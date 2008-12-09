@@ -1,9 +1,9 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 09 Dec 2008 17:46:25 +1100
-Subject: [PATCH] powerpc: Introduce MMU features v2
-Message-Id: <20081209064732.D1904DDF15@ozlabs.org>
+Date: Tue, 09 Dec 2008 17:48:22 +1100
+Subject: [PATCH] powerpc: Split mmu_context handling v3
+Message-Id: <20081209064915.21F78DDF14@ozlabs.org>
 Cc: Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -14,1507 +14,1028 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We're soon running out of CPU features and I need to add some new
-ones for various MMU related bits, so this patch separates the MMU
-features from the CPU features. I moved over the 32-bit MMU related
-ones, added base features for MMU type families, but didn't move
-over any 64-bit only feature yet.
+This splits the mmu_context handling between 32-bit hash based processors,
+64-bit hash based processors and everybody else. This is preliminary work
+for adding SMP support for BookE processors.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
+v2. address various comments for Josh and Stephen
+v3. properly removes the old mmu_context_32.c and mmu_context_64.c
 
-Remove a spurrious character that broke 64-bit build
 
- arch/powerpc/include/asm/cputable.h       |   85 +++++++++-------------
- arch/powerpc/include/asm/feature-fixups.h |   30 +++++++
- arch/powerpc/include/asm/mmu.h            |   27 +++++++
- arch/powerpc/kernel/cputable.c            |  113 ++++++++++++++++++++++++++++++
- arch/powerpc/kernel/head_32.S             |    8 +-
- arch/powerpc/kernel/head_fsl_booke.S      |    4 -
- arch/powerpc/kernel/module.c              |    6 +
- arch/powerpc/kernel/setup_32.c            |    4 +
- arch/powerpc/kernel/setup_64.c            |    2 
- arch/powerpc/kernel/swsusp_32.S           |    6 -
- arch/powerpc/kernel/vdso.c                |   10 ++
- arch/powerpc/kernel/vdso32/vdso32.lds.S   |    3 
- arch/powerpc/kernel/vdso64/vdso64.lds.S   |    3 
- arch/powerpc/kernel/vmlinux.lds.S         |    6 +
- arch/powerpc/mm/mmu_decl.h                |    2 
- arch/powerpc/mm/ppc_mmu_32.c              |    2 
- arch/powerpc/platforms/powermac/sleep.S   |    5 -
- 17 files changed, 255 insertions(+), 61 deletions(-)
+ arch/powerpc/include/asm/mmu_context.h       |  260 +++------------------------
+ arch/powerpc/kernel/asm-offsets.c            |    1 
+ arch/powerpc/kernel/head_32.S                |   12 +
+ arch/powerpc/kernel/ppc_ksyms.c              |    3 
+ arch/powerpc/kernel/swsusp.c                 |    2 
+ arch/powerpc/mm/Makefile                     |    7 
+ arch/powerpc/mm/mmu_context_32.c             |   84 --------
+ arch/powerpc/mm/mmu_context_64.c             |   70 -------
+ arch/powerpc/mm/mmu_context_hash32.c         |  103 ++++++++++
+ arch/powerpc/mm/mmu_context_hash64.c         |   78 ++++++++
+ arch/powerpc/mm/mmu_context_nohash.c         |  162 ++++++++++++++++
+ arch/powerpc/platforms/Kconfig.cputype       |   10 -
+ arch/powerpc/platforms/powermac/cpufreq_32.c |    2 
+ drivers/macintosh/via-pmu.c                  |    4 
+ 14 files changed, 407 insertions(+), 391 deletions(-)
 
---- linux-work.orig/arch/powerpc/include/asm/cputable.h	2008-12-09 16:42:03.000000000 +1100
-+++ linux-work/arch/powerpc/include/asm/cputable.h	2008-12-09 17:07:31.000000000 +1100
-@@ -82,6 +82,7 @@ struct cpu_spec {
- 	char		*cpu_name;
- 	unsigned long	cpu_features;		/* Kernel features */
- 	unsigned int	cpu_user_features;	/* Userland features */
-+	unsigned int	mmu_features;		/* MMU features */
- 
- 	/* cache line sizes */
- 	unsigned int	icache_bsize;
-@@ -144,17 +145,14 @@ extern const char *powerpc_base_platform
- #define CPU_FTR_USE_TB			ASM_CONST(0x0000000000000040)
- #define CPU_FTR_L2CSR			ASM_CONST(0x0000000000000080)
- #define CPU_FTR_601			ASM_CONST(0x0000000000000100)
--#define CPU_FTR_HPTE_TABLE		ASM_CONST(0x0000000000000200)
- #define CPU_FTR_CAN_NAP			ASM_CONST(0x0000000000000400)
- #define CPU_FTR_L3CR			ASM_CONST(0x0000000000000800)
- #define CPU_FTR_L3_DISABLE_NAP		ASM_CONST(0x0000000000001000)
- #define CPU_FTR_NAP_DISABLE_L2_PR	ASM_CONST(0x0000000000002000)
- #define CPU_FTR_DUAL_PLL_750FX		ASM_CONST(0x0000000000004000)
- #define CPU_FTR_NO_DPM			ASM_CONST(0x0000000000008000)
--#define CPU_FTR_HAS_HIGH_BATS		ASM_CONST(0x0000000000010000)
- #define CPU_FTR_NEED_COHERENT		ASM_CONST(0x0000000000020000)
- #define CPU_FTR_NO_BTIC			ASM_CONST(0x0000000000040000)
--#define CPU_FTR_BIG_PHYS		ASM_CONST(0x0000000000080000)
- #define CPU_FTR_NODSISRALIGN		ASM_CONST(0x0000000000100000)
- #define CPU_FTR_PPC_LE			ASM_CONST(0x0000000000200000)
- #define CPU_FTR_REAL_LE			ASM_CONST(0x0000000000400000)
-@@ -266,107 +264,99 @@ extern const char *powerpc_base_platform
- 		     !defined(CONFIG_POWER3) && !defined(CONFIG_POWER4) && \
- 		     !defined(CONFIG_BOOKE))
- 
--#define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | CPU_FTR_HPTE_TABLE | \
-+#define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | \
- 	CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE)
- #define CPU_FTRS_603	(CPU_FTR_COMMON | \
- 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
- #define CPU_FTRS_604	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_PPC_LE)
-+	    CPU_FTR_USE_TB | CPU_FTR_PPC_LE)
- #define CPU_FTRS_740_NOTAU	(CPU_FTR_COMMON | \
- 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
- #define CPU_FTRS_740	(CPU_FTR_COMMON | \
- 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
-+	    CPU_FTR_TAU | CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_PPC_LE)
- #define CPU_FTRS_750	(CPU_FTR_COMMON | \
- 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
-+	    CPU_FTR_TAU | CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_PPC_LE)
--#define CPU_FTRS_750CL	(CPU_FTRS_750 | CPU_FTR_HAS_HIGH_BATS)
-+#define CPU_FTRS_750CL	(CPU_FTRS_750)
- #define CPU_FTRS_750FX1	(CPU_FTRS_750 | CPU_FTR_DUAL_PLL_750FX | CPU_FTR_NO_DPM)
- #define CPU_FTRS_750FX2	(CPU_FTRS_750 | CPU_FTR_NO_DPM)
--#define CPU_FTRS_750FX	(CPU_FTRS_750 | CPU_FTR_DUAL_PLL_750FX | \
--		CPU_FTR_HAS_HIGH_BATS)
-+#define CPU_FTRS_750FX	(CPU_FTRS_750 | CPU_FTR_DUAL_PLL_750FX)
- #define CPU_FTRS_750GX	(CPU_FTRS_750FX)
- #define CPU_FTRS_7400_NOTAU	(CPU_FTR_COMMON | \
- 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE | \
-+	    CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7400	(CPU_FTR_COMMON | \
- 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
--	    CPU_FTR_TAU | CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE | \
-+	    CPU_FTR_TAU | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7450_20	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7450_21	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | \
- 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7450_23	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | CPU_FTR_NEED_PAIRED_STWCX | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | \
- 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7455_1	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | CPU_FTR_NEED_PAIRED_STWCX | \
- 	    CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_HAS_HIGH_BATS | \
--	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
-+	    CPU_FTR_SPEC7450 | CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7455_20	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | CPU_FTR_NEED_PAIRED_STWCX | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | \
- 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP | \
--	    CPU_FTR_NEED_COHERENT | CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
-+	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
- #define CPU_FTRS_7455	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7447_10	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC | CPU_FTR_PPC_LE | \
- 	    CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7447	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_L3CR | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7447A	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_7448	(CPU_FTR_COMMON | \
- 	    CPU_FTR_USE_TB | \
- 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
- 	    CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
- #define CPU_FTRS_82XX	(CPU_FTR_COMMON | \
- 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB)
- #define CPU_FTRS_G2_LE	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
--	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS)
-+	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP)
- #define CPU_FTRS_E300	(CPU_FTR_MAYBE_CAN_DOZE | \
--	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_COMMON)
- #define CPU_FTRS_E300C2	(CPU_FTR_MAYBE_CAN_DOZE | \
--	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE)
--#define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON | \
--	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE)
-+#define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON | CPU_FTR_USE_TB)
- #define CPU_FTRS_8XX	(CPU_FTR_USE_TB)
- #define CPU_FTRS_40X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_44X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
-@@ -379,55 +369,54 @@ extern const char *powerpc_base_platform
- 	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN | \
- 	    CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_E500_2	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
--	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_BIG_PHYS | \
-+	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | \
- 	    CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_E500MC	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
--	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN | \
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN | \
- 	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC | CPU_FTR_NOEXECUTE)
- #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
- 
- /* 64-bit CPUs */
- #define CPU_FTRS_POWER3	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | CPU_FTR_PPC_LE)
-+	    CPU_FTR_IABR | CPU_FTR_PPC_LE)
- #define CPU_FTRS_RS64	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | \
-+	    CPU_FTR_IABR | \
- 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
- #define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ)
- #define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
- 	    CPU_FTR_CP_USE_DCBTZ)
- #define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR)
- #define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
- 	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD)
- #define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
- 	    CPU_FTR_DSCR | CPU_FTR_SAO)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE | \
- 	    CPU_FTR_CELL_TB_BUG | CPU_FTR_CP_USE_DCBTZ | \
- 	    CPU_FTR_UNALIGNED_LD_STD)
- #define CPU_FTRS_PA6T (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_PPCAS_ARCH_V2 | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
- 	    CPU_FTR_PURR | CPU_FTR_REAL_LE | CPU_FTR_NO_SLBIE_B)
--#define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | \
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
-+#define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | CPU_FTR_PPCAS_ARCH_V2)
- 
- #ifdef __powerpc64__
- #define CPU_FTRS_POSSIBLE	\
-Index: linux-work/arch/powerpc/include/asm/feature-fixups.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/feature-fixups.h	2008-09-29 14:21:37.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/feature-fixups.h	2008-12-09 16:42:03.000000000 +1100
-@@ -81,6 +81,36 @@ label##5:					       	\
- #define ALT_FTR_SECTION_END_IFCLR(msk)	\
- 	ALT_FTR_SECTION_END_NESTED_IFCLR(msk, 97)
- 
-+/* MMU feature dependent sections */
-+#define BEGIN_MMU_FTR_SECTION_NESTED(label)	START_FTR_SECTION(label)
-+#define BEGIN_MMU_FTR_SECTION			START_FTR_SECTION(97)
-+
-+#define END_MMU_FTR_SECTION_NESTED(msk, val, label) 		\
-+	FTR_SECTION_ELSE_NESTED(label)				\
-+	MAKE_FTR_SECTION_ENTRY(msk, val, label, __mmu_ftr_fixup)
-+
-+#define END_MMU_FTR_SECTION(msk, val)		\
-+	END_MMU_FTR_SECTION_NESTED(msk, val, 97)
-+
-+#define END_MMU_FTR_SECTION_IFSET(msk)	END_MMU_FTR_SECTION((msk), (msk))
-+#define END_MMU_FTR_SECTION_IFCLR(msk)	END_MMU_FTR_SECTION((msk), 0)
-+
-+/* MMU feature sections with alternatives, use BEGIN_FTR_SECTION to start */
-+#define MMU_FTR_SECTION_ELSE_NESTED(label)	FTR_SECTION_ELSE_NESTED(label)
-+#define MMU_FTR_SECTION_ELSE	MMU_FTR_SECTION_ELSE_NESTED(97)
-+#define ALT_MMU_FTR_SECTION_END_NESTED(msk, val, label)	\
-+	MAKE_FTR_SECTION_ENTRY(msk, val, label, __mmu_ftr_fixup)
-+#define ALT_MMU_FTR_SECTION_END_NESTED_IFSET(msk, label)	\
-+	ALT_MMU_FTR_SECTION_END_NESTED(msk, msk, label)
-+#define ALT_MMU_FTR_SECTION_END_NESTED_IFCLR(msk, label)	\
-+	ALT_MMU_FTR_SECTION_END_NESTED(msk, 0, label)
-+#define ALT_MMU_FTR_SECTION_END(msk, val)	\
-+	ALT_MMU_FTR_SECTION_END_NESTED(msk, val, 97)
-+#define ALT_MMU_FTR_SECTION_END_IFSET(msk)	\
-+	ALT_MMU_FTR_SECTION_END_NESTED_IFSET(msk, 97)
-+#define ALT_MMU_FTR_SECTION_END_IFCLR(msk)	\
-+	ALT_MMU_FTR_SECTION_END_NESTED_IFCLR(msk, 97)
-+
- /* Firmware feature dependent sections */
- #define BEGIN_FW_FTR_SECTION_NESTED(label)	START_FTR_SECTION(label)
- #define BEGIN_FW_FTR_SECTION			START_FTR_SECTION(97)
-Index: linux-work/arch/powerpc/include/asm/mmu.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/mmu.h	2008-09-29 14:21:37.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/mmu.h	2008-12-09 17:07:34.000000000 +1100
-@@ -2,6 +2,33 @@
- #define _ASM_POWERPC_MMU_H_
+--- linux-work.orig/arch/powerpc/include/asm/mmu_context.h	2008-12-09 16:30:57.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/mmu_context.h	2008-12-09 16:31:02.000000000 +1100
+@@ -2,240 +2,26 @@
+ #define __ASM_POWERPC_MMU_CONTEXT_H
  #ifdef __KERNEL__
  
-+#include <asm/asm-compat.h>
-+#include <asm/feature-fixups.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/sched.h>
++#include <linux/spinlock.h>
+ #include <asm/mmu.h>	
+ #include <asm/cputable.h>
+ #include <asm-generic/mm_hooks.h>
+-
+-#ifndef CONFIG_PPC64
+-#include <asm/atomic.h>
+-#include <linux/bitops.h>
+-
+-/*
+- * On 32-bit PowerPC 6xx/7xx/7xxx CPUs, we use a set of 16 VSIDs
+- * (virtual segment identifiers) for each context.  Although the
+- * hardware supports 24-bit VSIDs, and thus >1 million contexts,
+- * we only use 32,768 of them.  That is ample, since there can be
+- * at most around 30,000 tasks in the system anyway, and it means
+- * that we can use a bitmap to indicate which contexts are in use.
+- * Using a bitmap means that we entirely avoid all of the problems
+- * that we used to have when the context number overflowed,
+- * particularly on SMP systems.
+- *  -- paulus.
+- */
+-
+-/*
+- * This function defines the mapping from contexts to VSIDs (virtual
+- * segment IDs).  We use a skew on both the context and the high 4 bits
+- * of the 32-bit virtual address (the "effective segment ID") in order
+- * to spread out the entries in the MMU hash table.  Note, if this
+- * function is changed then arch/ppc/mm/hashtable.S will have to be
+- * changed to correspond.
+- */
+-#define CTX_TO_VSID(ctx, va)	(((ctx) * (897 * 16) + ((va) >> 28) * 0x111) \
+-				 & 0xffffff)
+-
+-/*
+-   The MPC8xx has only 16 contexts.  We rotate through them on each
+-   task switch.  A better way would be to keep track of tasks that
+-   own contexts, and implement an LRU usage.  That way very active
+-   tasks don't always have to pay the TLB reload overhead.  The
+-   kernel pages are mapped shared, so the kernel can run on behalf
+-   of any task that makes a kernel entry.  Shared does not mean they
+-   are not protected, just that the ASID comparison is not performed.
+-        -- Dan
+-
+-   The IBM4xx has 256 contexts, so we can just rotate through these
+-   as a way of "switching" contexts.  If the TID of the TLB is zero,
+-   the PID/TID comparison is disabled, so we can use a TID of zero
+-   to represent all kernel pages as shared among all contexts.
+-   	-- Dan
+- */
+-
+-static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+-{
+-}
+-
+-#ifdef CONFIG_8xx
+-#define NO_CONTEXT      	16
+-#define LAST_CONTEXT    	15
+-#define FIRST_CONTEXT    	0
+-
+-#elif defined(CONFIG_4xx)
+-#define NO_CONTEXT      	256
+-#define LAST_CONTEXT    	255
+-#define FIRST_CONTEXT    	1
+-
+-#elif defined(CONFIG_E200) || defined(CONFIG_E500)
+-#define NO_CONTEXT      	256
+-#define LAST_CONTEXT    	255
+-#define FIRST_CONTEXT    	1
+-
+-#else
+-
+-/* PPC 6xx, 7xx CPUs */
+-#define NO_CONTEXT      	((unsigned long) -1)
+-#define LAST_CONTEXT    	32767
+-#define FIRST_CONTEXT    	1
+-#endif
+-
+-/*
+- * Set the current MMU context.
+- * On 32-bit PowerPCs (other than the 8xx embedded chips), this is done by
+- * loading up the segment registers for the user part of the address space.
+- *
+- * Since the PGD is immediately available, it is much faster to simply
+- * pass this along as a second parameter, which is required for 8xx and
+- * can be used for debugging on all processors (if you happen to have
+- * an Abatron).
+- */
+-extern void set_context(unsigned long contextid, pgd_t *pgd);
+-
+-/*
+- * Bitmap of contexts in use.
+- * The size of this bitmap is LAST_CONTEXT + 1 bits.
+- */
+-extern unsigned long context_map[];
+-
+-/*
+- * This caches the next context number that we expect to be free.
+- * Its use is an optimization only, we can't rely on this context
+- * number to be free, but it usually will be.
+- */
+-extern unsigned long next_mmu_context;
+-
+-/*
+- * If we don't have sufficient contexts to give one to every task
+- * that could be in the system, we need to be able to steal contexts.
+- * These variables support that.
+- */
+-#if LAST_CONTEXT < 30000
+-#define FEW_CONTEXTS	1
+-extern atomic_t nr_free_contexts;
+-extern struct mm_struct *context_mm[LAST_CONTEXT+1];
+-extern void steal_context(void);
+-#endif
+-
+-/*
+- * Get a new mmu context for the address space described by `mm'.
+- */
+-static inline void get_mmu_context(struct mm_struct *mm)
+-{
+-	unsigned long ctx;
+-
+-	if (mm->context.id != NO_CONTEXT)
+-		return;
+-#ifdef FEW_CONTEXTS
+-	while (atomic_dec_if_positive(&nr_free_contexts) < 0)
+-		steal_context();
+-#endif
+-	ctx = next_mmu_context;
+-	while (test_and_set_bit(ctx, context_map)) {
+-		ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1, ctx);
+-		if (ctx > LAST_CONTEXT)
+-			ctx = 0;
+-	}
+-	next_mmu_context = (ctx + 1) & LAST_CONTEXT;
+-	mm->context.id = ctx;
+-#ifdef FEW_CONTEXTS
+-	context_mm[ctx] = mm;
+-#endif
+-}
+-
+-/*
+- * Set up the context for a new address space.
+- */
+-static inline int init_new_context(struct task_struct *t, struct mm_struct *mm)
+-{
+-	mm->context.id = NO_CONTEXT;
+-	return 0;
+-}
+-
+-/*
+- * We're finished using the context for an address space.
+- */
+-static inline void destroy_context(struct mm_struct *mm)
+-{
+-	preempt_disable();
+-	if (mm->context.id != NO_CONTEXT) {
+-		clear_bit(mm->context.id, context_map);
+-		mm->context.id = NO_CONTEXT;
+-#ifdef FEW_CONTEXTS
+-		atomic_inc(&nr_free_contexts);
+-#endif
+-	}
+-	preempt_enable();
+-}
+-
+-static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+-			     struct task_struct *tsk)
+-{
+-#ifdef CONFIG_ALTIVEC
+-	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+-	asm volatile ("dssall;\n"
+-#ifndef CONFIG_POWER4
+-	 "sync;\n" /* G4 needs a sync here, G5 apparently not */
+-#endif
+-	 : : );
+-#endif /* CONFIG_ALTIVEC */
+-
+-	tsk->thread.pgdir = next->pgd;
+-
+-	if (!cpu_isset(smp_processor_id(), next->cpu_vm_mask))
+-		cpu_set(smp_processor_id(), next->cpu_vm_mask);
+-
+-	/* No need to flush userspace segments if the mm doesnt change */
+-	if (prev == next)
+-		return;
+-
+-	/* Setup new userspace context */
+-	get_mmu_context(next);
+-	set_context(next->context.id, next->pgd);
+-}
+-
+-#define deactivate_mm(tsk,mm)	do { } while (0)
++#include <asm/cputhreads.h>
+ 
+ /*
+- * After we have set current->mm to a new value, this activates
+- * the context for the new mm so we see the new mappings.
++ * Most if the context management is out of line
+  */
+-#define activate_mm(active_mm, mm)   switch_mm(active_mm, mm, current)
+-
+ extern void mmu_context_init(void);
+-
+-
+-#else
+-
+-#include <linux/kernel.h>	
+-#include <linux/mm.h>	
+-#include <linux/sched.h>
+-
+-/*
+- * Copyright (C) 2001 PPC 64 Team, IBM Corp
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-static inline void enter_lazy_tlb(struct mm_struct *mm,
+-				  struct task_struct *tsk)
+-{
+-}
+-
+-/*
+- * The proto-VSID space has 2^35 - 1 segments available for user mappings.
+- * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
+- * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
+- */
+-#define NO_CONTEXT	0
+-#define MAX_CONTEXT	((1UL << 19) - 1)
+-
+ extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
+ extern void destroy_context(struct mm_struct *mm);
+ 
++extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
+ extern void switch_stab(struct task_struct *tsk, struct mm_struct *mm);
+ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
++extern void set_context(unsigned long id, pgd_t *pgd);
+ 
+ /*
+  * switch_mm is the entry point called from the architecture independent
+@@ -244,22 +30,39 @@ extern void switch_slb(struct task_struc
+ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+ 			     struct task_struct *tsk)
+ {
+-	if (!cpu_isset(smp_processor_id(), next->cpu_vm_mask))
+-		cpu_set(smp_processor_id(), next->cpu_vm_mask);
++	/* Mark this context has been used on the new CPU */
++	cpu_set(smp_processor_id(), next->cpu_vm_mask);
 +
-+/*
-+ * MMU features bit definitions
-+ */
-+#define MMU_FTR_HPTE_TABLE		ASM_CONST(0x00000001)
-+#define MMU_FTR_TYPE_8xx		ASM_CONST(0x00000002)
-+#define MMU_FTR_TYPE_40x		ASM_CONST(0x00000004)
-+#define MMU_FTR_TYPE_44x		ASM_CONST(0x00000008)
-+#define MMU_FTR_TYPE_FSL_E		ASM_CONST(0x00000010)
-+#define MMU_FTR_HAS_HIGH_BATS		ASM_CONST(0x00010000)
-+#define MMU_FTR_BIG_PHYS		ASM_CONST(0x00020000)
++	/* 32-bit keeps track of the current PGDIR in the thread struct */
++#ifdef CONFIG_PPC32
++	tsk->thread.pgdir = next->pgd;
++#endif /* CONFIG_PPC32 */
+ 
+-	/* No need to flush userspace segments if the mm doesnt change */
++	/* Nothing else to do if we aren't actually switching */
+ 	if (prev == next)
+ 		return;
+ 
++	/* We must stop all altivec streams before changing the HW
++	 * context
++	 */
+ #ifdef CONFIG_ALTIVEC
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+ 		asm volatile ("dssall");
+ #endif /* CONFIG_ALTIVEC */
+ 
++	/* The actual HW switching method differs between the various
++	 * sub architectures.
++	 */
++#ifdef CONFIG_PPC_STD_MMU_64
+ 	if (cpu_has_feature(CPU_FTR_SLB))
+ 		switch_slb(tsk, next);
+ 	else
+ 		switch_stab(tsk, next);
++#else
++	/* Out of line for now */
++	switch_mmu_context(prev, next);
++#endif
 +
-+#ifndef __ASSEMBLY__
-+#include <asm/cputable.h>
-+
-+static inline int mmu_has_feature(unsigned long feature)
+ }
+ 
+ #define deactivate_mm(tsk,mm)	do { } while (0)
+@@ -277,6 +80,11 @@ static inline void activate_mm(struct mm
+ 	local_irq_restore(flags);
+ }
+ 
+-#endif /* CONFIG_PPC64 */
++/* We don't currently use enter_lazy_tlb() for anything */
++static inline void enter_lazy_tlb(struct mm_struct *mm,
++				  struct task_struct *tsk)
 +{
-+	return (cur_cpu_spec->mmu_features & feature);
 +}
 +
-+extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
-+
-+#endif /* !__ASSEMBLY__ */
-+
-+
- #ifdef CONFIG_PPC64
- /* 64-bit classic hash table MMU */
- #  include <asm/mmu-hash64.h>
-Index: linux-work/arch/powerpc/kernel/cputable.c
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
+Index: linux-work/arch/powerpc/kernel/asm-offsets.c
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/cputable.c	2008-12-09 16:42:03.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/cputable.c	2008-12-09 17:07:44.000000000 +1100
-@@ -19,6 +19,7 @@
- #include <asm/oprofile_impl.h>
- #include <asm/cputable.h>
- #include <asm/prom.h>		/* for PTRRELOC on ARCH=ppc */
-+#include <asm/mmu.h>
- 
- struct cpu_spec* cur_cpu_spec = NULL;
- EXPORT_SYMBOL(cur_cpu_spec);
-@@ -93,6 +94,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER3 (630)",
- 		.cpu_features		= CPU_FTRS_POWER3,
- 		.cpu_user_features	= COMMON_USER_PPC64|PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -108,6 +110,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER3 (630+)",
- 		.cpu_features		= CPU_FTRS_POWER3,
- 		.cpu_user_features	= COMMON_USER_PPC64|PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -123,6 +126,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "RS64-II (northstar)",
- 		.cpu_features		= CPU_FTRS_RS64,
- 		.cpu_user_features	= COMMON_USER_PPC64,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -138,6 +142,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "RS64-III (pulsar)",
- 		.cpu_features		= CPU_FTRS_RS64,
- 		.cpu_user_features	= COMMON_USER_PPC64,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -153,6 +158,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "RS64-III (icestar)",
- 		.cpu_features		= CPU_FTRS_RS64,
- 		.cpu_user_features	= COMMON_USER_PPC64,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -168,6 +174,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "RS64-IV (sstar)",
- 		.cpu_features		= CPU_FTRS_RS64,
- 		.cpu_user_features	= COMMON_USER_PPC64,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -183,6 +190,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER4 (gp)",
- 		.cpu_features		= CPU_FTRS_POWER4,
- 		.cpu_user_features	= COMMON_USER_POWER4,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -198,6 +206,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER4+ (gq)",
- 		.cpu_features		= CPU_FTRS_POWER4,
- 		.cpu_user_features	= COMMON_USER_POWER4,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -214,6 +223,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_PPC970,
- 		.cpu_user_features	= COMMON_USER_POWER4 |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -232,6 +242,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_PPC970,
- 		.cpu_user_features	= COMMON_USER_POWER4 |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -250,6 +261,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_PPC970,
- 		.cpu_user_features	= COMMON_USER_POWER4 |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -268,6 +280,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_PPC970,
- 		.cpu_user_features	= COMMON_USER_POWER4 |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -286,6 +299,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_PPC970,
- 		.cpu_user_features	= COMMON_USER_POWER4 |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -302,6 +316,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER5 (gr)",
- 		.cpu_features		= CPU_FTRS_POWER5,
- 		.cpu_user_features	= COMMON_USER_POWER5,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 6,
-@@ -322,6 +337,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER5+ (gs)",
- 		.cpu_features		= CPU_FTRS_POWER5,
- 		.cpu_user_features	= COMMON_USER_POWER5_PLUS,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 6,
-@@ -338,6 +354,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER5+ (gs)",
- 		.cpu_features		= CPU_FTRS_POWER5,
- 		.cpu_user_features	= COMMON_USER_POWER5_PLUS,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 6,
-@@ -355,6 +372,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER5+",
- 		.cpu_features		= CPU_FTRS_POWER5,
- 		.cpu_user_features	= COMMON_USER_POWER5_PLUS,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
-@@ -368,6 +386,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_POWER6,
- 		.cpu_user_features	= COMMON_USER_POWER6 |
- 			PPC_FEATURE_POWER6_EXT,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 6,
-@@ -387,6 +406,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER6 (architected)",
- 		.cpu_features		= CPU_FTRS_POWER6,
- 		.cpu_user_features	= COMMON_USER_POWER6,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
-@@ -399,6 +419,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER7 (architected)",
- 		.cpu_features		= CPU_FTRS_POWER7,
- 		.cpu_user_features	= COMMON_USER_POWER7,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
-@@ -411,6 +432,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER7 (raw)",
- 		.cpu_features		= CPU_FTRS_POWER7,
- 		.cpu_user_features	= COMMON_USER_POWER7,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 6,
-@@ -433,6 +455,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_user_features	= COMMON_USER_PPC64 |
- 			PPC_FEATURE_CELL | PPC_FEATURE_HAS_ALTIVEC_COMP |
- 			PPC_FEATURE_SMT,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 4,
-@@ -448,6 +471,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "PA6T",
- 		.cpu_features		= CPU_FTRS_PA6T,
- 		.cpu_user_features	= COMMON_USER_PA6T,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 64,
- 		.dcache_bsize		= 64,
- 		.num_pmcs		= 6,
-@@ -465,6 +489,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER4 (compatible)",
- 		.cpu_features		= CPU_FTRS_COMPATIBLE,
- 		.cpu_user_features	= COMMON_USER_PPC64,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 6,
-@@ -482,6 +507,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_PPC601,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_601_INSTR |
- 			PPC_FEATURE_UNIFIED_CACHE | PPC_FEATURE_NO_TB,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_generic,
-@@ -493,6 +519,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "603",
- 		.cpu_features		= CPU_FTRS_603,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= 0,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -505,6 +532,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "603e",
- 		.cpu_features		= CPU_FTRS_603,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= 0,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -517,6 +545,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "603ev",
- 		.cpu_features		= CPU_FTRS_603,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= 0,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -529,6 +558,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "604",
- 		.cpu_features		= CPU_FTRS_604,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 2,
-@@ -542,6 +572,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "604e",
- 		.cpu_features		= CPU_FTRS_604,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -555,6 +586,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "604r",
- 		.cpu_features		= CPU_FTRS_604,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -568,6 +600,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "604ev",
- 		.cpu_features		= CPU_FTRS_604,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -581,6 +614,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "740/750",
- 		.cpu_features		= CPU_FTRS_740_NOTAU,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -594,6 +628,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "750CX",
- 		.cpu_features		= CPU_FTRS_750,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -607,6 +642,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "750CX",
- 		.cpu_features		= CPU_FTRS_750,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -621,6 +657,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "750CXe",
- 		.cpu_features		= CPU_FTRS_750,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -635,6 +672,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "750CXe",
- 		.cpu_features		= CPU_FTRS_750,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -649,6 +687,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "750CL",
- 		.cpu_features		= CPU_FTRS_750CL,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -663,6 +702,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "745/755",
- 		.cpu_features		= CPU_FTRS_750,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -677,6 +717,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "750FX",
- 		.cpu_features		= CPU_FTRS_750FX1,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -691,6 +732,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "750FX",
- 		.cpu_features		= CPU_FTRS_750FX2,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -705,6 +747,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "750FX",
- 		.cpu_features		= CPU_FTRS_750FX,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -719,6 +762,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "750GX",
- 		.cpu_features		= CPU_FTRS_750GX,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -733,6 +777,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "740/750",
- 		.cpu_features		= CPU_FTRS_740,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -748,6 +793,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7400_NOTAU,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -763,6 +809,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7400,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -778,6 +825,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7400,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -793,6 +841,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7450_20,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -810,6 +859,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7450_21,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -827,6 +877,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7450_23,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -844,6 +895,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7455_1,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -861,6 +913,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7455_20,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -878,6 +931,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7455,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -895,6 +949,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7447_10,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -912,6 +967,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7447_10,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -928,6 +984,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "7447/7457",
- 		.cpu_features		= CPU_FTRS_7447,
- 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -945,6 +1002,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7447A,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -962,6 +1020,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_7448,
- 		.cpu_user_features	= COMMON_USER |
- 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE | MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 6,
-@@ -978,6 +1037,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "82xx",
- 		.cpu_features		= CPU_FTRS_82XX,
- 		.cpu_user_features	= COMMON_USER,
-+		.mmu_features		= 0,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -990,6 +1050,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "G2_LE",
- 		.cpu_features		= CPU_FTRS_G2_LE,
- 		.cpu_user_features	= COMMON_USER,
-+		.mmu_features		= MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -1002,6 +1063,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "e300c1",
- 		.cpu_features		= CPU_FTRS_E300,
- 		.cpu_user_features	= COMMON_USER,
-+		.mmu_features		= MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -1014,6 +1076,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "e300c2",
- 		.cpu_features		= CPU_FTRS_E300C2,
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
-+		.mmu_features		= MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -1026,6 +1089,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "e300c3",
- 		.cpu_features		= CPU_FTRS_E300,
- 		.cpu_user_features	= COMMON_USER,
-+		.mmu_features		= MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -1040,6 +1104,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "e300c4",
- 		.cpu_features		= CPU_FTRS_E300,
- 		.cpu_user_features	= COMMON_USER,
-+		.mmu_features		= MMU_FTR_HAS_HIGH_BATS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -1055,6 +1120,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "(generic PPC)",
- 		.cpu_features		= CPU_FTRS_CLASSIC32,
- 		.cpu_user_features	= COMMON_USER,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_generic,
-@@ -1070,6 +1136,7 @@ static struct cpu_spec __initdata cpu_sp
- 		 * if the 8xx code is there.... */
- 		.cpu_features		= CPU_FTRS_8XX,
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
-+		.mmu_features		= MMU_FTR_TYPE_8xx,
- 		.icache_bsize		= 16,
- 		.dcache_bsize		= 16,
- 		.platform		= "ppc823",
-@@ -1082,6 +1149,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "403GC",
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 16,
- 		.dcache_bsize		= 16,
- 		.machine_check		= machine_check_4xx,
-@@ -1094,6 +1162,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 		 	PPC_FEATURE_HAS_MMU | PPC_FEATURE_NO_TB,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 16,
- 		.dcache_bsize		= 16,
- 		.machine_check		= machine_check_4xx,
-@@ -1105,6 +1174,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "403G ??",
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 16,
- 		.dcache_bsize		= 16,
- 		.machine_check		= machine_check_4xx,
-@@ -1117,6 +1187,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1129,6 +1200,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1141,6 +1213,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1153,6 +1226,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1165,6 +1239,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1177,6 +1252,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1189,6 +1265,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1201,6 +1278,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1212,6 +1290,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "405LP",
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1224,6 +1303,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1236,6 +1316,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1248,6 +1329,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1260,6 +1342,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1272,6 +1355,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1285,6 +1369,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1297,6 +1382,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_features		= CPU_FTRS_40X,
- 		.cpu_user_features	= PPC_FEATURE_32 |
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.mmu_features		= MMU_FTR_TYPE_40x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1311,6 +1397,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440GR Rev. A",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1322,6 +1409,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440EP Rev. A",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440ep,
-@@ -1334,6 +1422,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440GR Rev. B",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1345,6 +1434,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440EP Rev. C",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440ep,
-@@ -1357,6 +1447,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440EP Rev. B",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440ep,
-@@ -1369,6 +1460,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440GRX",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440grx,
-@@ -1381,6 +1473,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440EPX",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440epx,
-@@ -1393,6 +1486,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440GP Rev. B",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1404,6 +1498,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440GP Rev. C",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1415,6 +1510,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440GX Rev. A",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440gx,
-@@ -1427,6 +1523,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440GX Rev. B",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440gx,
-@@ -1439,6 +1536,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440GX Rev. C",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440gx,
-@@ -1451,6 +1549,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440GX Rev. F",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440gx,
-@@ -1463,6 +1562,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440SP Rev. A",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1474,6 +1574,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name               = "440SPe Rev. A",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features      = COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize           = 32,
- 		.dcache_bsize           = 32,
- 		.cpu_setup		= __setup_cpu_440spe,
-@@ -1486,6 +1587,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440SPe Rev. B",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_440spe,
-@@ -1498,6 +1600,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "440 in Virtex-5 FXT",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.platform		= "ppc440",
-@@ -1508,6 +1611,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "460EX",
- 		.cpu_features		= CPU_FTRS_440x6,
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_460ex,
-@@ -1520,6 +1624,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "460GT",
- 		.cpu_features		= CPU_FTRS_440x6,
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_460gt,
-@@ -1532,6 +1637,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "(generic 44x PPC)",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_44x,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_4xx,
-@@ -1548,6 +1654,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_user_features	= COMMON_USER_BOOKE |
- 			PPC_FEATURE_HAS_EFP_SINGLE |
- 			PPC_FEATURE_UNIFIED_CACHE,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_e200,
- 		.platform		= "ppc5554",
-@@ -1562,6 +1669,7 @@ static struct cpu_spec __initdata cpu_sp
- 			PPC_FEATURE_HAS_SPE_COMP |
- 			PPC_FEATURE_HAS_EFP_SINGLE_COMP |
- 			PPC_FEATURE_UNIFIED_CACHE,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_e200,
- 		.platform		= "ppc5554",
-@@ -1574,6 +1682,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_user_features	= COMMON_USER_BOOKE |
- 			PPC_FEATURE_HAS_EFP_SINGLE |
- 			PPC_FEATURE_UNIFIED_CACHE,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_e200,
- 		.platform		= "ppc5554",
-@@ -1588,6 +1697,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_user_features	= COMMON_USER_BOOKE |
- 			PPC_FEATURE_HAS_SPE_COMP |
- 			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -1605,6 +1715,7 @@ static struct cpu_spec __initdata cpu_sp
- 			PPC_FEATURE_HAS_SPE_COMP |
- 			PPC_FEATURE_HAS_EFP_SINGLE_COMP |
- 			PPC_FEATURE_HAS_EFP_DOUBLE_COMP,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
-@@ -1619,6 +1730,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "e500mc",
- 		.cpu_features		= CPU_FTRS_E500MC,
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS,
- 		.icache_bsize		= 64,
- 		.dcache_bsize		= 64,
- 		.num_pmcs		= 4,
-@@ -1635,6 +1747,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_user_features	= COMMON_USER_BOOKE |
- 			PPC_FEATURE_HAS_SPE_COMP |
- 			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.machine_check		= machine_check_e500,
-Index: linux-work/arch/powerpc/kernel/module.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/module.c	2008-09-29 14:21:37.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/module.c	2008-12-09 16:42:03.000000000 +1100
-@@ -78,6 +78,12 @@ int module_finalize(const Elf_Ehdr *hdr,
- 				  (void *)sect->sh_addr,
- 				  (void *)sect->sh_addr + sect->sh_size);
- 
-+	sect = find_section(hdr, sechdrs, "__mmu_ftr_fixup");
-+	if (sect != NULL)
-+		do_feature_fixups(cur_cpu_spec->mmu_features,
-+				  (void *)sect->sh_addr,
-+				  (void *)sect->sh_addr + sect->sh_size);
-+
- #ifdef CONFIG_PPC64
- 	sect = find_section(hdr, sechdrs, "__fw_ftr_fixup");
- 	if (sect != NULL)
-Index: linux-work/arch/powerpc/kernel/setup_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/setup_32.c	2008-11-24 14:48:55.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/setup_32.c	2008-12-09 17:07:34.000000000 +1100
-@@ -97,6 +97,10 @@ notrace unsigned long __init early_init(
- 			  PTRRELOC(&__start___ftr_fixup),
- 			  PTRRELOC(&__stop___ftr_fixup));
- 
-+	do_feature_fixups(spec->mmu_features,
-+			  PTRRELOC(&__start___mmu_ftr_fixup),
-+			  PTRRELOC(&__stop___mmu_ftr_fixup));
-+
- 	do_lwsync_fixups(spec->cpu_features,
- 			 PTRRELOC(&__start___lwsync_fixup),
- 			 PTRRELOC(&__stop___lwsync_fixup));
-Index: linux-work/arch/powerpc/kernel/setup_64.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/setup_64.c	2008-12-08 15:40:33.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/setup_64.c	2008-12-09 16:42:03.000000000 +1100
-@@ -362,6 +362,8 @@ void __init setup_system(void)
- 	 */
- 	do_feature_fixups(cur_cpu_spec->cpu_features,
- 			  &__start___ftr_fixup, &__stop___ftr_fixup);
-+	do_feature_fixups(cur_cpu_spec->mmu_features,
-+			  &__start___mmu_ftr_fixup, &__stop___mmu_ftr_fixup);
- 	do_feature_fixups(powerpc_firmware_features,
- 			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
- 	do_lwsync_fixups(cur_cpu_spec->cpu_features,
-Index: linux-work/arch/powerpc/kernel/vdso.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/vdso.c	2008-09-29 14:21:37.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/vdso.c	2008-12-09 16:42:03.000000000 +1100
-@@ -567,6 +567,11 @@ static __init int vdso_fixup_features(st
- 		do_feature_fixups(cur_cpu_spec->cpu_features,
- 				  start64, start64 + size64);
- 
-+	start64 = find_section64(v64->hdr, "__mmu_ftr_fixup", &size64);
-+	if (start64)
-+		do_feature_fixups(cur_cpu_spec->mmu_features,
-+				  start64, start64 + size64);
-+
- 	start64 = find_section64(v64->hdr, "__fw_ftr_fixup", &size64);
- 	if (start64)
- 		do_feature_fixups(powerpc_firmware_features,
-@@ -583,6 +588,11 @@ static __init int vdso_fixup_features(st
- 		do_feature_fixups(cur_cpu_spec->cpu_features,
- 				  start32, start32 + size32);
- 
-+	start32 = find_section32(v32->hdr, "__mmu_ftr_fixup", &size32);
-+	if (start32)
-+		do_feature_fixups(cur_cpu_spec->mmu_features,
-+				  start32, start32 + size32);
-+
- #ifdef CONFIG_PPC64
- 	start32 = find_section32(v32->hdr, "__fw_ftr_fixup", &size32);
- 	if (start32)
-Index: linux-work/arch/powerpc/kernel/vdso32/vdso32.lds.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/vdso32/vdso32.lds.S	2008-09-29 10:17:03.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/vdso32/vdso32.lds.S	2008-12-09 16:42:03.000000000 +1100
-@@ -34,6 +34,9 @@ SECTIONS
- 	__ftr_fixup	: { *(__ftr_fixup) }
- 
- 	. = ALIGN(8);
-+	__mmu_ftr_fixup	: { *(__mmu_ftr_fixup) }
-+
-+	. = ALIGN(8);
- 	__lwsync_fixup	: { *(__lwsync_fixup) }
- 
- #ifdef CONFIG_PPC64
-Index: linux-work/arch/powerpc/kernel/vdso64/vdso64.lds.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/vdso64/vdso64.lds.S	2008-09-29 10:17:03.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/vdso64/vdso64.lds.S	2008-12-09 16:42:03.000000000 +1100
-@@ -35,6 +35,9 @@ SECTIONS
- 	__ftr_fixup	: { *(__ftr_fixup) }
- 
- 	. = ALIGN(8);
-+	__mmu_ftr_fixup	: { *(__mmu_ftr_fixup) }
-+
-+	. = ALIGN(8);
- 	__lwsync_fixup	: { *(__lwsync_fixup) }
- 
- 	. = ALIGN(8);
-Index: linux-work/arch/powerpc/kernel/vmlinux.lds.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/vmlinux.lds.S	2008-11-24 16:35:11.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/vmlinux.lds.S	2008-12-09 16:42:03.000000000 +1100
-@@ -152,6 +152,12 @@ SECTIONS
- 		__stop___ftr_fixup = .;
- 	}
- 	. = ALIGN(8);
-+	__mmu_ftr_fixup : AT(ADDR(__mmu_ftr_fixup) - LOAD_OFFSET) {
-+		__start___mmu_ftr_fixup = .;
-+		*(__mmu_ftr_fixup)
-+		__stop___mmu_ftr_fixup = .;
-+	}
-+	. = ALIGN(8);
- 	__lwsync_fixup : AT(ADDR(__lwsync_fixup) - LOAD_OFFSET) {
- 		__start___lwsync_fixup = .;
- 		*(__lwsync_fixup)
-Index: linux-work/arch/powerpc/mm/mmu_decl.h
-===================================================================
---- linux-work.orig/arch/powerpc/mm/mmu_decl.h	2008-09-29 10:17:03.000000000 +1000
-+++ linux-work/arch/powerpc/mm/mmu_decl.h	2008-12-09 16:42:03.000000000 +1100
-@@ -86,7 +86,7 @@ static inline void flush_HPTE(unsigned c
- 			      unsigned long pdval)
+--- linux-work.orig/arch/powerpc/kernel/asm-offsets.c	2008-12-09 16:30:57.000000000 +1100
++++ linux-work/arch/powerpc/kernel/asm-offsets.c	2008-12-09 16:31:02.000000000 +1100
+@@ -60,6 +60,7 @@ int main(void)
  {
- 	if ((Hash != 0) &&
--	    cpu_has_feature(CPU_FTR_HPTE_TABLE))
-+	    mmu_has_feature(MMU_FTR_HPTE_TABLE))
- 		flush_hash_pages(0, va, pdval, 1);
- 	else
- 		_tlbie(va);
-Index: linux-work/arch/powerpc/mm/ppc_mmu_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/ppc_mmu_32.c	2008-09-29 14:21:37.000000000 +1000
-+++ linux-work/arch/powerpc/mm/ppc_mmu_32.c	2008-12-09 16:42:03.000000000 +1100
-@@ -192,7 +192,7 @@ void __init MMU_init_hw(void)
- 	extern unsigned int hash_page[];
- 	extern unsigned int flush_hash_patch_A[], flush_hash_patch_B[];
- 
--	if (!cpu_has_feature(CPU_FTR_HPTE_TABLE)) {
-+	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
- 		/*
- 		 * Put a blr (procedure return) instruction at the
- 		 * start of hash_page, since we can still get DSI
+ 	DEFINE(THREAD, offsetof(struct task_struct, thread));
+ 	DEFINE(MM, offsetof(struct task_struct, mm));
++	DEFINE(MMCONTEXTID, offsetof(struct mm_struct, context.id));
+ #ifdef CONFIG_PPC64
+ 	DEFINE(AUDITCONTEXT, offsetof(struct task_struct, audit_context));
+ #else
 Index: linux-work/arch/powerpc/kernel/head_32.S
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/head_32.S	2008-12-09 16:42:03.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/head_32.S	2008-12-09 16:42:03.000000000 +1100
-@@ -990,12 +990,12 @@ load_up_mmu:
- 	LOAD_BAT(1,r3,r4,r5)
- 	LOAD_BAT(2,r3,r4,r5)
- 	LOAD_BAT(3,r3,r4,r5)
--BEGIN_FTR_SECTION
-+BEGIN_MMU_FTR_SECTION
- 	LOAD_BAT(4,r3,r4,r5)
- 	LOAD_BAT(5,r3,r4,r5)
- 	LOAD_BAT(6,r3,r4,r5)
- 	LOAD_BAT(7,r3,r4,r5)
--END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_HAS_HIGH_BATS)
- 	blr
- 
- /*
-@@ -1141,7 +1141,7 @@ clear_bats:
- 	mtspr	SPRN_IBAT2L,r10
- 	mtspr	SPRN_IBAT3U,r10
- 	mtspr	SPRN_IBAT3L,r10
--BEGIN_FTR_SECTION
-+BEGIN_MMU_FTR_SECTION
- 	/* Here's a tweak: at this point, CPU setup have
- 	 * not been called yet, so HIGH_BAT_EN may not be
- 	 * set in HID0 for the 745x processors. However, it
-@@ -1164,7 +1164,7 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_IBAT6L,r10
- 	mtspr	SPRN_IBAT7U,r10
- 	mtspr	SPRN_IBAT7L,r10
--END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_HAS_HIGH_BATS)
- 	blr
- 
- flush_tlbs:
-Index: linux-work/arch/powerpc/kernel/swsusp_32.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/swsusp_32.S	2008-07-07 13:45:04.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/swsusp_32.S	2008-12-09 16:42:03.000000000 +1100
-@@ -5,7 +5,7 @@
- #include <asm/thread_info.h>
+--- linux-work.orig/arch/powerpc/kernel/head_32.S	2008-12-09 16:30:57.000000000 +1100
++++ linux-work/arch/powerpc/kernel/head_32.S	2008-12-09 16:31:02.000000000 +1100
+@@ -31,6 +31,7 @@
  #include <asm/ppc_asm.h>
  #include <asm/asm-offsets.h>
--
-+#include <asm/mmu.h>
+ #include <asm/ptrace.h>
++#include <asm/bug.h>
+ 
+ /* 601 only have IBAT; cr0.eq is set on 601 when using this macro */
+ #define LOAD_BAT(n, reg, RA, RB)	\
+@@ -1070,9 +1071,14 @@ start_here:
+ 	RFI
  
  /*
-  * Structure for storing CPU registers on the save area.
-@@ -279,7 +279,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	mtibatl	3,r4
++ * void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
++ *
+  * Set up the segment registers for a new context.
+  */
+-_ENTRY(set_context)
++_ENTRY(switch_mmu_context)
++	lwz	r3,MMCONTEXTID(r4)
++	cmpwi	cr0,r3,0
++	blt-	4f
+ 	mulli	r3,r3,897	/* multiply context by skew factor */
+ 	rlwinm	r3,r3,4,8,27	/* VSID = (context & 0xfffff) << 4 */
+ 	addis	r3,r3,0x6000	/* Set Ks, Ku bits */
+@@ -1083,6 +1089,7 @@ _ENTRY(set_context)
+ 	/* Context switch the PTE pointer for the Abatron BDI2000.
+ 	 * The PGDIR is passed as second argument.
+ 	 */
++	lwz	r4,MM_PGD(r4)
+ 	lis	r5, KERNELBASE@h
+ 	lwz	r5, 0xf0(r5)
+ 	stw	r4, 0x4(r5)
+@@ -1098,6 +1105,9 @@ _ENTRY(set_context)
+ 	sync
+ 	isync
+ 	blr
++4:	trap
++	EMIT_BUG_ENTRY 4b,__FILE__,__LINE__,0
++	blr
+ 
+ /*
+  * An undocumented "feature" of 604e requires that the v bit
+Index: linux-work/arch/powerpc/kernel/ppc_ksyms.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/ppc_ksyms.c	2008-12-09 16:30:57.000000000 +1100
++++ linux-work/arch/powerpc/kernel/ppc_ksyms.c	2008-12-09 16:31:02.000000000 +1100
+@@ -174,8 +174,7 @@ EXPORT_SYMBOL(cacheable_memcpy);
  #endif
  
--BEGIN_FTR_SECTION
-+BEGIN_MMU_FTR_SECTION
- 	li	r4,0
- 	mtspr	SPRN_DBAT4U,r4
- 	mtspr	SPRN_DBAT4L,r4
-@@ -297,7 +297,7 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_IBAT6L,r4
- 	mtspr	SPRN_IBAT7U,r4
- 	mtspr	SPRN_IBAT7L,r4
--END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_HAS_HIGH_BATS)
+ #ifdef CONFIG_PPC32
+-EXPORT_SYMBOL(next_mmu_context);
+-EXPORT_SYMBOL(set_context);
++EXPORT_SYMBOL(switch_mmu_context);
+ #endif
  
- 	/* Flush all TLBs */
- 	lis	r4,0x1000
-Index: linux-work/arch/powerpc/platforms/powermac/sleep.S
+ #ifdef CONFIG_PPC_STD_MMU_32
+Index: linux-work/arch/powerpc/kernel/swsusp.c
 ===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/sleep.S	2008-07-07 13:45:04.000000000 +1000
-+++ linux-work/arch/powerpc/platforms/powermac/sleep.S	2008-12-09 16:42:03.000000000 +1100
-@@ -17,6 +17,7 @@
- #include <asm/cache.h>
- #include <asm/thread_info.h>
- #include <asm/asm-offsets.h>
-+#include <asm/mmu.h>
- 
- #define MAGIC	0x4c617273	/* 'Lars' */
- 
-@@ -323,7 +324,7 @@ grackle_wake_up:
- 	lwz	r4,SL_IBAT3+4(r1)
- 	mtibatl	3,r4
- 
--BEGIN_FTR_SECTION
-+BEGIN_MMU_FTR_SECTION
- 	li	r4,0
- 	mtspr	SPRN_DBAT4U,r4
- 	mtspr	SPRN_DBAT4L,r4
-@@ -341,7 +342,7 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_IBAT6L,r4
- 	mtspr	SPRN_IBAT7U,r4
- 	mtspr	SPRN_IBAT7L,r4
--END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_HAS_HIGH_BATS)
- 
- 	/* Flush all TLBs */
- 	lis	r4,0x1000
-Index: linux-work/arch/powerpc/kernel/head_fsl_booke.S
+--- linux-work.orig/arch/powerpc/kernel/swsusp.c	2008-12-09 16:30:57.000000000 +1100
++++ linux-work/arch/powerpc/kernel/swsusp.c	2008-12-09 16:31:02.000000000 +1100
+@@ -34,6 +34,6 @@ void save_processor_state(void)
+ void restore_processor_state(void)
+ {
+ #ifdef CONFIG_PPC32
+-	set_context(current->active_mm->context.id, current->active_mm->pgd);
++	switch_mmu_context(NULL, current->active_mm);
+ #endif
+ }
+Index: linux-work/arch/powerpc/mm/Makefile
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/head_fsl_booke.S	2008-12-08 15:40:33.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/head_fsl_booke.S	2008-12-09 16:42:03.000000000 +1100
-@@ -767,10 +767,10 @@ finish_tlb_load:
- 	rlwimi	r12, r13, 24, 0, 7	/* grab RPN[32:39] */
- 	rlwimi	r12, r11, 24, 8, 19	/* grab RPN[40:51] */
- 	mtspr	SPRN_MAS3, r12
--BEGIN_FTR_SECTION
-+BEGIN_MMU_FTR_SECTION
- 	srwi	r10, r13, 8		/* grab RPN[8:31] */
- 	mtspr	SPRN_MAS7, r10
--END_FTR_SECTION_IFSET(CPU_FTR_BIG_PHYS)
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
- #else
- 	rlwimi	r11, r12, 0, 20, 31	/* Extract RPN from PTE and merge with perms */
- 	mtspr	SPRN_MAS3, r11
+--- linux-work.orig/arch/powerpc/mm/Makefile	2008-12-09 16:30:57.000000000 +1100
++++ linux-work/arch/powerpc/mm/Makefile	2008-12-09 16:31:02.000000000 +1100
+@@ -8,15 +8,16 @@ endif
+ 
+ obj-y				:= fault.o mem.o pgtable.o \
+ 				   init_$(CONFIG_WORD_SIZE).o \
+-				   pgtable_$(CONFIG_WORD_SIZE).o \
+-				   mmu_context_$(CONFIG_WORD_SIZE).o
++				   pgtable_$(CONFIG_WORD_SIZE).o
++obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o
+ hash-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
+ obj-$(CONFIG_PPC64)		+= hash_utils_64.o \
+ 				   slb_low.o slb.o stab.o \
+ 				   gup.o mmap.o $(hash-y)
+ obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o
+ obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
+-				   tlb_$(CONFIG_WORD_SIZE).o
++				   tlb_$(CONFIG_WORD_SIZE).o \
++				   mmu_context_hash$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_40x)		+= 40x_mmu.o
+ obj-$(CONFIG_44x)		+= 44x_mmu.o
+ obj-$(CONFIG_FSL_BOOKE)		+= fsl_booke_mmu.o
+Index: linux-work/arch/powerpc/mm/mmu_context_hash32.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/mm/mmu_context_hash32.c	2008-12-09 16:31:02.000000000 +1100
+@@ -0,0 +1,103 @@
++/*
++ * This file contains the routines for handling the MMU on those
++ * PowerPC implementations where the MMU substantially follows the
++ * architecture specification.  This includes the 6xx, 7xx, 7xxx,
++ * 8260, and POWER3 implementations but excludes the 8xx and 4xx.
++ *  -- paulus
++ *
++ *  Derived from arch/ppc/mm/init.c:
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
++ *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
++ *    Copyright (C) 1996 Paul Mackerras
++ *
++ *  Derived from "arch/i386/mm/init.c"
++ *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ *
++ */
++
++#include <linux/mm.h>
++#include <linux/init.h>
++
++#include <asm/mmu_context.h>
++#include <asm/tlbflush.h>
++
++/*
++ * On 32-bit PowerPC 6xx/7xx/7xxx CPUs, we use a set of 16 VSIDs
++ * (virtual segment identifiers) for each context.  Although the
++ * hardware supports 24-bit VSIDs, and thus >1 million contexts,
++ * we only use 32,768 of them.  That is ample, since there can be
++ * at most around 30,000 tasks in the system anyway, and it means
++ * that we can use a bitmap to indicate which contexts are in use.
++ * Using a bitmap means that we entirely avoid all of the problems
++ * that we used to have when the context number overflowed,
++ * particularly on SMP systems.
++ *  -- paulus.
++ */
++#define NO_CONTEXT      	((unsigned long) -1)
++#define LAST_CONTEXT    	32767
++#define FIRST_CONTEXT    	1
++
++/*
++ * This function defines the mapping from contexts to VSIDs (virtual
++ * segment IDs).  We use a skew on both the context and the high 4 bits
++ * of the 32-bit virtual address (the "effective segment ID") in order
++ * to spread out the entries in the MMU hash table.  Note, if this
++ * function is changed then arch/ppc/mm/hashtable.S will have to be
++ * changed to correspond.
++ *
++ *
++ * CTX_TO_VSID(ctx, va)	(((ctx) * (897 * 16) + ((va) >> 28) * 0x111) \
++ *				 & 0xffffff)
++ */
++
++static unsigned long next_mmu_context;
++static unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
++
++
++/*
++ * Set up the context for a new address space.
++ */
++int init_new_context(struct task_struct *t, struct mm_struct *mm)
++{
++	unsigned long ctx = next_mmu_context;
++
++	while (test_and_set_bit(ctx, context_map)) {
++		ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1, ctx);
++		if (ctx > LAST_CONTEXT)
++			ctx = 0;
++	}
++	next_mmu_context = (ctx + 1) & LAST_CONTEXT;
++	mm->context.id = ctx;
++
++	return 0;
++}
++
++/*
++ * We're finished using the context for an address space.
++ */
++void destroy_context(struct mm_struct *mm)
++{
++	preempt_disable();
++	if (mm->context.id != NO_CONTEXT) {
++		clear_bit(mm->context.id, context_map);
++		mm->context.id = NO_CONTEXT;
++	}
++	preempt_enable();
++}
++
++/*
++ * Initialize the context management stuff.
++ */
++void __init mmu_context_init(void)
++{
++	/* Reserve context 0 for kernel use */
++	context_map[0] = (1 << FIRST_CONTEXT) - 1;
++	next_mmu_context = FIRST_CONTEXT;
++}
+Index: linux-work/arch/powerpc/mm/mmu_context_hash64.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/mm/mmu_context_hash64.c	2008-12-09 16:31:02.000000000 +1100
+@@ -0,0 +1,78 @@
++/*
++ *  MMU context allocation for 64-bit kernels.
++ *
++ *  Copyright (C) 2004 Anton Blanchard, IBM Corp. <anton@samba.org>
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ *
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/types.h>
++#include <linux/mm.h>
++#include <linux/spinlock.h>
++#include <linux/idr.h>
++
++#include <asm/mmu_context.h>
++
++static DEFINE_SPINLOCK(mmu_context_lock);
++static DEFINE_IDR(mmu_context_idr);
++
++/*
++ * The proto-VSID space has 2^35 - 1 segments available for user mappings.
++ * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
++ * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
++ */
++#define NO_CONTEXT	0
++#define MAX_CONTEXT	((1UL << 19) - 1)
++
++int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
++{
++	int index;
++	int err;
++
++again:
++	if (!idr_pre_get(&mmu_context_idr, GFP_KERNEL))
++		return -ENOMEM;
++
++	spin_lock(&mmu_context_lock);
++	err = idr_get_new_above(&mmu_context_idr, NULL, 1, &index);
++	spin_unlock(&mmu_context_lock);
++
++	if (err == -EAGAIN)
++		goto again;
++	else if (err)
++		return err;
++
++	if (index > MAX_CONTEXT) {
++		spin_lock(&mmu_context_lock);
++		idr_remove(&mmu_context_idr, index);
++		spin_unlock(&mmu_context_lock);
++		return -ENOMEM;
++	}
++
++	/* The old code would re-promote on fork, we don't do that
++	 * when using slices as it could cause problem promoting slices
++	 * that have been forced down to 4K
++	 */
++	if (slice_mm_new_context(mm))
++		slice_set_user_psize(mm, mmu_virtual_psize);
++	mm->context.id = index;
++
++	return 0;
++}
++
++void destroy_context(struct mm_struct *mm)
++{
++	spin_lock(&mmu_context_lock);
++	idr_remove(&mmu_context_idr, mm->context.id);
++	spin_unlock(&mmu_context_lock);
++
++	mm->context.id = NO_CONTEXT;
++}
+Index: linux-work/arch/powerpc/mm/mmu_context_nohash.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/mm/mmu_context_nohash.c	2008-12-09 16:31:02.000000000 +1100
+@@ -0,0 +1,162 @@
++/*
++ * This file contains the routines for handling the MMU on those
++ * PowerPC implementations where the MMU is not using the hash
++ * table, such as 8xx, 4xx, BookE's etc...
++ *
++ * Copyright 2008 Ben Herrenschmidt <benh@kernel.crashing.org>
++ *                IBM Corp.
++ *
++ *  Derived from previous arch/powerpc/mm/mmu_context.c
++ *  and arch/powerpc/include/asm/mmu_context.h
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ *
++ */
++
++#include <linux/mm.h>
++#include <linux/init.h>
++
++#include <asm/mmu_context.h>
++#include <asm/tlbflush.h>
++
++/*
++ *   The MPC8xx has only 16 contexts.  We rotate through them on each
++ * task switch.  A better way would be to keep track of tasks that
++ * own contexts, and implement an LRU usage.  That way very active
++ * tasks don't always have to pay the TLB reload overhead.  The
++ * kernel pages are mapped shared, so the kernel can run on behalf
++ * of any task that makes a kernel entry.  Shared does not mean they
++ * are not protected, just that the ASID comparison is not performed.
++ *      -- Dan
++ *
++ * The IBM4xx has 256 contexts, so we can just rotate through these
++ * as a way of "switching" contexts.  If the TID of the TLB is zero,
++ * the PID/TID comparison is disabled, so we can use a TID of zero
++ * to represent all kernel pages as shared among all contexts.
++ * 	-- Dan
++ */
++
++#ifdef CONFIG_8xx
++#define NO_CONTEXT      	16
++#define LAST_CONTEXT    	15
++#define FIRST_CONTEXT    	0
++
++#elif defined(CONFIG_4xx)
++#define NO_CONTEXT      	256
++#define LAST_CONTEXT    	255
++#define FIRST_CONTEXT    	1
++
++#elif defined(CONFIG_E200) || defined(CONFIG_E500)
++#define NO_CONTEXT      	256
++#define LAST_CONTEXT    	255
++#define FIRST_CONTEXT    	1
++
++#else
++#error Unsupported processor type
++#endif
++
++static unsigned long next_mmu_context;
++static unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
++static atomic_t nr_free_contexts;
++static struct mm_struct *context_mm[LAST_CONTEXT+1];
++static void steal_context(void);
++
++/* Steal a context from a task that has one at the moment.
++ * This is only used on 8xx and 4xx and we presently assume that
++ * they don't do SMP.  If they do then this will have to check
++ * whether the MM we steal is in use.
++ * We also assume that this is only used on systems that don't
++ * use an MMU hash table - this is true for 8xx and 4xx.
++ * This isn't an LRU system, it just frees up each context in
++ * turn (sort-of pseudo-random replacement :).  This would be the
++ * place to implement an LRU scheme if anyone was motivated to do it.
++ *  -- paulus
++ */
++static void steal_context(void)
++{
++	struct mm_struct *mm;
++
++	/* free up context `next_mmu_context' */
++	/* if we shouldn't free context 0, don't... */
++	if (next_mmu_context < FIRST_CONTEXT)
++		next_mmu_context = FIRST_CONTEXT;
++	mm = context_mm[next_mmu_context];
++	flush_tlb_mm(mm);
++	destroy_context(mm);
++}
++
++
++/*
++ * Get a new mmu context for the address space described by `mm'.
++ */
++static inline void get_mmu_context(struct mm_struct *mm)
++{
++	unsigned long ctx;
++
++	if (mm->context.id != NO_CONTEXT)
++		return;
++
++	while (atomic_dec_if_positive(&nr_free_contexts) < 0)
++		steal_context();
++
++	ctx = next_mmu_context;
++	while (test_and_set_bit(ctx, context_map)) {
++		ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1, ctx);
++		if (ctx > LAST_CONTEXT)
++			ctx = 0;
++	}
++	next_mmu_context = (ctx + 1) & LAST_CONTEXT;
++	mm->context.id = ctx;
++	context_mm[ctx] = mm;
++}
++
++void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
++{
++	get_mmu_context(next);
++
++	set_context(next->context.id, next->pgd);
++}
++
++/*
++ * Set up the context for a new address space.
++ */
++int init_new_context(struct task_struct *t, struct mm_struct *mm)
++{
++	mm->context.id = NO_CONTEXT;
++	return 0;
++}
++
++/*
++ * We're finished using the context for an address space.
++ */
++void destroy_context(struct mm_struct *mm)
++{
++	preempt_disable();
++	if (mm->context.id != NO_CONTEXT) {
++		clear_bit(mm->context.id, context_map);
++		mm->context.id = NO_CONTEXT;
++		atomic_inc(&nr_free_contexts);
++	}
++	preempt_enable();
++}
++
++
++/*
++ * Initialize the context management stuff.
++ */
++void __init mmu_context_init(void)
++{
++	/*
++	 * Some processors have too few contexts to reserve one for
++	 * init_mm, and require using context 0 for a normal task.
++	 * Other processors reserve the use of context zero for the kernel.
++	 * This code assumes FIRST_CONTEXT < 32.
++	 */
++	context_map[0] = (1 << FIRST_CONTEXT) - 1;
++	next_mmu_context = FIRST_CONTEXT;
++	atomic_set(&nr_free_contexts, LAST_CONTEXT - FIRST_CONTEXT + 1);
++}
++
+Index: linux-work/arch/powerpc/platforms/Kconfig.cputype
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/Kconfig.cputype	2008-12-09 16:30:57.000000000 +1100
++++ linux-work/arch/powerpc/platforms/Kconfig.cputype	2008-12-09 16:31:02.000000000 +1100
+@@ -195,13 +195,21 @@ config SPE
+ 
+ config PPC_STD_MMU
+ 	bool
+-	depends on 6xx || POWER3 || POWER4 || PPC64
++	depends on 6xx || PPC64
+ 	default y
+ 
+ config PPC_STD_MMU_32
+ 	def_bool y
+ 	depends on PPC_STD_MMU && PPC32
+ 
++config PPC_STD_MMU_64
++	def_bool y
++	depends on PPC_STD_MMU && PPC64
++
++config PPC_MMU_NOHASH
++	def_bool y
++	depends on !PPC_STD_MMU
++
+ config PPC_MM_SLICES
+ 	bool
+ 	default y if HUGETLB_PAGE || PPC_64K_PAGES
+Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/cpufreq_32.c	2008-12-09 16:30:57.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/cpufreq_32.c	2008-12-09 16:31:02.000000000 +1100
+@@ -310,7 +310,7 @@ static int pmu_set_cpu_speed(int low_spe
+  		_set_L3CR(save_l3cr);
+ 
+ 	/* Restore userland MMU context */
+-	set_context(current->active_mm->context.id, current->active_mm->pgd);
++	switch_mmu_context(NULL, current->active_mm);
+ 
+ #ifdef DEBUG_FREQ
+ 	printk(KERN_DEBUG "HID1, after: %x\n", mfspr(SPRN_HID1));
+Index: linux-work/drivers/macintosh/via-pmu.c
+===================================================================
+--- linux-work.orig/drivers/macintosh/via-pmu.c	2008-12-09 16:30:57.000000000 +1100
++++ linux-work/drivers/macintosh/via-pmu.c	2008-12-09 16:31:02.000000000 +1100
+@@ -1814,7 +1814,7 @@ static int powerbook_sleep_grackle(void)
+  		_set_L2CR(save_l2cr);
+ 	
+ 	/* Restore userland MMU context */
+-	set_context(current->active_mm->context.id, current->active_mm->pgd);
++	switch_mmu_context(NULL, current->active_mm);
+ 
+ 	/* Power things up */
+ 	pmu_unlock();
+@@ -1903,7 +1903,7 @@ powerbook_sleep_Core99(void)
+  		_set_L3CR(save_l3cr);
+ 	
+ 	/* Restore userland MMU context */
+-	set_context(current->active_mm->context.id, current->active_mm->pgd);
++	switch_mmu_context(NULL, current->active_mm);
+ 
+ 	/* Tell PMU we are ready */
+ 	pmu_unlock();
+Index: linux-work/arch/powerpc/mm/mmu_context_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/mmu_context_32.c	2008-12-09 16:31:22.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,84 +0,0 @@
+-/*
+- * This file contains the routines for handling the MMU on those
+- * PowerPC implementations where the MMU substantially follows the
+- * architecture specification.  This includes the 6xx, 7xx, 7xxx,
+- * 8260, and POWER3 implementations but excludes the 8xx and 4xx.
+- *  -- paulus
+- *
+- *  Derived from arch/ppc/mm/init.c:
+- *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
+- *
+- *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
+- *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
+- *    Copyright (C) 1996 Paul Mackerras
+- *
+- *  Derived from "arch/i386/mm/init.c"
+- *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- *
+- */
+-
+-#include <linux/mm.h>
+-#include <linux/init.h>
+-
+-#include <asm/mmu_context.h>
+-#include <asm/tlbflush.h>
+-
+-unsigned long next_mmu_context;
+-unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
+-#ifdef FEW_CONTEXTS
+-atomic_t nr_free_contexts;
+-struct mm_struct *context_mm[LAST_CONTEXT+1];
+-void steal_context(void);
+-#endif /* FEW_CONTEXTS */
+-
+-/*
+- * Initialize the context management stuff.
+- */
+-void __init
+-mmu_context_init(void)
+-{
+-	/*
+-	 * Some processors have too few contexts to reserve one for
+-	 * init_mm, and require using context 0 for a normal task.
+-	 * Other processors reserve the use of context zero for the kernel.
+-	 * This code assumes FIRST_CONTEXT < 32.
+-	 */
+-	context_map[0] = (1 << FIRST_CONTEXT) - 1;
+-	next_mmu_context = FIRST_CONTEXT;
+-#ifdef FEW_CONTEXTS
+-	atomic_set(&nr_free_contexts, LAST_CONTEXT - FIRST_CONTEXT + 1);
+-#endif /* FEW_CONTEXTS */
+-}
+-
+-#ifdef FEW_CONTEXTS
+-/*
+- * Steal a context from a task that has one at the moment.
+- * This is only used on 8xx and 4xx and we presently assume that
+- * they don't do SMP.  If they do then this will have to check
+- * whether the MM we steal is in use.
+- * We also assume that this is only used on systems that don't
+- * use an MMU hash table - this is true for 8xx and 4xx.
+- * This isn't an LRU system, it just frees up each context in
+- * turn (sort-of pseudo-random replacement :).  This would be the
+- * place to implement an LRU scheme if anyone was motivated to do it.
+- *  -- paulus
+- */
+-void
+-steal_context(void)
+-{
+-	struct mm_struct *mm;
+-
+-	/* free up context `next_mmu_context' */
+-	/* if we shouldn't free context 0, don't... */
+-	if (next_mmu_context < FIRST_CONTEXT)
+-		next_mmu_context = FIRST_CONTEXT;
+-	mm = context_mm[next_mmu_context];
+-	flush_tlb_mm(mm);
+-	destroy_context(mm);
+-}
+-#endif /* FEW_CONTEXTS */
+Index: linux-work/arch/powerpc/mm/mmu_context_64.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/mmu_context_64.c	2008-12-09 16:31:25.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,70 +0,0 @@
+-/*
+- *  MMU context allocation for 64-bit kernels.
+- *
+- *  Copyright (C) 2004 Anton Blanchard, IBM Corp. <anton@samba.org>
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- *
+- */
+-
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/types.h>
+-#include <linux/mm.h>
+-#include <linux/spinlock.h>
+-#include <linux/idr.h>
+-
+-#include <asm/mmu_context.h>
+-
+-static DEFINE_SPINLOCK(mmu_context_lock);
+-static DEFINE_IDR(mmu_context_idr);
+-
+-int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+-{
+-	int index;
+-	int err;
+-
+-again:
+-	if (!idr_pre_get(&mmu_context_idr, GFP_KERNEL))
+-		return -ENOMEM;
+-
+-	spin_lock(&mmu_context_lock);
+-	err = idr_get_new_above(&mmu_context_idr, NULL, 1, &index);
+-	spin_unlock(&mmu_context_lock);
+-
+-	if (err == -EAGAIN)
+-		goto again;
+-	else if (err)
+-		return err;
+-
+-	if (index > MAX_CONTEXT) {
+-		spin_lock(&mmu_context_lock);
+-		idr_remove(&mmu_context_idr, index);
+-		spin_unlock(&mmu_context_lock);
+-		return -ENOMEM;
+-	}
+-
+-	/* The old code would re-promote on fork, we don't do that
+-	 * when using slices as it could cause problem promoting slices
+-	 * that have been forced down to 4K
+-	 */
+-	if (slice_mm_new_context(mm))
+-		slice_set_user_psize(mm, mmu_virtual_psize);
+-	mm->context.id = index;
+-
+-	return 0;
+-}
+-
+-void destroy_context(struct mm_struct *mm)
+-{
+-	spin_lock(&mmu_context_lock);
+-	idr_remove(&mmu_context_idr, mm->context.id);
+-	spin_unlock(&mmu_context_lock);
+-
+-	mm->context.id = NO_CONTEXT;
+-}
