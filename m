@@ -1,13 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18749.61556.325147.855082@cargo.ozlabs.ibm.com>
-Date: Tue, 9 Dec 2008 15:13:40 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id D1EA3DDED5
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 15:54:40 +1100 (EST)
+Date: Mon, 8 Dec 2008 23:54:37 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ndfc driver
+Message-ID: <20081208235437.08323e3a@lappy.seanm.ca>
+In-Reply-To: <20081208223227.19a702a9@zod.rchland.ibm.com>
+References: <20081203222832.3fc77d28@lappy.seanm.ca>
+	<20081204090107.20269571@zod.rchland.ibm.com>
+	<20081208193446.37e27e26@lappy.seanm.ca>
+	<20081209021115.GA13948@oksana.dev.rtsoft.ru>
+	<20081208214512.461276d2@lappy.seanm.ca>
+	<20081208223227.19a702a9@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,25 +27,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from the 'merge' branch of
+On Mon, 8 Dec 2008 22:32:27 -0500
+"Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> Except there is no controller in front of the NOR.  It's all just
+> MMIOs.  With NDFC, there is a controller, you have to do things to it
+> to talk to different chips, etc.
 
-to get two more small commits for powerpc; one is a very small
-defconfig update, and the other fixes a bug that can lead to an oops
-on some 440-family embedded powerpc processors.
+Ok, I have the following dts working... would this be better? It
+basically follows the fsl,upm-nand model. I can produce a new patch to
+ndfc.c for this:
 
-Thanks,
-Paul.
+ndfc@1,0 {
+	compatible = "amcc,ndfc";
+	reg = <0x00000001 0x00000000 0x00002000>;
+	ccr = <0x00001000>;
+	bank-settings = <0x80002222>;
+	#address-cells = <1>;
+	#size-cells = <1>;
 
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig |    2 +-
- arch/powerpc/configs/mpc83xx_defconfig          |    2 +-
- arch/powerpc/kernel/cpu_setup_44x.S             |    1 +
- arch/powerpc/kernel/cputable.c                  |    3 +++
- 4 files changed, 6 insertions(+), 2 deletions(-)
+	nand {
+    		#address-cells = <1>;
+    		#size-cells = <1>;
 
-Anton Vorontsov (1):
-      powerpc/83xx: Enable FIXED_PHY in mpc834x_itx and mpc83xx defconfigs
+    		partition@0 {
+    			label = "kernel";
+    			reg = <0x00000000 0x00200000>;
+    		};
+    		partition@200000 {
+    			label = "root";
+    			reg = <0x00200000 0x03E00000>;
+    		};	
+    		partition@40000000 {
+    			label = "persistent";
+    			reg = <0x04000000 0x04000000>;
+    		};
+    		partition@80000000 {
+    			label = "persistent1";
+    			reg = <0x08000000 0x04000000>;
+    		};
+    		partition@C0000000 {
+    			label = "persistent2";
+    			reg = <0x0C000000 0x04000000>;
+    		};
+    	};
+};
 
-Grant Likely (1):
-      powerpc/virtex5: Fix Virtex5 machine check handling
+
+Here is the boot output for both the NOR and the NAND (just for
+comparison):
+
+ffc00000.nor: Found 1 x16 devices at 0x0 in 16-bit bank
+ Amd/Fujitsu Extended Query Table at 0x0040
+ffc00000.nor: CFI does not contain boot bank location. Assuming top.
+number of CFI chips: 1
+cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+RedBoot partition parsing not available
+Creating 4 MTD partitions on "ffc00000.nor":
+0x00000000-0x00020000 : "splash"
+0x00300000-0x00340000 : "fpga"
+0x00340000-0x00380000 : "env"
+0x00380000-0x00400000 : "u-boot"
+NAND device: Manufacturer ID: 0xec, Chip ID: 0xda (Samsung NAND 256MiB 3,3V 8-bit)
+Scanning device for bad blocks
+Creating 5 MTD partitions on "d0000000.ndfc.nand":
+0x00000000-0x00200000 : "kernel"
+0x00200000-0x04000000 : "root"
+0x04000000-0x08000000 : "persistent"
+0x08000000-0x0c000000 : "persistent1"
+0x0c000000-0x10000000 : "persistent2"
+
+If everybody likes this better, I can produce a code patch.
+
+Cheers,
+   Sean
