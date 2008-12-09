@@ -1,18 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Tue, 9 Dec 2008 06:24:01 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] ndfc driver
-Message-ID: <20081209062401.502f2c48@zod.rchland.ibm.com>
-In-Reply-To: <200812090710.27781.sr@denx.de>
-References: <20081203222832.3fc77d28@lappy.seanm.ca>
-	<20081204090107.20269571@zod.rchland.ibm.com>
-	<20081208193446.37e27e26@lappy.seanm.ca>
-	<200812090710.27781.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	linux-mtd@lists.infradead.org, Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6B6D8DDF14
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 00:10:18 +1100 (EST)
+Message-Id: <1F81A57A-19A9-4A1A-AE71-51BEFF8D8192@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20081209065204.2614647526@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: Add SMP support to no-hash TLB handling v3
+Date: Tue, 9 Dec 2008 07:10:03 -0600
+References: <20081209065204.2614647526@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,55 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 9 Dec 2008 07:10:27 +0100
-Stefan Roese <sr@denx.de> wrote:
+> +void local_flush_tlb_page(struct vm_area_struct *vma, unsigned long  
+> vmaddr)
+> +{
+> +	unsigned int pid;
+> +
+> +	preempt_disable();
+> +	pid = vma ? vma->vm_mm->context.id : 0;
+> +	if (pid != MMU_NO_CONTEXT)
+> +		_tlbil_va(vmaddr, pid);
+> +	preempt_enable();
+> +}
+> +EXPORT_SYMBOL(local_flush_tlb_page);
 
-> On Tuesday 09 December 2008, Sean MacLennan wrote:
-> > On Thu, 4 Dec 2008 09:01:07 -0500
-> >
-> > "Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
-> > > In addition to an example DTS patch (probably to warp itself), could
-> > > you briefly write up a binding and put it in
-> > > Documentation/powerpc/dts-bindings/amcc (or similar)?  Also please CC
-> > > the devicetree-discuss list on that part.
-> >
-> > Here is a start at the doc. I have sent it as a patch, but could just
-> > as easily send raw text.
-> >
-> > The example comes from the warp dts, just with less partitions, so I
-> > have not included a warp dts patch here.
-> >
-> > Cheers,
-> >    Sean
-> >
-> > diff --git a/Documentation/powerpc/dts-bindings/amcc/ndfc.txt
-> > b/Documentation/powerpc/dts-bindings/amcc/ndfc.txt new file mode 100644
-> > index 0000000..668f4a9
-> > --- /dev/null
-> > +++ b/Documentation/powerpc/dts-bindings/amcc/ndfc.txt
-> > @@ -0,0 +1,31 @@
-> > +AMCC NDFC (NanD Flash Controller)
-> > +
-> > +Required properties:
-> > +- compatible : "amcc,ndfc".
-> 
-> The 4xx NAND controller was first implemented on the 440EP, IIRC. So I'm 
-> pretty sure that this controller is an IBM core and not am AMCC core. So this 
-> should be "ibm,ndfc".
+We are using this in highmem.h for kmap_atomic.. So you need to fix  
+that call site.
 
-That is true.  It's an IBM blue logic core.
- 
-> And with this change it makes no sense to put this file "ndfc.txt" into the 
-> amcc directory.
-> 
-> Josh, where should this go then?
-
-I declare it to be: dts-bindings/4xx/
-
-mostly because I don't want the bindings scattered across two
-directories simply because of the timeframe they showed up in the
-marketplace.
-
-If there are better ideas, I'm all ears.
-
-josh
+- k
