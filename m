@@ -1,21 +1,19 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4D0FEDDEFF
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 14:14:39 +1100 (EST)
-Date: Mon, 8 Dec 2008 19:14:26 -0800 (PST)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/85xx: Add support for SMP initialization
-In-Reply-To: <1228204546-1506-1-git-send-email-galak@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.64.0812081855330.4837@t2.domain.actdsltmp>
-References: <1228204546-1506-1-git-send-email-galak@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Fleming Andy <afleming@freescale.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Mon, 8 Dec 2008 22:32:27 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] ndfc driver
+Message-ID: <20081208223227.19a702a9@zod.rchland.ibm.com>
+In-Reply-To: <20081208214512.461276d2@lappy.seanm.ca>
+References: <20081203222832.3fc77d28@lappy.seanm.ca>
+	<20081204090107.20269571@zod.rchland.ibm.com>
+	<20081208193446.37e27e26@lappy.seanm.ca>
+	<20081209021115.GA13948@oksana.dev.rtsoft.ru>
+	<20081208214512.461276d2@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2 Dec 2008, Kumar Gala wrote:
-> Added 85xx specifc smp_ops structure.  We use ePAPR style boot release
-> and the MPIC for IPIs at this point.
->
-> Additionally added routines for secondary cpu entry and initializtion.
->
-> @@ -740,6 +750,9 @@ finish_tlb_load:
-> #else
-> 	rlwimi	r12, r11, 26, 27, 31	/* extract WIMGE from pte */
-> #endif
-> +#ifdef CONFIG_SMP
-> +	ori	r12, r12, MAS2_M
-> +#endif
-> 	mtspr	SPRN_MAS2, r12
+On Mon, 8 Dec 2008 21:45:12 -0500
+Sean MacLennan <smaclennan@pikatech.com> wrote:
 
-Wouldn't it be more efficient to set _PAGE_COHERENT when the pte is created
-vs setting MAS2_M each time it's loaded?
+> On Tue, 9 Dec 2008 05:11:15 +0300
+> "Anton Vorontsov" <avorontsov@ru.mvista.com> wrote:
+> 
+> > So this is a controller with partitions? ;-)
+> 
+> Actually, I did it this way to mimic the look of the NOR. Really, we
+> shouldn't care about the NAND chip.
 
-Is it correct to set MAS2_M for all pages, even uncached ones?
+Except there is no controller in front of the NOR.  It's all just
+MMIOs.  With NDFC, there is a controller, you have to do things to it
+to talk to different chips, etc.
 
-The code for ioremap() has this:
-
-         /* Non-cacheable page cannot be coherent */
-         if (flags & _PAGE_NO_CACHE)
-                 flags &= ~_PAGE_COHERENT;
-
-It seems odd that ioremap would explictly unset _PAGE_COHERENT when the
-code that sets the tlb will just force it back on.
+josh
