@@ -1,31 +1,15 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <yanok@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 748F5DDF76
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 05:21:55 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mB9ILAJ5017900
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 11:21:10 -0700
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mB9ILbT5177174
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 11:21:37 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mB9ILaRd004951
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 11:21:36 -0700
-Subject: [PATCH 3/8] cleanup careful_allocation(): bootmem already panics
-To: paulus@samba.org
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Tue, 09 Dec 2008 10:21:33 -0800
-References: <20081209182130.DB2150A2@kernel>
-In-Reply-To: <20081209182130.DB2150A2@kernel>
-Message-Id: <20081209182133.B06DD407@kernel>
-Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	"Serge E. Hallyn" <serue@us.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 21E0FDDF09
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 05:24:27 +1100 (EST)
+From: Ilya Yanok <yanok@emcraft.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC/PATCH] powerpc: consistent memory mapping.
+Date: Tue,  9 Dec 2008 21:23:46 +0300
+Message-Id: <1228847026-5857-1-git-send-email-yanok@emcraft.com>
+Cc: Ilya Yanok <yanok@emcraft.com>, wd@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,44 +19,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ Defining the start virtual address of the consistent memory
+in configs leads to overlapping of the consistent area with
+the other virtual regions (fixmap, pkmap, vmalloc). Defaults from
+current kernel just set consistent memory area to be somewhere
+high in the vmalloc area and then you need to pray there will be
+not enough vmalloc allocations to overlap.
 
-If we fail a bootmem allocation, the bootmem code itself
-panics.  No need to redo it here.
+ So, this patch makes the virtual address of the consistent memory
+to be assigned dynamically, at the end of the virtual address area.
+The fixmap area is now shifted to the low addresses, and ends before
+start of the consistent virtual addresses. User is now allowed to
+configure the size of the consistent memory area only.
 
-Also change the wording of the other panic.  We don't
-strictly have to allocate memory on the specified node.
-It is just a hint and that node may not even *have* any
-memory on it.  In that case we can and do fall back to
-other nodes.
+ The exception has been made for 8xx archs, where the start
+of the consistent memory is still configurable: this is to avoid
+overlapping with the IMM space of 8xx. Actually this is wrong. We
+have a possibility to overlap not only for consistent memory but
+for IMM space too. But we don't have much expertise in 8xx so we
+are looking forward for some advice here.
 
+ The following items remain to be done to complete supporting of
+the consistent memory fully:
 
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+a) we missing 1 (last) page of addresses at the end of the consistent
+memory area;
+
+b) if CONFIG_CONSISTENT_SIZE is such that we cover more address
+regions than served by 1 pgd level, then mapping of the pages to
+these additional areas won't work (this 'feature' isn't introduced
+by this patch, but is the consequence of the current consistent
+memory support code, where consistent_pte is set in dma_alloc_init()
+in accordance with the pgd of the CONSISTENT_BASE address).
+
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 ---
+ arch/powerpc/Kconfig               |    7 ++++---
+ arch/powerpc/lib/dma-noncoherent.c |    5 +++++
+ arch/powerpc/mm/pgtable_32.c       |    2 +-
+ 3 files changed, 10 insertions(+), 4 deletions(-)
 
- linux-2.6.git-dave/arch/powerpc/mm/numa.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-diff -puN arch/powerpc/mm/numa.c~cleanup-careful_allocation arch/powerpc/mm/numa.c
---- linux-2.6.git/arch/powerpc/mm/numa.c~cleanup-careful_allocation	2008-12-09 10:16:05.000000000 -0800
-+++ linux-2.6.git-dave/arch/powerpc/mm/numa.c	2008-12-09 10:16:05.000000000 -0800
-@@ -836,7 +836,7 @@ static void __init *careful_allocation(i
- 		ret = __lmb_alloc_base(size, align, lmb_end_of_DRAM());
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index aa2eb46..4d62446 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -809,7 +809,7 @@ config TASK_SIZE
  
- 	if (!ret)
--		panic("numa.c: cannot allocate %lu bytes on node %d",
-+		panic("numa.c: cannot allocate %lu bytes for node %d",
- 		      size, nid);
+ config CONSISTENT_START_BOOL
+ 	bool "Set custom consistent memory pool address"
+-	depends on ADVANCED_OPTIONS && NOT_COHERENT_CACHE
++	depends on ADVANCED_OPTIONS && NOT_COHERENT_CACHE && 8xx
+ 	help
+ 	  This option allows you to set the base virtual address
+ 	  of the consistent memory pool.  This pool of virtual
+@@ -817,8 +817,8 @@ config CONSISTENT_START_BOOL
  
- 	/*
-@@ -856,10 +856,6 @@ static void __init *careful_allocation(i
- 		ret = (unsigned long)__alloc_bootmem_node(NODE_DATA(new_nid),
- 				size, align, 0);
+ config CONSISTENT_START
+ 	hex "Base virtual address of consistent memory pool" if CONSISTENT_START_BOOL
+-	default "0xfd000000" if (NOT_COHERENT_CACHE && 8xx)
+-	default "0xff100000" if NOT_COHERENT_CACHE
++	depends on 8xx
++	default "0xfd000000" if NOT_COHERENT_CACHE
  
--		if (!ret)
--			panic("numa.c: cannot allocate %lu bytes on node %d",
--			      size, new_nid);
--
- 		ret = __pa(ret);
+ config CONSISTENT_SIZE_BOOL
+ 	bool "Set custom consistent memory pool size"
+@@ -831,6 +831,7 @@ config CONSISTENT_SIZE_BOOL
+ config CONSISTENT_SIZE
+ 	hex "Size of consistent memory pool" if CONSISTENT_SIZE_BOOL
+ 	default "0x00200000" if NOT_COHERENT_CACHE
++	default "0x00000000" if !NOT_COHERENT_CACHE
  
- 		dbg("alloc_bootmem %lx %lx\n", ret, size);
-_
+ config PIN_TLB
+ 	bool "Pinned Kernel TLBs (860 ONLY)"
+diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
+index 31734c0..3c12577 100644
+--- a/arch/powerpc/lib/dma-noncoherent.c
++++ b/arch/powerpc/lib/dma-noncoherent.c
+@@ -38,8 +38,13 @@
+  * can be further configured for specific applications under
+  * the "Advanced Setup" menu. -Matt
+  */
++#ifdef CONFIG_CONSISTENT_START
+ #define CONSISTENT_BASE	(CONFIG_CONSISTENT_START)
+ #define CONSISTENT_END	(CONFIG_CONSISTENT_START + CONFIG_CONSISTENT_SIZE)
++#else
++#define CONSISTENT_BASE	((unsigned long)(-CONFIG_CONSISTENT_SIZE))
++#define CONSISTENT_END	((unsigned long)(-PAGE_SIZE))
++#endif /* CONFIG_CONSISTENT_START */
+ #define CONSISTENT_OFFSET(x)	(((unsigned long)(x) - CONSISTENT_BASE) >> PAGE_SHIFT)
+ 
+ /*
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 10d21c3..fda24c7 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -395,7 +395,7 @@ void kernel_map_pages(struct page *page, int numpages, int enable)
+ #endif /* CONFIG_DEBUG_PAGEALLOC */
+ 
+ static int fixmaps;
+-unsigned long FIXADDR_TOP = (-PAGE_SIZE);
++unsigned long FIXADDR_TOP = (-PAGE_SIZE-CONFIG_CONSISTENT_SIZE);
+ EXPORT_SYMBOL(FIXADDR_TOP);
+ 
+ void __set_fixmap (enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags)
+-- 
+1.5.6.1
