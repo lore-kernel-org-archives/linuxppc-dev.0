@@ -1,22 +1,19 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.170])
-	by ozlabs.org (Postfix) with ESMTP id 4AF63DDEE8
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 11:31:14 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so1779167wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Dec 2008 16:31:13 -0800 (PST)
-Message-ID: <e9c3a7c20812081631i1e0efff2j953b2e81f6dc6e0e@mail.gmail.com>
-Date: Mon, 8 Dec 2008 17:31:13 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Yuri Tikhonov" <yur@emcraft.com>
-Subject: Re: [PATCH 01/11] async_tx: don't use src_list argument of
-	async_xor() for dma addresses
-In-Reply-To: <200812090055.26721.yur@emcraft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200812090055.26721.yur@emcraft.com>
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
-	dzu@denx.de, yanok@emcraft.com
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 378EADDEEC
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 11:34:50 +1100 (EST)
+Date: Mon, 8 Dec 2008 19:34:46 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ndfc driver
+Message-ID: <20081208193446.37e27e26@lappy.seanm.ca>
+In-Reply-To: <20081204090107.20269571@zod.rchland.ibm.com>
+References: <20081203222832.3fc77d28@lappy.seanm.ca>
+	<20081204090107.20269571@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 8, 2008 at 2:55 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
-> Using src_list argument of async_xor() as a storage for dma addresses
-> implies sizeof(dma_addr_t) <= sizeof(struct page *) restriction which is
-> not always true (e.g. ppc440spe).
->
+On Thu, 4 Dec 2008 09:01:07 -0500
+"Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
 
-ppc440spe runs with CONFIG_PHYS_64BIT?
+> In addition to an example DTS patch (probably to warp itself), could
+> you briefly write up a binding and put it in
+> Documentation/powerpc/dts-bindings/amcc (or similar)?  Also please CC
+> the devicetree-discuss list on that part.
 
-If we do this then we need to also change md to limit the number of
-allowed disks based on the kernel stack size.  Because with 256 disks
-a 4K stack can be consumed by one call to async_pq ((256 sources in
-raid5.c + 256 sources async_pq.c) * 8 bytes per source on 64-bit).
+Here is a start at the doc. I have sent it as a patch, but could just
+as easily send raw text.
 
-Regards,
-Dan
+The example comes from the warp dts, just with less partitions, so I
+have not included a warp dts patch here.
+
+Cheers,
+   Sean
+
+diff --git a/Documentation/powerpc/dts-bindings/amcc/ndfc.txt
+b/Documentation/powerpc/dts-bindings/amcc/ndfc.txt new file mode 100644
+index 0000000..668f4a9
+--- /dev/null
++++ b/Documentation/powerpc/dts-bindings/amcc/ndfc.txt
+@@ -0,0 +1,31 @@
++AMCC NDFC (NanD Flash Controller)
++
++Required properties:
++- compatible : "amcc,ndfc".
++- reg : should specify chip select and size used for the chip (0x2000).
++
++Optional properties:
++- ccr : NDFC config and control register value (default 0).
++- bank-settings : NDFC bank configuration register value (default 0).
++- partition(s) - follows the OF MTD standard for partitions
++
++Example:
++
++nand@1,0 {
++	compatible = "amcc,ndfc";
++	reg = <0x00000001 0x00000000 0x00002000>;
++	ccr = <0x00001000>;
++	bank-settings = <0x80002222>;
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	partition@0 {
++		label = "kernel";
++		reg = <0x00000000 0x00200000>;
++	};
++	partition@200000 {
++		label = "root";
++		reg = <0x00200000 0x03E00000>;
++	};
++};
++
