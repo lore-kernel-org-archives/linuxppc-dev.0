@@ -1,22 +1,18 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B59A5DDE41
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 11:41:43 +1100 (EST)
-Date: Tue, 9 Dec 2008 03:41:36 +0300
-From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <1195158776.20081209034136@emcraft.com>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Subject: Re[2]: [PATCH 01/11] async_tx: don't use src_list argument of
-	async_xor() for dma addresses
-In-Reply-To: <e9c3a7c20812081631i1e0efff2j953b2e81f6dc6e0e@mail.gmail.com>
-References: <200812090055.26721.yur@emcraft.com>
-	<e9c3a7c20812081631i1e0efff2j953b2e81f6dc6e0e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
-	dzu@denx.de, yanok@emcraft.com
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 0E874DDE24
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 11:51:26 +1100 (EST)
+Date: Mon, 8 Dec 2008 19:51:24 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ndfc driver
+Message-ID: <20081208195124.14988307@lappy.seanm.ca>
+In-Reply-To: <20081204090107.20269571@zod.rchland.ibm.com>
+References: <20081203222832.3fc77d28@lappy.seanm.ca>
+	<20081204090107.20269571@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday, December 9, 2008 you wrote:
+On Thu, 4 Dec 2008 09:01:07 -0500
+"Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
 
-> On Mon, Dec 8, 2008 at 2:55 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
->> Using src_list argument of async_xor() as a storage for dma addresses
->> implies sizeof(dma_addr_t) <=3D sizeof(struct page *) restriction which =
-is
->> not always true (e.g. ppc440spe).
->>
+> You also seem to only support a single NAND chip, however the NDFC can
+> support multiple chips.  Have you looked at how the the fsl_elbc_nand
+> driver does multiple chip support?  If not, could you at least
+> document the limitation in the patch?
 
-> ppc440spe runs with CONFIG_PHYS_64BIT?
-
- Yep. It uses 36-bit addressing, so this CONFIG is turned on.
-
-> If we do this then we need to also change md to limit the number of
-> allowed disks based on the kernel stack size.  Because with 256 disks
-> a 4K stack can be consumed by one call to async_pq ((256 sources in
-> raid5.c + 256 sources async_pq.c) * 8 bytes per source on 64-bit).
-
- On ppc440spe we have 8KB stack, so the things are not worse than on=20
-32-bit archs with 4KB stack. Thus, I guess no changes to md are=20
-required because of this patch. Right?
-
- Regards, Yuri
-
- --
- Yuri Tikhonov, Senior Software Engineer
- Emcraft Systems, www.emcraft.com
+Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+---
+diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
+index 0352d5c..3dd85e8 100644
+--- a/drivers/mtd/nand/ndfc.c
++++ b/drivers/mtd/nand/ndfc.c
+@@ -2,11 +2,15 @@
+  *  drivers/mtd/ndfc.c
+  *
+  *  Overview:
+- *   Platform independend driver for NDFC (NanD Flash Controller)
++ *   Platform independent driver for NDFC (NanD Flash Controller)
+  *   integrated into EP440 cores
+  *
+  *   Ported to an OF platform driver by Sean MacLennan
+  *
++ *   The NDFC supports multiple chips, but this driver only supports a
++ *   single chip since I do not have access to any boards with
++ *   multiple chips.
++ *
+  *  Author: Thomas Gleixner
+  *
+  *  Copyright 2006 IBM
