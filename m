@@ -1,32 +1,19 @@
-Return-Path: <serge@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 56084DDF33
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 08:54:20 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mB9Lqmgl021916
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 14:52:48 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mB9LsFpT227672
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 14:54:15 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mB9LsBSP029750
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 14:54:14 -0700
-Date: Tue, 9 Dec 2008 15:54:06 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 6/8] cleanup do_init_bootmem()
-Message-ID: <20081209215406.GC24549@us.ibm.com>
-References: <20081209182130.DB2150A2@kernel> <20081209182138.12F61BBF@kernel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081209182138.12F61BBF@kernel>
-Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6AD54DDF06
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 09:07:29 +1100 (EST)
+Subject: Re: [RFC/PATCH] powerpc: consistent memory mapping.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ilya Yanok <yanok@emcraft.com>
+In-Reply-To: <1228847026-5857-1-git-send-email-yanok@emcraft.com>
+References: <1228847026-5857-1-git-send-email-yanok@emcraft.com>
+Content-Type: text/plain
+Date: Wed, 10 Dec 2008 09:07:07 +1100
+Message-Id: <1228860427.22413.29.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, wd@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,13 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> 
-> I'm debating whether this is worth it. It makes this a bit more clean
-> looking, but doesn't seriously enhance readability.  But, I do think
-> it helps a bit.
-> 
-> Thoughts?
+On Tue, 2008-12-09 at 21:23 +0300, Ilya Yanok wrote:
+> Defining the start virtual address of the consistent memory
+> in configs leads to overlapping of the consistent area with
+> the other virtual regions (fixmap, pkmap, vmalloc). Defaults from
+> current kernel just set consistent memory area to be somewhere
+> high in the vmalloc area and then you need to pray there will be
+> not enough vmalloc allocations to overlap.
 
-Absolutely.  do_init_bootmem_node() is *still* a bit largish,
-but far better broken out.
+ .../...
+
+What about just ripping that consistent memory implementation out
+completely and using the normal vmalloc/ioremap allocator instead ?
+
+Any reason not to ?
+
+Cheers,
+Ben.
