@@ -1,24 +1,22 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D8EF1DDE41
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 11:40:29 +1100 (EST)
-Date: Mon, 8 Dec 2008 18:35:52 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: jhsiao@amcc.com
-Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v4]
-Message-Id: <20081208183552.744cb4ae.kim.phillips@freescale.com>
-In-Reply-To: <1228773307.4906.14.camel@jhsiao-usb>
-References: <1228256232.4770.47.camel@jhsiao-usb>
-	<20081204193256.12dbc306.kim.phillips@freescale.com>
-	<1228773307.4906.14.camel@jhsiao-usb>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, herbert@gondor.apana.org.au,
-	linux-crypto@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B59A5DDE41
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Dec 2008 11:41:43 +1100 (EST)
+Date: Tue, 9 Dec 2008 03:41:36 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <1195158776.20081209034136@emcraft.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Subject: Re[2]: [PATCH 01/11] async_tx: don't use src_list argument of
+	async_xor() for dma addresses
+In-Reply-To: <e9c3a7c20812081631i1e0efff2j953b2e81f6dc6e0e@mail.gmail.com>
+References: <200812090055.26721.yur@emcraft.com>
+	<e9c3a7c20812081631i1e0efff2j953b2e81f6dc6e0e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
+	dzu@denx.de, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,33 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 08 Dec 2008 13:55:07 -0800
-James Hsiao <jhsiao@amcc.com> wrote:
+On Tuesday, December 9, 2008 you wrote:
 
-> >> +     /* figure how many gd is needed */
-> >> +     if (aad_len) {
-> >> +             num_gd = get_sg_count(assoc, aad_len) +
-> >> +                     get_sg_count(src, datalen);
-> 
-> > this is dead code - aad_len is never non-zero - is there some code
-> > missing from crypto4xx_alg.c?  Also, IIRC, assoc is a superset of src,
-> > so I believe something like num_gd = get_sg_count(assoc, aad_len +
-> > datalen) would work better - this should also permit removal of the
-> > nbytes reached check in [1] in get_sg_count.
-> 
-> For the get num_gd, assoc and src are two different scatter_lists. One
-> for the packet and one for the aad, so, it makes more sense to me to
-> count them seperately. Yes?
+> On Mon, Dec 8, 2008 at 2:55 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
+>> Using src_list argument of async_xor() as a storage for dma addresses
+>> implies sizeof(dma_addr_t) <=3D sizeof(struct page *) restriction which =
+is
+>> not always true (e.g. ppc440spe).
+>>
 
-ok I looked it up - they are disjoint sg lists, so, yes, you're right.
+> ppc440spe runs with CONFIG_PHYS_64BIT?
 
-> The way to driver pass aad and aad_len is from crypto4xx_build_pd. 
-> This aad support will be used in the future. Do you want me to remover
-> from the current release?  The reason I have it in, is to avoid too much
-> code change for the future release.
+ Yep. It uses 36-bit addressing, so this CONFIG is turned on.
 
-removing it would definitely make both this and any forthcoming aead
-patches more on topic and thus easier to review (plus I suspect adding
-unused code to the kernel is generally frowned upon...)
+> If we do this then we need to also change md to limit the number of
+> allowed disks based on the kernel stack size.  Because with 256 disks
+> a 4K stack can be consumed by one call to async_pq ((256 sources in
+> raid5.c + 256 sources async_pq.c) * 8 bytes per source on 64-bit).
 
-Kim
+ On ppc440spe we have 8KB stack, so the things are not worse than on=20
+32-bit archs with 4KB stack. Thus, I guess no changes to md are=20
+required because of this patch. Right?
+
+ Regards, Yuri
+
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
