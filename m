@@ -1,24 +1,17 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.27])
-	by ozlabs.org (Postfix) with ESMTP id 8E292DDEEE
+Return-Path: <John.Linn@xilinx.com>
+Received: from VA3EHSOBE005.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 9B259DDED9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Dec 2008 08:18:47 +1100 (EST)
-Received: by ey-out-2122.google.com with SMTP id 6so34315eyi.15
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 09 Dec 2008 13:18:44 -0800 (PST)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-To: dhlii@dlasys.net
-Subject: Re: Is anyone using the C67x00 USB Host ?
-References: <49394978.10905@dlasys.net> <87r64j112j.fsf@macbook.be.48ers.dk>
-	<493ED385.7070601@dlasys.net>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Tue, 09 Dec 2008 22:11:44 +0100
-In-Reply-To: <493ED385.7070601@dlasys.net> (David H. Lynch,
-	Jr.'s message of "Tue\, 09 Dec 2008 15\:22\:29 -0500")
-Message-ID: <87wse9m4tr.fsf@macbook.be.48ers.dk>
+	Wed, 10 Dec 2008 10:09:15 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Subject: RE: XUPV2P update to kernel 2.6 fails
+Date: Tue, 9 Dec 2008 16:09:07 -0700
+In-Reply-To: <493ADC3B.2040505@ee.ethz.ch>
+References: <493ADC3B.2040505@ee.ethz.ch>
+From: John Linn <John.Linn@xilinx.com>
+To: <jamuelle@ee.ethz.ch>, "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Message-ID: <20081209230909.832FA928076@mail163-va3.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,33 +22,72 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "David" == David H Lynch <dhlii@dlasys.net> writes:
+You should visit http://xilinx.wikidot.com as there's more information ther=
+e.
 
-Hi,
+In general, this board is not directly supported, but is very similar to ML=
+405, a board with a Virtex 4 and a 405 processor.
 
- >> No activity on the interrupt pin or is it always active?
- >> 
- David> Neither:
+Thanks,
+John
 
- David> The USB system does not function with interrupts, and the
- David> kernel reports lots of unhandled IRQ's.
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org [mailto=
+:linuxppc-embedded-
+> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Jan M=FCller
+> Sent: Saturday, December 06, 2008 1:11 PM
+> To: linuxppc-embedded
+> Subject: XUPV2P update to kernel 2.6 fails
+> =
 
-Of the correct IRQ number?
+> Hi all,
+> =
 
- David> I beleive that
- David> int_status = c67x00_ll_hpi_status(c67x00);
- David> if (!int_status)
- David> return IRQ_NONE;
+> I was wondering if anyone got the XUPV2P board successfully up and
+> running with a recent 2.6 kernel?
+> =
 
- David> is always exiting IRQ_NONE;
+> I didn't succeed. I tried the newest kernel from xilinx git (2.6.27) and
+> also an older one, 2.6.22 (also from xilinx git). For the newer I used
+> the "device-tree" as bsp. For the 2.6.22 I just copied over the
+> xparameters_ml300.h file.
+> =
 
-That would be suprising if the c67x00 is triggering the interrupt.
+> In both cases no output at all was observable at the uart. Not even a
+> single sign from the uart at any time...
+> =
 
- David> If I replace the request_irq() call with installation of a
- David> timer service routine that basically periodically calls the
- David> interrupt handler, everything works fine - albeit slowly.
+> Strange is, the same download.bit file is working with a 2.4 kernel.
+> Could it be a kernel .config issue?
+> =
 
-And what does c67x00_ll_hpi_status() return in your timer routing?
+> But can this really be a software/kernel issue? For the 2.4 kernel there
+> was an output from the "bootloader"  (some addresses and the
+> "Loading..." information) even for wrong configured kernels...
+> =
 
--- 
-Bye, Peter Korsgaard
+> On this list I was reading something about setting the uart clockfreq
+> correctly in the .dts (it was not set at all, I have to stick with EDK
+> 9.1). But this didn't help for me.
+> 
+> To boot the FPGA I have to use an ace file on a cf-disc. For this I use
+> the download.bit file together with the simpleImage.virtex405-XUPV2P.elf
+> (on 2.6.27) or zImage (on 2.6.22)...
+> =
+
+> Any suggestions on this? Thanks a lot!
+> =
+
+> Regards,
+> Jan
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
