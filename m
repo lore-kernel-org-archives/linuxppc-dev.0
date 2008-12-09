@@ -1,21 +1,30 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C0BD3DDF18
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 00:17:39 +1100 (EST)
-Message-Id: <6CFA99B4-6757-414F-B272-2B6925682593@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1228714789.103940.266501677728.qpush@grosgo>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 0/9] powerpc: Preliminary work to enable SMP BookE
-Date: Tue, 9 Dec 2008 07:17:33 -0600
-References: <1228714789.103940.266501677728.qpush@grosgo>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8F9EB474C3
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 01:27:03 +1100 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e5.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mB9EQNrK003874
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 09:26:24 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mB9EQwXk2224190
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 09:26:59 -0500
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mB9EQtMq020895
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Dec 2008 07:26:55 -0700
+Date: Tue, 9 Dec 2008 09:26:49 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH 1/5] powerpc: booke: Don't hard-code size of struct tlbcam
+Message-ID: <20081209092649.1d262327@zod.rchland.ibm.com>
+In-Reply-To: <1228793699-23110-1-git-send-email-tpiepho@freescale.com>
+References: <1228793699-23110-1-git-send-email-tpiepho@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon,  8 Dec 2008 19:34:55 -0800
+Trent Piepho <tpiepho@freescale.com> wrote:
 
-On Dec 7, 2008, at 11:39 PM, Benjamin Herrenschmidt wrote:
+> Some assembly code in head_fsl_booke.S hard-coded the size of struct tlbcam
+> to 20 when it indexed the TLBCAM table.  Anyone changing the size of struct
+> tlbcam would not know to expect that.
+> 
+> The kernel already has a system to get the size of C structures into
+> assembly language files, asm-offsets, so let's use it.
+> 
+> The definition of the struct gets moved to a header, so that asm-offsets.c
+> can include it.
 
-> This series of patches is aimed at supporting SMP on non-hash
-> based processors. It consists of a rework of the MMU context
-> management and TLB management, clearly splitting hash32, hash64
-> and nohash in both cases, adding SMP safe context handling and
-> some basic SMP TLB management.
->
-> There is room for improvements, such as implementing lazy TLB
-> flushing on processors without invalidate-by-PID support HW,
-> some better IPI mechanism, support for variable sizes PID,
-> lock less fast path in the MMU context switch, etc...
-> but it should basically work.
->
-> There are some semingly unrelated patches in the pile as they
-> are dependencies of the main ones so I'm including them in.
+I don't mean to be overly picky, but your patch subjects and changelog
+descriptions are a bit wrong.  This series pertains to FSL BookE chips,
+not BookE in general.  There are other variants of BookE, such as 4xx.
 
-You'll be happy to know these patches at least boot on real 85xx SMP HW.
+If you could keep that in mind for future revisions, I'd appreciate
+it.  Something like:
 
-- k
+[PATCH] powerpc/fsl-booke: 
+
+or something similar would be a bit more correct.  Unless you really
+are changing something global to all BookE processors (which is sort of
+rare at the moment).
+
+josh
