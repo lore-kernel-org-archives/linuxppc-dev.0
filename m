@@ -1,28 +1,30 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A7961DDF6A
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 00:26:21 +1100 (EST)
-Date: Wed, 10 Dec 2008 16:25:53 +0300
-From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <1356341274.20081210162553@emcraft.com>
-To: David Howells <dhowells@redhat.com>
-Subject: Re[4]: [PATCH] fork_init: fix division by zero
-In-Reply-To: <5545.1228914404@redhat.com>
-References: <1795455197.20081210132912@emcraft.com>
-	<200812092044.40649.yur@emcraft.com>
-	<Pine.LNX.4.64.0812100944080.25126@vixen.sonytel.be>
-	<503391615.20081210130113@emcraft.com>
-	<20081210101745.GG28946@ZenIV.linux.org.uk>
-	<5545.1228914404@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Al Viro <viro@ZenIV.linux.org.uk>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Ilya Yanok <yanok@emcraft.com>
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B714ADDF6D
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 00:34:06 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBADTEXc001831
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 08:29:14 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mBADXxFq164976
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 08:34:01 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mBAEY8jg006577
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 09:34:08 -0500
+Date: Wed, 10 Dec 2008 08:31:43 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 2/2] powerpc: 44x doesn't need G set everywhere
+Message-ID: <20081210083143.62b869f4@zod.rchland.ibm.com>
+In-Reply-To: <20081210055139.A7FFCDDF65@ozlabs.org>
+References: <20081210055139.A7FFCDDF65@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,121 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=0D=0A Hello David,
+On Wed, 10 Dec 2008 16:50:50 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Wednesday, December 10, 2008 you wrote:
+> After discussing with chip designers, it appears that it's not
+> necessary to set G everywhere on 440 cores. The various core
+> errata related to prefetch should be sorted out by firmware by
+> disabling icache prefetching in CCR0. We add the workaround to
+> the kernel however just in case oooold firmwares don't do it.
+> 
+> This is valid for -all- 4xx core variants. Later ones hard wire
+> the absence of prefetch but it doesn't harm to clear the bits
+> in CCR0 (they should already be cleared anyway).
+> 
+> We still leave G=1 on the linear mapping for now, we need to
+> stop over-mapping RAM to be able to remove it.
 
-> Yuri Tikhonov <yur@emcraft.com> wrote:
+Hm.  Over-mapping it has the nice advantage that we use as few pinned
+TLB entries as possible.  For 440x6 cores with more than 256 MiB of
+DRAM, you could theoretically use a single 1GiB TLB entry to map all
+kernel DRAM.
 
->>  Here we believe in preprocessor: since all PAGE_SIZE, 8, and=20
->> THREAD_SIZE are the constants we expect it will calculate this.
+Do you think the trade-offs of allowing speculative accesses are worth
+the increased TLB pressure?  Large base pages will help with that in
+some workloads, but others are still going to be TLB constrained.
 
-> The preprocessor shouldn't be calculating this.  I believe it will _only_
-> calculate expressions for #if.  In the situation you're referring to, it
-> should perform a substitution and nothing more.  The preprocessor doesn't
-> necessarily know how to handle the types involved.
+I know, I'm probably paranoid.  But changing things like this around
+without some kind of benchmark data or testcase to make sure we aren't
+making it worse gives me the heebee-geebees.
 
-> In any case, there's an easy way to find out: you can ask the compiler to=
- give
-> you the result of running the source through the preprocessor only. For
-> instance, if you run this:
-
->         #define PAGE_SIZE 4096
->         #define THREAD_SIZE 8192
->         unsigned long mempages;
->         unsigned long jump(void)
->         {
->                 unsigned long max_threads;
->                 max_threads =3D mempages * PAGE_SIZE / (8 * THREAD_SIZE);
->                 return max_threads;
->         }
-
-> through "gcc -E", you get:
-
->         # 1 "calc.c"
->         # 1 "<built-in>"
->         # 1 "<command line>"
->         # 1 "calc.c"
->         unsigned long mempages;
->         unsigned long jump(void)
->         {
->          unsigned long max_threads;
->          max_threads =3D mempages * 4096 / (8 * 8192);
->          return max_threads;
->         }
-
-
->>  In any case, adding braces as follows probably would be better:
->>=20
->> +     max_threads =3D mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
-
-> I think you mean brackets, not braces '{}'.
-
- Yes, it was a typo.
-
-
->>  Right ?
-
-> Definitely not.
-
-> I added this function to the above:
-
->         unsigned long alt(void)
->         {
->                 unsigned long max_threads;
->                 max_threads =3D mempages * (PAGE_SIZE / (8 * THREAD_SIZE)=
-);
->                 return max_threads;
->         }
-
-> and ran it through "gcc -S -O2" for x86_64:
-
->         jump:
->                 movq    mempages(%rip), %rax
->                 salq    $12, %rax
->                 shrq    $16, %rax
->                 ret
->         alt:
->                 xorl    %eax, %eax
->                 ret
-
-> Note the difference?  In jump(), x86_64 first multiplies mempages by 4096=
-, and
-> _then_ divides by 8*8192.
-
-> In alt(), it just returns 0 because the compiler realised that you're
-> multiplying by 0.
-
- I think Geert has already commented this: you've compiled your alt()=20
-functions having 4K PAGE_SIZE and 8K THREAD_SIZE - this case is=20
-handled by the old code in fork_init.
-
-> If you're going to bracket the expression, it must be:
-
->                 max_threads =3D (mempages * PAGE_SIZE) / (8 * THREAD_SIZE=
-);
-
-> which should be superfluous.
-
->>  E.g. here is the result from this line as produced by cross-gcc=20
->> 4.2.2:
->>=20
->>         lis     r9,0
->>         rlwinm  r29,r29,2,16,29
->>         stw     r29,0(r9)
->>=20
->>  As you see - only rotate-left, i.e. multiplication to the constant.
-
-> Ummm...  On powerpc, I believe rotate-left would be a division as it does=
- the
-> bit-numbering and the bit direction the opposite way to more familiar CPUs
-> such as x86.
-
- On powerpc shifting left is multiplication by 2, as this has the most=20
-significant bit first.
-
- Regards, Yuri
-
- --
- Yuri Tikhonov, Senior Software Engineer
- Emcraft Systems, www.emcraft.com
+josh
