@@ -1,24 +1,25 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.186])
-	by ozlabs.org (Postfix) with ESMTP id 02F49DDF1C
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 12:08:31 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so260698rnf.16
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Dec 2008 17:08:30 -0800 (PST)
-Message-ID: <e9c3a7c20812091708n5e5daf2ane9c7fb927782c771@mail.gmail.com>
-Date: Tue, 9 Dec 2008 18:08:29 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Yuri Tikhonov" <yur@emcraft.com>
-Subject: Re: Re[2]: [PATCH 01/11] async_tx: don't use src_list argument of
-	async_xor() for dma addresses
-In-Reply-To: <1195158776.20081209034136@emcraft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200812090055.26721.yur@emcraft.com>
-	<e9c3a7c20812081631i1e0efff2j953b2e81f6dc6e0e@mail.gmail.com>
-	<1195158776.20081209034136@emcraft.com>
-Cc: wd@denx.de, dzu@denx.de, Neil Brown <neilb@suse.de>,
-	linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, yanok@emcraft.com
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id D1262DDF70
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 15:01:39 +1100 (EST)
+Date: Tue, 9 Dec 2008 23:01:35 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Mitch Bradley" <wmb@firmworks.com>
+Subject: Re: [PATCH] ndfc driver
+Message-ID: <20081209230135.35e1b9d1@lappy.seanm.ca>
+In-Reply-To: <493E24D8.6040406@firmworks.com>
+References: <20081203222832.3fc77d28@lappy.seanm.ca>
+	<20081204090107.20269571@zod.rchland.ibm.com>
+	<20081208193446.37e27e26@lappy.seanm.ca>
+	<20081209021115.GA13948@oksana.dev.rtsoft.ru>
+	<20081208214512.461276d2@lappy.seanm.ca>
+	<20081208223227.19a702a9@zod.rchland.ibm.com>
+	<20081208235437.08323e3a@lappy.seanm.ca>
+	<493E24D8.6040406@firmworks.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 8, 2008 at 5:41 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
-> On Tuesday, December 9, 2008 you wrote:
->
->> On Mon, Dec 8, 2008 at 2:55 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
->>> Using src_list argument of async_xor() as a storage for dma addresses
->>> implies sizeof(dma_addr_t) <= sizeof(struct page *) restriction which is
->>> not always true (e.g. ppc440spe).
->>>
->
->> ppc440spe runs with CONFIG_PHYS_64BIT?
->
->  Yep. It uses 36-bit addressing, so this CONFIG is turned on.
->
->> If we do this then we need to also change md to limit the number of
->> allowed disks based on the kernel stack size.  Because with 256 disks
->> a 4K stack can be consumed by one call to async_pq ((256 sources in
->> raid5.c + 256 sources async_pq.c) * 8 bytes per source on 64-bit).
->
->  On ppc440spe we have 8KB stack, so the things are not worse than on
-> 32-bit archs with 4KB stack. Thus, I guess no changes to md are
-> required because of this patch. Right?
+On Mon, 08 Dec 2008 21:57:12 -1000
+"Mitch Bradley" <wmb@firmworks.com> wrote:
 
-8K stacks do make this less of an issue *provided* handle_stripe()
-remains only called from raid5d.  We used to share some stripe
-handling work with the requester's process context where the stack is
-much more crowded.  So, we would now be more strongly tied to the
-raid5d-only approach... maybe that is not enough to deny this change.
-Neil what do you think of the async_{xor,pq,etc} apis allocating
-'src_cnt' sized arrays on the stack?
+> One address/size cell isn't enough for the next generation of NAND
+> FLASH chips.
+> 
 
-Thanks,
-Dan
+I am no dts expert, but I thought I could put:
+
+	nand {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+in my dts and you could put:
+
+	nand {
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+and, assuming we specified the reg entry right, everything would just
+work. Is that assumption wrong?
+
+And if the assumption is true, should I make a note in the doc that you
+can make the address and size bigger?
+
+Cheers,
+   Sean
