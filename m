@@ -1,33 +1,24 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 353A9DDF84
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 09:54:13 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBAMrVq3004110
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 15:53:31 -0700
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mBAMsAB7226824
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 15:54:10 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mBAMs3GH007837
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 15:54:10 -0700
-Subject: Re: [PATCH 1/8] fix bootmem reservation on uninitialized node
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18752.16188.480990.923571@cargo.ozlabs.ibm.com>
-References: <20081209182130.DB2150A2@kernel> <20081209182130.1E4C1438@kernel>
-	<18752.16188.480990.923571@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 14:54:00 -0800
-Message-Id: <1228949640.9737.109.camel@nimitz>
-Mime-Version: 1.0
-Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-	linuxppc-dev@ozlabs.org, "Serge E. Hallyn" <serue@us.ibm.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6B687DDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 09:55:31 +1100 (EST)
+Date: Wed, 10 Dec 2008 14:55:18 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 1/2] powerpc: Rework usage of
+	_PAGE_COHERENT/NO_CACHE/GUARDED
+In-Reply-To: <1228941726.22413.98.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0812101416350.28806@t2.domain.actdsltmp>
+References: <20081210055136.63D5FDDF5C@ozlabs.org>
+	<Pine.LNX.4.64.0812101107350.28806@t2.domain.actdsltmp>
+	<1228941726.22413.98.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-12-11 at 09:14 +1100, Paul Mackerras wrote:
-> Dave Hansen writes:
-> > This patch ensures that we do not touch bootmem for any node which
-> > has not been initialized.
-> > 
-> > Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
-> 
-> So, should I be sending this to Linus for 2.6.28?
+On Thu, 11 Dec 2008, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-12-10 at 11:33 -0800, Trent Piepho wrote:
+>> On Wed, 10 Dec 2008, Benjamin Herrenschmidt wrote:
+>>> This changes the logic so that instead, the PTE now contains
+>>> _PAGE_COHERENT for all normal RAM pages tha have I = 0. The hash
+>>> code clears it if the feature bit is not set.
+>>
+>> Why not check the feature bit when the PTE is made and unset _PAGE_COHERENT
+>> at that point?  In fact, could you do something like:
+>
+> Not sure what you mean. Inside set_pte_at ? Well, the one line of asm is
+> going to be in the noise in the hash code, I'm just flipping an existing
+> condition. I like the PTE to represent whether it's supposed to be a
+> coherent page.
 
-Yes, this is 2.6.28 material.
+In the code that does the mapping.  It's a lot cheaper to figure out if
+_PAGE_COHERENT is needed once per mapping instead of per page per fault.
 
-> I notice you have added a dbg() call.  For a 2.6.28 patch I'd somewhat
-> prefer not to have that in unless necessary.
+It sounds like getting it right is a lot more complicated than just one
+instruction.  No M bit for non-SMP, except for some 74xx, or if a MPC107
+bridge is used, which should be determined at runtime.  And does the MPC107
+thing apply to all pages or just those PCI memory behind the bridge?  Or
+DMA?
 
-It isn't necessary and probably snuck in from the others.  I'll respin
-and send this one out again.  If you want the others, I'll send
-separately.
+> I've been told that setting M on non-SMP will slows things down.  But
+>> couldn't you just change _PAGE_BASE on non-SMP instead of clearning it in
+>> the miss handler?
+>
+> Well, because we need it set on non SMP on some 74xx.. maybe we can
+> have it set in PAGE_BASE only if CONFIG_SMP and CONFIG_6xx ?
 
--- Dave
+That's what I was thinking, set it in page base for SMP and other instances
+when we know it's necessary at compile time.  If/when there is a runtime
+check, then it would be lot easier to put that check in the code that made
+the mapping instead of the miss handler.
+
+>> I have a patch to remove this IORESOURCE_PREFETCH hack.  The current kernel
+>> creates two files, resourceN and resourceN_wc, for prefetchable BARs to
+>> allow the user to choose what mode to use.
+>
+> Ah ? That's new ? I missed it. Has X been updated to use them ? If not,
+> keep the hack for a little while more :-)
+
+It's rather new so I bet X servers that use it aren't widely deployed yet.
+
+commit 45aec1ae72fc592f231e9e73ed9ed4d10cfbc0b5
+Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
+Date:   Tue Mar 18 17:00:22 2008 -0700
+
+     x86: PAT export resource_wc in pci sysfs
+
+Patch title is somewhat misleading, as it doesn't touch any x86 specific
+code.  And people complain when I used booke instead of fsl-booke...  like
+I want to make it any easier to have patches ignored.
