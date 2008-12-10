@@ -1,19 +1,22 @@
-Return-Path: <m.fortini@selcomgroup.com>
-Received: from xseries02.selcomgroup.com (mail.selcomgroup.com [85.18.34.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 965EADDF3D
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 05:50:52 +1100 (EST)
-Message-ID: <49400F56.2040008@selcomgroup.com>
-Date: Wed, 10 Dec 2008 19:49:58 +0100
-From: Matteo Fortini <m.fortini@selcomgroup.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ADS5121 Fix: put dummy byte to enable fixing EOF bug to first
-	place in order not to break some drivers\nUse ALARM interrupt to
-	avoid waiting for data to come in
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: John Rigby <jrigby@freescale.com>
+Return-Path: <dan.j.williams@intel.com>
+Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
+	by ozlabs.org (Postfix) with ESMTP id 34666DDF3F
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 06:00:20 +1100 (EST)
+Subject: Re: [PATCH] ASYNC_TX: async_xor mapping fix
+From: Dan Williams <dan.j.williams@intel.com>
+To: Yuri Tikhonov <yur@emcraft.com>
+In-Reply-To: <1228770496.26373.3.camel@dwillia2-linux.ch.intel.com>
+References: <200812082214.26811.yur@emcraft.com>
+	<1228770496.26373.3.camel@dwillia2-linux.ch.intel.com>
+Content-Type: text/plain
+Date: Wed, 10 Dec 2008 11:47:06 -0700
+Message-Id: <1228934826.1224.5.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+Cc: "wd@denx.de" <wd@denx.de>, "dzu@denx.de" <dzu@denx.de>,
+	Saeed Bishara <saeed@marvell.com>,
+	"linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,138 +26,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- From d500e922b750a2bea554d32d8f12937f4da9c80a Mon Sep 17 00:00:00 2001
-From: Matteo Fortini <m.fortini@selcomgroup.com>
-Date: Wed, 10 Dec 2008 19:33:16 +0100
-Subject: [PATCH] Fix: put dummy byte to enable fixing EOF bug to first 
-place in order not to break some drivers
- Use ALARM interrupt to avoid waiting for data to come in
+On Mon, 2008-12-08 at 14:08 -0700, Dan Williams wrote:
+> On Mon, 2008-12-08 at 12:14 -0700, Yuri Tikhonov wrote:
+> > The destination address may be present in the source list, so we should
+> > map the addresses from the source list first.
+> >  Otherwise, if page corresponding to destination is not marked as write-
+> > through (with regards to CPU cache), then mapping it with DMA_FROM_DEVICE
+> > may lead to data loss, and finally to an incorrect result of calculations.
+> > 
+> 
+> Thanks Yuri.  I think we should avoid mapping the destination twice
+> altogether, and for simplicity just always map it bidirectionally.
+
+Yuri, Saeed, can I get your acked-by's for the following 2.6.28 patch:
+
+Thanks,
+Dan
 
 
-Signed-off-by: Matteo Fortini <m.fortini@selcomgroup.com>
+----snip---->
+async_xor: dma_map destination DMA_BIDIRECTIONAL
+
+From: Dan Williams <dan.j.williams@intel.com>
+
+Mapping the destination multiple times is a misuse of the dma-api.
+Since the destination may be reused as a source, ensure that it is only
+mapped once and that it is mapped bidirectionally.  This appears to add
+ugliness on the unmap side in that it always reads back the destination
+address from the descriptor, but gcc can determine that dma_unmap is a
+nop and not emit the code that calculates its arguments.
+
+Cc: <stable@kernel.org>
+Cc: Saeed Bishara <saeed@marvell.com>
+Reported-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/spi/mpc512x_psc_spi.c |   53 
-++++++++++++++++++++++++-----------------
- 1 files changed, 31 insertions(+), 22 deletions(-)
+ crypto/async_tx/async_xor.c |   11 +++++++++--
+ drivers/dma/iop-adma.c      |   16 +++++++++++++---
+ drivers/dma/mv_xor.c        |   15 ++++++++++++---
+ 3 files changed, 34 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/spi/mpc512x_psc_spi.c b/drivers/spi/mpc512x_psc_spi.c
-index 1fd7ad4..41faa49 100644
---- a/drivers/spi/mpc512x_psc_spi.c
-+++ b/drivers/spi/mpc512x_psc_spi.c
-@@ -136,6 +136,7 @@ static void mpc512x_psc_spi_deactivate_cs(struct 
-spi_device *spi)
-                    (spi->mode & SPI_CS_HIGH) ? 1 : 0);
- }
+diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
+index c029d3e..a6faa90 100644
+--- a/crypto/async_tx/async_xor.c
++++ b/crypto/async_tx/async_xor.c
+@@ -53,10 +53,17 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
+ 	int xor_src_cnt;
+ 	dma_addr_t dma_dest;
  
+-	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_FROM_DEVICE);
+-	for (i = 0; i < src_cnt; i++)
++	/* map the dest bidrectional in case it is re-used as a source */
++	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_BIDIRECTIONAL);
++	for (i = 0; i < src_cnt; i++) {
++		/* only map the dest once */
++		if (src_list[i] == dest) {
++			dma_src[i] = dma_dest;
++			continue;
++		}
+ 		dma_src[i] = dma_map_page(dma->dev, src_list[i], offset,
+ 					  len, DMA_TO_DEVICE);
++	}
+ 
+ 	while (src_cnt) {
+ 		async_flags = flags;
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index c7a9306..6be3172 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -85,18 +85,28 @@ iop_adma_run_tx_complete_actions(struct iop_adma_desc_slot *desc,
+ 			enum dma_ctrl_flags flags = desc->async_tx.flags;
+ 			u32 src_cnt;
+ 			dma_addr_t addr;
++			dma_addr_t dest;
+ 
++			src_cnt = unmap->unmap_src_cnt;
++			dest = iop_desc_get_dest_addr(unmap, iop_chan);
+ 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
+-				addr = iop_desc_get_dest_addr(unmap, iop_chan);
+-				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
++				enum dma_data_direction dir;
 +
- /*
-  * Current MPC5121's have a bug in the SS logic that requires setting
-  * the EOF flag on the next to last byte instead of the last
-@@ -155,7 +156,7 @@ static int mpc512x_psc_spi_transfer_rxtx(struct 
-spi_device *spi,
++				if (src_cnt > 1) /* is xor? */
++					dir = DMA_BIDIRECTIONAL;
++				else
++					dir = DMA_FROM_DEVICE;
++
++				dma_unmap_page(dev, dest, len, dir);
+ 			}
  
-     if (!tx_buf && !rx_buf && t->len)
-         return -EINVAL;
--
-+    
-     /*
-      * zero out Mode register 2
-      * From the ref man:
-@@ -175,6 +176,7 @@ static int mpc512x_psc_spi_transfer_rxtx(struct 
-spi_device *spi,
-         u8 data;
-         size_t fifosz;
-         int rxcount;
-+        int txcount;
+ 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+-				src_cnt = unmap->unmap_src_cnt;
+ 				while (src_cnt--) {
+ 					addr = iop_desc_get_src_addr(unmap,
+ 								     iop_chan,
+ 								     src_cnt);
++					if (addr == dest)
++						continue;
+ 					dma_unmap_page(dev, addr, len,
+ 						       DMA_TO_DEVICE);
+ 				}
+diff --git a/drivers/dma/mv_xor.c b/drivers/dma/mv_xor.c
+index 0328da0..bcda174 100644
+--- a/drivers/dma/mv_xor.c
++++ b/drivers/dma/mv_xor.c
+@@ -311,17 +311,26 @@ mv_xor_run_tx_complete_actions(struct mv_xor_desc_slot *desc,
+ 			enum dma_ctrl_flags flags = desc->async_tx.flags;
+ 			u32 src_cnt;
+ 			dma_addr_t addr;
++			dma_addr_t dest;
  
-         /*
-          * The number of bytes that can be sent at a time
-@@ -183,41 +185,49 @@ static int mpc512x_psc_spi_transfer_rxtx(struct 
-spi_device *spi,
-         fifosz = MPC512x_PSC_FIFO_SZ(in_be32(&fifo->txsz));
-         count = min(fifosz, len);
++			src_cnt = unmap->unmap_src_cnt;
++			dest = mv_desc_get_dest_addr(unmap);
+ 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
+-				addr = mv_desc_get_dest_addr(unmap);
+-				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
++				enum dma_data_direction dir;
++
++				if (src_cnt > 1) /* is xor ? */
++					dir = DMA_BIDIRECTIONAL;
++				else
++					dir = DMA_FROM_DEVICE;
++				dma_unmap_page(dev, dest, len, dir);
+ 			}
  
-+        txcount = 0;
-+        /*
-+         * Insert a dummy byte before a message of len 1 to make it at 
-least 2 bytes long
-+         * to be able to set EOF correctly
-+         */
-+        if (t->len == 1) {
-+            out_8(&fifo->txdata_8, 0);
-+            txcount++;
-+        }
-         for (i = count; i > 0; i--) {
-             if (len == EOFBYTE || t->len == 1)
-                 setbits32(&fifo->txcmd, MPC512x_PSC_FIFO_EOF);
-             data = tx_buf ? *tx_buf++ : 0;
-             out_8(&fifo->txdata_8, data);
--            if (t->len == 1)
--                out_8(&fifo->txdata_8, 0);
-+            txcount++;
-             len--;
-         }
- 
-         INIT_COMPLETION(mps->done);
- 
--        /* interrupt on tx fifo empty */
--        out_be32(&fifo->txisr, MPC512x_PSC_FIFO_EMPTY);
--        out_be32(&fifo->tximr, MPC512x_PSC_FIFO_EMPTY);
-+        /* Enable FIFO_ALARM interrupts for rx_fifo */
-+        out_be32(&fifo->rxalarm, txcount);
-+        out_be32(&fifo->rxisr, MPC512x_PSC_FIFO_ALARM);
-+        out_be32(&fifo->rximr, MPC512x_PSC_FIFO_ALARM);
- 
--        /* enable transmiter/receiver */
--        out_8(&psc->command, MPC52xx_PSC_TX_ENABLE | 
-MPC52xx_PSC_RX_ENABLE);
--
--        wait_for_completion(&mps->done);
-+        /* Disable tx_fifo interrupts */
-+        out_be32(&fifo->txisr, 0xffffffff);
-+        out_be32(&fifo->tximr, 0);
- 
--        mdelay(1);
-+        out_8(&psc->command, MPC52xx_PSC_TX_ENABLE | 
-MPC52xx_PSC_RX_ENABLE);
- 
--        /* rx fifo should have count bytes in it */
--        rxcount = in_be32(&fifo->rxcnt);
--        if (rxcount != count)
--            mdelay(1);
-+        wait_for_completion (&mps->done);
- 
-         rxcount = in_be32(&fifo->rxcnt);
--        if (rxcount != count && t->len != 1)
-+        if (rxcount != txcount)
-             printk(KERN_WARNING "expected %d bytes in rx fifo "
--                       "but got %d\n", count, rxcount);
--
-+                    "but got %d\n", txcount, rxcount);
-         rxcount = min(rxcount, count);
-         {
-+            /* Throw away possible initial dummy byte */
-+            if (t->len == 1) {
-+                (void)in_8(&fifo->rxdata_8);
-+            }
-             for (i = rxcount; i > 0; i--) {
-                 data = in_8(&fifo->rxdata_8);
-                 if (rx_buf)
-@@ -418,10 +428,9 @@ static irqreturn_t mpc512x_psc_spi_isr(int irq, 
-void *dev_id)
-     struct mpc512x_psc_fifo __iomem *fifo = mps->fifo;
- 
-     /* clear interrupt and wake up the work queue */
--    if (in_be32(&fifo->txisr)
--        & in_be32(&fifo->tximr) & MPC512x_PSC_FIFO_EMPTY) {
--        out_be32(&fifo->txisr, MPC512x_PSC_FIFO_EMPTY);
--        out_be32(&fifo->tximr, 0);
-+    if (in_be32(&fifo->rxisr) & in_be32(&fifo->rximr) & 
-MPC512x_PSC_FIFO_ALARM) {
-+        out_be32(&fifo->rxisr, MPC512x_PSC_FIFO_ALARM);
-+        out_be32(&fifo->rximr, 0);
-         complete(&mps->done);
-         return IRQ_HANDLED;
-     }
--- 
-1.5.4.3
+ 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+-				src_cnt = unmap->unmap_src_cnt;
+ 				while (src_cnt--) {
+ 					addr = mv_desc_get_src_addr(unmap,
+ 								    src_cnt);
++					if (addr == dest)
++						continue;
+ 					dma_unmap_page(dev, addr, len,
+ 						       DMA_TO_DEVICE);
+ 				}
