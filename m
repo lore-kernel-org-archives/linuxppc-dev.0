@@ -1,20 +1,17 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E8F50DDF28
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 02:41:56 +1100 (EST)
-From: Trent Piepho <tpiepho@freescale.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] leds: Add option to have GPIO LEDs start on
-Date: Wed, 10 Dec 2008 07:41:41 -0800
-Message-Id: <1228923703-16370-2-git-send-email-tpiepho@freescale.com>
-In-Reply-To: <1228923703-16370-1-git-send-email-tpiepho@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Date: Wed, 10 Dec 2008 19:32:18 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH 1/4] leds: Support OpenFirmware led bindings
+Message-ID: <20081210163217.GA20150@oksana.dev.rtsoft.ru>
 References: <1228923703-16370-1-git-send-email-tpiepho@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
-	Trent Piepho <tpiepho@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1228923703-16370-1-git-send-email-tpiepho@freescale.com>
+Cc: devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
+	Sean MacLennan <smaclennan@pikatech.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,116 +21,134 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Yes, there is the "default-on" trigger but there are problems with that.
+Hi Trent,
 
-For one, it's a inefficient way to do it and requires led trigger support
-to be compiled in.
+On Wed, Dec 10, 2008 at 07:41:40AM -0800, Trent Piepho wrote:
+> Add bindings to support LEDs defined as of_platform devices in addition to
+> the existing bindings for platform devices.
+> 
+> New options in Kconfig allow the platform binding code and/or the
+> of_platform code to be turned on.  The of_platform code is of course only
+> available on archs that have OF support.
+> 
+> The existing probe and remove methods are refactored to use new functions
+> create_gpio_led(), to create and register one led, and delete_gpio_led(),
+> to unregister and free one led.  The new probe and remove methods for the
+> of_platform driver can then share most of the common probe and remove code
+> with the platform driver.
+> 
+> The suspend and resume methods aren't shared, but they are very short.  The
+> actual led driving code is the same for LEDs created by either binding.
+> 
+> The OF bindings are based on patch by Anton Vorontsov
+> <avorontsov@ru.mvista.com>.  They have been extended to allow multiple LEDs
+> per device.
+> 
+> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> Acked-by: Sean MacLennan <smaclennan@pikatech.com>
+> CC: devicetree-discuss@ozlabs.org
+> ---
 
-But the real reason is that is produces a glitch on the LED.  The GPIO is
-allocate with the LED *off*, then *later* when then trigger runs it is
-turned back on.  If the LED was already on via the GPIO's reset default or
-action of the firmware, this produces a glitch where the LED goes from on
-to off to on.  While normally this is fast enough that it wouldn't be
-noticeable to a human observer, there are still serious problems.
+Some petty notes below...
 
-One is that there may be something else on the GPIO line, like a hardware
-alarm or watchdog, that is fast enough to notice the glitch.
+[...]  
+> -static int gpio_led_probe(struct platform_device *pdev)
+> +static int __devinit create_gpio_led(const struct gpio_led *template,
+> +	struct gpio_led_data *led_dat, struct device *parent,
+> +	int (*blink_set)(unsigned, unsigned long *, unsigned long *))
+> +{
+> +	int ret;
+> +
+> +	ret = gpio_request(template->gpio, template->name);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	led_dat->cdev.name = template->name;
+> +	led_dat->cdev.default_trigger = template->default_trigger;
+> +	led_dat->gpio = template->gpio;
+> +	led_dat->can_sleep = gpio_cansleep(template->gpio);
+> +	led_dat->active_low = template->active_low;
+> +	if (blink_set) {
+> +		led_dat->platform_gpio_blink_set = blink_set;
+> +		led_dat->cdev.blink_set = gpio_blink_set;
+> +	}
+> +	led_dat->cdev.brightness_set = gpio_led_set;
+> +	led_dat->cdev.brightness = LED_OFF;
+> +
+> +	gpio_direction_output(led_dat->gpio, led_dat->active_low);
 
-Another is that the kernel may panic before the LED is turned back on, thus
-hanging with the LED in the wrong state.  This is not just speculation, but
-actually happened to me with an embedded system that has an LED which
-should turn off when the kernel finishes booting, which was left in the
-incorrect state due to a bug in the OF LED binding code.
+This can fail (yeah, the original code didn't check return value
+either).
 
-The platform device binding gains a field in the platform data
-"default_state" that controls this.  The OpenFirmware binding uses a
-property named "default-state" that can be set to "on" or "off".  The
-default if the property isn't present is off.
+> +	INIT_WORK(&led_dat->work, gpio_led_work);
+> +
+> +	ret = led_classdev_register(parent, &led_dat->cdev);
+> +	if (ret < 0)
+> +		gpio_free(led_dat->gpio);
+> +
+> +	return ret;
+> +}
+[...]
+> +static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
+> +					const struct of_device_id *match)
+> +{
+> +	struct device_node *np = ofdev->node, *child;
+> +	struct gpio_led led;
+> +	struct gpio_led_of_platform_data *pdata;
+> +	int count = 0, ret;
+> +
+> +	/* count LEDs defined by this device, so we know how much to allocate */
+> +	for_each_child_of_node(np, child)
+> +		count++;
+> +	if (!count)
+> +		return 0; /* or ENODEV? */
+> +
+> +	pdata = kzalloc(sizeof(*pdata) + sizeof(struct gpio_led_data) * count,
+> +			GFP_KERNEL);
+> +	if (!pdata)
+> +		return -ENOMEM;
+> +
+> +	memset(&led, 0, sizeof(led));
+> +	for_each_child_of_node(np, child) {
+> +		unsigned int flags;
 
-Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
----
- Documentation/powerpc/dts-bindings/gpio/led.txt |    9 ++++++++-
- drivers/leds/leds-gpio.c                        |    8 ++++++--
- include/linux/leds.h                            |    1 +
- 3 files changed, 15 insertions(+), 3 deletions(-)
+I think it would be better to use `enum of_gpio_flags' type here,
+just for clarity.
 
-diff --git a/Documentation/powerpc/dts-bindings/gpio/led.txt b/Documentation/powerpc/dts-bindings/gpio/led.txt
-index 4fe14de..5df384d 100644
---- a/Documentation/powerpc/dts-bindings/gpio/led.txt
-+++ b/Documentation/powerpc/dts-bindings/gpio/led.txt
-@@ -16,10 +16,15 @@ LED sub-node properties:
-   string defining the trigger assigned to the LED.  Current triggers are:
-     "backlight" - LED will act as a back-light, controlled by the framebuffer
- 		  system
--    "default-on" - LED will turn on
-+    "default-on" - LED will turn on, but see "default-state" below
-     "heartbeat" - LED "double" flashes at a load average based rate
-     "ide-disk" - LED indicates disk activity
-     "timer" - LED flashes at a fixed, configurable rate
-+- default-state:  (optional) The initial state of the LED.  Valid
-+  values are "on" and "off".  If the LED is already on or off and the
-+  default-state property is set the to same value, then no glitch
-+  should be produced where the LED momentarily turns off (or on).
-+  The default is off if this property is not present.
- 
- Examples:
- 
-@@ -36,8 +41,10 @@ run-control {
- 	compatible = "gpio-leds";
- 	red {
- 		gpios = <&mpc8572 6 0>;
-+		default-state = "off";
- 	};
- 	green {
- 		gpios = <&mpc8572 7 0>;
-+		default-state = "on";
- 	};
- }
-diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-index 107b958..21084a3 100644
---- a/drivers/leds/leds-gpio.c
-+++ b/drivers/leds/leds-gpio.c
-@@ -92,9 +92,10 @@ static int __devinit create_gpio_led(const struct gpio_led *template,
- 		led_dat->cdev.blink_set = gpio_blink_set;
- 	}
- 	led_dat->cdev.brightness_set = gpio_led_set;
--	led_dat->cdev.brightness = LED_OFF;
-+	led_dat->cdev.brightness = template->default_state ? LED_FULL : LED_OFF;
- 
--	gpio_direction_output(led_dat->gpio, led_dat->active_low);
-+	gpio_direction_output(led_dat->gpio,
-+	                      led_dat->active_low ^ template->default_state);
- 
- 	INIT_WORK(&led_dat->work, gpio_led_work);
- 
-@@ -256,12 +257,15 @@ static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
- 	memset(&led, 0, sizeof(led));
- 	for_each_child_of_node(np, child) {
- 		unsigned int flags;
-+		const char *state;
- 
- 		led.gpio = of_get_gpio_flags(child, 0, &flags);
- 		led.active_low = flags & OF_GPIO_ACTIVE_LOW;
- 		led.name = of_get_property(child, "label", NULL) ? : child->name;
- 		led.default_trigger =
- 			of_get_property(child, "linux,default-trigger", NULL);
-+		state = of_get_property(child, "default-state", NULL);
-+		led.default_state = state && !strcmp(state, "on");
- 
- 		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
- 				      &ofdev->dev, NULL);
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index d3a73f5..caa3987 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -138,6 +138,7 @@ struct gpio_led {
- 	const char *default_trigger;
- 	unsigned 	gpio;
- 	u8 		active_low;
-+	u8		default_state;
- };
- 
- struct gpio_led_platform_data {
+> +
+> +		led.gpio = of_get_gpio_flags(child, 0, &flags);
+> +		led.active_low = flags & OF_GPIO_ACTIVE_LOW;
+> +		led.name = of_get_property(child, "label", NULL) ? : child->name;
+> +		led.default_trigger =
+> +			of_get_property(child, "linux,default-trigger", NULL);
+> +
+> +		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
+> +				      &ofdev->dev, NULL);
+> +		if (ret < 0)
+
+of_node_put(np); is missing here.
+
+> +			goto err;
+> +	}
+> +
+> +	dev_set_drvdata(&ofdev->dev, pdata);
+> +
+> +	return 0;
+> +
+> +err:
+> +	for (count = pdata->num_leds - 2; count >= 0; count--)
+> +		delete_gpio_led(&pdata->led_data[count]);
+> +
+> +	kfree(pdata);
+> +
+> +	return ret;
+> +}
+[...]
+
+Thanks,
+
 -- 
-1.5.4.1
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
