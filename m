@@ -1,9 +1,16 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 10 Dec 2008 17:08:52 +1100
-Subject: [PATCH] powerpc: Remove flush_HPTE()
-Message-Id: <20081210060941.31C43DDF5A@ozlabs.org>
+Return-Path: <gerickson@nuovations.com>
+Received: from relay01.pair.com (relay01.pair.com [209.68.5.15])
+	by ozlabs.org (Postfix) with SMTP id DCA8B474C3
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 17:27:14 +1100 (EST)
+Date: Tue, 09 Dec 2008 22:27:06 -0800
+Subject: Indirect DCR Access
+From: Grant Erickson <gerickson@nuovations.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Message-ID: <C564A13A.135C2%gerickson@nuovations.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,74 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The function flush_HPTE() is used in only one place, the implementation
-of DEBUG_PAGEALLOC on ppc32.
+Josh:
 
-It's actually a dup of flush_tlb_page() though it's -slightly- more
-efficient on hash based processors. We remove it and replace it by
-a direct call to the hash flush code on those processors and to
-flush_tlb_page() for everybody else.
+In working through the PPC4XX "memory-controller","ibm,sdram-4xx-ddr2"
+adapter driver for the EDAC MC driver, there are a substantial number of
+indirect DCR accesses.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Ideally, I would use the address and data DCRs implied from the SDRAM0
+dcr-reg device tree property; however, the mtdcri and mfdcri are
+mnemonic-only at present. Consequently, I've done:
 
- arch/powerpc/mm/mmu_decl.h   |   17 -----------------
- arch/powerpc/mm/pgtable_32.c |    6 +++++-
- 2 files changed, 5 insertions(+), 18 deletions(-)
+    #define DCRN_SDRAM0_BASE        0x010
+    #define DCRN_SDRAM0_CONFIG_ADDR (DCRN_SDRAM0_BASE+0x0)
+    #define DCRN_SDRAM0_CONFIG_DATA (DCRN_SDRAM0_BASE+0x1)
 
---- linux-work.orig/arch/powerpc/mm/mmu_decl.h	2008-12-10 17:01:18.000000000 +1100
-+++ linux-work/arch/powerpc/mm/mmu_decl.h	2008-12-10 17:01:35.000000000 +1100
-@@ -58,17 +58,14 @@ extern phys_addr_t lowmem_end_addr;
-  * architectures.  -- Dan
-  */
- #if defined(CONFIG_8xx)
--#define flush_HPTE(X, va, pg)	_tlbie(va, 0 /* 8xx doesn't care about PID */)
- #define MMU_init_hw()		do { } while(0)
- #define mmu_mapin_ram()		(0UL)
- 
- #elif defined(CONFIG_4xx)
--#define flush_HPTE(pid, va, pg)	_tlbie(va, pid)
- extern void MMU_init_hw(void);
- extern unsigned long mmu_mapin_ram(void);
- 
- #elif defined(CONFIG_FSL_BOOKE)
--#define flush_HPTE(pid, va, pg)	_tlbie(va, pid)
- extern void MMU_init_hw(void);
- extern unsigned long mmu_mapin_ram(void);
- extern void adjust_total_lowmem(void);
-@@ -77,18 +74,4 @@ extern void adjust_total_lowmem(void);
- /* anything 32-bit except 4xx or 8xx */
- extern void MMU_init_hw(void);
- extern unsigned long mmu_mapin_ram(void);
--
--/* Be careful....this needs to be updated if we ever encounter 603 SMPs,
-- * which includes all new 82xx processors.  We need tlbie/tlbsync here
-- * in that case (I think). -- Dan.
-- */
--static inline void flush_HPTE(unsigned context, unsigned long va,
--			      unsigned long pdval)
--{
--	if ((Hash != 0) &&
--	    mmu_has_feature(MMU_FTR_HPTE_TABLE))
--		flush_hash_pages(0, va, pdval, 1);
--	else
--		_tlbie(va);
--}
- #endif
-Index: linux-work/arch/powerpc/mm/pgtable_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/pgtable_32.c	2008-12-10 17:01:49.000000000 +1100
-+++ linux-work/arch/powerpc/mm/pgtable_32.c	2008-12-10 17:04:36.000000000 +1100
-@@ -342,7 +342,11 @@ static int __change_page_attr(struct pag
- 		return -EINVAL;
- 	set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
- 	wmb();
--	flush_HPTE(0, address, pmd_val(*kpmd));
-+#ifdef CONFIG_PPC_STD_MMU
-+	flush_hash_pages(0, address, pmd_val(*kpmd), 1);
-+#else
-+	flush_tlb_page(NULL, address);
-+#endif
- 	pte_unmap(kpte);
- 
- 	return 0;
+    #define mfsdram(reg)        mfdcri(SDRAM0, SDRAM_ ## reg)
+    #define mtsdram(reg, value) mtdcri(SDRAM0, SDRAM_ ## reg, value)
+
+for the short-term.
+
+Is there a long-term strategy or set of options under discussion about
+expanding the DCR accessors in dcr.h to include indirect access from a
+device tree property as in the case above?
+
+It appears that the processors that use this memory controller core all have
+the same DCR address and data registers, so this isn't a huge portability
+issue for the immediate future; however, I endeavor to get things as close
+to "best practices" as possible up front.
+
+Regards,
+
+Grant
