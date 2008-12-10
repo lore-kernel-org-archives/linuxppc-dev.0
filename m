@@ -1,22 +1,34 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
-	by ozlabs.org (Postfix) with ESMTP id 34666DDF3F
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 06:00:20 +1100 (EST)
-Subject: Re: [PATCH] ASYNC_TX: async_xor mapping fix
-From: Dan Williams <dan.j.williams@intel.com>
-To: Yuri Tikhonov <yur@emcraft.com>
-In-Reply-To: <1228770496.26373.3.camel@dwillia2-linux.ch.intel.com>
-References: <200812082214.26811.yur@emcraft.com>
-	<1228770496.26373.3.camel@dwillia2-linux.ch.intel.com>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 11:47:06 -0700
-Message-Id: <1228934826.1224.5.camel@dwillia2-linux.ch.intel.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 07126DDF76
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 06:06:40 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBAJ6C0i030389
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 14:06:12 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mBAJ6a9i154186
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 14:06:36 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mBAJ6Z1T001337
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 14:06:36 -0500
+Date: Wed, 10 Dec 2008 14:06:30 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix build of 4xx simple platforms without
+	CONFIG_PCI
+Message-ID: <20081210140630.3dfaa9fd@zod.rchland.ibm.com>
+In-Reply-To: <20081210092508.66e566f8@zod.rchland.ibm.com>
+References: <20081208045411.0CE03DDE0E@ozlabs.org>
+	<1228714329.23242.52.camel@localhost>
+	<1228714694.7101.27.camel@pasglop>
+	<20081210092508.66e566f8@zod.rchland.ibm.com>
 Mime-Version: 1.0
-Cc: "wd@denx.de" <wd@denx.de>, "dzu@denx.de" <dzu@denx.de>,
-	Saeed Bishara <saeed@marvell.com>,
-	"linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Ilya Yanok <yanok@emcraft.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,137 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-12-08 at 14:08 -0700, Dan Williams wrote:
-> On Mon, 2008-12-08 at 12:14 -0700, Yuri Tikhonov wrote:
-> > The destination address may be present in the source list, so we should
-> > map the addresses from the source list first.
-> >  Otherwise, if page corresponding to destination is not marked as write-
-> > through (with regards to CPU cache), then mapping it with DMA_FROM_DEVICE
-> > may lead to data loss, and finally to an incorrect result of calculations.
-> > 
+On Wed, 10 Dec 2008 09:25:08 -0500
+Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+
+> On Mon, 08 Dec 2008 16:38:14 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> Thanks Yuri.  I think we should avoid mapping the destination twice
-> altogether, and for simplicity just always map it bidirectionally.
+> > 
+> > > > --- linux-work.orig/arch/powerpc/platforms/40x/ppc40x_simple.c	2008-12-08 15:51:49.000000000 +1100
+> > > > +++ linux-work/arch/powerpc/platforms/40x/ppc40x_simple.c	2008-12-08 15:51:52.000000000 +1100
+> > > > @@ -61,7 +61,9 @@ static int __init ppc40x_probe(void)
+> > > >  
+> > > >  	for (i = 0; i < ARRAY_SIZE(board); i++) {
+> > > >  		if (of_flat_dt_is_compatible(root, board[i])) {
+> > > > +#ifdef CONFIG_PCI
+> > > >  			ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
+> > > > +#endif
+> > > 
+> > > No! #ifdefs! in C code!
+> > > 
+> > > To the tune of you-know-what.
+> > > 
+> > > Looks like we need an accessor we can replace with an empty version in
+> > > the !PCI case.
+> > 
+> > If you have plenty of time on your hands :-) In the meantime, this is a
+> > build fix.
+> 
+> I have time.  I hate ifdefs.
 
-Yuri, Saeed, can I get your acked-by's for the following 2.6.28 patch:
+Oh, and:
+http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048214.html
 
-Thanks,
-Dan
+I told you so (sort of).  Ha!  ;)
 
-
-----snip---->
-async_xor: dma_map destination DMA_BIDIRECTIONAL
-
-From: Dan Williams <dan.j.williams@intel.com>
-
-Mapping the destination multiple times is a misuse of the dma-api.
-Since the destination may be reused as a source, ensure that it is only
-mapped once and that it is mapped bidirectionally.  This appears to add
-ugliness on the unmap side in that it always reads back the destination
-address from the descriptor, but gcc can determine that dma_unmap is a
-nop and not emit the code that calculates its arguments.
-
-Cc: <stable@kernel.org>
-Cc: Saeed Bishara <saeed@marvell.com>
-Reported-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
- crypto/async_tx/async_xor.c |   11 +++++++++--
- drivers/dma/iop-adma.c      |   16 +++++++++++++---
- drivers/dma/mv_xor.c        |   15 ++++++++++++---
- 3 files changed, 34 insertions(+), 8 deletions(-)
-
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index c029d3e..a6faa90 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -53,10 +53,17 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
- 	int xor_src_cnt;
- 	dma_addr_t dma_dest;
- 
--	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_FROM_DEVICE);
--	for (i = 0; i < src_cnt; i++)
-+	/* map the dest bidrectional in case it is re-used as a source */
-+	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_BIDIRECTIONAL);
-+	for (i = 0; i < src_cnt; i++) {
-+		/* only map the dest once */
-+		if (src_list[i] == dest) {
-+			dma_src[i] = dma_dest;
-+			continue;
-+		}
- 		dma_src[i] = dma_map_page(dma->dev, src_list[i], offset,
- 					  len, DMA_TO_DEVICE);
-+	}
- 
- 	while (src_cnt) {
- 		async_flags = flags;
-diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index c7a9306..6be3172 100644
---- a/drivers/dma/iop-adma.c
-+++ b/drivers/dma/iop-adma.c
-@@ -85,18 +85,28 @@ iop_adma_run_tx_complete_actions(struct iop_adma_desc_slot *desc,
- 			enum dma_ctrl_flags flags = desc->async_tx.flags;
- 			u32 src_cnt;
- 			dma_addr_t addr;
-+			dma_addr_t dest;
- 
-+			src_cnt = unmap->unmap_src_cnt;
-+			dest = iop_desc_get_dest_addr(unmap, iop_chan);
- 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
--				addr = iop_desc_get_dest_addr(unmap, iop_chan);
--				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
-+				enum dma_data_direction dir;
-+
-+				if (src_cnt > 1) /* is xor? */
-+					dir = DMA_BIDIRECTIONAL;
-+				else
-+					dir = DMA_FROM_DEVICE;
-+
-+				dma_unmap_page(dev, dest, len, dir);
- 			}
- 
- 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
--				src_cnt = unmap->unmap_src_cnt;
- 				while (src_cnt--) {
- 					addr = iop_desc_get_src_addr(unmap,
- 								     iop_chan,
- 								     src_cnt);
-+					if (addr == dest)
-+						continue;
- 					dma_unmap_page(dev, addr, len,
- 						       DMA_TO_DEVICE);
- 				}
-diff --git a/drivers/dma/mv_xor.c b/drivers/dma/mv_xor.c
-index 0328da0..bcda174 100644
---- a/drivers/dma/mv_xor.c
-+++ b/drivers/dma/mv_xor.c
-@@ -311,17 +311,26 @@ mv_xor_run_tx_complete_actions(struct mv_xor_desc_slot *desc,
- 			enum dma_ctrl_flags flags = desc->async_tx.flags;
- 			u32 src_cnt;
- 			dma_addr_t addr;
-+			dma_addr_t dest;
- 
-+			src_cnt = unmap->unmap_src_cnt;
-+			dest = mv_desc_get_dest_addr(unmap);
- 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
--				addr = mv_desc_get_dest_addr(unmap);
--				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
-+				enum dma_data_direction dir;
-+
-+				if (src_cnt > 1) /* is xor ? */
-+					dir = DMA_BIDIRECTIONAL;
-+				else
-+					dir = DMA_FROM_DEVICE;
-+				dma_unmap_page(dev, dest, len, dir);
- 			}
- 
- 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
--				src_cnt = unmap->unmap_src_cnt;
- 				while (src_cnt--) {
- 					addr = mv_desc_get_src_addr(unmap,
- 								    src_cnt);
-+					if (addr == dest)
-+						continue;
- 					dma_unmap_page(dev, addr, len,
- 						       DMA_TO_DEVICE);
- 				}
+josh
