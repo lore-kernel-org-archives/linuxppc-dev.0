@@ -1,20 +1,14 @@
-Return-Path: <julia@diku.dk>
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 42962DDECF
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 03:40:48 +1100 (EST)
-Date: Wed, 10 Dec 2008 17:40:41 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, grant.likely@secretlab.ca,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org
-Subject: [PATCH 21/28] drivers/char/xilinx_hwicap: Drop return value from
-	platform_driver remove functions
-Message-ID: <Pine.LNX.4.64.0812101740170.21998@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <09D94812-E541-4BE5-B679-0036F23E33D9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+In-Reply-To: <493FCB98.7000803@aimvalley.nl>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: some (MPC8313) Freescale patches not in latest kernel
+Date: Wed, 10 Dec 2008 10:42:29 -0600
+References: <493FCB98.7000803@aimvalley.nl>
+Cc: linuxppc-dev@ozlabs.org, LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,100 +18,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
 
-The return value of the remove function of a driver structure, and thus of
-a platform_driver structure, is ultimately ignored, and is thus
-unnecessary.  This patch removes the return value for the remove function
-stored in a platform_driver structure.  For the files in this patch, the
-return values are always 0.
+On Dec 10, 2008, at 8:00 AM, Norbert van Bolhuis wrote:
 
-A simplified version of the semantic patch that makes this change is as
-follows: (http://www.emn.fr/x-info/coccinelle/)
+>
+> I'm preparing the latest (2.6.28-rc7) linux kernel for an MPC8313  
+> based project
+> that's about to start.
+>
+> Things seems to work great with the base 2.6.28-rc7 kernel. On our  
+> MPC8313E-RDB
+> the kernel boots without problems, ethernet (with eTSEC2/eth1) works  
+> and even
+> eTSEC1/eth0 has a 1gbit link. Most other peripherals seems to work  
+> as well, I never
+> really tried them though.
+>
+> However, the Freescale MPC8313 BSP (and http://www.bitshrine.org/ 
+> gpp/) includes a few
+> patches which I believe I need and/or are useful, for instance:
+> linux-fsl-2.6.23-MPC8313ERDB-ETSEC27-errata-workaround.patch
+> linux-fsl-2.6.23-MPC8313ERDB-IEEE-1588.patch
+> linux-fsl-2.6.23-GIANFAR_PARAMETER_ADJUST.patch
+> linux-fsl-2.6.23-GIANFAR_SKB_BUFFER_RECYCLING_SUPPORT.patch
+> linux-fsl-2.6.23-GIANFAR_SKB_BUFFER_RECYCLING_SUPPORT-2.patch
+>
+> These patches are not in the latest (2.6.28-rc7) linux kernel
+> nor in any of the powerpc devlopment trees
+> (e.g. git://git.kernel.org/pub/scm/linux/kernel/git/paulus/ 
+> powerpc.git)
+> Of course users like me can simply check out the patches and apply  
+> them
+> if needed for the project.
+> Before I do that I would just like to understand why they're not in.
+> They're not MPC8313(-RDB) specific and they seem very useful to me.
+>
+> Is it lack of time/importance ?
 
-// <smpl>
-@r@
-struct platform_driver I;
-identifier a,f;
-position p;
-@@
-I.remove = \(f@p\|a(f@p)\);
+Simply put the reason is that some of these patches have never been  
+posted to the open source for acceptance into the kernel.  I would  
+suggest requesting that of Freescale through whatever sales contact  
+you have.
 
-@void_called@
-identifier r.f;
-position p;
-@@
-f@p(...);
-
-@called@
-identifier r.f;
-position p1 != void_called.p;
-@@
-f@p1(...)
-
-@localfn@
-identifier r.f;
-@@
-static int f(...) { ... }
-
-@depends on !called && localfn@
-struct platform_driver I;
-identifier a,f;
-position r.p;
-@@
-
-I.
-- remove
-+ remove_new
-   = \(f@p\|a(f@p)\);
-
-@depends on !called && localfn@
-identifier r.f,i;
-constant C;
-expression E;
-@@
-
-- int
-+ void
-       f(...) {
-  <...
-(
--  return \(C\|i\);
-+  return;
-|
--  return E;
-+  E;
-+  return;
-)
-  ...>
-}
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/char/xilinx_hwicap/xilinx_hwicap.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-index d161319..007b4df 100644
---- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-+++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-@@ -743,14 +743,14 @@ static int __devinit hwicap_drv_probe(struct platform_device *pdev)
- 			&buffer_icap_config, regs);
- }
- 
--static int __devexit hwicap_drv_remove(struct platform_device *pdev)
-+static void __devexit hwicap_drv_remove(struct platform_device *pdev)
- {
--	return hwicap_remove(&pdev->dev);
-+	hwicap_remove(&pdev->dev);
- }
- 
- static struct platform_driver hwicap_platform_driver = {
- 	.probe = hwicap_drv_probe,
--	.remove = hwicap_drv_remove,
-+	.remove_new = hwicap_drv_remove,
- 	.driver = {
- 		.owner = THIS_MODULE,
- 		.name = DRIVER_NAME,
+- k
