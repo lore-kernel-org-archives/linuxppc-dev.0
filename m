@@ -1,22 +1,17 @@
-Return-Path: <monstr@seznam.cz>
-Received: from smtp.seznam.cz (smtp.seznam.cz [77.75.72.43])
-	by ozlabs.org (Postfix) with ESMTP id 647E7474D4
+Return-Path: <alan.casey5@mail.dcu.ie>
+Received: from hawk.dcu.ie (mail.dcu.ie [136.206.1.5])
+	by ozlabs.org (Postfix) with ESMTP id 86AC6DDF37
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Dec 2008 03:34:54 +1100 (EST)
-Message-ID: <493FEFA7.9050703@seznam.cz>
-Date: Wed, 10 Dec 2008 17:34:47 +0100
-From: Michal Simek <monstr@seznam.cz>
+	Thu, 11 Dec 2008 07:02:27 +1100 (EST)
+Date: Wed, 10 Dec 2008 19:41:42 +0000
+Message-ID: <49152FA80002B243@hawk.dcu.ie>
+In-Reply-To: <1149420832@web.de>
+From: "Alan Casey" <alan.casey5@mail.dcu.ie>
+Subject: RE: XUPV2P update to kernel 2.6 fails
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: Is anyone using the C67x00 USB Host ?
-References: <49394978.10905@dlasys.net>
-	<493D2B22.4000601@seznam.cz>	<493ED4B6.7010605@dlasys.net>
-	<493F89F2.60702@seznam.cz>	<87iqpsme9j.fsf@macbook.be.48ers.dk>
-	<493FD3EC.3060305@seznam.cz> <87wse8m6p0.fsf@macbook.be.48ers.dk>
-In-Reply-To: <87wse8m6p0.fsf@macbook.be.48ers.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: dhlii@dlasys.net, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Reply-To: monstr@seznam.cz
+Content-Type: text/plain; charset="ISO-8859-15"
+Reply-To: alan.casey5@mail.dcu.ie
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,38 +22,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Peter,
+Hi,
 
->>>>>> "Michal" == Michal Simek <monstr@seznam.cz> writes:
-> 
-> Hi,
-> 
->  >> Why? Have you swapped your A0 / A1?
-> 
->  Michal> I found that ml40x designs have different connection that
->  Michal> ml505 usb design. This is no problem for me. But I think that
->  Michal> in David case is that problem.
-> 
-> OK. If this is something common, then maybe we should add support for
-> it in the driver?
+  I got Linux up and running as well on the XUPV2P using 
+  Linux kernel version 2.6.24 a while back, downloaded
+  from the Xilinx git tree.
 
-I think this is not necessary. Swapped A0/A1 is hw solution. And change which I
-described is sw solution.
+  Alan.
 
->  Michal> We used 2.6.20 kernel because we have this kernel well tested.
->  Michal> I found where the problem was.
-> 
-> Ahh, what was it?
-
-Problem was in different status handling for older kernel and I extend some
-timeout value before. I am reverting my debug messages. Maybe I did any other
-change which do some work too.
-
-Thanks,
-Michal
-
-> 
->  Michal> Thanks for your driver and help,
-> 
-> You're welcome.
-> 
+>-- Original Message --
+>Date: Wed, 10 Dec 2008 11:05:13 +0100
+>From: Joachim Meyer <Jogi95@web.de>
+>To: John Linn <John.Linn@xilinx.com>
+>Subject: RE: XUPV2P update to kernel 2.6 fails
+>Cc: linuxppc-embedded@ozlabs.org
+>
+>
+>Hi
+>
+>I was setting up linux for teh XUP a few month ago. Both, older Kernels
+(with
+>ppc and xparameters_ml300.h file) and new ones (with powerpc and device-=
+tree)
+>from the Xilinx git server worked fine for me, so yes, it should work.
+>For more help you should say, what exactly you are doing, but maybe you
+have
+>already found your error.
+>Cheers,
+>Joachim
+>____________________________________________________________________
+>Psssst! Schon vom neuen WEB.DE MultiMessenger geh=F6rt? 
+>Der kann`s mit allen: http://www.produkte.web.de/messenger/?did=3D3123
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
