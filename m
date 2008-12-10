@@ -1,30 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B714ADDF6D
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 00:34:06 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBADTEXc001831
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 08:29:14 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mBADXxFq164976
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 08:34:01 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mBAEY8jg006577
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 09:34:08 -0500
-Date: Wed, 10 Dec 2008 08:31:43 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 2/2] powerpc: 44x doesn't need G set everywhere
-Message-ID: <20081210083143.62b869f4@zod.rchland.ibm.com>
-In-Reply-To: <20081210055139.A7FFCDDF65@ozlabs.org>
-References: <20081210055139.A7FFCDDF65@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jacmet@gmail.com>
+Received: from mail-ew0-f20.google.com (mail-ew0-f20.google.com
+	[209.85.219.20]) by ozlabs.org (Postfix) with ESMTP id 2C1F3DDF26
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 00:37:59 +1100 (EST)
+Received: by ewy13 with SMTP id 13so828304ewy.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 05:37:57 -0800 (PST)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: paulus@samba.org,
+	benh@kernel.crashing.org,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: make udbg 16550 boot console configurable for
+	EMBEDDED
+Date: Wed, 10 Dec 2008 14:31:02 +0100
+Message-Id: <1228915862-21388-1-git-send-email-jacmet@sunsite.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,33 +22,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 10 Dec 2008 16:50:50 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+The udbg console is currently always enabled for platforms selecting
+the PPC_UDBG_16550 symbol (needed to create platform devices for
+8250 SoC UARTs from DT).
 
-> After discussing with chip designers, it appears that it's not
-> necessary to set G everywhere on 440 cores. The various core
-> errata related to prefetch should be sorted out by firmware by
-> disabling icache prefetching in CCR0. We add the workaround to
-> the kernel however just in case oooold firmwares don't do it.
-> 
-> This is valid for -all- 4xx core variants. Later ones hard wire
-> the absence of prefetch but it doesn't harm to clear the bits
-> in CCR0 (they should already be cleared anyway).
-> 
-> We still leave G=1 on the linear mapping for now, we need to
-> stop over-mapping RAM to be able to remove it.
+Now, the udbg console is nice for debugging as it works so early, but
+it also has a number of disadvantages:
 
-Hm.  Over-mapping it has the nice advantage that we use as few pinned
-TLB entries as possible.  For 440x6 cores with more than 256 MiB of
-DRAM, you could theoretically use a single 1GiB TLB entry to map all
-kernel DRAM.
+- It doesn't respect console= and still outputs console messages even
+  if console isn't ttySx (E.G. if CONFIG_SILENT_CONSOLE is enabled in
+  U-Boot which sets 'console='
+- It's slow (boot is ~0.3s slower on my mpc8347 platform compared to
+  using the 8250 driver right away)
+- It slightly bloats the kernel (pretty insignificant, around 1K)
 
-Do you think the trade-offs of allowing speculative accesses are worth
-the increased TLB pressure?  Large base pages will help with that in
-some workloads, but others are still going to be TLB constrained.
+As that isn't always desirable, add a PPC_UDBG_16550_CONSOLE kconfig
+symbol to let the user disable it (only visible if CONFIG_EMBEDDED).
 
-I know, I'm probably paranoid.  But changing things like this around
-without some kind of benchmark data or testcase to make sure we aren't
-making it worse gives me the heebee-geebees.
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+ arch/powerpc/kernel/Makefile        |    3 ++-
+ arch/powerpc/kernel/legacy_serial.c |    4 ++++
+ arch/powerpc/platforms/Kconfig      |    7 +++++++
+ 3 files changed, 13 insertions(+), 1 deletions(-)
 
-josh
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 92673b4..4651c0b 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -80,7 +80,8 @@ obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
+ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+-obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
++obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o
++obj-$(CONFIG_PPC_UDBG_16550_CONSOLE)	+= udbg_16550.o
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ 
+ pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index 9ddfaef..c0e9866 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -279,6 +279,7 @@ static int __init add_legacy_pci_port(struct device_node *np,
+ }
+ #endif
+ 
++#ifdef CONFIG_PPC_UDBG_16550_CONSOLE
+ static void __init setup_legacy_serial_console(int console)
+ {
+ 	struct legacy_serial_info *info =
+@@ -295,6 +296,9 @@ static void __init setup_legacy_serial_console(int console)
+ 	DBG("default console speed = %d\n", info->speed);
+ 	udbg_init_uart(addr, info->speed, info->clock);
+ }
++#else
++#define setup_legacy_serial_console(console)	do { } while (0)
++#endif
+ 
+ /*
+  * This is called very early, as part of setup_system() or eventually
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 47e956c..bc3ce47 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -312,4 +312,11 @@ config MPC8xxx_GPIO
+ 	  Say Y here if you're going to use hardware that connects to the
+ 	  MPC831x/834x/837x/8572/8610 GPIOs.
+ 
++config PPC_UDBG_16550_CONSOLE
++	bool "Boot console on 16550 UDBG" if EMBEDDED
++	depends on PPC_UDBG_16550
++	default y
++	help
++	  Say Y here to use the UDBG infrastructure for early boot messages.
++
+ endmenu
+-- 
+1.5.6.5
