@@ -1,14 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <09D94812-E541-4BE5-B679-0036F23E33D9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-In-Reply-To: <493FCB98.7000803@aimvalley.nl>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: some (MPC8313) Freescale patches not in latest kernel
-Date: Wed, 10 Dec 2008 10:42:29 -0600
-References: <493FCB98.7000803@aimvalley.nl>
-Cc: linuxppc-dev@ozlabs.org, LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 71637DDF31
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 04:00:48 +1100 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH][v2] fork_init: fix division by zero
+Date: Wed, 10 Dec 2008 19:50:51 +0300
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200812101950.51958.yur@emcraft.com>
+Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
+	Al Viro <viro@zeniv.linux.org.uk>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,45 +27,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 10, 2008, at 8:00 AM, Norbert van Bolhuis wrote:
+The following patch fixes divide-by-zero error for the
+cases of really big PAGE_SIZEs (e.g. 256KB on ppc44x).
+Support for big page sizes on 44x is not present in the
+current kernel yet, but coming soon.
 
->
-> I'm preparing the latest (2.6.28-rc7) linux kernel for an MPC8313  
-> based project
-> that's about to start.
->
-> Things seems to work great with the base 2.6.28-rc7 kernel. On our  
-> MPC8313E-RDB
-> the kernel boots without problems, ethernet (with eTSEC2/eth1) works  
-> and even
-> eTSEC1/eth0 has a 1gbit link. Most other peripherals seems to work  
-> as well, I never
-> really tried them though.
->
-> However, the Freescale MPC8313 BSP (and http://www.bitshrine.org/ 
-> gpp/) includes a few
-> patches which I believe I need and/or are useful, for instance:
-> linux-fsl-2.6.23-MPC8313ERDB-ETSEC27-errata-workaround.patch
-> linux-fsl-2.6.23-MPC8313ERDB-IEEE-1588.patch
-> linux-fsl-2.6.23-GIANFAR_PARAMETER_ADJUST.patch
-> linux-fsl-2.6.23-GIANFAR_SKB_BUFFER_RECYCLING_SUPPORT.patch
-> linux-fsl-2.6.23-GIANFAR_SKB_BUFFER_RECYCLING_SUPPORT-2.patch
->
-> These patches are not in the latest (2.6.28-rc7) linux kernel
-> nor in any of the powerpc devlopment trees
-> (e.g. git://git.kernel.org/pub/scm/linux/kernel/git/paulus/ 
-> powerpc.git)
-> Of course users like me can simply check out the patches and apply  
-> them
-> if needed for the project.
-> Before I do that I would just like to understand why they're not in.
-> They're not MPC8313(-RDB) specific and they seem very useful to me.
->
-> Is it lack of time/importance ?
+Also this patch fixes the comment for the max_threads
+settings, as this didn't match the things actually done
+in the code.
 
-Simply put the reason is that some of these patches have never been  
-posted to the open source for acceptance into the kernel.  I would  
-suggest requesting that of Freescale through whatever sales contact  
-you have.
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+---
+ kernel/fork.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-- k
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 8d6a7dd..638eb7f 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -181,10 +181,14 @@ void __init fork_init(unsigned long mempages)
+ 
+ 	/*
+ 	 * The default maximum number of threads is set to a safe
+-	 * value: the thread structures can take up at most half
+-	 * of memory.
++	 * value: the thread structures can take up at most
++	 * (1/8) part of memory.
+ 	 */
++#if (8 * THREAD_SIZE) > PAGE_SIZE
+ 	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
++#else
++	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
++#endif
+ 
+ 	/*
+ 	 * we need to allow at least 20 threads to boot a system
+-- 
+1.5.6.1
