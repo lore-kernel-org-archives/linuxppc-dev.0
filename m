@@ -1,17 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Date: Wed, 10 Dec 2008 19:32:18 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: [PATCH 1/4] leds: Support OpenFirmware led bindings
-Message-ID: <20081210163217.GA20150@oksana.dev.rtsoft.ru>
-References: <1228923703-16370-1-git-send-email-tpiepho@freescale.com>
+Return-Path: <julia@diku.dk>
+Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mgw2.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 42962DDECF
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 03:40:48 +1100 (EST)
+Date: Wed, 10 Dec 2008 17:40:41 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: dmitri.vorobiev@movial.fi, grant.likely@secretlab.ca,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org
+Subject: [PATCH 21/28] drivers/char/xilinx_hwicap: Drop return value from
+	platform_driver remove functions
+Message-ID: <Pine.LNX.4.64.0812101740170.21998@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1228923703-16370-1-git-send-email-tpiepho@freescale.com>
-Cc: devicetree-discuss@ozlabs.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
-	Sean MacLennan <smaclennan@pikatech.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,134 +24,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Trent,
+From: Julia Lawall <julia@diku.dk>
 
-On Wed, Dec 10, 2008 at 07:41:40AM -0800, Trent Piepho wrote:
-> Add bindings to support LEDs defined as of_platform devices in addition to
-> the existing bindings for platform devices.
-> 
-> New options in Kconfig allow the platform binding code and/or the
-> of_platform code to be turned on.  The of_platform code is of course only
-> available on archs that have OF support.
-> 
-> The existing probe and remove methods are refactored to use new functions
-> create_gpio_led(), to create and register one led, and delete_gpio_led(),
-> to unregister and free one led.  The new probe and remove methods for the
-> of_platform driver can then share most of the common probe and remove code
-> with the platform driver.
-> 
-> The suspend and resume methods aren't shared, but they are very short.  The
-> actual led driving code is the same for LEDs created by either binding.
-> 
-> The OF bindings are based on patch by Anton Vorontsov
-> <avorontsov@ru.mvista.com>.  They have been extended to allow multiple LEDs
-> per device.
-> 
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> Acked-by: Sean MacLennan <smaclennan@pikatech.com>
-> CC: devicetree-discuss@ozlabs.org
-> ---
+The return value of the remove function of a driver structure, and thus of
+a platform_driver structure, is ultimately ignored, and is thus
+unnecessary.  This patch removes the return value for the remove function
+stored in a platform_driver structure.  For the files in this patch, the
+return values are always 0.
 
-Some petty notes below...
+A simplified version of the semantic patch that makes this change is as
+follows: (http://www.emn.fr/x-info/coccinelle/)
 
-[...]  
-> -static int gpio_led_probe(struct platform_device *pdev)
-> +static int __devinit create_gpio_led(const struct gpio_led *template,
-> +	struct gpio_led_data *led_dat, struct device *parent,
-> +	int (*blink_set)(unsigned, unsigned long *, unsigned long *))
-> +{
-> +	int ret;
-> +
-> +	ret = gpio_request(template->gpio, template->name);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	led_dat->cdev.name = template->name;
-> +	led_dat->cdev.default_trigger = template->default_trigger;
-> +	led_dat->gpio = template->gpio;
-> +	led_dat->can_sleep = gpio_cansleep(template->gpio);
-> +	led_dat->active_low = template->active_low;
-> +	if (blink_set) {
-> +		led_dat->platform_gpio_blink_set = blink_set;
-> +		led_dat->cdev.blink_set = gpio_blink_set;
-> +	}
-> +	led_dat->cdev.brightness_set = gpio_led_set;
-> +	led_dat->cdev.brightness = LED_OFF;
-> +
-> +	gpio_direction_output(led_dat->gpio, led_dat->active_low);
+// <smpl>
+@r@
+struct platform_driver I;
+identifier a,f;
+position p;
+@@
+I.remove = \(f@p\|a(f@p)\);
 
-This can fail (yeah, the original code didn't check return value
-either).
+@void_called@
+identifier r.f;
+position p;
+@@
+f@p(...);
 
-> +	INIT_WORK(&led_dat->work, gpio_led_work);
-> +
-> +	ret = led_classdev_register(parent, &led_dat->cdev);
-> +	if (ret < 0)
-> +		gpio_free(led_dat->gpio);
-> +
-> +	return ret;
-> +}
-[...]
-> +static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
-> +					const struct of_device_id *match)
-> +{
-> +	struct device_node *np = ofdev->node, *child;
-> +	struct gpio_led led;
-> +	struct gpio_led_of_platform_data *pdata;
-> +	int count = 0, ret;
-> +
-> +	/* count LEDs defined by this device, so we know how much to allocate */
-> +	for_each_child_of_node(np, child)
-> +		count++;
-> +	if (!count)
-> +		return 0; /* or ENODEV? */
-> +
-> +	pdata = kzalloc(sizeof(*pdata) + sizeof(struct gpio_led_data) * count,
-> +			GFP_KERNEL);
-> +	if (!pdata)
-> +		return -ENOMEM;
-> +
-> +	memset(&led, 0, sizeof(led));
-> +	for_each_child_of_node(np, child) {
-> +		unsigned int flags;
+@called@
+identifier r.f;
+position p1 != void_called.p;
+@@
+f@p1(...)
 
-I think it would be better to use `enum of_gpio_flags' type here,
-just for clarity.
+@localfn@
+identifier r.f;
+@@
+static int f(...) { ... }
 
-> +
-> +		led.gpio = of_get_gpio_flags(child, 0, &flags);
-> +		led.active_low = flags & OF_GPIO_ACTIVE_LOW;
-> +		led.name = of_get_property(child, "label", NULL) ? : child->name;
-> +		led.default_trigger =
-> +			of_get_property(child, "linux,default-trigger", NULL);
-> +
-> +		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
-> +				      &ofdev->dev, NULL);
-> +		if (ret < 0)
+@depends on !called && localfn@
+struct platform_driver I;
+identifier a,f;
+position r.p;
+@@
 
-of_node_put(np); is missing here.
+I.
+- remove
++ remove_new
+   = \(f@p\|a(f@p)\);
 
-> +			goto err;
-> +	}
-> +
-> +	dev_set_drvdata(&ofdev->dev, pdata);
-> +
-> +	return 0;
-> +
-> +err:
-> +	for (count = pdata->num_leds - 2; count >= 0; count--)
-> +		delete_gpio_led(&pdata->led_data[count]);
-> +
-> +	kfree(pdata);
-> +
-> +	return ret;
-> +}
-[...]
+@depends on !called && localfn@
+identifier r.f,i;
+constant C;
+expression E;
+@@
 
-Thanks,
+- int
++ void
+       f(...) {
+  <...
+(
+-  return \(C\|i\);
++  return;
+|
+-  return E;
++  E;
++  return;
+)
+  ...>
+}
+// </smpl>
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+index d161319..007b4df 100644
+--- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
++++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+@@ -743,14 +743,14 @@ static int __devinit hwicap_drv_probe(struct platform_device *pdev)
+ 			&buffer_icap_config, regs);
+ }
+ 
+-static int __devexit hwicap_drv_remove(struct platform_device *pdev)
++static void __devexit hwicap_drv_remove(struct platform_device *pdev)
+ {
+-	return hwicap_remove(&pdev->dev);
++	hwicap_remove(&pdev->dev);
+ }
+ 
+ static struct platform_driver hwicap_platform_driver = {
+ 	.probe = hwicap_drv_probe,
+-	.remove = hwicap_drv_remove,
++	.remove_new = hwicap_drv_remove,
+ 	.driver = {
+ 		.owner = THIS_MODULE,
+ 		.name = DRIVER_NAME,
