@@ -1,21 +1,33 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 47428DDF45
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 20:07:31 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: PPC4xx ECC Configs, Defines and Source
-Date: Wed, 10 Dec 2008 10:07:16 +0100
-References: <C562B54F.1351E%gerickson@nuovations.com>
-	<20081208202152.GA10929@yoda.jdub.homelinux.org>
-	<1228899216.22413.52.camel@pasglop>
-In-Reply-To: <1228899216.22413.52.camel@pasglop>
+Return-Path: <msafradin@gmx.de>
+Received: from mtagate7.uk.ibm.com (mtagate7.uk.ibm.com [195.212.29.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate7.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DE8A5474C1
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 20:52:40 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate7.uk.ibm.com (8.13.8/8.13.8) with ESMTP id mBA9qZcr533336
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 09:52:35 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.1) with
+	ESMTP id mBA9qZ8s2543704
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 09:52:35 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id mBA9qZCs032061
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 09:52:35 GMT
+Message-ID: <493F915D.9090909@gmx.de>
+Date: Wed, 10 Dec 2008 10:52:29 +0100
+From: Mijo Safradin <msafradin@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200812101007.16677.sr@denx.de>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Grant Erickson <gerickson@nuovations.com>
+To: Cliff Wickman <cpw@sgi.com>
+Subject: Re: [Re: PATCH] numactl: fix libnuma on big-endian 64-bit systems
+References: <E1L8ejM-0003Ln-VN@eag09.americas.sgi.com>
+In-Reply-To: <E1L8ejM-0003Ln-VN@eag09.americas.sgi.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: Lee.Schermerhorn@hp.com, safradin@de.ibm.com, arnd@arndb.de,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 10 December 2008, Benjamin Herrenschmidt wrote:
-> > Why is there a need to have so many files?  I would think you could
-> > have a single file with all the ECC monitoring implementations in it
-> > called ppc4xx_ecc.c (or such).  Surely they would share some amount
-> > of code?
->
-> Well, it depends how much they share, but I'd rather have separate files
-> with helpers in ppc4xx_soc.c if it's small, that way, it's easier to
-> only build selected files based on what SoC support is enabled.
+Cliff Wickman wrote:
+> linux-numa@vger.kernel.org
+> 
+> Arnd Bergmann and Mijo Safradin called my attention to problems with
+> libnuma's read_mask() on a big-endian 64-bit machine.
+> 
+> In testing that function I found it to be buggy on little-endian and 32-bit
+> systems as well.
+> 
+> I propose a function that looks like the below.  The patch is farther below.
+> (Arnd, I did not switch to longs, as that proved problematic.  The ascii hex
+>  strings being scanned are 32-bit values.)
+> 
+> I tested on a 64-bit MIPS system.  Could you test on your platform?
+> 
 
-ACK. The Denali core for example from 440EPx/GRx is completely different. 
-Trying to fit this Denali ECC handling into the IBM-DDR(2) code would result 
-in an ugly mess.
+Hi Cliff,
 
-Best regards,
-Stefan
+using the current numactl-2.0.3-rc1.tar.gz, which contains your patch.
+numademo breaks with "mbind: Invalid argument". 
+
+Mijo
