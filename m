@@ -1,20 +1,35 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 71637DDF31
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 04:00:48 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][v2] fork_init: fix division by zero
-Date: Wed, 10 Dec 2008 19:50:51 +0300
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200812101950.51958.yur@emcraft.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5BCBCDDF26
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 04:25:18 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	mBAHPDfa018866
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 10:25:14 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id mBAHPCSH015543
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 11:25:13 -0600 (CST)
+Date: Wed, 10 Dec 2008 11:25:12 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH] fork_init: fix division by zero
+Message-ID: <20081210172512.GA19584@ld0162-tx32.am.freescale.net>
+References: <200812092044.40649.yur@emcraft.com>
+	<Pine.LNX.4.64.0812100944080.25126@vixen.sonytel.be>
+	<503391615.20081210130113@emcraft.com>
+	<20081210101745.GG28946@ZenIV.linux.org.uk>
+	<1795455197.20081210132912@emcraft.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1795455197.20081210132912@emcraft.com>
 Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-	Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
-	Al Viro <viro@zeniv.linux.org.uk>,
+	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org, Al Viro <viro@ZenIV.linux.org.uk>,
 	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,42 +41,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Dec 10, 2008 at 01:29:12PM +0300, Yuri Tikhonov wrote:
+> On Wednesday, December 10, 2008 you wrote:
+> > x * y / z is parsed as (x * y) / z, not x * (y / z).
+> 
+>  Here we believe in preprocessor: since all PAGE_SIZE, 8, and 
+> THREAD_SIZE are the constants we expect it will calculate this.
+> 
+>  E.g. here is the result from this line as produced by cross-gcc 
+> 4.2.2:
+> 
+>         lis     r9,0
+>         rlwinm  r29,r29,2,16,29
+>         stw     r29,0(r9)
+> 
+>  As you see - only rotate-left, i.e. multiplication to the constant.
 
-The following patch fixes divide-by-zero error for the
-cases of really big PAGE_SIZEs (e.g. 256KB on ppc44x).
-Support for big page sizes on 44x is not present in the
-current kernel yet, but coming soon.
+Yes, and also note that it is masking the result by 0xfffc, to preserve
+the effect of any overflow in (x * y).
 
-Also this patch fixes the comment for the max_threads
-settings, as this didn't match the things actually done
-in the code.
-
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
----
- kernel/fork.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 8d6a7dd..638eb7f 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -181,10 +181,14 @@ void __init fork_init(unsigned long mempages)
- 
- 	/*
- 	 * The default maximum number of threads is set to a safe
--	 * value: the thread structures can take up at most half
--	 * of memory.
-+	 * value: the thread structures can take up at most
-+	 * (1/8) part of memory.
- 	 */
-+#if (8 * THREAD_SIZE) > PAGE_SIZE
- 	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
-+#else
-+	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
-+#endif
- 
- 	/*
- 	 * we need to allow at least 20 threads to boot a system
--- 
-1.5.6.1
+-Scott
