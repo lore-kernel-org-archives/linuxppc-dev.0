@@ -1,17 +1,18 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 4E1E2DDFFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 11:18:01 +1100 (EST)
-Date: Wed, 10 Dec 2008 16:17:58 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Ayman El-Khashab <AymanE@tanisys.com>
-Subject: Re: Help enabling PCI endpoint on 460EX, host sees disabled
-Message-ID: <20081211001758.GA29190@ovro.caltech.edu>
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F8AD@tanisys-ex2.Tanisys.Local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A0137F8AD@tanisys-ex2.Tanisys.Local>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 5E722DDFF9
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 11:28:48 +1100 (EST)
+Received: from localhost.localdomain (unknown [127.0.0.1])
+	by b-sasl-quonix.sasl.smtp.pobox.com (Postfix) with ESMTP id 4C91018937
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 19:28:43 -0500 (EST)
+Received: from thinkcentre (unknown [67.9.156.46]) by
+	b-sasl-quonix.sasl.smtp.pobox.com (Postfix) with ESMTPA id 116A918917
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 19:28:42 -0500 (EST)
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] move smp_hw_index to 32-bit code
+Date: Wed, 10 Dec 2008 18:28:41 -0600
+Message-Id: <1228955322-16995-1-git-send-email-ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 10, 2008 at 05:29:53PM -0600, Ayman El-Khashab wrote:
-> My system consists of a pair of 460EXs attached by way of both PCI-E and
-> PCI.  Ultimately my goal is to communicate between them via pci-e (is
-> there anything out there that does this already?).
+smp_hw_index isn't used on 64-bit, so move it from smp.c to
+setup_32.c.
 
-I can't help you with that exact board, but I've written an "ethernet
-over PCI" driver for Linux and U-Boot. The Linux driver has been posted
-here on linuxppc-dev and on the lkml. Search for "net: add PCINet
-driver" and you'll find it.
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/kernel/setup_32.c |    2 ++
+ arch/powerpc/kernel/smp.c      |    1 -
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-It won't work on your board, but it should serve as a good example about
-how to communicate over PCI.
-
-You are the third user asking for something like this recently. :) Too
-bad the mainline kernel developers seem to be mostly ignoring the
-driver I wrote.
-
-Definitely get PCI/PCI-E working and stable before you try to start
-communicating between the devices, though.
-
-Ira
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index c1a2762..2e9fcf0 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -49,6 +49,8 @@ int boot_cpuid;
+ EXPORT_SYMBOL_GPL(boot_cpuid);
+ int boot_cpuid_phys;
+ 
++int smp_hw_index[NR_CPUS];
++
+ unsigned long ISA_DMA_THRESHOLD;
+ unsigned int DMA_MODE_READ;
+ unsigned int DMA_MODE_WRITE;
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index ff9f701..5af6ac1 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -57,7 +57,6 @@
+ #define DBG(fmt...)
+ #endif
+ 
+-int smp_hw_index[NR_CPUS];
+ struct thread_info *secondary_ti;
+ 
+ cpumask_t cpu_possible_map = CPU_MASK_NONE;
+-- 
+1.5.5
