@@ -1,22 +1,32 @@
-Return-Path: <pczanik@fang.fa.gau.hu>
-Received: from b.relay.invitel.net (b.relay.invitel.net [62.77.203.4])
-	by ozlabs.org (Postfix) with ESMTP id 86493DDF77
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 00:27:04 +1100 (EST)
-Received: from mail.invitel.hu (mail.invitel.hu [213.163.59.4])
-	by b.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
-	D10B031A8D5
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 14:18:39 +0100 (CET)
-Received: from [192.168.2.179] ([87.97.93.237])
-	by mail.invitel.hu (Invitel Messaging Server)
-	with ESMTPA id <0KBP000HRRN3YAX0@invitel.hu> for
-	linuxppc-dev@ozlabs.org; Thu, 11 Dec 2008 14:18:39 +0100 (CET)
-Date: Thu, 11 Dec 2008 14:18:00 +0100
-From: Peter Czanik <pczanik@fang.fa.gau.hu>
-Subject: MPC8610HPCD sound as module
-To: linuxppc-dev@ozlabs.org
-Message-id: <49411308.1050008@fang.fa.gau.hu>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-2
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 38865DDF6B
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 01:35:27 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBBEYhrd019574
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 09:34:43 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mBBEZNou180536
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 09:35:23 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mBBFZXP1004837
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 10:35:33 -0500
+Date: Thu, 11 Dec 2008 09:35:17 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Matteo Fortini <m.fortini@selcomgroup.com>
+Subject: Re: [PATCH] ADS5121 Fix: put dummy byte to enable fixing EOF bug to
+	first place in order not to break some drivers\nUse ALARM interrupt to
+	avoid waiting for data to come in
+Message-ID: <20081211093517.31741578@zod.rchland.ibm.com>
+In-Reply-To: <49400F56.2040008@selcomgroup.com>
+References: <49400F56.2040008@selcomgroup.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +36,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Wed, 10 Dec 2008 19:49:58 +0100
+Matteo Fortini <m.fortini@selcomgroup.com> wrote:
 
-I have an MPC8610HPCD system. The latest stable kernel (2.6.27.8) runs
-fine on this, with a catch: sound only works, when compiled in the
-kernel (see:
-http://www.alsa-project.org/db/?f=73fb074ce0b41463bb3f32aaa297a1e1f53caf2d
-). When the exact same sound options are compiled as modules (see:
-http://www.alsa-project.org/db/?f=c353962950284d61bd16ac7d48032b8b5f598062
-), then sound card is not found. Both kernel configurations were based
-on mpc8610_hpcd_defconfig with some minor tweaks (some additional fs
-options to be able to boot SuSE Linux). The only difference between the
-two configs is that in the second case sound is modular.
+>  From d500e922b750a2bea554d32d8f12937f4da9c80a Mon Sep 17 00:00:00 2001
+> From: Matteo Fortini <m.fortini@selcomgroup.com>
+> Date: Wed, 10 Dec 2008 19:33:16 +0100
+> Subject: [PATCH] Fix: put dummy byte to enable fixing EOF bug to first 
+> place in order not to break some drivers
+>  Use ALARM interrupt to avoid waiting for data to come in
+> 
+> 
+> Signed-off-by: Matteo Fortini <m.fortini@selcomgroup.com>
+> ---
+>  drivers/spi/mpc512x_psc_spi.c |   53 
+> ++++++++++++++++++++++++-----------------
+>  1 files changed, 31 insertions(+), 22 deletions(-)
 
-As far as I can see from comments in the sources, it should work also as
-a module. Any hints how to achieve that?
+This patch is whitespace corrupted.
 
-Thanks, bye,
-CzP
+josh
