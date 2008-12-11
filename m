@@ -1,22 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E1FCFDE01B
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 09:41:02 +1100 (EST)
-Subject: Re: Help enabling PCI endpoint on 460EX, host sees disabled
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ira Snyder <iws@ovro.caltech.edu>
-In-Reply-To: <20081211162203.GA8670@ovro.caltech.edu>
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F8AD@tanisys-ex2.Tanisys.Local>
-	<20081211001758.GA29190@ovro.caltech.edu>
-	<1228993468.22413.165.camel@pasglop>
-	<20081211162203.GA8670@ovro.caltech.edu>
-Content-Type: text/plain
-Date: Fri, 12 Dec 2008 09:40:53 +1100
-Message-Id: <1229035253.22413.181.camel@pasglop>
-Mime-Version: 1.0
-Cc: Ayman El-Khashab <AymanE@tanisys.com>, linuxppc-dev@ozlabs.org
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83507.mail.sp1.yahoo.com (web83507.mail.sp1.yahoo.com
+	[216.252.120.163]) by ozlabs.org (Postfix) with SMTP id E69CEDE03A
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 10:55:15 +1100 (EST)
+Date: Thu, 11 Dec 2008 15:48:34 -0800 (PST)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Problem building kernel
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <683138.71397.qm@web83507.mail.sp1.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello all,
 
-> I'm still working on various issues with the hardware. Soon I'll be able
-> to easily test several boards in the same system at the same time. Once
-> I've proven that works, I'll start nagging :)
-> 
-> Is there a better subject line I should use to get attention, or should
-> I just start CC'ing people?
+I got the latest kernel from git://git.denx.de/linux-2.6-denx.git and after
+configuring with menuconfig I am seeing these errors.  I feel like this
+could be something simple that I am just unaware of, but I'm not sure
+and haven't been able to find anything useful when doing a web search.
 
-Not really. CC relevant lists like linuxppc-dev and netdev. If nothing
-happens after a while, maybe ping me and/or jeff garzik privately.
+Any ideas?  What other information would be helpful?
 
-> Sorry if I sounded negative in my post. It's just a little discouraging
-> when you don't get lots of feedback. I REALLY appreciate all of the work
-> you and everyone else is doing.
+  BOOTCC  arch/powerpc/boot/redboot-83xx.o
+  BOOTCC  arch/powerpc/boot/cuboot-sam440ep.o
+  BOOTCC  arch/powerpc/boot/cuboot-acadia.o
+{standard input}: Assembler messages:
+{standard input}:278: Error: Unrecognized opcode: `mtdcr'
+{standard input}:282: Error: Unrecognized opcode: `mfdcr'
+{standard input}:289: Error: Unrecognized opcode: `mtdcr'
+{standard input}:293: Error: Unrecognized opcode: `mfdcr'
+{standard input}:312: Error: Unrecognized opcode: `mtdcr'
+{standard input}:316: Error: Unrecognized opcode: `mfdcr'
+make[2]: *** [arch/powerpc/boot/cuboot-acadia.o] Error 1
+make[1]: *** [zImage] Error 2
+make: *** [sub-make] Error 2
 
-Well, it's annoying and heh, I don't get much feedback either on some of
-my stuff :-) But there's a limited amount of people who can do useful
-reviews and those are generally already very busy so ...
-
-Cheers,
-Ben.
+Ron
