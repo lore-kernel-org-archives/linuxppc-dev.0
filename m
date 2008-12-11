@@ -1,23 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5372BDDF1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 22:08:10 +1100 (EST)
-Subject: Re: [PATCH] Introduce ppc_pci_flags accessors
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081210195313.4014ca85@zod.rchland.ibm.com>
-References: <20081210191148.GA1769@yoda.jdub.homelinux.org>
-	<1228952788.7999.0.camel@localhost>
-	<20081210185446.13e33cb2@zod.rchland.ibm.com>
-	<Pine.LNX.4.64.0812101613140.28806@t2.domain.actdsltmp>
-	<20081210195313.4014ca85@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Thu, 11 Dec 2008 22:06:01 +1100
-Message-Id: <1228993561.22413.166.camel@pasglop>
+Return-Path: <maillist.kernel@gmail.com>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.247])
+	by ozlabs.org (Postfix) with ESMTP id 91F5EDDE24
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 23:04:20 +1100 (EST)
+Received: by ag-out-0708.google.com with SMTP id 31so1096808agc.0
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 04:04:18 -0800 (PST)
+Date: Thu, 11 Dec 2008 20:04:14 +0800
+From: "maillist.kernel" <maillist.kernel@gmail.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: How to support 3GB pci address?
+Message-ID: <200812112004118902765@gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Trent Piepho <tpiepho@freescale.com>
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon652578677326_====="
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-12-10 at 19:53 -0500, Josh Boyer wrote:
-> 
-> That's fine too.  I think you can Michael can have a virtual
-> arm-wrestling match to decide whether ppc_pci_has_flag or
-> ppc_pci_flags_are_set wins ;)
 
-I vote for _has_flag() :-)
+This is a multi-part message in MIME format.
 
-I even wonder if we need the word "flag" in there at all, but then I'm
-just being anal !
+--=====003_Dragon652578677326_=====
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
-Cheers,
-Ben.
+Hi, we want to design a system using mpc8548, and linking with an idt 16 ports PCIE switch.
+In the system, the total PCI address needed is about 3GB, so I want to know how to support it in linux. mpc8548 has 36-bit real address, and can support 32GB PCIE address space, but in linux, there is only 1GB kernel space, how to map the 3GB pci address to kernel? Is the  36-bit real address only used to support large memory(>4GB) for muti-threads? 
+
+Any suggestions please would be much appreciated!
+
+Thanks in advance for your help
+
+ 
+
+--=====003_Dragon652578677326_=====
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=gb2312">
+<META content="MSHTML 6.00.2900.3462" name=GENERATOR>
+<STYLE>BLOCKQUOTE {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px; MARGIN-LEFT: 2em
+}
+OL {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
+}
+UL {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
+}
+</STYLE>
+</HEAD>
+<BODY style="FONT-SIZE: 10pt; FONT-FAMILY: verdana">
+<DIV><FONT face=Verdana><FONT face=Verdana color=#c0c0c0><FONT color=#000000 
+size=5>Hi,&nbsp;we want to design a system using mpc8548, and linking with an 
+idt 16 ports&nbsp;PCIE switch.</FONT></FONT></FONT></DIV>
+<DIV><FONT size=5><FONT face=Verdana>In&nbsp;the system, the total&nbsp;PCI 
+address&nbsp;needed is about 3GB, so I want to know how to support it in linux. 
+mpc8548 has 36-bit real address, and can support 32GB&nbsp;PCIE address space, 
+but in linux, there is only 1GB kernel space, how to map the 3GB pci address to 
+kernel? Is the&nbsp;</FONT>&nbsp;36-bit real address only used to&nbsp;support 
+large memory(&gt;4GB) for muti-threads?&nbsp;</FONT></DIV>
+<DIV><FONT size=5></FONT>&nbsp;</DIV>
+<DIV><FONT size=5>Any suggestions please would be much appreciated!</FONT></DIV>
+<DIV><FONT size=5></FONT>&nbsp;</DIV>
+<DIV>
+<H3 class=r><FONT size=5>Thanks in advance for your help</FONT></H3></DIV>
+<DIV>&nbsp;</DIV>
+<DIV><FONT face=Verdana size=2>&nbsp;</DIV></FONT></BODY></HTML>
+
+--=====003_Dragon652578677326_=====--
