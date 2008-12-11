@@ -1,30 +1,22 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <m.fortini@selcomgroup.com>
+Received: from xseries02.selcomgroup.com (mail.selcomgroup.com [85.18.34.51])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5947ADDFB0
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 05:36:18 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBBIVPNN007857
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 13:31:25 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mBBIaF34116940
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 13:36:15 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mBBJaKcV002334
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 14:36:25 -0500
-Subject: [PATCH 2/2] fix bootmem reservation on uninitialized node
-To: paulus@samba.org
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Thu, 11 Dec 2008 10:36:06 -0800
-References: <20081211183603.981E651D@kernel>
-In-Reply-To: <20081211183603.981E651D@kernel>
-Message-Id: <20081211183606.1E011B66@kernel>
-Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	"Serge E. Hallyn" <serue@us.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 58B2B474C2
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 05:40:14 +1100 (EST)
+Message-ID: <49415E59.7000301@selcomgroup.com>
+Date: Thu, 11 Dec 2008 19:39:21 +0100
+From: Matteo Fortini <m.fortini@selcomgroup.com>
+MIME-Version: 1.0
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: [RESEND] [PATCH] ADS5121 Fix: put dummy byte to enable fixing EOF
+	bug to first place in order not to break some drivers\nUse ALARM
+	interrupt to avoid waiting for data to come in
+References: <49400F56.2040008@selcomgroup.com>
+	<20081211093517.31741578@zod.rchland.ibm.com>
+In-Reply-To: <20081211093517.31741578@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,55 +27,125 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-careful_allocation() was calling into the bootemem allocator for
-nodes which had not been fully initialized and caused a previous
-bug.  http://patchwork.ozlabs.org/patch/10528/  So, I merged a
-few broken out loops in do_init_bootmem() to fix it.  That changed
-the code ordering.
+This patch is to avoid breaking some drivers, in my case the ADS7846 
+touchscreen one, which use 1 char messages.
+If you put the dummy byte after the 1 char message, you get part of the 
+answer to the message in the rxbuf of the message, which is thrown away.
 
-I think this bug is triggered by having reserved areas for a node
-which are spanned by another node's contents.  In the
-mark_reserved_regions_for_nid() code, we attempt to reserve the
-area for a node before we have allocated the NODE_DATA() for that
-nid.  We do this since I reordered that loop.  I suck.
+The solution is to put the dummy byte before the message, so that the 
+slave doesn't respond.
 
-This may only present on some systems that have 16GB pages
-reserved.  But, it can probably happen on any system that is
-trying to reserve large swaths of memory that happen to span other
-nodes' contents.
+It also optimizes the interrupt handling, by using the alarm function of 
+the FIFO, to wait until the rx FIFO has received enough bytes, instead 
+of waiting until the tx FIFO is empty.
 
-This patch ensures that we do not touch bootmem for any node which
-has not been initialized.
 
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+
+Signed-off-by: Matteo Fortini <m.fortini@selcomgroup.com>
 ---
+ drivers/spi/mpc512x_psc_spi.c |   50 
++++++++++++++++++++++++-----------------
+ 1 files changed, 29 insertions(+), 21 deletions(-)
 
- linux-2.6.git-dave/arch/powerpc/mm/numa.c |   15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
-
-diff -puN arch/powerpc/mm/numa.c~fix-bad-node-reserve arch/powerpc/mm/numa.c
---- linux-2.6.git/arch/powerpc/mm/numa.c~fix-bad-node-reserve	2008-12-10 14:54:18.000000000 -0800
-+++ linux-2.6.git-dave/arch/powerpc/mm/numa.c	2008-12-10 14:55:33.000000000 -0800
-@@ -901,10 +901,17 @@ static void mark_reserved_regions_for_ni
- 			if (end_pfn > node_ar.end_pfn)
- 				reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
- 					- (start_pfn << PAGE_SHIFT);
--			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase,
--				reserve_size, node_ar.nid);
--			reserve_bootmem_node(NODE_DATA(node_ar.nid), physbase,
--						reserve_size, BOOTMEM_DEFAULT);
-+			/*
-+			 * Only worry about *this* node, others may not
-+			 * yet have valid NODE_DATA().
-+			 */
-+			if (node_ar.nid == nid) {
-+				dbg("reserve_bootmem %lx %lx nid=%d\n",
-+					physbase, reserve_size, node_ar.nid);
-+				reserve_bootmem_node(NODE_DATA(node_ar.nid),
-+						physbase, reserve_size,
-+						BOOTMEM_DEFAULT);
-+			}
- 			/*
- 			 * if reserved region is contained in the active region
- 			 * then done.
-_
+diff --git a/drivers/spi/mpc512x_psc_spi.c b/drivers/spi/mpc512x_psc_spi.c
+index 1fd7ad4..eace796 100644
+--- a/drivers/spi/mpc512x_psc_spi.c
++++ b/drivers/spi/mpc512x_psc_spi.c
+@@ -175,6 +175,7 @@ static int mpc512x_psc_spi_transfer_rxtx(struct 
+spi_device *spi,
+         u8 data;
+         size_t fifosz;
+         int rxcount;
++        int txcount;
+ 
+         /*
+          * The number of bytes that can be sent at a time
+@@ -183,41 +184,49 @@ static int mpc512x_psc_spi_transfer_rxtx(struct 
+spi_device *spi,
+         fifosz = MPC512x_PSC_FIFO_SZ(in_be32(&fifo->txsz));
+         count = min(fifosz, len);
+ 
++        txcount = 0;
++        /*
++         * Insert a dummy byte before a message of len 1 to make it at 
+least 2 bytes long
++         * to be able to set EOF correctly
++         */
++        if (t->len == 1) {
++            out_8(&fifo->txdata_8, 0);
++            txcount++;
++        }
+         for (i = count; i > 0; i--) {
+             if (len == EOFBYTE || t->len == 1)
+                 setbits32(&fifo->txcmd, MPC512x_PSC_FIFO_EOF);
+             data = tx_buf ? *tx_buf++ : 0;
+             out_8(&fifo->txdata_8, data);
+-            if (t->len == 1)
+-                out_8(&fifo->txdata_8, 0);
++            txcount++;
+             len--;
+         }
+ 
+         INIT_COMPLETION(mps->done);
+ 
+-        /* interrupt on tx fifo empty */
+-        out_be32(&fifo->txisr, MPC512x_PSC_FIFO_EMPTY);
+-        out_be32(&fifo->tximr, MPC512x_PSC_FIFO_EMPTY);
+-
+-        /* enable transmiter/receiver */
+-        out_8(&psc->command, MPC52xx_PSC_TX_ENABLE | 
+MPC52xx_PSC_RX_ENABLE);
++        /* Enable FIFO_ALARM interrupts for rx_fifo */
++        out_be32(&fifo->rxalarm, txcount);
++        out_be32(&fifo->rxisr, MPC512x_PSC_FIFO_ALARM);
++        out_be32(&fifo->rximr, MPC512x_PSC_FIFO_ALARM);
+ 
+-        wait_for_completion(&mps->done);
++        /* Disable tx_fifo interrupts */
++        out_be32(&fifo->txisr, 0xffffffff);
++        out_be32(&fifo->tximr, 0);
+ 
+-        mdelay(1);
++        out_8(&psc->command, MPC52xx_PSC_TX_ENABLE | 
+MPC52xx_PSC_RX_ENABLE);
+ 
+-        /* rx fifo should have count bytes in it */
+-        rxcount = in_be32(&fifo->rxcnt);
+-        if (rxcount != count)
+-            mdelay(1);
++        wait_for_completion (&mps->done);
+ 
+         rxcount = in_be32(&fifo->rxcnt);
+-        if (rxcount != count && t->len != 1)
++        if (rxcount != txcount)
+             printk(KERN_WARNING "expected %d bytes in rx fifo "
+-                       "but got %d\n", count, rxcount);
+-
++                "but got %d\n", txcount, rxcount);
+         rxcount = min(rxcount, count);
+         {
++            /* Throw away possible initial dummy byte */
++            if (t->len == 1) {
++                (void)in_8(&fifo->rxdata_8);
++            }
+             for (i = rxcount; i > 0; i--) {
+                 data = in_8(&fifo->rxdata_8);
+                 if (rx_buf)
+@@ -418,10 +427,9 @@ static irqreturn_t mpc512x_psc_spi_isr(int irq, 
+void *dev_id)
+     struct mpc512x_psc_fifo __iomem *fifo = mps->fifo;
+ 
+     /* clear interrupt and wake up the work queue */
+-    if (in_be32(&fifo->txisr)
+-        & in_be32(&fifo->tximr) & MPC512x_PSC_FIFO_EMPTY) {
+-        out_be32(&fifo->txisr, MPC512x_PSC_FIFO_EMPTY);
+-        out_be32(&fifo->tximr, 0);
++    if (in_be32(&fifo->rxisr) & in_be32(&fifo->rximr) & 
+MPC512x_PSC_FIFO_ALARM) {
++        out_be32(&fifo->rxisr, MPC512x_PSC_FIFO_ALARM);
++        out_be32(&fifo->rximr, 0);
+         complete(&mps->done);
+         return IRQ_HANDLED;
+     }
+-- 
+1.5.4.3
