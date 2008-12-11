@@ -1,18 +1,19 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	by ozlabs.org (Postfix) with ESMTP id B6823DDFCC
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 02:47:36 +1100 (EST)
-Date: Thu, 11 Dec 2008 15:31:59 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: MPC8610HPCD sound as module
-Message-ID: <20081211153158.GF30808@sirena.org.uk>
-References: <49411308.1050008@fang.fa.gau.hu>
-	<ed82fe3e0812110712r4baeea60ied52937aa434f48e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ed82fe3e0812110712r4baeea60ied52937aa434f48e@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B0603474C1
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 03:14:10 +1100 (EST)
+Message-Id: <41706FC0-B740-42C0-BA2B-B9E4B5839477@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: "maillist.kernel" <maillist.kernel@gmail.com>
+In-Reply-To: <200812112004118902765@gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: How to support 3GB pci address?
+Date: Thu, 11 Dec 2008 10:13:57 -0600
+References: <200812112004118902765@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 11, 2008 at 09:12:54AM -0600, Timur Tabi wrote:
-> On Thu, Dec 11, 2008 at 7:18 AM, Peter Czanik <pczanik@fang.fa.gau.hu> wrote:
 
-> > As far as I can see from comments in the sources, it should work also as
-> > a module. Any hints how to achieve that?
+On Dec 11, 2008, at 6:04 AM, maillist.kernel wrote:
 
-> The ASoC V2 version of the driver supports loading as a module.  ASoC
-> V1 does not support loading sound drivers as modules, which is why I
-> didn't implement that support in the V1 drivers.  The 2.6.27 kernel
+> Hi, we want to design a system using mpc8548, and linking with an  
+> idt 16 ports PCIE switch.
+> In the system, the total PCI address needed is about 3GB, so I want  
+> to know how to support it in linux. mpc8548 has 36-bit real address,  
+> and can support 32GB PCIE address space, but in linux, there is only  
+> 1GB kernel space, how to map the 3GB pci address to kernel? Is the   
+> 36-bit real address only used to support large memory(>4GB) for muti- 
+> threads?
+>
+> Any suggestions please would be much appreciated!
+>
+> Thanks in advance for your help
 
-ASoC v1 supports loading drivers as modules (and this is fairly heavily
-used), though as you say the MPC8610 drivers don't support that.
+The 36-bit support is current (in tree) in complete.  Work is in  
+progress to add swiotlb support to PPC which will generically enable  
+what you want to accomplish.
 
-> has ASoC V1.  ASoC V2 won't be integrated into the mainline until at
-> least 2.6.29, and maybe even 2.6.30.  The ASoC V2 repository is
-> available at http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-asoc.git
-> under the asoc-v2-dev branch.
-
-At the minute there's code queued for merge which defers card
-instantiation until DAIs and platforms have registered, allowing the
-various parts of the system to probe through the normal mechanisms.
-That's the most substantial of the outstanding changes.
+- k
