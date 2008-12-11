@@ -1,11 +1,11 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id E0057DDFC7
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 13:01:33 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so319926qwb.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 18:01:31 -0800 (PST)
-Message-ID: <9e4733910812101801q7caedddat7809ad4995e14d7d@mail.gmail.com>
-Date: Wed, 10 Dec 2008 21:01:30 -0500
+Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
+	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id 54EC2DDFC7
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 13:04:26 +1100 (EST)
+Received: by qyk14 with SMTP id 14so1505328qyk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 18:04:24 -0800 (PST)
+Message-ID: <9e4733910812101804y25fb30d3m81950a56039d84b6@mail.gmail.com>
+Date: Wed, 10 Dec 2008 21:04:24 -0500
 From: "Jon Smirl" <jonsmirl@gmail.com>
 To: "Gary Thomas" <gary@mlbassoc.com>
 Subject: Re: MPC5200 VIRQ question
@@ -30,12 +30,6 @@ On Wed, Dec 10, 2008 at 8:04 PM, Gary Thomas <gary@mlbassoc.com> wrote:
 >>> I have a MPC5200 based board which has an FPGA for external
 >>> I/O, etc.  This FPGA also funnels interrupts from the various
 >>> external devices through to the CPU.
-
-This thread may give you some clues.
-http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg24077.html
-
-The code from that thread was never finished and may not be correct.
-
 >>>
 >>> I've defined this structure in my DTS:
 >>>
@@ -56,6 +50,28 @@ The code from that thread was never finished and may not be correct.
 > BTW, this is wrong! Are the IRQ mappings on the MPC5200 documented
 > somewhere? I've looked and looked without much joy.  Only by
 > experimentation did I discover that "<1 2 3>" corresponds to IRQ2.
+
+Documentation/powerpc/mpc52xx-device-tree-bindings.txt
+
+1. Interrupt mapping
+--------------------
+The mpc5200 pic driver splits hardware IRQ numbers into two levels.  The
+split reflects the layout of the PIC hardware itself, which groups
+interrupts into one of three groups; CRIT, MAIN or PERP.  Also, the
+Bestcomm dma engine has it's own set of interrupt sources which are
+cascaded off of peripheral interrupt 0, which the driver interprets as a
+fourth group, SDMA.
+
+The interrupts property for device nodes using the mpc5200 pic consists
+of three cells; <L1 L2 level>
+
+    L1 := [CRIT=0, MAIN=1, PERP=2, SDMA=3]
+    L2 := interrupt number; directly mapped from the value in the
+          "ICTL PerStat, MainStat, CritStat Encoded Register"
+    level := [LEVEL_HIGH=0, EDGE_RISING=1, EDGE_FALLING=2, LEVEL_LOW=3]
+
+
+
 >
 >>>                      interrupt-parent = <&mpc5200_pic>;
 >>>              };
