@@ -1,19 +1,20 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id C34F1DDFF2
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 03:22:06 +1100 (EST)
-Date: Thu, 11 Dec 2008 08:22:03 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Help enabling PCI endpoint on 460EX, host sees disabled
-Message-ID: <20081211162203.GA8670@ovro.caltech.edu>
-References: <16691A8B34B5D9458EA3A1C37A11555A0137F8AD@tanisys-ex2.Tanisys.Local>
-	<20081211001758.GA29190@ovro.caltech.edu>
-	<1228993468.22413.165.camel@pasglop>
+Return-Path: <tmarri@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0BB8ADDF0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 04:58:41 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1228993468.22413.165.camel@pasglop>
-Cc: Ayman El-Khashab <AymanE@tanisys.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: : [PATCH] Add_460SX_Initial_Framework
+Date: Thu, 11 Dec 2008 09:58:36 -0800
+Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C067050E9@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <mailman.732.1228204677.29923.linuxppc-dev@ozlabs.org>
+References: <mailman.732.1228204677.29923.linuxppc-dev@ozlabs.org>
+From: "Tirumala Reddy Marri" <tmarri@amcc.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,45 +24,669 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 11, 2008 at 10:04:28PM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2008-12-10 at 16:17 -0800, Ira Snyder wrote:
-> > On Wed, Dec 10, 2008 at 05:29:53PM -0600, Ayman El-Khashab wrote:
-> > > My system consists of a pair of 460EXs attached by way of both PCI-E and
-> > > PCI.  Ultimately my goal is to communicate between them via pci-e (is
-> > > there anything out there that does this already?).
-> > 
-> > I can't help you with that exact board, but I've written an "ethernet
-> > over PCI" driver for Linux and U-Boot. The Linux driver has been posted
-> > here on linuxppc-dev and on the lkml. Search for "net: add PCINet
-> > driver" and you'll find it.
-> > 
-> > It won't work on your board, but it should serve as a good example about
-> > how to communicate over PCI.
-> > 
-> > You are the third user asking for something like this recently. :) Too
-> > bad the mainline kernel developers seem to be mostly ignoring the
-> > driver I wrote.
-> 
-> Don't get too disappointed... a lot of us are busy and things fall
-> through the cracks.. it may just be that we had nothing bad to say about
-> it :-)
-> 
-> Seriously, if you feel you didn't get useful reviews or that nothing is
-> picking it up, just holler, and nag us. We all have pretty full plates
-> and things do slip or just forgotten :-)
-> 
+Josh,
+  I will be handling this patch from now on. I will modify the patch and
+answer your queries soon.
+Thanks,
+Marri
 
-Thanks Ben.
 
-I'm still working on various issues with the hardware. Soon I'll be able
-to easily test several boards in the same system at the same time. Once
-I've proven that works, I'll start nagging :)
+Message: 2
+Date: Mon, 1 Dec 2008 20:32:56 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Add_460SX_Initial_Framework
+To: mmadishetty@amcc.com
+Cc: linuxppc-dev@ozlabs.org
+Message-ID: <20081202013256.GB25631@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=3Dus-ascii
 
-Is there a better subject line I should use to get attention, or should
-I just start CC'ing people?
+On Mon, Dec 01, 2008 at 03:37:15PM -0800, mmadishetty@amcc.com wrote:
+>From: Madhulika Madishetty <mmadishetty@amcc.com>
+>
+>This patch contains the initial framework for AMCC Redwood board.
+>
+>Signed-off-by: Madhulika Madishetty <mmadishetty@amcc.com>, Tirumala
+Reddy=20
+>Marri <tmarri@amcc.com>,
+>Feng Kan <fkan@amcc.com>, Vidhyananth Venkatasamy
+<vvenkatasamy@amcc.com>,=20
+>Preetesh Parekh <pparekh@amcc.com>
+>Acked-by: Loc Ho <lho@amcc.com>, Feng Kan <fkan@amcc.com>
 
-Sorry if I sounded negative in my post. It's just a little discouraging
-when you don't get lots of feedback. I REALLY appreciate all of the work
-you and everyone else is doing.
+One Signed-off-by: per person, per line please.  Don't use a single
+with multiple names.
 
-Ira
+>---
+> arch/powerpc/boot/dts/redwood_amcc.dts     |  247 +++++++
+> arch/powerpc/configs/44x/redwood_defconfig | 1082=20
+>++++++++++++++++++++++++++++
+
+Parts of your patch are word-wrapped.
+
+>diff --git a/arch/powerpc/boot/dts/redwood_amcc.dts=20
+>b/arch/powerpc/boot/dts/redwood_amcc.dts
+>new file mode 100644
+>index 0000000..e4f5efd
+>--- /dev/null
+>+++ b/arch/powerpc/boot/dts/redwood_amcc.dts
+
+Any particular reason you chose to call this redwood_amcc.dts?  None
+of the other boards do that.
+
+Also, what possessed AMCC to create an entirely new board called
+Redwood when there is already a 4xx board called Redwood?  I realize
+this isn't really something you can control, and the old board isn't
+supported any longer, but still...  yell at your marketing people or
+something :).
+
+>@@ -0,0 +1,247 @@
+>+/*
+>+ * Device Tree Source for AMCC Redwood(460SX)
+>+ *
+>+ * Copyright 2008 AMCC <tmarri@amcc.com>
+>+ *
+>+ * This file is licensed under the terms of the GNU General Public
+>+ * License version 2.  This program is licensed "as is" without
+>+ * any warranty of any kind, whether express or implied.
+>+ */
+>+
+>+/dts-v1/;
+
+If this is really a dts-v1, I would expect all the values here to
+look differently.  See below.
+
+>+
+>+/ {
+>+	#address-cells =3D <2>;
+>+	#size-cells =3D <1>;
+>+	model =3D "amcc,redwood";
+>+	compatible =3D "amcc,redwood";
+>+	dcr-parent =3D <&/cpus/cpu@0>;
+>+
+>+	aliases {
+>+		ethernet0 =3D &EMAC0;
+>+		serial0 =3D &UART0;
+>+	};
+>+
+>+	cpus {
+>+		#address-cells =3D <1>;
+>+		#size-cells =3D <0>;
+>+
+>+		cpu@0 {
+>+			device_type =3D "cpu";
+>+			model =3D "PowerPC,460SX";
+>+			reg =3D <0>;
+>+			clock-frequency =3D <0>; /* Filled in by U-Boot */
+>+			timebase-frequency =3D <0>; /* Filled in by U-Boot
+*/
+>+			i-cache-line-size =3D <20>;
+>+			d-cache-line-size =3D <20>;
+
+Here.  You have a i/d-cache line size of 20 bytes?  That's odd...
+
+>+			i-cache-size =3D <8000>;
+>+			d-cache-size =3D <8000>;
+
+And you have a cache size of 8000 bytes?  Also odd.  I would expect
+these
+lines to look like:
+
+			i-cache-line-size =3D <0x20>;
+			i-cache-size =3D <0x8000>;
+
+or
+			i-cache-line-size =3D <32>;
+			i-cache-size =3D <32768>;
+
+Please go through and verify all the values are properly filled out.
+I'm
+not even sure how this works with newer dtc versions.
+
+>+			dcr-controller;
+>+			dcr-access-method =3D "native";
+>+		};
+>+	};
+>+
+>+	memory {
+>+		device_type =3D "memory";
+>+		reg =3D <0 0 0>; /* Filled in by U-Boot */
+>+	};
+>+
+>+	UIC0: interrupt-controller0 {
+>+		compatible =3D "ibm,uic-460sx","ibm,uic";
+>+		interrupt-controller;
+>+		cell-index =3D <0>;
+>+		dcr-reg =3D <0c0 009>;
+>+		#address-cells =3D <0>;
+>+		#size-cells =3D <0>;
+>+		#interrupt-cells =3D <2>;
+>+	};
+>+
+>+	UIC1: interrupt-controller1 {
+>+		compatible =3D "ibm,uic-460sx","ibm,uic";
+>+		interrupt-controller;
+>+		cell-index =3D <1>;
+>+		dcr-reg =3D <0d0 009>;
+>+		#address-cells =3D <0>;
+>+		#size-cells =3D <0>;
+>+		#interrupt-cells =3D <2>;
+>+		interrupts =3D <1e 4 1f 4>; /* cascade */
+>+		interrupt-parent =3D <&UIC0>;
+>+	};
+>+
+>+	UIC2: interrupt-controller2 {
+>+		compatible =3D "ibm,uic-460sx","ibm,uic";
+>+		interrupt-controller;
+>+		cell-index =3D <2>;
+>+		dcr-reg =3D <0e0 009>;
+>+		#address-cells =3D <0>;
+>+		#size-cells =3D <0>;
+>+		#interrupt-cells =3D <2>;
+>+		interrupts =3D <a 4 b 4>; /* cascade */
+>+		interrupt-parent =3D <&UIC0>;
+>+	};
+>+
+>+	UIC3: interrupt-controller3 {
+>+		compatible =3D "ibm,uic-460sx","ibm,uic";
+>+		interrupt-controller;
+>+		cell-index =3D <3>;
+>+		dcr-reg =3D <0f0 009>;
+>+		#address-cells =3D <0>;
+>+		#size-cells =3D <0>;
+>+		#interrupt-cells =3D <2>;
+>+		interrupts =3D <10 4 11 4>; /* cascade */
+>+		interrupt-parent =3D <&UIC0>;
+>+	};
+>+
+>+	SDR0: sdr {
+>+		compatible =3D "ibm,sdr-460sx";
+>+		dcr-reg =3D <00e 002>;
+>+	};
+>+
+>+	CPR0: cpr {
+>+		compatible =3D "ibm,cpr-460sx";
+>+		dcr-reg =3D <00c 002>;
+>+	};
+>+	plb {
+>+		compatible =3D "ibm,plb-460sx", "ibm,plb4";
+>+		#address-cells =3D <2>;
+>+		#size-cells =3D <1>;
+>+		ranges;
+>+		clock-frequency =3D <0>; /* Filled in by U-Boot */
+>+
+>+		SDRAM0: sdram {
+>+			compatible =3D "ibm,sdram-460sx",
+"ibm,sdram-405gp";
+>+			dcr-reg =3D <010 2>;
+>+		};
+>+
+>+		MAL0: mcmal {
+>+			compatible =3D "ibm,mcmal-460sx", "ibm,mcmal2";
+>+			dcr-reg =3D <180 62>;
+>+			num-tx-chans =3D <4>;
+>+			num-rx-chans =3D <20>;
+>+			#address-cells =3D <1>;
+>+			#size-cells =3D <1>;
+>+			/*reg =3D <4 00040000 10000>;
+>+			ranges =3D <0 4 00040000 10000>;*/  /*OCM mapped
+to 0xa0000000 */
+
+You have reg and ranges commented out?  Not sure why those are here
+anyway,
+but you should remove them if they aren't needed.
+
+>+			interrupt-parent =3D <&UIC1>;
+>+			interrupts =3D <	/*TXEOB*/ 6 4
+>+					/*RXEOB*/ 7 4
+>+					/*SERR*/  1 4
+>+					/*TXDE*/  2 4
+>+					/*RXDE*/  3 4
+>+					/*COAL TX0*/ 18 2
+>+					/*COAL TX1*/ 19 2
+>+					/*COAL TX2*/ 1a 2
+>+					/*COAL TX3*/ 1b 2
+>+					/*COAL RX0*/ 1c 2
+>+					/*COAL RX1*/ 1d 2
+>+					/*COAL RX2*/ 1e 2
+>+					/*COAL RX3*/ 1f 2>;
+>+		};
+>+
+>+
+>+		POB0: opb {
+>+			compatible =3D "ibm,opb-460sx", "ibm,opb";
+>+			#address-cells =3D <1>;
+>+			#size-cells =3D <1>;
+>+			ranges =3D <b0000000 4 b0000000 50000000>;
+>+			clock-frequency =3D <0>; /* Filled in by U-Boot */
+>+
+>+			EBC0: ebc {
+>+				compatible =3D "ibm,ebc-460sx", "ibm,ebc";
+>+				dcr-reg =3D <012 2>;
+>+				#address-cells =3D <2>;
+>+				#size-cells =3D <1>;
+>+				clock-frequency =3D <0>; /* Filled in by
+U-Boot */
+>+				/* ranges property is supplied by U-Boot
+*/
+>+				interrupts =3D <6 4>;
+>+				interrupt-parent =3D <&UIC1>;
+>+
+>+				nor_flash@0,0 {
+>+					compatible =3D "amd,s29gl512n",
+"cfi-flash";
+>+					bank-width =3D <2>;
+>+					reg =3D <0 000000 4000000>;
+>+					#address-cells =3D <1>;
+>+					#size-cells =3D <1>;
+>+					partition@0 {
+>+						label =3D "kernel";
+>+						reg =3D <0 1e0000>;
+>+					};
+>+					partition@1e0000 {
+>+						label =3D "dtb";
+>+						reg =3D <1e0000 20000>;
+>+					};
+>+					partition@200000 {
+>+						label =3D "ramdisk";
+>+						reg =3D <200000 1400000>;
+>+					};
+>+					partition@1600000 {
+>+						label =3D "jffs2";
+>+						reg =3D <1600000 400000>;
+>+					};
+>+					partition@1a00000 {
+>+						label =3D "user";
+>+						reg =3D <1a00000 2560000>;
+>+					};
+>+					partition@3f60000 {
+>+						label =3D "env";
+>+						reg =3D <3f60000 40000>;
+>+					};
+>+					partition@3fa0000 {
+>+						label =3D "u-boot";
+>+						reg =3D <3fa0000 60000>;
+>+					};
+>+				};
+>+			};
+>+
+>+			UART0: serial@ef600200 {
+>+				device_type =3D "serial";
+>+				compatible =3D "ns16550";
+>+				reg =3D <ef600200 8>;
+>+				virtual-reg =3D <ef600200>;
+>+				clock-frequency =3D <0>; /* Filled in by
+U-Boot */
+>+				current-speed =3D <0>; /* Filled in by
+U-Boot */
+>+				interrupt-parent =3D <&UIC0>;
+>+				interrupts =3D <0 4>;
+>+			};
+>+
+>+			RGMII0: emac-rgmii@ef600900 {
+>+				compatible =3D "ibm,rgmii-460sx",
+"ibm,rgmii";
+>+				reg =3D <ef600900 8>;
+>+			};
+>+
+>+			EMAC0: ethernet@ef600a00 {
+>+				device_type =3D "network";
+>+				compatible =3D "ibm,emac-460sx",
+"ibm,emac4";
+>+				interrupt-parent =3D <&EMAC0>;
+>+				interrupts =3D <0 1>;
+>+				#interrupt-cells =3D <1>;
+>+				#address-cells =3D <0>;
+>+				#size-cells =3D <0>;
+>+				interrupt-map =3D </*Status*/ 0 &UIC0 13 4
+>+						 /*Wake*/   1 &UIC2 1D
+4>;
+>+				reg =3D <ef600a00 70>;
+>+				local-mac-address =3D [000000000000]; /*
+Filled in by U-Boot */
+>+				mal-device =3D <&MAL0>;
+>+				mal-tx-channel =3D <0>;
+>+				mal-rx-channel =3D <0>;
+>+				cell-index =3D <0>;
+>+				max-frame-size =3D <2328>;
+>+				rx-fifo-size =3D <1000>;
+>+				tx-fifo-size =3D <800>;
+>+				phy-mode =3D "rgmii";
+>+				phy-map =3D <00000000>;
+>+				rgmii-device =3D <&RGMII0>;
+>+				rgmii-channel =3D <0>;
+>+				has-inverted-stacr-oc;
+>+				has-new-stacr-staopc;
+>+			};
+>+
+>+		};
+>+
+>+
+>+	};
+>+	chosen {
+>+		linux,stdout-path =3D "/plb/opb/serial@ef600200";
+>+	};
+>+
+>+};
+>diff --git a/arch/powerpc/configs/44x/redwood_defconfig=20
+>b/arch/powerpc/configs/44x/redwood_defconfig
+>new file mode 100644
+>index 0000000..e9ad3b2
+>--- /dev/null
+>+++ b/arch/powerpc/configs/44x/redwood_defconfig
+>@@ -0,0 +1,1082 @@
+>+#
+>+# Automatically generated make config: don't edit
+>+# Linux kernel version: 2.6.26
+
+I think you need to regenerate this defconfig against
+a more current kernel.
+
+
+>diff --git a/arch/powerpc/kernel/cpu_setup_44x.S=20
+>b/arch/powerpc/kernel/cpu_setup_44x.S
+>index 80cac98..ebc2449 100644
+>--- a/arch/powerpc/kernel/cpu_setup_44x.S
+>+++ b/arch/powerpc/kernel/cpu_setup_44x.S
+>@@ -35,6 +35,8 @@ _GLOBAL(__setup_cpu_440grx)
+> _GLOBAL(__setup_cpu_460ex)
+> _GLOBAL(__setup_cpu_460gt)
+> 	b	__init_fpu_44x
+>+_GLOBAL(__setup_cpu_460sx)
+>+	b	__init_fpu_44x
+
+Don't you also need __fixup_440A_mcheck here?
+
+> _GLOBAL(__setup_cpu_440gx)
+> _GLOBAL(__setup_cpu_440spe)
+> 	b	__fixup_440A_mcheck
+>diff --git a/arch/powerpc/kernel/cputable.c=20
+>b/arch/powerpc/kernel/cputable.c
+>index b1eb834..f3005f8 100644
+>--- a/arch/powerpc/kernel/cputable.c
+>+++ b/arch/powerpc/kernel/cputable.c
+>@@ -41,6 +41,7 @@ extern void __setup_cpu_440grx(unsigned long offset,=20
+>struct cpu_spec* spec);
+> extern void __setup_cpu_440spe(unsigned long offset, struct cpu_spec*=20
+>spec);
+> extern void __setup_cpu_460ex(unsigned long offset, struct cpu_spec*=20
+>spec);
+> extern void __setup_cpu_460gt(unsigned long offset, struct cpu_spec*=20
+>spec);
+>+extern void __setup_cpu_460sx(unsigned long offset, struct cpu_spec=20
+>*spec);
+> extern void __setup_cpu_603(unsigned long offset, struct cpu_spec*
+spec);
+> extern void __setup_cpu_604(unsigned long offset, struct cpu_spec*
+spec);
+> extern void __setup_cpu_750(unsigned long offset, struct cpu_spec*
+spec);
+>@@ -1526,6 +1527,18 @@ static struct cpu_spec __initdata cpu_specs[] =
+=3D
+{
+> 		.machine_check		=3D machine_check_440A,
+> 		.platform		=3D "ppc440",
+> 	},
+>+	{ /* 460SX */
+>+		.pvr_mask		=3D 0xffffff00,
+>+		.pvr_value		=3D 0x13541800,
+>+		.cpu_name		=3D "460SX",
+>+		.cpu_features		=3D CPU_FTRS_44X,
+>+		.cpu_user_features	=3D COMMON_USER_BOOKE,
+>+		.icache_bsize		=3D 32,
+>+		.dcache_bsize		=3D 32,
+>+		.cpu_setup		=3D __setup_cpu_460sx,
+>+		.machine_check		=3D machine_check_440A,
+>+		.platform		=3D "ppc440",
+>+	},
+> 	{	/* default match */
+> 		.pvr_mask		=3D 0x00000000,
+> 		.pvr_value		=3D 0x00000000,
+>diff --git a/arch/powerpc/platforms/44x/Kconfig=20
+>b/arch/powerpc/platforms/44x/Kconfig
+>index 3496bc0..52a38d0 100644
+>--- a/arch/powerpc/platforms/44x/Kconfig
+>+++ b/arch/powerpc/platforms/44x/Kconfig
+>@@ -118,6 +118,17 @@ config GLACIER
+> 	help
+> 	  This option enables support for the AMCC PPC460GT evaluation
+board.
+>
+>+config REDWOOD
+>+	bool "Redwood"
+>+	depends on 44x
+>+	default n
+>+	select PPC44x_SIMPLE
+
+If you are selecting PPC44x_SIMPLE, why do you create
+your own redwood.c file?
+
+>+	select 460SX
+>+	select PCI
+>+	select PPC4xx_PCI_EXPRESS
+>+	help
+>+	  This option enables support for the AMCC PPC460SX validation
+board.
+>+
+> config YOSEMITE
+> 	bool "Yosemite"
+> 	depends on 44x
+>@@ -220,6 +231,14 @@ config 460EX
+> 	select IBM_NEW_EMAC_EMAC4
+> 	select IBM_NEW_EMAC_TAH
+>
+>+config 460SX
+>+	bool
+>+	select PPC_FPU
+>+	select IBM_NEW_EMAC_EMAC4
+>+	select IBM_NEW_EMAC_RGMII
+>+	select IBM_NEW_EMAC_ZMII
+>+	select IBM_NEW_EMAC_TAH
+>+
+> # 44x errata/workaround config symbols, selected by the CPU models
+above
+> config IBM440EP_ERR42
+> 	bool
+>@@ -231,5 +250,4 @@ config XILINX_VIRTEX
+> # Xilinx Virtex 5 FXT FPGA architecture, selected by a Xilinx board
+above
+> config XILINX_VIRTEX_5_FXT
+> 	bool
+>-	select XILINX_VIRTEX
+>-
+>+	select XILINX_VIRTEX
+>\ No newline at end of file
+
+Erm, this is an unnecessary patch hunk.
+
+>diff --git a/arch/powerpc/platforms/44x/Makefile=20
+>b/arch/powerpc/platforms/44x/Makefile
+>index 6981331..af797c8 100644
+>--- a/arch/powerpc/platforms/44x/Makefile
+>+++ b/arch/powerpc/platforms/44x/Makefile
+>@@ -5,3 +5,4 @@ obj-$(CONFIG_SAM440EP) 	+=3D sam440ep.o
+> obj-$(CONFIG_WARP)	+=3D warp.o
+> obj-$(CONFIG_WARP)	+=3D warp-nand.o
+> obj-$(CONFIG_XILINX_VIRTEX_5_FXT) +=3D virtex.o
+>+obj-$(CONFIG_REDWOOD) +=3D redwood.o
+>\ No newline at end of file
+>diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c=20
+>b/arch/powerpc/platforms/44x/ppc44x_simple.c
+>index 2967126..1470a1c 100644
+>--- a/arch/powerpc/platforms/44x/ppc44x_simple.c
+>+++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
+>@@ -57,9 +57,11 @@ static char *board[] __initdata =3D {
+> 	"ibm,ebony",
+> 	"amcc,katmai",
+> 	"amcc,rainier",
+>+	"amcc,redwood"
+> 	"amcc,sequoia",
+> 	"amcc,taishan",
+> 	"amcc,yosemite"
+>+
+> };
+>
+> static int __init ppc44x_probe(void)
+
+Judging from the redwood.c file you create below, this is
+entirely incorrect.
+
+>diff --git a/arch/powerpc/platforms/44x/redwood.c=20
+>b/arch/powerpc/platforms/44x/redwood.c
+>new file mode 100644
+>index 0000000..c3bae49
+>--- /dev/null
+>+++ b/arch/powerpc/platforms/44x/redwood.c
+>@@ -0,0 +1,103 @@
+>+/*
+>+ * redwood board specific routines
+>+ *
+>+ * Copyright 2008 Appled Micro Circuits Corporation.
+>+ * All rights reserved. Tirumala Marri <tmarri@amcc.com>
+>+ *
+>+ * Based on the Katmai code by
+>+ * Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>+ * Copyright 2007 IBM Corp.
+>+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>+ * Copyright 2007 IBM Corporation
+>+ *
+>+ * This program is free software; you can redistribute  it and/or
+modify=20
+>it
+>+ * under  the terms of  the GNU General  Public License as published
+by=20
+>the
+>+ * Free Software Foundation;  either version 2 of the  License, or (at
+
+>your
+>+ * option) any later version.
+>+ */
+
+Word-wrapped.
+
+>+#include <linux/init.h>
+>+#include <linux/of_platform.h>
+>+
+>+#include <asm/machdep.h>
+>+#include <asm/prom.h>
+>+#include <asm/udbg.h>
+>+#include <asm/time.h>
+>+#include <asm/uic.h>
+>+#include <asm/pci-bridge.h>
+>+#include <asm/ppc4xx.h>
+>+#include <asm/dcr.h>
+>+#include <asm/dcr-regs.h>
+>+#include <asm/io.h>
+>+
+>+#define DCRN_EBC0_CONFIG_ADDR    0x012
+>+#define DCRN_EBC0_CONFIG_DATA    0x013
+>+
+>+static __initdata struct of_device_id redwood_of_bus[] =3D {
+>+	{ .compatible =3D "ibm,plb4", },
+>+	{ .compatible =3D "ibm,opb", },
+>+	{ .compatible =3D "ibm,ebc", },
+>+	{},
+>+};
+>+
+>+static int __init redwood_device_probe(void)
+>+{
+>+	of_platform_bus_probe(NULL, redwood_of_bus, NULL);
+>+
+>+	return 0;
+>+}
+>+machine_device_initcall(redwood, redwood_device_probe);
+>+
+>+static int __init redwood_probe(void)
+>+{
+>+	unsigned long root =3D of_get_flat_dt_root();
+>+
+>+	if (!of_flat_dt_is_compatible(root, "amcc,redwood"))
+>+		return 0;
+>+	ppc_pci_flags =3D PPC_PCI_REASSIGN_ALL_RSRC;
+>+	return 1;
+>+}
+>+
+>+static void __init redwood_setup_arch(void)
+>+{
+>+	struct device_node *np;
+>+	unsigned int *cpld_ptr =3D NULL;
+>+	unsigned int ebc_b3cr =3D 0;
+>+	unsigned long long ebc_cpld_addr =3D 0;
+>+
+>+	mtdcr(DCRN_EBC0_CONFIG_ADDR, 0x3);
+
+What is 0x3?  No hard-coded magic hex values please.  Same comment
+elsewhere.
+
+>+	ebc_b3cr =3D mfdcr(DCRN_EBC0_CONFIG_DATA);
+>+	/* cpld address retrieved from EBC_CR */
+>+	ebc_cpld_addr =3D 0x400000000ULL | (ebc_b3cr & 0xFFF00000);
+>+	cpld_ptr =3D ioremap(ebc_cpld_addr, 0xC);
+
+Why aren't you using the device tree here?  Getting the cpld address
+and resources should be easy enough if the cpld is enumerated in the
+device tree...
+
+>+	if (!cpld_ptr) {
+>+		printk(KERN_ERR "Err: can't map CPLD registers!\n");
+>+		return;
+>+	}
+>+	/* Check EMAC bridge setting */
+>+	np =3D of_find_compatible_node(NULL, NULL, "ibm,emac-460sx");
+
+of_find_compatible_node creates a reference on the node pointer.  You
+need to use of_node_put on it when you are done.
+
+>+	if (np) {
+>+		const char *phymode;
+>+		unsigned int bcr;
+>+		phymode =3D of_get_property(np, "phy-mode", NULL);
+>+		if (!phymode) {
+>+			printk(KERN_ERR "Err: can't access node property
+\
+>+					phy-mode\n defaulting to
+rgmii");
+>+		}
+>+		bcr =3D in_be32(cpld_ptr + 2);
+>+		if (strcasecmp(phymode, "gmii") =3D=3D 0)
+>+			out_be32(cpld_ptr + 2, bcr & 0xFFEFFFFF);
+>+		else
+>+			out_be32(cpld_ptr + 2, bcr | 0x00100000);
+>+	}
+
+A comment about what this function is trying to do would be nice.  I can
+guess that it's setting the phy in a certain mode with some magical hex
+values, but I have no idea why.
+
+>+}
+>+
+>+define_machine(redwood) {
+>+	.name 				=3D "redwood",
+>+	.probe 				=3D redwood_probe,
+>+	.setup_arch			=3D redwood_setup_arch,
+>+	.progress 			=3D udbg_progress,
+>+	.init_IRQ 			=3D uic_init_tree,
+>+	.get_irq 			=3D uic_get_irq,
+>+	.restart			=3D ppc4xx_reset_system,
+>+	.calibrate_decr			=3D generic_calibrate_decr,
+>+};
+>--=20
+>1.5.5
+>--------------------------------------------------------
+>
+>CONFIDENTIALITY NOTICE: This e-mail message, including any attachments,
+is=20
+>for the sole use of the intended recipient(s) and contains information=20
+>that is confidential and proprietary to Applied Micro Circuits
+Corporation=20
+>or its subsidiaries. It is to be used solely for the purpose of
+furthering=20
+>the parties' business relationship. All unauthorized review, use,=20
+>disclosure or distribution is prohibited. If you are not the intended=20
+>recipient, please contact the sender by reply e-mail and destroy all=20
+>copies of the original message.
+
+Get rid of this message entirely.  It has no place on a public mailing
+list,
+and certainly not for a patch submission.
+
+josh
