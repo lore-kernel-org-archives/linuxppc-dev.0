@@ -1,25 +1,19 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <gregkh@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A99CADDF85
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 07:44:49 +1100 (EST)
-Date: Thu, 11 Dec 2008 12:43:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH][v2] fork_init: fix division by zero
-Message-Id: <20081211124330.ff9b7483.akpm@linux-foundation.org>
-In-Reply-To: <20081211202800.GQ28946@ZenIV.linux.org.uk>
-References: <200812101950.51958.yur@emcraft.com>
-	<20081211121635.ff58193f.akpm@linux-foundation.org>
-	<20081211202800.GQ28946@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: wd@denx.de, dzu@denx.de, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, miltonm@bga.com,
-	Geert.Uytterhoeven@sonycom.com, yanok@emcraft.com
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5F88ADDE26
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 07:54:45 +1100 (EST)
+Date: Thu, 11 Dec 2008 12:50:33 -0800
+From: Greg KH <gregkh@suse.de>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [RESEND][PATCH] uio: Add of_platform_driver to uio_pdrv_genirq
+Message-ID: <20081211205033.GA7080@suse.de>
+References: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, hjk@linutronix.de, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,32 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 11 Dec 2008 20:28:00 +0000
-Al Viro <viro@ZenIV.linux.org.uk> wrote:
-
-> On Thu, Dec 11, 2008 at 12:16:35PM -0800, Andrew Morton wrote:
-> > > +#if (8 * THREAD_SIZE) > PAGE_SIZE
-> > >  	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
-> > > +#else
-> > > +	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
-> > > +#endif
-> > 
-> > The expression you've chosen here can be quite inacccurate, because
-> > ((PAGE_SIZE / (8 * THREAD_SIZE)) is a small number.  The way to
-> > preserve accuracy is
-> > 
-> > 	max_threads = (mempages * PAGE_SIZE) / (8 * THREAD_SIZE);
-> > 
-> > so how about avoiding the nasty ifdefs and doing
+On Thu, Dec 11, 2008 at 04:05:37PM +0100, Wolfram Sang wrote:
+> Make the generic uio-driver also accessible for of devices. It utilizes the
+> standard 'reg' and 'interrupt' properties. A typical usage would look like
+> this:
 > 
-> Are you sure?
+> 	fpga-io@00003000 {
+> 		compatible = "generic-uio";
+> 		reg = <0x00003000 0x20>;
+> 		interrupts = <0xa>;
+> 		interrupt-parent = <&fpga_irq_mux>;
+> 	};
+> 
+> To achieve this, the probe function has been refactored, so it can be used by
+> platform and of code. Then, the of driver has been added.
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> ---
+>  drivers/uio/uio_pdrv_genirq.c |  178 ++++++++++++++++++++++++++++++++++++------
+>  1 file changed, 154 insertions(+), 24 deletions(-)
+> 
+> Index: playground/drivers/uio/uio_pdrv_genirq.c
+> ===================================================================
+> --- playground.orig/drivers/uio/uio_pdrv_genirq.c
+> +++ playground/drivers/uio/uio_pdrv_genirq.c
+> @@ -1,13 +1,15 @@
+>  /*
+>   * drivers/uio/uio_pdrv_genirq.c
+>   *
+> - * Userspace I/O platform driver with generic IRQ handling code.
+> + * Userspace I/O platform & of driver with generic IRQ handling code.
+>   *
+>   * Copyright (C) 2008 Magnus Damm
+> + * Copyright (C) 2008 Wolfram Sang, Pengutronix e.K.
+>   *
+>   * Based on uio_pdrv.c by Uwe Kleine-Koenig,
+>   * Copyright (C) 2008 by Digi International Inc.
+>   * All rights reserved.
+> + * Adding of_platform_driver based on xilinxfb.c by Grant Likely.
+>   *
+>   * This program is free software; you can redistribute it and/or modify it
+>   * under the terms of the GNU General Public License version 2 as published by
+> @@ -20,6 +22,10 @@
+>  #include <linux/bitops.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/stringify.h>
+> +#if defined(CONFIG_OF)
+> +#include <linux/of_device.h>
+> +#include <linux/of_platform.h>
+> +#endif
 
-No, not at all.  It's all too hard.  Which is why I'm looking for
-simplification.
+You should never need to test a config variable in order to know to
+include a header file or not.
 
->  Do they actually cross the page boundaries?
+> +/* ---------------------------------------------------------------------
+> + * OF bus binding
+> + */
+> +
+> +#if defined(CONFIG_OF)
 
-Some flavours of slab have at times done an order-1 allocation for
-objects which would fit into an order-0 page (etc) if it looks like
-that will be beneficial from a packing POV.  I'm unsure whether that
-still happens - I tried to get it stamped out for reliability reasons.
+Same goes here, don't put #if in .c files please.
+
+thanks,
+
+greg k-h
