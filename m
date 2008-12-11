@@ -1,22 +1,15 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	by ozlabs.org (Postfix) with ESMTP id C1B91DDE11
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 05:53:08 +1100 (EST)
-Date: Thu, 11 Dec 2008 18:52:56 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Timur Tabi <timur@freescale.com>
-Message-ID: <20081211185255.GA16784@sirena.org.uk>
-References: <49411308.1050008@fang.fa.gau.hu>
-	<ed82fe3e0812110712r4baeea60ied52937aa434f48e@mail.gmail.com>
-	<20081211153158.GF30808@sirena.org.uk>
-	<49413487.9030805@freescale.com>
-	<20081211154411.GG30808@sirena.org.uk>
-	<49413596.6030803@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49413596.6030803@freescale.com>
-Subject: Re: MPC8610HPCD sound as module
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 76CC4DDE11
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 06:14:31 +1100 (EST)
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] check for GIQ indicator before calling set-indicator
+Date: Thu, 11 Dec 2008 13:14:25 -0600
+Message-Id: <1229022865-14993-1-git-send-email-ntl@pobox.com>
+In-Reply-To: <c5d656532783550a8b21bb027497160a@bga.com>
+References: <c5d656532783550a8b21bb027497160a@bga.com>
+Cc: miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +19,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 11, 2008 at 09:45:26AM -0600, Timur Tabi wrote:
+Since "Factor out cpu joining/unjoining the GIQ"
+(b4963255ad5a426f04a0bb15c4315fa4bb40cde9) the WARN_ON in
+xics_set_cpu_giq() is being triggered during boot on JS20 because the
+GIQ indicator is not available on that platform.  While the warning is
+harmless and the system runs normally, it's nicer to check for the
+existence of the indicator before trying to manipulate it.
 
-> And since I fixed the code in the V2 drivers, I have no interest in fixing it in
-> the V1 drivers, which are officially in maintenance mode -- only critical bug
-> fixes, no new features.
+Implement rtas_indicator_present(), which searches the
+/rtas/rtas-indicators property for the given indicator token, and use
+this function in xics_set_cpu_giq().
 
-Well, from that point of view now would be a good time for you to start
-backporting your newer code.  The concept of having the core wait for
-subdevices to probe is now there which was the major win from the point
-of view of integration with the device tree.  What's there now also has
-the changes you wanted without the use of templates in the ASoC core so
-you can do a single memory allocation for devices rather than having to
-fill out templates and have the core do allocations for you.
+Also use a WARN statement in xics_set_cpu_giq to get better
+information on failure.
+
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/include/asm/rtas.h       |    1 +
+ arch/powerpc/kernel/rtas.c            |   26 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/xics.c |   15 ++++++++++++---
+ 3 files changed, 39 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 8eaa7b2..e0175be 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -168,6 +168,7 @@ extern void rtas_os_term(char *str);
+ extern int rtas_get_sensor(int sensor, int index, int *state);
+ extern int rtas_get_power_level(int powerdomain, int *level);
+ extern int rtas_set_power_level(int powerdomain, int level, int *setlevel);
++extern bool rtas_indicator_present(int token, int *maxindex);
+ extern int rtas_set_indicator(int indicator, int index, int new_value);
+ extern int rtas_set_indicator_fast(int indicator, int index, int new_value);
+ extern void rtas_progress(char *s, unsigned short hex);
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 1f8505c..fdfe14c 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -566,6 +566,32 @@ int rtas_get_sensor(int sensor, int index, int *state)
+ }
+ EXPORT_SYMBOL(rtas_get_sensor);
+ 
++bool rtas_indicator_present(int token, int *maxindex)
++{
++	int proplen, count, i;
++	const struct indicator_elem {
++		u32 token;
++		u32 maxindex;
++	} *indicators;
++
++	indicators = of_get_property(rtas.dev, "rtas-indicators", &proplen);
++	if (!indicators)
++		return false;
++
++	count = proplen / sizeof(struct indicator_elem);
++
++	for (i = 0; i < count; i++) {
++		if (indicators[i].token != token)
++			continue;
++		if (maxindex)
++			*maxindex = indicators[i].maxindex;
++		return true;
++	}
++
++	return false;
++}
++EXPORT_SYMBOL(rtas_indicator_present);
++
+ int rtas_set_indicator(int indicator, int index, int new_value)
+ {
+ 	int token = rtas_token("set-indicator");
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index e190477..37f5986 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -728,9 +728,18 @@ static void xics_set_cpu_priority(unsigned char cppr)
+ /* Have the calling processor join or leave the specified global queue */
+ static void xics_set_cpu_giq(unsigned int gserver, unsigned int join)
+ {
+-	int status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
+-		(1UL << interrupt_server_size) - 1 - gserver, join);
+-	WARN_ON(status < 0);
++	int index;
++	int status;
++
++	if (!rtas_indicator_present(GLOBAL_INTERRUPT_QUEUE, NULL))
++		return;
++
++	index = (1UL << interrupt_server_size) - 1 - gserver;
++
++	status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE, index, join);
++
++	WARN(status < 0, "set-indicator(%d, %d, %u) returned %d\n",
++	     GLOBAL_INTERRUPT_QUEUE, index, join, status);
+ }
+ 
+ void xics_setup_cpu(void)
+-- 
+1.5.5
