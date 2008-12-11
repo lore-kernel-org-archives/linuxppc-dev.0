@@ -1,21 +1,20 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 77194DDFCD
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 17:16:12 +1100 (EST)
-Received: from localhost.localdomain (unknown [127.0.0.1])
-	by a-sasl-fastnet.sasl.smtp.pobox.com (Postfix) with ESMTP id
-	58A2886E93
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 01:16:09 -0500 (EST)
-Received: from thinkcentre (unknown [67.9.156.46]) by
-	a-sasl-fastnet.sasl.smtp.pobox.com (Postfix) with ESMTPA id ECA4486E91
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 01:16:07 -0500 (EST)
-From: Nathan Lynch <ntl@pobox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3 v2] convert cpu_to_l2cache() to of_find_next_cache_node()
-Date: Thu, 11 Dec 2008 00:16:07 -0600
-Message-Id: <1228976167-11236-1-git-send-email-ntl@pobox.com>
-In-Reply-To: <1228956366-17593-2-git-send-email-ntl@pobox.com>
-References: <1228956366-17593-2-git-send-email-ntl@pobox.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id 9DF7EDDE0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 18:16:02 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so379364ywh.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 23:16:00 -0800 (PST)
+Message-ID: <fa686aa40812102316s165b757eva8ca282be2505964@mail.gmail.com>
+Date: Thu, 11 Dec 2008 00:16:00 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Gary Thomas" <gary@mlbassoc.com>
+Subject: Re: MPC5200 VIRQ question
+In-Reply-To: <49406730.8040609@mlbassoc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4937E048.90206@mlbassoc.com> <1228723422.7101.35.camel@pasglop>
+	<49406730.8040609@mlbassoc.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The smp code uses cache information to populate cpu_core_map; change
-it to use common code for cache lookup.
+On Wed, Dec 10, 2008 at 6:04 PM, Gary Thomas <gary@mlbassoc.com> wrote:
+> Benjamin Herrenschmidt wrote:
+>> On Thu, 2008-12-04 at 06:51 -0700, Gary Thomas wrote:
+>>> I have a MPC5200 based board which has an FPGA for external
+>>> I/O, etc.  This FPGA also funnels interrupts from the various
+>>> external devices through to the CPU.
+>>>
+>>> I've defined this structure in my DTS:
+>>>
+>>>      fpga@f8000000 {
+>>>              device_type = "board-control";
+>>>              #address-cells = <1>;
+>>>              #size-cells = <1>;
+>>>              // Note: includes sub-devices like CAN, A/D, etc
+>>>              reg = <0xf8000000 0x100000>;
+>>>
+>>>              fpga_ic: fpga_ic@f8000000 {
+>>>                      device_type = "fpga-int-ctlr";
+>>>                      interrupt-controller;
+>>>                      #address-cells = <0>;
+>>>                      #interrupt-cells = <2>;
+>>>                      interrupts = <2 26 3>; // IRQ2
+>
+> BTW, this is wrong! Are the IRQ mappings on the MPC5200 documented
+> somewhere? I've looked and looked without much joy.  Only by
+> experimentation did I discover that "<1 2 3>" corresponds to IRQ2.
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- arch/powerpc/kernel/smp.c |   11 ++++-------
- 1 files changed, 4 insertions(+), 7 deletions(-)
+http://www.nabble.com/-PATCH--powerpc-mpc5200:-Document-and-tidy-irq-driver-td20740376.html
 
-v2: Fix refcount imbalance, thanks to sfr.
+This should be going in for 2.6.29.  There is also some documentation
+about it in Documentation/powerpc/mpc52xx-device-tree-bindings.txt
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index ff9f701..a112ba9 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -408,8 +408,7 @@ out:
- static struct device_node *cpu_to_l2cache(int cpu)
- {
- 	struct device_node *np;
--	const phandle *php;
--	phandle ph;
-+	struct device_node *cache;
- 
- 	if (!cpu_present(cpu))
- 		return NULL;
-@@ -418,13 +417,11 @@ static struct device_node *cpu_to_l2cache(int cpu)
- 	if (np == NULL)
- 		return NULL;
- 
--	php = of_get_property(np, "l2-cache", NULL);
--	if (php == NULL)
--		return NULL;
--	ph = *php;
-+	cache = of_find_next_cache_node(np);
-+
- 	of_node_put(np);
- 
--	return of_find_node_by_phandle(ph);
-+	return cache;
- }
- 
- /* Activate a secondary processor. */
--- 
-1.5.5
+g.
