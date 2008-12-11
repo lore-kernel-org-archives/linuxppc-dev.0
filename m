@@ -1,33 +1,20 @@
-Return-Path: <Yu.Liu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4BB03DE027
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 13:16:03 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	mBB2Fwpg008137
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 19:15:58 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id mBB2FvwN007345
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Dec 2008 20:15:57 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] fsl-booke: declare tlbcam_index and num_tlbcam_entries
-	for use in c file
-Date: Thu, 11 Dec 2008 10:16:00 +0800
-Message-ID: <D8176E55B81822498D63816C4ADC701027CD97@zch01exm26.fsl.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0812100602210.28806@t2.domain.actdsltmp>
-References: <1228898473-29986-1-git-send-email-yu.liu@freescale.com>
-	<Pine.LNX.4.64.0812100602210.28806@t2.domain.actdsltmp>
-From: "Liu Yu" <Yu.Liu@freescale.com>
-To: "Piepho Trent-B16872" <tpiepho@freescale.com>
-Cc: Wood Scott-B07421 <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Gala Kumar-B11780 <kumar.gala@freescale.com>, kvm-ppc@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 453B0DDF72
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 16:20:40 +1100 (EST)
+Subject: Re: [PATCH] powermac: use set_hard_smp_processor_id() instead of
+	smp_hw_index
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <1228955322-16995-2-git-send-email-ntl@pobox.com>
+References: <1228955322-16995-2-git-send-email-ntl@pobox.com>
+Content-Type: text/plain
+Date: Thu, 11 Dec 2008 16:20:29 +1100
+Message-Id: <1228972829.22413.159.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,32 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2008-12-10 at 18:28 -0600, Nathan Lynch wrote:
+> The hard_smp_processor_id functions are the appropriate interfaces for
+> managing physical CPU ids.
+> 
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
 
-> -----Original Message-----
-> From: Piepho Trent-B16872=20
-> Sent: Wednesday, December 10, 2008 10:04 PM
-> To: Liu Yu-B13201
-> Cc: linuxppc-dev@ozlabs.org; kvm-ppc@vger.kernel.org; Wood=20
-> Scott-B07421; Gala Kumar-B11780
-> Subject: Re: [PATCH] fsl-booke: declare tlbcam_index and=20
-> num_tlbcam_entries for use in c file
->=20
-> On Wed, 10 Dec 2008, Liu Yu wrote:
-> > KVM on E500 platform currently utilize TLB1 entries without=20
-> bothering host,
-> > that is using unused TLB1 entries.
-> >
-> > So, KVM needs to read tlbcam_index and num_tlbcam_entries=20
-> to know exactly
-> > which TLB1 entry is unused.
->=20
-> Do you need really need num_tlbcam_entries?  It's completely=20
-> unused and
-> I've already sent out a patch to remove it.  If you want to know how
-> big TLB1 is, just read it from SPRN_TLB1CFG.
->=20
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Ah, I missed your patch.
-Certainly I can use SPRN_TLB1CFG.
-I thought if kernel provide a way to get it, then I would rather get it
-from kernel than from hardware.
+> ---
+>  arch/powerpc/platforms/powermac/smp.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+> index 40f72c2..6b0711c 100644
+> --- a/arch/powerpc/platforms/powermac/smp.c
+> +++ b/arch/powerpc/platforms/powermac/smp.c
+> @@ -739,7 +739,7 @@ static void __init smp_core99_setup(int ncpus)
+>  
+>  		/* XXX should get this from reg properties */
+>  		for (i = 1; i < ncpus; ++i)
+> -			smp_hw_index[i] = i;
+> +			set_hard_smp_processor_id(i, i);
+>  	}
+>  #endif
+>  
