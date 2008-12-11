@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 453B0DDF72
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 16:20:40 +1100 (EST)
-Subject: Re: [PATCH] powermac: use set_hard_smp_processor_id() instead of
-	smp_hw_index
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <1228955322-16995-2-git-send-email-ntl@pobox.com>
-References: <1228955322-16995-2-git-send-email-ntl@pobox.com>
-Content-Type: text/plain
-Date: Thu, 11 Dec 2008 16:20:29 +1100
-Message-Id: <1228972829.22413.159.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 77194DDFCD
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 17:16:12 +1100 (EST)
+Received: from localhost.localdomain (unknown [127.0.0.1])
+	by a-sasl-fastnet.sasl.smtp.pobox.com (Postfix) with ESMTP id
+	58A2886E93
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 01:16:09 -0500 (EST)
+Received: from thinkcentre (unknown [67.9.156.46]) by
+	a-sasl-fastnet.sasl.smtp.pobox.com (Postfix) with ESMTPA id ECA4486E91
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 01:16:07 -0500 (EST)
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 2/3 v2] convert cpu_to_l2cache() to of_find_next_cache_node()
+Date: Thu, 11 Dec 2008 00:16:07 -0600
+Message-Id: <1228976167-11236-1-git-send-email-ntl@pobox.com>
+In-Reply-To: <1228956366-17593-2-git-send-email-ntl@pobox.com>
+References: <1228956366-17593-2-git-send-email-ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-12-10 at 18:28 -0600, Nathan Lynch wrote:
-> The hard_smp_processor_id functions are the appropriate interfaces for
-> managing physical CPU ids.
-> 
-> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+The smp code uses cache information to populate cpu_core_map; change
+it to use common code for cache lookup.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
 ---
+ arch/powerpc/kernel/smp.c |   11 ++++-------
+ 1 files changed, 4 insertions(+), 7 deletions(-)
 
-> ---
->  arch/powerpc/platforms/powermac/smp.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-> index 40f72c2..6b0711c 100644
-> --- a/arch/powerpc/platforms/powermac/smp.c
-> +++ b/arch/powerpc/platforms/powermac/smp.c
-> @@ -739,7 +739,7 @@ static void __init smp_core99_setup(int ncpus)
->  
->  		/* XXX should get this from reg properties */
->  		for (i = 1; i < ncpus; ++i)
-> -			smp_hw_index[i] = i;
-> +			set_hard_smp_processor_id(i, i);
->  	}
->  #endif
->  
+v2: Fix refcount imbalance, thanks to sfr.
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index ff9f701..a112ba9 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -408,8 +408,7 @@ out:
+ static struct device_node *cpu_to_l2cache(int cpu)
+ {
+ 	struct device_node *np;
+-	const phandle *php;
+-	phandle ph;
++	struct device_node *cache;
+ 
+ 	if (!cpu_present(cpu))
+ 		return NULL;
+@@ -418,13 +417,11 @@ static struct device_node *cpu_to_l2cache(int cpu)
+ 	if (np == NULL)
+ 		return NULL;
+ 
+-	php = of_get_property(np, "l2-cache", NULL);
+-	if (php == NULL)
+-		return NULL;
+-	ph = *php;
++	cache = of_find_next_cache_node(np);
++
+ 	of_node_put(np);
+ 
+-	return of_find_node_by_phandle(ph);
++	return cache;
+ }
+ 
+ /* Activate a secondary processor. */
+-- 
+1.5.5
