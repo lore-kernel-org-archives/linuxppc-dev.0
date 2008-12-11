@@ -1,20 +1,22 @@
-Return-Path: <m.fortini@selcomgroup.com>
-Received: from averell.mail.tiscali.it (averell.mail.tiscali.it
-	[213.205.33.55]) by ozlabs.org (Postfix) with ESMTP id 4D34ADDF65
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 09:07:20 +1100 (EST)
-Message-ID: <49418CE4.6080109@selcomgroup.com>
-Date: Thu, 11 Dec 2008 22:57:56 +0100
-From: Matteo Fortini <m.fortini@selcomgroup.com>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CD4C6DDFCE
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 09:22:44 +1100 (EST)
+Date: Fri, 12 Dec 2008 01:22:32 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <483237973.20081212012232@emcraft.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re[2]: [PATCH][v2] fork_init: fix division by zero
+In-Reply-To: <20081211121635.ff58193f.akpm@linux-foundation.org>
+References: <200812101950.51958.yur@emcraft.com>
+	<20081211121635.ff58193f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [RESEND] [PATCH] ADS5121 Fix: put dummy byte to enable fixing
-	EOF bug to first place in order not to break some drivers\nUse
-	ALARM	interrupt to avoid waiting for data to come in
-References: <49400F56.2040008@selcomgroup.com>	<20081211093517.31741578@zod.rchland.ibm.com>	<49415E59.7000301@selcomgroup.com>
-	<20081211134635.1badd234@zod.rchland.ibm.com>
-In-Reply-To: <20081211134635.1badd234@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
+Content-Type: text/plain; charset=windows-1251
+Cc: wd@denx.de, dzu@denx.de, linux-kernel@vger.kernel.org, miltonm@bga.com,
+	linuxppc-dev@ozlabs.org, viro@zeniv.linux.org.uk,
+	Geert.Uytterhoeven@sonycom.com, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,48 +26,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I rechecked it and I should have taken away all the only-whitespace changes.
+=0D=0AHello Andrew,
 
-The diffs are from the ads5121 branch from Denx.
+On Thursday, December 11, 2008 you wrote:
 
-Regards,
-M
+[snip]
+
+> The expression you've chosen here can be quite inacccurate, because
+> ((PAGE_SIZE / (8 * THREAD_SIZE)) is a small number.=20
+
+ But why is it bad? We do multiplication to 'mempages', not division.=20
+All the numbers in the multiplier are the power of 2, so both=20
+expressions:
+
+mempages * (PAGE_SIZE / (8 * THREAD_SIZE))
+
+and
+
+max_threads =3D (mempages * PAGE_SIZE) / (8 * THREAD_SIZE)
+
+are finally equal.=20
+
+>  The way to preserve accuracy is
+
+>         max_threads =3D (mempages * PAGE_SIZE) / (8 * THREAD_SIZE);
+
+> so how about avoiding the nasty ifdefs and doing
+
+ I'm OK with the approach below, but, leading resulting to the same,=20
+this involves some overhead to the code where there was no this=20
+overhead before this patch: e.g. your implementation is finally boils=20
+down to ~5 times more processor instructions than there were before,
+plus operations with stack for the 'm' variable.
+
+ On the other hand, my approach with nasty (I agree) ifdefs doesn't=20
+lead to overheads to the code which does not need this: i.e. the most=20
+common situation of small PAGE_SIZEs. Big PAGE_SIZE is the exception,=20
+so I believe that the more common cases should not suffer because of=20
+this.
+
+> --- a/kernel/fork.c~fork_init-fix-division-by-zero
+> +++ a/kernel/fork.c
+> @@ -69,6 +69,7 @@
+>  #include <asm/mmu_context.h>
+>  #include <asm/cacheflush.h>
+>  #include <asm/tlbflush.h>
+> +#include <asm/div64.h>
+> =20
+>  /*
+>   * Protected counters by write_lock_irq(&tasklist_lock)
+> @@ -185,10 +186,15 @@ void __init fork_init(unsigned long memp
+> =20
+>         /*
+>          * The default maximum number of threads is set to a safe
+> -        * value: the thread structures can take up at most half
+> -        * of memory.
+> +        * value: the thread structures can take up at most
+> +        * (1/8) part of memory.
+>          */
+> -       max_threads =3D mempages / (8 * THREAD_SIZE / PAGE_SIZE);
+> +       {
+> +               /* max_threads =3D (mempages * PAGE_SIZE) / THREAD_SIZE /=
+ 8; */
+> +               u64 m =3D mempages * PAGE_SIZE;
+> +               do_div(m, THREAD_SIZE * 8);
+> +               max_threads =3D m;
+> +       }
+> =20
+>         /*
+>          * we need to allow at least 20 threads to boot a system
+> _
+
+> ?
 
 
-Josh Boyer ha scritto:
-> On Thu, 11 Dec 2008 19:39:21 +0100
-> Matteo Fortini <m.fortini@selcomgroup.com> wrote:
->
->   
->> This patch is to avoid breaking some drivers, in my case the ADS7846 
->> touchscreen one, which use 1 char messages.
->> If you put the dummy byte after the 1 char message, you get part of the 
->> answer to the message in the rxbuf of the message, which is thrown away.
->>
->> The solution is to put the dummy byte before the message, so that the 
->> slave doesn't respond.
->>
->> It also optimizes the interrupt handling, by using the alarm function of 
->> the FIFO, to wait until the rx FIFO has received enough bytes, instead 
->> of waiting until the tx FIFO is empty.
->>
->>
->>
->> Signed-off-by: Matteo Fortini <m.fortini@selcomgroup.com>
->> ---
->>  drivers/spi/mpc512x_psc_spi.c |   50 
->> +++++++++++++++++++++++-----------------
->>  1 files changed, 29 insertions(+), 21 deletions(-)
->>     
->
-> This still seems to be whitespace corrupted.  Also, that file doesn't
-> even exist in any upstream kernel I can find.  What tree did you diff
-> this from?
->
-> josh
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
->   
+> The code is also inaccurate because it assumes that <whatever allocator
+is used for threads>> will pack the thread_structs into pages with best
+> possible density, which isn't necessarily the case.  Let's not worry
+> about that.
+
+
+
+
+> OT:
+
+> max_threads is widly wrong anyway.
+
+> - the caller passes in num_physpages, which includes highmem.  And we
+>   can't allocate thread structs from highmem.
+
+> - num_physpages includes kernel pages and other stuff which can never
+>   be allocated via the page allocator.
+
+> A suitable fix would be to switch the caller to the strangely-named
+> nr_free_buffer_pages().
+
+> If you grep the tree for `num_physpages', you will find a splendid
+> number of similar bugs.  num_physpages should be unexported, burnt,
+> deleted, etc.  It's just an invitation to write buggy code.
+
+
+ Regards, Yuri
+
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
