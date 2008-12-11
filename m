@@ -1,18 +1,23 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-bw0-f10.google.com (mail-bw0-f10.google.com
-	[209.85.218.10]) by ozlabs.org (Postfix) with ESMTP id 97361DDEDA
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 06:57:34 +1100 (EST)
-Received: by bwz3 with SMTP id 3so1139994bwz.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 11:57:32 -0800 (PST)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Thu, 11 Dec 2008 14:46:44 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, michael@ellerman.id.au
-Subject: [PATCH v2] powerpc: Introduce ppc_pci_flags accessors
-Message-ID: <20081211194644.GA30711@yoda.jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 08C7A474C1
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 07:18:02 +1100 (EST)
+Date: Thu, 11 Dec 2008 12:16:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH][v2] fork_init: fix division by zero
+Message-Id: <20081211121635.ff58193f.akpm@linux-foundation.org>
+In-Reply-To: <200812101950.51958.yur@emcraft.com>
+References: <200812101950.51958.yur@emcraft.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: wd@denx.de, dzu@denx.de, linux-kernel@vger.kernel.org, miltonm@bga.com,
+	linuxppc-dev@ozlabs.org, viro@zeniv.linux.org.uk,
+	Geert.Uytterhoeven@sonycom.com, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,275 +27,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently there are a number of platforms that open code access to
-the ppc_pci_flags global variable.  However, that variable is not
-present if CONFIG_PCI is not set, which can lead to a build break.
+On Wed, 10 Dec 2008 19:50:51 +0300
+Yuri Tikhonov <yur@emcraft.com> wrote:
 
-This introduces a number of accessor functions that are defined
-to be empty in the case of CONFIG_PCI being disabled.  The
-various platform files in the kernel are updated to use these.
+> 
+> The following patch fixes divide-by-zero error for the
+> cases of really big PAGE_SIZEs (e.g. 256KB on ppc44x).
+> Support for big page sizes on 44x is not present in the
+> current kernel yet, but coming soon.
+> 
+> Also this patch fixes the comment for the max_threads
+> settings, as this didn't match the things actually done
+> in the code.
+> 
+> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+> ---
+>  kernel/fork.c |    8 ++++++--
+>  1 files changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 8d6a7dd..638eb7f 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -181,10 +181,14 @@ void __init fork_init(unsigned long mempages)
+>  
+>  	/*
+>  	 * The default maximum number of threads is set to a safe
+> -	 * value: the thread structures can take up at most half
+> -	 * of memory.
+> +	 * value: the thread structures can take up at most
+> +	 * (1/8) part of memory.
+>  	 */
+> +#if (8 * THREAD_SIZE) > PAGE_SIZE
+>  	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
+> +#else
+> +	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
+> +#endif
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
----
-v2: Make accessors static inline functions and rename flag_is_set to has_flag
+The expression you've chosen here can be quite inacccurate, because
+((PAGE_SIZE / (8 * THREAD_SIZE)) is a small number.  The way to
+preserve accuracy is
 
- arch/powerpc/include/asm/pci-bridge.h      |   26 +++++++++++++++++++++++++-
- arch/powerpc/include/asm/pci.h             |    4 ++--
- arch/powerpc/platforms/40x/ep405.c         |    2 +-
- arch/powerpc/platforms/40x/kilauea.c       |    2 +-
- arch/powerpc/platforms/40x/ppc40x_simple.c |    2 +-
- arch/powerpc/platforms/44x/ebony.c         |    2 +-
- arch/powerpc/platforms/44x/ppc44x_simple.c |    2 +-
- arch/powerpc/platforms/44x/sam440ep.c      |    2 +-
- arch/powerpc/platforms/52xx/mpc52xx_pci.c  |    2 +-
- arch/powerpc/platforms/82xx/pq2.c          |    2 +-
- arch/powerpc/platforms/chrp/pci.c          |    2 +-
- arch/powerpc/platforms/powermac/pci.c      |    6 +++---
- arch/powerpc/sysdev/fsl_pci.c              |    4 ++--
- arch/powerpc/sysdev/grackle.c              |    2 +-
- 14 files changed, 42 insertions(+), 18 deletions(-)
+	max_threads = (mempages * PAGE_SIZE) / (8 * THREAD_SIZE);
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index fa8b3b7..84007af 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -13,7 +13,6 @@
- 
- struct device_node;
- 
--extern unsigned int ppc_pci_flags;
- enum {
- 	/* Force re-assigning all resources (ignore firmware
- 	 * setup completely)
-@@ -36,6 +35,31 @@ enum {
- 	/* ... except for domain 0 */
- 	PPC_PCI_COMPAT_DOMAIN_0		= 0x00000020,
- };
-+#ifdef CONFIG_PCI
-+extern unsigned int ppc_pci_flags;
-+
-+static inline void ppc_pci_set_flags(int flags)
-+{
-+	ppc_pci_flags = flags;
-+}
-+
-+static inline void ppc_pci_add_flags(int flags)
-+{
-+	ppc_pci_flags |= flags;
-+}
-+
-+static inline int ppc_pci_has_flag(int flag)
-+{
-+	return (ppc_pci_flags & flag);
-+}
-+#else
-+static inline void ppc_pci_set_flags(int flags) { }
-+static inline void ppc_pci_add_flags(int flags) { }
-+static inline int ppc_pci_has_flag(int flag)
-+{
-+	return 0;
-+}
-+#endif
- 
+so how about avoiding the nasty ifdefs and doing
+
+--- a/kernel/fork.c~fork_init-fix-division-by-zero
++++ a/kernel/fork.c
+@@ -69,6 +69,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
++#include <asm/div64.h>
  
  /*
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 1c721a6..3548159 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -38,8 +38,8 @@ struct pci_dev;
-  * Set this to 1 if you want the kernel to re-assign all PCI
-  * bus numbers (don't do that on ppc64 yet !)
-  */
--#define pcibios_assign_all_busses()    	(ppc_pci_flags & \
--					 PPC_PCI_REASSIGN_ALL_BUS)
-+#define pcibios_assign_all_busses() \
-+	(ppc_pci_has_flag(PPC_PCI_REASSIGN_ALL_BUS))
- #define pcibios_scan_all_fns(a, b)	0
+  * Protected counters by write_lock_irq(&tasklist_lock)
+@@ -185,10 +186,15 @@ void __init fork_init(unsigned long memp
  
- static inline void pcibios_set_master(struct pci_dev *dev)
-diff --git a/arch/powerpc/platforms/40x/ep405.c b/arch/powerpc/platforms/40x/ep405.c
-index ae2e7f6..4058fd1 100644
---- a/arch/powerpc/platforms/40x/ep405.c
-+++ b/arch/powerpc/platforms/40x/ep405.c
-@@ -100,7 +100,7 @@ static void __init ep405_setup_arch(void)
- 	/* Find & init the BCSR CPLD */
- 	ep405_init_bcsr();
- 
--	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
-+	ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
- }
- 
- static int __init ep405_probe(void)
-diff --git a/arch/powerpc/platforms/40x/kilauea.c b/arch/powerpc/platforms/40x/kilauea.c
-index 1dd24ff..fd7d934 100644
---- a/arch/powerpc/platforms/40x/kilauea.c
-+++ b/arch/powerpc/platforms/40x/kilauea.c
-@@ -44,7 +44,7 @@ static int __init kilauea_probe(void)
- 	if (!of_flat_dt_is_compatible(root, "amcc,kilauea"))
- 		return 0;
- 
--	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
-+	ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
- 
- 	return 1;
- }
-diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
-index 4498a86..f40ac9b 100644
---- a/arch/powerpc/platforms/40x/ppc40x_simple.c
-+++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
-@@ -61,7 +61,7 @@ static int __init ppc40x_probe(void)
- 
- 	for (i = 0; i < ARRAY_SIZE(board); i++) {
- 		if (of_flat_dt_is_compatible(root, board[i])) {
--			ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
-+			ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
- 			return 1;
- 		}
- 	}
-diff --git a/arch/powerpc/platforms/44x/ebony.c b/arch/powerpc/platforms/44x/ebony.c
-index a0e8fe4..88b9117 100644
---- a/arch/powerpc/platforms/44x/ebony.c
-+++ b/arch/powerpc/platforms/44x/ebony.c
-@@ -54,7 +54,7 @@ static int __init ebony_probe(void)
- 	if (!of_flat_dt_is_compatible(root, "ibm,ebony"))
- 		return 0;
- 
--	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
-+	ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
- 
- 	return 1;
- }
-diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms/44x/ppc44x_simple.c
-index 2967126..76fdc51 100644
---- a/arch/powerpc/platforms/44x/ppc44x_simple.c
-+++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
-@@ -69,7 +69,7 @@ static int __init ppc44x_probe(void)
- 
- 	for (i = 0; i < ARRAY_SIZE(board); i++) {
- 		if (of_flat_dt_is_compatible(root, board[i])) {
--			ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
-+			ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
- 			return 1;
- 		}
- 	}
-diff --git a/arch/powerpc/platforms/44x/sam440ep.c b/arch/powerpc/platforms/44x/sam440ep.c
-index 47f10e6..a78e8eb 100644
---- a/arch/powerpc/platforms/44x/sam440ep.c
-+++ b/arch/powerpc/platforms/44x/sam440ep.c
-@@ -51,7 +51,7 @@ static int __init sam440ep_probe(void)
- 	if (!of_flat_dt_is_compatible(root, "acube,sam440ep"))
- 		return 0;
- 
--	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
-+	ppc_pci_set_flags(PPC_PCI_REASSIGN_ALL_RSRC);
- 
- 	return 1;
- }
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-index b49a185..c3f2c21 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-@@ -375,7 +375,7 @@ mpc52xx_add_bridge(struct device_node *node)
- 
- 	pr_debug("Adding MPC52xx PCI host bridge %s\n", node->full_name);
- 
--	ppc_pci_flags |= PPC_PCI_REASSIGN_ALL_BUS;
-+	ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS);
- 
- 	if (of_address_to_resource(node, 0, &rsrc) != 0) {
- 		printk(KERN_ERR "Can't get %s resources\n", node->full_name);
-diff --git a/arch/powerpc/platforms/82xx/pq2.c b/arch/powerpc/platforms/82xx/pq2.c
-index 1b75902..9761a59 100644
---- a/arch/powerpc/platforms/82xx/pq2.c
-+++ b/arch/powerpc/platforms/82xx/pq2.c
-@@ -53,7 +53,7 @@ static void __init pq2_pci_add_bridge(struct device_node *np)
- 	if (of_address_to_resource(np, 0, &r) || r.end - r.start < 0x10b)
- 		goto err;
- 
--	ppc_pci_flags |= PPC_PCI_REASSIGN_ALL_BUS;
-+	ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS);
- 
- 	hose = pcibios_alloc_controller(np);
- 	if (!hose)
-diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
-index d3cde6b..e0392e2 100644
---- a/arch/powerpc/platforms/chrp/pci.c
-+++ b/arch/powerpc/platforms/chrp/pci.c
-@@ -198,7 +198,7 @@ static void __init setup_peg2(struct pci_controller *hose, struct device_node *d
- 		printk ("RTAS supporting Pegasos OF not found, please upgrade"
- 			" your firmware\n");
- 	}
--	ppc_pci_flags |= PPC_PCI_REASSIGN_ALL_BUS;
-+	ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS);
- 	/* keep the reference to the root node */
- }
- 
-diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
-index bcf50d7..54b7b76 100644
---- a/arch/powerpc/platforms/powermac/pci.c
-+++ b/arch/powerpc/platforms/powermac/pci.c
-@@ -729,7 +729,7 @@ static void __init setup_bandit(struct pci_controller *hose,
- static int __init setup_uninorth(struct pci_controller *hose,
- 				 struct resource *addr)
- {
--	ppc_pci_flags |= PPC_PCI_REASSIGN_ALL_BUS;
-+	ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS);
- 	has_uninorth = 1;
- 	hose->ops = &macrisc_pci_ops;
- 	hose->cfg_addr = ioremap(addr->start + 0x800000, 0x1000);
-@@ -996,7 +996,7 @@ void __init pmac_pci_init(void)
- 	struct device_node *np, *root;
- 	struct device_node *ht = NULL;
- 
--	ppc_pci_flags = PPC_PCI_CAN_SKIP_ISA_ALIGN;
-+	ppc_pci_set_flags(PPC_PCI_CAN_SKIP_ISA_ALIGN);
- 
- 	root = of_find_node_by_path("/");
- 	if (root == NULL) {
-@@ -1055,7 +1055,7 @@ void __init pmac_pci_init(void)
- 	 * some offset between bus number and domains for now when we
- 	 * assign all busses should help for now
+ 	/*
+ 	 * The default maximum number of threads is set to a safe
+-	 * value: the thread structures can take up at most half
+-	 * of memory.
++	 * value: the thread structures can take up at most
++	 * (1/8) part of memory.
  	 */
--	if (ppc_pci_flags & PPC_PCI_REASSIGN_ALL_BUS)
-+	if (ppc_pci_has_flag(PPC_PCI_REASSIGN_ALL_BUS))
- 		pcibios_assign_bus_offset = 0x10;
- #endif
- }
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 5b264eb..d5f9ae0 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -187,7 +187,7 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 		printk(KERN_WARNING "Can't get bus-range for %s, assume"
- 			" bus 0\n", dev->full_name);
+-	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
++	{
++		/* max_threads = (mempages * PAGE_SIZE) / THREAD_SIZE / 8; */
++		u64 m = mempages * PAGE_SIZE;
++		do_div(m, THREAD_SIZE * 8);
++		max_threads = m;
++	}
  
--	ppc_pci_flags |= PPC_PCI_REASSIGN_ALL_BUS;
-+	ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS);
- 	hose = pcibios_alloc_controller(dev);
- 	if (!hose)
- 		return -ENOMEM;
-@@ -300,7 +300,7 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 		       " bus 0\n", dev->full_name);
- 	}
- 
--	ppc_pci_flags |= PPC_PCI_REASSIGN_ALL_BUS;
-+	ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS);
- 	hose = pcibios_alloc_controller(dev);
- 	if (!hose)
- 		return -ENOMEM;
-diff --git a/arch/powerpc/sysdev/grackle.c b/arch/powerpc/sysdev/grackle.c
-index d502927..5da37c2 100644
---- a/arch/powerpc/sysdev/grackle.c
-+++ b/arch/powerpc/sysdev/grackle.c
-@@ -57,7 +57,7 @@ void __init setup_grackle(struct pci_controller *hose)
- {
- 	setup_indirect_pci(hose, 0xfec00000, 0xfee00000, 0);
- 	if (machine_is_compatible("PowerMac1,1"))
--		ppc_pci_flags |= PPC_PCI_REASSIGN_ALL_BUS;
-+		ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS);
- 	if (machine_is_compatible("AAPL,PowerBook1998"))
- 		grackle_set_loop_snoop(hose, 1);
- #if 0	/* Disabled for now, HW problems ??? */
--- 
-1.5.6.5
+ 	/*
+ 	 * we need to allow at least 20 threads to boot a system
+_
+
+?
+
+
+The code is also inaccurate because it assumes that <whatever allocator
+is used for threads> will pack the thread_structs into pages with best
+possible density, which isn't necessarily the case.  Let's not worry
+about that.
+
+
+
+
+OT:
+
+max_threads is widly wrong anyway.
+
+- the caller passes in num_physpages, which includes highmem.  And we
+  can't allocate thread structs from highmem.
+
+- num_physpages includes kernel pages and other stuff which can never
+  be allocated via the page allocator.
+
+A suitable fix would be to switch the caller to the strangely-named
+nr_free_buffer_pages().
+
+If you grep the tree for `num_physpages', you will find a splendid
+number of similar bugs.  num_physpages should be unexported, burnt,
+deleted, etc.  It's just an invitation to write buggy code.
