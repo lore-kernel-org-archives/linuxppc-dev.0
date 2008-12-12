@@ -1,18 +1,24 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id E09F5DE0B2
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 03:59:16 +1100 (EST)
-Message-ID: <49429861.9060305@harris.com>
-Date: Fri, 12 Dec 2008 11:59:13 -0500
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3300CDE0CC
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 04:14:35 +1100 (EST)
+Message-ID: <49429BC9.7070508@freescale.com>
+Date: Fri, 12 Dec 2008 11:13:45 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [RFC] Dummy GPIO driver for use with SPI
-References: <4942738A.80609@harris.com>
-	<20081212150144.GA28147@oksana.dev.rtsoft.ru>
-In-Reply-To: <20081212150144.GA28147@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: How to support 3GB pci address?
+References: <200812112004118902765@gmail.com>	<41706FC0-B740-42C0-BA2B-B9E4B5839477@kernel.crashing.org>	<Pine.LNX.4.64.0812111957470.28806@t2.domain.actdsltmp>	<C2765CC8-2113-4323-9983-FD6E9A357453@kernel.crashing.org>	<Pine.LNX.4.64.0812120015050.28806@t2.domain.actdsltmp>
+	<A15C72A2-1CEE-4D22-ACA8-F0DA1F04699E@kernel.crashing.org>
+In-Reply-To: <A15C72A2-1CEE-4D22-ACA8-F0DA1F04699E@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	"maillist.kernel" <maillist.kernel@gmail.com>,
+	Trent Piepho <tpiepho@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> On Fri, Dec 12, 2008 at 09:22:02AM -0500, Steven A. Falco wrote:
->> This patch adds a dummy GPIO driver, which is useful for SPI devices
->> that do not have a physical chip select.
+Kumar Gala wrote:
 > 
-> Hm. Then you don't need a chip-select, and SPI driver must understand
-> this case. When SPI controller has no "gpios" property, it should just
-> ignore any chip-select toggling operations.
+> On Dec 12, 2008, at 3:04 AM, Trent Piepho wrote:
 > 
-> As an implementation example you can use this patch:
+>> On Thu, 11 Dec 2008, Kumar Gala wrote:
+>>> On Dec 11, 2008, at 10:07 PM, Trent Piepho wrote:
+>>>> Don't the ATMU windows in the pcie controller serve as a IOMMU, making
+>>>> swiotlb
+>>>> unnecessary and wasteful?
+>>>
+>>> Nope.  You have no way to tell when to switch a window as you have no 
+>>> idea
+>>> when a device might DMA data.
+>>
+>> Isn't that what dma_alloc_coherent() and dma_map_single() are for?
 > 
-> http://patchwork.ozlabs.org/patch/12499/
-> 
-> grep for "SPI w/o chip-select line."
-> 
+> Nope.  How would manipulate the PCI ATMU?
 
-My actual situation is a bit more complicated - serves me right for
-trying to simplify it in my RFC.
+It could dynamically set up 1GB or so windows to cover 
+currently-established mappings as they happen, and fall back on bounce 
+buffering if no windows are available.  This avoids penalizing a 
+DMA-heavy application that is the only DMA user (so no window 
+thrashing), but happens to live in high memory.
 
-We have three devices on the SPI bus.  Two have well-behaved chip
-selects - they are ST flash memory devices.  The third device, the
-Atmel chip does not have a chip select.  It does have a RESET pin,
-which is similar to a chip select, but the Atmel protocol requires
-that that pin be low during the entire programming operation, and
-I cannot chain all the tx/rx operations together into one atomic 
-SPI transaction, so I cannot use that pin as the SPI chip select.
+That said, let's get things working first, and optimize later.
 
-Instead, I manage the RESET pin outside of the SPI driver, and hence
-there is no chip select for that one device, so I use my dummy CS
-driver to provide a fake chip select to satisfy the SPI driver.
-
-This does have the limitation that I must be careful not to access
-the flash parts at the same time as I access the Atmel, but that is
-ok for my application.  I guess I could use something like your
-patch, but I'd maybe have to extend the flags to include a "do not
-use" bit, which would bypass the gpio_is_valid and gpio_request
-calls.
-
-What do you think about having a mechanism to specify that some
-SPI slaves have a chip select, while others don't have to have a
-chip select managed by the SPI subsystem?
-
-	Steve
+-Scott
