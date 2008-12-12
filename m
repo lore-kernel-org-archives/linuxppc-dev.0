@@ -1,22 +1,23 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp120.mail.mud.yahoo.com (smtp120.mail.mud.yahoo.com
-	[209.191.84.77]) by ozlabs.org (Postfix) with SMTP id 69791DE11D
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 14:36:10 +1100 (EST)
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][v2] fork_init: fix division by zero
-Date: Fri, 12 Dec 2008 13:36:02 +1000
-References: <200812101950.51958.yur@emcraft.com>
-	<200812121331.34602.nickpiggin@yahoo.com.au>
-	<20081211184753.97d0db7a.akpm@linux-foundation.org>
-In-Reply-To: <20081211184753.97d0db7a.akpm@linux-foundation.org>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5F0CEDE01D
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 15:07:17 +1100 (EST)
+Date: Thu, 11 Dec 2008 20:07:06 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: How to support 3GB pci address?
+In-Reply-To: <41706FC0-B740-42C0-BA2B-B9E4B5839477@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.64.0812111957470.28806@t2.domain.actdsltmp>
+References: <200812112004118902765@gmail.com>
+	<41706FC0-B740-42C0-BA2B-B9E4B5839477@kernel.crashing.org>
 MIME-Version: 1.0
-Message-Id: <200812121436.03177.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: wd@denx.de, dzu@denx.de, miltonm@bga.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>,
-	Geert.Uytterhoeven@sonycom.com, yanok@emcraft.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	"maillist.kernel" <maillist.kernel@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 12 December 2008 13:47, Andrew Morton wrote:
-> On Fri, 12 Dec 2008 12:31:33 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > On Friday 12 December 2008 07:43, Andrew Morton wrote:
-> > > On Thu, 11 Dec 2008 20:28:00 +0000
-> > >
-> > > >  Do they actually cross the page boundaries?
-> > >
-> > > Some flavours of slab have at times done an order-1 allocation for
-> > > objects which would fit into an order-0 page (etc) if it looks like
-> > > that will be beneficial from a packing POV.  I'm unsure whether that
-> > > still happens - I tried to get it stamped out for reliability reasons.
-> >
-> > Hmph, SLUB uses order-3 allocations for 832 byte sized objects
-> > by default here (mm struct).
+On Thu, 11 Dec 2008, Kumar Gala wrote:
+> On Dec 11, 2008, at 6:04 AM, maillist.kernel wrote:
+>> In the system, the total PCI address needed is about 3GB, so I want to know 
+>> how to support it in linux. mpc8548 has 36-bit real address, and can 
+>> support 32GB PCIE address space, but in linux, there is only 1GB kernel 
+>> space, how to map the 3GB pci address to kernel? Is the  36-bit real 
+>> address only used to support large memory(>4GB) for muti-threads?
 >
-> That sucks, but at least it's <= PAGE_ALLOC_COSTLY_ORDER.
+> The 36-bit support is current (in tree) in complete.  Work is in progress to 
+> add swiotlb support to PPC which will generically enable what you want to 
+> accomplish.
 
-Which is somewhat arbitrary a value. order-1 is costly compared to
-order-0...
-
-After running my system here for a while and doing various things
-with it, I have the ability to allocate 898 order-0 pages (3592K),
-or 36 order-3 pages (1152K).
-
-Not as bad as I expected, but the system's only been up for an hour,
-and not exactly doing anything unusual (and it has nearly 30MB free,
-out of 4GB).
-
-
-> It's fortunate that everyone has more than 128GB of memory.
-
-And that SLAB still works quite well :)
+Don't the ATMU windows in the pcie controller serve as a IOMMU, making swiotlb
+unnecessary and wasteful?
