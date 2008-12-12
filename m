@@ -1,21 +1,17 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-gx0-f19.google.com (mail-gx0-f19.google.com
-	[209.85.217.19]) by ozlabs.org (Postfix) with ESMTP id A1777DE092
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 12:09:47 +1100 (EST)
-Received: by gxk12 with SMTP id 12so1601176gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Dec 2008 17:09:28 -0800 (PST)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Thu, 11 Dec 2008 20:03:22 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A1CD3DDFE5
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 12:38:52 +1100 (EST)
+To: Ron Madrid <ron_madrid@sbcglobal.net>
+From: Wolfgang Denk <wd@denx.de>
 Subject: Re: Problem building kernel
-Message-ID: <20081212010322.GB30711@yoda.jdub.homelinux.org>
-References: <683138.71397.qm@web83507.mail.sp1.yahoo.com>
-	<EE58AED7-C014-4009-ADB8-F8D5AC0B6221@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <EE58AED7-C014-4009-ADB8-F8D5AC0B6221@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Ron Madrid <ron_madrid@sbcglobal.net>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <454690.60670.qm@web83505.mail.sp1.yahoo.com>
+References: <454690.60670.qm@web83505.mail.sp1.yahoo.com>
+Date: Fri, 12 Dec 2008 02:38:48 +0100
+Message-Id: <20081212013848.42D228124402@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 11, 2008 at 06:19:20PM -0600, Kumar Gala wrote:
->
-> On Dec 11, 2008, at 5:48 PM, Ron Madrid wrote:
->
->> Hello all,
->>
->> I got the latest kernel from git://git.denx.de/linux-2.6-denx.git and 
->> after
->> configuring with menuconfig I am seeing these errors.  I feel like  
->> this
->> could be something simple that I am just unaware of, but I'm not sure
->> and haven't been able to find anything useful when doing a web search.
->>
->> Any ideas?  What other information would be helpful?
->>
->>  BOOTCC  arch/powerpc/boot/redboot-83xx.o
->>  BOOTCC  arch/powerpc/boot/cuboot-sam440ep.o
->>  BOOTCC  arch/powerpc/boot/cuboot-acadia.o
->> {standard input}: Assembler messages:
->> {standard input}:278: Error: Unrecognized opcode: `mtdcr'
->> {standard input}:282: Error: Unrecognized opcode: `mfdcr'
->> {standard input}:289: Error: Unrecognized opcode: `mtdcr'
->> {standard input}:293: Error: Unrecognized opcode: `mfdcr'
->> {standard input}:312: Error: Unrecognized opcode: `mtdcr'
->> {standard input}:316: Error: Unrecognized opcode: `mfdcr'
->> make[2]: *** [arch/powerpc/boot/cuboot-acadia.o] Error 1
->> make[1]: *** [zImage] Error 2
->> make: *** [sub-make] Error 2
->>
->> Ron
->
-> I swear Josh or Grant fixed this.
+Dear Ron Madrid,
 
-I did.  I sent a pull request to Paul today for this exact commit.
+In message <454690.60670.qm@web83505.mail.sp1.yahoo.com> you wrote:
+> Thank you.  That took care of it.  I knew it was something small.
 
-I had it sitting in the wrong branch of my tree.  Sorry about that.
+It's fixed in our tree now, too. 
 
-josh
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I'd like to meet the man who invented sex and see what  he's  working
+on now.
