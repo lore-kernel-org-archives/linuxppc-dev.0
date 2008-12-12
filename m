@@ -1,15 +1,18 @@
-Return-Path: <linuxuser330250@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 908F3DE0D4
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 03:52:27 +1100 (EST)
-From: Linux User #330250 <linuxuser330250@gmx.net>
-To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
-Subject: PowerMac3,6 (G4 MDD): X.org radeon + DVI panel = red flickering
-Date: Fri, 12 Dec 2008 17:52:22 +0100
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id E09F5DE0B2
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 03:59:16 +1100 (EST)
+Message-ID: <49429861.9060305@harris.com>
+Date: Fri, 12 Dec 2008 11:59:13 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200812121752.22746.linuxuser330250@gmx.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [RFC] Dummy GPIO driver for use with SPI
+References: <4942738A.80609@harris.com>
+	<20081212150144.GA28147@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081212150144.GA28147@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,40 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi!
+Anton Vorontsov wrote:
+> On Fri, Dec 12, 2008 at 09:22:02AM -0500, Steven A. Falco wrote:
+>> This patch adds a dummy GPIO driver, which is useful for SPI devices
+>> that do not have a physical chip select.
+> 
+> Hm. Then you don't need a chip-select, and SPI driver must understand
+> this case. When SPI controller has no "gpios" property, it should just
+> ignore any chip-select toggling operations.
+> 
+> As an implementation example you can use this patch:
+> 
+> http://patchwork.ozlabs.org/patch/12499/
+> 
+> grep for "SPI w/o chip-select line."
+> 
 
-Reading of "powerbook VT garbled between rc7 and rc8" by  
-Johannes Berg reminded me of my own graphics problem with the X.org radeon 
-driver when connected to a TFT panel using the DVI connector.
+My actual situation is a bit more complicated - serves me right for
+trying to simplify it in my RFC.
 
-The symtom: after initial X video initialization the screen flickers red. This 
-red flickering goes away once I reset the screen (my way is to change the 
-resolution twice). After that the screen looks perfect.
-It reapears after switching back to X from a text console of another X 
-session. (same workaround fixes the red flickering)
+We have three devices on the SPI bus.  Two have well-behaved chip
+selects - they are ST flash memory devices.  The third device, the
+Atmel chip does not have a chip select.  It does have a RESET pin,
+which is similar to a chip select, but the Atmel protocol requires
+that that pin be low during the entire programming operation, and
+I cannot chain all the tx/rx operations together into one atomic 
+SPI transaction, so I cannot use that pin as the SPI chip select.
 
-I filed a bug at bugs.freedesktop.org a month ago, but no answer yet.
-https://bugs.freedesktop.org/show_bug.cgi?id=18554
+Instead, I manage the RESET pin outside of the SPI driver, and hence
+there is no chip select for that one device, so I use my dummy CS
+driver to provide a fake chip select to satisfy the SPI driver.
 
-There is no problem when connecting the digital TFT panel via a DVI-to-VGA 
-adapter on the Radeon 9000 AGP graphics card with the VGA connected of the 
-panel, but then the picture is a bit blur, which doesn't look nice compared 
-to the 100% sharp picture I get with DVI.
+This does have the limitation that I must be careful not to access
+the flash parts at the same time as I access the Atmel, but that is
+ok for my application.  I guess I could use something like your
+patch, but I'd maybe have to extend the flags to include a "do not
+use" bit, which would bypass the gpio_is_valid and gpio_request
+calls.
 
-The problem seems the have come up with a new radeon driver starting in X.org 
-7 series, (according to Giuliano Pochini) it worked with X.org 6.8.2, and did 
-flicker red in X.org 7.1.1.
-The radeon driver that seems not to be affected is video-ati 6.6.3.
-See my bug report at freedesktop.org and 
-http://lists.freedesktop.org/archives/xorg/2007-January/020641.html
+What do you think about having a mechanism to specify that some
+SPI slaves have a chip select, while others don't have to have a
+chip select managed by the SPI subsystem?
 
-Unfortunately I cannot use 6.6.3 with X.org 7.4 as it fails to compile.
-
-My question, since this problem is present for some years now:
-Does none of the Apple PowerMac G4 devs have this problem with DVI?
-
-If not, do any of you have an idea what could cause this problem and how to 
-fix it?
-
-Thanks,
-Andreas  aka  Linux User #330250
+	Steve
