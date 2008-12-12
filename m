@@ -1,17 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id A1CD3DDFE5
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 12:38:52 +1100 (EST)
-To: Ron Madrid <ron_madrid@sbcglobal.net>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Problem building kernel
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <454690.60670.qm@web83505.mail.sp1.yahoo.com>
-References: <454690.60670.qm@web83505.mail.sp1.yahoo.com>
-Date: Fri, 12 Dec 2008 02:38:48 +0100
-Message-Id: <20081212013848.42D228124402@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <nickpiggin@yahoo.com.au>
+Received: from smtp101.mail.mud.yahoo.com (smtp101.mail.mud.yahoo.com
+	[209.191.85.211]) by ozlabs.org (Postfix) with SMTP id 95AB3DE072
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 13:31:42 +1100 (EST)
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][v2] fork_init: fix division by zero
+Date: Fri, 12 Dec 2008 12:31:33 +1000
+References: <200812101950.51958.yur@emcraft.com>
+	<20081211202800.GQ28946@ZenIV.linux.org.uk>
+	<20081211124330.ff9b7483.akpm@linux-foundation.org>
+In-Reply-To: <20081211124330.ff9b7483.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200812121331.34602.nickpiggin@yahoo.com.au>
+Cc: wd@denx.de, dzu@denx.de, miltonm@bga.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>,
+	Geert.Uytterhoeven@sonycom.com, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Ron Madrid,
+On Friday 12 December 2008 07:43, Andrew Morton wrote:
+> On Thu, 11 Dec 2008 20:28:00 +0000
 
-In message <454690.60670.qm@web83505.mail.sp1.yahoo.com> you wrote:
-> Thank you.  That took care of it.  I knew it was something small.
+> >  Do they actually cross the page boundaries?
+>
+> Some flavours of slab have at times done an order-1 allocation for
+> objects which would fit into an order-0 page (etc) if it looks like
+> that will be beneficial from a packing POV.  I'm unsure whether that
+> still happens - I tried to get it stamped out for reliability reasons.
 
-It's fixed in our tree now, too. 
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I'd like to meet the man who invented sex and see what  he's  working
-on now.
+Hmph, SLUB uses order-3 allocations for 832 byte sized objects
+by default here (mm struct).
