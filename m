@@ -1,16 +1,15 @@
-Return-Path: <AymanE@tanisys.com>
-Received: from tanisys-ex2.Tanisys.Local (mail.tanisys.com [206.127.28.197])
-	by ozlabs.org (Postfix) with ESMTP id 3C96DDE070
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 03:49:37 +1100 (EST)
+Return-Path: <linuxuser330250@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 908F3DE0D4
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 03:52:27 +1100 (EST)
+From: Linux User #330250 <linuxuser330250@gmx.net>
+To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
+Subject: PowerMac3,6 (G4 MDD): X.org radeon + DVI panel = red flickering
+Date: Fri, 12 Dec 2008 17:52:22 +0100
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C95C79.9D8278A1"
-Subject: Trying to understand ppc4xx_configure_pciex_PIMs mapping to physical
-	address 0
-Date: Fri, 12 Dec 2008 10:49:36 -0600
-Message-ID: <16691A8B34B5D9458EA3A1C37A11555A0137F8B7@tanisys-ex2.Tanisys.Local>
-From: "Ayman El-Khashab" <AymanE@tanisys.com>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200812121752.22746.linuxuser330250@gmx.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,89 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi!
 
-------_=_NextPart_001_01C95C79.9D8278A1
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Reading of "powerbook VT garbled between rc7 and rc8" by  
+Johannes Berg reminded me of my own graphics problem with the X.org radeon 
+driver when connected to a TFT panel using the DVI connector.
 
-I am using the ppc460ex as an endpoint and I see that the mentioned
-function setups a 32Mb
-window at address 0 in sdram.  what i want is some memory that the host
-can read/write to.
-But the 32Mb that are already mapped at the bottom of ram, so it would
-not be good do writes
-to those addresses.  Am I missing something?  My driver right now is not
-touching the PIM=20
-registers.
-=20
-So is the right way to do this to change the PIM registers after I get a
-buffer in the kernel -- or
-something else?
-=20
-How would I make sure that it was aligned on a 32Mb boundry per the 44x
-requirements? =20
-=20
-thanks
-ayman
+The symtom: after initial X video initialization the screen flickers red. This 
+red flickering goes away once I reset the screen (my way is to change the 
+resolution twice). After that the screen looks perfect.
+It reapears after switching back to X from a text console of another X 
+session. (same workaround fixes the red flickering)
 
-------_=_NextPart_001_01C95C79.9D8278A1
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+I filed a bug at bugs.freedesktop.org a month ago, but no answer yet.
+https://bugs.freedesktop.org/show_bug.cgi?id=18554
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.6000.16735" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D678054316-12122008>I am =
-using the=20
-ppc460ex as an endpoint and I see that the mentioned function setups a=20
-32Mb</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D678054316-12122008>window =
-at address 0=20
-in sdram.&nbsp; what i want is some memory that the host can read/write=20
-to.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D678054316-12122008>But =
-the 32Mb that=20
-are already mapped at the bottom of ram, so it would not be =
-</SPAN></FONT><FONT=20
-face=3DArial size=3D2><SPAN class=3D678054316-12122008>good&nbsp;do=20
-writes</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D678054316-12122008>to =
-those=20
-addresses.&nbsp; Am I missing something?</SPAN></FONT><FONT face=3DArial =
+There is no problem when connecting the digital TFT panel via a DVI-to-VGA 
+adapter on the Radeon 9000 AGP graphics card with the VGA connected of the 
+panel, but then the picture is a bit blur, which doesn't look nice compared 
+to the 100% sharp picture I get with DVI.
 
-size=3D2><SPAN class=3D678054316-12122008>&nbsp; My driver right now is =
-not touching=20
-the PIM </SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D678054316-12122008>registers.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D678054316-12122008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D678054316-12122008>So is =
-the right way=20
-to do this to change the PIM registers after I get a buffer in the =
-kernel --=20
-or</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN =
-class=3D678054316-12122008>something=20
-else?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D678054316-12122008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D678054316-12122008>How =
-would I make=20
-sure that it was aligned on a 32Mb boundry per the 44x =
-requirements?&nbsp;=20
-</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D678054316-12122008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D678054316-12122008>thanks</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D678054316-12122008>ayman</SPAN></FONT></DIV></BODY></HTML>
+The problem seems the have come up with a new radeon driver starting in X.org 
+7 series, (according to Giuliano Pochini) it worked with X.org 6.8.2, and did 
+flicker red in X.org 7.1.1.
+The radeon driver that seems not to be affected is video-ati 6.6.3.
+See my bug report at freedesktop.org and 
+http://lists.freedesktop.org/archives/xorg/2007-January/020641.html
 
-------_=_NextPart_001_01C95C79.9D8278A1--
+Unfortunately I cannot use 6.6.3 with X.org 7.4 as it fails to compile.
+
+My question, since this problem is present for some years now:
+Does none of the Apple PowerMac G4 devs have this problem with DVI?
+
+If not, do any of you have an idea what could cause this problem and how to 
+fix it?
+
+Thanks,
+Andreas  aka  Linux User #330250
