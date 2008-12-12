@@ -1,25 +1,19 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 342F2DDFBE
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 20:04:35 +1100 (EST)
-Date: Fri, 12 Dec 2008 01:04:11 -0800 (PST)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: How to support 3GB pci address?
-In-Reply-To: <C2765CC8-2113-4323-9983-FD6E9A357453@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.64.0812120015050.28806@t2.domain.actdsltmp>
-References: <200812112004118902765@gmail.com>
-	<41706FC0-B740-42C0-BA2B-B9E4B5839477@kernel.crashing.org>
-	<Pine.LNX.4.64.0812111957470.28806@t2.domain.actdsltmp>
-	<C2765CC8-2113-4323-9983-FD6E9A357453@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	"maillist.kernel" <maillist.kernel@gmail.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B6AA5DE0B7
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 21:15:25 +1100 (EST)
+Subject: Re: [PATCH] NOMMU: Rename PowerPC's struct vm_region
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Howells <dhowells@redhat.com>
+In-Reply-To: <20081211125354.20641.23213.stgit@warthog.procyon.org.uk>
+References: <20081211125354.20641.23213.stgit@warthog.procyon.org.uk>
+Content-Type: text/plain
+Date: Fri, 12 Dec 2008 21:15:12 +1100
+Message-Id: <1229076912.22413.213.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,35 +23,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 11 Dec 2008, Kumar Gala wrote:
-> On Dec 11, 2008, at 10:07 PM, Trent Piepho wrote:
->> On Thu, 11 Dec 2008, Kumar Gala wrote:
->> > On Dec 11, 2008, at 6:04 AM, maillist.kernel wrote:
->> > > In the system, the total PCI address needed is about 3GB, so I want to 
->> > > know
->> > > how to support it in linux. mpc8548 has 36-bit real address, and can
->> > > support 32GB PCIE address space, but in linux, there is only 1GB kernel
->> > > space, how to map the 3GB pci address to kernel? Is the  36-bit real
->> > > address only used to support large memory(>4GB) for muti-threads?
->> > 
->> > The 36-bit support is current (in tree) in complete.  Work is in progress 
->> > to
->> > add swiotlb support to PPC which will generically enable what you want to
->> > accomplish.
->> 
->> Don't the ATMU windows in the pcie controller serve as a IOMMU, making 
->> swiotlb
->> unnecessary and wasteful?
->
-> Nope.  You have no way to tell when to switch a window as you have no idea 
-> when a device might DMA data.
+On Thu, 2008-12-11 at 12:53 +0000, David Howells wrote:
+> Rename PowerPC's struct vm_region so that I can introduce my own global version
+> for NOMMU.  It's feasible that the PowerPC version may wish to use my global
+> one instead.
+> 
+> The NOMMU vm_region struct defines areas of the physical memory map that are
+> under mmap.  This may include chunks of RAM or regions of memory mapped
+> devices, such as flash.  It is also used to retain copies of file content so
+> that shareable private memory mappings of files can be made.  As such, it may
+> be compatible with what is described in the banner comment for PowerPC's
+> vm_region struct.
 
-Isn't that what dma_alloc_coherent() and dma_map_single() are for?
+Hrm... that whole dma-noncoherent stuff still eludes me as to why it
+uses it's own region allocator instead of the vmalloc one .. since you
+can use the later with explicit boundaries.
 
-It sounded like the original poster was talking about having 3GB of PCI
-BARs.  How does swiotlb even enter the picture for that?
+Cheers,
+Ben.
 
->From what I've read about swiotlb, it is a hack that allows one to do DMA
-with 32-bit PCI devices on 64-bit systems that lack an IOMMU.  It reserves
-a large block of RAM under 32-bits (technically it uses GFP_DMA) and doles
-this out to drivers that allocate DMA memory.
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+> 
+>  arch/powerpc/lib/dma-noncoherent.c |   24 ++++++++++++------------
+>  1 files changed, 12 insertions(+), 12 deletions(-)
+> 
+> 
+> diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
+> index 31734c0..a55c6ca 100644
+> --- a/arch/powerpc/lib/dma-noncoherent.c
+> +++ b/arch/powerpc/lib/dma-noncoherent.c
+> @@ -77,26 +77,26 @@ static DEFINE_SPINLOCK(consistent_lock);
+>   * the amount of RAM found at boot time.)  I would imagine that get_vm_area()
+>   * would have to initialise this each time prior to calling vm_region_alloc().
+>   */
+> -struct vm_region {
+> +struct ppc_vm_region {
+>  	struct list_head	vm_list;
+>  	unsigned long		vm_start;
+>  	unsigned long		vm_end;
+>  };
+>  
+> -static struct vm_region consistent_head = {
+> +static struct ppc_vm_region consistent_head = {
+>  	.vm_list	= LIST_HEAD_INIT(consistent_head.vm_list),
+>  	.vm_start	= CONSISTENT_BASE,
+>  	.vm_end		= CONSISTENT_END,
+>  };
+>  
+> -static struct vm_region *
+> -vm_region_alloc(struct vm_region *head, size_t size, gfp_t gfp)
+> +static struct ppc_vm_region *
+> +ppc_vm_region_alloc(struct ppc_vm_region *head, size_t size, gfp_t gfp)
+>  {
+>  	unsigned long addr = head->vm_start, end = head->vm_end - size;
+>  	unsigned long flags;
+> -	struct vm_region *c, *new;
+> +	struct ppc_vm_region *c, *new;
+>  
+> -	new = kmalloc(sizeof(struct vm_region), gfp);
+> +	new = kmalloc(sizeof(struct ppc_vm_region), gfp);
+>  	if (!new)
+>  		goto out;
+>  
+> @@ -130,9 +130,9 @@ vm_region_alloc(struct vm_region *head, size_t size, gfp_t gfp)
+>  	return NULL;
+>  }
+>  
+> -static struct vm_region *vm_region_find(struct vm_region *head, unsigned long addr)
+> +static struct ppc_vm_region *ppc_vm_region_find(struct ppc_vm_region *head, unsigned long addr)
+>  {
+> -	struct vm_region *c;
+> +	struct ppc_vm_region *c;
+>  
+>  	list_for_each_entry(c, &head->vm_list, vm_list) {
+>  		if (c->vm_start == addr)
+> @@ -151,7 +151,7 @@ void *
+>  __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
+>  {
+>  	struct page *page;
+> -	struct vm_region *c;
+> +	struct ppc_vm_region *c;
+>  	unsigned long order;
+>  	u64 mask = 0x00ffffff, limit; /* ISA default */
+>  
+> @@ -191,7 +191,7 @@ __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
+>  	/*
+>  	 * Allocate a virtual address in the consistent mapping region.
+>  	 */
+> -	c = vm_region_alloc(&consistent_head, size,
+> +	c = ppc_vm_region_alloc(&consistent_head, size,
+>  			    gfp & ~(__GFP_DMA | __GFP_HIGHMEM));
+>  	if (c) {
+>  		unsigned long vaddr = c->vm_start;
+> @@ -239,7 +239,7 @@ EXPORT_SYMBOL(__dma_alloc_coherent);
+>   */
+>  void __dma_free_coherent(size_t size, void *vaddr)
+>  {
+> -	struct vm_region *c;
+> +	struct ppc_vm_region *c;
+>  	unsigned long flags, addr;
+>  	pte_t *ptep;
+>  
+> @@ -247,7 +247,7 @@ void __dma_free_coherent(size_t size, void *vaddr)
+>  
+>  	spin_lock_irqsave(&consistent_lock, flags);
+>  
+> -	c = vm_region_find(&consistent_head, (unsigned long)vaddr);
+> +	c = ppc_vm_region_find(&consistent_head, (unsigned long)vaddr);
+>  	if (!c)
+>  		goto no_area;
+>  
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
