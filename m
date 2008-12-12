@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B6AA5DE0B7
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 21:15:25 +1100 (EST)
-Subject: Re: [PATCH] NOMMU: Rename PowerPC's struct vm_region
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081211125354.20641.23213.stgit@warthog.procyon.org.uk>
-References: <20081211125354.20641.23213.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain
-Date: Fri, 12 Dec 2008 21:15:12 +1100
-Message-Id: <1229076912.22413.213.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id C64B7DE059
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 21:43:18 +1100 (EST)
+Subject: powerbook VT garbled between rc7 and rc8
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-HI48QWSGASSsOglg1wz0"
+Date: Fri, 12 Dec 2008 11:42:34 +0100
+Message-Id: <1229078554.3600.8.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,119 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-12-11 at 12:53 +0000, David Howells wrote:
-> Rename PowerPC's struct vm_region so that I can introduce my own global version
-> for NOMMU.  It's feasible that the PowerPC version may wish to use my global
-> one instead.
-> 
-> The NOMMU vm_region struct defines areas of the physical memory map that are
-> under mmap.  This may include chunks of RAM or regions of memory mapped
-> devices, such as flash.  It is also used to retain copies of file content so
-> that shareable private memory mappings of files can be made.  As such, it may
-> be compatible with what is described in the banner comment for PowerPC's
-> vm_region struct.
 
-Hrm... that whole dma-noncoherent stuff still eludes me as to why it
-uses it's own region allocator instead of the vmalloc one .. since you
-can use the later with explicit boundaries.
+--=-HI48QWSGASSsOglg1wz0
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+Hi,
 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
-> 
->  arch/powerpc/lib/dma-noncoherent.c |   24 ++++++++++++------------
->  1 files changed, 12 insertions(+), 12 deletions(-)
-> 
-> 
-> diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
-> index 31734c0..a55c6ca 100644
-> --- a/arch/powerpc/lib/dma-noncoherent.c
-> +++ b/arch/powerpc/lib/dma-noncoherent.c
-> @@ -77,26 +77,26 @@ static DEFINE_SPINLOCK(consistent_lock);
->   * the amount of RAM found at boot time.)  I would imagine that get_vm_area()
->   * would have to initialise this each time prior to calling vm_region_alloc().
->   */
-> -struct vm_region {
-> +struct ppc_vm_region {
->  	struct list_head	vm_list;
->  	unsigned long		vm_start;
->  	unsigned long		vm_end;
->  };
->  
-> -static struct vm_region consistent_head = {
-> +static struct ppc_vm_region consistent_head = {
->  	.vm_list	= LIST_HEAD_INIT(consistent_head.vm_list),
->  	.vm_start	= CONSISTENT_BASE,
->  	.vm_end		= CONSISTENT_END,
->  };
->  
-> -static struct vm_region *
-> -vm_region_alloc(struct vm_region *head, size_t size, gfp_t gfp)
-> +static struct ppc_vm_region *
-> +ppc_vm_region_alloc(struct ppc_vm_region *head, size_t size, gfp_t gfp)
->  {
->  	unsigned long addr = head->vm_start, end = head->vm_end - size;
->  	unsigned long flags;
-> -	struct vm_region *c, *new;
-> +	struct ppc_vm_region *c, *new;
->  
-> -	new = kmalloc(sizeof(struct vm_region), gfp);
-> +	new = kmalloc(sizeof(struct ppc_vm_region), gfp);
->  	if (!new)
->  		goto out;
->  
-> @@ -130,9 +130,9 @@ vm_region_alloc(struct vm_region *head, size_t size, gfp_t gfp)
->  	return NULL;
->  }
->  
-> -static struct vm_region *vm_region_find(struct vm_region *head, unsigned long addr)
-> +static struct ppc_vm_region *ppc_vm_region_find(struct ppc_vm_region *head, unsigned long addr)
->  {
-> -	struct vm_region *c;
-> +	struct ppc_vm_region *c;
->  
->  	list_for_each_entry(c, &head->vm_list, vm_list) {
->  		if (c->vm_start == addr)
-> @@ -151,7 +151,7 @@ void *
->  __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
->  {
->  	struct page *page;
-> -	struct vm_region *c;
-> +	struct ppc_vm_region *c;
->  	unsigned long order;
->  	u64 mask = 0x00ffffff, limit; /* ISA default */
->  
-> @@ -191,7 +191,7 @@ __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
->  	/*
->  	 * Allocate a virtual address in the consistent mapping region.
->  	 */
-> -	c = vm_region_alloc(&consistent_head, size,
-> +	c = ppc_vm_region_alloc(&consistent_head, size,
->  			    gfp & ~(__GFP_DMA | __GFP_HIGHMEM));
->  	if (c) {
->  		unsigned long vaddr = c->vm_start;
-> @@ -239,7 +239,7 @@ EXPORT_SYMBOL(__dma_alloc_coherent);
->   */
->  void __dma_free_coherent(size_t size, void *vaddr)
->  {
-> -	struct vm_region *c;
-> +	struct ppc_vm_region *c;
->  	unsigned long flags, addr;
->  	pte_t *ptep;
->  
-> @@ -247,7 +247,7 @@ void __dma_free_coherent(size_t size, void *vaddr)
->  
->  	spin_lock_irqsave(&consistent_lock, flags);
->  
-> -	c = vm_region_find(&consistent_head, (unsigned long)vaddr);
-> +	c = ppc_vm_region_find(&consistent_head, (unsigned long)vaddr);
->  	if (!c)
->  		goto no_area;
->  
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+After upgrading to -rc8 yesterday my powerbook started up today with the
+screen totally garbled, only occasionally was a word readable. I also
+tried adding radeonfb=3Daccel_cexp to the command line but that changed
+nothing. Also, once I was in X, it seemingly worked fine, but then I
+opened up a terminal and tried setting the boot volume to 0 (nvsetvol 0)
+[I had booted OSX yesterday] and the machine simply shut down and reset
+its clock.
+
+Something's amiss, but I have no idea what yet, and don't have time to
+further diagnose/bisect before the end of next week.
+
+johannes
+
+--=-HI48QWSGASSsOglg1wz0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJQkAVAAoJEKVg1VMiehFYV4MP/2spMUOl1c0YoCQpQE9qIsd1
+MpfIgLp1L1MLyz9eN4J85yBIbMJqC2Mp5G01hMvGaJtD9yIZKMF2MI4cTvQE9Q6R
+FRR7oDgpHa/nusRWElvfvHRI/2fwYq/8kDsQb+1u3gzicGNPTK3im6q7CgISUmCc
+Pg3khUeTm64sxBAZ3F/xzVkkJecGWC29Hn4g33LtviC2brka9Bl2UQX2qoSO7SCx
+AfavEhsHss8sB1dBr9tayWkTFpvsHcg3moPqUBNLWiyxq6dnwRSMwdeClaYaPBlW
+qdxseOQ5uFJFEcg67Skz1IzyyKi7ptl3HTaVkZUw+AjTBqSyvlA8DKbDw71Zj4nV
+D4U5QYeQuXvg5UYtirWzVTuAHrAdwh7oZK56qJEHONjfOa6va73IoVuEZPxjz+L2
+Ds9gv4/WWRAJhdz1HeVyy6oA82sNMr800zUO1pZ1e8cyCF6TOjUAxr6lRyctm3fT
+vYtgxfgNeF6jZFw9lP/b3ZQbSNKJfbRDuQXSXHvbNQKYzzukdTtE8Coma0cyOsyp
+ab5gG+WxO8JqgJlaqJV+eeRYPWoFiEp/ZJsD2WxmWlGGBpA3CTEwCiLtoDXJ50S5
+eircKGKKg6OGUsvJ25mlHqV2sggFZ+Sgn/5rp8XQUKFmSWFpCWKBIZ7gToIEu+LS
+hN3JHTASLtG8ViRrzF5i
+=PuJ3
+-----END PGP SIGNATURE-----
+
+--=-HI48QWSGASSsOglg1wz0--
