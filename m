@@ -1,24 +1,20 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F03EBDE0BE
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 08:39:53 +1100 (EST)
-Date: Fri, 12 Dec 2008 13:39:45 -0800 (PST)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [RFC] Dummy GPIO driver for use with SPI
-In-Reply-To: <20081212171438.GA9738@oksana.dev.rtsoft.ru>
-Message-ID: <Pine.LNX.4.64.0812121322110.28806@t2.domain.actdsltmp>
-References: <4942738A.80609@harris.com>
-	<20081212150144.GA28147@oksana.dev.rtsoft.ru>
-	<49429861.9060305@harris.com>
-	<20081212171438.GA9738@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 93C0ADE0BE
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 08:50:18 +1100 (EST)
+Subject: Re: Trying to understand ppc4xx_configure_pciex_PIMs mapping to
+	physical address 0
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ayman El-Khashab <AymanE@tanisys.com>
+In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A0137F8B7@tanisys-ex2.Tanisys.Local>
+References: <16691A8B34B5D9458EA3A1C37A11555A0137F8B7@tanisys-ex2.Tanisys.Local>
+Content-Type: text/plain
+Date: Sat, 13 Dec 2008 08:50:11 +1100
+Message-Id: <1229118611.22413.224.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,34 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 12 Dec 2008, Anton Vorontsov wrote:
-> On Fri, Dec 12, 2008 at 11:59:13AM -0500, Steven A. Falco wrote:
->> What do you think about having a mechanism to specify that some
->> SPI slaves have a chip select, while others don't have to have a
->> chip select managed by the SPI subsystem?
->
-> Um.. do you know that you can pass '0' as a GPIO?
->
-> For example,
->
-> spi-controller {
-> 	gpios = <&pio1 1 0	/* cs0 */
-> 		 0		/* cs1, no GPIO */
-> 		 &pio2 2 0>;	/* cs2 */
+On Fri, 2008-12-12 at 10:49 -0600, Ayman El-Khashab wrote:
+> I am using the ppc460ex as an endpoint and I see that the mentioned
+> function setups a 32Mb
+> window at address 0 in sdram.  what i want is some memory that the
+> host can read/write to.
+> But the 32Mb that are already mapped at the bottom of ram, so it would
+> not be good do writes
+> to those addresses.  Am I missing something?  My driver right now is
+> not touching the PIM 
+> registers.
+>  
+> So is the right way to do this to change the PIM registers after I get
+> a buffer in the kernel -- or
+> something else?
+>  
+> How would I make sure that it was aligned on a 32Mb boundry per the
+> 44x requirements?  
 
-It's ok the that middle specifier is only one word instead of three?  Seems
-like "0 0 0" would be better, so all the specifiers are the same size.
+either that or just allocate some memory and expose the 32MB region that
+contains that memory... 
 
-> 		normal case;
-> 	} else if (gpio == -EEXIST) {
+There isn't really much existing code to support endpoint mode. IE, the
+code in ppc4xx_pci.c is really mostly host oriented, so it's up to you
+to define what you want here. We have no API defined for drivers to use
+etc.. 
 
-Isn't EEXIST (pathname already exists) backward?  Seems like ENOENT would
-be the right error code.  Except that's used for reading past the end...
-
-Maybe a reading past the end should be EINVAL or EBADF?
-
-Or return ENODEV for the 'hole' cell?  Or ENOLINK?
-
-EEXIST is for trying to create something that already exists.  The 'hole'
-is more like trying to follow a broken link or find something that doesn't
-exist.
+Ben.
