@@ -1,20 +1,31 @@
-Return-Path: <js084@bucknell.edu>
-Received: from ivory.bucknell.edu (ivory.bucknell.edu [134.82.9.79])
-	by ozlabs.org (Postfix) with ESMTP id 5F35FDE12C
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CF469DE124
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Dec 2008 12:27:03 +1100 (EST)
-Received: from [134.82.109.42] (js084.resnet.bucknell.edu [134.82.109.42])
-	(authenticated bits=0)
-	by ivory.bucknell.edu (8.14.3/8.14.3) with ESMTP id mBD1QsNL012596
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Fri, 12 Dec 2008 20:27:01 -0500
-Message-ID: <49430F5D.8060707@bucknell.edu>
-Date: Fri, 12 Dec 2008 20:26:53 -0500
-From: Juliana Su <js084@bucknell.edu>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: XUPV2P + EDK 9.1 + Linux 2.4
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 13 Dec 2008 12:30:05 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBD1TFMR016045
+	for <linuxppc-embedded@ozlabs.org>; Fri, 12 Dec 2008 20:29:15 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mBD1Tx7l172522
+	for <linuxppc-embedded@ozlabs.org>; Fri, 12 Dec 2008 20:29:59 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mBD1TwA4016793
+	for <linuxppc-embedded@ozlabs.org>; Fri, 12 Dec 2008 20:29:58 -0500
+Date: Fri, 12 Dec 2008 20:29:52 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "sarah.ddff" <sarah.ddff@gmail.com>
+Subject: Re: two linux 2.6 kernels on two ppc405 (xupv2p) ?
+Message-ID: <20081212202952.48ef12c3@zod.rchland.ibm.com>
+In-Reply-To: <20978466.post@talk.nabble.com>
+References: <20978466.post@talk.nabble.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,22 +36,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am familiar with that site. It is very useful; I have actually 
-referred to it many times when trying to port Linux 2.4 to the XUPV2P. 
-No luck, though.
+On Fri, 12 Dec 2008 08:13:26 -0800 (PST)
+"sarah.ddff" <sarah.ddff@gmail.com> wrote:
 
+> 
+> Hi all,
+> I want to implement a multiprocessor system managed by a linux kernel on the
+> xupv2p.
+> I knwo that there is no cache coherency between the two ppc405 cores.
+> Consequently,
+> SMP linux can not be used.
+> So the only solution is to install two linux kernels, each on a ppc
+> processor,
+> and to make them communicate with shared memory.
+> My questions are:
+> does someone succeed in doing this?
+> Is it possible to do this ?
 
--Juliana
+AMCC has created a dual-460GT board called Arches.  I have no idea how
+it actually works because it faces the same issues a dual-405 board
+would, but apparently someone must use it somewhere.
 
-------------------------------
+Basic Arches support is in the kernel, but it's only for a single
+processor from what I can see.
 
-Message: 4
-Date: Fri, 12 Dec 2008 06:39:01 -0800 (PST)
-From: "sarah.ddff" <sarah.ddff@gmail.com>
-Subject: Re: XUPV2P + EDK 9.1 + Linux 2.4
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <20976787.post@talk.nabble.com>
-Content-Type: text/plain; charset=UTF-8
-
-
-I have linux 2.6 running on the xupv2p with uart and ethernet. Also, I have linux 2.6 running with uart, sysace and ethernet. You can find here: https://rm-rfroot.net/xupv2p/ useful instructions to port linux 2.4 to the xupv2p board.
+josh
