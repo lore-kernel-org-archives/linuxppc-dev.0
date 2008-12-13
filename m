@@ -1,17 +1,17 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 71C44DDF40
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Dec 2008 07:17:11 +1100 (EST)
-In-Reply-To: <1229022865-14993-1-git-send-email-ntl@pobox.com>
-References: <c5d656532783550a8b21bb027497160a@bga.com>
-	<1229022865-14993-1-git-send-email-ntl@pobox.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <fc002fa9fb49e710793097c3d5b3010b@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] check for GIQ indicator before calling set-indicator
-Date: Sat, 13 Dec 2008 14:22:55 -0600
-To: Nathan Lynch <ntl@pobox.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 86E1EDE10C
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Dec 2008 08:05:34 +1100 (EST)
+Date: Sat, 13 Dec 2008 15:13:35 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Roel Kluin <roel.kluin@gmail.com>
+Subject: Re: [PATCH] [POWERPC] pasemi: ioremap/iounmap balance and failure
+	handling
+Message-ID: <20081213211335.GC17331@lixom.net>
+References: <4943E6B5.6010501@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4943E6B5.6010501@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,57 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Dec 11, 2008, at 1:14 PM, Nathan Lynch wrote:
+On Sat, Dec 13, 2008 at 05:45:41PM +0100, Roel Kluin wrote:
+> map_onedev can return NULL, so catch that. Also iounmap if DMA controller can't be
+> found.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> UNTESTED! I am a bit new, so please confirm whether this is correct. especially: 
+> 
+> * can we iounmap while init_lock is held?
 
-> Since "Factor out cpu joining/unjoining the GIQ"
-> (b4963255ad5a426f04a0bb15c4315fa4bb40cde9) the WARN_ON in
-> xics_set_cpu_giq() is being triggered during boot on JS20 because the
-> GIQ indicator is not available on that platform.  While the warning is
-> harmless and the system runs normally, it's nicer to check for the
-> existence of the indicator before trying to manipulate it.
->
-> Implement rtas_indicator_present(), which searches the
-> /rtas/rtas-indicators property for the given indicator token, and use
-> this function in xics_set_cpu_giq().
->
-> Also use a WARN statement in xics_set_cpu_giq to get better
-> information on failure.
->
-> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+Yes, should be OK.
 
-Acked-By: Milton Miller <miltonm@bga.com>
+> * is it ok to add another BUG() here?
+> 
+> diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
+> index 217af32..bdf5440 100644
+> --- a/arch/powerpc/platforms/pasemi/dma_lib.c
+> +++ b/arch/powerpc/platforms/pasemi/dma_lib.c
+> @@ -534,14 +534,21 @@ int pasemi_dma_init(void)
+>  		err = -ENODEV;
+>  		goto out;
+>  	}
+> +
+>  	iob_regs = map_onedev(iob_pdev, 0);
+> +	if (iob_regs == NULL) {
+> +		BUG();
+> +		printk(KERN_WARNING "Can't ioremap I/O Bridge registers\n");
+> +		err = -ENODEV;
+> +		goto out;
+> +	}
 
-...
-> diff --git a/arch/powerpc/platforms/pseries/xics.c 
-> b/arch/powerpc/platforms/pseries/xics.c
-> index e190477..37f5986 100644
-> --- a/arch/powerpc/platforms/pseries/xics.c
-> +++ b/arch/powerpc/platforms/pseries/xics.c
-> @@ -728,9 +728,18 @@ static void xics_set_cpu_priority(unsigned char 
-> cppr)
->  /* Have the calling processor join or leave the specified global 
-> queue */
->  static void xics_set_cpu_giq(unsigned int gserver, unsigned int join)
->  {
-> -	int status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
-> -		(1UL << interrupt_server_size) - 1 - gserver, join);
-> -	WARN_ON(status < 0);
-> +	int index;
-> +	int status;
+I don't see the point of doing BUG() _and_ error recovery. BUG() is
+definitely heavy handed. Something like "pasemi_dma_init: Can't..." would
+be a good and detailed enough error message.
+
+>  
+>  	dma_pdev = pci_get_device(PCI_VENDOR_ID_PASEMI, 0xa007, NULL);
+>  	if (!dma_pdev) {
+>  		BUG();
+>  		printk(KERN_WARNING "Can't find DMA controller\n");
+>  		err = -ENODEV;
+> -		goto out;
+> +		goto out_unmap;
+>  	}
+>  	dma_regs = map_onedev(dma_pdev, 0);
+>  	base_hw_irq = virq_to_hw(dma_pdev->irq);
+> @@ -624,6 +631,10 @@ int pasemi_dma_init(void)
+>  
+>  	printk(KERN_INFO "PA Semi PWRficient DMA library initialized "
+>  		"(%d tx, %d rx channels)\n", num_txch, num_rxch);
+> +	goto out;
 > +
-> +	if (!rtas_indicator_present(GLOBAL_INTERRUPT_QUEUE, NULL))
-> +		return;
-> +
-> +	index = (1UL << interrupt_server_size) - 1 - gserver;
-> +
-> +	status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE, index, 
-> join);
-> +
-> +	WARN(status < 0, "set-indicator(%d, %d, %u) returned %d\n",
-> +	     GLOBAL_INTERRUPT_QUEUE, index, join, status);
->  }
->
->  void xics_setup_cpu(void)
-> -- 
-> 1.5.5
->
+> +out_unmap:
+> +	iounmap(iob_regs);
+>  
+>  out:
+>  	spin_unlock(&init_lock);
