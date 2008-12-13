@@ -1,19 +1,17 @@
-Return-Path: <roel.kluin@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id B4748DDFB5
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Dec 2008 06:15:17 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id 17so50375ugm.14
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 11:15:15 -0800 (PST)
-Message-ID: <494409C5.1050308@gmail.com>
-Date: Sat, 13 Dec 2008 20:15:17 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] [POWERPC] pasemi: ioremap/iounmap balance and failure
-	handling
-References: <4943E6B5.6010501@gmail.com>
-In-Reply-To: <4943E6B5.6010501@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 71C44DDF40
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Dec 2008 07:17:11 +1100 (EST)
+In-Reply-To: <1229022865-14993-1-git-send-email-ntl@pobox.com>
+References: <c5d656532783550a8b21bb027497160a@bga.com>
+	<1229022865-14993-1-git-send-email-ntl@pobox.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <fc002fa9fb49e710793097c3d5b3010b@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] check for GIQ indicator before calling set-indicator
+Date: Sat, 13 Dec 2008 14:22:55 -0600
+To: Nathan Lynch <ntl@pobox.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,88 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roel Kluin wrote:
-> map_onedev can return NULL, so catch that. Also iounmap if DMA controller can't be
-> found.
+On Dec 11, 2008, at 1:14 PM, Nathan Lynch wrote:
 
-I think there may also be a problem with pasemi_mac_init_module(): if
-pci_register_driver() fails, then iob_regs won't get iounmapped.
+> Since "Factor out cpu joining/unjoining the GIQ"
+> (b4963255ad5a426f04a0bb15c4315fa4bb40cde9) the WARN_ON in
+> xics_set_cpu_giq() is being triggered during boot on JS20 because the
+> GIQ indicator is not available on that platform.  While the warning is
+> harmless and the system runs normally, it's nicer to check for the
+> existence of the indicator before trying to manipulate it.
+>
+> Implement rtas_indicator_present(), which searches the
+> /rtas/rtas-indicators property for the given indicator token, and use
+> this function in xics_set_cpu_giq().
+>
+> Also use a WARN statement in xics_set_cpu_giq to get better
+> information on failure.
+>
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
 
-maybe something like the totally untested patch below?
+Acked-By: Milton Miller <miltonm@bga.com>
 
-diff --git a/arch/powerpc/include/asm/pasemi_dma.h b/arch/powerpc/include/asm/pasemi_dma.h
-index 19fd793..7256a2c 100644
---- a/arch/powerpc/include/asm/pasemi_dma.h
-+++ b/arch/powerpc/include/asm/pasemi_dma.h
-@@ -535,4 +535,7 @@ extern void pasemi_dma_free_fun(int fun);
- /* Initialize the library, must be called before any other functions */
- extern int pasemi_dma_init(void);
- 
-+/* Clean up the library */
-+extern void pasemi_dma_exit(void);
-+
- #endif /* ASM_PASEMI_DMA_H */
-diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
-index 217af32..fc0e1f9 100644
---- a/arch/powerpc/platforms/pasemi/dma_lib.c
-+++ b/arch/powerpc/platforms/pasemi/dma_lib.c
-@@ -534,14 +534,21 @@ int pasemi_dma_init(void)
- 		err = -ENODEV;
- 		goto out;
- 	}
-+
- 	iob_regs = map_onedev(iob_pdev, 0);
-+	if (iob_regs == NULL) {
-+		BUG();
-+		printk(KERN_WARNING "Can't ioremap I/O Bridge registers\n");
-+		err = -ENODEV;
-+		goto out;
-+	}
- 
- 	dma_pdev = pci_get_device(PCI_VENDOR_ID_PASEMI, 0xa007, NULL);
- 	if (!dma_pdev) {
- 		BUG();
- 		printk(KERN_WARNING "Can't find DMA controller\n");
- 		err = -ENODEV;
--		goto out;
-+		goto out_unmap;
- 	}
- 	dma_regs = map_onedev(dma_pdev, 0);
- 	base_hw_irq = virq_to_hw(dma_pdev->irq);
-@@ -624,9 +631,19 @@ int pasemi_dma_init(void)
- 
- 	printk(KERN_INFO "PA Semi PWRficient DMA library initialized "
- 		"(%d tx, %d rx channels)\n", num_txch, num_rxch);
-+	goto out;
-+
-+out_unmap:
-+	iounmap(iob_regs);
- 
- out:
- 	spin_unlock(&init_lock);
- 	return err;
- }
- EXPORT_SYMBOL(pasemi_dma_init);
-+
-+void pasemi_dma_exit(void)
-+{
-+	iounmap(iob_regs);
-+}
-+
-diff --git a/drivers/net/pasemi_mac.c b/drivers/net/pasemi_mac.c
-index edc0fd5..0897fa0 100644
---- a/drivers/net/pasemi_mac.c
-+++ b/drivers/net/pasemi_mac.c
-@@ -1919,7 +1919,11 @@ int pasemi_mac_init_module(void)
- 	if (err)
- 		return err;
- 
--	return pci_register_driver(&pasemi_mac_driver);
-+	err = pci_register_driver(&pasemi_mac_driver);
-+	if (err)
-+		pasemi_dma_exit();
-+
-+	return err;
- }
- 
- module_init(pasemi_mac_init_module);
+...
+> diff --git a/arch/powerpc/platforms/pseries/xics.c 
+> b/arch/powerpc/platforms/pseries/xics.c
+> index e190477..37f5986 100644
+> --- a/arch/powerpc/platforms/pseries/xics.c
+> +++ b/arch/powerpc/platforms/pseries/xics.c
+> @@ -728,9 +728,18 @@ static void xics_set_cpu_priority(unsigned char 
+> cppr)
+>  /* Have the calling processor join or leave the specified global 
+> queue */
+>  static void xics_set_cpu_giq(unsigned int gserver, unsigned int join)
+>  {
+> -	int status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE,
+> -		(1UL << interrupt_server_size) - 1 - gserver, join);
+> -	WARN_ON(status < 0);
+> +	int index;
+> +	int status;
+> +
+> +	if (!rtas_indicator_present(GLOBAL_INTERRUPT_QUEUE, NULL))
+> +		return;
+> +
+> +	index = (1UL << interrupt_server_size) - 1 - gserver;
+> +
+> +	status = rtas_set_indicator_fast(GLOBAL_INTERRUPT_QUEUE, index, 
+> join);
+> +
+> +	WARN(status < 0, "set-indicator(%d, %d, %u) returned %d\n",
+> +	     GLOBAL_INTERRUPT_QUEUE, index, join, status);
+>  }
+>
+>  void xics_setup_cpu(void)
+> -- 
+> 1.5.5
+>
