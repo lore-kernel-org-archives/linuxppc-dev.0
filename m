@@ -1,18 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 13 Dec 2008 09:46:15 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: [RFC] Dummy GPIO driver for use with SPI
-Message-ID: <20081212224615.GA6703@yookeroo.seuss>
-References: <4942738A.80609@harris.com>
-	<20081212150144.GA28147@oksana.dev.rtsoft.ru>
-	<49429861.9060305@harris.com>
-	<20081212171438.GA9738@oksana.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0812121322110.28806@t2.domain.actdsltmp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0812121322110.28806@t2.domain.actdsltmp>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <maillist.kernel@gmail.com>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.245])
+	by ozlabs.org (Postfix) with ESMTP id 66436DE0D4
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Dec 2008 16:15:07 +1100 (EST)
+Received: by ag-out-0708.google.com with SMTP id 31so1812017agc.0
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Dec 2008 21:15:05 -0800 (PST)
+Date: Sat, 13 Dec 2008 12:56:26 +0800
+From: "maillist.kernel" <maillist.kernel@gmail.com>
+To: Trent Piepho <tpiepho@freescale.com>,
+	Kumar Gala <galak@kernel.crashing.org>
+References: <200812112004118902765@gmail.com>,
+	<41706FC0-B740-42C0-BA2B-B9E4B5839477@kernel.crashing.org>,
+	<Pine.LNX.4.64.0812111957470.28806@t2.domain.actdsltmp>,
+	<C2765CC8-2113-4323-9983-FD6E9A357453@kernel.crashing.org>,
+	<Pine.LNX.4.64.0812120015050.28806@t2.domain.actdsltmp>,
+	<A15C72A2-1CEE-4D22-ACA8-F0DA1F04699E@kernel.crashing.org>,
+	<Pine.LNX.4.64.0812121141550.28806@t2.domain.actdsltmp>
+Subject: Re: Re: How to support 3GB pci address?
+Message-ID: <200812131256230461123@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon415623707004_====="
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +30,295 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 12, 2008 at 01:39:45PM -0800, Trent Piepho wrote:
-> On Fri, 12 Dec 2008, Anton Vorontsov wrote:
-> > On Fri, Dec 12, 2008 at 11:59:13AM -0500, Steven A. Falco wrote:
-> >> What do you think about having a mechanism to specify that some
-> >> SPI slaves have a chip select, while others don't have to have a
-> >> chip select managed by the SPI subsystem?
-> >
-> > Um.. do you know that you can pass '0' as a GPIO?
-> >
-> > For example,
-> >
-> > spi-controller {
-> > 	gpios = <&pio1 1 0	/* cs0 */
-> > 		 0		/* cs1, no GPIO */
-> > 		 &pio2 2 0>;	/* cs2 */
-> 
-> It's ok the that middle specifier is only one word instead of three?  Seems
-> like "0 0 0" would be better, so all the specifiers are the same
-> size.
 
-No.  The gpio specifier size is already a property of the gpio
-controller, so the phandle must be understood before reading the
-specifier cells (interrupt specifiers are variable size in the same
-way).  It's just that nearly every (real) gpio controller has a 2 cell
-specifier.  Having the "null" gpio have #gpio-cells non-zero would be
-silly, though.
+This is a multi-part message in MIME format.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+--=====003_Dragon415623707004_=====
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
+
+Thanks for all the suggestions and Comments!
+In the system,  the total memory size is less than 4GB.   I want to know how to map the 3GB pci address to the kernel ,
+and how can my driver access all the pci device. Usually we have only 1GB kernel address, minus the 896MB
+for memory map, we can only use the 128M for ioremap. I can adjust the PAGE_OFFSET to a lower value, but it's not enough.
+
+>One can mmap() a PCI BAR from userspace, in which case the mapping comes
+>out of the "max userspace size" pool instead of the "all ioremap()s" pool. 
+>The userspace pool is per processes.  So while having four kernel drivers
+>each call ioremap(..., 1GB) will never work, it is possible to have four
+>userspace processes each call mmap("/sys/bus/pci.../resource", 1GB) and
+>have it work.
+
+There are many pci devices in the system and every pci device has only several tens of MB, so how can I call the mmap("/sys/bus/pci.../resource", 1GB) 
+and how can I use it by my drivers ?
+
+Thanks again for all your help!
+
+
+
+
+ 
+On Fri, 12 Dec 2008, Kumar Gala wrote:
+> On Dec 12, 2008, at 3:04 AM, Trent Piepho wrote:
+> > On Thu, 11 Dec 2008, Kumar Gala wrote:
+> >  > On Dec 11, 2008, at 10:07 PM, Trent Piepho wrote:
+> >  >  > On Thu, 11 Dec 2008, Kumar Gala wrote:
+> >  >  >  > The 36-bit support is current (in tree) in complete.  Work is in 
+> >  >  >  > add swiotlb support to PPC which will generically enable what you 
+> >  >  > 
+> >  >  > Don't the ATMU windows in the pcie controller serve as a IOMMU, making
+> >  >  > swiotlb
+> >  >  > unnecessary and wasteful?
+> >  > 
+> >  > Nope.  You have no way to tell when to switch a window as you have no 
+> >  > idea
+> >  > when a device might DMA data.
+> > 
+> > Isn't that what dma_alloc_coherent() and dma_map_single() are for?
+>
+> Nope.  How would manipulate the PCI ATMU?
+
+Umm, out_be32()?  Why would it be any different than other iommu
+implementations, like the pseries one for example?
+
+Just define set a of fsl dma ops that use an inbound ATMU window if they
+need to.  The only issue would be if you have a 32-bit device with multiple
+concurrent DMA buffers scattered over  > 32 bits of address space and run
+out of ATMU windows.  But other iommu implementations have that same
+limitation.  You just have to try harder to allocate GFP_DMA memory that
+doesn't need an ATMU window or create larger contiguous bounce buffer to
+replace scattered smaller buffers.
+
+> > It sounded like the original poster was talking about having 3GB of PCI
+> > BARs.  How does swiotlb even enter the picture for that?
+>
+> It wasn't clear how much system memory they wanted.  If they can fit their 
+> entire memory map for PCI addresses in 4G of address space (this includes all 
+> of system DRAM) than they don't need anything special.
+
+Why the need to fit the entire PCI memory map into the lower 4G?  What
+issue is there with mapping a PCI BAR above 4G if you have 36-bit support?
+
+Putting system memory below 4GB is only an issue if you're talking about
+DMA.  For mapping a PCI BAR, what does it doesn't matter?
+
+The problem I see with having large PCI BARs, is that the max userspace
+process size plus low memory plus all ioremap()s must be less than 4GB.  If
+one wants to call ioremap(..., 3GB), then only 1 GB is left for userspace
+plus low memory.  That's not very much.
+
+One can mmap() a PCI BAR from userspace, in which case the mapping comes
+out of the "max userspace size" pool instead of the "all ioremap()s" pool. 
+The userspace pool is per processes.  So while having four kernel drivers
+each call ioremap(..., 1GB) will never work, it is possible to have four
+userspace processes each call mmap("/sys/bus/pci.../resource", 1GB) and
+have it work.
+
+> >  >From what I've read about swiotlb, it is a hack that allows one to do DMA
+> > with 32-bit PCI devices on 64-bit systems that lack an IOMMU.  It reserves
+> > a large block of RAM under 32-bits (technically it uses GFP_DMA) and doles
+> > this out to drivers that allocate DMA memory.
+>
+> correct.  It bounce buffers the DMAs to a 32-bit dma'ble region and copies 
+> to/from the  >32-bit address.
+
+--=====003_Dragon415623707004_=====
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
+dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
+MC4yOTAwLjM0NjIiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPkBmb250LWZhY2Ugew0KCWZvbnQt
+ZmFtaWx5OiDLzszlOw0KfQ0KQGZvbnQtZmFjZSB7DQoJZm9udC1mYW1pbHk6IFZlcmRhbmE7DQp9
+DQpAZm9udC1mYWNlIHsNCglmb250LWZhbWlseTogQMvOzOU7DQp9DQpAcGFnZSBTZWN0aW9uMSB7
+c2l6ZTogNTk1LjNwdCA4NDEuOXB0OyBtYXJnaW46IDcyLjBwdCA5MC4wcHQgNzIuMHB0IDkwLjBw
+dDsgbGF5b3V0LWdyaWQ6IDE1LjZwdDsgfQ0KUC5Nc29Ob3JtYWwgew0KCVRFWFQtSlVTVElGWTog
+aW50ZXItaWRlb2dyYXBoOyBGT05ULVNJWkU6IDEwLjVwdDsgTUFSR0lOOiAwY20gMGNtIDBwdDsg
+Rk9OVC1GQU1JTFk6ICJUaW1lcyBOZXcgUm9tYW4iOyBURVhULUFMSUdOOiBqdXN0aWZ5DQp9DQpM
+SS5Nc29Ob3JtYWwgew0KCVRFWFQtSlVTVElGWTogaW50ZXItaWRlb2dyYXBoOyBGT05ULVNJWkU6
+IDEwLjVwdDsgTUFSR0lOOiAwY20gMGNtIDBwdDsgRk9OVC1GQU1JTFk6ICJUaW1lcyBOZXcgUm9t
+YW4iOyBURVhULUFMSUdOOiBqdXN0aWZ5DQp9DQpESVYuTXNvTm9ybWFsIHsNCglURVhULUpVU1RJ
+Rlk6IGludGVyLWlkZW9ncmFwaDsgRk9OVC1TSVpFOiAxMC41cHQ7IE1BUkdJTjogMGNtIDBjbSAw
+cHQ7IEZPTlQtRkFNSUxZOiAiVGltZXMgTmV3IFJvbWFuIjsgVEVYVC1BTElHTjoganVzdGlmeQ0K
+fQ0KQTpsaW5rIHsNCglDT0xPUjogYmx1ZTsgVEVYVC1ERUNPUkFUSU9OOiB1bmRlcmxpbmUNCn0N
+ClNQQU4uTXNvSHlwZXJsaW5rIHsNCglDT0xPUjogYmx1ZTsgVEVYVC1ERUNPUkFUSU9OOiB1bmRl
+cmxpbmUNCn0NCkE6dmlzaXRlZCB7DQoJQ09MT1I6IHB1cnBsZTsgVEVYVC1ERUNPUkFUSU9OOiB1
+bmRlcmxpbmUNCn0NClNQQU4uTXNvSHlwZXJsaW5rRm9sbG93ZWQgew0KCUNPTE9SOiBwdXJwbGU7
+IFRFWFQtREVDT1JBVElPTjogdW5kZXJsaW5lDQp9DQpTUEFOLkVtYWlsU3R5bGUxNyB7DQoJRk9O
+VC1XRUlHSFQ6IG5vcm1hbDsgQ09MT1I6IHdpbmRvd3RleHQ7IEZPTlQtU1RZTEU6IG5vcm1hbDsg
+Rk9OVC1GQU1JTFk6IFZlcmRhbmE7IFRFWFQtREVDT1JBVElPTjogbm9uZTsgbXNvLXN0eWxlLXR5
+cGU6IHBlcnNvbmFsLWNvbXBvc2UNCn0NCkRJVi5TZWN0aW9uMSB7DQoJcGFnZTogU2VjdGlvbjEN
+Cn0NClVOS05PV04gew0KCUZPTlQtU0laRTogMTBwdA0KfQ0KQkxPQ0tRVU9URSB7DQoJTUFSR0lO
+LVRPUDogMHB4OyBNQVJHSU4tQk9UVE9NOiAwcHg7IE1BUkdJTi1MRUZUOiAyZW0NCn0NCk9MIHsN
+CglNQVJHSU4tVE9QOiAwcHg7IE1BUkdJTi1CT1RUT006IDBweA0KfQ0KVUwgew0KCU1BUkdJTi1U
+T1A6IDBweDsgTUFSR0lOLUJPVFRPTTogMHB4DQp9DQo8L1NUWUxFPg0KPC9IRUFEPg0KPEJPRFkg
+c3R5bGU9IkZPTlQtU0laRTogMTBwdDsgRk9OVC1GQU1JTFk6IHZlcmRhbmEiPg0KPERJVj48Rk9O
+VCBmYWNlPVZlcmRhbmEgY29sb3I9I2MwYzBjMCBzaXplPTI+PC9GT05UPjwvRElWPg0KPERJVj48
+Rk9OVCBmYWNlPVZlcmRhbmEgY29sb3I9IzAwMDA4MCBzaXplPTI+DQo8SDMgY2xhc3M9cj5UaGFu
+a3MgZm9yIGFsbCB0aGUgc3VnZ2VzdGlvbnMgYW5kIENvbW1lbnRzITwvSDM+DQo8RElWIGNsYXNz
+PXI+PC9GT05UPjxGT05UIGZhY2U9VmVyZGFuYSBjb2xvcj0jMDAwMDgwIHNpemU9ND5JbiZuYnNw
+O3RoZSBzeXN0ZW0sIA0KJm5ic3A7dGhlIHRvdGFsIG1lbW9yeSBzaXplIGlzIGxlc3MmbmJzcDt0
+aGFuJm5ic3A7NEdCLiZuYnNwOyZuYnNwOyBJIHdhbnQgdG8gDQprbm93IGhvdyB0byBtYXAgdGhl
+IDNHQiBwY2kgYWRkcmVzcyB0byB0aGUga2VybmVsICw8L0ZPTlQ+PC9ESVY+DQo8RElWIGNsYXNz
+PXI+PEZPTlQgY29sb3I9IzAwMDA4MCBzaXplPTQ+YW5kIGhvdyBjYW4gbXkgZHJpdmVyIGFjY2Vz
+cyBhbGwgdGhlIHBjaSANCmRldmljZS4gVXN1YWxseSB3ZSBoYXZlIG9ubHkgMUdCIGtlcm5lbCBh
+ZGRyZXNzLCBtaW51cyB0aGUgODk2TUI8L0ZPTlQ+PC9ESVY+DQo8RElWIGNsYXNzPXI+PEZPTlQg
+Y29sb3I9IzAwMDA4MD48Rk9OVCBzaXplPTQ+Zm9yIG1lbW9yeSBtYXAsIHdlIGNhbiBvbmx5IHVz
+ZSANCnRoZSAxMjhNIGZvciBpb3JlbWFwLjwvRk9OVD4gPEZPTlQgc2l6ZT00PkkgY2FuIGFkanVz
+dCB0aGUgUEFHRV9PRkZTRVQgdG8gYSANCmxvd2VyIHZhbHVlLCBidXQgaXQncyBub3QgZW5vdWdo
+LjwvRk9OVD48L0ZPTlQ+PC9ESVY+DQo8RElWIGNsYXNzPXI+PEZPTlQgY29sb3I9IzAwMDA4MCBz
+aXplPTQ+PC9GT05UPiZuYnNwOzwvRElWPg0KPERJViBjbGFzcz1yPg0KPERJVj4mZ3Q7T25lJm5i
+c3A7Y2FuJm5ic3A7bW1hcCgpJm5ic3A7YSZuYnNwO1BDSSZuYnNwO0JBUiZuYnNwO2Zyb20mbmJz
+cDt1c2Vyc3BhY2UsJm5ic3A7aW4mbmJzcDt3aGljaCZuYnNwO2Nhc2UmbmJzcDt0aGUmbmJzcDtt
+YXBwaW5nJm5ic3A7Y29tZXM8L0RJVj4NCjxESVY+Jmd0O291dCZuYnNwO29mJm5ic3A7dGhlJm5i
+c3A7Im1heCZuYnNwO3VzZXJzcGFjZSZuYnNwO3NpemUiJm5ic3A7cG9vbCZuYnNwO2luc3RlYWQm
+bmJzcDtvZiZuYnNwO3RoZSZuYnNwOyJhbGwmbmJzcDtpb3JlbWFwKClzIiZuYnNwO3Bvb2wuJm5i
+c3A7PC9ESVY+DQo8RElWPiZndDtUaGUmbmJzcDt1c2Vyc3BhY2UmbmJzcDtwb29sJm5ic3A7aXMm
+bmJzcDtwZXImbmJzcDtwcm9jZXNzZXMuJm5ic3A7Jm5ic3A7U28mbmJzcDt3aGlsZSZuYnNwO2hh
+dmluZyZuYnNwO2ZvdXImbmJzcDtrZXJuZWwmbmJzcDtkcml2ZXJzPC9ESVY+DQo8RElWPiZndDtl
+YWNoJm5ic3A7Y2FsbCZuYnNwO2lvcmVtYXAoLi4uLCZuYnNwOzFHQikmbmJzcDt3aWxsJm5ic3A7
+bmV2ZXImbmJzcDt3b3JrLCZuYnNwO2l0Jm5ic3A7aXMmbmJzcDtwb3NzaWJsZSZuYnNwO3RvJm5i
+c3A7aGF2ZSZuYnNwO2ZvdXI8L0RJVj4NCjxESVY+Jmd0O3VzZXJzcGFjZSZuYnNwO3Byb2Nlc3Nl
+cyZuYnNwO2VhY2gmbmJzcDtjYWxsJm5ic3A7bW1hcCgiL3N5cy9idXMvcGNpLi4uL3Jlc291cmNl
+IiwmbmJzcDsxR0IpJm5ic3A7YW5kPC9ESVY+DQo8RElWPiZndDtoYXZlJm5ic3A7aXQmbmJzcDt3
+b3JrLjwvRElWPjwvRElWPg0KPERJViBjbGFzcz1yPjxGT05UIGNvbG9yPSMwMDAwODAgc2l6ZT00
+PjwvRk9OVD48Rk9OVCBmYWNlPVZlcmRhbmEgY29sb3I9IzAwMDA4MCANCnNpemU9Mj48L0ZPTlQ+
+Jm5ic3A7PC9ESVY+DQo8RElWIGNsYXNzPXI+PEZPTlQgZmFjZT1WZXJkYW5hPjxGT05UIGNvbG9y
+PSMwMDAwODAgc2l6ZT00PlRoZXJlIGFyZSBtYW55IHBjaSANCmRldmljZXMgaW4gdGhlIHN5c3Rl
+bSBhbmQgZXZlcnkgcGNpIGRldmljZSBoYXMgb25seSBzZXZlcmFsIHRlbnMgb2YgTUIsIHNvIGhv
+dyANCmNhbiBJIGNhbGwgdGhlIA0KbW1hcCgiL3N5cy9idXMvcGNpLi4uL3Jlc291cmNlIiwmbmJz
+cDsxR0IpJm5ic3A7PC9GT05UPjwvRk9OVD48L0RJVj4NCjxESVYgY2xhc3M9cj48Rk9OVCBjb2xv
+cj0jMDAwMDgwIHNpemU9ND5hbmQgaG93IGNhbiBJIHVzZSBpdCBieSBteSBkcml2ZXJzIA0KPzwv
+Rk9OVD48L0RJVj4NCjxESVYgY2xhc3M9cj48Rk9OVCBjb2xvcj0jMDAwMDgwIHNpemU9ND48L0ZP
+TlQ+Jm5ic3A7PC9ESVY+DQo8RElWIGNsYXNzPXI+PEZPTlQgY29sb3I9IzAwMDA4MCBzaXplPTQ+
+VGhhbmtzIGFnYWluIGZvciZuYnNwO2FsbCB5b3VyIA0KaGVscCE8L0ZPTlQ+PC9ESVY+DQo8RElW
+IGNsYXNzPXI+PEZPTlQgZmFjZT1WZXJkYW5hIGNvbG9yPSMwMDAwODAgc2l6ZT0yPiZuYnNwOzwv
+RElWPjwvRElWPg0KPERJVj4NCjxIUj4NCjwvRElWPjwvRk9OVD4NCjxESVY+DQo8RElWPjxGT05U
+IGZhY2U9VmVyZGFuYSBzaXplPTI+PC9GT05UPjwvRElWPjxGT05UIGZhY2U9VmVyZGFuYSBzaXpl
+PTI+PC9GT05UPiANCjwvRElWPg0KPERJVj48Rk9OVCBmYWNlPVZlcmRhbmEgc2l6ZT0yPg0KPERJ
+Vj5PbiZuYnNwO0ZyaSwmbmJzcDsxMiZuYnNwO0RlYyZuYnNwOzIwMDgsJm5ic3A7S3VtYXImbmJz
+cDtHYWxhJm5ic3A7d3JvdGU6PC9ESVY+DQo8RElWPiZndDsmbmJzcDtPbiZuYnNwO0RlYyZuYnNw
+OzEyLCZuYnNwOzIwMDgsJm5ic3A7YXQmbmJzcDszOjA0Jm5ic3A7QU0sJm5ic3A7VHJlbnQmbmJz
+cDtQaWVwaG8mbmJzcDt3cm90ZTo8L0RJVj4NCjxESVY+Jmd0OyANCiZndDsmbmJzcDtPbiZuYnNw
+O1RodSwmbmJzcDsxMSZuYnNwO0RlYyZuYnNwOzIwMDgsJm5ic3A7S3VtYXImbmJzcDtHYWxhJm5i
+c3A7d3JvdGU6PC9ESVY+DQo8RElWPiZndDsgJmd0OyZuYnNwOyANCiZndDsmbmJzcDtPbiZuYnNw
+O0RlYyZuYnNwOzExLCZuYnNwOzIwMDgsJm5ic3A7YXQmbmJzcDsxMDowNyZuYnNwO1BNLCZuYnNw
+O1RyZW50Jm5ic3A7UGllcGhvJm5ic3A7d3JvdGU6PC9ESVY+DQo8RElWPiZndDsgJmd0OyZuYnNw
+OyAmZ3Q7Jm5ic3A7IA0KJmd0OyZuYnNwO09uJm5ic3A7VGh1LCZuYnNwOzExJm5ic3A7RGVjJm5i
+c3A7MjAwOCwmbmJzcDtLdW1hciZuYnNwO0dhbGEmbmJzcDt3cm90ZTo8L0RJVj4NCjxESVY+Jmd0
+OyAmZ3Q7Jm5ic3A7ICZndDsmbmJzcDsgJmd0OyZuYnNwOyANCiZndDsmbmJzcDtUaGUmbmJzcDsz
+Ni1iaXQmbmJzcDtzdXBwb3J0Jm5ic3A7aXMmbmJzcDtjdXJyZW50Jm5ic3A7KGluJm5ic3A7dHJl
+ZSkmbmJzcDtpbiZuYnNwO2NvbXBsZXRlLiZuYnNwOyZuYnNwO1dvcmsmbmJzcDtpcyZuYnNwO2lu
+Jm5ic3A7PC9ESVY+DQo8RElWPiZndDsgJmd0OyZuYnNwOyAmZ3Q7Jm5ic3A7ICZndDsmbmJzcDsg
+DQomZ3Q7Jm5ic3A7YWRkJm5ic3A7c3dpb3RsYiZuYnNwO3N1cHBvcnQmbmJzcDt0byZuYnNwO1BQ
+QyZuYnNwO3doaWNoJm5ic3A7d2lsbCZuYnNwO2dlbmVyaWNhbGx5Jm5ic3A7ZW5hYmxlJm5ic3A7
+d2hhdCZuYnNwO3lvdSZuYnNwOzwvRElWPg0KPERJVj4mZ3Q7ICZndDsmbmJzcDsgJmd0OyZuYnNw
+OyAmZ3Q7Jm5ic3A7PC9ESVY+DQo8RElWPiZndDsgJmd0OyZuYnNwOyAmZ3Q7Jm5ic3A7IA0KJmd0
+OyZuYnNwO0Rvbid0Jm5ic3A7dGhlJm5ic3A7QVRNVSZuYnNwO3dpbmRvd3MmbmJzcDtpbiZuYnNw
+O3RoZSZuYnNwO3BjaWUmbmJzcDtjb250cm9sbGVyJm5ic3A7c2VydmUmbmJzcDthcyZuYnNwO2Em
+bmJzcDtJT01NVSwmbmJzcDttYWtpbmc8L0RJVj4NCjxESVY+Jmd0OyAmZ3Q7Jm5ic3A7ICZndDsm
+bmJzcDsgJmd0OyZuYnNwO3N3aW90bGI8L0RJVj4NCjxESVY+Jmd0OyAmZ3Q7Jm5ic3A7ICZndDsm
+bmJzcDsgDQomZ3Q7Jm5ic3A7dW5uZWNlc3NhcnkmbmJzcDthbmQmbmJzcDt3YXN0ZWZ1bD88L0RJ
+Vj4NCjxESVY+Jmd0OyAmZ3Q7Jm5ic3A7ICZndDsmbmJzcDs8L0RJVj4NCjxESVY+Jmd0OyAmZ3Q7
+Jm5ic3A7IA0KJmd0OyZuYnNwO05vcGUuJm5ic3A7Jm5ic3A7WW91Jm5ic3A7aGF2ZSZuYnNwO25v
+Jm5ic3A7d2F5Jm5ic3A7dG8mbmJzcDt0ZWxsJm5ic3A7d2hlbiZuYnNwO3RvJm5ic3A7c3dpdGNo
+Jm5ic3A7YSZuYnNwO3dpbmRvdyZuYnNwO2FzJm5ic3A7eW91Jm5ic3A7aGF2ZSZuYnNwO25vJm5i
+c3A7PC9ESVY+DQo8RElWPiZndDsgJmd0OyZuYnNwOyAmZ3Q7Jm5ic3A7aWRlYTwvRElWPg0KPERJ
+Vj4mZ3Q7ICZndDsmbmJzcDsgDQomZ3Q7Jm5ic3A7d2hlbiZuYnNwO2EmbmJzcDtkZXZpY2UmbmJz
+cDttaWdodCZuYnNwO0RNQSZuYnNwO2RhdGEuPC9ESVY+DQo8RElWPiZndDsgJmd0OyZuYnNwOzwv
+RElWPg0KPERJVj4mZ3Q7IA0KJmd0OyZuYnNwO0lzbid0Jm5ic3A7dGhhdCZuYnNwO3doYXQmbmJz
+cDtkbWFfYWxsb2NfY29oZXJlbnQoKSZuYnNwO2FuZCZuYnNwO2RtYV9tYXBfc2luZ2xlKCkmbmJz
+cDthcmUmbmJzcDtmb3I/PC9ESVY+DQo8RElWPiZndDs8L0RJVj4NCjxESVY+Jmd0OyZuYnNwO05v
+cGUuJm5ic3A7Jm5ic3A7SG93Jm5ic3A7d291bGQmbmJzcDttYW5pcHVsYXRlJm5ic3A7dGhlJm5i
+c3A7UENJJm5ic3A7QVRNVT88L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElWPlVtbSwmbmJz
+cDtvdXRfYmUzMigpPyZuYnNwOyZuYnNwO1doeSZuYnNwO3dvdWxkJm5ic3A7aXQmbmJzcDtiZSZu
+YnNwO2FueSZuYnNwO2RpZmZlcmVudCZuYnNwO3RoYW4mbmJzcDtvdGhlciZuYnNwO2lvbW11PC9E
+SVY+DQo8RElWPmltcGxlbWVudGF0aW9ucywmbmJzcDtsaWtlJm5ic3A7dGhlJm5ic3A7cHNlcmll
+cyZuYnNwO29uZSZuYnNwO2ZvciZuYnNwO2V4YW1wbGU/PC9ESVY+DQo8RElWPiZuYnNwOzwvRElW
+Pg0KPERJVj5KdXN0Jm5ic3A7ZGVmaW5lJm5ic3A7c2V0Jm5ic3A7YSZuYnNwO29mJm5ic3A7ZnNs
+Jm5ic3A7ZG1hJm5ic3A7b3BzJm5ic3A7dGhhdCZuYnNwO3VzZSZuYnNwO2FuJm5ic3A7aW5ib3Vu
+ZCZuYnNwO0FUTVUmbmJzcDt3aW5kb3cmbmJzcDtpZiZuYnNwO3RoZXk8L0RJVj4NCjxESVY+bmVl
+ZCZuYnNwO3RvLiZuYnNwOyZuYnNwO1RoZSZuYnNwO29ubHkmbmJzcDtpc3N1ZSZuYnNwO3dvdWxk
+Jm5ic3A7YmUmbmJzcDtpZiZuYnNwO3lvdSZuYnNwO2hhdmUmbmJzcDthJm5ic3A7MzItYml0Jm5i
+c3A7ZGV2aWNlJm5ic3A7d2l0aCZuYnNwO211bHRpcGxlPC9ESVY+DQo8RElWPmNvbmN1cnJlbnQm
+bmJzcDtETUEmbmJzcDtidWZmZXJzJm5ic3A7c2NhdHRlcmVkJm5ic3A7b3ZlciZuYnNwOyANCiZn
+dDsmbmJzcDszMiZuYnNwO2JpdHMmbmJzcDtvZiZuYnNwO2FkZHJlc3MmbmJzcDtzcGFjZSZuYnNw
+O2FuZCZuYnNwO3J1bjwvRElWPg0KPERJVj5vdXQmbmJzcDtvZiZuYnNwO0FUTVUmbmJzcDt3aW5k
+b3dzLiZuYnNwOyZuYnNwO0J1dCZuYnNwO290aGVyJm5ic3A7aW9tbXUmbmJzcDtpbXBsZW1lbnRh
+dGlvbnMmbmJzcDtoYXZlJm5ic3A7dGhhdCZuYnNwO3NhbWU8L0RJVj4NCjxESVY+bGltaXRhdGlv
+bi4mbmJzcDsmbmJzcDtZb3UmbmJzcDtqdXN0Jm5ic3A7aGF2ZSZuYnNwO3RvJm5ic3A7dHJ5Jm5i
+c3A7aGFyZGVyJm5ic3A7dG8mbmJzcDthbGxvY2F0ZSZuYnNwO0dGUF9ETUEmbmJzcDttZW1vcnkm
+bmJzcDt0aGF0PC9ESVY+DQo8RElWPmRvZXNuJ3QmbmJzcDtuZWVkJm5ic3A7YW4mbmJzcDtBVE1V
+Jm5ic3A7d2luZG93Jm5ic3A7b3ImbmJzcDtjcmVhdGUmbmJzcDtsYXJnZXImbmJzcDtjb250aWd1
+b3VzJm5ic3A7Ym91bmNlJm5ic3A7YnVmZmVyJm5ic3A7dG88L0RJVj4NCjxESVY+cmVwbGFjZSZu
+YnNwO3NjYXR0ZXJlZCZuYnNwO3NtYWxsZXImbmJzcDtidWZmZXJzLjwvRElWPg0KPERJVj4mbmJz
+cDs8L0RJVj4NCjxESVY+Jmd0OyANCiZndDsmbmJzcDtJdCZuYnNwO3NvdW5kZWQmbmJzcDtsaWtl
+Jm5ic3A7dGhlJm5ic3A7b3JpZ2luYWwmbmJzcDtwb3N0ZXImbmJzcDt3YXMmbmJzcDt0YWxraW5n
+Jm5ic3A7YWJvdXQmbmJzcDtoYXZpbmcmbmJzcDszR0ImbmJzcDtvZiZuYnNwO1BDSTwvRElWPg0K
+PERJVj4mZ3Q7IA0KJmd0OyZuYnNwO0JBUnMuJm5ic3A7Jm5ic3A7SG93Jm5ic3A7ZG9lcyZuYnNw
+O3N3aW90bGImbmJzcDtldmVuJm5ic3A7ZW50ZXImbmJzcDt0aGUmbmJzcDtwaWN0dXJlJm5ic3A7
+Zm9yJm5ic3A7dGhhdD88L0RJVj4NCjxESVY+Jmd0OzwvRElWPg0KPERJVj4mZ3Q7Jm5ic3A7SXQm
+bmJzcDt3YXNuJ3QmbmJzcDtjbGVhciZuYnNwO2hvdyZuYnNwO211Y2gmbmJzcDtzeXN0ZW0mbmJz
+cDttZW1vcnkmbmJzcDt0aGV5Jm5ic3A7d2FudGVkLiZuYnNwOyZuYnNwO0lmJm5ic3A7dGhleSZu
+YnNwO2NhbiZuYnNwO2ZpdCZuYnNwO3RoZWlyJm5ic3A7PC9ESVY+DQo8RElWPiZndDsmbmJzcDtl
+bnRpcmUmbmJzcDttZW1vcnkmbmJzcDttYXAmbmJzcDtmb3ImbmJzcDtQQ0kmbmJzcDthZGRyZXNz
+ZXMmbmJzcDtpbiZuYnNwOzRHJm5ic3A7b2YmbmJzcDthZGRyZXNzJm5ic3A7c3BhY2UmbmJzcDso
+dGhpcyZuYnNwO2luY2x1ZGVzJm5ic3A7YWxsJm5ic3A7PC9ESVY+DQo8RElWPiZndDsmbmJzcDtv
+ZiZuYnNwO3N5c3RlbSZuYnNwO0RSQU0pJm5ic3A7dGhhbiZuYnNwO3RoZXkmbmJzcDtkb24ndCZu
+YnNwO25lZWQmbmJzcDthbnl0aGluZyZuYnNwO3NwZWNpYWwuPC9ESVY+DQo8RElWPiZuYnNwOzwv
+RElWPg0KPERJVj5XaHkmbmJzcDt0aGUmbmJzcDtuZWVkJm5ic3A7dG8mbmJzcDtmaXQmbmJzcDt0
+aGUmbmJzcDtlbnRpcmUmbmJzcDtQQ0kmbmJzcDttZW1vcnkmbmJzcDttYXAmbmJzcDtpbnRvJm5i
+c3A7dGhlJm5ic3A7bG93ZXImbmJzcDs0Rz8mbmJzcDsmbmJzcDtXaGF0PC9ESVY+DQo8RElWPmlz
+c3VlJm5ic3A7aXMmbmJzcDt0aGVyZSZuYnNwO3dpdGgmbmJzcDttYXBwaW5nJm5ic3A7YSZuYnNw
+O1BDSSZuYnNwO0JBUiZuYnNwO2Fib3ZlJm5ic3A7NEcmbmJzcDtpZiZuYnNwO3lvdSZuYnNwO2hh
+dmUmbmJzcDszNi1iaXQmbmJzcDtzdXBwb3J0PzwvRElWPg0KPERJVj4mbmJzcDs8L0RJVj4NCjxE
+SVY+UHV0dGluZyZuYnNwO3N5c3RlbSZuYnNwO21lbW9yeSZuYnNwO2JlbG93Jm5ic3A7NEdCJm5i
+c3A7aXMmbmJzcDtvbmx5Jm5ic3A7YW4mbmJzcDtpc3N1ZSZuYnNwO2lmJm5ic3A7eW91J3JlJm5i
+c3A7dGFsa2luZyZuYnNwO2Fib3V0PC9ESVY+DQo8RElWPkRNQS4mbmJzcDsmbmJzcDtGb3ImbmJz
+cDttYXBwaW5nJm5ic3A7YSZuYnNwO1BDSSZuYnNwO0JBUiwmbmJzcDt3aGF0Jm5ic3A7ZG9lcyZu
+YnNwO2l0Jm5ic3A7ZG9lc24ndCZuYnNwO21hdHRlcj88L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+
+DQo8RElWPlRoZSZuYnNwO3Byb2JsZW0mbmJzcDtJJm5ic3A7c2VlJm5ic3A7d2l0aCZuYnNwO2hh
+dmluZyZuYnNwO2xhcmdlJm5ic3A7UENJJm5ic3A7QkFScywmbmJzcDtpcyZuYnNwO3RoYXQmbmJz
+cDt0aGUmbmJzcDttYXgmbmJzcDt1c2Vyc3BhY2U8L0RJVj4NCjxESVY+cHJvY2VzcyZuYnNwO3Np
+emUmbmJzcDtwbHVzJm5ic3A7bG93Jm5ic3A7bWVtb3J5Jm5ic3A7cGx1cyZuYnNwO2FsbCZuYnNw
+O2lvcmVtYXAoKXMmbmJzcDttdXN0Jm5ic3A7YmUmbmJzcDtsZXNzJm5ic3A7dGhhbiZuYnNwOzRH
+Qi4mbmJzcDsmbmJzcDtJZjwvRElWPg0KPERJVj5vbmUmbmJzcDt3YW50cyZuYnNwO3RvJm5ic3A7
+Y2FsbCZuYnNwO2lvcmVtYXAoLi4uLCZuYnNwOzNHQiksJm5ic3A7dGhlbiZuYnNwO29ubHkmbmJz
+cDsxJm5ic3A7R0ImbmJzcDtpcyZuYnNwO2xlZnQmbmJzcDtmb3ImbmJzcDt1c2Vyc3BhY2U8L0RJ
+Vj4NCjxESVY+cGx1cyZuYnNwO2xvdyZuYnNwO21lbW9yeS4mbmJzcDsmbmJzcDtUaGF0J3MmbmJz
+cDtub3QmbmJzcDt2ZXJ5Jm5ic3A7bXVjaC48L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElW
+Pk9uZSZuYnNwO2NhbiZuYnNwO21tYXAoKSZuYnNwO2EmbmJzcDtQQ0kmbmJzcDtCQVImbmJzcDtm
+cm9tJm5ic3A7dXNlcnNwYWNlLCZuYnNwO2luJm5ic3A7d2hpY2gmbmJzcDtjYXNlJm5ic3A7dGhl
+Jm5ic3A7bWFwcGluZyZuYnNwO2NvbWVzPC9ESVY+DQo8RElWPm91dCZuYnNwO29mJm5ic3A7dGhl
+Jm5ic3A7Im1heCZuYnNwO3VzZXJzcGFjZSZuYnNwO3NpemUiJm5ic3A7cG9vbCZuYnNwO2luc3Rl
+YWQmbmJzcDtvZiZuYnNwO3RoZSZuYnNwOyJhbGwmbmJzcDtpb3JlbWFwKClzIiZuYnNwO3Bvb2wu
+Jm5ic3A7PC9ESVY+DQo8RElWPlRoZSZuYnNwO3VzZXJzcGFjZSZuYnNwO3Bvb2wmbmJzcDtpcyZu
+YnNwO3BlciZuYnNwO3Byb2Nlc3Nlcy4mbmJzcDsmbmJzcDtTbyZuYnNwO3doaWxlJm5ic3A7aGF2
+aW5nJm5ic3A7Zm91ciZuYnNwO2tlcm5lbCZuYnNwO2RyaXZlcnM8L0RJVj4NCjxESVY+ZWFjaCZu
+YnNwO2NhbGwmbmJzcDtpb3JlbWFwKC4uLiwmbmJzcDsxR0IpJm5ic3A7d2lsbCZuYnNwO25ldmVy
+Jm5ic3A7d29yaywmbmJzcDtpdCZuYnNwO2lzJm5ic3A7cG9zc2libGUmbmJzcDt0byZuYnNwO2hh
+dmUmbmJzcDtmb3VyPC9ESVY+DQo8RElWPnVzZXJzcGFjZSZuYnNwO3Byb2Nlc3NlcyZuYnNwO2Vh
+Y2gmbmJzcDtjYWxsJm5ic3A7bW1hcCgiL3N5cy9idXMvcGNpLi4uL3Jlc291cmNlIiwmbmJzcDsx
+R0IpJm5ic3A7YW5kPC9ESVY+DQo8RElWPmhhdmUmbmJzcDtpdCZuYnNwO3dvcmsuPC9ESVY+DQo8
+RElWPiZuYnNwOzwvRElWPg0KPERJVj4mZ3Q7ICZndDsmbmJzcDsgDQomZ3Q7RnJvbSZuYnNwO3do
+YXQmbmJzcDtJJ3ZlJm5ic3A7cmVhZCZuYnNwO2Fib3V0Jm5ic3A7c3dpb3RsYiwmbmJzcDtpdCZu
+YnNwO2lzJm5ic3A7YSZuYnNwO2hhY2smbmJzcDt0aGF0Jm5ic3A7YWxsb3dzJm5ic3A7b25lJm5i
+c3A7dG8mbmJzcDtkbyZuYnNwO0RNQTwvRElWPg0KPERJVj4mZ3Q7IA0KJmd0OyZuYnNwO3dpdGgm
+bmJzcDszMi1iaXQmbmJzcDtQQ0kmbmJzcDtkZXZpY2VzJm5ic3A7b24mbmJzcDs2NC1iaXQmbmJz
+cDtzeXN0ZW1zJm5ic3A7dGhhdCZuYnNwO2xhY2smbmJzcDthbiZuYnNwO0lPTU1VLiZuYnNwOyZu
+YnNwO0l0Jm5ic3A7cmVzZXJ2ZXM8L0RJVj4NCjxESVY+Jmd0OyANCiZndDsmbmJzcDthJm5ic3A7
+bGFyZ2UmbmJzcDtibG9jayZuYnNwO29mJm5ic3A7UkFNJm5ic3A7dW5kZXImbmJzcDszMi1iaXRz
+Jm5ic3A7KHRlY2huaWNhbGx5Jm5ic3A7aXQmbmJzcDt1c2VzJm5ic3A7R0ZQX0RNQSkmbmJzcDth
+bmQmbmJzcDtkb2xlczwvRElWPg0KPERJVj4mZ3Q7IA0KJmd0OyZuYnNwO3RoaXMmbmJzcDtvdXQm
+bmJzcDt0byZuYnNwO2RyaXZlcnMmbmJzcDt0aGF0Jm5ic3A7YWxsb2NhdGUmbmJzcDtETUEmbmJz
+cDttZW1vcnkuPC9ESVY+DQo8RElWPiZndDs8L0RJVj4NCjxESVY+Jmd0OyZuYnNwO2NvcnJlY3Qu
+Jm5ic3A7Jm5ic3A7SXQmbmJzcDtib3VuY2UmbmJzcDtidWZmZXJzJm5ic3A7dGhlJm5ic3A7RE1B
+cyZuYnNwO3RvJm5ic3A7YSZuYnNwOzMyLWJpdCZuYnNwO2RtYSdibGUmbmJzcDtyZWdpb24mbmJz
+cDthbmQmbmJzcDtjb3BpZXMmbmJzcDs8L0RJVj4NCjxESVY+Jmd0OyZuYnNwO3RvL2Zyb20mbmJz
+cDt0aGUmbmJzcDsgDQomZ3Q7MzItYml0Jm5ic3A7YWRkcmVzcy48L0RJVj48L0ZPTlQ+PC9ESVY+
+PC9CT0RZPjwvSFRNTD4NCg==
+
+--=====003_Dragon415623707004_=====--
