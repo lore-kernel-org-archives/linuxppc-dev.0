@@ -1,23 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0A73FDE092
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Dec 2008 10:49:40 +1100 (EST)
-Message-Id: <1957A815-19D9-434C-9F46-8124D86C075F@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20081211191503.1e8bbf18@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 1/9] powerpc: Fix bogus cache flushing on all 40x and
-	BookE processors v2
-Date: Sat, 13 Dec 2008 17:49:03 -0600
-References: <1228714789.103940.266501677728.qpush@grosgo>
-	<20081208054038.20368DDE1F@ozlabs.org>
-	<20081211191503.1e8bbf18@zod.rchland.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0C1DADDF63
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Dec 2008 13:46:09 +1100 (EST)
+Subject: Re: [PATCH][for 2.6.28] powerpc/fsl-booke: Fix problem with
+	_tlbil_va being interrupted
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1229211183-5350-1-git-send-email-galak@kernel.crashing.org>
+References: <1229211183-5350-1-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sun, 14 Dec 2008 13:46:02 +1100
+Message-Id: <1229222762.26324.19.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,28 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2008-12-13 at 17:33 -0600, Kumar Gala wrote:
+> An example calling sequence which we did see:
+> 
+> copy_user_highpage -> kmap_atomic -> flush_tlb_page -> _tlbil_va
+> 
+> We got interrupted after setting up the MAS registers before the
+> tlbwe and the interrupt handler that caused the interrupt also did
+> a kmap_atomic (ide code) and thus on returning from the interrupt
+> the MAS registers no longer contained the proper values.
+> 
+> Since we dont save/restore MAS registers for normal interrupts we
+> need to disable interrupts in _tlbil_va to ensure atomicity.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-On Dec 11, 2008, at 6:15 PM, Josh Boyer wrote:
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-> On Mon, 08 Dec 2008 16:39:52 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->> We were missing the CPU_FTR_NOEXECUTE bit in our cputable for all
->> these processors. The result is that update_mmu_cache() would flush
->> the cache for all pages mapped to userspace which is totally
->> unnecessary on those processors since we already handle flushing
->> on execute in the page fault path.
->>
->> This should provide a nice speed up ;-)
->>
->> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->
-> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->
-> Kumar, feel free to take this through your tree.
->
-> josh
+Paul, this is a 2.6.28 regression, it should probably go to Linus in
+case he hasn't released yet :-)
 
-applied to next
-
-- k
+Cheers,
+Ben.
