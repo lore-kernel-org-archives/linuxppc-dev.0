@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0C1DADDF63
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Dec 2008 13:46:09 +1100 (EST)
-Subject: Re: [PATCH][for 2.6.28] powerpc/fsl-booke: Fix problem with
-	_tlbil_va being interrupted
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1229211183-5350-1-git-send-email-galak@kernel.crashing.org>
-References: <1229211183-5350-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sun, 14 Dec 2008 13:46:02 +1100
-Message-Id: <1229222762.26324.19.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id 765A0DDFE3
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Dec 2008 14:55:37 +1100 (EST)
+Date: Sun, 14 Dec 2008 12:44:59 +0900
+To: linuxppc-dev@ozlabs.org
+Subject: [RESEND] [PATCH] powerpc: remove dead BIO_VMERGE_BOUNDARY definition
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20081214124508U.fujita.tomonori@lab.ntt.co.jp>
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2008-12-13 at 17:33 -0600, Kumar Gala wrote:
-> An example calling sequence which we did see:
-> 
-> copy_user_highpage -> kmap_atomic -> flush_tlb_page -> _tlbil_va
-> 
-> We got interrupted after setting up the MAS registers before the
-> tlbwe and the interrupt handler that caused the interrupt also did
-> a kmap_atomic (ide code) and thus on returning from the interrupt
-> the MAS registers no longer contained the proper values.
-> 
-> Since we dont save/restore MAS registers for normal interrupts we
-> need to disable interrupts in _tlbil_va to ensure atomicity.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+This is a resend of:
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+http://marc.info/?l=linux-kernel&m=122482703616607&w=2
+
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] powerpc: remove dead BIO_VMERGE_BOUNDARY definition
+
+The block layer dropped the virtual merge feature
+(b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY
+definition is meaningless now (For POWER, BIO_VMERGE_BOUNDARY has been
+meaningless for a long time since POWER disables the virtual merge
+feature).
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
+ arch/powerpc/include/asm/io.h |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
 
-Paul, this is a 2.6.28 regression, it should probably go to Linus in
-case he hasn't released yet :-)
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index 08266d2..494cd8b 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -713,13 +713,6 @@ static inline void * phys_to_virt(unsigned long address)
+  */
+ #define page_to_phys(page)	((phys_addr_t)page_to_pfn(page) << PAGE_SHIFT)
+ 
+-/* We do NOT want virtual merging, it would put too much pressure on
+- * our iommu allocator. Instead, we want drivers to be smart enough
+- * to coalesce sglists that happen to have been mapped in a contiguous
+- * way by the iommu
+- */
+-#define BIO_VMERGE_BOUNDARY	0
+-
+ /*
+  * 32 bits still uses virt_to_bus() for it's implementation of DMA
+  * mappings se we have to keep it defined here. We also have some old
+-- 
+1.5.5.GIT
