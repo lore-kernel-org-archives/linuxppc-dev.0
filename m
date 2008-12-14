@@ -1,25 +1,23 @@
-Return-Path: <drzeus-mmc@drzeus.cx>
-Received: from smtp.drzeus.cx (server.drzeus.cx [85.8.24.28])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 425E1DDF1E
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 04:28:44 +1100 (EST)
-Date: Sun, 14 Dec 2008 18:28:38 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2] mmc: Add mmc_vddrange_to_ocrmask() helper function
-Message-ID: <20081214182838.26c931bf@mjolnir.drzeus.cx>
-In-Reply-To: <20081201115320.GA10980@oksana.dev.rtsoft.ru>
-References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
-	<20081030195632.GB13640@oksana.dev.rtsoft.ru>
-	<20081108215537.12cdf5f6@mjolnir.drzeus.cx>
-	<20081126195417.GA26264@oksana.dev.rtsoft.ru>
-	<20081130210648.77b8843a@mjolnir.drzeus.cx>
-	<20081201115320.GA10980@oksana.dev.rtsoft.ru>
+Return-Path: <gknispel@proformatique.com>
+Received: from proformatique.com (web.proformatique.com [91.194.179.68])
+	by ozlabs.org (Postfix) with ESMTP id 97769DDE9F
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 05:50:53 +1100 (EST)
+Date: Sun, 14 Dec 2008 19:50:50 +0100
+From: Guillaume Knispel <gknispel@proformatique.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Fix corruption error in rh_alloc_fixed()
+Message-ID: <20081214195050.677ba7d1@xilun.lan.proformatique.com>
+In-Reply-To: <493E8BE2.809@freescale.com>
+References: <20081209152834.1d6ff291@xilun.lan.proformatique.com>
+	<493E88B7.5020702@freescale.com>
+	<20081209161422.5e289e6c@xilun.lan.proformatique.com>
+	<493E8BE2.809@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org
+Cc: Tjernlund <joakim.tjernlund@transmode.se>, Joakim,
+	Pantelis Antoniou <pantelis@embeddedalley.com>,
+	linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,25 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 1 Dec 2008 14:53:20 +0300
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+On Tue, 09 Dec 2008 09:16:50 -0600
+Timur Tabi <timur@freescale.com> wrote:
 
+> Guillaume Knispel wrote:
 > 
-> Though, the $subject patch could be merged anytime as it doesn't
-> depend on anything else. So, if you'll merge it earlier, that will
-> make things a bit easier: -1 patch to resend. ;-)
+> > blk = NULL; at the end of the loop is what is done in the more used
+> > rh_alloc_align(), so for consistency either we change both or we use
+> > the same construction here.
+> > I also think that testing for &info->free_list is harder to understand
+> > because you must have the linked list implementation in your head
+> > (which a kernel developer should anyway so this is not so important)
+> 
+> Fair enough.
+> 
+> Acked-by: Timur Tabi <timur@freescale.com>
 > 
 
-Queued up. Will be sent once the merge window opens up.
+Kumar, can this go into your tree ?
+(copying the patch under so you have it at hand)
 
-Rgds
+There is an error in rh_alloc_fixed() of the Remote Heap code:
+If there is at least one free block blk won't be NULL at the end of the
+search loop, so -ENOMEM won't be returned and the else branch of
+"if (bs == s || be == e)" will be taken, corrupting the management
+structures.
+
+Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
+---
+Fix an error in rh_alloc_fixed() that made allocations succeed when
+they should fail, and corrupted management structures.
+
+diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
+index 29b2941..45907c1 100644
+--- a/arch/powerpc/lib/rheap.c
++++ b/arch/powerpc/lib/rheap.c
+@@ -556,6 +556,7 @@ unsigned long rh_alloc_fixed(rh_info_t * info, unsigned long start, int size, co
+ 		be = blk->start + blk->size;
+ 		if (s >= bs && e <= be)
+ 			break;
++		blk = NULL;
+ 	}
+ 
+ 	if (blk == NULL)
+
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Guillaume KNISPEL
