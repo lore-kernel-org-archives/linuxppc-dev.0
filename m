@@ -1,17 +1,25 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+Return-Path: <drzeus-mmc@drzeus.cx>
+Received: from smtp.drzeus.cx (server.drzeus.cx [85.8.24.28])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 765A0DDFE3
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Dec 2008 14:55:37 +1100 (EST)
-Date: Sun, 14 Dec 2008 12:44:59 +0900
-To: linuxppc-dev@ozlabs.org
-Subject: [RESEND] [PATCH] powerpc: remove dead BIO_VMERGE_BOUNDARY definition
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	by ozlabs.org (Postfix) with ESMTPS id 425E1DDF1E
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 04:28:44 +1100 (EST)
+Date: Sun, 14 Dec 2008 18:28:38 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH v2] mmc: Add mmc_vddrange_to_ocrmask() helper function
+Message-ID: <20081214182838.26c931bf@mjolnir.drzeus.cx>
+In-Reply-To: <20081201115320.GA10980@oksana.dev.rtsoft.ru>
+References: <20081030195546.GA30645@oksana.dev.rtsoft.ru>
+	<20081030195632.GB13640@oksana.dev.rtsoft.ru>
+	<20081108215537.12cdf5f6@mjolnir.drzeus.cx>
+	<20081126195417.GA26264@oksana.dev.rtsoft.ru>
+	<20081130210648.77b8843a@mjolnir.drzeus.cx>
+	<20081201115320.GA10980@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20081214124508U.fujita.tomonori@lab.ntt.co.jp>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,42 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a resend of:
+On Mon, 1 Dec 2008 14:53:20 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-http://marc.info/?l=linux-kernel&m=122482703616607&w=2
+> 
+> Though, the $subject patch could be merged anytime as it doesn't
+> depend on anything else. So, if you'll merge it earlier, that will
+> make things a bit easier: -1 patch to resend. ;-)
+> 
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] powerpc: remove dead BIO_VMERGE_BOUNDARY definition
+Queued up. Will be sent once the merge window opens up.
 
-The block layer dropped the virtual merge feature
-(b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY
-definition is meaningless now (For POWER, BIO_VMERGE_BOUNDARY has been
-meaningless for a long time since POWER disables the virtual merge
-feature).
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/powerpc/include/asm/io.h |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 08266d2..494cd8b 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -713,13 +713,6 @@ static inline void * phys_to_virt(unsigned long address)
-  */
- #define page_to_phys(page)	((phys_addr_t)page_to_pfn(page) << PAGE_SHIFT)
- 
--/* We do NOT want virtual merging, it would put too much pressure on
-- * our iommu allocator. Instead, we want drivers to be smart enough
-- * to coalesce sglists that happen to have been mapped in a contiguous
-- * way by the iommu
-- */
--#define BIO_VMERGE_BOUNDARY	0
--
- /*
-  * 32 bits still uses virt_to_bus() for it's implementation of DMA
-  * mappings se we have to keep it defined here. We also have some old
+Rgds
 -- 
-1.5.5.GIT
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
