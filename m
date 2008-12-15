@@ -4,18 +4,20 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AF6BBDDED4
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 07:54:59 +1100 (EST)
-Message-Id: <8F38D1CB-D389-4065-A309-3126B6D482DB@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id BB5EFDDE31
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 07:57:39 +1100 (EST)
+Message-Id: <C0519630-66EF-4860-A27E-15CC749D98DC@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20081215054611.3C3C1474E1@ozlabs.org>
+In-Reply-To: <1229373978.26324.120.camel@pasglop>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 15/16] powerpc/mm: Rework usage of
-	_PAGE_COHERENT/NO_CACHE/GUARDED
-Date: Mon, 15 Dec 2008 14:54:52 -0600
-References: <20081215054611.3C3C1474E1@ozlabs.org>
+Subject: Re: [PATCH 11/16] powerpc/mm: Add SMP support to no-hash TLB handling
+	v3
+Date: Mon, 15 Dec 2008 14:57:33 -0600
+References: <20081215054554.E883EDDF9D@ozlabs.org>
+	<B3FDD472-0720-4454-9329-5A1C8A9BF84A@freescale.com>
+	<1229373978.26324.120.camel@pasglop>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,86 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+
+On Dec 15, 2008, at 2:46 PM, Benjamin Herrenschmidt wrote:
+
+>>>
+>>> Index: linux-work/arch/powerpc/include/asm/mmu.h
+>>> ===================================================================
+>>> --- linux-work.orig/arch/powerpc/include/asm/mmu.h	2008-12-15
+>>> 14:36:20.000000000 +1100
+>>> +++ linux-work/arch/powerpc/include/asm/mmu.h	2008-12-15
+>>> 14:36:20.000000000 +1100
+>>> @@ -15,6 +15,9 @@
+>>> #define MMU_FTR_TYPE_FSL_E		ASM_CONST(0x00000010)
+>>> #define MMU_FTR_HAS_HIGH_BATS		ASM_CONST(0x00010000)
+>>> #define MMU_FTR_BIG_PHYS		ASM_CONST(0x00020000)
+>>> +#define MMU_FTR_HAS_TLBIVAX_BCAST	ASM_CONST(0x00040000)
+>>> +#define MMU_FTR_HAS_TLBILX_PID		ASM_CONST(0x00080000)
+>>
+>> Can we make these FTR_USE_ instead of FTR_HAS_.  On e500 we have
+>> TLBIVAX_BCAST but dont plan to use it.  I'd prefer not to have to
+>> answer questions about that.
 >
-> --- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc32.h	 
-> 2008-11-24 14:48:55.000000000 +1100
-> +++ linux-work/arch/powerpc/include/asm/pgtable-ppc32.h	2008-12-15  
-> 15:34:16.000000000 +1100
+> Hehehe :-) I can change that easily yes.
 
-[snip]
+Probably good to add something in the commit message about how  
+FTR_USE_ implies FTR_HAS_ just so when some comes back through the git  
+history the know we thought about it.
 
+>>> +#define MMU_FTR_TLBIVAX_NEED_LOCK	ASM_CONST(0x00100000)
+>>
+>> Is this really ivax lock or sync lock?
 >
-> @@ -436,20 +437,23 @@ extern int icache_44x_need_flush;
-> 			 _PAGE_USER | _PAGE_ACCESSED | \
-> 			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | \
-> 			 _PAGE_EXEC | _PAGE_HWEXEC)
-> +
-> /*
-> - * Note: the _PAGE_COHERENT bit automatically gets set in the  
-> hardware
-> - * PTE if CONFIG_SMP is defined (hash_page does this); there is no  
-> need
-> - * to have it in the Linux PTE, and in fact the bit could be reused  
-> for
-> - * another purpose.  -- paulus.
-> + * We define 2 sets of base prot bits, one for basic pages (ie,
-> + * cacheable kernel and user pages) and one for non cacheable
-> + * pages. We always set _PAGE_COHERENT when SMP is enabled or
-> + * the processor might need it for DMA coherency.
->  */
-> -
-> -#ifdef CONFIG_44x
-> -#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_GUARDED)
-> +#if defined(CONFIG_SMP) || defined(CONFIG_PPC_STD_MMU)
-> +#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT)
-> #else
-> #define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED)
-> #endif
-> +#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
-> +
-> #define _PAGE_WRENABLE	(_PAGE_RW | _PAGE_DIRTY | _PAGE_HWWRITE)
-> #define _PAGE_KERNEL	(_PAGE_BASE | _PAGE_SHARED | _PAGE_WRENABLE)
-> +#define _PAGE_KERNEL_NC	(_PAGE_BASE_NC | _PAGE_SHARED |  
-> _PAGE_WRENABLE | _PAGE_NO_CACHE)
+> The whole thing. Not totally clear, you have a better name ? Some CPUs
+> want a lock on sync and some on ivax, I plan to lock the whole  
+> sequence.
 
-Either _BASE_NC should have _PAGE_NO_CACHE set or you need a different  
-name here for _PAGE_KERNEL_NC
+MMU_FTR_TLBIVAX_OR_SYNC_NEED_LOCK ?
 
-> #ifdef CONFIG_PPC_STD_MMU
-> /* On standard PPC MMU, no user access implies kernel read/write  
-> access,
-> @@ -459,7 +463,7 @@ extern int icache_44x_need_flush;
-> #define _PAGE_KERNEL_RO	(_PAGE_BASE | _PAGE_SHARED)
-> #endif
->
-> -#define _PAGE_IO	(_PAGE_KERNEL | _PAGE_NO_CACHE | _PAGE_GUARDED)
-> +#define _PAGE_IO	(_PAGE_KERNEL_NC | _PAGE_GUARDED)
-> #define _PAGE_RAM	(_PAGE_KERNEL | _PAGE_HWEXEC)
+Its probably a good idea to have a clear definition of what each of  
+these flags means in the commit message.
 
-I think we should do:
-
-#define _PAGE_KERNEL_NC	(_PAGE_BASE_NC | _PAGE_SHARED | _PAGE_WRENABLE)
-#define _PAGE_IO	(_PAGE_KERNEL_NC | _PAGE_NO_CACHE | _PAGE_GUARDED)
-
-> Index: linux-work/arch/powerpc/include/asm/pgtable.h
-> ===================================================================
-> --- linux-work.orig/arch/powerpc/include/asm/pgtable.h	2008-09-29  
-> 14:21:37.000000000 +1000
-> +++ linux-work/arch/powerpc/include/asm/pgtable.h	2008-12-15  
-> 14:38:00.000000000 +1100
-> @@ -16,6 +16,32 @@ struct mm_struct;
-> #endif
->
-> #ifndef __ASSEMBLY__
-> +
-> +/*
-> + * Macro to mark a page protection value as "uncacheable".
-> + */
-> +
-> +#define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_COHERENT |  
-> _PAGE_COHERENT | \
-> + 			 _PAGE_WRITETHRU)
-
-we like coherent so much we set it thrice?
-
-- k
+-k
