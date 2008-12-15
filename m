@@ -1,32 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 754F8DDF67
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 07:37:55 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBFKWs9H007338
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 15:32:54 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mBFKbp9U152912
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 15:37:51 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mBFKbpgQ003700
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 15:37:51 -0500
-Date: Mon, 15 Dec 2008 15:37:44 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: michael@ellerman.id.au
-Subject: Re: Need help to understand why kdump is for 64 bit PPC only
-Message-ID: <20081215153744.105907e5@zod.rchland.ibm.com>
-In-Reply-To: <1229373184.8332.3.camel@localhost>
-References: <80872bab0812151058tdffd4b9ucd9031db21c9fc76@mail.gmail.com>
-	<1228A590-B809-4EBB-BC6F-05525220656A@kernel.crashing.org>
-	<1229373184.8332.3.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: Frank Fan <linuxppcstudy@gmail.com>, linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9001BDDE9E
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 07:44:22 +1100 (EST)
+Message-Id: <32B523EF-18CD-44BD-8B00-FEE38443B481@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: update powerpc.git next and pull in some of benh's mmu patches
+Date: Mon, 15 Dec 2008 14:44:12 -0600
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,25 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 16 Dec 2008 07:33:04 +1100
-Michael Ellerman <michael@ellerman.id.au> wrote:
+Paul,
 
-> On Mon, 2008-12-15 at 13:35 -0600, Kumar Gala wrote:
-> > On Dec 15, 2008, at 12:58 PM, Frank Fan wrote:
-> >=20
-> > > Hello,
-> > >
-> > > I am working on a freescale MPC8572 CPU board and use 32 bit =20
-> > > Linux2.6.28.  When I enable 64 bit, it shows "kdump" in "kernel =20
-> > > options". Otherwise, "kdump" is disabled.
-> > > Can someone give me some hint why kdump is for 64 bit PPC only?
-> >=20
-> > Probably because no one has implemented or tested it on ppc32/8572.
->=20
-> Pretty much, the 32-bit version of default_machine_kexec() is pretty
-> na=C3=AFve, but you never know it might work.
+Can you update powerpc.git to linus's top of tree (we need the  
+tlbil_va patch Linus picked up).
 
-You forgot the obligatory: "Or it could crash and cause your board to
-catch on fire."
+Also, can you pull in my next tree and some of Ben's trivial mmu  
+related changes:
 
-josh
+1/16 powerpc: Fix bogus cache flushing on all 40x and BookE processors  
+v2	-- in my next tree (pull request sent)
+2/16 powerpc: Fix asm EMIT_BUG_ENTRY with !CONFIG_BUG
+4/16 powerpc/fsl-booke: Fix problem with _tlbil_va	-- pick up via  
+update to linus head
+5/16 powerpc/mm: Add local_flush_tlb_mm() to SW loaded TLB  
+implementations -- ack'd
+8/16 powerpc/mm: Rename tlb_32.c and tlb_64.c to tlb_hash32.c and  
+tlb_hash64.c -- looks like a pure move
+10/16 powerpc/mm: Remove flush_HPTE()
+
+Patches I want to still review and test:
+
+6/16 powerpc/mm: Split mmu_context handling v3
+7/16 powerpc/mm: Rework context management for CPUs with no hash table  
+v2
+9/16 powerpc/mm: Introduce MMU features v2
+11/16 powerpc/mm: Add SMP support to no-hash TLB handling v3
+12/16 powerpc/mm: Split low level tlb invalidate for nohash processors
+14/16 powerpc/mm: Runtime allocation of mmu context maps for nohash  
+CPUs v2
+15/16 powerpc/mm: Rework usage of _PAGE_COHERENT/NO_CACHE/GUARDED
+
+Pathces left up to Josh & Ben
+
+3/16 powerpc/4xx: Extended DCR support v2
+13/16 powerpc/44x: No need to mask MSR:CE, ME or DE in _tlbil_va on 440
+16/16 powerpc/44x: 44x TLB doesn't need "Guarded" set for all pages
+
+- k
