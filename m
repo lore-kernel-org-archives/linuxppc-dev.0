@@ -1,25 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 88631DDE9E
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 09:19:53 +1100 (EST)
-Message-Id: <01FA1F1A-0A98-4553-B27D-CBC627E3EC02@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 68069DDED5
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 09:33:40 +1100 (EST)
+Date: Mon, 15 Dec 2008 16:33:33 -0600
+From: Nathan Lynch <ntl@pobox.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1229375937.26324.128.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 11/16] powerpc/mm: Add SMP support to no-hash TLB handling
-	v3
-Date: Mon, 15 Dec 2008 16:19:47 -0600
-References: <20081215054554.E883EDDF9D@ozlabs.org>
-	<B3FDD472-0720-4454-9329-5A1C8A9BF84A@freescale.com>
-	<1229373978.26324.120.camel@pasglop>
-	<C0519630-66EF-4860-A27E-15CC749D98DC@freescale.com>
-	<1229374984.26324.125.camel@pasglop>
-	<B5573CC7-9ED1-48CE-9BE9-51A0BF5CB247@kernel.crashing.org>
-	<1229375937.26324.128.camel@pasglop>
+Subject: Re: [PATCH 1/3] add of_find_next_cache_node()
+Message-ID: <20081215223333.GP6958@localdomain>
+References: <1228956366-17593-1-git-send-email-ntl@pobox.com>
+	<1229296287.26324.87.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1229296287.26324.87.camel@pasglop>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,27 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt wrote:
+> On Wed, 2008-12-10 at 18:46 -0600, Nathan Lynch wrote:
+> > +       /* OF on pmac has nodes instead of properties named "l2-cache"
+> > +        * beneath CPU nodes.
+> > +        */
+> > +       if (!strcmp(np->type, "cpu"))
+> > +               for_each_child_of_node(np, child)
+> > +                       if (!strcmp(child->type, "cache"))
+> > +                               return child;
+> > +
+> 
+> pmac has both actually. And the property points to the node. It's a
+> problem for /proc/device-tree so we rename them iirc, but only in /proc,
+> ie, they should still be intact in the tree I think.
 
-On Dec 15, 2008, at 3:18 PM, Benjamin Herrenschmidt wrote:
-
-> On Mon, 2008-12-15 at 15:10 -0600, Kumar Gala wrote:
->
->> Hmm.. are you mixing the two different locking needs together?  The  
->> is
->> locking of ivax vs tlbwe and there is locking around multiple "msgs"
->> on the bus.  I know for us we can have any # of ivax's on the bus,  
->> but
->> only one tlbsync.
->
-> I'm purely talking about the later. Right now I only issue one ivax +
-> one tlbsycn anyway but I was thinking about having _tlbivax_bcast  
-> take a
-> count for small ranges, but I would still lock the whole thing because
-> some impl I know of don't like multiple ivax coliding form different
-> sources neither.
-
-Ok.  Lets use MMU_FTR_LOCK_BCAST_TLB_OPS and have a comment about  
-locking because bus implementations cant handle multiple ivax and/or  
-multiple syncs.
-
-- k
+I see the 'l2-cache' property (renamed to 'l2-cache#1' in /proc) on a
+G4 iBook, but it is not present on the two G5 models I've checked.
