@@ -1,18 +1,23 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
-	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 68069DDED5
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 09:33:40 +1100 (EST)
-Date: Mon, 15 Dec 2008 16:33:33 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] add of_find_next_cache_node()
-Message-ID: <20081215223333.GP6958@localdomain>
-References: <1228956366-17593-1-git-send-email-ntl@pobox.com>
-	<1229296287.26324.87.camel@pasglop>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8F02DDDF5B
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 09:56:52 +1100 (EST)
+Date: Mon, 15 Dec 2008 14:56:44 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] POWERPC: MTD: Add cached map support to physmap_of MTD
+	driver
+In-Reply-To: <20081215133026.4a86e7f7@zod.rchland.ibm.com>
+Message-ID: <Pine.LNX.4.64.0812151451480.28806@t2.domain.actdsltmp>
+References: <1229365518-20538-1-git-send-email-tpiepho@freescale.com>
+	<20081215133026.4a86e7f7@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1229296287.26324.87.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, MTD mailing list <linux-mtd@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2008-12-10 at 18:46 -0600, Nathan Lynch wrote:
-> > +       /* OF on pmac has nodes instead of properties named "l2-cache"
-> > +        * beneath CPU nodes.
-> > +        */
-> > +       if (!strcmp(np->type, "cpu"))
-> > +               for_each_child_of_node(np, child)
-> > +                       if (!strcmp(child->type, "cache"))
-> > +                               return child;
-> > +
-> 
-> pmac has both actually. And the property points to the node. It's a
-> problem for /proc/device-tree so we rename them iirc, but only in /proc,
-> ie, they should still be intact in the tree I think.
+On Mon, 15 Dec 2008, Josh Boyer wrote:
+>
+> Did you actually change anything in this version when compared to the
+> version you sent out last week?  If not, is there a reason you sent it
+> again without flagging it as a resend?
 
-I see the 'l2-cache' property (renamed to 'l2-cache#1' in /proc) on a
-G4 iBook, but it is not present on the two G5 models I've checked.
+I sent it out last week?  I'm trying to tie up loose ends before I leave
+and thought this patch hadn't gone out yet.  No changes unless there was
+some kind of last minute spelling fix in the patch comments.
+
+At least this one has my non-Freescale address CCed so I'll get replies if
+there are any.
