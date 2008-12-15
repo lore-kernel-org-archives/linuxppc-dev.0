@@ -1,11 +1,11 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 15 Dec 2008 16:44:35 +1100
-Subject: [PATCH 7/16] powerpc/mm: Rework context management for CPUs with no
-	hash table v2
+Date: Mon, 15 Dec 2008 16:44:39 +1100
+Subject: [PATCH 8/16] powerpc/mm: Rename tlb_32.c and tlb_64.c to tlb_hash32.c
+	and tlb_hash64.c
 In-Reply-To: <1229319836.100184.344640589620.qpush@grosgo>
-Message-Id: <20081215054534.4C5A4DDFD4@ozlabs.org>
+Message-Id: <20081215054539.2B9B8DDFB4@ozlabs.org>
 Cc: Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,460 +16,853 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This reworks the context management code used by 4xx,8xx and
-freescale BookE. It adds support for SMP by implementing a
-concept of stale context map to lazily flush the TLB on
-processors where a context may have been invalidated. This
-also contains the ground work for generalizing such lazy TLB
-flushing by just picking up a new PID and marking the old one
-stale. This will be implemented later.
+This renames the files to clarify the fact that they are used by
+the hash based family of CPUs (the 603 being an exception in that
+family but is still handled by that code).
 
-This is a first implementation that uses a global spinlock.
-
-Ideally, we should try to get at least the fast path (context ID
-already assigned) lockless or limited to a per context lock,
-but for now this will do.
-
-I tried to keep the UP case reasonably simple to avoid adding
-too much overhead to 8xx which does a lot of context stealing
-since it effectively has only 16 PIDs available.
+This paves the way for the new tlb_nohash.c coming via a subsequent
+patch.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-v2. remove some bugs with active tracking on SMP
 
- arch/powerpc/include/asm/mmu-40x.h       |    5 
- arch/powerpc/include/asm/mmu-44x.h       |    5 
- arch/powerpc/include/asm/mmu-8xx.h       |    3 
- arch/powerpc/include/asm/mmu-fsl-booke.h |    5 
- arch/powerpc/include/asm/tlbflush.h      |    2 
- arch/powerpc/mm/mmu_context_nohash.c     |  262 +++++++++++++++++++++++++------
- 6 files changed, 232 insertions(+), 50 deletions(-)
+ arch/powerpc/mm/Makefile     |    2 
+ arch/powerpc/mm/tlb_32.c     |  190 --------------------------------------
+ arch/powerpc/mm/tlb_64.c     |  211 -------------------------------------------
+ arch/powerpc/mm/tlb_hash32.c |  190 ++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/tlb_hash64.c |  211 +++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 402 insertions(+), 402 deletions(-)
 
---- linux-work.orig/arch/powerpc/include/asm/mmu-40x.h	2008-09-29 14:21:37.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/mmu-40x.h	2008-12-09 16:42:03.000000000 +1100
-@@ -54,8 +54,9 @@
- #ifndef __ASSEMBLY__
- 
- typedef struct {
--	unsigned long id;
--	unsigned long vdso_base;
-+	unsigned int	id;
-+	unsigned int	active;
-+	unsigned long	vdso_base;
- } mm_context_t;
- 
- #endif /* !__ASSEMBLY__ */
-Index: linux-work/arch/powerpc/include/asm/mmu-44x.h
+--- linux-work.orig/arch/powerpc/mm/tlb_32.c	2008-12-09 16:30:49.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,190 +0,0 @@
+-/*
+- * This file contains the routines for TLB flushing.
+- * On machines where the MMU uses a hash table to store virtual to
+- * physical translations, these routines flush entries from the
+- * hash table also.
+- *  -- paulus
+- *
+- *  Derived from arch/ppc/mm/init.c:
+- *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
+- *
+- *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
+- *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
+- *    Copyright (C) 1996 Paul Mackerras
+- *
+- *  Derived from "arch/i386/mm/init.c"
+- *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- *
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/mm.h>
+-#include <linux/init.h>
+-#include <linux/highmem.h>
+-#include <linux/pagemap.h>
+-
+-#include <asm/tlbflush.h>
+-#include <asm/tlb.h>
+-
+-#include "mmu_decl.h"
+-
+-/*
+- * Called when unmapping pages to flush entries from the TLB/hash table.
+- */
+-void flush_hash_entry(struct mm_struct *mm, pte_t *ptep, unsigned long addr)
+-{
+-	unsigned long ptephys;
+-
+-	if (Hash != 0) {
+-		ptephys = __pa(ptep) & PAGE_MASK;
+-		flush_hash_pages(mm->context.id, addr, ptephys, 1);
+-	}
+-}
+-EXPORT_SYMBOL(flush_hash_entry);
+-
+-/*
+- * Called by ptep_set_access_flags, must flush on CPUs for which the
+- * DSI handler can't just "fixup" the TLB on a write fault
+- */
+-void flush_tlb_page_nohash(struct vm_area_struct *vma, unsigned long addr)
+-{
+-	if (Hash != 0)
+-		return;
+-	_tlbie(addr);
+-}
+-
+-/*
+- * Called at the end of a mmu_gather operation to make sure the
+- * TLB flush is completely done.
+- */
+-void tlb_flush(struct mmu_gather *tlb)
+-{
+-	if (Hash == 0) {
+-		/*
+-		 * 603 needs to flush the whole TLB here since
+-		 * it doesn't use a hash table.
+-		 */
+-		_tlbia();
+-	}
+-}
+-
+-/*
+- * TLB flushing:
+- *
+- *  - flush_tlb_mm(mm) flushes the specified mm context TLB's
+- *  - flush_tlb_page(vma, vmaddr) flushes one page
+- *  - flush_tlb_range(vma, start, end) flushes a range of pages
+- *  - flush_tlb_kernel_range(start, end) flushes kernel pages
+- *
+- * since the hardware hash table functions as an extension of the
+- * tlb as far as the linux tables are concerned, flush it too.
+- *    -- Cort
+- */
+-
+-/*
+- * 750 SMP is a Bad Idea because the 750 doesn't broadcast all
+- * the cache operations on the bus.  Hence we need to use an IPI
+- * to get the other CPU(s) to invalidate their TLBs.
+- */
+-#ifdef CONFIG_SMP_750
+-#define FINISH_FLUSH	smp_send_tlb_invalidate(0)
+-#else
+-#define FINISH_FLUSH	do { } while (0)
+-#endif
+-
+-static void flush_range(struct mm_struct *mm, unsigned long start,
+-			unsigned long end)
+-{
+-	pmd_t *pmd;
+-	unsigned long pmd_end;
+-	int count;
+-	unsigned int ctx = mm->context.id;
+-
+-	if (Hash == 0) {
+-		_tlbia();
+-		return;
+-	}
+-	start &= PAGE_MASK;
+-	if (start >= end)
+-		return;
+-	end = (end - 1) | ~PAGE_MASK;
+-	pmd = pmd_offset(pud_offset(pgd_offset(mm, start), start), start);
+-	for (;;) {
+-		pmd_end = ((start + PGDIR_SIZE) & PGDIR_MASK) - 1;
+-		if (pmd_end > end)
+-			pmd_end = end;
+-		if (!pmd_none(*pmd)) {
+-			count = ((pmd_end - start) >> PAGE_SHIFT) + 1;
+-			flush_hash_pages(ctx, start, pmd_val(*pmd), count);
+-		}
+-		if (pmd_end == end)
+-			break;
+-		start = pmd_end + 1;
+-		++pmd;
+-	}
+-}
+-
+-/*
+- * Flush kernel TLB entries in the given range
+- */
+-void flush_tlb_kernel_range(unsigned long start, unsigned long end)
+-{
+-	flush_range(&init_mm, start, end);
+-	FINISH_FLUSH;
+-}
+-
+-/*
+- * Flush all the (user) entries for the address space described by mm.
+- */
+-void flush_tlb_mm(struct mm_struct *mm)
+-{
+-	struct vm_area_struct *mp;
+-
+-	if (Hash == 0) {
+-		_tlbia();
+-		return;
+-	}
+-
+-	/*
+-	 * It is safe to go down the mm's list of vmas when called
+-	 * from dup_mmap, holding mmap_sem.  It would also be safe from
+-	 * unmap_region or exit_mmap, but not from vmtruncate on SMP -
+-	 * but it seems dup_mmap is the only SMP case which gets here.
+-	 */
+-	for (mp = mm->mmap; mp != NULL; mp = mp->vm_next)
+-		flush_range(mp->vm_mm, mp->vm_start, mp->vm_end);
+-	FINISH_FLUSH;
+-}
+-
+-void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
+-{
+-	struct mm_struct *mm;
+-	pmd_t *pmd;
+-
+-	if (Hash == 0) {
+-		_tlbie(vmaddr);
+-		return;
+-	}
+-	mm = (vmaddr < TASK_SIZE)? vma->vm_mm: &init_mm;
+-	pmd = pmd_offset(pud_offset(pgd_offset(mm, vmaddr), vmaddr), vmaddr);
+-	if (!pmd_none(*pmd))
+-		flush_hash_pages(mm->context.id, vmaddr, pmd_val(*pmd), 1);
+-	FINISH_FLUSH;
+-}
+-
+-/*
+- * For each address in the range, find the pte for the address
+- * and check _PAGE_HASHPTE bit; if it is set, find and destroy
+- * the corresponding HPTE.
+- */
+-void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+-		     unsigned long end)
+-{
+-	flush_range(vma->vm_mm, start, end);
+-	FINISH_FLUSH;
+-}
+Index: linux-work/arch/powerpc/mm/tlb_64.c
 ===================================================================
---- linux-work.orig/arch/powerpc/include/asm/mmu-44x.h	2008-09-29 14:21:37.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/mmu-44x.h	2008-12-15 10:12:39.000000000 +1100
-@@ -56,8 +56,9 @@
- extern unsigned int tlb_44x_hwater;
- 
- typedef struct {
--	unsigned long id;
--	unsigned long vdso_base;
-+	unsigned int	id;
-+	unsigned int	active;
-+	unsigned long	vdso_base;
- } mm_context_t;
- 
- #endif /* !__ASSEMBLY__ */
-Index: linux-work/arch/powerpc/include/asm/mmu-fsl-booke.h
+--- linux-work.orig/arch/powerpc/mm/tlb_64.c	2008-12-09 16:30:49.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,211 +0,0 @@
+-/*
+- * This file contains the routines for flushing entries from the
+- * TLB and MMU hash table.
+- *
+- *  Derived from arch/ppc64/mm/init.c:
+- *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
+- *
+- *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
+- *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
+- *    Copyright (C) 1996 Paul Mackerras
+- *
+- *  Derived from "arch/i386/mm/init.c"
+- *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
+- *
+- *  Dave Engebretsen <engebret@us.ibm.com>
+- *      Rework for PPC64 port.
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/mm.h>
+-#include <linux/init.h>
+-#include <linux/percpu.h>
+-#include <linux/hardirq.h>
+-#include <asm/pgalloc.h>
+-#include <asm/tlbflush.h>
+-#include <asm/tlb.h>
+-#include <asm/bug.h>
+-
+-DEFINE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
+-
+-/* This is declared as we are using the more or less generic
+- * arch/powerpc/include/asm/tlb.h file -- tgall
+- */
+-DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+-
+-/*
+- * A linux PTE was changed and the corresponding hash table entry
+- * neesd to be flushed. This function will either perform the flush
+- * immediately or will batch it up if the current CPU has an active
+- * batch on it.
+- *
+- * Must be called from within some kind of spinlock/non-preempt region...
+- */
+-void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
+-		     pte_t *ptep, unsigned long pte, int huge)
+-{
+-	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
+-	unsigned long vsid, vaddr;
+-	unsigned int psize;
+-	int ssize;
+-	real_pte_t rpte;
+-	int i;
+-
+-	i = batch->index;
+-
+-	/* We mask the address for the base page size. Huge pages will
+-	 * have applied their own masking already
+-	 */
+-	addr &= PAGE_MASK;
+-
+-	/* Get page size (maybe move back to caller).
+-	 *
+-	 * NOTE: when using special 64K mappings in 4K environment like
+-	 * for SPEs, we obtain the page size from the slice, which thus
+-	 * must still exist (and thus the VMA not reused) at the time
+-	 * of this call
+-	 */
+-	if (huge) {
+-#ifdef CONFIG_HUGETLB_PAGE
+-		psize = get_slice_psize(mm, addr);;
+-#else
+-		BUG();
+-		psize = pte_pagesize_index(mm, addr, pte); /* shutup gcc */
+-#endif
+-	} else
+-		psize = pte_pagesize_index(mm, addr, pte);
+-
+-	/* Build full vaddr */
+-	if (!is_kernel_addr(addr)) {
+-		ssize = user_segment_size(addr);
+-		vsid = get_vsid(mm->context.id, addr, ssize);
+-		WARN_ON(vsid == 0);
+-	} else {
+-		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
+-		ssize = mmu_kernel_ssize;
+-	}
+-	vaddr = hpt_va(addr, vsid, ssize);
+-	rpte = __real_pte(__pte(pte), ptep);
+-
+-	/*
+-	 * Check if we have an active batch on this CPU. If not, just
+-	 * flush now and return. For now, we don global invalidates
+-	 * in that case, might be worth testing the mm cpu mask though
+-	 * and decide to use local invalidates instead...
+-	 */
+-	if (!batch->active) {
+-		flush_hash_page(vaddr, rpte, psize, ssize, 0);
+-		return;
+-	}
+-
+-	/*
+-	 * This can happen when we are in the middle of a TLB batch and
+-	 * we encounter memory pressure (eg copy_page_range when it tries
+-	 * to allocate a new pte). If we have to reclaim memory and end
+-	 * up scanning and resetting referenced bits then our batch context
+-	 * will change mid stream.
+-	 *
+-	 * We also need to ensure only one page size is present in a given
+-	 * batch
+-	 */
+-	if (i != 0 && (mm != batch->mm || batch->psize != psize ||
+-		       batch->ssize != ssize)) {
+-		__flush_tlb_pending(batch);
+-		i = 0;
+-	}
+-	if (i == 0) {
+-		batch->mm = mm;
+-		batch->psize = psize;
+-		batch->ssize = ssize;
+-	}
+-	batch->pte[i] = rpte;
+-	batch->vaddr[i] = vaddr;
+-	batch->index = ++i;
+-	if (i >= PPC64_TLB_BATCH_NR)
+-		__flush_tlb_pending(batch);
+-}
+-
+-/*
+- * This function is called when terminating an mmu batch or when a batch
+- * is full. It will perform the flush of all the entries currently stored
+- * in a batch.
+- *
+- * Must be called from within some kind of spinlock/non-preempt region...
+- */
+-void __flush_tlb_pending(struct ppc64_tlb_batch *batch)
+-{
+-	cpumask_t tmp;
+-	int i, local = 0;
+-
+-	i = batch->index;
+-	tmp = cpumask_of_cpu(smp_processor_id());
+-	if (cpus_equal(batch->mm->cpu_vm_mask, tmp))
+-		local = 1;
+-	if (i == 1)
+-		flush_hash_page(batch->vaddr[0], batch->pte[0],
+-				batch->psize, batch->ssize, local);
+-	else
+-		flush_hash_range(i, local);
+-	batch->index = 0;
+-}
+-
+-/**
+- * __flush_hash_table_range - Flush all HPTEs for a given address range
+- *                            from the hash table (and the TLB). But keeps
+- *                            the linux PTEs intact.
+- *
+- * @mm		: mm_struct of the target address space (generally init_mm)
+- * @start	: starting address
+- * @end         : ending address (not included in the flush)
+- *
+- * This function is mostly to be used by some IO hotplug code in order
+- * to remove all hash entries from a given address range used to map IO
+- * space on a removed PCI-PCI bidge without tearing down the full mapping
+- * since 64K pages may overlap with other bridges when using 64K pages
+- * with 4K HW pages on IO space.
+- *
+- * Because of that usage pattern, it's only available with CONFIG_HOTPLUG
+- * and is implemented for small size rather than speed.
+- */
+-#ifdef CONFIG_HOTPLUG
+-
+-void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+-			      unsigned long end)
+-{
+-	unsigned long flags;
+-
+-	start = _ALIGN_DOWN(start, PAGE_SIZE);
+-	end = _ALIGN_UP(end, PAGE_SIZE);
+-
+-	BUG_ON(!mm->pgd);
+-
+-	/* Note: Normally, we should only ever use a batch within a
+-	 * PTE locked section. This violates the rule, but will work
+-	 * since we don't actually modify the PTEs, we just flush the
+-	 * hash while leaving the PTEs intact (including their reference
+-	 * to being hashed). This is not the most performance oriented
+-	 * way to do things but is fine for our needs here.
+-	 */
+-	local_irq_save(flags);
+-	arch_enter_lazy_mmu_mode();
+-	for (; start < end; start += PAGE_SIZE) {
+-		pte_t *ptep = find_linux_pte(mm->pgd, start);
+-		unsigned long pte;
+-
+-		if (ptep == NULL)
+-			continue;
+-		pte = pte_val(*ptep);
+-		if (!(pte & _PAGE_HASHPTE))
+-			continue;
+-		hpte_need_flush(mm, start, ptep, pte, 0);
+-	}
+-	arch_leave_lazy_mmu_mode();
+-	local_irq_restore(flags);
+-}
+-
+-#endif /* CONFIG_HOTPLUG */
+Index: linux-work/arch/powerpc/mm/tlb_hash32.c
 ===================================================================
---- linux-work.orig/arch/powerpc/include/asm/mmu-fsl-booke.h	2008-12-08 15:40:33.000000000 +1100
-+++ linux-work/arch/powerpc/include/asm/mmu-fsl-booke.h	2008-12-09 16:42:03.000000000 +1100
-@@ -76,8 +76,9 @@
- #ifndef __ASSEMBLY__
- 
- typedef struct {
--	unsigned long id;
--	unsigned long vdso_base;
-+	unsigned int	id;
-+	unsigned int	active;
-+	unsigned long	vdso_base;
- } mm_context_t;
- #endif /* !__ASSEMBLY__ */
- 
-Index: linux-work/arch/powerpc/mm/mmu_context_nohash.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/mmu_context_nohash.c	2008-12-09 16:42:03.000000000 +1100
-+++ linux-work/arch/powerpc/mm/mmu_context_nohash.c	2008-12-15 10:13:05.000000000 +1100
-@@ -14,13 +14,28 @@
-  *  as published by the Free Software Foundation; either version
-  *  2 of the License, or (at your option) any later version.
-  *
-+ * TODO:
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/mm/tlb_hash32.c	2008-12-09 16:31:43.000000000 +1100
+@@ -0,0 +1,190 @@
++/*
++ * This file contains the routines for TLB flushing.
++ * On machines where the MMU uses a hash table to store virtual to
++ * physical translations, these routines flush entries from the
++ * hash table also.
++ *  -- paulus
 + *
-+ *   - The global context lock will not scale very well
-+ *   - The maps should be dynamically allocated to allow for processors
-+ *     that support more PID bits at runtime
-+ *   - Implement flush_tlb_mm() by making the context stale and picking
-+ *     a new one
-+ *   - More aggressively clear stale map bits and maybe find some way to
-+ *     also clear mm->cpu_vm_mask bits when processes are migrated
-  */
- 
-+#undef DEBUG
-+#define DEBUG_STEAL_ONLY
-+#undef DEBUG_MAP_CONSISTENCY
++ *  Derived from arch/ppc/mm/init.c:
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
++ *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
++ *    Copyright (C) 1996 Paul Mackerras
++ *
++ *  Derived from "arch/i386/mm/init.c"
++ *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ *
++ */
 +
 +#include <linux/kernel.h>
- #include <linux/mm.h>
- #include <linux/init.h>
- 
- #include <asm/mmu_context.h>
- #include <asm/tlbflush.h>
-+#include <linux/spinlock.h>
- 
- /*
-  *   The MPC8xx has only 16 contexts.  We rotate through them on each
-@@ -40,17 +55,14 @@
-  */
- 
- #ifdef CONFIG_8xx
--#define NO_CONTEXT      	16
- #define LAST_CONTEXT    	15
- #define FIRST_CONTEXT    	0
- 
- #elif defined(CONFIG_4xx)
--#define NO_CONTEXT      	256
- #define LAST_CONTEXT    	255
- #define FIRST_CONTEXT    	1
- 
- #elif defined(CONFIG_E200) || defined(CONFIG_E500)
--#define NO_CONTEXT      	256
- #define LAST_CONTEXT    	255
- #define FIRST_CONTEXT    	1
- 
-@@ -58,11 +70,11 @@
- #error Unsupported processor type
- #endif
- 
--static unsigned long next_mmu_context;
-+static unsigned int next_context, nr_free_contexts;
- static unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
--static atomic_t nr_free_contexts;
-+static unsigned long stale_map[NR_CPUS][LAST_CONTEXT / BITS_PER_LONG + 1];
- static struct mm_struct *context_mm[LAST_CONTEXT+1];
--static void steal_context(void);
-+static spinlock_t context_lock = SPIN_LOCK_UNLOCKED;
- 
- /* Steal a context from a task that has one at the moment.
-  * This is only used on 8xx and 4xx and we presently assume that
-@@ -75,49 +87,193 @@ static void steal_context(void);
-  * place to implement an LRU scheme if anyone was motivated to do it.
-  *  -- paulus
-  */
--static void steal_context(void)
++#include <linux/mm.h>
++#include <linux/init.h>
++#include <linux/highmem.h>
++#include <linux/pagemap.h>
++
++#include <asm/tlbflush.h>
++#include <asm/tlb.h>
++
++#include "mmu_decl.h"
 +
 +/*
-+ * For context stealing, we use a slightly different approach for
-+ * SMP and UP. Basically, the UP one is simpler and doesn't use
-+ * the stale map as we can just flush the local CPU
++ * Called when unmapping pages to flush entries from the TLB/hash table.
 + */
-+#ifdef CONFIG_SMP
-+static unsigned int steal_context_smp(unsigned int id)
- {
- 	struct mm_struct *mm;
-+	unsigned int cpu, max;
- 
--	/* free up context `next_mmu_context' */
--	/* if we shouldn't free context 0, don't... */
--	if (next_mmu_context < FIRST_CONTEXT)
--		next_mmu_context = FIRST_CONTEXT;
--	mm = context_mm[next_mmu_context];
--	flush_tlb_mm(mm);
--	destroy_context(mm);
--}
-+ again:
-+	max = LAST_CONTEXT - FIRST_CONTEXT;
- 
-+	/* Attempt to free next_context first and then loop until we manage */
-+	while (max--) {
-+		/* Pick up the victim mm */
-+		mm = context_mm[id];
-+
-+		/* We have a candidate victim, check if it's active, on SMP
-+		 * we cannot steal active contexts
-+		 */
-+		if (mm->context.active) {
-+			id ++;
-+			if (id > LAST_CONTEXT)
-+				id = FIRST_CONTEXT;
-+			continue;
-+		}
-+		pr_debug("[%d] steal context %d from mm @%p\n",
-+			 smp_processor_id(), id, mm);
-+
-+		/* Mark this mm has having no context anymore */
-+		mm->context.id = MMU_NO_CONTEXT;
-+
-+		/* Mark it stale on all CPUs that used this mm */
-+		for_each_cpu_mask_nr(cpu, mm->cpu_vm_mask)
-+			__set_bit(id, stale_map[cpu]);
-+		return id;
-+	}
- 
--/*
-- * Get a new mmu context for the address space described by `mm'.
-+	/* This will happen if you have more CPUs than available contexts,
-+	 * all we can do here is wait a bit and try again
-+	 */
-+	spin_unlock(&context_lock);
-+	cpu_relax();
-+	spin_lock(&context_lock);
-+	goto again;
-+}
-+#endif  /* CONFIG_SMP */
-+
-+/* Note that this will also be called on SMP if all other CPUs are
-+ * offlined, which means that it may be called for cpu != 0. For
-+ * this to work, we somewhat assume that CPUs that are onlined
-+ * come up with a fully clean TLB (or are cleaned when offlined)
-  */
--static inline void get_mmu_context(struct mm_struct *mm)
-+static unsigned int steal_context_up(unsigned int id)
- {
--	unsigned long ctx;
-+	struct mm_struct *mm;
-+	int cpu = smp_processor_id();
- 
--	if (mm->context.id != NO_CONTEXT)
--		return;
-+	/* Pick up the victim mm */
-+	mm = context_mm[id];
-+
-+	pr_debug("[%d] steal context %d from mm @%p\n", cpu, id, mm);
-+
-+	/* Mark this mm has having no context anymore */
-+	mm->context.id = MMU_NO_CONTEXT;
-+
-+	/* Flush the TLB for that context */
-+	local_flush_tlb_mm(mm);
-+
-+	/* XXX This clear should ultimately be part of local_flush_tlb_mm */
-+	__clear_bit(id, stale_map[cpu]);
-+
-+	return id;
-+}
- 
--	while (atomic_dec_if_positive(&nr_free_contexts) < 0)
--		steal_context();
-+#ifdef DEBUG_MAP_CONSISTENCY
-+static void context_check_map(void)
++void flush_hash_entry(struct mm_struct *mm, pte_t *ptep, unsigned long addr)
 +{
-+	unsigned int id, nrf, nact;
- 
--	ctx = next_mmu_context;
--	while (test_and_set_bit(ctx, context_map)) {
--		ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1, ctx);
--		if (ctx > LAST_CONTEXT)
--			ctx = 0;
--	}
--	next_mmu_context = (ctx + 1) & LAST_CONTEXT;
--	mm->context.id = ctx;
--	context_mm[ctx] = mm;
-+	nrf = nact = 0;
-+	for (id = FIRST_CONTEXT; id <= LAST_CONTEXT; id++) {
-+		int used = test_bit(id, context_map);
-+		if (!used)
-+			nrf++;
-+		if (used != (context_mm[id] != NULL))
-+			pr_err("MMU: Context %d is %s and MM is %p !\n",
-+			       id, used ? "used" : "free", context_mm[id]);
-+		if (context_mm[id] != NULL)
-+			nact += context_mm[id]->context.active;
++	unsigned long ptephys;
++
++	if (Hash != 0) {
++		ptephys = __pa(ptep) & PAGE_MASK;
++		flush_hash_pages(mm->context.id, addr, ptephys, 1);
 +	}
-+	if (nrf != nr_free_contexts) {
-+		pr_err("MMU: Free context count out of sync ! (%d vs %d)\n",
-+		       nr_free_contexts, nrf);
-+		nr_free_contexts = nrf;
-+	}
-+	if (nact > num_online_cpus())
-+		pr_err("MMU: More active contexts than CPUs ! (%d vs %d)\n",
-+		       nact, num_online_cpus());
- }
-+#else
-+static void context_check_map(void) { }
-+#endif
- 
- void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
- {
--	get_mmu_context(next);
-+	unsigned int id, cpu = smp_processor_id();
-+	unsigned long *map;
- 
--	set_context(next->context.id, next->pgd);
-+	/* No lockless fast path .. yet */
-+	spin_lock(&context_lock);
++}
++EXPORT_SYMBOL(flush_hash_entry);
 +
-+#ifndef DEBUG_STEAL_ONLY
-+	pr_debug("[%d] activating context for mm @%p, active=%d, id=%d\n",
-+		 cpu, next, next->context.active, next->context.id);
-+#endif
-+
-+#ifdef CONFIG_SMP
-+	/* Mark us active and the previous one not anymore */
-+	next->context.active++;
-+	if (prev) {
-+		WARN_ON(prev->context.active < 1);
-+		prev->context.active--;
-+	}
-+#endif /* CONFIG_SMP */
-+
-+	/* If we already have a valid assigned context, skip all that */
-+	id = next->context.id;
-+	if (likely(id != MMU_NO_CONTEXT))
-+		goto ctxt_ok;
-+
-+	/* We really don't have a context, let's try to acquire one */
-+	id = next_context;
-+	if (id > LAST_CONTEXT)
-+		id = FIRST_CONTEXT;
-+	map = context_map;
-+
-+	/* No more free contexts, let's try to steal one */
-+	if (nr_free_contexts == 0) {
-+#ifdef CONFIG_SMP
-+		if (num_online_cpus() > 1) {
-+			id = steal_context_smp(id);
-+			goto stolen;
-+		}
-+#endif /* CONFIG_SMP */
-+		id = steal_context_up(id);
-+		goto stolen;
-+	}
-+	nr_free_contexts--;
-+
-+	/* We know there's at least one free context, try to find it */
-+	while (__test_and_set_bit(id, map)) {
-+		id = find_next_zero_bit(map, LAST_CONTEXT+1, id);
-+		if (id > LAST_CONTEXT)
-+			id = FIRST_CONTEXT;
-+	}
-+ stolen:
-+	next_context = id + 1;
-+	context_mm[id] = next;
-+	next->context.id = id;
-+
-+#ifndef DEBUG_STEAL_ONLY
-+	pr_debug("[%d] picked up new id %d, nrf is now %d\n",
-+		 cpu, id, nr_free_contexts);
-+#endif
-+
-+	context_check_map();
-+ ctxt_ok:
-+
-+	/* If that context got marked stale on this CPU, then flush the
-+	 * local TLB for it and unmark it before we use it
-+	 */
-+	if (test_bit(id, stale_map[cpu])) {
-+		pr_debug("[%d] flushing stale context %d for mm @%p !\n",
-+			 cpu, id, next);
-+		local_flush_tlb_mm(next);
-+
-+		/* XXX This clear should ultimately be part of local_flush_tlb_mm */
-+		__clear_bit(id, stale_map[cpu]);
-+	}
-+
-+	/* Flick the MMU and release lock */
-+	set_context(id, next->pgd);
-+	spin_unlock(&context_lock);
- }
- 
- /*
-@@ -125,7 +281,9 @@ void switch_mmu_context(struct mm_struct
-  */
- int init_new_context(struct task_struct *t, struct mm_struct *mm)
- {
--	mm->context.id = NO_CONTEXT;
-+	mm->context.id = MMU_NO_CONTEXT;
-+	mm->context.active = 0;
-+
- 	return 0;
- }
- 
-@@ -134,13 +292,25 @@ int init_new_context(struct task_struct 
-  */
- void destroy_context(struct mm_struct *mm)
- {
--	preempt_disable();
--	if (mm->context.id != NO_CONTEXT) {
--		clear_bit(mm->context.id, context_map);
--		mm->context.id = NO_CONTEXT;
--		atomic_inc(&nr_free_contexts);
-+	unsigned int id;
-+
-+	if (mm->context.id == MMU_NO_CONTEXT)
++/*
++ * Called by ptep_set_access_flags, must flush on CPUs for which the
++ * DSI handler can't just "fixup" the TLB on a write fault
++ */
++void flush_tlb_page_nohash(struct vm_area_struct *vma, unsigned long addr)
++{
++	if (Hash != 0)
 +		return;
++	_tlbie(addr);
++}
 +
-+	WARN_ON(mm->context.active != 0);
++/*
++ * Called at the end of a mmu_gather operation to make sure the
++ * TLB flush is completely done.
++ */
++void tlb_flush(struct mmu_gather *tlb)
++{
++	if (Hash == 0) {
++		/*
++		 * 603 needs to flush the whole TLB here since
++		 * it doesn't use a hash table.
++		 */
++		_tlbia();
++	}
++}
 +
-+	spin_lock(&context_lock);
-+	id = mm->context.id;
-+	if (id != MMU_NO_CONTEXT) {
-+		__clear_bit(id, context_map);
-+		mm->context.id = MMU_NO_CONTEXT;
-+#ifdef DEBUG_MAP_CONSISTENCY
-+		mm->context.active = 0;
-+		context_mm[id] = NULL;
++/*
++ * TLB flushing:
++ *
++ *  - flush_tlb_mm(mm) flushes the specified mm context TLB's
++ *  - flush_tlb_page(vma, vmaddr) flushes one page
++ *  - flush_tlb_range(vma, start, end) flushes a range of pages
++ *  - flush_tlb_kernel_range(start, end) flushes kernel pages
++ *
++ * since the hardware hash table functions as an extension of the
++ * tlb as far as the linux tables are concerned, flush it too.
++ *    -- Cort
++ */
++
++/*
++ * 750 SMP is a Bad Idea because the 750 doesn't broadcast all
++ * the cache operations on the bus.  Hence we need to use an IPI
++ * to get the other CPU(s) to invalidate their TLBs.
++ */
++#ifdef CONFIG_SMP_750
++#define FINISH_FLUSH	smp_send_tlb_invalidate(0)
++#else
++#define FINISH_FLUSH	do { } while (0)
 +#endif
-+		nr_free_contexts++;
- 	}
--	preempt_enable();
-+	spin_unlock(&context_lock);
- }
- 
- 
-@@ -149,6 +319,12 @@ void destroy_context(struct mm_struct *m
-  */
- void __init mmu_context_init(void)
- {
-+	/* Mark init_mm as being active on all possible CPUs since
-+	 * we'll get called with prev == init_mm the first time
-+	 * we schedule on a given CPU
++
++static void flush_range(struct mm_struct *mm, unsigned long start,
++			unsigned long end)
++{
++	pmd_t *pmd;
++	unsigned long pmd_end;
++	int count;
++	unsigned int ctx = mm->context.id;
++
++	if (Hash == 0) {
++		_tlbia();
++		return;
++	}
++	start &= PAGE_MASK;
++	if (start >= end)
++		return;
++	end = (end - 1) | ~PAGE_MASK;
++	pmd = pmd_offset(pud_offset(pgd_offset(mm, start), start), start);
++	for (;;) {
++		pmd_end = ((start + PGDIR_SIZE) & PGDIR_MASK) - 1;
++		if (pmd_end > end)
++			pmd_end = end;
++		if (!pmd_none(*pmd)) {
++			count = ((pmd_end - start) >> PAGE_SHIFT) + 1;
++			flush_hash_pages(ctx, start, pmd_val(*pmd), count);
++		}
++		if (pmd_end == end)
++			break;
++		start = pmd_end + 1;
++		++pmd;
++	}
++}
++
++/*
++ * Flush kernel TLB entries in the given range
++ */
++void flush_tlb_kernel_range(unsigned long start, unsigned long end)
++{
++	flush_range(&init_mm, start, end);
++	FINISH_FLUSH;
++}
++
++/*
++ * Flush all the (user) entries for the address space described by mm.
++ */
++void flush_tlb_mm(struct mm_struct *mm)
++{
++	struct vm_area_struct *mp;
++
++	if (Hash == 0) {
++		_tlbia();
++		return;
++	}
++
++	/*
++	 * It is safe to go down the mm's list of vmas when called
++	 * from dup_mmap, holding mmap_sem.  It would also be safe from
++	 * unmap_region or exit_mmap, but not from vmtruncate on SMP -
++	 * but it seems dup_mmap is the only SMP case which gets here.
 +	 */
-+	init_mm.context.active = NR_CPUS;
++	for (mp = mm->mmap; mp != NULL; mp = mp->vm_next)
++		flush_range(mp->vm_mm, mp->vm_start, mp->vm_end);
++	FINISH_FLUSH;
++}
 +
- 	/*
- 	 * Some processors have too few contexts to reserve one for
- 	 * init_mm, and require using context 0 for a normal task.
-@@ -156,7 +332,7 @@ void __init mmu_context_init(void)
- 	 * This code assumes FIRST_CONTEXT < 32.
- 	 */
- 	context_map[0] = (1 << FIRST_CONTEXT) - 1;
--	next_mmu_context = FIRST_CONTEXT;
--	atomic_set(&nr_free_contexts, LAST_CONTEXT - FIRST_CONTEXT + 1);
-+	next_context = FIRST_CONTEXT;
-+	nr_free_contexts = LAST_CONTEXT - FIRST_CONTEXT + 1;
- }
- 
-Index: linux-work/arch/powerpc/include/asm/tlbflush.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/tlbflush.h	2008-12-09 16:42:03.000000000 +1100
-+++ linux-work/arch/powerpc/include/asm/tlbflush.h	2008-12-15 10:13:05.000000000 +1100
-@@ -29,6 +29,8 @@
- 
- #include <linux/mm.h>
- 
-+#define MMU_NO_CONTEXT      	((unsigned int)-1)
++void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
++{
++	struct mm_struct *mm;
++	pmd_t *pmd;
 +
- extern void _tlbie(unsigned long address, unsigned int pid);
- extern void _tlbil_all(void);
- extern void _tlbil_pid(unsigned int pid);
-Index: linux-work/arch/powerpc/include/asm/mmu-8xx.h
++	if (Hash == 0) {
++		_tlbie(vmaddr);
++		return;
++	}
++	mm = (vmaddr < TASK_SIZE)? vma->vm_mm: &init_mm;
++	pmd = pmd_offset(pud_offset(pgd_offset(mm, vmaddr), vmaddr), vmaddr);
++	if (!pmd_none(*pmd))
++		flush_hash_pages(mm->context.id, vmaddr, pmd_val(*pmd), 1);
++	FINISH_FLUSH;
++}
++
++/*
++ * For each address in the range, find the pte for the address
++ * and check _PAGE_HASHPTE bit; if it is set, find and destroy
++ * the corresponding HPTE.
++ */
++void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
++		     unsigned long end)
++{
++	flush_range(vma->vm_mm, start, end);
++	FINISH_FLUSH;
++}
+Index: linux-work/arch/powerpc/mm/tlb_hash64.c
 ===================================================================
---- linux-work.orig/arch/powerpc/include/asm/mmu-8xx.h	2008-09-29 14:21:37.000000000 +1000
-+++ linux-work/arch/powerpc/include/asm/mmu-8xx.h	2008-12-09 16:42:03.000000000 +1100
-@@ -137,7 +137,8 @@
- 
- #ifndef __ASSEMBLY__
- typedef struct {
--	unsigned long id;
-+	unsigned int id;
-+	unsigned int active;
- 	unsigned long vdso_base;
- } mm_context_t;
- #endif /* !__ASSEMBLY__ */
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/mm/tlb_hash64.c	2008-12-09 16:31:39.000000000 +1100
+@@ -0,0 +1,211 @@
++/*
++ * This file contains the routines for flushing entries from the
++ * TLB and MMU hash table.
++ *
++ *  Derived from arch/ppc64/mm/init.c:
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
++ *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
++ *    Copyright (C) 1996 Paul Mackerras
++ *
++ *  Derived from "arch/i386/mm/init.c"
++ *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
++ *
++ *  Dave Engebretsen <engebret@us.ibm.com>
++ *      Rework for PPC64 port.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/init.h>
++#include <linux/percpu.h>
++#include <linux/hardirq.h>
++#include <asm/pgalloc.h>
++#include <asm/tlbflush.h>
++#include <asm/tlb.h>
++#include <asm/bug.h>
++
++DEFINE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
++
++/* This is declared as we are using the more or less generic
++ * arch/powerpc/include/asm/tlb.h file -- tgall
++ */
++DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
++
++/*
++ * A linux PTE was changed and the corresponding hash table entry
++ * neesd to be flushed. This function will either perform the flush
++ * immediately or will batch it up if the current CPU has an active
++ * batch on it.
++ *
++ * Must be called from within some kind of spinlock/non-preempt region...
++ */
++void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
++		     pte_t *ptep, unsigned long pte, int huge)
++{
++	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
++	unsigned long vsid, vaddr;
++	unsigned int psize;
++	int ssize;
++	real_pte_t rpte;
++	int i;
++
++	i = batch->index;
++
++	/* We mask the address for the base page size. Huge pages will
++	 * have applied their own masking already
++	 */
++	addr &= PAGE_MASK;
++
++	/* Get page size (maybe move back to caller).
++	 *
++	 * NOTE: when using special 64K mappings in 4K environment like
++	 * for SPEs, we obtain the page size from the slice, which thus
++	 * must still exist (and thus the VMA not reused) at the time
++	 * of this call
++	 */
++	if (huge) {
++#ifdef CONFIG_HUGETLB_PAGE
++		psize = get_slice_psize(mm, addr);;
++#else
++		BUG();
++		psize = pte_pagesize_index(mm, addr, pte); /* shutup gcc */
++#endif
++	} else
++		psize = pte_pagesize_index(mm, addr, pte);
++
++	/* Build full vaddr */
++	if (!is_kernel_addr(addr)) {
++		ssize = user_segment_size(addr);
++		vsid = get_vsid(mm->context.id, addr, ssize);
++		WARN_ON(vsid == 0);
++	} else {
++		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
++		ssize = mmu_kernel_ssize;
++	}
++	vaddr = hpt_va(addr, vsid, ssize);
++	rpte = __real_pte(__pte(pte), ptep);
++
++	/*
++	 * Check if we have an active batch on this CPU. If not, just
++	 * flush now and return. For now, we don global invalidates
++	 * in that case, might be worth testing the mm cpu mask though
++	 * and decide to use local invalidates instead...
++	 */
++	if (!batch->active) {
++		flush_hash_page(vaddr, rpte, psize, ssize, 0);
++		return;
++	}
++
++	/*
++	 * This can happen when we are in the middle of a TLB batch and
++	 * we encounter memory pressure (eg copy_page_range when it tries
++	 * to allocate a new pte). If we have to reclaim memory and end
++	 * up scanning and resetting referenced bits then our batch context
++	 * will change mid stream.
++	 *
++	 * We also need to ensure only one page size is present in a given
++	 * batch
++	 */
++	if (i != 0 && (mm != batch->mm || batch->psize != psize ||
++		       batch->ssize != ssize)) {
++		__flush_tlb_pending(batch);
++		i = 0;
++	}
++	if (i == 0) {
++		batch->mm = mm;
++		batch->psize = psize;
++		batch->ssize = ssize;
++	}
++	batch->pte[i] = rpte;
++	batch->vaddr[i] = vaddr;
++	batch->index = ++i;
++	if (i >= PPC64_TLB_BATCH_NR)
++		__flush_tlb_pending(batch);
++}
++
++/*
++ * This function is called when terminating an mmu batch or when a batch
++ * is full. It will perform the flush of all the entries currently stored
++ * in a batch.
++ *
++ * Must be called from within some kind of spinlock/non-preempt region...
++ */
++void __flush_tlb_pending(struct ppc64_tlb_batch *batch)
++{
++	cpumask_t tmp;
++	int i, local = 0;
++
++	i = batch->index;
++	tmp = cpumask_of_cpu(smp_processor_id());
++	if (cpus_equal(batch->mm->cpu_vm_mask, tmp))
++		local = 1;
++	if (i == 1)
++		flush_hash_page(batch->vaddr[0], batch->pte[0],
++				batch->psize, batch->ssize, local);
++	else
++		flush_hash_range(i, local);
++	batch->index = 0;
++}
++
++/**
++ * __flush_hash_table_range - Flush all HPTEs for a given address range
++ *                            from the hash table (and the TLB). But keeps
++ *                            the linux PTEs intact.
++ *
++ * @mm		: mm_struct of the target address space (generally init_mm)
++ * @start	: starting address
++ * @end         : ending address (not included in the flush)
++ *
++ * This function is mostly to be used by some IO hotplug code in order
++ * to remove all hash entries from a given address range used to map IO
++ * space on a removed PCI-PCI bidge without tearing down the full mapping
++ * since 64K pages may overlap with other bridges when using 64K pages
++ * with 4K HW pages on IO space.
++ *
++ * Because of that usage pattern, it's only available with CONFIG_HOTPLUG
++ * and is implemented for small size rather than speed.
++ */
++#ifdef CONFIG_HOTPLUG
++
++void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
++			      unsigned long end)
++{
++	unsigned long flags;
++
++	start = _ALIGN_DOWN(start, PAGE_SIZE);
++	end = _ALIGN_UP(end, PAGE_SIZE);
++
++	BUG_ON(!mm->pgd);
++
++	/* Note: Normally, we should only ever use a batch within a
++	 * PTE locked section. This violates the rule, but will work
++	 * since we don't actually modify the PTEs, we just flush the
++	 * hash while leaving the PTEs intact (including their reference
++	 * to being hashed). This is not the most performance oriented
++	 * way to do things but is fine for our needs here.
++	 */
++	local_irq_save(flags);
++	arch_enter_lazy_mmu_mode();
++	for (; start < end; start += PAGE_SIZE) {
++		pte_t *ptep = find_linux_pte(mm->pgd, start);
++		unsigned long pte;
++
++		if (ptep == NULL)
++			continue;
++		pte = pte_val(*ptep);
++		if (!(pte & _PAGE_HASHPTE))
++			continue;
++		hpte_need_flush(mm, start, ptep, pte, 0);
++	}
++	arch_leave_lazy_mmu_mode();
++	local_irq_restore(flags);
++}
++
++#endif /* CONFIG_HOTPLUG */
+Index: linux-work/arch/powerpc/mm/Makefile
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/Makefile	2008-12-09 16:31:02.000000000 +1100
++++ linux-work/arch/powerpc/mm/Makefile	2008-12-09 16:31:43.000000000 +1100
+@@ -16,7 +16,7 @@ obj-$(CONFIG_PPC64)		+= hash_utils_64.o 
+ 				   gup.o mmap.o $(hash-y)
+ obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o
+ obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
+-				   tlb_$(CONFIG_WORD_SIZE).o \
++				   tlb_hash$(CONFIG_WORD_SIZE).o \
+ 				   mmu_context_hash$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_40x)		+= 40x_mmu.o
+ obj-$(CONFIG_44x)		+= 44x_mmu.o
