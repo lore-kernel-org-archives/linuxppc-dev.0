@@ -1,20 +1,33 @@
-Return-Path: <axboe@kernel.dk>
-Received: from kernel.dk (brick.kernel.dk [93.163.65.50])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "A common name", Issuer "A common name" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 18FBADDF25
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 18:55:43 +1100 (EST)
-Date: Mon, 15 Dec 2008 08:28:30 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [RESEND] [PATCH] powerpc: remove dead BIO_VMERGE_BOUNDARY
-	definition
-Message-ID: <20081215072830.GQ23742@kernel.dk>
-References: <20081214124508U.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081214124508U.fujita.tomonori@lab.ntt.co.jp>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id ACBB9DDF75
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 23:26:16 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBFCPRYr032601
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 05:25:27 -0700
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mBFCQEBw207230
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 05:26:14 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mBFCQDmc007003
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 05:26:13 -0700
+Date: Mon, 15 Dec 2008 07:25:54 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 13/16] powerpc/44x: No need to mask MSR:CE,ME or DE in
+	_tlbil_va on 440
+Message-ID: <20081215072554.3c88a7ff@zod.rchland.ibm.com>
+In-Reply-To: <20081215054603.6BB25DDFB5@ozlabs.org>
+References: <1229319836.100184.344640589620.qpush@grosgo>
+	<20081215054603.6BB25DDFB5@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 14 2008, FUJITA Tomonori wrote:
-> This is a resend of:
-> 
-> http://marc.info/?l=linux-kernel&m=122482703616607&w=2
-> 
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] powerpc: remove dead BIO_VMERGE_BOUNDARY definition
-> 
-> The block layer dropped the virtual merge feature
-> (b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY
-> definition is meaningless now (For POWER, BIO_VMERGE_BOUNDARY has been
-> meaningless for a long time since POWER disables the virtual merge
-> feature).
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+On Mon, 15 Dec 2008 16:45:05 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
+> The handlers for Critical, Machine Check or Debug interrupts
+> will save and restore MMUCR nowadays, thus we only need to
+> disable normal interrupts when invalidating TLB entries.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 > ---
->  arch/powerpc/include/asm/io.h |    7 -------
->  1 files changed, 0 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-> index 08266d2..494cd8b 100644
-> --- a/arch/powerpc/include/asm/io.h
-> +++ b/arch/powerpc/include/asm/io.h
-> @@ -713,13 +713,6 @@ static inline void * phys_to_virt(unsigned long address)
->   */
->  #define page_to_phys(page)	((phys_addr_t)page_to_pfn(page) << PAGE_SHIFT)
->  
-> -/* We do NOT want virtual merging, it would put too much pressure on
-> - * our iommu allocator. Instead, we want drivers to be smart enough
-> - * to coalesce sglists that happen to have been mapped in a contiguous
-> - * way by the iommu
-> - */
-> -#define BIO_VMERGE_BOUNDARY	0
-> -
->  /*
->   * 32 bits still uses virt_to_bus() for it's implementation of DMA
->   * mappings se we have to keep it defined here. We also have some old
-> -- 
-> 1.5.5.GIT
+>  arch/powerpc/mm/tlb_nohash_low.S |   19 ++++++++++---------
+>  1 file changed, 10 insertions(+), 9 deletions(-)
 > 
-
--- 
-Jens Axboe
+> --- linux-work.orig/arch/powerpc/mm/tlb_nohash_low.S	2008-12-15 13:34:57.000000000 +1100
+> +++ linux-work/arch/powerpc/mm/tlb_nohash_low.S	2008-12-15 13:35:07.000000000 +1100
+> @@ -75,18 +75,19 @@ _GLOBAL(_tlbil_va)
+>  	mfspr	r5,SPRN_MMUCR
+>  	rlwimi	r5,r4,0,24,31			/* Set TID */
+> 
+> -	/* We have to run the search with interrupts disabled, even critical
+> -	 * and debug interrupts (in fact the only critical exceptions we have
+> -	 * are debug and machine check).  Otherwise  an interrupt which causes
+> -	 * a TLB miss can clobber the MMUCR between the mtspr and the tlbsx. */
+> +	/* We have to run the search with interrupts disabled, otherwise
+> +	 * an interrupt which causes a TLB miss can clobber the MMUCR
+> +	 * between the mtspr and the tlbsx.
+> +	 *
+> +	 * Critical and Machine Check interrupts take care of saving
+> +	 * and restoring MMUCR, so only normal interrupts have to be
+> +	 * taken care of.
+> +	 */
+>  	mfmsr	r4
+> -	lis	r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@ha
+> -	addi	r6,r6,(MSR_EE|MSR_CE|MSR_ME|MSR_DE)@l
+> -	andc	r6,r4,r6
+> -	mtmsr	r6
+> +	wrteei	0
+>  	mtspr	SPRN_MMUCR,r5
+>  	tlbsx.	r3, 0, r3
+> -	mtmsr	r4
+> +	wrtee	r4
+>  	bne	1f
+>  	sync
+>  	/* There are only 64 TLB entries, so r3 < 64,
