@@ -1,18 +1,14 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
-	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id D8AE9DDF5A
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 10:19:29 +1100 (EST)
-Date: Sun, 14 Dec 2008 17:19:20 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] add of_find_next_cache_node()
-Message-ID: <20081214231919.GO6958@localdomain>
-References: <1228956366-17593-1-git-send-email-ntl@pobox.com>
-	<1229296287.26324.87.camel@pasglop>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 15 Dec 2008 11:12:01 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: [RFC] Dummy GPIO driver for use with SPI
+Message-ID: <20081215001201.GB15327@yookeroo.seuss>
+References: <4942738A.80609@harris.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1229296287.26324.87.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <4942738A.80609@harris.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +18,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2008-12-10 at 18:46 -0600, Nathan Lynch wrote:
-> > +       /* OF on pmac has nodes instead of properties named "l2-cache"
-> > +        * beneath CPU nodes.
-> > +        */
-> > +       if (!strcmp(np->type, "cpu"))
-> > +               for_each_child_of_node(np, child)
-> > +                       if (!strcmp(child->type, "cache"))
-> > +                               return child;
-> > +
+On Fri, Dec 12, 2008 at 09:22:02AM -0500, Steven A. Falco wrote:
+> This patch adds a dummy GPIO driver, which is useful for SPI devices
+> that do not have a physical chip select.
 > 
-> pmac has both actually. And the property points to the node. It's a
-> problem for /proc/device-tree so we rename them iirc, but only in /proc,
-> ie, they should still be intact in the tree I think.
+> Signed-off-by: Steven A. Falco <sfalco@harris.com>
+> ---
+> The SPI subsystem requires a chip-select for each connected slave
+> device.  I have a custom board with an Atmel "co-processor".  This part
+> is reprogrammed via SPI, so it needs a chip select to satisfy the SPI
+> subsystem, but my hardware does not have a physical CS connected.
+> 
+> I could waste a "no-connect" GPIO pin, but I'd rather not.  So, I've
+> written a dummy GPIO driver, which behaves exactly like a real GPIO
+> device, but with no underlying hardware.  This could also be useful
+> as a template for real GPIO drivers.
+> 
+> I use the following dts entry:
+> 
+> 	GPIO3: dummy@ef500000 {
+> 		compatible = "linux,dummy-gpio";
+> 		reg = <ef500000 1>;
+> 		gpio-controller;
+> 		#gpio-cells = <2>;
+> 	};
 
-Okay, I'll check on this.
+This is not sane.  I can see reasons it might be useful to have a
+dummy gpio driver within the kernel, but since this doesn't represent
+any real hardware, it should not appear in the device tree.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
