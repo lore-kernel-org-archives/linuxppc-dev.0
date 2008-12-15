@@ -1,25 +1,17 @@
-Return-Path: <gknispel@proformatique.com>
-Received: from proformatique.com (web.proformatique.com [91.194.179.68])
-	by ozlabs.org (Postfix) with ESMTP id 9040ADDF68
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 11:32:55 +1100 (EST)
-Date: Mon, 15 Dec 2008 01:32:51 +0100
-From: Guillaume Knispel <gknispel@proformatique.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Fix corruption error in rh_alloc_fixed()
-Message-ID: <20081215013251.0359db80@xilun.lan.proformatique.com>
-In-Reply-To: <18757.30913.736857.463769@cargo.ozlabs.ibm.com>
-References: <20081209152834.1d6ff291@xilun.lan.proformatique.com>
-	<493E88B7.5020702@freescale.com>
-	<20081209161422.5e289e6c@xilun.lan.proformatique.com>
-	<493E8BE2.809@freescale.com>
-	<20081214195050.677ba7d1@xilun.lan.proformatique.com>
-	<18757.30913.736857.463769@cargo.ozlabs.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: powerpc/cell/axon-msi: fix MSI after kexec
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200812122019.51191.arnd@arndb.de>
+References: <200812122019.51191.arnd@arndb.de>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-5t6+J21KYP4+mZ/i3Vd7"
+Date: Mon, 15 Dec 2008 15:30:26 +1100
+Message-Id: <1229315426.7118.59.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Tjernlund <joakim.tjernlund@transmode.se>,
-	Pantelis Antoniou <pantelis@embeddedalley.com>,
-	linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
-	Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,70 +21,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 15 Dec 2008 08:21:05 +1100
-Paul Mackerras <paulus@samba.org> wrote:
 
-> Guillaume Knispel writes:
-> 
-> > On Tue, 09 Dec 2008 09:16:50 -0600
-> > Timur Tabi <timur@freescale.com> wrote:
-> > 
-> > > Guillaume Knispel wrote:
-> > > 
-> > > > blk = NULL; at the end of the loop is what is done in the more used
-> > > > rh_alloc_align(), so for consistency either we change both or we use
-> > > > the same construction here.
-> > > > I also think that testing for &info->free_list is harder to understand
-> > > > because you must have the linked list implementation in your head
-> > > > (which a kernel developer should anyway so this is not so important)
-> > > 
-> > > Fair enough.
-> > > 
-> > > Acked-by: Timur Tabi <timur@freescale.com>
-> > > 
-> > 
-> > Kumar, can this go into your tree ?
-> > (copying the patch under so you have it at hand)
-> > 
-> > There is an error in rh_alloc_fixed() of the Remote Heap code:
-> > If there is at least one free block blk won't be NULL at the end of the
-> > search loop, so -ENOMEM won't be returned and the else branch of
-> > "if (bs == s || be == e)" will be taken, corrupting the management
-> > structures.
-> > 
-> > Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
-> > ---
-> > Fix an error in rh_alloc_fixed() that made allocations succeed when
-> > they should fail, and corrupted management structures.
-> 
-> What's the impact of this?  Can it cause an oops?
-> 
-> Is it a regression from 2.6.27?  Should we be putting it in 2.6.28?
-> 
-> Paul.
+--=-5t6+J21KYP4+mZ/i3Vd7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The problem obviously only affect people that make use of
-rh_alloc_fixed(), which is the case when you program an MCC or a QMC
-controller of the CPM. Without the patch cpm_muram_alloc_fixed()
-succeed when it should not, for example when trying to allocate out of
-range areas or already allocated areas, so it is possible that buffer
-descriptors or other control structures used by other controllers get
-corrupted.
+On Fri, 2008-12-12 at 20:19 +0100, Arnd Bergmann wrote:
+> Commit d015fe995 'powerpc/cell/axon-msi: Retry on missing interrupt'
+> has turned a rare failure to kexec on QS22 into a reproducible
+> error, which we have now analysed.
+>=20
+> The problem is that after a kexec, the MSIC hardware still points
+> into the middle of the old ring buffer. We set up the ring buffer
+> during reboot, but not the offset into it. On older kernels, this
+> would cause a storm of thousands of spurious interrupts after a
+> kexec, which would most of the time get dropped silently.
+>=20
+> With the new code, we time out on each interrupt, waiting for
+> it to become valid. If more interrupts come in that we time
+> out on, this goes on indefinitely, which eventually leads to
+> a hard crash.
+>=20
+> The solution in this patch is to read the current offset from
+> the MSIC when reinitializing it. This now works correctly, as
+> expected.
+>=20
+> Reported-by: Dirk Herrendoerfer <d.herrendoerfer@de.ibm.com>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>=20
+> Please apply when Dirk and Michael have given their Ack.
+> Should we have it in 2.6.28? Not sure if going from 'works sometimes'
+> to 'works never' counts as a regression. Most users won't be impacted,
+> because they don't use kexec on QS22.
 
-Digging into ooooold Linux (like 2.6.9, I haven't checked before),
-the problem seems to always have been present.
+I think it does count, it's a pretty small fix.
 
-Without this patch I experienced oops (sometimes panic, sometimes not)
-in various unrelated part (probably an indirect result of either
-corruption of rheap management structures or corruption caused by the
-CPM using crazy overwritten data) and also initialization of
-multi-channel control structures putting other communication
-controllers out-of-order.
+> diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platfo=
+rms/cell/axon_msi.c
+> index 442cf36..548fa4e 100644
+> --- a/arch/powerpc/platforms/cell/axon_msi.c
+> +++ b/arch/powerpc/platforms/cell/axon_msi.c
+> @@ -413,6 +422,9 @@ static int axon_msi_probe(struct of_device *device,
+>  			MSIC_CTRL_IRQ_ENABLE | MSIC_CTRL_ENABLE |
+>  			MSIC_CTRL_FIFO_SIZE);
+> =20
+> +	msic->read_offset =3D dcr_read(msic->dcr_host, MSIC_WRITE_OFFSET_REG)
+> +				& MSIC_FIFO_SIZE_MASK;
+> +
 
-The only risk I can think off is that it could break some out of tree
-kernel space code which worked because of luck and a double error - for
-example when doing a single DPRam allocation from offset 0 while
-leaving an area reserved at the base of the DPRam. So I think it should
-be put in 2.6.28.
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
 
-Guillaume Knispel
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-5t6+J21KYP4+mZ/i3Vd7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklF3WIACgkQdSjSd0sB4dJtqwCfVUSN0oEygcqP8MJwAWoFIxSJ
+XToAoJpswxgEzd4fzo/uc7b8CrTrvmPw
+=Fyfl
+-----END PGP SIGNATURE-----
+
+--=-5t6+J21KYP4+mZ/i3Vd7--
