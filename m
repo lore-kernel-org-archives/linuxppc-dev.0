@@ -1,24 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BB5EFDDE31
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 07:57:39 +1100 (EST)
-Message-Id: <C0519630-66EF-4860-A27E-15CC749D98DC@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1229373978.26324.120.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 11/16] powerpc/mm: Add SMP support to no-hash TLB handling
-	v3
-Date: Mon, 15 Dec 2008 14:57:33 -0600
-References: <20081215054554.E883EDDF9D@ozlabs.org>
-	<B3FDD472-0720-4454-9329-5A1C8A9BF84A@freescale.com>
-	<1229373978.26324.120.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 15/16] powerpc/mm: Rework usage of
+	_PAGE_COHERENT/NO_CACHE/GUARDED
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <8F38D1CB-D389-4065-A309-3126B6D482DB@freescale.com>
+References: <20081215054611.3C3C1474E1@ozlabs.org>
+	<8F38D1CB-D389-4065-A309-3126B6D482DB@freescale.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-ijlwLBNZum8dquhvnRN6"
+Date: Tue, 16 Dec 2008 08:03:18 +1100
+Message-Id: <1229374998.8332.20.camel@localhost>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,43 +24,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 15, 2008, at 2:46 PM, Benjamin Herrenschmidt wrote:
+--=-ijlwLBNZum8dquhvnRN6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->>>
->>> Index: linux-work/arch/powerpc/include/asm/mmu.h
->>> ===================================================================
->>> --- linux-work.orig/arch/powerpc/include/asm/mmu.h	2008-12-15
->>> 14:36:20.000000000 +1100
->>> +++ linux-work/arch/powerpc/include/asm/mmu.h	2008-12-15
->>> 14:36:20.000000000 +1100
->>> @@ -15,6 +15,9 @@
->>> #define MMU_FTR_TYPE_FSL_E		ASM_CONST(0x00000010)
->>> #define MMU_FTR_HAS_HIGH_BATS		ASM_CONST(0x00010000)
->>> #define MMU_FTR_BIG_PHYS		ASM_CONST(0x00020000)
->>> +#define MMU_FTR_HAS_TLBIVAX_BCAST	ASM_CONST(0x00040000)
->>> +#define MMU_FTR_HAS_TLBILX_PID		ASM_CONST(0x00080000)
->>
->> Can we make these FTR_USE_ instead of FTR_HAS_.  On e500 we have
->> TLBIVAX_BCAST but dont plan to use it.  I'd prefer not to have to
->> answer questions about that.
->
-> Hehehe :-) I can change that easily yes.
+On Mon, 2008-12-15 at 14:54 -0600, Kumar Gala wrote:
+> >
+> > #ifndef __ASSEMBLY__
+> > +
+> > +/*
+> > + * Macro to mark a page protection value as "uncacheable".
+> > + */
+> > +
+> > +#define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_COHERENT | _PAGE_COHER=
+ENT | \
+> > + 			 _PAGE_WRITETHRU)
+>=20
+> we like coherent so much we set it thrice?
 
-Probably good to add something in the commit message about how  
-FTR_USE_ implies FTR_HAS_ just so when some comes back through the git  
-history the know we thought about it.
+That makes it really-really-really coherent.
 
->>> +#define MMU_FTR_TLBIVAX_NEED_LOCK	ASM_CONST(0x00100000)
->>
->> Is this really ivax lock or sync lock?
->
-> The whole thing. Not totally clear, you have a better name ? Some CPUs
-> want a lock on sync and some on ivax, I plan to lock the whole  
-> sequence.
+cheers
 
-MMU_FTR_TLBIVAX_OR_SYNC_NEED_LOCK ?
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Its probably a good idea to have a clear definition of what each of  
-these flags means in the commit message.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
--k
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-ijlwLBNZum8dquhvnRN6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklGxhYACgkQdSjSd0sB4dJPFACgm+Baus4TeFC4VORTY4Gvnlml
+g0AAn2y2a1IS43Zg71OvQgyTk5hwqfac
+=zFCN
+-----END PGP SIGNATURE-----
+
+--=-ijlwLBNZum8dquhvnRN6--
