@@ -1,23 +1,20 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8F02DDDF5B
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 09:56:52 +1100 (EST)
-Date: Mon, 15 Dec 2008 14:56:44 -0800 (PST)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] POWERPC: MTD: Add cached map support to physmap_of MTD
-	driver
-In-Reply-To: <20081215133026.4a86e7f7@zod.rchland.ibm.com>
-Message-ID: <Pine.LNX.4.64.0812151451480.28806@t2.domain.actdsltmp>
-References: <1229365518-20538-1-git-send-email-tpiepho@freescale.com>
-	<20081215133026.4a86e7f7@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, MTD mailing list <linux-mtd@lists.infradead.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 61CA3DDF86
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 10:27:45 +1100 (EST)
+Subject: Re: update powerpc.git next and pull in some of benh's mmu patches
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <32B523EF-18CD-44BD-8B00-FEE38443B481@freescale.com>
+References: <32B523EF-18CD-44BD-8B00-FEE38443B481@freescale.com>
+Content-Type: text/plain
+Date: Tue, 16 Dec 2008 10:25:29 +1100
+Message-Id: <1229383529.26324.131.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 15 Dec 2008, Josh Boyer wrote:
->
-> Did you actually change anything in this version when compared to the
-> version you sent out last week?  If not, is there a reason you sent it
-> again without flagging it as a resend?
 
-I sent it out last week?  I'm trying to tie up loose ends before I leave
-and thought this patch hadn't gone out yet.  No changes unless there was
-some kind of last minute spelling fix in the patch comments.
+> Patches I want to still review and test:
+> 
+> 6/16 powerpc/mm: Split mmu_context handling v3
+> 7/16 powerpc/mm: Rework context management for CPUs with no hash table  
+> v2
+> 9/16 powerpc/mm: Introduce MMU features v2
+> 11/16 powerpc/mm: Add SMP support to no-hash TLB handling v3
+> 12/16 powerpc/mm: Split low level tlb invalidate for nohash processors
+> 14/16 powerpc/mm: Runtime allocation of mmu context maps for nohash  
+> CPUs v2
+> 15/16 powerpc/mm: Rework usage of _PAGE_COHERENT/NO_CACHE/GUARDED
 
-At least this one has my non-Freescale address CCed so I'll get replies if
-there are any.
+New variants of the above coming. Note that pretty much any patch
+touching cputable will break the mmu features patch, which is a pain to
+fixup. The patch is based on -top- of the DCR stuff which touches
+cputable, so please, Josh, review it asap so it can go in as a
+pre-req :-)
+
+Cheers,
+Ben.
