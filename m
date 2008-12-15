@@ -1,32 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EE55BDDF91
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 07:50:45 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e38.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBFKnV73020540
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 13:49:31 -0700
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mBFKodoe176584
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 13:50:41 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mBFKodnn026558
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 13:50:39 -0700
-Date: Mon, 15 Dec 2008 15:50:32 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: update powerpc.git next and pull in some of benh's mmu patches
-Message-ID: <20081215155032.5c00c281@zod.rchland.ibm.com>
-In-Reply-To: <32B523EF-18CD-44BD-8B00-FEE38443B481@freescale.com>
-References: <32B523EF-18CD-44BD-8B00-FEE38443B481@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AF6BBDDED4
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 07:54:59 +1100 (EST)
+Message-Id: <8F38D1CB-D389-4065-A309-3126B6D482DB@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20081215054611.3C3C1474E1@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 15/16] powerpc/mm: Rework usage of
+	_PAGE_COHERENT/NO_CACHE/GUARDED
+Date: Mon, 15 Dec 2008 14:54:52 -0600
+References: <20081215054611.3C3C1474E1@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,24 +26,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 15 Dec 2008 14:44:12 -0600
-Kumar Gala <kumar.gala@freescale.com> wrote:
+>
+> --- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc32.h	 
+> 2008-11-24 14:48:55.000000000 +1100
+> +++ linux-work/arch/powerpc/include/asm/pgtable-ppc32.h	2008-12-15  
+> 15:34:16.000000000 +1100
 
-> Pathces left up to Josh & Ben
-> 
-> 3/16 powerpc/4xx: Extended DCR support v2
+[snip]
 
-I'd like to test this one a bit.
+>
+> @@ -436,20 +437,23 @@ extern int icache_44x_need_flush;
+> 			 _PAGE_USER | _PAGE_ACCESSED | \
+> 			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | \
+> 			 _PAGE_EXEC | _PAGE_HWEXEC)
+> +
+> /*
+> - * Note: the _PAGE_COHERENT bit automatically gets set in the  
+> hardware
+> - * PTE if CONFIG_SMP is defined (hash_page does this); there is no  
+> need
+> - * to have it in the Linux PTE, and in fact the bit could be reused  
+> for
+> - * another purpose.  -- paulus.
+> + * We define 2 sets of base prot bits, one for basic pages (ie,
+> + * cacheable kernel and user pages) and one for non cacheable
+> + * pages. We always set _PAGE_COHERENT when SMP is enabled or
+> + * the processor might need it for DMA coherency.
+>  */
+> -
+> -#ifdef CONFIG_44x
+> -#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_GUARDED)
+> +#if defined(CONFIG_SMP) || defined(CONFIG_PPC_STD_MMU)
+> +#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT)
+> #else
+> #define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED)
+> #endif
+> +#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
+> +
+> #define _PAGE_WRENABLE	(_PAGE_RW | _PAGE_DIRTY | _PAGE_HWWRITE)
+> #define _PAGE_KERNEL	(_PAGE_BASE | _PAGE_SHARED | _PAGE_WRENABLE)
+> +#define _PAGE_KERNEL_NC	(_PAGE_BASE_NC | _PAGE_SHARED |  
+> _PAGE_WRENABLE | _PAGE_NO_CACHE)
 
-> 13/16 powerpc/44x: No need to mask MSR:CE, ME or DE in _tlbil_va on 440
+Either _BASE_NC should have _PAGE_NO_CACHE set or you need a different  
+name here for _PAGE_KERNEL_NC
 
-This one should be good to go.  I already Acked it.
+> #ifdef CONFIG_PPC_STD_MMU
+> /* On standard PPC MMU, no user access implies kernel read/write  
+> access,
+> @@ -459,7 +463,7 @@ extern int icache_44x_need_flush;
+> #define _PAGE_KERNEL_RO	(_PAGE_BASE | _PAGE_SHARED)
+> #endif
+>
+> -#define _PAGE_IO	(_PAGE_KERNEL | _PAGE_NO_CACHE | _PAGE_GUARDED)
+> +#define _PAGE_IO	(_PAGE_KERNEL_NC | _PAGE_GUARDED)
+> #define _PAGE_RAM	(_PAGE_KERNEL | _PAGE_HWEXEC)
 
-> 16/16 powerpc/44x: 44x TLB doesn't need "Guarded" set for all pages
+I think we should do:
 
-Would like to test this one as well.
+#define _PAGE_KERNEL_NC	(_PAGE_BASE_NC | _PAGE_SHARED | _PAGE_WRENABLE)
+#define _PAGE_IO	(_PAGE_KERNEL_NC | _PAGE_NO_CACHE | _PAGE_GUARDED)
 
-Also, could you look at Hollis' memory size alignment patch.  That is
-needed for the large page stuff.
+> Index: linux-work/arch/powerpc/include/asm/pgtable.h
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/include/asm/pgtable.h	2008-09-29  
+> 14:21:37.000000000 +1000
+> +++ linux-work/arch/powerpc/include/asm/pgtable.h	2008-12-15  
+> 14:38:00.000000000 +1100
+> @@ -16,6 +16,32 @@ struct mm_struct;
+> #endif
+>
+> #ifndef __ASSEMBLY__
+> +
+> +/*
+> + * Macro to mark a page protection value as "uncacheable".
+> + */
+> +
+> +#define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_COHERENT |  
+> _PAGE_COHERENT | \
+> + 			 _PAGE_WRITETHRU)
 
-josh
+we like coherent so much we set it thrice?
+
+- k
