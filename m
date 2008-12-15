@@ -1,19 +1,21 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9001BDDE9E
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 07:44:22 +1100 (EST)
-Message-Id: <32B523EF-18CD-44BD-8B00-FEE38443B481@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: update powerpc.git next and pull in some of benh's mmu patches
-Date: Mon, 15 Dec 2008 14:44:12 -0600
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 00394DDECF
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 07:48:25 +1100 (EST)
+Subject: Re: [PATCH 11/16] powerpc/mm: Add SMP support to no-hash TLB
+	handling v3
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <B3FDD472-0720-4454-9329-5A1C8A9BF84A@freescale.com>
+References: <20081215054554.E883EDDF9D@ozlabs.org>
+	<B3FDD472-0720-4454-9329-5A1C8A9BF84A@freescale.com>
+Content-Type: text/plain
+Date: Tue, 16 Dec 2008 07:46:18 +1100
+Message-Id: <1229373978.26324.120.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
 
-Can you update powerpc.git to linus's top of tree (we need the  
-tlbil_va patch Linus picked up).
+> > +void local_flush_tlb_mm(struct mm_struct *mm)
+> > +{
+> > +	unsigned int pid;
+> > +
+> > +	preempt_disable();
+> > +	pid = mm->context.id;
+> > +	if (pid != MMU_NO_CONTEXT)
+> > +		_tlbil_pid(pid);
+> > +	preempt_enable();
+> > +}
+> > +EXPORT_SYMBOL(local_flush_tlb_mm);
+> 
+> Do these really get called w/MMU_NO_CONTEXT?  What is the calling code  
+> trying to flush under those situations?
 
-Also, can you pull in my next tree and some of Ben's trivial mmu  
-related changes:
+A bit of paranoia but yes, I think they can. flush_* can be called on a
+non-current mm, thus an mm without a context (because it's been stolen
+mostly) due to calls to unmap_mapping_range() or something like that,
+which can be called by some filesystems (especially network filesystems
+trying to reflect remote changes on mmap'ed regions I think). Under some
+circumstances, ptrace can also cause flushes of non-current mm's.
+ 
+> 
+> > Index: linux-work/arch/powerpc/include/asm/mmu.h
+> > ===================================================================
+> > --- linux-work.orig/arch/powerpc/include/asm/mmu.h	2008-12-15  
+> > 14:36:20.000000000 +1100
+> > +++ linux-work/arch/powerpc/include/asm/mmu.h	2008-12-15  
+> > 14:36:20.000000000 +1100
+> > @@ -15,6 +15,9 @@
+> > #define MMU_FTR_TYPE_FSL_E		ASM_CONST(0x00000010)
+> > #define MMU_FTR_HAS_HIGH_BATS		ASM_CONST(0x00010000)
+> > #define MMU_FTR_BIG_PHYS		ASM_CONST(0x00020000)
+> > +#define MMU_FTR_HAS_TLBIVAX_BCAST	ASM_CONST(0x00040000)
+> > +#define MMU_FTR_HAS_TLBILX_PID		ASM_CONST(0x00080000)
+> 
+> Can we make these FTR_USE_ instead of FTR_HAS_.  On e500 we have  
+> TLBIVAX_BCAST but dont plan to use it.  I'd prefer not to have to  
+> answer questions about that.
 
-1/16 powerpc: Fix bogus cache flushing on all 40x and BookE processors  
-v2	-- in my next tree (pull request sent)
-2/16 powerpc: Fix asm EMIT_BUG_ENTRY with !CONFIG_BUG
-4/16 powerpc/fsl-booke: Fix problem with _tlbil_va	-- pick up via  
-update to linus head
-5/16 powerpc/mm: Add local_flush_tlb_mm() to SW loaded TLB  
-implementations -- ack'd
-8/16 powerpc/mm: Rename tlb_32.c and tlb_64.c to tlb_hash32.c and  
-tlb_hash64.c -- looks like a pure move
-10/16 powerpc/mm: Remove flush_HPTE()
+Hehehe :-) I can change that easily yes.
 
-Patches I want to still review and test:
+> > +#define MMU_FTR_TLBIVAX_NEED_LOCK	ASM_CONST(0x00100000)
+> 
+> Is this really ivax lock or sync lock?
 
-6/16 powerpc/mm: Split mmu_context handling v3
-7/16 powerpc/mm: Rework context management for CPUs with no hash table  
-v2
-9/16 powerpc/mm: Introduce MMU features v2
-11/16 powerpc/mm: Add SMP support to no-hash TLB handling v3
-12/16 powerpc/mm: Split low level tlb invalidate for nohash processors
-14/16 powerpc/mm: Runtime allocation of mmu context maps for nohash  
-CPUs v2
-15/16 powerpc/mm: Rework usage of _PAGE_COHERENT/NO_CACHE/GUARDED
+The whole thing. Not totally clear, you have a better name ? Some CPUs
+want a lock on sync and some on ivax, I plan to lock the whole sequence.
 
-Pathces left up to Josh & Ben
-
-3/16 powerpc/4xx: Extended DCR support v2
-13/16 powerpc/44x: No need to mask MSR:CE, ME or DE in _tlbil_va on 440
-16/16 powerpc/44x: 44x TLB doesn't need "Guarded" set for all pages
-
-- k
+Cheers,
+Ben.
