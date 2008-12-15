@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8E690DDF81
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 08:04:15 +1100 (EST)
-Subject: Re: [PATCH 15/16] powerpc/mm: Rework usage of
-	_PAGE_COHERENT/NO_CACHE/GUARDED
+	by ozlabs.org (Postfix) with ESMTPS id E0A25DDF70
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 08:05:14 +1100 (EST)
+Subject: Re: [PATCH 11/16] powerpc/mm: Add SMP support to no-hash TLB
+	handling v3
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <8F38D1CB-D389-4065-A309-3126B6D482DB@freescale.com>
-References: <20081215054611.3C3C1474E1@ozlabs.org>
-	<8F38D1CB-D389-4065-A309-3126B6D482DB@freescale.com>
+In-Reply-To: <C0519630-66EF-4860-A27E-15CC749D98DC@freescale.com>
+References: <20081215054554.E883EDDF9D@ozlabs.org>
+	<B3FDD472-0720-4454-9329-5A1C8A9BF84A@freescale.com>
+	<1229373978.26324.120.camel@pasglop>
+	<C0519630-66EF-4860-A27E-15CC749D98DC@freescale.com>
 Content-Type: text/plain
-Date: Tue, 16 Dec 2008 08:01:50 +1100
-Message-Id: <1229374910.26324.124.camel@pasglop>
+Date: Tue, 16 Dec 2008 08:03:04 +1100
+Message-Id: <1229374984.26324.125.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,46 +28,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > -#ifdef CONFIG_44x
-> > -#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_GUARDED)
-> > +#if defined(CONFIG_SMP) || defined(CONFIG_PPC_STD_MMU)
-> > +#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT)
-> > #else
-> > #define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED)
-> > #endif
-> > +#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
-> > +
-> > #define _PAGE_WRENABLE	(_PAGE_RW | _PAGE_DIRTY | _PAGE_HWWRITE)
-> > #define _PAGE_KERNEL	(_PAGE_BASE | _PAGE_SHARED | _PAGE_WRENABLE)
-> > +#define _PAGE_KERNEL_NC	(_PAGE_BASE_NC | _PAGE_SHARED |  
-> > _PAGE_WRENABLE | _PAGE_NO_CACHE)
+> > The whole thing. Not totally clear, you have a better name ? Some CPUs
+> > want a lock on sync and some on ivax, I plan to lock the whole  
+> > sequence.
 > 
-> Either _BASE_NC should have _PAGE_NO_CACHE set or you need a different  
-> name here for _PAGE_KERNEL_NC
+> MMU_FTR_TLBIVAX_OR_SYNC_NEED_LOCK ?
 
-Not sure what you mean.. _PAGE_KERNEL_NC has no cache in it, and
-_BASE_NC doesn't ... oh well.. because it's the base type used by
-KERNEL_NC :-) I agree it's not the clearest, I can just move
-_PAGE_NO_CACHE to _PAGE_BASE_NC, that will make it clearer I suppose,
-but I don't see anything being actually incorrect, or do I miss
-something ?
+Which completely blows away the nice tab'ing :-)
 
-> I think we should do:
-> 
-> #define _PAGE_KERNEL_NC	(_PAGE_BASE_NC | _PAGE_SHARED | _PAGE_WRENABLE)
-> #define _PAGE_IO	(_PAGE_KERNEL_NC | _PAGE_NO_CACHE | _PAGE_GUARDED)
+MMU_FTR_LOCK_BCAST_TLB_OPS ?
 
-I don't understand.... _PAGE_KERNEL_NC is supposedly non caccheable, I
-should probably move _PAGE_NO_CACHE to _PAGE_BASE_NC...
+> Its probably a good idea to have a clear definition of what each of  
+> these flags means in the commit message.
 
-> > +#define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_COHERENT |  
-> > _PAGE_COHERENT | \
-> > + 			 _PAGE_WRITETHRU)
-> 
-> we like coherent so much we set it thrice?
-
-Nice :-) Yeah, it should be _COHERENT, _GUARDED, _NO_CACHE and
-_WRITETHRU, I'll fix that.
+No, I'd rather have that in a comment in the code.
 
 Cheers,
 Ben.
