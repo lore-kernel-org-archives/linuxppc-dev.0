@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [93.163.65.50])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CBFC4DDF74
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 18:06:34 +1100 (EST)
-Subject: Re: [PATCH 4/16] powerpc/fsl-booke: Fix problem with _tlbil_va
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20081215175953.aeb8d836.sfr@canb.auug.org.au>
-References: <1229319836.100184.344640589620.qpush@grosgo>
-	<20081215054518.EC239DDFED@ozlabs.org>
-	<20081215175953.aeb8d836.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Mon, 15 Dec 2008 18:04:18 +1100
-Message-Id: <1229324658.26324.108.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
+	(Client CN "A common name", Issuer "A common name" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 18FBADDF25
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Dec 2008 18:55:43 +1100 (EST)
+Date: Mon, 15 Dec 2008 08:28:30 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [RESEND] [PATCH] powerpc: remove dead BIO_VMERGE_BOUNDARY
+	definition
+Message-ID: <20081215072830.GQ23742@kernel.dk>
+References: <20081214124508U.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081214124508U.fujita.tomonori@lab.ntt.co.jp>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-12-15 at 17:59 +1100, Stephen Rothwell wrote:
-> Hi Ben,
+On Sun, Dec 14 2008, FUJITA Tomonori wrote:
+> This is a resend of:
 > 
-> On Mon, 15 Dec 2008 16:44:21 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > From: Kumar Gala <galak@kernel.crashing.org>
-> > 
-> > An example calling sequence which we did see:
+> http://marc.info/?l=linux-kernel&m=122482703616607&w=2
 > 
-> This one is already in Linus' tree as of today.
+> =
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH] powerpc: remove dead BIO_VMERGE_BOUNDARY definition
+> 
+> The block layer dropped the virtual merge feature
+> (b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY
+> definition is meaningless now (For POWER, BIO_VMERGE_BOUNDARY has been
+> meaningless for a long time since POWER disables the virtual merge
+> feature).
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-Ah indeed, it wasn't in powerpc yet which is why I left in there, since
-that's what my series is based on.
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
-I expect a few of those near the top of the pile to also go separate
-ways via Kumar or Josh...
+> ---
+>  arch/powerpc/include/asm/io.h |    7 -------
+>  1 files changed, 0 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+> index 08266d2..494cd8b 100644
+> --- a/arch/powerpc/include/asm/io.h
+> +++ b/arch/powerpc/include/asm/io.h
+> @@ -713,13 +713,6 @@ static inline void * phys_to_virt(unsigned long address)
+>   */
+>  #define page_to_phys(page)	((phys_addr_t)page_to_pfn(page) << PAGE_SHIFT)
+>  
+> -/* We do NOT want virtual merging, it would put too much pressure on
+> - * our iommu allocator. Instead, we want drivers to be smart enough
+> - * to coalesce sglists that happen to have been mapped in a contiguous
+> - * way by the iommu
+> - */
+> -#define BIO_VMERGE_BOUNDARY	0
+> -
+>  /*
+>   * 32 bits still uses virt_to_bus() for it's implementation of DMA
+>   * mappings se we have to keep it defined here. We also have some old
+> -- 
+> 1.5.5.GIT
+> 
 
-I grouped all them to make the dependency chain clear and because that
-way it actually builds on top of today's powerpc master :-)
-
-Once we are passed reviews etc... we can always sort out the details on
-how to merge the various bits. Hopefully soon since it's now getting
-some fairly good testing by Kumar and I and some of them already has
--some- amount of review.
-
-Cheers,
-Ben.
+-- 
+Jens Axboe
