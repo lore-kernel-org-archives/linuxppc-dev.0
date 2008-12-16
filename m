@@ -2,20 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 609F4DDED4
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 19:57:45 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 2473FDDFAF
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 19:59:09 +1100 (EST)
 Subject: Re: [PATCH] POWERPC: MTD: Add cached map support to physmap_of MTD
 	driver
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <1229365518-20538-1-git-send-email-tpiepho@freescale.com>
+In-Reply-To: <Pine.LNX.4.64.0812151653050.28806@t2.domain.actdsltmp>
 References: <1229365518-20538-1-git-send-email-tpiepho@freescale.com>
+	<18758.62580.416920.482077@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0812151653050.28806@t2.domain.actdsltmp>
 Content-Type: text/plain
-Date: Tue, 16 Dec 2008 19:55:31 +1100
-Message-Id: <1229417731.7319.3.camel@pasglop>
+Date: Tue, 16 Dec 2008 19:56:56 +1100
+Message-Id: <1229417816.7319.4.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Trent Piepho <xyzzy@speakeasy.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	xyzzy@speakeasy.org, MTD mailing list <linux-mtd@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-12-15 at 10:25 -0800, Trent Piepho wrote:
-> The MTD system supports operation where a direct mapped flash chip is
-> mapped twice.  The normal mapping is a standard ioremap(), which is
-> non-cached and guarded on powerpc.  The second mapping is used only for
-> reads and can be cached and non-guarded.  Currently, only the pxa2xx
-> mapping driver makes use of this feature.  This patch adds support to the
-> physmap_of driver on PPC32 platforms for this cached mapping mode.
+On Mon, 2008-12-15 at 17:11 -0800, Trent Piepho wrote:
+> Shame, as it provides a huge speed up.  I suppose an alternative would be
+> to map the chip twice at different physical addresses, by just configuring
+> the chip select to be twice the size it should be, and giving them
+> different cacheability.
 
-This can be dangerous tho.
+Nice trick. That would probably work.
 
-I think it's illegal as per the architecture to have the same physical
-address mapped twice with different caching attributes.
+> Or changing the mapping for writes and then changing it back.  It wouldn't
+> be necessary to change the whole thing, just the page being written to.
 
-More specifically, various processors can get very upset if you do an
-uncached access that happens to hit a line in the cache.
-
-The problem gets worsened by the fact that cores that support
-speculative loads and prefetch will potentially bring anything mapped
-into the cache even if it's not directly accessed.
-
-So you have to be very careful and first verify that on whatever core
-you intend to use that feature, what you are doing is indeed safe.
+Right though changing mappings can be expensive. It might be worth
+looking at using fixmap for that tho, which is the fastest way to setup
+and tear down mappings, especially since we can (though we don't today)
+implement a bypass on those to directly load the TLB.
 
 Cheers,
 Ben.
