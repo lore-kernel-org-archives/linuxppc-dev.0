@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 45E1747545
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 03:23:07 +1100 (EST)
-Date: Tue, 16 Dec 2008 19:23:05 +0300
+	by ozlabs.org (Postfix) with ESMTP id 0EC5A474DA
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 03:23:09 +1100 (EST)
+Date: Tue, 16 Dec 2008 19:23:08 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/3] powerpc: Make default kexec/crash_kernel ops implicit
-Message-ID: <20081216162305.GB21749@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/3] powerpc: Remove default kexec/crash_kernel ops assignments
+Message-ID: <20081216162308.GC21749@oksana.dev.rtsoft.ru>
 References: <20081216162217.GA3885@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -21,65 +21,183 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch removes need for each platform to specify default kexec and
-crash kernel ops, thus effectively adds a working kexec support for most
-boards.
-
-Platforms that can't cope with default ops will explode in some weird
-way (a hang or reboot is most likely), which means that the board's
-kexec support should be fixed or blacklisted via dummy _prepare callback
-returning -ENOSYS.
+Default ops are implicit now.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/kernel/machine_kexec.c |   21 +++++++++------------
- 1 files changed, 9 insertions(+), 12 deletions(-)
+ arch/powerpc/platforms/cell/celleb_setup.c     |    9 ---------
+ arch/powerpc/platforms/cell/setup.c            |    6 ------
+ arch/powerpc/platforms/embedded6xx/c2k.c       |    6 ------
+ arch/powerpc/platforms/embedded6xx/prpmc2800.c |    6 ------
+ arch/powerpc/platforms/maple/setup.c           |    6 ------
+ arch/powerpc/platforms/powermac/setup.c        |    6 ------
+ arch/powerpc/platforms/ps3/setup.c             |    4 ----
+ 7 files changed, 0 insertions(+), 43 deletions(-)
 
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 037ade7..4f797c0 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -22,6 +22,8 @@ void machine_crash_shutdown(struct pt_regs *regs)
- {
- 	if (ppc_md.machine_crash_shutdown)
- 		ppc_md.machine_crash_shutdown(regs);
-+	else
-+		default_machine_crash_shutdown(regs);
- }
+diff --git a/arch/powerpc/platforms/cell/celleb_setup.c b/arch/powerpc/platforms/cell/celleb_setup.c
+index b11cb30..07c234f 100644
+--- a/arch/powerpc/platforms/cell/celleb_setup.c
++++ b/arch/powerpc/platforms/cell/celleb_setup.c
+@@ -45,7 +45,6 @@
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+ #include <asm/io.h>
+-#include <asm/kexec.h>
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+ #include <asm/cputable.h>
+@@ -226,9 +225,6 @@ define_machine(celleb_beat) {
+ 	.pci_setup_phb		= celleb_setup_phb,
+ #ifdef CONFIG_KEXEC
+ 	.kexec_cpu_down		= beat_kexec_cpu_down,
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+ #endif
+ };
  
- /*
-@@ -33,11 +35,8 @@ int machine_kexec_prepare(struct kimage *image)
- {
- 	if (ppc_md.machine_kexec_prepare)
- 		return ppc_md.machine_kexec_prepare(image);
--	/*
--	 * Fail if platform doesn't provide its own machine_kexec_prepare
--	 * implementation.
--	 */
--	return -ENOSYS;
-+	else
-+		return default_machine_kexec_prepare(image);
- }
+@@ -248,9 +244,4 @@ define_machine(celleb_native) {
+ 	.pci_probe_mode 	= celleb_pci_probe_mode,
+ 	.pci_setup_phb		= celleb_setup_phb,
+ 	.init_IRQ		= celleb_init_IRQ_native,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index ab721b5..5930536 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -35,7 +35,6 @@
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+ #include <asm/io.h>
+-#include <asm/kexec.h>
+ #include <asm/pgtable.h>
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -289,9 +288,4 @@ define_machine(cell) {
+ 	.progress		= cell_progress,
+ 	.init_IRQ       	= cell_init_irq,
+ 	.pci_setup_phb		= cell_setup_phb,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/embedded6xx/c2k.c b/arch/powerpc/platforms/embedded6xx/c2k.c
+index 32ba0fa..8cab573 100644
+--- a/arch/powerpc/platforms/embedded6xx/c2k.c
++++ b/arch/powerpc/platforms/embedded6xx/c2k.c
+@@ -20,7 +20,6 @@
+ #include <linux/seq_file.h>
+ #include <linux/time.h>
+ #include <linux/of.h>
+-#include <linux/kexec.h>
  
- void machine_kexec_cleanup(struct kimage *image)
-@@ -54,13 +53,11 @@ void machine_kexec(struct kimage *image)
- {
- 	if (ppc_md.machine_kexec)
- 		ppc_md.machine_kexec(image);
--	else {
--		/*
--		 * Fall back to normal restart if platform doesn't provide
--		 * its own kexec function, and user insist to kexec...
--		 */
--		machine_restart(NULL);
--	}
-+	else
-+		default_machine_kexec(image);
-+
-+	/* Fall back to normal restart if we're still alive. */
-+	machine_restart(NULL);
- 	for(;;);
- }
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
+@@ -147,9 +146,4 @@ define_machine(c2k) {
+ 	.get_irq		= mv64x60_get_irq,
+ 	.restart		= c2k_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/embedded6xx/prpmc2800.c b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+index 4c485e9..670035f 100644
+--- a/arch/powerpc/platforms/embedded6xx/prpmc2800.c
++++ b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+@@ -19,7 +19,6 @@
+ #include <asm/prom.h>
+ #include <asm/system.h>
+ #include <asm/time.h>
+-#include <asm/kexec.h>
  
+ #include <mm/mmu_decl.h>
+ 
+@@ -155,9 +154,4 @@ define_machine(prpmc2800){
+ 	.get_irq		= mv64x60_get_irq,
+ 	.restart		= prpmc2800_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+index d4c61c3..bfd60e4 100644
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -50,7 +50,6 @@
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+ #include <asm/io.h>
+-#include <asm/kexec.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/iommu.h>
+ #include <asm/machdep.h>
+@@ -335,9 +334,4 @@ define_machine(maple) {
+       	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= maple_progress,
+ 	.power_save		= power4_idle,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index 1293772..9b78f53 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -60,7 +60,6 @@
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+ #include <asm/io.h>
+-#include <asm/kexec.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/ohare.h>
+ #include <asm/mediabay.h>
+@@ -738,11 +737,6 @@ define_machine(powermac) {
+ 	.pci_probe_mode		= pmac_pci_probe_mode,
+ 	.power_save		= power4_idle,
+ 	.enable_pmcs		= power4_enable_pmcs,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ #endif /* CONFIG_PPC64 */
+ #ifdef CONFIG_PPC32
+ 	.pcibios_enable_device_hook = pmac_pci_enable_device_hook,
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index bfc33fb..35f3e85 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -23,7 +23,6 @@
+ #include <linux/fs.h>
+ #include <linux/root_dev.h>
+ #include <linux/console.h>
+-#include <linux/kexec.h>
+ #include <linux/bootmem.h>
+ 
+ #include <asm/machdep.h>
+@@ -281,8 +280,5 @@ define_machine(ps3) {
+ 	.halt				= ps3_halt,
+ #if defined(CONFIG_KEXEC)
+ 	.kexec_cpu_down			= ps3_kexec_cpu_down,
+-	.machine_kexec			= default_machine_kexec,
+-	.machine_kexec_prepare		= default_machine_kexec_prepare,
+-	.machine_crash_shutdown		= default_machine_crash_shutdown,
+ #endif
+ };
 -- 
 1.5.6.5
