@@ -1,31 +1,20 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0D60ADDF28
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 05:39:08 +1100 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e5.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBGIc7Ow001427
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 13:38:07 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mBGIctUT1982592
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 13:38:56 -0500
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mBGIcnCa012409
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 11:38:52 -0700
-Message-ID: <4947F5B8.4050500@austin.ibm.com>
-Date: Tue, 16 Dec 2008 12:38:48 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 87FA6DDF29
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 05:44:53 +1100 (EST)
+Date: Tue, 16 Dec 2008 21:44:51 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/83xx: Fix few build errors with
+	CONFIG_QUICC_ENGINE=n
+Message-ID: <20081216184451.GA6959@oksana.dev.rtsoft.ru>
+References: <20081205165504.GA30966@oksana.dev.rtsoft.ru>
+	<6C14C18C-D709-4E69-8B47-C8A13380D713@kernel.crashing.org>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Manish Ahuja <mahuja@us.ibm.com>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] [RFC] Pass a valid token to rats_call() in phyp-dump code.
-References: <20081216043429.GC14890@ozlabs.org>
-In-Reply-To: <20081216043429.GC14890@ozlabs.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <6C14C18C-D709-4E69-8B47-C8A13380D713@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,43 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Yes,
+On Tue, Dec 16, 2008 at 12:18:07PM -0600, Kumar Gala wrote:
+[..]
+>> This patch implements traditional way of !QE case handling.
+>> Alternative version is coming (w/o ifdefs in the board files).
+>>
+>> p.s. I don't know if it is 2.6.28 material...
+>
+> what's the state of this patch vs the alternate version?
 
-That is required. It is in the patches that I sent to Ben, Paul & Brad.
+Pros of the alternative version:
+- No #ifdefs in .c files.
 
-I just waiting to post it with other patches.
+Cons of the alternative version:
+- For this code (assuming QE=n):
+        if ((np = of_find_node_by_name(NULL, "par_io")) != NULL)
+		par_io_init(np);
 
-Acked-by: Manish Ahuja <mahujam@gmail.com>
+  GCC can still issue the of_find_node_by_name() call. (I wonder if
+  there is any way to tell gcc that particular function doesn't
+  produce any side-effects so that gcc can optimize it away too).
 
-Tony Breeds wrote:
-> ibm_configure_kernel_dump, is passed as the token to rtas_call() but I
-> cannot see where it is initialised.  Set it to something sane?
-> 
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-> ---
->  arch/powerpc/platforms/pseries/phyp_dump.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/phyp_dump.c b/arch/powerpc/platforms/pseries/phyp_dump.c
-> index 16e659a..6cf35cd 100644
-> --- a/arch/powerpc/platforms/pseries/phyp_dump.c
-> +++ b/arch/powerpc/platforms/pseries/phyp_dump.c
-> @@ -414,6 +414,8 @@ static int __init phyp_dump_setup(void)
->  		of_node_put(rtas);
->  	}
->  
-> +	ibm_configure_kernel_dump = rtas_token("ibm,configure-kernel-dump");
-> +
->  	print_dump_header(dump_header);
->  	dump_area_length = init_dump_header(&phdr);
->  	/* align down */
-
+It's up to you to decide which version you want to merge.
 
 -- 
-
---
-Manish Ahuja
-Linux RAS Engineer.
-IBM Linux Technology Center
-mahuja@us.ibm.com
-512-838-1928, t/l 678-1928.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
