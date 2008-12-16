@@ -1,15 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <A7BF6E08-786A-4D00-BBEA-1568939722E9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D9010F59452A@EMPBEDEX.empirix.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: MPC8572 - IPR Register
-Date: Tue, 16 Dec 2008 15:34:31 -0600
-References: <mailman.2123.1229452170.29923.linuxppc-dev@ozlabs.org>
-	<BD261180E6D35F4D9D32F3E44FD3D9010F59452A@EMPBEDEX.empirix.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 76336DDF2B
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 09:18:26 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBGMGwr7021548
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 15:16:58 -0700
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mBGMINxg206196
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 15:18:23 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mBGMINQ6017306
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 15:18:23 -0700
+Message-ID: <4948292F.8080402@austin.ibm.com>
+Date: Tue, 16 Dec 2008 16:18:23 -0600
+From: Manish Ahuja <ahuja@austin.ibm.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Manish Ahuja <mahuja@us.ibm.com>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] Protect against NULL pointer deref in phyp-dump code.
+References: <20081216041748.GB14890@ozlabs.org>
+In-Reply-To: <20081216041748.GB14890@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +37,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 16, 2008, at 1:54 PM, Morrison, Tom wrote:
+Acked-by: Manish Ahuja <mahujam@gmail.com>
 
-> We are having a problem with an external interrupt not actually being
-> received / detected on the MPC8572.
->
-> This external device 'believes' that it has sent an interrupt
-> (over PCIe) to the MPC8572 and we believe that the associated
-> ExVPR register has correctly unmasked/configured this correctly.
->
-> But, still NO interrupt...
->
-> If you read the documentation about this configuration register, it
-> indicates that there is some type of "IPR" register internal to the
-> 8572 that indicates if an interrupt has been received by the PIC...
->
-> We want to read that IPR register to verify that:
->   a) the external device has sent the interrupt
-> 	and we have configured something wrong in the chip
->
->   b) there is no pending interrupt (thus none received) from
-> 	this external device...
->
-> Is there any way (hook (indirection) or crook (aka: secret register))
-> that would allow us to read this register? From all my investigations
-> it looks like there isn't a 'straight forward' / documented way to
-> do so...I am hoping you guys have gone beyond the 'straight forward'
-> means and have found a way...
->
-> Thanks in Advance...
 
-1. Which PCIe port is the device on?
-2. is this a INT-X style or MSI interrupt?
-3. if INT-X is INT-A, B, C, D?
+Tony Breeds wrote:
+> print_dump_header() will be called at least once with a NULL pointer in
+> a normal boot sequence.  if DEBUG is defined then we will get a deref,
+> add a quick fix to exit early in the NULL pointer case.
+> 
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> ---
+>  arch/powerpc/platforms/pseries/phyp_dump.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/phyp_dump.c b/arch/powerpc/platforms/pseries/phyp_dump.c
+> index edbc012..16e659a 100644
+> --- a/arch/powerpc/platforms/pseries/phyp_dump.c
+> +++ b/arch/powerpc/platforms/pseries/phyp_dump.c
+> @@ -130,6 +130,9 @@ static unsigned long init_dump_header(struct phyp_dump_header *ph)
+>  static void print_dump_header(const struct phyp_dump_header *ph)
+>  {
+>  #ifdef DEBUG
+> +	if (ph == NULL)
+> +		return;
+> +
+>  	printk(KERN_INFO "dump header:\n");
+>  	/* setup some ph->sections required */
+>  	printk(KERN_INFO "version = %d\n", ph->version);
 
-- k
+
+-- 
+
+--
+Manish Ahuja
+Linux RAS Engineer.
+IBM Linux Technology Center
+mahuja@us.ibm.com
+512-838-1928, t/l 678-1928.
