@@ -1,31 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0C30B474C2
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 03:28:48 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e31.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBGGRIYG005216
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 09:27:18 -0700
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mBGGSflq154884
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 09:28:41 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mBGGScRJ011479
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 09:28:38 -0700
-Date: Tue, 16 Dec 2008 11:28:31 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: More commits added to powerpc.git next and master branches
-Message-ID: <20081216162831.GA20115@localhost.localdomain>
-References: <18759.14410.731000.378702@cargo.ozlabs.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id EEFAEDDF70
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 03:34:29 +1100 (EST)
+Date: Tue, 16 Dec 2008 19:34:28 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [RFC] Dummy GPIO driver for use with SPI
+Message-ID: <20081216163428.GA22756@oksana.dev.rtsoft.ru>
+References: <4942738A.80609@harris.com>
+	<20081212150144.GA28147@oksana.dev.rtsoft.ru>
+	<49429861.9060305@harris.com>
+	<20081212171438.GA9738@oksana.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0812121322110.28806@t2.domain.actdsltmp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18759.14410.731000.378702@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <Pine.LNX.4.64.0812121322110.28806@t2.domain.actdsltmp>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,13 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 16, 2008 at 04:10:34PM +1100, Paul Mackerras wrote:
->I have added the following commits to the next and master branches of
->my powerpc.git tree (including commits pulled from Kumar's tree).  I
->have also pulled in Linus' current tree and the 3 commits that I just
->asked him to pull.
+On Fri, Dec 12, 2008 at 01:39:45PM -0800, Trent Piepho wrote:
+> On Fri, 12 Dec 2008, Anton Vorontsov wrote:
+> > On Fri, Dec 12, 2008 at 11:59:13AM -0500, Steven A. Falco wrote:
+> >> What do you think about having a mechanism to specify that some
+> >> SPI slaves have a chip select, while others don't have to have a
+> >> chip select managed by the SPI subsystem?
+> >
+> > Um.. do you know that you can pass '0' as a GPIO?
+> >
+> > For example,
+> >
+> > spi-controller {
+> > 	gpios = <&pio1 1 0	/* cs0 */
+> > 		 0		/* cs1, no GPIO */
+> > 		 &pio2 2 0>;	/* cs2 */
+> 
+> It's ok the that middle specifier is only one word instead of three?  Seems
+> like "0 0 0" would be better, so all the specifiers are the same size.
+> 
+> > 		normal case;
+> > 	} else if (gpio == -EEXIST) {
+> 
+> Isn't EEXIST (pathname already exists) backward?
 
-I sent a pull request to you last week for my -next branch.  It would be
-nice to get those included as well.
+In my thinking it's "the GPIO is specified (exists in the list), but
+it's would be an error if you try to use it". So EEXIST.
 
-josh
+> Seems like ENOENT would
+> be the right error code.  Except that's used for reading past the end...
+> Maybe a reading past the end should be EINVAL or EBADF?
+> 
+> Or return ENODEV for the 'hole' cell?  Or ENOLINK?
+
+I'd say it's a matter of taste, none of the errors are actually
+appropriate. An appropriate errno value would be EHOLEINALIST,
+but we don't have it.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
