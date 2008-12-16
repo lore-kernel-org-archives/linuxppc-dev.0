@@ -2,20 +2,24 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 81400DDDCA
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 10:00:33 +1100 (EST)
-Message-Id: <40363DF0-BC55-4872-AF73-1ED0B24F6224@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 22BE9DDF63
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 10:01:21 +1100 (EST)
+Message-Id: <065FAE64-D239-41A5-AA04-192DA4BC6038@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: bterrell <bterrell@empirix.com>
-In-Reply-To: <21042870.post@talk.nabble.com>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20081216191419.GA31928@oksana.dev.rtsoft.ru>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: MPC8572 - IPR Register
-Date: Tue, 16 Dec 2008 17:00:25 -0600
-References: <BD261180E6D35F4D9D32F3E44FD3D9010F59452A@EMPBEDEX.empirix.com>
-	<A7BF6E08-786A-4D00-BBEA-1568939722E9@kernel.crashing.org>
-	<21042870.post@talk.nabble.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/83xx: Fix few build errors with
+	CONFIG_QUICC_ENGINE=n
+Date: Tue, 16 Dec 2008 16:57:43 -0600
+References: <20081205165504.GA30966@oksana.dev.rtsoft.ru>
+	<6C14C18C-D709-4E69-8B47-C8A13380D713@kernel.crashing.org>
+	<20081216184451.GA6959@oksana.dev.rtsoft.ru>
+	<4947FABD.8090209@freescale.com>
+	<20081216191419.GA31928@oksana.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +30,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 16, 2008, at 4:08 PM, bterrell wrote:
+On Dec 16, 2008, at 1:14 PM, Anton Vorontsov wrote:
 
->
->
-> Kumar Gala-3 wrote:
+> On Tue, Dec 16, 2008 at 01:00:13PM -0600, Scott Wood wrote:
+>> Anton Vorontsov wrote:
+>>>  GCC can still issue the of_find_node_by_name() call. (I wonder if
+>>>  there is any way to tell gcc that particular function doesn't
+>>>  produce any side-effects so that gcc can optimize it away too).
 >>
->>
->> <1. Which PCIe port is the device on?
->> 2. is this a INT-X style or MSI interrupt?
->> 3. if INT-X is INT-A, B, C, D?
->>
->> - k
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
->>
+>> __attribute__((pure))
 >
-> He was posting a question for me.  The external device (PLX8616
-> non-transparent bridge) which is sending the interrupt is connected  
-> to the
-> first PCIE controller.  The PCIE controller is configured in RC mode  
-> and is
-> "x4".  I'm using legacy (INTx) interrupts from the external switch  
-> NTB port.
-> The NTB port always generates INTA, but is swizzled by the upstream  
-> port of
-> the PLX8616 switch, so it comes to the PCIE controller as INTB I  
-> believe.
+> Ah, thanks!
 >
-> It works fine when the the 8572 and 8616 both start after power-on  
-> reset.
-> Can send multiple interrupts and each is acknowledged properly.   
-> However,
-> after I generate a "hot reset" event from the PCIE controller to the
-> upstream port on the 8616 (or link goes down/up), it no longer seems  
-> to
-> propagate the INTx interrupt to the CPU.  Either the 8616 is not  
-> sending the
-> interrrupt or the 8572 is ignoring/masking it.  I'm trying to  
-> determine
-> which device is at fault.  I don't have access to a PCIE analyzer at  
-> the
-> moment.  Looking for some more visibility into received interrupts  
-> within
-> the 8572 PCIE or MPIC.
->
-> FYI, I have not tried MSI yet but will soon.
+> But I forgot that of_find_node_by_name() and friends aren't
+> actually "pure", they're getting the node. :-(
 
-So I'll ask the same questions.  I can point you at some registers to  
-look at but wanted the details I asked about earlier.
+Looking at include/linux/compiler-gcc.h I'm guessing the proper way to  
+use it is __pure & inclusion of compiler.h
 
 - k
