@@ -1,42 +1,20 @@
-Return-Path: <brueckner@linux.vnet.ibm.com>
-Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [194.196.100.161])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5DAACDDEF2
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 21:09:47 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate1.uk.ibm.com (8.13.1/8.13.1) with ESMTP id mBGA9eeO027934
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 10:09:40 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id mBGA9dX8643152
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 10:09:39 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id mBGA9cLh023839
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 10:09:39 GMT
-Date: Tue, 16 Dec 2008 11:09:38 +0100
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: [patch 1/1 v2] hvc_console: escape magic sysrq key
-Message-ID: <20081216100938.GA22294@cetus.boeblingen.de.ibm.com>
-References: <20081216091544.061115344@linux.vnet.ibm.com>
-	<20081216092408.362722962@linux.vnet.ibm.com>
-	<jeiqpkcvgo.fsf@sykes.suse.de>
+Return-Path: <roel.kluin@gmail.com>
+Received: from mail-ew0-f20.google.com (mail-ew0-f20.google.com
+	[209.85.219.20]) by ozlabs.org (Postfix) with ESMTP id DA156DDF75
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 22:00:54 +1100 (EST)
+Received: by ewy13 with SMTP id 13so4627957ewy.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 03:00:52 -0800 (PST)
+Message-ID: <49478879.2030409@gmail.com>
+Date: Tue, 16 Dec 2008 11:52:41 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <jeiqpkcvgo.fsf@sykes.suse.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-	Christian Borntraeger <borntraeger@de.ibm.com>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linux PPC devel <linuxppc-dev@ozlabs.org>,
-	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] [POWERPC] pasemi: ioremap/iounmap balance and failure
+	handling
+References: <4943E6B5.6010501@gmail.com> <20081213211335.GC17331@lixom.net>
+In-Reply-To: <20081213211335.GC17331@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -46,51 +24,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Andreas,
+Olof Johansson wrote:
+> On Sat, Dec 13, 2008 at 05:45:41PM +0100, Roel Kluin wrote:
+>> map_onedev can return NULL, so catch that. Also iounmap if DMA controller can't be
+>> found.
 
-thanks for your comments.
+>> +
+>>  	iob_regs = map_onedev(iob_pdev, 0);
+>> +	if (iob_regs == NULL) {
+>> +		BUG();
+>> +		printk(KERN_WARNING "Can't ioremap I/O Bridge registers\n");
+>> +		err = -ENODEV;
+>> +		goto out;
+>> +	}
+> 
+> I don't see the point of doing BUG() _and_ error recovery. BUG() is
+> definitely heavy handed. Something like "pasemi_dma_init: Can't..." would
+> be a good and detailed enough error message.
 
-On Tue, Dec 16, 2008 at 10:36:55AM +0100, Andreas Schwab wrote:
-> > +					/* if ^0 is pressed again, reset
-> > +					 * sysrq_pressed and flip ^0 char */
-> The comment says ^0 twice when ^O is meant.
-Correct. I have updated the comment.
+Thanks for reviewing. This patch should address your comments to patch V1.
 
-> > +					sysrq_pressed = (sysrq_pressed) ? 0 : 1;
->                                         sysrq_pressed = !sysrc_pressed;
-Ok, it might look better.
+As I asked in my V2, I think there may also be a problem with
+pasemi_mac_init_module(): if pci_register_driver() fails, then iob_regs won't get
+iounmapped. right?
 
+Is it ok to add the function pasemi_dma_exit() for these cleanup purposes?
+and is it correct that we don't need to EXPORT_SYMBOL(pasemi_dma_exit)?
+---------------------8<------------>8-------------------
 
-[PATCH v2] hvc_console: escape magic sysrq key
+map_onedev can return NULL, so catch that. Also iounmap if DMA controller can't be
+found.
 
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-
-The ctrl-o (^O) is a common control key used by several applications like vim.
-
-To allow users to send ^O to the terminal, this patch introduces a check
-if ^O is pressed again if the sysrq_pressed variable is already set.
-In this case, clear sysrq_pressed state and flip the ^O character to the tty.
-(The old behavior has always set "sysrq_pressed" if ^O has been entered, and it
-has not flipped the ^O character to the tty.)
-
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- drivers/char/hvc_console.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/pasemi_dma.h   |    3 +++
+ arch/powerpc/platforms/pasemi/dma_lib.c |   15 ++++++++++++++-
+ drivers/net/pasemi_mac.c                |    6 +++++-
+ 3 files changed, 22 insertions(+), 2 deletions(-)
 
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -642,8 +642,11 @@ int hvc_poll(struct hvc_struct *hp)
- 				/* Handle the SysRq Hack */
- 				/* XXX should support a sequence */
- 				if (buf[i] == '\x0f') {	/* ^O */
--					sysrq_pressed = 1;
--					continue;
-+					/* if ^O is pressed again, reset
-+					 * sysrq_pressed and flip ^O char */
-+					sysrq_pressed = !sysrq_pressed;
-+					if (sysrq_pressed)
-+						continue;
- 				} else if (sysrq_pressed) {
- 					handle_sysrq(buf[i], tty);
- 					sysrq_pressed = 0;
+diff --git a/arch/powerpc/include/asm/pasemi_dma.h b/arch/powerpc/include/asm/pasemi_dma.h
+index 19fd793..7256a2c 100644
+--- a/arch/powerpc/include/asm/pasemi_dma.h
++++ b/arch/powerpc/include/asm/pasemi_dma.h
+@@ -535,4 +535,7 @@ extern void pasemi_dma_free_fun(int fun);
+ /* Initialize the library, must be called before any other functions */
+ extern int pasemi_dma_init(void);
+ 
++/* Clean up the library */
++extern void pasemi_dma_exit(void);
++
+ #endif /* ASM_PASEMI_DMA_H */
+diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
+index 217af32..c97fba9 100644
+--- a/arch/powerpc/platforms/pasemi/dma_lib.c
++++ b/arch/powerpc/platforms/pasemi/dma_lib.c
+@@ -534,14 +534,17 @@ int pasemi_dma_init(void)
+ 		err = -ENODEV;
+ 		goto out;
+ 	}
++
+ 	iob_regs = map_onedev(iob_pdev, 0);
++	if (iob_regs == NULL)
++		printk(KERN_WARNING "pasemi_dma_init: Can't ioremap I/O Bridge registers\n");
+ 
+ 	dma_pdev = pci_get_device(PCI_VENDOR_ID_PASEMI, 0xa007, NULL);
+ 	if (!dma_pdev) {
+ 		BUG();
+ 		printk(KERN_WARNING "Can't find DMA controller\n");
+ 		err = -ENODEV;
+-		goto out;
++		goto out_unmap;
+ 	}
+ 	dma_regs = map_onedev(dma_pdev, 0);
+ 	base_hw_irq = virq_to_hw(dma_pdev->irq);
+@@ -624,9 +627,19 @@ int pasemi_dma_init(void)
+ 
+ 	printk(KERN_INFO "PA Semi PWRficient DMA library initialized "
+ 		"(%d tx, %d rx channels)\n", num_txch, num_rxch);
++	goto out;
++
++out_unmap:
++	iounmap(iob_regs);
+ 
+ out:
+ 	spin_unlock(&init_lock);
+ 	return err;
+ }
+ EXPORT_SYMBOL(pasemi_dma_init);
++
++void pasemi_dma_exit(void)
++{
++	iounmap(iob_regs);
++}
++
+diff --git a/drivers/net/pasemi_mac.c b/drivers/net/pasemi_mac.c
+index edc0fd5..0897fa0 100644
+--- a/drivers/net/pasemi_mac.c
++++ b/drivers/net/pasemi_mac.c
+@@ -1919,7 +1919,11 @@ int pasemi_mac_init_module(void)
+ 	if (err)
+ 		return err;
+ 
+-	return pci_register_driver(&pasemi_mac_driver);
++	err = pci_register_driver(&pasemi_mac_driver);
++	if (err)
++		pasemi_dma_exit();
++
++	return err;
+ }
+ 
+ module_init(pasemi_mac_init_module);
