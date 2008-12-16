@@ -1,14 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18759.28289.218980.817708@cargo.ozlabs.ibm.com>
-Date: Tue, 16 Dec 2008 20:01:53 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0C733DDF76
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 20:07:52 +1100 (EST)
 Subject: Re: More commits added to powerpc.git next and master branches
-In-Reply-To: <1229411060.7319.0.camel@pasglop>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18759.28289.218980.817708@cargo.ozlabs.ibm.com>
 References: <18759.14410.731000.378702@cargo.ozlabs.ibm.com>
 	<1229411060.7319.0.camel@pasglop>
+	<18759.28289.218980.817708@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 16 Dec 2008 20:07:45 +1100
+Message-Id: <1229418465.7319.14.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -19,12 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
+On Tue, 2008-12-16 at 20:01 +1100, Paul Mackerras wrote:
+> > Is there any reason you haven't been updating patchwork ? Or are you
+> > waiting for things in your -next branch to actually hit upstream ?
+> 
+> Just an oversight.  I have updated it now, at least for the patches I
+> committed.
 
-> Is there any reason you haven't been updating patchwork ? Or are you
-> waiting for things in your -next branch to actually hit upstream ?
+Cool, thanks. It's getting a little bit out of control, hence my
+asking :-)
 
-Just an oversight.  I have updated it now, at least for the patches I
-committed.
-
-Paul.
+Cheers,
+Ben.
