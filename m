@@ -1,19 +1,16 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
-	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 36975DDF1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 11:07:11 +1100 (EST)
-Date: Mon, 15 Dec 2008 18:07:04 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] add of_find_next_cache_node()
-Message-ID: <20081216000704.GQ6958@localdomain>
-References: <1228956366-17593-1-git-send-email-ntl@pobox.com>
-	<1229296287.26324.87.camel@pasglop> <20081215223333.GP6958@localdomain>
-	<1229383984.26324.134.camel@pasglop>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1229383984.26324.134.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <18758.62580.416920.482077@cargo.ozlabs.ibm.com>
+Date: Tue, 16 Dec 2008 11:21:08 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH] POWERPC: MTD: Add cached map support to physmap_of MTD
+	driver
+In-Reply-To: <1229365518-20538-1-git-send-email-tpiepho@freescale.com>
+References: <1229365518-20538-1-git-send-email-tpiepho@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Trent Piepho <xyzzy@speakeasy.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,10 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> 
-> Don't 970MP have a shared L2 tho ?
+Trent Piepho writes:
 
-The 970MP UM describes 1MB L2 per core, and the device tree on the
-quad G5 reflects that... might be interesting to know what it looks
-like on IBM JS21 for comparison's sake, but I think we're okay.
+> The MTD system supports operation where a direct mapped flash chip is
+> mapped twice.  The normal mapping is a standard ioremap(), which is
+> non-cached and guarded on powerpc.  The second mapping is used only for
+> reads and can be cached and non-guarded.  Currently, only the pxa2xx
+> mapping driver makes use of this feature.  This patch adds support to the
+> physmap_of driver on PPC32 platforms for this cached mapping mode.
+
+Note that having two mappings of the same physical address that differ
+in cacheability is a programming error according to the PowerPC
+architecture.
+
+Do you know that the processor implementations where you want to do
+this can cope with having two mappings with different cacheability?
+
+Paul.
