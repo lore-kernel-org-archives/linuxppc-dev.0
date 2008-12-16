@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 3771BDDF60
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 03:23:01 +1100 (EST)
-Date: Tue, 16 Dec 2008 19:22:59 +0300
+	by ozlabs.org (Postfix) with ESMTP id 45E1747545
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 03:23:07 +1100 (EST)
+Date: Tue, 16 Dec 2008 19:23:05 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/3] powerpc: Setup OF properties for ppc32 kexec
-Message-ID: <20081216162259.GA21749@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/3] powerpc: Make default kexec/crash_kernel ops implicit
+Message-ID: <20081216162305.GB21749@oksana.dev.rtsoft.ru>
 References: <20081216162217.GA3885@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -21,132 +21,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Dale Farnsworth <dale@farnsworth.org>
+This patch removes need for each platform to specify default kexec and
+crash kernel ops, thus effectively adds a working kexec support for most
+boards.
 
-Refactor the setting of kexec OF properties, moving the common code
-from machine_kexec_64.c to machine_kexec.c where it can be used on
-both ppc64 and ppc32.  This is needed for kexec to work on ppc32
-platforms.
+Platforms that can't cope with default ops will explode in some weird
+way (a hang or reboot is most likely), which means that the board's
+kexec support should be fixed or blacklisted via dummy _prepare callback
+returning -ENOSYS.
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/kernel/machine_kexec.c    |   34 ++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/machine_kexec_64.c |   24 ++++-----------------
- 2 files changed, 39 insertions(+), 19 deletions(-)
+ arch/powerpc/kernel/machine_kexec.c |   21 +++++++++------------
+ 1 files changed, 9 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index ac2a21f..037ade7 100644
+index 037ade7..4f797c0 100644
 --- a/arch/powerpc/kernel/machine_kexec.c
 +++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -13,8 +13,10 @@
- #include <linux/reboot.h>
- #include <linux/threads.h>
- #include <linux/lmb.h>
-+#include <linux/of.h>
- #include <asm/machdep.h>
- #include <asm/prom.h>
-+#include <asm/sections.h>
- 
- void machine_crash_shutdown(struct pt_regs *regs)
+@@ -22,6 +22,8 @@ void machine_crash_shutdown(struct pt_regs *regs)
  {
-@@ -118,3 +120,35 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
- {
- 	return (start + size) > crashk_res.start && start <= crashk_res.end;
- }
-+
-+/* Values we need to export to the second kernel via the device tree. */
-+static unsigned long kernel_end;
-+
-+static struct property kernel_end_prop = {
-+	.name = "linux,kernel-end",
-+	.length = sizeof(unsigned long),
-+	.value = &kernel_end,
-+};
-+
-+static int __init kexec_setup(void)
-+{
-+	struct device_node *node;
-+	struct property *prop;
-+
-+	node = of_find_node_by_path("/chosen");
-+	if (!node)
-+		return -ENOENT;
-+
-+	/* remove any stale properties so ours can be found */
-+	prop = of_find_property(node, kernel_end_prop.name, NULL);
-+	if (prop)
-+		prom_remove_property(node, prop);
-+
-+	/* information needed by userspace when using default_machine_kexec */
-+	kernel_end = __pa(_end);
-+	prom_add_property(node, &kernel_end_prop);
-+
-+	of_node_put(node);
-+	return 0;
-+}
-+late_initcall(kexec_setup);
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 3c4ca04..a89bce8 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -289,7 +289,7 @@ void default_machine_kexec(struct kimage *image)
+ 	if (ppc_md.machine_crash_shutdown)
+ 		ppc_md.machine_crash_shutdown(regs);
++	else
++		default_machine_crash_shutdown(regs);
  }
  
- /* Values we need to export to the second kernel via the device tree. */
--static unsigned long htab_base, kernel_end;
-+static unsigned long htab_base;
- 
- static struct property htab_base_prop = {
- 	.name = "linux,htab-base",
-@@ -303,25 +303,20 @@ static struct property htab_size_prop = {
- 	.value = &htab_size_bytes,
- };
- 
--static struct property kernel_end_prop = {
--	.name = "linux,kernel-end",
--	.length = sizeof(unsigned long),
--	.value = &kernel_end,
--};
--
- static void __init export_htab_values(void)
+ /*
+@@ -33,11 +35,8 @@ int machine_kexec_prepare(struct kimage *image)
  {
- 	struct device_node *node;
- 	struct property *prop;
+ 	if (ppc_md.machine_kexec_prepare)
+ 		return ppc_md.machine_kexec_prepare(image);
+-	/*
+-	 * Fail if platform doesn't provide its own machine_kexec_prepare
+-	 * implementation.
+-	 */
+-	return -ENOSYS;
++	else
++		return default_machine_kexec_prepare(image);
+ }
  
-+	/* On machines with no htab htab_address is NULL */
-+	if (!htab_address)
-+		return;
+ void machine_kexec_cleanup(struct kimage *image)
+@@ -54,13 +53,11 @@ void machine_kexec(struct kimage *image)
+ {
+ 	if (ppc_md.machine_kexec)
+ 		ppc_md.machine_kexec(image);
+-	else {
+-		/*
+-		 * Fall back to normal restart if platform doesn't provide
+-		 * its own kexec function, and user insist to kexec...
+-		 */
+-		machine_restart(NULL);
+-	}
++	else
++		default_machine_kexec(image);
 +
- 	node = of_find_node_by_path("/chosen");
- 	if (!node)
- 		return;
- 
- 	/* remove any stale propertys so ours can be found */
--	prop = of_find_property(node, kernel_end_prop.name, NULL);
--	if (prop)
--		prom_remove_property(node, prop);
- 	prop = of_find_property(node, htab_base_prop.name, NULL);
- 	if (prop)
- 		prom_remove_property(node, prop);
-@@ -329,19 +324,10 @@ static void __init export_htab_values(void)
- 	if (prop)
- 		prom_remove_property(node, prop);
- 
--	/* information needed by userspace when using default_machine_kexec */
--	kernel_end = __pa(_end);
--	prom_add_property(node, &kernel_end_prop);
--
--	/* On machines with no htab htab_address is NULL */
--	if (NULL == htab_address)
--		goto out;
--
- 	htab_base = __pa(htab_address);
- 	prom_add_property(node, &htab_base_prop);
- 	prom_add_property(node, &htab_size_prop);
- 
-- out:
- 	of_node_put(node);
++	/* Fall back to normal restart if we're still alive. */
++	machine_restart(NULL);
+ 	for(;;);
  }
  
 -- 
