@@ -1,11 +1,11 @@
 Return-Path: <tony@bakeyournoodle.com>
-Date: Tue, 16 Dec 2008 15:17:48 +1100
+Date: Tue, 16 Dec 2008 15:34:43 +1100
 From: Tony Breeds <tony@bakeyournoodle.com>
 To: Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	Manish Ahuja <mahuja@us.ibm.com>
-Subject: [PATCH] Protect against NULL pointer deref in phyp-dump code.
-Message-ID: <20081216041748.GB14890@ozlabs.org>
+Subject: [PATCH] [RFC] Pass a valid token to rats_call() in phyp-dump code.
+Message-ID: <20081216043429.GC14890@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
@@ -18,29 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-print_dump_header() will be called at least once with a NULL pointer in
-a normal boot sequence.  if DEBUG is defined then we will get a deref,
-add a quick fix to exit early in the NULL pointer case.
+ibm_configure_kernel_dump, is passed as the token to rtas_call() but I
+cannot see where it is initialised.  Set it to something sane?
 
 Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 ---
- arch/powerpc/platforms/pseries/phyp_dump.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/phyp_dump.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/phyp_dump.c b/arch/powerpc/platforms/pseries/phyp_dump.c
-index edbc012..16e659a 100644
+index 16e659a..6cf35cd 100644
 --- a/arch/powerpc/platforms/pseries/phyp_dump.c
 +++ b/arch/powerpc/platforms/pseries/phyp_dump.c
-@@ -130,6 +130,9 @@ static unsigned long init_dump_header(struct phyp_dump_header *ph)
- static void print_dump_header(const struct phyp_dump_header *ph)
- {
- #ifdef DEBUG
-+	if (ph == NULL)
-+		return;
+@@ -414,6 +414,8 @@ static int __init phyp_dump_setup(void)
+ 		of_node_put(rtas);
+ 	}
+ 
++	ibm_configure_kernel_dump = rtas_token("ibm,configure-kernel-dump");
 +
- 	printk(KERN_INFO "dump header:\n");
- 	/* setup some ph->sections required */
- 	printk(KERN_INFO "version = %d\n", ph->version);
+ 	print_dump_header(dump_header);
+ 	dump_area_length = init_dump_header(&phdr);
+ 	/* align down */
 -- 
 1.6.0.4
 
