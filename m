@@ -1,20 +1,20 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from mx.gate01.com (mta23.gyao.ne.jp [125.63.38.249])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A14C8DDEE9
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 23:27:20 +1100 (EST)
-Date: Tue, 16 Dec 2008 21:25:24 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [RESEND][PATCH] uio: Add of_platform_driver to uio_pdrv_genirq
-Message-ID: <20081216122524.GA29546@linux-sh.org>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 963C4DDF8F
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Dec 2008 23:27:42 +1100 (EST)
+Date: Tue, 16 Dec 2008 13:27:32 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Greg KH <gregkh@suse.de>
+Subject: adding of_platform_drivers (was: Re: [RESEND][PATCH] uio: Add
+	of_platform_driver to uio_pdrv_genirq)
+Message-ID: <20081216122731.GC3275@pengutronix.de>
 References: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
+	<20081211205033.GA7080@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, hjk@linutronix.de, gregkh@suse.de,
-	linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="9Ek0hoCL9XbhcSqy"
+In-Reply-To: <20081211205033.GA7080@suse.de>
+Cc: linuxppc-dev@ozlabs.org, hjk@linutronix.de, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 11, 2008 at 04:05:37PM +0100, Wolfram Sang wrote:
-> Make the generic uio-driver also accessible for of devices. It utilizes the
-> standard 'reg' and 'interrupt' properties. A typical usage would look like
-> this:
-> 
-> 	fpga-io@00003000 {
-> 		compatible = "generic-uio";
-> 		reg = <0x00003000 0x20>;
-> 		interrupts = <0xa>;
-> 		interrupt-parent = <&fpga_irq_mux>;
-> 	};
-> 
-> To achieve this, the probe function has been refactored, so it can be used by
-> platform and of code. Then, the of driver has been added.
-> 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 
-It is pretty poor form to not even bother to Cc the only author of the
-code you are modifying, and have no Signed-off-by or Acked-by to even
-suggest that it was ever even looked at. This isn't something that ought
-to have to be pointed out, either.
+--9Ek0hoCL9XbhcSqy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In addition to the stuff pointed out by Greg, I don't see what you
-actually gain by hacking the OF crap in to this driver. You would be
-better off layering the OF driver on top of this, rather than trying to
-make them live together in the same file.
+> > +/* -------------------------------------------------------------------=
+--
+> > + * OF bus binding
+> > + */
+> > +
+> > +#if defined(CONFIG_OF)
+>=20
+> Same goes here, don't put #if in .c files please.
 
-See pata_platform/pata_of_platform for an example of how to do this a bit
-more sanely.
+So, generally speaking, this means that I should not put a
+platform_driver and an of_platform_driver into one source file, but
+rather create an of_$DRIVER.c then? I found both ways used in the kernel
+and could not find hints about the preferred way to do it. I took this
+approach as I hoped it would save some code to directly convert the
+of_node to uioinfo without the detour of using a platform_device
+inbetween.
+
+Kind regards,
+
+   Wolfram
+
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--9Ek0hoCL9XbhcSqy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklHnrMACgkQD27XaX1/VRtqVgCeNRTrMgtmVHBqkfx84ili+hS7
+6IQAnRgwJOng1yxbQ13jzEQPHJvfyRM2
+=OZHf
+-----END PGP SIGNATURE-----
+
+--9Ek0hoCL9XbhcSqy--
