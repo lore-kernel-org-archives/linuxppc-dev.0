@@ -1,23 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 55459DDF03
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 07:24:07 +1100 (EST)
-Message-Id: <08DF1088-4A51-40DD-9856-9450F4712733@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20081217171545.GB10240@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 3/5] powerpc/83xx: Add USB Host/Gadget support for
-	MPC8360E-MDS boards
-Date: Wed, 17 Dec 2008 14:21:53 -0600
-References: <20081203192644.GA6145@oksana.dev.rtsoft.ru>
-	<20081203192743.GC13035@oksana.dev.rtsoft.ru>
-	<8CFD0641-F9CD-4961-A1B3-C702E8E5DFB7@kernel.crashing.org>
-	<20081217171545.GB10240@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Return-Path: <rlefevre@gmail.com>
+Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
+	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id A1211DDF08
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 07:27:50 +1100 (EST)
+Received: by qyk14 with SMTP id 14so122348qyk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 12:27:49 -0800 (PST)
+Message-ID: <4e0b9cb00812171227g47647d31ufaec827ddbab0232@mail.gmail.com>
+Date: Wed, 17 Dec 2008 21:27:49 +0100
+From: "Remi Lefevre" <rlefevre@gmail.com>
+To: "Laurent Pinchart" <laurentp@cse-semaphore.com>
+Subject: Re: FHCI driver adaptation for CPM2
+In-Reply-To: <200812171633.58081.laurentp@cse-semaphore.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4e0b9cb00812170710n3374d558xab3584dc61980756@mail.gmail.com>
+	<200812171633.58081.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Hi Remi,
 
-On Dec 17, 2008, at 11:15 AM, Anton Vorontsov wrote:
+Hi Laurent,
 
-> On Wed, Dec 17, 2008 at 10:59:09AM -0600, Kumar Gala wrote:
->>
->> On Dec 3, 2008, at 1:27 PM, Anton Vorontsov wrote:
->>
->>> - Update the device tree per QE USB bindings;
->>> - Add timer (FSL GTM) node;
->>> - Add gpio-controller node for BCSR13 bank (GPIOs on that bank
->>> are used to control the USB transceiver);
->>> - Set up other BCSR registers;
->>> - Configure the QE Par IO.
->>
->> Of these are they all in the kernel tree already?  What I mean is  
->> QE usb
->> bindings in linus's tree?
+> You will find my latest version of the CPM2 FHCI patch attached to this e=
+-
+> mail. I've never bothered to clean it as we decided to drop the USB host
+> function from our device.
+
+Thank you very much. Not clean is better than lost.
+
+> This depends on the disk. Some will probably not check the SOF token, oth=
+ers
+> will do and behave strangely.
 >
-> Yes, they're all in the Linus' tree already (except for simple/bcsr
-> gpio bindings, which are in this patch series).
+>> Also 40% seems quite a lot, even at 1000Hz interruptions, an idea how mu=
+ch
+>> does the CRC computation contribute in this CPU hogging ?
+>
+> I haven't measured that, but probably not much. The biggest CPU time eate=
+r
+> isn't the SOF generation interrupt but the USB packet handling code. The =
+CPM2
+> USB host controller is really too low-level to be usable (except maybe fo=
+r
+> specific applications). Comparing the OHCI/UHCI/EHCI and FHCI controllers=
+ is
+> akin to  bit like comparing a full 16550 UART with a software bit-bang
+> implementation. You can get around with it, it might work for your specif=
+ic
+> application, but you shouldn't try a full speed 115200bds communication w=
+hile
+> computing a CPU-hungry physical simulation.
 
-Ok.  If you fixup my comment about splitting up patch 2/5 & 3/5 w/ 
-regards to BCSR GPIO and repost the patch series (excluding 1/5 since  
-that is in my tree) I'll apply all these since they look good.
+That's what I was afraid of. I now understand clearly why you didn't expect=
+ that
+much better performance with CPM3 in a past message
+(http://ozlabs.org/pipermail/linuxppc-embedded/2008-May/030508.html).
+Still, as you said, it can have some use for specific applications.
 
-- k
+Do you remember the throughput you were able to reach with this cpu overhea=
+d ?
+
+> Laurent Pinchart
+> CSE Semaphore Belgium
+
+Kind regards,
+R=E9mi Lef=E8vre
