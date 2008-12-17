@@ -1,20 +1,18 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0F0EBDDF08
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 06:43:32 +1100 (EST)
-From: Trent Piepho <tpiepho@freescale.com>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id 812A5DDEE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 06:53:14 +1100 (EST)
+Received: from [192.168.1.37] (66-81-70-148.bayarea.dialup.o1.com
+	[66.81.70.148]) (authenticated bits=0)
+	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id mBHJq3HU085726
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 11:53:07 -0800 (PST)
+Message-ID: <494957B9.1040800@hypersurf.com>
+Date: Wed, 17 Dec 2008 11:49:13 -0800
+From: Kevin Diggs <kevdig@hypersurf.com>
+MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] POWERPC/fsl-pci: Set relaxed ordering on prefetchable
-	ranges
-Date: Wed, 17 Dec 2008 11:43:26 -0800
-Message-Id: <1229543006-8950-2-git-send-email-tpiepho@freescale.com>
-In-Reply-To: <1229543006-8950-1-git-send-email-tpiepho@freescale.com>
-References: <1229543006-8950-1-git-send-email-tpiepho@freescale.com>
-Cc: Trent Piepho <xyzzy@speakeasy.org>, Trent Piepho <tpiepho@freescale.com>
+Subject: What means "technology has been retired"?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Provides a small speedup when accessing pefetchable ranges.  To indicate
-that a memory range is prefetchable, mark it in the dts file with 42000000
-instead of 02000000.
+Does anyone know what the statement:
 
-A powepc pci_controller is allowed three memory ranges, any of which may be
-prefetchable.  However, the PCI-PCI bridge configuration space only has one
-field for "non-prefetchable memory behind bridge", which has a 32 bit
-address, and one field for "prefetchable memory behind bridge", which may
-have a 64 bit address.  These are PCI bus addresses, not CPU physical
-addresses.
+	"This technology has been retired."
 
-So really you're only allowed one memory range of each type.  And if you
-want the range at a PCI address above 32 bits you must make it
-prefetchable.
+on this page:
 
-Signed-off-by: Trent Piepho <tpiepho@freescale.com>
----
- arch/powerpc/sysdev/fsl_pci.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+http://www.alphaworks.ibm.com/tech/powerscale4ppc
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 656f914..af0d7e3 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -41,6 +41,9 @@ static int __init setup_one_atmu(struct ccsr_pci __iomem *pci,
- 	pr_debug("PCI MEM resource start 0x%016llx, size 0x%016llx.\n",
- 		(u64)res->start, (u64)size);
- 
-+	if (res->flags & IORESOURCE_PREFETCH)
-+		flags |= 0x10000000; /* enable relaxed ordering */
-+
- 	for (i = 0; size > 0; i++) {
- 		unsigned int bits = min(__ilog2(size),
- 					__ffs(pci_addr | phys_addr));
--- 
-1.5.4.1
+means? Something about 970FX frequency scaling?
+
+kevin
