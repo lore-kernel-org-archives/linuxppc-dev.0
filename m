@@ -1,22 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <linuxppc-dev@ml.breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+	[85.10.199.196])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CD40DDDE0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 08:30:06 +1100 (EST)
-Message-Id: <F29CCE3A-BCCC-4DA2-A0C8-F221F1248D24@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20081215054534.4C5A4DDFD4@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 7/16] powerpc/mm: Rework context management for CPUs with
-	no hash table v2
-Date: Wed, 17 Dec 2008 15:30:00 -0600
-References: <20081215054534.4C5A4DDFD4@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DACB3DDEFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 08:34:56 +1100 (EST)
+Date: Wed, 17 Dec 2008 22:34:48 +0100
+From: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: "booke: Fix problem with _tlbil_va being interrupted" causes BUG()
+Message-ID: <20081217213448.GA27343@Chamillionaire.breakpoint.cc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I just pulled from Linus and the Kernel I booted gave me this:
+| Freeing unused kernel memory: 152k init
+| BUG: sleeping function called from invalid context at /home/bigeasy/git/linux-2.6-powerpc/fs/exec.c:417
+| in_atomic(): 0, irqs_disabled(): 1, pid: 1, name: swapper
+| Call Trace:
+| [ef831dd0] [c0007764] show_stack+0x48/0x154 (unreliable)
+| [ef831e00] [c002b4d0] __might_sleep+0x118/0x11c
+| [ef831e10] [c009bcfc] copy_strings+0x70/0x324
+| [ef831e70] [c009bfd0] copy_strings_kernel+0x20/0x38
+| [ef831e90] [c009d3b8] do_execve+0x15c/0x1ec
+| [ef831ec0] [c00084ac] sys_execve+0x58/0x84
+| [ef831ee0] [c000f0e8] ret_from_syscall+0x0/0x3c
+| [ef831fa0] [c0001d68] init_post+0x54/0x174
+| [ef831fc0] [c038a1c0] kernel_init+0xdc/0x104
+| [ef831ff0] [c000ee68] kernel_thread+0x4c/0x68
+| ------------[ cut here ]------------
 
-On Dec 14, 2008, at 11:44 PM, Benjamin Herrenschmidt wrote:
+It looks like userspace starts here. A bisect leads to
 
-> This reworks the context management code used by 4xx,8xx and
-> freescale BookE. It adds support for SMP by implementing a
-> concept of stale context map to lazily flush the TLB on
-> processors where a context may have been invalidated. This
-> also contains the ground work for generalizing such lazy TLB
-> flushing by just picking up a new PID and marking the old one
-> stale. This will be implemented later.
->
-> This is a first implementation that uses a global spinlock.
->
-> Ideally, we should try to get at least the fast path (context ID
-> already assigned) lockless or limited to a per context lock,
-> but for now this will do.
->
-> I tried to keep the UP case reasonably simple to avoid adding
-> too much overhead to 8xx which does a lot of context stealing
-> since it effectively has only 16 PIDs available.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> v2. remove some bugs with active tracking on SMP
+|commit e5e774d8833de1a0037be2384efccadf16935675
+|Author: Kumar Gala <galak@kernel.crashing.org>
+|Date:   Sat Dec 13 17:01:37 2008 -0600
+|
+|    powerpc/fsl-booke: Fix problem with _tlbil_va being interrupted
+|    
+|    An example calling sequence which we did see:
+|    
+|    copy_user_highpage -> kmap_atomic -> flush_tlb_page -> _tlbil_va
+|    
+|    We got interrupted after setting up the MAS registers before the
+|    tlbwe and the interrupt handler that caused the interrupt also did
+|    a kmap_atomic (ide code) and thus on returning from the interrupt
+|    the MAS registers no longer contained the proper values.
+|    
+|    Since we dont save/restore MAS registers for normal interrupts we
+|    need to disable interrupts in _tlbil_va to ensure atomicity.
+|    
+|    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+|
+|:040000 040000 1f298a8930bd2704f4481307f3d22589943bb5c0 7e3847dab748c332c8533111de32d23731ec778b M      arch
 
-I'd personally like a bit more commentary on how the stale map  
-addresses the SMP issues in the commit message.
+as the guilty commit.
+This box has highmem.
 
-Also, Paul had a comment that we've kept around related to 8xx/4xx SMP  
-as well as LRU.. is that still relevant?
-
-- k
+Sebastian
