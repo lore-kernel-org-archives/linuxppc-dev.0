@@ -1,25 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 22BE9DDF63
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 10:01:21 +1100 (EST)
-Message-Id: <065FAE64-D239-41A5-AA04-192DA4BC6038@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20081216191419.GA31928@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc/83xx: Fix few build errors with
-	CONFIG_QUICC_ENGINE=n
-Date: Tue, 16 Dec 2008 16:57:43 -0600
-References: <20081205165504.GA30966@oksana.dev.rtsoft.ru>
-	<6C14C18C-D709-4E69-8B47-C8A13380D713@kernel.crashing.org>
-	<20081216184451.GA6959@oksana.dev.rtsoft.ru>
-	<4947FABD.8090209@freescale.com>
-	<20081216191419.GA31928@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18760.21056.857206.703778@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Dec 2008 12:13:36 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Fix corruption error in rh_alloc_fixed()
+In-Reply-To: <33EE789F-D0A8-40A0-BF2A-B8084613B431@kernel.crashing.org>
+References: <20081209152834.1d6ff291@xilun.lan.proformatique.com>
+	<493E88B7.5020702@freescale.com>
+	<20081209161422.5e289e6c@xilun.lan.proformatique.com>
+	<493E8BE2.809@freescale.com>
+	<20081214195050.677ba7d1@xilun.lan.proformatique.com>
+	<18757.30913.736857.463769@cargo.ozlabs.ibm.com>
+	<20081215013251.0359db80@xilun.lan.proformatique.com>
+	<33EE789F-D0A8-40A0-BF2A-B8084613B431@kernel.crashing.org>
+Cc: Tjernlund <joakim.tjernlund@transmode.se>,
+	Guillaume Knispel <gknispel@proformatique.com>,
+	Pantelis Antoniou <pantelis@embeddedalley.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +29,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala writes:
 
-On Dec 16, 2008, at 1:14 PM, Anton Vorontsov wrote:
+> Paul are you planning on picking this up for .28 if not I'll pick it  
+> up for .29
 
-> On Tue, Dec 16, 2008 at 01:00:13PM -0600, Scott Wood wrote:
->> Anton Vorontsov wrote:
->>>  GCC can still issue the of_find_node_by_name() call. (I wonder if
->>>  there is any way to tell gcc that particular function doesn't
->>>  produce any side-effects so that gcc can optimize it away too).
->>
->> __attribute__((pure))
->
-> Ah, thanks!
->
-> But I forgot that of_find_node_by_name() and friends aren't
-> actually "pure", they're getting the node. :-(
+I was waiting for you to say if it needed to go in .28.  Sounds like
+you don't think it's that urgent then?
 
-Looking at include/linux/compiler-gcc.h I'm guessing the proper way to  
-use it is __pure & inclusion of compiler.h
-
-- k
+Paul.
