@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 6267F47502
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 07:09:11 +1100 (EST)
-Date: Wed, 17 Dec 2008 23:09:10 +0300
+	by ozlabs.org (Postfix) with ESMTP id 205A347519
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 07:09:15 +1100 (EST)
+Date: Wed, 17 Dec 2008 23:09:13 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 4/7] powerpc/32: Allow to ioremap RAM addresses for kdump
-	kernel
-Message-ID: <20081217200910.GD4624@oksana.dev.rtsoft.ru>
+Subject: [PATCH 5/7] powerpc/32: Add the ability for a classic ppc kernel
+	to be loaded at 32M
+Message-ID: <20081217200913.GE4624@oksana.dev.rtsoft.ru>
 References: <20081217200610.GA31887@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -22,47 +22,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-While for debugging it is good to catch bogus users of ioremap,
-though for kdump support it is more convenient to use ioremap for
-copy_oldmem_page() (exactly as we do for PPC64 currently).
+From: Dale Farnsworth <dale@farnsworth.org>
 
-Note that copy_oldmem_page() calls __ioremap with flags set to '0',
-so it should be safe with the regard to the caches.
+Add the ability for a classic ppc kernel to be loaded at an address
+of 32MB.  This done by fixing a few places that assume we are loaded
+at address 0, and by changing several uses of KERNELBASE to use
+PAGE_OFFSET, instead.
 
-The other option is to use kmap_atomic_pfn()[1], but it will not work
-for kernels compiled without HIGHMEM.
-
-That is, on a board with 256MB RAM and crashkernel=64M@32M case, the
-!HIGHMEM capturing kernel maps 0-96M range, which does not include all
-the memory needed to capture the dump. And, obviously, accessing
-anything upper than 96M will cause faults.
-
-[1] http://ozlabs.org/pipermail/linuxppc-dev/2007-November/046747.html
-
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/mm/pgtable_32.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/ppc_asm.h |    4 ++--
+ arch/powerpc/kernel/head_32.S      |   11 ++++++-----
+ arch/powerpc/mm/init_32.c          |    2 +-
+ arch/powerpc/mm/pgtable_32.c       |    4 ++--
+ arch/powerpc/mm/ppc_mmu_32.c       |    8 ++++----
+ 5 files changed, 15 insertions(+), 14 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index c4a029c..1a0d628 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -425,14 +425,14 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ #define fromreal(rd)	tovirt(rd,rd)
+ 
+ #define tophys(rd,rs)				\
+-0:	addis	rd,rs,-KERNELBASE@h;		\
++0:	addis	rd,rs,-PAGE_OFFSET@h;		\
+ 	.section ".vtop_fixup","aw";		\
+ 	.align  1;				\
+ 	.long   0b;				\
+ 	.previous
+ 
+ #define tovirt(rd,rs)				\
+-0:	addis	rd,rs,KERNELBASE@h;		\
++0:	addis	rd,rs,PAGE_OFFSET@h;		\
+ 	.section ".ptov_fixup","aw";		\
+ 	.align  1;				\
+ 	.long   0b;				\
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 0c32682..97338d9 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -182,7 +182,8 @@ __after_mmu_off:
+ 	bl	reloc_offset
+ 	mr	r26,r3
+ 	addis	r4,r3,KERNELBASE@h	/* current address of _start */
+-	cmpwi	0,r4,0			/* are we already running at 0? */
++	lis	r5,PHYSICAL_START@h
++	cmplw	0,r4,r5			/* already running at PHYSICAL_START? */
+ 	bne	relocate_kernel
+ /*
+  * we now have the 1st 16M of ram mapped with the bats.
+@@ -810,13 +811,13 @@ giveup_altivec:
+ 
+ /*
+  * This code is jumped to from the startup code to copy
+- * the kernel image to physical address 0.
++ * the kernel image to physical address PHYSICAL_START.
+  */
+ relocate_kernel:
+ 	addis	r9,r26,klimit@ha	/* fetch klimit */
+ 	lwz	r25,klimit@l(r9)
+ 	addis	r25,r25,-KERNELBASE@h
+-	li	r3,0			/* Destination base address */
++	lis	r3,PHYSICAL_START@h	/* Destination base address */
+ 	li	r6,0			/* Destination offset */
+ 	li	r5,0x4000		/* # bytes of memory to copy */
+ 	bl	copy_and_flush		/* copy the first 0x4000 bytes */
+@@ -1178,11 +1179,11 @@ mmu_off:
+ 
+ /*
+  * Use the first pair of BAT registers to map the 1st 16MB
+- * of RAM to KERNELBASE.  From this point on we can't safely
++ * of RAM to PAGE_OFFSET.  From this point on we can't safely
+  * call OF any more.
+  */
+ initial_bats:
+-	lis	r11,KERNELBASE@h
++	lis	r11,PAGE_OFFSET@h
+ 	mfspr	r9,SPRN_PVR
+ 	rlwinm	r9,r9,16,16,31		/* r9 = 1 for 601, 4 for 604 */
+ 	cmpwi	0,r9,1
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 388ceda..4ac0e4e 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -49,7 +49,7 @@
+ 
+ #if defined(CONFIG_KERNEL_START_BOOL) || defined(CONFIG_LOWMEM_SIZE_BOOL)
+ /* The ammount of lowmem must be within 0xF0000000 - KERNELBASE. */
+-#if (CONFIG_LOWMEM_SIZE > (0xF0000000 - KERNELBASE))
++#if (CONFIG_LOWMEM_SIZE > (0xF0000000 - PAGE_OFFSET))
+ #error "You must adjust CONFIG_LOWMEM_SIZE or CONFIG_START_KERNEL"
+ #endif
+ #endif
 diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 3414724..cd56097 100644
+index cd56097..8cba46f 100644
 --- a/arch/powerpc/mm/pgtable_32.c
 +++ b/arch/powerpc/mm/pgtable_32.c
-@@ -173,6 +173,7 @@ __ioremap(phys_addr_t addr, unsigned long size, unsigned long flags)
- 	if (p < 16*1024*1024)
- 		p += _ISA_MEM_BASE;
+@@ -269,7 +269,7 @@ int map_page(unsigned long va, phys_addr_t pa, int flags)
+ }
  
-+#ifndef CONFIG_CRASH_DUMP
- 	/*
- 	 * Don't allow anybody to remap normal RAM that we're using.
- 	 * mem_init() sets high_memory so only do the check after that.
-@@ -182,6 +183,7 @@ __ioremap(phys_addr_t addr, unsigned long size, unsigned long flags)
- 		       (unsigned long long)p, __builtin_return_address(0));
- 		return NULL;
+ /*
+- * Map in a big chunk of physical memory starting at KERNELBASE.
++ * Map in a big chunk of physical memory starting at PAGE_OFFSET.
+  */
+ void __init mapin_ram(void)
+ {
+@@ -278,7 +278,7 @@ void __init mapin_ram(void)
+ 	int ktext;
+ 
+ 	s = mmu_mapin_ram();
+-	v = KERNELBASE + s;
++	v = PAGE_OFFSET + s;
+ 	p = memstart_addr + s;
+ 	for (; s < total_lowmem; s += PAGE_SIZE) {
+ 		ktext = ((char *) v >= _stext && (char *) v < etext);
+diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+index 6aa1208..49b195e 100644
+--- a/arch/powerpc/mm/ppc_mmu_32.c
++++ b/arch/powerpc/mm/ppc_mmu_32.c
+@@ -95,16 +95,16 @@ unsigned long __init mmu_mapin_ram(void)
+ 			break;
  	}
-+#endif
  
- 	if (size == 0)
- 		return NULL;
+-	setbat(2, KERNELBASE, 0, bl, _PAGE_RAM);
+-	done = (unsigned long)bat_addrs[2].limit - KERNELBASE + 1;
++	setbat(2, PAGE_OFFSET, 0, bl, _PAGE_RAM);
++	done = (unsigned long)bat_addrs[2].limit - PAGE_OFFSET + 1;
+ 	if ((done < tot) && !bat_addrs[3].limit) {
+ 		/* use BAT3 to cover a bit more */
+ 		tot -= done;
+ 		for (bl = 128<<10; bl < max_size; bl <<= 1)
+ 			if (bl * 2 > tot)
+ 				break;
+-		setbat(3, KERNELBASE+done, done, bl, _PAGE_RAM);
+-		done = (unsigned long)bat_addrs[3].limit - KERNELBASE + 1;
++		setbat(3, PAGE_OFFSET+done, done, bl, _PAGE_RAM);
++		done = (unsigned long)bat_addrs[3].limit - PAGE_OFFSET + 1;
+ 	}
+ 
+ 	return done;
 -- 
 1.5.6.5
