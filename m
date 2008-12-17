@@ -1,21 +1,32 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 3C063DDE3A
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 04:15:47 +1100 (EST)
-Date: Wed, 17 Dec 2008 20:15:45 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/5] powerpc/83xx: Add USB Host/Gadget support for
-	MPC8360E-MDS boards
-Message-ID: <20081217171545.GB10240@oksana.dev.rtsoft.ru>
-References: <20081203192644.GA6145@oksana.dev.rtsoft.ru>
-	<20081203192743.GC13035@oksana.dev.rtsoft.ru>
-	<8CFD0641-F9CD-4961-A1B3-C702E8E5DFB7@kernel.crashing.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4F7AEDDEDF
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 04:33:40 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBHHW9aC030663
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 10:32:09 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mBHHXYou137142
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 10:33:34 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mBHHXWET022047
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 10:33:33 -0700
+Date: Wed, 17 Dec 2008 12:33:29 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/16] powerpc/4xx: Extended DCR support v2
+Message-ID: <20081217173329.GD3049@localhost.localdomain>
+References: <1229319836.100184.344640589620.qpush@grosgo>
+	<20081215054516.146BFDDFAB@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <8CFD0641-F9CD-4961-A1B3-C702E8E5DFB7@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081215054516.146BFDDFAB@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +36,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 17, 2008 at 10:59:09AM -0600, Kumar Gala wrote:
+On Mon, Dec 15, 2008 at 04:44:17PM +1100, Benjamin Herrenschmidt wrote:
+>This adds supports to the "extended" DCR addressing via
+>the indirect mfdcrx/mtdcrx instructions supported by some
+>4xx cores (440H6 and later)
 >
-> On Dec 3, 2008, at 1:27 PM, Anton Vorontsov wrote:
+>I enabled the feature for now only on AMCC 460 chips
 >
->> - Update the device tree per QE USB bindings;
->> - Add timer (FSL GTM) node;
->> - Add gpio-controller node for BCSR13 bank (GPIOs on that bank
->>  are used to control the USB transceiver);
->> - Set up other BCSR registers;
->> - Configure the QE Par IO.
->
-> Of these are they all in the kernel tree already?  What I mean is QE usb 
-> bindings in linus's tree?
+>Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Yes, they're all in the Linus' tree already (except for simple/bcsr
-gpio bindings, which are in this patch series).
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-Thanks,
+I actually ran some tests on this patch on a Bamboo board that
+lacks the new instructions.  While tbench might not be great here,
+it's the thing I had handy and it does drive some DCR access given
+that every interrupt uses DCR instructions to handle the UIC bits
+(and some of the MAL stuff I'm assuming).
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+The results with and without the patch were pretty close.
+Differences were in the noise range.  I wanted to test on
+Canyonlands, which does have the new instructions, but mine
+appears to be DOA.
+
+So in summary, it doesn't make things worse :).
+
+josh
