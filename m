@@ -2,21 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2D7AFDDFCC
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 03:58:40 +1100 (EST)
-Message-Id: <E4C453B2-C0BC-4535-8014-04AB39A6BB49@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 05460DDED8
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 04:01:18 +1100 (EST)
+Message-Id: <8CFD0641-F9CD-4961-A1B3-C702E8E5DFB7@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20081217165552.GA7307@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20081203192743.GC13035@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 1/5] powerpc/qe: Implement QE Pin Multiplexing API
-Date: Wed, 17 Dec 2008 10:56:33 -0600
+Subject: Re: [PATCH 3/5] powerpc/83xx: Add USB Host/Gadget support for
+	MPC8360E-MDS boards
+Date: Wed, 17 Dec 2008 10:59:09 -0600
 References: <20081203192644.GA6145@oksana.dev.rtsoft.ru>
-	<20081203192738.GA13035@oksana.dev.rtsoft.ru>
-	<20081217154111.GA21335@oksana.dev.rtsoft.ru>
-	<C486295F-74E1-4A24-A8FE-C7BD446A53F5@kernel.crashing.org>
-	<20081217165552.GA7307@oksana.dev.rtsoft.ru>
+	<20081203192743.GC13035@oksana.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,18 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>
->>>
->>> Kumar, can you please merge this patch? It is the last patch that
->>> holds the FHCI USB driver.
->>>
->>> Thanks,
->>
->> Will do.  Can I get you to add kdoc comments for the API functions:
->
-> The functions already have kdoc comments (see qe_lib/gpio.c changes).
 
+On Dec 3, 2008, at 1:27 PM, Anton Vorontsov wrote:
 
-Yeah, I noticed that.. sorry about the noise.
+> - Update the device tree per QE USB bindings;
+> - Add timer (FSL GTM) node;
+> - Add gpio-controller node for BCSR13 bank (GPIOs on that bank
+>  are used to control the USB transceiver);
+> - Set up other BCSR registers;
+> - Configure the QE Par IO.
+
+Of these are they all in the kernel tree already?  What I mean is QE  
+usb bindings in linus's tree?  I know GTM timers is and this patch  
+series had the bcsr gpio.  Similar question for qe par io.  I think we  
+are good but clearly I leave much of QE to you & timur.
 
 - k
