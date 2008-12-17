@@ -1,12 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C7CB247573
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 07:09:27 +1100 (EST)
-Date: Wed, 17 Dec 2008 23:09:26 +0300
+	by ozlabs.org (Postfix) with ESMTP id DA1494768F
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 07:09:36 +1100 (EST)
+Date: Wed, 17 Dec 2008 23:09:35 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/7] powerpc/32: Wire up the trampoline code for kdump
-Message-ID: <20081217200926.GF4624@oksana.dev.rtsoft.ru>
+Subject: [PATCH 7/7] powerpc/64/kdump: Use ppc_save_regs() in
+	crash_setup_regs()
+Message-ID: <20081217200935.GG4624@oksana.dev.rtsoft.ru>
 References: <20081217200610.GA31887@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -21,78 +22,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Dale Farnsworth <dale@farnsworth.org>
+The patch replaces internal registers dump implementation with
+ppc_save_regs(). From now on PPC64 and PPC32 are using the same
+code for crash_setup_regs().
 
-Wire up the trampoline code for ppc32 to relay exceptions from the
-vectors at address 0 to vectors at address 32MB, and modify Kconfig
-to enable Kdump support for all classic powerpcs.
+NOTE: The old regs dump implementation was capturing SP (r1) directly
+as is, so you could see crash_kexec() function on top of the back-trace.
+But ppc_save_regs() goes up one stack frame, so you'll not see it
+anymore, at the top-level you'll see who actually triggered the crash
+dump instead.
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/Kconfig             |    2 +-
- arch/powerpc/include/asm/kdump.h |   13 +++++++++++++
- arch/powerpc/kernel/setup_32.c   |    2 ++
- 3 files changed, 16 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index be4f99b..f7f5448 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -326,7 +326,7 @@ config KEXEC
+p.s.
+The patch is the last in the series, so you can easily drop it
+until somebody actually test it (I don't have any PPC64 machine,
+so I'm looking for volunteers. :-)
+
+ arch/powerpc/include/asm/kexec.h |   55 --------------------------------------
+ 1 files changed, 0 insertions(+), 55 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index 6dbffc9..7e06b43 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -48,63 +48,8 @@ static inline void crash_setup_regs(struct pt_regs *newregs,
+ {
+ 	if (oldregs)
+ 		memcpy(newregs, oldregs, sizeof(*newregs));
+-#ifdef __powerpc64__
+-	else {
+-		/* FIXME Merge this with xmon_save_regs ?? */
+-		unsigned long tmp1, tmp2;
+-		__asm__ __volatile__ (
+-			"std    0,0(%2)\n"
+-			"std    1,8(%2)\n"
+-			"std    2,16(%2)\n"
+-			"std    3,24(%2)\n"
+-			"std    4,32(%2)\n"
+-			"std    5,40(%2)\n"
+-			"std    6,48(%2)\n"
+-			"std    7,56(%2)\n"
+-			"std    8,64(%2)\n"
+-			"std    9,72(%2)\n"
+-			"std    10,80(%2)\n"
+-			"std    11,88(%2)\n"
+-			"std    12,96(%2)\n"
+-			"std    13,104(%2)\n"
+-			"std    14,112(%2)\n"
+-			"std    15,120(%2)\n"
+-			"std    16,128(%2)\n"
+-			"std    17,136(%2)\n"
+-			"std    18,144(%2)\n"
+-			"std    19,152(%2)\n"
+-			"std    20,160(%2)\n"
+-			"std    21,168(%2)\n"
+-			"std    22,176(%2)\n"
+-			"std    23,184(%2)\n"
+-			"std    24,192(%2)\n"
+-			"std    25,200(%2)\n"
+-			"std    26,208(%2)\n"
+-			"std    27,216(%2)\n"
+-			"std    28,224(%2)\n"
+-			"std    29,232(%2)\n"
+-			"std    30,240(%2)\n"
+-			"std    31,248(%2)\n"
+-			"mfmsr  %0\n"
+-			"std    %0, 264(%2)\n"
+-			"mfctr  %0\n"
+-			"std    %0, 280(%2)\n"
+-			"mflr   %0\n"
+-			"std    %0, 288(%2)\n"
+-			"bl     1f\n"
+-		"1:     mflr   %1\n"
+-			"std    %1, 256(%2)\n"
+-			"mtlr   %0\n"
+-			"mfxer  %0\n"
+-			"std    %0, 296(%2)\n"
+-			: "=&r" (tmp1), "=&r" (tmp2)
+-			: "b" (newregs)
+-			: "memory");
+-	}
+-#else
+ 	else
+ 		ppc_save_regs(newregs);
+-#endif /* __powerpc64__ */
+ }
  
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
--	depends on PPC_MULTIPLATFORM && PPC64 && RELOCATABLE
-+	depends on (PPC64 && RELOCATABLE) || 6xx
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
- 	  The same kernel binary can be used as production kernel and dump
-diff --git a/arch/powerpc/include/asm/kdump.h b/arch/powerpc/include/asm/kdump.h
-index b07ebb9..5ebfe5d 100644
---- a/arch/powerpc/include/asm/kdump.h
-+++ b/arch/powerpc/include/asm/kdump.h
-@@ -1,6 +1,8 @@
- #ifndef _PPC64_KDUMP_H
- #define _PPC64_KDUMP_H
- 
-+#include <asm/page.h>
-+
- /* Kdump kernel runs at 32 MB, change at your peril. */
- #define KDUMP_KERNELBASE	0x2000000
- 
-@@ -11,8 +13,19 @@
- 
- #ifdef CONFIG_CRASH_DUMP
- 
-+/*
-+ * On PPC64 translation is disabled during trampoline setup, so we use
-+ * physical addresses. Though on PPC32 translation is already enabled,
-+ * so we can't do the same. Luckily create_trampoline() creates relative
-+ * branches, so we can just add the PAGE_OFFSET and don't worry about it.
-+ */
-+#ifdef __powerpc64__
- #define KDUMP_TRAMPOLINE_START	0x0100
- #define KDUMP_TRAMPOLINE_END	0x3000
-+#else
-+#define KDUMP_TRAMPOLINE_START	(0x0100 + PAGE_OFFSET)
-+#define KDUMP_TRAMPOLINE_END	(0x3000 + PAGE_OFFSET)
-+#endif /* __powerpc64__ */
- 
- #define KDUMP_MIN_TCE_ENTRIES	2048
- 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 086c23c..9ca1d2b 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -121,6 +121,8 @@ notrace void __init machine_init(unsigned long dt_ptr)
- 
- 	probe_machine();
- 
-+	setup_kdump_trampoline();
-+
- #ifdef CONFIG_6xx
- 	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
- 	    cpu_has_feature(CPU_FTR_CAN_NAP))
+ extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
 -- 
 1.5.6.5
