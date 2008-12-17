@@ -1,23 +1,19 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pqueueb.post.tele.dk (pqueueb.post.tele.dk [193.162.153.10])
-	by ozlabs.org (Postfix) with ESMTP id 0E098DDEF8
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 18:48:57 +1100 (EST)
-Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
-	by pqueueb.post.tele.dk (Postfix) with ESMTP id 6F6678109
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 08:26:57 +0100 (CET)
-Date: Wed, 17 Dec 2008 08:28:23 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: next-20081216 - powerpc link error 'dynreloc miscount'
-Message-ID: <20081217072823.GB3551@uranus.ravnborg.org>
-References: <20081216223754.0c8e21d4.sfr@canb.auug.org.au>
-	<20081217070858.GA7424@linux.vnet.ibm.com>
-Mime-Version: 1.0
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [93.163.65.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "A common name", Issuer "A common name" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 406A1DDF37
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 19:02:45 +1100 (EST)
+Date: Wed, 17 Dec 2008 09:02:11 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] powerpc/iseries: viodasd needs to depend on CONFIG_BLOCK
+Message-ID: <20081217080211.GB32491@kernel.dk>
+References: <20081217171649.f3cd7c96.sfr@canb.auug.org.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20081217070858.GA7424@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
-	mel@csn.ul.ie, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
+In-Reply-To: <20081217171649.f3cd7c96.sfr@canb.auug.org.au>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 17, 2008 at 12:38:58PM +0530, Kamalesh Babulal wrote:
-> Hi,
-> 	next-20081216 build breaks on powerpc
+On Wed, Dec 17 2008, Stephen Rothwell wrote:
+> Otherwise you get lot of errors like these:
 > 
-> ld: dynreloc miscount for kernel/built-in.o, section .opd
-> ld: can not edit opd Bad value
-> make: *** [vmlinux.o] Error 1
+> drivers/block/viodasd.c:72: error: dereferencing pointer to incomplete type
+> drivers/block/viodasd.c: In function 'viodasd_open':
+> drivers/block/viodasd.c:135: error: dereferencing pointer to incomplete type
+> drivers/block/viodasd.c: In function 'viodasd_release':
+> drivers/block/viodasd.c:184: error: dereferencing pointer to incomplete type
+> drivers/block/viodasd.c: In function 'viodasd_getgeo':
+> drivers/block/viodasd.c:209: error: dereferencing pointer to incomplete type
+> drivers/block/viodasd.c:214: error: implicit declaration of function 'get_capacity'
+> drivers/block/viodasd.c: At top level:
+> drivers/block/viodasd.c:222: error: variable 'viodasd_fops' has initializer but incomplete type
+> drivers/block/viodasd.c:223: error: unknown field 'owner' specified in initializer
+> 
+> Discovered by a randconfig build.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/platforms/iseries/Kconfig |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+> index 45ffd8e..ed3753d 100644
+> --- a/arch/powerpc/platforms/iseries/Kconfig
+> +++ b/arch/powerpc/platforms/iseries/Kconfig
+> @@ -9,6 +9,7 @@ menu "iSeries device drivers"
+>  
+>  config VIODASD
+>  	tristate "iSeries Virtual I/O disk support"
+> +	depends on BLOCK
+>  	help
+>  	  If you are running on an iSeries system and you want to use
+>  	  virtual disks created and managed by OS/400, say Y.
+> -- 
+> 1.6.0.5
 
-Could it be this:
+Indeed, looks good. I trust the ppc folks will carry this one? If so,
+feel free to add my acked-by to this.
 
-     http://sourceware.org/ml/binutils/2005-10/msg00334.html
-
-	Sam
+-- 
+Jens Axboe
