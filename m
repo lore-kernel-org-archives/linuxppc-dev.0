@@ -1,23 +1,16 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 0E94BDDF46
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 15:14:10 +1100 (EST)
-Date: Tue, 16 Dec 2008 23:14:00 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] ndfc driver
-Message-ID: <20081216231400.5ba6afa1@lappy.seanm.ca>
-In-Reply-To: <20081210181634.2aac2023@lappy.seanm.ca>
-References: <20081203222832.3fc77d28@lappy.seanm.ca>
-	<20081204090107.20269571@zod.rchland.ibm.com>
-	<20081208193446.37e27e26@lappy.seanm.ca>
-	<200812090710.27781.sr@denx.de>
-	<20081210181634.2aac2023@lappy.seanm.ca>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4A4D1DDF46
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 17:16:55 +1100 (EST)
+Date: Wed, 17 Dec 2008 17:16:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt
+	<benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/iseries: viodasd needs to depend on CONFIG_BLOCK
+Message-Id: <20081217171649.f3cd7c96.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	linux-mtd@lists.infradead.org, Arnd
-	Bergmann <arnd@arndb.de>, devicetree-discuss@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Jens Axboe <jens.axboe@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,14 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 10 Dec 2008 18:16:34 -0500
-"Sean MacLennan" <sean.maclennan@ottawa.kanatek.ca> wrote:
+Otherwise you get lot of errors like these:
 
-> Here is an updated patch. Doc has been moved to 4xx and amcc changed
-> to ibm.
+drivers/block/viodasd.c:72: error: dereferencing pointer to incomplete type
+drivers/block/viodasd.c: In function 'viodasd_open':
+drivers/block/viodasd.c:135: error: dereferencing pointer to incomplete type
+drivers/block/viodasd.c: In function 'viodasd_release':
+drivers/block/viodasd.c:184: error: dereferencing pointer to incomplete type
+drivers/block/viodasd.c: In function 'viodasd_getgeo':
+drivers/block/viodasd.c:209: error: dereferencing pointer to incomplete type
+drivers/block/viodasd.c:214: error: implicit declaration of function 'get_capacity'
+drivers/block/viodasd.c: At top level:
+drivers/block/viodasd.c:222: error: variable 'viodasd_fops' has initializer but incomplete type
+drivers/block/viodasd.c:223: error: unknown field 'owner' specified in initializer
 
-Anybody? Even if it is not perfect, it would be better to have
-a driver that at least compiles ;)
+Discovered by a randconfig build.
 
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/iseries/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+index 45ffd8e..ed3753d 100644
+--- a/arch/powerpc/platforms/iseries/Kconfig
++++ b/arch/powerpc/platforms/iseries/Kconfig
+@@ -9,6 +9,7 @@ menu "iSeries device drivers"
+ 
+ config VIODASD
+ 	tristate "iSeries Virtual I/O disk support"
++	depends on BLOCK
+ 	help
+ 	  If you are running on an iSeries system and you want to use
+ 	  virtual disks created and managed by OS/400, say Y.
+-- 
+1.6.0.5
+
+-- 
 Cheers,
-   Sean
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
