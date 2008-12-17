@@ -1,21 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 158B0DDF1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 03:55:55 +1100 (EST)
-Date: Wed, 17 Dec 2008 19:55:52 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] powerpc/qe: Implement QE Pin Multiplexing API
-Message-ID: <20081217165552.GA7307@oksana.dev.rtsoft.ru>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D32CBDDF3D
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 03:58:15 +1100 (EST)
+Message-Id: <51466E9D-4D61-4864-8007-B54A61230F8F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20081203192742.GB13035@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 2/5] powerpc: Implement GPIO driver for simple
+	memory-mapped banks
+Date: Wed, 17 Dec 2008 10:56:08 -0600
 References: <20081203192644.GA6145@oksana.dev.rtsoft.ru>
-	<20081203192738.GA13035@oksana.dev.rtsoft.ru>
-	<20081217154111.GA21335@oksana.dev.rtsoft.ru>
-	<C486295F-74E1-4A24-A8FE-C7BD446A53F5@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <C486295F-74E1-4A24-A8FE-C7BD446A53F5@kernel.crashing.org>
+	<20081203192742.GB13035@oksana.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +25,281 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 17, 2008 at 10:46:17AM -0600, Kumar Gala wrote:
->
-> On Dec 17, 2008, at 9:41 AM, Anton Vorontsov wrote:
->
->> On Wed, Dec 03, 2008 at 10:27:38PM +0300, Anton Vorontsov wrote:
->>> With this API we're able to set a QE pin to the GPIO mode or a  
->>> dedicated
->>> peripheral function.
->>>
->>> The API relies on the fact that QE gpio controllers are registered.  
->>> If
->>> they aren't, the API won't work (gracefully though).
->>>
->>> There is one caveat though: if anybody occupied the node->data  
->>> before us,
->>> or overwrote it, then bad things will happen. Luckily this is all in 
->>> the
->>> platform code that we fully control, so this should never happen.
->>>
->>> I could implement more checks (for example we could create a list of
->>> successfully registered QE controllers, and compare the node->data  
->>> in the
->>> qe_pin_request()), but this is unneeded if nobody is going to do  
->>> silly
->>> things behind our back.
->>>
->>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>> ---
->>
->> Kumar, can you please merge this patch? It is the last patch that
->> holds the FHCI USB driver.
->>
->> Thanks,
->
-> Will do.  Can I get you to add kdoc comments for the API functions:
 
-The functions already have kdoc comments (see qe_lib/gpio.c changes).
+On Dec 3, 2008, at 1:27 PM, Anton Vorontsov wrote:
 
-> +extern struct qe_pin *qe_pin_request(struct device_node *np, int  
-> index);
-> +extern void qe_pin_free(struct qe_pin *qe_pin);
-> +extern void qe_pin_set_gpio(struct qe_pin *qe_pin);
-> +extern void qe_pin_set_dedicated(struct qe_pin *pin);
+> The driver supports very simple GPIO controllers, that is, when a
+> controller provides just a 'data' register. Such controllers may be
+> found in various BCSRs (Board's FPGAs used to control board's
+> switches, LEDs, chip-selects, Ethernet/USB PHY power, etc).
+>
+> So far we support only 1-byte GPIO banks. Support for other widths may
+> be implemented when/if needed.
+>
+> p.s.
+> To avoid "made up" compatible entries (like compatible = "simple- 
+> gpio"),
+> boards must call the simple_gpiochip_init() to pass the compatible
+> string.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> Documentation/powerpc/dts-bindings/fsl/board.txt |   30 ++++
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+can we pull this out of this patch.  Since the fsl board specific  
+binding its 100% relevant to the generic support for simple_gpio.  We  
+can also update the .dts for just gpio and Kconfig in that patch.
+
+>
+> arch/powerpc/platforms/Kconfig                   |   10 ++
+> arch/powerpc/sysdev/Makefile                     |    1 +
+> arch/powerpc/sysdev/simple_gpio.c                |  156 +++++++++++++ 
+> +++++++++
+> arch/powerpc/sysdev/simple_gpio.h                |   15 ++
+> 5 files changed, 212 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/sysdev/simple_gpio.c
+> create mode 100644 arch/powerpc/sysdev/simple_gpio.h
+>
+> diff --git a/Documentation/powerpc/dts-bindings/fsl/board.txt b/ 
+> Documentation/powerpc/dts-bindings/fsl/board.txt
+> index 81a917e..2bd9888 100644
+> --- a/Documentation/powerpc/dts-bindings/fsl/board.txt
+> +++ b/Documentation/powerpc/dts-bindings/fsl/board.txt
+> @@ -27,3 +27,33 @@ Example (MPC8610HPCD):
+> 		compatible = "fsl,fpga-pixis";
+> 		reg = <0xe8000000 32>;
+> 	};
+> +
+> +* Freescale BCSR GPIO banks
+> +
+> +Some BCSR registers act as simple GPIO controllers, each such
+> +register can be represented by the gpio-controller node.
+> +
+> +Required properities:
+> +- compatible : Should be "fsl,<board>-bcsr-gpio";
+> +- reg : Should contain the address and the lenght of the GPIO bank
+> +  register;
+
+spelling - length
+semicolon at add of register can be dropped.
+
+>
+> +- #gpio-cells : Should be two. The first cell is the pin number and  
+> the
+> +  second cell is used to specify optional paramters (currently  
+> unused);
+> +- gpio-controller : Marks the port as GPIO controller.
+> +
+> +Example:
+> +
+> +	bcsr@1,0 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		compatible = "fsl,mpc8360mds-bcsr";
+> +		reg = <1 0 0x8000>;
+> +		ranges = <0 1 0 0x8000>;
+> +
+> +		bcsr13: gpio-controller@d {
+> +			#gpio-cells = <2>;
+> +			compatible = "fsl,mpc8360mds-bcsr-gpio";
+> +			reg = <0xd 1>;
+> +			gpio-controller;
+> +		};
+> +	};
+
+> diff --git a/arch/powerpc/sysdev/simple_gpio.c b/arch/powerpc/sysdev/ 
+> simple_gpio.c
+> new file mode 100644
+> index 0000000..d62c85a
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/simple_gpio.c
+> @@ -0,0 +1,156 @@
+> +/*
+> + * Simple Memory-Mapped GPIOs
+> + *
+> + * Copyright (c) MontaVista Software, Inc. 2008.
+> + *
+> + * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/types.h>
+> +#include <linux/ioport.h>
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/of_gpio.h>
+> +#include <linux/gpio.h>
+> +#include <asm/prom.h>
+> +#include "simple_gpio.h"
+> +
+> +struct u8_gpio_chip {
+> +	struct of_mm_gpio_chip mm_gc;
+> +	spinlock_t lock;
+> +
+> +	/* shadowed data register to clear/set bits safely */
+> +	u8 data;
+> +};
+> +
+> +static struct u8_gpio_chip *to_u8_gpio_chip(struct of_mm_gpio_chip  
+> *mm_gc)
+> +{
+> +	return container_of(mm_gc, struct u8_gpio_chip, mm_gc);
+> +}
+> +
+> +static u8 u8_pin2mask(unsigned int pin)
+> +{
+> +	return 1 << (8 - 1 - pin);
+> +}
+> +
+> +static int u8_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+> +{
+> +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+> +
+> +	return in_8(mm_gc->regs) & u8_pin2mask(gpio);
+> +}
+> +
+> +static void u8_gpio_set(struct gpio_chip *gc, unsigned int gpio,  
+> int val)
+> +{
+> +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+> +	struct u8_gpio_chip *u8_gc = to_u8_gpio_chip(mm_gc);
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&u8_gc->lock, flags);
+> +
+> +	if (val)
+> +		u8_gc->data |= u8_pin2mask(gpio);
+> +	else
+> +		u8_gc->data &= ~u8_pin2mask(gpio);
+> +
+> +	out_8(mm_gc->regs, u8_gc->data);
+> +
+> +	spin_unlock_irqrestore(&u8_gc->lock, flags);
+> +}
+> +
+> +static int u8_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int u8_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio,  
+> int val)
+> +{
+> +	u8_gpio_set(gc, gpio, val);
+> +	return 0;
+> +}
+> +
+> +static void u8_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
+> +{
+> +	struct u8_gpio_chip *u8_gc = to_u8_gpio_chip(mm_gc);
+> +
+> +	u8_gc->data = in_8(mm_gc->regs);
+> +}
+> +
+> +static int __init u8_simple_gpiochip_add(struct device_node *np)
+> +{
+> +	int ret;
+> +	struct u8_gpio_chip *u8_gc;
+> +	struct of_mm_gpio_chip *mm_gc;
+> +	struct of_gpio_chip *of_gc;
+> +	struct gpio_chip *gc;
+> +
+> +	u8_gc = kzalloc(sizeof(*u8_gc), GFP_KERNEL);
+> +	if (!u8_gc)
+> +		return -ENOMEM;
+> +
+> +	spin_lock_init(&u8_gc->lock);
+> +
+> +	mm_gc = &u8_gc->mm_gc;
+> +	of_gc = &mm_gc->of_gc;
+> +	gc = &of_gc->gc;
+> +
+> +	mm_gc->save_regs = u8_gpio_save_regs;
+> +	of_gc->gpio_cells = 2;
+> +	gc->ngpio = 8;
+> +	gc->direction_input = u8_gpio_dir_in;
+> +	gc->direction_output = u8_gpio_dir_out;
+> +	gc->get = u8_gpio_get;
+> +	gc->set = u8_gpio_set;
+> +
+> +	ret = of_mm_gpiochip_add(np, mm_gc);
+> +	if (ret)
+> +		goto err;
+> +	return 0;
+> +err:
+> +	kfree(u8_gc);
+> +	return ret;
+> +}
+> +
+> +int __init simple_gpiochip_init(const char *compatible)
+> +{
+> +	struct device_node *np;
+> +
+> +	for_each_compatible_node(np, NULL, compatible) {
+> +		int ret;
+> +		struct resource r;
+> +
+> +		ret = of_address_to_resource(np, 0, &r);
+> +		if (ret)
+> +			goto err;
+> +
+> +		switch (resource_size(&r)) {
+> +		case 1:
+> +			ret = u8_simple_gpiochip_add(np);
+> +			if (ret)
+> +				goto err;
+> +			break;
+> +		default:
+> +			/*
+> +			 * Whenever you need support for GPIO bank width > 1,
+> +			 * please just turn u8_ code into huge macros, and
+> +			 * construct needed uX_ code with it.
+> +			 */
+> +			ret = -ENOSYS;
+> +			goto err;
+> +		}
+> +		continue;
+> +err:
+> +		pr_err("%s: registration failed, status %d\n",
+> +		       np->full_name, ret);
+> +	}
+> +	return 0;
+> +}
+> diff --git a/arch/powerpc/sysdev/simple_gpio.h b/arch/powerpc/sysdev/ 
+> simple_gpio.h
+> new file mode 100644
+> index 0000000..4d0e64d
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/simple_gpio.h
+> @@ -0,0 +1,15 @@
+> +#ifndef __SYSDEV_SIMPLE_GPIO_H
+> +#define __SYSDEV_SIMPLE_GPIO_H
+> +
+> +#include <linux/errno.h>
+> +
+> +#ifdef CONFIG_SIMPLE_GPIO
+> +extern int simple_gpiochip_init(const char *compatible);
+> +#else
+> +static inline int simple_gpiochip_init(const char *compatible)
+> +{
+> +	return -ENODEV;
+> +}
+> +#endif /* CONFIG_SIMPLE_GPIO */
+> +
+> +#endif /* __SYSDEV_SIMPLE_GPIO_H */
+
+Can I call simple_gpiochip_init() multiple times w/different  
+compatibles?
+
+- k
