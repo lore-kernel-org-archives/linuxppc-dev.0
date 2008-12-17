@@ -1,14 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 18 Dec 2008 10:46:10 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Erickson <gerickson@nuovations.com>
+Subject: Re: [PATCH] powerpc/4xx: DTS: Add Add'l SDRAM0 Compatible and
+	Interrupt Info
+Message-ID: <20081217234610.GA11185@yookeroo.seuss>
+References: <1229543767-1617-1-git-send-email-gerickson@nuovations.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18761.32798.327649.628188@cargo.ozlabs.ibm.com>
-Date: Thu, 18 Dec 2008 09:41:34 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: Please pull from 'merge' for 2.6.28
-In-Reply-To: <Pine.LNX.4.64.0812171006580.12026@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0812171006580.12026@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1229543767-1617-1-git-send-email-gerickson@nuovations.com>
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,18 +19,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
-
-> The following changes since commit 23e0e8afafd9ac065d81506524adf3339584044b:
->   Arnd Bergmann (1):
->         powerpc/cell/axon-msi: Fix MSI after kexec
+On Wed, Dec 17, 2008 at 11:56:07AM -0800, Grant Erickson wrote:
+> Added additional information for type and compatibility strings and
+> interrupt information to the SDRAM0 memory-controller device tree
+> nodes for AMCC PowerPC 405EX[r]-based boards to facilitate binding
+> with the new "ibm,sdram-4xx-ddr2" EDAC memory controller adapter driver.
 > 
-> are available in the git repository at:
+> Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+> ---
+> As support in the associated EDAC adapter driver is added over time,
+> similar changes will/should be made to the DTS files for boards
+> leveraging realizations of this "ibm,sdram-4xx-ddr2" controller,
+> including the 440SP, 440SPe, 460EX, 460GT and 460SX.
 > 
->   master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
+>  arch/powerpc/boot/dts/haleakala.dts |   11 ++++++++++-
+>  arch/powerpc/boot/dts/kilauea.dts   |   11 ++++++++++-
+>  arch/powerpc/boot/dts/makalu.dts    |   11 ++++++++++-
+>  3 files changed, 30 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
+> index 513bc43..e45ce7e 100644
+> --- a/arch/powerpc/boot/dts/haleakala.dts
+> +++ b/arch/powerpc/boot/dts/haleakala.dts
+> @@ -89,8 +89,17 @@
+>  		clock-frequency = <0>; /* Filled in by U-Boot */
+>  
+>  		SDRAM0: memory-controller {
+> -			compatible = "ibm,sdram-405exr";
+> +			device_type = "memory-controller";
 
-Linus, please pull Kumar's tree directly, since I have no other
-commits needing to go in 2.6.28 at this stage.
+This should not have a device_type.
 
-Thanks,
-Paul.
+> +			compatible = "ibm,sdram-405exr", "ibm,sdram-4xx-ddr2";
+>  			dcr-reg = <0x010 0x002>;
+> +			#address-cells = <0>;
+> +			#size-cells = <0>;
+
+This seems odd.  These should only be present if the node does, or at
+least can, have subnodes - I don't see that it would.
+
+> +			#interrupt-cells = <1>;
+> +			interrupt-parent = <&SDRAM0>;
+> +			interrupts = <0x0 0x1>;
+> +			interrupt-map = </* ECCDED Error */ 0x0 &UIC2 0x5 0x4
+> +					 /* ECCSEC Error */ 0x1 &UIC2 0x6 0x4>;
+> +			interrupt-map-mask = <0xffffffff>;
+>  		};
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
