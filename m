@@ -1,13 +1,13 @@
 Return-Path: <gerickson@nuovations.com>
-Received: from relay02.pair.com (relay02.pair.com [209.68.5.16])
-	by ozlabs.org (Postfix) with SMTP id C5838DDF0A
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 09:12:27 +1100 (EST)
+Received: from relay01.pair.com (relay01.pair.com [209.68.5.15])
+	by ozlabs.org (Postfix) with SMTP id 8DF35DDED4
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 09:34:14 +1100 (EST)
 From: Grant Erickson <gerickson@nuovations.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4] powerpc/4xx: DTS: Add Add'l SDRAM0 Compatible and
+Subject: [PATCH v5] powerpc/4xx: DTS: Add Add'l SDRAM0 Compatible and
 	Interrupt Info
-Date: Thu, 18 Dec 2008 14:12:24 -0800
-Message-Id: <1229638344-650-1-git-send-email-gerickson@nuovations.com>
+Date: Thu, 18 Dec 2008 14:34:05 -0800
+Message-Id: <1229639645-4455-1-git-send-email-gerickson@nuovations.com>
 Cc: bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -41,6 +41,8 @@ are mapped to the same interrupt parent.
 
 Patch v4 corrects a typo: 'interrupt-map' should be 'interrupts'.
 
+Patch v5 corrects a copy-and-paste error, Haleakala is a 405exr.
+
  arch/powerpc/boot/dts/haleakala.dts |    5 ++++-
  arch/powerpc/boot/dts/kilauea.dts   |    5 ++++-
  arch/powerpc/boot/dts/makalu.dts    |    5 ++++-
@@ -55,7 +57,7 @@ index 513bc43..9384da6 100644
  
  		SDRAM0: memory-controller {
 -			compatible = "ibm,sdram-405exr";
-+			compatible = "ibm,sdram-405ex", "ibm,sdram-4xx-ddr2";
++			compatible = "ibm,sdram-405exr", "ibm,sdram-4xx-ddr2";
  			dcr-reg = <0x010 0x002>;
 +			interrupt-parent = <&UIC2>;
 +			interrupts = <0x5 0x4	/* ECC DED Error */ 
