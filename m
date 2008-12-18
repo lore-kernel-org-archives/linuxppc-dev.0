@@ -1,20 +1,18 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id DDCA0DDE23
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 21:23:52 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: "Remi Lefevre" <rlefevre@gmail.com>
-Subject: Re: FHCI driver adaptation for CPM2
-Date: Thu, 18 Dec 2008 11:23:48 +0100
-References: <4e0b9cb00812170710n3374d558xab3584dc61980756@mail.gmail.com>
-	<200812171633.58081.laurentp@cse-semaphore.com>
-	<4e0b9cb00812171227g47647d31ufaec827ddbab0232@mail.gmail.com>
-In-Reply-To: <4e0b9cb00812171227g47647d31ufaec827ddbab0232@mail.gmail.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 379E8DDF22
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 21:29:57 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LDG8e-0006nN-Eu
+	for linuxppc-dev@ozlabs.org; Thu, 18 Dec 2008 02:29:52 -0800
+Message-ID: <21070179.post@talk.nabble.com>
+Date: Thu, 18 Dec 2008 02:29:52 -0800 (PST)
+From: Felix Radensky <felix@embedded-sol.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Long boot delay on 460EX with 2.6.28-rc8
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200812181123.48550.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Remi,
 
-On Wednesday 17 December 2008 21:27:49 Remi Lefevre wrote:
-> >> Also 40% seems quite a lot, even at 1000Hz interruptions, an idea how
-> >> much does the CRC computation contribute in this CPU hogging ?
-> >
-> > I haven't measured that, but probably not much. The biggest CPU time
-> > eater isn't the SOF generation interrupt but the USB packet handling
-> > code. The CPM2 USB host controller is really too low-level to be usable
-> > (except maybe for specific applications). Comparing the OHCI/UHCI/EHCI
-> > and FHCI controllers is akin to  bit like comparing a full 16550 UART
-> > with a software bit-bang implementation. You can get around with it, it
-> > might work for your specific application, but you shouldn't try a full
-> > speed 115200bds communication while computing a CPU-hungry physical
-> > simulation.
->
-> That's what I was afraid of. I now understand clearly why you didn't expect
-> that much better performance with CPM3 in a past message
-> (http://ozlabs.org/pipermail/linuxppc-embedded/2008-May/030508.html).
-> Still, as you said, it can have some use for specific applications.
->
-> Do you remember the throughput you were able to reach with this cpu
-> overhead ?
+Hi,
 
-I'm sorry I don't.
+I'm experiencing a long (around 20 sec) delay from the moment
+u-boot-1.3.4 passes control to linux and until the first kernel message
+appears on console. This happens on custom board, I don't have access
+to Canyonlands to test how it behaves. I did not modify anything in kernel 
+code to make it boot on custom board, just removed PCIX and PCIE0 nodes
+from DTS.
 
-Best regards,
+Has anyone experienced similar behavior with 460EX ? Any hints what can
+cause this ?
+
+Thanks a lot.
+
+Felix.
+
 
 -- 
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-F +32 (2) 387 42 75
+View this message in context: http://www.nabble.com/Long-boot-delay-on-460EX-with-2.6.28-rc8-tp21070179p21070179.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
