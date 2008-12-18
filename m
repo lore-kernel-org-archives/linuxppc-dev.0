@@ -1,25 +1,20 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D243DDEF7
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 18:58:50 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH][v2] fork_init: fix division by zero
-Date: Thu, 18 Dec 2008 10:47:50 +0300
-References: <200812101950.51958.yur@emcraft.com>
-	<20081211121635.ff58193f.akpm@linux-foundation.org>
-	<18753.46301.944770.779390@cargo.ozlabs.ibm.com>
-In-Reply-To: <18753.46301.944770.779390@cargo.ozlabs.ibm.com>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
+	by ozlabs.org (Postfix) with ESMTP id F1408DDF26
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 19:04:29 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] powerpc/4xx: DTS: Add Add'l SDRAM0 Compatible and
+	Interrupt Info
+Date: Thu, 18 Dec 2008 09:04:23 +0100
+References: <1229563900-10447-1-git-send-email-gerickson@nuovations.com>
+In-Reply-To: <1229563900-10447-1-git-send-email-gerickson@nuovations.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200812181047.50332.yur@emcraft.com>
-Cc: wd@denx.de, dzu@denx.de, linux-kernel@vger.kernel.org, miltonm@bga.com,
-	linuxppc-dev@ozlabs.org, viro@zeniv.linux.org.uk,
-	Geert.Uytterhoeven@sonycom.com, yanok@emcraft.com,
-	Andrew Morton <akpm@linux-foundation.org>
+Message-Id: <200812180904.23593.sr@denx.de>
+Cc: bluesmoke-devel@lists.sourceforge.net,
+	Grant Erickson <gerickson@nuovations.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,90 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Paul,
+On Thursday 18 December 2008, Grant Erickson wrote:
+> Added additional information for type and compatibility strings and
+> interrupt information to the SDRAM0 memory-controller device tree
+> nodes for AMCC PowerPC 405EX[r]-based boards to facilitate binding
+> with the new "ibm,sdram-4xx-ddr2" EDAC memory controller adapter driver.
+>
+> Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+> ---
+> As support in the associated EDAC adapter driver is added over time,
+> similar changes will/should be made to the DTS files for boards
+> leveraging realizations of this "ibm,sdram-4xx-ddr2" controller,
+> including the 440SP, 440SPe, 460EX, 460GT and 460SX.
+>
+> Patch v2, based on review from David Gibson, removes the 'device_type'
+> field because it is only used for legacy OpenFirmware method
+> interfaces and no such compatibility is warranted here. In addition,
+> removed address- and size-cells as this node has no children.
+>
+>  arch/powerpc/boot/dts/haleakala.dts |    8 +-
+>  arch/powerpc/boot/dts/kilauea.dts   |    8 +-
+>  arch/powerpc/boot/dts/makalu.dts    |    8 +-
+>  3 files changed, 21 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/dts/haleakala.dts
+> b/arch/powerpc/boot/dts/haleakala.dts index 513bc43..64880ab 100644
+> --- a/arch/powerpc/boot/dts/haleakala.dts
+> +++ b/arch/powerpc/boot/dts/haleakala.dts
+> @@ -89,8 +89,14 @@
+>  		clock-frequency = <0>; /* Filled in by U-Boot */
+>
+>  		SDRAM0: memory-controller {
+> -			compatible = "ibm,sdram-405exr";
+> +			compatible = "ibm,sdram-405exr", "ibm,sdram-4xx-ddr2";
+>  			dcr-reg = <0x010 0x002>;
+> +			#interrupt-cells = <1>;
+> +			interrupt-parent = <&SDRAM0>;
+> +			interrupts = <0x0 0x1>;
+> +			interrupt-map = </* ECCDED Error */ 0x0 &UIC2 0x5 0x4
+> +					 /* ECCSEC Error */ 0x1 &UIC2 0x6 0x4>;
+> +			interrupt-map-mask = <0xffffffff>;
 
-On Friday 12 December 2008 03:48, Paul Mackerras wrote:
-> Andrew Morton writes:
-> 
-> > > +#if (8 * THREAD_SIZE) > PAGE_SIZE
-> > >  	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
-> > > +#else
-> > > +	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
-> > > +#endif
-> > 
-> > The expression you've chosen here can be quite inacccurate, because
-> > ((PAGE_SIZE / (8 * THREAD_SIZE)) is a small number.  The way to
-> > preserve accuracy is
-> 
-> The assumption is that THREAD_SIZE is a power of 2, as is PAGE_SIZE.
-> 
-> I think Yuri should be increasing THREAD_SIZE for the larger page
-> sizes he's implementing, because we have on-stack arrays whose size
-> depends on the page size.  I suspect that having THREAD_SIZE less than
-> 1/8 of PAGE_SIZE risks stack overflows, and the better fix is for Yuri
-> to make sure THREAD_SIZE is at least 1/8 of PAGE_SIZE.  (In fact, more
-> may be needed - someone should work out what fraction is actually
-> needed.)
+When all interrupts are mapped the same parent, this should do as well:
 
-  Right, thanks for pointing this. I guess, I was just lucky since didn't run into
-problems with stack overflows. So, I agree that we should increase the 
-THREAD_SIZE in case of 256KB pages up to 1/8 of PAGE_SIZE, that is up 
-to 32KB.
+			interrupt-parent = <&UIC2>;
+			interrupts = <0x5 0x4	/* ECCDED Error */
+				      0x6 0x4>; /* ECCSEC Error */
 
- There is one more warning from the common code when I use 256KB pages:
+Other than this:
 
-   CC      mm/shmem.o
-mm/shmem.c: In function 'shmem_truncate_range':
-mm/shmem.c:613: warning: division by zero
-mm/shmem.c:619: warning: division by zero
-mm/shmem.c:644: warning: division by zero
-mm/shmem.c: In function 'shmem_unuse_inode':
-mm/shmem.c:873: warning: division by zero
+Acked-by: Stefan Roese <sr@denx.de>
 
- The problem here is that ENTRIES_PER_PAGEPAGE becomes 0x1.0000.0000
-when PAGE_SIZE is 256K.
+Thanks.
 
- How about the following fix ?
-
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 0ed0752..99d7c91 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -57,7 +57,7 @@
- #include <asm/pgtable.h>
- 
- #define ENTRIES_PER_PAGE (PAGE_CACHE_SIZE/sizeof(unsigned long))
--#define ENTRIES_PER_PAGEPAGE (ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
-+#define ENTRIES_PER_PAGEPAGE ((unsigned long long)ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
- #define BLOCKS_PER_PAGE  (PAGE_CACHE_SIZE/512)
- 
- #define SHMEM_MAX_INDEX  (SHMEM_NR_DIRECT + (ENTRIES_PER_PAGEPAGE/2) * (ENTRIES_PER_PAGE+1))
-@@ -95,7 +95,7 @@ static unsigned long shmem_default_max_inodes(void)
- }
- #endif
- 
--static int shmem_getpage(struct inode *inode, unsigned long idx,
-+static int shmem_getpage(struct inode *inode, unsigned long long idx,
- 			 struct page **pagep, enum sgp_type sgp, int *type);
- 
- static inline struct page *shmem_dir_alloc(gfp_t gfp_mask)
-@@ -533,7 +533,7 @@ static void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end)
- 	int punch_hole;
- 	spinlock_t *needs_lock;
- 	spinlock_t *punch_lock;
--	unsigned long upper_limit;
-+	unsigned long long upper_limit;
- 
- 	inode->i_ctime = inode->i_mtime = CURRENT_TIME;
- 	idx = (start + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-@@ -1175,7 +1175,7 @@ static inline struct mempolicy *shmem_get_sbmpol(struct shmem_sb_info *sbinfo)
-  * vm. If we swap it in we mark it dirty since we also free the swap
-  * entry since a page cannot live in both the swap and page cache
-  */
--static int shmem_getpage(struct inode *inode, unsigned long idx,
-+static int shmem_getpage(struct inode *inode, unsigned long long idx,
- 			struct page **pagep, enum sgp_type sgp, int *type)
- {
- 	struct address_space *mapping = inode->i_mapping;
-
-Regards, Yuri
+Best regards,
+Stefan
