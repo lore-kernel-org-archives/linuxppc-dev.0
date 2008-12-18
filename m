@@ -1,20 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
-	by ozlabs.org (Postfix) with ESMTP id F1408DDF26
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 19:04:29 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2] powerpc/4xx: DTS: Add Add'l SDRAM0 Compatible and
-	Interrupt Info
-Date: Thu, 18 Dec 2008 09:04:23 +0100
-References: <1229563900-10447-1-git-send-email-gerickson@nuovations.com>
-In-Reply-To: <1229563900-10447-1-git-send-email-gerickson@nuovations.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id DDCA0DDE23
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 21:23:52 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: "Remi Lefevre" <rlefevre@gmail.com>
+Subject: Re: FHCI driver adaptation for CPM2
+Date: Thu, 18 Dec 2008 11:23:48 +0100
+References: <4e0b9cb00812170710n3374d558xab3584dc61980756@mail.gmail.com>
+	<200812171633.58081.laurentp@cse-semaphore.com>
+	<4e0b9cb00812171227g47647d31ufaec827ddbab0232@mail.gmail.com>
+In-Reply-To: <4e0b9cb00812171227g47647d31ufaec827ddbab0232@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200812180904.23593.sr@denx.de>
-Cc: bluesmoke-devel@lists.sourceforge.net,
-	Grant Erickson <gerickson@nuovations.com>
+Message-Id: <200812181123.48550.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,58 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 18 December 2008, Grant Erickson wrote:
-> Added additional information for type and compatibility strings and
-> interrupt information to the SDRAM0 memory-controller device tree
-> nodes for AMCC PowerPC 405EX[r]-based boards to facilitate binding
-> with the new "ibm,sdram-4xx-ddr2" EDAC memory controller adapter driver.
->
-> Signed-off-by: Grant Erickson <gerickson@nuovations.com>
-> ---
-> As support in the associated EDAC adapter driver is added over time,
-> similar changes will/should be made to the DTS files for boards
-> leveraging realizations of this "ibm,sdram-4xx-ddr2" controller,
-> including the 440SP, 440SPe, 460EX, 460GT and 460SX.
->
-> Patch v2, based on review from David Gibson, removes the 'device_type'
-> field because it is only used for legacy OpenFirmware method
-> interfaces and no such compatibility is warranted here. In addition,
-> removed address- and size-cells as this node has no children.
->
->  arch/powerpc/boot/dts/haleakala.dts |    8 +-
->  arch/powerpc/boot/dts/kilauea.dts   |    8 +-
->  arch/powerpc/boot/dts/makalu.dts    |    8 +-
->  3 files changed, 21 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/boot/dts/haleakala.dts
-> b/arch/powerpc/boot/dts/haleakala.dts index 513bc43..64880ab 100644
-> --- a/arch/powerpc/boot/dts/haleakala.dts
-> +++ b/arch/powerpc/boot/dts/haleakala.dts
-> @@ -89,8 +89,14 @@
->  		clock-frequency = <0>; /* Filled in by U-Boot */
->
->  		SDRAM0: memory-controller {
-> -			compatible = "ibm,sdram-405exr";
-> +			compatible = "ibm,sdram-405exr", "ibm,sdram-4xx-ddr2";
->  			dcr-reg = <0x010 0x002>;
-> +			#interrupt-cells = <1>;
-> +			interrupt-parent = <&SDRAM0>;
-> +			interrupts = <0x0 0x1>;
-> +			interrupt-map = </* ECCDED Error */ 0x0 &UIC2 0x5 0x4
-> +					 /* ECCSEC Error */ 0x1 &UIC2 0x6 0x4>;
-> +			interrupt-map-mask = <0xffffffff>;
+Hi Remi,
 
-When all interrupts are mapped the same parent, this should do as well:
+On Wednesday 17 December 2008 21:27:49 Remi Lefevre wrote:
+> >> Also 40% seems quite a lot, even at 1000Hz interruptions, an idea how
+> >> much does the CRC computation contribute in this CPU hogging ?
+> >
+> > I haven't measured that, but probably not much. The biggest CPU time
+> > eater isn't the SOF generation interrupt but the USB packet handling
+> > code. The CPM2 USB host controller is really too low-level to be usable
+> > (except maybe for specific applications). Comparing the OHCI/UHCI/EHCI
+> > and FHCI controllers is akin to  bit like comparing a full 16550 UART
+> > with a software bit-bang implementation. You can get around with it, it
+> > might work for your specific application, but you shouldn't try a full
+> > speed 115200bds communication while computing a CPU-hungry physical
+> > simulation.
+>
+> That's what I was afraid of. I now understand clearly why you didn't expect
+> that much better performance with CPM3 in a past message
+> (http://ozlabs.org/pipermail/linuxppc-embedded/2008-May/030508.html).
+> Still, as you said, it can have some use for specific applications.
+>
+> Do you remember the throughput you were able to reach with this cpu
+> overhead ?
 
-			interrupt-parent = <&UIC2>;
-			interrupts = <0x5 0x4	/* ECCDED Error */
-				      0x6 0x4>; /* ECCSEC Error */
-
-Other than this:
-
-Acked-by: Stefan Roese <sr@denx.de>
-
-Thanks.
+I'm sorry I don't.
 
 Best regards,
-Stefan
+
+-- 
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+F +32 (2) 387 42 75
