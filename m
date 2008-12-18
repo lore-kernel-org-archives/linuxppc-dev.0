@@ -1,24 +1,18 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de",
-	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
-	verified)) by ozlabs.org (Postfix) with ESMTPS id A9597DDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 22:13:54 +1100 (EST)
-Message-ID: <494A3035.30107@scram.de>
-Date: Thu, 18 Dec 2008 12:12:53 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 58785DDF25
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 03:02:59 +1100 (EST)
+Date: Thu, 18 Dec 2008 19:02:56 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Felix Radensky <felix@embedded-sol.com>
+Subject: Re: Long boot delay on 460EX with 2.6.28-rc8
+Message-ID: <20081218160256.GA14419@oksana.dev.rtsoft.ru>
+References: <21070179.post@talk.nabble.com>
 MIME-Version: 1.0
-To: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: Please pull bjdoo ks' i2c-fixes
-References: <E1LChEf-0000Ts-53@teyla.home.fluff.org>
-	<4948E89A.7080703@scram.de> <20081218100635.GH8032@fluff.org.uk>
-In-Reply-To: <20081218100635.GH8032@fluff.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mike Ditto <mditto@consentry.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linux-i2c@vger.kernel.org, khali@linux-fr.org,
-	torvalds@linux-foundation.org
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <21070179.post@talk.nabble.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,12 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben Dooks schrieb:
+On Thu, Dec 18, 2008 at 02:29:52AM -0800, Felix Radensky wrote:
+> 
+> Hi,
+> 
+> I'm experiencing a long (around 20 sec) delay from the moment
+> u-boot-1.3.4 passes control to linux and until the first kernel message
+> appears on console.
 
-> Ok, but this isn't really a fix, so I'll look at putting it into my
-> i2c-next tree, not i2c-fixes.
+I saw somewhat similar behaviour on 83xx target, the cause was
+that my .config file contained bogus UDBG_RTAS_CONSOLE=y symbol
+(or was it PPC_EARLY_DEBUG_RTAS_PANEL=y? Or HVC_UDBG=y? I don't
+quite remember).
 
-That's OK for me.
+Obviously, on 83xx we don't have RTAS or HVC stuff, but kernel
+didn't oops or hang completely, it was busy with executing various
+delays in those drivers and then just continued to load.
+
+OTOH, it might be that the kernel just calibrates the delay loop
+for too long, and you actually don't have any early messages
+support enabled so you don't see what the kernel does at the moment.
+
+You could provide dmesg and .config file to make things clearer, so
+at least somebody with 460EX boards could try to reproduce the
+result.
 
 Thanks,
-Jochen
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
