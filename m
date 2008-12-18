@@ -1,20 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Long boot delay on 460EX with 2.6.28-rc8
-From: Michael Ellerman <michael@ellerman.id.au>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20081218190136.GA7752@oksana.dev.rtsoft.ru>
-References: <21070179.post@talk.nabble.com>
-	<20081218160256.GA14419@oksana.dev.rtsoft.ru>
-	<A53D4E40-E15F-433B-A9DE-9359533C17F8@kernel.crashing.org>
-	<20081218190136.GA7752@oksana.dev.rtsoft.ru>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-WSNn9sNrbBRldZuQXk7D"
-Date: Fri, 19 Dec 2008 09:57:43 +1100
-Message-Id: <1229641063.8584.1.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <gerickson@nuovations.com>
+Received: from relay01.pair.com (relay01.pair.com [209.68.5.15])
+	by ozlabs.org (Postfix) with SMTP id D7208DDEEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 10:44:16 +1100 (EST)
+Date: Thu, 18 Dec 2008 15:43:54 -0800
+Subject: Re: [PATCH v2] Add PPC/4xx "ibm,sdram-4xx-ddr2" EDAC MC Driver
+From: Grant Erickson <gerickson@nuovations.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Message-ID: <C570203A.138A0%gerickson@nuovations.com>
+In-Reply-To: <C56FE0DE.1387F%gerickson@nuovations.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+	dougthompson@xmission.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 12/18/08 11:13 AM, Grant Erickson wrote:
+> On 12/18/08 9:56 AM, Josh Boyer wrote:
+>> So, I am not an expert at the EDAC subsystem.  Just looking at the
+>> number of functions that get call from this interrupt handler, I'm
+>> wondering if a significant amount of time could be spent here.  With
+>> all the message building and such, it seems like it could be error
+>> prone.
+> 
+> The message building functions are really best-effort, straight-through, so
+> there should be little room if any for error-proneness. Though, snprintf
+> contained therein is fairly costly as functions go.
+> 
+>> Do you have an idea of the duration of one of these events?  Could
+>> this schedule a work queue to handle it outside of the hard IRQ
+>> context?
+> 
+> I'll take some measurements for the worst case message length time. I
+> certainly thought about a work queue; however, my gut feeling was that it
+> wasn't warranted.
+> 
+> Stay tuned for measurement data.
 
---=-WSNn9sNrbBRldZuQXk7D
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+In general, correctable and uncorrectable ECC errors in and of themselves
+should be rare events. So, by extension, the generation of these ECC error
+messages should be rare as well.
 
-On Thu, 2008-12-18 at 22:01 +0300, Anton Vorontsov wrote:
-> On Thu, Dec 18, 2008 at 12:51:29PM -0600, Kumar Gala wrote:
+When one of these CE or UE ECC events occurs, the time required to build the
+driver-unique log message is as shown below for a run of ~300 forced CEs at
+at a processor frequency of 400 MHz:
 
-> >> I saw somewhat similar behaviour on 83xx target, the cause was
-> >> that my .config file contained bogus UDBG_RTAS_CONSOLE=3Dy symbol
-> >> (or was it PPC_EARLY_DEBUG_RTAS_PANEL=3Dy? Or HVC_UDBG=3Dy? I don't
-> >> quite remember).
-> >>
-> >> Obviously, on 83xx we don't have RTAS or HVC stuff, but kernel
-> >> didn't oops or hang completely, it was busy with executing various
-> >> delays in those drivers and then just continued to load.
-> >
-> > Why are these drivers even doing anything on 83xx?  Seems like they nee=
-d=20
-> > something to bind against or some detection of "HW".
->=20
-> Early console/UDBG is known to cause problems if enabled on
-> inappropriate hardware. They start working very early, so it's hard
-> for them to do the hw detection (no device tree yet, I presume).
+                Ticks       Time / us
+     --------------------------------
+     Minimum     4150           10.38
+     Maximum     9075           22.69
+     Mean        8024           20.06
+     Median      8297           20.74
+     Mode        8869           22.17
+     Std. Dev.    864            2.16
+     --------------------------------
 
-Yes that's the whole point, it's _EARLY_ debug, there's even a big fat
-warning in the Kconfig.
+Regards,
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-WSNn9sNrbBRldZuQXk7D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklK1WcACgkQdSjSd0sB4dIkCwCbBI4oqqHc1Q8aPIMPKOZSFEpl
-1xoAoIjUv4BkmVkUgKQeXqpEnRYE/idX
-=gkWk
------END PGP SIGNATURE-----
-
---=-WSNn9sNrbBRldZuQXk7D--
+Grant
