@@ -1,18 +1,33 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 4A41BDDEE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 05:33:03 +1100 (EST)
-Date: Thu, 18 Dec 2008 21:33:01 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH 0/7] OpenFirmware support for the spi_mpc83xx driver
-Message-ID: <20081218183301.GA32440@oksana.dev.rtsoft.ru>
-References: <20081205200936.GA19137@oksana.dev.rtsoft.ru>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CA251DDDEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 05:34:14 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBIIXFOd025409
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 13:33:15 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mBIIY7vh169892
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 13:34:07 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mBIIXVUD001146
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 13:33:31 -0500
+Date: Thu, 18 Dec 2008 13:34:02 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Grant Erickson <gerickson@nuovations.com>
+Subject: Re: [PATCH v2] powerpc/4xx: DTS: Add Add'l SDRAM0 Compatible and
+	Interrupt Info
+Message-ID: <20081218183402.GC23637@localhost.localdomain>
+References: <20081218175643.GB18201@yoda.jdub.homelinux.org>
+	<C56FD0C0.1386E%gerickson@nuovations.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081205200936.GA19137@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <C56FD0C0.1386E%gerickson@nuovations.com>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 05, 2008 at 11:09:36PM +0300, Anton Vorontsov wrote:
-> Hi all,
-> 
-> The patch series are used to support SPI via the OF SPI subsystem
-> (driver/of/of_spi.c). Now the driver is able to manage its own
-> chip selects, and doesn't need any auxiliary support from the
-> board files or fsl_soc constructors.
-> 
-> The series also contains PowerPC portions of the MMC SPI support.
-> 
-> Since the series touches spi and powerpc trees, I think it would
-> be most convenient to pass it via one of these trees. The patches
-> doesn't touch any SPI functionality, only some probe routines, so
-> I believe powerpc.git is the best candidate...
-> 
-> The other reason for powerpc tree is that the patches depends on
-> other patches as found in paulus/powerpc.git + of_gpio_count()
-> as found here:
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-December/065917.html
-> 
-> David, if you're OK with the patches, may I ask you to sign off on
-> the ones that touch drivers/spi so that we could pass it via Kumar's
-> powerpc.git?
+On Thu, Dec 18, 2008 at 10:04:48AM -0800, Grant Erickson wrote:
+>On 12/18/08 9:56 AM, Josh Boyer wrote:
+>> On Thu, Dec 18, 2008 at 09:04:23AM +0100, Stefan Roese wrote:
+>>> On Thursday 18 December 2008, Grant Erickson wrote:
+>>>> diff --git a/arch/powerpc/boot/dts/haleakala.dts
+>>>> b/arch/powerpc/boot/dts/haleakala.dts index 513bc43..64880ab 100644
+>>>> --- a/arch/powerpc/boot/dts/haleakala.dts
+>>>> +++ b/arch/powerpc/boot/dts/haleakala.dts
+>>>> @@ -89,8 +89,14 @@
+>>>> clock-frequency = <0>; /* Filled in by U-Boot */
+>>>> 
+>>>> SDRAM0: memory-controller {
+>>>> -   compatible = "ibm,sdram-405exr";
+>>>> +   compatible = "ibm,sdram-405exr", "ibm,sdram-4xx-ddr2";
+>>>> dcr-reg = <0x010 0x002>;
+>>>> +   #interrupt-cells = <1>;
+>>>> +   interrupt-parent = <&SDRAM0>;
+>>>> +   interrupts = <0x0 0x1>;
+>>>> +   interrupt-map = </* ECCDED Error */ 0x0 &UIC2 0x5 0x4
+>>>> +      /* ECCSEC Error */ 0x1 &UIC2 0x6 0x4>;
+>>>> +   interrupt-map-mask = <0xffffffff>;
+>>> 
+>>> When all interrupts are mapped the same parent, this should do as well:
+>>> 
+>>> interrupt-parent = <&UIC2>;
+>>> interrupts = <0x5 0x4 /* ECCDED Error */
+>>>      0x6 0x4>; /* ECCSEC Error */
+>>> 
+>>> Other than this:
+>>> 
+>>> Acked-by: Stefan Roese <sr@denx.de>
+>> 
+>> Yeah, I agree.  Adding an interrupt map when it's not needed is
+>> just complexity that doesn't need to be there.
+>
+>Stefan and Josh:
+>
+>From a programmatic perspective, does the above still allow the code to
+>index virtual interrupt indices 0 and 1 rather than 5 and 6 when calling
+>irq_of_parse_and_map()?
 
-David, I'm sorry for bothering you, but have you had a chance to
-look into this patch set?
+Yes.  The index parameter to irq_of_parse_and_map is just an index into
+the interrupts property.  So index 0 will use the first set of numbers
+that matches the required #interrupt-cells.  In this case it's two, one
+for the hardware irq number and one for the level/edge/polarity settings.
 
-Thanks,
-
-> The queue:
-> 
-> [1/7] powerpc: Implement get_brgfreq() and get_baudrate() stubs
-> [2/7] spi_mpc83xx: Fix sparse warnings
-> [3/7] spi_mpc83xx: Rework chip selects handling
-> [4/7] spi_mpc83xx: Add OF platform driver bindings
-> [5/7] powerpc/fsl_soc: Isolate legacy fsl_spi support to mpc832x_rdb boards
-> [6/7] powerpc: Add mmc-spi-slot bindings
-> [7/7] powerpc/83xx: Add mmc-spi support via the device tree for MPC8323E-RDB
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+josh
