@@ -1,17 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8219DDDF15
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 05:23:37 +1100 (EST)
-Date: Thu, 18 Dec 2008 21:23:31 +0300
+	by ozlabs.org (Postfix) with ESMTP id 4A41BDDEE7
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 05:33:03 +1100 (EST)
+Date: Thu, 18 Dec 2008 21:33:01 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH 4/6] ucc_geth: Cleanup repetitive ucc_geth_memclean() calls
-Message-ID: <20081218182331.GD30682@oksana.dev.rtsoft.ru>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [PATCH 0/7] OpenFirmware support for the spi_mpc83xx driver
+Message-ID: <20081218183301.GA32440@oksana.dev.rtsoft.ru>
+References: <20081205200936.GA19137@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-Cc: netdev@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-	linuxppc-dev@ozlabs.org, Andy Fleming <afleming@freescale.com>,
-	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>
+In-Reply-To: <20081205200936.GA19137@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,260 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-No need to call ucc_geth_memclean() so many times, just check for
-errors in ucc_geth_open(), and call ucc_geth_stop() in case of errors.
+On Fri, Dec 05, 2008 at 11:09:36PM +0300, Anton Vorontsov wrote:
+> Hi all,
+> 
+> The patch series are used to support SPI via the OF SPI subsystem
+> (driver/of/of_spi.c). Now the driver is able to manage its own
+> chip selects, and doesn't need any auxiliary support from the
+> board files or fsl_soc constructors.
+> 
+> The series also contains PowerPC portions of the MMC SPI support.
+> 
+> Since the series touches spi and powerpc trees, I think it would
+> be most convenient to pass it via one of these trees. The patches
+> doesn't touch any SPI functionality, only some probe routines, so
+> I believe powerpc.git is the best candidate...
+> 
+> The other reason for powerpc tree is that the patches depends on
+> other patches as found in paulus/powerpc.git + of_gpio_count()
+> as found here:
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-December/065917.html
+> 
+> David, if you're OK with the patches, may I ask you to sign off on
+> the ones that touch drivers/spi so that we could pass it via Kumar's
+> powerpc.git?
 
-The ucc_geth_stop() may be called anytime and will do the right thing.
+David, I'm sorry for bothering you, but have you had a chance to
+look into this patch set?
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/ucc_geth.c |   31 +------------------------------
- 1 files changed, 1 insertions(+), 30 deletions(-)
+Thanks,
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 1ba2855..70208c6 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -2420,7 +2420,6 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
- 	if (ucc_fast_init(uf_info, &ugeth->uccf)) {
- 		if (netif_msg_probe(ugeth))
- 			ugeth_err("%s: Failed to init uccf.", __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 
-@@ -2476,7 +2475,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		if (netif_msg_ifup(ugeth))
- 			ugeth_err("%s: Bad number of Rx threads value.",
- 				       	__func__);
--		ucc_geth_memclean(ugeth);
- 		return -EINVAL;
- 		break;
- 	}
-@@ -2501,7 +2499,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		if (netif_msg_ifup(ugeth))
- 			ugeth_err("%s: Bad number of Tx threads value.",
- 				       	__func__);
--		ucc_geth_memclean(ugeth);
- 		return -EINVAL;
- 		break;
- 	}
-@@ -2555,7 +2552,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		if (netif_msg_ifup(ugeth))
- 			ugeth_err("%s: IPGIFG initialization parameter too large.",
- 				  __func__);
--		ucc_geth_memclean(ugeth);
- 		return ret_val;
- 	}
- 
-@@ -2573,7 +2569,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		if (netif_msg_ifup(ugeth))
- 			ugeth_err("%s: Half Duplex initialization parameter too large.",
- 			  __func__);
--		ucc_geth_memclean(ugeth);
- 		return ret_val;
- 	}
- 
-@@ -2628,7 +2623,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 				ugeth_err
- 				    ("%s: Can not allocate memory for Tx bd rings.",
- 				     __func__);
--			ucc_geth_memclean(ugeth);
- 			return -ENOMEM;
- 		}
- 		/* Zero unused end of bd ring, according to spec */
-@@ -2664,7 +2658,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 				ugeth_err
- 				    ("%s: Can not allocate memory for Rx bd rings.",
- 				     __func__);
--			ucc_geth_memclean(ugeth);
- 			return -ENOMEM;
- 		}
- 	}
-@@ -2680,7 +2673,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			if (netif_msg_ifup(ugeth))
- 				ugeth_err("%s: Could not allocate tx_skbuff",
- 					  __func__);
--			ucc_geth_memclean(ugeth);
- 			return -ENOMEM;
- 		}
- 
-@@ -2712,7 +2704,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			if (netif_msg_ifup(ugeth))
- 				ugeth_err("%s: Could not allocate rx_skbuff",
- 					  __func__);
--			ucc_geth_memclean(ugeth);
- 			return -ENOMEM;
- 		}
- 
-@@ -2746,7 +2737,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			ugeth_err
- 			    ("%s: Can not allocate DPRAM memory for p_tx_glbl_pram.",
- 			     __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 	ugeth->p_tx_glbl_pram =
-@@ -2769,7 +2759,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			ugeth_err
- 			    ("%s: Can not allocate DPRAM memory for p_thread_data_tx.",
- 			     __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 
-@@ -2799,7 +2788,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			ugeth_err
- 			    ("%s: Can not allocate DPRAM memory for p_send_q_mem_reg.",
- 			     __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 
-@@ -2843,7 +2831,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 				ugeth_err
- 				 ("%s: Can not allocate DPRAM memory for p_scheduler.",
- 				     __func__);
--			ucc_geth_memclean(ugeth);
- 			return -ENOMEM;
- 		}
- 
-@@ -2894,7 +2881,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 				    ("%s: Can not allocate DPRAM memory for"
- 					" p_tx_fw_statistics_pram.",
- 				       	__func__);
--			ucc_geth_memclean(ugeth);
- 			return -ENOMEM;
- 		}
- 		ugeth->p_tx_fw_statistics_pram =
-@@ -2934,7 +2920,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			ugeth_err
- 			    ("%s: Can not allocate DPRAM memory for p_rx_glbl_pram.",
- 			     __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 	ugeth->p_rx_glbl_pram =
-@@ -2956,7 +2941,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			ugeth_err
- 			    ("%s: Can not allocate DPRAM memory for p_thread_data_rx.",
- 			     __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 
-@@ -2980,7 +2964,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 				ugeth_err
- 					("%s: Can not allocate DPRAM memory for"
- 					" p_rx_fw_statistics_pram.", __func__);
--			ucc_geth_memclean(ugeth);
- 			return -ENOMEM;
- 		}
- 		ugeth->p_rx_fw_statistics_pram =
-@@ -3003,7 +2986,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			ugeth_err
- 			    ("%s: Can not allocate DPRAM memory for"
- 				" p_rx_irq_coalescing_tbl.", __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 
-@@ -3072,7 +3054,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			ugeth_err
- 			    ("%s: Can not allocate DPRAM memory for p_rx_bd_qs_tbl.",
- 			     __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 
-@@ -3149,7 +3130,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			if (netif_msg_ifup(ugeth))
- 				ugeth_err("%s: Null Extended Filtering Chain Pointer.",
- 					  __func__);
--			ucc_geth_memclean(ugeth);
- 			return -EINVAL;
- 		}
- 
-@@ -3163,7 +3143,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 				ugeth_err
- 					("%s: Can not allocate DPRAM memory for"
- 					" p_exf_glbl_param.", __func__);
--			ucc_geth_memclean(ugeth);
- 			return -ENOMEM;
- 		}
- 
-@@ -3211,7 +3190,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			ugeth_err
- 			    ("%s: Can not allocate memory for"
- 				" p_UccInitEnetParamShadows.", __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 	/* Zero out *p_init_enet_param_shadow */
-@@ -3246,7 +3224,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		if (netif_msg_ifup(ugeth))
- 			ugeth_err("%s: Invalid largest External Lookup Key Size.",
- 				  __func__);
--		ucc_geth_memclean(ugeth);
- 		return -EINVAL;
- 	}
- 	ugeth->p_init_enet_param_shadow->largestexternallookupkeysize =
-@@ -3273,7 +3250,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		if (netif_msg_ifup(ugeth))
- 				ugeth_err("%s: Can not fill p_init_enet_param_shadow.",
- 					__func__);
--		ucc_geth_memclean(ugeth);
- 		return ret_val;
- 	}
- 
-@@ -3289,7 +3265,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		if (netif_msg_ifup(ugeth))
- 			ugeth_err("%s: Can not fill p_init_enet_param_shadow.",
- 				  __func__);
--		ucc_geth_memclean(ugeth);
- 		return ret_val;
- 	}
- 
-@@ -3299,7 +3274,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			if (netif_msg_ifup(ugeth))
- 				ugeth_err("%s: Can not fill Rx bds with buffers.",
- 					  __func__);
--			ucc_geth_memclean(ugeth);
- 			return ret_val;
- 		}
- 	}
-@@ -3311,7 +3285,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			ugeth_err
- 			    ("%s: Can not allocate DPRAM memory for p_init_enet_pram.",
- 			     __func__);
--		ucc_geth_memclean(ugeth);
- 		return -ENOMEM;
- 	}
- 	p_init_enet_pram =
-@@ -3763,7 +3736,6 @@ static int ucc_geth_open(struct net_device *dev)
- 	if (err) {
- 		if (netif_msg_ifup(ugeth))
- 			ugeth_err("%s: Cannot enable net device, aborting.", dev->name);
--		ucc_geth_stop(ugeth);
- 		goto out_err;
- 	}
- 
-@@ -3773,7 +3745,6 @@ static int ucc_geth_open(struct net_device *dev)
- 		if (netif_msg_ifup(ugeth))
- 			ugeth_err("%s: Cannot get IRQ for net device, aborting.",
- 				  dev->name);
--		ucc_geth_stop(ugeth);
- 		goto out_err;
- 	}
- 
-@@ -3783,7 +3754,7 @@ static int ucc_geth_open(struct net_device *dev)
- 
- out_err:
- 	napi_disable(&ugeth->napi);
--
-+	ucc_geth_stop(ugeth);
- 	return err;
- }
- 
+> The queue:
+> 
+> [1/7] powerpc: Implement get_brgfreq() and get_baudrate() stubs
+> [2/7] spi_mpc83xx: Fix sparse warnings
+> [3/7] spi_mpc83xx: Rework chip selects handling
+> [4/7] spi_mpc83xx: Add OF platform driver bindings
+> [5/7] powerpc/fsl_soc: Isolate legacy fsl_spi support to mpc832x_rdb boards
+> [6/7] powerpc: Add mmc-spi-slot bindings
+> [7/7] powerpc/83xx: Add mmc-spi support via the device tree for MPC8323E-RDB
+
 -- 
-1.5.6.5
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
