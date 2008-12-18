@@ -1,14 +1,17 @@
-Return-Path: <gerickson@nuovations.com>
-Received: from relay02.pair.com (relay02.pair.com [209.68.5.16])
-	by ozlabs.org (Postfix) with SMTP id 49492DDEE9
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 06:59:48 +1100 (EST)
-From: Grant Erickson <gerickson@nuovations.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] powerpc/4xx: DTS: Add Add'l SDRAM0 Compatible and
-	Interrupt Info
-Date: Thu, 18 Dec 2008 11:59:46 -0800
-Message-Id: <1229630386-28380-1-git-send-email-gerickson@nuovations.com>
-Cc: bluesmoke-devel@lists.sourceforge.net
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 5E138474C1
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 07:04:08 +1100 (EST)
+To: Felix Radensky <felix@embedded-sol.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Long boot delay on 460EX with 2.6.28-rc8
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <21070179.post@talk.nabble.com>
+References: <21070179.post@talk.nabble.com>
+Date: Thu, 18 Dec 2008 21:04:05 +0100
+Message-Id: <20081218200405.441278387CC7@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,82 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Added additional information for type and compatibility strings and
-interrupt information to the SDRAM0 memory-controller device tree
-nodes for AMCC PowerPC 405EX[r]-based boards to facilitate binding
-with the new "ibm,sdram-4xx-ddr2" EDAC memory controller adapter driver.
+Dear Felix Radensky,
 
-Signed-off-by: Grant Erickson <gerickson@nuovations.com>
----
-As support in the associated EDAC adapter driver is added over time,
-similar changes will/should be made to the DTS files for boards
-leveraging realizations of this "ibm,sdram-4xx-ddr2" controller,
-including the 440SP, 440SPe, 460EX, 460GT and 460SX.
+In message <21070179.post@talk.nabble.com> you wrote:
+> 
+> I'm experiencing a long (around 20 sec) delay from the moment
+> u-boot-1.3.4 passes control to linux and until the first kernel message
+> appears on console. This happens on custom board, I don't have access
+> to Canyonlands to test how it behaves. I did not modify anything in kernel 
+> code to make it boot on custom board, just removed PCIX and PCIE0 nodes
+> from DTS.
 
-Patch v2, based on review from David Gibson, removes the 'device_type'
-field because it is only used for legacy OpenFirmware method
-interfaces and no such compatibility is warranted here. In addition,
-removed address- and size-cells as this node has no children.
+Try using a recent version of U-Boot as a first step (v2009.01-rc1).
 
-Patch v3, based on review from Josh Boyer and Stefan Roese, simplifies
-the interrupt specification because both the SEC and DED interrupts
-are mapped to the same interrupt parent.
+Best regards,
 
- arch/powerpc/boot/dts/haleakala.dts |    5 +-
- arch/powerpc/boot/dts/kilauea.dts   |    5 +-
- arch/powerpc/boot/dts/makalu.dts    |    5 +-
- 3 files changed, 12 insertions(+), 3 deletions(-)
+Wolfgang Denk
 
-diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
-index 513bc43..09522f3 100644
---- a/arch/powerpc/boot/dts/haleakala.dts
-+++ b/arch/powerpc/boot/dts/haleakala.dts
-@@ -89,8 +89,11 @@
- 		clock-frequency = <0>; /* Filled in by U-Boot */
- 
- 		SDRAM0: memory-controller {
--			compatible = "ibm,sdram-405exr";
-+			compatible = "ibm,sdram-405exr", "ibm,sdram-4xx-ddr2";
- 			dcr-reg = <0x010 0x002>;
-+			interrupt-parent = <&UIC2>;
-+			interrupt-map = <0x5 0x4	/* ECC DED Error */ 
-+					 0x6 0x4>;	/* ECC SEC Error */ 
- 		};
- 
- 		MAL0: mcmal {
-diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
-index dececc4..68c88e2 100644
---- a/arch/powerpc/boot/dts/kilauea.dts
-+++ b/arch/powerpc/boot/dts/kilauea.dts
-@@ -90,8 +90,11 @@
- 		clock-frequency = <0>; /* Filled in by U-Boot */
- 
- 		SDRAM0: memory-controller {
--			compatible = "ibm,sdram-405ex";
-+			compatible = "ibm,sdram-405ex", "ibm,sdram-4xx-ddr2";
- 			dcr-reg = <0x010 0x002>;
-+			interrupt-parent = <&UIC2>;
-+			interrupt-map = <0x5 0x4	/* ECC DED Error */ 
-+					 0x6 0x4>;	/* ECC SEC Error */ 
- 		};
- 
- 		MAL0: mcmal {
-diff --git a/arch/powerpc/boot/dts/makalu.dts b/arch/powerpc/boot/dts/makalu.dts
-index 945508c..537d21f 100644
---- a/arch/powerpc/boot/dts/makalu.dts
-+++ b/arch/powerpc/boot/dts/makalu.dts
-@@ -90,9 +90,11 @@
- 		clock-frequency = <0>; /* Filled in by U-Boot */
- 
- 		SDRAM0: memory-controller {
--			compatible = "ibm,sdram-405ex";
-+			compatible = "ibm,sdram-405ex", "ibm,sdram-4xx-ddr2";
- 			dcr-reg = <0x010 0x002>;
-+			interrupt-parent = <&UIC2>;
-+			interrupt-map = <0x5 0x4	/* ECC DED Error */ 
-+					 0x6 0x4>;	/* ECC SEC Error */ 
- 		};
- 
- 		MAL0: mcmal {
---
-1.6.0.5
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Der Horizont vieler Menschen ist ein Kreis mit Radius Null --
+und das nennen sie ihren Standpunkt.
