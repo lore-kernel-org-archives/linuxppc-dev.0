@@ -1,26 +1,25 @@
-Return-Path: <Mingkai.Hu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 73F94DDF15
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 13:19:17 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	mBI2J238001034
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 19:19:13 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id mBI2IvdF018275
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Dec 2008 20:18:58 -0600 (CST)
-From: Mingkai Hu <Mingkai.hu@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH v1] Add support for getting device platform data to I2C device
-Date: Thu, 18 Dec 2008 10:14:11 +0800
-Message-Id: <1229566451-29411-1-git-send-email-Mingkai.hu@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-	Mingkai Hu <Mingkai.hu@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7D243DDEF7
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 18:58:50 +1100 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH][v2] fork_init: fix division by zero
+Date: Thu, 18 Dec 2008 10:47:50 +0300
+References: <200812101950.51958.yur@emcraft.com>
+	<20081211121635.ff58193f.akpm@linux-foundation.org>
+	<18753.46301.944770.779390@cargo.ozlabs.ibm.com>
+In-Reply-To: <18753.46301.944770.779390@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200812181047.50332.yur@emcraft.com>
+Cc: wd@denx.de, dzu@denx.de, linux-kernel@vger.kernel.org, miltonm@bga.com,
+	linuxppc-dev@ozlabs.org, viro@zeniv.linux.org.uk,
+	Geert.Uytterhoeven@sonycom.com, yanok@emcraft.com,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,101 +29,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is no standard way of getting device platform data from
-dts file to the I2C device when it's probed. This patch adds
-a function pointer to the of_modalias_table to get such bindings
-properties into device's platform data.
+Hello Paul,
 
-Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
----
-Thanks to Scott Wood's suggestions.
+On Friday 12 December 2008 03:48, Paul Mackerras wrote:
+> Andrew Morton writes:
+> 
+> > > +#if (8 * THREAD_SIZE) > PAGE_SIZE
+> > >  	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
+> > > +#else
+> > > +	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
+> > > +#endif
+> > 
+> > The expression you've chosen here can be quite inacccurate, because
+> > ((PAGE_SIZE / (8 * THREAD_SIZE)) is a small number.  The way to
+> > preserve accuracy is
+> 
+> The assumption is that THREAD_SIZE is a power of 2, as is PAGE_SIZE.
+> 
+> I think Yuri should be increasing THREAD_SIZE for the larger page
+> sizes he's implementing, because we have on-stack arrays whose size
+> depends on the page size.  I suspect that having THREAD_SIZE less than
+> 1/8 of PAGE_SIZE risks stack overflows, and the better fix is for Yuri
+> to make sure THREAD_SIZE is at least 1/8 of PAGE_SIZE.  (In fact, more
+> may be needed - someone should work out what fraction is actually
+> needed.)
 
- drivers/of/base.c   |    9 ++++++++-
- drivers/of/of_i2c.c |    3 ++-
- drivers/of/of_spi.c |    2 +-
- include/linux/of.h  |    3 ++-
- 4 files changed, 13 insertions(+), 4 deletions(-)
+  Right, thanks for pointing this. I guess, I was just lucky since didn't run into
+problems with stack overflows. So, I agree that we should increase the 
+THREAD_SIZE in case of 256KB pages up to 1/8 of PAGE_SIZE, that is up 
+to 32KB.
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index ad8ac1a..38ab2a2 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -408,6 +408,7 @@ EXPORT_SYMBOL(of_find_matching_node);
- struct of_modalias_table {
- 	char *of_device;
- 	char *modalias;
-+	const void *(*binder)(struct device_node *node);
- };
- static struct of_modalias_table of_modalias_table[] = {
- 	/* Empty for now; add entries as needed */
-@@ -418,6 +419,7 @@ static struct of_modalias_table of_modalias_table[] = {
-  * @node:	pointer to a device tree node
-  * @modalias:	Pointer to buffer that modalias value will be copied into
-  * @len:	Length of modalias value
-+ * @platform_data: pointer to device's platform specific data
-  *
-  * Based on the value of the compatible property, this routine will determine
-  * an appropriate modalias value for a particular device tree node.  Three
-@@ -430,7 +432,8 @@ static struct of_modalias_table of_modalias_table[] = {
-  *
-  * This routine returns 0 on success
+ There is one more warning from the common code when I use 256KB pages:
+
+   CC      mm/shmem.o
+mm/shmem.c: In function 'shmem_truncate_range':
+mm/shmem.c:613: warning: division by zero
+mm/shmem.c:619: warning: division by zero
+mm/shmem.c:644: warning: division by zero
+mm/shmem.c: In function 'shmem_unuse_inode':
+mm/shmem.c:873: warning: division by zero
+
+ The problem here is that ENTRIES_PER_PAGEPAGE becomes 0x1.0000.0000
+when PAGE_SIZE is 256K.
+
+ How about the following fix ?
+
+diff --git a/mm/shmem.c b/mm/shmem.c
+index 0ed0752..99d7c91 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -57,7 +57,7 @@
+ #include <asm/pgtable.h>
+ 
+ #define ENTRIES_PER_PAGE (PAGE_CACHE_SIZE/sizeof(unsigned long))
+-#define ENTRIES_PER_PAGEPAGE (ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
++#define ENTRIES_PER_PAGEPAGE ((unsigned long long)ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
+ #define BLOCKS_PER_PAGE  (PAGE_CACHE_SIZE/512)
+ 
+ #define SHMEM_MAX_INDEX  (SHMEM_NR_DIRECT + (ENTRIES_PER_PAGEPAGE/2) * (ENTRIES_PER_PAGE+1))
+@@ -95,7 +95,7 @@ static unsigned long shmem_default_max_inodes(void)
+ }
+ #endif
+ 
+-static int shmem_getpage(struct inode *inode, unsigned long idx,
++static int shmem_getpage(struct inode *inode, unsigned long long idx,
+ 			 struct page **pagep, enum sgp_type sgp, int *type);
+ 
+ static inline struct page *shmem_dir_alloc(gfp_t gfp_mask)
+@@ -533,7 +533,7 @@ static void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end)
+ 	int punch_hole;
+ 	spinlock_t *needs_lock;
+ 	spinlock_t *punch_lock;
+-	unsigned long upper_limit;
++	unsigned long long upper_limit;
+ 
+ 	inode->i_ctime = inode->i_mtime = CURRENT_TIME;
+ 	idx = (start + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+@@ -1175,7 +1175,7 @@ static inline struct mempolicy *shmem_get_sbmpol(struct shmem_sb_info *sbinfo)
+  * vm. If we swap it in we mark it dirty since we also free the swap
+  * entry since a page cannot live in both the swap and page cache
   */
--int of_modalias_node(struct device_node *node, char *modalias, int len)
-+int of_modalias_node(struct device_node *node, char *modalias, int len,
-+	const void **platform_data)
+-static int shmem_getpage(struct inode *inode, unsigned long idx,
++static int shmem_getpage(struct inode *inode, unsigned long long idx,
+ 			struct page **pagep, enum sgp_type sgp, int *type)
  {
- 	int i, cplen;
- 	const char *compatible;
-@@ -442,6 +445,10 @@ int of_modalias_node(struct device_node *node, char *modalias, int len)
- 		if (!of_device_is_compatible(node, compatible))
- 			continue;
- 		strlcpy(modalias, of_modalias_table[i].modalias, len);
-+
-+		if (platform_data && of_modalias_table[i].binder)
-+			*platform_data = of_modalias_table[i].binder(node);
-+
- 		return 0;
- 	}
- 
-diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-index 6a98dc8..38d9faf 100644
---- a/drivers/of/of_i2c.c
-+++ b/drivers/of/of_i2c.c
-@@ -27,7 +27,8 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
- 		const u32 *addr;
- 		int len;
- 
--		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0)
-+		if (of_modalias_node(node, info.type, sizeof(info.type),
-+			(const void **)&info.platform_data) < 0)
- 			continue;
- 
- 		addr = of_get_property(node, "reg", &len);
-diff --git a/drivers/of/of_spi.c b/drivers/of/of_spi.c
-index b01eec0..0dcd52c 100644
---- a/drivers/of/of_spi.c
-+++ b/drivers/of/of_spi.c
-@@ -39,7 +39,7 @@ void of_register_spi_devices(struct spi_master *master, struct device_node *np)
- 
- 		/* Select device driver */
- 		if (of_modalias_node(nc, spi->modalias,
--				     sizeof(spi->modalias)) < 0) {
-+				     sizeof(spi->modalias), NULL) < 0) {
- 			dev_err(&master->dev, "cannot find modalias for %s\n",
- 				nc->full_name);
- 			spi_dev_put(spi);
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 79886ad..ed4c269 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -70,6 +70,7 @@ extern int of_n_addr_cells(struct device_node *np);
- extern int of_n_size_cells(struct device_node *np);
- extern const struct of_device_id *of_match_node(
- 	const struct of_device_id *matches, const struct device_node *node);
--extern int of_modalias_node(struct device_node *node, char *modalias, int len);
-+extern int of_modalias_node(struct device_node *node, char *modalias, int len,
-+	const void **platform_data);
- 
- #endif /* _LINUX_OF_H */
--- 
-1.5.4
+ 	struct address_space *mapping = inode->i_mapping;
+
+Regards, Yuri
