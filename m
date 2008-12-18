@@ -1,23 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 90735DDE28
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 04:20:21 +1100 (EST)
-Message-ID: <494A8643.1030105@freescale.com>
-Date: Thu, 18 Dec 2008 11:20:03 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <super.firetwister@googlemail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id 355A7DDF13
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 04:38:28 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so112191qwb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 09:38:27 -0800 (PST)
+Message-ID: <6a6049b80812180938q927a8e6v9b2ca659c42442c@mail.gmail.com>
+Date: Thu, 18 Dec 2008 18:38:26 +0100
+From: "M B" <super.firetwister@googlemail.com>
+To: netdev <netdev@vger.kernel.org>
+Subject: gianfar tries to free an irq from interrupt context
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v1] Add support for getting device platform data to I2C
-	device
-References: <1229566451-29411-1-git-send-email-Mingkai.hu@freescale.com>
-	<20081218165946.GA4029@oksana.dev.rtsoft.ru>
-In-Reply-To: <20081218165946.GA4029@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=windows-1251; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Mingkai Hu <Mingkai.hu@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> On Thu, Dec 18, 2008 at 10:14:11AM +0800, Mingkai Hu wrote:
->> There is no standard way of getting device platform data from
->> dts file to the I2C device when it's probed. This patch adds
->> a function pointer to the of_modalias_table to get such bindings
->> properties into device's platform data.
-> 
-> Unfortunately this approach leads to inability to make the bindings
-> modular.
+Hi,
 
-True, but I think it's fine for now while a better mechanism is worked 
-out -- especially for things that are mainly used in embedded situations 
-where modular builds aren't as necessary.
+I'm having Problems with the gianfar Ethernet. eth1 is working fine,
+but eth0 is making trouble. It's making trouble in u-boot as well, so
+it could as well be a hardware problem.
+First of all eth0 receives some frame errors (frame: in ifconfig), but
+eth1 doesn't.
+eth1 performs well under a ping flood, but eth0 produces the following
+WARN_ON() after some time.
+I'm using linux-2.6.26 ARCH ppc on a MPC8347 with 2 different 100MB PHYs.
 
-> And the solution that everybody seem to agree with (SPI driver example):
-> http://lkml.org/lkml/2008/10/30/393
+Is my Board just triggering this error or responsible for it?
 
-Hmm, that doesn't seem to allow for any binding mechanism other than 
-internal and OF, and it seems like it could be done more 
-straightforwardly by having the modalias point to the OF wrapper, which 
-then instantiates the core driver.
+Regards
 
-But the above approach has the distinct advantage of having already been 
-implemented. :-)
+Markus
 
--Scott
+------------[ cut here ]------------
+Badness at kernel/irq/manage.c:441
+NIP: c003e9c0 LR: c014e5b4 CTR: c014e7f0
+REGS: c029bcd0 TRAP: 0700   Tainted: G        W  (2.6.26)
+MSR: 00021032 <ME,IR,DR>  CR: 44000028  XER: 00000000
+TASK = c027f7f8[0] 'swapper' THREAD: c029a000
+GPR00: 00000001 c029bd80 c027f7f8 00000022 cfca1080 ffffffff c013e298 c02f2cd8
+GPR08: cfca13e0 c029a000 02000100 fe024000 38c35770 ffffffff 0404f000 00000000
+GPR16: ffffffbf ffffffff c02f002c c0282344 00200200 00000000 c0303be8 c0303de8
+GPR24: c0303fe8 c03041e8 c029a034 c029bde8 cfca1080 00009032 00000022 cfca13e0
+NIP [c003e9c0] free_irq+0x2c/0x18c
+LR [c014e5b4] stop_gfar+0x70/0x11c
+Call Trace:
+[c029bd80] [00000102] 0x102 (unreliable)
+[c029bda0] [c014e5b4] stop_gfar+0x70/0x11c
+[c029bdc0] [c014e820] gfar_timeout+0x30/0x60
+[c029bdd0] [c01a4770] dev_watchdog+0xac/0x160
+[c029bde0] [c0021a18] run_timer_softirq+0x17c/0x220
+[c029be30] [c001cd84] __do_softirq+0x70/0xd0
+[c029be60] [c0008ff8] do_softirq+0x40/0x58
+[c029be70] [c001ca08] irq_exit+0x3c/0x5c
+[c029be80] [c0005790] timer_interrupt+0x204/0x234
+[c029bec0] [c00042b4] ret_from_except+0x0/0x14
+[c029bf80] [c000bdcc] cpu_idle+0xdc/0xec
+[c029bfa0] [c02057b4] rest_init+0x7c/0x90
+[c029bfc0] [c029d914] start_kernel+0x2b8/0x2cc
+[c029bff0] [000032c0] 0x32c0
+Instruction dump:
+4e800020 7c0802a6 9421ffe0 bf810010 54290024 90010024 7c7e1b78 7c9c2378
+8009000c 5400012e 7c0000d0 54000ffe <0f000000> 2b83007f 419d0144 1c030038
