@@ -1,18 +1,23 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 379E8DDF22
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 21:29:57 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LDG8e-0006nN-Eu
-	for linuxppc-dev@ozlabs.org; Thu, 18 Dec 2008 02:29:52 -0800
-Message-ID: <21070179.post@talk.nabble.com>
-Date: Thu, 18 Dec 2008 02:29:52 -0800 (PST)
-From: Felix Radensky <felix@embedded-sol.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Long boot delay on 460EX with 2.6.28-rc8
+Return-Path: <ben@fluff.org.uk>
+Received: from kira.home.fluff.org (aeryn.fluff.org.uk [87.194.8.8])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A7016DDED4
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Dec 2008 21:35:52 +1100 (EST)
+Date: Thu, 18 Dec 2008 10:06:35 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: Please pull bjdoo ks' i2c-fixes
+Message-ID: <20081218100635.GH8032@fluff.org.uk>
+References: <E1LChEf-0000Ts-53@teyla.home.fluff.org>
+	<4948E89A.7080703@scram.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4948E89A.7080703@scram.de>
+Cc: Mike Ditto <mditto@consentry.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>,
+	khali@linux-fr.org, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Dec 17, 2008 at 12:55:06PM +0100, Jochen Friedrich wrote:
+> Hi Ben,
+> 
+> > Mike Ditto (1):
+> >       i2c-cpm: Detect and report NAK right away instead of timing out
+> 
+> Could you also have a look at http://patchwork.ozlabs.org/patch/7452/ ?
+> (Discussion at http://patchwork.ozlabs.org/patch/6666/ )
+> 
+> IIRC, Kumar prefers to push this via your tree.
 
-Hi,
-
-I'm experiencing a long (around 20 sec) delay from the moment
-u-boot-1.3.4 passes control to linux and until the first kernel message
-appears on console. This happens on custom board, I don't have access
-to Canyonlands to test how it behaves. I did not modify anything in kernel 
-code to make it boot on custom board, just removed PCIX and PCIE0 nodes
-from DTS.
-
-Has anyone experienced similar behavior with 460EX ? Any hints what can
-cause this ?
-
-Thanks a lot.
-
-Felix.
-
+Ok, but this isn't really a fix, so I'll look at putting it into my
+i2c-next tree, not i2c-fixes.
 
 -- 
-View this message in context: http://www.nabble.com/Long-boot-delay-on-460EX-with-2.6.28-rc8-tp21070179p21070179.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
