@@ -1,18 +1,10 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18763.10937.847276.371262@drongo.ozlabs.ibm.com>
-Date: Fri, 19 Dec 2008 16:01:45 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/5] powerpc: ftrace updates to previous patch series
-In-Reply-To: <alpine.DEB.1.10.0812011315020.7645@gandalf.stny.rr.com>
-References: <20081126215821.263324391@goodmis.org>
-	<alpine.DEB.1.10.0811261749310.1501@gandalf.stny.rr.com>
-	<20081128131014.GC26793@elte.hu>
-	<alpine.DEB.1.10.0812011315020.7645@gandalf.stny.rr.com>
-Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 19 Dec 2008 16:13:19 +1100
+Subject: [PATCH 0/10] powerpc: Preliminary work to enable SMP BookE (v3)
+Message-Id: <1229663599.904385.502157196243.qpush@grosgo>
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,11 +14,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Steven Rostedt writes:
+This series of patches is aimed at supporting SMP on non-hash
+based processors. It consists of a rework of the MMU context
+management and TLB management, clearly splitting hash32, hash64
+and nohash in both cases, adding SMP safe context handling and
+some basic SMP TLB management.
 
-> Sorry, I rebased to edit the change log where I mispelled Paul's name.
+There is room for improvements, such as implementing lazy TLB
+flushing on processors without invalidate-by-PID support HW,
+some better IPI mechanism, lock less fast path in the MMU context
+switch, etc... but it should basically work.
 
-So, what commits should I be pulling into powerpc.git, or what patches
-should I be committing, for dynamic ftrace on powerpc?
-
-Paul.
+This version addresses the issues raised about some of the patches
+in the previous batch, removes the ones that were already merged
+in -next and and rebases the remaining ones when needed.
