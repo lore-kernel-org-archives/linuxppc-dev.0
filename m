@@ -1,11 +1,11 @@
 Return-Path: <benh@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 19 Dec 2008 16:13:48 +1100
-Subject: [PATCH 8/10] powerpc/mm: Runtime allocation of mmu context maps for
-	nohash CPUs v2
+Date: Fri, 19 Dec 2008 16:13:51 +1100
+Subject: [PATCH 9/10] powerpc/mm: Rework usage of
+	_PAGE_COHERENT/NO_CACHE/GUARDED v2
 In-Reply-To: <1229663599.904385.502157196243.qpush@grosgo>
-Message-Id: <20081219051452.E3FE2DDFDC@ozlabs.org>
+Message-Id: <20081219051455.EBC28DE04A@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,315 +16,424 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This makes the MMU context code used for CPUs with no hash table
-(except 603) dynamically allocate the various maps used to track
-the state of contexts.
+Currently, we never set _PAGE_COHERENT in the PTEs, we just OR it in
+in the hash code based on some CPU feature bit. We also manipulate
+_PAGE_NO_CACHE and _PAGE_GUARDED by hand in all sorts of places.
 
-Only the main free map and CPU 0 stale map are allocated at boot
-time. Other CPU maps are allocated when those CPUs are brought up
-and freed if they are unplugged.
+This changes the logic so that instead, the PTE now contains
+_PAGE_COHERENT for all normal RAM pages thay have I = 0 on platforms
+that need it. The hash code clears it if the feature bit is not set.
 
-This also moves the initialization of the MMU context management
-slightly later during the boot process, which should be fine as
-it's really only needed when userland if first started anyways.
+It also adds some clean accessors to setup various valid combinations
+of access flags and change various bits of code to use them instead.
+
+This should help having the PTE actually containing the bit
+combinations that we really want.
+
+I also removed _PAGE_GUARDED from _PAGE_BASE on 44x and instead
+set it explicitely from the TLB miss. I will ultimately remove it
+completely as it appears that it might not be needed after all
+but in the meantime, having it in the TLB miss makes things a
+lot easier.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-v2. rebased and add some more debug
+v2. Make _PAGE_NO_CACHE part of _PAGE_BASE_NC and fixup typo in
+    the definition of _PAGE_CACHE_CTL
 
- arch/powerpc/kernel/setup_32.c       |    5 +
- arch/powerpc/mm/init_32.c            |    4 
- arch/powerpc/mm/mmu_context_nohash.c |  161 ++++++++++++++++++++++++-----------
- 3 files changed, 116 insertions(+), 54 deletions(-)
 
---- linux-work.orig/arch/powerpc/mm/mmu_context_nohash.c	2008-12-19 16:06:46.000000000 +1100
-+++ linux-work/arch/powerpc/mm/mmu_context_nohash.c	2008-12-19 16:07:05.000000000 +1100
-@@ -28,54 +28,30 @@
- #undef DEBUG
- #define DEBUG_STEAL_ONLY
- #undef DEBUG_MAP_CONSISTENCY
-+/*#define DEBUG_CLAMP_LAST_CONTEXT   15 */
- 
- #include <linux/kernel.h>
- #include <linux/mm.h>
- #include <linux/init.h>
-+#include <linux/spinlock.h>
-+#include <linux/bootmem.h>
-+#include <linux/notifier.h>
-+#include <linux/cpu.h>
- 
- #include <asm/mmu_context.h>
- #include <asm/tlbflush.h>
--#include <linux/spinlock.h>
--
--/*
-- *   The MPC8xx has only 16 contexts.  We rotate through them on each
-- * task switch.  A better way would be to keep track of tasks that
-- * own contexts, and implement an LRU usage.  That way very active
-- * tasks don't always have to pay the TLB reload overhead.  The
-- * kernel pages are mapped shared, so the kernel can run on behalf
-- * of any task that makes a kernel entry.  Shared does not mean they
-- * are not protected, just that the ASID comparison is not performed.
-- *      -- Dan
-- *
-- * The IBM4xx has 256 contexts, so we can just rotate through these
-- * as a way of "switching" contexts.  If the TID of the TLB is zero,
-- * the PID/TID comparison is disabled, so we can use a TID of zero
-- * to represent all kernel pages as shared among all contexts.
-- * 	-- Dan
-- */
--
--#ifdef CONFIG_8xx
--#define LAST_CONTEXT    	15
--#define FIRST_CONTEXT    	0
--
--#elif defined(CONFIG_4xx)
--#define LAST_CONTEXT    	255
--#define FIRST_CONTEXT    	1
--
--#elif defined(CONFIG_E200) || defined(CONFIG_E500)
--#define LAST_CONTEXT    	255
--#define FIRST_CONTEXT    	1
--
--#else
--#error Unsupported processor type
--#endif
- 
-+static unsigned int first_context, last_context;
- static unsigned int next_context, nr_free_contexts;
--static unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
--static unsigned long stale_map[NR_CPUS][LAST_CONTEXT / BITS_PER_LONG + 1];
--static struct mm_struct *context_mm[LAST_CONTEXT+1];
-+static unsigned long *context_map;
-+static unsigned long *stale_map[NR_CPUS];
-+static struct mm_struct **context_mm;
- static spinlock_t context_lock = SPIN_LOCK_UNLOCKED;
- 
-+#define CTX_MAP_SIZE	\
-+	(sizeof(unsigned long) * (last_context / BITS_PER_LONG + 1))
-+
-+
- /* Steal a context from a task that has one at the moment.
+ arch/powerpc/include/asm/pgtable-ppc32.h |   42 ++++++++++++-------------------
+ arch/powerpc/include/asm/pgtable-ppc64.h |   13 ---------
+ arch/powerpc/include/asm/pgtable.h       |   26 +++++++++++++++++++
+ arch/powerpc/kernel/head_44x.S           |    1 
+ arch/powerpc/kernel/pci-common.c         |   24 ++++++-----------
+ arch/powerpc/mm/hash_low_32.S            |    4 +-
+ arch/powerpc/mm/mem.c                    |    4 +-
+ arch/powerpc/platforms/cell/spufs/file.c |   27 ++++++-------------
+ drivers/video/controlfb.c                |    4 +-
+ 9 files changed, 68 insertions(+), 77 deletions(-)
+
+--- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc32.h	2008-11-24 14:48:55.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pgtable-ppc32.h	2008-12-17 12:35:16.000000000 +1100
+@@ -228,9 +228,10 @@ extern int icache_44x_need_flush;
+  *   - FILE *must* be in the bottom three bits because swap cache
+  *     entries use the top 29 bits for TLB2.
   *
-  * This is used when we are running out of available PID numbers
-@@ -98,7 +74,7 @@ static unsigned int steal_context_smp(un
- 	unsigned int cpu, max;
- 
-  again:
--	max = LAST_CONTEXT - FIRST_CONTEXT;
-+	max = last_context - first_context;
- 
- 	/* Attempt to free next_context first and then loop until we manage */
- 	while (max--) {
-@@ -110,8 +86,8 @@ static unsigned int steal_context_smp(un
- 		 */
- 		if (mm->context.active) {
- 			id ++;
--			if (id > LAST_CONTEXT)
--				id = FIRST_CONTEXT;
-+			if (id > last_context)
-+				id = first_context;
- 			continue;
- 		}
- 		pr_debug("[%d] steal context %d from mm @%p\n",
-@@ -169,7 +145,7 @@ static void context_check_map(void)
- 	unsigned int id, nrf, nact;
- 
- 	nrf = nact = 0;
--	for (id = FIRST_CONTEXT; id <= LAST_CONTEXT; id++) {
-+	for (id = first_context; id <= last_context; id++) {
- 		int used = test_bit(id, context_map);
- 		if (!used)
- 			nrf++;
-@@ -187,6 +163,8 @@ static void context_check_map(void)
- 	if (nact > num_online_cpus())
- 		pr_err("MMU: More active contexts than CPUs ! (%d vs %d)\n",
- 		       nact, num_online_cpus());
-+	if (first_context > 0 && !test_bit(0, context_map))
-+		pr_err("MMU: Context 0 has been freed !!!\n");
- }
+- *   - CACHE COHERENT bit (M) has no effect on PPC440 core, because it
+- *     doesn't support SMP. So we can use this as software bit, like
+- *     DIRTY.
++ *   - CACHE COHERENT bit (M) has no effect on original PPC440 cores,
++ *     because it doesn't support SMP. However, some later 460 variants
++ *     have -some- form of SMP support and so I keep the bit there for
++ *     future use
+  *
+  * With the PPC 44x Linux implementation, the 0-11th LSBs of the PTE are used
+  * for memory protection related functions (see PTE structure in
+@@ -436,20 +437,23 @@ extern int icache_44x_need_flush;
+ 			 _PAGE_USER | _PAGE_ACCESSED | \
+ 			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | \
+ 			 _PAGE_EXEC | _PAGE_HWEXEC)
++
+ /*
+- * Note: the _PAGE_COHERENT bit automatically gets set in the hardware
+- * PTE if CONFIG_SMP is defined (hash_page does this); there is no need
+- * to have it in the Linux PTE, and in fact the bit could be reused for
+- * another purpose.  -- paulus.
++ * We define 2 sets of base prot bits, one for basic pages (ie,
++ * cacheable kernel and user pages) and one for non cacheable
++ * pages. We always set _PAGE_COHERENT when SMP is enabled or
++ * the processor might need it for DMA coherency.
+  */
+-
+-#ifdef CONFIG_44x
+-#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_GUARDED)
++#if defined(CONFIG_SMP) || defined(CONFIG_PPC_STD_MMU)
++#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT)
  #else
- static void context_check_map(void) { }
-@@ -209,6 +187,10 @@ void switch_mmu_context(struct mm_struct
- 	/* Mark us active and the previous one not anymore */
- 	next->context.active++;
- 	if (prev) {
-+#ifndef DEBUG_STEAL_ONLY
-+		pr_debug(" old context %p active was: %d\n",
-+			 prev, prev->context.active);
-+#endif
- 		WARN_ON(prev->context.active < 1);
- 		prev->context.active--;
- 	}
-@@ -221,8 +203,8 @@ void switch_mmu_context(struct mm_struct
+ #define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED)
+ #endif
++#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_NO_CACHE)
++
+ #define _PAGE_WRENABLE	(_PAGE_RW | _PAGE_DIRTY | _PAGE_HWWRITE)
+ #define _PAGE_KERNEL	(_PAGE_BASE | _PAGE_SHARED | _PAGE_WRENABLE)
++#define _PAGE_KERNEL_NC	(_PAGE_BASE_NC | _PAGE_SHARED | _PAGE_WRENABLE)
  
- 	/* We really don't have a context, let's try to acquire one */
- 	id = next_context;
--	if (id > LAST_CONTEXT)
--		id = FIRST_CONTEXT;
-+	if (id > last_context)
-+		id = first_context;
- 	map = context_map;
+ #ifdef CONFIG_PPC_STD_MMU
+ /* On standard PPC MMU, no user access implies kernel read/write access,
+@@ -459,7 +463,7 @@ extern int icache_44x_need_flush;
+ #define _PAGE_KERNEL_RO	(_PAGE_BASE | _PAGE_SHARED)
+ #endif
  
- 	/* No more free contexts, let's try to steal one */
-@@ -240,9 +222,9 @@ void switch_mmu_context(struct mm_struct
+-#define _PAGE_IO	(_PAGE_KERNEL | _PAGE_NO_CACHE | _PAGE_GUARDED)
++#define _PAGE_IO	(_PAGE_KERNEL_NC | _PAGE_GUARDED)
+ #define _PAGE_RAM	(_PAGE_KERNEL | _PAGE_HWEXEC)
  
- 	/* We know there's at least one free context, try to find it */
- 	while (__test_and_set_bit(id, map)) {
--		id = find_next_zero_bit(map, LAST_CONTEXT+1, id);
--		if (id > LAST_CONTEXT)
--			id = FIRST_CONTEXT;
-+		id = find_next_zero_bit(map, last_context+1, id);
-+		if (id > last_context)
-+			id = first_context;
- 	}
-  stolen:
- 	next_context = id + 1;
-@@ -311,6 +293,42 @@ void destroy_context(struct mm_struct *m
- 	spin_unlock(&context_lock);
+ #if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
+@@ -552,9 +556,6 @@ static inline int pte_young(pte_t pte)		
+ static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
+ static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+ 
+-static inline void pte_uncache(pte_t pte)       { pte_val(pte) |= _PAGE_NO_CACHE; }
+-static inline void pte_cache(pte_t pte)         { pte_val(pte) &= ~_PAGE_NO_CACHE; }
+-
+ static inline pte_t pte_wrprotect(pte_t pte) {
+ 	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE); return pte; }
+ static inline pte_t pte_mkclean(pte_t pte) {
+@@ -693,10 +694,11 @@ static inline void __set_pte_at(struct m
+ #endif
  }
  
-+#ifdef CONFIG_SMP
 +
-+static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
-+					    unsigned long action, void *hcpu)
-+{
-+	unsigned int cpu = (unsigned int)(long)hcpu;
+ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 			      pte_t *ptep, pte_t pte)
+ {
+-#if defined(CONFIG_PTE_64BIT) && defined(CONFIG_SMP)
++#if defined(CONFIG_PTE_64BIT) && defined(CONFIG_SMP) && defined(CONFIG_DEBUG_VM)
+ 	WARN_ON(pte_present(*ptep));
+ #endif
+ 	__set_pte_at(mm, addr, ptep, pte);
+@@ -760,16 +762,6 @@ static inline void __ptep_set_access_fla
+ 	__changed;							   \
+ })
+ 
+-/*
+- * Macro to mark a page protection value as "uncacheable".
+- */
+-#define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_NO_CACHE | _PAGE_GUARDED))
+-
+-struct file;
+-extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+-				     unsigned long size, pgprot_t vma_prot);
+-#define __HAVE_PHYS_MEM_ACCESS_PROT
+-
+ #define __HAVE_ARCH_PTE_SAME
+ #define pte_same(A,B)	(((pte_val(A) ^ pte_val(B)) & ~_PAGE_HASHPTE) == 0)
+ 
+Index: linux-work/arch/powerpc/kernel/head_44x.S
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/head_44x.S	2008-09-29 10:17:03.000000000 +1000
++++ linux-work/arch/powerpc/kernel/head_44x.S	2008-12-17 12:35:16.000000000 +1100
+@@ -570,6 +570,7 @@ finish_tlb_load:
+ 	rlwimi	r10,r12,29,30,30		/* DIRTY -> SW position */
+ 	and	r11,r12,r10			/* Mask PTE bits to keep */
+ 	andi.	r10,r12,_PAGE_USER		/* User page ? */
++	ori	r11,r11,_PAGE_GUARDED		/* 440 errata, needs G set */
+ 	beq	1f				/* nope, leave U bits empty */
+ 	rlwimi	r11,r11,3,26,28			/* yes, copy S bits to U */
+ 1:	tlbwe	r11,r13,PPC44x_TLB_ATTRIB	/* Write ATTRIB */
+Index: linux-work/arch/powerpc/mm/hash_low_32.S
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/hash_low_32.S	2008-12-17 12:35:13.000000000 +1100
++++ linux-work/arch/powerpc/mm/hash_low_32.S	2008-12-17 12:35:16.000000000 +1100
+@@ -323,8 +323,8 @@ _GLOBAL(create_hpte)
+ 	ori	r8,r8,0xe14		/* clear out reserved bits and M */
+ 	andc	r8,r5,r8		/* PP = user? (rw&dirty? 2: 3): 0 */
+ BEGIN_FTR_SECTION
+-	ori	r8,r8,_PAGE_COHERENT	/* set M (coherence required) */
+-END_FTR_SECTION_IFSET(CPU_FTR_NEED_COHERENT)
++	rlwinm	r8,r8,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
++END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+ #ifdef CONFIG_PTE_64BIT
+ 	/* Put the XPN bits into the PTE */
+ 	rlwimi	r8,r10,8,20,22
+Index: linux-work/arch/powerpc/include/asm/pgtable-ppc64.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc64.h	2008-12-17 12:28:23.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pgtable-ppc64.h	2008-12-17 12:35:16.000000000 +1100
+@@ -245,9 +245,6 @@ static inline int pte_young(pte_t pte) {
+ static inline int pte_file(pte_t pte) { return pte_val(pte) & _PAGE_FILE;}
+ static inline int pte_special(pte_t pte) { return pte_val(pte) & _PAGE_SPECIAL; }
+ 
+-static inline void pte_uncache(pte_t pte) { pte_val(pte) |= _PAGE_NO_CACHE; }
+-static inline void pte_cache(pte_t pte)   { pte_val(pte) &= ~_PAGE_NO_CACHE; }
+-
+ static inline pte_t pte_wrprotect(pte_t pte) {
+ 	pte_val(pte) &= ~(_PAGE_RW); return pte; }
+ static inline pte_t pte_mkclean(pte_t pte) {
+@@ -405,16 +402,6 @@ static inline void __ptep_set_access_fla
+ 	__changed;							   \
+ })
+ 
+-/*
+- * Macro to mark a page protection value as "uncacheable".
+- */
+-#define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_NO_CACHE | _PAGE_GUARDED))
+-
+-struct file;
+-extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+-				     unsigned long size, pgprot_t vma_prot);
+-#define __HAVE_PHYS_MEM_ACCESS_PROT
+-
+ #define __HAVE_ARCH_PTE_SAME
+ #define pte_same(A,B)	(((pte_val(A) ^ pte_val(B)) & ~_PAGE_HPTEFLAGS) == 0)
+ 
+Index: linux-work/arch/powerpc/include/asm/pgtable.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pgtable.h	2008-09-29 14:21:37.000000000 +1000
++++ linux-work/arch/powerpc/include/asm/pgtable.h	2008-12-17 12:35:16.000000000 +1100
+@@ -16,6 +16,32 @@ struct mm_struct;
+ #endif
+ 
+ #ifndef __ASSEMBLY__
 +
-+	/* We don't touch CPU 0 map, it's allocated at aboot and kept
-+	 * around forever
-+	 */
-+	if (cpu == 0)
-+		return NOTIFY_OK;
++/*
++ * Macro to mark a page protection value as "uncacheable".
++ */
 +
-+	switch (action) {
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		pr_debug("MMU: Allocating stale context map for CPU %d\n", cpu);
-+		stale_map[cpu] = kzalloc(CTX_MAP_SIZE, GFP_KERNEL);
-+		break;
-+#ifdef CONFIG_HOTPLUG_CPU
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+		pr_debug("MMU: Freeing stale context map for CPU %d\n", cpu);
-+		kfree(stale_map[cpu]);
-+		stale_map[cpu] = NULL;
-+		break;
-+#endif
-+	}
-+	return NOTIFY_OK;
-+}
++#define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_GUARDED | _PAGE_NO_CACHE | \
++ 			 _PAGE_WRITETHRU)
 +
-+static struct notifier_block __cpuinitdata mmu_context_cpu_nb = {
-+	.notifier_call	= mmu_context_cpu_notify,
-+};
++#define pgprot_noncached(prot)	  (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_NO_CACHE | _PAGE_GUARDED))
 +
-+#endif /* CONFIG_SMP */
++#define pgprot_noncached_wc(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_NO_CACHE))
++
++#define pgprot_cached(prot)       (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_COHERENT))
++
++#define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_COHERENT | _PAGE_WRITETHRU))
++
++
++struct file;
++extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
++				     unsigned long size, pgprot_t vma_prot);
++#define __HAVE_PHYS_MEM_ACCESS_PROT
++
+ /*
+  * ZERO_PAGE is a global shared page that is always zero: used
+  * for zero-mapped memory areas etc..
+Index: linux-work/arch/powerpc/kernel/pci-common.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2008-12-17 12:29:35.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci-common.c	2008-12-17 12:35:16.000000000 +1100
+@@ -370,13 +370,10 @@ static pgprot_t __pci_mmap_set_pgprot(st
+ 	}
+ 
+ 	/* XXX would be nice to have a way to ask for write-through */
+-	prot |= _PAGE_NO_CACHE;
+ 	if (write_combine)
+-		prot &= ~_PAGE_GUARDED;
++		return pgprot_noncached_wc(prot);
+ 	else
+-		prot |= _PAGE_GUARDED;
+-
+-	return __pgprot(prot);
++		return pgprot_noncached(prot);
+ }
  
  /*
-  * Initialize the context management stuff.
-@@ -324,13 +342,56 @@ void __init mmu_context_init(void)
- 	init_mm.context.active = NR_CPUS;
+@@ -387,19 +384,17 @@ static pgprot_t __pci_mmap_set_pgprot(st
+ pgprot_t pci_phys_mem_access_prot(struct file *file,
+ 				  unsigned long pfn,
+ 				  unsigned long size,
+-				  pgprot_t protection)
++				  pgprot_t prot)
+ {
+ 	struct pci_dev *pdev = NULL;
+ 	struct resource *found = NULL;
+-	unsigned long prot = pgprot_val(protection);
+ 	resource_size_t offset = ((resource_size_t)pfn) << PAGE_SHIFT;
+ 	int i;
  
- 	/*
-+	 *   The MPC8xx has only 16 contexts.  We rotate through them on each
-+	 * task switch.  A better way would be to keep track of tasks that
-+	 * own contexts, and implement an LRU usage.  That way very active
-+	 * tasks don't always have to pay the TLB reload overhead.  The
-+	 * kernel pages are mapped shared, so the kernel can run on behalf
-+	 * of any task that makes a kernel entry.  Shared does not mean they
-+	 * are not protected, just that the ASID comparison is not performed.
-+	 *      -- Dan
-+	 *
-+	 * The IBM4xx has 256 contexts, so we can just rotate through these
-+	 * as a way of "switching" contexts.  If the TID of the TLB is zero,
-+	 * the PID/TID comparison is disabled, so we can use a TID of zero
-+	 * to represent all kernel pages as shared among all contexts.
-+	 * 	-- Dan
-+	 */
-+	if (mmu_has_feature(MMU_FTR_TYPE_8xx)) {
-+		first_context = 0;
-+		last_context = 15;
-+	} else {
-+		first_context = 1;
-+		last_context = 255;
-+	}
-+
-+#ifdef DEBUG_CLAMP_LAST_CONTEXT
-+	last_context = DEBUG_CLAMP_LAST_CONTEXT;
-+#endif
-+	/*
-+	 * Allocate the maps used by context management
-+	 */
-+	context_map = alloc_bootmem(CTX_MAP_SIZE);
-+	context_mm = alloc_bootmem(sizeof(void *) * (last_context + 1));
-+	stale_map[0] = alloc_bootmem(CTX_MAP_SIZE);
-+
-+#ifdef CONFIG_SMP
-+	register_cpu_notifier(&mmu_context_cpu_nb);
-+#endif
-+
-+	printk(KERN_INFO
-+	       "MMU: Allocated %d bytes of context maps for %d contexts\n",
-+	       2 * CTX_MAP_SIZE + (sizeof(void *) * (last_context + 1)),
-+	       last_context - first_context + 1);
-+
-+	/*
- 	 * Some processors have too few contexts to reserve one for
- 	 * init_mm, and require using context 0 for a normal task.
- 	 * Other processors reserve the use of context zero for the kernel.
--	 * This code assumes FIRST_CONTEXT < 32.
-+	 * This code assumes first_context < 32.
- 	 */
--	context_map[0] = (1 << FIRST_CONTEXT) - 1;
--	next_context = FIRST_CONTEXT;
--	nr_free_contexts = LAST_CONTEXT - FIRST_CONTEXT + 1;
-+	context_map[0] = (1 << first_context) - 1;
-+	next_context = first_context;
-+	nr_free_contexts = last_context - first_context + 1;
- }
- 
-Index: linux-work/arch/powerpc/kernel/setup_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/setup_32.c	2008-12-19 16:07:01.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/setup_32.c	2008-12-19 16:07:05.000000000 +1100
-@@ -38,6 +38,7 @@
- #include <asm/time.h>
- #include <asm/serial.h>
- #include <asm/udbg.h>
-+#include <asm/mmu_context.h>
- 
- #include "setup.h"
- 
-@@ -330,4 +331,8 @@ void __init setup_arch(char **cmdline_p)
- 	if ( ppc_md.progress ) ppc_md.progress("arch: exit", 0x3eab);
- 
- 	paging_init();
-+
-+	/* Initialize the MMU context management stuff */
-+	mmu_context_init();
-+
- }
-Index: linux-work/arch/powerpc/mm/init_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/init_32.c	2008-12-19 15:42:28.000000000 +1100
-+++ linux-work/arch/powerpc/mm/init_32.c	2008-12-19 16:07:05.000000000 +1100
-@@ -35,7 +35,6 @@
- #include <asm/pgalloc.h>
- #include <asm/prom.h>
- #include <asm/io.h>
--#include <asm/mmu_context.h>
- #include <asm/pgtable.h>
- #include <asm/mmu.h>
- #include <asm/smp.h>
-@@ -180,9 +179,6 @@ void __init MMU_init(void)
- 	if (ppc_md.progress)
- 		ppc_md.progress("MMU:setio", 0x302);
- 
--	/* Initialize the context management stuff */
--	mmu_context_init();
+ 	if (page_is_ram(pfn))
+-		return __pgprot(prot);
 -
- 	if (ppc_md.progress)
- 		ppc_md.progress("MMU:exit", 0x211);
+-	prot |= _PAGE_NO_CACHE | _PAGE_GUARDED;
++		return prot;
  
++	prot = pgprot_noncached(prot);
+ 	for_each_pci_dev(pdev) {
+ 		for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+ 			struct resource *rp = &pdev->resource[i];
+@@ -420,14 +415,14 @@ pgprot_t pci_phys_mem_access_prot(struct
+ 	}
+ 	if (found) {
+ 		if (found->flags & IORESOURCE_PREFETCH)
+-			prot &= ~_PAGE_GUARDED;
++			prot = pgprot_noncached_wc(prot);
+ 		pci_dev_put(pdev);
+ 	}
+ 
+ 	pr_debug("PCI: Non-PCI map for %llx, prot: %lx\n",
+-		 (unsigned long long)offset, prot);
++		 (unsigned long long)offset, pgprot_val(prot));
+ 
+-	return __pgprot(prot);
++	return prot;
+ }
+ 
+ 
+@@ -583,8 +578,7 @@ int pci_mmap_legacy_page_range(struct pc
+ 	pr_debug(" -> mapping phys %llx\n", (unsigned long long)offset);
+ 
+ 	vma->vm_pgoff = offset >> PAGE_SHIFT;
+-	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 	return remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
+ 			       vma->vm_end - vma->vm_start,
+ 			       vma->vm_page_prot);
+Index: linux-work/arch/powerpc/mm/mem.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/mem.c	2008-12-17 12:35:12.000000000 +1100
++++ linux-work/arch/powerpc/mm/mem.c	2008-12-17 12:35:16.000000000 +1100
+@@ -102,8 +102,8 @@ pgprot_t phys_mem_access_prot(struct fil
+ 		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
+ 
+ 	if (!page_is_ram(pfn))
+-		vma_prot = __pgprot(pgprot_val(vma_prot)
+-				    | _PAGE_GUARDED | _PAGE_NO_CACHE);
++		vma_prot = pgprot_noncached(vma_prot);
++
+ 	return vma_prot;
+ }
+ EXPORT_SYMBOL(phys_mem_access_prot);
+Index: linux-work/arch/powerpc/platforms/cell/spufs/file.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/cell/spufs/file.c	2008-12-08 15:40:33.000000000 +1100
++++ linux-work/arch/powerpc/platforms/cell/spufs/file.c	2008-12-17 12:35:16.000000000 +1100
+@@ -273,12 +273,10 @@ spufs_mem_mmap_fault(struct vm_area_stru
+ 		return VM_FAULT_NOPAGE;
+ 
+ 	if (ctx->state == SPU_STATE_SAVED) {
+-		vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-							& ~_PAGE_NO_CACHE);
++		vma->vm_page_prot = pgprot_cached(vma->vm_page_prot);
+ 		pfn = vmalloc_to_pfn(ctx->csa.lscsa->ls + offset);
+ 	} else {
+-		vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-					     | _PAGE_NO_CACHE);
++		vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
+ 		pfn = (ctx->spu->local_store_phys + offset) >> PAGE_SHIFT;
+ 	}
+ 	vm_insert_pfn(vma, address, pfn);
+@@ -338,8 +336,7 @@ static int spufs_mem_mmap(struct file *f
+ 		return -EINVAL;
+ 
+ 	vma->vm_flags |= VM_IO | VM_PFNMAP;
+-	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-				     | _PAGE_NO_CACHE);
++	vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
+ 
+ 	vma->vm_ops = &spufs_mem_mmap_vmops;
+ 	return 0;
+@@ -452,8 +449,7 @@ static int spufs_cntl_mmap(struct file *
+ 		return -EINVAL;
+ 
+ 	vma->vm_flags |= VM_IO | VM_PFNMAP;
+-	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 
+ 	vma->vm_ops = &spufs_cntl_mmap_vmops;
+ 	return 0;
+@@ -1155,8 +1151,7 @@ static int spufs_signal1_mmap(struct fil
+ 		return -EINVAL;
+ 
+ 	vma->vm_flags |= VM_IO | VM_PFNMAP;
+-	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 
+ 	vma->vm_ops = &spufs_signal1_mmap_vmops;
+ 	return 0;
+@@ -1292,8 +1287,7 @@ static int spufs_signal2_mmap(struct fil
+ 		return -EINVAL;
+ 
+ 	vma->vm_flags |= VM_IO | VM_PFNMAP;
+-	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 
+ 	vma->vm_ops = &spufs_signal2_mmap_vmops;
+ 	return 0;
+@@ -1414,8 +1408,7 @@ static int spufs_mss_mmap(struct file *f
+ 		return -EINVAL;
+ 
+ 	vma->vm_flags |= VM_IO | VM_PFNMAP;
+-	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 
+ 	vma->vm_ops = &spufs_mss_mmap_vmops;
+ 	return 0;
+@@ -1476,8 +1469,7 @@ static int spufs_psmap_mmap(struct file 
+ 		return -EINVAL;
+ 
+ 	vma->vm_flags |= VM_IO | VM_PFNMAP;
+-	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 
+ 	vma->vm_ops = &spufs_psmap_mmap_vmops;
+ 	return 0;
+@@ -1536,8 +1528,7 @@ static int spufs_mfc_mmap(struct file *f
+ 		return -EINVAL;
+ 
+ 	vma->vm_flags |= VM_IO | VM_PFNMAP;
+-	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
+-				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 
+ 	vma->vm_ops = &spufs_mfc_mmap_vmops;
+ 	return 0;
+Index: linux-work/drivers/video/controlfb.c
+===================================================================
+--- linux-work.orig/drivers/video/controlfb.c	2008-07-07 13:45:06.000000000 +1000
++++ linux-work/drivers/video/controlfb.c	2008-12-17 12:35:16.000000000 +1100
+@@ -298,10 +298,10 @@ static int controlfb_mmap(struct fb_info
+                        return -EINVAL;
+                start = info->fix.mmio_start;
+                len = PAGE_ALIGN((start & ~PAGE_MASK)+info->fix.mmio_len);
+-               pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE|_PAGE_GUARDED;
++	       vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+        } else {
+                /* framebuffer */
+-               pgprot_val(vma->vm_page_prot) |= _PAGE_WRITETHRU;
++	       vma->vm_page_prot = pgprot_cached_wthru(vma->vm_page_prot);
+        }
+        start &= PAGE_MASK;
+        if ((vma->vm_end - vma->vm_start + off) > len)
