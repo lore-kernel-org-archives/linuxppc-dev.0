@@ -1,22 +1,33 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 5EEEFDDE08
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 19:30:38 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LDakk-0002xa-Eb
-	for linuxppc-dev@ozlabs.org; Fri, 19 Dec 2008 00:30:34 -0800
-Message-ID: <21087541.post@talk.nabble.com>
-Date: Fri, 19 Dec 2008 00:30:34 -0800 (PST)
-From: Felix Radensky <felix@embedded-sol.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Long boot delay on 460EX with 2.6.28-rc8
-In-Reply-To: <200812190856.19482.sr@denx.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6D050DDF2F
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 23:36:29 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBJCZfeD025880
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 05:35:41 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	mBJCaPFY196446
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 05:36:25 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	mBJCaORe019001
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 05:36:25 -0700
+Date: Fri, 19 Dec 2008 07:36:11 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/10] powerpc/4xx: Extended DCR support v2
+Message-ID: <20081219123611.GA2721@zod.rchland.ibm.com>
+References: <1229663599.904385.502157196243.qpush@grosgo>
+	<20081219051426.4FF4ADDF1E@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-References: <21070179.post@talk.nabble.com>
-	<20081218190208.GC18201@yoda.jdub.homelinux.org>
-	<21087072.post@talk.nabble.com> <200812190856.19482.sr@denx.de>
+In-Reply-To: <20081219051426.4FF4ADDF1E@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,83 +37,235 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Dec 19, 2008 at 04:13:22PM +1100, Benjamin Herrenschmidt wrote:
+>This adds supports to the "extended" DCR addressing via
+>the indirect mfdcrx/mtdcrx instructions supported by some
+>4xx cores (440H6 and later)
+>
+>I enabled the feature for now only on AMCC 460 chips
+>
+>Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
+In general, if you just carry over my previous Acks it'll make life
+easier ;)
 
-Stefan Roese wrote:
-> 
-> 
->> Is this an expected behavior - detection of 256 MiB NAND flash
->> takes around 20 seconds. The ndfc driver works fine after boot.
-> 
-> No, 20 seconds is definitely too long. Something must be wrong with the
-> ndfc 
-> driver or the NAND dts entries.
-> 
-> Best regards,
-> Stefan
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+josh
 
-Thanks, Stefan
-
-My ndfc DTS entry looks like this
-
-nand@3,0 {
-    compatible = "amcc,ndfc";
-    reg = <0x00000003 0x00000000 0x00002000>;
-    ccr = <0x00001000>;
-    bank-settings = <0x80002222>;
-    #address-cells = <1>;
-    #size-cells = <1>;
-
-    partition@0 {
-        label = "data";
-        reg = <0x00000000 0x10000000>;
-    };
-};
-
-I also had to modify u-boot to provide ndfc ebc mappings.
-Not sure if it's the best solution, but it worked. Sorry for
-posting u-boot stuff here, I'll stop doing that if list thinks
-it's irrelevant.
-
-My u-boot code looks like this (modified canyonlands code):
-
-void ft_board_setup(void *blob, bd_t *bd)
-{
-        u32 val[8];
-        int rc;
-
-        ft_cpu_setup(blob, bd);
-
-        /* Fixup NOR mapping */
-        val[0] = 0;                             /* chip select number */
-        val[1] = 0;                             /* always 0 */
-        val[2] = CFG_FLASH_BASE_PHYS_L;         /* we fixed up this address
-*/
-        val[3] = gd->bd->bi_flashsize;
-
-        /* Set NAND Controller mapping */
-        val[4] = CFG_NAND_CS;                   /* chip select number */
-        val[5] = 0;                                         /* always 0 */
-        val[6] = CFG_NAND_ADDR;              /* NAND address */
-        val[7] = 0x2000;                               /* NAND register area
-size */
-
-        rc = fdt_find_and_setprop(blob, "/plb/opb/ebc", "ranges",
-                                  val, sizeof(val), 1);
-        if (rc) {
-                printf("Unable to update property NOR mapping, err=%s\n",
-                       fdt_strerror(rc));
-        }
-}
-
-Felix.
-
--- 
-View this message in context: http://www.nabble.com/Long-boot-delay-on-460EX-with-2.6.28-rc8-tp21070179p21087541.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+>---
+>
+>This variant uses "440x6" instead of "440H6". I made no other
+>changes to the code as I think the codegen is the less bad I've
+>had so far and I rely on Josh further work on cleaning up the
+>type of 440core selection at Kconfig time so the feature are
+>properly reflected in the POSSIBLE and ALWAYS masks based on
+>the core selection. That way, if only one core type is selected
+>the feature test should resolve at compile time.
+>
+>
+> arch/powerpc/include/asm/cputable.h   |    7 ++-
+> arch/powerpc/include/asm/dcr-native.h |   63 +++++++++++++++++++++++++++-------
+> arch/powerpc/kernel/cputable.c        |    4 +-
+> arch/powerpc/sysdev/dcr-low.S         |    8 +++-
+> 4 files changed, 65 insertions(+), 17 deletions(-)
+>
+>--- linux-work.orig/arch/powerpc/include/asm/cputable.h	2008-12-17 12:28:23.000000000 +1100
+>+++ linux-work/arch/powerpc/include/asm/cputable.h	2008-12-17 12:30:52.000000000 +1100
+>@@ -164,6 +164,7 @@ extern const char *powerpc_base_platform
+> #define CPU_FTR_NEED_PAIRED_STWCX	ASM_CONST(0x0000000004000000)
+> #define CPU_FTR_LWSYNC			ASM_CONST(0x0000000008000000)
+> #define CPU_FTR_NOEXECUTE		ASM_CONST(0x0000000010000000)
+>+#define CPU_FTR_INDEXED_DCR		ASM_CONST(0x0000000020000000)
+>
+> /*
+>  * Add the 64-bit processor unique features in the top half of the word;
+>@@ -369,6 +370,8 @@ extern const char *powerpc_base_platform
+> #define CPU_FTRS_8XX	(CPU_FTR_USE_TB)
+> #define CPU_FTRS_40X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+> #define CPU_FTRS_44X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+>+#define CPU_FTRS_440x6	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE | \
+>+	    CPU_FTR_INDEXED_DCR)
+> #define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
+> 	    CPU_FTR_NODSISRALIGN | CPU_FTR_COHERENT_ICACHE | \
+> 	    CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_NOEXECUTE)
+>@@ -455,7 +458,7 @@ enum {
+> 	    CPU_FTRS_40X |
+> #endif
+> #ifdef CONFIG_44x
+>-	    CPU_FTRS_44X |
+>+	    CPU_FTRS_44X | CPU_FTRS_440x6 |
+> #endif
+> #ifdef CONFIG_E200
+> 	    CPU_FTRS_E200 |
+>@@ -495,7 +498,7 @@ enum {
+> 	    CPU_FTRS_40X &
+> #endif
+> #ifdef CONFIG_44x
+>-	    CPU_FTRS_44X &
+>+	    CPU_FTRS_44X & CPU_FTRS_440x6 &
+> #endif
+> #ifdef CONFIG_E200
+> 	    CPU_FTRS_E200 &
+>Index: linux-work/arch/powerpc/include/asm/dcr-native.h
+>===================================================================
+>--- linux-work.orig/arch/powerpc/include/asm/dcr-native.h	2008-09-29 14:21:37.000000000 +1000
+>+++ linux-work/arch/powerpc/include/asm/dcr-native.h	2008-12-17 12:30:52.000000000 +1100
+>@@ -23,6 +23,7 @@
+> #ifndef __ASSEMBLY__
+>
+> #include <linux/spinlock.h>
+>+#include <asm/cputable.h>
+>
+> typedef struct {
+> 	unsigned int base;
+>@@ -39,23 +40,45 @@ static inline bool dcr_map_ok_native(dcr
+> #define dcr_read_native(host, dcr_n)		mfdcr(dcr_n + host.base)
+> #define dcr_write_native(host, dcr_n, value)	mtdcr(dcr_n + host.base, value)
+>
+>-/* Device Control Registers */
+>-void __mtdcr(int reg, unsigned int val);
+>-unsigned int __mfdcr(int reg);
+>+/* Table based DCR accessors */
+>+extern void __mtdcr(unsigned int reg, unsigned int val);
+>+extern unsigned int __mfdcr(unsigned int reg);
+>+
+>+/* mfdcrx/mtdcrx instruction based accessors. We hand code
+>+ * the opcodes in order not to depend on newer binutils
+>+ */
+>+static inline unsigned int mfdcrx(unsigned int reg)
+>+{
+>+	unsigned int ret;
+>+	asm volatile(".long 0x7c000206 | (%0 << 21) | (%1 << 16)"
+>+		     : "=r" (ret) : "r" (reg));
+>+	return ret;
+>+}
+>+
+>+static inline void mtdcrx(unsigned int reg, unsigned int val)
+>+{
+>+	asm volatile(".long 0x7c000306 | (%0 << 21) | (%1 << 16)"
+>+		     : : "r" (val), "r" (reg));
+>+}
+>+
+> #define mfdcr(rn)						\
+> 	({unsigned int rval;					\
+>-	if (__builtin_constant_p(rn))				\
+>+	if (__builtin_constant_p(rn) && rn < 1024)		\
+> 		asm volatile("mfdcr %0," __stringify(rn)	\
+> 		              : "=r" (rval));			\
+>+	else if (likely(cpu_has_feature(CPU_FTR_INDEXED_DCR)))	\
+>+		rval = mfdcrx(rn);				\
+> 	else							\
+> 		rval = __mfdcr(rn);				\
+> 	rval;})
+>
+> #define mtdcr(rn, v)						\
+> do {								\
+>-	if (__builtin_constant_p(rn))				\
+>+	if (__builtin_constant_p(rn) && rn < 1024)		\
+> 		asm volatile("mtdcr " __stringify(rn) ",%0"	\
+> 			      : : "r" (v)); 			\
+>+	else if (likely(cpu_has_feature(CPU_FTR_INDEXED_DCR)))	\
+>+		mtdcrx(rn, v);					\
+> 	else							\
+> 		__mtdcr(rn, v);					\
+> } while (0)
+>@@ -69,8 +92,13 @@ static inline unsigned __mfdcri(int base
+> 	unsigned int val;
+>
+> 	spin_lock_irqsave(&dcr_ind_lock, flags);
+>-	__mtdcr(base_addr, reg);
+>-	val = __mfdcr(base_data);
+>+	if (cpu_has_feature(CPU_FTR_INDEXED_DCR)) {
+>+		mtdcrx(base_addr, reg);
+>+		val = mfdcrx(base_data);
+>+	} else {
+>+		__mtdcr(base_addr, reg);
+>+		val = __mfdcr(base_data);
+>+	}
+> 	spin_unlock_irqrestore(&dcr_ind_lock, flags);
+> 	return val;
+> }
+>@@ -81,8 +109,13 @@ static inline void __mtdcri(int base_add
+> 	unsigned long flags;
+>
+> 	spin_lock_irqsave(&dcr_ind_lock, flags);
+>-	__mtdcr(base_addr, reg);
+>-	__mtdcr(base_data, val);
+>+	if (cpu_has_feature(CPU_FTR_INDEXED_DCR)) {
+>+		mtdcrx(base_addr, reg);
+>+		mtdcrx(base_data, val);
+>+	} else {
+>+		__mtdcr(base_addr, reg);
+>+		__mtdcr(base_data, val);
+>+	}
+> 	spin_unlock_irqrestore(&dcr_ind_lock, flags);
+> }
+>
+>@@ -93,9 +126,15 @@ static inline void __dcri_clrset(int bas
+> 	unsigned int val;
+>
+> 	spin_lock_irqsave(&dcr_ind_lock, flags);
+>-	__mtdcr(base_addr, reg);
+>-	val = (__mfdcr(base_data) & ~clr) | set;
+>-	__mtdcr(base_data, val);
+>+	if (cpu_has_feature(CPU_FTR_INDEXED_DCR)) {
+>+		mtdcrx(base_addr, reg);
+>+		val = (mfdcrx(base_data) & ~clr) | set;
+>+		mtdcrx(base_data, val);
+>+	} else {
+>+		__mtdcr(base_addr, reg);
+>+		val = (__mfdcr(base_data) & ~clr) | set;
+>+		__mtdcr(base_data, val);
+>+	}
+> 	spin_unlock_irqrestore(&dcr_ind_lock, flags);
+> }
+>
+>Index: linux-work/arch/powerpc/sysdev/dcr-low.S
+>===================================================================
+>--- linux-work.orig/arch/powerpc/sysdev/dcr-low.S	2008-07-07 13:45:04.000000000 +1000
+>+++ linux-work/arch/powerpc/sysdev/dcr-low.S	2008-12-17 12:30:52.000000000 +1100
+>@@ -11,14 +11,20 @@
+>
+> #include <asm/ppc_asm.h>
+> #include <asm/processor.h>
+>+#include <asm/bug.h>
+>
+> #define DCR_ACCESS_PROLOG(table) \
+>+	cmpli	cr0,r3,1024;	 \
+> 	rlwinm  r3,r3,4,18,27;   \
+> 	lis     r5,table@h;      \
+> 	ori     r5,r5,table@l;   \
+> 	add     r3,r3,r5;        \
+>+	bge-	1f;		 \
+> 	mtctr   r3;              \
+>-	bctr
+>+	bctr;			 \
+>+1:	trap;			 \
+>+	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,0;	\
+>+	blr
+>
+> _GLOBAL(__mfdcr)
+> 	DCR_ACCESS_PROLOG(__mfdcr_table)
+>Index: linux-work/arch/powerpc/kernel/cputable.c
+>===================================================================
+>--- linux-work.orig/arch/powerpc/kernel/cputable.c	2008-12-17 12:28:23.000000000 +1100
+>+++ linux-work/arch/powerpc/kernel/cputable.c	2008-12-17 12:30:52.000000000 +1100
+>@@ -1509,7 +1509,7 @@ static struct cpu_spec __initdata cpu_sp
+> 		.pvr_mask		= 0xffff0002,
+> 		.pvr_value		= 0x13020002,
+> 		.cpu_name		= "460EX",
+>-		.cpu_features		= CPU_FTRS_44X,
+>+		.cpu_features		= CPU_FTRS_440x6,
+> 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+> 		.icache_bsize		= 32,
+> 		.dcache_bsize		= 32,
+>@@ -1521,7 +1521,7 @@ static struct cpu_spec __initdata cpu_sp
+> 		.pvr_mask		= 0xffff0002,
+> 		.pvr_value		= 0x13020000,
+> 		.cpu_name		= "460GT",
+>-		.cpu_features		= CPU_FTRS_44X,
+>+		.cpu_features		= CPU_FTRS_440x6,
+> 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+> 		.icache_bsize		= 32,
+> 		.dcache_bsize		= 32,
