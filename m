@@ -1,18 +1,22 @@
-Return-Path: <xilinx@live.cn>
-Received: from bay0-omc2-s16.bay0.hotmail.com (bay0-omc2-s16.bay0.hotmail.com
-	[65.54.246.152]) by ozlabs.org (Postfix) with ESMTP id AA85CDDF2D
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3D97DDDF28
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Dec 2008 03:40:53 +1100 (EST)
-Message-ID: <BAY105-DS282E6A4ACCAA3ED3A42A3CDF00@phx.gbl>
-From: "mingqian" <xilinx@live.cn>
-In-Reply-To: <loom.20081219T062005-806@post.gmane.org>
-To: <linuxppc-embedded@ozlabs.org>
-References: <loom.20081219T062005-806@post.gmane.org>
-Subject: Re: Device Tree setup for 8272-based board
-Date: Sat, 20 Dec 2008 00:37:07 +0800
+	Sat, 20 Dec 2008 07:04:10 +1100 (EST)
+Message-ID: <494BFE2B.2010103@freescale.com>
+Date: Fri, 19 Dec 2008 14:03:55 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Daniel Ng <daniel_ng11@lycos.com>
+Subject: Re: Device Tree setup for 8272-based board
+References: <loom.20081219T062005-806@post.gmane.org>
+In-Reply-To: <loom.20081219T062005-806@post.gmane.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,42 +27,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGkgRGFuaWVsLA0KICAgIEkgdGhpbmsgeW91J2QgYmV0dGVyIHJlYWQgRG9jdW1lbnRhdGlvbi9w
-b3dlcnBjL2Jvb3R3cmFwcGVyLnR4dCwgYW5kIGNob29zZSB0aGUgYXBwcm9wcmlhdGUgaW1hZ2Ug
-dGFyZ2V0Lg0KDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLQ0KRnJvbTogIkRhbmllbCBOZyIgPGRhbmllbF9uZzExQGx5Y29zLmNvbT4NClNlbnQ6IEZy
-aWRheSwgRGVjZW1iZXIgMTksIDIwMDggMjozMSBQTQ0KVG86IDxsaW51eHBwYy1lbWJlZGRlZEBv
-emxhYnMub3JnPg0KU3ViamVjdDogRGV2aWNlIFRyZWUgc2V0dXAgZm9yIDgyNzItYmFzZWQgYm9h
-cmQNCg0KPiBIaSwNCj4gDQo+IFdlIGFyZSBtaWdyYXRpbmcgb3VyIFBvd2VyUEMgODI3Mi1iYXNl
-ZCBib2FyZCBmcm9tIDIuNi4xNCB0byAyLjYuMjcuDQo+IA0KPiBPbmUgb2YgdGhlIGJpZyBjaGFu
-Z2VzIGlzIHRoZSBuZWVkIGZvciBhIERldmljZSBUcmVlIGZvciBib290dXAuDQo+IA0KPiBTbyBm
-YXIsIG15IGJvb3R1cCBsb29rcyBsaWtlIHRoZSBiZWxvdyAodXNpbmcgdS1ib290KS4NCj4gDQo+
-IEkgYW0ganVzdCB1c2luZyBhcmNoL3Bvd2VycGMvYm9vdC9jdWJvb3QtODI0eC5jIA0KPiBhbmQg
-L2FyY2gvcG93ZXJwYy9ib290L2R0cy9tcGM4MjcyYWRzLmR0cyBmb3Igbm93LiBUaGVyZWZvcmUs
-IGFsbCB0aGUgc2V0dGluZ3MgDQo+IGFzIHByaW50ZWQgYmVsb3cgYXJlIHdyb25nIGllLiBNZW1v
-cnksIEVORVQwIG1hYywgQ1BVIGNsb2NrIGZyZXEsIGV0Yy4NCj4gDQo+IFdoZW4gSSBjaGFuZ2Ug
-dGhlIHNldHRpbmdzIGluIG1wYzgyNzJhZHMuZHRzIGFuZCBkbyBhIGZyZXNoIHJlY29tcGlsZSwg
-dGhlIA0KPiBzZXR0aW5ncyBkbyBub3QgY2hhbmdlLiBIb3dldmVyLCBpZiBJIHVzZSBhbm90aGVy
-IGN1Ym9vdCouYyBmaWxlLCBJIGdldCBhIA0KPiBkaWZmZXJlbnQgc2V0IG9mIHByaW50ZWQgc2V0
-dGluZ3MgZWcuIDIgZXRoZXJuZXQgcG9ydHMgaW5zdGVhZCBvZiAxLiBUaGlzIGlzIA0KPiBmaW5l
-LCBidXQgSSBkb24ndCBzZWUgd2hlcmUgaW4gdGhlIGN1Ym9vdCouYyBmaWxlIHRoZXNlIHNldHRp
-bmdzIGFyZSANCj4gc3BlY2lmaWVkLiBDYW4gc29tZW9uZSBzdWdnZXN0IHdoZXJlIHRoZXNlIG1p
-Z2h0IGJlPw0KPiANCj4gQ2hlZXJzLA0KPiBEYW5pZWwNCj4gDQo+IA0KPiAjIyBCb290aW5nIGlt
-YWdlIGF0IDAwMjAwMDAwIC4uLg0KPiAgIEltYWdlIE5hbWU6ICAgTGludXgtMi42LjI3LW15YnVp
-bGQNCj4gICBJbWFnZSBUeXBlOiAgIFBvd2VyUEMgTGludXggS2VybmVsIEltYWdlIChnemlwIGNv
-bXByZXNzZWQpDQo+ICAgRGF0YSBTaXplOiAgICAxNDc3MjMzIEJ5dGVzID0gIDEuNCBNQg0KPiAg
-IExvYWQgQWRkcmVzczogMDA0MDAwMDANCj4gICBFbnRyeSBQb2ludDogIDAwNDAwNTk0DQo+ICAg
-VmVyaWZ5aW5nIENoZWNrc3VtIC4uLiBPSw0KPiAgIFVuY29tcHJlc3NpbmcgS2VybmVsIEltYWdl
-IC4uLiBPSw0KPiBNZW1vcnkgPC0gPDB4MCAweDQwMDAwMDA+ICg2NE1CKQ0KPiBFTkVUMDogbG9j
-YWwtbWFjLWFkZHJlc3MgPC0gYzA6YTg6MDE6NGI6N2U6MTMNCj4gQ1BVIGNsb2NrLWZyZXF1ZW5j
-eSA8LSAweGExNzVjMTAwICgyNzA5TUh6KQ0KPiBDUFUgdGltZWJhc2UtZnJlcXVlbmN5IDwtIDB4
-NGVhZDlhMCAoODNNSHopDQo+IENQVSBidXMtZnJlcXVlbmN5IDwtIDB4MTNhYjY2ODAgKDMzME1I
-eikNCj4gDQo+IHpJbWFnZSBzdGFydGluZzogbG9hZGVkIGF0IDB4MDA0MDAwMDAgKHNwOiAweDAz
-ZjdjOWM4KQ0KPiBBbGxvY2F0aW5nIDB4MzE2ZThjIGJ5dGVzIGZvciBrZXJuZWwgLi4uDQo+IGd1
-bnppcHBpbmcgKDB4MDAwMDAwMDAgPC0gMHgwMDQwYzAwMDoweDAwNzEzNjdjKS4uLmRvbmUgMHgy
-ZjQxYTAgYnl0ZXMNCj4gDQo+IExpbnV4L1Bvd2VyUEMgbG9hZDoNCj4gRmluYWxpemluZyBkZXZp
-Y2UgdHJlZS4uLiBmbGF0IHRyZWUgYXQgMHg0MGFjZDgNCj4gDQo+ICh0aGVyZSBpcyBubyBtb3Jl
-IG91dHB1dCBhZnRlciB0aGlzKQ0KPiANCj4gDQo+IA0KPiBfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXw0KPiBMaW51eHBwYy1lbWJlZGRlZCBtYWlsaW5nIGxp
-c3QNCj4gTGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KPiBodHRwczovL296bGFicy5vcmcv
-bWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZA0KPiA=
+Daniel Ng wrote:
+> We are migrating our PowerPC 8272-based board from 2.6.14 to 2.6.27.
+> 
+> One of the big changes is the need for a Device Tree for bootup.
+> 
+> So far, my bootup looks like the below (using u-boot).
+> 
+> I am just using arch/powerpc/boot/cuboot-824x.c 
+
+cuboot-824x is for 8240, 8245, and similar chips.  You want cuboot-pq2.
+
+> When I change the settings in mpc8272ads.dts and do a fresh recompile, the 
+> settings do not change. However, if I use another cuboot*.c file, I get a 
+> different set of printed settings eg. 2 ethernet ports instead of 1. This is 
+> fine, but I don't see where in the cuboot*.c file these settings are 
+> specified. Can someone suggest where these might be?
+
+The cuboot file defines things like TARGET_CPM2 or TARGET_824x, which 
+influences the compilation of the bd_t struct.  It's messy, which is why 
+we use device trees now. :-)
+
+-Scott
