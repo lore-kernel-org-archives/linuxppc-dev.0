@@ -1,22 +1,26 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 36B5DDDF2A
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 16:42:29 +1100 (EST)
-Date: Fri, 19 Dec 2008 00:42:25 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 0/5] powerpc: ftrace updates to previous patch series
-In-Reply-To: <18763.10937.847276.371262@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0812190032300.17609@gandalf.stny.rr.com>
-References: <20081126215821.263324391@goodmis.org>
-	<alpine.DEB.1.10.0811261749310.1501@gandalf.stny.rr.com>
-	<20081128131014.GC26793@elte.hu>
-	<alpine.DEB.1.10.0812011315020.7645@gandalf.stny.rr.com>
-	<18763.10937.847276.371262@drongo.ozlabs.ibm.com>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8BB22DDF2A
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 16:49:22 +1100 (EST)
+Date: Fri, 19 Dec 2008 08:49:10 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <1626525439.20081219084910@emcraft.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re[2]: [PATCH][v2] fork_init: fix division by zero
+In-Reply-To: <20081218144553.91226f50.akpm@linux-foundation.org>
+References: <200812101950.51958.yur@emcraft.com>
+	<20081211121635.ff58193f.akpm@linux-foundation.org>
+	<18753.46301.944770.779390@cargo.ozlabs.ibm.com>
+	<200812181047.50332.yur@emcraft.com>
+	<20081218144553.91226f50.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=windows-1251
+Cc: wd@denx.de, dzu@denx.de, linux-kernel@vger.kernel.org, miltonm@bga.com,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	viro@zeniv.linux.org.uk, Hugh Dickins <hugh@veritas.com>,
+	Geert.Uytterhoeven@sonycom.com, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,63 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+=0D=0AHello Andrew,
 
-On Fri, 19 Dec 2008, Paul Mackerras wrote:
+On Friday, December 19, 2008 you wrote:
+[snip]
+>>  There is one more warning from the common code when I use 256KB pages:
+>>=20
+>>    CC      mm/shmem.o
+>> mm/shmem.c: In function 'shmem_truncate_range':
+>> mm/shmem.c:613: warning: division by zero
+>> mm/shmem.c:619: warning: division by zero
+>> mm/shmem.c:644: warning: division by zero
+>> mm/shmem.c: In function 'shmem_unuse_inode':
+>> mm/shmem.c:873: warning: division by zero
+>>=20
+>>  The problem here is that ENTRIES_PER_PAGEPAGE becomes 0x1.0000.0000
+>> when PAGE_SIZE is 256K.
+>>=20
+>>  How about the following fix ?
 
-> Steven Rostedt writes:
-> 
-> > Sorry, I rebased to edit the change log where I mispelled Paul's name.
-> 
-> So, what commits should I be pulling into powerpc.git, or what patches
-> should I be committing, for dynamic ftrace on powerpc?
+[snip]
 
-Ingo did not like the rebase and kept the original commits (the one with 
-the change log with the incorrect spelling).
+> Looks sane.
 
-From: git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-  tracing/powerpc
-====================================
-commit 8fd6e5a8c81e2e9b912ea33c8425a10729db469b
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Fri Nov 14 16:21:19 2008 -0800
+ Thanks for reviewing.
 
-    powerpc: ftrace, convert to new dynamic ftrace arch API
-    
-    Impact: update to PowerPC ftrace arch API
-    
-    This patch converts PowerPC to use the new dynamic ftrace arch API.
-    
-    Thanks to Paul Mackennas for pointing out the mistakes of my original
-    test_24bit_addr function.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-====================================
+> But to apply this I'd prefer a changelog, a signoff and a grunt from Hugh.
 
-The branch in my tree 'ppc/ftrace' has not been changed since. The only 
-reason the commits in my tree are different than the ones in tip was 
-because I rebased to fixed the spelling in the change log.
+ Sure, I'll post this in the separate thread then; keeping Hugh in CC.
 
-From: git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-  ppc/ftrace
-====================================
-commit a3520364f9376943e4d6c76931bf4df8569fa555
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Fri Nov 14 16:21:19 2008 -0800
+ Regards, Yuri
 
-    powerpc: ftrace, convert to new dynamic ftrace arch API
-    
-    Impact: update to PowerPC ftrace arch API
-    
-    This patch converts PowerPC to use the new dynamic ftrace arch API.
-    
-    Thanks to Paul Mackerras for pointing out the mistakes of my original
-    test_24bit_addr function.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-====================================
-
-Take your pick for which to pull from.
-
-Thanks,
-
--- Steve
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
