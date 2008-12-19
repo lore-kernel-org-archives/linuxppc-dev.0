@@ -1,15 +1,21 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 73D4EDDF55
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 02:33:16 +1100 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: grant.likely@secretlab.ca
-Subject: [PATCH V2] mpc52xx/serial: fix error paths in probe function
-Date: Fri, 19 Dec 2008 16:32:03 +0100
-Message-Id: <1229700723-12675-1-git-send-email-w.sang@pengutronix.de>
-In-Reply-To: <1227800036-30109-1-git-send-email-w.sang@pengutronix.de>
-References: <1227800036-30109-1-git-send-email-w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4D50EDDF2B
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 03:06:02 +1100 (EST)
+Message-Id: <CFACC97C-D525-4E64-BB8D-79A499B9F915@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1229663599.904385.502157196243.qpush@grosgo>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 0/10] powerpc: Preliminary work to enable SMP BookE (v3)
+Date: Fri, 19 Dec 2008 10:05:26 -0600
+References: <1229663599.904385.502157196243.qpush@grosgo>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,65 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-- error cases for mapbase and irq were unbundled
-- mapped irq now gets disposed on error
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
----
+On Dec 18, 2008, at 11:13 PM, Benjamin Herrenschmidt wrote:
 
-Tested with 2.6.28-rc9 on a phyCORE-MPC5200B-IO.
+> This series of patches is aimed at supporting SMP on non-hash
+> based processors. It consists of a rework of the MMU context
+> management and TLB management, clearly splitting hash32, hash64
+> and nohash in both cases, adding SMP safe context handling and
+> some basic SMP TLB management.
+>
+> There is room for improvements, such as implementing lazy TLB
+> flushing on processors without invalidate-by-PID support HW,
+> some better IPI mechanism, lock less fast path in the MMU context
+> switch, etc... but it should basically work.
+>
+> This version addresses the issues raised about some of the patches
+> in the previous batch, removes the ones that were already merged
+> in -next and and rebases the remaining ones when needed.
+>
 
-Changes since V1:
+All patches
 
-after following a discussion on LKML, it seems better to:
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-- use -EINVAL again instead of -ENODEV
-- use dev_dbg instead of dev_err
+Please put these in powerpc/next and I can work up some 85xx SMP  
+support on top of them.
 
- drivers/serial/mpc52xx_uart.c |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index 28c00c3..172f61f 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -1109,22 +1109,29 @@ mpc52xx_uart_of_probe(struct of_device *op, const struct of_device_id *match)
- 		return ret;
- 
- 	port->mapbase = res.start;
-+	if (!port->mapbase) {
-+		dev_dbg(&op->dev, "Could not allocate resources for PSC\n");
-+		return -EINVAL;
-+	}
-+
- 	port->irq = irq_of_parse_and_map(op->node, 0);
-+	if (port->irq == NO_IRQ) {
-+		dev_dbg(&op->dev, "Could not get irq\n");
-+		return -EINVAL;
-+	}
- 
- 	dev_dbg(&op->dev, "mpc52xx-psc uart at %p, irq=%x, freq=%i\n",
- 		(void *)port->mapbase, port->irq, port->uartclk);
- 
--	if ((port->irq == NO_IRQ) || !port->mapbase) {
--		printk(KERN_ERR "Could not allocate resources for PSC\n");
--		return -EINVAL;
--	}
--
- 	/* Add the port to the uart sub-system */
- 	ret = uart_add_one_port(&mpc52xx_uart_driver, port);
--	if (!ret)
--		dev_set_drvdata(&op->dev, (void *)port);
-+	if (ret) {
-+		irq_dispose_mapping(port->irq);
-+		return ret;
-+	}
- 
--	return ret;
-+	dev_set_drvdata(&op->dev, (void *)port);
-+	return 0;
- }
- 
- static int
--- 
-1.5.6.5
+- k
