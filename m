@@ -1,13 +1,13 @@
 Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id ADBEFDDE08
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 19:30:37 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5EEEFDDE08
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 19:30:38 +1100 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LDakj-0002xY-DH
-	for linuxppc-dev@ozlabs.org; Fri, 19 Dec 2008 00:30:33 -0800
-Message-ID: <21087540.post@talk.nabble.com>
-Date: Fri, 19 Dec 2008 00:30:33 -0800 (PST)
+	(envelope-from <bounces@nabble.com>) id 1LDakk-0002xa-Eb
+	for linuxppc-dev@ozlabs.org; Fri, 19 Dec 2008 00:30:34 -0800
+Message-ID: <21087541.post@talk.nabble.com>
+Date: Fri, 19 Dec 2008 00:30:34 -0800 (PST)
 From: Felix Radensky <felix@embedded-sol.com>
 To: linuxppc-dev@ozlabs.org
 Subject: Re: Long boot delay on 460EX with 2.6.28-rc8
@@ -104,5 +104,5 @@ size */
 Felix.
 
 -- 
-View this message in context: http://www.nabble.com/Long-boot-delay-on-460EX-with-2.6.28-rc8-tp21070179p21087540.html
+View this message in context: http://www.nabble.com/Long-boot-delay-on-460EX-with-2.6.28-rc8-tp21070179p21087541.html
 Sent from the linuxppc-dev mailing list archive at Nabble.com.
