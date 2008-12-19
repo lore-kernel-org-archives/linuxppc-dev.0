@@ -1,12 +1,20 @@
-Return-Path: <gerickson@nuovations.com>
-Received: from relay03.pair.com (relay03.pair.com [209.68.5.17])
-	by ozlabs.org (Postfix) with SMTP id 27550DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 05:18:00 +1100 (EST)
-From: Grant Erickson <gerickson@nuovations.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Const-qualify Device Node Argument to DCR Resource Extent API
-Date: Fri, 19 Dec 2008 10:17:54 -0800
-Message-Id: <1229710674-30301-1-git-send-email-gerickson@nuovations.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 67674DDF32
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 07:13:33 +1100 (EST)
+Date: Fri, 19 Dec 2008 14:13:09 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH] wrapper: Use the child-bus #address-cells to decide which
+	range entry to use
+Message-ID: <20081219201309.GB2077@loki.buserror.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,54 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add const qualifier to device_node argument for
-dcr_resource_{start,len} as of_get_property also const-qualifies this
-argument.
+The correct #address-cells was still used for the actual translation,
+so the impact is only a possibility of choosing the wrong range entry
+or failing to find any match.  Most common cases were not affected.
 
-Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/include/asm/dcr.h |    4 ++--
- arch/powerpc/sysdev/dcr.c      |    5 +++--
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/devtree.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/dcr.h b/arch/powerpc/include/asm/dcr.h
-index d13fb68..9d6851c 100644
---- a/arch/powerpc/include/asm/dcr.h
-+++ b/arch/powerpc/include/asm/dcr.h
-@@ -68,9 +68,9 @@ typedef dcr_host_mmio_t dcr_host_t;
-  * additional helpers to read the DCR * base from the device-tree
-  */
- struct device_node;
--extern unsigned int dcr_resource_start(struct device_node *np,
-+extern unsigned int dcr_resource_start(const struct device_node *np,
- 				       unsigned int index);
--extern unsigned int dcr_resource_len(struct device_node *np,
-+extern unsigned int dcr_resource_len(const struct device_node *np,
- 				     unsigned int index);
- #endif /* CONFIG_PPC_DCR */
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
-index a8ba998..bb44aa9 100644
---- a/arch/powerpc/sysdev/dcr.c
-+++ b/arch/powerpc/sysdev/dcr.c
-@@ -124,7 +124,8 @@ EXPORT_SYMBOL_GPL(dcr_write_generic);
+diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
+index 5d12336..a7e21a3 100644
+--- a/arch/powerpc/boot/devtree.c
++++ b/arch/powerpc/boot/devtree.c
+@@ -213,7 +213,7 @@ static int find_range(u32 *reg, u32 *ranges, int nregaddr,
+ 		u32 range_addr[MAX_ADDR_CELLS];
+ 		u32 range_size[MAX_ADDR_CELLS];
  
- #endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
+-		copy_val(range_addr, ranges + i, naddr);
++		copy_val(range_addr, ranges + i, nregaddr);
+ 		copy_val(range_size, ranges + i + nregaddr + naddr, nsize);
  
--unsigned int dcr_resource_start(struct device_node *np, unsigned int index)
-+unsigned int dcr_resource_start(const struct device_node *np,
-+				unsigned int index)
- {
- 	unsigned int ds;
- 	const u32 *dr = of_get_property(np, "dcr-reg", &ds);
-@@ -136,7 +137,7 @@ unsigned int dcr_resource_start(struct device_node *np, unsigned int index)
- }
- EXPORT_SYMBOL_GPL(dcr_resource_start);
- 
--unsigned int dcr_resource_len(struct device_node *np, unsigned int index)
-+unsigned int dcr_resource_len(const struct device_node *np, unsigned int index)
- {
- 	unsigned int ds;
- 	const u32 *dr = of_get_property(np, "dcr-reg", &ds);
+ 		if (compare_reg(reg, range_addr, range_size))
 -- 
-1.6.0.5
+1.5.6.rc1.6.gc53ad.dirty
