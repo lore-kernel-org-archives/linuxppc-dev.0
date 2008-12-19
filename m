@@ -1,21 +1,12 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4D50EDDF2B
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 03:06:02 +1100 (EST)
-Message-Id: <CFACC97C-D525-4E64-BB8D-79A499B9F915@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1229663599.904385.502157196243.qpush@grosgo>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 0/10] powerpc: Preliminary work to enable SMP BookE (v3)
-Date: Fri, 19 Dec 2008 10:05:26 -0600
-References: <1229663599.904385.502157196243.qpush@grosgo>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <gerickson@nuovations.com>
+Received: from relay03.pair.com (relay03.pair.com [209.68.5.17])
+	by ozlabs.org (Postfix) with SMTP id 27550DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 05:18:00 +1100 (EST)
+From: Grant Erickson <gerickson@nuovations.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Const-qualify Device Node Argument to DCR Resource Extent API
+Date: Fri, 19 Dec 2008 10:17:54 -0800
+Message-Id: <1229710674-30301-1-git-send-email-gerickson@nuovations.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +16,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Add const qualifier to device_node argument for
+dcr_resource_{start,len} as of_get_property also const-qualifies this
+argument.
 
-On Dec 18, 2008, at 11:13 PM, Benjamin Herrenschmidt wrote:
+Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+---
+ arch/powerpc/include/asm/dcr.h |    4 ++--
+ arch/powerpc/sysdev/dcr.c      |    5 +++--
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-> This series of patches is aimed at supporting SMP on non-hash
-> based processors. It consists of a rework of the MMU context
-> management and TLB management, clearly splitting hash32, hash64
-> and nohash in both cases, adding SMP safe context handling and
-> some basic SMP TLB management.
->
-> There is room for improvements, such as implementing lazy TLB
-> flushing on processors without invalidate-by-PID support HW,
-> some better IPI mechanism, lock less fast path in the MMU context
-> switch, etc... but it should basically work.
->
-> This version addresses the issues raised about some of the patches
-> in the previous batch, removes the ones that were already merged
-> in -next and and rebases the remaining ones when needed.
->
-
-All patches
-
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
-
-Please put these in powerpc/next and I can work up some 85xx SMP  
-support on top of them.
-
-- k
+diff --git a/arch/powerpc/include/asm/dcr.h b/arch/powerpc/include/asm/dcr.h
+index d13fb68..9d6851c 100644
+--- a/arch/powerpc/include/asm/dcr.h
++++ b/arch/powerpc/include/asm/dcr.h
+@@ -68,9 +68,9 @@ typedef dcr_host_mmio_t dcr_host_t;
+  * additional helpers to read the DCR * base from the device-tree
+  */
+ struct device_node;
+-extern unsigned int dcr_resource_start(struct device_node *np,
++extern unsigned int dcr_resource_start(const struct device_node *np,
+ 				       unsigned int index);
+-extern unsigned int dcr_resource_len(struct device_node *np,
++extern unsigned int dcr_resource_len(const struct device_node *np,
+ 				     unsigned int index);
+ #endif /* CONFIG_PPC_DCR */
+ #endif /* __ASSEMBLY__ */
+diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
+index a8ba998..bb44aa9 100644
+--- a/arch/powerpc/sysdev/dcr.c
++++ b/arch/powerpc/sysdev/dcr.c
+@@ -124,7 +124,8 @@ EXPORT_SYMBOL_GPL(dcr_write_generic);
+ 
+ #endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
+ 
+-unsigned int dcr_resource_start(struct device_node *np, unsigned int index)
++unsigned int dcr_resource_start(const struct device_node *np,
++				unsigned int index)
+ {
+ 	unsigned int ds;
+ 	const u32 *dr = of_get_property(np, "dcr-reg", &ds);
+@@ -136,7 +137,7 @@ unsigned int dcr_resource_start(struct device_node *np, unsigned int index)
+ }
+ EXPORT_SYMBOL_GPL(dcr_resource_start);
+ 
+-unsigned int dcr_resource_len(struct device_node *np, unsigned int index)
++unsigned int dcr_resource_len(const struct device_node *np, unsigned int index)
+ {
+ 	unsigned int ds;
+ 	const u32 *dr = of_get_property(np, "dcr-reg", &ds);
+-- 
+1.6.0.5
