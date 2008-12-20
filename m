@@ -1,22 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3D97DDDF28
+Return-Path: <xilinx@live.cn>
+Received: from bay0-omc2-s27.bay0.hotmail.com (bay0-omc2-s27.bay0.hotmail.com
+	[65.54.246.163]) by ozlabs.org (Postfix) with ESMTP id 172BADDF15
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Dec 2008 07:04:10 +1100 (EST)
-Message-ID: <494BFE2B.2010103@freescale.com>
-Date: Fri, 19 Dec 2008 14:03:55 -0600
-From: Scott Wood <scottwood@freescale.com>
+	Sat, 20 Dec 2008 14:52:01 +1100 (EST)
+Message-ID: <BAY105-DS3567863497ABB33F27B64CDF10@phx.gbl>
+From: "mingqian" <xilinx@live.cn>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Linux 2.6 frame buffer for XUPV2P
+Date: Sat, 20 Dec 2008 11:51:38 +0800
 MIME-Version: 1.0
-To: Daniel Ng <daniel_ng11@lycos.com>
-Subject: Re: Device Tree setup for 8272-based board
-References: <loom.20081219T062005-806@post.gmane.org>
-In-Reply-To: <loom.20081219T062005-806@post.gmane.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0008_01C96299.513361D0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,25 +21,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Daniel Ng wrote:
-> We are migrating our PowerPC 8272-based board from 2.6.14 to 2.6.27.
-> 
-> One of the big changes is the need for a Device Tree for bootup.
-> 
-> So far, my bootup looks like the below (using u-boot).
-> 
-> I am just using arch/powerpc/boot/cuboot-824x.c 
+这是一封 MIME 格式的多方邮件。
 
-cuboot-824x is for 8240, 8245, and similar chips.  You want cuboot-pq2.
+------=_NextPart_000_0008_01C96299.513361D0
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
 
-> When I change the settings in mpc8272ads.dts and do a fresh recompile, the 
-> settings do not change. However, if I use another cuboot*.c file, I get a 
-> different set of printed settings eg. 2 ethernet ports instead of 1. This is 
-> fine, but I don't see where in the cuboot*.c file these settings are 
-> specified. Can someone suggest where these might be?
+SGkgYWxsLCBJIGhhdmUgcnVuIExpbnV4IDIuNiBmcm9tIGdpdC54aWxpbnguY29tIG9uIG15IFhV
+UFYyUCBib2FyZC4gVGhpcyB2ZW5kb3Iga2VybmVsIHZlcnNpb24gaXMgMi42LjI4LXJjNi4gQ3Vy
+cmVudGx5LCB0aGUgdWFydGxpdGUgYW5kIGV0aGVybmV0IG1hYyB3b3JrIG9rLCBidXQgeGlsaW54
+IGZyYW1lIGJ1ZmZlciBkcml2ZXIgc2VlbXMgbm90IHdvcmtpbmcsIGFzIG5vdGhpbmcgaXMgc2hv
+d24gb24gdGhlIFZHQSBtb25pdG9yLCBhbmQgbm90aGluZyByZWxhdGVkIHRvIGZyYW1lYnVmZmVy
+IGlzIHNob3duIGluIHRoZSBzZXJpYWwgb3V0cHV0LiBJIHJ1biBmYnNldCwgIGJ1dCBpdCBzYXlz
+IGZiMCBub3QgZm91bmQuDQpUaGUgaGFyZHdhcmUgZnJhbWVidWZmZXIgSVAgY29yZSBJIHVzZSBp
+cyB0aGUgcGxiX3RmdF9jbnRscl9yZWYgMS4wMC5kLCB3aGljaCBpcyBhIFBMQiBtYXN0ZXIgYW5k
+IERDUiBzbGF2ZSwgYW5kIHRoZSAgb3BiMmRjcl9icmlkZ2UgYWN0cyBhcyB0aGUgRENSIG1hc3Rl
+ci4NCkNhbiBzb21lb25lIHN1Z2dlc3Qgd2hlcmUgdGhlIHByb2JsZW0gbWlnaHQgYmU/IA==
 
-The cuboot file defines things like TARGET_CPM2 or TARGET_824x, which 
-influences the compilation of the bd_t struct.  It's messy, which is why 
-we use device trees now. :-)
+------=_NextPart_000_0008_01C96299.513361D0
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
 
--Scott
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
+dD10ZXh0L2h0bWw7Y2hhcnNldD1nYjIzMTI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4wMC42
+MDAwLjE2Nzg4IiBuYW1lPUdFTkVSQVRPUj48L0hFQUQ+DQo8Qk9EWSBpZD1NYWlsQ29udGFpbmVy
+Qm9keSANCnN0eWxlPSJQQURESU5HLVJJR0hUOiAxMHB4OyBQQURESU5HLUxFRlQ6IDEwcHg7IFBB
+RERJTkctVE9QOiAxNXB4IiANCmJnQ29sb3I9I2ZmZmZmZiBsZWZ0TWFyZ2luPTAgdG9wTWFyZ2lu
+PTAgQ2FudmFzVGFiU3RvcD0idHJ1ZSIgDQpuYW1lPSJDb21wb3NlIG1lc3NhZ2UgYXJlYSI+DQo8
+RElWPjxGT05UIGZhY2U9y87M5SBzaXplPTI+DQo8RElWPjxGT05UIGZhY2U9y87M5SBzaXplPTI+
+SGkgYWxsLCBJIGhhdmUgcnVuIExpbnV4IDIuNiBmcm9tIGdpdC54aWxpbnguY29tIG9uIG15IA0K
+WFVQVjJQIGJvYXJkLiBUaGlzIHZlbmRvciBrZXJuZWwgdmVyc2lvbiBpcyAyLjYuMjgtcmM2LiBD
+dXJyZW50bHksIHRoZSB1YXJ0bGl0ZSANCmFuZCBldGhlcm5ldCBtYWMgd29yayBvaywgYnV0IHhp
+bGlueCBmcmFtZSZuYnNwO2J1ZmZlciBkcml2ZXIgc2VlbXMgbm90IA0Kd29ya2luZywmbmJzcDth
+cyBub3RoaW5nIGlzJm5ic3A7c2hvd24gb24gdGhlJm5ic3A7VkdBIG1vbml0b3IsIGFuZCANCm5v
+dGhpbmcmbmJzcDtyZWxhdGVkIHRvJm5ic3A7ZnJhbWVidWZmZXIgaXMgc2hvd24gaW4gdGhlIHNl
+cmlhbCANCm91dHB1dC4mbmJzcDtJJm5ic3A7cnVuIGZic2V0LCAmbmJzcDtidXQgaXQgc2F5cyBm
+YjAgbm90IGZvdW5kLjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT3LzszlIHNpemU9Mj5U
+aGUgaGFyZHdhcmUmbmJzcDtmcmFtZWJ1ZmZlciBJUCZuYnNwO2NvcmUmbmJzcDtJIHVzZSANCmlz
+Jm5ic3A7dGhlJm5ic3A7cGxiX3RmdF9jbnRscl9yZWYgMS4wMC5kLCZuYnNwO3doaWNoJm5ic3A7
+aXMmbmJzcDthIFBMQiBtYXN0ZXIgDQphbmQgRENSIHNsYXZlLCZuYnNwO2FuZCB0aGUgPC9GT05U
+PiZuYnNwOzxGT05UIGZhY2U9y87M5SBzaXplPTI+b3BiMmRjcl9icmlkZ2UgDQphY3RzIGFzIHRo
+ZSBEQ1IgbWFzdGVyLjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT3LzszlIHNpemU9Mj5D
+YW4gc29tZW9uZSBzdWdnZXN0IHdoZXJlIHRoZSBwcm9ibGVtIG1pZ2h0IGJlPyANCjwvRk9OVD48
+L0RJVj48L0ZPTlQ+PC9ESVY+PC9CT0RZPjwvSFRNTD4NCg==
+
+------=_NextPart_000_0008_01C96299.513361D0--
