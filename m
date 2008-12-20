@@ -1,18 +1,17 @@
-Return-Path: <sumedhtirodkar@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.188])
-	by ozlabs.org (Postfix) with ESMTP id 49AB7DDEF5
+Return-Path: <onramp123@yahoo.com>
+Received: from n22b.bullet.mail.mud.yahoo.com (n22b.bullet.mail.mud.yahoo.com
+	[68.142.206.159]) by ozlabs.org (Postfix) with SMTP id A02ED474C1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 21 Dec 2008 03:07:14 +1100 (EST)
-Received: by fk-out-0910.google.com with SMTP id e30so763745fke.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Dec 2008 08:07:04 -0800 (PST)
-Message-ID: <d2b9ccd90812200807k59ae3b30j832ad752f297d350@mail.gmail.com>
-Date: Sat, 20 Dec 2008 21:37:04 +0530
-From: "sumedh tirodkar" <sumedhtirodkar@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: yaboot: text mode or graphics mode?
+	Sun, 21 Dec 2008 04:50:33 +1100 (EST)
+From: "Steve DeLaney" <onramp123@yahoo.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: mpc8xxx_gpio.c on mpc8349e-mitx
+Date: Sat, 20 Dec 2008 09:40:01 -0800
+Message-ID: <02dd01c962c9$fc4d1b30$6b03a8c0@sdelaney2>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+Reply-To: onramp123@yahoo.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,11 +22,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Does anyone knw what happens when we boot into yaboot,whether we are
-in text mode or graphics mode? If text mode then wat is the address of
-the screen? I need it to print some debug info..bt i either dnt seem
-to get the buffer address correct or i m not in text mode as yaboot
-has already switched to some other mode...
 
-Regards,
-Sumedh
+We are currently working on LTIB toolchain, and are upgrading a GPIO driver
+on MPC8349E-MITX platform.  
+
+This has taken us to the latest kernel 2.6.27.10
+we ran across a patch on ozlabs patchwork that looks like it should
+work for us, and we thank you first of all for the contribution.
+
+The topic here pertains to how various distros are related
+Sorry for this basic question but it will help us better understand
+the best path for our development.
+
+in ozlabs patchwork Sep 21 08 is what appears to be the original
+implementation of GPIO support.
+In the denx git there is arch/powerpc/sysdev/mpc8xxx_gpio.c, so it looks
+like the ozlabs GPIO support made it into the denx distro.
+
+mpc8xxx_gpio.c is not present in the kernel.org 2.6.27.10 distro. 
+But is is likely that mpc8xxx_gpio.c will eventually go upstream to
+kernel.org?
+Just also curious what are the primary powerpc contributions, such as 
+denx, freescale, others??
+
+Thanks,
+/steverino2
+
+ 
