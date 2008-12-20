@@ -1,20 +1,23 @@
-Return-Path: <sumedhtirodkar@gmail.com>
-Received: from mail-bw0-f10.google.com (mail-bw0-f10.google.com
-	[209.85.218.10]) by ozlabs.org (Postfix) with ESMTP id B5358DDEF0
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 7F183DDE98
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 21 Dec 2008 04:56:57 +1100 (EST)
-Received: by bwz3 with SMTP id 3so3688285bwz.9
+	Sun, 21 Dec 2008 07:45:21 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so506400ywh.39
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Dec 2008 09:56:54 -0800 (PST)
-Message-ID: <d2b9ccd90812200956jee5279ak68776aec20fb8b80@mail.gmail.com>
-Date: Sat, 20 Dec 2008 23:26:54 +0530
-From: "sumedh tirodkar" <sumedhtirodkar@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: yaboot: text mode or graphics mode?
-In-Reply-To: <d2b9ccd90812200807k59ae3b30j832ad752f297d350@mail.gmail.com>
+	Sat, 20 Dec 2008 12:45:19 -0800 (PST)
+Message-ID: <fa686aa40812201245q5a04cf39x62f20be2bba69b8@mail.gmail.com>
+Date: Sat, 20 Dec 2008 13:45:19 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: mingqian <xilinx@live.cn>
+Subject: Re: Linux 2.6 frame buffer for XUPV2P
+In-Reply-To: <BAY105-DS5483ABB21548C3078681CCDF10@phx.gbl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <d2b9ccd90812200807k59ae3b30j832ad752f297d350@mail.gmail.com>
+References: <BAY105-DS3567863497ABB33F27B64CDF10@phx.gbl>
+	<fa686aa40812192235q6d9e09bav80508cf31bf0be94@mail.gmail.com>
+	<BAY105-DS5483ABB21548C3078681CCDF10@phx.gbl>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,17 +28,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I just found out that openfirmware boots into graphics mode(non-text
-mode). Now i wish to switch back to text mode. how do i do this?
+On Sat, Dec 20, 2008 at 5:52 AM, mingqian <xilinx@live.cn> wrote:
+> Hi Grant,
+> My .config is:
+[...]
 
-On Sat, Dec 20, 2008 at 9:37 PM, sumedh tirodkar
-<sumedhtirodkar@gmail.com> wrote:
-> Does anyone knw what happens when we boot into yaboot,whether we are
-> in text mode or graphics mode? If text mode then wat is the address of
-> the screen? I need it to print some debug info..bt i either dnt seem
-> to get the buffer address correct or i m not in text mode as yaboot
-> has already switched to some other mode...
->
-> Regards,
-> Sumedh
->
+Hi Ming,
+
+Can you please post your .dts file also?
+
+Thanks,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
