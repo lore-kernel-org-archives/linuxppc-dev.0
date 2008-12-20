@@ -1,24 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id D4036DDEF3
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 17:51:24 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LDvgH-0005AF-95
-	for linuxppc-dev@ozlabs.org; Fri, 19 Dec 2008 22:51:21 -0800
-Message-ID: <21102440.post@talk.nabble.com>
-Date: Fri, 19 Dec 2008 22:51:21 -0800 (PST)
-From: Felix Radensky <felix@embedded-sol.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Long boot delay on 460EX with 2.6.28-rc8
-In-Reply-To: <20081220003704.26bfb042@lappy.seanm.ca>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id C6051DDE1D
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 18:15:29 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so455937yxg.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 23:15:27 -0800 (PST)
+Message-ID: <fa686aa40812192315l5bf965c6i7fb0cfb1683971cc@mail.gmail.com>
+Date: Sat, 20 Dec 2008 00:15:27 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Matt Sealey" <matt@genesi-usa.com>, "Olaf Hering" <olaf@aepfle.de>
+Subject: Re: [PATCH]: [MPC5200] Add ATA DMA support
+In-Reply-To: <b5e2fc790811250719h21b2b0e5uc0a249a73458148f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <21070179.post@talk.nabble.com>
-	<20081218190208.GC18201@yoda.jdub.homelinux.org>
-	<21087072.post@talk.nabble.com> <200812190856.19482.sr@denx.de>
-	<494C10EE.1040305@embedded-sol.com>
-	<20081220003704.26bfb042@lappy.seanm.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <633A55242A59C7488FAAF5A6850929984B814A@SRVEXC01.sts.saurer.vpn>
+	<b5e2fc790811250719h21b2b0e5uc0a249a73458148f@mail.gmail.com>
+Cc: "Lehmann, Hans \(Ritter Elektronik\)" <hans.lehmann@ritter-elektronik.de>,
+	Tim Yamin <plasm@roo.me.uk>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Nov 25, 2008 at 8:19 AM, Matt Sealey <matt@genesi-usa.com> wrote:
+>
+>
+> On Tue, Nov 25, 2008 at 8:45 AM, Lehmann, Hans (Ritter Elektronik)
+> <hans.lehmann@ritter-elektronik.de> wrote:
+>>
+>> Tim, Grant,
+>>
+>> just an info.
+>>
+>> Very often the Bestcomm-FEC crashed without any error logs if I initiate a
+>> transaction over FEC and save the file to disk (I rememeber I have read
+>> something like that). A restart of FEC don't work.
+>> But no I figured out, if I connect to the other ethernet port of our board
+>> (natsemi) the FEC will awake to life again, if I initiate a new transaction
+>> over natsemi. This seems a little oddly to me.
+>
+> Hi guys,
+>
+> We tried to get the SUSE guys to push the patch into openSUSE 11.1 release
+> and the tests came back negative here too with regards to FEC support; for
+> some odd reason, it does this;
+>
+> https://bugzilla.novell.com/show_bug.cgi?id=445856#c10
+>
+> There is some weird interaction here, but I can't imagine what it might be.
+> Tim, did you ever see any ethernet problems like this?
 
+It looks like something getting messed up during allocation of buffers
+and not DMA operation related at all.  I don't see the problem here...
 
+Digging deeper I think the problem is due to this:
 
-Sean MacLennan-2 wrote:
-> 
-> On Fri, 19 Dec 2008 23:23:58 +0200
-> "Felix Radensky" <felix@embedded-sol.com> wrote:
-> 
->> Hi, Sean
->> 
->> Do you have any ideas what can cause such delay ?
-> 
-> Sorry, I haven't been following this thread :(
-> 
-> We also use a 256M NAND, although a Spansion S29GL. While there is a
-> small delay in u-boot, there is no noticeable during the ndfc startup.
-> 
-> Can you read and write the NAND properly in u-boot? That is always the
-> first step. If that works, we can look at what might be different
-> between the u-boot and the ndfc driver.
-> 
-> Cheers,
->    Sean
-> 
-> 
+>   ------- Comment #6 From Olaf Hering 2008-11-18 01:32:52 MST  -------
+>
+> Also, the patches do not seem to apply and compile with our kernel-source.
+> bcom_task->bd changed to void*, this breaks sound/ppc/mpc52xx_ac97.c. It looks
+> like an unneeded cosmetic change.
+> The Kconfig changes are appearently also not required for an existing .config.
+>
+> I removed the bcom_task->bd  change.
 
-Thanks, Sean
+The patch does depend on bcom_task->bd being (void *).  Without it the
+calculation of BD offsets is entirely wrong in bcom_get_bd().
 
-I've found the cause of the delay. It was a stupid error on my part, not
-related to ndfc driver, which is fine. Thanks a lot for you work on this.
+That being said, the next version of the patch will leave the pointer
+as (bcom_bd *) and handle the offset calculation in a different way.
 
-I apologize for the noise.
+g.
 
-Felix.
 -- 
-View this message in context: http://www.nabble.com/Long-boot-delay-on-460EX-with-2.6.28-rc8-tp21070179p21102440.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
