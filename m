@@ -1,16 +1,21 @@
-Return-Path: <xilinx@live.cn>
-Received: from bay0-omc2-s27.bay0.hotmail.com (bay0-omc2-s27.bay0.hotmail.com
-	[65.54.246.163]) by ozlabs.org (Postfix) with ESMTP id 172BADDF15
+Return-Path: <glikely@secretlab.ca>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.189])
+	by ozlabs.org (Postfix) with ESMTP id 6FD4ADDEF1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Dec 2008 14:52:01 +1100 (EST)
-Message-ID: <BAY105-DS3567863497ABB33F27B64CDF10@phx.gbl>
-From: "mingqian" <xilinx@live.cn>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Linux 2.6 frame buffer for XUPV2P
-Date: Sat, 20 Dec 2008 11:51:38 +0800
+	Sat, 20 Dec 2008 17:45:32 +1100 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so1089528rnf.16
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 19 Dec 2008 22:45:07 -0800 (PST)
+Message-ID: <fa686aa40812192235q6d9e09bav80508cf31bf0be94@mail.gmail.com>
+Date: Fri, 19 Dec 2008 23:35:07 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: mingqian <xilinx@live.cn>
+Subject: Re: Linux 2.6 frame buffer for XUPV2P
+In-Reply-To: <BAY105-DS3567863497ABB33F27B64CDF10@phx.gbl>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0008_01C96299.513361D0"
+Content-Type: text/plain; charset=ISO-8859-1
+References: <BAY105-DS3567863497ABB33F27B64CDF10@phx.gbl>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,51 +26,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-这是一封 MIME 格式的多方邮件。
+2008/12/19 mingqian <xilinx@live.cn>:
+> Hi all, I have run Linux 2.6 from git.xilinx.com on my XUPV2P board. This
+> vendor kernel version is 2.6.28-rc6. Currently, the uartlite and ethernet
+> mac work ok, but xilinx frame buffer driver seems not working, as nothing
+> is shown on the VGA monitor, and nothing related to framebuffer is shown in
+> the serial output. I run fbset,  but it says fb0 not found.
+> The hardware framebuffer IP core I use is the plb_tft_cntlr_ref
+> 1.00.d, which is a PLB master and DCR slave, and the  opb2dcr_bridge acts as
+> the DCR master.
+> Can someone suggest where the problem might be?
 
-------=_NextPart_000_0008_01C96299.513361D0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+Please post your kernel .config and your dmesg output.
 
-SGkgYWxsLCBJIGhhdmUgcnVuIExpbnV4IDIuNiBmcm9tIGdpdC54aWxpbnguY29tIG9uIG15IFhV
-UFYyUCBib2FyZC4gVGhpcyB2ZW5kb3Iga2VybmVsIHZlcnNpb24gaXMgMi42LjI4LXJjNi4gQ3Vy
-cmVudGx5LCB0aGUgdWFydGxpdGUgYW5kIGV0aGVybmV0IG1hYyB3b3JrIG9rLCBidXQgeGlsaW54
-IGZyYW1lIGJ1ZmZlciBkcml2ZXIgc2VlbXMgbm90IHdvcmtpbmcsIGFzIG5vdGhpbmcgaXMgc2hv
-d24gb24gdGhlIFZHQSBtb25pdG9yLCBhbmQgbm90aGluZyByZWxhdGVkIHRvIGZyYW1lYnVmZmVy
-IGlzIHNob3duIGluIHRoZSBzZXJpYWwgb3V0cHV0LiBJIHJ1biBmYnNldCwgIGJ1dCBpdCBzYXlz
-IGZiMCBub3QgZm91bmQuDQpUaGUgaGFyZHdhcmUgZnJhbWVidWZmZXIgSVAgY29yZSBJIHVzZSBp
-cyB0aGUgcGxiX3RmdF9jbnRscl9yZWYgMS4wMC5kLCB3aGljaCBpcyBhIFBMQiBtYXN0ZXIgYW5k
-IERDUiBzbGF2ZSwgYW5kIHRoZSAgb3BiMmRjcl9icmlkZ2UgYWN0cyBhcyB0aGUgRENSIG1hc3Rl
-ci4NCkNhbiBzb21lb25lIHN1Z2dlc3Qgd2hlcmUgdGhlIHByb2JsZW0gbWlnaHQgYmU/IA==
+g.
 
-------=_NextPart_000_0008_01C96299.513361D0
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
-
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD10ZXh0L2h0bWw7Y2hhcnNldD1nYjIzMTI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4wMC42
-MDAwLjE2Nzg4IiBuYW1lPUdFTkVSQVRPUj48L0hFQUQ+DQo8Qk9EWSBpZD1NYWlsQ29udGFpbmVy
-Qm9keSANCnN0eWxlPSJQQURESU5HLVJJR0hUOiAxMHB4OyBQQURESU5HLUxFRlQ6IDEwcHg7IFBB
-RERJTkctVE9QOiAxNXB4IiANCmJnQ29sb3I9I2ZmZmZmZiBsZWZ0TWFyZ2luPTAgdG9wTWFyZ2lu
-PTAgQ2FudmFzVGFiU3RvcD0idHJ1ZSIgDQpuYW1lPSJDb21wb3NlIG1lc3NhZ2UgYXJlYSI+DQo8
-RElWPjxGT05UIGZhY2U9y87M5SBzaXplPTI+DQo8RElWPjxGT05UIGZhY2U9y87M5SBzaXplPTI+
-SGkgYWxsLCBJIGhhdmUgcnVuIExpbnV4IDIuNiBmcm9tIGdpdC54aWxpbnguY29tIG9uIG15IA0K
-WFVQVjJQIGJvYXJkLiBUaGlzIHZlbmRvciBrZXJuZWwgdmVyc2lvbiBpcyAyLjYuMjgtcmM2LiBD
-dXJyZW50bHksIHRoZSB1YXJ0bGl0ZSANCmFuZCBldGhlcm5ldCBtYWMgd29yayBvaywgYnV0IHhp
-bGlueCBmcmFtZSZuYnNwO2J1ZmZlciBkcml2ZXIgc2VlbXMgbm90IA0Kd29ya2luZywmbmJzcDth
-cyBub3RoaW5nIGlzJm5ic3A7c2hvd24gb24gdGhlJm5ic3A7VkdBIG1vbml0b3IsIGFuZCANCm5v
-dGhpbmcmbmJzcDtyZWxhdGVkIHRvJm5ic3A7ZnJhbWVidWZmZXIgaXMgc2hvd24gaW4gdGhlIHNl
-cmlhbCANCm91dHB1dC4mbmJzcDtJJm5ic3A7cnVuIGZic2V0LCAmbmJzcDtidXQgaXQgc2F5cyBm
-YjAgbm90IGZvdW5kLjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT3LzszlIHNpemU9Mj5U
-aGUgaGFyZHdhcmUmbmJzcDtmcmFtZWJ1ZmZlciBJUCZuYnNwO2NvcmUmbmJzcDtJIHVzZSANCmlz
-Jm5ic3A7dGhlJm5ic3A7cGxiX3RmdF9jbnRscl9yZWYgMS4wMC5kLCZuYnNwO3doaWNoJm5ic3A7
-aXMmbmJzcDthIFBMQiBtYXN0ZXIgDQphbmQgRENSIHNsYXZlLCZuYnNwO2FuZCB0aGUgPC9GT05U
-PiZuYnNwOzxGT05UIGZhY2U9y87M5SBzaXplPTI+b3BiMmRjcl9icmlkZ2UgDQphY3RzIGFzIHRo
-ZSBEQ1IgbWFzdGVyLjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT3LzszlIHNpemU9Mj5D
-YW4gc29tZW9uZSBzdWdnZXN0IHdoZXJlIHRoZSBwcm9ibGVtIG1pZ2h0IGJlPyANCjwvRk9OVD48
-L0RJVj48L0ZPTlQ+PC9ESVY+PC9CT0RZPjwvSFRNTD4NCg==
-
-------=_NextPart_000_0008_01C96299.513361D0--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
