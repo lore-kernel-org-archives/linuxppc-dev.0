@@ -1,18 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D2061DDF15
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 14:36:13 +1100 (EST)
-Subject: Re: 970FX thermal diode on G5
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Diggs <kevdig@hypersurf.com>
-In-Reply-To: <494C5E6A.6030207@hypersurf.com>
-References: <494C5E6A.6030207@hypersurf.com>
-Content-Type: text/plain
-Date: Sat, 20 Dec 2008 14:35:53 +1100
-Message-Id: <1229744153.13001.50.camel@pasglop>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 670D3DDEFE
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 16:37:30 +1100 (EST)
+Date: Sat, 20 Dec 2008 00:37:04 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Felix Radensky" <felix@embedded-sol.com>
+Subject: Re: Long boot delay on 460EX with 2.6.28-rc8
+Message-ID: <20081220003704.26bfb042@lappy.seanm.ca>
+In-Reply-To: <494C10EE.1040305@embedded-sol.com>
+References: <21070179.post@talk.nabble.com>
+	<20081218190208.GC18201@yoda.jdub.homelinux.org>
+	<21087072.post@talk.nabble.com> <200812190856.19482.sr@denx.de>
+	<494C10EE.1040305@embedded-sol.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,12 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-12-19 at 18:54 -0800, Kevin Diggs wrote:
-> Hi,
-> 
-> 	Is the thermal diode on a 970FX used on a G5? Can it be read by software?
+On Fri, 19 Dec 2008 23:23:58 +0200
+"Felix Radensky" <felix@embedded-sol.com> wrote:
 
-The existing thermal control should do all you need already :-)
+> Hi, Sean
+> 
+> Do you have any ideas what can cause such delay ?
+
+Sorry, I haven't been following this thread :(
+
+We also use a 256M NAND, although a Spansion S29GL. While there is a
+small delay in u-boot, there is no noticeable during the ndfc startup.
+
+Can you read and write the NAND properly in u-boot? That is always the
+first step. If that works, we can look at what might be different
+between the u-boot and the ndfc driver.
 
 Cheers,
-Ben.
+   Sean
