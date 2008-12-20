@@ -1,18 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
-	by ozlabs.org (Postfix) with ESMTP id BAC25DDDCA
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 11:57:25 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so1921972rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 16:57:24 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc: Copy bootable images in the default install script
-Date: Fri, 19 Dec 2008 17:57:20 -0700
-Message-ID: <20081220005720.23861.18505.stgit@localhost.localdomain>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id 60AE0DDDD8
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 13:57:46 +1100 (EST)
+Received: from [192.168.1.37] (66-81-71-171.bayarea.dialup.o1.com
+	[66.81.71.171]) (authenticated bits=0)
+	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id mBK2vVDH026010
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Dec 2008 18:57:42 -0800 (PST)
+Message-ID: <494C5E6A.6030207@hypersurf.com>
+Date: Fri, 19 Dec 2008 18:54:34 -0800
+From: Kevin Diggs <kevdig@hypersurf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: LinuxPPC Mailing List <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: 970FX thermal diode on G5
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,74 +22,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Hi,
 
-This patch makes the default install script (arch/powerpc/boot/install.sh)
-copy the bootable image files into the install directory.  Before this
-patch only the vmlinux image file was copied.
+	Is the thermal diode on a 970FX used on a G5? Can it be read by software?
 
-This patch makes the default 'make install' command useful for embedded
-development when $(INSTALL_PATH) is set in the environment.
-
-As a side effect, this patch changes the calling convention of the
-install.sh script.  Instead of a single 5th parameter, the script is now
-passed a list of all the target images stored in the $(image-y) Makefile
-variable.  This should be backwards compatible with existing install scripts
-since it just adds additional arguments and does not change existing ones.
-
-CC: Kumar Gala <galak@kernel.crashing.org>
-CC: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: LinuxPPC Mailing List <linuxppc-dev@ozlabs.org>
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
-
- arch/powerpc/boot/Makefile   |    2 +-
- arch/powerpc/boot/install.sh |   14 +++++++++++++-
- 2 files changed, 14 insertions(+), 2 deletions(-)
-
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 3d3daa6..b6187ca 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -355,7 +355,7 @@ $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
- 	@rm -f $@; ln $< $@
- 
- install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
--	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $<
-+	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $^
- 
- # anything not in $(targets)
- clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
-diff --git a/arch/powerpc/boot/install.sh b/arch/powerpc/boot/install.sh
-index b002bfd..51b2387 100644
---- a/arch/powerpc/boot/install.sh
-+++ b/arch/powerpc/boot/install.sh
-@@ -15,7 +15,7 @@
- #   $2 - kernel image file
- #   $3 - kernel map file
- #   $4 - default install path (blank if root directory)
--#   $5 - kernel boot file, the zImage
-+#   $5 and more - kernel boot files; zImage*, uImage, cuImage.*, etc.
- #
- 
- # User may have a custom install script
-@@ -38,3 +38,15 @@ fi
- 
- cat $2 > $4/$image_name
- cp $3 $4/System.map
-+
-+# Copy all the bootable image files
-+path=$4
-+shift 4
-+while [ $# -ne 0 ]; do
-+	image_name=`basename $1`
-+	if [ -f $path/$image_name ]; then
-+		mv $path/$image_name $path/$image_name.old
-+	fi
-+	cat $1 > $path/$image_name
-+	shift
-+done;
+kevin
