@@ -1,19 +1,23 @@
-Return-Path: <julia@diku.dk>
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 426A4DDDFA
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2008 07:54:55 +1100 (EST)
-Date: Sun, 21 Dec 2008 21:54:45 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] arch/powerpc/platforms/85xx: Add local_irq_restore in
-	error handling code
-Message-ID: <Pine.LNX.4.64.0812212154240.3635@ask.diku.dk>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 24A50DDDF6
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2008 07:57:30 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH][v2] powerpc 44x: support for 256KB PAGE_SIZE
+References: <200812211446.56783.yur@emcraft.com>
+	<je4p0x319s.fsf@sykes.suse.de> <947420693.20081221230007@emcraft.com>
+	<jelju91e1q.fsf@sykes.suse.de> <121213804.20081221233548@emcraft.com>
+Date: Sun, 21 Dec 2008 21:57:23 +0100
+In-Reply-To: <121213804.20081221233548@emcraft.com> (Yuri Tikhonov's message
+	of "Sun, 21 Dec 2008 23:35:48 +0300")
+Message-ID: <jehc4x1c24.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Cc: wd@denx.de, dzu@denx.de, miltonm@bga.com, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,57 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+Yuri Tikhonov <yur@emcraft.com> writes:
 
-There is a call to local_irq_restore in the normal exit case, so it would
-seem that there should be one on an error return as well.
+>  Because, in any case, either should we patch binutils, or should we 
+> pass some non-default value to the linker: the resulted application 
+> doesn't match the ELF standard
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+An ELF object built with a 256k alignment of is still perfectly
+compliant.
 
-// <smpl>
-@@
-expression l;
-expression E,E1,E2;
-@@
+Andreas.
 
-local_irq_save(l);
-... when != local_irq_restore(l)
-    when != spin_unlock_irqrestore(E,l)
-    when any
-    when strict
-(
-if (...) { ... when != local_irq_restore(l)
-               when != spin_unlock_irqrestore(E1,l)
-+   local_irq_restore(l);
-    return ...;
-}
-|
-if (...)
-+   {local_irq_restore(l);
-    return ...;
-+   }
-|
-spin_unlock_irqrestore(E2,l);
-|
-local_irq_restore(l);
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- arch/powerpc/platforms/85xx/smp.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff -u -p a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -58,6 +58,7 @@ smp_85xx_kick_cpu(int nr)
- 
- 	if (cpu_rel_addr == NULL) {
- 		printk(KERN_ERR "No cpu-release-addr for cpu %d\n", nr);
-+		local_irq_restore(flags);
- 		return;
- 	}
- 
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
