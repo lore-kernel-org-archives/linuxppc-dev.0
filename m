@@ -1,18 +1,18 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 88EF8DDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2008 07:14:32 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH][v2] powerpc 44x: support for 256KB PAGE_SIZE
-References: <200812211446.56783.yur@emcraft.com>
-	<je4p0x319s.fsf@sykes.suse.de> <947420693.20081221230007@emcraft.com>
-Date: Sun, 21 Dec 2008 21:14:25 +0100
-In-Reply-To: <947420693.20081221230007@emcraft.com> (Yuri Tikhonov's message
-	of "Sun, 21 Dec 2008 23:00:07 +0300")
-Message-ID: <jelju91e1q.fsf@sykes.suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3AEF2DDDE0
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2008 07:35:51 +1100 (EST)
+Date: Sun, 21 Dec 2008 23:35:48 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <121213804.20081221233548@emcraft.com>
+To: Andreas Schwab <schwab@suse.de>
+Subject: Re[2]: [PATCH][v2] powerpc 44x: support for 256KB PAGE_SIZE
+In-Reply-To: <jelju91e1q.fsf@sykes.suse.de>
+References: <200812211446.56783.yur@emcraft.com> <je4p0x319s.fsf@sykes.suse.de>
+	<947420693.20081221230007@emcraft.com>
+	<jelju91e1q.fsf@sykes.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Cc: wd@denx.de, dzu@denx.de, miltonm@bga.com, linuxppc-dev@ozlabs.org,
@@ -26,17 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Yuri Tikhonov <yur@emcraft.com> writes:
+=0D=0AOn Sunday, December 21, 2008 you wrote:
 
->  Thanks for pointing this. I guess, the -zmax-page-size option is new 
-> to binutils 2.17.50.0.10. Right?
+> Yuri Tikhonov <yur@emcraft.com> writes:
 
-It was added 2½ years ago.
+>>  Thanks for pointing this. I guess, the -zmax-page-size option is new=20
+>> to binutils 2.17.50.0.10. Right?
 
-Andreas.
+> It was added 2=BD years ago.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+ Yes, approximately: http://gcc.gnu.org/ml/gcc/2006-07/msg00361.html
+
+"
+Date: Sat, 15 Jul 2006 15:19:05 -0700
+Subject: The Linux binutils 2.17.50.0.3 is released
+
+Changes from binutils 2.17.50.0.2:
+...
+16. Add "-z max-page-size=3D" and "-z common-page-size=3D" to ELF linker.
+"
+
+>>  I'll remove the STDBINUTILS config option from this patch then, and=20
+>> correspondingly update the description.
+
+ I thought about this more, and I guess that we should keep the=20
+dependency on the newly introduced by this patch STDBINUTILS option.=20
+Perhaps, change it name to, say, STD_ELF_LINKING.
+
+ Because, in any case, either should we patch binutils, or should we=20
+pass some non-default value to the linker: the resulted application=20
+doesn't match the ELF standard, and the applications which match the=20
+standard simply won't work with the 256K paged kernel - so, a user has=20
+to be aware of it before turning the 256K on.
+
+ What do you think about this?
+
+ Regards, Yuri
