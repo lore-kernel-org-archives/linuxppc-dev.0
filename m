@@ -1,23 +1,19 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 24A50DDDF6
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2008 07:57:30 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH][v2] powerpc 44x: support for 256KB PAGE_SIZE
-References: <200812211446.56783.yur@emcraft.com>
-	<je4p0x319s.fsf@sykes.suse.de> <947420693.20081221230007@emcraft.com>
-	<jelju91e1q.fsf@sykes.suse.de> <121213804.20081221233548@emcraft.com>
-Date: Sun, 21 Dec 2008 21:57:23 +0100
-In-Reply-To: <121213804.20081221233548@emcraft.com> (Yuri Tikhonov's message
-	of "Sun, 21 Dec 2008 23:35:48 +0300")
-Message-ID: <jehc4x1c24.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: wd@denx.de, dzu@denx.de, miltonm@bga.com, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, yanok@emcraft.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/3] powerpc: Make default kexec/crash_kernel ops implicit
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20081216162305.GB21749@oksana.dev.rtsoft.ru>
+References: <20081216162217.GA3885@oksana.dev.rtsoft.ru>
+	<20081216162305.GB21749@oksana.dev.rtsoft.ru>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-ng7SsjqV9DKyyiH9PQ2i"
+Date: Mon, 22 Dec 2008 10:08:42 +1100
+Message-Id: <1229900922.8269.15.camel@localhost>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Yuri Tikhonov <yur@emcraft.com> writes:
 
->  Because, in any case, either should we patch binutils, or should we 
-> pass some non-default value to the linker: the resulted application 
-> doesn't match the ELF standard
+--=-ng7SsjqV9DKyyiH9PQ2i
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-An ELF object built with a 256k alignment of is still perfectly
-compliant.
+On Tue, 2008-12-16 at 19:23 +0300, Anton Vorontsov wrote:
+> This patch removes need for each platform to specify default kexec and
+> crash kernel ops, thus effectively adds a working kexec support for most
+> boards.
+>=20
+> Platforms that can't cope with default ops will explode in some weird
+> way (a hang or reboot is most likely), which means that the board's
+> kexec support should be fixed or blacklisted via dummy _prepare callback
+> returning -ENOSYS.
 
-Andreas.
+But where is the patch to do this?
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+The chance of kexec working on some random machine that's never been
+tested is pretty slim, every driver needs to be aware its hardware might
+be in a weird state, so enabling it by default is not a good idea IMHO.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-ng7SsjqV9DKyyiH9PQ2i
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklOzHoACgkQdSjSd0sB4dLimQCgw5F4tcyrwyf36QZYaXVgvFcq
+VgsAnivT3D4bhlNzCC1qSTD7XY7AtOyO
+=p4kI
+-----END PGP SIGNATURE-----
+
+--=-ng7SsjqV9DKyyiH9PQ2i--
