@@ -1,15 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D5113DDD0C
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Dec 2008 22:36:50 +1100 (EST)
+Date: Sun, 21 Dec 2008 14:36:42 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <1681222932.20081221143642@emcraft.com>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re[2]: [PATCH] powerpc 44x: support for 256KB PAGE_SIZE
+In-Reply-To: <79323ed6bfab87d44b196d610cea5e42@bga.com>
+References: <200812190939.46733.yur@emcraft.com>
+	<79323ed6bfab87d44b196d610cea5e42@bga.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18766.7876.303633.244193@cargo.ozlabs.ibm.com>
-Date: Sun, 21 Dec 2008 21:47:32 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: Commits added to powerpc.git next and master branches
-In-Reply-To: <fa686aa40812210201w7e2c9a63he8ba42d78d44ddd@mail.gmail.com>
-References: <18765.58426.49381.986612@cargo.ozlabs.ibm.com>
-	<fa686aa40812210201w7e2c9a63he8ba42d78d44ddd@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=windows-1251
+Cc: yanok@emcraft.com, dzu@denx.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,15 +25,158 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely writes:
+=0D=0A Hello Milton,
 
-> Here are a few more for you.  These are all the MPC5200 patches that
-> I've currently got in my queue and they are based off of your current
-> -next tree.
-> 
-> The first commit is Ben's fix for the missing blr instruction in
-> _tlbia() which is critical to get in ASAP.
+ Thanks for reviewing. I'll re-post the updated patch shortly.
 
-Thanks, pulled and pushed out.
+On Sunday, December 21, 2008 you wrote:
 
-Paul.
+
+> On Dec 19, 2008, at 12:39 AM, Yuri Tikhonov wrote:
+
+>> This patch adds support for 256KB pages on ppc44x-based boards.
+>>
+
+> Hi.  A couple of small comments.
+
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index cd8ff7c..348702c 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -436,6 +436,14 @@ config PPC_64K_PAGES
+>>       bool "64k page size" if 44x || PPC_STD_MMU_64
+>>       select PPC_HAS_HASH_64K if PPC_STD_MMU_64
+>>
+>> +config PPC_256K_PAGES
+>> +     bool "256k page size" if 44x
+>> +     depends on !STDBINUTILS
+>> +     help
+>> +       ELF standard supports only page sizes up to 64K so you need a=20
+>> patched
+>> +       binutils in order to use 256K pages. Chose it only if you know w=
+hat
+>> +       you are doing.
+>> +
+
+> Make the page size 256k.   As the ELF standard only requires alignment
+> to
+> support page sizes up to 64k, you will need to compile all of your user
+> space applications with a patched binutils.
+
+> Say N unless you know what you are doing.
+
+> (The previous text did not describe what the option actually did, and=20
+> did not emphasize that all of user space had to be compiled).
+
+
+>> diff --git a/arch/powerpc/include/asm/thread_info.h=20
+>> b/arch/powerpc/include/asm/thread_info.h
+>> index 9665a26..3c8bbab 100644
+>> --- a/arch/powerpc/include/asm/thread_info.h
+>> +++ b/arch/powerpc/include/asm/thread_info.h
+>> @@ -15,8 +15,12 @@
+>>  #ifdef CONFIG_PPC64
+>>  #define THREAD_SHIFT         14
+>>  #else
+>> +#ifdef CONFIG_PPC_256K_PAGES
+>> +#define THREAD_SHIFT         15
+>> +#else
+>>  #define THREAD_SHIFT         13
+>>  #endif
+>> +#endif
+
+> Switching to #elif would remove the nested ifdef here.
+
+>>
+>>  #define THREAD_SIZE          (1 << THREAD_SHIFT)
+>>
+>> diff --git a/arch/powerpc/kernel/head_booke.h=20
+>> b/arch/powerpc/kernel/head_booke.h
+>> index fce2df9..bc6a26c 100644
+>> --- a/arch/powerpc/kernel/head_booke.h
+>> +++ b/arch/powerpc/kernel/head_booke.h
+>> @@ -10,6 +10,14 @@
+>>               mtspr   SPRN_IVOR##vector_number,r26;   \
+>>               sync
+>>
+>> +#ifndef CONFIG_PPC_256K_PAGES
+
+> This if should be on THREAD_SIZE or THREAD_SHIFT, not the option that=20
+> causes it to be large.
+
+>> +#define ALLOC_STACK_FRAME(reg, val)  addi reg,reg,val
+>> +#else
+>> +#define ALLOC_STACK_FRAME(reg, val)                  \
+>> +     addis   reg,reg,val@ha;                         \
+>> +     addi    reg,reg,val@l
+>> +#endif
+>> +
+>>  #define NORMAL_EXCEPTION_PROLOG                                        =
+           \
+>>       mtspr   SPRN_SPRG0,r10;         /* save two registers to work with=
+ */\
+>>       mtspr   SPRN_SPRG1,r11;                                           =
+   \
+>> @@ -20,7 +28,7 @@
+>>       beq     1f;                                                       =
+   \
+>>       mfspr   r1,SPRN_SPRG3;          /* if from user, start at top of  =
+ */\
+>>       lwz     r1,THREAD_INFO-THREAD(r1); /* this thread's kernel stack  =
+ */\
+>> -     addi    r1,r1,THREAD_SIZE;                                        =
+   \
+>> +     ALLOC_STACK_FRAME(r1, THREAD_SIZE);                               =
+   \
+>>  1:   subi    r1,r1,INT_FRAME_SIZE;   /* Allocate an exception frame    =
+ */\
+>>       mr      r11,r1;                                                   =
+   \
+>>       stw     r10,_CCR(r11);          /* save various registers         =
+ */\
+>> diff --git a/init/Kconfig b/init/Kconfig
+>> index f763762..96229b9 100644
+>> --- a/init/Kconfig
+>> +++ b/init/Kconfig
+>> @@ -635,6 +635,16 @@ config ELF_CORE
+>>       help
+>>         Enable support for generating core dumps. Disabling saves about =
+4k.
+>>
+>> +config STDBINUTILS
+>> +     bool "Using standard binutils" if EMBEDDED
+>> +     depends on 44x
+>> +     default y
+>> +     help
+>> +       Turning this option off allows you to select 256KB PAGE_SIZE on=
+=20
+>> 44x.
+>> +       Note, that kernel will be able to run only those applications,
+>> +       which had been compiled using the patched binutils (ELF standard
+>> +       supports only page sizes up to 64K).
+>> +
+
+> The config variable 44x is pretty nondescript for a global config file.
+>   If you leave it here, I would suggest  making it depend on PPC && 44x
+> so that other people don't have to wonder what 44x means.  I didn't=20
+> look if there was a better place to put this option, somewhere=20
+> architecture specific might be better (eg after selecting the 44x cpu=20
+> type).
+
+>>  config PCSPKR_PLATFORM
+>>       bool "Enable PC-Speaker support" if EMBEDDED
+>>       depends on ALPHA || X86 || MIPS || PPC_PREP || PPC_CHRP ||=20
+>> PPC_PSERIES
+>>
+
+> thanks,
+> milton
+
+
+
+
+ Regards, Yuri
+
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
