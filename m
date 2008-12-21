@@ -1,21 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
-	by ozlabs.org (Postfix) with ESMTP id 5FAF5474E0
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Dec 2008 19:06:40 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so2289593rvb.9
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Dec 2008 00:06:40 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 4/4] powerpc/mpc5200: Add MDMA/UDMA support to MPC5200 ATA
-	driver
-To: linuxppc-dev@ozlabs.org, hans.lehmann@ritter-elektronik.de,
-	matt@genesi-usa.com, olaf@aepfle.de
-Date: Sun, 21 Dec 2008 01:06:35 -0700
-Message-ID: <20081221080635.29029.39493.stgit@localhost.localdomain>
-In-Reply-To: <20081221080213.29029.7646.stgit@localhost.localdomain>
-References: <20081221080213.29029.7646.stgit@localhost.localdomain>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id CF628DDE11
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Dec 2008 20:07:17 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so550869yxg.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Dec 2008 01:07:15 -0800 (PST)
+Message-ID: <fa686aa40812210107o3d12d42q2e6b0265810f7b77@mail.gmail.com>
+Date: Sun, 21 Dec 2008 02:07:15 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: Commits added to powerpc.git next and master branches
+In-Reply-To: <18765.58426.49381.986612@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
+References: <18765.58426.49381.986612@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,814 +23,248 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Tim Yamin <plasm@roo.me.uk>
+Hey Paul,
 
-This patch adds MDMA/UDMA support using BestComm for DMA on the MPC5200
-platform.  Based heavily on previous work by Freescale (Bernard Kuhn,
-John Rigby) and Domen Puncer.
+Top of your -next tree fails with a stack overflow on the MPC5200 when
+attempting to mount an NFS rootfs (log below).  I haven't had a chance
+to bisect yet, but I'm posting this in case someone has already seen
+and solved this.
 
-With this patch, a SanDisk Extreme IV CF card gets read speeds of
-approximately 26.70 MB/sec.
+Cheers,
+g.
 
-Signed-off-by: Tim Yamin <plasm@roo.me.uk>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Linux/PowerPC load: ip=192.168.0.64::192.168.0.1
+nfsroot=192.168.0.200:/home/srv/nfs/gdc/efika-1,tcp rw
+console=ttyPSC0,115200 libata.force=udma2
+Finalizing device tree... using OF tree (promptr=01003ed8)
+OF stdout device is: /failsafe
+command line: ip=192.168.0.64::192.168.0.1
+nfsroot=192.168.0.200:/home/srv/nfs/gdc/efika-1,tcp rw
+console=ttyPSC0,115200 libata.force=udma2
+memory layout at init:
+  alloc_bottom : 01ba7000
+  alloc_top    : 30000000
+  alloc_top_hi : f000c000
+  rmo_top      : 30000000
+  ram_top      : f000c000
+Looking for displays
+instantiating rtas at 0x07ffb000 ... done
+Applying EFIKA device tree fixups
+Fixing bestcomm interrupts property
+Adding sound interrupts property
+Adding Ethernet MDIO node
+Adding Ethernet PHY node
+copying OF device tree ...
+Building dt strings...
+Building dt structure...
+Device tree strings 0x01ba8000 -> 0x01ba87ae
+Device tree struct  0x01ba9000 -> 0x01bac000
+Calling quiesce ...
+returning from prom_init
+psc_console=fdfe2000
+[    0.000000] Using Efika machine description
+[    0.000000] Only using first contiguous memory region<5>Linux
+version 2.6.28-rc8-00225-gf06f0c2 (grant@trillian) (gcc version 4.1.2)
+#57 Sun Dec 21 01:59:34 MST 2008
+[    0.000000] console [udbg0] enabled
+[    0.000000] Efika: PCI bus 0 controlled by /pci@80000000
+[    0.000000]
+[    0.000000] PCI host bridge /pci@80000000  ranges:
+[    0.000000]   IO 0x00000000f8000000..0x00000000f800ffff -> 0x0000000000000000
+[    0.000000]  MEM 0x0000000080000000..0x00000000bfffffff ->
+0x0000000080000000
+[    0.000000] Top of RAM: 0x8000000, Total RAM: 0x8000000
+[    0.000000] Memory hole size: 0MB
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA      0x00000000 -> 0x00008000
+[    0.000000]   Normal   0x00008000 -> 0x00008000
+[    0.000000] Movable zone start PFN for each node
+[    0.000000] early_node_map[1] active PFN ranges
+[    0.000000]     0: 0x00000000 -> 0x00008000
+[    0.000000] On node 0 totalpages: 32768
+[    0.000000] free_area_init_node: node 0, pgdat c0379b4c,
+node_mem_map c03a5000
+[    0.000000]   DMA zone: 256 pages used for memmap
+[    0.000000]   DMA zone: 0 pages reserved
+[    0.000000]   DMA zone: 32512 pages, LIFO batch:7
+[    0.000000]   Normal zone: 0 pages used for memmap
+[    0.000000]   Movable zone: 0 pages used for memmap
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.
+Total pages: 32512
+[    0.000000] Kernel command line: ip=192.168.0.64::192.168.0.1
+nfsroot=192.168.0.200:/home/srv/nfs/gdc/efika-1,tcp rw
+console=ttyPSC0,115200 libata.force=udma2
+[    0.000000] MPC52xx PIC is up and running!
+[    0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)
+[    0.000000] time_init: decrementer frequency = 33.000000 MHz
+[    0.000000] time_init: processor frequency   = 396.000000 MHz
+[    0.000000] clocksource: timebase mult[79364d9] shift[22] registered
+[    0.000000] clockevent: decrementer mult[872] shift[16] cpu[0]
+[    0.012342] Console: colour dummy device 80x25
+[    0.022389] console handover: boot [udbg0] -> real [ttyPSC0]
+[    0.022903] Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+[    0.035946] Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+[    0.061939] Memory: 125980k/131072k available (3420k kernel code,
+4932k reserved, 144k data, 122k bss, 184k init)
+[    0.072632] SLUB: Genslabs=12, HWalign=32, Order=0-3, MinObjects=0,
+CPUs=1, Nodes=1
+[    0.080527] Calibrating delay loop... 65.79 BogoMIPS (lpj=131584)
+[    0.175504] Mount-cache hash table entries: 512
+[    0.185228] net_namespace: 288 bytes
+[    0.189594] NET: Registered protocol family 16
+[    0.205009] PCI: Probing PCI hardware
+[    0.209622] pci 0000:00:18.0: reg 10 io port: [0x1000-0x107f]
+[    0.215597] pci 0000:00:18.0: reg 14 32bit mmio: [0x80000000-0x8000007f]
+[    0.222715] pci 0000:00:18.0: reg 30 32bit mmio: [0x80020000-0x8003ffff]
+[    0.229673] pci 0000:00:18.0: supports D1 D2
+[    0.234086] pci 0000:00:18.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.240899] pci 0000:00:18.0: PME# disabled
+[    0.246731] bus: 00 index 0 io port: [0xfdfd0000-0xfdfdffff]
+[    0.252580] bus: 00 index 1 mmio: [0x80000000-0xbfffffff]
+[    0.258277] DMA: MPC52xx BestComm driver
+[    0.262509] DMA: MPC52xx BestComm engine @f0001200 ok !
+[    0.295488] SCSI subsystem initialized
+[    0.299714] libata version 3.00 loaded.
+[    0.323846] Switched to high resolution mode on CPU 0
+[    0.330777] NET: Registered protocol family 2
+[    0.376005] IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.383536] TCP established hash table entries: 4096 (order: 3, 32768 bytes)
+[    0.391093] TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.397898] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.404450] TCP reno registered
+[    0.416069] NET: Registered protocol family 1
+[    0.459008] msgmni has been set to 246
+[    0.464366] alg: No test for stdrng (krng)
+[    0.468759] io scheduler noop registered
+[    0.472902] io scheduler anticipatory registered (default)
+[    0.478563] io scheduler deadline registered
+[    0.483162] io scheduler cfq registered
+[    1.001144] Generic RTC Driver v1.07
+[    1.005815] Serial: MPC52xx PSC UART driver
+[    1.010416] f0002000.serial: ttyPSC0 at MMIO 0xf0002000 (irq = 129)
+is a MPC52xx PSC
+[    1.036995] brd: module loaded
+[    1.048974] loop: module loaded
+[    1.056105] mpc52xx MII bus: probed
+[    1.061429] net eth0: Using PHY at MDIO address 16
+[    1.067254] Driver 'sd' needs updating - please use bus_type methods
+[    1.074314] ata: MPC52xx IDE/ATA libata driver
+[    1.079598] scsi0 : mpc52xx_ata
+[    1.083744] ata1: PATA max PIO4 ata_regs 0xf0003a00 irq 135
+[    1.252244] ata1.00: ATA-4: TRANSCEND, 20070418, max UDMA/66
+[    1.258098] ata1.00: 994896 sectors, multi 0: LBA
+[    1.263139] ata1.00: FORCE: xfer_mask set to udma2
+[    1.284181] ata1.00: configured for UDMA/33
+[    1.289209] scsi 0:0:0:0: Direct-Access     ATA      TRANSCEND
+  2007 PQ: 0 ANSI: 5
+[    1.299207] sd 0:0:0:0: [sda] 994896 512-byte hardware sectors:
+(509 MB/485 MiB)
+[    1.307048] sd 0:0:0:0: [sda] Write Protect is off
+[    1.312027] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[    1.317653] sd 0:0:0:0: [sda] Write cache: disabled, read cache:
+enabled, doesn't support DPO or FUA
+[    1.327702] sd 0:0:0:0: [sda] 994896 512-byte hardware sectors:
+(509 MB/485 MiB)
+[    1.335536] sd 0:0:0:0: [sda] Write Protect is off
+[    1.340507] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[    1.346099] sd 0:0:0:0: [sda] Write cache: disabled, read cache:
+enabled, doesn't support DPO or FUA
+[    1.355506]  sda: sda1
+[    1.360460] sd 0:0:0:0: [sda] Attached SCSI disk
+[    1.368173] mice: PS/2 mouse device common for all mice
+[    1.374670] i2c /dev entries driver
+[    1.381619] TCP cubic registered
+[    1.385040] NET: Registered protocol family 17
+[    1.391136] RPC: Registered udp transport module.
+[    1.396025] RPC: Registered tcp transport module.
+[    1.912532] net eth0: attached phy 16 to driver Generic PHY
+[    2.919875] IP-Config: Guessing netmask 255.255.255.0
+[    2.925414] IP-Config: Complete:
+[    2.928599]      device=eth0, addr=192.168.0.64,
+mask=255.255.255.0, gw=192.168.0.1,
+[    2.936518]      host=192.168.0.64, domain=, nis-domain=(none),
+[    2.942608]      bootserver=255.255.255.255,
+rootserver=192.168.0.200, rootpath=
+[    2.950769] Looking up port of RPC 100003/2 on 192.168.0.200
+[    3.912011] PHY: f0003000:10 - Link is Up - 100/Full
+[    4.258019] Looking up port of RPC 100005/1 on 192.168.0.200
+[    9.286978] VFS: Mounted root (nfs filesystem).
+[    9.291906] Freeing unused kernel memory: 184k init
+[    9.315799] Kernel stack overflow in process c7828000, r1=c7825b60
+[    9.322122] NIP: c0018028 LR: c0018064 CTR: 00000226
+[    9.327192] REGS: c7825ab0 TRAP: 0901   Not tainted
+(2.6.28-rc8-00225-gf06f0c2)
+[    9.334740] MSR: 00009032 <EE,ME,IR,DR>  CR: 48002022  XER: 00000000
+[    9.341245] TASK = c7828000[1] 'init' THREAD: c7826000
+[    9.346309] GPR00: 00000000 c7825b60 c7828000 c78ad520 c01da000
+c0000000 c0000000 00000315
+[    9.354853] GPR08: 00356795 c0380000 c7a24000 00000001 c7826000
+[    9.361197] NIP [c0018028] _tlbia+0x14/0x20
+[    9.365470] LR [c0018064] tlb_flush+0x30/0x40
+[    9.369911] Call Trace:
+[    9.372399] Instruction dump:
+[    9.375424] 4185ffe4 7d400124 4c00012c 4e800020 7c001a64 7c0004ac
+4e800020 7c0004ac
+[    9.383344] 38800400 7c8903a6 3c80c000 7c002264 <38841000> 4200fff8
+7c0004ac 9421fff0
+[    9.391445] Kernel panic - not syncing: kernel stack overflow
+[    9.397309] Rebooting in 180 seconds..
 
- arch/powerpc/sysdev/bestcomm/ata.h |   17 -
- drivers/ata/Kconfig                |    3 
- drivers/ata/pata_mpc52xx.c         |  546 ++++++++++++++++++++++++++++++++----
- 3 files changed, 488 insertions(+), 78 deletions(-)
+
+On Sat, Dec 20, 2008 at 11:37 PM, Paul Mackerras <paulus@samba.org> wrote:
+> Anton Vorontsov (3):
+>      of: Minor simplification for the of_parse_phandles_with_args()
+>      of: of_parse_phandles_with_args() learns to differentiate 'hole' cells
+>      of/gpio: Implement of_gpio_count()
+>
+> Benjamin Herrenschmidt (10):
+>      powerpc/4xx: Extended DCR support v2
+>      powerpc/mm: Split mmu_context handling
+>      powerpc/mm: Rework context management for CPUs with no hash table
+>      powerpc/mm: Introduce MMU features
+>      powerpc/mm: Add SMP support to no-hash TLB handling
+>      powerpc/mm: Split low level tlb invalidate for nohash processors
+>      powerpc/44x: No need to mask MSR:CE, ME or DE in _tlbil_va on 440
+>      powerpc/mm: Runtime allocation of mmu context maps for nohash CPUs
+>      powerpc/mm: Rework usage of _PAGE_COHERENT/NO_CACHE/GUARDED
+>      powerpc/44x: 44x TLB doesn't need "Guarded" set for all pages
+>
+> Brian King (2):
+>      powerpc: Disable Collaborative Memory Manager for kdump
+>      powerpc: Add reboot notifier to Collaborative Memory Manager
+>
+> David Howells (1):
+>      powerpc: Rename struct vm_region to avoid conflict with NOMMU
+>
+> Grant Erickson (1):
+>      powerpc: Const-qualify Device Node Argument to DCR Resource Extent API
+>
+> Hendrik Brueckner (1):
+>      hvc_console: Escape magic sysrq key
+>
+> Nathan Lynch (3):
+>      powerpc: Add of_find_next_cache_node()
+>      powerpc: Convert cpu_to_l2cache() to of_find_next_cache_node()
+>      powerpc: Convert sysfs cache code to of_find_next_cache_node()
+>
+> Scott Wood (1):
+>      powerpc/bootwrapper: Use the child-bus #address-cells to decide which range entry to use
+>
+> Stephen Rothwell (1):
+>      powerpc/iseries: viodasd needs to depend on CONFIG_BLOCK
+>
+> Tony Breeds (2):
+>      powerpc: Protect against NULL pointer deref in phyp-dump code
+>      powerpc: Pass a valid token to rtas_call() in phyp-dump code
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
 
-diff --git a/arch/powerpc/sysdev/bestcomm/ata.h b/arch/powerpc/sysdev/bestcomm/ata.h
-index 0374322..0b23718 100644
---- a/arch/powerpc/sysdev/bestcomm/ata.h
-+++ b/arch/powerpc/sysdev/bestcomm/ata.h
-@@ -20,18 +20,11 @@ struct bcom_ata_bd {
- 	u32	dst_pa;
- };
- 
--extern struct bcom_task *
--bcom_ata_init(int queue_len, int maxbufsize);
--
--extern void
--bcom_ata_rx_prepare(struct bcom_task *tsk);
--
--extern void
--bcom_ata_tx_prepare(struct bcom_task *tsk);
--
--extern void
--bcom_ata_reset_bd(struct bcom_task *tsk);
--
-+extern struct bcom_task * bcom_ata_init(int queue_len, int maxbufsize);
-+extern void bcom_ata_rx_prepare(struct bcom_task *tsk);
-+extern void bcom_ata_tx_prepare(struct bcom_task *tsk);
-+extern void bcom_ata_reset_bd(struct bcom_task *tsk);
-+extern void bcom_ata_release(struct bcom_task *tsk);
- 
- #endif /* __BESTCOMM_ATA_H__ */
- 
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index 421b7c7..1a7be96 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -456,7 +456,8 @@ config PATA_MARVELL
- 
- config PATA_MPC52xx
- 	tristate "Freescale MPC52xx SoC internal IDE"
--	depends on PPC_MPC52xx
-+	depends on PPC_MPC52xx && PPC_BESTCOMM
-+	select PPC_BESTCOMM_ATA
- 	help
- 	  This option enables support for integrated IDE controller
- 	  of the Freescale MPC52xx SoC.
-diff --git a/drivers/ata/pata_mpc52xx.c b/drivers/ata/pata_mpc52xx.c
-index a9e8273..50ae6d1 100644
---- a/drivers/ata/pata_mpc52xx.c
-+++ b/drivers/ata/pata_mpc52xx.c
-@@ -6,6 +6,9 @@
-  * Copyright (C) 2006 Sylvain Munaut <tnt@246tNt.com>
-  * Copyright (C) 2003 Mipsys - Benjamin Herrenschmidt
-  *
-+ * UDMA support based on patches by Freescale (Bernard Kuhn, John Rigby),
-+ * Domen Puncer and Tim Yamin.
-+ *
-  * This file is licensed under the terms of the GNU General Public License
-  * version 2. This program is licensed "as is" without any warranty of any
-  * kind, whether express or implied.
-@@ -17,28 +20,46 @@
- #include <linux/delay.h>
- #include <linux/libata.h>
- #include <linux/of_platform.h>
-+#include <linux/types.h>
- 
--#include <asm/types.h>
-+#include <asm/cacheflush.h>
- #include <asm/prom.h>
- #include <asm/mpc52xx.h>
- 
-+#include <sysdev/bestcomm/bestcomm.h>
-+#include <sysdev/bestcomm/bestcomm_priv.h>
-+#include <sysdev/bestcomm/ata.h>
- 
- #define DRV_NAME	"mpc52xx_ata"
--#define DRV_VERSION	"0.1.2"
--
- 
- /* Private structures used by the driver */
- struct mpc52xx_ata_timings {
- 	u32	pio1;
- 	u32	pio2;
-+	u32	mdma1;
-+	u32	mdma2;
-+	u32	udma1;
-+	u32	udma2;
-+	u32	udma3;
-+	u32	udma4;
-+	u32	udma5;
-+	int	using_udma;
- };
- 
- struct mpc52xx_ata_priv {
- 	unsigned int			ipb_period;
--	struct mpc52xx_ata __iomem *	ata_regs;
-+	struct mpc52xx_ata __iomem	*ata_regs;
-+	phys_addr_t			ata_regs_pa;
- 	int				ata_irq;
- 	struct mpc52xx_ata_timings	timings[2];
- 	int				csel;
-+
-+	/* DMA */
-+	struct bcom_task		*dmatsk;
-+	const struct udmaspec		*udmaspec;
-+	const struct mdmaspec		*mdmaspec;
-+	int 				mpc52xx_ata_dma_last_write;
-+	int				waiting_for_dma;
- };
- 
- 
-@@ -53,6 +74,107 @@ static const int ataspec_ta[5]    = { 35,  35,  35,  35,  35};
- 
- #define CALC_CLKCYC(c,v) ((((v)+(c)-1)/(c)))
- 
-+/* ======================================================================== */
-+
-+/* ATAPI-4 MDMA specs (in clocks) */
-+struct mdmaspec {
-+	u32 t0M;
-+	u32 td;
-+	u32 th;
-+	u32 tj;
-+	u32 tkw;
-+	u32 tm;
-+	u32 tn;
-+};
-+
-+static const struct mdmaspec mdmaspec66[3] = {
-+	{ .t0M = 32, .td = 15, .th = 2, .tj = 2, .tkw = 15, .tm = 4, .tn = 1 },
-+	{ .t0M = 10, .td = 6,  .th = 1, .tj = 1, .tkw = 4,  .tm = 2, .tn = 1 },
-+	{ .t0M = 8,  .td = 5,  .th = 1, .tj = 1, .tkw = 2,  .tm = 2, .tn = 1 },
-+};
-+
-+static const struct mdmaspec mdmaspec132[3] = {
-+	{ .t0M = 64, .td = 29, .th = 3, .tj = 3, .tkw = 29, .tm = 7, .tn = 2 },
-+	{ .t0M = 20, .td = 11, .th = 2, .tj = 1, .tkw = 7,  .tm = 4, .tn = 1 },
-+	{ .t0M = 16, .td = 10, .th = 2, .tj = 1, .tkw = 4,  .tm = 4, .tn = 1 },
-+};
-+
-+/* ATAPI-4 UDMA specs (in clocks) */
-+struct udmaspec {
-+	u32 tcyc;
-+	u32 t2cyc;
-+	u32 tds;
-+	u32 tdh;
-+	u32 tdvs;
-+	u32 tdvh;
-+	u32 tfs;
-+	u32 tli;
-+	u32 tmli;
-+	u32 taz;
-+	u32 tzah;
-+	u32 tenv;
-+	u32 tsr;
-+	u32 trfs;
-+	u32 trp;
-+	u32 tack;
-+	u32 tss;
-+};
-+
-+static const struct udmaspec udmaspec66[6] = {
-+	{ .tcyc = 8,  .t2cyc = 16, .tds  = 1,  .tdh  = 1, .tdvs = 5,  .tdvh = 1,
-+	  .tfs  = 16, .tli   = 10, .tmli = 2,  .taz  = 1, .tzah = 2,  .tenv = 2,
-+	  .tsr  = 3,  .trfs  = 5,  .trp  = 11, .tack = 2, .tss  = 4,
-+	},
-+	{ .tcyc = 5,  .t2cyc = 11, .tds  = 1,  .tdh  = 1, .tdvs = 4,  .tdvh = 1,
-+	  .tfs  = 14, .tli   = 10, .tmli = 2,  .taz  = 1, .tzah = 2,  .tenv = 2,
-+	  .tsr  = 2,  .trfs  = 5,  .trp  = 9,  .tack = 2, .tss  = 4,
-+	},
-+	{ .tcyc = 4,  .t2cyc = 8,  .tds  = 1,  .tdh  = 1, .tdvs = 3,  .tdvh = 1,
-+	  .tfs  = 12, .tli   = 10, .tmli = 2,  .taz  = 1, .tzah = 2,  .tenv = 2,
-+	  .tsr  = 2,  .trfs  = 4,  .trp  = 7,  .tack = 2, .tss  = 4,
-+	},
-+	{ .tcyc = 3,  .t2cyc = 6,  .tds  = 1,  .tdh  = 1, .tdvs = 2,  .tdvh = 1,
-+	  .tfs  = 9,  .tli   = 7,  .tmli = 2,  .taz  = 1, .tzah = 2,  .tenv = 2,
-+	  .tsr  = 2,  .trfs  = 4,  .trp  = 7,  .tack = 2, .tss  = 4,
-+	},
-+	{ .tcyc = 2,  .t2cyc = 4,  .tds  = 1,  .tdh  = 1, .tdvs = 1,  .tdvh = 1,
-+	  .tfs  = 8,  .tli   = 8,  .tmli = 2,  .taz  = 1, .tzah = 2,  .tenv = 2,
-+	  .tsr  = 2,  .trfs  = 4,  .trp  = 7,  .tack = 2, .tss  = 4,
-+	},
-+	{ .tcyc = 2,  .t2cyc = 2,  .tds  = 1,  .tdh  = 1, .tdvs = 1,  .tdvh = 1,
-+	  .tfs  = 6,  .tli   = 5,  .tmli = 2,  .taz  = 1, .tzah = 2,  .tenv = 2,
-+	  .tsr  = 2,  .trfs  = 4,  .trp  = 6,  .tack = 2, .tss  = 4,
-+	},
-+};
-+
-+static const struct udmaspec udmaspec132[6] = {
-+	{ .tcyc = 15, .t2cyc = 31, .tds  = 2,  .tdh  = 1, .tdvs = 10, .tdvh = 1,
-+	  .tfs  = 30, .tli   = 20, .tmli = 3,  .taz  = 2, .tzah = 3,  .tenv = 3,
-+	  .tsr  = 7,  .trfs  = 10, .trp  = 22, .tack = 3, .tss  = 7,
-+	},
-+	{ .tcyc = 10, .t2cyc = 21, .tds  = 2,  .tdh  = 1, .tdvs = 7,  .tdvh = 1,
-+	  .tfs  = 27, .tli   = 20, .tmli = 3,  .taz  = 2, .tzah = 3,  .tenv = 3,
-+	  .tsr  = 4,  .trfs  = 10, .trp  = 17, .tack = 3, .tss  = 7,
-+	},
-+	{ .tcyc = 6,  .t2cyc = 12, .tds  = 1,  .tdh  = 1, .tdvs = 5,  .tdvh = 1,
-+	  .tfs  = 23, .tli   = 20, .tmli = 3,  .taz  = 2, .tzah = 3,  .tenv = 3,
-+	  .tsr  = 3,  .trfs  = 8,  .trp  = 14, .tack = 3, .tss  = 7,
-+	},
-+	{ .tcyc = 7,  .t2cyc = 12, .tds  = 1,  .tdh  = 1, .tdvs = 3,  .tdvh = 1,
-+	  .tfs  = 15, .tli   = 13, .tmli = 3,  .taz  = 2, .tzah = 3,  .tenv = 3,
-+	  .tsr  = 3,  .trfs  = 8,  .trp  = 14, .tack = 3, .tss  = 7,
-+	},
-+	{ .tcyc = 2,  .t2cyc = 5,  .tds  = 0,  .tdh  = 0, .tdvs = 1,  .tdvh = 1,
-+	  .tfs  = 16, .tli   = 14, .tmli = 2,  .taz  = 1, .tzah = 2,  .tenv = 2,
-+	  .tsr  = 2,  .trfs  = 7,  .trp  = 13, .tack = 2, .tss  = 6,
-+	},
-+	{ .tcyc = 3,  .t2cyc = 6,  .tds  = 1,  .tdh  = 1, .tdvs = 1,  .tdvh = 1,
-+	  .tfs  = 12, .tli   = 10, .tmli = 3,  .taz  = 2, .tzah = 3,  .tenv = 3,
-+	  .tsr  = 3,  .trfs  = 7,  .trp  = 12, .tack = 3, .tss  = 7,
-+	},
-+};
-+
-+/* ======================================================================== */
- 
- /* Bit definitions inside the registers */
- #define MPC52xx_ATA_HOSTCONF_SMR	0x80000000UL /* State machine reset */
-@@ -66,6 +188,7 @@ static const int ataspec_ta[5]    = { 35,  35,  35,  35,  35};
- #define MPC52xx_ATA_HOSTSTAT_WERR	0x01000000UL /* Write Error */
- 
- #define MPC52xx_ATA_FIFOSTAT_EMPTY	0x01 /* FIFO Empty */
-+#define MPC52xx_ATA_FIFOSTAT_ERROR	0x40 /* FIFO Error */
- 
- #define MPC52xx_ATA_DMAMODE_WRITE	0x01 /* Write DMA */
- #define MPC52xx_ATA_DMAMODE_READ	0x02 /* Read DMA */
-@@ -75,6 +198,8 @@ static const int ataspec_ta[5]    = { 35,  35,  35,  35,  35};
- #define MPC52xx_ATA_DMAMODE_FR		0x20 /* FIFO Reset */
- #define MPC52xx_ATA_DMAMODE_HUT		0x40 /* Host UDMA burst terminate */
- 
-+#define MAX_DMA_BUFFERS 128
-+#define MAX_DMA_BUFFER_SIZE 0x20000u
- 
- /* Structure of the hardware registers */
- struct mpc52xx_ata {
-@@ -140,7 +265,6 @@ struct mpc52xx_ata {
- 
- 
- /* MPC52xx low level hw control */
--
- static int
- mpc52xx_ata_compute_pio_timings(struct mpc52xx_ata_priv *priv, int dev, int pio)
- {
-@@ -148,7 +272,7 @@ mpc52xx_ata_compute_pio_timings(struct mpc52xx_ata_priv *priv, int dev, int pio)
- 	unsigned int ipb_period = priv->ipb_period;
- 	unsigned int t0, t1, t2_8, t2_16, t2i, t4, ta;
- 
--	if ((pio<0) || (pio>4))
-+	if ((pio < 0) || (pio > 4))
- 		return -EINVAL;
- 
- 	t0	= CALC_CLKCYC(ipb_period, 1000 * ataspec_t0[pio]);
-@@ -165,6 +289,43 @@ mpc52xx_ata_compute_pio_timings(struct mpc52xx_ata_priv *priv, int dev, int pio)
- 	return 0;
- }
- 
-+static int
-+mpc52xx_ata_compute_mdma_timings(struct mpc52xx_ata_priv *priv, int dev,
-+				 int speed)
-+{
-+	struct mpc52xx_ata_timings *t = &priv->timings[dev];
-+	const struct mdmaspec *s = &priv->mdmaspec[speed];
-+
-+	if (speed < 0 || speed > 2)
-+		return -EINVAL;
-+
-+	t->mdma1 = (s->t0M << 24) | (s->td << 16) | (s->tkw << 8) | (s->tm);
-+	t->mdma2 = (s->th << 24) | (s->tj << 16) | (s->tn << 8);
-+	t->using_udma = 0;
-+
-+	return 0;
-+}
-+
-+static int
-+mpc52xx_ata_compute_udma_timings(struct mpc52xx_ata_priv *priv, int dev,
-+				 int speed)
-+{
-+	struct mpc52xx_ata_timings *t = &priv->timings[dev];
-+	const struct udmaspec *s = &priv->udmaspec[speed];
-+
-+	if (speed < 0 || speed > 2)
-+		return -EINVAL;
-+
-+	t->udma1 = (s->t2cyc << 24) | (s->tcyc << 16) | (s->tds << 8) | s->tdh;
-+	t->udma2 = (s->tdvs << 24) | (s->tdvh << 16) | (s->tfs << 8) | s->tli;
-+	t->udma3 = (s->tmli << 24) | (s->taz << 16) | (s->tenv << 8) | s->tsr;
-+	t->udma4 = (s->tss << 24) | (s->trfs << 16) | (s->trp << 8) | s->tack;
-+	t->udma5 = (s->tzah << 24);
-+	t->using_udma = 1;
-+
-+	return 0;
-+}
-+
- static void
- mpc52xx_ata_apply_timings(struct mpc52xx_ata_priv *priv, int device)
- {
-@@ -173,14 +334,13 @@ mpc52xx_ata_apply_timings(struct mpc52xx_ata_priv *priv, int device)
- 
- 	out_be32(&regs->pio1,  timing->pio1);
- 	out_be32(&regs->pio2,  timing->pio2);
--	out_be32(&regs->mdma1, 0);
--	out_be32(&regs->mdma2, 0);
--	out_be32(&regs->udma1, 0);
--	out_be32(&regs->udma2, 0);
--	out_be32(&regs->udma3, 0);
--	out_be32(&regs->udma4, 0);
--	out_be32(&regs->udma5, 0);
--
-+	out_be32(&regs->mdma1, timing->mdma1);
-+	out_be32(&regs->mdma2, timing->mdma2);
-+	out_be32(&regs->udma1, timing->udma1);
-+	out_be32(&regs->udma2, timing->udma2);
-+	out_be32(&regs->udma3, timing->udma3);
-+	out_be32(&regs->udma4, timing->udma4);
-+	out_be32(&regs->udma5, timing->udma5);
- 	priv->csel = device;
- }
- 
-@@ -208,7 +368,7 @@ mpc52xx_ata_hw_init(struct mpc52xx_ata_priv *priv)
- 
- 	/* Set the time slot to 1us */
- 	tslot = CALC_CLKCYC(priv->ipb_period, 1000000);
--	out_be32(&regs->share_cnt, tslot << 16 );
-+	out_be32(&regs->share_cnt, tslot << 16);
- 
- 	/* Init timings to PIO0 */
- 	memset(priv->timings, 0x00, 2*sizeof(struct mpc52xx_ata_timings));
-@@ -237,13 +397,37 @@ mpc52xx_ata_set_piomode(struct ata_port *ap, struct ata_device *adev)
- 	rv = mpc52xx_ata_compute_pio_timings(priv, adev->devno, pio);
- 
- 	if (rv) {
--		printk(KERN_ERR DRV_NAME
--			": Trying to select invalid PIO mode %d\n", pio);
-+		dev_err(ap->dev, "error: invalid PIO mode: %d\n", pio);
-+		return;
-+	}
-+
-+	mpc52xx_ata_apply_timings(priv, adev->devno);
-+}
-+
-+static void
-+mpc52xx_ata_set_dmamode(struct ata_port *ap, struct ata_device *adev)
-+{
-+	struct mpc52xx_ata_priv *priv = ap->host->private_data;
-+	int rv;
-+
-+	if (adev->dma_mode >= XFER_UDMA_0) {
-+		int dma = adev->dma_mode - XFER_UDMA_0;
-+		rv = mpc52xx_ata_compute_udma_timings(priv, adev->devno, dma);
-+	} else {
-+		int dma = adev->dma_mode - XFER_MW_DMA_0;
-+		rv = mpc52xx_ata_compute_mdma_timings(priv, adev->devno, dma);
-+	}
-+
-+	if (rv) {
-+		dev_alert(ap->dev,
-+			"Trying to select invalid DMA mode %d\n",
-+			adev->dma_mode);
- 		return;
- 	}
- 
- 	mpc52xx_ata_apply_timings(priv, adev->devno);
- }
-+
- static void
- mpc52xx_ata_dev_select(struct ata_port *ap, unsigned int device)
- {
-@@ -252,7 +436,173 @@ mpc52xx_ata_dev_select(struct ata_port *ap, unsigned int device)
- 	if (device != priv->csel)
- 		mpc52xx_ata_apply_timings(priv, device);
- 
--	ata_sff_dev_select(ap,device);
-+	ata_sff_dev_select(ap, device);
-+}
-+
-+static int
-+mpc52xx_ata_build_dmatable(struct ata_queued_cmd *qc)
-+{
-+	struct ata_port *ap = qc->ap;
-+	struct mpc52xx_ata_priv *priv = ap->host->private_data;
-+	struct bcom_ata_bd *bd;
-+	unsigned int read = !(qc->tf.flags & ATA_TFLAG_WRITE), si;
-+	struct scatterlist *sg;
-+	int count = 0;
-+
-+	if (read)
-+		bcom_ata_rx_prepare(priv->dmatsk);
-+	else
-+		bcom_ata_tx_prepare(priv->dmatsk);
-+
-+	for_each_sg(qc->sg, sg, qc->n_elem, si) {
-+		dma_addr_t cur_addr = sg_dma_address(sg);
-+		u32 cur_len = sg_dma_len(sg);
-+
-+		while (cur_len) {
-+			unsigned int tc = min(cur_len, MAX_DMA_BUFFER_SIZE);
-+			bd = (struct bcom_ata_bd *)
-+				bcom_prepare_next_buffer(priv->dmatsk);
-+
-+			if (read) {
-+				bd->status = tc;
-+				bd->src_pa = (__force u32) priv->ata_regs_pa +
-+					offsetof(struct mpc52xx_ata, fifo_data);
-+				bd->dst_pa = (__force u32) cur_addr;
-+			} else {
-+				bd->status = tc;
-+				bd->src_pa = (__force u32) cur_addr;
-+				bd->dst_pa = (__force u32) priv->ata_regs_pa +
-+					offsetof(struct mpc52xx_ata, fifo_data);
-+			}
-+
-+			bcom_submit_next_buffer(priv->dmatsk, NULL);
-+
-+			cur_addr += tc;
-+			cur_len -= tc;
-+			count++;
-+
-+			if (count > MAX_DMA_BUFFERS) {
-+				dev_alert(ap->dev, "dma table"
-+					"too small\n");
-+				goto use_pio_instead;
-+			}
-+		}
-+	}
-+	return 1;
-+
-+ use_pio_instead:
-+	bcom_ata_reset_bd(priv->dmatsk);
-+	return 0;
-+}
-+
-+static void
-+mpc52xx_bmdma_setup(struct ata_queued_cmd *qc)
-+{
-+	struct ata_port *ap = qc->ap;
-+	struct mpc52xx_ata_priv *priv = ap->host->private_data;
-+	struct mpc52xx_ata __iomem *regs = priv->ata_regs;
-+
-+	unsigned int read = !(qc->tf.flags & ATA_TFLAG_WRITE);
-+	u8 dma_mode;
-+
-+	if (!mpc52xx_ata_build_dmatable(qc))
-+		dev_alert(ap->dev, "%s: %i, return 1?\n",
-+			__func__, __LINE__);
-+
-+	/* Check FIFO is OK... */
-+	if (in_8(&priv->ata_regs->fifo_status) & MPC52xx_ATA_FIFOSTAT_ERROR)
-+		dev_alert(ap->dev, "%s: FIFO error detected: 0x%02x!\n",
-+			__func__, in_8(&priv->ata_regs->fifo_status));
-+
-+	if (read) {
-+		dma_mode = MPC52xx_ATA_DMAMODE_IE | MPC52xx_ATA_DMAMODE_READ |
-+				MPC52xx_ATA_DMAMODE_FE;
-+
-+		/* Setup FIFO if direction changed */
-+		if (priv->mpc52xx_ata_dma_last_write != 0) {
-+			priv->mpc52xx_ata_dma_last_write = 0;
-+
-+			/* Configure FIFO with granularity to 7 */
-+			out_8(&regs->fifo_control, 7);
-+			out_be16(&regs->fifo_alarm, 128);
-+
-+			/* Set FIFO Reset bit (FR) */
-+			out_8(&regs->dma_mode, MPC52xx_ATA_DMAMODE_FR);
-+		}
-+	} else {
-+		dma_mode = MPC52xx_ATA_DMAMODE_IE | MPC52xx_ATA_DMAMODE_WRITE;
-+
-+		/* Setup FIFO if direction changed */
-+		if (priv->mpc52xx_ata_dma_last_write != 1) {
-+			priv->mpc52xx_ata_dma_last_write = 1;
-+
-+			/* Configure FIFO with granularity to 4 */
-+			out_8(&regs->fifo_control, 4);
-+			out_be16(&regs->fifo_alarm, 128);
-+		}
-+	}
-+
-+	if (priv->timings[qc->dev->devno].using_udma)
-+		dma_mode |= MPC52xx_ATA_DMAMODE_UDMA;
-+
-+	out_8(&regs->dma_mode, dma_mode);
-+	priv->waiting_for_dma = ATA_DMA_ACTIVE;
-+
-+	ata_wait_idle(ap);
-+	ap->ops->sff_exec_command(ap, &qc->tf);
-+}
-+
-+static void
-+mpc52xx_bmdma_start(struct ata_queued_cmd *qc)
-+{
-+	struct ata_port *ap = qc->ap;
-+	struct mpc52xx_ata_priv *priv = ap->host->private_data;
-+
-+	bcom_set_task_auto_start(priv->dmatsk->tasknum, priv->dmatsk->tasknum);
-+	bcom_enable(priv->dmatsk);
-+}
-+
-+static void
-+mpc52xx_bmdma_stop(struct ata_queued_cmd *qc)
-+{
-+	struct ata_port *ap = qc->ap;
-+	struct mpc52xx_ata_priv *priv = ap->host->private_data;
-+
-+	bcom_disable(priv->dmatsk);
-+	bcom_ata_reset_bd(priv->dmatsk);
-+	priv->waiting_for_dma = 0;
-+
-+	/* Check FIFO is OK... */
-+	if (in_8(&priv->ata_regs->fifo_status) & MPC52xx_ATA_FIFOSTAT_ERROR)
-+		dev_alert(ap->dev, "%s: FIFO error detected: 0x%02x!\n",
-+			__func__, in_8(&priv->ata_regs->fifo_status));
-+}
-+
-+static u8
-+mpc52xx_bmdma_status(struct ata_port *ap)
-+{
-+	struct mpc52xx_ata_priv *priv = ap->host->private_data;
-+
-+	/* Check FIFO is OK... */
-+	if (in_8(&priv->ata_regs->fifo_status) & MPC52xx_ATA_FIFOSTAT_ERROR) {
-+		dev_alert(ap->dev, "%s: FIFO error detected: 0x%02x!\n",
-+			__func__, in_8(&priv->ata_regs->fifo_status));
-+		return priv->waiting_for_dma | ATA_DMA_ERR;
-+	}
-+
-+	return priv->waiting_for_dma;
-+}
-+
-+static irqreturn_t
-+mpc52xx_ata_task_irq(int irq, void *vpriv)
-+{
-+	struct mpc52xx_ata_priv *priv = vpriv;
-+	while (bcom_buffer_done(priv->dmatsk))
-+		bcom_retrieve_buffer(priv->dmatsk, NULL, NULL);
-+
-+	priv->waiting_for_dma |= ATA_DMA_INTR;
-+
-+	return IRQ_HANDLED;
- }
- 
- static struct scsi_host_template mpc52xx_ata_sht = {
-@@ -262,14 +612,18 @@ static struct scsi_host_template mpc52xx_ata_sht = {
- static struct ata_port_operations mpc52xx_ata_port_ops = {
- 	.inherits		= &ata_sff_port_ops,
- 	.sff_dev_select		= mpc52xx_ata_dev_select,
--	.cable_detect		= ata_cable_40wire,
- 	.set_piomode		= mpc52xx_ata_set_piomode,
--	.post_internal_cmd	= ATA_OP_NULL,
-+	.set_dmamode		= mpc52xx_ata_set_dmamode,
-+	.bmdma_setup		= mpc52xx_bmdma_setup,
-+	.bmdma_start		= mpc52xx_bmdma_start,
-+	.bmdma_stop		= mpc52xx_bmdma_stop,
-+	.bmdma_status		= mpc52xx_bmdma_status,
-+	.qc_prep		= ata_noop_qc_prep,
- };
- 
- static int __devinit
- mpc52xx_ata_init_one(struct device *dev, struct mpc52xx_ata_priv *priv,
--		     unsigned long raw_ata_regs)
-+		     unsigned long raw_ata_regs, int mwdma_mask, int udma_mask)
- {
- 	struct ata_host *host;
- 	struct ata_port *ap;
-@@ -281,9 +635,9 @@ mpc52xx_ata_init_one(struct device *dev, struct mpc52xx_ata_priv *priv,
- 
- 	ap = host->ports[0];
- 	ap->flags		|= ATA_FLAG_SLAVE_POSS;
--	ap->pio_mask		= 0x1f;	/* Up to PIO4 */
--	ap->mwdma_mask		= 0x00;	/* No MWDMA   */
--	ap->udma_mask		= 0x00;	/* No UDMA    */
-+	ap->pio_mask		= ATA_PIO4;
-+	ap->mwdma_mask		= mwdma_mask;
-+	ap->udma_mask		= udma_mask;
- 	ap->ops			= &mpc52xx_ata_port_ops;
- 	host->private_data	= priv;
- 
-@@ -330,89 +684,139 @@ mpc52xx_ata_probe(struct of_device *op, const struct of_device_id *match)
- {
- 	unsigned int ipb_freq;
- 	struct resource res_mem;
--	int ata_irq;
-+	int ata_irq = 0;
- 	struct mpc52xx_ata __iomem *ata_regs;
--	struct mpc52xx_ata_priv *priv;
--	int rv;
-+	struct mpc52xx_ata_priv *priv = NULL;
-+	int rv, ret, task_irq = 0;
-+	int mwdma_mask = 0, udma_mask = 0;
-+	const __be32 *prop;
-+	int proplen;
-+	struct bcom_task *dmatsk = NULL;
- 
- 	/* Get ipb frequency */
- 	ipb_freq = mpc52xx_find_ipb_freq(op->node);
- 	if (!ipb_freq) {
--		printk(KERN_ERR DRV_NAME ": "
--			"Unable to find IPB Bus frequency\n" );
-+		dev_err(&op->dev, "could not determine IPB bus frequency\n");
- 		return -ENODEV;
- 	}
- 
--	/* Get IRQ and register */
-+	/* Get device base address from device tree, request the region
-+	 * and ioremap it. */
- 	rv = of_address_to_resource(op->node, 0, &res_mem);
- 	if (rv) {
--		printk(KERN_ERR DRV_NAME ": "
--			"Error while parsing device node resource\n" );
-+		dev_err(&op->dev, "could not determine device base address\n");
- 		return rv;
- 	}
- 
--	ata_irq = irq_of_parse_and_map(op->node, 0);
--	if (ata_irq == NO_IRQ) {
--		printk(KERN_ERR DRV_NAME ": "
--			"Error while mapping the irq\n");
--		return -EINVAL;
--	}
--
--	/* Request mem region */
- 	if (!devm_request_mem_region(&op->dev, res_mem.start,
--				     sizeof(struct mpc52xx_ata), DRV_NAME)) {
--		printk(KERN_ERR DRV_NAME ": "
--			"Error while requesting mem region\n");
--		rv = -EBUSY;
--		goto err;
-+				     sizeof(*ata_regs), DRV_NAME)) {
-+		dev_err(&op->dev, "error requesting register region\n");
-+		return -EBUSY;
- 	}
- 
--	/* Remap registers */
--	ata_regs = devm_ioremap(&op->dev, res_mem.start,
--				sizeof(struct mpc52xx_ata));
-+	ata_regs = devm_ioremap(&op->dev, res_mem.start, sizeof(*ata_regs));
- 	if (!ata_regs) {
--		printk(KERN_ERR DRV_NAME ": "
--			"Error while mapping register set\n");
-+		dev_err(&op->dev, "error mapping device registers\n");
- 		rv = -ENOMEM;
- 		goto err;
- 	}
- 
-+	/*
-+	 * By default, all DMA modes are disabled for the MPC5200.  Some
-+	 * boards don't have the required signals routed to make DMA work.
-+	 * Also, the MPC5200B has a silicon bug that causes data corruption
-+	 * with UDMA if it is used at the same time as the LocalPlus bus.
-+	 *
-+	 * Instead of trying to guess what modes are usable, check the
-+	 * ATA device tree node to find out what DMA modes work on the board.
-+	 * UDMA/MWDMA modes can also be forced by adding "libata.force=<mode>"
-+	 * to the kernel boot parameters.
-+	 *
-+	 * The MPC5200 ATA controller supports MWDMA modes 0, 1 and 2 and
-+	 * UDMA modes 0, 1 and 2.
-+	 */
-+	prop = of_get_property(op->node, "mwdma-mode", &proplen);
-+	if ((prop) && (proplen >= 4))
-+		mwdma_mask = 0x7 & ((1 << (*prop + 1)) - 1);
-+	prop = of_get_property(op->node, "udma-mode", &proplen);
-+	if ((prop) && (proplen >= 4))
-+		udma_mask = 0x7 & ((1 << (*prop + 1)) - 1);
-+
-+	ata_irq = irq_of_parse_and_map(op->node, 0);
-+	if (ata_irq == NO_IRQ) {
-+		dev_err(&op->dev, "error mapping irq\n");
-+		return -EINVAL;
-+	}
-+
- 	/* Prepare our private structure */
--	priv = devm_kzalloc(&op->dev, sizeof(struct mpc52xx_ata_priv),
--			    GFP_ATOMIC);
-+	priv = devm_kzalloc(&op->dev, sizeof(*priv), GFP_ATOMIC);
- 	if (!priv) {
--		printk(KERN_ERR DRV_NAME ": "
--			"Error while allocating private structure\n");
-+		dev_err(&op->dev, "error allocating private structure\n");
- 		rv = -ENOMEM;
- 		goto err;
- 	}
- 
- 	priv->ipb_period = 1000000000 / (ipb_freq / 1000);
- 	priv->ata_regs = ata_regs;
-+	priv->ata_regs_pa = res_mem.start;
- 	priv->ata_irq = ata_irq;
- 	priv->csel = -1;
-+	priv->mpc52xx_ata_dma_last_write = -1;
-+
-+	if (ipb_freq/1000000 == 66) {
-+		priv->mdmaspec = mdmaspec66;
-+		priv->udmaspec = udmaspec66;
-+	} else {
-+		priv->mdmaspec = mdmaspec132;
-+		priv->udmaspec = udmaspec132;
-+	}
-+
-+	/* Allocate a BestComm task for DMA */
-+	dmatsk = bcom_ata_init(MAX_DMA_BUFFERS, MAX_DMA_BUFFER_SIZE);
-+	if (!dmatsk) {
-+		dev_err(&op->dev, "bestcomm initialization failed\n");
-+		rv = -ENOMEM;
-+		goto err;
-+	}
-+
-+	task_irq = bcom_get_task_irq(dmatsk);
-+	ret = request_irq(task_irq, &mpc52xx_ata_task_irq, IRQF_DISABLED,
-+				"ATA task", priv);
-+	if (ret) {
-+		dev_err(&op->dev, "error requesting DMA IRQ\n");
-+		goto err;
-+	}
-+	priv->dmatsk = dmatsk;
- 
- 	/* Init the hw */
- 	rv = mpc52xx_ata_hw_init(priv);
- 	if (rv) {
--		printk(KERN_ERR DRV_NAME ": Error during HW init\n");
-+		dev_err(&op->dev, "error initializing hardware\n");
- 		goto err;
- 	}
- 
- 	/* Register ourselves to libata */
--	rv = mpc52xx_ata_init_one(&op->dev, priv, res_mem.start);
-+	rv = mpc52xx_ata_init_one(&op->dev, priv, res_mem.start,
-+				  mwdma_mask, udma_mask);
- 	if (rv) {
--		printk(KERN_ERR DRV_NAME ": "
--			"Error while registering to ATA layer\n");
--		return rv;
-+		dev_err(&op->dev, "error registering with ATA layer\n");
-+		goto err;
- 	}
- 
--	/* Done */
- 	return 0;
- 
--	/* Error path */
--err:
--	irq_dispose_mapping(ata_irq);
-+ err:
-+	devm_release_mem_region(&op->dev, res_mem.start, sizeof(*ata_regs));
-+	if (ata_irq)
-+		irq_dispose_mapping(ata_irq);
-+	if (task_irq)
-+		irq_dispose_mapping(task_irq);
-+	if (dmatsk)
-+		bcom_ata_release(dmatsk);
-+	if (ata_regs)
-+		devm_iounmap(&op->dev, ata_regs);
-+	if (priv)
-+		devm_kfree(&op->dev, priv);
- 	return rv;
- }
- 
-@@ -420,10 +824,23 @@ static int
- mpc52xx_ata_remove(struct of_device *op)
- {
- 	struct mpc52xx_ata_priv *priv;
-+	int task_irq;
- 
-+	/* Deregister the ATA interface */
- 	priv = mpc52xx_ata_remove_one(&op->dev);
-+
-+	/* Clean up DMA */
-+	task_irq = bcom_get_task_irq(priv->dmatsk);
-+	irq_dispose_mapping(task_irq);
-+	bcom_ata_release(priv->dmatsk);
- 	irq_dispose_mapping(priv->ata_irq);
- 
-+	/* Clear up IO allocations */
-+	devm_iounmap(&op->dev, priv->ata_regs);
-+	devm_release_mem_region(&op->dev, priv->ata_regs_pa,
-+				sizeof(*priv->ata_regs));
-+	devm_kfree(&op->dev, priv);
-+
- 	return 0;
- }
- 
-@@ -447,7 +864,7 @@ mpc52xx_ata_resume(struct of_device *op)
- 
- 	rv = mpc52xx_ata_hw_init(priv);
- 	if (rv) {
--		printk(KERN_ERR DRV_NAME ": Error during HW init\n");
-+		dev_err(host->dev, "error initializing hardware\n");
- 		return rv;
- 	}
- 
-@@ -507,5 +924,4 @@ MODULE_AUTHOR("Sylvain Munaut <tnt@246tNt.com>");
- MODULE_DESCRIPTION("Freescale MPC52xx IDE/ATA libata driver");
- MODULE_LICENSE("GPL");
- MODULE_DEVICE_TABLE(of, mpc52xx_ata_of_match);
--MODULE_VERSION(DRV_VERSION);
- 
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
