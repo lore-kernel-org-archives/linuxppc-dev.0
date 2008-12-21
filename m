@@ -1,19 +1,18 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 35A71DDD01
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Dec 2008 22:57:51 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 82E23DDE0F
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2008 03:45:18 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LERQU-0000sq-DW
+	for linuxppc-dev@ozlabs.org; Sun, 21 Dec 2008 08:45:10 -0800
+Message-ID: <21116726.post@talk.nabble.com>
+Date: Sun, 21 Dec 2008 08:45:10 -0800 (PST)
+From: Felix Radensky <felix@embedded-sol.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH][v2] powerpc 44x: support for 256KB PAGE_SIZE
-Date: Sun, 21 Dec 2008 14:46:56 +0300
+Subject: Kernel crash on ohci-hcd unloading in 2.6.28-rc9
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200812211446.56783.yur@emcraft.com>
-Cc: wd@denx.de, yanok@emcraft.com, miltonm@bga.com, paulus@samba.org,
-	dzu@denx.de
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,223 +23,64 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This patch adds support for 256KB pages on ppc44x-based boards.
+Hi,
 
-For simplification of implementation with 256KB pages we still assume
-2-level paging. As a side effect this leads to wasting extra memory space
-reserved for PTE tables: only 1/4 of pages allocated for PTEs are
-actually used. But this may be an acceptable trade-off to achieve the
-high performance we have with big PAGE_SIZEs in some applications (e.g.
-RAID).
+I'm getting the following crash when unloading ohci-hcd module
+on custom 460EX platform:
 
-Also with 256KB PAGE_SIZE we increase THREAD_SIZE up to 32KB to minimize
-the risk of stack overflows in the cases of on-stack arrays, which size
-depends on the page size (e.g. multipage BIOs, NTFS, etc.).
+-bash-3.2# rmmod ohci-hcd
+ppc-of-ohci 4bffd0000.usb: remove, state 1
+usb usb1: USB disconnect, address 1
+usb 1-1: USB disconnect, address 2
+ppc-of-ohci 4bffd0000.usb: USB bus 1 deregistered
+Trying to install chip for IRQ-1
+------------[ cut here ]------------
+Badness at c0044dd8 [verbose debug info unavailable]
+NIP: c0044dd8 LR: c0044dd8 CTR: c0106bb4
+REGS: dfa27cf0 TRAP: 0700   Not tainted  (2.6.28-rc9)
+MSR: 00029000 <EE,ME>  CR: 22000082  XER: 20000004
+TASK = df874c30[468] 'rmmod' THREAD: dfa26000
+GPR00: c0044dd8 dfa27da0 df874c30 00000024 00001a85 ffffffff c01071f0
+00020000
+GPR08: 00000001 c0232c74 00001a85 00000001 24000084 1004a180 00000000
+00000000
+GPR16: 101017e8 1009e4f0 100f0000 10043008 00000000 bfae0070 10001be4
+bfae007c
+GPR24: bfae0078 00000000 bfae0080 00000880 00000000 ffffffff e4fa79a8
+00000000
+NIP [c0044dd8] set_irq_chip+0x4c/0x98
+LR [c0044dd8] set_irq_chip+0x4c/0x98
+Call Trace:
+[dfa27da0] [c0044dd8] set_irq_chip+0x4c/0x98 (unreliable)
+[dfa27dc0] [c0044e84] set_irq_chip_and_handler+0x1c/0x40
+[dfa27de0] [c0003570] irq_dispose_mapping+0x5c/0x158
+[dfa27e00] [e4fa2d70] ohci_hcd_ppc_of_remove+0x34/0x70 [ohci_hcd]
+[dfa27e20] [c011f9dc] of_platform_device_remove+0x30/0x44
+[dfa27e30] [c010d4f0] __device_release_driver+0x84/0xb0
+[dfa27e40] [c010d588] driver_detach+0x6c/0xa8
+[dfa27e60] [c010c5b8] bus_remove_driver+0x9c/0xd8
+[dfa27e80] [c010dacc] driver_unregister+0x48/0x5c
+[dfa27ea0] [c011fae0] of_unregister_driver+0x14/0x24
+[dfa27eb0] [e4fa4cc0] ohci_hcd_mod_exit+0x28/0x400 [ohci_hcd]
+[dfa27ed0] [c0040b50] sys_delete_module+0x1ac/0x218
+[dfa27f40] [c000cab8] ret_from_syscall+0x0/0x3c
+Instruction dump:
+7f830040 7c9f2378 409c0018 1c03003c 3d20c022 39291594 7fc04a15 40a20020
+3c60c01d 7d645b78 3863fbe8 4bfd954d <0fe00000> 3860ffea 48000030 2f840000
 
-With 256KB PAGE_SIZE we need to decrease the PKMAP_ORDER at least down
-to 9, otherwise all high memory (2 ^ 10 * PAGE_SIZE == 256MB) we'll be
-occupied by PKMAP addresses leaving no place for vmalloc. We do not
-separate PKMAP_ORDER for 256K from 16K/64K PAGE_SIZE here; actually that
-value of 10 in support for 16K/64K had been selected rather intuitively.
-Thus now for all cases of PAGE_SIZE on ppc44x (including the default, 4KB,
-one) we have 512 pages for PKMAP.
+This happens because by the moment irq_dispose_mapping(hcd->irq) is invoked
+from
+ohci_hcd_ppc_of_remove() (in drivers/usb/host/ohci-ppc-of.c) hcd->irq is set
+to -1 by 
+ohci_stop().
 
-Because ELF standard supports only page sizes up to 64K, then you should
-use patched binutils for building applications to be run with the 256KB-
-page sized kernel. The patch for binutils is rather trivial, and may
-look as follows:
+I'm not sure what is the correct way to fix the crash. I've modified
+ohci_stop() 
+not to free irq and set hcd->irq to -1 if CONFIG_USB_OHCI_HCD_PPC_OF is
+defined, and that fixed the crash. But maybe this is not the best way to fix
+it.
 
---- binutils/bfd/elf32-ppc.c.orig
-+++ binutils/bfd/elf32-ppc.c
-
--#define ELF_MAXPAGESIZE                0x10000
-+#define ELF_MAXPAGESIZE                0x40000
-
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
----
- arch/powerpc/Kconfig                   |   14 ++++++++++++++
- arch/powerpc/include/asm/highmem.h     |   10 +++++-----
- arch/powerpc/include/asm/mmu-44x.h     |    2 ++
- arch/powerpc/include/asm/page.h        |    6 ++++--
- arch/powerpc/include/asm/page_32.h     |    4 ++++
- arch/powerpc/include/asm/thread_info.h |    4 +++-
- arch/powerpc/kernel/head_booke.h       |   11 ++++++++++-
- arch/powerpc/platforms/44x/Kconfig     |   10 ++++++++++
- 8 files changed, 52 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index cd8ff7c..3338e71 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -436,6 +436,18 @@ config PPC_64K_PAGES
- 	bool "64k page size" if 44x || PPC_STD_MMU_64
- 	select PPC_HAS_HASH_64K if PPC_STD_MMU_64
- 
-+config PPC_256K_PAGES
-+	bool "256k page size" if 44x
-+	depends on !STDBINUTILS
-+	help
-+	  Make the page size 256k.
-+
-+	  As the ELF standard only requires alignment to support page
-+	  sizes up to 64k, you will need to compile all of your user
-+	  space applications with a patched binutils.
-+
-+	  Say N unless you know what you are doing.
-+
- endchoice
- 
- config FORCE_MAX_ZONEORDER
-@@ -448,6 +460,8 @@ config FORCE_MAX_ZONEORDER
- 	default "9" if PPC_STD_MMU_32 && PPC_16K_PAGES
- 	range 7 64 if PPC_STD_MMU_32 && PPC_64K_PAGES
- 	default "7" if PPC_STD_MMU_32 && PPC_64K_PAGES
-+	range 5 64 if PPC_STD_MMU_32 && PPC_256K_PAGES
-+	default "5" if PPC_STD_MMU_32 && PPC_256K_PAGES
- 	range 11 64
- 	default "11"
- 	help
-diff --git a/arch/powerpc/include/asm/highmem.h b/arch/powerpc/include/asm/highmem.h
-index 7d6bb37..0d1333f 100644
---- a/arch/powerpc/include/asm/highmem.h
-+++ b/arch/powerpc/include/asm/highmem.h
-@@ -39,15 +39,15 @@ extern pte_t *pkmap_page_table;
-  * chunk of RAM.
-  */
- /*
-- * We use one full pte table with 4K pages. And with 16K/64K pages pte
-- * table covers enough memory (32MB and 512MB resp.) that both FIXMAP
-- * and PKMAP can be placed in single pte table. We use 1024 pages for
-- * PKMAP in case of 16K/64K pages.
-+ * We use one full pte table with 4K pages. And with 16K/64K/256K pages pte
-+ * table covers enough memory (32MB/512MB/2GB resp.), so that both FIXMAP
-+ * and PKMAP can be placed in a single pte table. We use 512 pages for PKMAP
-+ * in case of 16K/64K/256K page sizes.
-  */
- #ifdef CONFIG_PPC_4K_PAGES
- #define PKMAP_ORDER	PTE_SHIFT
- #else
--#define PKMAP_ORDER	10
-+#define PKMAP_ORDER	9
- #endif
- #define LAST_PKMAP	(1 << PKMAP_ORDER)
- #ifndef CONFIG_PPC_4K_PAGES
-diff --git a/arch/powerpc/include/asm/mmu-44x.h b/arch/powerpc/include/asm/mmu-44x.h
-index 73e1909..52a2339 100644
---- a/arch/powerpc/include/asm/mmu-44x.h
-+++ b/arch/powerpc/include/asm/mmu-44x.h
-@@ -81,6 +81,8 @@ typedef struct {
- #define PPC44x_TLBE_SIZE	PPC44x_TLB_16K
- #elif (PAGE_SHIFT == 16)
- #define PPC44x_TLBE_SIZE	PPC44x_TLB_64K
-+#elif (PAGE_SHIFT == 18)
-+#define PPC44x_TLBE_SIZE	PPC44x_TLB_256K
- #else
- #error "Unsupported PAGE_SIZE"
- #endif
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 197d569..32cbf16 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -19,12 +19,14 @@
- #include <asm/kdump.h>
- 
- /*
-- * On regular PPC32 page size is 4K (but we support 4K/16K/64K pages
-+ * On regular PPC32 page size is 4K (but we support 4K/16K/64K/256K pages
-  * on PPC44x). For PPC64 we support either 4K or 64K software
-  * page size. When using 64K pages however, whether we are really supporting
-  * 64K pages in HW or not is irrelevant to those definitions.
-  */
--#if defined(CONFIG_PPC_64K_PAGES)
-+#if defined(CONFIG_PPC_256K_PAGES)
-+#define PAGE_SHIFT		18
-+#elif defined(CONFIG_PPC_64K_PAGES)
- #define PAGE_SHIFT		16
- #elif defined(CONFIG_PPC_16K_PAGES)
- #define PAGE_SHIFT		14
-diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
-index 1458d95..a0e3f6e 100644
---- a/arch/powerpc/include/asm/page_32.h
-+++ b/arch/powerpc/include/asm/page_32.h
-@@ -19,7 +19,11 @@
- #define PTE_FLAGS_OFFSET	0
- #endif
- 
-+#ifdef CONFIG_PPC_256K_PAGES
-+#define PTE_SHIFT	(PAGE_SHIFT - PTE_T_LOG2 - 2)	/* 1/4 of a page */
-+#else
- #define PTE_SHIFT	(PAGE_SHIFT - PTE_T_LOG2)	/* full page */
-+#endif
- 
- #ifndef __ASSEMBLY__
- /*
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 9665a26..e04286f 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -12,8 +12,10 @@
- 
- /* We have 8k stacks on ppc32 and 16k on ppc64 */
- 
--#ifdef CONFIG_PPC64
-+#if defined(CONFIG_PPC64)
- #define THREAD_SHIFT		14
-+#elif defined(CONFIG_PPC_256K_PAGES)
-+#define THREAD_SHIFT		15
- #else
- #define THREAD_SHIFT		13
- #endif
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index fce2df9..17803ad 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -10,6 +10,15 @@
- 		mtspr	SPRN_IVOR##vector_number,r26;	\
- 		sync
- 
-+#if (THREAD_SHIFT < 15)
-+#define ALLOC_STACK_FRAME(reg, val)			\
-+	addi reg,reg,val
-+#else
-+#define ALLOC_STACK_FRAME(reg, val)			\
-+	addis	reg,reg,val@ha;				\
-+	addi	reg,reg,val@l
-+#endif
-+
- #define NORMAL_EXCEPTION_PROLOG						     \
- 	mtspr	SPRN_SPRG0,r10;		/* save two registers to work with */\
- 	mtspr	SPRN_SPRG1,r11;						     \
-@@ -20,7 +29,7 @@
- 	beq	1f;							     \
- 	mfspr	r1,SPRN_SPRG3;		/* if from user, start at top of   */\
- 	lwz	r1,THREAD_INFO-THREAD(r1); /* this thread's kernel stack   */\
--	addi	r1,r1,THREAD_SIZE;					     \
-+	ALLOC_STACK_FRAME(r1, THREAD_SIZE);				     \
- 1:	subi	r1,r1,INT_FRAME_SIZE;	/* Allocate an exception frame     */\
- 	mr	r11,r1;							     \
- 	stw	r10,_CCR(r11);          /* save various registers	   */\
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 3496bc0..346b293 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -214,6 +214,16 @@ config 440SPe
- 	bool
- 	select IBM_NEW_EMAC_EMAC4
- 
-+config STDBINUTILS
-+	bool "Using standard binutils"
-+	depends on 44x
-+	default y
-+	help
-+	  Turning this option off allows you to select 256KB PAGE_SIZE on 44x.
-+	  Note, that kernel will be able to run only those applications,
-+	  which had been compiled using the patched binutils (ELF standard
-+	  supports only page sizes up to 64K).
-+
- config 460EX
- 	bool
- 	select PPC_FPU
+Felix.
 -- 
-1.6.0.4
+View this message in context: http://www.nabble.com/Kernel-crash-on-ohci-hcd-unloading-in-2.6.28-rc9-tp21116726p21116726.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
