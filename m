@@ -1,23 +1,20 @@
 Return-Path: <timur.tabi@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 25267DDE24
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Dec 2008 14:23:08 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id d11so508394and.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 19:23:06 -0800 (PST)
-Message-ID: <ed82fe3e0812201923s7ff3401i2d12aca4ae9de1e7@mail.gmail.com>
-Date: Sat, 20 Dec 2008 21:23:06 -0600
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id A4DC7DDDE0
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Dec 2008 14:27:33 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so534549yxg.39
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Dec 2008 19:27:31 -0800 (PST)
+Message-ID: <ed82fe3e0812201927j2cf2786ag320e9ebd3b7c7954@mail.gmail.com>
+Date: Sat, 20 Dec 2008 21:27:31 -0600
 From: "Timur Tabi" <timur@freescale.com>
 Sender: timur.tabi@gmail.com
-To: "Anton Vorontsov" <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 6/6] ucc_geth: Remove UGETH_FILTERING dead code
-In-Reply-To: <20081218182335.GF30682@oksana.dev.rtsoft.ru>
+To: "Becky Bruce" <beckyb@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Update 8641hpcn dts file to match latest u-boot
+In-Reply-To: <1229724312-20406-1-git-send-email-beckyb@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20081218182335.GF30682@oksana.dev.rtsoft.ru>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andy Fleming <afleming@freescale.com>,
-	Li Yang <leoli@freescale.com>, Jeff Garzik <jgarzik@pobox.com>,
-	David Miller <davem@davemloft.net>
+References: <1229724312-20406-1-git-send-email-beckyb@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,14 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 18, 2008 at 12:23 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> The code appears to be dead: nobody call these functions, plus build
-> breaks when UGETH_FILTERING is enabled:
+On Fri, Dec 19, 2008 at 4:05 PM, Becky Bruce <beckyb@kernel.crashing.org> wrote:
+> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> @@ -26,7 +26,7 @@
+>                serial1 = &serial1;
+>                pci0 = &pci0;
+>                pci1 = &pci1;
+> -               rapidio0 = &rapidio0;
+> +               /* rapidio0 = &rapidio0; */
 
-I general, I agree with patches like this, but I'd like to hear from
-Leo first why this code was written in the first place before I can
-ack it.
+If you're going to leave commented-out code in the DTS, please add a
+comment here to explain why the code is commented-out and not just
+deleted.
 
 -- 
 Timur Tabi
