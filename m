@@ -1,27 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.184])
-	by ozlabs.org (Postfix) with ESMTP id 0D6D6DDE06
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id 5DA17DDDEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 21 Dec 2008 21:06:01 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so1383933rnf.16
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 21 Dec 2008 02:05:59 -0800 (PST)
-Message-ID: <fa686aa40812210205q2862c27bwcc700506d5345dbf@mail.gmail.com>
-Date: Sun, 21 Dec 2008 03:05:59 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: mingqian <xilinx@live.cn>
-Subject: Re: Linux 2.6 frame buffer for XUPV2P
-In-Reply-To: <BAY105-DS67451C50733C2C2A9DEBFCDEE0@phx.gbl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <BAY105-DS3567863497ABB33F27B64CDF10@phx.gbl>
-	<fa686aa40812192235q6d9e09bav80508cf31bf0be94@mail.gmail.com>
-	<BAY105-DS5483ABB21548C3078681CCDF10@phx.gbl>
-	<fa686aa40812201245q5a04cf39x62f20be2bba69b8@mail.gmail.com>
-	<BAY105-DS32759F571CA31E6361531CDEE0@phx.gbl>
-	<fa686aa40812201958k5358d81wac30662517c59d@mail.gmail.com>
-	<BAY105-DS67451C50733C2C2A9DEBFCDEE0@phx.gbl>
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 22 Dec 2008 17:58:05 +1100 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1LEejk-0006U6-GK
+	for linuxppc-embedded@ozlabs.org; Mon, 22 Dec 2008 06:57:57 +0000
+Received: from CPE-124-190-96-129.vic.bigpond.net.au ([124.190.96.129])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Mon, 22 Dec 2008 06:57:56 +0000
+Received: from daniel_ng11 by CPE-124-190-96-129.vic.bigpond.net.au with local
+	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Mon, 22 Dec 2008 06:57:56 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Daniel Ng <daniel_ng11@lycos.com>
+Subject: Re: Device Tree setup for 8272-based board
+Date: Mon, 22 Dec 2008 06:57:45 +0000 (UTC)
+Message-ID: <loom.20081222T064929-412@post.gmane.org>
+References: <loom.20081219T062005-806@post.gmane.org>
+	<494BFE2B.2010103@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -32,16 +33,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 21, 2008 at 1:55 AM, mingqian <xilinx@live.cn> wrote:
-> Thanks Grant!
->    It works after I follow your advice 1) & 2). The small Linux logo is shown on the screen,
+Scott Wood <scottwood <at> freescale.com> writes:
 
-Okay, good.  It's not the final solution, but I know what I need to
-fix now and it gets you working.
+> The cuboot file defines things like TARGET_CPM2 or TARGET_824x, which 
+> influences the compilation of the bd_t struct.  It's messy, which is why 
+> we use device trees now. 
+> 
+
+
+Thanks for your helpful responses Scott and Ming Qian. Now, from reading the 
+docco can you please verify my understanding is correct?- 
+
+First, I need a basic DTS file which will give me a basic Device Tree. The 
+cuboot*.c file takes care of adding other parameters to the Device Tree passed 
+from u-boot via the old bd_info struct. 
+
+Is this correct? If so, would it be possible to do away with the DTS file 
+altogether? On the other hand, would it be possible to do away with the 
+cuboot*.c file by providing a complete DTS file?
 
 Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Daniel
