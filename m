@@ -1,19 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id F335BDDDFB
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 04:12:12 +1100 (EST)
-Date: Mon, 22 Dec 2008 20:12:09 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/83xx: Fix few build errors with
-	CONFIG_QUICC_ENGINE=n
-Message-ID: <20081222171209.GA22890@oksana.dev.rtsoft.ru>
-References: <20081205165504.GA30966@oksana.dev.rtsoft.ru>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 2117FDDE11
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 05:42:26 +1100 (EST)
+Date: Mon, 22 Dec 2008 12:42:11 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH] ehea: use get_zeroed_page for alignment-sensitive allocation
+Message-ID: <20081222184211.GV6958@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081205165504.GA30966@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+Cc: hannes.hering@linux.vnet.ibm.com, osstklei@de.ibm.com,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com, ossthema@de.ibm.com,
+	ossrosch@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,116 +21,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 05, 2008 at 07:55:04PM +0300, Anton Vorontsov wrote:
-> Some 83xx boards were not ready for the optional QUICC Engine support.
-> 
-> This patch fixes following build errors:
-> 
-> arch/powerpc/platforms/built-in.o: In function `flush_disable_caches':
-> (.text+0xb308): undefined reference to `par_io_data_set'
-> arch/powerpc/platforms/built-in.o: In function `flush_disable_caches':
-> (.text+0xb334): undefined reference to `par_io_data_set'
-> arch/powerpc/platforms/built-in.o: In function `flush_disable_caches':
-> (.text+0xb408): undefined reference to `qe_ic_get_high_irq'
-> arch/powerpc/platforms/built-in.o: In function `flush_disable_caches':
-> (.text+0xb478): undefined reference to `qe_ic_get_low_irq'
-> arch/powerpc/platforms/built-in.o: In function `mpc832x_spi_init':
-> mpc832x_rdb.c:(.init.text+0x574c): undefined reference to `par_io_config_pin'
-> mpc832x_rdb.c:(.init.text+0x5768): undefined reference to `par_io_config_pin'
-> mpc832x_rdb.c:(.init.text+0x5784): undefined reference to `par_io_config_pin'
-> mpc832x_rdb.c:(.init.text+0x57a0): undefined reference to `par_io_config_pin'
-> mpc832x_rdb.c:(.init.text+0x57bc): undefined reference to `par_io_config_pin'
-> arch/powerpc/platforms/built-in.o:mpc832x_rdb.c:(.init.text+0x57d8): more undefined references to `par_io_config_pin' follow
-> arch/powerpc/platforms/built-in.o: In function `mpc836x_rdk_init_IRQ':
-> mpc836x_rdk.c:(.init.text+0x5e84): undefined reference to `qe_ic_init'
-> arch/powerpc/platforms/built-in.o: In function `mpc836x_rdk_setup_arch':
-> mpc836x_rdk.c:(.init.text+0x5f10): undefined reference to `qe_reset'
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
+With slub debug enabled, I see the following errors and crash with
+2.6.28-rc9:
 
-Kumar,
+IBM eHEA ethernet device driver (Release EHEA_0095)
+ehea: Error in ehea_h_register_rpage_mr: not on pageboundary
+ehea: Error in ehea_reg_mr_section: register_rpage_mr failed
+ehea: Error in ehea_reg_kernel_mr: registering mr failed
+ehea: Error in ehea_setup_ports: creating MR failed
+ehea 23c00100.lhea: setup_ports failed
+Unable to handle kernel paging request for data at address 0x6b6b6b6b6b6bbdcb
+Faulting instruction address: 0xd000000000064a24
+cpu 0x0: Vector: 300 (Data Access) at [c0000000740e7190]
+    pc: d000000000064a24: .ehea_update_firmware_handles+0x84/0x47c [ehea]
+    lr: d00000000006df34: .ehea_probe_adapter+0x35c/0x39c [ehea]
+    sp: c0000000740e7410
+   msr: 8000000000009032
+   dar: 6b6b6b6b6b6bbdcb
+ dsisr: 40000000
+  current = 0xc000000074233780
+  paca    = 0xc0000000008a3300
+    pid   = 2046, comm = modprobe
+enter ? for help
+[c0000000740e74f0] d00000000006df34 .ehea_probe_adapter+0x35c/0x39c [ehea]
+[c0000000740e75a0] c00000000041d5a4 .of_platform_device_probe+0x78/0xb0
+[c0000000740e7630] c0000000002d8b38 .driver_probe_device+0x13c/0x200
+[c0000000740e76c0] c0000000002d8c90 .__driver_attach+0x94/0xd8
+[c0000000740e7750] c0000000002d7d64 .bus_for_each_dev+0x80/0xd8
+[c0000000740e7800] c0000000002d889c .driver_attach+0x28/0x40
+[c0000000740e7880] c0000000002d8340 .bus_add_driver+0xd4/0x284
+[c0000000740e7920] c0000000002d90a0 .driver_register+0xc4/0x198
+[c0000000740e79d0] c00000000041d45c .of_register_driver+0x4c/0x60
+[c0000000740e7a50] c000000000020ef8 .ibmebus_register_driver+0x30/0x4c
+[c0000000740e7ae0] d00000000006e108 .ehea_module_init+0x194/0x208c [ehea]
+[c0000000740e7b90] c000000000009028 .do_one_initcall+0x90/0x1ac
+[c0000000740e7d90] c00000000008619c .sys_init_module+0xc4/0x200
+[c0000000740e7e30] c0000000000084ac syscall_exit+0x0/0x40
 
-After all I think we should apply this version.
+(When slub debug is disabled it works fine.)
 
-Soon I'll send cleanup patches for all QE boards to remove need
-for most #ifdefs.
+PAGE_SIZE allocations via slab are not guaranteed to be page-aligned;
+use get_zeroed_page for the 'pt' buffer (I don't really know what this
+is, only that it is passed to firmware and that the first error
+message complains about its alignment).  This allows the system to
+boot.
 
-But so far let's be consistent and do what other boards are doing.
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ drivers/net/ehea/ehea_qmr.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks,
+By the way, there are several other kzalloc(PAGE_SIZE) call sites in
+this driver; are they also making assumptions about alignment?
 
-> This patch implements traditional way of !QE case handling.
-> Alternative version is coming (w/o ifdefs in the board files).
-> 
-> p.s. I don't know if it is 2.6.28 material...
-> 
->  arch/powerpc/platforms/83xx/mpc832x_rdb.c |    3 ++-
->  arch/powerpc/platforms/83xx/mpc836x_rdk.c |    6 ++++--
->  2 files changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-> index 0300268..7e20e91 100644
-> --- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-> +++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-> @@ -38,6 +38,7 @@
->  #define DBG(fmt...)
->  #endif
->  
-> +#ifdef CONFIG_QUICC_ENGINE
->  static void mpc83xx_spi_activate_cs(u8 cs, u8 polarity)
->  {
->  	pr_debug("%s %d %d\n", __func__, cs, polarity);
-> @@ -77,8 +78,8 @@ static int __init mpc832x_spi_init(void)
->  			    mpc83xx_spi_activate_cs,
->  			    mpc83xx_spi_deactivate_cs);
->  }
-> -
->  machine_device_initcall(mpc832x_rdb, mpc832x_spi_init);
-> +#endif /* CONFIG_QUICC_ENGINE */
->  
->  /* ************************************************************************
->   *
-> diff --git a/arch/powerpc/platforms/83xx/mpc836x_rdk.c b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-> index a5273bb..b0090aa 100644
-> --- a/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-> +++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-> @@ -51,8 +51,9 @@ static void __init mpc836x_rdk_setup_arch(void)
->  	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
->  		mpc83xx_add_bridge(np);
->  #endif
-> -
-> +#ifdef CONFIG_QUICC_ENGINE
->  	qe_reset();
-> +#endif
->  }
->  
->  static void __init mpc836x_rdk_init_IRQ(void)
-> @@ -71,13 +72,14 @@ static void __init mpc836x_rdk_init_IRQ(void)
->  	 */
->  	ipic_set_default_priority();
->  	of_node_put(np);
-> -
-> +#ifdef CONFIG_QUICC_ENGINE
->  	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
->  	if (!np)
->  		return;
->  
->  	qe_ic_init(np, 0, qe_ic_cascade_low_ipic, qe_ic_cascade_high_ipic);
->  	of_node_put(np);
-> +#endif
->  }
->  
->  /*
-> -- 
-> 1.5.6.5
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
+diff --git a/drivers/net/ehea/ehea_qmr.c b/drivers/net/ehea/ehea_qmr.c
+index 9d00687..b7b0937 100644
+--- a/drivers/net/ehea/ehea_qmr.c
++++ b/drivers/net/ehea/ehea_qmr.c
+@@ -893,7 +893,7 @@ int ehea_reg_kernel_mr(struct ehea_adapter *adapter, struct ehea_mr *mr)
+ 
+ 	unsigned long top;
+ 
+-	pt = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	pt = (void *)get_zeroed_page(GFP_KERNEL);
+ 	if (!pt) {
+ 		ehea_error("no mem");
+ 		ret = -ENOMEM;
+@@ -937,7 +937,7 @@ int ehea_reg_kernel_mr(struct ehea_adapter *adapter, struct ehea_mr *mr)
+ 	mr->adapter = adapter;
+ 	ret = 0;
+ out:
+-	kfree(pt);
++	free_page((unsigned long)pt);
+ 	return ret;
+ }
+ 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.5
