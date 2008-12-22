@@ -1,18 +1,22 @@
-Return-Path: <peko@macbook.be.48ers.dk>
-Received: from mx-out.mail001.coreserver.be (mx-out.mail001.coreserver.be
-	[83.143.245.21]) by ozlabs.org (Postfix) with ESMTP id EC6EFDDDE3
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7E266DDDFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Dec 2008 20:29:36 +1100 (EST)
-To: onramp123@yahoo.com
-Subject: Re: mpc8xxx_gpio.c on mpc8349e-mitx
-References: <02dd01c962c9$fc4d1b30$6b03a8c0@sdelaney2>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 22 Dec 2008 10:02:33 +0100
-In-Reply-To: <02dd01c962c9$fc4d1b30$6b03a8c0@sdelaney2> (Steve DeLaney's
-	message of "Sat\, 20 Dec 2008 09\:40\:01 -0800")
-Message-ID: <87d4fkbn12.fsf@macbook.be.48ers.dk>
+	Tue, 23 Dec 2008 04:37:53 +1100 (EST)
+Message-ID: <494FD050.7020405@freescale.com>
+Date: Mon, 22 Dec 2008 11:37:20 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Daniel Ng <daniel_ng11@lycos.com>
+Subject: Re: Device Tree setup for 8272-based board
+References: <loom.20081219T062005-806@post.gmane.org>	<494BFE2B.2010103@freescale.com>
+	<loom.20081222T064929-412@post.gmane.org>
+In-Reply-To: <loom.20081222T064929-412@post.gmane.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,42 +28,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "Steve" == Steve DeLaney <onramp123@yahoo.com> writes:
+Daniel Ng wrote:
+> Thanks for your helpful responses Scott and Ming Qian. Now, from reading the 
+> docco can you please verify my understanding is correct?- 
+> 
+> First, I need a basic DTS file which will give me a basic Device Tree. The 
+> cuboot*.c file takes care of adding other parameters to the Device Tree passed 
+> from u-boot via the old bd_info struct. 
+> 
+> Is this correct? 
 
-Hi,
+Yes.
 
- Steve> We are currently working on LTIB toolchain, and are upgrading
- Steve> a GPIO driver on MPC8349E-MITX platform.
+> If so, would it be possible to do away with the DTS file 
+> altogether?
 
- Steve> This has taken us to the latest kernel 2.6.27.10
- Steve> we ran across a patch on ozlabs patchwork that looks like it should
- Steve> work for us, and we thank you first of all for the contribution.
+How, other than by encoding all the information about the board in code 
+rather than data, which would be a step backwards?
 
-You're welcome.
+> On the other hand, would it be possible to do away with the 
+> cuboot*.c file by providing a complete DTS file?
 
- Steve> The topic here pertains to how various distros are related
- Steve> Sorry for this basic question but it will help us better understand
- Steve> the best path for our development.
+Yes, though that eliminates the ability to dynamically set certain 
+parameters from the firmware.  Better is to use an up-to-date u-boot, 
+and have u-boot fill in the dynamic fields (MAC address, clocks, command 
+line, etc) directly.
 
- Steve> in ozlabs patchwork Sep 21 08 is what appears to be the original
- Steve> implementation of GPIO support.
- Steve> In the denx git there is arch/powerpc/sysdev/mpc8xxx_gpio.c, so it looks
- Steve> like the ozlabs GPIO support made it into the denx distro.
-
-More importantly, it's included in the mainline kernel.org kernel
-since 2.6.28-rc1
-
- Steve> mpc8xxx_gpio.c is not present in the kernel.org 2.6.27.10 distro. 
- Steve> But is is likely that mpc8xxx_gpio.c will eventually go upstream to
- Steve> kernel.org?
-
-It is. 2.6.28 is scheduled to release any moment now.
-
- Steve> Just also curious what are the primary powerpc contributions,
- Steve> such as denx, freescale, others??
-
-It's basically all over the map. I wrote the gpio driver and I'm not
-involved with any of those.
-
--- 
-Bye, Peter Korsgaard
+-Scott
