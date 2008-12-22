@@ -1,28 +1,19 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 5DA17DDDEA
+Return-Path: <peko@macbook.be.48ers.dk>
+Received: from mx-out.mail001.coreserver.be (mx-out.mail001.coreserver.be
+	[83.143.245.21]) by ozlabs.org (Postfix) with ESMTP id EC6EFDDDE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Dec 2008 17:58:05 +1100 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1LEejk-0006U6-GK
-	for linuxppc-embedded@ozlabs.org; Mon, 22 Dec 2008 06:57:57 +0000
-Received: from CPE-124-190-96-129.vic.bigpond.net.au ([124.190.96.129])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 22 Dec 2008 06:57:56 +0000
-Received: from daniel_ng11 by CPE-124-190-96-129.vic.bigpond.net.au with local
-	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 22 Dec 2008 06:57:56 +0000
-To: linuxppc-embedded@ozlabs.org
-From: Daniel Ng <daniel_ng11@lycos.com>
-Subject: Re: Device Tree setup for 8272-based board
-Date: Mon, 22 Dec 2008 06:57:45 +0000 (UTC)
-Message-ID: <loom.20081222T064929-412@post.gmane.org>
-References: <loom.20081219T062005-806@post.gmane.org>
-	<494BFE2B.2010103@freescale.com>
-Mime-Version: 1.0
+	Mon, 22 Dec 2008 20:29:36 +1100 (EST)
+To: onramp123@yahoo.com
+Subject: Re: mpc8xxx_gpio.c on mpc8349e-mitx
+References: <02dd01c962c9$fc4d1b30$6b03a8c0@sdelaney2>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 22 Dec 2008 10:02:33 +0100
+In-Reply-To: <02dd01c962c9$fc4d1b30$6b03a8c0@sdelaney2> (Steve DeLaney's
+	message of "Sat\, 20 Dec 2008 09\:40\:01 -0800")
+Message-ID: <87d4fkbn12.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -33,24 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood <at> freescale.com> writes:
+>>>>> "Steve" == Steve DeLaney <onramp123@yahoo.com> writes:
 
-> The cuboot file defines things like TARGET_CPM2 or TARGET_824x, which 
-> influences the compilation of the bd_t struct.  It's messy, which is why 
-> we use device trees now. 
-> 
+Hi,
 
+ Steve> We are currently working on LTIB toolchain, and are upgrading
+ Steve> a GPIO driver on MPC8349E-MITX platform.
 
-Thanks for your helpful responses Scott and Ming Qian. Now, from reading the 
-docco can you please verify my understanding is correct?- 
+ Steve> This has taken us to the latest kernel 2.6.27.10
+ Steve> we ran across a patch on ozlabs patchwork that looks like it should
+ Steve> work for us, and we thank you first of all for the contribution.
 
-First, I need a basic DTS file which will give me a basic Device Tree. The 
-cuboot*.c file takes care of adding other parameters to the Device Tree passed 
-from u-boot via the old bd_info struct. 
+You're welcome.
 
-Is this correct? If so, would it be possible to do away with the DTS file 
-altogether? On the other hand, would it be possible to do away with the 
-cuboot*.c file by providing a complete DTS file?
+ Steve> The topic here pertains to how various distros are related
+ Steve> Sorry for this basic question but it will help us better understand
+ Steve> the best path for our development.
 
-Cheers,
-Daniel
+ Steve> in ozlabs patchwork Sep 21 08 is what appears to be the original
+ Steve> implementation of GPIO support.
+ Steve> In the denx git there is arch/powerpc/sysdev/mpc8xxx_gpio.c, so it looks
+ Steve> like the ozlabs GPIO support made it into the denx distro.
+
+More importantly, it's included in the mainline kernel.org kernel
+since 2.6.28-rc1
+
+ Steve> mpc8xxx_gpio.c is not present in the kernel.org 2.6.27.10 distro. 
+ Steve> But is is likely that mpc8xxx_gpio.c will eventually go upstream to
+ Steve> kernel.org?
+
+It is. 2.6.28 is scheduled to release any moment now.
+
+ Steve> Just also curious what are the primary powerpc contributions,
+ Steve> such as denx, freescale, others??
+
+It's basically all over the map. I wrote the gpio driver and I'm not
+involved with any of those.
+
+-- 
+Bye, Peter Korsgaard
