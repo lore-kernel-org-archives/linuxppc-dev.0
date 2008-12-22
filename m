@@ -1,23 +1,21 @@
-Return-Path: <dwm@austin.ibm.com>
-Received: from jerryjeff (unknown [24.173.215.189])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "jerryjeff.enoyolf.org",
-	Issuer "CA Cert Signing Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4D233DDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 06:46:36 +1100 (EST)
-In-reply-to: <20081222184211.GV6958@localdomain>
-References: <20081222184211.GV6958@localdomain>
-From: Doug Maxey <dwm@austin.ibm.com>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH] ehea: use get_zeroed_page for alignment-sensitive
-	allocation
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id CB30DDDE19
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 10:05:08 +1100 (EST)
+Date: Tue, 23 Dec 2008 10:04:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: testing (Was: Re: linux-next: scsi-post-merge tree build failure)
+Message-Id: <20081223100456.bb556b19.sfr@canb.auug.org.au>
+In-Reply-To: <1229979392.4360.15.camel@pasglop>
+References: <20081223012545.5b1e7f5e.sfr@canb.auug.org.au>
+	<1229979392.4360.15.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Mon, 22 Dec 2008 13:14:48 -0600
-Message-ID: <18883.1229973288@jerryjeff>
-Cc: hannes.hering@linux.vnet.ibm.com, netdev@vger.kernel.org,
-	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	raisch@de.ibm.com, ossthema@de.ibm.com, osstklei@de.ibm.com
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__23_Dec_2008_10_04_56_+1100_alZ25LbOBXWMwSbX"
+Cc: Blanchard <hollisb@us.ibm.com>, Hollis, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,62 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Tue__23_Dec_2008_10_04_56_+1100_alZ25LbOBXWMwSbX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 22 Dec 2008 12:42:11 CST, Nathan Lynch wrote:
-> With slub debug enabled, I see the following errors and crash with
-> 2.6.28-rc9:
-> 
-> IBM eHEA ethernet device driver (Release EHEA_0095)
-> ehea: Error in ehea_h_register_rpage_mr: not on pageboundary
-> ehea: Error in ehea_reg_mr_section: register_rpage_mr failed
-> ehea: Error in ehea_reg_kernel_mr: registering mr failed
-> ehea: Error in ehea_setup_ports: creating MR failed
-> ehea 23c00100.lhea: setup_ports failed
-> Unable to handle kernel paging request for data at address 0x6b6b6b6b6b6bbdcb
-> Faulting instruction address: 0xd000000000064a24
-> cpu 0x0: Vector: 300 (Data Access) at [c0000000740e7190]
->     pc: d000000000064a24: .ehea_update_firmware_handles+0x84/0x47c [ehea]
->     lr: d00000000006df34: .ehea_probe_adapter+0x35c/0x39c [ehea]
->     sp: c0000000740e7410
->    msr: 8000000000009032
->    dar: 6b6b6b6b6b6bbdcb
->  dsisr: 40000000
->   current = 0xc000000074233780
->   paca    = 0xc0000000008a3300
->     pid   = 2046, comm = modprobe
-> enter ? for help
-> [c0000000740e74f0] d00000000006df34 .ehea_probe_adapter+0x35c/0x39c [ehea]
-> [c0000000740e75a0] c00000000041d5a4 .of_platform_device_probe+0x78/0xb0
-> [c0000000740e7630] c0000000002d8b38 .driver_probe_device+0x13c/0x200
-> [c0000000740e76c0] c0000000002d8c90 .__driver_attach+0x94/0xd8
-> [c0000000740e7750] c0000000002d7d64 .bus_for_each_dev+0x80/0xd8
-> [c0000000740e7800] c0000000002d889c .driver_attach+0x28/0x40
-> [c0000000740e7880] c0000000002d8340 .bus_add_driver+0xd4/0x284
-> [c0000000740e7920] c0000000002d90a0 .driver_register+0xc4/0x198
-> [c0000000740e79d0] c00000000041d45c .of_register_driver+0x4c/0x60
-> [c0000000740e7a50] c000000000020ef8 .ibmebus_register_driver+0x30/0x4c
-> [c0000000740e7ae0] d00000000006e108 .ehea_module_init+0x194/0x208c [ehea]
-> [c0000000740e7b90] c000000000009028 .do_one_initcall+0x90/0x1ac
-> [c0000000740e7d90] c00000000008619c .sys_init_module+0xc4/0x200
-> [c0000000740e7e30] c0000000000084ac syscall_exit+0x0/0x40
-> 
-> (When slub debug is disabled it works fine.)
-> 
-> PAGE_SIZE allocations via slab are not guaranteed to be page-aligned;
-> use get_zeroed_page for the 'pt' buffer (I don't really know what this
-> is, only that it is passed to firmware and that the first error
-> message complains about its alignment).  This allows the system to
-> boot.
-> 
-> Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> ---
->  drivers/net/ehea/ehea_qmr.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> By the way, there are several other kzalloc(PAGE_SIZE) call sites in
-> this driver; are they also making assumptions about alignment?
+Hi Ben,
 
-meh. I would say yes, pretty much everything is expecting a page alignment 
-(4K at least).  
+On Tue, 23 Dec 2008 07:56:32 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> On Tue, 2008-12-23 at 01:25 +1100, Stephen Rothwell wrote:
+> > Hi Paul, Ben,
+> >=20
+> > Today's linux-next build (powerpc ppc44x_config) failed like this:
+> >=20
+> > arch/powerpc/kvm/powerpc.c: In function 'kvm_arch_vcpu_put':
+> > arch/powerpc/kvm/powerpc.c:333: error: implicit declaration of function=
+ '_tlbil_all'
+> >=20
+> > Probably caused by commit 2a4aca1144394653269720ffbb5a325a77abd5fa
+> > ("powerpc/mm: Split low level tlb invalidate for nohash processors").
+> > Reverting just that commit was too difficult, so I have reverted the
+> > powerpc tree for today.
+>=20
+> You can't revert that without reverting my whole series.
 
-++doug
+I know that ... I tried.
+
+> Adding a #include ../mm/mmu_decl.h to the kvm code should fix it for
+> now.
+>=20
+> I need to talk to hollis about the right way to do that stuff in
+> the long run but it might be it... those _tlbil things are low level
+> stuff that aren't supposed to be used by the outside world which is
+> why I moved the declarations there, but KVM is also low level :-)
+
+So, why is this series in powerpc/next at all if some of the modified
+files haven't even been compiled?  A simple ppc44x_defconfig build of the
+powerpc/next tree fails - which I would have thought would be part of the
+testing since KVM is only implemented for 44x on powerpc.
+
+(Sorry, I am annoyed - it was late when I finally found this build
+failure on top of everything else.)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__23_Dec_2008_10_04_56_+1100_alZ25LbOBXWMwSbX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklQHRgACgkQjjKRsyhoI8wF8wCePvm7BJbBHjR/XFvEbAhSdHeE
+3hYAnA6FQrFtA29+U+/2C3fRefdgxJ2r
+=bM/H
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__23_Dec_2008_10_04_56_+1100_alZ25LbOBXWMwSbX--
