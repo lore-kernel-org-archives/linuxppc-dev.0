@@ -1,21 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 0F286DDDEA
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2008 11:11:13 +1100 (EST)
-Date: Mon, 22 Dec 2008 03:11:07 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/3] powerpc: Make default kexec/crash_kernel ops implicit
-Message-ID: <20081222001107.GA26630@oksana.dev.rtsoft.ru>
-References: <20081216162217.GA3885@oksana.dev.rtsoft.ru>
-	<20081216162305.GB21749@oksana.dev.rtsoft.ru>
-	<1229900922.8269.15.camel@localhost>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id 467D9DDD01
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Dec 2008 11:15:07 +1100 (EST)
+Received: from [192.168.1.37] (66-81-71-174.bayarea.dialup.o1.com
+	[66.81.71.174]) (authenticated bits=0)
+	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id mBM0EmCM020128
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Dec 2008 16:15:00 -0800 (PST)
+Message-ID: <494EDB3F.4090604@hypersurf.com>
+Date: Sun, 21 Dec 2008 16:11:43 -0800
+From: Kevin Diggs <kevdig@hypersurf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <1229900922.8269.15.camel@localhost>
-Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+To: linuxppc-dev@ozlabs.org
+Subject: schizophrenic G5 ...
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,53 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 22, 2008 at 10:08:42AM +1100, Michael Ellerman wrote:
-> On Tue, 2008-12-16 at 19:23 +0300, Anton Vorontsov wrote:
-> > This patch removes need for each platform to specify default kexec and
-> > crash kernel ops, thus effectively adds a working kexec support for most
-> > boards.
-> > 
-> > Platforms that can't cope with default ops will explode in some weird
-> > way (a hang or reboot is most likely), which means that the board's
-> > kexec support should be fixed or blacklisted via dummy _prepare callback
-> > returning -ENOSYS.
-> 
-> But where is the patch to do this?
+Hi,
 
-The -ENOSYS dummy callback is a last resort thing to do when nobody
-cares or it's impossible to fix the Kexec on some board. We don't
-have any such boards (yet).
+	I have a water cooled dual 2.5 GHz G5 (Powermac7,3). It has YDL 6.0 on 
+it. Using the stock YDL 2.6.23 kernel this machine "appears" to work fine.
 
-> The chance of kexec working on some random machine that's never been
-> tested is pretty slim, every driver needs to be aware its hardware might
-> be in a weird state,
+	After finally getting it to boot under 2.6.27, it will shut itself off 
+if put under any significant load. And it is doing it very quickly. Like 
+within a few seconds of becoming busy. I just discovered it is spitting 
+out messages about "temperature way above maximum" (from therm_pm72.c).
 
-The boards setup isn't always static. The Kexec might work perfectly
-well on a standalone board, but might hang with some weird PCI device
-attached to it (think that it might need some PCI fixup on shutdown).
+	This one has the Panasonic cooling system. I have checked behind the 
+cover and see no evidence of leaks.
 
-I think that a "Kexec tested to work on a particular board" term
-just doesn't exist. It might work, but it might hang with other setup
-on the *same* board.
+	When put under load under the stock YDL kernel, the cpu fans will speed 
+up for about 2 minutes. Then over the next minute or so they will slow 
+down almost to idle. Thereafter a whirring sound can be heard every 15 
+to 30 seconds lasting about 5 seconds. Which I am guessing is the pump? 
+The exhaust air barely gets warm?
 
-But in practice the Kexec work on every 6xx board I have. And I have
-pretty much of Freescale boards (almost all from the 83xx series),
-and I don't think it's practical to add #ifdef CONFIG_KEXEC into the
-every board file...
+	Anyone have any ideas? Could the cooling system NOT be correctly 
+thermally connected to the cpus?
 
-Thus I don't think that disabling Kexec by default is a good idea.
-
-Plus, note that PowerPC port is the only one that disables Kexec
-by default (all other arches permit Kexec by default).
-
-> so enabling it by default is not a good idea IMHO.
-
-Why? A hang or plain/watchdog reboot is OK since kexec is as
-dangerous as trying to boot another kernel using "reboot ->
-u-boot -> new kernel" sequence -- it might not work, the new
-kernel might not boot for some reason.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+kevin
