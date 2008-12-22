@@ -1,19 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 05615DDE08
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 08:03:24 +1100 (EST)
-Subject: Re: schizophrenic G5 ...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Diggs <kevdig@hypersurf.com>
-In-Reply-To: <494EDB3F.4090604@hypersurf.com>
-References: <494EDB3F.4090604@hypersurf.com>
-Content-Type: text/plain
-Date: Tue, 23 Dec 2008 08:03:15 +1100
-Message-Id: <1229979795.4360.18.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Message-Id: <20081222214108.168571344@arndb.de>
+References: <20081222213424.234398861@arndb.de>
+In-Reply-To: <18765.58426.49381.986612@cargo.ozlabs.ibm.com>
+Date: Mon, 22 Dec 2008 22:34:25 +0100
+From: arnd@arndb.de
+To: paulus@samba.org
+Subject: [patch 1/2] powerpc/cell: fix build breakage with CONFIG_SPUFS
+	disabled
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +17,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2008-12-21 at 16:11 -0800, Kevin Diggs wrote:
-> Hi,
-> 
-> 	I have a water cooled dual 2.5 GHz G5 (Powermac7,3). It has YDL 6.0 on 
-> it. Using the stock YDL 2.6.23 kernel this machine "appears" to work fine.
-> 
-> 	After finally getting it to boot under 2.6.27, it will shut itself off 
-> if put under any significant load. And it is doing it very quickly. Like 
-> within a few seconds of becoming busy. I just discovered it is spitting 
-> out messages about "temperature way above maximum" (from therm_pm72.c).
-> 
-> 	This one has the Panasonic cooling system. I have checked behind the 
-> cover and see no evidence of leaks.
-> 
-> 	When put under load under the stock YDL kernel, the cpu fans will speed 
-> up for about 2 minutes. Then over the next minute or so they will slow 
-> down almost to idle. Thereafter a whirring sound can be heard every 15 
-> to 30 seconds lasting about 5 seconds. Which I am guessing is the pump? 
-> The exhaust air barely gets warm?
-> 
-> 	Anyone have any ideas? Could the cooling system NOT be correctly 
-> thermally connected to the cpus?
+CBE_THERM and OPROFILE_CELL both cannot be built without
+SPU_FS disabled, so make the dependency explicit.
 
-I have approx. the same here taking dust under the desk, I'll give it a
-spin but i might have to wait a couple of days...
+Reported-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/powerpc/platforms/cell/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-If mine works, then we'll have to run some more intensive debugging to
-see what's going on.
+diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+index c14d7d8..617f845 100644
+--- a/arch/powerpc/platforms/cell/Kconfig
++++ b/arch/powerpc/platforms/cell/Kconfig
+@@ -102,7 +102,7 @@ config PPC_IBM_CELL_POWERBUTTON
+ config CBE_THERM
+ 	tristate "CBE thermal support"
+ 	default m
+-	depends on CBE_RAS
++	depends on CBE_RAS && SPU_BASE
+ 
+ config CBE_CPUFREQ
+ 	tristate "CBE frequency scaling"
+@@ -136,5 +136,5 @@ endmenu
+ 
+ config OPROFILE_CELL
+ 	def_bool y
+-	depends on PPC_CELL_NATIVE && (OPROFILE = m || OPROFILE = y)
++	depends on PPC_CELL_NATIVE && (OPROFILE = m || OPROFILE = y) && SPU_BASE
+ 
+-- 
+1.5.6.3
 
-Cheers,
-Ben.
+-- 
