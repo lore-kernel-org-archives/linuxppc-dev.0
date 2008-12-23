@@ -1,22 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
+	[216.10.194.28])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 821EBDDDF0
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 11:19:51 +1100 (EST)
-Subject: Re: testing (Was: Re: linux-next: scsi-post-merge tree build failure)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20081223100456.bb556b19.sfr@canb.auug.org.au>
-References: <20081223012545.5b1e7f5e.sfr@canb.auug.org.au>
-	<1229979392.4360.15.camel@pasglop>
-	<20081223100456.bb556b19.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Tue, 23 Dec 2008 11:19:35 +1100
-Message-Id: <1229991575.4360.31.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Hollis Blanchard <hollisb@us.ibm.com>
+	(Client CN "extu-mxob-1.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 95789DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 11:49:08 +1100 (EST)
+Date: Tue, 23 Dec 2008 00:35:12 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+To: Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH] mm/shmem.c: fix division by zero
+In-Reply-To: <200812190844.57996.yur@emcraft.com>
+Message-ID: <Pine.LNX.4.64.0812230016510.13610@blonde.anvils>
+References: <200812190844.57996.yur@emcraft.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: wd@denx.de, dzu@denx.de, linux-kernel@vger.kernel.org, miltonm@bga.com,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	viro@zeniv.linux.org.uk, Geert.Uytterhoeven@sonycom.com,
+	yanok@emcraft.com, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-12-23 at 10:04 +1100, Stephen Rothwell wrote:
-> So, why is this series in powerpc/next at all if some of the modified
-> files haven't even been compiled?  
-
-Because nobody spotted the problem while the series was out for review ?
-
-> A simple ppc44x_defconfig build of the
-> powerpc/next tree fails - which I would have thought would be part of the
-> testing since KVM is only implemented for 44x on powerpc.
+On Fri, 19 Dec 2008, Yuri Tikhonov wrote:
 > 
-> (Sorry, I am annoyed - it was late when I finally found this build
-> failure on top of everything else.)
+> The following patch fixes division by zero, which we have in
+> shmem_truncate_range() and shmem_unuse_inode(), if use big
+> PAGE_SIZE values (e.g. 256KB on ppc44x).
+> 
+> With 256KB PAGE_SIZE the ENTRIES_PER_PAGEPAGE constant becomes
+> too large (0x1.0000.0000), so this patch just changes the types
+> from 'ulong' to 'ullong' where it's necessary.
+> 
+> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 
-I have about 3 44x configs in my build tests. KVM happens not to be
-enabled in any of them :-( I'll add this ppc4xx_defconfig to the lot, I
-didn't know it existed in fact.
+Sorry for the slow reply, but I'm afraid I don't like spattering
+around an increasing number of unsigned long longs to fix that division
+by zero on an unusual configuration: I doubt that's the right solution.
 
-Cheers,
-Ben.
+It's ridiculous for shmem.c to be trying to support a wider address
+range than the page cache itself can support, and it's wasteful for
+it to be using 256KB pages for its index blocks (not to mention its
+data blocks! but we'll agree to differ on that).
+
+Maybe it should be doing a kmalloc(4096) instead of using alloc_pages();
+though admittedly that's not a straightforward change, since we do make
+use of highmem and page->private.  Maybe I should use this as stimulus
+to switch shmem over to storing its swap entries in the pagecache radix
+tree.  Maybe we should simply disable its use of swap in such an
+extreme configuration.
+
+But I need to understand more about your ppc44x target to make
+the right decision.  What's very strange to me is this: since
+unsigned long long is the same size as unsigned long on 64-bit,
+this change appears to be for a 32-bit machine with 256KB pages.
+I wonder what market segment that is targeted at?
+
+Hugh
