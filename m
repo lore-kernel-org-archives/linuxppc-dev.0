@@ -1,24 +1,21 @@
-Return-Path: <hugh@veritas.com>
-Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
-	[216.10.194.28])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-1.symantec.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95789DDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 11:49:08 +1100 (EST)
-Date: Tue, 23 Dec 2008 00:35:12 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-To: Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH] mm/shmem.c: fix division by zero
-In-Reply-To: <200812190844.57996.yur@emcraft.com>
-Message-ID: <Pine.LNX.4.64.0812230016510.13610@blonde.anvils>
-References: <200812190844.57996.yur@emcraft.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id BC905DDE23
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 12:52:51 +1100 (EST)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Mon, 22 Dec 2008 20:52:36 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: testing (Was: Re: linux-next: scsi-post-merge tree build failure)
+Message-ID: <20081223015236.GA7137@zod.rchland.ibm.com>
+References: <20081223012545.5b1e7f5e.sfr@canb.auug.org.au>
+	<1229979392.4360.15.camel@pasglop>
+	<20081223100456.bb556b19.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: wd@denx.de, dzu@denx.de, linux-kernel@vger.kernel.org, miltonm@bga.com,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	viro@zeniv.linux.org.uk, Geert.Uytterhoeven@sonycom.com,
-	yanok@emcraft.com, akpm@linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081223100456.bb556b19.sfr@canb.auug.org.au>
+Cc: Blanchard <hollisb@us.ibm.com>, Hollis@ozlabs.org, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,38 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 19 Dec 2008, Yuri Tikhonov wrote:
-> 
-> The following patch fixes division by zero, which we have in
-> shmem_truncate_range() and shmem_unuse_inode(), if use big
-> PAGE_SIZE values (e.g. 256KB on ppc44x).
-> 
-> With 256KB PAGE_SIZE the ENTRIES_PER_PAGEPAGE constant becomes
-> too large (0x1.0000.0000), so this patch just changes the types
-> from 'ulong' to 'ullong' where it's necessary.
-> 
-> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+On Tue, Dec 23, 2008 at 10:04:56AM +1100, Stephen Rothwell wrote:
+>Hi Ben,
+>
+>On Tue, 23 Dec 2008 07:56:32 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>>
+>> On Tue, 2008-12-23 at 01:25 +1100, Stephen Rothwell wrote:
+>> > Hi Paul, Ben,
+>> > 
+>> > Today's linux-next build (powerpc ppc44x_config) failed like this:
+>> > 
+>> > arch/powerpc/kvm/powerpc.c: In function 'kvm_arch_vcpu_put':
+>> > arch/powerpc/kvm/powerpc.c:333: error: implicit declaration of function '_tlbil_all'
+>> > 
+>> > Probably caused by commit 2a4aca1144394653269720ffbb5a325a77abd5fa
+>> > ("powerpc/mm: Split low level tlb invalidate for nohash processors").
+>> > Reverting just that commit was too difficult, so I have reverted the
+>> > powerpc tree for today.
+>> 
+>> You can't revert that without reverting my whole series.
+>
+>I know that ... I tried.
+>
+>> Adding a #include ../mm/mmu_decl.h to the kvm code should fix it for
+>> now.
+>> 
+>> I need to talk to hollis about the right way to do that stuff in
+>> the long run but it might be it... those _tlbil things are low level
+>> stuff that aren't supposed to be used by the outside world which is
+>> why I moved the declarations there, but KVM is also low level :-)
+>
+>So, why is this series in powerpc/next at all if some of the modified
+>files haven't even been compiled?  A simple ppc44x_defconfig build of the
+>powerpc/next tree fails - which I would have thought would be part of the
+>testing since KVM is only implemented for 44x on powerpc.
 
-Sorry for the slow reply, but I'm afraid I don't like spattering
-around an increasing number of unsigned long longs to fix that division
-by zero on an unusual configuration: I doubt that's the right solution.
+Well, they were, and then they weren't.  I tested this series starting
+with the ppc44x_defconfig.  However, I was incrementally compiling them
+and I also had the 16/64K pages patch applied and 64K enabled.  That
+resulted in a kernel that was too big for the wrapper, so I went in
+and turned some stuff off to make the kernel smaller.  That included
+the KVM stuff.  By the time I was done building and testing the whole
+series, it had remained disabled.
 
-It's ridiculous for shmem.c to be trying to support a wider address
-range than the page cache itself can support, and it's wasteful for
-it to be using 256KB pages for its index blocks (not to mention its
-data blocks! but we'll agree to differ on that).
+That might sound like a cop-out, but it's what happend.  I should have
+done a simple build after I was done.  Sorry Stephen.
 
-Maybe it should be doing a kmalloc(4096) instead of using alloc_pages();
-though admittedly that's not a straightforward change, since we do make
-use of highmem and page->private.  Maybe I should use this as stimulus
-to switch shmem over to storing its swap entries in the pagecache radix
-tree.  Maybe we should simply disable its use of swap in such an
-extreme configuration.
-
-But I need to understand more about your ppc44x target to make
-the right decision.  What's very strange to me is this: since
-unsigned long long is the same size as unsigned long on 64-bit,
-this change appears to be for a 32-bit machine with 256KB pages.
-I wonder what market segment that is targeted at?
-
-Hugh
+josh
