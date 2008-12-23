@@ -1,22 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 315B3DDDEA
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id 4B2FEDDD1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Dec 2008 09:52:22 +1100 (EST)
-Message-ID: <49501A14.7000201@freescale.com>
-Date: Mon, 22 Dec 2008 16:52:04 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Joe Shmo <spamreceptor@yahoo.com>
-Subject: Re: uboot 1.3.0 compatible with linux 2.6.21?
-References: <193482.90130.qm@web30103.mail.mud.yahoo.com>
-In-Reply-To: <193482.90130.qm@web30103.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 23 Dec 2008 11:52:15 +1100 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1LEvVI-0001eN-FS
+	for linuxppc-embedded@ozlabs.org; Tue, 23 Dec 2008 00:52:08 +0000
+Received: from CPE-124-190-96-129.vic.bigpond.net.au ([124.190.96.129])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 23 Dec 2008 00:52:08 +0000
+Received: from daniel_ng11 by CPE-124-190-96-129.vic.bigpond.net.au with local
+	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 23 Dec 2008 00:52:08 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Daniel Ng <daniel_ng11@lycos.com>
+Subject: Re: Device Tree setup for 8272-based board
+Date: Tue, 23 Dec 2008 00:52:01 +0000 (UTC)
+Message-ID: <loom.20081223T003725-939@post.gmane.org>
+References: <loom.20081219T062005-806@post.gmane.org>
+	<494BFE2B.2010103@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,23 +33,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Joe Shmo wrote:
-> I'm using a board that is a derivative of the 8313ERDB
-> board.  The freescale BSP for that board included a
-> patched uboot 1.1.6 that works with the 2.6.21 kernel.
-[snip]
-> I've changed the DTS file describing our hardware and
-> recompiled it, but no luck.  I'm wondering if the
-> different versions of uboot manipulate the DTS file in
-> different ways and there may not be a way for these
-> two versions to run together.  That's the main
-> question here.
+Scott Wood <scottwood <at> freescale.com> writes:
+> cuboot-824x is for 8240, 8245, and similar chips.  You want cuboot-pq2.
 
-Yes, there have been some changes.  U-boot is probably looking for 
-network aliases to fill in the MAC addresses.
+Hi Scott et al,
 
-At the very least, use a newer DTS file; better yet, use the latest 
-upstream u-boot and kernel rather than anything from the BSP (unless 
-there's something you really need that isn't upstream).
+I seem to get further with the cuboot-824x file- with the cuboot-pq2 file the 
+boot sequence doesn't even reach the 'zImage starting' stage. The machine 
+reboots just before it should be printing out 'zImage starting'. 
 
--Scott
+Is there a way I can get more detailed debug to see what's happening?
+
+Do settings from bd_info struct override the settings from the DTS file?
+
+Also, a lot of the settings passed from u-boot in our 2.6.14 environment are 
+plain wrong eg. wrong memory, wrong processor speed. In this case, the correct 
+settings are set elsewhere (for memory, it is a kernel parameter ie. mem=32M, 
+and the processor speed is set in the 2.6.14 'make menuconfig'). Therefore, 
+the machine still boots into Linux correctly. For 2.6.27, would these 
+incorrect settings be causing my problems?
+
+Daniel
