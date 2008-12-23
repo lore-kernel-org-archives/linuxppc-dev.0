@@ -1,21 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CB30DDDE19
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 10:05:08 +1100 (EST)
-Date: Tue, 23 Dec 2008 10:04:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: testing (Was: Re: linux-next: scsi-post-merge tree build failure)
-Message-Id: <20081223100456.bb556b19.sfr@canb.auug.org.au>
-In-Reply-To: <1229979392.4360.15.camel@pasglop>
-References: <20081223012545.5b1e7f5e.sfr@canb.auug.org.au>
-	<1229979392.4360.15.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/3] powerpc: Make default kexec/crash_kernel ops implicit
+From: Michael Ellerman <michael@ellerman.id.au>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20081222001107.GA26630@oksana.dev.rtsoft.ru>
+References: <20081216162217.GA3885@oksana.dev.rtsoft.ru>
+	<20081216162305.GB21749@oksana.dev.rtsoft.ru>
+	<1229900922.8269.15.camel@localhost>
+	<20081222001107.GA26630@oksana.dev.rtsoft.ru>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-jyCcD/18Qoml7NEZ587A"
+Date: Tue, 23 Dec 2008 11:15:21 +1100
+Message-Id: <1229991321.9502.9.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__23_Dec_2008_10_04_56_+1100_alZ25LbOBXWMwSbX"
-Cc: Blanchard <hollisb@us.ibm.com>, Hollis, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,64 +25,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__23_Dec_2008_10_04_56_+1100_alZ25LbOBXWMwSbX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-jyCcD/18Qoml7NEZ587A
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi Ben,
-
-On Tue, 23 Dec 2008 07:56:32 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> On Tue, 2008-12-23 at 01:25 +1100, Stephen Rothwell wrote:
-> > Hi Paul, Ben,
+On Mon, 2008-12-22 at 03:11 +0300, Anton Vorontsov wrote:
+> On Mon, Dec 22, 2008 at 10:08:42AM +1100, Michael Ellerman wrote:
+> > On Tue, 2008-12-16 at 19:23 +0300, Anton Vorontsov wrote:
+> > > This patch removes need for each platform to specify default kexec an=
+d
+> > > crash kernel ops, thus effectively adds a working kexec support for m=
+ost
+> > > boards.
+> > >=20
+> > > Platforms that can't cope with default ops will explode in some weird
+> > > way (a hang or reboot is most likely), which means that the board's
+> > > kexec support should be fixed or blacklisted via dummy _prepare callb=
+ack
+> > > returning -ENOSYS.
 > >=20
-> > Today's linux-next build (powerpc ppc44x_config) failed like this:
-> >=20
-> > arch/powerpc/kvm/powerpc.c: In function 'kvm_arch_vcpu_put':
-> > arch/powerpc/kvm/powerpc.c:333: error: implicit declaration of function=
- '_tlbil_all'
-> >=20
-> > Probably caused by commit 2a4aca1144394653269720ffbb5a325a77abd5fa
-> > ("powerpc/mm: Split low level tlb invalidate for nohash processors").
-> > Reverting just that commit was too difficult, so I have reverted the
-> > powerpc tree for today.
+> > But where is the patch to do this?
 >=20
-> You can't revert that without reverting my whole series.
+> The -ENOSYS dummy callback is a last resort thing to do when nobody
+> cares or it's impossible to fix the Kexec on some board. We don't
+> have any such boards (yet).
 
-I know that ... I tried.
+Yes we do, iseries, so at the very least we need a patch for that.
 
-> Adding a #include ../mm/mmu_decl.h to the kvm code should fix it for
-> now.
+> > The chance of kexec working on some random machine that's never been
+> > tested is pretty slim, every driver needs to be aware its hardware migh=
+t
+> > be in a weird state,
 >=20
-> I need to talk to hollis about the right way to do that stuff in
-> the long run but it might be it... those _tlbil things are low level
-> stuff that aren't supposed to be used by the outside world which is
-> why I moved the declarations there, but KVM is also low level :-)
+> The boards setup isn't always static. The Kexec might work perfectly
+> well on a standalone board, but might hang with some weird PCI device
+> attached to it (think that it might need some PCI fixup on shutdown).
+>=20
+> I think that a "Kexec tested to work on a particular board" term
+> just doesn't exist. It might work, but it might hang with other setup
+> on the *same* board.
 
-So, why is this series in powerpc/next at all if some of the modified
-files haven't even been compiled?  A simple ppc44x_defconfig build of the
-powerpc/next tree fails - which I would have thought would be part of the
-testing since KVM is only implemented for 44x on powerpc.
+Sure, nothing is 100%, I'd just rather that someone has at least tried a
+kexec on the basic config and had it work.
 
-(Sorry, I am annoyed - it was late when I finally found this build
-failure on top of everything else.)
+> But in practice the Kexec work on every 6xx board I have. And I have
+> pretty much of Freescale boards (almost all from the 83xx series),
+> and I don't think it's practical to add #ifdef CONFIG_KEXEC into the
+> every board file...
+
+OK in that case I'm OK with it. The Kconfig restricts it to only PPC64
+or 6xx, so it's not enabled on _every_ platform.
+
+cheers
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
---Signature=_Tue__23_Dec_2008_10_04_56_+1100_alZ25LbOBXWMwSbX
-Content-Type: application/pgp-signature
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-jyCcD/18Qoml7NEZ587A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAklQHRgACgkQjjKRsyhoI8wF8wCePvm7BJbBHjR/XFvEbAhSdHeE
-3hYAnA6FQrFtA29+U+/2C3fRefdgxJ2r
-=bM/H
+iEYEABECAAYFAklQLZkACgkQdSjSd0sB4dIa6wCeIZdV/1b+XxSKz+u3N27hw51h
+hZcAnipMJXJUYNX2/J0uVlq3z/cUnWW7
+=TOFi
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__23_Dec_2008_10_04_56_+1100_alZ25LbOBXWMwSbX--
+--=-jyCcD/18Qoml7NEZ587A--
