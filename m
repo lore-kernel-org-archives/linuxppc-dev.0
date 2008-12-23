@@ -1,17 +1,15 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 0FD8DDDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2008 05:50:57 +1100 (EST)
-Date: Tue, 23 Dec 2008 12:50:51 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/iseries: Kexec is known not to work on iseries
-Message-ID: <20081223185051.GX6958@localdomain>
-References: <102d4cdd8493017c104fda0dccc513bce056430c.1230024187.git.michael@ellerman.id.au>
+Return-Path: <scottwood@freescale.com>
+Message-ID: <495135A3.9090709@freescale.com>
+Date: Tue, 23 Dec 2008 13:01:55 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <102d4cdd8493017c104fda0dccc513bce056430c.1230024187.git.michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
+To: jeff angielski <jeff@theptrgroup.com>
+Subject: Re: cpm2-scc-uart on mpc8265 not working
+References: <1229977289.19292.16.camel@penguin>	 <49500029.90809@freescale.com>
+	<1230057813.11655.27.camel@penguin>
+In-Reply-To: <1230057813.11655.27.camel@penguin>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,38 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+jeff angielski wrote:
+> I fixed up the DPRAM regions.  
+> 
+> I also fixed up the muram region which had not been updated for the
+> mpc8265 - it still had the old mpc8272 definitions.
+> 
+> The kernel does not hang anymore but I still don't see anything on the
+> serial port.  Using an o'scope I can see data on the line, it is just
+> that bit period is about 560uS - way to slow.
 
-Michael Ellerman wrote:
-> The non-zero return from the prepare callback is returned by sys_kexec_load()
-> to userspace, indicating that kexec is not supported on the machine.
+U-boot needs to fill in the clock-frequency property in the brg node.
 
-...
+> 				data@0 {
+> 					/*
+> 					reg = <0x0 0x2000 0x9800 0x800>;
+> 					*/
+> 					compatible = "fsl,cpm-muram-data";
+> 					reg = <0x0 0x6000 0x8000 0x1000 0xb000 0x1000>;
 
-> @@ -638,6 +639,13 @@ static int __init iseries_probe(void)
->  	return 1;
->  }
->  
-> +#ifdef CONFIG_KEXEC
-> +static int iseries_kexec_prepare(struct kimage *image)
-> +{
-> +	return -ENOSYS;
-> +}
-> +#endif
-> +
->  define_machine(iseries) {
->  	.name			= "iSeries",
->  	.setup_arch		= iSeries_setup_arch,
-> @@ -658,6 +666,9 @@ define_machine(iseries) {
->  	.probe			= iseries_probe,
->  	.ioremap		= iseries_ioremap,
->  	.iounmap		= iseries_iounmap,
-> +#ifdef CONFIG_KEXEC
-> +	.machine_kexec_prepare	= iseries_kexec_prepare,
-> +#endif
->  	/* XXX Implement enable_pmcs for iSeries */
->  };
+This is not correct -- you should only list the DPRAM regions that are 
+usable for arbitrary data.  This is <0 0x4000>, assuming none of that 
+has been allocated to microcode.
 
-But machine_kexec_prepare() already returns -ENOSYS if the platform
-doesn't have the hook in ppc_md.  I must be missing something; what is
-this patch fixing?
+-Scott
