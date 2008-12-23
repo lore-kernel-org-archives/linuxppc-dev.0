@@ -1,19 +1,17 @@
-Return-Path: <parabelboi@bopserverein.de>
-Received: from mail.bopserverein.de (unknown [80.190.146.56])
-	by ozlabs.org (Postfix) with ESMTP id B73C0DDDE3
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2008 03:29:36 +1100 (EST)
-Received: from localhost (unknown [10.88.0.94])
-	by mail.bopserverein.de (Postfix) with ESMTP id 56D28DC49
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 17:22:30 +0100 (CET)
-Date: Tue, 23 Dec 2008 17:22:45 +0100
-From: Christian Krafft <parabelboi@bopserverein.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: schizophrenic G5 ...
-Message-ID: <20081223172245.792a9e2b@bopserverein.de>
-In-Reply-To: <494EDB3F.4090604@hypersurf.com>
-References: <494EDB3F.4090604@hypersurf.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id AAD69DDE3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Dec 2008 03:59:27 +1100 (EST)
+Date: Tue, 23 Dec 2008 19:59:25 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH] ucc_geth: Eliminate the need for forward references
+Message-ID: <20081223165925.GA19473@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Cc: netdev@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+	linuxppc-dev@ozlabs.org, Andy Fleming <afleming@freescale.com>,
+	Li Yang <leoli@freescale.com>, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +21,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 21 Dec 2008 16:11:43 -0800
-Kevin Diggs <kevdig@hypersurf.com> wrote:
+This patch simply reorders some functions to eliminate the need for
+forward references. No other changes than that.
 
-> Hi,
-> 
-> 	I have a water cooled dual 2.5 GHz G5 (Powermac7,3). It has
-> YDL 6.0 on it. Using the stock YDL 2.6.23 kernel this machine
-> "appears" to work fine.
-> 
-> 	After finally getting it to boot under 2.6.27, it will shut
-> itself off if put under any significant load. And it is doing it very
-> quickly. Like within a few seconds of becoming busy. I just
-> discovered it is spitting out messages about "temperature way above
-> maximum" (from therm_pm72.c).
-> 
+Suggested-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/ucc_geth.c |   81 +++++++++++++++++++++++-------------------------
+ 1 files changed, 39 insertions(+), 42 deletions(-)
 
-I have a very similar problem on my mac at work.
-I don't know atm how to look up the critical temperature that is
-fused. My mac reported only 55 degrees for the one cpu.
-The critical temperature can be read from the device-tree if i remember
-it correctly.
-I heard that there exists a bootable CD which contains a tool to refuse
-the CPU. Dont know where to download it, so my pragmatic solution was to
-relocate the machine to a room with air conditioning ;-)
-And I also run the ONE cpu at lowest frequency.
-
-ck
-
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 6c2d074..764d421 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3072,48 +3072,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	return 0;
+ }
+ 
+-static int ucc_geth_close(struct net_device *dev);
+-static int ucc_geth_open(struct net_device *dev);
+-
+-/* Reopen device. This will reset the MAC and PHY. */
+-static void ucc_geth_timeout_work(struct work_struct *work)
+-{
+-	struct ucc_geth_private *ugeth;
+-	struct net_device *dev;
+-
+-	ugeth = container_of(work, struct ucc_geth_private, timeout_work);
+-	dev = ugeth->dev;
+-
+-	ugeth_vdbg("%s: IN", __func__);
+-
+-	dev->stats.tx_errors++;
+-
+-	ugeth_dump_regs(ugeth);
+-
+-	if (dev->flags & IFF_UP) {
+-		/*
+-		 * Must reset MAC *and* PHY. This is done by reopening
+-		 * the device.
+-		 */
+-		ucc_geth_close(dev);
+-		ucc_geth_open(dev);
+-	}
+-
+-	netif_tx_schedule_all(dev);
+-}
+-
+-/*
+- * ucc_geth_timeout gets called when a packet has not been
+- * transmitted after a set amount of time.
+- */
+-static void ucc_geth_timeout(struct net_device *dev)
+-{
+-	struct ucc_geth_private *ugeth = netdev_priv(dev);
+-
+-	netif_carrier_off(dev);
+-	schedule_work(&ugeth->timeout_work);
+-}
+-
+ /* This is called by the kernel when a frame is ready for transmission. */
+ /* It is pointed to by the dev->hard_start_xmit function pointer */
+ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
+@@ -3526,6 +3484,45 @@ static int ucc_geth_close(struct net_device *dev)
+ 	return 0;
+ }
+ 
++/* Reopen device. This will reset the MAC and PHY. */
++static void ucc_geth_timeout_work(struct work_struct *work)
++{
++	struct ucc_geth_private *ugeth;
++	struct net_device *dev;
++
++	ugeth = container_of(work, struct ucc_geth_private, timeout_work);
++	dev = ugeth->dev;
++
++	ugeth_vdbg("%s: IN", __func__);
++
++	dev->stats.tx_errors++;
++
++	ugeth_dump_regs(ugeth);
++
++	if (dev->flags & IFF_UP) {
++		/*
++		 * Must reset MAC *and* PHY. This is done by reopening
++		 * the device.
++		 */
++		ucc_geth_close(dev);
++		ucc_geth_open(dev);
++	}
++
++	netif_tx_schedule_all(dev);
++}
++
++/*
++ * ucc_geth_timeout gets called when a packet has not been
++ * transmitted after a set amount of time.
++ */
++static void ucc_geth_timeout(struct net_device *dev)
++{
++	struct ucc_geth_private *ugeth = netdev_priv(dev);
++
++	netif_carrier_off(dev);
++	schedule_work(&ugeth->timeout_work);
++}
++
+ static phy_interface_t to_phy_interface(const char *phy_connection_type)
+ {
+ 	if (strcasecmp(phy_connection_type, "mii") == 0)
 -- 
-Hi, I am a signature virus. Please copy me into your ~/.signature to
-help me spread.
+1.5.6.5
