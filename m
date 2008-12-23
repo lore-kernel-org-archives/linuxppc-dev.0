@@ -1,11 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id B027DDDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 19:06:39 +1100 (EST)
+Received: from [192.168.1.37] (66-81-71-74.bayarea.dialup.o1.com [66.81.71.74])
+	(authenticated bits=0)
+	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id mBN86MVS084373
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Dec 2008 00:06:33 -0800 (PST)
+Message-ID: <49509B3E.9000003@hypersurf.com>
+Date: Tue, 23 Dec 2008 00:03:10 -0800
+From: Kevin Diggs <kevdig@hypersurf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <18768.28189.286604.897494@cargo.ozlabs.ibm.com>
-Date: Tue, 23 Dec 2008 15:50:37 +1100
-From: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: Commits added to powerpc.git next and master branches
+Subject: Re: schizophrenic G5 ...
+References: <494EDB3F.4090604@hypersurf.com> <1229979795.4360.18.camel@pasglop>
+In-Reply-To: <1229979795.4360.18.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,56 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Includes commits pulled from Grant Likely's and Arnd Bergmann's trees.
+Benjamin Herrenschmidt wrote:
+> On Sun, 2008-12-21 at 16:11 -0800, Kevin Diggs wrote:
+> 
+>>Hi,
+>>
+>>	I have a water cooled dual 2.5 GHz G5 (Powermac7,3). It has YDL 6.0 on 
+>>it. Using the stock YDL 2.6.23 kernel this machine "appears" to work fine.
+>>
+>>	After finally getting it to boot under 2.6.27, it will shut itself off 
+>>if put under any significant load. And it is doing it very quickly. Like 
+>>within a few seconds of becoming busy. I just discovered it is spitting 
+>>out messages about "temperature way above maximum" (from therm_pm72.c).
+>>
+>>	This one has the Panasonic cooling system. I have checked behind the 
+>>cover and see no evidence of leaks.
+>>
+>>	When put under load under the stock YDL kernel, the cpu fans will speed 
+>>up for about 2 minutes. Then over the next minute or so they will slow 
+>>down almost to idle. Thereafter a whirring sound can be heard every 15 
+>>to 30 seconds lasting about 5 seconds. Which I am guessing is the pump? 
+>>The exhaust air barely gets warm?
+>>
+>>	Anyone have any ideas? Could the cooling system NOT be correctly 
+>>thermally connected to the cpus?
+> 
+I would appreciate it if one of the many people on this list that are 
+way more smarterer than me could tell me something like, "If this were 
+true you would have toasted the cpus already!"
+> 
+> I have approx. the same here taking dust under the desk, I'll give it a
+> spin but i might have to wait a couple of days...
+> 
+> If mine works, then we'll have to run some more intensive debugging to
+> see what's going on.
+> 
+> Cheers,
+> Ben.
+> 
+> 
+Ben,
 
-Anton Vorontsov (5):
-      powerpc: Make default kexec/crash_kernel ops implicit
-      powerpc: Remove default kexec/crash_kernel ops assignments
-      powerpc: Prepare xmon_save_regs for use with kdump
-      powerpc/32/kdump: Implement crash_setup_regs() using ppc_save_reg=
-s()
-      powerpc/32: Allow __ioremap on RAM addresses for kdump kernel
-
-Arnd Bergmann (1):
-      powerpc/cell: fix build breakage with CONFIG_SPUFS disabled
-
-Benjamin Herrenschmidt (1):
-      powerpc: Fix missing 'blr' in _tlbia()
-
-Benjamin Krill (1):
-      powerpc/cell: add QPACE as a separate Cell platform
-
-Dale Farnsworth (4):
-      powerpc: Setup OF properties for ppc32 kexec
-      powerpc/32: Setup OF properties for kdump
-      powerpc/32: Add the ability for a classic ppc kernel to be loaded=
- at 32M
-      powerpc/32: Wire up the trampoline code for kdump
-
-Grant Likely (4):
-      powerpc/mpc5200: Document and tidy irq driver
-      powerpc/mpc5200: Make internal 5200 PIC the default interrupt con=
-troller
-      powerpc/mpc5200: Bugfix on handling variable sized buffer descrip=
-tors
-      powerpc/mpc5200: Disable bestcomm prefetching when ATA DMA enable=
-d
-
-Paul Mackerras (1):
-      powerpc: Fix KVM build on ppc440
-
-Ren=E9 B=FCrgel (1):
-      powerpc/mpc5200: Make PSC UART driver update serial errors counte=
-rs
-
-Sebastien Dugue (1):
-      powerpc/pseries: Fix cpu hotplug
-
-Tim Yamin (2):
-      powerpc/mpc5200: Bestcomm fixes to ATA support
-      powerpc/mpc5200: Add MDMA/UDMA support to MPC5200 ATA driver
-
-Wolfram Sang (3):
-      powerpc/mpc5200: Remove obsolete code from mpc5200 MDIO driver
-      powerpc/mpc5200: add rts/cts handling in PSC UART driver
-      powerpc/mpc5200: fix error paths in PSC UART probe function
+	I would appreciate it. I am now kinda afraid to turn the thing on.
