@@ -1,29 +1,26 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 96DADDDDF6
+Return-Path: <jpl@xiphos.ca>
+Received: from smtp191.iad.emailsrvr.com (smtp191.iad.emailsrvr.com
+	[207.97.245.191])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ABC30DDE0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Dec 2008 10:22:21 +1100 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1LFGZn-0004ZR-0Q
-	for linuxppc-embedded@ozlabs.org; Tue, 23 Dec 2008 23:22:12 +0000
-Received: from CPE-124-190-96-129.vic.bigpond.net.au ([124.190.96.129])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 23 Dec 2008 23:22:11 +0000
-Received: from daniel_ng11 by CPE-124-190-96-129.vic.bigpond.net.au with local
-	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 23 Dec 2008 23:22:11 +0000
+	Thu, 25 Dec 2008 10:13:08 +1100 (EST)
+Received: from relay9.relay.iad.mlsrvr.com (localhost [127.0.0.1])
+	by relay9.relay.iad.mlsrvr.com (SMTP Server) with ESMTP id CE63D1E3105
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 Dec 2008 17:48:01 -0500 (EST)
+Received: from xiphos.com (webmail16.webmail.iad.mlsrvr.com [192.168.1.21])
+	by relay9.relay.iad.mlsrvr.com (SMTP Server) with ESMTP id CB5831E307A
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 Dec 2008 17:48:01 -0500 (EST)
+Date: Wed, 24 Dec 2008 17:48:01 -0500 (EST)
+Subject: virtex uImage and serial ports
+From: "Joshua Lamorie" <jpl@xiphos.ca>
 To: linuxppc-embedded@ozlabs.org
-From: Daniel Ng <daniel_ng11@lycos.com>
-Subject: Re: Device Tree setup for 8272-based board
-Date: Tue, 23 Dec 2008 23:21:57 +0000 (UTC)
-Message-ID: <loom.20081223T232059-383@post.gmane.org>
-References: <loom.20081219T062005-806@post.gmane.org>	<494BFE2B.2010103@freescale.com>
-	<loom.20081223T003725-939@post.gmane.org>
-	<49510D2A.4010906@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=UTF-8
+Message-ID: <1230158881.82162837@192.168.1.35>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -34,10 +31,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood <at> freescale.com> writes:
-> Yes, if u-boot is providing junk, then you'll probably want to hack up 
-> the wrapper to ignore it.  Or just upgrade u-boot to one that works. 
-> 
-
-Thanks for your advice Scott. Looks like upgrading u-boot will be the easiest 
-way forward.
+Gidday there,=0A=0AI am trying to get 2.6.27(ish) running on my custom Virt=
+ex-II Pro platform (I call it Q5).  I already have many years of running 2.=
+4.26 and booting from u-boot.=0A=0AThe problem is getting the console runni=
+ng.  I have a device tree blob built and loaded into memory, and by peeking=
+ at __log_buf I can see that it is reading this okay (i.e. it is correctly =
+finding my interrupt controller).  However, by the time it goes to mount th=
+e ramdisk as root, it complains that there is no console.=0A=0AI'm fairly c=
+ertain /chosen has stdout pointing to the correct UART, and the console arg=
+uments are ttyS0,115200.=0A=0AIn looking through the code however, I cannot=
+ figure out how the uImage code actually initializes the serial-ports for t=
+he XILINX_VIRTEX_GENERIC_BOARD.  As I understand it, the only place where s=
+erial_console_init is called, is within platform_init, and this isn't calle=
+d for uImage.=0A=0ASo, three questions.=0A=0A1) How is the serial driver su=
+pposed to know where the platforms serial ports are?=0A=0A2) If I wanted to=
+ scrap u-boot and just copy kernel/ramdisk/dtb to memory, which kernel make=
+ target should I use?  dtbImage, simpleImage?=0A=0A3) What is the best, mos=
+t modern image to build that should be used by u-boot?=0A=0AThanks in advan=
+ce=0A=0AJoshua=0A=0Ap.s. I've been trying with kernel.org mainline, xilinx =
+git and denx ELDK xenomai (2.6.24).  U-boot is built from latest git source=
+.  DTS file built from XPS 9.1i with latest service packs, and turned into =
+DTB with latest dtc source from git.=0A=0A=0A-- =0AXiphos Technologies=0A(5=
+14) 847-9474 x227=0A(514) 848-9644 fax=0A=0Awww.xiphos.com=0A______________=
+_________________________________=0AThe information transmitted is intended=
+ only for the=0Aperson or entity to which it is addressed and may contain=
+=0Aconfidential and/or privileged material.  If you have=0Areceived this in=
+ error, please contact the sender and delete=0Athis communication and any c=
+opy immediately. Thank you.=0A=0A
