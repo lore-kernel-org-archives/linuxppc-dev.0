@@ -1,20 +1,22 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 13581DDE17
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Dec 2008 06:11:26 +1100 (EST)
-Date: Wed, 24 Dec 2008 22:11:23 +0300
+	by ozlabs.org (Postfix) with ESMTP id 4F2B7DDED2
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Dec 2008 06:11:45 +1100 (EST)
+Date: Wed, 24 Dec 2008 22:11:43 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] USB: Driver for Freescale QUICC Engine USB Host Controller
-Message-ID: <20081224191123.GA16966@oksana.dev.rtsoft.ru>
+Message-ID: <20081224191143.GA11060@oksana.dev.rtsoft.ru>
 References: <20081223210322.GA2802@oksana.dev.rtsoft.ru>
-	<20081223132840.55e7b666.akpm@linux-foundation.org>
+	<Pine.LNX.4.44L0.0812232140400.8076-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20081223132840.55e7b666.akpm@linux-foundation.org>
-Cc: dbrownell@users.sourceforge.net, greg@kroah.com, linux-usb@vger.kernel.org,
+In-Reply-To: <Pine.LNX.4.44L0.0812232140400.8076-100000@netrider.rowland.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Greg Kroah-Hartman <greg@kroah.com>, linux-usb@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	leoli@freescale.com, timur@freescale.com
+	Andrew Morton <akpm@linux-foundation.org>,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,9 +27,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 23, 2008 at 01:28:40PM -0800, Andrew Morton wrote:
-> On Wed, 24 Dec 2008 00:03:22 +0300
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+On Tue, Dec 23, 2008 at 09:45:09PM -0500, Alan Stern wrote:
+> On Wed, 24 Dec 2008, Anton Vorontsov wrote:
 > 
 > > This patch adds support for the FHCI USB controller, as found
 > > in the Freescale MPC836x and MPC832x processors. It can support
@@ -40,70 +41,20 @@ On Tue, Dec 23, 2008 at 01:28:40PM -0800, Andrew Morton wrote:
 > > This controller does not integrate the root hub, so this driver also
 > > fakes one-port hub. External hub is required to support more than
 > > one device.
-> > 
 > 
-> <quick scan>
-> 
-> Nice-looking driver.  But the namespace pollution is tremendous!
+> It looks like the kernel this was written for is several versions out 
+> of date.
 
-Thanks for the review, Andrew.
+Yeah, originally it was written for 2.6.10. Though the driver I
+posted is for the linux-next, and it works quite well w/o the
+{un,}link_urb calls. ;-)
 
-Name-space pollution fixed.
+> The driver is missing some critical calls to functions like 
+> usb_hcd_link_urb_to_ep().
 
-[..]
-> > +static int fhci_mem_init(struct fhci_hcd *fhci)
-> > +{
-> > +	int i;
-> > +	int error = 0;
-> > +
-> > +	fhci->hc_list = kzalloc(sizeof(*fhci->hc_list), GFP_KERNEL);
-> > +	if (!fhci->hc_list)
-> > +		return -ENOMEM;
-> > +
-> > +	INIT_LIST_HEAD(&fhci->hc_list->ctrl_list);
-> > +	INIT_LIST_HEAD(&fhci->hc_list->bulk_list);
-> > +	INIT_LIST_HEAD(&fhci->hc_list->iso_list);
-> > +	INIT_LIST_HEAD(&fhci->hc_list->intr_list);
-> > +	INIT_LIST_HEAD(&fhci->hc_list->done_list);
-> > +
-> > +	fhci->vroot_hub = kzalloc(sizeof(*fhci->vroot_hub), GFP_KERNEL);
-> > +	if (!fhci->vroot_hub)
-> > +		return -ENOMEM;
-> 
-> Did we leak fhci->hc_list?
+Fixed.
 
-Apparently. Fixed.
-
-[...]
-> > +struct ed *get_empty_ed(struct fhci_hcd *fhci)
-> > +{
-> > +	struct ed *ed;
-> > +
-> > +	if (!list_empty(&fhci->empty_eds)) {
-> > +		ed = list_entry(fhci->empty_eds.next, struct ed, node);
-> > +		list_del(fhci->empty_eds.next);
-> > +	} else {
-> > +		ed = kmalloc(sizeof(*ed), GFP_ATOMIC);
-> > +		if (!ed)
-> > +			fhci_err(fhci, "No memory to allocate to ED\n");
-> > +		else
-> > +			init_ed(ed);
-> > +	}
-> > +
-> > +	return ed;
-> > +}
-> 
-> The GFP_ATOMICs here are regrettable.  Are these functions ever called
-> from a context in which a more reliable allocation mode can be used?
-> If so, the caller should pass in the gfp_t.
-
-No, these are called with a spinlock held. But we don't normally
-allocate things via this function, instead we pre-allocate the eds
-and tds in the fhci_mem_init, so the kmalloc above is the last resort
-when no empty tds/eds left in the appropriate lists (normally should
-not happen).
-
-Thanks,
+Thanks for review!
 
 -- 
 Anton Vorontsov
