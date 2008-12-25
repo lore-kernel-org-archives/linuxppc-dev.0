@@ -1,16 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <glppd-linuxppc-dev-3@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id 6E864DDED1
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Dec 2008 15:05:06 +1100 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1LFgIU-0004jX-Rr
+	for linuxppc-dev@ozlabs.org; Thu, 25 Dec 2008 02:50:02 +0000
+Received: from 83.167.112.74 ([83.167.112.74])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Dec 2008 02:50:02 +0000
+Received: from malc by 83.167.112.74 with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Dec 2008 02:50:02 +0000
+To: linuxppc-dev@ozlabs.org
+From: malc@pulsesoft.com
+Subject: Lock-up on PPC64
+Date: Thu, 25 Dec 2008 04:01:49 +0300
+Message-ID: <877i5pukxu.fsf@linmac.oyster.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18772.11376.339295.42622@cargo.ozlabs.ibm.com>
-Date: Fri, 26 Dec 2008 11:59:28 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-In-Reply-To: <20081224233536.b067c9da.akpm@linux-foundation.org>
-References: <200812241325.49404.chandru@in.ibm.com>
-	<20081224233536.b067c9da.akpm@linux-foundation.org>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,98 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton writes:
+Hello,
 
-> On Wed, 24 Dec 2008 13:25:49 +0530 Chandru <chandru@in.ibm.com> wrote:
-> 
-> > On a ppc machine booting linux-2.6.28-rc9 with crashkernel=256M@32M boot 
-> > parameter causes the kernel to panic while booting. __Following are the console 
-> > messages...
-> 
-> - Please put [patch] in the Subject: line of patches
-> 
-> - Please choose a suitable title, as per
->   Documentation/SubmittingPatches, section 15.
-> 
-> - Please cc suitable mailing lists and maintainers on bug reports and
->   on patches.
+Benjamin Herrenschmidt asked to re-report this issue to linuxppc-dev and
+here it is.
 
-Dave Hansen was working on this code recently, and this looks a bit
-similar to some changes he was making.  Dave, what's your opinion on
-this patch?
+[original LKML message http://lkml.org/lkml/2008/12/21/105]
 
-Paul.
+Synopsis
 
-> From: Chandru <chandru@in.ibm.com>
-> 
-> When booted with crashkernel=224M@32M or any memory size less than this,
-> the system boots properly.  The following was the observation..  The
-> system comes up with two nodes (0-256M and 256M-4GB).  _The crashkernel
-> memory reservation spans across these two nodes.  _The
-> mark_reserved_regions_for_nid() in arch/powerpc/mm/numa.c resizes the
-> reserved part of the memory within it as:
-> 
-> _ _ _ _ _ _ if (end_pfn > node_ar.end_pfn)
-> _ _ _ _ _ _ _ _ reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
-> _ _ _ _ _ _ _ _ _ _ - (start_pfn << PAGE_SHIFT);
-> 
-> 
-> but the reserve_bootmem_node() in mm/bootmem.c raises the pfn value of end 
-> 
-> _ _ end = PFN_UP(physaddr + size);
-> 
-> This causes end to get a value past the last page in the 0-256M node. 
-> _Again when reserve_bootmem_node() returns,
-> _mark_reserved_regions_for_nid() loops around to set the rest of the
-> crashkernel memory in the next node as reserved.  _ It references
-> NODE_DATA(node_ar.nid) and this causes another 'Oops: kernel access of bad
-> area' problem.  The following changes made the system to boot with any
-> amount of crashkernel memory size.
-> 
-> Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/powerpc/mm/numa.c |    7 ++++---
->  mm/bootmem.c           |    4 ++++
->  2 files changed, 8 insertions(+), 3 deletions(-)
-> 
-> diff -puN arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting arch/powerpc/mm/numa.c
-> --- a/arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting
-> +++ a/arch/powerpc/mm/numa.c
-> @@ -995,10 +995,11 @@ void __init do_init_bootmem(void)
->  				  start_pfn, end_pfn);
->  
->  		free_bootmem_with_active_regions(nid, end_pfn);
-> +	}
-> +
-> +	for_each_online_node(nid) {
->  		/*
-> -		 * Be very careful about moving this around.  Future
-> -		 * calls to careful_allocation() depend on this getting
-> -		 * done correctly.
-> +		 * Be very careful about moving this around.
->  		 */
->  		mark_reserved_regions_for_nid(nid);
->  		sparse_memory_present_with_active_regions(nid);
-> diff -puN mm/bootmem.c~2628-rc9-panics-with-crashkernel=256m-while-booting mm/bootmem.c
-> --- a/mm/bootmem.c~2628-rc9-panics-with-crashkernel=256m-while-booting
-> +++ a/mm/bootmem.c
-> @@ -375,10 +375,14 @@ int __init reserve_bootmem_node(pg_data_
->  				 unsigned long size, int flags)
->  {
->  	unsigned long start, end;
-> +	bootmem_data_t *bdata = pgdat->bdata;
->  
->  	start = PFN_DOWN(physaddr);
->  	end = PFN_UP(physaddr + size);
->  
-> +	if (end > bdata->node_low_pfn)
-> +		end = bdata->node_low_pfn;
-> +
->  	return mark_bootmem_node(pgdat->bdata, start, end, 1, flags);
->  }
->  
-> _
+Plain/non-root userspace application which doesn't interface with
+any weird out-of/in-tree drivers manages to lock-up a PS3 machine
+running Linux.
+
+The application in question is Mono VM running mcs.exe (C# compiler)
+which tries to compile particular file, distribution is Yellow Dog Linux
+6.0 with either stock (2.6.23.x) or custom compiled (2.6.27) 64bit kernel.
+
+
+Symptoms are as follows (interaction is done via ssh from another
+machine):
+
+$ make
+... lots of stdout/err messages
+... eventually an error message
+
+Eventually the ssh session terminates, PS3 is still pingable but
+impossible to connect to, attaching keyboard and trying magic SysRq
+doesn't work, typing keys into login: prompt works (as in - the terminal
+shows keys that were pressed, but after hittiing enter the carret is
+advanced and nothing happens, hitting random keys doesn't yield anything
+either)
+
+There's a bug in Mono bugzilla which describes exactly the same problem,
+but it appears as if reporters machine continued working after hitting
+the problem. https://bugzilla.novell.com/show_bug.cgi?id=414845
+The reporter aslo managed to create minimal reproducible test case
+(so that running `MONO_PATH=... .../mono .../mcs.exe prob.cs' kills
+  this PS3 just as well)
+
+Any pointers to what can be done to further debug this would be greatly
+appreciated.
+
+[ends here]
+
+Unfortunatelly reproducing requires building Mono from sources.
+
+Mono 2.0.1 can only be built in 32bit mode and still exhibits the same
+(locking-up behavior):
+ http://ftp.novell.com/pub/mono/sources/mono/mono-2.0.1.tar.bz2
+
+Or the one from the SVN, instructions are at:
+http://mono-project.com/AnonSVN
+(Configured with: `CC='gcc -m64' ./configure' (never tried 32bit build))
+
+Unfortunatelly the only PPC64 machine i have access to that's running
+Linux is a PS3 so i can not confirm/deny the reproducibility on other
+PPC64's.
+
+P.S. FWIW custom 2.6.27 = ps3_defconfig + enabled netconsole.
+
+-- 
+mailto:av1474@comtv.ru
