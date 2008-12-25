@@ -4,19 +4,20 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E2837DDECA
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Dec 2008 18:36:16 +1100 (EST)
-Date: Wed, 24 Dec 2008 23:35:36 -0800
+	by ozlabs.org (Postfix) with ESMTPS id 5F629DDECA
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Dec 2008 19:07:45 +1100 (EST)
+Date: Thu, 25 Dec 2008 00:07:35 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Chandru <chandru@in.ibm.com>
+To: Chandru <chandru@in.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
 Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-Message-Id: <20081224233536.b067c9da.akpm@linux-foundation.org>
-In-Reply-To: <200812241325.49404.chandru@in.ibm.com>
+Message-Id: <20081225000735.4dd4e802.akpm@linux-foundation.org>
+In-Reply-To: <20081224233536.b067c9da.akpm@linux-foundation.org>
 References: <200812241325.49404.chandru@in.ibm.com>
+	<20081224233536.b067c9da.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Benjamin, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(cc's added)
+On Wed, 24 Dec 2008 23:35:36 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Wed, 24 Dec 2008 13:25:49 +0530 Chandru <chandru@in.ibm.com> wrote:
+> - Please put [patch] in the Subject: line of patches
+> 
+> - Please choose a suitable title, as per
+>   Documentation/SubmittingPatches, section 15.
+> 
+> - Please cc suitable mailing lists and maintainers on bug reports and
+>   on patches.
 
-> On a ppc machine booting linux-2.6.28-rc9 with crashkernel=256M@32M boot 
-> parameter causes the kernel to panic while booting. __Following are the console 
-> messages...
+Also the patch was wordwrapped and the changelog was filled with weird
+UTF8 characters.
 
-- Please put [patch] in the Subject: line of patches
-
-- Please choose a suitable title, as per
-  Documentation/SubmittingPatches, section 15.
-
-- Please cc suitable mailing lists and maintainers on bug reports and
-  on patches.
-
+I think I have it all cleaned up now.
 
 
 From: Chandru <chandru@in.ibm.com>
 
 When booted with crashkernel=224M@32M or any memory size less than this,
 the system boots properly.  The following was the observation..  The
-system comes up with two nodes (0-256M and 256M-4GB).  _The crashkernel
-memory reservation spans across these two nodes.  _The
+system comes up with two nodes (0-256M and 256M-4GB).  The crashkernel
+memory reservation spans across these two nodes.  The
 mark_reserved_regions_for_nid() in arch/powerpc/mm/numa.c resizes the
 reserved part of the memory within it as:
 
-_ _ _ _ _ _ if (end_pfn > node_ar.end_pfn)
-_ _ _ _ _ _ _ _ reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
-_ _ _ _ _ _ _ _ _ _ - (start_pfn << PAGE_SHIFT);
+	if (end_pfn > node_ar.end_pfn)
+		reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
+				- (start_pfn << PAGE_SHIFT);
 
 
 but the reserve_bootmem_node() in mm/bootmem.c raises the pfn value of end 
 
-_ _ end = PFN_UP(physaddr + size);
+	end = PFN_UP(physaddr + size);
 
 This causes end to get a value past the last page in the 0-256M node. 
-_Again when reserve_bootmem_node() returns,
-_mark_reserved_regions_for_nid() loops around to set the rest of the
-crashkernel memory in the next node as reserved.  _ It references
-NODE_DATA(node_ar.nid) and this causes another 'Oops: kernel access of bad
-area' problem.  The following changes made the system to boot with any
-amount of crashkernel memory size.
+Again when reserve_bootmem_node() returns, mark_reserved_regions_for_nid()
+loops around to set the rest of the crashkernel memory in the next node as
+reserved.  It references NODE_DATA(node_ar.nid) and this causes another
+'Oops: kernel access of bad area' problem.  The following changes made the
+system to boot with any amount of crashkernel memory size.
 
 Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -80,8 +78,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  mm/bootmem.c           |    4 ++++
  2 files changed, 8 insertions(+), 3 deletions(-)
 
-diff -puN arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting arch/powerpc/mm/numa.c
---- a/arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting
+diff -puN arch/powerpc/mm/numa.c~powerpc-fix-code-for-reserved-memory-spanning-across-nodes arch/powerpc/mm/numa.c
+--- a/arch/powerpc/mm/numa.c~powerpc-fix-code-for-reserved-memory-spanning-across-nodes
 +++ a/arch/powerpc/mm/numa.c
 @@ -995,10 +995,11 @@ void __init do_init_bootmem(void)
  				  start_pfn, end_pfn);
@@ -98,8 +96,8 @@ diff -puN arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-boo
  		 */
  		mark_reserved_regions_for_nid(nid);
  		sparse_memory_present_with_active_regions(nid);
-diff -puN mm/bootmem.c~2628-rc9-panics-with-crashkernel=256m-while-booting mm/bootmem.c
---- a/mm/bootmem.c~2628-rc9-panics-with-crashkernel=256m-while-booting
+diff -puN mm/bootmem.c~powerpc-fix-code-for-reserved-memory-spanning-across-nodes mm/bootmem.c
+--- a/mm/bootmem.c~powerpc-fix-code-for-reserved-memory-spanning-across-nodes
 +++ a/mm/bootmem.c
 @@ -375,10 +375,14 @@ int __init reserve_bootmem_node(pg_data_
  				 unsigned long size, int flags)
