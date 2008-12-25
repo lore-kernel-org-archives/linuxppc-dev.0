@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 0EB75DDEEF
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Dec 2008 01:15:11 +1100 (EST)
-Date: Thu, 25 Dec 2008 17:15:09 +0300
+	by ozlabs.org (Postfix) with ESMTP id B32C0474DB
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Dec 2008 01:15:14 +1100 (EST)
+Date: Thu, 25 Dec 2008 17:15:11 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Greg Kroah-Hartman <greg@kroah.com>
-Subject: [PATCH 4/6] USB: fsl_qe_udc: Fix disconnects reporting during bus
-	reset
-Message-ID: <20081225141509.GD6786@oksana.dev.rtsoft.ru>
+Subject: [PATCH 5/6] USB: fsl_qe_udc: Fix muram corruption by disabled
+	endpoints
+Message-ID: <20081225141511.GE6786@oksana.dev.rtsoft.ru>
 References: <20081225141402.GA30689@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -26,35 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Freescale QE UDC controllers can't report the "port change" states,
-so the only way to handle disconnects is to process bus reset
-interrupts. The bus reset can take some time, that is, few irqs.
-Gadgets may print the disconnection events, and this causes few
-repetitive messages in the kernel log.
+Before freeing an endpoint's muram memory, we should stop all activity
+of the endpoint, otherwise the QE UDC controller might do nasty things
+with the muram memory that isn't belong to that endpoint anymore.
 
-This patch fixes the issue by using the usb_state machine, if the
-usb controller has been already reset, just quit the reset irq
-early.
+The qe_ep_reset() effectively flushes the hardware fifos, finishes all
+late transaction and thus prevents the corruption.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/usb/gadget/fsl_qe_udc.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/usb/gadget/fsl_qe_udc.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-index b460c6d..4726582 100644
+index 4726582..ea42088 100644
 --- a/drivers/usb/gadget/fsl_qe_udc.c
 +++ b/drivers/usb/gadget/fsl_qe_udc.c
-@@ -2161,6 +2161,9 @@ static int reset_irq(struct qe_udc *udc)
- {
- 	unsigned char i;
+@@ -1622,6 +1622,7 @@ static int qe_ep_disable(struct usb_ep *_ep)
+ 	nuke(ep, -ESHUTDOWN);
+ 	ep->desc = NULL;
+ 	ep->stopped = 1;
++	qe_ep_reset(udc, ep->epnum);
+ 	spin_unlock_irqrestore(&udc->lock, flags);
  
-+	if (udc->usb_state == USB_STATE_DEFAULT)
-+		return 0;
-+
- 	qe_usb_disable();
- 	out_8(&udc->usb_regs->usb_usadr, 0);
- 
+ 	cpm_muram_free(cpm_muram_offset(ep->rxbase));
 -- 
 1.5.6.5
