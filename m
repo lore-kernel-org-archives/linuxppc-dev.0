@@ -1,20 +1,18 @@
-Return-Path: <av1474@comtv.ru>
-Received: from akado.ru (fe01x03-cgp.akado.ru [77.232.31.164])
-	by ozlabs.org (Postfix) with ESMTP id 81C1ADDDE0
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Dec 2008 12:45:01 +1100 (EST)
-Date: Sun, 28 Dec 2008 03:45:05 +0300 (MSK)
-From: malc <av1474@comtv.ru>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Lock-up on PPC64
-In-Reply-To: <1230165163.7292.32.camel@pasglop>
-Message-ID: <Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
-References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
-	<20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
-	<20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
-	<1230165163.7292.32.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 74C6ADDD0B
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Dec 2008 11:00:42 +1100 (EST)
+Date: Mon, 29 Dec 2008 11:00:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>, Neil Horman
+	<nhorman@tuxdriver.com>
+Subject: linux-next: origin tree build failure
+Message-Id: <20081229110041.0eca977a.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
+	Linus <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 25 Dec 2008, Benjamin Herrenschmidt wrote:
+Hi Dave, Neil,
 
-> On Wed, 2008-12-24 at 03:08 +0300, malc@pulsesoft.com wrote:
->> Ken Moffat <zarniwhoop@ntlworld.com> writes:
->>
->>> On Tue, Dec 23, 2008 at 06:04:45AM +0300, malc@pulsesoft.com wrote:
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-[..snip..]
+drivers/net/ibmveth.c: In function 'ibmveth_poll':
+drivers/net/ibmveth.c:1034: warning: passing argument 1 of 'netif_rx_reschedule' from incompatible pointer type
+drivers/net/ibmveth.c:1034: error: too many arguments to function 'netif_rx_reschedule'
 
->>
->> Thanks for the reference, but i'm sure, now more than ever, that bad
->> memory has nothing to do with it, all signs are there that kernel is
->> confused by the way signals are (mis)used by Mono.
->
-> It shouldn't be but I agree with you, it smells bad. Can you report that
-> again on the linuxppc-dev@ozlabs.org mailing list ? Along with
-> instructions to d/l, install & run the minimum repro-case ? I'll try to
-> give it a go on different ppc64 machines as soon as I'm over my upcoming
-> xmas hangover :-) If it appears to be ps3 specific, we can work with
-> Geoff Levand (PS3 maintainer for Sony) to try to identify the root cause
-> and fix it.
+Another miss in commit 908a7a16b852ffd618a9127be8d62432182d81b4 ("net: Remove
+unused netdev arg from some NAPI interfaces").
 
-I've posted a message to linuxppc-dev via gmane, but AFAICS it never made
-it there. Anyhow, here's another try:
+I have added the following patch for today.
 
-Mono can be obtained from:
-http://ftp.novell.com/pub/mono/sources/mono/mono-2.0.1.tar.bz2
-
-Although 2.0.1 only supports ppc32 the problem is still reproducible.
-
-Now to the Christmas cheer, i've tried v2.6.28 and couldn't help but
-notice that the problem is gone, bisecting v2.6.27 (which funnily i
-had to mark good) to v2.6.28 (which has to be marked bad) wasn't fun
-but eventually converged at ab598b6680f1e74c267d1547ee352f3e1e530f89
-
-commit ab598b6680f1e74c267d1547ee352f3e1e530f89
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Sun Nov 30 11:49:45 2008 +0000
-
-     powerpc: Fix system calls on Cell entered with XER.SO=1
-
-Now the lock-up is gone, however the code never exercises the path
-taken during the lock-up so i guess it, at least, deserves a better
-look by PPC64 care takers.
+(I wonder how many more there will be? :-()
 
 -- 
-mailto:av1474@comtv.ru
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 29 Dec 2008 10:56:00 +1100
+Subject: [PATCH] net: ibmveth NAPI interface cleanup fix
+
+Commit 908a7a16b852ffd618a9127be8d62432182d81b4 ("net: Remove unused
+netdev arg from some NAPI interfaces") missed one spot.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/net/ibmveth.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
+index 1f055a9..9bc0f17 100644
+--- a/drivers/net/ibmveth.c
++++ b/drivers/net/ibmveth.c
+@@ -1031,7 +1031,7 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+ 		netif_rx_complete(napi);
+ 
+ 		if (ibmveth_rxq_pending_buffer(adapter) &&
+-		    netif_rx_reschedule(netdev, napi)) {
++		    netif_rx_reschedule(napi)) {
+ 			lpar_rc = h_vio_signal(adapter->vdev->unit_address,
+ 					       VIO_IRQ_DISABLE);
+ 			goto restart_poll;
+-- 
+1.6.0.5
