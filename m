@@ -1,19 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D0774DDE26
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 05:31:21 +1100 (EST)
-Message-Id: <51A41F18-046E-4227-813D-0EC46E2FFEE4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0812301139490.20609@blarg.am.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: Please pull from 'next' branch
-Date: Tue, 30 Dec 2008 12:31:15 -0600
-References: <Pine.LNX.4.64.0812301139490.20609@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <jonsmirl@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id B871DDDDED
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 07:17:23 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so1610220yxg.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Dec 2008 12:17:22 -0800 (PST)
+Received: from localhost ([127.0.0.1]) by terra with esmtp (Exim 4.69)
+	(envelope-from <jonsmirl@gmail.com>) id 1LHkvj-0006z0-Ck
+	for linuxppc-dev@ozlabs.org; Tue, 30 Dec 2008 15:11:07 -0500
+Subject: [PATCH] Add the of_find_i2c_device_by_node function.
+To: linuxppc-dev@ozlabs.org
+From: Jon Smirl <jonsmirl@gmail.com>
+Date: Tue, 30 Dec 2008 15:11:07 -0500
+Message-ID: <20081230201107.26810.71390.stgit@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,69 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Add the of_find_i2c_device_by_node function. This allows you to follow
+a reference in the device tree to an i2c device node and then locate
+the linux device instantiated by the device tree. Example use, an i2s
+codec controlled by i2c.
 
-On Dec 30, 2008, at 11:40 AM, Kumar Gala wrote:
+This was waiting for Anton's i2c patches that were just added.
 
-> Please pull from 'next' branch of
->
-> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
->
-> to receive the following updates:
->
-> Documentation/powerpc/dts-bindings/fsl/board.txt |   32 +++
-> arch/powerpc/boot/dts/mpc836x_mds.dts            |   43 ++++-
-> arch/powerpc/boot/dts/mpc836x_rdk.dts            |   19 ++
-> arch/powerpc/boot/dts/mpc8641_hpcn.dts           |   56 +++---
-> arch/powerpc/configs/85xx/mpc8572_ds_defconfig   |   43 +++--
-> arch/powerpc/include/asm/qe.h                    |   37 ++++
-> arch/powerpc/include/asm/qe_ic.h                 |   21 ++
-> arch/powerpc/platforms/83xx/mpc831x_rdb.c        |    2
-> arch/powerpc/platforms/83xx/mpc832x_mds.c        |    9 -
-> arch/powerpc/platforms/83xx/mpc832x_rdb.c        |    5
-> arch/powerpc/platforms/83xx/mpc836x_mds.c        |   81 +++++++++
-> arch/powerpc/platforms/83xx/mpc836x_rdk.c        |    6
-> arch/powerpc/platforms/83xx/mpc837x_mds.c        |    1
-> arch/powerpc/platforms/83xx/mpc837x_rdb.c        |    2
-> arch/powerpc/platforms/83xx/mpc83xx.h            |    1
-> arch/powerpc/platforms/85xx/mpc85xx_ds.c         |    7
-> arch/powerpc/platforms/85xx/smp.c                |    1
-> arch/powerpc/platforms/Kconfig                   |   11 +
-> arch/powerpc/platforms/Kconfig.cputype           |    2
-> arch/powerpc/sysdev/Makefile                     |    1
-> arch/powerpc/sysdev/fsl_pci.c                    |    7
-> arch/powerpc/sysdev/fsl_soc.h                    |    5
-> arch/powerpc/sysdev/qe_lib/gpio.c                |  195 +++++++++++++ 
-> ++++++++++
-> arch/powerpc/sysdev/simple_gpio.c                |  155 +++++++++++++ 
-> +++++
-> arch/powerpc/sysdev/simple_gpio.h                |   12 +
-> 25 files changed, 684 insertions(+), 70 deletions(-)
->
-> Anton Vorontsov (11):
->      powerpc: Implement get_brgfreq() and get_baudrate() stubs
->      powerpc/83xx: Fix sparse warnings in board files
->      powerpc/83xx: Fix sparse warnings in mpc836x_mds.c
->      powerpc/qe: Implement QE Pin Multiplexing API
->      powerpc: Add device tree bindings for BCSR GPIO banks
->      powerpc: Implement GPIO driver for simple memory-mapped banks
->      powerpc/83xx: Add USB Host/Gadget support for MPC8360E-MDS boards
->      powerpc/83xx: Add USB Host support for MPC8360E-RDK boards
->      powerpc/fsl_pci: Fix sparse warnings
->      powerpc/83xx: Fix few build errors with CONFIG_QUICC_ENGINE=n
->      powerpc/qe: Fix few build errors with CONFIG_QUICC_ENGINE=n
->
-> Becky Bruce (1):
->      powerpc/86xx: Update 8641hpcn dts file to match latest u-boot
->
-> Julia Lawall (1):
->      powerpc/85xx: Add local_irq_restore in error handling code
->
-> Kumar Gala (2):
->      powerpc/85xx: Enable SMP support
->      powerpc/85xx: Add SMP support to MPC8572 DS
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+---
+ drivers/of/of_i2c.c    |   19 +++++++++++++++++++
+ include/linux/of_i2c.h |    3 +++
+ 2 files changed, 22 insertions(+), 0 deletions(-)
 
-Updated w/one more patch from Anton:
-
-        powerpc/qe: Select QE_USB with USB_GADGET_FSL_QE
-
-- k
+diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+index e1b0ad6..fa65a2b 100644
+--- a/drivers/of/of_i2c.c
++++ b/drivers/of/of_i2c.c
+@@ -66,4 +66,23 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+ }
+ EXPORT_SYMBOL(of_register_i2c_devices);
+ 
++static int of_dev_node_match(struct device *dev, void *data)
++{
++        return dev_archdata_get_node(&dev->archdata) == data;
++}
++
++/* must call put_device() when done with returned i2c_client device */
++struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
++{
++	struct device *dev;
++
++	dev = bus_find_device(&i2c_bus_type, NULL, node,
++					 of_dev_node_match);
++	if (!dev)
++		return NULL;
++
++	return to_i2c_client(dev);
++}
++EXPORT_SYMBOL(of_find_i2c_device_by_node);
++
+ MODULE_LICENSE("GPL");
+diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
+index bd2a870..34974b5 100644
+--- a/include/linux/of_i2c.h
++++ b/include/linux/of_i2c.h
+@@ -17,4 +17,7 @@
+ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 			     struct device_node *adap_node);
+ 
++/* must call put_device() when done with returned i2c_client device */
++struct i2c_client *of_find_i2c_device_by_node(struct device_node *node);
++
+ #endif /* __LINUX_OF_I2C_H */
