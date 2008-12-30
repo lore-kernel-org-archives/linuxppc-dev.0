@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 89A43DDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 04:26:10 +1100 (EST)
-Message-Id: <A452E21F-E6FB-437E-A6BE-C2C974DF5297@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 74B49DDE0A
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 04:27:05 +1100 (EST)
+Message-Id: <AD3CD240-2FA0-4EF2-A348-71E64EEB4484@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20081205165913.GA786@oksana.dev.rtsoft.ru>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <ed82fe3e0812201927j2cf2786ag320e9ebd3b7c7954@mail.gmail.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc/qe: Fix few build errors with
-	CONFIG_QUICC_ENGINE=n
-Date: Tue, 30 Dec 2008 11:19:22 -0600
-References: <20081205165504.GA30966@oksana.dev.rtsoft.ru>
-	<20081205165913.GA786@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: Update 8641hpcn dts file to match latest u-boot
+Date: Tue, 30 Dec 2008 11:24:59 -0600
+References: <1229724312-20406-1-git-send-email-beckyb@kernel.crashing.org>
+	<ed82fe3e0812201927j2cf2786ag320e9ebd3b7c7954@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +25,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 5, 2008, at 10:59 AM, Anton Vorontsov wrote:
+On Dec 20, 2008, at 9:27 PM, Timur Tabi wrote:
 
-> Some 83xx boards were not ready for the optional QUICC Engine support.
+> On Fri, Dec 19, 2008 at 4:05 PM, Becky Bruce <beckyb@kernel.crashing.org 
+> > wrote:
+>> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+>> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+>> @@ -26,7 +26,7 @@
+>>               serial1 = &serial1;
+>>               pci0 = &pci0;
+>>               pci1 = &pci1;
+>> -               rapidio0 = &rapidio0;
+>> +               /* rapidio0 = &rapidio0; */
 >
-> This patch fixes following build errors:
->
-> arch/powerpc/platforms/built-in.o: In function `flush_disable_caches':
-> (.text+0xb308): undefined reference to `par_io_data_set'
-> arch/powerpc/platforms/built-in.o: In function `flush_disable_caches':
-> (.text+0xb334): undefined reference to `par_io_data_set'
-> arch/powerpc/platforms/built-in.o: In function `flush_disable_caches':
-> (.text+0xb408): undefined reference to `qe_ic_get_high_irq'
-> arch/powerpc/platforms/built-in.o: In function `flush_disable_caches':
-> (.text+0xb478): undefined reference to `qe_ic_get_low_irq'
-> arch/powerpc/platforms/built-in.o: In function `mpc832x_spi_init':
-> mpc832x_rdb.c:(.init.text+0x574c): undefined reference to  
-> `par_io_config_pin'
-> mpc832x_rdb.c:(.init.text+0x5768): undefined reference to  
-> `par_io_config_pin'
-> mpc832x_rdb.c:(.init.text+0x5784): undefined reference to  
-> `par_io_config_pin'
-> mpc832x_rdb.c:(.init.text+0x57a0): undefined reference to  
-> `par_io_config_pin'
-> mpc832x_rdb.c:(.init.text+0x57bc): undefined reference to  
-> `par_io_config_pin'
-> arch/powerpc/platforms/built-in.o:mpc832x_rdb.c:(.init.text+0x57d8):  
-> more undefined references to `par_io_config_pin' follow
-> arch/powerpc/platforms/built-in.o: In function `mpc836x_rdk_init_IRQ':
-> mpc836x_rdk.c:(.init.text+0x5e84): undefined reference to `qe_ic_init'
-> arch/powerpc/platforms/built-in.o: In function  
-> `mpc836x_rdk_setup_arch':
-> mpc836x_rdk.c:(.init.text+0x5f10): undefined reference to `qe_reset'
-> make: *** [.tmp_vmlinux1] Error 1
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/include/asm/qe.h    |   16 ++++++++++++++--
-> arch/powerpc/include/asm/qe_ic.h |   21 +++++++++++++++++----
-> 2 files changed, 31 insertions(+), 6 deletions(-)
+> If you're going to leave commented-out code in the DTS, please add a
+> comment here to explain why the code is commented-out and not just
+> deleted.
 
-
-applied to next
+There is a comment its just further down w/the actual rapidio node.
 
 - k
