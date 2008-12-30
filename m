@@ -2,20 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 87980DDE1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 05:12:02 +1100 (EST)
-Message-Id: <3A41A734-8709-4AC6-ADFD-430D3C1E5DC8@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 83E40DDEE1
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 05:12:36 +1100 (EST)
+Message-Id: <6AE841CF-DD83-403E-9829-456D04CA9AAB@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Julia Lawall <julia@diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0812212154240.3635@ask.diku.dk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20081108175254.GA6444@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/2] arch/powerpc/platforms/85xx: Add local_irq_restore in
-	error handling code
-Date: Tue, 30 Dec 2008 12:11:51 -0600
-References: <Pine.LNX.4.64.0812212154240.3635@ask.diku.dk>
-Cc: linuxppc-dev@ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/qe: Select QE_USB with USB_GADGET_FSL_QE
+Date: Tue, 30 Dec 2008 12:12:32 -0600
+References: <20081108175254.GA6444@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,52 +24,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 21, 2008, at 2:54 PM, Julia Lawall wrote:
+On Nov 8, 2008, at 11:52 AM, Anton Vorontsov wrote:
 
-> From: Julia Lawall <julia@diku.dk>
+> Boards should know when QE_USB is used, so that they can configure USB
+> clocks and pins.
 >
-> There is a call to local_irq_restore in the normal exit case, so it  
-> would
-> seem that there should be one on an error return as well.
+> Another option would be to add 'select QE_USB' into USB_GADGET_FSL_QE,
+> but selects are evil since they don't support dependencies.
 >
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
+> While at it, also remove 'host' from the symbol description, since the
+> QE_USB code is used to support the gadget driver as well.
 >
-> // <smpl>
-> @@
-> expression l;
-> expression E,E1,E2;
-> @@
->
-> local_irq_save(l);
-> ... when != local_irq_restore(l)
->    when != spin_unlock_irqrestore(E,l)
->    when any
->    when strict
-> (
-> if (...) { ... when != local_irq_restore(l)
->               when != spin_unlock_irqrestore(E1,l)
-> +   local_irq_restore(l);
->    return ...;
-> }
-> |
-> if (...)
-> +   {local_irq_restore(l);
->    return ...;
-> +   }
-> |
-> spin_unlock_irqrestore(E2,l);
-> |
-> local_irq_restore(l);
-> )
-> // </smpl>
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
->
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> arch/powerpc/platforms/85xx/smp.c |    1 +
-> 1 file changed, 1 insertion(+)
+> arch/powerpc/sysdev/qe_lib/Kconfig |    3 ++-
+> 1 files changed, 2 insertions(+), 1 deletions(-)
 
-applied.
+applied to next
 
 - k
