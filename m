@@ -2,16 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A6C5DDDE1C
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 04:32:26 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id mBUHWLMR006815
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Dec 2008 11:32:22 -0600
+	by ozlabs.org (Postfix) with ESMTPS id AA952DDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 04:40:19 +1100 (EST)
+Date: Tue, 30 Dec 2008 11:40:13 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: Enable SMP support
-Date: Tue, 30 Dec 2008 11:32:20 -0600
-Message-Id: <1230658341-20124-1-git-send-email-galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'next' branch
+Message-ID: <Pine.LNX.4.64.0812301139490.20609@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/platforms/Kconfig.cputype |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Please pull from 'next' branch of
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 3d0c776..e868b5c 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -231,7 +231,7 @@ config VIRT_CPU_ACCOUNTING
- 	  If in doubt, say Y here.
- 
- config SMP
--	depends on PPC_STD_MMU
-+	depends on PPC_STD_MMU || FSL_BOOKE
- 	bool "Symmetric multi-processing support"
- 	---help---
- 	  This enables support for systems with more than one CPU. If you have
--- 
-1.5.6.5
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
+
+to receive the following updates:
+
+ Documentation/powerpc/dts-bindings/fsl/board.txt |   32 +++
+ arch/powerpc/boot/dts/mpc836x_mds.dts            |   43 ++++-
+ arch/powerpc/boot/dts/mpc836x_rdk.dts            |   19 ++
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts           |   56 +++---
+ arch/powerpc/configs/85xx/mpc8572_ds_defconfig   |   43 +++--
+ arch/powerpc/include/asm/qe.h                    |   37 ++++
+ arch/powerpc/include/asm/qe_ic.h                 |   21 ++
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c        |    2
+ arch/powerpc/platforms/83xx/mpc832x_mds.c        |    9 -
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c        |    5
+ arch/powerpc/platforms/83xx/mpc836x_mds.c        |   81 +++++++++
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c        |    6
+ arch/powerpc/platforms/83xx/mpc837x_mds.c        |    1
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c        |    2
+ arch/powerpc/platforms/83xx/mpc83xx.h            |    1
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c         |    7
+ arch/powerpc/platforms/85xx/smp.c                |    1
+ arch/powerpc/platforms/Kconfig                   |   11 +
+ arch/powerpc/platforms/Kconfig.cputype           |    2
+ arch/powerpc/sysdev/Makefile                     |    1
+ arch/powerpc/sysdev/fsl_pci.c                    |    7
+ arch/powerpc/sysdev/fsl_soc.h                    |    5
+ arch/powerpc/sysdev/qe_lib/gpio.c                |  195 +++++++++++++++++++++++
+ arch/powerpc/sysdev/simple_gpio.c                |  155 ++++++++++++++++++
+ arch/powerpc/sysdev/simple_gpio.h                |   12 +
+ 25 files changed, 684 insertions(+), 70 deletions(-)
+
+Anton Vorontsov (11):
+      powerpc: Implement get_brgfreq() and get_baudrate() stubs
+      powerpc/83xx: Fix sparse warnings in board files
+      powerpc/83xx: Fix sparse warnings in mpc836x_mds.c
+      powerpc/qe: Implement QE Pin Multiplexing API
+      powerpc: Add device tree bindings for BCSR GPIO banks
+      powerpc: Implement GPIO driver for simple memory-mapped banks
+      powerpc/83xx: Add USB Host/Gadget support for MPC8360E-MDS boards
+      powerpc/83xx: Add USB Host support for MPC8360E-RDK boards
+      powerpc/fsl_pci: Fix sparse warnings
+      powerpc/83xx: Fix few build errors with CONFIG_QUICC_ENGINE=n
+      powerpc/qe: Fix few build errors with CONFIG_QUICC_ENGINE=n
+
+Becky Bruce (1):
+      powerpc/86xx: Update 8641hpcn dts file to match latest u-boot
+
+Julia Lawall (1):
+      powerpc/85xx: Add local_irq_restore in error handling code
+
+Kumar Gala (2):
+      powerpc/85xx: Enable SMP support
+      powerpc/85xx: Add SMP support to MPC8572 DS
