@@ -1,33 +1,21 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3452FDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Dec 2008 08:36:15 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id mBTLZ9Uw012243
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Dec 2008 16:35:09 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	mBTLaBD6191298
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Dec 2008 16:36:11 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	mBTMaLPu022347
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Dec 2008 17:36:21 -0500
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18772.11376.339295.42622@cargo.ozlabs.ibm.com>
-References: <200812241325.49404.chandru@in.ibm.com>
-	<20081224233536.b067c9da.akpm@linux-foundation.org>
-	<18772.11376.339295.42622@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Mon, 29 Dec 2008 13:36:07 -0800
-Message-Id: <1230586567.19452.100.camel@nimitz>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id B4739DDDFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Dec 2008 13:19:07 +1100 (EST)
+Date: Mon, 29 Dec 2008 18:19:08 -0800 (PST)
+Message-Id: <20081229.181908.214463121.davem@davemloft.net>
+To: nhorman@tuxdriver.com
+Subject: Re: [PATCH] clean up of netif_rx_reschedule() changes in drivers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081229153757.GA2857@localhost.localdomain>
+References: <20081229102509.GA11111@linux.vnet.ibm.com>
+	<20081229214144.43be8c1d.sfr@canb.auug.org.au>
+	<20081229153757.GA2857@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	kamalesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,37 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-12-26 at 11:59 +1100, Paul Mackerras wrote:
-> 
-> > diff -puN arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting arch/powerpc/mm/numa.c
-> > --- a/arch/powerpc/mm/numa.c~2628-rc9-panics-with-crashkernel=256m-while-booting
-> > +++ a/arch/powerpc/mm/numa.c
-> > @@ -995,10 +995,11 @@ void __init do_init_bootmem(void)
-> >                                 start_pfn, end_pfn);
-> >  
-> >               free_bootmem_with_active_regions(nid, end_pfn);
-> > +     }
-> > +
-> > +     for_each_online_node(nid) {
-> >               /*
-> > -              * Be very careful about moving this around.  Future
-> > -              * calls to careful_allocation() depend on this getting
-> > -              * done correctly.
-> > +              * Be very careful about moving this around.
-> >                */
-> >               mark_reserved_regions_for_nid(nid);
-> >               sparse_memory_present_with_active_regions(nid);
+From: Neil Horman <nhorman@tuxdriver.com>
+Date: Mon, 29 Dec 2008 10:37:57 -0500
 
-I think this reintroduces one of the bugs that I squashed.  You *have*
-to call mark_reserved_regions_for_nid() right after you do
-free_bootmem_with_active_regions().  Otherwise, someone else can
-bootmem_alloc() a reserved region from that node.
+> On Mon, Dec 29, 2008 at 09:41:44PM +1100, Stephen Rothwell wrote:
+> > Hi Kamalesh,
+> > 
+> > On Mon, 29 Dec 2008 15:55:29 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> > > greping through the sources for the changes missed out, we have
+> > > 
+> > 	.
+> > 	.
+> > > 
+> > > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+ ...
+> Thanks guys, not sure how my patch missed that.  I did an allmodconfig build
+> that passed successfully.  Thanks!
 
-Perhaps I need to make that comment a bit more forceful. :)
+It's very simple, you're not building on powerpc or ARM :-)
 
-/*
- * Don't break this loop out.  Period.  Never.  Ever.
- * No, seriously.  Don't do it.  I mean it.  Really!
- */
+> Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
--- Dave
+Applied, thanks everyone.
