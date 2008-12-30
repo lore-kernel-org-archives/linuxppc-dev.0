@@ -1,16 +1,18 @@
-Return-Path: <noname1.c@hotmail.com>
-Received: from blu0-omc1-s11.blu0.hotmail.com (blu0-omc1-s11.blu0.hotmail.com
-	[65.55.116.22]) by ozlabs.org (Postfix) with ESMTP id 6CF8CDDDE0
+Return-Path: <John.Linn@xilinx.com>
+Received: from WA4EHSOBE001.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 8A733DDEE2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Dec 2008 00:24:52 +1100 (EST)
-Message-ID: <BLU127-W15ADD9570E2B57B30628BDB5E60@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_ebda39bc-3b02-414d-86e4-2e943c401f5d_"
-From: =?utf-8?Q?=E5=90=91=E5=AE=87?= <noname1.c@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: network can't work in my board
-Date: Mon, 29 Dec 2008 21:19:44 +0800
+	Wed, 31 Dec 2008 05:16:42 +1100 (EST)
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: virtex uImage and serial ports
+Date: Tue, 30 Dec 2008 11:16:34 -0700
+In-Reply-To: <1230158881.82162837@192.168.1.35>
+References: <1230158881.82162837@192.168.1.35>
+From: John Linn <John.Linn@xilinx.com>
+To: "Joshua Lamorie" <jpl@xiphos.ca>,
+	<linuxppc-embedded@ozlabs.org>
+Message-ID: <20081230181636.49A821BA0065@mail222-wa4.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,39 +23,121 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_ebda39bc-3b02-414d-86e4-2e943c401f5d_
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Hi Joshua,
 
-DQpJIGhhdmUgZ290IHRoZSBtcGM4MzEzUkRCLg0KVXNpbmcgdGhlIEJTUCxJIHVwZGF0ZWQgdGhl
-IHUtYm9vdCB0byB1LWJvb3QgMS4zLjAgYW5kIHRoZSBrZXJuZWwgdG8gTGludXgtMi42LjIzLg0K
-QW5kIHRoZW4gcmVzdGFydGVkLGV2ZXJ5dGhpbmcgd2VudCB3ZWxsLg0KQnV0IG9uY2UgSSBwbHVn
-Z2VkIGluIHRoZSBjb3BwZXIsd2hlbiB0aGVyZSB3ZXJlIHBhY2tldHMsSSBjb3VsZG4ndCBpbnB1
-dCBhbnl0aGluZy4NCiANCk5vdyBJIGRvbid0IGtub3cgd2hhdCdzIHdyb25nIGFuZCBob3cgdG8g
-Y29ycmVjdCBpdC4NCkNhbiBhbnlvbmUgaGVscCBtZT8NCiANCiANCg0KX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCiDkuI3l
-j6rmmK/mlLblj5Hpgq7ku7bigJQg5p+l55yLIFdpbmRvd3MgTGl2ZeKEoiDnmoTmm7TlpJrnsr7l
-vanlip/og73jgIINCmh0dHA6Ly93d3cubWljcm9zb2Z0LmNvbS93aW5kb3dzL3dpbmRvd3NsaXZl
-Lw==
+Have you looked at our wiki site at http://xilinx.wikidot.com as we
+quite a bit of information there.
 
---_ebda39bc-3b02-414d-86e4-2e943c401f5d_
-Content-Type: text/html; charset="utf-8"
-Content-Transfer-Encoding: base64
+The ML405 board is a V2Pro chip so it should be pretty close to what you
+want using the default kernel config for virtex4.
 
-PGh0bWw+DQo8aGVhZD4NCjxzdHlsZT4NCi5obW1lc3NhZ2UgUA0Kew0KbWFyZ2luOjBweDsNCnBh
-ZGRpbmc6MHB4DQp9DQpib2R5LmhtbWVzc2FnZQ0Kew0KZm9udC1zaXplOiAxMHB0Ow0KZm9udC1m
-YW1pbHk6VmVyZGFuYQ0KfQ0KPC9zdHlsZT4NCjwvaGVhZD4NCjxib2R5IGNsYXNzPSdobW1lc3Nh
-Z2UnPg0KSSBoYXZlIGdvdCB0aGUgbXBjODMxM1JEQi48QlI+DQpVc2luZyB0aGUgQlNQLEkgdXBk
-YXRlZCB0aGUgdS1ib290IHRvIHUtYm9vdCAxLjMuMCBhbmQgdGhlIGtlcm5lbCB0byBMaW51eC0y
-LjYuMjMuPEJSPg0KQW5kIHRoZW4gcmVzdGFydGVkLGV2ZXJ5dGhpbmcmbmJzcDt3ZW50Jm5ic3A7
-d2VsbC48QlI+DQpCdXQgb25jZSBJIHBsdWdnZWQgaW4gdGhlIGNvcHBlcix3aGVuIHRoZXJlJm5i
-c3A7d2VyZSBwYWNrZXRzLEkgY291bGRuJ3QgaW5wdXQgYW55dGhpbmcuPEJSPg0KJm5ic3A7PEJS
-Pg0KTm93IEkgZG9uJ3Qga25vdyB3aGF0J3Mgd3JvbmcgYW5kIGhvdyB0byBjb3JyZWN0IGl0LjxC
-Uj4NCkNhbiBhbnlvbmUgaGVscCBtZT88QlI+DQombmJzcDs8QlI+DQombmJzcDs8QlI+DQo8UlRF
-X1RFWFQ+PC9SVEVfVEVYVD48QlI+PGJyIC8+PGhyIC8+5p+l55yLIFdpbmRvd3MgTGl2ZeKEoiDn
-moTmm7TlpJrnsr7lvanlip/og73jgIINCuS4jeWPquaYr+aUtuWPkemCruS7tiDigJQg5LqG6Kej
-V2luZG93cyBMaXZl4oSiIOeahOWFtuS7luW8uuWkp+WKn+iDveOAgg0KIDxhIGhyZWY9J2h0dHA6
-Ly93d3cubWljcm9zb2Z0LmNvbS93aW5kb3dzL3dpbmRvd3NsaXZlLycgdGFyZ2V0PSdfbmV3Jz7k
-uI3lj6rmmK/mlLblj5Hpgq7ku7Y8L2E+PC9ib2R5Pg0KPC9odG1sPg==
+I haven't tested the console at 115,200 as I use it at 9600.  Shouldn't
+be a problem, but may not hurt to stay at 9600 to get it working.
 
---_ebda39bc-3b02-414d-86e4-2e943c401f5d_--
+There are pages on the wiki about using u-boot with the kernel also as
+it sounds like that's what you're doing.
+
+Thanks,
+John
+
+
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-
+> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Joshua Lamorie
+> Sent: Wednesday, December 24, 2008 3:48 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: virtex uImage and serial ports
+> =
+
+> Gidday there,
+> =
+
+> I am trying to get 2.6.27(ish) running on my custom Virtex-II Pro
+platform (I call it Q5).  I already
+> have many years of running 2.4.26 and booting from u-boot.
+> =
+
+> The problem is getting the console running.  I have a device tree blob
+built and loaded into memory,
+> and by peeking at __log_buf I can see that it is reading this okay
+(i.e. it is correctly finding my
+> interrupt controller).  However, by the time it goes to mount the
+ramdisk as root, it complains that
+> there is no console.
+> =
+
+> I'm fairly certain /chosen has stdout pointing to the correct UART,
+and the console arguments are
+> ttyS0,115200.
+> =
+
+> In looking through the code however, I cannot figure out how the
+uImage code actually initializes the
+> serial-ports for the XILINX_VIRTEX_GENERIC_BOARD.  As I understand it,
+the only place where
+> serial_console_init is called, is within platform_init, and this isn't
+called for uImage.
+> =
+
+> So, three questions.
+> =
+
+> 1) How is the serial driver supposed to know where the platforms
+serial ports are?
+> =
+
+> 2) If I wanted to scrap u-boot and just copy kernel/ramdisk/dtb to
+memory, which kernel make target
+> should I use?  dtbImage, simpleImage?
+> =
+
+> 3) What is the best, most modern image to build that should be used by
+u-boot?
+> =
+
+> Thanks in advance
+> =
+
+> Joshua
+> =
+
+> p.s. I've been trying with kernel.org mainline, xilinx git and denx
+ELDK xenomai (2.6.24).  U-boot is
+> built from latest git source.  DTS file built from XPS 9.1i with
+latest service packs, and turned
+> into DTB with latest dtc source from git.
+> =
+
+> =
+
+> --
+> Xiphos Technologies
+> (514) 847-9474 x227
+> (514) 848-9644 fax
+> =
+
+> www.xiphos.com
+> _______________________________________________
+> The information transmitted is intended only for the
+> person or entity to which it is addressed and may contain
+> confidential and/or privileged material.  If you have
+> received this in error, please contact the sender and delete
+> this communication and any copy immediately. Thank you.
+> =
+
+> =
+
+> =
+
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
