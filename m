@@ -1,20 +1,15 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id C6C8ADDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 09:27:33 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so1621668ywh.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Dec 2008 14:27:32 -0800 (PST)
-Sender: Matt Sealey <neko@genesi-usa.com>
-Message-ID: <495AA054.7090903@genesi-usa.com>
-Date: Tue, 30 Dec 2008 16:27:32 -0600
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Becky Bruce <beckyb@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Update 8641hpcn dts file to match latest u-boot
-References: <1229724312-20406-1-git-send-email-beckyb@kernel.crashing.org>
-In-Reply-To: <1229724312-20406-1-git-send-email-beckyb@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 9B6E1DDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 14:02:29 +1100 (EST)
+Date: Wed, 31 Dec 2008 14:02:25 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] ibmveth: use consistent types
+Message-Id: <20081231140225.48b695ef.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +19,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Becky Bruce wrote:
-> The newest revision of uboot reworks the memory map for this
-> board to look more like the 85xx boards.  Also, some regions
-> which were far larger than the actual hardware have been scaled
-> back to match the board, and the imaginary second flash bank has
-> been removed. Rapidio and PCI are mutually exclusive in the hardware,
-> and they now are occupying the same space in the address map.
-> The Rapidio node is commented out of the .dts since PCI is the
-> common use case.
+These variables are only used with an interface involving "unsigned
+long" and the macros are only used with these variables.  This change
+will prevent some warnings when we change u64 to "unsigned long long".
 
-Hi Becky,
+This code is only built for 64bit powerpc, so the transformation is
+really a noop.
 
-What would be the "newest revision of U-Boot" that implements this 
-memory map? We're entering into moving-target territory again here where 
-we have no real idea which kernels are required or work or are even 
-supported on which versions of the firmware.. and of course this device
-tree committed to mainline means that the next set of kernel.org won't
-have the right data to boot what could be a perfectly workable kernel
-on previous U-Boot versions.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/net/ibmveth.c |    4 ++--
+ drivers/net/ibmveth.h |   10 +++++-----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-Isn't there any documentation on this apart from git changesets hidden 
-behind obscure many-digit hashes?
+diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
+index 9bc0f17..ca3bb9f 100644
+--- a/drivers/net/ibmveth.c
++++ b/drivers/net/ibmveth.c
+@@ -754,7 +754,7 @@ static int ibmveth_set_csum_offload(struct net_device *dev, u32 data,
+ 				    void (*done) (struct net_device *, u32))
+ {
+ 	struct ibmveth_adapter *adapter = netdev_priv(dev);
+-	u64 set_attr, clr_attr, ret_attr;
++	unsigned long set_attr, clr_attr, ret_attr;
+ 	long ret;
+ 	int rc1 = 0, rc2 = 0;
+ 	int restart = 0;
+@@ -1209,7 +1209,7 @@ static int __devinit ibmveth_probe(struct vio_dev *dev, const struct vio_device_
+ 	long ret;
+ 	struct net_device *netdev;
+ 	struct ibmveth_adapter *adapter;
+-	u64 set_attr, ret_attr;
++	unsigned long set_attr, ret_attr;
+ 
+ 	unsigned char *mac_addr_p;
+ 	unsigned int *mcastFilterSize_p;
+diff --git a/drivers/net/ibmveth.h b/drivers/net/ibmveth.h
+index d281869..ec76ace 100644
+--- a/drivers/net/ibmveth.h
++++ b/drivers/net/ibmveth.h
+@@ -39,11 +39,11 @@
+ #define IbmVethMcastRemoveFilter     0x2UL
+ #define IbmVethMcastClearFilterTable 0x3UL
+ 
+-#define IBMVETH_ILLAN_PADDED_PKT_CSUM	0x0000000000002000ULL
+-#define IBMVETH_ILLAN_TRUNK_PRI_MASK	0x0000000000000F00ULL
+-#define IBMVETH_ILLAN_IPV6_TCP_CSUM		0x0000000000000004ULL
+-#define IBMVETH_ILLAN_IPV4_TCP_CSUM		0x0000000000000002ULL
+-#define IBMVETH_ILLAN_ACTIVE_TRUNK		0x0000000000000001ULL
++#define IBMVETH_ILLAN_PADDED_PKT_CSUM	0x0000000000002000UL
++#define IBMVETH_ILLAN_TRUNK_PRI_MASK	0x0000000000000F00UL
++#define IBMVETH_ILLAN_IPV6_TCP_CSUM		0x0000000000000004UL
++#define IBMVETH_ILLAN_IPV4_TCP_CSUM		0x0000000000000002UL
++#define IBMVETH_ILLAN_ACTIVE_TRUNK		0x0000000000000001UL
+ 
+ /* hcall macros */
+ #define h_register_logical_lan(ua, buflst, rxq, fltlst, mac) \
+-- 
+1.6.0.5
 
---
-Matt Sealey <matt@genesi-usa.com>
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
