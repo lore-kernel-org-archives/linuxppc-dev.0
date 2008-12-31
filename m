@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 35CF9DDED7
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 20:09:46 +1100 (EST)
-Subject: Re: [PATCH] net/ehea: use consistent type
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20081230.215101.228854586.davem@davemloft.net>
-References: <20081231141730.81449124.sfr@canb.auug.org.au>
-	<20081230.215101.228854586.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 31 Dec 2008 20:09:01 +1100
-Message-Id: <1230714541.15389.69.camel@pasglop>
-Mime-Version: 1.0
-Cc: tklein@de.ibm.com, sfr@canb.auug.org.au, themann@de.ibm.com,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, raisch@de.ibm.com
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 04A82DDE20
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 20:29:19 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc/cell: bitops work on unsigned longs
+Date: Wed, 31 Dec 2008 10:29:04 +0100
+References: <20081231140615.51749e7f.sfr@canb.auug.org.au>
+In-Reply-To: <20081231140615.51749e7f.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200812311029.05767.arnd@arndb.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-12-30 at 21:51 -0800, David Miller wrote:
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Wed, 31 Dec 2008 14:17:30 +1100
-> 
-> > ehea_plpar_hcall9() takes an unsigned long array, so pass that.
-> > 
-> > This change will avoid some warnings when we change u64 to unsigned
-> > long long.
-> > 
-> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> 
-> Patch rejected, for the same reasons as the other driver
-> change.
-> 
-> We're not going to poop up some drivers with the assumption that long
-> is 64-bit.
+On Wednesday 31 December 2008, Stephen Rothwell wrote:
+> So change the flags member of struct spu from u64 to unsigned long.
+> This change will also prevent some warnings when we change u64 to unsigned
+> long long.
 
-Well, in that case, this patch is actually correct without considering
-the u64 change. The array is what lands in the registers of the pHyp
-call, so strictly speaking, it's an array of unsigned long's (ie, 32-bit
-on a 32-bit platform, 64-bit on a 64-bit platform), not an array of
-u64's. This function being a wrapper on that pHyp call, it may as well
-use the right type.
+Thanks. I'm still on vacation right now, so it's probably best
+if Paul takes these two patches directly.
 
-Cheers,
-Ben.
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+Acked-by: Arnd Bergmann <arnd@arndb.de>
