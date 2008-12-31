@@ -1,15 +1,15 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 9B6E1DDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 14:02:29 +1100 (EST)
-Date: Wed, 31 Dec 2008 14:02:25 +1100
+	by ozlabs.org (Postfix) with ESMTP id C23E6DDE06
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 14:06:16 +1100 (EST)
+Date: Wed, 31 Dec 2008 14:06:15 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] ibmveth: use consistent types
-Message-Id: <20081231140225.48b695ef.sfr@canb.auug.org.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] powerpc/cell: bitops work on unsigned longs
+Message-Id: <20081231140615.51749e7f.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: netdev@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,62 +19,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These variables are only used with an interface involving "unsigned
-long" and the macros are only used with these variables.  This change
-will prevent some warnings when we change u64 to "unsigned long long".
-
-This code is only built for 64bit powerpc, so the transformation is
-really a noop.
+So change the flags member of struct spu from u64 to unsigned long.
+This change will also prevent some warnings when we change u64 to unsigned
+long long.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/net/ibmveth.c |    4 ++--
- drivers/net/ibmveth.h |   10 +++++-----
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/spu.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
-index 9bc0f17..ca3bb9f 100644
---- a/drivers/net/ibmveth.c
-+++ b/drivers/net/ibmveth.c
-@@ -754,7 +754,7 @@ static int ibmveth_set_csum_offload(struct net_device *dev, u32 data,
- 				    void (*done) (struct net_device *, u32))
- {
- 	struct ibmveth_adapter *adapter = netdev_priv(dev);
--	u64 set_attr, clr_attr, ret_attr;
-+	unsigned long set_attr, clr_attr, ret_attr;
- 	long ret;
- 	int rc1 = 0, rc2 = 0;
- 	int restart = 0;
-@@ -1209,7 +1209,7 @@ static int __devinit ibmveth_probe(struct vio_dev *dev, const struct vio_device_
- 	long ret;
- 	struct net_device *netdev;
- 	struct ibmveth_adapter *adapter;
--	u64 set_attr, ret_attr;
-+	unsigned long set_attr, ret_attr;
- 
- 	unsigned char *mac_addr_p;
- 	unsigned int *mcastFilterSize_p;
-diff --git a/drivers/net/ibmveth.h b/drivers/net/ibmveth.h
-index d281869..ec76ace 100644
---- a/drivers/net/ibmveth.h
-+++ b/drivers/net/ibmveth.h
-@@ -39,11 +39,11 @@
- #define IbmVethMcastRemoveFilter     0x2UL
- #define IbmVethMcastClearFilterTable 0x3UL
- 
--#define IBMVETH_ILLAN_PADDED_PKT_CSUM	0x0000000000002000ULL
--#define IBMVETH_ILLAN_TRUNK_PRI_MASK	0x0000000000000F00ULL
--#define IBMVETH_ILLAN_IPV6_TCP_CSUM		0x0000000000000004ULL
--#define IBMVETH_ILLAN_IPV4_TCP_CSUM		0x0000000000000002ULL
--#define IBMVETH_ILLAN_ACTIVE_TRUNK		0x0000000000000001ULL
-+#define IBMVETH_ILLAN_PADDED_PKT_CSUM	0x0000000000002000UL
-+#define IBMVETH_ILLAN_TRUNK_PRI_MASK	0x0000000000000F00UL
-+#define IBMVETH_ILLAN_IPV6_TCP_CSUM		0x0000000000000004UL
-+#define IBMVETH_ILLAN_IPV4_TCP_CSUM		0x0000000000000002UL
-+#define IBMVETH_ILLAN_ACTIVE_TRUNK		0x0000000000000001UL
- 
- /* hcall macros */
- #define h_register_logical_lan(ua, buflst, rxq, fltlst, mac) \
+diff --git a/arch/powerpc/include/asm/spu.h b/arch/powerpc/include/asm/spu.h
+index 8b2eb04..0ab8d86 100644
+--- a/arch/powerpc/include/asm/spu.h
++++ b/arch/powerpc/include/asm/spu.h
+@@ -128,7 +128,7 @@ struct spu {
+ 	int number;
+ 	unsigned int irqs[3];
+ 	u32 node;
+-	u64 flags;
++	unsigned long flags;
+ 	u64 class_0_pending;
+ 	u64 class_0_dar;
+ 	u64 class_1_dar;
 -- 
 1.6.0.5
 
