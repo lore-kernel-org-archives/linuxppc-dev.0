@@ -1,15 +1,15 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C23E6DDE06
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 14:06:16 +1100 (EST)
-Date: Wed, 31 Dec 2008 14:06:15 +1100
+	by ozlabs.org (Postfix) with ESMTP id EFEACDDE0A
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 14:09:15 +1100 (EST)
+Date: Wed, 31 Dec 2008 14:09:15 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] powerpc/cell: bitops work on unsigned longs
-Message-Id: <20081231140615.51749e7f.sfr@canb.auug.org.au>
+Subject: [PATCH] powerpc/cell: local_irq_save takes an unsigned long
+Message-Id: <20081231140915.75067edd.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,28 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So change the flags member of struct spu from u64 to unsigned long.
-This change will also prevent some warnings when we change u64 to unsigned
-long long.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/include/asm/spu.h |    2 +-
+ .../powerpc/platforms/cell/cbe_cpufreq_pervasive.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/spu.h b/arch/powerpc/include/asm/spu.h
-index 8b2eb04..0ab8d86 100644
---- a/arch/powerpc/include/asm/spu.h
-+++ b/arch/powerpc/include/asm/spu.h
-@@ -128,7 +128,7 @@ struct spu {
- 	int number;
- 	unsigned int irqs[3];
- 	u32 node;
+diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq_pervasive.c b/arch/powerpc/platforms/cell/cbe_cpufreq_pervasive.c
+index 70fa7ae..20472e4 100644
+--- a/arch/powerpc/platforms/cell/cbe_cpufreq_pervasive.c
++++ b/arch/powerpc/platforms/cell/cbe_cpufreq_pervasive.c
+@@ -54,7 +54,7 @@ int cbe_cpufreq_set_pmode(int cpu, unsigned int pmode)
+ {
+ 	struct cbe_pmd_regs __iomem *pmd_regs;
+ 	struct cbe_mic_tm_regs __iomem *mic_tm_regs;
 -	u64 flags;
 +	unsigned long flags;
- 	u64 class_0_pending;
- 	u64 class_0_dar;
- 	u64 class_1_dar;
+ 	u64 value;
+ #ifdef DEBUG
+ 	long time;
 -- 
 1.6.0.5
 
