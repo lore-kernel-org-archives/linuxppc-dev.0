@@ -1,16 +1,17 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CB749DDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 14:14:53 +1100 (EST)
-Date: Wed, 31 Dec 2008 14:14:53 +1100
+	by ozlabs.org (Postfix) with ESMTP id 2F064DDDF9
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 14:17:32 +1100 (EST)
+Date: Wed, 31 Dec 2008 14:17:30 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Hoang-Nam Nguyen <hnguyen@de.ibm.com>, Christoph Raisch <raisch@de.ibm.com>
-Subject: [PATCH] infiniband/ehca: use consistent type
-Message-Id: <20081231141453.45d7f2c1.sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] net/ehea: use consistent type
+Message-Id: <20081231141730.81449124.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Heiko J Schick <schickhj@de.ibm.com>,
-	Joachim Fenkes <fenkes@de.ibm.com>, general@lists.openfabrics.org
+Cc: Klein <tklein@de.ibm.com>, Thomas, Christoph, netdev@vger.kernel.org,
+	Jan-Bernd Themann <themann@de.ibm.com>,
+	ppc-dev <linuxppc-dev@ozlabs.org>, Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,137 +21,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ehca_plpar_hcall9() takes an unsigned long array, so pass that.
+ehea_plpar_hcall9() takes an unsigned long array, so pass that.
 
 This change will avoid some warnings when we change u64 to unsigned
 long long.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/infiniband/hw/ehca/hcp_if.c |   26 +++++++++++++-------------
- 1 files changed, 13 insertions(+), 13 deletions(-)
+ drivers/net/ehea/ehea_phyp.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
-index 415d3a4..79d95d9 100644
---- a/drivers/infiniband/hw/ehca/hcp_if.c
-+++ b/drivers/infiniband/hw/ehca/hcp_if.c
-@@ -226,7 +226,7 @@ u64 hipz_h_alloc_resource_eq(const struct ipz_adapter_handle adapter_handle,
- 			     u32 *eq_ist)
+diff --git a/drivers/net/ehea/ehea_phyp.c b/drivers/net/ehea/ehea_phyp.c
+index 2a33a61..8fe9dca 100644
+--- a/drivers/net/ehea/ehea_phyp.c
++++ b/drivers/net/ehea/ehea_phyp.c
+@@ -214,7 +214,7 @@ u64 ehea_h_alloc_resource_qp(const u64 adapter_handle,
+ 			     u64 *qp_handle, struct h_epas *h_epas)
  {
- 	u64 ret;
+ 	u64 hret;
 -	u64 outs[PLPAR_HCALL9_BUFSIZE];
 +	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 	u64 allocate_controls;
+ 
+ 	u64 allocate_controls =
+ 	    EHEA_BMASK_SET(H_ALL_RES_QP_EQPO, init_attr->low_lat_rq1 ? 1 : 0)
+@@ -312,7 +312,7 @@ u64 ehea_h_alloc_resource_cq(const u64 adapter_handle,
+ 			     u64 *cq_handle, struct h_epas *epas)
+ {
+ 	u64 hret;
+-	u64 outs[PLPAR_HCALL9_BUFSIZE];
++	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
+ 
+ 	hret = ehea_plpar_hcall9(H_ALLOC_HEA_RESOURCE,
+ 				 outs,
+@@ -374,7 +374,7 @@ u64 ehea_h_alloc_resource_eq(const u64 adapter_handle,
+ 			     struct ehea_eq_attr *eq_attr, u64 *eq_handle)
+ {
+ 	u64 hret, allocate_controls;
+-	u64 outs[PLPAR_HCALL9_BUFSIZE];
++	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
  
  	/* resource type */
-@@ -270,7 +270,7 @@ u64 hipz_h_alloc_resource_cq(const struct ipz_adapter_handle adapter_handle,
- 			     struct ehca_alloc_cq_parms *param)
- {
- 	u64 ret;
--	u64 outs[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 
- 	ret = ehca_plpar_hcall9(H_ALLOC_RESOURCE, outs,
- 				adapter_handle.handle,   /* r4  */
-@@ -297,7 +297,7 @@ u64 hipz_h_alloc_resource_qp(const struct ipz_adapter_handle adapter_handle,
- {
- 	u64 ret;
- 	u64 allocate_controls, max_r10_reg, r11, r12;
--	u64 outs[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 
  	allocate_controls =
- 		EHCA_BMASK_SET(H_ALL_RES_QP_ENHANCED_OPS, parms->ext_type)
-@@ -525,7 +525,7 @@ u64 hipz_h_disable_and_get_wqe(const struct ipz_adapter_handle adapter_handle,
- 			       int dis_and_get_function_code)
+@@ -407,7 +407,7 @@ u64 ehea_h_modify_ehea_qp(const u64 adapter_handle, const u8 cat,
+ 			  u16 *out_swr, u16 *out_rwr)
  {
- 	u64 ret;
+ 	u64 hret;
 -	u64 outs[PLPAR_HCALL9_BUFSIZE];
 +	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
  
- 	ret = ehca_plpar_hcall9(H_DISABLE_AND_GETC, outs,
- 				adapter_handle.handle,     /* r4 */
-@@ -548,7 +548,7 @@ u64 hipz_h_modify_qp(const struct ipz_adapter_handle adapter_handle,
- 		     struct h_galpa gal)
+ 	hret = ehea_plpar_hcall9(H_MODIFY_HEA_QP,
+ 				 outs,
+@@ -449,7 +449,7 @@ u64 ehea_h_register_smr(const u64 adapter_handle, const u64 orig_mr_handle,
+ 			struct ehea_mr *mr)
  {
- 	u64 ret;
--	u64 outs[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 	ret = ehca_plpar_hcall9(H_MODIFY_QP, outs,
- 				adapter_handle.handle, /* r4 */
- 				qp_handle.handle,      /* r5 */
-@@ -579,7 +579,7 @@ u64 hipz_h_destroy_qp(const struct ipz_adapter_handle adapter_handle,
- 		      struct ehca_qp *qp)
- {
- 	u64 ret;
+ 	u64 hret;
 -	u64 outs[PLPAR_HCALL9_BUFSIZE];
 +	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
  
- 	ret = hcp_galpas_dtor(&qp->galpas);
- 	if (ret) {
-@@ -625,7 +625,7 @@ u64 hipz_h_define_aqp1(const struct ipz_adapter_handle adapter_handle,
- 		       u32 * bma_qp_nr)
+ 	hret = ehea_plpar_hcall9(H_REGISTER_SMR,
+ 				 outs,
+@@ -468,7 +468,7 @@ u64 ehea_h_register_smr(const u64 adapter_handle, const u64 orig_mr_handle,
+ 
+ u64 ehea_h_disable_and_get_hea(const u64 adapter_handle, const u64 qp_handle)
  {
- 	u64 ret;
 -	u64 outs[PLPAR_HCALL9_BUFSIZE];
 +	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
  
- 	ret = ehca_plpar_hcall9(H_DEFINE_AQP1, outs,
- 				adapter_handle.handle, /* r4 */
-@@ -733,7 +733,7 @@ u64 hipz_h_alloc_resource_mr(const struct ipz_adapter_handle adapter_handle,
- 			     struct ehca_mr_hipzout_parms *outparms)
+ 	return ehea_plpar_hcall9(H_DISABLE_AND_GET_HEA,
+ 				 outs,
+@@ -493,7 +493,7 @@ u64 ehea_h_alloc_resource_mr(const u64 adapter_handle, const u64 vaddr,
+ 			     const u32 pd, u64 *mr_handle, u32 *lkey)
  {
- 	u64 ret;
+ 	u64 hret;
 -	u64 outs[PLPAR_HCALL9_BUFSIZE];
 +	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
  
- 	ret = ehca_plpar_hcall9(H_ALLOC_RESOURCE, outs,
- 				adapter_handle.handle,            /* r4 */
-@@ -794,7 +794,7 @@ u64 hipz_h_query_mr(const struct ipz_adapter_handle adapter_handle,
- 		    struct ehca_mr_hipzout_parms *outparms)
+ 	hret = ehea_plpar_hcall9(H_ALLOC_HEA_RESOURCE,
+ 				 outs,
+@@ -564,7 +564,7 @@ u64 ehea_h_modify_ehea_port(const u64 adapter_handle, const u16 port_num,
+ 			    const u8 cb_cat, const u64 select_mask,
+ 			    void *cb_addr)
  {
- 	u64 ret;
 -	u64 outs[PLPAR_HCALL9_BUFSIZE];
 +	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 
- 	ret = ehca_plpar_hcall9(H_QUERY_MR, outs,
- 				adapter_handle.handle,     /* r4 */
-@@ -828,7 +828,7 @@ u64 hipz_h_reregister_pmr(const struct ipz_adapter_handle adapter_handle,
- 			  struct ehca_mr_hipzout_parms *outparms)
- {
- 	u64 ret;
--	u64 outs[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 
- 	ret = ehca_plpar_hcall9(H_REREGISTER_PMR, outs,
- 				adapter_handle.handle,    /* r4 */
-@@ -855,7 +855,7 @@ u64 hipz_h_register_smr(const struct ipz_adapter_handle adapter_handle,
- 			struct ehca_mr_hipzout_parms *outparms)
- {
- 	u64 ret;
--	u64 outs[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 
- 	ret = ehca_plpar_hcall9(H_REGISTER_SMR, outs,
- 				adapter_handle.handle,            /* r4 */
-@@ -877,7 +877,7 @@ u64 hipz_h_alloc_resource_mw(const struct ipz_adapter_handle adapter_handle,
- 			     struct ehca_mw_hipzout_parms *outparms)
- {
- 	u64 ret;
--	u64 outs[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 
- 	ret = ehca_plpar_hcall9(H_ALLOC_RESOURCE, outs,
- 				adapter_handle.handle,      /* r4 */
-@@ -895,7 +895,7 @@ u64 hipz_h_query_mw(const struct ipz_adapter_handle adapter_handle,
- 		    struct ehca_mw_hipzout_parms *outparms)
- {
- 	u64 ret;
--	u64 outs[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 
- 	ret = ehca_plpar_hcall9(H_QUERY_MW, outs,
- 				adapter_handle.handle,    /* r4 */
+ 	u64 port_info;
+ 	u64 arr_index = 0;
+ 	u64 cb_logaddr = virt_to_abs(cb_addr);
 -- 
 1.6.0.5
 
