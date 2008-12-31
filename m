@@ -1,22 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2E764DDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 15:44:29 +1100 (EST)
-Date: Wed, 31 Dec 2008 15:44:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH] infiniband/ehca: spin_lock_irqsave takes an unsigned long
-Message-Id: <20081231154424.77961256.sfr@canb.auug.org.au>
-In-Reply-To: <adaiqp1q8ky.fsf@cisco.com>
-References: <20081231141257.9bafac41.sfr@canb.auug.org.au>
-	<adaiqp1q8ky.fsf@cisco.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 93A5DDDECF
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 16:50:03 +1100 (EST)
+Date: Tue, 30 Dec 2008 21:49:59 -0800 (PST)
+Message-Id: <20081230.214959.141224132.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Subject: Re: [PATCH] ibmveth: use consistent types
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081231140225.48b695ef.sfr@canb.auug.org.au>
+References: <20081231140225.48b695ef.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__31_Dec_2008_15_44_24_+1100_A+UYPYB7FLu+F9Fv"
-Cc: Heiko J Schick <schickhj@de.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	general@lists.openfabrics.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__31_Dec_2008_15_44_24_+1100_A+UYPYB7FLu+F9Fv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 31 Dec 2008 14:02:25 +1100
 
-Hi Roland,
+> These variables are only used with an interface involving "unsigned
+> long" and the macros are only used with these variables.  This change
+> will prevent some warnings when we change u64 to "unsigned long long".
+> 
+> This code is only built for 64bit powerpc, so the transformation is
+> really a noop.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-On Tue, 30 Dec 2008 20:20:29 -0800 Roland Dreier <rdreier@cisco.com> wrote:
->
-> are you trying to land the 'typedef unsigned long u64' change for
-> 2.6.28, or can these patches wait for 2.6.29?
+I'd prefer if the types were to remain 32-bit portable.
 
-2.6.29 (or even 30), I would think at this point.
+Doing things like this is just a problem waiting to happen,
+either for the first person who actually finds a need and
+a way to use this driver on 32-bit or the person who cut and
+pastes this code into their driver which should work on both
+32-bit and 64-bit.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__31_Dec_2008_15_44_24_+1100_A+UYPYB7FLu+F9Fv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkla+KgACgkQjjKRsyhoI8zaZgCdEUsLGMHYEkhxkooRAMUrv1YK
-YbwAnihto3K6VbefZFrQZDeO2IOgVF8X
-=q7R/
------END PGP SIGNATURE-----
-
---Signature=_Wed__31_Dec_2008_15_44_24_+1100_A+UYPYB7FLu+F9Fv--
+Patch not applied.
