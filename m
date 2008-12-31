@@ -1,14 +1,14 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 6F555DDE1A
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 16:50:59 +1100 (EST)
-Date: Tue, 30 Dec 2008 21:51:01 -0800 (PST)
-Message-Id: <20081230.215101.228854586.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 87F6ADDECF
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Dec 2008 16:51:53 +1100 (EST)
+Date: Tue, 30 Dec 2008 21:51:56 -0800 (PST)
+Message-Id: <20081230.215156.151347026.davem@davemloft.net>
 To: sfr@canb.auug.org.au
-Subject: Re: [PATCH] net/ehea: use consistent type
+Subject: Re: [PATCH] net/ehea: bitops work on unsigned longs
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081231141730.81449124.sfr@canb.auug.org.au>
-References: <20081231141730.81449124.sfr@canb.auug.org.au>
+In-Reply-To: <20081231141853.c6d123c4.sfr@canb.auug.org.au>
+References: <20081231141853.c6d123c4.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: tklein@de.ibm.com, netdev@vger.kernel.org, raisch@de.ibm.com,
@@ -23,19 +23,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 31 Dec 2008 14:17:30 +1100
+Date: Wed, 31 Dec 2008 14:18:53 +1100
 
-> ehea_plpar_hcall9() takes an unsigned long array, so pass that.
-> 
-> This change will avoid some warnings when we change u64 to unsigned
+> These changes will avoid several warnings when we change u64 to unsigned
 > long long.
 > 
+> Also, ehea_driver_flags is only used in ehca_main.c
+> 
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
 
-Patch rejected, for the same reasons as the other driver
-change.
+And also rejected, just like the previous two.
 
-We're not going to poop up some drivers with the assumption that long
-is 64-bit.
+This is so much worse than the problems we had with
+printing u64's and it's being done as a result to
+the "fix" for that.
 
-Thanks ;-)
+Please let's not do this...
