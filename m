@@ -1,22 +1,24 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B955ADDEEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jan 2009 04:41:27 +1100 (EST)
-Date: Wed, 31 Dec 2008 20:41:25 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7E16DDDED9
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jan 2009 01:26:43 +1100 (EST)
+Message-Id: <B64DF110-E26A-4229-8384-E7933732BC01@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20081231171017.6FCF585AD247@gemini.denx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
 Subject: Re: [PATCH v2 4/4] powerpc/83xx: Add PCI-E support for all MPC83xx
 	boards with PCI-E
-Message-ID: <20081231174125.GA13027@oksana.dev.rtsoft.ru>
+Date: Thu, 1 Jan 2009 08:26:14 -0600
 References: <20081229164040.GD8215@oksana.dev.rtsoft.ru>
 	<C96CE59B-05FA-4728-930F-D4430EFB9B99@kernel.crashing.org>
 	<20081230201916.GA20059@oksana.dev.rtsoft.ru>
 	<1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+	<20081231171017.6FCF585AD247@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 31, 2008 at 10:48:07AM -0600, Kumar Gala wrote:
+
+On Dec 31, 2008, at 11:10 AM, Wolfgang Denk wrote:
+
+> Dear Kumar,
 >
-> On Dec 30, 2008, at 2:19 PM, Anton Vorontsov wrote:
->
->>>>
->>>>
->>>> +		compatible = "fsl,mpc8315-pcie", "fsl,mpc8314-pcie";
->>>> +		reg = <0xe0009000 0x00001000 0xb0000000 0x01000000>;
->>>
->>> the size on the 0xb0000000 seems wrong
+> In message <1F7739C2-930B-49C1- 
+> B8FF-679AF1BBAEAE@kernel.crashing.org> you wrote:
 >>
->> This is how FSL U-Boots configure the cfg window, and I'm trying to
->> retain the compatibility. Anyway, now Linux maps only the first 4kB
->> of that area, so we don't actually care about this, but dts is still
->> correct for older u-boots. Newer U-Boots might want to correct this
->> value if they want to use other cfg window setup...
+>>> This is how FSL U-Boots configure the cfg window, and I'm trying to
+>>> retain the compatibility. Anyway, now Linux maps only the first 4kB
+>>> of that area, so we don't actually care about this, but dts is still
+>>> correct for older u-boots. Newer U-Boots might want to correct this
+>>> value if they want to use other cfg window setup...
+>>
+>> I'd rather not pollute the .dts with this since I don't believe the
+>> open source u-boot supports PCIe on 83xx.
 >
-> I'd rather not pollute the .dts with this
+> What exactly do you mean by "open source u-boot"?  You  don't  really
+> mean that there are propriatary (closed source) versions of U-Boot in
+> Freescale,  or  are  you?  I  iknow that you know that it's GPL, so I
+> guess that was just an unlucky phrase?
 
-So you prefer to change the cfg window size to 0x1000?
+I meant the official u-boot from denx.de vs the one FSL ships w/its  
+boards & BSPs.  The BSP u-boot has modifications that don't exist in  
+the denx.de u-boot (as the quality of the code is not up to open  
+source standards).
 
-> since I don't believe the open 
-> source u-boot supports PCIe on 83xx.
+That is all I meant.
 
-Yes, that's correct. PCI-E support for community U-Boot is ongoing.
+My statement was to convey that the kernel.org kernel should only  
+worry itself with the denx.de u-boot (w/regards to compatibility).
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
