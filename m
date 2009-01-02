@@ -1,12 +1,12 @@
 Return-Path: <miltonm@bga.com>
 Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id DC2D0DDFCD
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jan 2009 07:44:21 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 45951DDFA2
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jan 2009 07:44:44 +1100 (EST)
 From: Milton Miller <miltonm@bga.com>
 To: Simon Horman <horms@verge.net.au>, <kexec@lists.infradead.org> 
-Message-Id: <kexec-29-1-3.miltonm@bga.com>
-In-Reply-To: <kexec-29-3.miltonm@bga.com>
-Date: Sat,  3 Jan 2009 07:44:21 +1100 (EST)
+Message-Id: <kexec-29-1-4.miltonm@bga.com>
+In-Reply-To: <kexec-29-1.miltonm@bga.com>
+Date: Sat,  3 Jan 2009 07:44:44 +1100 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -17,134 +17,205 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Subject [PATCH kexec-tools 3/5] ppc64: segments may be reordered
-Date: Fri, 02 Jan 2009 14:44:13 -0600
+Subject [PATCH kexec-tools 4/5] ppc64: cleanups
+Date: Fri, 02 Jan 2009 14:44:26 -0600
 Subject: (No subject header)
 X-Originating-IP: 205.232.218.102
 
-Instead of fetching data from the segment array, remember the address
-when added and find the kernel text from the parsed elf header.
+don't copy purgatory, as elf-load-rel does that for us (like x86_64).
 
-While add_segment (and hence add_buffer) always adds to the end of
-the list of segments, it sorts the previous segments before each
-allocation.  In some layouts, the device tree or initrd will fit
-in a hole below the the kernel.   When that happens, the previus
-code mis-patches purgatory and the kexec fails.
+move function declarations from c to h files
+
+remove casts between void  * and various pointers
+
+change some pointers between char and unsigned char *
+
+change args to be vars of the right type instead of casting or
+copying between types
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
+we still need to cast purgatory or we get a signed-ness warning on the pointer
 
-The only safe reference is to info->segments[info->nr_segments]
 
- kexec/arch/ppc64/kexec-elf-ppc64.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
-
+Index: kexec-tools/kexec/arch/ppc64/fs2dt.c
+===================================================================
+--- kexec-tools.orig/kexec/arch/ppc64/fs2dt.c	2009-01-02 02:16:17.000000000 -0600
++++ kexec-tools/kexec/arch/ppc64/fs2dt.c	2009-01-02 02:16:19.000000000 -0600
+@@ -46,8 +46,6 @@ static unsigned long long mem_rsrv[2*MEM
+ 
+ static int crash_param = 0;
+ static char local_cmdline[COMMAND_LINE_SIZE] = { "" };
+-static unsigned *dt_len; /* changed len of modified cmdline
+-			    in flat device-tree */
+ extern mem_rgns_t usablemem_rgns;
+ static struct bootblock bb[1];
+ 
+@@ -314,7 +312,6 @@ static void putprops(char *fn, struct di
+ 		len = statbuf.st_size;
+ 
+ 		*dt++ = 3;
+-		dt_len = dt;
+ 		*dt++ = len;
+ 		*dt++ = propnum(fn);
+ 
+@@ -509,12 +506,11 @@ static void putnode(void)
+ 	free(namelist);
+ }
+ 
+-int create_flatten_tree(struct kexec_info *info, unsigned char **bufp,
+-			unsigned long *sizep, char *cmdline)
++int create_flatten_tree(char **bufp, off_t *sizep, char *cmdline)
+ {
+ 	unsigned long len;
+ 	unsigned long tlen;
+-	unsigned char *buf;
++	char *buf;
+ 	unsigned long me;
+ 
+ 	me = 0;
+@@ -556,7 +552,7 @@ int create_flatten_tree(struct kexec_inf
+ 
+ 	reserve(me, bb->totalsize); /* patched later in kexec_load */
+ 
+-	buf = (unsigned char *) malloc(bb->totalsize);
++	buf = malloc(bb->totalsize);
+ 	*bufp = buf;
+ 	memcpy(buf, bb, bb->off_mem_rsvmap);
+ 	tlen = bb->off_mem_rsvmap;
 Index: kexec-tools/kexec/arch/ppc64/kexec-elf-ppc64.c
 ===================================================================
---- kexec-tools.orig/kexec/arch/ppc64/kexec-elf-ppc64.c	2009-01-01 21:46:24.000000000 -0600
-+++ kexec-tools/kexec/arch/ppc64/kexec-elf-ppc64.c	2009-01-02 01:48:28.000000000 -0600
-@@ -86,7 +86,7 @@ int elf_ppc64_load(int argc, char **argv
+--- kexec-tools.orig/kexec/arch/ppc64/kexec-elf-ppc64.c	2009-01-02 02:16:17.000000000 -0600
++++ kexec-tools/kexec/arch/ppc64/kexec-elf-ppc64.c	2009-01-02 02:16:19.000000000 -0600
+@@ -42,10 +42,6 @@ uint64_t initrd_base, initrd_size;
+ unsigned char reuse_initrd = 0;
+ const char *ramdisk;
+ 
+-int create_flatten_tree(struct kexec_info *, unsigned char **, unsigned long *,
+-			char *);
+-int my_r2(struct mem_ehdr *ehdr);
+-
+ int elf_ppc64_probe(const char *buf, off_t len)
+ {
+ 	struct mem_ehdr ehdr;
+@@ -80,7 +76,7 @@ int elf_ppc64_load(int argc, char **argv
+ 	const char *devicetreeblob;
+ 	int cmdline_len, modified_cmdline_len;
+ 	uint64_t max_addr, hole_addr;
+-	unsigned char *seg_buf = NULL;
++	char *seg_buf = NULL;
+ 	off_t seg_size = 0;
+ 	struct mem_phdr *phdr;
  	size_t size;
- 	uint64_t *rsvmap_ptr;
- 	struct bootblock *bb_ptr;
--	unsigned int nr_segments, i;
-+	unsigned int i;
- 	int result, opt;
- 	uint64_t my_kernel, my_dt_offset;
- 	unsigned int my_panic_kernel;
-@@ -187,7 +187,7 @@ int elf_ppc64_load(int argc, char **argv
+@@ -187,8 +183,7 @@ int elf_ppc64_load(int argc, char **argv
  	if (size > phdr->p_memsz)
  		size = phdr->p_memsz;
  
--	hole_addr = (uint64_t)locate_hole(info, size, 0, 0,
-+	my_kernel = hole_addr = (uint64_t)locate_hole(info, size, 0, 0,
- 			max_addr, 1);
+-	my_kernel = hole_addr = (uint64_t)locate_hole(info, size, 0, 0,
+-			max_addr, 1);
++	my_kernel = hole_addr = locate_hole(info, size, 0, 0, max_addr, 1);
  	ehdr.e_phdr[0].p_paddr = hole_addr;
  	result = elf_exec_load(&ehdr, info);
-@@ -233,12 +233,10 @@ int elf_ppc64_load(int argc, char **argv
+ 	if (result < 0) {
+@@ -210,16 +205,6 @@ int elf_ppc64_load(int argc, char **argv
+ 	}
+ 
+ 	/* Add v2wrap to the current image */
+-	seg_buf = NULL;
+-	seg_size = 0;
+-
+-	seg_buf = (unsigned char *) malloc(purgatory_size);
+-	if (seg_buf == NULL) {
+-		free_elf_info(&ehdr);
+-		return -1;
+-	}
+-	memcpy(seg_buf, purgatory, purgatory_size);
+-	seg_size = purgatory_size;
+ 	elf_rel_build_load(info, &info->rhdr, (const char *)purgatory,
+ 				purgatory_size, 0, max_addr, 1, 0);
+ 
+@@ -232,7 +217,7 @@ int elf_ppc64_load(int argc, char **argv
+ 			"Can't use ramdisk with device tree blob input\n");
  			return -1;
  		}
- 		seg_buf = (unsigned char *)slurp_file(ramdisk, &seg_size);
--		add_buffer(info, seg_buf, seg_size, seg_size, 0, 0, max_addr, 1);
--		hole_addr = (uintptr_t)
--			info->segment[info->nr_segments-1].mem;
-+		hole_addr = add_buffer(info, seg_buf, seg_size, seg_size,
-+			0, 0, max_addr, 1);
+-		seg_buf = (unsigned char *)slurp_file(ramdisk, &seg_size);
++		seg_buf = slurp_file(ramdisk, &seg_size);
+ 		hole_addr = add_buffer(info, seg_buf, seg_size, seg_size,
+ 			0, 0, max_addr, 1);
  		initrd_base = hole_addr;
--		initrd_size = (uint64_t)
--			info->segment[info->nr_segments-1].memsz;
-+		initrd_size = seg_size;
+@@ -240,21 +225,11 @@ int elf_ppc64_load(int argc, char **argv
  	} /* ramdisk */
  
  	if (devicetreeblob) {
-@@ -248,44 +246,37 @@ int elf_ppc64_load(int argc, char **argv
+-		unsigned char *blob_buf = NULL;
+-		off_t blob_size = 0;
+-
  		/* Grab device tree from buffer */
- 		blob_buf =
- 			(unsigned char *)slurp_file(devicetreeblob, &blob_size);
--		add_buffer(info, blob_buf, blob_size, blob_size, 0, 0,
--				max_addr, -1);
- 
-+		seg_buf = blob_buf;
-+		seg_size = blob_size;
+-		blob_buf =
+-			(unsigned char *)slurp_file(devicetreeblob, &blob_size);
+-
+-		seg_buf = blob_buf;
+-		seg_size = blob_size;
++		seg_buf = slurp_file(devicetreeblob, &seg_size);
  	} else {
  		/* create from fs2dt */
- 		seg_buf = NULL;
- 		seg_size = 0;
- 		create_flatten_tree(info, (unsigned char **)&seg_buf,
- 				(unsigned long *)&seg_size,cmdline);
--		add_buffer(info, seg_buf, seg_size, seg_size,
--				0, 0, max_addr, -1);
+-		seg_buf = NULL;
+-		seg_size = 0;
+-		create_flatten_tree(info, (unsigned char **)&seg_buf,
+-				(unsigned long *)&seg_size,cmdline);
++		create_flatten_tree(&seg_buf, &seg_size, cmdline);
  	}
-+	my_dt_offset = add_buffer(info, seg_buf, seg_size, seg_size,
-+				0, 0, max_addr, -1);
- 
- 	/* patch reserve map address for flattened device-tree
- 	 * find last entry (both 0) in the reserve mem list.  Assume DT
+ 	my_dt_offset = add_buffer(info, seg_buf, seg_size, seg_size,
+ 				0, 0, max_addr, -1);
+@@ -264,14 +239,13 @@ int elf_ppc64_load(int argc, char **argv
  	 * entry is before this one
  	 */
--	bb_ptr = (struct bootblock *)(
--		(unsigned char *)info->segment[(info->nr_segments)-1].buf);
--	rsvmap_ptr = (uint64_t *)(
--		(unsigned char *)info->segment[(info->nr_segments)-1].buf +
--		bb_ptr->off_mem_rsvmap);
-+	bb_ptr = (struct bootblock *)(seg_buf);
-+	rsvmap_ptr = (uint64_t *)
-+		(((char *)seg_buf) + bb_ptr->off_mem_rsvmap);
+ 	bb_ptr = (struct bootblock *)(seg_buf);
+-	rsvmap_ptr = (uint64_t *)
+-		(((char *)seg_buf) + bb_ptr->off_mem_rsvmap);
++	rsvmap_ptr = (uint64_t *)(seg_buf + bb_ptr->off_mem_rsvmap);
  	while (*rsvmap_ptr || *(rsvmap_ptr+1))
  		rsvmap_ptr += 2;
  	rsvmap_ptr -= 2;
--	*rsvmap_ptr = (uintptr_t)(
--		info->segment[(info->nr_segments)-1].mem);
-+	*rsvmap_ptr = my_dt_offset;
+ 	*rsvmap_ptr = my_dt_offset;
  	rsvmap_ptr++;
- 	*rsvmap_ptr = (uint64_t)bb_ptr->totalsize;
+-	*rsvmap_ptr = (uint64_t)bb_ptr->totalsize;
++	*rsvmap_ptr = bb_ptr->totalsize;
  
--	nr_segments = info->nr_segments;
--
  	/* Set kernel */
--	my_kernel = (uintptr_t)info->segment[0].mem;
  	elf_rel_set_symbol(&info->rhdr, "kernel", &my_kernel, sizeof(my_kernel));
+@@ -319,7 +293,7 @@ int elf_ppc64_load(int argc, char **argv
+ 	elf_rel_set_symbol(&info->rhdr, "stack", &my_stack, sizeof(my_stack));
  
- 	/* Set dt_offset */
--	my_dt_offset = (uintptr_t)info->segment[nr_segments-1].mem;
- 	elf_rel_set_symbol(&info->rhdr, "dt_offset", &my_dt_offset,
- 				sizeof(my_dt_offset));
+ 	/* Set toc */
+-	toc_addr = (unsigned long) my_r2(&info->rhdr);
++	toc_addr = my_r2(&info->rhdr);
+ 	elf_rel_set_symbol(&info->rhdr, "my_toc", &toc_addr, sizeof(toc_addr));
  
-@@ -293,7 +284,7 @@ int elf_ppc64_load(int argc, char **argv
- 	elf_rel_get_symbol(&info->rhdr, "purgatory_start", slave_code,
- 			sizeof(slave_code));
- 	master_entry = slave_code[0];
--	memcpy(slave_code, info->segment[0].buf, sizeof(slave_code));
-+	memcpy(slave_code, phdr->p_data, sizeof(slave_code));
- 	slave_code[0] = master_entry;
- 	elf_rel_set_symbol(&info->rhdr, "purgatory_start", slave_code,
- 				sizeof(slave_code));
-@@ -366,7 +357,7 @@ int elf_ppc64_load(int argc, char **argv
- 	fprintf(stderr, "purgatory size is %zu\n", purgatory_size);
- #endif
+ #ifdef DEBUG
+Index: kexec-tools/kexec/arch/ppc64/kexec-elf-rel-ppc64.c
+===================================================================
+--- kexec-tools.orig/kexec/arch/ppc64/kexec-elf-rel-ppc64.c	2009-01-02 02:16:17.000000000 -0600
++++ kexec-tools/kexec/arch/ppc64/kexec-elf-rel-ppc64.c	2009-01-02 02:16:19.000000000 -0600
+@@ -3,6 +3,7 @@
+ #include <string.h>
+ #include "../../kexec.h"
+ #include "../../kexec-elf.h"
++#include "kexec-ppc64.h"
  
--	for (i = 0; i < nr_segments; i++)
-+	for (i = 0; i < info->nr_segments; i++)
- 		fprintf(stderr, "segment[%d].mem:%p memsz:%zu\n", i,
- 			info->segment[i].mem, info->segment[i].memsz);
+ int machine_verify_elf_rel(struct mem_ehdr *ehdr)
+ {
+Index: kexec-tools/kexec/arch/ppc64/kexec-ppc64.h
+===================================================================
+--- kexec-tools.orig/kexec/arch/ppc64/kexec-ppc64.h	2009-01-02 02:16:17.000000000 -0600
++++ kexec-tools/kexec/arch/ppc64/kexec-ppc64.h	2009-01-02 02:16:19.000000000 -0600
+@@ -14,6 +14,9 @@ int elf_ppc64_load(int argc, char **argv
+ void elf_ppc64_usage(void);
+ void reserve(unsigned long long where, unsigned long long length);
  
++int create_flatten_tree(char **, off_t *, char *);
++unsigned long my_r2(const struct mem_ehdr *ehdr);
++
+ extern uint64_t initrd_base, initrd_size;
+ extern int max_memory_ranges;
+ extern unsigned char reuse_initrd;
