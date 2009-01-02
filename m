@@ -1,12 +1,12 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18781.39038.346841.639155@cargo.ozlabs.ibm.com>
-Date: Fri, 2 Jan 2009 15:30:54 +1100
+Message-ID: <18781.39270.35009.235687@cargo.ozlabs.ibm.com>
+Date: Fri, 2 Jan 2009 15:34:46 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: New maintainer for powerpc architecture
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+To: torvalds@linux-foundation.org
+Subject: [PATCH] Update powerpc maintainers
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -17,13 +17,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-After looking after the powerpc architecture part of the Linux kernel
-for 7.5 years, I am now stepping down, and Ben Herrenschmidt will be
-taking over as powerpc maintainer.
+Ben Herrenschmidt is taking over as the primary powerpc architecture
+maintainer.  I'll still be around as his backup/deputy.
 
-I'm not abandoning Linux or PowerPC though; I'll still be working on
-various powerpc/linux things, including being the platform maintainer
-for pSeries, working on performance monitor infrastructure (whichever
-one gets in, in the end), etc.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
 
-Paul.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ceb32ee..ef777d2 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2635,10 +2635,10 @@ W:	http://www.hansenpartnership.com/voyager
+ S:	Maintained
+ 
+ LINUX FOR POWERPC (32-BIT AND 64-BIT)
+-P:	Paul Mackerras
+-M:	paulus@samba.org
+ P:	Benjamin Herrenschmidt
+ M:	benh@kernel.crashing.org
++P:	Paul Mackerras
++M:	paulus@samba.org
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-dev@ozlabs.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git
