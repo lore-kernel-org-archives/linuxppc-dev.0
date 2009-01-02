@@ -1,19 +1,11 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f16.google.com (mail-gx0-f16.google.com
-	[209.85.217.16]) by ozlabs.org (Postfix) with ESMTP id 67BCBDDEE3
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jan 2009 10:57:37 +1100 (EST)
-Received: by gxk9 with SMTP id 9so499751gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 01 Jan 2009 15:57:35 -0800 (PST)
-Message-ID: <fa686aa40901011551o69d7432ald4bd9e3d0bcc4c43@mail.gmail.com>
-Date: Thu, 1 Jan 2009 16:51:48 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: linuxppc-embedded is no more
-In-Reply-To: <20090102103312.924a9696.sfr@canb.auug.org.au>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910901011933s3b353ddw753aca32635b5db@mail.gmail.com>
+Date: Thu, 1 Jan 2009 22:33:01 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: Section mismatches in the pcibios code
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20090102103312.924a9696.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +15,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 1, 2009 at 4:33 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi all,
->
-> I have removed the linuxppc-embedded mailing list and subscribed all the
-> members of that list to linuxppc-dev
+What's up with these section mismatches? I tried fixing them be they
+are very intertwined.
 
-... and there was much rejoicing!!!
+  LD      arch/powerpc/kernel/built-in.o
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x11efc): Section
+mismatch in reference from the function
+pcibios_allocate_bus_resources() to the function
+.init.text:reparent_resources()
+The function pcibios_allocate_bus_resources() references
+the function __init reparent_resources().
+This is often because pcibios_allocate_bus_resources lacks a __init
+annotation or the annotation of reparent_resources is wrong.
 
-Thanks,
-g.
+WARNING: arch/powerpc/kernel/built-in.o(.text+0x11fa4): Section
+mismatch in reference from the function pcibios_finish_adding_to_bus()
+to the function .devinit.text:pcibios_claim_one_bus()
+The function pcibios_finish_adding_to_bus() references
+the function __devinit pcibios_claim_one_bus().
+This is often because pcibios_finish_adding_to_bus lacks a __devinit
+annotation or the annotation of pcibios_claim_one_bus is wrong.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Jon Smirl
+jonsmirl@gmail.com
