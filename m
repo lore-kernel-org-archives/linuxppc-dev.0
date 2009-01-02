@@ -1,13 +1,14 @@
 Return-Path: <miltonm@bga.com>
 Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 5E676DDFD6
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jan 2009 07:44:53 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5E173DDFDD
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jan 2009 07:46:16 +1100 (EST)
 From: Milton Miller <miltonm@bga.com>
-To: Simon Horman <horms@verge.net.au>, <kexec@lists.infradead.org> 
-Message-Id: <kexec-29-1-5.miltonm@bga.com>
+To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Message-Id: <kexec-29-1-6.miltonm@bga.com>
 In-Reply-To: <kexec-29-1.miltonm@bga.com>
-Date: Sat,  3 Jan 2009 07:44:53 +1100 (EST)
-Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: make dummy section a valid note header
+Date: Fri, 02 Jan 2009 14:46:04 -0600
+Cc: kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,78 +18,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Subject [PATCH kexec-tools 5/5] entry wants to be void *
-Date: Fri, 02 Jan 2009 14:44:40 -0600
-Subject: (No subject header)
-X-Originating-IP: 205.232.218.102
+We are declaring the dummy section (used to work around a binutils
+bug) as PT_NOTE, but we don't have enough bytes for it to be a valid
+note header, and kexec userspace complains:
 
-The kexec info struct defines entry to be a void *, so pass around the
-user supplied value as one.
+Warning: Elf Note name is not null terminated
+Warning: append= option is not passed. Using the first kernel root partition
+Warning: Elf Note name is not null terminated
 
-This fixes the following warning:
-
-gcc -g -O2 -fno-strict-aliasing -Wall -Wstrict-prototypes -I./include -I./util_lib/include -Iinclude/ -I./kexec/arch/ppc64/include  -c -MD -o kexec/kexec.o kexec/kexec.c
-kexec/kexec.c: In function ‘my_load’:
-kexec/kexec.c:773: warning: assignment makes pointer from integer without a cast
+Instead of using the arbitray value 0xf177 (aka "fill"), declare a
+no-name no-description note of type 0.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
+verified on binutils-2.6.17 that the workaround still works (that
+is we get a phdr that does not have all zeros in the paddr field,
+and a relocatable kernel booted).
 
-Index: kexec-tools/kexec/kexec.c
+Index: common/arch/powerpc/kernel/vmlinux.lds.S
 ===================================================================
---- kexec-tools.orig/kexec/kexec.c	2009-01-02 02:54:37.000000000 -0600
-+++ kexec-tools/kexec/kexec.c	2009-01-02 02:55:06.000000000 -0600
-@@ -666,7 +666,7 @@ static void update_purgatory(struct kexe
-  *	Load the new kernel
-  */
- static int my_load(const char *type, int fileind, int argc, char **argv,
--		   unsigned long kexec_flags, unsigned long entry)
-+		   unsigned long kexec_flags, void *entry)
- {
- 	char *kernel;
- 	char *kernel_buf;
-@@ -846,23 +846,20 @@ static int my_exec(void)
- 
- static int kexec_loaded(void);
- 
--static int load_jump_back_helper_image(unsigned long kexec_flags,
--				       unsigned long entry)
-+static int load_jump_back_helper_image(unsigned long kexec_flags, void *entry)
- {
- 	int result;
- 	struct kexec_segment seg;
- 
- 	memset(&seg, 0, sizeof(seg));
--	result = kexec_load((void *)entry, 1, &seg,
--			    kexec_flags);
-+	result = kexec_load(entry, 1, &seg, kexec_flags);
- 	return result;
- }
+--- common.orig/arch/powerpc/kernel/vmlinux.lds.S	2009-01-02 01:07:12.000000000 -0600
++++ common/arch/powerpc/kernel/vmlinux.lds.S	2009-01-02 01:18:00.000000000 -0600
+@@ -87,7 +87,9 @@ SECTIONS
+ 	/* The dummy segment contents for the bug workaround mentioned above
+ 	   near PHDRS.  */
+ 	.dummy : AT(ADDR(.dummy) - LOAD_OFFSET) {
+-		LONG(0xf177)
++		LONG(0)
++		LONG(0)
++		LONG(0)
+ 	} :kernel :dummy
  
  /*
-  *	Jump back to the original kernel
-  */
--static int my_load_jump_back_helper(unsigned long kexec_flags,
--				    unsigned long entry)
-+static int my_load_jump_back_helper(unsigned long kexec_flags, void *entry)
- {
- 	int result;
- 
-@@ -1036,7 +1033,7 @@ int main(int argc, char *argv[])
- 	int do_ifdown = 0;
- 	int do_unload = 0;
- 	int do_reuse_initrd = 0;
--	unsigned long entry = 0;
-+	void *entry = 0;
- 	char *type = 0;
- 	char *endptr;
- 	int opt;
-@@ -1096,7 +1093,7 @@ int main(int argc, char *argv[])
- 			kexec_flags = KEXEC_PRESERVE_CONTEXT;
- 			break;
- 		case OPT_ENTRY:
--			entry = strtoul(optarg, &endptr, 0);
-+			entry = (void *)strtoul(optarg, &endptr, 0);
- 			if (*endptr) {
- 				fprintf(stderr,
- 					"Bad option value in --load-jump-back-helper=%s\n",
