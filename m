@@ -1,11 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18781.39270.35009.235687@cargo.ozlabs.ibm.com>
-Date: Fri, 2 Jan 2009 15:34:46 +1100
+Message-ID: <18781.39639.123017.149165@cargo.ozlabs.ibm.com>
+Date: Fri, 2 Jan 2009 15:40:55 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: torvalds@linux-foundation.org
-Subject: [PATCH] Update powerpc maintainers
+Subject: [PATCH v2] Update powerpc maintainers
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,12 +22,13 @@ maintainer.  I'll still be around as his backup/deputy.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
+Now with added tree location update goodness!
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index ceb32ee..ef777d2 100644
+index ceb32ee..967b0e8 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2635,10 +2635,10 @@ W:	http://www.hansenpartnership.com/voyager
+@@ -2635,13 +2635,13 @@ W:	http://www.hansenpartnership.com/voyager
  S:	Maintained
  
  LINUX FOR POWERPC (32-BIT AND 64-BIT)
@@ -39,4 +40,8 @@ index ceb32ee..ef777d2 100644
 +M:	paulus@samba.org
  W:	http://www.penguinppc.org/
  L:	linuxppc-dev@ozlabs.org
- T:	git kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git
+-T:	git kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git
++T:	git kernel.org:/pub/scm/linux/kernel/git/benh/powerpc.git
+ S:	Supported
+ 
+ LINUX FOR POWER MACINTOSH
