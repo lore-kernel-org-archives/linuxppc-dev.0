@@ -1,14 +1,15 @@
 Return-Path: <miltonm@bga.com>
 Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 761DADE028
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jan 2009 07:46:26 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id ADDE8DE002
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jan 2009 08:04:53 +1100 (EST)
 From: Milton Miller <miltonm@bga.com>
-To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Message-Id: <kexec-29-1-7.miltonm@bga.com>
+To: Simon Horman <horms@verge.net.au>, <kexec@lists.infradead.org> 
+Message-Id: <kexec-29-1-1r.miltonm@bga.com>
 In-Reply-To: <kexec-29-1.miltonm@bga.com>
-Subject: [PATCH] powerpc: check crash_base for relocatable kernel
-Date: Fri, 02 Jan 2009 14:46:15 -0600
-Cc: kexec@lists.infradead.org
+Subject: [PATCH kexec-tools 1/5] ppc64: always check number of ranges when
+	adding
+Date: Fri, 02 Jan 2009 15:04:40 -0600
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,89 +19,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Enforce that the crash kernel region never overlaps the current kernel,
-as it will be written directly on kexec load.
+make the idom "always call realloc_memory_ranges when filling a range entry"
 
-Also, default to the previous KDUMP_KERNELBASE if the start is 0.
+kexec was core dumping after using 5 exclude_range pairs when only 3
+were allocated.
 
-Other architectures (x86, ia64) state that specifying the start address
-0 (or omitting it) will result in the kernel allocating it.  Before the
-relocatable patch in 2.6.28, powerpc would adjust any other start value
-to the hardcoded KDUMP_KERNELBASE of 32M.
+also delcare realloc_memory_ranges to take no arguments.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
----
-consider for stable 2.6.28:
 
-A crash region start of 0 results either in a kernel panic (if all of
-segemnt 0 is reserved) or confused kexec userspace (as the start
-and length are not exported to userspace):
-
-Starting new kernel
-Reserving 512MB of memory at 0MB for crashkernel (System RAM: 2048MB)
-Using pSeries machine description
-
-...
-
-[boot]0012 Setup Arch
-Kernel panic - not syncing: ERROR: Failed to allocate 0x4000 bytes below 0x10000000.
-
-or
-
-# kexec -p /root/vmlinux
-Memory for crashkernel is not reserved
-Please reserve memory by passing "crashkernel=X@Y" parameter to the kernel
-Then try loading kdump kernel
-# cat /proc/cmdline
-retain_initrd crashkernel=64M
-#
-
-
-Index: common/arch/powerpc/kernel/machine_kexec.c
+Index: kexec-tools/kexec/arch/ppc64/kexec-ppc64.c
 ===================================================================
---- common.orig/arch/powerpc/kernel/machine_kexec.c	2009-01-01 23:43:45.000000000 -0600
-+++ common/arch/powerpc/kernel/machine_kexec.c	2009-01-02 00:40:24.000000000 -0600
-@@ -13,6 +13,7 @@
- #include <linux/reboot.h>
- #include <linux/threads.h>
- #include <linux/lmb.h>
-+#include <asm/sections.h>
- #include <asm/machdep.h>
- #include <asm/prom.h>
+--- kexec-tools.orig/kexec/arch/ppc64/kexec-ppc64.c	2009-01-02 02:08:58.000000000 -0600
++++ kexec-tools/kexec/arch/ppc64/kexec-ppc64.c	2009-01-02 02:09:08.000000000 -0600
+@@ -96,7 +96,7 @@ err1:
  
-@@ -94,10 +95,35 @@ void __init reserve_crashkernel(void)
- 				KDUMP_KERNELBASE);
+ }
  
- 	crashk_res.start = KDUMP_KERNELBASE;
-+#else
-+	if (!crashk_res.start) {
-+		/*
-+		 * unspecified address, choose a region of specified size
-+		 * can overlap with initrd (ignoring corruption when retained)
-+		 * ppc64 requires kernel and some stacks to be in first segemnt
-+		 */
-+		crashk_res.start = KDUMP_KERNELBASE;
-+	}
-+
-+	crash_base = PAGE_ALIGN(crashk_res.start);
-+	if (crash_base != crashk_res.start) {
-+		printk("Crash kernel base must be aligned to 0x%lx\n",
-+				PAGE_SIZE);
-+		crashk_res.start = crash_base;
-+	}
-+
- #endif
- 	crash_size = PAGE_ALIGN(crash_size);
- 	crashk_res.end = crashk_res.start + crash_size - 1;
+-static int realloc_memory_ranges()
++static int realloc_memory_ranges(void)
+ {
+ 	size_t memory_range_len;
  
-+	/* The crash region must not overlap the current kernel */
-+	if (overlaps_crashkernel(__pa(_stext), _end - _stext)) {
-+		printk(KERN_WARNING
-+			"Crash kernel can not overlap current kernel\n");
-+		crashk_res.start = crashk_res.end = 0;
-+		return;
-+	}
-+
- 	/* Crash kernel trumps memory limit */
- 	if (memory_limit && memory_limit <= crashk_res.end) {
- 		memory_limit = crashk_res.end + 1;
+@@ -469,6 +469,8 @@ static int get_devtree_details(unsigned 
+ 				exclude_range[i].start = initrd_start;
+ 				exclude_range[i].end = initrd_end;
+ 				i++;
++				if (i >= max_memory_ranges)
++					realloc_memory_ranges();
+ 			}
+ 		} /* chosen */
+ 
+@@ -581,6 +583,8 @@ static int get_devtree_details(unsigned 
+ 			exclude_range[i].start = tce_base;
+ 			exclude_range[i].end = tce_base + tce_size;
+ 			i++;
++			if (i >= max_memory_ranges)
++				realloc_memory_ranges();
+ 			if (kexec_flags & KEXEC_ON_CRASH)
+ 				add_usable_mem_rgns(tce_base, tce_size);
+ 			closedir(cdir);
+@@ -634,6 +638,8 @@ int setup_memory_ranges(unsigned long ke
+ 				memory_range[j].end = exclude_range[i].start - 1;
+ 				memory_range[j].type = RANGE_RAM;
+ 				j++;
++				if (j >= max_memory_ranges)
++					realloc_memory_ranges();
+ 			}
+ 		} /* i == 0 */
+ 		/* If the last exclude range does not end at memory_max, include
+@@ -646,6 +652,8 @@ int setup_memory_ranges(unsigned long ke
+ 				memory_range[j].end = memory_max;
+ 				memory_range[j].type = RANGE_RAM;
+ 				j++;
++				if (j >= max_memory_ranges)
++					realloc_memory_ranges();
+ 				/* Limit the end to rmo_top */
+ 				if (memory_range[j-1].start >= rmo_top) {
+ 					j--;
+@@ -666,6 +674,8 @@ int setup_memory_ranges(unsigned long ke
+ 		memory_range[j].end = exclude_range[i+1].start - 1;
+ 		memory_range[j].type = RANGE_RAM;
+ 		j++;
++		if (i >= max_memory_ranges)
++			realloc_memory_ranges();
+ 		/* Limit range to rmo_top */
+ 		if (memory_range[j-1].start >= rmo_top) {
+ 			j--;
