@@ -1,13 +1,13 @@
 Return-Path: <miltonm@bga.com>
 Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 5E173DDFDD
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jan 2009 07:46:16 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 761DADE028
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jan 2009 07:46:26 +1100 (EST)
 From: Milton Miller <miltonm@bga.com>
 To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Message-Id: <kexec-29-1-6.miltonm@bga.com>
+Message-Id: <kexec-29-1-7.miltonm@bga.com>
 In-Reply-To: <kexec-29-1.miltonm@bga.com>
-Subject: [PATCH] powerpc: make dummy section a valid note header
-Date: Fri, 02 Jan 2009 14:46:04 -0600
+Subject: [PATCH] powerpc: check crash_base for relocatable kernel
+Date: Fri, 02 Jan 2009 14:46:15 -0600
 Cc: kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -18,35 +18,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We are declaring the dummy section (used to work around a binutils
-bug) as PT_NOTE, but we don't have enough bytes for it to be a valid
-note header, and kexec userspace complains:
+Enforce that the crash kernel region never overlaps the current kernel,
+as it will be written directly on kexec load.
 
-Warning: Elf Note name is not null terminated
-Warning: append= option is not passed. Using the first kernel root partition
-Warning: Elf Note name is not null terminated
+Also, default to the previous KDUMP_KERNELBASE if the start is 0.
 
-Instead of using the arbitray value 0xf177 (aka "fill"), declare a
-no-name no-description note of type 0.
+Other architectures (x86, ia64) state that specifying the start address
+0 (or omitting it) will result in the kernel allocating it.  Before the
+relocatable patch in 2.6.28, powerpc would adjust any other start value
+to the hardcoded KDUMP_KERNELBASE of 32M.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
-verified on binutils-2.6.17 that the workaround still works (that
-is we get a phdr that does not have all zeros in the paddr field,
-and a relocatable kernel booted).
+consider for stable 2.6.28:
 
-Index: common/arch/powerpc/kernel/vmlinux.lds.S
+A crash region start of 0 results either in a kernel panic (if all of
+segemnt 0 is reserved) or confused kexec userspace (as the start
+and length are not exported to userspace):
+
+Starting new kernel
+Reserving 512MB of memory at 0MB for crashkernel (System RAM: 2048MB)
+Using pSeries machine description
+
+...
+
+[boot]0012 Setup Arch
+Kernel panic - not syncing: ERROR: Failed to allocate 0x4000 bytes below 0x10000000.
+
+or
+
+# kexec -p /root/vmlinux
+Memory for crashkernel is not reserved
+Please reserve memory by passing "crashkernel=X@Y" parameter to the kernel
+Then try loading kdump kernel
+# cat /proc/cmdline
+retain_initrd crashkernel=64M
+#
+
+
+Index: common/arch/powerpc/kernel/machine_kexec.c
 ===================================================================
---- common.orig/arch/powerpc/kernel/vmlinux.lds.S	2009-01-02 01:07:12.000000000 -0600
-+++ common/arch/powerpc/kernel/vmlinux.lds.S	2009-01-02 01:18:00.000000000 -0600
-@@ -87,7 +87,9 @@ SECTIONS
- 	/* The dummy segment contents for the bug workaround mentioned above
- 	   near PHDRS.  */
- 	.dummy : AT(ADDR(.dummy) - LOAD_OFFSET) {
--		LONG(0xf177)
-+		LONG(0)
-+		LONG(0)
-+		LONG(0)
- 	} :kernel :dummy
+--- common.orig/arch/powerpc/kernel/machine_kexec.c	2009-01-01 23:43:45.000000000 -0600
++++ common/arch/powerpc/kernel/machine_kexec.c	2009-01-02 00:40:24.000000000 -0600
+@@ -13,6 +13,7 @@
+ #include <linux/reboot.h>
+ #include <linux/threads.h>
+ #include <linux/lmb.h>
++#include <asm/sections.h>
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
  
- /*
+@@ -94,10 +95,35 @@ void __init reserve_crashkernel(void)
+ 				KDUMP_KERNELBASE);
+ 
+ 	crashk_res.start = KDUMP_KERNELBASE;
++#else
++	if (!crashk_res.start) {
++		/*
++		 * unspecified address, choose a region of specified size
++		 * can overlap with initrd (ignoring corruption when retained)
++		 * ppc64 requires kernel and some stacks to be in first segemnt
++		 */
++		crashk_res.start = KDUMP_KERNELBASE;
++	}
++
++	crash_base = PAGE_ALIGN(crashk_res.start);
++	if (crash_base != crashk_res.start) {
++		printk("Crash kernel base must be aligned to 0x%lx\n",
++				PAGE_SIZE);
++		crashk_res.start = crash_base;
++	}
++
+ #endif
+ 	crash_size = PAGE_ALIGN(crash_size);
+ 	crashk_res.end = crashk_res.start + crash_size - 1;
+ 
++	/* The crash region must not overlap the current kernel */
++	if (overlaps_crashkernel(__pa(_stext), _end - _stext)) {
++		printk(KERN_WARNING
++			"Crash kernel can not overlap current kernel\n");
++		crashk_res.start = crashk_res.end = 0;
++		return;
++	}
++
+ 	/* Crash kernel trumps memory limit */
+ 	if (memory_limit && memory_limit <= crashk_res.end) {
+ 		memory_limit = crashk_res.end + 1;
