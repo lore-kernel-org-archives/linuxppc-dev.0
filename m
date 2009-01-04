@@ -1,12 +1,14 @@
-Return-Path: <zvdata@yahoo.com>
-Date: Sun, 4 Jan 2009 04:57:10 -0800 (PST)
-From: zz zcv <zvdata@yahoo.com>
-Subject: please unsubscribe me 
-To: Linuxppc-dev@ozlabs.org
+Return-Path: <leon.woestenberg@gmail.com>
+Message-ID: <c384c5ea0901040555l7aed6e21qc63b48f9875b76c2@mail.gmail.com>
+Date: Sun, 4 Jan 2009 14:55:47 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Frank Lautenbach" <frank.lautenbach@gmx.de>
+Subject: Re: Unsubscribe
+In-Reply-To: <4960AA0D.50908@gmx.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1463650803-1231073830=:43635"
-Message-ID: <362378.43635.qm@web31606.mail.mud.yahoo.com>
-Reply-To: zvdata@yahoo.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4960AA0D.50908@gmx.de>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,27 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0-1463650803-1231073830=:43635
-Content-Type: text/plain; charset=us-ascii
+Hello Frank,
 
-Hi,
+On Sun, Jan 4, 2009 at 1:22 PM, Frank Lautenbach
+<frank.lautenbach@gmx.de> wrote:
+> can you please unsubscribe me from this mailing list?
+> Frank
 
-can you please unsubscribe me from this mailing list?
+Every email from the list comes with this footer:
 
-Thanks!
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+Visit that URL and use the unsubscribe feature.
 
-
-Greetings,
-
-zeev
-_______________________________________________
-
-
-      
---0-1463650803-1231073830=:43635
-Content-Type: text/html; charset=us-ascii
-
-<table cellspacing="0" cellpadding="0" border="0" ><tr><td valign="top" style="font: inherit;">Hi,<BR><BR>can you please unsubscribe me from this mailing list?<BR><BR>Thanks!<BR><BR><BR>Greetings,<BR><BR>zeev<BR>_______________________________________________</td></tr></table><br>
-
-      
---0-1463650803-1231073830=:43635--
+Regards,
+-- 
+Leon
