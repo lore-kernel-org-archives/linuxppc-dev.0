@@ -1,34 +1,21 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 58B5CDE18D
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 05:28:36 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id n04IRYF1021250
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 05:27:34 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n04IOmkW224498
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 05:24:48 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n04IOmmd001146
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 05:24:48 +1100
-Date: Sun, 4 Jan 2009 23:54:41 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with
-	!CONFIG_VIOPATH
-Message-ID: <20090104182441.GA5086@linux.vnet.ibm.com>
-References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <5414eaef99b7392a95f6e3488b81dbf7@bga.com>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 0F9F6DE197
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 10:28:09 +1100 (EST)
+Date: Mon, 5 Jan 2009 10:28:00 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Subject: Re: linux-next: manual merge of the driver-core tree
+Message-Id: <20090105102800.c73bed11.sfr@canb.auug.org.au>
+In-Reply-To: <20081204042154.GA18027@kroah.com>
+References: <20081204104418.97f848b4.sfr@canb.auug.org.au>
+	<20081204042154.GA18027@kroah.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__5_Jan_2009_10_28_00_+1100_uKX3m5EZk7JusMsB"
+Cc: Kumar, Kay Sievers <kay.sievers@vrfy.org>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,85 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Milton Miller <miltonm@bga.com> [2009-01-04 02:54:15]:
+--Signature=_Mon__5_Jan_2009_10_28_00_+1100_uKX3m5EZk7JusMsB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> In-Reply-To: <20090103191359.GA9304@linux.vnet.ibm.com>
->
-> Kamalesh Babulal wrote:
->>  config SCSI_IBMVSCSI
->>         tristate "IBM Virtual SCSI support"
->> -       depends on PPC_PSERIES || PPC_ISERIES
->> +       depends on (PPC_PSERIES || PPC_ISERIES) && VIOPATH
->>         select SCSI_SRP_ATTRS
->>         help
->>           This is the IBM POWER Virtual SCSI Client
->
-> As VIOPATH is iSeries code and is only used by the iSeries code, the 
-> requirment should be
->
-> depends on PPC_PSERIES || (PPC_ISERIES && VIOPATH)
->
-> except VIOPATH isn't selectable:
->
-> arch/powerpc/platforms/iseries/Kconfig:
->
->  config VIOPATH
->         bool
->         depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
->         default y
->
-> so instead we should be adding
->
-> select VIOPATH if PPC_ISERIES
->
-> to SCSI_IBMVSCSI and just
->
-> select VIOPATH
->
-> to HVC_ISERIES as it depends on PPC_ISERIES
->
-> otherwise you have to enable one driver to get these other drivers.
->
-> milton
->
+Hi Greg,
 
-Hi Milton,
+On Wed, 3 Dec 2008 20:21:54 -0800 Greg KH <greg@kroah.com> wrote:
+>
+> On Thu, Dec 04, 2008 at 10:44:18AM +1100, Stephen Rothwell wrote:
+> >=20
+> > Today's linux-next merge of the driver-core tree got a conflict in
+> > arch/powerpc/platforms/85xx/mpc85xx_mds.c between commit
+> > 24a99596f7465274a8e65ddd29a7d9028969b9f9 ("powerpc/85xx: Fix compile
+> > warnings in mpc85xx_mds.c") from the galak tree and commit
+> > f58f23751464d095f9942304bc5f6072b79a2cc3 ("powerpc: struct device -
+> > replace bus_id with dev_name(), dev_set_name()") from the driver-core
+> > tree.
+> >=20
+> > I fixed it up (see below) and can carry the fix as necessary.
+> >=20
+> > Paul, maybe you should apply the patch from the driver-core tree as it
+> > was cc'd to you and all its prerequisites are upstream.
+>=20
+> Yes, Paul, please apply the patch, and let me know.  It will make things
+> much easier in the end for everyone involved.
 
-	Thanks for the review comments, I am resending the patch with the 
-changes you have recommended.
+It looks like this has been applied to the powerpc tree and is now in
+Linus' tree.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
- drivers/char/Kconfig |    1 +
- drivers/scsi/Kconfig |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 1697043..b8da09a 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -616,6 +616,7 @@ config HVC_ISERIES
- 	default y
- 	select HVC_DRIVER
- 	select HVC_IRQ
-+	select VIOPATH
- 	help
- 	  iSeries machines support a hypervisor virtual console.
- 
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index b732297..256c7be 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -884,6 +884,7 @@ config SCSI_IBMVSCSI
- 	tristate "IBM Virtual SCSI support"
- 	depends on PPC_PSERIES || PPC_ISERIES
- 	select SCSI_SRP_ATTRS
-+	select VIOPATH if PPC_ISERIES
- 	help
- 	  This is the IBM POWER Virtual SCSI Client
- 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+--Signature=_Mon__5_Jan_2009_10_28_00_+1100_uKX3m5EZk7JusMsB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklhRgAACgkQjjKRsyhoI8wISACguEoWL/6mMchylc2hf7XDZUDp
+ucQAn0w11gcpUIiGryrbaw156ZM0CYn7
+=6EXZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__5_Jan_2009_10_28_00_+1100_uKX3m5EZk7JusMsB--
