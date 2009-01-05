@@ -1,22 +1,24 @@
-Return-Path: <av1474@comtv.ru>
-Received: from akado.ru (fe02x03-cgp.akado.ru [77.232.31.165])
-	by ozlabs.org (Postfix) with ESMTP id B9888DE184
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 03:34:35 +1100 (EST)
-Date: Mon, 5 Jan 2009 19:34:36 +0300 (MSK)
-From: malc <av1474@comtv.ru>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: Lock-up on PPC64
-In-Reply-To: <1231158516.8367.3.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
-References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
-	<20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
-	<20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
-	<1230165163.7292.32.camel@pasglop>
-	<Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
-	<1231158516.8367.3.camel@localhost>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 04D47DE29C
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 03:37:10 +1100 (EST)
+Date: Mon, 5 Jan 2009 19:37:08 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2 4/4] powerpc/83xx: Add PCI-E support for all MPC83xx
+	boards with PCI-E
+Message-ID: <20090105163708.GB7345@oksana.dev.rtsoft.ru>
+References: <20081229164040.GD8215@oksana.dev.rtsoft.ru>
+	<C96CE59B-05FA-4728-930F-D4430EFB9B99@kernel.crashing.org>
+	<20081230201916.GA20059@oksana.dev.rtsoft.ru>
+	<1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
+	<20081231174125.GA13027@oksana.dev.rtsoft.ru>
+	<950062C1-9944-4B34-9D1D-18F35E1933E2@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <950062C1-9944-4B34-9D1D-18F35E1933E2@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 5 Jan 2009, Michael Ellerman wrote:
-
-> On Sun, 2008-12-28 at 03:45 +0300, malc wrote:
->> On Thu, 25 Dec 2008, Benjamin Herrenschmidt wrote:
->>
->>> On Wed, 2008-12-24 at 03:08 +0300, malc@pulsesoft.com wrote:
->>>> Ken Moffat <zarniwhoop@ntlworld.com> writes:
+On Thu, Jan 01, 2009 at 08:29:39AM -0600, Kumar Gala wrote:
+[...]
+>>>>>> +		compatible = "fsl,mpc8315-pcie", "fsl,mpc8314-pcie";
+>>>>>> +		reg = <0xe0009000 0x00001000 0xb0000000 0x01000000>;
+>>>>>
+>>>>> the size on the 0xb0000000 seems wrong
 >>>>
->>>>> On Tue, Dec 23, 2008 at 06:04:45AM +0300, malc@pulsesoft.com wrote:
+>>>> This is how FSL U-Boots configure the cfg window, and I'm trying to
+>>>> retain the compatibility. Anyway, now Linux maps only the first 4kB
+>>>> of that area, so we don't actually care about this, but dts is still
+>>>> correct for older u-boots. Newer U-Boots might want to correct this
+>>>> value if they want to use other cfg window setup...
+>>>
+>>> I'd rather not pollute the .dts with this
 >>
->> [..snip..]
->>
-[..snip..]
-
->>
->> Now to the Christmas cheer, i've tried v2.6.28 and couldn't help but
->> notice that the problem is gone, bisecting v2.6.27 (which funnily i
->> had to mark good) to v2.6.28 (which has to be marked bad) wasn't fun
->> but eventually converged at ab598b6680f1e74c267d1547ee352f3e1e530f89
->>
->> commit ab598b6680f1e74c267d1547ee352f3e1e530f89
->> Author: Paul Mackerras <paulus@samba.org>
->> Date:   Sun Nov 30 11:49:45 2008 +0000
->>
->>      powerpc: Fix system calls on Cell entered with XER.SO=1
->>
->> Now the lock-up is gone, however the code never exercises the path
->> taken during the lock-up so i guess it, at least, deserves a better
->> look by PPC64 care takers.
+>> So you prefer to change the cfg window size to 0x1000?
 >
-> I'm confused. Which code never exercises which path, and so what
-> deserves a better look?
+> I'd prefer to drop it (assuming that is reasonable).
 
-Before this change (atleast) mono_handle_native_sigsegv was executed
-(before machine locks-up hard) after the change this code path is
-never touched.
+I see. Yes, we can drop it and just read the outwin0 BAR register
+to find out the cfg space base address.
 
-The fact that machine locks up hard and not even magic sysrq works
-is what deserves a better look.
+> Does the PCI-express OF draft spec cover describing cfg space
+>
+> http://playground.sun.com/1275/proposals/New/516-it.txt
 
-[..snip..]
+If I understood correctly, the spec describes directly mapped
+cfg space, this won't work for 83xx PCI-E.
+
+I'll post new patches soon.
+
+Thanks,
 
 -- 
-mailto:av1474@comtv.ru
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
