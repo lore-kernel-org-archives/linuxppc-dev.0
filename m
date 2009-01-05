@@ -1,12 +1,14 @@
-Return-Path: <Narendra.KA@Lntemsys.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: Unsubscribe
+Return-Path: <netstv@gmail.com>
+Message-ID: <b4b98b690901042033i5e5b1d3fp91a4c63831cbef6e@mail.gmail.com>
+Date: Sun, 4 Jan 2009 20:33:42 -0800
+From: "Steve Iribarne (GMail)" <netstv@gmail.com>
+To: "Narendra KA" <Narendra.KA@lntemsys.com>
+Subject: Re: Unsubscribe
+In-Reply-To: <OFD8F688F4.39893FD8-ON65257535.0018ECDE-65257535.00186B27@lntemsys.com>
 MIME-Version: 1.0
-Message-ID: <OFD8F688F4.39893FD8-ON65257535.0018ECDE-65257535.00186B27@lntemsys.com>
-From: Narendra KA <Narendra.KA@Lntemsys.com>
-Date: Mon, 5 Jan 2009 10:02:58 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 00186B2465257535_="
+Content-Type: text/plain; charset=ISO-8859-1
+References: <OFD8F688F4.39893FD8-ON65257535.0018ECDE-65257535.00186B27@lntemsys.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,27 +18,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 00186B2465257535_=
-Content-Type: text/plain; charset="US-ASCII"
+HOLLY CRAP everyone.. please read at the bottom of these emails to
+figure out how to unsubscribe.  This is ridiculous!
 
- Hi,
+Towards the bottom of the
+"https://ozlabs.org/mailman/listinfo/linuxppc-dev" page there is
+simple place you put your f'ing email address and hit "Unsubscribe or
+edit options".
 
-can you please unsubscribe me from this mailing list?
- 
-Thanks and Regards,
-Narendra K.A
+That's why we put it there... so you could do it and we wouldn't have
+to do any of it.
 
---=_alternative 00186B2465257535_=
-Content-Type: text/html; charset="US-ASCII"
+Please quit sending emails asking someone to do something for you.
+
+Sorry for the spam, but I'm hung over from new years and in a bad mood
+and this was the email that sent me over the top.  No ill will towards
+you Narendra.
+
+-stv
+
+On Sun, Jan 4, 2009 at 8:32 PM, Narendra KA <Narendra.KA@lntemsys.com> wrote:
+>
+>
+> Hi,
+>
+> can you please unsubscribe me from this mailing list?
+>
+> Thanks and Regards,
+> Narendra K.A
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
 
-<br><font size=2 face="sans-serif"><br>
-</font><font size=2 color=#008000 face="Verdana"> </font><font size=2><tt>Hi,<br>
-<br>
-can you please unsubscribe me from this mailing list?<br>
-</tt></font><font size=2 color=#008000 face="Verdana"> </font>
-<br><font size=2 color=#999999 face="Verdana"><b>Thanks and Regards</b></font><font size=2 color=#008000 face="Verdana">,</font>
-<br><font size=3 face="Verdana"><b><i>Narendra K.A</i></b></font>
-<br>
---=_alternative 00186B2465257535_=--
+
+-- 
+/*
+ * Steve Iribarne
+ * Software Engineer
+ * (aka Grunt)
+ */
