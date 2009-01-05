@@ -1,15 +1,21 @@
 Return-Path: <miltonm@bga.com>
 Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 2A17EDDF6D
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 00:22:07 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 01264DE107
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 00:26:51 +1100 (EST)
+In-Reply-To: <20090104182441.GA5086@linux.vnet.ibm.com>
+References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com>
+	<20090104182441.GA5086@linux.vnet.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0ba5eb018563b895658033d2db0c9b9f@bga.com>
+Message-Id: <98d6aef17cba9d835d7866745f811dc7@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] ppc64: Enable RELOCATABLE option for CRASH_DUMP
-Date: Mon, 5 Jan 2009 07:28:54 -0600
-To: M. Mohan Kumar <mohan@in.ibm.com>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with
+	!CONFIG_VIOPATH
+Date: Mon, 5 Jan 2009 07:33:32 -0600
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,19 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mohan wrote:
+On Jan 4, 2009, at 12:24 PM, Kamalesh Babulal wrote:
 
->  config CRASH_DUMP
->         bool "Build a kdump crash kernel"
-> -       depends on (PPC64 && RELOCATABLE) || 6xx
-> +       depends on PPC64 || 6xx
-> +       select RELOCATABLE
->         help
->           Build a kernel suitable for use as a kdump capture kernel.
->           The same kernel binary can be used as production kernel and 
-> dump
+> Hi Milton,
 >
+> 	Thanks for the review comments, I am resending the patch with the
+> changes you have recommended.
+>
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
-You should only select relocatable if ppc64
+Better, but you didn't include the change log, nor did you respond to 
+Stephen's reply suggesting that all users be converted to select 
+viopath (versus the proposed 2 select and 5 get it via depends and 
+default y).
 
 milton
