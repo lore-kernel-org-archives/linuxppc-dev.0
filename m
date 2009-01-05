@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DBC17DE171
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 03:27:21 +1100 (EST)
-Message-Id: <1C3FA775-7C2A-4218-BE14-95FF2DD9F6D2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <1231152455-8296-1-git-send-email-leoli@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc/8313erdb: fix kernel crash
-Date: Mon, 5 Jan 2009 10:25:08 -0600
-References: <1231152455-8296-1-git-send-email-leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 3E593DE081
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 03:30:32 +1100 (EST)
+Date: Mon, 5 Jan 2009 19:30:29 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Liu Dave <DaveLiu@freescale.com>
+Subject: Re: [PATCH v2 3/4] powerpc/fsl_pci: Add MPC83xx PCI-E controller
+	RCmode support
+Message-ID: <20090105163029.GA7345@oksana.dev.rtsoft.ru>
+References: <20081229210559.GA10801@oksana.dev.rtsoft.ru>
+	<D7CCA83BB0796C49BC0BB53B6AB1208904074B@zch01exm21.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208904074B@zch01exm21.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Huang Changming-R66093 <Chang-Ming.Huang@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Jan 05, 2009 at 04:18:26PM +0800, Liu Dave wrote:
+> > +static void __iomem *mpc83xx_pcie_remap_cfg(struct pci_bus *bus,
+> > +				    unsigned int devfn, int offset)
+> > +{
+> > +	struct pci_controller *hose = bus->sysdata;
+> > +	struct mpc83xx_pcie *pcie = hose->dn->data;
+> > +	u8 bus_no = bus->number - hose->first_busno;
+> > +	u32 dev_base = bus_no << 20 | devfn << 12;
+> 
+> Hello Anton,
+> 
+> There is one bug for the bus/device number shift according to the latest
+> 83xx UM. The shift should be
+> 
+> dev_base = (bus_no << 24) | (devfn << 16);
+> 
+> You can download the latest MPC8315 UM as reference from
+> http://www.freescale.com.
 
-On Jan 5, 2009, at 4:47 AM, Li Yang wrote:
+Ah! Thanks a lot, that explains a lot.
 
-> Probe the new mdio node added by b31a1d8b.  Fix kernel panic problem  
-> when
-> gianfar driver wants to get the of_platform_device of that mdio.
->
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> arch/powerpc/boot/dts/mpc8313erdb.dts |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/ 
-> boot/dts/mpc8313erdb.dts
-> index d4df8b6..917d466 100644
-> --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> @@ -222,7 +222,7 @@
-> 			cell-index = <1>;
-> 			device_type = "network";
-> 			model = "eTSEC";
-> -			compatible = "gianfar";
-> +			compatible = "gianfar", "simple-bus";
-> 			reg = <0x25000 0x1000>;
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> 			interrupts = <34 0x8 33 0x8 32 0x8>;
+I was quite puzzled why FSL u-boots are using "wrong" shifts, so I
+"corrected" them. And indeed, I was looking at the old reference
+manual: MPC8315ERM   Rev. 0   09/2007. The new manual (MPC8315ERM
+Rev. 1   2/2008) specifies other bits, the same as used in the FSL
+U-Boot, i.e. 31:24 for bus no, 23:19 and 18:16 for device and func.
 
-This isn't correct at all.  Not sure what the panic is but adding  
-"simple-bus" isn't correct.
+> AFAIK, you will work on the u-boot for 83xx PEX, Any question forward
+> to Jerry Huang (in cc). I think he should have some update for PEX.
 
-- k
+Much thanks for the information,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
