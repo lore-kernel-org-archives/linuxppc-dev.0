@@ -1,12 +1,17 @@
-Return-Path: <jrose@econolite.com>
-From: Jim Rose <jrose@econolite.com>
-To: "Linuxppc-dev@ozlabs.org" <Linuxppc-dev@ozlabs.org>
-Date: Mon, 5 Jan 2009 13:32:26 -0800
-Subject: unsubscribe
-Message-ID: <75D730947C105846B394D10A0E24FDAC1E30ADC9FD@anamail.econolite.com>
-Content-Type: multipart/alternative;
-	boundary="_000_75D730947C105846B394D10A0E24FDAC1E30ADC9FDanamaileconol_"
+Return-Path: <tom.d.arbuckle@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 57D87DDFC7
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 07:00:13 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so2267079ywh.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 Jan 2009 12:00:11 -0800 (PST)
+Message-ID: <e86dc2bc0901051200l1a111022o8842c2f66135da11@mail.gmail.com>
+Date: Mon, 5 Jan 2009 20:00:10 +0000
+From: "Tom Arbuckle" <tom.d.arbuckle@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC PATCH] "multifunc-device": fix IRQ assignment by also scanning
+	dummy nodes
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,63 +21,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---_000_75D730947C105846B394D10A0E24FDAC1E30ADC9FDanamaileconol_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Kernel: 2.6.28; function: scan_OF_pci_childs; file: arch/powerpc/kernel/pci_32.c
+Quoting from line 206 : 'some OFs create a parent node "multifunc-device" as a
+fake root for all functions of a multi-function device. we go down
+them as well.'
+
+Function scan_OF_for_pci_dev (line 225) also needs to be taught about
+these dummy nodes to prevent misallocation/non-allocation of IRQs for
+this class of devices.
+
+Why RFC? I have chosen to scan all 'unusual' nodes as possible
+multifunc-devices. Is this too many?
+
+Bug seen when using a bt878 multimedia controller card on a G3 Powermac.
+This PCI card has separate audio and video nodes and was not being properly
+assigned interrupts. (Either 'cannot grab irq 0' or type of assigned
+interrupt wrt 'edge/level' was incorrect).
+
+Signed off by: Tom Arbuckle <tom.d.arbuckle (at) gmail.com>
 
 
+Regards,
 
---_000_75D730947C105846B394D10A0E24FDAC1E30ADC9FDanamaileconol_
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
-hemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html40">
+Tom Arbuckle
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-ascii"=
->
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
+Homepage: http://www.ece.ul.ie/homepage/Tom_Arbuckle/
+LinkedIn: http://www.linkedin.com/in/tomarbuckle
 
-</head>
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+--- linux-2.6.28/arch/powerpc/kernel/pci_32.c.orig	2008-12-27
+16:32:48.000000000 +0000
++++ linux-2.6.28/arch/powerpc/kernel/pci_32.c	2008-12-27
+16:36:15.000000000 +0000
+@@ -226,15 +226,21 @@ static struct device_node *scan_OF_for_p
+ 					       unsigned int devfn)
+ {
+ 	struct device_node *np;
++	struct device_node *np_sub = NULL;
+ 	const u32 *reg;
+ 	unsigned int psize;
 
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
---_000_75D730947C105846B394D10A0E24FDAC1E30ADC9FDanamaileconol_--
+ 	for_each_child_of_node(parent, np) {
+ 		reg = of_get_property(np, "reg", &psize);
+-		if (reg == NULL || psize < 4)
+-			continue;
+-		if (((reg[0] >> 8) & 0xff) == devfn)
+-			return np;
++		if (reg && psize >= 4) {
++			if (((reg[0] >> 8) & 0xff) == devfn)
++				return np;
++		}
++		if (!strcmp(np->name, "multifunc-device")) {
++			np_sub = scan_OF_for_pci_dev(np, devfn);
++			if (np_sub)
++				return np_sub;
++		}
+ 	}
+ 	return NULL;
+ }
