@@ -1,14 +1,19 @@
-Return-Path: <jeongin.choi@samsung.com>
-Date: Mon, 05 Jan 2009 23:48:55 +0000 (GMT)
-From: JeongIn Choi <jeongin.choi@samsung.com>
-Subject: Unsubscribe
-Message-id: <0KD000J60VHHH2@ms7.samsung.com>
-MIME-version: 1.0
-MIME-version: 1.0
-Content-type: text/html; charset=windows-1252
-Cc: Frank Lautenbach <frank.lautenbach@gmx.de>,
-	"Linuxppc-dev@ozlabs.org" <Linuxppc-dev@ozlabs.org>
-Reply-To: jeongin.choi@samsung.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id AE1ECDE3A1
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 10:59:59 +1100 (EST)
+Date: Tue, 6 Jan 2009 10:59:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] net/ehea: bitops work on unsigned longs
+Message-Id: <20090106105951.62b0429d.sfr@canb.auug.org.au>
+In-Reply-To: <20081230.215156.151347026.davem@davemloft.net>
+References: <20081231141853.c6d123c4.sfr@canb.auug.org.au>
+	<20081230.215156.151347026.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: tklein@de.ibm.com, netdev@vger.kernel.org, raisch@de.ibm.com,
+	themann@de.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,36 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PEhUTUw+PEhFQUQ+CjxNRVRBIGh0dHAtZXF1aXY9Q29udGVudC1UeXBlIGNvbnRlbnQ9J3RleHQv
-aHRtbDsgY2hhcnNldD13aW5kb3dzLTEyNTInPgo8dGl0bGU+U2Ftc3VuZyBFbnRlcnByaXNlIFBv
-cnRhbCBteVNpbmdsZTwvdGl0bGU+CjxzdHlsZT4gUCwgdGQsIGxpIHtmb250LWZhbWlseTpBcmlh
-bCwgYXJpYWw7IGZvbnQtc2l6ZTo5cHQ7IG1hcmdpbi10b3A6NXB4O21hcmdpbi1ib3R0b206NXB4
-O30gYm9keXtmb250LWZhbWlseTpBcmlhbCwgYXJpYWw7IGZvbnQtc2l6ZTo5cHQ7fTwvc3R5bGU+
-CjwvSEVBRD48Qk9EWT48YnI+PCEtLVNQOmplb25naW4uY2hvaS0tPkhlbGxvIEZyYW5rIA0KPHA+
-V291bGQgeW91IHBsZWFzZSB1bnN1YnNjcmliZSBtZSA/IDwvcD4NCjxwPnJlZ2FyZCB5b3Vyczwv
-cD4NCjxwPiZuYnNwOzwvcD4NCjxIUiBhbGlnbj1sZWZ0IHdpZHRoPSIzMDAiPg0KDQo8RElWIGFs
-aWduPWxlZnQ+DQo8VEFCTEUgYm9yZGVyQ29sb3I9d2hpdGUgY2VsbFNwYWNpbmc9MCB3aWR0aD0i
-MzIxIiBib3JkZXI9MT4NCjxUUj4NCjxURCB3aWR0aD0iNiI+DQo8UD4mbmJzcDs8L1A+DQo8UCBh
-bGlnbj1jZW50ZXI+Jm5ic3A7PC9QPg0KPFAgYWxpZ249Y2VudGVyPiZuYnNwOzwvUD4NCjxQIGFs
-aWduPWNlbnRlcj4mbmJzcDs8L1A+DQo8UCBhbGlnbj1jZW50ZXI+Jm5ic3A7PC9QPg0KPFAgYWxp
-Z249Y2VudGVyPiZuYnNwOzwvUD4NCjxQIGFsaWduPWNlbnRlcj4mbmJzcDs8L1A+DQo8UCBhbGln
-bj1jZW50ZXI+Jm5ic3A7PC9QPg0KPFAgYWxpZ249Y2VudGVyPiZuYnNwOzwvUD4NCjxQIGFsaWdu
-PWNlbnRlcj4mbmJzcDs8L1A+DQo8UD4mbmJzcDs8L1A+PC9URD4NCjxURCB3aWR0aD0iMzA1Ij4N
-CjxQPjxCPkplb25nJm5ic3A7SW4uJm5ic3A7Q2hvaSZuYnNwOzwvQj4mbmJzcDsmbmJzcDsmbmJz
-cDs8QlI+PEJSPlM8Rk9OVCBmYWNlPVZlcmRhbmE+YW1zdW5nJm5ic3A7VGhhbGVzJm5ic3A7Q28u
-LEx0ZC4gDQo8L0ZPTlQ+PC9QPg0KPFA+PEZPTlQgZmFjZT1WZXJkYW5hPlMvVzEmbmJzcDtHcm91
-cDwvRk9OVD48L1A+DQo8UD48Rk9OVCBmYWNlPVZlcmRhbmE+QWR2YW5jZWQmbmJzcDtUZWNobm9s
-b2d5Jm5ic3A7UiZhbXA7RCZuYnNwO0NlbnRlcjwvRk9OVD48L1A+DQo8UD4mbmJzcDs8L1A+DQo8
-UD48Qj48QSBocmVmPSJodHRwOi8vd3d3LnNhbXN1bmd0aGFsZXMuY29tIj48Rk9OVCBmYWNlPVZl
-cmRhbmE+U0FNU1VORyBUSEFMRVMgDQpDTy4sIExURC48L0ZPTlQ+PC9BPjwvQj48L1A+DQo8UD48
-Rk9OVCBmYWNlPVZlcmRhbmE+Jm5ic3A7Q2hhbmctTGkgMzA0LCBOYW1zYS1NeXVuLCBDaGVvaW4t
-R3UsPC9GT05UPjwvUD4NCiAgICAgICAgICAgICAgICA8cD48Rk9OVCBmYWNlPVZlcmRhbmE+Jm5i
-c3A7WW9uZ2luLUNpdHksIEd5ZW9uZ2dpLURvLCBLb3JlYSANCiAgICAgICAgICAgICAgICA0NDkt
-ODg1PC9GT05UPjwvcD4NCjxQPjxGT05UIGZhY2U9VmVyZGFuYT4mbmJzcDtURUwgOiA4Mi0zMS04
-MDIwLTcxNzUmbmJzcDtGQVg6ODItMzEtODAyMC03MzUwPC9GT05UPjwvUD4NCjxQPjxGT05UIGZh
-Y2U9VmVyZGFuYT4mbmJzcDtNb2JpbGUgOiA4Mi0xOC01MTMtNTgwMDwvRk9OVD48L1A+DQo8UD48
-Rk9OVCBmYWNlPVZlcmRhbmE+Jm5ic3A7RS1tYWlsJm5ic3A7OiZuYnNwOzxBIA0KaHJlZj0ibWFp
-bHRvOmplb25naW4uY2hvaUBzYW1zdW5nLmNvbSI+amVvbmdpbi5jaG9pQHNhbXN1bmcuY29tPC9B
-PjwvRk9OVD48L1A+DQo8L1REPjwvVFI+PC9UQUJMRT48L0RJVj4NCjxIUiBhbGlnbj1sZWZ0IHdp
-ZHRoPSIzMDAiPjwhLS1qZW9uZ2luLmNob2k6RVAtLT48cD4mbmJzcDs8L3A+PHA+Jm5ic3A7PC9w
-Pjxicj48L0JPRFk+PC9IVE1MPg==
+Hi Dave,
+
+On Tue, 30 Dec 2008 21:51:56 -0800 (PST) David Miller <davem@davemloft.net> wrote:
+>
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Wed, 31 Dec 2008 14:18:53 +1100
+> 
+> > These changes will avoid several warnings when we change u64 to unsigned
+> > long long.
+> > 
+> > Also, ehea_driver_flags is only used in ehca_main.c
+> > 
+> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> > ---
+> 
+> And also rejected, just like the previous two.
+> 
+> This is so much worse than the problems we had with
+> printing u64's and it's being done as a result to
+> the "fix" for that.
+
+How is this worse than anything?  The only thing wrong with this patch is
+the commit message ... Lets try this (if this doesn't address your
+problems, then assume I am too dense for your original explanation):
+---------------------------------------------------------------------------
+net/ehea: bitops work on unsigned longs
+
+The flags field of struct ehea_port is only used with test_bit(),
+clear_bit() and set_bit() and these interfaces only work on
+"unsigned long"s, so change the field to be an "unsigned long".  Also,
+this field only has two bits defined for it (0 and 1) so will still be
+fine if someone builds this driver for a 32 bit arch (at least as far as
+this flags field is concerned).
+
+Also note that ehea_driver_flags is only used in ehca_main.c, so make it
+static in there.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/net/ehea/ehea.h      |    3 +--
+ drivers/net/ehea/ehea_main.c |    2 +-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index 9930d5f..6271b94 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -478,7 +478,7 @@ struct ehea_port {
+ 	int num_add_tx_qps;
+ 	int num_mcs;
+ 	int resets;
+-	u64 flags;
++	unsigned long flags;
+ 	u64 mac_addr;
+ 	u32 logical_port_id;
+ 	u32 port_speed;
+@@ -510,7 +510,6 @@ void ehea_set_ethtool_ops(struct net_device *netdev);
+ int ehea_sense_port_attr(struct ehea_port *port);
+ int ehea_set_portspeed(struct ehea_port *port, u32 port_speed);
+ 
+-extern u64 ehea_driver_flags;
+ extern struct work_struct ehea_rereg_mr_task;
+ 
+ #endif	/* __EHEA_H__ */
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index a2f1905..e3131ea 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -99,7 +99,7 @@ MODULE_PARM_DESC(use_lro, " Large Receive Offload, 1: enable, 0: disable, "
+ 
+ static int port_name_cnt;
+ static LIST_HEAD(adapter_list);
+-u64 ehea_driver_flags;
++static unsigned long ehea_driver_flags;
+ struct work_struct ehea_rereg_mr_task;
+ static DEFINE_MUTEX(dlpar_mem_lock);
+ struct ehea_fw_handle_array ehea_fw_handles;
+-- 
+1.6.0.5
+
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
