@@ -1,21 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0F9F6DE197
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 10:28:09 +1100 (EST)
-Date: Mon, 5 Jan 2009 10:28:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Subject: Re: linux-next: manual merge of the driver-core tree
-Message-Id: <20090105102800.c73bed11.sfr@canb.auug.org.au>
-In-Reply-To: <20081204042154.GA18027@kroah.com>
-References: <20081204104418.97f848b4.sfr@canb.auug.org.au>
-	<20081204042154.GA18027@kroah.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__5_Jan_2009_10_28_00_+1100_uKX3m5EZk7JusMsB"
-Cc: Kumar, Kay Sievers <kay.sievers@vrfy.org>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <neko@genesi-usa.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 8B081DDFF9
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 11:07:09 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so2125764yxg.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 04 Jan 2009 16:07:08 -0800 (PST)
+Sender: Matt Sealey <neko@genesi-usa.com>
+Message-ID: <49614F36.2040406@genesi-usa.com>
+Date: Sun, 04 Jan 2009 18:07:18 -0600
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: cpu_die on MPC8641D
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,50 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__5_Jan_2009_10_28_00_+1100_uKX3m5EZk7JusMsB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I just built a kernel with a config very similar to the MPC8641HPCN 
+defconfig and for some reason at the end of the build I got an error 
+saying there was no symbol "cpu_die".
 
-Hi Greg,
+I can't work out what I missed here, I checked a few LXRs to 
+cross-reference where the symbol might come from and there are things 
+for 64-bit CPUs (kernel/setup_64.c) and for PowerMacs but there seems to 
+be no "generic" SMP support for 32-bit/e600 cores at all?
 
-On Wed, 3 Dec 2008 20:21:54 -0800 Greg KH <greg@kroah.com> wrote:
->
-> On Thu, Dec 04, 2008 at 10:44:18AM +1100, Stephen Rothwell wrote:
-> >=20
-> > Today's linux-next merge of the driver-core tree got a conflict in
-> > arch/powerpc/platforms/85xx/mpc85xx_mds.c between commit
-> > 24a99596f7465274a8e65ddd29a7d9028969b9f9 ("powerpc/85xx: Fix compile
-> > warnings in mpc85xx_mds.c") from the galak tree and commit
-> > f58f23751464d095f9942304bc5f6072b79a2cc3 ("powerpc: struct device -
-> > replace bus_id with dev_name(), dev_set_name()") from the driver-core
-> > tree.
-> >=20
-> > I fixed it up (see below) and can carry the fix as necessary.
-> >=20
-> > Paul, maybe you should apply the patch from the driver-core tree as it
-> > was cc'd to you and all its prerequisites are upstream.
->=20
-> Yes, Paul, please apply the patch, and let me know.  It will make things
-> much easier in the end for everyone involved.
+I'm trying not to have any Mac drivers in the kernel, but it seems I 
+need to make sure I build in the generic PowerMac platform support to 
+get SMP? Why?
 
-It looks like this has been applied to the powerpc tree and is now in
-Linus' tree.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__5_Jan_2009_10_28_00_+1100_uKX3m5EZk7JusMsB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklhRgAACgkQjjKRsyhoI8wISACguEoWL/6mMchylc2hf7XDZUDp
-ucQAn0w11gcpUIiGryrbaw156ZM0CYn7
-=6EXZ
------END PGP SIGNATURE-----
-
---Signature=_Mon__5_Jan_2009_10_28_00_+1100_uKX3m5EZk7JusMsB--
+-- Matt Sealey <matt@genesi-usa.com>
