@@ -1,23 +1,33 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A4CB7DE184
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 16:57:54 +1100 (EST)
-Date: Mon, 5 Jan 2009 16:57:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Subject: Re: linux-next: manual merge of the driver-core tree
-Message-Id: <20090105165745.9ea2ac91.sfr@canb.auug.org.au>
-In-Reply-To: <20090105043646.GB16341@kroah.com>
-References: <20081204104418.97f848b4.sfr@canb.auug.org.au>
-	<20081204042154.GA18027@kroah.com>
-	<20090105102800.c73bed11.sfr@canb.auug.org.au>
-	<20090105043646.GB16341@kroah.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__5_Jan_2009_16_57_45_+1100_otfgmH=GfQESDJ5/"
-Cc: Kumar, Kay Sievers <kay.sievers@vrfy.org>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <DaveLiu@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C9FE6DE259
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 19:18:32 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n058ISp1007346
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 01:18:29 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n058IRCd021514
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 02:18:28 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2 3/4] powerpc/fsl_pci: Add MPC83xx PCI-E controller
+	RCmode support
+Date: Mon, 5 Jan 2009 16:18:26 +0800
+Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208904074B@zch01exm21.fsl.freescale.net>
+In-Reply-To: <20081229210559.GA10801@oksana.dev.rtsoft.ru>
+References: <20081229164038.GC8215@oksana.dev.rtsoft.ru><DE5232AE-281E-4A6E-9844-A69DF7C90034@kernel.crashing.org>
+	<20081229210559.GA10801@oksana.dev.rtsoft.ru>
+From: "Liu Dave" <DaveLiu@freescale.com>
+To: <avorontsov@ru.mvista.com>, "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Huang Changming-R66093 <Chang-Ming.Huang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__5_Jan_2009_16_57_45_+1100_otfgmH=GfQESDJ5/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> +static void __iomem *mpc83xx_pcie_remap_cfg(struct pci_bus *bus,
+> +				    unsigned int devfn, int offset)
+> +{
+> +	struct pci_controller *hose =3D bus->sysdata;
+> +	struct mpc83xx_pcie *pcie =3D hose->dn->data;
+> +	u8 bus_no =3D bus->number - hose->first_busno;
+> +	u32 dev_base =3D bus_no << 20 | devfn << 12;
 
-Hi Greg,
+Hello Anton,
 
-On Sun, 4 Jan 2009 20:36:46 -0800 Greg KH <greg@kroah.com> wrote:
->
-> Thanks for letting me know, I'll drop it from my tree when I sync up
-> with Linus's tree tomorrow.
+There is one bug for the bus/device number shift according to the latest
+83xx UM. The shift should be
 
-Thanks.
+dev_base =3D (bus_no << 24) | (devfn << 16);
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+You can download the latest MPC8315 UM as reference from
+http://www.freescale.com.
 
---Signature=_Mon__5_Jan_2009_16_57_45_+1100_otfgmH=GfQESDJ5/
-Content-Type: application/pgp-signature
+AFAIK, you will work on the u-boot for 83xx PEX, Any question forward
+to Jerry Huang (in cc). I think he should have some update for PEX.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklhoVkACgkQjjKRsyhoI8wA0ACfYrwX9bMSR9/HuUqQ2dDuTuQ3
-1S0AnAnJZm9ZEAFR3EWdgpsqcKp/NSG9
-=fYYp
------END PGP SIGNATURE-----
-
---Signature=_Mon__5_Jan_2009_16_57_45_+1100_otfgmH=GfQESDJ5/--
+Thanks,
+Dave
