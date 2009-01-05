@@ -1,17 +1,29 @@
-Return-Path: <arunkat@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.173])
-	by ozlabs.org (Postfix) with ESMTP id ACA36DE2AB
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 19:41:36 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so7859090wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 05 Jan 2009 00:41:36 -0800 (PST)
-Message-ID: <edd12c050901050041j1940342ld25d7365398e5563@mail.gmail.com>
-Date: Mon, 5 Jan 2009 14:11:36 +0530
-From: "Arun Kumar" <arunkat@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: UNSUBSCRIBE
+Return-Path: <hans.lehmann@ritter-elektronik.de>
+Received: from mail5.oerlikon.com (mail5.oerlikon.com [193.158.88.212])
+	by ozlabs.org (Postfix) with ESMTP id 618C5DE28A
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 20:40:13 +1100 (EST)
+Received: from anetcsgv210.dom03.net (localhost.localdomain [127.0.0.1])
+	by anetcsgv210.dom03.net (Postfix) with ESMTP id A69B52E97B2
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 10:25:06 +0100 (CET)
+Received: from anetcsgv202.dom03.net (anetcsgv202.dom03.net [193.158.88.254])
+	by anetcsgv210.dom03.net (Postfix) with ESMTP id 960922E97B6
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 10:25:06 +0100 (CET)
+Received: from SRVWWP01.sts.saurer.vpn (unknown [10.33.20.167])
+	by anetcsgv202.dom03.net (postfix-1) with ESMTP id 3089C15187
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 10:25:06 +0100 (CET)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_162546_7635656.1231144896264"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: AW: [PATCH]: [MPC5200] Add ATA DMA support
+Date: Mon, 5 Jan 2009 10:25:05 +0100
+Message-ID: <633A55242A59C7488FAAF5A6850929984B816F@SRVEXC01.sts.saurer.vpn>
+In-Reply-To: <fa686aa40812192318m397aab91kcd1684fe80b52d67@mail.gmail.com>
+References: <AclPDG6qSkF9cHawTOKR6zBfDIjvgg==>
+	<633A55242A59C7488FAAF5A6850929984B814A@SRVEXC01.sts.saurer.vpn>
+	<fa686aa40812192318m397aab91kcd1684fe80b52d67@mail.gmail.com>
+From: "Lehmann, Hans (Ritter Elektronik)" <hans.lehmann@ritter-elektronik.de>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: Tim Yamin <plasm@roo.me.uk>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_162546_7635656.1231144896264
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
->
-> kindly unsubscribe me from this mailing list.
->
+> Hans, what ATA modes do you see this problem in?  UDMA?  MWDMA?  Or =
+does just having the patch applied but still using PIO mode expose the =
+problem?
 
 
+This problem occurs in MWDMA 2 mode.
 
--- 
-
-Best Regards,
-Arun
+Happy new year
 
 
-"      Not in imagined futures
-               Or in remembered pasts
-       But only here and only now
-                   Will you find a peace that lasts        "
 
-------=_Part_162546_7635656.1231144896264
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-<div class="gmail_quote">
-<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">kindly unsubscribe me from this mailing list.<br></blockquote></div><br><br clear="all"><br>-- <br><br>Best Regards,<br>
-Arun <br><br><br>&quot; &nbsp; &nbsp; &nbsp;Not in imagined futures &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Or in remembered pasts<br>&nbsp; &nbsp; &nbsp; &nbsp;But only here and only now <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Will you find a peace that lasts &nbsp; &nbsp; &nbsp; &nbsp;&quot;<br>
+Mit freundlichen Gr=FC=DFen
 
-------=_Part_162546_7635656.1231144896264--
+Hans Lehmann
+Softwareentwicklung
+
+Telefon	+49 (0)2191-67-2520
+Fax 	+49 (0)2191-67-703408
+e-mail 	hans.lehmann@ritter-elektronik.de
+
+
+
+Ritter Elektronik GmbH
+Leverkuser Stra=DFe 65
+D-42897 Remscheid
+www.ritter-elektronik.de
+
+Gesch=E4ftsf=FChrer: Manfred A. Wagner, Dr. Uwe Baader
+Sitz der Gesellschaft: Oberhausen
+HRB 17168 Duisburg  /  USt-ID DE 814009849
