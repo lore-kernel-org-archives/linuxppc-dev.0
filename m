@@ -1,13 +1,14 @@
-Return-Path: <njozwiak@mlsw.biz>
-Message-Id: <200901052149.n05LnNnK028442@server.mlsw.biz>
-From: "Nate Jozwiak" <njozwiak@mlsw.biz>
-To: <Linuxppc-dev@ozlabs.org>
-Subject: unsubscribe
-Date: Mon, 5 Jan 2009 16:49:23 -0500
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_019A_01C96F55.8FEF7CB0"
-In-Reply-To: <75D730947C105846B394D10A0E24FDAC1E30ADC9FD@anamail.econolite.com>
+Return-Path: <jeongin.choi@samsung.com>
+Date: Mon, 05 Jan 2009 23:48:55 +0000 (GMT)
+From: JeongIn Choi <jeongin.choi@samsung.com>
+Subject: Unsubscribe
+Message-id: <0KD000J60VHHH2@ms7.samsung.com>
+MIME-version: 1.0
+MIME-version: 1.0
+Content-type: text/html; charset=windows-1252
+Cc: Frank Lautenbach <frank.lautenbach@gmx.de>,
+	"Linuxppc-dev@ozlabs.org" <Linuxppc-dev@ozlabs.org>
+Reply-To: jeongin.choi@samsung.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,90 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_019A_01C96F55.8FEF7CB0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-unsubscribe
-
- 
-
- 
-
-
-------=_NextPart_000_019A_01C96F55.8FEF7CB0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal;
-	font-family:Arial;
-	color:windowtext;}
-span.EmailStyle18
-	{mso-style-type:personal-reply;
-	font-family:Arial;
-	color:navy;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>unsubscribe</span></font><o:p></o:p>=
-</p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_019A_01C96F55.8FEF7CB0--
+PEhUTUw+PEhFQUQ+CjxNRVRBIGh0dHAtZXF1aXY9Q29udGVudC1UeXBlIGNvbnRlbnQ9J3RleHQv
+aHRtbDsgY2hhcnNldD13aW5kb3dzLTEyNTInPgo8dGl0bGU+U2Ftc3VuZyBFbnRlcnByaXNlIFBv
+cnRhbCBteVNpbmdsZTwvdGl0bGU+CjxzdHlsZT4gUCwgdGQsIGxpIHtmb250LWZhbWlseTpBcmlh
+bCwgYXJpYWw7IGZvbnQtc2l6ZTo5cHQ7IG1hcmdpbi10b3A6NXB4O21hcmdpbi1ib3R0b206NXB4
+O30gYm9keXtmb250LWZhbWlseTpBcmlhbCwgYXJpYWw7IGZvbnQtc2l6ZTo5cHQ7fTwvc3R5bGU+
+CjwvSEVBRD48Qk9EWT48YnI+PCEtLVNQOmplb25naW4uY2hvaS0tPkhlbGxvIEZyYW5rIA0KPHA+
+V291bGQgeW91IHBsZWFzZSB1bnN1YnNjcmliZSBtZSA/IDwvcD4NCjxwPnJlZ2FyZCB5b3Vyczwv
+cD4NCjxwPiZuYnNwOzwvcD4NCjxIUiBhbGlnbj1sZWZ0IHdpZHRoPSIzMDAiPg0KDQo8RElWIGFs
+aWduPWxlZnQ+DQo8VEFCTEUgYm9yZGVyQ29sb3I9d2hpdGUgY2VsbFNwYWNpbmc9MCB3aWR0aD0i
+MzIxIiBib3JkZXI9MT4NCjxUUj4NCjxURCB3aWR0aD0iNiI+DQo8UD4mbmJzcDs8L1A+DQo8UCBh
+bGlnbj1jZW50ZXI+Jm5ic3A7PC9QPg0KPFAgYWxpZ249Y2VudGVyPiZuYnNwOzwvUD4NCjxQIGFs
+aWduPWNlbnRlcj4mbmJzcDs8L1A+DQo8UCBhbGlnbj1jZW50ZXI+Jm5ic3A7PC9QPg0KPFAgYWxp
+Z249Y2VudGVyPiZuYnNwOzwvUD4NCjxQIGFsaWduPWNlbnRlcj4mbmJzcDs8L1A+DQo8UCBhbGln
+bj1jZW50ZXI+Jm5ic3A7PC9QPg0KPFAgYWxpZ249Y2VudGVyPiZuYnNwOzwvUD4NCjxQIGFsaWdu
+PWNlbnRlcj4mbmJzcDs8L1A+DQo8UD4mbmJzcDs8L1A+PC9URD4NCjxURCB3aWR0aD0iMzA1Ij4N
+CjxQPjxCPkplb25nJm5ic3A7SW4uJm5ic3A7Q2hvaSZuYnNwOzwvQj4mbmJzcDsmbmJzcDsmbmJz
+cDs8QlI+PEJSPlM8Rk9OVCBmYWNlPVZlcmRhbmE+YW1zdW5nJm5ic3A7VGhhbGVzJm5ic3A7Q28u
+LEx0ZC4gDQo8L0ZPTlQ+PC9QPg0KPFA+PEZPTlQgZmFjZT1WZXJkYW5hPlMvVzEmbmJzcDtHcm91
+cDwvRk9OVD48L1A+DQo8UD48Rk9OVCBmYWNlPVZlcmRhbmE+QWR2YW5jZWQmbmJzcDtUZWNobm9s
+b2d5Jm5ic3A7UiZhbXA7RCZuYnNwO0NlbnRlcjwvRk9OVD48L1A+DQo8UD4mbmJzcDs8L1A+DQo8
+UD48Qj48QSBocmVmPSJodHRwOi8vd3d3LnNhbXN1bmd0aGFsZXMuY29tIj48Rk9OVCBmYWNlPVZl
+cmRhbmE+U0FNU1VORyBUSEFMRVMgDQpDTy4sIExURC48L0ZPTlQ+PC9BPjwvQj48L1A+DQo8UD48
+Rk9OVCBmYWNlPVZlcmRhbmE+Jm5ic3A7Q2hhbmctTGkgMzA0LCBOYW1zYS1NeXVuLCBDaGVvaW4t
+R3UsPC9GT05UPjwvUD4NCiAgICAgICAgICAgICAgICA8cD48Rk9OVCBmYWNlPVZlcmRhbmE+Jm5i
+c3A7WW9uZ2luLUNpdHksIEd5ZW9uZ2dpLURvLCBLb3JlYSANCiAgICAgICAgICAgICAgICA0NDkt
+ODg1PC9GT05UPjwvcD4NCjxQPjxGT05UIGZhY2U9VmVyZGFuYT4mbmJzcDtURUwgOiA4Mi0zMS04
+MDIwLTcxNzUmbmJzcDtGQVg6ODItMzEtODAyMC03MzUwPC9GT05UPjwvUD4NCjxQPjxGT05UIGZh
+Y2U9VmVyZGFuYT4mbmJzcDtNb2JpbGUgOiA4Mi0xOC01MTMtNTgwMDwvRk9OVD48L1A+DQo8UD48
+Rk9OVCBmYWNlPVZlcmRhbmE+Jm5ic3A7RS1tYWlsJm5ic3A7OiZuYnNwOzxBIA0KaHJlZj0ibWFp
+bHRvOmplb25naW4uY2hvaUBzYW1zdW5nLmNvbSI+amVvbmdpbi5jaG9pQHNhbXN1bmcuY29tPC9B
+PjwvRk9OVD48L1A+DQo8L1REPjwvVFI+PC9UQUJMRT48L0RJVj4NCjxIUiBhbGlnbj1sZWZ0IHdp
+ZHRoPSIzMDAiPjwhLS1qZW9uZ2luLmNob2k6RVAtLT48cD4mbmJzcDs8L3A+PHA+Jm5ic3A7PC9w
+Pjxicj48L0JPRFk+PC9IVE1MPg==
