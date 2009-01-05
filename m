@@ -1,35 +1,22 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D70F8DE10C
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 03:30:40 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n05GSo7C003026
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 09:28:50 -0700
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n05GUaDV206314
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 09:30:36 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n05GUZdn002479
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 09:30:36 -0700
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Chandru <chandru@in.ibm.com>
-In-Reply-To: <200901051919.52327.chandru@in.ibm.com>
-References: <200812241325.49404.chandru@in.ibm.com>
-	<18772.11376.339295.42622@cargo.ozlabs.ibm.com>
-	<1230586567.19452.100.camel@nimitz>
-	<200901051919.52327.chandru@in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 05 Jan 2009 08:30:33 -0800
-Message-Id: <1231173033.19452.190.camel@nimitz>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <av1474@comtv.ru>
+Received: from akado.ru (fe02x03-cgp.akado.ru [77.232.31.165])
+	by ozlabs.org (Postfix) with ESMTP id B9888DE184
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 03:34:35 +1100 (EST)
+Date: Mon, 5 Jan 2009 19:34:36 +0300 (MSK)
+From: malc <av1474@comtv.ru>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: Lock-up on PPC64
+In-Reply-To: <1231158516.8367.3.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
+	<20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
+	<20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
+	<1230165163.7292.32.camel@pasglop>
+	<Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
+	<1231158516.8367.3.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,63 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2009-01-05 at 19:19 +0530, Chandru wrote:
-> On Tuesday 30 December 2008 03:06:07 Dave Hansen wrote:
-> When booted with crashkernel=224M@32M or any memory size less than
-> this, the system boots properly. The system comes up with two nodes
-> (0-256M and 256M-4GB). The crashkernel memory reservation spans across
-> these two nodes. The mark_reserved_regions_for_nid() in
-> arch/powerpc/numa.c resizes the reserved part of the memory within it
-> as... 
-> 
-> 	 if (end_pfn > node_ar.end_pfn)
-> 		reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
-> 				- (start_pfn << PAGE_SHIFT);
-> 
-> but the reserve_bootmem_node() in mm/bootmem.c raises the pfn value of
-> end
-> 
-> 	end = PFN_UP(physaddr + size);
-> 
-> This causes end to get a value past the last page in the 0-256M node.
-> The following change restricts the value of end if it exceeds the last
-> pfn in a given node.
+On Mon, 5 Jan 2009, Michael Ellerman wrote:
 
-OK, I had to think about this for a good, long time.  That's bad. :)
+> On Sun, 2008-12-28 at 03:45 +0300, malc wrote:
+>> On Thu, 25 Dec 2008, Benjamin Herrenschmidt wrote:
+>>
+>>> On Wed, 2008-12-24 at 03:08 +0300, malc@pulsesoft.com wrote:
+>>>> Ken Moffat <zarniwhoop@ntlworld.com> writes:
+>>>>
+>>>>> On Tue, Dec 23, 2008 at 06:04:45AM +0300, malc@pulsesoft.com wrote:
+>>
+>> [..snip..]
+>>
+[..snip..]
 
-There are two things that we're dealing with here: "active regions" and
-the NODE_DATA's.  The if() you've pasted above resizes the reservation
-so that it fits into the current active region.  However, as you noted,
-we haven't resized it so that it fits into the NODE_DATA() that we're
-looking at.  We call into the bootmem code, and BUG_ON().
+>>
+>> Now to the Christmas cheer, i've tried v2.6.28 and couldn't help but
+>> notice that the problem is gone, bisecting v2.6.27 (which funnily i
+>> had to mark good) to v2.6.28 (which has to be marked bad) wasn't fun
+>> but eventually converged at ab598b6680f1e74c267d1547ee352f3e1e530f89
+>>
+>> commit ab598b6680f1e74c267d1547ee352f3e1e530f89
+>> Author: Paul Mackerras <paulus@samba.org>
+>> Date:   Sun Nov 30 11:49:45 2008 +0000
+>>
+>>      powerpc: Fix system calls on Cell entered with XER.SO=1
+>>
+>> Now the lock-up is gone, however the code never exercises the path
+>> taken during the lock-up so i guess it, at least, deserves a better
+>> look by PPC64 care takers.
+>
+> I'm confused. Which code never exercises which path, and so what
+> deserves a better look?
 
-The thing I don't like about this is that it might hide bugs in other
-callers.  This really is a ppc-specific thing and, although what you
-wrote will fix the bug on ppc, it will probably cause someone in the
-future to call reserve_bootmem_node() with too large a reservation and
-get a silent failure (not reserving the requested size) back.  
+Before this change (atleast) mono_handle_native_sigsegv was executed
+(before machine locks-up hard) after the change this code path is
+never touched.
 
-We really do need to go take a hard look at the whole interaction
-between lmb's, node active regions, and the NUMA code some day.  It has
-kinda grown to be a bit ungainly.
+The fact that machine locks up hard and not even magic sysrq works
+is what deserves a better look.
 
-How about we just consult the NODE_DATA() in
-mark_reserved_regions_for_nid() instead of reserve_bootmem_node()?
+[..snip..]
 
-> --- linux-2.6.28/mm/bootmem.c.orig	2009-01-05 20:42:12.000000000 +0530
-> +++ linux-2.6.28/mm/bootmem.c	2009-01-05 20:43:53.000000000 +0530
-> @@ -375,10 +375,14 @@ int __init reserve_bootmem_node(pg_data_
->  				 unsigned long size, int flags)
->  {
->  	unsigned long start, end;
-> +	bootmem_data_t *bdata = pgdat->bdata;
-> 
->  	start = PFN_DOWN(physaddr);
->  	end = PFN_UP(physaddr + size);
-> 
-> +	if (end > bdata->node_low_pfn)
-> +		end = bdata->node_low_pfn;
-> +
->  	return mark_bootmem_node(pgdat->bdata, start, end, 1, flags);
->  }
--- Dave
+-- 
+mailto:av1474@comtv.ru
