@@ -1,19 +1,35 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 6E295DE171
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 04:41:57 +1100 (EST)
-Date: Mon, 5 Jan 2009 20:41:55 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0F8BBDE072
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 04:46:54 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n05Hkkx8006672
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 10:46:51 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n05HkjYp018765
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jan 2009 11:46:45 -0600 (CST)
+Date: Mon, 5 Jan 2009 11:46:45 -0600
+From: Scott Wood <scottwood@freescale.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc/83xx: Add PCI-E support for all MPC83xx boards
-	with PCI-E
-Message-ID: <20090105174155.GB8718@oksana.dev.rtsoft.ru>
-References: <20090105174050.GA30219@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20090105174050.GA30219@oksana.dev.rtsoft.ru>
-Cc: Huang Changming <Chang-Ming.Huang@freescale.com>,
-	Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2 4/4] powerpc/83xx: Add PCI-E support for all MPC83xx
+	boards with PCI-E
+Message-ID: <20090105174645.GA23766@ld0162-tx32.am.freescale.net>
+References: <20081229164040.GD8215@oksana.dev.rtsoft.ru>
+	<C96CE59B-05FA-4728-930F-D4430EFB9B99@kernel.crashing.org>
+	<20081230201916.GA20059@oksana.dev.rtsoft.ru>
+	<1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
+	<20081231171017.6FCF585AD247@gemini.denx.de>
+	<B64DF110-E26A-4229-8384-E7933732BC01@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <B64DF110-E26A-4229-8384-E7933732BC01@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,459 +39,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds pcie nodes to the appropriate dts files, plus adds
-some probing code for the boards.
+On Thu, Jan 01, 2009 at 08:26:14AM -0600, Kumar Gala wrote:
+> I meant the official u-boot from denx.de vs the one FSL ships w/its  
+> boards & BSPs.  The BSP u-boot has modifications that don't exist in  
+> the denx.de u-boot (as the quality of the code is not up to open  
+> source standards).
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc8315erdb.dts     |   64 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/mpc8377_mds.dts     |   64 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/mpc8377_rdb.dts     |   64 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/mpc8378_mds.dts     |   64 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/mpc8378_rdb.dts     |   64 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/83xx/mpc831x_rdb.c |    2 +
- arch/powerpc/platforms/83xx/mpc837x_mds.c |    2 +
- arch/powerpc/platforms/83xx/mpc837x_rdb.c |    2 +
- 8 files changed, 326 insertions(+), 0 deletions(-)
+I believe "upstream" is the word you're looking for.
 
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index 072c9b0..9a4fa2a 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -22,6 +22,8 @@
- 		serial0 = &serial0;
- 		serial1 = &serial1;
- 		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
- 	};
- 
- 	cpus {
-@@ -349,4 +351,66 @@
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
- 	};
-+
-+	pci1: pcie@e0009000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8315-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe0009000 0x00001000>;
-+		ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
-+		          0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 1 8
-+				 0 0 0 2 &ipic 1 8
-+				 0 0 0 3 &ipic 1 8
-+				 0 0 0 4 &ipic 1 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xa0000000
-+				  0x02000000 0 0xa0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
-+
-+	pci2: pcie@e000a000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8315-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe000a000 0x00001000>;
-+		ranges = <0x02000000 0 0xc0000000 0xc0000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xd1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 2 8
-+				 0 0 0 2 &ipic 2 8
-+				 0 0 0 3 &ipic 2 8
-+				 0 0 0 4 &ipic 2 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xc0000000
-+				  0x02000000 0 0xc0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index 1d14d70..b12b9b4 100644
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -23,6 +23,8 @@
- 		serial0 = &serial0;
- 		serial1 = &serial1;
- 		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
- 	};
- 
- 	cpus {
-@@ -409,4 +411,66 @@
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
- 	};
-+
-+	pci1: pcie@e0009000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8377-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe0009000 0x00001000>;
-+		ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
-+		          0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 1 8
-+				 0 0 0 2 &ipic 1 8
-+				 0 0 0 3 &ipic 1 8
-+				 0 0 0 4 &ipic 1 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xa0000000
-+				  0x02000000 0 0xa0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
-+
-+	pci2: pcie@e000a000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8377-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe000a000 0x00001000>;
-+		ranges = <0x02000000 0 0xc0000000 0xc0000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xd1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 2 8
-+				 0 0 0 2 &ipic 2 8
-+				 0 0 0 3 &ipic 2 8
-+				 0 0 0 4 &ipic 2 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xc0000000
-+				  0x02000000 0 0xc0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index 9413af3..1aed6d0 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -22,6 +22,8 @@
- 		serial0 = &serial0;
- 		serial1 = &serial1;
- 		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
- 	};
- 
- 	cpus {
-@@ -350,4 +352,66 @@
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
- 	};
-+
-+	pci1: pcie@e0009000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8377-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe0009000 0x00001000>;
-+		ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
-+		          0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 1 8
-+				 0 0 0 2 &ipic 1 8
-+				 0 0 0 3 &ipic 1 8
-+				 0 0 0 4 &ipic 1 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xa0000000
-+				  0x02000000 0 0xa0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
-+
-+	pci2: pcie@e000a000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8377-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe000a000 0x00001000>;
-+		ranges = <0x02000000 0 0xc0000000 0xc0000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xd1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 2 8
-+				 0 0 0 2 &ipic 2 8
-+				 0 0 0 3 &ipic 2 8
-+				 0 0 0 4 &ipic 2 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xc0000000
-+				  0x02000000 0 0xc0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
-index b85fc02..771bbf4 100644
---- a/arch/powerpc/boot/dts/mpc8378_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-@@ -23,6 +23,8 @@
- 		serial0 = &serial0;
- 		serial1 = &serial1;
- 		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
- 	};
- 
- 	cpus {
-@@ -395,4 +397,66 @@
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
- 	};
-+
-+	pci1: pcie@e0009000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8378-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe0009000 0x00001000>;
-+		ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
-+		          0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 1 8
-+				 0 0 0 2 &ipic 1 8
-+				 0 0 0 3 &ipic 1 8
-+				 0 0 0 4 &ipic 1 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xa0000000
-+				  0x02000000 0 0xa0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
-+
-+	pci2: pcie@e000a000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8378-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe000a000 0x00001000>;
-+		ranges = <0x02000000 0 0xc0000000 0xc0000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xd1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 2 8
-+				 0 0 0 2 &ipic 2 8
-+				 0 0 0 3 &ipic 2 8
-+				 0 0 0 4 &ipic 2 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xc0000000
-+				  0x02000000 0 0xc0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 23c10ce..68ee09e 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -22,6 +22,8 @@
- 		serial0 = &serial0;
- 		serial1 = &serial1;
- 		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
- 	};
- 
- 	cpus {
-@@ -334,4 +336,66 @@
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
- 	};
-+
-+	pci1: pcie@e0009000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8378-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe0009000 0x00001000>;
-+		ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
-+		          0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 1 8
-+				 0 0 0 2 &ipic 1 8
-+				 0 0 0 3 &ipic 1 8
-+				 0 0 0 4 &ipic 1 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xa0000000
-+				  0x02000000 0 0xa0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
-+
-+	pci2: pcie@e000a000 {
-+		#address-cells = <3>;
-+		#size-cells = <2>;
-+		#interrupt-cells = <1>;
-+		device_type = "pci";
-+		compatible = "fsl,mpc8378-pcie", "fsl,mpc8314-pcie";
-+		reg = <0xe000a000 0x00001000>;
-+		ranges = <0x02000000 0 0xc0000000 0xc0000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xd1000000 0 0x00800000>;
-+		bus-range = <0 255>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0 0 0 1 &ipic 2 8
-+				 0 0 0 2 &ipic 2 8
-+				 0 0 0 3 &ipic 2 8
-+				 0 0 0 4 &ipic 2 8>;
-+		clock-frequency = <0>;
-+
-+		pcie@0 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			device_type = "pci";
-+			reg = <0 0 0 0 0>;
-+			ranges = <0x02000000 0 0xc0000000
-+				  0x02000000 0 0xc0000000
-+				  0 0x10000000
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00800000>;
-+		};
-+	};
- };
-diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-index 5177bdd..b690fd7 100644
---- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-@@ -38,6 +38,8 @@ static void __init mpc831x_rdb_setup_arch(void)
- #ifdef CONFIG_PCI
- 	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
- 		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8314-pcie")
-+		mpc83xx_add_bridge(np);
- #endif
- 	mpc831x_usb_cfg();
- }
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-index 530ef99..33420eb 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-@@ -92,6 +92,8 @@ static void __init mpc837x_mds_setup_arch(void)
- 		}
- 		mpc83xx_add_bridge(np);
- 	}
-+	for_each_compatible_node(np, "pci", "fsl,mpc8314-pcie")
-+		mpc83xx_add_bridge(np);
- #endif
- 	mpc837xmds_usb_cfg();
- }
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-index 1d09654..3d7b953 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-@@ -38,6 +38,8 @@ static void __init mpc837x_rdb_setup_arch(void)
- #ifdef CONFIG_PCI
- 	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
- 		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8314-pcie")
-+		mpc83xx_add_bridge(np);
- #endif
- 	mpc837x_usb_cfg();
- }
--- 
-1.5.6.5
+> My statement was to convey that the kernel.org kernel should only  
+> worry itself with the denx.de u-boot (w/regards to compatibility).
+
+Why?  Unless the BSP u-boots do something insane, I think we should try
+to have the upstream kernel boot on the u-boot that comes on the board
+(it's not nice to require users to reflash unnecessarily).
+
+That said, the device tree should come from u-boot, not from the kernel.
+
+-Scott
