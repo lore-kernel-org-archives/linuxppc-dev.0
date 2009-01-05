@@ -1,14 +1,22 @@
-Return-Path: <netstv@gmail.com>
-Message-ID: <b4b98b690901042033i5e5b1d3fp91a4c63831cbef6e@mail.gmail.com>
-Date: Sun, 4 Jan 2009 20:33:42 -0800
-From: "Steve Iribarne (GMail)" <netstv@gmail.com>
-To: "Narendra KA" <Narendra.KA@lntemsys.com>
-Subject: Re: Unsubscribe
-In-Reply-To: <OFD8F688F4.39893FD8-ON65257535.0018ECDE-65257535.00186B27@lntemsys.com>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 9D2B3DE044
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jan 2009 15:37:59 +1100 (EST)
+Date: Sun, 4 Jan 2009 20:36:46 -0800
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: manual merge of the driver-core tree
+Message-ID: <20090105043646.GB16341@kroah.com>
+References: <20081204104418.97f848b4.sfr@canb.auug.org.au>
+	<20081204042154.GA18027@kroah.com>
+	<20090105102800.c73bed11.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <OFD8F688F4.39893FD8-ON65257535.0018ECDE-65257535.00186B27@lntemsys.com>
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090105102800.c73bed11.sfr@canb.auug.org.au>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,46 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-HOLLY CRAP everyone.. please read at the bottom of these emails to
-figure out how to unsubscribe.  This is ridiculous!
+On Mon, Jan 05, 2009 at 10:28:00AM +1100, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> On Wed, 3 Dec 2008 20:21:54 -0800 Greg KH <greg@kroah.com> wrote:
+> >
+> > On Thu, Dec 04, 2008 at 10:44:18AM +1100, Stephen Rothwell wrote:
+> > > 
+> > > Today's linux-next merge of the driver-core tree got a conflict in
+> > > arch/powerpc/platforms/85xx/mpc85xx_mds.c between commit
+> > > 24a99596f7465274a8e65ddd29a7d9028969b9f9 ("powerpc/85xx: Fix compile
+> > > warnings in mpc85xx_mds.c") from the galak tree and commit
+> > > f58f23751464d095f9942304bc5f6072b79a2cc3 ("powerpc: struct device -
+> > > replace bus_id with dev_name(), dev_set_name()") from the driver-core
+> > > tree.
+> > > 
+> > > I fixed it up (see below) and can carry the fix as necessary.
+> > > 
+> > > Paul, maybe you should apply the patch from the driver-core tree as it
+> > > was cc'd to you and all its prerequisites are upstream.
+> > 
+> > Yes, Paul, please apply the patch, and let me know.  It will make things
+> > much easier in the end for everyone involved.
+> 
+> It looks like this has been applied to the powerpc tree and is now in
+> Linus' tree.
 
-Towards the bottom of the
-"https://ozlabs.org/mailman/listinfo/linuxppc-dev" page there is
-simple place you put your f'ing email address and hit "Unsubscribe or
-edit options".
+Thanks for letting me know, I'll drop it from my tree when I sync up
+with Linus's tree tomorrow.
 
-That's why we put it there... so you could do it and we wouldn't have
-to do any of it.
-
-Please quit sending emails asking someone to do something for you.
-
-Sorry for the spam, but I'm hung over from new years and in a bad mood
-and this was the email that sent me over the top.  No ill will towards
-you Narendra.
-
--stv
-
-On Sun, Jan 4, 2009 at 8:32 PM, Narendra KA <Narendra.KA@lntemsys.com> wrote:
->
->
-> Hi,
->
-> can you please unsubscribe me from this mailing list?
->
-> Thanks and Regards,
-> Narendra K.A
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
-
--- 
-/*
- * Steve Iribarne
- * Software Engineer
- * (aka Grunt)
- */
+greg k-h
