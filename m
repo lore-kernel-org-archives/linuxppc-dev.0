@@ -1,20 +1,14 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 5D0A8DE130
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 06:31:25 +1100 (EST)
-To: Stefan Roese <sr@denx.de>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH v5] spi: Add PPC4xx SPI driver
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <200901051912.25874.sr@denx.de>
-References: <1227628088-10849-1-git-send-email-sr@denx.de>
-	<200812271130.12513.david-b@pacbell.net>
-	<200901051912.25874.sr@denx.de>
-Date: Mon, 05 Jan 2009 20:31:17 +0100
-Message-Id: <20090105193117.E5AD98387CDB@gemini.denx.de>
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	spi-devel-general@lists.sourceforge.net
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id BB6C4DE25A
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 07:09:17 +1100 (EST)
+Message-ID: <496268E7.5090907@harris.com>
+Date: Mon, 05 Jan 2009 15:09:11 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [QUESTION] 440EPx with PCI to PCIe bridge error
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +18,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Stefan,
+I have a Sequoia board (440EPx) with kernel 2.6.27.9.  I've recently
+plugged in a PLX adapter board to convert one of the PCI connectors
+on the Sequoia to PCIe.
 
-In message <200901051912.25874.sr@denx.de> you wrote:
->
-> > > +	/* Write new configration */
-> > > +	out_8(&hw->regs->mode, cs->mode);
-> > > +
-> > > +	/*
-> > > +	 * Allow platform reduce the interrupt load on the CPU during SPI
-> > > +	 * transfers. We do not target maximum performance, but rather allow
-> > > +	 * platform to limit SPI bus frequency and interrupt rate.
-> >
-> > That comment doesn't seem even vaguely related to the
-> > code it allegedly refers to ... nothing in this routine
-> > affects the IRQ load.
-> 
-> IIRC (I didn't write the original version of this driver) then this comments 
-> simply refers to the fact that the platform can select a maximum SPI 
-> frequency via spi->max_speed_hz which is pretty obvious. So I'll just remove 
-> this comment in the next version.
+When the kernel boots, I get the following error messages regarding
+mem resource allocation.  Device 0000:00:0c.0 is the PCI<->PCIe bridge,
+and device 0000:01:00.0 is an FPGA PCIe evaluation board.
 
-On PPC4xx systems we get one interrupt per transferred  byte,  i.  e.
-there  is  a  direct relation between SPI bus frequency and interrupt
-rate.
+	PCI host bridge /plb/pci@1ec000000 (primary) ranges:
+	 MEM 0x0000000180000000..0x000000018fffffff -> 0x0000000080000000
+	  IO 0x00000001e8000000..0x00000001e80fffff -> 0x0000000000000000
+	4xx PCI DMA offset set to 0x00000000
+	PCI: Probing PCI hardware
+	PCI: Hiding 4xx host bridge resources 0000:00:00.0
+	pci 0000:00:0c.0: PME# supported from D0 D1 D3hot
+	pci 0000:00:0c.0: PME# disabled
+	pci 0000:00:0c.0: BAR 8: can't allocate mem resource [0x180000000-0x18fffffff]
+	pci 0000:01:00.0: BAR 1: can't allocate mem resource [0x1f0000000-0x1ffffffff]
+	pci 0000:01:00.0: BAR 0: can't allocate mem resource [0x180000000-0x18007ffff]
+	pci 0000:00:0c.0: PCI bridge, secondary bus 0000:01
+	pci 0000:00:0c.0:   IO window: disabled
+	pci 0000:00:0c.0:   MEM window: disabled
+	pci 0000:00:0c.0:   PREFETCH window: disabled
 
-Since this is a PPC4xx SPI driver, the comment is actually helpful to
-understand the operation of the driver especially in relation to  the
-limitations of the hardware.
+Plain PCI cards plugged directly into the Sequoia work fine.  Is there
+something I have to add to the .dts file to represent the PCI<->PCIe
+bridge?
 
-Instead of removing the  comment  (which  leaves  the  casual  reader
-clueless)  it  would probably better to add a sentence explaining the
-one byte / one interrupt situation?
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-...when fits of creativity run strong, more than  one  programmer  or
-writer  has  been  known to abandon the desktop for the more spacious
-floor.                                             - Fred Brooks, Jr.
+	Thanks,
+	Steve
