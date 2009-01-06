@@ -1,23 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F3E84474FB
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 09:02:57 +1100 (EST)
-Subject: Re: [QUESTION] 440EPx with PCI to PCIe bridge error
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Steven A. Falco" <sfalco@harris.com>
-In-Reply-To: <4963CF68.3040808@harris.com>
-References: <496268E7.5090907@harris.com>
-	<1231190318.14860.17.camel@pasglop>  <49627D33.8030605@harris.com>
-	<1231223634.14860.18.camel@pasglop> <4963C1DE.6020007@harris.com>
-	<4963CF68.3040808@harris.com>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 09:02:20 +1100
-Message-Id: <1231279340.14860.31.camel@pasglop>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 98BA7474FB
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 09:08:17 +1100 (EST)
+Date: Tue, 06 Jan 2009 14:08:17 -0800 (PST)
+Message-Id: <20090106.140817.59130790.davem@davemloft.net>
+To: afleming@freescale.com
+Subject: Re: [PATCH] gianfar: ensure ECNTRL[R100] is cleared on link state
+	change
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <8E33B4C2-F1E3-4C64-86E4-6EAA4C7151C5@freescale.com>
+References: <1231275171-21388-1-git-send-email-galak@kernel.crashing.org>
+	<8E33B4C2-F1E3-4C64-86E4-6EAA4C7151C5@freescale.com>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Wolfgang Denk <wd@denx.de>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, leo@rock.ap.freescale.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-01-06 at 16:38 -0500, Steven A. Falco wrote:
-> But this has no effect on Linux.  So, I also changed the sequoia.dts
-> to make the outbound range larger, and now Linux is happy too.  I now
-> have ranges for the device:
+From: Andy Fleming <afleming@freescale.com>
+Date: Tue, 6 Jan 2009 14:56:25 -0600
+
 > 
-> # cat 0000:01:00.0/resource
-> 0x0000000190000000 0x000000019007ffff 0x0000000000020200
-> 0x0000000180000000 0x000000018fffffff 0x0000000000020200
+> On Jan 6, 2009, at 2:52 PM, Kumar Gala wrote:
+> 
+> > From: Leo Li <leo@rock.ap.freescale.net>
+> >
+> > When changing the link between 100Mbps and 1Gbps in SGMII mode it was
+> > found out that the link would stop working.  The issue is that ECNTRL[R100]
+> > needs to be cleared when in 1Gbps mode.  Older reference manuals didn't
+> > require the explicitly clearing but has since been found it that it is
+> > needed.
+> >
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> 
+> Acked-by: Andy Fleming <afleming@freescale.com>
 
-So your problem is fixed ? I didn't have a chance yet to look at your
-logs, but it could just have been that you didn't have enough space
-allocated to PCI for your card...
-
-Cheers,
-Ben.
+Applied, thanks everyone.
