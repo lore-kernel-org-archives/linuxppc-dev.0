@@ -1,15 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 6 Jan 2009 12:43:23 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: The usage of compatible 'simple-bus'
-Message-ID: <20090106014323.GB29456@yookeroo.seuss>
-References: <3A45394FD742FA419B760BB8D398F9ED0B37E7@zch01exm26.fsl.freescale.net>
-	<20090105192053.GB23766@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090105192053.GB23766@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 5D845DE327
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 12:59:35 +1100 (EST)
+Date: Mon, 05 Jan 2009 17:59:35 -0800 (PST)
+Message-Id: <20090105.175935.193702661.davem@davemloft.net>
+To: biggerbadderben@gmail.com
+Subject: Re: What is with all these unsubscribe messages
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4962B36A.20500@gmail.com>
+References: <85a5c2010901051703t4ea70cf2hf3b4ea7d2cb39262@mail.gmail.com>
+	<20090105200718.0dab886a@lappy.seanm.ca> <4962B36A.20500@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, mgessner@gmail.com, smaclennan@pikatech.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,27 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 05, 2009 at 01:20:53PM -0600, Scott Wood wrote:
-> On Mon, Jan 05, 2009 at 06:27:39PM +0800, Li Yang wrote:
-> > I got an assumption from the existing device trees that having
-> > 'simple-bus' in the compatible property of a node means that all child
-> > nodes should be added as of_platform_device in platform initialization
-> > phase.  No matter it represents a bus in common sense or not.  Is this
-> > truly the case? 
-> 
-> Yes, simple-bus indicates that the children can be driven standalone from
-> any knowledge of the parent bus.
+From: Ben Warren <biggerbadderben@gmail.com>
+Date: Mon, 05 Jan 2009 17:27:06 -0800
 
-Erm, well, sort of.  Strictly it indicates that the only way to locate
-the child devices of this bus is by using the address information in
-the device tree - there's no way to dynamically probe the bus.
+> I expect they're all people, like myself, that have been bumped here
+> from the ppc_embedded list and aren't used to all the traffic.
 
-The fact that this causes of_platform_devices to be instantiated is a
-Linux implementation specific detail (and one we might change in
-future).
+This is why, as a policy, we never allow propagation of subscribers
+from old lists to new ones created at vger.kernel.org
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Everyone must go through the motions of adding themselves to the new
+list.
+
+If you allow the propagation, it's essentially an act of putting
+someone onto a mailing list without having their permission to do so.
+
+And the result is what we've seen here for the past few days.  If
+those people on the embedded list were truly interested in the
+linuxppc-dev list content, they would have added themselves.
