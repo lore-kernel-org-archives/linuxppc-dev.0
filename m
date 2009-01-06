@@ -1,12 +1,17 @@
 Return-Path: <PaulEaton@earthlink.net>
+Received: from elasmtp-kukur.atl.sa.earthlink.net
+	(elasmtp-kukur.atl.sa.earthlink.net [209.86.89.65])
+	by ozlabs.org (Postfix) with ESMTP id C21E4DE5AD
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 22:16:10 +1100 (EST)
 From: "Paul Eaton" <PaulEaton@earthlink.net>
-To: <Linuxppc-dev@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
 Subject: Unsubscribe me
-Date: Tue, 6 Jan 2009 06:02:25 -0500
-Message-ID: <819C6A2CAED042D6AA8087F228E05D2A@dadshomepc>
+Date: Tue, 6 Jan 2009 06:16:11 -0500
+Message-ID: <DB9B52A7A0AC41688D5C8CF2A8A0E5E2@dadshomepc>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_02A2_01C96FC4.59078CF0"
+	boundary="----=_NextPart_000_02A6_01C96FC6.45B55810"
+Cc: PaulEaton@earthlink.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,21 +23,53 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_02A2_01C96FC4.59078CF0
+------=_NextPart_000_02A6_01C96FC6.45B55810
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Please unsubscribe me.
+unsubscibe me ......
 
  
 
-Thanks,
+thanks
 
-Paul
+ 
+
+> unsubscribe
+
+> 
+
+> 
+
+> 
+
+> 
+
+> 
+
+> _______________________________________________
+
+> Linuxppc-dev mailing list
+
+> Linuxppc-dev@ozlabs.org
+
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+ 
+
+_______________________________________________
+
+Linuxppc-dev mailing list
+
+Linuxppc-dev@ozlabs.org
+
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+ 
 
 
-------=_NextPart_000_02A2_01C96FC4.59078CF0
+------=_NextPart_000_02A6_01C96FC6.45B55810
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -77,21 +114,109 @@ div.Section1
 
 <div class=3DSection1>
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Please unsubscribe me.<o:p></o:p></span></font></p>
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>unsubscibe me =
+......<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>thanks<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>&gt; =
+unsubscribe<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&gt;<o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&gt;<o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&gt;<o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&gt;<o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>&gt;<o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>&gt;
+_______________________________________________<o:p></o:p></span></font><=
+/p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>&gt; Linuxppc-dev =
+mailing
+list<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>&gt; =
+Linuxppc-dev@ozlabs.org<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>&gt; <a
+href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-dev">https://ozlabs.=
+org/mailman/listinfo/linuxppc-dev</a><o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>_______________________________________________<o:p></o:p></span></=
+font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Linuxppc-dev =
+mailing list<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier =
+New"'>Linuxppc-dev@ozlabs.org<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'><a
+href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-dev">https://ozlabs.=
+org/mailman/listinfo/linuxppc-dev</a><o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 face=3DArial><span =
 style=3D'font-size:10.0pt;
 font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Paul<o:p></o:p></span></font></p>
 
 </div>
 
@@ -99,4 +224,4 @@ font-family:Arial'>Paul<o:p></o:p></span></font></p>
 
 </html>
 
-------=_NextPart_000_02A2_01C96FC4.59078CF0--
+------=_NextPart_000_02A6_01C96FC6.45B55810--
