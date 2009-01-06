@@ -1,25 +1,21 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id 19352474C5
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 21:44:41 +1100 (EST)
-Date: Tue, 6 Jan 2009 11:46:19 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with
-	!CONFIG_VIOPATH
-Message-ID: <20090106104619.GA13789@uranus.ravnborg.org>
-References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com>
-	<20090104182441.GA5086@linux.vnet.ibm.com>
-	<98d6aef17cba9d835d7866745f811dc7@bga.com>
-	<20090106072549.GA5066@linux.vnet.ibm.com>
-	<20090106073149.GA12371@uranus.ravnborg.org>
-	<20090106093847.GB5066@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090106093847.GB5066@linux.vnet.ibm.com>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Milton Miller <miltonm@bga.com>, Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <PaulEaton@earthlink.net>
+Received: from elasmtp-kukur.atl.sa.earthlink.net
+	(elasmtp-kukur.atl.sa.earthlink.net [209.86.89.65])
+	by ozlabs.org (Postfix) with ESMTP id F117BDE2AA
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 21:55:38 +1100 (EST)
+From: "Paul Eaton" <PaulEaton@earthlink.net>
+To: <vikas.soni@gdatech.co.in>,
+	"'Nate Jozwiak'" <njozwiak@mlsw.biz>
+References: <75D730947C105846B394D10A0E24FDAC1E30ADC9FD@anamail.econolite.com><200901052149.n05LnNnK028442@server.mlsw.biz>
+	<54000.172.29.38.110.1231218239.squirrel@mail.gdatech.co.in>
+Subject: RE: unsubscribe
+Date: Tue, 6 Jan 2009 05:55:38 -0500
+Message-ID: <A81409CD755543399BC5CCB7C0128DD7@dadshomepc>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <54000.172.29.38.110.1231218239.squirrel@mail.gdatech.co.in>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,17 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kamalesh
+Unsubscribe me please
 
-Looks good, small nit below.
+-----Original Message-----
+From: linuxppc-dev-bounces+pauleaton=earthlink.net@ozlabs.org
+[mailto:linuxppc-dev-bounces+pauleaton=earthlink.net@ozlabs.org] On Behalf
+Of vikas.soni@gdatech.co.in
+Sent: Tuesday, January 06, 2009 12:04 AM
+To: Nate Jozwiak
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: unsubscribe
 
->  config VIOPATH
->  	bool
-> -	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
-> -	default y
-> +	default n
+unsubscibe me ......
 
-As 'n' is default anyway this line is not needed and I suggest you
-spin a final version of the patch with this removed.
+thanks
 
-	Sam
+> unsubscribe
+>
+>
+>
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
