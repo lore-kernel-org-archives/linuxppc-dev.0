@@ -1,23 +1,29 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C5B84DDEDA
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 07:56:57 +1100 (EST)
-Message-Id: <8E33B4C2-F1E3-4C64-86E4-6EAA4C7151C5@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8F681DE51D
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 08:15:15 +1100 (EST)
+Date: Wed, 7 Jan 2009 00:15:13 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1231275171-21388-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] gianfar: ensure ECNTRL[R100] is cleared on link state
-	change
-Date: Tue, 6 Jan 2009 14:56:25 -0600
-References: <1231275171-21388-1-git-send-email-galak@kernel.crashing.org>
-Cc: netdev@vger.kernel.org, Leo Li <leo@rock.ap.freescale.net>,
-	davem@davemloft.net, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2 4/4] powerpc/83xx: Add PCI-E support for all MPC83xx
+	boards with PCI-E
+Message-ID: <20090106211513.GA23914@oksana.dev.rtsoft.ru>
+References: <C96CE59B-05FA-4728-930F-D4430EFB9B99@kernel.crashing.org>
+	<20081230201916.GA20059@oksana.dev.rtsoft.ru>
+	<1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
+	<20081231171017.6FCF585AD247@gemini.denx.de>
+	<B64DF110-E26A-4229-8384-E7933732BC01@kernel.crashing.org>
+	<20090105174645.GA23766@ld0162-tx32.am.freescale.net>
+	<20090105180122.GA12237@oksana.dev.rtsoft.ru>
+	<c384c5ea0901061053r21fbc853y3b28ae3c8e3a0e6f@mail.gmail.com>
+	<20090106192747.GA3056@oksana.dev.rtsoft.ru>
+	<2B8AFE67-67BF-4926-B41B-79ACD72CA505@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <2B8AFE67-67BF-4926-B41B-79ACD72CA505@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>, Wolfgang Denk <wd@denx.de>,
+	linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +33,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jan 6, 2009, at 2:52 PM, Kumar Gala wrote:
-
-> From: Leo Li <leo@rock.ap.freescale.net>
+On Tue, Jan 06, 2009 at 02:38:57PM -0600, Kumar Gala wrote:
+[...]
+>>>>> Why?  Unless the BSP u-boots do something insane, I think we  
+>>>>> should try
+>>>>> to have the upstream kernel boot on the u-boot that comes on the  
+>>>>> board
+>>>>> (it's not nice to require users to reflash unnecessarily).
+>>>>
+>>>> Just in case, the latest version of this patch set is compatible  
+>>>> with
+>>>> the FSL u-boots.
+>>>>
+>>>
+>>> Up to now, I was testing PCIe with this combo:
+>>> - U-Boot 1.3.0-rc2 (Nov 19 2007 - 16:37:36) MPC83XX, was on the board
+>>> - dtc 1.1.0
+>>> - Linux 2.6.24.3 w/ Freescale patches from http://www.bitshrine.org/gpp/
+>>>
+>>>
+>>> That u-boot (i.e. on the mpc8315e-rdb board) had PCIe initialization.
+>>>
+>>> Is u-boot PCIe initialization required for this kernel patch to work?
+>>
+>> Yup.
 >
-> When changing the link between 100Mbps and 1Gbps in SGMII mode it was
-> found out that the link would stop working.  The issue is that  
-> ECNTRL[R100]
-> needs to be cleared when in 1Gbps mode.  Older reference manuals  
-> didn't
-> require the explicitly clearing but has since been found it that it is
-> needed.
->
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Really?  what for?
 
-Acked-by: Andy Fleming <afleming@freescale.com>
+Hm. U-Boot should initialize SerDes and PCI-E controller (pcie laws,
+inbound/outbound windows, clocks, etc.)
+
+Though if PCI-E controller wasn't initialized (i.e. board reflashed
+with the community u-boot), Linux just won't probe the pcie controller:
+
+cfg_bar = in_le32(hose->cfg_data + PEX_OUTWIN0_BAR);
+if (!cfg_bar) {
+	/* PCI-E isn't configured. */
+	ret = -ENODEV;
+	goto err1;
+}
+
+Or did I misunderstand the question?
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
