@@ -1,25 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 94071474C5
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 23:05:59 +1100 (EST)
-Subject: Re: Lock-up on PPC64
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1231158516.8367.3.camel@localhost>
-References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
-	<20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
-	<20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
-	<1230165163.7292.32.camel@pasglop>
-	<Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
-	<1231158516.8367.3.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 06 Jan 2009 23:05:25 +1100
-Message-Id: <1231243525.14860.26.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, malc <av1474@comtv.ru>,
-	linux-kernel@vger.kernel.org
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from mail-bw0-f10.google.com (mail-bw0-f10.google.com
+	[209.85.218.10]) by ozlabs.org (Postfix) with ESMTP id 68141474CC
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 23:19:34 +1100 (EST)
+Received: by bwz3 with SMTP id 3so20638391bwz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 06 Jan 2009 04:19:32 -0800 (PST)
+Message-ID: <c384c5ea0901060418x48c507afq26bf6cec109ed9c4@mail.gmail.com>
+Date: Tue, 6 Jan 2009 13:18:56 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH v2 4/4] powerpc/83xx: Add PCI-E support for all MPC83xx
+	boards with PCI-E
+In-Reply-To: <20090105180122.GA12237@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20081229164040.GD8215@oksana.dev.rtsoft.ru>
+	<C96CE59B-05FA-4728-930F-D4430EFB9B99@kernel.crashing.org>
+	<20081230201916.GA20059@oksana.dev.rtsoft.ru>
+	<1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
+	<20081231171017.6FCF585AD247@gemini.denx.de>
+	<B64DF110-E26A-4229-8384-E7933732BC01@kernel.crashing.org>
+	<20090105174645.GA23766@ld0162-tx32.am.freescale.net>
+	<20090105180122.GA12237@oksana.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2009-01-05 at 23:28 +1100, Michael Ellerman wrote:
-> I'm confused. Which code never exercises which path, and so what
-> deserves a better look?
+Hello,
 
-Well, the thing is with the fix that went into 2.6.30, some error path
-will never bit hit, or pretty much.
+On Mon, Jan 5, 2009 at 7:01 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Mon, Jan 05, 2009 at 11:46:45AM -0600, Scott Wood wrote:
+> [...]
+>> > My statement was to convey that the kernel.org kernel should only
+>> > worry itself with the denx.de u-boot (w/regards to compatibility).
+>>
+>> Why?  Unless the BSP u-boots do something insane, I think we should try
+>> to have the upstream kernel boot on the u-boot that comes on the board
+>> (it's not nice to require users to reflash unnecessarily).
+>
 
-Without the fix, what can happen is that a syscall incorrectly is
-interpreted as returning an error, thus triggering rarely used error
-path in Mono. However, that shouldn't lockup the whole machine :-)
+The u-boot that came with the boards (at least MPC8315E-RDB) is too
+old for 2.6.25+ kernels:
 
-So It's still worth investigating what's happening when taking the fix
-out, as we may have another bug somewhere lurking.
+I have run into this earlier:
 
-Cheers,
-Ben.
+http://www.mail-archive.com/u-boot-users@lists.sourceforge.net/msg06551.html
+
+
+
+Regards,
+-- 
+Leon
