@@ -1,11 +1,11 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f16.google.com (mail-gx0-f16.google.com
-	[209.85.217.16]) by ozlabs.org (Postfix) with ESMTP id 50E92DE3B7
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 01:38:19 +1100 (EST)
-Received: by gxk9 with SMTP id 9so2182538gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 06 Jan 2009 06:38:17 -0800 (PST)
-Message-ID: <fa686aa40901060638y50702717s78b883f099fc912c@mail.gmail.com>
-Date: Tue, 6 Jan 2009 07:38:16 -0700
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 76C2DDE4BA
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 01:40:51 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so2406206yxg.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 06 Jan 2009 06:40:48 -0800 (PST)
+Message-ID: <fa686aa40901060640w29e7ad12jfb08e5874c050bd3@mail.gmail.com>
+Date: Tue, 6 Jan 2009 07:40:47 -0700
 From: "Grant Likely" <grant.likely@secretlab.ca>
 To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
 Subject: Re: Why did you merge two mailing lists?
@@ -25,30 +25,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Tue, Jan 6, 2009 at 2:26 AM, Mohammad Sadegh Sadri
 <mamsadegh@hotmail.com> wrote:
-> Hi All,
->
-> First i should say thanks for your efforts and managing the mailing lists,
-> it is great work and i know that well.
-> I can not understand the reason of merging PPC-embedded and PPC devel
-> mailing lists and as you see there are many people just interested in ppc
-> embedded and messages there. they do not have any interest in what is going
-> on in ppc devel.
+> any how i understand that there is no way to go back where we were
+> previously, and so i should just say thanks, and that i have to unsubscribe
+> from the new mailing list althougth i know there would be emails in which
+> i'll be interested.
 
-If you were only following linuxppc-embedded, then you were missing
-most of the embedded traffic.  It has been a long time that most
-embedded related messages have been going to linuxppc-dev instead of
-linuxppc-embedded.
-
-> For me, i was interested to read messages regarding Xilinx embedded powerpc
-> core. I was just wanted to be informed about new patches, new changes, new
-> drivers and so. and I think this is the same for many of the members of ppc
-> embedded since Xilinx disscussion has been always one of the most active
-> ones in that mailing list.
-
-Yes, but even that is misleading.  Sure most of the traffic on
-linuxppc-embedded was xilinx traffic; but even more xilinx traffic is
-on linuxppc-dev.  Following only linuxppc-embedded doesn't give you
-the whole picture.
+Alternately, you could also create for yourself a filter that drops
+all linuxppc-dev messages that don't contain the words "xilinx",
+"virtex" or similar.  Just about all email clients provide a method
+for filtering.
 
 g.
 
