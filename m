@@ -1,18 +1,17 @@
-Return-Path: <phantom@ms.usi.com.tw>
-Message-ID: <49629BBA.6090004@ms.usi.com.tw>
-Date: Tue, 06 Jan 2009 07:46:02 +0800
-From: Ian Juang <phantom@ms.usi.com.tw>
-MIME-Version: 1.0
-To: Leonid <Leonid@a-k-a.net>
-Subject: Re: unsubscribe
-References: <43FB4790A017E847A47C1D1FD108904E017B7C12@EXVBE011-1.exch011.int
-	ermedia.net>
-In-Reply-To: <43FB4790A017E847A47C1D1FD108904E017B7C12@EXVBE011-1.exch011.in
-	termedia.net>
-Content-Type: text/plain;
-	charset=UTF-8;
-	format=flowed
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 4F04BDE3C1
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 12:07:21 +1100 (EST)
+Date: Mon, 5 Jan 2009 20:07:18 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Matt Gessner" <mgessner@gmail.com>
+Subject: Re: What is with all these unsubscribe messages
+Message-ID: <20090105200718.0dab886a@lappy.seanm.ca>
+In-Reply-To: <85a5c2010901051703t4ea70cf2hf3b4ea7d2cb39262@mail.gmail.com>
+References: <85a5c2010901051703t4ea70cf2hf3b4ea7d2cb39262@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please unsubscribe me from this list.
+On Mon, 5 Jan 2009 20:03:58 -0500
+"Matt Gessner" <mgessner@gmail.com> wrote:
 
+> Does anyone have a feel as to why all these messages are being sent
+> out (other than the fact that people don't use the manager to manage
+> their membership)?
 
->
-> -------- Original Message --------
-> Subject: unsubscribe
-> From: Leonid <Leonid@a-k-a.net>
-> To: Linuxppc-dev@ozlabs.org
-> Date: 2009年1月6日 上午 02:03:55
->
->
->
-> Please unsubscribe me from this list.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
->   
+I am seeing them on other forums too. I am suspicious, but do not know
+for sure, that they are just harvesting email addresses.
+
+Cheers,
+   Sean
