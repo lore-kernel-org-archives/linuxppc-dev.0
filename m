@@ -1,22 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E8A28DE3DF
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 13:53:17 +1100 (EST)
-Date: Tue, 6 Jan 2009 13:53:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: What is with all these unsubscribe messages
-Message-Id: <20090106135304.077bfca8.sfr@canb.auug.org.au>
+Return-Path: <jbrower@signalogic.com>
+Received: from nuntius.signalogic.com
+	(adsl-64-219-188-225.dsl.rcsntx.swbell.net [64.219.188.225])
+	by ozlabs.org (Postfix) with ESMTP id 79ECADE46E
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 13:56:30 +1100 (EST)
+Message-ID: <32909.64.219.188.227.1231208926.squirrel@office.signalogic.com>
 In-Reply-To: <20090105.175935.193702661.davem@davemloft.net>
-References: <85a5c2010901051703t4ea70cf2hf3b4ea7d2cb39262@mail.gmail.com>
-	<20090105200718.0dab886a@lappy.seanm.ca> <4962B36A.20500@gmail.com>
+References: <85a5c2010901051703t4ea70cf2hf3b4ea7d2cb39262@mail.gmail.com><20090105200718.0dab886a@lappy.seanm.ca>
+	<4962B36A.20500@gmail.com>
 	<20090105.175935.193702661.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__6_Jan_2009_13_53_04_+1100_t+W/=2EMHG6yw4rv"
-Cc: linuxppc-dev@ozlabs.org, mgessner@gmail.com, smaclennan@pikatech.com,
-	biggerbadderben@gmail.com
+Date: Mon, 5 Jan 2009 20:28:46 -0600 (CST)
+Subject: Re: What is with all these unsubscribe messages
+From: "Jeff Brower" <jbrower@signalogic.com>
+To: "David Miller" <davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,58 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__6_Jan_2009_13_53_04_+1100_t+W/=2EMHG6yw4rv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+David-
 
-Hi Dave,
-
-On Mon, 05 Jan 2009 17:59:35 -0800 (PST) David Miller <davem@davemloft.net>=
- wrote:
+> From: Ben Warren <biggerbadderben@gmail.com>
+> Date: Mon, 05 Jan 2009 17:27:06 -0800
+>
+>> I expect they're all people, like myself, that have been bumped here
+>> from the ppc_embedded list and aren't used to all the traffic.
 >
 > This is why, as a policy, we never allow propagation of subscribers
 > from old lists to new ones created at vger.kernel.org
->=20
+>
 > Everyone must go through the motions of adding themselves to the new
 > list.
->=20
+>
 > If you allow the propagation, it's essentially an act of putting
 > someone onto a mailing list without having their permission to do so.
->=20
+>
 > And the result is what we've seen here for the past few days.  If
 > those people on the embedded list were truly interested in the
 > linuxppc-dev list content, they would have added themselves.
 
-Except we have merged the lists.  This was asked for by people on the
-linuxppc-embedded list after (they assured me) some discussion.  I was
-not on that list, so took their word for it.
+I completely disagree.  I'm glad the embedded PC list owners were thoughtful enough to migrate me to the new list. 
+They are experts, they know what they're doing, and I trust their judgment.
 
-The merge was announced ...
+My only complaint is that the new subject lines don't have the widely used "[group-name]" prefix.  I might guess that
+some people rely on that to organize e-mail searches for specific group content.
 
-Anyway, it is done.
-
-<annoyed>
-If people are not smart enough to figure out how to unsubscribe
-themselves form a mailing list (which includes the big URL hint at the
-base of each message and more hints in the headers) you have to wonder
-why they were subscribed.
-</annoyed>
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_Jan_2009_13_53_04_+1100_t+W/=2EMHG6yw4rv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklix5EACgkQjjKRsyhoI8xpmACeKpMS1jzCx735EIYWZPh9+GHy
-HW4AnjlQNOKrXd5sBN0a3Bg3bUlryKBZ
-=B2fu
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_Jan_2009_13_53_04_+1100_t+W/=2EMHG6yw4rv--
+-Jeff
