@@ -1,10 +1,10 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <4963CDF4.1070403@am.sony.com>
-Date: Tue, 6 Jan 2009 13:32:36 -0800
+Message-ID: <4963CDDF.1040101@am.sony.com>
+Date: Tue, 6 Jan 2009 13:32:15 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 6/6] mtd/ps3vram: Use msleep in waits
+Subject: [patch 3/6] mtd/ps3vram: Remove ps3vram debug routines
 References: <4963CA52.9030902@am.sony.com>
 In-Reply-To: <4963CA52.9030902@am.sony.com>
 Content-Type: text/plain; charset="ISO-8859-1"
@@ -20,78 +20,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Replace the use of udelay() with msleep() in the looping wait routines
-ps3vram_notifier_wait() and ps3vram_wait_ring().
+Remove the ps3vram debug routines ps3vram_dump_ring() and
+ps3vram_dump_reports().  These routines are not needed.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- drivers/mtd/devices/ps3vram.c |   36 ++++++++++++++----------------------
- 1 file changed, 14 insertions(+), 22 deletions(-)
+ drivers/mtd/devices/ps3vram.c |   29 -----------------------------
+ 1 file changed, 29 deletions(-)
 
 --- a/drivers/mtd/devices/ps3vram.c
 +++ b/drivers/mtd/devices/ps3vram.c
-@@ -109,22 +109,18 @@ static void ps3vram_notifier_reset(struc
- 		notify[i] = 0xffffffff;
+@@ -87,9 +87,6 @@ struct ps3vram_priv {
+ #define DMA_NOTIFIER_HANDLE_BASE 0x66604200 /* first DMA notifier handle */
+ #define DMA_NOTIFIER_OFFSET_BASE 0x1000     /* first DMA notifier offset */
+ #define DMA_NOTIFIER_SIZE        0x40
+-
+-#define NUM_NOTIFIERS		16
+-
+ #define NOTIFIER 7	/* notifier used for completion report */
+ 
+ /* A trailing '-' means to subtract off ps3fb_videomemory.size */
+@@ -131,28 +128,6 @@ static int ps3vram_notifier_wait(struct 
+ 	return -1;
  }
  
--static int ps3vram_notifier_wait(struct mtd_info *mtd, int timeout_ms)
-+static int ps3vram_notifier_wait(struct mtd_info *mtd, unsigned int timeout_ms)
- {
- 	struct ps3vram_priv *priv = mtd->priv;
- 	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
- 
--	timeout_ms *= 1000;
+-static void ps3vram_dump_ring(struct mtd_info *mtd)
+-{
+-	struct ps3vram_priv *priv = mtd->priv;
+-	uint32_t *fifo;
 -
- 	do {
--		if (notify[3] == 0)
-+		if (!notify[3])
- 			return 0;
+-	pr_info("PUT = %08x GET = %08x\n", priv->ctrl[CTRL_PUT],
+-		priv->ctrl[CTRL_GET]);
+-	for (fifo = priv->fifo_base; fifo < priv->fifo_ptr; fifo++)
+-		pr_info("%p: %08x\n", fifo, *fifo);
+-}
 -
--		if (timeout_ms)
--			udelay(1);
-+		msleep(1);
- 	} while (timeout_ms--);
- 
--	return -1;
-+	return -ETIMEDOUT;
- }
- 
+-static void ps3vram_dump_reports(struct mtd_info *mtd)
+-{
+-	struct ps3vram_priv *priv = mtd->priv;
+-	int i;
+-
+-	for (i = 0; i < NUM_NOTIFIERS; i++) {
+-		uint32_t *n = ps3vram_get_notifier(priv->reports, i);
+-		pr_info("%p: %08x\n", n, *n);
+-	}
+-}
+-
  static void ps3vram_init_ring(struct mtd_info *mtd)
-@@ -135,25 +131,21 @@ static void ps3vram_init_ring(struct mtd
- 	priv->ctrl[CTRL_GET] = FIFO_BASE + FIFO_OFFSET;
- }
- 
--static int ps3vram_wait_ring(struct mtd_info *mtd, int timeout)
-+static int ps3vram_wait_ring(struct mtd_info *mtd, unsigned int timeout_ms)
  {
  	struct ps3vram_priv *priv = mtd->priv;
+@@ -284,8 +259,6 @@ static int ps3vram_upload(struct mtd_inf
+ 	ps3vram_fire_ring(mtd);
+ 	if (ps3vram_notifier_wait(mtd, 200) < 0) {
+ 		pr_err("notifier timeout\n");
+-		ps3vram_dump_ring(mtd);
+-		ps3vram_dump_reports(mtd);
+ 		return -1;
+ 	}
  
--	/* wait until setup commands are processed */
--	timeout *= 1000;
--	while (--timeout) {
-+	do {
- 		if (priv->ctrl[CTRL_PUT] == priv->ctrl[CTRL_GET])
--			break;
--		udelay(1);
--	}
--	if (timeout == 0) {
--		dev_dbg(priv->dev, "%s:%d: FIFO timeout (%08x/%08x/%08x)\n",
--			__func__, __LINE__, priv->ctrl[CTRL_PUT],
--			priv->ctrl[CTRL_GET], priv->ctrl[CTRL_TOP]);
--		return -ETIMEDOUT;
--	}
-+			return 0;
-+		msleep(1);
-+	} while (timeout_ms--);
+@@ -317,8 +290,6 @@ static int ps3vram_download(struct mtd_i
+ 	ps3vram_fire_ring(mtd);
+ 	if (ps3vram_notifier_wait(mtd, 200) < 0) {
+ 		pr_err("notifier timeout\n");
+-		ps3vram_dump_ring(mtd);
+-		ps3vram_dump_reports(mtd);
+ 		return -1;
+ 	}
  
--	return 0;
-+	dev_dbg(priv->dev, "%s:%d: FIFO timeout (%08x/%08x/%08x)\n", __func__,
-+		__LINE__, priv->ctrl[CTRL_PUT], priv->ctrl[CTRL_GET],
-+		priv->ctrl[CTRL_TOP]);
-+
-+	return -ETIMEDOUT;
- }
- 
- static void ps3vram_out_ring(struct ps3vram_priv *priv, u32 data)
 
 -- 
