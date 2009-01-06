@@ -1,30 +1,17 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from mail-bw0-f10.google.com (mail-bw0-f10.google.com
-	[209.85.218.10]) by ozlabs.org (Postfix) with ESMTP id 2AC37474FE
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 09:34:08 +1100 (EST)
-Received: by bwz3 with SMTP id 3so21247276bwz.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 06 Jan 2009 14:34:06 -0800 (PST)
-Message-ID: <c384c5ea0901061433y446f4ab4i2e18d1141734d60e@mail.gmail.com>
-Date: Tue, 6 Jan 2009 23:33:35 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2 4/4] powerpc/83xx: Add PCI-E support for all MPC83xx
-	boards with PCI-E
-In-Reply-To: <20090106211513.GA23914@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <C96CE59B-05FA-4728-930F-D4430EFB9B99@kernel.crashing.org>
-	<1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
-	<20081231171017.6FCF585AD247@gemini.denx.de>
-	<B64DF110-E26A-4229-8384-E7933732BC01@kernel.crashing.org>
-	<20090105174645.GA23766@ld0162-tx32.am.freescale.net>
-	<20090105180122.GA12237@oksana.dev.rtsoft.ru>
-	<c384c5ea0901061053r21fbc853y3b28ae3c8e3a0e6f@mail.gmail.com>
-	<20090106192747.GA3056@oksana.dev.rtsoft.ru>
-	<2B8AFE67-67BF-4926-B41B-79ACD72CA505@kernel.crashing.org>
-	<20090106211513.GA23914@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Wolfgang Denk <wd@denx.de>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6B029DE599
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 10:13:08 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+	avorontsov@ru.mvista.com
+Subject: [PATCH] powerpc: add Ethernet UPSMR definitions to QE library
+Date: Tue,  6 Jan 2009 17:12:23 -0600
+Message-Id: <1231283543-26752-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,42 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Anton,
+Add the UCC_GETH_UPSMR_xxx definitions to qe.h.  The ucc_geth driver will
+eventually use these instead of the UPSMR_ macros it currently defines.
 
-On Tue, Jan 6, 2009 at 10:15 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Tue, Jan 06, 2009 at 02:38:57PM -0600, Kumar Gala wrote:
->>>> Is u-boot PCIe initialization required for this kernel patch to work?
->>>
->>> Yup.
->>
->> Really?  what for?
->
-> Hm. U-Boot should initialize SerDes and PCI-E controller (pcie laws,
-> inbound/outbound windows, clocks, etc.)
->
-> Though if PCI-E controller wasn't initialized (i.e. board reflashed
-> with the community u-boot), Linux just won't probe the pcie controller:
->
-> cfg_bar = in_le32(hose->cfg_data + PEX_OUTWIN0_BAR);
-> if (!cfg_bar) {
->        /* PCI-E isn't configured. */
->        ret = -ENODEV;
->        goto err1;
-> }
->
-> Or did I misunderstand the question?
->
-You understood correctly, thanks for answering.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/include/asm/qe.h |   19 ++++++++++++++++++-
+ 1 files changed, 18 insertions(+), 1 deletions(-)
 
-So to summarize, we need u-boot to initialize the PCIe controller, in
-order for Linux to further take it over.
-
-What u-boot versions/releases do provide this initialization?
-
-I know the u-boot with the board works, but it's incompatible with
-recent Linux kernels.
-
-Regards,
+diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
+index edee15d..a355e72 100644
+--- a/arch/powerpc/include/asm/qe.h
++++ b/arch/powerpc/include/asm/qe.h
+@@ -591,7 +591,7 @@ struct ucc_slow_pram {
+ #define UCC_GETH_UCCE_RXF1      0x00000002
+ #define UCC_GETH_UCCE_RXF0      0x00000001
+ 
+-/* UPSMR, when used as a UART */
++/* UCC Protocol Specific Mode Register (UPSMR), when used for UART */
+ #define UCC_UART_UPSMR_FLC		0x8000
+ #define UCC_UART_UPSMR_SL		0x4000
+ #define UCC_UART_UPSMR_CL_MASK		0x3000
+@@ -619,6 +619,23 @@ struct ucc_slow_pram {
+ #define UCC_UART_UPSMR_TPM_EVEN		0x0002
+ #define UCC_UART_UPSMR_TPM_HIGH		0x0003
+ 
++/* UCC Protocol Specific Mode Register (UPSMR), when used for Ethernet */
++#define UCC_GETH_UPSMR_FTFE     0x80000000
++#define UCC_GETH_UPSMR_PTPE     0x40000000
++#define UCC_GETH_UPSMR_ECM      0x04000000
++#define UCC_GETH_UPSMR_HSE      0x02000000
++#define UCC_GETH_UPSMR_PRO      0x00400000
++#define UCC_GETH_UPSMR_CAP      0x00200000
++#define UCC_GETH_UPSMR_RSH      0x00100000
++#define UCC_GETH_UPSMR_RPM      0x00080000
++#define UCC_GETH_UPSMR_R10M     0x00040000
++#define UCC_GETH_UPSMR_RLPB     0x00020000
++#define UCC_GETH_UPSMR_TBIM     0x00010000
++#define UCC_GETH_UPSMR_RES1     0x00002000
++#define UCC_GETH_UPSMR_RMM      0x00001000
++#define UCC_GETH_UPSMR_CAM      0x00000400
++#define UCC_GETH_UPSMR_BRO      0x00000200
++
+ /* UCC Transmit On Demand Register (UTODR) */
+ #define UCC_SLOW_TOD	0x8000
+ #define UCC_FAST_TOD	0x8000
 -- 
-Leon
+1.5.5
