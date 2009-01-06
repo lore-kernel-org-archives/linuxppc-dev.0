@@ -1,17 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 1430CDDF04
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 16:39:17 +1100 (EST)
-Date: Tue, 6 Jan 2009 16:39:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] ibmveth: use consistent types
-Message-Id: <20090106163908.2e6134f4.sfr@canb.auug.org.au>
-In-Reply-To: <20081231140225.48b695ef.sfr@canb.auug.org.au>
-References: <20081231140225.48b695ef.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: netdev@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <LeoLi@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: The usage of compatible 'simple-bus'
+Date: Tue, 6 Jan 2009 13:46:21 +0800
+Message-ID: <3A45394FD742FA419B760BB8D398F9ED0B38C9@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20090106014323.GB29456@yookeroo.seuss>
+References: <3A45394FD742FA419B760BB8D398F9ED0B37E7@zch01exm26.fsl.freescale.net><20090105192053.GB23766@ld0162-tx32.am.freescale.net>
+	<20090106014323.GB29456@yookeroo.seuss>
+From: "Li Yang" <LeoLi@freescale.com>
+To: "David Gibson" <david@gibson.dropbear.id.au>,
+	"Wood Scott-B07421" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These variables are only used with an interface that just dumps their
-values into registers to be passed to the hypervisor. The arguments
-to that interface are declared to be "unsigned long", so make these
-variables match.  The macros are only used with these variables, so make
-them match as well.
+> -----Original Message-----
+> From:=20
+> devicetree-discuss-bounces+leoli=3Dfreescale.com@ozlabs.org=20
+> [mailto:devicetree-discuss-bounces+leoli=3Dfreescale.com@ozlabs.
+> org] On Behalf Of David Gibson
+> Sent: Tuesday, January 06, 2009 9:43 AM
+> To: Wood Scott-B07421
+> Cc: linuxppc-dev@ozlabs.org; Li Yang-R58472;=20
+> devicetree-discuss@ozlabs.org
+> Subject: Re: The usage of compatible 'simple-bus'
+>=20
+> On Mon, Jan 05, 2009 at 01:20:53PM -0600, Scott Wood wrote:
+> > On Mon, Jan 05, 2009 at 06:27:39PM +0800, Li Yang wrote:
+> > > I got an assumption from the existing device trees that having=20
+> > > 'simple-bus' in the compatible property of a node means that all=20
+> > > child nodes should be added as of_platform_device in platform=20
+> > > initialization phase.  No matter it represents a bus in=20
+> common sense=20
+> > > or not.  Is this truly the case?
+> >=20
+> > Yes, simple-bus indicates that the children can be driven=20
+> standalone=20
+> > from any knowledge of the parent bus.
+>=20
+> Erm, well, sort of.  Strictly it indicates that the only way=20
+> to locate the child devices of this bus is by using the=20
+> address information in the device tree - there's no way to=20
+> dynamically probe the bus.
 
-This code is currently only built for 64bit powerpc, so the transformation
-is really a noop.  If the interface was ever ported to 32 bit, it would
-almost certainly still use registers to pass the parameters and so
-"unsigned long" would still be appropriate.
+So if I understand correctly, "simple-bus" is intended to be used for
+true buses.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/net/ibmveth.c |    4 ++--
- drivers/net/ibmveth.h |   10 +++++-----
- 2 files changed, 7 insertions(+), 7 deletions(-)
+>=20
+> The fact that this causes of_platform_devices to be=20
+> instantiated is a Linux implementation specific detail (and=20
+> one we might change in future).
 
-diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
-index 9bc0f17..ca3bb9f 100644
---- a/drivers/net/ibmveth.c
-+++ b/drivers/net/ibmveth.c
-@@ -754,7 +754,7 @@ static int ibmveth_set_csum_offload(struct net_device *dev, u32 data,
- 				    void (*done) (struct net_device *, u32))
- {
- 	struct ibmveth_adapter *adapter = netdev_priv(dev);
--	u64 set_attr, clr_attr, ret_attr;
-+	unsigned long set_attr, clr_attr, ret_attr;
- 	long ret;
- 	int rc1 = 0, rc2 = 0;
- 	int restart = 0;
-@@ -1209,7 +1209,7 @@ static int __devinit ibmveth_probe(struct vio_dev *dev, const struct vio_device_
- 	long ret;
- 	struct net_device *netdev;
- 	struct ibmveth_adapter *adapter;
--	u64 set_attr, ret_attr;
-+	unsigned long set_attr, ret_attr;
- 
- 	unsigned char *mac_addr_p;
- 	unsigned int *mcastFilterSize_p;
-diff --git a/drivers/net/ibmveth.h b/drivers/net/ibmveth.h
-index d281869..ec76ace 100644
---- a/drivers/net/ibmveth.h
-+++ b/drivers/net/ibmveth.h
-@@ -39,11 +39,11 @@
- #define IbmVethMcastRemoveFilter     0x2UL
- #define IbmVethMcastClearFilterTable 0x3UL
- 
--#define IBMVETH_ILLAN_PADDED_PKT_CSUM	0x0000000000002000ULL
--#define IBMVETH_ILLAN_TRUNK_PRI_MASK	0x0000000000000F00ULL
--#define IBMVETH_ILLAN_IPV6_TCP_CSUM		0x0000000000000004ULL
--#define IBMVETH_ILLAN_IPV4_TCP_CSUM		0x0000000000000002ULL
--#define IBMVETH_ILLAN_ACTIVE_TRUNK		0x0000000000000001ULL
-+#define IBMVETH_ILLAN_PADDED_PKT_CSUM	0x0000000000002000UL
-+#define IBMVETH_ILLAN_TRUNK_PRI_MASK	0x0000000000000F00UL
-+#define IBMVETH_ILLAN_IPV6_TCP_CSUM		0x0000000000000004UL
-+#define IBMVETH_ILLAN_IPV4_TCP_CSUM		0x0000000000000002UL
-+#define IBMVETH_ILLAN_ACTIVE_TRUNK		0x0000000000000001UL
- 
- /* hcall macros */
- #define h_register_logical_lan(ua, buflst, rxq, fltlst, mac) \
--- 
-1.6.0.5
+Here we have a common case for SoC that part of a device has its
+separate driver besides the driver for the main feature of the whole
+device.  The resources used by the sub-device is usually part of the
+resources of the parent device.  So it makes sense to put the node of
+sub-device beneathe the node of main device.  Shall we have a convention
+to mark such devices in device tree so that the sub-device can be
+scanned and probed as a standalone of_platform_device?
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+If "simple-bus" may cause confusion to do this job as it's not a bus
+actually, I propose to use "has-subdevice".
+
+- Leo
