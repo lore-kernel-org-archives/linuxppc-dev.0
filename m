@@ -1,15 +1,37 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from blu0-omc4-s4.blu0.hotmail.com (blu0-omc4-s4.blu0.hotmail.com
-	[65.55.111.143]) by ozlabs.org (Postfix) with ESMTP id F1BA3DE409
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 20:31:07 +1100 (EST)
-Message-ID: <BLU144-W67465C9F30727CFAF5938B2DE0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_ea29b305-6028-417d-a9a2-9d679ea60560_"
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Why did you merge two mailing lists?
-Date: Tue, 6 Jan 2009 09:26:01 +0000
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [59.145.155.3])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1C7FD474C5
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 20:38:55 +1100 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28smtp03.in.ibm.com (8.13.1/8.13.1) with ESMTP id n069cmj4010341
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jan 2009 15:08:48 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	n069cqBu2171016
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jan 2009 15:08:52 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+	by d28av02.in.ibm.com (8.13.1/8.13.3) with ESMTP id n069cmII023931
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jan 2009 20:38:48 +1100
+Date: Tue, 6 Jan 2009 15:08:47 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with
+	!CONFIG_VIOPATH
+Message-ID: <20090106093847.GB5066@linux.vnet.ibm.com>
+References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com>
+	<20090104182441.GA5086@linux.vnet.ibm.com>
+	<98d6aef17cba9d835d7866745f811dc7@bga.com>
+	<20090106072549.GA5066@linux.vnet.ibm.com>
+	<20090106073149.GA12371@uranus.ravnborg.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20090106073149.GA12371@uranus.ravnborg.org>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Milton Miller <miltonm@bga.com>, Stephen Rothwell <sfr@canb.auug.org.au>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,83 +41,122 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---_ea29b305-6028-417d-a9a2-9d679ea60560_
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
+* Sam Ravnborg <sam@ravnborg.org> [2009-01-06 08:31:49]:
+
+> > 
+> > 	Sorry for resending the patch before taking care of the response. Resending 
+> > the patch with changes made to other three drivers also.
+> > 
+> > Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
+> > 
+> > iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
+> > Removing the dependency of VIOPATH by selecting it, when the drivers
+> > dependent on iSeries code.
+> > 
+> > 
+> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/platforms/iseries/Kconfig |    5 ++++-
+> >  drivers/char/Kconfig                   |    1 +
+> >  drivers/scsi/Kconfig                   |    1 +
+> >  3 files changed, 6 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+> > index ed3753d..5cb2320 100644
+> > --- a/arch/powerpc/platforms/iseries/Kconfig
+> > +++ b/arch/powerpc/platforms/iseries/Kconfig
+> > @@ -10,18 +10,21 @@ menu "iSeries device drivers"
+> >  config VIODASD
 
 
-Hi All=2C
+<snip>
 
-First i should say thanks for your efforts and managing the mailing lists=
-=2C it is great work and i know that well.
-I can not understand the reason of merging PPC-embedded and PPC devel maili=
-ng lists and as you see there are many people just interested in ppc embedd=
-ed and messages there. they do not have any interest in what is going on in=
- ppc devel.=20
+> 
+> VIOPATH is set using select so the "depends on" is effectively ignored.
+> If you think you need the "depends on" then you need to revisit the
+> symbol that will select VIOPATH and make sure _they_ have this dependency.
+> 
+> 	Sam
 
-For me=2C i was interested to read messages regarding Xilinx embedded power=
-pc core. I was just wanted to be informed about new patches=2C new changes=
-=2C new drivers and so. and I think this is the same for many of the member=
-s of ppc embedded since Xilinx disscussion has been always one of the most =
-active ones in that mailing list.
-Now=2C after the merge we are receiving lots of emails which are not relate=
-d to our job. So one should look at all of the email subjects carefully to =
-filter those related to his own job and this is some thing really time cons=
-uming and boring specially with the very high traffic of this mailing list.=
-=20
+Hi Sam,
 
-any how i understand that there is no way to go back where we were previous=
-ly=2C and so i should just say thanks=2C and that i have to unsubscribe fro=
-m the new mailing list althougth i know there would be emails in which i'll=
- be interested.=20
+	VIOPATH is used only by the PPC_ISERIES code. The symbols selecting
+the VIOPATH are also dependent on the PPC_ISERIES. Should we make the 
+config VIOPATH as default n, because it being selected the dependent
+drivers.
 
-thanks
+Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
 
+iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
+Removing the dependency of VIOPATH by selecting it, when the drivers
+dependent on iSeries code.
 
-_________________________________________________________________
-Drag n=92 drop=97Get easy photo sharing with Windows Live=99 Photos.
-http://www.microsoft.com/windows/windowslive/photos.aspx=
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/iseries/Kconfig |    6 ++++--
+ drivers/char/Kconfig                   |    1 +
+ drivers/scsi/Kconfig                   |    1 +
+ 3 files changed, 6 insertions(+), 2 deletions(-)
 
---_ea29b305-6028-417d-a9a2-9d679ea60560_
-Content-Type: text/html; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt=3B
-font-family:Verdana
-}
-</style>
-</head>
-<body class=3D'hmmessage'>
-Hi All=2C<br><br>First i should say thanks for your efforts and managing th=
-e mailing lists=2C it is great work and i know that well.<br>I can not unde=
-rstand the reason of merging PPC-embedded and PPC devel mailing lists and a=
-s you see there are many people just interested in ppc embedded and message=
-s there. they do not have any interest in what is going on in ppc devel. <b=
-r><br>For me=2C i was interested to read messages regarding Xilinx embedded=
- powerpc core. I was just wanted to be informed about new patches=2C new ch=
-anges=2C new drivers and so. and I think this is the same for many of the m=
-embers of ppc embedded since Xilinx disscussion has been always one of the =
-most active ones in that mailing list.<br>Now=2C after the merge we are rec=
-eiving lots of emails which are not related to our job. So one should look =
-at all of the email subjects carefully to filter those related to his own j=
-ob and this is some thing really time consuming and boring specially with t=
-he very high traffic of this mailing list. <br><br>any how i understand tha=
-t there is no way to go back where we were previously=2C and so i should ju=
-st say thanks=2C and that i have to unsubscribe from the new mailing list a=
-lthougth i know there would be emails in which i'll be interested. <br><br>=
-thanks<br><br><br /><hr />Win a trip with your 3 best buddies. <a href=3D'h=
-ttp://www.messengerbuddies.ca/?ocid=3DBUDDYOMATICENCA19' target=3D'_new'>En=
-ter today.</a></body>
-</html>=
-
---_ea29b305-6028-417d-a9a2-9d679ea60560_--
+diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
+index ed3753d..fd524cd 100644
+--- a/arch/powerpc/platforms/iseries/Kconfig
++++ b/arch/powerpc/platforms/iseries/Kconfig
+@@ -10,18 +10,21 @@ menu "iSeries device drivers"
+ config VIODASD
+ 	tristate "iSeries Virtual I/O disk support"
+ 	depends on BLOCK
++	select VIOPATH
+ 	help
+ 	  If you are running on an iSeries system and you want to use
+ 	  virtual disks created and managed by OS/400, say Y.
+ 
+ config VIOCD
+ 	tristate "iSeries Virtual I/O CD support"
++	select VIOPATH
+ 	help
+ 	  If you are running Linux on an IBM iSeries system and you want to
+ 	  read a CD drive owned by OS/400, say Y here.
+ 
+ config VIOTAPE
+ 	tristate "iSeries Virtual Tape Support"
++	select VIOPATH
+ 	help
+ 	  If you are running Linux on an iSeries system and you want Linux
+ 	  to read and/or write a tape drive owned by OS/400, say Y here.
+@@ -30,5 +33,4 @@ endmenu
+ 
+ config VIOPATH
+ 	bool
+-	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
+-	default y
++	default n
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 1697043..b8da09a 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -616,6 +616,7 @@ config HVC_ISERIES
+ 	default y
+ 	select HVC_DRIVER
+ 	select HVC_IRQ
++	select VIOPATH
+ 	help
+ 	  iSeries machines support a hypervisor virtual console.
+ 
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index b732297..256c7be 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -884,6 +884,7 @@ config SCSI_IBMVSCSI
+ 	tristate "IBM Virtual SCSI support"
+ 	depends on PPC_PSERIES || PPC_ISERIES
+ 	select SCSI_SRP_ATTRS
++	select VIOPATH if PPC_ISERIES
+ 	help
+ 	  This is the IBM POWER Virtual SCSI Client
+ 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
