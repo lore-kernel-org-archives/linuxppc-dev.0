@@ -1,21 +1,26 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 44EDCDE124
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 09:22:04 +1100 (EST)
-Message-ID: <4963D989.6090909@harris.com>
-Date: Tue, 06 Jan 2009 17:22:01 -0500
-From: "Steven A. Falco" <sfalco@harris.com>
-MIME-Version: 1.0
+Return-Path: <av1474@comtv.ru>
+Received: from akado.ru (fe01x03-cgp.akado.ru [77.232.31.164])
+	by ozlabs.org (Postfix) with ESMTP id C1224DE124
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 09:23:15 +1100 (EST)
+Date: Wed, 7 Jan 2009 01:23:19 +0300 (MSK)
+From: malc <av1474@comtv.ru>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [QUESTION] 440EPx with PCI to PCIe bridge error
-References: <496268E7.5090907@harris.com>	 <1231190318.14860.17.camel@pasglop>
-	<49627D33.8030605@harris.com>	 <1231223634.14860.18.camel@pasglop>
-	<4963C1DE.6020007@harris.com>	 <4963CF68.3040808@harris.com>
-	<1231279340.14860.31.camel@pasglop>
-In-Reply-To: <1231279340.14860.31.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Wolfgang Denk <wd@denx.de>
+Subject: Re: Lock-up on PPC64
+In-Reply-To: <1231276643.14860.30.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0901070105510.4695@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
+	<20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
+	<20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
+	<1230165163.7292.32.camel@pasglop>
+	<Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
+	<1231158516.8367.3.camel@localhost>
+	<Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
+	<1231243373.14860.24.camel@pasglop>
+	<Pine.LNX.4.64.0901062032550.2972@linmac.oyster.ru>
+	<1231276643.14860.30.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Tue, 2009-01-06 at 16:38 -0500, Steven A. Falco wrote:
->> But this has no effect on Linux.  So, I also changed the sequoia.dts
->> to make the outbound range larger, and now Linux is happy too.  I now
->> have ranges for the device:
->>
->> # cat 0000:01:00.0/resource
->> 0x0000000190000000 0x000000019007ffff 0x0000000000020200
->> 0x0000000180000000 0x000000018fffffff 0x0000000000020200
-> 
-> So your problem is fixed ? I didn't have a chance yet to look at your
-> logs, but it could just have been that you didn't have enough space
-> allocated to PCI for your card...
-> 
-> Cheers,
-> Ben.
+On Wed, 7 Jan 2009, Benjamin Herrenschmidt wrote:
 
-That appears to be the problem.  Apparently the PCI/PCIe bridge requests
-in excess of 256 MB of space, but the default in the sequoia .dts file is
-"only" for 256 MB, so the request fails.
+>
+>> As you wish :) I've written some ad-hoc stuff in the failing path which
+>> manually triggers sysrq and then sends the klogctl output via network
+>> and here it is:
+>
+> Allright, something's unclear to me. What do you mean by the system goes
+> down then ? The kernel appears to be working at least to a certain
+> extent if you manage to trigger a sysrq from userspace... And from what
+> I see, it looks that all processes are somewhere in schedule.
+>
+> So what is precisely your symptom here ?
 
-I'm not sure if this should be changed in the mainline.  This card works
-out of the box when used with a generic x86 PC, but not when used with
-a sequoia.  But, maybe it's just me climbing the PPC learning curve.
+Okay full setup is like this:
 
-	Steve
+1. Default ydl kernel (2.6.23) (i.e. without XER.SO patch)
+
+2. Mono with mono_handle_native_sigsegv augmented with code
+    that write(2)s a byte to an file which corresponds to a FIFO
+
+3. Small application that is blocking on the read side of the FIFO and
+    upon receiving anything, write(2)s "t\nd\n" to /proc/sysrq-trigger,
+    then grabs the printk buffer via klogctl and send(2)s it.
+
+Given all that, I have two connections to PS3 - one is running the
+dlog (application described in item 3), and the other is used to run
+Mono with arguments that lead to the lock up.
+
+After Mono is invoked one can see that mono_handle_native_sigsegv is
+executed (few debugging write(2)s) and also that local copy of nc,
+which dlog connects to, has received printk buffer, PS3 meanwhile
+locks up.
+
+Hope it's clearer now, if not, please, do ask.
+
+-- 
+mailto:av1474@comtv.ru
