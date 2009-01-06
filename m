@@ -1,21 +1,12 @@
 Return-Path: <PaulEaton@earthlink.net>
-Received: from elasmtp-kukur.atl.sa.earthlink.net
-	(elasmtp-kukur.atl.sa.earthlink.net [209.86.89.65])
-	by ozlabs.org (Postfix) with ESMTP id F117BDE2AA
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 21:55:38 +1100 (EST)
 From: "Paul Eaton" <PaulEaton@earthlink.net>
-To: <vikas.soni@gdatech.co.in>,
-	"'Nate Jozwiak'" <njozwiak@mlsw.biz>
-References: <75D730947C105846B394D10A0E24FDAC1E30ADC9FD@anamail.econolite.com><200901052149.n05LnNnK028442@server.mlsw.biz>
-	<54000.172.29.38.110.1231218239.squirrel@mail.gdatech.co.in>
-Subject: RE: unsubscribe
-Date: Tue, 6 Jan 2009 05:55:38 -0500
-Message-ID: <A81409CD755543399BC5CCB7C0128DD7@dadshomepc>
+To: <Linuxppc-dev@ozlabs.org>
+Subject: Unsubscribe me
+Date: Tue, 6 Jan 2009 06:02:25 -0500
+Message-ID: <819C6A2CAED042D6AA8087F228E05D2A@dadshomepc>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <54000.172.29.38.110.1231218239.squirrel@mail.gdatech.co.in>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_02A2_01C96FC4.59078CF0"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +16,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Unsubscribe me please
+This is a multi-part message in MIME format.
 
------Original Message-----
-From: linuxppc-dev-bounces+pauleaton=earthlink.net@ozlabs.org
-[mailto:linuxppc-dev-bounces+pauleaton=earthlink.net@ozlabs.org] On Behalf
-Of vikas.soni@gdatech.co.in
-Sent: Tuesday, January 06, 2009 12:04 AM
-To: Nate Jozwiak
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: unsubscribe
+------=_NextPart_000_02A2_01C96FC4.59078CF0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-unsubscibe me ......
+Please unsubscribe me.
 
-thanks
+ 
 
-> unsubscribe
->
->
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Thanks,
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Paul
+
+
+------=_NextPart_000_02A2_01C96FC4.59078CF0
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Please unsubscribe me.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Paul<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_02A2_01C96FC4.59078CF0--
