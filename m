@@ -1,18 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 5D845DE327
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 12:59:35 +1100 (EST)
-Date: Mon, 05 Jan 2009 17:59:35 -0800 (PST)
-Message-Id: <20090105.175935.193702661.davem@davemloft.net>
-To: biggerbadderben@gmail.com
-Subject: Re: What is with all these unsubscribe messages
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4962B36A.20500@gmail.com>
-References: <85a5c2010901051703t4ea70cf2hf3b4ea7d2cb39262@mail.gmail.com>
-	<20090105200718.0dab886a@lappy.seanm.ca> <4962B36A.20500@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, mgessner@gmail.com, smaclennan@pikatech.com
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A3471DE398
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 13:06:06 +1100 (EST)
+Date: Tue, 6 Jan 2009 05:06:03 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [spi-devel-general] [PATCH v5] spi: Add PPC4xx SPI driver
+Message-ID: <20090106020603.GA14074@oksana.dev.rtsoft.ru>
+References: <1227628088-10849-1-git-send-email-sr@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1227628088-10849-1-git-send-email-sr@denx.de>
+Cc: david-b@pacbell.net, linuxppc-dev@ozlabs.org,
+	spi-devel-general@lists.sourceforge.net
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Ben Warren <biggerbadderben@gmail.com>
-Date: Mon, 05 Jan 2009 17:27:06 -0800
+Hi Stefan,
 
-> I expect they're all people, like myself, that have been bumped here
-> from the ppc_embedded list and aren't used to all the traffic.
+On Tue, Nov 25, 2008 at 04:48:08PM +0100, Stefan Roese wrote:
+> This adds a SPI driver for the SPI controller found in the IBM/AMCC
+> 4xx PowerPC's.
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
+> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> ---
+[...]
+> +static unsigned int of_num_gpios(struct device_node *node)
+> +{
+> +	unsigned int num = 0;
+> +
+> +	while (gpio_is_valid(of_get_gpio(node, num)))
+> +		num++;
+> +	return num;
+> +}
 
-This is why, as a policy, we never allow propagation of subscribers
-from old lists to new ones created at vger.kernel.org
+FYI, as of commit 749820928a2fd47ff536773d869d2c3f8038b7d1 ("of/gpio:
+Implement of_gpio_count()") you can use of_gpio_count() from
+linux/of_gpio.h.
 
-Everyone must go through the motions of adding themselves to the new
-list.
-
-If you allow the propagation, it's essentially an act of putting
-someone onto a mailing list without having their permission to do so.
-
-And the result is what we've seen here for the past few days.  If
-those people on the embedded list were truly interested in the
-linuxppc-dev list content, they would have added themselves.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
