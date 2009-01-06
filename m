@@ -1,20 +1,18 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 646A8DE5B9
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 05:47:23 +1100 (EST)
-Date: Tue, 06 Jan 2009 10:47:24 -0800 (PST)
-Message-Id: <20090106.104724.60763449.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 53824DE5D0
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 05:47:52 +1100 (EST)
+Date: Tue, 06 Jan 2009 10:47:53 -0800 (PST)
+Message-Id: <20090106.104753.91462944.davem@davemloft.net>
 To: sfr@canb.auug.org.au
-Subject: Re: [PATCH] net/ehea: use consistant type
+Subject: Re: [PATCH] ibmveth: use consistent types
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090106163454.b9f93b08.sfr@canb.auug.org.au>
-References: <20090106110511.43b0a87a.sfr@canb.auug.org.au>
-	<20090105.161926.141190504.davem@davemloft.net>
-	<20090106163454.b9f93b08.sfr@canb.auug.org.au>
+In-Reply-To: <20090106163908.2e6134f4.sfr@canb.auug.org.au>
+References: <20081231140225.48b695ef.sfr@canb.auug.org.au>
+	<20090106163908.2e6134f4.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: tklein@de.ibm.com, linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	netdev@vger.kernel.org, themann@de.ibm.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +23,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 6 Jan 2009 16:34:54 +1100
+Date: Tue, 6 Jan 2009 16:39:08 +1100
 
-> ehea_plpar_hcall9() takes an "unsigned long" array to return its results,
-> so change the arrays we pass to it to match.  This is currently only
-> 64 bit code, so the transformation is actually a noop, but because
-> ehea_plpar_hcall9() copies the values of registers into the array,
-> if this was ported to a 32 bit hypervisor interface "unsigned long"
-> would probably still be the correct type.
+> These variables are only used with an interface that just dumps their
+> values into registers to be passed to the hypervisor. The arguments
+> to that interface are declared to be "unsigned long", so make these
+> variables match.  The macros are only used with these variables, so make
+> them match as well.
+> 
+> This code is currently only built for 64bit powerpc, so the transformation
+> is really a noop.  If the interface was ever ported to 32 bit, it would
+> almost certainly still use registers to pass the parameters and so
+> "unsigned long" would still be appropriate.
 > 
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Applied.
+Also applied, thanks Stephen.
