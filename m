@@ -1,23 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 5F1FDDDE23
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 11:11:59 +1100 (EST)
-Date: Tue, 6 Jan 2009 11:11:48 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] net/ehea: bitops work on unsigned longs
-Message-Id: <20090106111148.90da9b78.sfr@canb.auug.org.au>
-In-Reply-To: <20090105.160535.24967514.davem@davemloft.net>
-References: <20081231141853.c6d123c4.sfr@canb.auug.org.au>
-	<20081230.215156.151347026.davem@davemloft.net>
-	<20090106105951.62b0429d.sfr@canb.auug.org.au>
-	<20090105.160535.24967514.davem@davemloft.net>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id E80CCDE29C
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 11:19:25 +1100 (EST)
+Date: Mon, 05 Jan 2009 16:19:26 -0800 (PST)
+Message-Id: <20090105.161926.141190504.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Subject: Re: [PATCH] net/ehea: use consistent type
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090106110511.43b0a87a.sfr@canb.auug.org.au>
+References: <20081230.215101.228854586.davem@davemloft.net>
+	<1230714541.15389.69.camel@pasglop>
+	<20090106110511.43b0a87a.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__6_Jan_2009_11_11_48_+1100_IRgU9yNttcNMywX1"
-Cc: tklein@de.ibm.com, netdev@vger.kernel.org, raisch@de.ibm.com,
-	themann@de.ibm.com, linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: tklein@de.ibm.com, themann@de.ibm.com, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__6_Jan_2009_11_11_48_+1100_IRgU9yNttcNMywX1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 6 Jan 2009 11:05:11 +1100
 
-Hi Dave,
+> Hi Dave,
+> 
+> On Wed, 31 Dec 2008 20:09:01 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > Well, in that case, this patch is actually correct without considering
+> > the u64 change. The array is what lands in the registers of the pHyp
+> > call, so strictly speaking, it's an array of unsigned long's (ie, 32-bit
+> > on a 32-bit platform, 64-bit on a 64-bit platform), not an array of
+> > u64's. This function being a wrapper on that pHyp call, it may as well
+> > use the right type.
+> 
+> So, any response?
 
-On Mon, 05 Jan 2009 16:05:35 -0800 (PST) David Miller <davem@davemloft.net>=
- wrote:
->
-> Aha, yes the commit message fooled me :-)  New patch is fine and
-> I'll toss this into net-2.6
-
-I will try to do better in the future, thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_Jan_2009_11_11_48_+1100_IRgU9yNttcNMywX1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkliocQACgkQjjKRsyhoI8w7HACfYAgOyx9NXyXR5JgRkLniWWNQ
-dggAn14ZZDw6CRCpQVf9wRwQXjzYolqE
-=B87q
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_Jan_2009_11_11_48_+1100_IRgU9yNttcNMywX1--
+Please resubmit, I'll take another look :-)
