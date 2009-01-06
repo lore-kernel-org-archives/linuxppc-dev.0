@@ -1,23 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A25C2DDF6F
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 11:05:24 +1100 (EST)
-Date: Tue, 6 Jan 2009 11:05:11 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] net/ehea: use consistent type
-Message-Id: <20090106110511.43b0a87a.sfr@canb.auug.org.au>
-In-Reply-To: <1230714541.15389.69.camel@pasglop>
-References: <20081231141730.81449124.sfr@canb.auug.org.au>
-	<20081230.215101.228854586.davem@davemloft.net>
-	<1230714541.15389.69.camel@pasglop>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id A138FDE2CE
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 11:05:35 +1100 (EST)
+Date: Mon, 05 Jan 2009 16:05:35 -0800 (PST)
+Message-Id: <20090105.160535.24967514.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Subject: Re: [PATCH] net/ehea: bitops work on unsigned longs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090106105951.62b0429d.sfr@canb.auug.org.au>
+References: <20081231141853.c6d123c4.sfr@canb.auug.org.au>
+	<20081230.215156.151347026.davem@davemloft.net>
+	<20090106105951.62b0429d.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__6_Jan_2009_11_05_11_+1100_PMWslh76T_yeTJ70"
-Cc: tklein@de.ibm.com, themann@de.ibm.com, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	David Miller <davem@davemloft.net>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: tklein@de.ibm.com, netdev@vger.kernel.org, raisch@de.ibm.com,
+	themann@de.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,55 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__6_Jan_2009_11_05_11_+1100_PMWslh76T_yeTJ70
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 6 Jan 2009 10:59:51 +1100
 
-Hi Dave,
-
-On Wed, 31 Dec 2008 20:09:01 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> On Tue, 2008-12-30 at 21:51 -0800, David Miller wrote:
+> Hi Dave,
+> 
+> On Tue, 30 Dec 2008 21:51:56 -0800 (PST) David Miller <davem@davemloft.net> wrote:
+> >
 > > From: Stephen Rothwell <sfr@canb.auug.org.au>
-> > Date: Wed, 31 Dec 2008 14:17:30 +1100
-> >=20
-> > > ehea_plpar_hcall9() takes an unsigned long array, so pass that.
-> > >=20
-> > > This change will avoid some warnings when we change u64 to unsigned
+> > Date: Wed, 31 Dec 2008 14:18:53 +1100
+> > 
+> > > These changes will avoid several warnings when we change u64 to unsigned
 > > > long long.
-> > >=20
+> > > 
+> > > Also, ehea_driver_flags is only used in ehca_main.c
+> > > 
 > > > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> >=20
-> > Patch rejected, for the same reasons as the other driver
-> > change.
-> >=20
-> > We're not going to poop up some drivers with the assumption that long
-> > is 64-bit.
->=20
-> Well, in that case, this patch is actually correct without considering
-> the u64 change. The array is what lands in the registers of the pHyp
-> call, so strictly speaking, it's an array of unsigned long's (ie, 32-bit
-> on a 32-bit platform, 64-bit on a 64-bit platform), not an array of
-> u64's. This function being a wrapper on that pHyp call, it may as well
-> use the right type.
+> > > ---
+> > 
+> > And also rejected, just like the previous two.
+> > 
+> > This is so much worse than the problems we had with
+> > printing u64's and it's being done as a result to
+> > the "fix" for that.
+> 
+> How is this worse than anything?  The only thing wrong with this patch is
+> the commit message ... Lets try this (if this doesn't address your
+> problems, then assume I am too dense for your original explanation):
 
-So, any response?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_Jan_2009_11_05_11_+1100_PMWslh76T_yeTJ70
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklioDcACgkQjjKRsyhoI8yL6gCbBn6TnSy/i8zso9iL2Fj7W0YC
-46UAnR9a7Hbv7wbhwmmrv6mqu3bbJnlX
-=hWiw
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_Jan_2009_11_05_11_+1100_PMWslh76T_yeTJ70--
+Aha, yes the commit message fooled me :-)  New patch is fine and
+I'll toss this into net-2.6
