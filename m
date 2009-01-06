@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 02CE7DE5B0
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 07:20:08 +1100 (EST)
-Message-Id: <3BAE548B-82EA-4A5F-BC4B-525CCAF4C846@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20090105192755.GC23766@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc/8313erdb: fix kernel crash
-Date: Tue, 6 Jan 2009 14:18:00 -0600
-References: <1231152455-8296-1-git-send-email-leoli@freescale.com>
-	<1C3FA775-7C2A-4218-BE14-95FF2DD9F6D2@kernel.crashing.org>
-	<20090105192755.GC23766@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 29548DE5F8
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 07:41:08 +1100 (EST)
+Message-ID: <4963C1DE.6020007@harris.com>
+Date: Tue, 06 Jan 2009 15:41:02 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [QUESTION] 440EPx with PCI to PCIe bridge error
+References: <496268E7.5090907@harris.com>	 <1231190318.14860.17.camel@pasglop>
+	<49627D33.8030605@harris.com> <1231223634.14860.18.camel@pasglop>
+In-Reply-To: <1231223634.14860.18.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt wrote:
+> 
+>> Here is a complete startup log, with debug turned on as you requested.
+>> This is still against 2.6.27.9, as it will take me a little time to
+>> build 2.6.28.  Hopefully, this log will be useful in the meantime.
+> 
+> Can you add "debug" to your kernel command line option or send the
+> output of the "dmesg" command please ?
+> 
+> Cheers,
+> Ben.
+> 
 
-On Jan 5, 2009, at 1:27 PM, Scott Wood wrote:
+I saw a recent post from Anton talking about U-Boot configuring PCI.  That
+got me wondering if U-Boot has anything to do with the problem I've
+reported.  So, I turned on debug in uboot's pci_auto.c, and added another
+DEBUGF like so:
 
-> On Mon, Jan 05, 2009 at 10:25:08AM -0600, Kumar Gala wrote:
->>
->> On Jan 5, 2009, at 4:47 AM, Li Yang wrote:
->>
->>> Probe the new mdio node added by b31a1d8b.  Fix kernel panic problem
->>> when
->>> gianfar driver wants to get the of_platform_device of that mdio.
->>>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> ---
->>> arch/powerpc/boot/dts/mpc8313erdb.dts |    2 +-
->>> 1 files changed, 1 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/
->>> boot/dts/mpc8313erdb.dts
->>> index d4df8b6..917d466 100644
->>> --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
->>> +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
->>> @@ -222,7 +222,7 @@
->>> 			cell-index = <1>;
->>> 			device_type = "network";
->>> 			model = "eTSEC";
->>> -			compatible = "gianfar";
->>> +			compatible = "gianfar", "simple-bus";
->>> 			reg = <0x25000 0x1000>;
->>> 			local-mac-address = [ 00 00 00 00 00 00 ];
->>> 			interrupts = <34 0x8 33 0x8 32 0x8>;
->>
->> This isn't correct at all.  Not sure what the panic is but adding
->> "simple-bus" isn't correct.
->
-> It looks like the mdio node got added in the wrong place on 8313erdb,
-> relative to where it went on all other boards -- though if we were to
-> ignore existing practice, it probably does belong under the gianfar  
-> node
-> (and not as a freestanding device).
+	if (addr - res->bus_start + size > res->size) {
+		DEBUGF("address=0x%lx bus_start=%lx size=%x limit=%lx\n",
+			       	addr, res->bus_start, size, res->size);
+		DEBUGF("No room in resource");
+		goto error;
+	}
 
-Is there any reason that we can't change the 8313 dts to make the mdio  
-standalone like all the other .dts?  (not sure if there is some pwr  
-mgmt impact)
+When starting U-Boot, I get a "No room in resource" message.  Will this
+affect Linux, or is it just a U-Boot warning?
 
-- k
+	Steve
+
+
+U-Boot 2008.10-00079-gebb3412-dirty (Jan  6 2009 - 15:21:56)
+
+CPU:   AMCC PowerPC 440EPx Rev. A at 666.666 MHz (PLB=166, OPB=83, EBC=55 MHz)
+       Security/Kasumi support
+       Bootstrap Option H - Boot ROM Location I2C (Addr 0x52)
+       Internal PCI arbiter enabled, PCI async ext clock used
+       32 kB I-Cache 32 kB D-Cache
+Board: Sequoia - AMCC PPC440EPx Evaluation Board, Rev. F, PCI=66 MHz, serial# 7654
+I2C:   ready
+SPI:   ready
+DTT:   1 is 35 C
+DRAM:  256 MB
+FLASH: 64 MB
+NAND:  32 MiB
+PCI:   Bus Dev VenId DevId Class Int
+PCI Autoconfig: Bus Memory region: [80000000-8fffffff],
+                Physical Memory [80000000-8fffffff]
+PCI Autoconfig: Bus I/O region: [0-ffff],
+                Physical Memory: [e8000000-e800ffff]
+PCI Autoconfig: Found P2P bridge, device 12
+PCI Autoconfig: BAR 0, Mem, size=0x80000, address=0x80000000 bus_lower=80080000
+PCI Autoconfig: BAR 1, Mem, size=0x10000000, address=0x90000000 bus_start=80000000 size=10000000 limit=10000000
+No room in resource
+        01  00  1172  0004  ff00  43
+        00  0c  10b5  8112  0604  43
