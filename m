@@ -1,21 +1,12 @@
-Return-Path: <vikas.soni@gdatech.co.in>
-Received: from mail.gdatech.co.in (mail.gdatech.co.in [124.124.200.195])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.gdatech.co.in",
-	Issuer "mail.gdatech.co.in" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 33DAD474C2
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 16:10:02 +1100 (EST)
-Message-ID: <54000.172.29.38.110.1231218239.squirrel@mail.gdatech.co.in>
-In-Reply-To: <200901052149.n05LnNnK028442@server.mlsw.biz>
-References: <75D730947C105846B394D10A0E24FDAC1E30ADC9FD@anamail.econolite.com>
-	<200901052149.n05LnNnK028442@server.mlsw.biz>
-Date: Tue, 6 Jan 2009 10:33:59 +0530 (IST)
-Subject: Re: unsubscribe
-From: vikas.soni@gdatech.co.in
-To: "Nate Jozwiak" <njozwiak@mlsw.biz>
+Return-Path: <killyouatonce@gmail.com>
+Message-ID: <931ae8260901052116x2822b951ve9ab33a8ecd75ac8@mail.gmail.com>
+Date: Tue, 6 Jan 2009 13:16:35 +0800
+From: "yanlong wang" <killyouatonce@gmail.com>
+To: Linuxppc-dev@ozlabs.org
+Subject: 
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_151455_11184822.1231218995645"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +16,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-unsubscibe me ......
+------=_Part_151455_11184822.1231218995645
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-thanks
+unsubscribe
 
-> unsubscribe
->
->
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+------=_Part_151455_11184822.1231218995645
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+unsubscribe
+
+------=_Part_151455_11184822.1231218995645--
