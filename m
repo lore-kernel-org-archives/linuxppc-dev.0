@@ -1,15 +1,14 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <4963CDE5.70609@am.sony.com>
-Date: Tue, 6 Jan 2009 13:32:21 -0800
+Message-ID: <4963CDCA.4080802@am.sony.com>
+Date: Tue, 6 Jan 2009 13:31:54 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 4/6] mtd/ps3vram: Cleanup ps3vram driver messages
-References: <4963CA52.9030902@am.sony.com>
-In-Reply-To: <4963CA52.9030902@am.sony.com>
+Subject: [patch 0/6] ps3vram driver patches
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: David Woodhouse <David.Woodhouse@intel.com>, Arnd Bergmann <arnd@arndb.de>,
 	Jim Paris <jim@jtan.com>, linuxppc-dev@ozlabs.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	Vivien Chappelier <vivien.chappelier@free.fr>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -20,356 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Cleanup the ps3vram driver messages.  Add a new struct device pointer
-variable dev to struct ps3vram_priv and use dev_dbg(), pr_dbg(), etc.
-where appropriate.
+Hi Ben,
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
- drivers/mtd/devices/ps3vram.c |  116 ++++++++++++++++++++++++------------------
- 1 file changed, 68 insertions(+), 48 deletions(-)
+This is a set of patches for the ps3vram driver.
 
---- a/drivers/mtd/devices/ps3vram.c
-+++ b/drivers/mtd/devices/ps3vram.c
-@@ -53,9 +53,6 @@ struct mtd_info ps3vram_mtd;
- #define CACHE_PAGE_PRESENT 1
- #define CACHE_PAGE_DIRTY   2
- 
--#define dbg(fmt, args...)	\
--	pr_debug("%s:%d " fmt "\n", __func__, __LINE__, ## args)
--
- struct ps3vram_tag {
- 	unsigned int address;
- 	unsigned int flags;
-@@ -78,6 +75,7 @@ struct ps3vram_priv {
- 	uint32_t *fifo_base;
- 	uint32_t *fifo_ptr;
- 
-+	struct device *dev;
- 	struct ps3vram_cache cache;
- 
- 	/* Used to serialize cache/DMA operations */
-@@ -148,8 +146,9 @@ static int ps3vram_wait_ring(struct mtd_
- 		udelay(1);
- 	}
- 	if (timeout == 0) {
--		pr_err("FIFO timeout (%08x/%08x/%08x)\n", priv->ctrl[CTRL_PUT],
--		       priv->ctrl[CTRL_GET], priv->ctrl[CTRL_TOP]);
-+		dev_dbg(priv->dev, "%s:%d: FIFO timeout (%08x/%08x/%08x)\n",
-+			__func__, __LINE__, priv->ctrl[CTRL_PUT],
-+			priv->ctrl[CTRL_GET], priv->ctrl[CTRL_TOP]);
- 		return -ETIMEDOUT;
- 	}
- 
-@@ -181,7 +180,8 @@ static void ps3vram_rewind_ring(struct m
- 					   L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT,
- 					   0, 0, 0, 0);
- 	if (status)
--		pr_err("ps3vram: lv1_gpu_context_attribute FB_BLIT failed\n");
-+		dev_err(priv->dev, "%s:%d: lv1_gpu_context_attribute failed\n",
-+			__func__, __LINE__);
- 
- 	priv->fifo_ptr = priv->fifo_base;
- }
-@@ -201,11 +201,13 @@ static void ps3vram_fire_ring(struct mtd
- 					   L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT,
- 					   0, 0, 0, 0);
- 	if (status)
--		pr_err("ps3vram: lv1_gpu_context_attribute FB_BLIT failed\n");
-+		dev_err(priv->dev, "%s:%d: lv1_gpu_context_attribute failed\n",
-+			__func__, __LINE__);
- 
- 	if ((priv->fifo_ptr - priv->fifo_base) * sizeof(uint32_t) >
- 	    FIFO_SIZE - 1024) {
--		dbg("fifo full, rewinding");
-+		dev_dbg(priv->dev, "%s:%d: fifo full, rewinding\n", __func__,
-+			__LINE__);
- 		ps3vram_wait_ring(mtd, 200);
- 		ps3vram_rewind_ring(mtd);
- 	}
-@@ -258,7 +260,8 @@ static int ps3vram_upload(struct mtd_inf
- 	ps3vram_out_ring(priv, 0);
- 	ps3vram_fire_ring(mtd);
- 	if (ps3vram_notifier_wait(mtd, 200) < 0) {
--		pr_err("notifier timeout\n");
-+		dev_dbg(priv->dev, "%s:%d: notifier timeout\n", __func__,
-+			__LINE__);
- 		return -1;
- 	}
- 
-@@ -289,7 +292,8 @@ static int ps3vram_download(struct mtd_i
- 	ps3vram_out_ring(priv, 0);
- 	ps3vram_fire_ring(mtd);
- 	if (ps3vram_notifier_wait(mtd, 200) < 0) {
--		pr_err("notifier timeout\n");
-+		dev_dbg(priv->dev, "%s:%d: notifier timeout\n", __func__,
-+			__LINE__);
- 		return -1;
- 	}
- 
-@@ -302,16 +306,17 @@ static void ps3vram_cache_evict(struct m
- 	struct ps3vram_cache *cache = &priv->cache;
- 
- 	if (cache->tags[entry].flags & CACHE_PAGE_DIRTY) {
--		dbg("flushing %d : 0x%08x", entry, cache->tags[entry].address);
-+		dev_dbg(priv->dev, "%s:%d: flushing %d : 0x%08x\n", __func__,
-+			__LINE__, entry, cache->tags[entry].address);
- 		if (ps3vram_upload(mtd,
- 				   CACHE_OFFSET + entry * cache->page_size,
- 				   cache->tags[entry].address,
- 				   DMA_PAGE_SIZE,
- 				   cache->page_size / DMA_PAGE_SIZE) < 0) {
--			pr_err("failed to upload from 0x%x to 0x%x size 0x%x\n",
--			       entry * cache->page_size,
--			       cache->tags[entry].address,
--			       cache->page_size);
-+			dev_dbg(priv->dev, "%s:%d: failed to upload from "
-+				"0x%x to 0x%x size 0x%x\n", __func__, __LINE__,
-+				entry * cache->page_size,
-+				cache->tags[entry].address, cache->page_size);
- 		}
- 		cache->tags[entry].flags &= ~CACHE_PAGE_DIRTY;
- 	}
-@@ -323,16 +328,16 @@ static void ps3vram_cache_load(struct mt
- 	struct ps3vram_priv *priv = mtd->priv;
- 	struct ps3vram_cache *cache = &priv->cache;
- 
--	dbg("fetching %d : 0x%08x", entry, address);
-+	dev_dbg(priv->dev, "%s:%d: fetching %d : 0x%08x\n", __func__, __LINE__,
-+		entry, address);
- 	if (ps3vram_download(mtd,
- 			     address,
- 			     CACHE_OFFSET + entry * cache->page_size,
- 			     DMA_PAGE_SIZE,
- 			     cache->page_size / DMA_PAGE_SIZE) < 0) {
--		pr_err("failed to download from 0x%x to 0x%x size 0x%x\n",
--		       address,
--		       entry * cache->page_size,
--		       cache->page_size);
-+		dev_err(priv->dev, "%s:%d: failed to download from "
-+			"0x%x to 0x%x size 0x%x\n", __func__, __LINE__, address,
-+			entry * cache->page_size, cache->page_size);
- 	}
- 
- 	cache->tags[entry].address = address;
-@@ -346,7 +351,7 @@ static void ps3vram_cache_flush(struct m
- 	struct ps3vram_cache *cache = &priv->cache;
- 	int i;
- 
--	dbg("FLUSH");
-+	dev_dbg(priv->dev, "%s:%d: FLUSH\n", __func__, __LINE__);
- 	for (i = 0; i < cache->page_count; i++) {
- 		ps3vram_cache_evict(mtd, i);
- 		cache->tags[i].flags = 0;
-@@ -369,15 +374,15 @@ static unsigned int ps3vram_cache_match(
- 	for (i = 0; i < cache->page_count; i++) {
- 		if ((cache->tags[i].flags & CACHE_PAGE_PRESENT) &&
- 		    cache->tags[i].address == base) {
--			dbg("found entry %d : 0x%08x",
--			    i, cache->tags[i].address);
-+			dev_dbg(priv->dev, "%s:%d: found entry %d : 0x%08x\n",
-+				__func__, __LINE__, i, cache->tags[i].address);
- 			return i;
- 		}
- 	}
- 
- 	/* choose a random entry */
- 	i = (jiffies + (counter++)) % cache->page_count;
--	dbg("using cache entry %d", i);
-+	dev_dbg(priv->dev, "%s:%d: using entry %d\n", __func__, __LINE__, i);
- 
- 	ps3vram_cache_evict(mtd, i);
- 	ps3vram_cache_load(mtd, i, base);
-@@ -389,18 +394,19 @@ static int ps3vram_cache_init(struct mtd
- {
- 	struct ps3vram_priv *priv = mtd->priv;
- 
--	pr_info("creating cache: %d entries, %d bytes pages\n",
--	       CACHE_PAGE_COUNT, CACHE_PAGE_SIZE);
--
- 	priv->cache.page_count = CACHE_PAGE_COUNT;
- 	priv->cache.page_size = CACHE_PAGE_SIZE;
- 	priv->cache.tags = kzalloc(sizeof(struct ps3vram_tag) *
- 				   CACHE_PAGE_COUNT, GFP_KERNEL);
- 	if (priv->cache.tags == NULL) {
--		pr_err("could not allocate cache tags\n");
-+		dev_err(priv->dev, "%s:%d: could not allocate cache tags\n",
-+			__func__, __LINE__);
- 		return -ENOMEM;
- 	}
- 
-+	dev_info(priv->dev, "created ram cache: %d entries, %d KiB each\n",
-+		CACHE_PAGE_COUNT, CACHE_PAGE_SIZE / 1024);
-+
- 	return 0;
- }
- 
-@@ -434,14 +440,14 @@ static int ps3vram_erase(struct mtd_info
- 	return 0;
- }
- 
--
- static int ps3vram_read(struct mtd_info *mtd, loff_t from, size_t len,
- 			size_t *retlen, u_char *buf)
- {
- 	struct ps3vram_priv *priv = mtd->priv;
- 	unsigned int cached, count;
- 
--	dbg("from = 0x%08x len = 0x%zx", (unsigned int) from, len);
-+	dev_dbg(priv->dev, "%s:%d: from=0x%08x len=0x%zx\n", __func__, __LINE__,
-+		(unsigned int)from, len);
- 
- 	if (from >= mtd->size)
- 		return -EINVAL;
-@@ -463,8 +469,9 @@ static int ps3vram_read(struct mtd_info 
- 		entry = ps3vram_cache_match(mtd, from);
- 		cached = CACHE_OFFSET + entry * priv->cache.page_size + offset;
- 
--		dbg("from=%08x cached=%08x offset=%08x avail=%08x count=%08x",
--		    (unsigned)from, cached, offset, avail, count);
-+		dev_dbg(priv->dev, "%s:%d: from=%08x cached=%08x offset=%08x "
-+			"avail=%08x count=%08x\n", __func__, __LINE__,
-+			(unsigned int)from, cached, offset, avail, count);
- 
- 		if (avail > count)
- 			avail = count;
-@@ -507,8 +514,9 @@ static int ps3vram_write(struct mtd_info
- 		entry = ps3vram_cache_match(mtd, to);
- 		cached = CACHE_OFFSET + entry * priv->cache.page_size + offset;
- 
--		dbg("to=%08x cached=%08x offset=%08x avail=%08x count=%08x",
--		    (unsigned) to, cached, offset, avail, count);
-+		dev_dbg(priv->dev, "%s:%d: to=%08x cached=%08x offset=%08x "
-+			"avail=%08x count=%08x\n", __func__, __LINE__,
-+			(unsigned int)to, cached, offset, avail, count);
- 
- 		if (avail > count)
- 			avail = count;
-@@ -544,12 +552,14 @@ static int __devinit ps3vram_probe(struc
- 	priv = ps3vram_mtd.priv;
- 
- 	mutex_init(&priv->lock);
-+	priv->dev = &dev->core;
- 
- 	/* Allocate XDR buffer (1MiB aligned) */
- 	priv->xdr_buf = (uint8_t *) __get_free_pages(GFP_KERNEL,
- 						     get_order(XDR_BUF_SIZE));
- 	if (priv->xdr_buf == NULL) {
--		pr_err("ps3vram: could not allocate XDR buffer\n");
-+		dev_dbg(&dev->core, "%s:%d: could not allocate XDR buffer\n",
-+			__func__, __LINE__);
- 		ret = -ENOMEM;
- 		goto out_free_priv;
- 	}
-@@ -560,7 +570,8 @@ static int __devinit ps3vram_probe(struc
- 
- 	/* XXX: Need to open GPU, in case ps3fb or snd_ps3 aren't loaded */
- 	if (ps3_open_hv_device(dev)) {
--		pr_err("ps3vram: ps3_open_hv_device failed\n");
-+		dev_err(&dev->core, "%s:%d: ps3_open_hv_device failed\n",
-+			__func__, __LINE__);
- 		ret = -EAGAIN;
- 		goto out_close_gpu;
- 	}
-@@ -572,7 +583,8 @@ static int __devinit ps3vram_probe(struc
- 		ddr_size -= ps3fb_videomemory.size;
- 	ddr_size = ALIGN(ddr_size, 1024*1024);
- 	if (ddr_size <= 0) {
--		printk(KERN_ERR "ps3vram: specified size is too small\n");
-+		dev_err(&dev->core, "%s:%d: specified size is too small\n",
-+			__func__, __LINE__);
- 		ret = -EINVAL;
- 		goto out_close_gpu;
- 	}
-@@ -586,12 +598,11 @@ static int __devinit ps3vram_probe(struc
- 		ddr_size -= 1024*1024;
- 	}
- 	if (status != 0 || ddr_size <= 0) {
--		pr_err("ps3vram: lv1_gpu_memory_allocate failed\n");
-+		dev_err(&dev->core, "%s:%d: lv1_gpu_memory_allocate failed\n",
-+			__func__, __LINE__);
- 		ret = -ENOMEM;
- 		goto out_free_xdr_buf;
- 	}
--	pr_info("ps3vram: allocated %u MiB of DDR memory\n",
--		(unsigned int) (ddr_size / 1024 / 1024));
- 
- 	/* Request context */
- 	status = lv1_gpu_context_allocate(priv->memory_handle,
-@@ -602,7 +613,8 @@ static int __devinit ps3vram_probe(struc
- 					  &reports_lpar,
- 					  &reports_size);
- 	if (status) {
--		pr_err("ps3vram: lv1_gpu_context_allocate failed\n");
-+		dev_err(&dev->core, "%s:%d: lv1_gpu_context_allocate failed\n",
-+			__func__, __LINE__);
- 		ret = -ENOMEM;
- 		goto out_free_memory;
- 	}
-@@ -612,28 +624,32 @@ static int __devinit ps3vram_probe(struc
- 				       ps3_mm_phys_to_lpar(__pa(priv->xdr_buf)),
- 				       XDR_BUF_SIZE, 0);
- 	if (status) {
--		pr_err("ps3vram: lv1_gpu_context_iomap failed\n");
-+		dev_err(&dev->core, "%s:%d: lv1_gpu_context_iomap failed\n",
-+			__func__, __LINE__);
- 		ret = -ENOMEM;
- 		goto out_free_context;
- 	}
- 
- 	priv->base = ioremap(ddr_lpar, ddr_size);
- 	if (!priv->base) {
--		pr_err("ps3vram: ioremap failed\n");
-+		dev_err(&dev->core, "%s:%d: ioremap failed\n", __func__,
-+			__LINE__);
- 		ret = -ENOMEM;
- 		goto out_free_context;
- 	}
- 
- 	priv->ctrl = ioremap(ctrl_lpar, 64 * 1024);
- 	if (!priv->ctrl) {
--		pr_err("ps3vram: ioremap failed\n");
-+		dev_err(&dev->core, "%s:%d: ioremap failed\n", __func__,
-+			__LINE__);
- 		ret = -ENOMEM;
- 		goto out_unmap_vram;
- 	}
- 
- 	priv->reports = ioremap(reports_lpar, reports_size);
- 	if (!priv->reports) {
--		pr_err("ps3vram: ioremap failed\n");
-+		dev_err(&dev->core, "%s:%d: ioremap failed\n", __func__,
-+			__LINE__);
- 		ret = -ENOMEM;
- 		goto out_unmap_ctrl;
- 	}
-@@ -661,7 +677,8 @@ static int __devinit ps3vram_probe(struc
- 	ret = ps3vram_wait_ring(&ps3vram_mtd, 100);
- 	mutex_unlock(&ps3_gpu_mutex);
- 	if (ret < 0) {
--		pr_err("failed to initialize channels\n");
-+		dev_err(&dev->core, "%s:%d: failed to initialize channels\n",
-+			__func__, __LINE__);
- 		ret = -ETIMEDOUT;
- 		goto out_unmap_reports;
- 	}
-@@ -669,12 +686,15 @@ static int __devinit ps3vram_probe(struc
- 	ps3vram_cache_init(&ps3vram_mtd);
- 
- 	if (add_mtd_device(&ps3vram_mtd)) {
--		pr_err("ps3vram: failed to register device\n");
-+		dev_err(&dev->core, "%s:%d: add_mtd_device failed\n",
-+			__func__, __LINE__);
- 		ret = -EAGAIN;
- 		goto out_cache_cleanup;
- 	}
- 
--	pr_info("ps3vram mtd device registered, %lu bytes\n", ddr_size);
-+	dev_info(&dev->core, "reserved %u MiB of gpu memory\n",
-+		(unsigned int)(ddr_size / 1024 / 1024));
-+
- 	return 0;
- 
- out_cache_cleanup:
+Patch 1 adds the driver.  It has already been reviewed on the cbe-oss-dev ML
+and has been acked by David Woodhouse, so should be ready to merge.
+
+Patch 2 is a minor update to reflect changes to the ps3-system-bus that have
+been merged into mainline since this driver was posted, and so can be merged.
+
+Patches 3-6 are minor cleanups suggested by Arnd Bergmann.  I have left two
+of Arnd's sugestions, implementing the driver as a block device, similar to
+the axonram driver, and eliminating the need to ioremap.  These will require
+a significant re-work.
+
+
+ [patch 1/6] powerpc/ps3: ps3vram driver for accessing video RAM as MTD
+ [patch 2/6] powerpc/ps3: Add modalias support to the ps3vram driver
+ [patch 3/6] mtd/ps3vram: Remove ps3vram debug routines
+ [patch 4/6] mtd/ps3vram: Cleanup ps3vram driver messages
+ [patch 5/6] mtd/ps3vram: Use kernel types
+ [patch 6/6] mtd/ps3vram: Use msleep in waits
+
+-Geoff
+
 
 -- 
