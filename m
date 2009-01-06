@@ -1,28 +1,15 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from mail-bw0-f10.google.com (mail-bw0-f10.google.com
-	[209.85.218.10]) by ozlabs.org (Postfix) with ESMTP id 68141474CC
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 23:19:34 +1100 (EST)
-Received: by bwz3 with SMTP id 3so20638391bwz.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 06 Jan 2009 04:19:32 -0800 (PST)
-Message-ID: <c384c5ea0901060418x48c507afq26bf6cec109ed9c4@mail.gmail.com>
-Date: Tue, 6 Jan 2009 13:18:56 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2 4/4] powerpc/83xx: Add PCI-E support for all MPC83xx
-	boards with PCI-E
-In-Reply-To: <20090105180122.GA12237@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20081229164040.GD8215@oksana.dev.rtsoft.ru>
-	<C96CE59B-05FA-4728-930F-D4430EFB9B99@kernel.crashing.org>
-	<20081230201916.GA20059@oksana.dev.rtsoft.ru>
-	<1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
-	<20081231171017.6FCF585AD247@gemini.denx.de>
-	<B64DF110-E26A-4229-8384-E7933732BC01@kernel.crashing.org>
-	<20090105174645.GA23766@ld0162-tx32.am.freescale.net>
-	<20090105180122.GA12237@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Wolfgang Denk <wd@denx.de>
+Return-Path: <opurdila@ixiacom.com>
+Received: from ixro-ex1.ixiacom.com (unknown [212.146.94.66])
+	by ozlabs.org (Postfix) with ESMTP id 8C94DDE3AC
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 00:13:05 +1100 (EST)
+From: Octavian Purdila <opurdila@ixiacom.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc: G4 oprofile: variable number of counters
+Date: Tue,  6 Jan 2009 14:55:34 +0200
+Message-Id: <1231246535-13151-2-git-send-email-opurdila@ixiacom.com>
+In-Reply-To: <1231246535-13151-1-git-send-email-opurdila@ixiacom.com>
+References: <1231246535-13151-1-git-send-email-opurdila@ixiacom.com>
+Cc: Octavian Purdila <opurdila@ixiacom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,29 +19,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+For ppc750 processors which use 4 performance counters instead of the
+6 G4 uses but otherwise is compatible with G4.
 
-On Mon, Jan 5, 2009 at 7:01 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Mon, Jan 05, 2009 at 11:46:45AM -0600, Scott Wood wrote:
-> [...]
->> > My statement was to convey that the kernel.org kernel should only
->> > worry itself with the denx.de u-boot (w/regards to compatibility).
->>
->> Why?  Unless the BSP u-boots do something insane, I think we should try
->> to have the upstream kernel boot on the u-boot that comes on the board
->> (it's not nice to require users to reflash unnecessarily).
->
+Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
+---
+ arch/powerpc/oprofile/op_model_7450.c |   21 +++++++++++----------
+ 1 files changed, 11 insertions(+), 10 deletions(-)
 
-The u-boot that came with the boards (at least MPC8315E-RDB) is too
-old for 2.6.25+ kernels:
-
-I have run into this earlier:
-
-http://www.mail-archive.com/u-boot-users@lists.sourceforge.net/msg06551.html
-
-
-
-Regards,
+diff --git a/arch/powerpc/oprofile/op_model_7450.c b/arch/powerpc/oprofile/op_model_7450.c
+index cc599eb..97348f5 100644
+--- a/arch/powerpc/oprofile/op_model_7450.c
++++ b/arch/powerpc/oprofile/op_model_7450.c
+@@ -29,7 +29,7 @@
+ static unsigned long reset_value[OP_MAX_COUNTER];
+ 
+ static int oprofile_running;
+-static u32 mmcr0_val, mmcr1_val, mmcr2_val;
++static u32 mmcr0_val, mmcr1_val, mmcr2_val, ctrs;
+ 
+ #define MMCR0_PMC1_SHIFT	6
+ #define MMCR0_PMC2_SHIFT	0
+@@ -88,13 +88,12 @@ static int fsl7450_cpu_setup(struct op_counter_config *ctr)
+ 
+ 	mtspr(SPRN_MMCR0, mmcr0_val);
+ 	mtspr(SPRN_MMCR1, mmcr1_val);
+-	mtspr(SPRN_MMCR2, mmcr2_val);
++	if (ctrs > 4)
++		mtspr(SPRN_MMCR2, mmcr2_val);
+ 
+ 	return 0;
+ }
+ 
+-#define NUM_CTRS 6
+-
+ /* Configures the global settings for the countes on all CPUs. */
+ static int fsl7450_reg_setup(struct op_counter_config *ctr,
+ 			     struct op_system_config *sys,
+@@ -102,12 +101,13 @@ static int fsl7450_reg_setup(struct op_counter_config *ctr,
+ {
+ 	int i;
+ 
++	ctrs = num_ctrs;
+ 	/* Our counters count up, and "count" refers to
+ 	 * how much before the next interrupt, and we interrupt
+ 	 * on overflow.  So we calculate the starting value
+ 	 * which will give us "count" until overflow.
+ 	 * Then we set the events on the enabled counters */
+-	for (i = 0; i < NUM_CTRS; ++i)
++	for (i = 0; i < num_ctrs; ++i)
+ 		reset_value[i] = 0x80000000UL - ctr[i].count;
+ 
+ 	/* Set events for Counters 1 & 2 */
+@@ -123,9 +123,10 @@ static int fsl7450_reg_setup(struct op_counter_config *ctr,
+ 
+ 	/* Set events for Counters 3-6 */
+ 	mmcr1_val = mmcr1_event3(ctr[2].event)
+-		| mmcr1_event4(ctr[3].event)
+-		| mmcr1_event5(ctr[4].event)
+-		| mmcr1_event6(ctr[5].event);
++		| mmcr1_event4(ctr[3].event);
++	if (num_ctrs > 4)
++		mmcr1_val |= mmcr1_event5(ctr[4].event)
++			| mmcr1_event6(ctr[5].event);
+ 
+ 	mmcr2_val = 0;
+ 
+@@ -139,7 +140,7 @@ static int fsl7450_start(struct op_counter_config *ctr)
+ 
+ 	mtmsr(mfmsr() | MSR_PMM);
+ 
+-	for (i = 0; i < NUM_CTRS; ++i) {
++	for (i = 0; i < ctrs; ++i) {
+ 		if (ctr[i].enabled)
+ 			classic_ctr_write(i, reset_value[i]);
+ 		else
+@@ -184,7 +185,7 @@ static void fsl7450_handle_interrupt(struct pt_regs *regs,
+ 	pc = mfspr(SPRN_SIAR);
+ 	is_kernel = is_kernel_addr(pc);
+ 
+-	for (i = 0; i < NUM_CTRS; ++i) {
++	for (i = 0; i < ctrs; ++i) {
+ 		val = classic_ctr_read(i);
+ 		if (val < 0) {
+ 			if (oprofile_running && ctr[i].enabled) {
 -- 
-Leon
+1.5.6.5
