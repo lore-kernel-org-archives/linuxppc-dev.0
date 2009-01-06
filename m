@@ -1,39 +1,17 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [59.145.155.3])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8D836DE5B8
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 02:57:36 +1100 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28smtp03.in.ibm.com (8.13.1/8.13.1) with ESMTP id n06FvRU9021230
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jan 2009 21:27:27 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n06FvV4c4485310
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jan 2009 21:27:31 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.13.1/8.13.3) with ESMTP id n06FvRUX021311
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jan 2009 02:57:27 +1100
-Date: Tue, 6 Jan 2009 21:27:24 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] 2.6.28-git4 - powerpc - drivers build fails with
-	!CONFIG_VIOPATH
-Message-ID: <20090106155724.GA6747@linux.vnet.ibm.com>
-References: <5414eaef99b7392a95f6e3488b81dbf7@bga.com>
-	<20090104182441.GA5086@linux.vnet.ibm.com>
-	<98d6aef17cba9d835d7866745f811dc7@bga.com>
-	<20090106072549.GA5066@linux.vnet.ibm.com>
-	<20090106073149.GA12371@uranus.ravnborg.org>
-	<20090106093847.GB5066@linux.vnet.ibm.com>
-	<20090106104619.GA13789@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20090106104619.GA13789@uranus.ravnborg.org>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Milton Miller <miltonm@bga.com>, Stephen Rothwell <sfr@canb.auug.org.au>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 97596DE497
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 03:26:04 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n06GQ00d027762
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jan 2009 10:26:00 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Fix PCIe error interrupts
+Date: Tue,  6 Jan 2009 10:26:00 -0600
+Message-Id: <1231259160-29464-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,99 +21,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Sam Ravnborg <sam@ravnborg.org> [2009-01-06 11:46:19]:
+The PCIe interrupts for 8544ds and 8572ds were incorrect.  The 8572 case
+was found by Liu Yu.
 
-> Hi Kamalesh
-> 
-> Looks good, small nit below.
-> 
-> >  config VIOPATH
-> >  	bool
-> > -	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
-> > -	default y
-> > +	default n
-> 
-> As 'n' is default anyway this line is not needed and I suggest you
-> spin a final version of the patch with this removed.
-> 
-> 	Sam
-
-Hi Sam,
-
-	Thanks for the review comments. I am resending the patch with the changes
-you have recommended.
-
-Impact: Fix the VIOPATH dependency in the iSeries dependent drivers.
-
-iSeries depend drivers build fails, when CONFIG_VIOPATH is disabled.
-Removing the dependency of VIOPATH by selecting it, when the drivers
-dependent on iSeries code.
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/platforms/iseries/Kconfig |    5 +++--
- drivers/char/Kconfig                   |    1 +
- drivers/scsi/Kconfig                   |    1 +
- 3 files changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/mpc8544ds.dts            |    4 ++--
+ arch/powerpc/boot/dts/mpc8572ds.dts            |    4 ++--
+ arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |    2 +-
+ arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |    2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
-index ed3753d..7ddd0a2 100644
---- a/arch/powerpc/platforms/iseries/Kconfig
-+++ b/arch/powerpc/platforms/iseries/Kconfig
-@@ -10,18 +10,21 @@ menu "iSeries device drivers"
- config VIODASD
- 	tristate "iSeries Virtual I/O disk support"
- 	depends on BLOCK
-+	select VIOPATH
- 	help
- 	  If you are running on an iSeries system and you want to use
- 	  virtual disks created and managed by OS/400, say Y.
- 
- config VIOCD
- 	tristate "iSeries Virtual I/O CD support"
-+	select VIOPATH
- 	help
- 	  If you are running Linux on an IBM iSeries system and you want to
- 	  read a CD drive owned by OS/400, say Y here.
- 
- config VIOTAPE
- 	tristate "iSeries Virtual Tape Support"
-+	select VIOPATH
- 	help
- 	  If you are running Linux on an iSeries system and you want Linux
- 	  to read and/or write a tape drive owned by OS/400, say Y here.
-@@ -30,5 +33,3 @@ endmenu
- 
- config VIOPATH
- 	bool
--	depends on VIODASD || VIOCD || VIOTAPE || ISERIES_VETH
--	default y
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 1697043..b8da09a 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -616,6 +616,7 @@ config HVC_ISERIES
- 	default y
- 	select HVC_DRIVER
- 	select HVC_IRQ
-+	select VIOPATH
- 	help
- 	  iSeries machines support a hypervisor virtual console.
- 
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index b732297..256c7be 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -884,6 +884,7 @@ config SCSI_IBMVSCSI
- 	tristate "IBM Virtual SCSI support"
- 	depends on PPC_PSERIES || PPC_ISERIES
- 	select SCSI_SRP_ATTRS
-+	select VIOPATH if PPC_ISERIES
- 	help
- 	  This is the IBM POWER Virtual SCSI Client
- 
+diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
+index f1fb207..fc448d4 100644
+--- a/arch/powerpc/boot/dts/mpc8544ds.dts
++++ b/arch/powerpc/boot/dts/mpc8544ds.dts
+@@ -293,7 +293,7 @@
+ 			  0x1000000 0x0 0x0 0xe1010000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+-		interrupts = <26 2>;
++		interrupts = <25 2>;
+ 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+ 		interrupt-map = <
+ 			/* IDSEL 0x0 */
+@@ -330,7 +330,7 @@
+ 			  0x1000000 0x0 0x0 0xe1020000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+-		interrupts = <25 2>;
++		interrupts = <26 2>;
+ 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+ 		interrupt-map = <
+ 			/* IDSEL 0x0 */
+diff --git a/arch/powerpc/boot/dts/mpc8572ds.dts b/arch/powerpc/boot/dts/mpc8572ds.dts
+index a10506e..c14890d 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds.dts
+@@ -679,7 +679,7 @@
+ 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x00010000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+-		interrupts = <26 2>;
++		interrupts = <25 2>;
+ 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+ 		interrupt-map = <
+ 			/* IDSEL 0x0 */
+@@ -716,7 +716,7 @@
+ 			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x00010000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+-		interrupts = <27 2>;
++		interrupts = <26 2>;
+ 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+ 		interrupt-map = <
+ 			/* IDSEL 0x0 */
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+index c114c4e..fd462ef 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+@@ -457,7 +457,7 @@
+ 			  0x1000000 0x0 0x0 0xffc10000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+-		interrupts = <26 2>;
++		interrupts = <25 2>;
+ 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+ 		interrupt-map = <
+ 			/* IDSEL 0x0 */
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+index 04ecda1..e35230f 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+@@ -208,7 +208,7 @@
+ 			  0x1000000 0x0 0x0 0xffc20000 0x0 0x10000>;
+ 		clock-frequency = <33333333>;
+ 		interrupt-parent = <&mpic>;
+-		interrupts = <27 2>;
++		interrupts = <26 2>;
+ 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+ 		interrupt-map = <
+ 			/* IDSEL 0x0 */
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+1.5.6.5
