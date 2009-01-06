@@ -1,29 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C21B4DDF80
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 10:42:58 +1100 (EST)
-Date: Wed, 7 Jan 2009 02:42:56 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-Subject: Re: [PATCH v2 4/4] powerpc/83xx: Add PCI-E support for all MPC83xx
-	boards with PCI-E
-Message-ID: <20090106234256.GA26089@oksana.dev.rtsoft.ru>
-References: <1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
-	<20081231171017.6FCF585AD247@gemini.denx.de>
-	<B64DF110-E26A-4229-8384-E7933732BC01@kernel.crashing.org>
-	<20090105174645.GA23766@ld0162-tx32.am.freescale.net>
-	<20090105180122.GA12237@oksana.dev.rtsoft.ru>
-	<c384c5ea0901061053r21fbc853y3b28ae3c8e3a0e6f@mail.gmail.com>
-	<20090106192747.GA3056@oksana.dev.rtsoft.ru>
-	<2B8AFE67-67BF-4926-B41B-79ACD72CA505@kernel.crashing.org>
-	<20090106211513.GA23914@oksana.dev.rtsoft.ru>
-	<c384c5ea0901061433y446f4ab4i2e18d1141734d60e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <c384c5ea0901061433y446f4ab4i2e18d1141734d60e@mail.gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Wolfgang Denk <wd@denx.de>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: check crash_base for relocatable kernel
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <kexec-29-1-7.miltonm@bga.com>
+References: <kexec-29-1-7.miltonm@bga.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-FFqWjNFUZYKxLEfaXwl3"
+Date: Wed, 07 Jan 2009 10:44:02 +1100
+Message-Id: <1231285442.8292.10.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	kexec@lists.infradead.org, "M.MohanK" <"umar mohan"@in.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,48 +22,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 06, 2009 at 11:33:35PM +0100, Leon Woestenberg wrote:
-> Hello Anton,
-> 
-> On Tue, Jan 6, 2009 at 10:15 PM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > On Tue, Jan 06, 2009 at 02:38:57PM -0600, Kumar Gala wrote:
-> >>>> Is u-boot PCIe initialization required for this kernel patch to work?
-> >>>
-> >>> Yup.
-> >>
-> >> Really?  what for?
-> >
-> > Hm. U-Boot should initialize SerDes and PCI-E controller (pcie laws,
-> > inbound/outbound windows, clocks, etc.)
-> >
-> > Though if PCI-E controller wasn't initialized (i.e. board reflashed
-> > with the community u-boot), Linux just won't probe the pcie controller:
-> >
-> > cfg_bar = in_le32(hose->cfg_data + PEX_OUTWIN0_BAR);
-> > if (!cfg_bar) {
-> >        /* PCI-E isn't configured. */
-> >        ret = -ENODEV;
-> >        goto err1;
-> > }
-> >
-> > Or did I misunderstand the question?
-> >
-> You understood correctly, thanks for answering.
-> 
-> So to summarize, we need u-boot to initialize the PCIe controller, in
-> order for Linux to further take it over.
-> 
-> What u-boot versions/releases do provide this initialization?
 
-Only FSL U-Boots so far (i.e. community u-boot + fsl patches).
+--=-FFqWjNFUZYKxLEfaXwl3
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> I know the u-boot with the board works, but it's incompatible with
-> recent Linux kernels.
+On Fri, 2009-01-02 at 14:46 -0600, Milton Miller wrote:
+> @@ -94,10 +95,35 @@ void __init reserve_crashkernel(void)
+>  				KDUMP_KERNELBASE);
+> =20
+>  	crashk_res.start =3D KDUMP_KERNELBASE;
+> +#else
+> +	if (!crashk_res.start) {
+> +		/*
+> +		 * unspecified address, choose a region of specified size
+> +		 * can overlap with initrd (ignoring corruption when retained)
+> +		 * ppc64 requires kernel and some stacks to be in first segemnt
+> +		 */
+> +		crashk_res.start =3D KDUMP_KERNELBASE;
+> +	}
+> +
+> +	crash_base =3D PAGE_ALIGN(crashk_res.start);
+> +	if (crash_base !=3D crashk_res.start) {
+> +		printk("Crash kernel base must be aligned to 0x%lx\n",
+> +				PAGE_SIZE);
+> +		crashk_res.start =3D crash_base;
+> +	}
+> +
+>  #endif
+>  	crash_size =3D PAGE_ALIGN(crash_size);
+>  	crashk_res.end =3D crashk_res.start + crash_size - 1;
+> =20
+> +	/* The crash region must not overlap the current kernel */
+> +	if (overlaps_crashkernel(__pa(_stext), _end - _stext)) {
+> +		printk(KERN_WARNING
+> +			"Crash kernel can not overlap current kernel\n");
+> +		crashk_res.start =3D crashk_res.end =3D 0;
+> +		return;
+> +	}
 
-We should fix that (if possible).
+I think we can be smarter here. Why don't we adjust the crash kernel
+region so that it doesn't overlap the first kernel? ie. move it up a
+bit.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+There's also the issue of the RMO, I'm not sure what we should do there,
+but I think the kernel needs some smarts otherwise users are going to
+shoot themselves in the foot.
+
+We could ignore the @x setting and split the RMO between both kernels
+somewhat intelligently.
+
+What might work is multiple crash regions, that way we could have some
+space in the RMO for the second kernel (say 32MB?), but the rest outside
+- leaving some RMO for the first kernel. But I think that would require
+some serious surgery.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-FFqWjNFUZYKxLEfaXwl3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklj7MIACgkQdSjSd0sB4dLBdgCfZk1sxjUdSvVDI7/zJPkrVdAe
+UAMAniZbgjgXYcoQq70SvLu30w/Bufb0
+=yJJU
+-----END PGP SIGNATURE-----
+
+--=-FFqWjNFUZYKxLEfaXwl3--
