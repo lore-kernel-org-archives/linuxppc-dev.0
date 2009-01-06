@@ -1,16 +1,15 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <4963CDD3.1070504@am.sony.com>
-Date: Tue, 6 Jan 2009 13:32:03 -0800
+Message-ID: <4963CDEC.2000003@am.sony.com>
+Date: Tue, 6 Jan 2009 13:32:28 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 2/6] powerpc/ps3: Add modalias support to the ps3vram driver
+Subject: [patch 5/6] mtd/ps3vram: Use kernel types
 References: <4963CA52.9030902@am.sony.com>
 In-Reply-To: <4963CA52.9030902@am.sony.com>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: David Woodhouse <David.Woodhouse@intel.com>, Arnd Bergmann <arnd@arndb.de>,
 	Jim Paris <jim@jtan.com>, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	Vivien Chappelier <vivien.chappelier@free.fr>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,31 +20,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Replace the use of stdint.h types with kernel types
+in the ps3vram driver.
 
-Update ps3vram driver to use the new ps3 three id modalias support.
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/include/asm/ps3.h |    1 +
- drivers/mtd/devices/ps3vram.c  |    1 +
- 2 files changed, 2 insertions(+)
+ drivers/mtd/devices/ps3vram.c |   56 ++++++++++++++++++++++--------------------
+ 1 file changed, 30 insertions(+), 26 deletions(-)
 
---- a/arch/powerpc/include/asm/ps3.h
-+++ b/arch/powerpc/include/asm/ps3.h
-@@ -333,6 +333,7 @@ enum ps3_match_sub_id {
- #define PS3_MODULE_ALIAS_STOR_FLASH	"ps3:8:0"
- #define PS3_MODULE_ALIAS_SOUND		"ps3:9:0"
- #define PS3_MODULE_ALIAS_GPU_FB		"ps3:10:1"
-+#define PS3_MODULE_ALIAS_GPU_RAMDISK	"ps3:10:2"
- #define PS3_MODULE_ALIAS_LPM		"ps3:11:0"
- 
- enum ps3_system_bus_device_type {
 --- a/drivers/mtd/devices/ps3vram.c
 +++ b/drivers/mtd/devices/ps3vram.c
-@@ -774,3 +774,4 @@ module_exit(ps3vram_exit);
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Jim Paris <jim@jtan.com>");
- MODULE_DESCRIPTION("MTD driver for PS3 video RAM");
-+MODULE_ALIAS(PS3_MODULE_ALIAS_GPU_RAMDISK);
+@@ -65,15 +65,15 @@ struct ps3vram_cache {
+ };
+ 
+ struct ps3vram_priv {
+-	uint64_t memory_handle;
+-	uint64_t context_handle;
+-	uint8_t *base;
+-	uint32_t *ctrl;
+-	uint32_t *reports;
+-	uint8_t *xdr_buf;
++	u64 memory_handle;
++	u64 context_handle;
++	u32 *ctrl;
++	u32 *reports;
++	u8 *base;
++	u8 *xdr_buf;
+ 
+-	uint32_t *fifo_base;
+-	uint32_t *fifo_ptr;
++	u32 *fifo_base;
++	u32 *fifo_ptr;
+ 
+ 	struct device *dev;
+ 	struct ps3vram_cache cache;
+@@ -92,7 +92,7 @@ char *size = "256M-";
+ module_param(size, charp, 0);
+ MODULE_PARM_DESC(size, "memory size");
+ 
+-static inline uint32_t *ps3vram_get_notifier(uint32_t *reports, int notifier)
++static u32 *ps3vram_get_notifier(u32 *reports, int notifier)
+ {
+ 	return (void *) reports +
+ 		DMA_NOTIFIER_OFFSET_BASE +
+@@ -102,8 +102,9 @@ static inline uint32_t *ps3vram_get_noti
+ static void ps3vram_notifier_reset(struct mtd_info *mtd)
+ {
+ 	int i;
++
+ 	struct ps3vram_priv *priv = mtd->priv;
+-	uint32_t *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
++	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
+ 	for (i = 0; i < 4; i++)
+ 		notify[i] = 0xffffffff;
+ }
+@@ -111,7 +112,7 @@ static void ps3vram_notifier_reset(struc
+ static int ps3vram_notifier_wait(struct mtd_info *mtd, int timeout_ms)
+ {
+ 	struct ps3vram_priv *priv = mtd->priv;
+-	uint32_t *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
++	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
+ 
+ 	timeout_ms *= 1000;
+ 
+@@ -155,13 +156,13 @@ static int ps3vram_wait_ring(struct mtd_
+ 	return 0;
+ }
+ 
+-static inline void ps3vram_out_ring(struct ps3vram_priv *priv, uint32_t data)
++static void ps3vram_out_ring(struct ps3vram_priv *priv, u32 data)
+ {
+ 	*(priv->fifo_ptr)++ = data;
+ }
+ 
+-static inline void ps3vram_begin_ring(struct ps3vram_priv *priv, uint32_t chan,
+-				      uint32_t tag, uint32_t size)
++static void ps3vram_begin_ring(struct ps3vram_priv *priv, u32 chan,
++				      u32 tag, u32 size)
+ {
+ 	ps3vram_out_ring(priv, (size << 18) | (chan << 13) | tag);
+ }
+@@ -194,7 +195,7 @@ static void ps3vram_fire_ring(struct mtd
+ 	mutex_lock(&ps3_gpu_mutex);
+ 
+ 	priv->ctrl[CTRL_PUT] = FIFO_BASE + FIFO_OFFSET +
+-		(priv->fifo_ptr - priv->fifo_base) * sizeof(uint32_t);
++		(priv->fifo_ptr - priv->fifo_base) * sizeof(u32);
+ 
+ 	/* asking the HV for a blit will kick the fifo */
+ 	status = lv1_gpu_context_attribute(priv->context_handle,
+@@ -204,8 +205,8 @@ static void ps3vram_fire_ring(struct mtd
+ 		dev_err(priv->dev, "%s:%d: lv1_gpu_context_attribute failed\n",
+ 			__func__, __LINE__);
+ 
+-	if ((priv->fifo_ptr - priv->fifo_base) * sizeof(uint32_t) >
+-	    FIFO_SIZE - 1024) {
++	if ((priv->fifo_ptr - priv->fifo_base) * sizeof(u32) >
++		FIFO_SIZE - 1024) {
+ 		dev_dbg(priv->dev, "%s:%d: fifo full, rewinding\n", __func__,
+ 			__LINE__);
+ 		ps3vram_wait_ring(mtd, 200);
+@@ -538,10 +539,13 @@ static int ps3vram_write(struct mtd_info
+ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
+ {
+ 	struct ps3vram_priv *priv;
+-	uint64_t status;
+-	uint64_t ddr_lpar, ctrl_lpar, info_lpar, reports_lpar;
+-	int64_t ddr_size;
+-	uint64_t reports_size;
++	int status;
++	u64 ddr_lpar;
++	u64 ctrl_lpar;
++	u64 info_lpar;
++	u64 reports_lpar;
++	u64 ddr_size;
++	u64 reports_size;
+ 	int ret = -ENOMEM;
+ 	char *rest;
+ 
+@@ -555,8 +559,8 @@ static int __devinit ps3vram_probe(struc
+ 	priv->dev = &dev->core;
+ 
+ 	/* Allocate XDR buffer (1MiB aligned) */
+-	priv->xdr_buf = (uint8_t *) __get_free_pages(GFP_KERNEL,
+-						     get_order(XDR_BUF_SIZE));
++	priv->xdr_buf = (void *)__get_free_pages(GFP_KERNEL,
++		get_order(XDR_BUF_SIZE));
+ 	if (priv->xdr_buf == NULL) {
+ 		dev_dbg(&dev->core, "%s:%d: could not allocate XDR buffer\n",
+ 			__func__, __LINE__);
+@@ -565,7 +569,7 @@ static int __devinit ps3vram_probe(struc
+ 	}
+ 
+ 	/* Put FIFO at begginning of XDR buffer */
+-	priv->fifo_base = (uint32_t *) (priv->xdr_buf + FIFO_OFFSET);
++	priv->fifo_base = (u32 *) (priv->xdr_buf + FIFO_OFFSET);
+ 	priv->fifo_ptr = priv->fifo_base;
+ 
+ 	/* XXX: Need to open GPU, in case ps3fb or snd_ps3 aren't loaded */
+@@ -593,11 +597,11 @@ static int __devinit ps3vram_probe(struc
+ 		status = lv1_gpu_memory_allocate(ddr_size, 0, 0, 0, 0,
+ 						 &priv->memory_handle,
+ 						 &ddr_lpar);
+-		if (status == 0)
++		if (!status)
+ 			break;
+ 		ddr_size -= 1024*1024;
+ 	}
+-	if (status != 0 || ddr_size <= 0) {
++	if (status || ddr_size <= 0) {
+ 		dev_err(&dev->core, "%s:%d: lv1_gpu_memory_allocate failed\n",
+ 			__func__, __LINE__);
+ 		ret = -ENOMEM;
+
+-- 
