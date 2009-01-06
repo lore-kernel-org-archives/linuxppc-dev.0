@@ -1,23 +1,25 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from mail-bw0-f10.google.com (mail-bw0-f10.google.com
-	[209.85.218.10]) by ozlabs.org (Postfix) with ESMTP id 0DBF1DE4D4
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 23:00:03 +1100 (EST)
-Received: by bwz3 with SMTP id 3so20618629bwz.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 06 Jan 2009 04:00:00 -0800 (PST)
-Message-ID: <c384c5ea0901060354x1658f8c4x2478a6b1fd0901c9@mail.gmail.com>
-Date: Tue, 6 Jan 2009 12:54:27 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: 2.6.28 does not boot on MPC8315E-RDB, or...?
-In-Reply-To: <c384c5ea0901051407i2f1b418ep56c2a9f20268459a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <c384c5ea0901031458j74d74ba3y359831fff9716d07@mail.gmail.com>
-	<008601c96e04$18b74bc0$6b03a8c0@sdelaney2>
-	<c384c5ea0901031645q6358f5deibca91cb065fbeb32@mail.gmail.com>
-	<20090105165817.GA24565@oksana.dev.rtsoft.ru>
-	<c384c5ea0901051407i2f1b418ep56c2a9f20268459a@mail.gmail.com>
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>, onramp123@yahoo.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 51094DE4CA
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jan 2009 23:03:35 +1100 (EST)
+Subject: Re: Lock-up on PPC64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: malc <av1474@comtv.ru>
+In-Reply-To: <Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
+References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>
+	<20081222233223.GA6688@joi> <877i5rh9rm.fsf@linmac.oyster.ru>
+	<20081223234513.GA8730@deepthought> <871vvy77v4.fsf@linmac.oyster.ru>
+	<1230165163.7292.32.camel@pasglop>
+	<Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
+	<1231158516.8367.3.camel@localhost>
+	<Pine.LNX.4.64.0901051928200.2208@linmac.oyster.ru>
+Content-Type: text/plain
+Date: Tue, 06 Jan 2009 23:02:53 +1100
+Message-Id: <1231243373.14860.24.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Mon, 2009-01-05 at 19:34 +0300, malc wrote:
+> Before this change (atleast) mono_handle_native_sigsegv was executed
+> (before machine locks-up hard) after the change this code path is
+> never touched.
+> 
+> The fact that machine locks up hard and not even magic sysrq works
+> is what deserves a better look.
 
-On Mon, Jan 5, 2009 at 11:07 PM, Leon Woestenberg
-<leon.woestenberg@gmail.com> wrote:
->>
->> 2.6.28 works fine here... using
->> arch/powerpc/configs/83xx/mpc8315_rdb_defconfig and
->> arch/powerpc/boot/dts/mpc8315erdb.dts
->> Hope this helps,
->>
-> Thanks for the report, I went back to the defconfig and at least it
-> gives me a partial boot:
->
+Indeed. It's possible that the normally not hit error case is triggering
+a different bug. Definitely worth looking at.
 
-False report. The partial boot was with a 2.6.24.7 dts, and 2.6.28 uImage.
+I didn't have a chance so far, I'm a bit swamped at the moment, but keep
+pining me please :-)
 
-After some experimenting, I noticed garbage on the serial port.
-
-The pre-programmed u-boot is too old. The stupid thing is, I ran into
-this earlier, the thread is here:
-
-http://www.mail-archive.com/u-boot-users@lists.sourceforge.net/msg06551.html
-
-I forgot I was using the second board lying around, which hadn't had
-u-boot updated.
-
-Regards,
--- 
-Leon
+Cheers,
+Ben.
