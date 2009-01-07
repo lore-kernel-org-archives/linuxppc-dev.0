@@ -1,21 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 658E0DE120
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 05:00:37 +1100 (EST)
-Date: Wed, 7 Jan 2009 19:00:24 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Subject: Re: [PATCH V3 01/17] Squashfs: inode operations
-In-Reply-To: <E1LJnJn-0002L2-GZ@dylan.lougher.demon.co.uk>
-Message-ID: <Pine.LNX.4.64.0901071854210.32034@vixen.sonytel.be>
-References: <E1LJnJn-0002L2-GZ@dylan.lougher.demon.co.uk>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 0/6] ps3vram driver patches
+Date: Wed, 7 Jan 2009 19:44:44 +0100
+References: <4963CDCA.4080802@am.sony.com>
+In-Reply-To: <4963CDCA.4080802@am.sony.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Cc: sfr@canb.auug.org.au, linux-embedded@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200901071944.45680.arnd@arndb.de>
+Cc: David Woodhouse <David.Woodhouse@intel.com>, Jim Paris <jim@jtan.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Vivien Chappelier <vivien.chappelier@free.fr>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 5 Jan 2009, Phillip Lougher wrote:
-> diff --git a/fs/squashfs/inode.c b/fs/squashfs/inode.c
-> new file mode 100644
-> index 0000000..7a63398
-> --- /dev/null
-> +++ b/fs/squashfs/inode.c
-> @@ -0,0 +1,346 @@
+On Tuesday 06 January 2009, Geoff Levand wrote:
+> Patches 3-6 are minor cleanups suggested by Arnd Bergmann. =A0I have left=
+ two
+> of Arnd's sugestions, implementing the driver as a block device, similar =
+to
+> the axonram driver, and eliminating the need to ioremap. =A0These will re=
+quire
+> a significant re-work.
 
-> +int squashfs_read_inode(struct inode *inode, long long ino)
-> +{
-> +	struct super_block *sb = inode->i_sb;
-> +	struct squashfs_sb_info *msblk = sb->s_fs_info;
-> +	u64 block = SQUASHFS_INODE_BLK(ino) + msblk->inode_table;
-        ^^^
+My complaint about the ioremap was just about the type of the mapping,
+not something fundamental. Please just replace ioremap(addr, size) with
+ioremap_flags(addr, size, _PAGE_NO_CACHE) in order to get a mapping without
+the guarded bit.
 
-> +		TRACE("File inode %x:%x, start_block %llx, block_list_start "
-                                                     ^^^^
-> +			"%llx, offset %x\n", SQUASHFS_INODE_BLK(ino),
-                         ^^^^
-> +			offset, squashfs_i(inode)->start, block, offset);
+If everyone else thinks that doing the ps3vram driver as an MTD rather than
+a block device is acceptable, I have no further objections. Thanks for
+following up on my other comments.
 
-Note that I get lots of
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-| warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'u64'
-
-on ppc64, since you switched from `unsigned long long' to 'u64', as `u64' is
-(still -- this is being changed) `unsigned long' on pp64.
-
-I guess no action has to be taken, for now?
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+	Arnd <><
