@@ -1,20 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D070FDE0E9
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 11:04:44 +1100 (EST)
-Subject: Re: [PATCH/RFC] Add Alternative Log Buffer Support for printk Messages
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Erickson <gerickson@nuovations.com>
-In-Reply-To: <1227638045-12862-1-git-send-email-gerickson@nuovations.com>
-References: <1227638045-12862-1-git-send-email-gerickson@nuovations.com>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 11:04:02 +1100
-Message-Id: <1231286642.14860.35.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 6F86BDE6CA
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 11:06:33 +1100 (EST)
+Date: Wed, 7 Jan 2009 11:06:28 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/pasemi: local_irq_save uses an unsigned long
+Message-Id: <20090107110628.6e8927f0.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Wolfgang Denx <wd@denx.de>, linux-embedded@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-11-25 at 10:34 -0800, Grant Erickson wrote:
-> This merges support for the previously DENX-only kernel feature of
-> specifying an alternative, "external" buffer for kernel printk
-> messages and their associated metadata. In addition, this ports
-> architecture support for this feature from arch/ppc to arch/powerpc.
-> 
-> Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-Considering the extensive changes to generic code, this patch will
-have to be submitted via the linux-kernel mailing list.
+[Split from a larger patch - sfr]
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/pasemi/cpufreq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I suggest you split the generic core change from the powerpc specific
-implementation.
+diff --git a/arch/powerpc/platforms/pasemi/cpufreq.c b/arch/powerpc/platforms/pasemi/cpufreq.c
+index 58556b0..86db47c 100644
+--- a/arch/powerpc/platforms/pasemi/cpufreq.c
++++ b/arch/powerpc/platforms/pasemi/cpufreq.c
+@@ -112,7 +112,7 @@ static int get_gizmo_latency(void)
+ 
+ static void set_astate(int cpu, unsigned int astate)
+ {
+-	u64 flags;
++	unsigned long flags;
+ 
+ 	/* Return if called before init has run */
+ 	if (unlikely(!sdcasr_mapbase))
+-- 
+1.6.0.5
 
-I'm not sure whether I like the idea myself or not there, so you'll have
-to convince the powers that be to take it.
-
+-- 
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
