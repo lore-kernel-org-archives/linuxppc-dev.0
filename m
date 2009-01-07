@@ -1,18 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C1FB2DE358
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 03:06:01 +1100 (EST)
-Message-Id: <373CF068-D08F-4AD0-BB67-2AA4E6D354A0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <1228793699-23110-1-git-send-email-tpiepho@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 1/5] powerpc: booke: Don't hard-code size of struct tlbcam
-Date: Wed, 7 Jan 2009 10:03:52 -0600
-References: <1228793699-23110-1-git-send-email-tpiepho@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f16.google.com (mail-gx0-f16.google.com
+	[209.85.217.16]) by ozlabs.org (Postfix) with ESMTP id 3C6C5DE276
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 03:07:02 +1100 (EST)
+Received: by gxk9 with SMTP id 9so2750959gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 07 Jan 2009 08:07:01 -0800 (PST)
+Message-ID: <fa686aa40901070807i8b91856y34a079c9e0835149@mail.gmail.com>
+Date: Wed, 7 Jan 2009 09:07:00 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Subject: Re: [PATCH 1/5] powerpc: Add platform support for AmigaOne
+In-Reply-To: <20090107135457.234150@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20090107135457.234150@gmx.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,30 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Jan 7, 2009 at 6:54 AM, Gerhard Pircher <gerhard_pircher@gmx.net> wrote:
+> +
+> +void amigaone_show_cpuinfo(struct seq_file *m)
+> +{
+> +       struct device_node *root;
+> +       const char *model = "";
+> +
+> +       root = of_find_node_by_path("/");
+> +       if (root)
+> +               model = of_get_property(root, "model", NULL);
+> +       seq_printf(m, "machine\t\t: %s\n", model);
+> +
+> +       of_node_put(root);
+> +       return;
+> +}
 
-On Dec 8, 2008, at 9:34 PM, Trent Piepho wrote:
+show_cpuinfo() common code already prints the model.  You can drop this hook.
 
-> Some assembly code in head_fsl_booke.S hard-coded the size of struct  
-> tlbcam
-> to 20 when it indexed the TLBCAM table.  Anyone changing the size of  
-> struct
-> tlbcam would not know to expect that.
->
-> The kernel already has a system to get the size of C structures into
-> assembly language files, asm-offsets, so let's use it.
->
-> The definition of the struct gets moved to a header, so that asm- 
-> offsets.c
-> can include it.
->
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> ---
-> arch/powerpc/kernel/asm-offsets.c    |    8 ++++++++
-> arch/powerpc/kernel/head_fsl_booke.S |    2 +-
-> arch/powerpc/mm/fsl_booke_mmu.c      |    8 +-------
-> arch/powerpc/mm/mmu_decl.h           |    9 +++++++++
-> 4 files changed, 19 insertions(+), 8 deletions(-)
+> +void __init amigaone_setup_arch(void)
+> +{
+> +       struct device_node *np;
+> +
+> +       /* Initialization until calibrate_delay() runs. */
+> +       loops_per_jiffy = 50000000/HZ;
 
-applied to next
+If it doesn't noticeably slow down the boot then I would remove this line.
 
-- k
+Otherwise looks okay to me.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
