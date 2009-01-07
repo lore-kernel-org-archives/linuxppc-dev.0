@@ -1,24 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8DDD1DE6D0
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 08:36:20 +1100 (EST)
-Date: Thu, 8 Jan 2009 08:36:09 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH V3 01/17] Squashfs: inode operations
-Message-Id: <20090108083609.97f0703a.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0901071854210.32034@vixen.sonytel.be>
-References: <E1LJnJn-0002L2-GZ@dylan.lougher.demon.co.uk>
-	<Pine.LNX.4.64.0901071854210.32034@vixen.sonytel.be>
+Return-Path: <wim@iguana.be>
+Received: from mailrelay002.isp.belgacom.be (mailrelay002.isp.belgacom.be
+	[195.238.6.175]) by ozlabs.org (Postfix) with ESMTP id DE74CDE7B9
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 08:48:39 +1100 (EST)
+Date: Wed, 7 Jan 2009 22:48:34 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] watchdog: Basic support for GE Fanuc's FPGA based
+	watchdog timer
+Message-ID: <20090107214834.GF11454@infomag.infomag.iguana.be>
+References: <20081110123101.8608.352.stgit@ubuntu8041.localdomain>
+	<20081110123125.8608.2251.stgit@ubuntu8041.localdomain>
+	<A23D61BC-CA79-490C-8C70-F4341E7844EA@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__8_Jan_2009_08_36_09_+1100_IRCI5g.wNKF4sD4i"
-Cc: linux-embedded@vger.kernel.org,
-	Phillip Lougher <phillip@lougher.demon.co.uk>, Linux/PPC,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Development <linuxppc-dev@ozlabs.org>, linux-fsdevel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <A23D61BC-CA79-490C-8C70-F4341E7844EA@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Martyn Welch <martyn.welch@gefanuc.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,43 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__8_Jan_2009_08_36_09_+1100_IRCI5g.wNKF4sD4i
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi All,
 
-Hi Geert,
+> Any status of acceptance of this?
 
-On Wed, 7 Jan 2009 19:00:24 +0100 (CET) Geert Uytterhoeven <Geert.Uytterhoe=
-ven@sonycom.com> wrote:
->
-> Note that I get lots of
->=20
-> | warning: format '%llx' expects type 'long long unsigned int', but argum=
-ent 3 has type 'u64'
->=20
-> on ppc64, since you switched from `unsigned long long' to 'u64', as `u64'=
- is
-> (still -- this is being changed) `unsigned long' on pp64.
->=20
-> I guess no action has to be taken, for now?
+I changed the ioctl to an unlocked ioctl and removed the temperature ioctl call.
+It's now in my linux-2.6-watchdog-next tree. Can someone verify that it still works?
+(http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-next.git;a=summary)
 
-Correct, as we are in the process of changing u64 to unsigned long long for
-powerpc.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Kumar,
 
---Signature=_Thu__8_Jan_2009_08_36_09_+1100_IRCI5g.wNKF4sD4i
-Content-Type: application/pgp-signature
+the second patch is also in. Do we keep in in the watchdog tree since it almost doesn't
+touch the powerpc arch or do you want it in your tree?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkllIEkACgkQjjKRsyhoI8z+kACgqYc6WZOOWrsC3r7DIQxcBfZT
-ddUAoKQX7RBP6l9WH98d3MgBSQ/3fPDf
-=JuME
------END PGP SIGNATURE-----
-
---Signature=_Thu__8_Jan_2009_08_36_09_+1100_IRCI5g.wNKF4sD4i--
+Kind regards,
+Wim.
