@@ -1,19 +1,20 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.180])
-	by ozlabs.org (Postfix) with ESMTP id 9DDA5DE010
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 07:47:36 +1100 (EST)
-Received: by ik-out-1112.google.com with SMTP id c28so2175343ika.1
-	for <linuxppc-dev@ozlabs.org>; Wed, 07 Jan 2009 12:47:34 -0800 (PST)
-Date: Thu, 8 Jan 2009 15:46:34 -0500
-From: Josh Boyer <jwboyer@gmail.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: mal_probe crash
-Message-ID: <20090108204634.GB2337@yoda.jdub.homelinux.org>
-References: <20090107154434.0c9437ef@lappy.seanm.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090107154434.0c9437ef@lappy.seanm.ca>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 04BE0474C8
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 07:51:44 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Fix missing semicolons in mmu_decl.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090107143724.GF17171@zod.rchland.ibm.com>
+References: <20090107035702.C9114474D7@ozlabs.org>
+	<20090107143724.GF17171@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 07:51:37 +1100
+Message-Id: <1231361497.2142.20.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 07, 2009 at 03:44:34PM -0500, Sean MacLennan wrote:
->With Linus' latest git, mal_probe crashes. It calls netif_napi_add with
->the first parameter NULL. This was ok since the parameter, a net
->device, was only used if CONFIG_NETPOLL was set.
->
->Now it is always de-referenced. A quick check shows that ibm_newemac is
->the only driver that passed NULL as the first parameter to this call in
->2.6.28.
->
->I don't really follow ibm_newemac changes, so the patch may be waiting
->to be applied. This is really just a heads up.
+On Wed, 2009-01-07 at 09:37 -0500, Josh Boyer wrote:
+> On Wed, Jan 07, 2009 at 02:56:51PM +1100, Benjamin Herrenschmidt wrote:
+> >This is a brown paper bag from one of my earlier patches that
+> >breaks build on 40x and 8xx.
+> >
+> >And yes, I've now added 40x and 8xx to my list of test configs :-)
+> >
+> >Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> 
+> Please get it into your tree so people stop emailing me about it
+> being broken :).
 
-I haven't heard of that, so I doubt there's a patch pending.  *Sigh*
+It's in, waiting for me to push. I didn't have a chance yesterday due to
+other problems but hopefully, after I do a few boot tests today, I'll
+push out.
 
-josh
+Ben.
