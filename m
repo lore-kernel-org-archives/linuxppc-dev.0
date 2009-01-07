@@ -1,26 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9D875DE4FA
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 09:38:10 +1100 (EST)
-Message-ID: <49652ECC.70309@freescale.com>
-Date: Wed, 07 Jan 2009 16:38:04 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/5] powerpc: Generic device tree for all AmigaOne boards
-References: <20090107135457.234150@gmx.net> <20090107140132.140980@gmx.net>	
-	<fa686aa40901070841o3ede1d56tf5f69c33523513f4@mail.gmail.com>	
-	<20090107221028.GA18669@ld0162-tx32.am.freescale.net>	
-	<fa686aa40901071421w6c4aa48eyd869eb952373a74d@mail.gmail.com>	
-	<49652B79.5010502@freescale.com>
-	<fa686aa40901071436x35fb6c6ar3f711c53d7edf2bc@mail.gmail.com>
-In-Reply-To: <fa686aa40901071436x35fb6c6ar3f711c53d7edf2bc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 56DA7474C2
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 09:50:19 +1100 (EST)
+Subject: Re: mal_probe crash
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+In-Reply-To: <20090108204634.GB2337@yoda.jdub.homelinux.org>
+References: <20090107154434.0c9437ef@lappy.seanm.ca>
+	<20090108204634.GB2337@yoda.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 09:50:10 +1100
+Message-Id: <1231368610.2142.27.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,17 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, Jan 7, 2009 at 3:23 PM, Scott Wood <scottwood@freescale.com> wrote:
->> It doesn't seem any more likely to introduce a fault by specifying the
->> interrupt controller in one place than in many places.
+On Thu, 2009-01-08 at 15:46 -0500, Josh Boyer wrote:
+> On Wed, Jan 07, 2009 at 03:44:34PM -0500, Sean MacLennan wrote:
+> >With Linus' latest git, mal_probe crashes. It calls netif_napi_add with
+> >the first parameter NULL. This was ok since the parameter, a net
+> >device, was only used if CONFIG_NETPOLL was set.
+> >
+> >Now it is always de-referenced. A quick check shows that ibm_newemac is
+> >the only driver that passed NULL as the first parameter to this call in
+> >2.6.28.
+> >
+> >I don't really follow ibm_newemac changes, so the patch may be waiting
+> >to be applied. This is really just a heads up.
 > 
-> We do the same thing with #address-cells and #size-cells for the same
-> reason.  You can get away with leaving them out; but being explicit is
-> more clear.
+> I haven't heard of that, so I doubt there's a patch pending.  *Sigh*
 
-That's different -- the defaults for #address-cells and #size-cells are 
-abitrary constants (2 and 1, respectively), not merely something that 
-was defined higher in the hierarchy.
+There isn't that I know of. The EMAC code creates a single NAPI instance
+for all EMACs and I think used to completely disconnect things. The old
+code created a fake netdev just for NAPI, that became unnecessary with
+the new NAPI stuff.... but it looks like the way we do things now
+displeases some changes in the network stack. I'll have to dig.
 
--Scott
+Cheers,
+Ben.
