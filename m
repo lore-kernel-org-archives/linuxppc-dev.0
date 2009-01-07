@@ -1,15 +1,19 @@
-Return-Path: <dibacco@libero.it>
-Received: from cp-out3.libero.it (cp-out3.libero.it [212.52.84.103])
-	by ozlabs.org (Postfix) with ESMTP id E7E1EDE006
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 08:11:12 +1100 (EST)
-Date: Wed,  7 Jan 2009 22:11:09 +0100
-Message-Id: <KD4DIL$CAE78B389ABC17D576E1A2B47EE54AEE@libero.it>
-Subject: Re: __pa giving strange phys address on PPC
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: "dibacco\@libero\.it" <dibacco@libero.it>
-To: "jwboyer" <jwboyer@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0D184DE0A0
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 08:13:33 +1100 (EST)
+Subject: Re: Building current git for 405 is broken
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+In-Reply-To: <200901071510.45923.matthias.fuchs@esd-electronics.com>
+References: <200901071510.45923.matthias.fuchs@esd-electronics.com>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 08:13:09 +1100
+Message-Id: <1231362789.2142.23.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,7 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I used __pa on the result of an uncached_mem_alloc. 
-Furthermore __pa should work on the return of a kmalloc?
+On Wed, 2009-01-07 at 15:10 +0100, Matthias Fuchs wrote:
+> Hi Benjamin,
+> 
+> commit 2a4aca114439 (powerpc/mm: Split low level tlb invalidate for nohash processors)
+> breaks building for 40x CPUs. This is what I get when building for the walnut board:
 
-Thank you.
+The fix is in my tree, I'll push it out and ask Linus to pull later
+today or tomorrow.
+
+Cheers,
+Ben.
