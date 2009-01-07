@@ -2,18 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 441EADE4B3
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 15:27:08 +1100 (EST)
-Message-Id: <1FC59878-C803-447A-9F2C-A18F3C858F92@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 460F747506
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 15:27:14 +1100 (EST)
+Message-Id: <A23D61BC-CA79-490C-8C70-F4341E7844EA@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <1231283543-26752-1-git-send-email-timur@freescale.com>
+To: Wim Van Sebroeck <wim@iguana.be>
+In-Reply-To: <20081110123125.8608.2251.stgit@ubuntu8041.localdomain>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: add Ethernet UPSMR definitions to QE library
-Date: Tue, 6 Jan 2009 22:25:00 -0600
-References: <1231283543-26752-1-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] watchdog: Basic support for GE Fanuc's FPGA based
+	watchdog timer
+Date: Tue, 6 Jan 2009 22:27:00 -0600
+References: <20081110123101.8608.352.stgit@ubuntu8041.localdomain>
+	<20081110123125.8608.2251.stgit@ubuntu8041.localdomain>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Martyn Welch <martyn.welch@gefanuc.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +27,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 6, 2009, at 5:12 PM, Timur Tabi wrote:
+On Nov 10, 2008, at 6:31 AM, Martyn Welch wrote:
 
-> Add the UCC_GETH_UPSMR_xxx definitions to qe.h.  The ucc_geth driver  
-> will
-> eventually use these instead of the UPSMR_ macros it currently  
-> defines.
+> GE Fanuc SBC610
 >
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> Support for the FPGA based watchdog timer as found on GE Fanuc's  
+> SBC310,
+> SBC610 and PPC9A Single Board Computers.
+>
+> This patch adds support for the watchdog timer found in one of the  
+> devices
+> FPGAs. There are two identical watchdog timers at different offsets  
+> in the
+> above mentioned boards, this driver is capable of supporting one of  
+> them.
+> The watchdog timers are also capable of generating interrupts at a
+> user-configurable threshold, though support for this operation is  
+> currently
+> not supported by the driver.
+>
+> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 > ---
-> arch/powerpc/include/asm/qe.h |   19 ++++++++++++++++++-
-> 1 files changed, 18 insertions(+), 1 deletions(-)
+>
+> drivers/watchdog/Kconfig   |    6 +
+> drivers/watchdog/Makefile  |    1
+> drivers/watchdog/gef_wdt.c |  333 +++++++++++++++++++++++++++++++++++ 
+> +++++++++
+> 3 files changed, 340 insertions(+), 0 deletions(-)
 
-applied
+Wim,
+
+Any status of acceptance of this?
 
 - k
