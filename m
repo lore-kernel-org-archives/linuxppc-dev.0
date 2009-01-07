@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 3FF9EDE0C4
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 11:01:28 +1100 (EST)
-Date: Wed, 7 Jan 2009 11:01:23 +1100
+	by ozlabs.org (Postfix) with ESMTP id C803ADE0E9
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 11:03:49 +1100 (EST)
+Date: Wed, 7 Jan 2009 11:03:44 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/cell: use correct types in beat files
-Message-Id: <20090107110123.a3f10ec6.sfr@canb.auug.org.au>
+Subject: [PATCH] powerpc/cell: fix some types
+Message-Id: <20090107110344.5fbada03.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Molnar <mingo@elte.hu>, Ingo,
@@ -22,138 +22,69 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Ingo Molnar <mingo@elte.hu>
 
-Only pass the address of a u64 if that is what the function requires.
+in/out_be64() work on u64s.
 
-[Split out of a larger patch - sfr]
-[update comment - sfr]
+The first parameter to ppc_md.ioremap is a phys_addr_t.
+
+[Split out from a large patch - sfr]
+[A couple of updates - sfr]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/cell/beat_htab.c |   21 +++++++++++----------
- arch/powerpc/platforms/cell/beat_udbg.c |    4 ++--
- drivers/char/hvc_beat.c                 |    4 ++--
- 3 files changed, 15 insertions(+), 14 deletions(-)
+ arch/powerpc/platforms/cell/interrupt.c      |    2 +-
+ arch/powerpc/platforms/cell/io-workarounds.c |    4 ++--
+ arch/powerpc/platforms/cell/iommu.c          |    4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
-index 2e67bd8..35b1ec4 100644
---- a/arch/powerpc/platforms/cell/beat_htab.c
-+++ b/arch/powerpc/platforms/cell/beat_htab.c
-@@ -44,8 +44,8 @@ static DEFINE_SPINLOCK(beat_htab_lock);
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 2d5bb22..28c04da 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -148,7 +148,7 @@ static unsigned int iic_get_irq(void)
  
- static inline unsigned int beat_read_mask(unsigned hpte_group)
+ 	iic = &__get_cpu_var(iic);
+ 	*(unsigned long *) &pending =
+-		in_be64((unsigned long __iomem *) &iic->regs->pending_destr);
++		in_be64((u64 __iomem *) &iic->regs->pending_destr);
+ 	if (!(pending.flags & CBE_IIC_IRQ_VALID))
+ 		return NO_IRQ;
+ 	virq = irq_linear_revmap(iic_host, iic_pending_to_hwnum(pending));
+diff --git a/arch/powerpc/platforms/cell/io-workarounds.c b/arch/powerpc/platforms/cell/io-workarounds.c
+index b5f84e8..059cad6 100644
+--- a/arch/powerpc/platforms/cell/io-workarounds.c
++++ b/arch/powerpc/platforms/cell/io-workarounds.c
+@@ -130,14 +130,14 @@ static const struct ppc_pci_io __devinitconst iowa_pci_io = {
+ 
+ };
+ 
+-static void __iomem *iowa_ioremap(unsigned long addr, unsigned long size,
++static void __iomem *iowa_ioremap(phys_addr_t addr, unsigned long size,
+ 						unsigned long flags)
  {
--	unsigned long hpte_v[5];
- 	unsigned long rmask = 0;
-+	u64 hpte_v[5];
+ 	struct iowa_bus *bus;
+ 	void __iomem *res = __ioremap(addr, size, flags);
+ 	int busno;
  
- 	beat_read_htab_entries(0, hpte_group + 0, hpte_v);
- 	if (!(hpte_v[0] & HPTE_V_BOLTED))
-@@ -93,8 +93,7 @@ static long beat_lpar_hpte_insert(unsigned long hpte_group,
- 				  int psize, int ssize)
+-	bus = iowa_pci_find(0, addr);
++	bus = iowa_pci_find(0, (unsigned long)addr);
+ 	if (bus != NULL) {
+ 		busno = bus - iowa_busses;
+ 		PCI_SET_ADDR_TOKEN(res, busno + 1);
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index 86db4dd..88d94b5 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -150,8 +150,8 @@ static int cbe_nr_iommus;
+ static void invalidate_tce_cache(struct cbe_iommu *iommu, unsigned long *pte,
+ 		long n_ptes)
  {
- 	unsigned long lpar_rc;
--	unsigned long slot;
--	unsigned long hpte_v, hpte_r;
-+	u64 hpte_v, hpte_r, slot;
+-	unsigned long __iomem *reg;
+-	unsigned long val;
++	u64 __iomem *reg;
++	u64 val;
+ 	long n;
  
- 	/* same as iseries */
- 	if (vflags & HPTE_V_SECONDARY)
-@@ -153,8 +152,9 @@ static long beat_lpar_hpte_remove(unsigned long hpte_group)
- 
- static unsigned long beat_lpar_hpte_getword0(unsigned long slot)
- {
--	unsigned long dword0, dword[5];
-+	unsigned long dword0;
- 	unsigned long lpar_rc;
-+	u64 dword[5];
- 
- 	lpar_rc = beat_read_htab_entries(0, slot & ~3UL, dword);
- 
-@@ -170,7 +170,7 @@ static void beat_lpar_hptab_clear(void)
- 	unsigned long size_bytes = 1UL << ppc64_pft_size;
- 	unsigned long hpte_count = size_bytes >> 4;
- 	int i;
--	unsigned long dummy0, dummy1;
-+	u64 dummy0, dummy1;
- 
- 	/* TODO: Use bulk call */
- 	for (i = 0; i < hpte_count; i++)
-@@ -189,7 +189,8 @@ static long beat_lpar_hpte_updatepp(unsigned long slot,
- 				    int psize, int ssize, int local)
- {
- 	unsigned long lpar_rc;
--	unsigned long dummy0, dummy1, want_v;
-+	u64 dummy0, dummy1;
-+	unsigned long want_v;
- 
- 	want_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M);
- 
-@@ -255,7 +256,8 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
- 					  unsigned long ea,
- 					  int psize, int ssize)
- {
--	unsigned long lpar_rc, slot, vsid, va, dummy0, dummy1;
-+	unsigned long lpar_rc, slot, vsid, va;
-+	u64 dummy0, dummy1;
- 
- 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
- 	va = (vsid << 28) | (ea & 0x0fffffff);
-@@ -276,7 +278,7 @@ static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long va,
- {
- 	unsigned long want_v;
- 	unsigned long lpar_rc;
--	unsigned long dummy1, dummy2;
-+	u64 dummy1, dummy2;
- 	unsigned long flags;
- 
- 	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
-@@ -315,8 +317,7 @@ static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
- 				  int psize, int ssize)
- {
- 	unsigned long lpar_rc;
--	unsigned long slot;
--	unsigned long hpte_v, hpte_r;
-+	u64 hpte_v, hpte_r, slot;
- 
- 	/* same as iseries */
- 	if (vflags & HPTE_V_SECONDARY)
-diff --git a/arch/powerpc/platforms/cell/beat_udbg.c b/arch/powerpc/platforms/cell/beat_udbg.c
-index 6b418f6..350735b 100644
---- a/arch/powerpc/platforms/cell/beat_udbg.c
-+++ b/arch/powerpc/platforms/cell/beat_udbg.c
-@@ -40,8 +40,8 @@ static void udbg_putc_beat(char c)
- }
- 
- /* Buffered chars getc */
--static long inbuflen;
--static long inbuf[2];	/* must be 2 longs */
-+static u64 inbuflen;
-+static u64 inbuf[2];	/* must be 2 u64s */
- 
- static int udbg_getc_poll_beat(void)
- {
-diff --git a/drivers/char/hvc_beat.c b/drivers/char/hvc_beat.c
-index 91cdb35..0afc8b8 100644
---- a/drivers/char/hvc_beat.c
-+++ b/drivers/char/hvc_beat.c
-@@ -44,7 +44,7 @@ static int hvc_beat_get_chars(uint32_t vtermno, char *buf, int cnt)
- 	static unsigned char q[sizeof(unsigned long) * 2]
- 		__attribute__((aligned(sizeof(unsigned long))));
- 	static int qlen = 0;
--	unsigned long got;
-+	u64 got;
- 
- again:
- 	if (qlen) {
-@@ -63,7 +63,7 @@ again:
- 		}
- 	}
- 	if (beat_get_term_char(vtermno, &got,
--		((unsigned long *)q), ((unsigned long *)q) + 1) == 0) {
-+		((u64 *)q), ((u64 *)q) + 1) == 0) {
- 		qlen = got;
- 		goto again;
- 	}
+ 	reg = iommu->xlate_regs + IOC_IOPT_CacheInvd;
 -- 
 1.6.0.5
 
