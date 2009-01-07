@@ -1,12 +1,22 @@
-Return-Path: <skrishnakar@gmail.com>
-Message-ID: <6213bc560901070638h51553732p79c8950ee5ee07c0@mail.gmail.com>
-Date: Wed, 7 Jan 2009 20:08:27 +0530
-From: "srikanth krishnakar" <skrishnakar@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: unsubscribe me
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 80C3FDE2DB
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 01:45:39 +1100 (EST)
+Message-ID: <4964C00E.1090208@harris.com>
+Date: Wed, 07 Jan 2009 09:45:34 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_181922_20292997.1231339107350"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [QUESTION] 440EPx with PCI to PCIe bridge error
+References: <496268E7.5090907@harris.com>	 <1231190318.14860.17.camel@pasglop>
+	<49627D33.8030605@harris.com>	 <1231223634.14860.18.camel@pasglop>
+	<4963C1DE.6020007@harris.com>	 <4963CF68.3040808@harris.com>
+	<1231279340.14860.31.camel@pasglop>	 <4963D989.6090909@harris.com>
+	<1231283623.14860.32.camel@pasglop>
+In-Reply-To: <1231283623.14860.32.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,25 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_181922_20292997.1231339107350
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Benjamin Herrenschmidt wrote:
+> 
+>> I'm not sure if this should be changed in the mainline.  This card works
+>> out of the box when used with a generic x86 PC, but not when used with
+>> a sequoia.  But, maybe it's just me climbing the PPC learning curve.
+> 
+> Nah, I think 256M is ridiculously small :-) I think the .dts for that
+> board should be changed, there is plenty of physical address space
+> available on those chips since it's using a 36-bit bus.
+> 
+> Cheers,
+> Ben.
+>  
 
-unsubscribe me plz.
+Sheepish grin:  I did more checking, and the current mainline actually has
+this set to 1 GB.
 
--- 
-"The Good You Do, The Best You GET"
+The .dts I'm using dates back to 2.6.25.  I had started modifying it for some
+custom peripherals we have hacked onto a Sequoia, and I missed the changes
+that were made between .25 and .28.
 
-Regards
-Srikanth Krishnakar
-**********************
+If you think 1 GB is a suitable default, then no further changes are needed.
+If you think it should be bigger than 1 GB, then I could submit a patch.
 
-------=_Part_181922_20292997.1231339107350
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-unsubscribe me plz.<br clear="all"><br>-- <br>&quot;The Good You Do, The Best You GET&quot;<br><br>Regards<br>Srikanth Krishnakar<br>**********************<br>
-
-------=_Part_181922_20292997.1231339107350--
+	Steve
