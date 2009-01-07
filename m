@@ -1,19 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH kexec-tools 1/5] ppc64: always check number of ranges
-	when adding
-From: Michael Ellerman <michael@ellerman.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4212ADE547
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 13:46:45 +1100 (EST)
+Subject: Re: [PATCH] ppc64: Enable RELOCATABLE option for CRASH_DUMP
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <kexec-29-1-1r.miltonm@bga.com>
-References: <kexec-29-1-1r.miltonm@bga.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-PLiU4TOASLxTQCgToQjz"
-Date: Wed, 07 Jan 2009 13:42:52 +1100
-Message-Id: <1231296172.8292.20.camel@localhost>
+In-Reply-To: <0ba5eb018563b895658033d2db0c9b9f@bga.com>
+References: <0ba5eb018563b895658033d2db0c9b9f@bga.com>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 13:45:45 +1100
+Message-Id: <1231296345.14860.49.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Simon Horman <horms@verge.net.au>,
-	kexec@lists.infradead.org, "M.MohanK" <"umar mohan"@in.ibm.com>
-Reply-To: michael@ellerman.id.au
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,106 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2009-01-05 at 07:28 -0600, Milton Miller wrote:
+> Mohan wrote:
+> 
+> >  config CRASH_DUMP
+> >         bool "Build a kdump crash kernel"
+> > -       depends on (PPC64 && RELOCATABLE) || 6xx
+> > +       depends on PPC64 || 6xx
+> > +       select RELOCATABLE
+> >         help
+> >           Build a kernel suitable for use as a kdump capture kernel.
+> >           The same kernel binary can be used as production kernel and 
+> > dump
+> >
+> 
+> You should only select relocatable if ppc64
 
---=-PLiU4TOASLxTQCgToQjz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Please, can you try to conserve the mail IDs when you reply ? Not only
+you break threads, but your replies never make it to patchwork which
+makes it hard for me to know that you commented or acked/nacked a patch.
 
-On Fri, 2009-01-02 at 15:04 -0600, Milton Miller wrote:
-> make the idom "always call realloc_memory_ranges when filling a range ent=
-ry"
->=20
-> kexec was core dumping after using 5 exclude_range pairs when only 3
-> were allocated.
->=20
-> also delcare realloc_memory_ranges to take no arguments.
->=20
-> Signed-off-by: Milton Miller <miltonm@bga.com>
->=20
-> Index: kexec-tools/kexec/arch/ppc64/kexec-ppc64.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- kexec-tools.orig/kexec/arch/ppc64/kexec-ppc64.c	2009-01-02 02:08:58.0=
-00000000 -0600
-> +++ kexec-tools/kexec/arch/ppc64/kexec-ppc64.c	2009-01-02 02:09:08.000000=
-000 -0600
-> @@ -96,7 +96,7 @@ err1:
-> =20
->  }
-> =20
-> -static int realloc_memory_ranges()
-> +static int realloc_memory_ranges(void)
->  {
->  	size_t memory_range_len;
-> =20
-> @@ -469,6 +469,8 @@ static int get_devtree_details(unsigned=20
->  				exclude_range[i].start =3D initrd_start;
->  				exclude_range[i].end =3D initrd_end;
->  				i++;
-> +				if (i >=3D max_memory_ranges)
-> +					realloc_memory_ranges();
->  			}
->  		} /* chosen */
-> =20
-> @@ -581,6 +583,8 @@ static int get_devtree_details(unsigned=20
->  			exclude_range[i].start =3D tce_base;
->  			exclude_range[i].end =3D tce_base + tce_size;
->  			i++;
-> +			if (i >=3D max_memory_ranges)
-> +				realloc_memory_ranges();
->  			if (kexec_flags & KEXEC_ON_CRASH)
->  				add_usable_mem_rgns(tce_base, tce_size);
->  			closedir(cdir);
-> @@ -634,6 +638,8 @@ int setup_memory_ranges(unsigned long ke
->  				memory_range[j].end =3D exclude_range[i].start - 1;
->  				memory_range[j].type =3D RANGE_RAM;
->  				j++;
-> +				if (j >=3D max_memory_ranges)
-> +					realloc_memory_ranges();
->  			}
->  		} /* i =3D=3D 0 */
->  		/* If the last exclude range does not end at memory_max, include
-> @@ -646,6 +652,8 @@ int setup_memory_ranges(unsigned long ke
->  				memory_range[j].end =3D memory_max;
->  				memory_range[j].type =3D RANGE_RAM;
->  				j++;
-> +				if (j >=3D max_memory_ranges)
-> +					realloc_memory_ranges();
->  				/* Limit the end to rmo_top */
->  				if (memory_range[j-1].start >=3D rmo_top) {
->  					j--;
-> @@ -666,6 +674,8 @@ int setup_memory_ranges(unsigned long ke
->  		memory_range[j].end =3D exclude_range[i+1].start - 1;
->  		memory_range[j].type =3D RANGE_RAM;
->  		j++;
-> +		if (i >=3D max_memory_ranges)
-> +			realloc_memory_ranges();
+Thanks !
 
-Should this be checking against i or j?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-PLiU4TOASLxTQCgToQjz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklkFqwACgkQdSjSd0sB4dKQ/gCeL4FdWYqyFpzcPTAEN170P12+
-wbEAoJAW51XjL0TzwoPxS6zl1PngcER/
-=KWAW
------END PGP SIGNATURE-----
-
---=-PLiU4TOASLxTQCgToQjz--
+Cheers,
+Ben.
