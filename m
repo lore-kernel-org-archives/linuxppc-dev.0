@@ -1,23 +1,21 @@
-Return-Path: <wim@iguana.be>
-Received: from mailrelay002.isp.belgacom.be (mailrelay002.isp.belgacom.be
-	[195.238.6.175]) by ozlabs.org (Postfix) with ESMTP id 32C59DE81B
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 09:12:16 +1100 (EST)
-Date: Wed, 7 Jan 2009 23:12:15 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] watchdog: Basic support for GE Fanuc's FPGA based
-	watchdog timer
-Message-ID: <20090107221215.GG11454@infomag.infomag.iguana.be>
-References: <20081110123101.8608.352.stgit@ubuntu8041.localdomain>
-	<20081110123125.8608.2251.stgit@ubuntu8041.localdomain>
-	<A23D61BC-CA79-490C-8C70-F4341E7844EA@kernel.crashing.org>
-	<20090107214834.GF11454@infomag.infomag.iguana.be>
-	<7E6F9CA6-92CF-4EBE-9D18-925D2CD1BC8A@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7E6F9CA6-92CF-4EBE-9D18-925D2CD1BC8A@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Martyn Welch <martyn.welch@gefanuc.com>, Paul Mackerras <paulus@samba.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 636F2474C2
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 09:21:42 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so2667833yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 07 Jan 2009 14:21:40 -0800 (PST)
+Message-ID: <fa686aa40901071421w6c4aa48eyd869eb952373a74d@mail.gmail.com>
+Date: Wed, 7 Jan 2009 15:21:40 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: [PATCH 2/5] powerpc: Generic device tree for all AmigaOne boards
+In-Reply-To: <20090107221028.GA18669@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20090107135457.234150@gmx.net> <20090107140132.140980@gmx.net>
+	<fa686aa40901070841o3ede1d56tf5f69c33523513f4@mail.gmail.com>
+	<20090107221028.GA18669@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+On Wed, Jan 7, 2009 at 3:10 PM, Scott Wood <scottwood@freescale.com> wrote:
+> On Wed, Jan 07, 2009 at 09:41:14AM -0700, Grant Likely wrote:
+>> > +                       8042@60 {
+>> > +                               device_type = "8042";
+>> > +                               reg = <1 0x00000060 0x00000001
+>> > +                                      1 0x00000064 0x00000001>;
+>> > +                               // IRQ1, IRQ12 (rising edge)
+>> > +                               interrupts = <1 3 12 3>;
+>>
+>> For the flattened device tree, I think we've settled on the convention
+>> that every node with an IRQ connection should have both the
+>> interrupt-parent and interrupts properties.  (ie. don't rely on the
+>> parent node's interrupt-parent property.)
+>
+> Why?
 
-> >the second patch is also in. Do we keep in in the watchdog tree  
-> >since it almost doesn't
-> >touch the powerpc arch or do you want it in your tree?
-> 
-> If you have it in your tree to pull go ahead and send it via  
-> watchdog.  (I assume this will be for 2.6.29)
+Defensive programming.  To not rely on implicit relationships
 
-Ok. Will do it like that. And yes it is for 2.6.29.
+g.
 
-Kind regards,
-Wim.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
