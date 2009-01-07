@@ -1,23 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 148D1DDFB3
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 02:22:58 +1100 (EST)
-Message-Id: <F325E4B5-0818-4AE3-B2AA-305D7D423838@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090107151942.GA2156@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/2] powerpc/83xx: Add PCI-E support for all MPC83xx
-	boards with PCI-E
-Date: Wed, 7 Jan 2009 09:20:50 -0600
-References: <20090105174050.GA30219@oksana.dev.rtsoft.ru>
-	<20090105174155.GB8718@oksana.dev.rtsoft.ru>
-	<20090107151942.GA2156@oksana.dev.rtsoft.ru>
-Cc: Huang Changming <Chang-Ming.Huang@freescale.com>,
-	Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Date: Wed, 7 Jan 2009 09:25:51 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: The usage of compatible 'simple-bus'
+Message-ID: <20090107152551.GA15585@ld0162-tx32.am.freescale.net>
+References: <20090106014323.GB29456@yookeroo.seuss>
+	<3A45394FD742FA419B760BB8D398F9ED0B38C9@zch01exm26.fsl.freescale.net>
+	<20090107020006.GD13731@yookeroo.seuss>
+	<2a27d3730901061951g333d10b6mf4dc0219570e521b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2a27d3730901061951g333d10b6mf4dc0219570e521b@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Jan 07, 2009 at 11:51:12AM +0800, Li Yang wrote:
+> > I see two sensible options for this situation:
+> >        - Move the MDIO node to outside the gianfar MAC node.  I think
+> > this is already done on some boards with gianfar?
+> 
+> Yes, we can use good old way.  But as Scott has moved the MDIO into
+> the gianfar node on MPC8313, maybe it's a better way to describe the
+> relationship of the two parts.
 
-On Jan 7, 2009, at 9:19 AM, Anton Vorontsov wrote:
+Ah, right, that was to reflect the clock domain situation so that someday
+when I get time to do device power management the kernel can know that by
+shutting down ethernet@25000 it's also shutting down mdio@24520, which is
+also used by ethernet@26000.
 
-> On Mon, Jan 05, 2009 at 08:41:55PM +0300, Anton Vorontsov wrote:
->> This patch adds pcie nodes to the appropriate dts files, plus adds
->> some probing code for the boards.
->>
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->> ---
-> [...]
->> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/ 
->> boot/dts/mpc8377_mds.dts
->> index 1d14d70..b12b9b4 100644
->> --- a/arch/powerpc/boot/dts/mpc8377_mds.dts
->> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-> [...]
->> +	pci1: pcie@e0009000 {
->> +		#address-cells = <3>;
->> +		#size-cells = <2>;
->> +		#interrupt-cells = <1>;
->> +		device_type = "pci";
->> +		compatible = "fsl,mpc8377-pcie", "fsl,mpc8314-pcie";
->> +		reg = <0xe0009000 0x00001000>;
->> +		ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
->> +		          0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
->
-> I just noticed that for MPC837x boards FSL U-Boots set up cfg space
-> at 0xa0000000, mem at 0xa8000000, and io at 0xb8000000. So the setup
-> is differerent from MPC8315 boards (the ones I was testing this patch
-> with).
->
-> I'll send an update today, and will test it on MPC837x and MPC831x
-> boards (but firstly need to finish and send PCI-E patches for the
-> community U-Boots).
+Adding simple-bus was a bit of a hack, but it preserves the existing
+binding whereby mdio sits under a simple-bus.  Ideally, the mdio node
+would simply be a container for PHY nodes, and would simply be a part of
+gianfar rather than a separate entity.
 
-Can you also rebase on my latest next tree.  I pulled in Trent's 85xx/ 
-86xx pci atmu cleanup and that might impact the patches applying.
-
-- k
+-Scott
