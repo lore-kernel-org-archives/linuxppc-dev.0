@@ -1,12 +1,15 @@
-Return-Path: <jaya@ecil.co.in>
-Message-ID: <00b901c97089$f754a580$4e0b12ac@jaya>
-From: "jayaseela" <jaya@ecil.co.in>
-To: <Linuxppc-dev@ozlabs.org>
-Subject: unscribeme
-Date: Wed, 7 Jan 2009 11:07:00 +0530
+Return-Path: <aung.aungkyawsoe@gmail.com>
+Message-ID: <d668b9080901062232k2c6ae9e7h549639a3a18f11e6@mail.gmail.com>
+Date: Wed, 7 Jan 2009 01:32:08 -0500
+From: AKS <aung.aungkyawsoe@gmail.com>
+To: Linuxppc-dev@ozlabs.org
+Subject: unsubscribe
+In-Reply-To: <8e35d5a90901061755m3dae2927h2840fe5a07018174@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_00B6_01C970B8.10989BE0"
+	boundary="----=_Part_225121_28825619.1231309928190"
+References: <960972fa0901060959s6d833d23x5a5e94d5f487ad49@mail.gmail.com>
+	<8e35d5a90901061755m3dae2927h2840fe5a07018174@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,40 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+------=_Part_225121_28825619.1231309928190
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-------=_NextPart_000_00B6_01C970B8.10989BE0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Please unsubscribe me, thanks!
 
+------=_Part_225121_28825619.1231309928190
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-please unscribe me
+<div class="gmail_quote">Please unsubscribe me, thanks!<br></div>
 
- Thanks
-  jaya
-
-
-This Mail is scanned for viruses, worms and Spams by ECNET IMSS.
-------=_NextPart_000_00B6_01C970B8.10989BE0
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=
-=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2600.0" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>please unscribe me</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>&nbsp;Thanks</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>&nbsp; jaya</FONT></DIV></BODY></HTML>
-
-<table><tr><td bgcolor=3D#ffffff><font color=3D#000000>This Mail is scanned=
- for viruses, worms and Spams by ECNET IMSS.<br>
-</font></td></tr></table>
-------=_NextPart_000_00B6_01C970B8.10989BE0--
+------=_Part_225121_28825619.1231309928190--
