@@ -1,16 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8639BDE731
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 11:59:10 +1100 (EST)
-Date: Wed, 7 Jan 2009 11:59:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH] powerpc: cleanup from l64 to ll64 change: drivers/scsi
-Message-Id: <20090107115900.17c0dbb6.sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D4EF6DDF46
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 12:50:31 +1100 (EST)
+Subject: Re: kernel panics with crashkernel=256M while booting
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Chandru <chandru@in.ibm.com>
+In-Reply-To: <200812221614.17952.chandru@in.ibm.com>
+References: <200812221614.17952.chandru@in.ibm.com>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 12:50:17 +1100
+Message-Id: <1231293017.14860.48.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: King <brking@linux.vnet.ibm.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
-	linux-scsi@vger.kernel.org, Brian
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,102 +23,182 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a powerpc specific driver.
+On Mon, 2008-12-22 at 16:14 +0530, Chandru wrote:
+> On a ppc64 machine booting linux-2.6.28-rc9 with crashkernel=256M@32M boot 
+> parameter caused the kernel to panic while booting.  Follwing is the console 
+> message..
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/scsi/ibmvscsi/ibmvfc.c |   14 +++++++-------
- drivers/scsi/ibmvscsi/ibmvfc.h |    6 +++---
- 2 files changed, 10 insertions(+), 10 deletions(-)
+This is a fix to generic code. Can you resubmit it to linux-mm and/or
+linux-kernel ? You can still CC linuxppc-dev but it should be handled by
+one of the core mm maintainers.
 
-This patch on its own will generate several warnings - it depends on the
-actual l64 to ll64 patch that is pending in the powerp queue.  It may be
-easier for someone to just ack this patch so that it can be fed through
-the powerpc tree.
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 44f202f..be6cf09 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -933,7 +933,7 @@ static void ibmvfc_get_host_speed(struct Scsi_Host *shost)
- 			fc_host_speed(shost) = FC_PORTSPEED_16GBIT;
- 			break;
- 		default:
--			ibmvfc_log(vhost, 3, "Unknown port speed: %ld Gbit\n",
-+			ibmvfc_log(vhost, 3, "Unknown port speed: %lld Gbit\n",
- 				   vhost->login_buf->resp.link_speed / 100);
- 			fc_host_speed(shost) = FC_PORTSPEED_UNKNOWN;
- 			break;
-@@ -2149,8 +2149,8 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
- {
- 	const char *desc = ibmvfc_get_ae_desc(crq->event);
- 
--	ibmvfc_log(vhost, 3, "%s event received. scsi_id: %lx, wwpn: %lx,"
--		   " node_name: %lx\n", desc, crq->scsi_id, crq->wwpn, crq->node_name);
-+	ibmvfc_log(vhost, 3, "%s event received. scsi_id: %llx, wwpn: %llx,"
-+		   " node_name: %llx\n", desc, crq->scsi_id, crq->wwpn, crq->node_name);
- 
- 	switch (crq->event) {
- 	case IBMVFC_AE_LINK_UP:
-@@ -2184,7 +2184,7 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
- 		ibmvfc_link_down(vhost, IBMVFC_HALTED);
- 		break;
- 	default:
--		dev_err(vhost->dev, "Unknown async event received: %ld\n", crq->event);
-+		dev_err(vhost->dev, "Unknown async event received: %lld\n", crq->event);
- 		break;
- 	};
- }
-@@ -2261,13 +2261,13 @@ static void ibmvfc_handle_crq(struct ibmvfc_crq *crq, struct ibmvfc_host *vhost)
- 	 * actually sent
- 	 */
- 	if (unlikely(!ibmvfc_valid_event(&vhost->pool, evt))) {
--		dev_err(vhost->dev, "Returned correlation_token 0x%08lx is invalid!\n",
-+		dev_err(vhost->dev, "Returned correlation_token 0x%08llx is invalid!\n",
- 			crq->ioba);
- 		return;
- 	}
- 
- 	if (unlikely(atomic_read(&evt->free))) {
--		dev_err(vhost->dev, "Received duplicate correlation_token 0x%08lx!\n",
-+		dev_err(vhost->dev, "Received duplicate correlation_token 0x%08llx!\n",
- 			crq->ioba);
- 		return;
- 	}
-@@ -3259,7 +3259,7 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *vhost, u64 scsi_id)
- 
- 	tgt = mempool_alloc(vhost->tgt_pool, GFP_KERNEL);
- 	if (!tgt) {
--		dev_err(vhost->dev, "Target allocation failure for scsi id %08lx\n",
-+		dev_err(vhost->dev, "Target allocation failure for scsi id %08llx\n",
- 			scsi_id);
- 		return -ENOMEM;
- 	}
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-index babdf3d..87dafd0 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.h
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -691,13 +691,13 @@ struct ibmvfc_host {
- #define DBG_CMD(CMD) do { if (ibmvfc_debug) CMD; } while (0)
- 
- #define tgt_dbg(t, fmt, ...)			\
--	DBG_CMD(dev_info((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__))
-+	DBG_CMD(dev_info((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__))
- 
- #define tgt_info(t, fmt, ...)		\
--	dev_info((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
-+	dev_info((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
- 
- #define tgt_err(t, fmt, ...)		\
--	dev_err((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
-+	dev_err((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
- 
- #define ibmvfc_dbg(vhost, ...) \
- 	DBG_CMD(dev_info((vhost)->dev, ##__VA_ARGS__))
--- 
-1.6.0.5
-
--- 
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
+
+> =================================
+> <snip>
+> ...
+> Calling quiesce ...
+> returning from prom_init
+> Reserving 256MB of memory at 32MB for crashkernel (System RAM: 4096MB)
+> Phyp-dump disabled at boot time
+> Using pSeries machine description
+> Using 1TB segments
+> Found initrd at 0xc000000000e00000:0xc0000000015ab50c
+> console [udbg0] enabled
+> Partition configured for 4 cpus.
+> CPU maps initialized for 2 threads per core
+> Starting Linux PPC64 #3 SMP Mon Dec 22 02:16:31 CST 2008
+> -----------------------------------------------------
+> ppc64_pft_size                = 0x1a
+> physicalMemorySize            = 0x100000000
+> htab_hash_mask                = 0x7ffff
+> -----------------------------------------------------
+> Initializing cgroup subsys cpuset
+> Initializing cgroup subsys cpu
+> Linux version 2.6.28-rc9-1-ppc64 (root@rulerlp10) (gcc version 4.3.2 
+> [gcc-4_3-branch revision 141291] (SUSE Linux) ) #3 SMP Mon Dec 22 02:16:31 CST 
+> 2008
+> [boot]0012 Setup Arch
+> ------------[ cut here ]------------
+> kernel BUG at mm/bootmem.c:279!
+> Oops: Exception in kernel mode, sig: 5 [#1]
+> SMP NR_CPUS=1024 NUMA pSeries
+> Modules linked in:
+> NIP: c000000000747538 LR: c000000000731d1c CTR: c000000000730cf4
+> REGS: c000000000993a00 TRAP: 0700   Not tainted  (2.6.28-rc9-1-ppc64)
+> MSR: 8000000000021032 <ME,IR,DR>  CR: 24002082  XER: 00000001
+> TASK = c0000000008dfaa0[0] 'swapper' THREAD: c000000000990000 CPU: 0
+> GPR00: 0000000000000001 c000000000993c80 c00000000098a768 c0000000007664d0
+> GPR04: 00000000000001f7 0000000000001001 0000000000000001 0000000000000000
+> GPR08: 0000000000000000 0000000000000000 c0000000008dd6c0 0000000000000000
+> GPR12: 0000000024002088 c000000000a52c00 c000000000763990 c00000000067f735
+> GPR16: 00000000034638c8 0000000000000000 c000000000993d98 c000000000993d90
+> GPR20: c000000000993da0 c000000000c32bc8 c000000001f78800 c000000000000000
+> GPR24: 0000000000000004 0000000010087800 0000000000000000 0000000000000001
+> GPR28: 00000000000001f7 0000000000001001 c000000000910cb0 c0000000007664d0
+> NIP [c000000000747538] .mark_bootmem_node+0xa8/0x120
+> LR [c000000000731d1c] .do_init_bootmem+0xc1c/0xd58
+> Call Trace:
+> [c000000000993c80] [c000000000993d20] init_thread_union+0x3d20/0x4000 
+> (unreliable)
+> [c000000000993d20] [c000000000731d1c] .do_init_bootmem+0xc1c/0xd58
+> [c000000000993e40] [c0000000007267f0] .setup_arch+0x1a4/0x21c
+> [c000000000993ee0] [c000000000720868] .start_kernel+0xdc/0x56c
+> [c000000000993f90] [c0000000000083b8] .start_here_common+0x1c/0x64
+> Instruction dump:
+> 7ca501d2 4bda924d 60000000 e93f0000 7c09e010 7c000110 7c0000d0 0b000000
+> e81f0008 7c1d0010 7c000110 7c0000d0 <0b000000> 2fbb0000 7ca9e850 7c89e050
+> ---[ end trace 31fd0ba7d8756001 ]---
+> Kernel panic - not syncing: Attempted to kill the idle task!
+> ------------[ cut here ]------------
+> Badness at kernel/smp.c:333
+> NIP: c0000000000b9384 LR: c0000000000b96ac CTR: 0000000000136f8c
+> REGS: c000000000992eb0 TRAP: 0700   Tainted: G      D     (2.6.28-rc9-1-ppc64)
+> MSR: 8000000000021032 <ME,IR,DR>  CR: 28002084  XER: 00000001
+> TASK = c0000000008dfaa0[0] 'swapper' THREAD: c000000000990000 CPU: 0
+> GPR00: 0000000000000001 c000000000993130 c00000000098a768 0000000000000001
+> GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR12: 0000000028002082 c000000000a52c00 c000000000763990 c00000000067f735
+> GPR16: 00000000034638c8 0000000000000000 c000000000993d98 c000000000993d90
+> GPR20: c000000000993da0 c000000000c32bc8 c000000001f78800 0000000000000000
+> GPR24: c000000000926320 0000000000000000 0000000000000000 0000000000000000
+> GPR28: 0000000000000000 0000000000000000 c00000000090f4f8 c000000000af8380
+> NIP [c0000000000b9384] .smp_call_function_mask+0x6c/0x2f4
+> LR [c0000000000b96ac] .smp_call_function+0xa0/0xcc
+> Call Trace:
+> [c000000000993130] [c0000000009931d0] init_thread_union+0x31d0/0x4000 
+> (unreliable)
+> [c000000000993420] [c0000000000b96ac] .smp_call_function+0xa0/0xcc
+> [c000000000993530] [c00000000002ce0c] .smp_send_stop+0x24/0x3c
+> [c0000000009935b0] [c0000000004f0658] .panic+0x98/0x198
+> [c000000000993640] [c00000000008fe18] .do_exit+0xa0/0x900
+> [c000000000993730] [c000000000027984] .die+0x274/0x278
+> [c0000000009937d0] [c000000000027c78] ._exception+0x88/0x20c
+> [c000000000993990] [c000000000004f8c] program_check_common+0x10c/0x180
+> --- Exception: 700 at .mark_bootmem_node+0xa8/0x120
+>     LR = .do_init_bootmem+0xc1c/0xd58
+> [c000000000993c80] [c000000000993d20] init_thread_union+0x3d20/0x4000 
+> (unreliable)
+> [c000000000993d20] [c000000000731d1c] .do_init_bootmem+0xc1c/0xd58
+> [c000000000993e40] [c0000000007267f0] .setup_arch+0x1a4/0x21c
+> [c000000000993ee0] [c000000000720868] .start_kernel+0xdc/0x56c
+> [c000000000993f90] [c0000000000083b8] .start_here_common+0x1c/0x64
+> Instruction dump:
+> eae103a8 eb4103b6 f8810328 f8a10330 f8c10338 f8e10340 f9010348 f9210350
+> f9410358 880d01da 7c000074 7800d182 <0b000000> 3b8100d8 a3ad000a e89e8028
+> Rebooting in 180 seconds..                                         
+> =================================
+> 
+> 
+> 
+> When booted with crashkernel=224M@32M or any memory size less than this, the 
+> system boots properly. The following was the observation.. 
+> The system comes up with two nodes (0-256M and 256M-4GB).  The crashkernel 
+> memory reservation spans across these two nodes.  The 
+> mark_reserved_regions_for_nid() in arch/powerpc/mm/numa.c resizes the reserved 
+> part of the memory within it as...
+> ...
+> ...
+>             if (end_pfn > node_ar.end_pfn)
+>                 reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
+>                     - (start_pfn << PAGE_SHIFT);
+> 
+> 
+> but the reserve_bootmem_node() in mm/bootmem.c raises the pfn value of end 
+> 
+>     end = PFN_UP(physaddr + size);
+> 
+> This causes end to get a value past the last page in the 0-256M node.  Again 
+> when reserve_bootmem_node() returns,  mark_reserved_regions_for_nid() loops 
+> around to set the rest of the crashkernel memory in the next node as reserved.  
+> It references NODE_DATA(node_ar.nid) and this causes another 'Oops: kernel 
+> access of bad area' problem. The following changes made the system to boot 
+> with any amount of crashkernel memory size.
+> 
+> 
+> Fix code for reserved memory spanning acroos nodes
+> 
+> Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
+> ---
+> 
+> --- linux-2.6.28-rc9//arch/powerpc/mm/numa.c.orig	2008-12-22 
+> 04:23:24.000000000 -0600
+> +++ linux-2.6.28-rc9/arch/powerpc/mm/numa.c	2008-12-22 04:24:25.000000000 -0600
+> @@ -995,10 +995,11 @@ void __init do_init_bootmem(void)
+>  				  start_pfn, end_pfn);
+>  
+>  		free_bootmem_with_active_regions(nid, end_pfn);
+> +	}
+> +
+> +	for_each_online_node(nid) {
+>  		/*
+> -		 * Be very careful about moving this around.  Future
+> -		 * calls to careful_allocation() depend on this getting
+> -		 * done correctly.
+> +		 * Be very careful about moving this around.
+>  		 */
+>  		mark_reserved_regions_for_nid(nid);
+>  		sparse_memory_present_with_active_regions(nid);
+> --- linux-2.6.28-rc9/mm/bootmem.c.orig	2008-12-19 10:49:24.000000000 -0600
+> +++ linux-2.6.28-rc9/mm/bootmem.c	2008-12-19 10:49:33.000000000 -0600
+> @@ -375,10 +375,14 @@ int __init reserve_bootmem_node(pg_data_
+>  				 unsigned long size, int flags)
+>  {
+>  	unsigned long start, end;
+> +	bootmem_data_t *bdata = pgdat->bdata;
+>  
+>  	start = PFN_DOWN(physaddr);
+>  	end = PFN_UP(physaddr + size);
+>  
+> +	if (end > bdata->node_low_pfn)
+> +		end = bdata->node_low_pfn;
+> +
+>  	return mark_bootmem_node(pgdat->bdata, start, end, 1, flags);
+>  }
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
