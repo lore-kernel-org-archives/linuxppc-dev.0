@@ -1,15 +1,16 @@
-Return-Path: <sjkim@signalogic.com>
-Message-ID: <4964CB1B.10100@signalogic.com>
-Date: Wed, 07 Jan 2009 09:32:43 -0600
-From: Sungjoo Kim <sjkim@signalogic.com>
-MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: Re: unsubscribe
-References: <VSNLCHNFE002d6apSJm00010350@VSNLCHNFE002.VSNLXCHANGE.COM>
-In-Reply-To: <VSNLCHNFE002d6apSJm00010350@VSNLCHNFE002.VSNLXCHANGE.COM>
-Content-Type: multipart/alternative;
-	boundary="------------080503020602020100090506"
-Cc: santhoshunnikrishnan@tataelxsi.co.in
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A83CCDE5DE
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 02:54:12 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: netdev@vger.kernel.org
+Subject: [PATCH] gianfar: Fixup use of BUS_ID_SIZE
+Date: Wed,  7 Jan 2009 09:52:01 -0600
+Message-Id: <1231343521-22171-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, kay.sievers@vrfy.org, afleming@freescale.com,
+	davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,74 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080503020602020100090506
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Commit b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4 went back to using
+BUS_ID_SIZE instead of sizeof() as per the larger patch series
+that will remove "char bus_id[20]" from struct device.
 
-Please unsubscribe me too, thanks!!
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/net/gianfar.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-
-
-santhoshunnikrishnan@tataelxsi.co.in wrote:
->  
-> Please unsubscribe me, thanks!
->
-> The information contained in this electronic message and any 
-> attachments to this message are intended for the exclusive use of the 
-> addressee(s) and may contain proprietary, confidential or privileged 
-> information. If you are not the intended recipient, you should not 
-> disseminate, distribute or copy this e-mail. Please notify the sender 
-> immediately and destroy all copies of this message and any attachments 
-> contained in it.
->
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
---------------080503020602020100090506
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Please unsubscribe me too, thanks!!<br>
-<br>
-<br>
-<br>
-<a class="moz-txt-link-abbreviated" href="mailto:santhoshunnikrishnan@tataelxsi.co.in">santhoshunnikrishnan@tataelxsi.co.in</a> wrote:
-<blockquote
- cite="mid:VSNLCHNFE002d6apSJm00010350@VSNLCHNFE002.VSNLXCHANGE.COM"
- type="cite">
-  <meta http-equiv="Content-Type" content="text/html; ">
-  <meta content="MSHTML 6.00.2900.3492" name="GENERATOR">
-  <div dir="ltr" align="left">&nbsp;</div>
-  <div class="gmail_quote">Please unsubscribe me, thanks!<br>
-  </div>
-  <p>The information contained in this electronic message and any
-attachments to this message are intended for the exclusive use of the
-addressee(s) and may contain proprietary, confidential or privileged
-information. If you are not the intended recipient, you should not
-disseminate, distribute or copy this e-mail. Please notify the sender
-immediately and destroy all copies of this message and any attachments
-contained in it.</p>
-  <pre wrap=""><pre wrap="">
-<hr size="4" width="90%">
-_______________________________________________
-Linuxppc-dev mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-dev">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a></pre></pre>
-</blockquote>
-<br>
-</body>
-</html>
-
---------------080503020602020100090506--
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 7fcc3af..1b8deca 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -238,8 +238,8 @@ static int gfar_of_init(struct net_device *dev)
+ 			goto err_out;
+ 		}
+ 
+-		snprintf(priv->phy_bus_id, BUS_ID_SIZE, PHY_ID_FMT, "0",
+-				fixed_link[0]);
++		snprintf(priv->phy_bus_id, sizeof(priv->phy_bus_id),
++				PHY_ID_FMT, "0", fixed_link[0]);
+ 	} else {
+ 		phy = of_find_node_by_phandle(*ph);
+ 
+@@ -256,7 +256,7 @@ static int gfar_of_init(struct net_device *dev)
+ 		of_node_put(mdio);
+ 
+ 		gfar_mdio_bus_name(bus_name, mdio);
+-		snprintf(priv->phy_bus_id, BUS_ID_SIZE, "%s:%02x",
++		snprintf(priv->phy_bus_id, sizeof(priv->phy_bus_id), "%s:%02x",
+ 				bus_name, *id);
+ 	}
+ 
+-- 
+1.5.6.5
