@@ -1,19 +1,23 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 7ACE8DDF7F
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 02:20:38 +1100 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 07 Jan 2009 16:20:35 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <fa686aa40901070707h6c10186bv6c7953e7a63c9f3f@mail.gmail.com>
-Message-ID: <20090107152035.270110@gmx.net>
-MIME-Version: 1.0
-References: <20090107135457.234150@gmx.net> <20090107140334.299940@gmx.net>
-	<fa686aa40901070707h6c10186bv6c7953e7a63c9f3f@mail.gmail.com>
-Subject: Re: [PATCH 3/5] powerpc: Bootwrapper and serial console support for
-	AmigaOne
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 148D1DDFB3
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 02:22:58 +1100 (EST)
+Message-Id: <F325E4B5-0818-4AE3-B2AA-305D7D423838@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20090107151942.GA2156@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 2/2] powerpc/83xx: Add PCI-E support for all MPC83xx
+	boards with PCI-E
+Date: Wed, 7 Jan 2009 09:20:50 -0600
+References: <20090105174050.GA30219@oksana.dev.rtsoft.ru>
+	<20090105174155.GB8718@oksana.dev.rtsoft.ru>
+	<20090107151942.GA2156@oksana.dev.rtsoft.ru>
+Cc: Huang Changming <Chang-Ming.Huang@freescale.com>,
+	Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +28,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
--------- Original-Nachricht --------
-> Datum: Wed, 7 Jan 2009 08:07:14 -0700
-> Von: "Grant Likely" <grant.likely@secretlab.ca>
-> An: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-> CC: linuxppc-dev@ozlabs.org
-> Betreff: Re: [PATCH 3/5] powerpc: Bootwrapper and serial console support for AmigaOne
+On Jan 7, 2009, at 9:19 AM, Anton Vorontsov wrote:
 
-> On Wed, Jan 7, 2009 at 7:03 AM, Gerhard Pircher <gerhard_pircher@gmx.net>
-> wrote:
-> > diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
-> > index 8b3607c..f2156f0 100644
-> > --- a/arch/powerpc/boot/serial.c
-> > +++ b/arch/powerpc/boot/serial.c
-> > @@ -117,7 +117,8 @@ int serial_console_init(void)
-> >        if (devp == NULL)
-> >                goto err_out;
-> >
-> > -       if (dt_is_compatible(devp, "ns16550"))
-> > +       if (dt_is_compatible(devp, "ns16550") ||
-> > +           dt_is_compatible(devp, "pnpPNP,501"))
-> >                rc = ns16550_console_init(devp, &serial_cd);
-> 
-> Why not just claim "ns16550" compatibility in the device tree node?
-It was suggested that I should use PNP identifiers for all ISA devices, as
-these are part of a real PCI2ISA bridge (when I sent the previous version
-or these patches).
+> On Mon, Jan 05, 2009 at 08:41:55PM +0300, Anton Vorontsov wrote:
+>> This patch adds pcie nodes to the appropriate dts files, plus adds
+>> some probing code for the boards.
+>>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>> ---
+> [...]
+>> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/ 
+>> boot/dts/mpc8377_mds.dts
+>> index 1d14d70..b12b9b4 100644
+>> --- a/arch/powerpc/boot/dts/mpc8377_mds.dts
+>> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+> [...]
+>> +	pci1: pcie@e0009000 {
+>> +		#address-cells = <3>;
+>> +		#size-cells = <2>;
+>> +		#interrupt-cells = <1>;
+>> +		device_type = "pci";
+>> +		compatible = "fsl,mpc8377-pcie", "fsl,mpc8314-pcie";
+>> +		reg = <0xe0009000 0x00001000>;
+>> +		ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+>> +		          0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
+>
+> I just noticed that for MPC837x boards FSL U-Boots set up cfg space
+> at 0xa0000000, mem at 0xa8000000, and io at 0xb8000000. So the setup
+> is differerent from MPC8315 boards (the ones I was testing this patch
+> with).
+>
+> I'll send an update today, and will test it on MPC837x and MPC831x
+> boards (but firstly need to finish and send PCI-E patches for the
+> community U-Boots).
 
-Gerhard
+Can you also rebase on my latest next tree.  I pulled in Trent's 85xx/ 
+86xx pci atmu cleanup and that might impact the patches applying.
 
--- 
-Sensationsangebot verlängert: GMX FreeDSL - Telefonanschluss + DSL 
-für nur 16,37 Euro/mtl.!* http://dsl.gmx.de/?ac=OM.AD.PD003K1308T4569a
+- k
