@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 04BE0474C8
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 07:51:44 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Fix missing semicolons in mmu_decl.h
+	by ozlabs.org (Postfix) with ESMTPS id 0B18A478AF
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 07:52:13 +1100 (EST)
+Subject: Re: kernel panics with crashkernel=256M while booting
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20090107143724.GF17171@zod.rchland.ibm.com>
-References: <20090107035702.C9114474D7@ozlabs.org>
-	<20090107143724.GF17171@zod.rchland.ibm.com>
+To: Chandru <chandru@in.ibm.com>
+In-Reply-To: <200901072007.45098.chandru@in.ibm.com>
+References: <200812221614.17952.chandru@in.ibm.com>
+	<1231293017.14860.48.camel@pasglop>
+	<200901072007.45098.chandru@in.ibm.com>
 Content-Type: text/plain
-Date: Thu, 08 Jan 2009 07:51:37 +1100
-Message-Id: <1231361497.2142.20.camel@pasglop>
+Date: Thu, 08 Jan 2009 07:52:03 +1100
+Message-Id: <1231361523.2142.21.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,22 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-01-07 at 09:37 -0500, Josh Boyer wrote:
-> On Wed, Jan 07, 2009 at 02:56:51PM +1100, Benjamin Herrenschmidt wrote:
-> >This is a brown paper bag from one of my earlier patches that
-> >breaks build on 40x and 8xx.
+On Wed, 2009-01-07 at 20:07 +0530, Chandru wrote:
+> On Wednesday 07 January 2009 07:20:17 Benjamin Herrenschmidt wrote:
+> > On Mon, 2008-12-22 at 16:14 +0530, Chandru wrote:
+> > > On a ppc64 machine booting linux-2.6.28-rc9 with crashkernel=256M@32M
+> > > boot parameter caused the kernel to panic while booting.  Follwing is the
+> > > console message..
 > >
-> >And yes, I've now added 40x and 8xx to my list of test configs :-)
+> > This is a fix to generic code. Can you resubmit it to linux-mm and/or
+> > linux-kernel ? You can still CC linuxppc-dev but it should be handled by
+> > one of the core mm maintainers.
 > >
-> >Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cheers,
+> > Ben.
 > 
-> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> 
-> Please get it into your tree so people stop emailing me about it
-> being broken :).
+> Its been submitted to lkml too. You have also been added to the cc list of the 
+> thread.
 
-It's in, waiting for me to push. I didn't have a chance yesterday due to
-other problems but hopefully, after I do a few boot tests today, I'll
-push out.
+Right, I saw the subsequent messages. The initial one was stale in
+patchwork.
 
+Cheers,
 Ben.
