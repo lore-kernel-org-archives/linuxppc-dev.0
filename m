@@ -1,14 +1,12 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: [patch] Possible fix for kexec-tools dynamic range allocation
-From: Michael Ellerman <michael@ellerman.id.au>
-To: kexec@lists.infradead.org
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 17:01:26 +1100
-Message-Id: <1231308086.27416.14.camel@localhost>
-Mime-Version: 1.0
-Cc: muvarov@gmail.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Horms <horms@verge.net.au>
-Reply-To: michael@ellerman.id.au
+Return-Path: <jaya@ecil.co.in>
+Message-ID: <00b901c97089$f754a580$4e0b12ac@jaya>
+From: "jayaseela" <jaya@ecil.co.in>
+To: <Linuxppc-dev@ozlabs.org>
+Subject: unscribeme
+Date: Wed, 7 Jan 2009 11:07:00 +0530
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00B6_01C970B8.10989BE0"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,62 +16,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+This is a multi-part message in MIME format.
 
-The patch to dynamically allocate memory regions for ppc64 kexec-tools,
-ie. "ppc64: kexec memory ranges dynamic allocation" (d182ce5), has never
-worked AFAICT.
+------=_NextPart_000_00B6_01C970B8.10989BE0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Chandru reported it as broken when it was posted:
-http://lists.infradead.org/pipermail/kexec/2008-October/002751.html
 
-Still, it's in now, and I'm trying to work out what's going wrong.
+please unscribe me
 
-The symptom is as reported by Chandru, we end up not being able to
-allocate any memory (in locate_hole()). This is caused by the list of
-memory_ranges being empty.
+ Thanks
+  jaya
 
-The memory_ranges are empty because they have been realloc'ed (by the
-dynamic alloc code), and the generic code is still looking at the old
-version.
 
-What I'm not clear on is why the ppc64 code is even calling
-setup_memory_ranges() a second time (in elf_ppc64_load()). It's already
-been called by get_memory_ranges() from my_load(). Or is there another
-route into elf_ppc64_load() that I'm not seeing?
+This Mail is scanned for viruses, worms and Spams by ECNET IMSS.
+------=_NextPart_000_00B6_01C970B8.10989BE0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-And in fact if I just remove that call, then everything is peachy.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=
+=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2600.0" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>please unscribe me</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>&nbsp;Thanks</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>&nbsp; jaya</FONT></DIV></BODY></HTML>
 
-The following patch makes it work for me at least.
-
-cheers
-
->From 40958d8f957876ca612b666f40bebf28ea335314 Mon Sep 17 00:00:00 2001
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 7 Jan 2009 16:57:05 +1100
-Subject: [PATCH] Don't call setup_memory_ranges() again
-
-There's no need to call setup_memory_ranges() again. Furthermore it can
-lead to the memory_ranges being realloc'ed, which results in the generic
-code (locate_hole() etc.) using the free'd memory_ranges.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- kexec/arch/ppc64/kexec-elf-ppc64.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/kexec/arch/ppc64/kexec-elf-ppc64.c b/kexec/arch/ppc64/kexec-elf-ppc64.c
-index 21533cb..1e2d5a3 100644
---- a/kexec/arch/ppc64/kexec-elf-ppc64.c
-+++ b/kexec/arch/ppc64/kexec-elf-ppc64.c
-@@ -151,8 +151,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
- 	if (ramdisk && reuse_initrd)
- 		die("Can't specify --ramdisk or --initrd with --reuseinitrd\n");
- 
--	setup_memory_ranges(info->kexec_flags);
--
- 	/* Need to append some command line parameters internally in case of
- 	 * taking crash dumps.
- 	 */
--- 
-1.5.3.7.1.g4e596e
+<table><tr><td bgcolor=3D#ffffff><font color=3D#000000>This Mail is scanned=
+ for viruses, worms and Spams by ECNET IMSS.<br>
+</font></td></tr></table>
+------=_NextPart_000_00B6_01C970B8.10989BE0--
