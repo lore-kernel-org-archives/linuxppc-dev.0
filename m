@@ -1,24 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BAEFFDE531
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 02:10:26 +1100 (EST)
-Message-Id: <545635DB-30D6-4387-8CA1-9485698A441C@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Liu Yu <Yu.Liu@freescale.com>, Hollis Blanchard <hollisb@us.ibm.com>
-In-Reply-To: <1229654093-11398-1-git-send-email-yu.liu@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH v2] powerpc/fsl-booke: declare tlbcam_index for use in c
-	file
-Date: Wed, 7 Jan 2009 09:09:04 -0600
-References: <1229654093-11398-1-git-send-email-yu.liu@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Trent Piepho <tpiepho@freescale.com>, kvm-ppc <kvm-ppc@vger.kernel.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f16.google.com (mail-gx0-f16.google.com
+	[209.85.217.16]) by ozlabs.org (Postfix) with ESMTP id E21AADDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 02:13:09 +1100 (EST)
+Received: by gxk9 with SMTP id 9so2722113gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 07 Jan 2009 07:13:06 -0800 (PST)
+Message-ID: <fa686aa40901070713kca10b27y6c6aac03e6224fac@mail.gmail.com>
+Date: Wed, 7 Jan 2009 08:13:06 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Subject: Re: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne
+	boards
+In-Reply-To: <20090107141254.140990@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20090107135457.234150@gmx.net> <20090107141254.140990@gmx.net>
+Cc: linuxppc-dev@ozlabs.org, bzolnier@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,44 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Dec 18, 2008, at 8:34 PM, Liu Yu wrote:
-
-> KVM on E500 platform currently utilize TLB1 entries without  
-> bothering host,
-> that is using unused TLB1 entries.
+On Wed, Jan 7, 2009 at 7:12 AM, Gerhard Pircher <gerhard_pircher@gmx.net> wrote:
+> The AmigaOne uses the onboard VIA IDE controller in legacy mode (like the
+> Pegasos).
 >
-> So, KVM needs to read tlbcam_index to know exactly
-> which TLB1 entry is unused by host.
->
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
+> Signed-off-by: Gerhard Pircher <gerhard_pircher@gmx.net>
 > ---
-> [v2]
-> Remove num_tlbcam_entries declare and read from SPRN_TLB1CFG in KVM  
-> instead.
+>  drivers/ide/via82cxxx.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+
+This patch needs to also be posted on the linux-ide mailing list.
+
+> diff --git a/drivers/ide/via82cxxx.c b/drivers/ide/via82cxxx.c
+> index 2a812d3..086f476 100644
+> --- a/drivers/ide/via82cxxx.c
+> +++ b/drivers/ide/via82cxxx.c
+> @@ -450,6 +450,11 @@ static int __devinit via_init_one(struct pci_dev *dev, const struct pci_device_i
+>                d.host_flags |= IDE_HFLAG_FORCE_LEGACY_IRQS;
+>  #endif
 >
-> arch/powerpc/include/asm/mmu-fsl-booke.h |    2 ++
-> 1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/mmu-fsl-booke.h b/arch/powerpc/ 
-> include/asm/mmu-fsl-booke.h
-> index 925d93c..c86af6c 100644
-> --- a/arch/powerpc/include/asm/mmu-fsl-booke.h
-> +++ b/arch/powerpc/include/asm/mmu-fsl-booke.h
-> @@ -73,6 +73,8 @@
->
-> #ifndef __ASSEMBLY__
->
-> +extern unsigned int tlbcam_index;
+> +#ifdef CONFIG_AMIGAONE
+> +       if (machine_is(amigaone))
+> +               d.host_flags |= IDE_HFLAG_FORCE_LEGACY_IRQS;
+> +#endif
 > +
-> typedef struct {
-> 	unsigned long id;
-> 	unsigned long vdso_base;
-> -- 
-> 1.5.4
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+I know you're just following the example of the PEGASOS workaround
+immediately above; but the #defines are really ugly.  I wonder if
+there is there a cleaner way to manipulate the flags.
 
-(Hollis will you deal with sending this via the KVM tree?)
+g.
 
-- k
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
