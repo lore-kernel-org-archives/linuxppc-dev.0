@@ -1,19 +1,38 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 478E5DE2EA
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 02:27:23 +1100 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 07 Jan 2009 16:27:22 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <fa686aa40901070713kca10b27y6c6aac03e6224fac@mail.gmail.com>
-Message-ID: <20090107152722.140970@gmx.net>
-MIME-Version: 1.0
-References: <20090107135457.234150@gmx.net> <20090107141254.140990@gmx.net>
-	<fa686aa40901070713kca10b27y6c6aac03e6224fac@mail.gmail.com>
-Subject: Re: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne
-	boards
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, bzolnier@gmail.com
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AE451DE2CC
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 02:43:47 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n07FhiCf009914
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jan 2009 08:43:44 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n07FhhKk022404
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jan 2009 09:43:43 -0600 (CST)
+Date: Wed, 7 Jan 2009 09:43:43 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Subject: Re: [PATCH v2 4/4] powerpc/83xx: Add PCI-E support for all MPC83xx
+	boards with PCI-E
+Message-ID: <20090107154343.GC15585@ld0162-tx32.am.freescale.net>
+References: <20081229164040.GD8215@oksana.dev.rtsoft.ru>
+	<C96CE59B-05FA-4728-930F-D4430EFB9B99@kernel.crashing.org>
+	<20081230201916.GA20059@oksana.dev.rtsoft.ru>
+	<1F7739C2-930B-49C1-B8FF-679AF1BBAEAE@kernel.crashing.org>
+	<20081231171017.6FCF585AD247@gemini.denx.de>
+	<B64DF110-E26A-4229-8384-E7933732BC01@kernel.crashing.org>
+	<20090105174645.GA23766@ld0162-tx32.am.freescale.net>
+	<20090105180122.GA12237@oksana.dev.rtsoft.ru>
+	<c384c5ea0901060418x48c507afq26bf6cec109ed9c4@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c384c5ea0901060418x48c507afq26bf6cec109ed9c4@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +42,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
--------- Original-Nachricht --------
-> Datum: Wed, 7 Jan 2009 08:13:06 -0700
-> Von: "Grant Likely" <grant.likely@secretlab.ca>
-> An: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-> CC: linuxppc-dev@ozlabs.org, bzolnier@gmail.com
-> Betreff: Re: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne boards
-
-> On Wed, Jan 7, 2009 at 7:12 AM, Gerhard Pircher <gerhard_pircher@gmx.net>
-> wrote:
-> > The AmigaOne uses the onboard VIA IDE controller in legacy mode (like
-> the
-> > Pegasos).
-> >
-> > Signed-off-by: Gerhard Pircher <gerhard_pircher@gmx.net>
-> > ---
-> >  drivers/ide/via82cxxx.c |    5 +++++
-> >  1 files changed, 5 insertions(+), 0 deletions(-)
+On Tue, Jan 06, 2009 at 01:18:56PM +0100, Leon Woestenberg wrote:
+> Hello,
 > 
-> This patch needs to also be posted on the linux-ide mailing list.
-Ouch, I only sent it to the maintainer. I'll fix that.
-
-> > diff --git a/drivers/ide/via82cxxx.c b/drivers/ide/via82cxxx.c
-> > index 2a812d3..086f476 100644
-> > --- a/drivers/ide/via82cxxx.c
-> > +++ b/drivers/ide/via82cxxx.c
-> > @@ -450,6 +450,11 @@ static int __devinit via_init_one(struct pci_dev
-> *dev, const struct pci_device_i
-> >                d.host_flags |= IDE_HFLAG_FORCE_LEGACY_IRQS;
-> >  #endif
+> On Mon, Jan 5, 2009 at 7:01 PM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > On Mon, Jan 05, 2009 at 11:46:45AM -0600, Scott Wood wrote:
+> > [...]
+> >> > My statement was to convey that the kernel.org kernel should only
+> >> > worry itself with the denx.de u-boot (w/regards to compatibility).
+> >>
+> >> Why?  Unless the BSP u-boots do something insane, I think we should try
+> >> to have the upstream kernel boot on the u-boot that comes on the board
+> >> (it's not nice to require users to reflash unnecessarily).
 > >
-> > +#ifdef CONFIG_AMIGAONE
-> > +       if (machine_is(amigaone))
-> > +               d.host_flags |= IDE_HFLAG_FORCE_LEGACY_IRQS;
-> > +#endif
-> > +
 > 
-> I know you're just following the example of the PEGASOS workaround
-> immediately above; but the #defines are really ugly.  I wonder if
-> there is there a cleaner way to manipulate the flags.
-AFAIK the via82cxxx driver doesn't make use of the pci_get_legacy_ide_irq
-approach.
+> The u-boot that came with the boards (at least MPC8315E-RDB) is too
+> old for 2.6.25+ kernels:
+> 
+> I have run into this earlier:
+> 
+> http://www.mail-archive.com/u-boot-users@lists.sourceforge.net/msg06551.html
 
-Gerhard
+"It doesn't work" doesn't imply "It's worthless to try to make it work".
 
--- 
-Sensationsangebot verlängert: GMX FreeDSL - Telefonanschluss + DSL 
-für nur 16,37 Euro/mtl.!* http://dsl.gmx.de/?ac=OM.AD.PD003K1308T4569a
+-Scott
