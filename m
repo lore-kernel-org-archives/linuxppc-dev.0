@@ -1,22 +1,21 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-4.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id BC925DE437
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 06:32:17 +1100 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] infiniband/ehca: use consistent type
-References: <20081231141453.45d7f2c1.sfr@canb.auug.org.au>
-Date: Wed, 07 Jan 2009 11:32:13 -0800
-In-Reply-To: <20081231141453.45d7f2c1.sfr@canb.auug.org.au> (Stephen
-	Rothwell's message of "Wed, 31 Dec 2008 14:14:53 +1100")
-Message-ID: <adazli2ud36.fsf@cisco.com>
-MIME-Version: 1.0
+Return-Path: <wim@iguana.be>
+Received: from mailrelay002.isp.belgacom.be (mailrelay002.isp.belgacom.be
+	[195.238.6.175]) by ozlabs.org (Postfix) with ESMTP id 37556DE13B
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 18:56:28 +1100 (EST)
+Date: Wed, 7 Jan 2009 08:56:21 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] watchdog: Basic support for GE Fanuc's FPGA based
+	watchdog timer
+Message-ID: <20090107075621.GD11454@infomag.infomag.iguana.be>
+References: <20081110123101.8608.352.stgit@ubuntu8041.localdomain>
+	<20081110123125.8608.2251.stgit@ubuntu8041.localdomain>
+	<A23D61BC-CA79-490C-8C70-F4341E7844EA@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Heiko J Schick <schickhj@de.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	general@lists.openfabrics.org
+In-Reply-To: <A23D61BC-CA79-490C-8C70-F4341E7844EA@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Martyn Welch <martyn.welch@gefanuc.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If we're going to clean this code up, does it make sense to take it
-further?  More precisely, your patch does:
+Hi Kumar,
 
-@@ -226,7 +226,7 @@ u64 hipz_h_alloc_resource_eq(const struct ipz_adapter_handle adapter_handle,
- 			     u32 *eq_ist)
- {
- 	u64 ret;
--	u64 outs[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
- 	u64 allocate_controls;
+> >drivers/watchdog/Kconfig   |    6 +
+> >drivers/watchdog/Makefile  |    1
+> >drivers/watchdog/gef_wdt.c |  333 +++++++++++++++++++++++++++++++++++ 
+> >+++++++++
+> >3 files changed, 340 insertions(+), 0 deletions(-)
+> 
+> Wim,
+> 
+> Any status of acceptance of this?
 
-but every parameter of ehca_plpar_hcall9() is unsigned long, and the
-return value is a signed long.  So should we change ret to long and all
-these other declarations to unsigned long while we're touching the code
-here?
+I started reviewing it on sunday. It looks OK so you can expect inclusion in my -next tree this week.
+A couple of days later I would like to forward it to Linus for mainline inclusion. It would like to have it in 2.6.29.
 
- - R.
+Kind regards,
+Wim.
