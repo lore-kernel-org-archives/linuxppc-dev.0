@@ -1,16 +1,23 @@
-Return-Path: <marc.leeman@gmail.com>
-Date: Wed, 7 Jan 2009 09:10:41 +0100
-From: Marc Leeman <marc.leeman@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: Re: [gmail] RE: unsubscribe
-Message-ID: <20090107081041.GB1041@crichton.homelinux.org>
-References: <028AE8A7C04EE14889BE99E5450BE32D03E16603@kndmex01.barco.com>
-	<D7CCA83BB0796C49BC0BB53B6AB12089056B35@zch01exm21.fsl.freescale.net>
+Return-Path: <ben@codiert.org>
+Received: from cursor.subgra.de (cursor.subgra.de [78.46.252.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "cursor.subgra.de", Issuer "cursor.subgra.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 09B9DDE076
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 19:43:58 +1100 (EST)
+Date: Wed, 7 Jan 2009 09:11:21 +0100
+From: Benjamin Krill <ben@codiert.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] serial: add support for the cell network processor NWP
+	device
+Message-ID: <20090107081120.GB3306@codiert.org>
+References: <200811241453.32166.arnd@arndb.de>
+	<1231297694.14860.55.camel@pasglop>
+	<20090106202143.b31b908e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="61jdw2sOBCFtR2d/"
-In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB12089056B35@zch01exm21.fsl.freescale.net>
-Reply-To: Marc Leeman <marc.leeman@gmail.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090106202143.b31b908e.akpm@linux-foundation.org>
+Cc: linux-serial@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,39 +27,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>My version is mucked up anyway - PORT_NWPSERIAL has the same value as
+>PORT_S3C6400.
 
---61jdw2sOBCFtR2d/
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Should I send an updated version against a current tree? 
 
-> They seem like worm virus. or
-> The linuxppc-dev really doesn't have love?
-
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-Doesn't anyone know how to read e-mails these days? I'll put it in caps,
-maybe it will stand out more:
-
-HTTPS://OZLABS.ORG/MAILMAN/LISTINFO/LINUXPPC-DEV
-
-
---=20
-  greetz, marc
-Support bacteria -- it's the only culture some people have!
-crichton 2.6.26 #1 PREEMPT Tue Jul 29 21:17:59 CDT 2008 GNU/Linux
-
---61jdw2sOBCFtR2d/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFJZGOBUQpj09NWLeERAo+JAJ4uZo/ZLE/tREdy1yi6zG79RlMGkACgl/jZ
-0szzx7VMO7sYDMrSQfigTBU=
-=sqe6
------END PGP SIGNATURE-----
-
---61jdw2sOBCFtR2d/--
+ ben
