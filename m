@@ -1,17 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Date: Wed, 7 Jan 2009 09:25:51 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: The usage of compatible 'simple-bus'
-Message-ID: <20090107152551.GA15585@ld0162-tx32.am.freescale.net>
-References: <20090106014323.GB29456@yookeroo.seuss>
-	<3A45394FD742FA419B760BB8D398F9ED0B38C9@zch01exm26.fsl.freescale.net>
-	<20090107020006.GD13731@yookeroo.seuss>
-	<2a27d3730901061951g333d10b6mf4dc0219570e521b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2a27d3730901061951g333d10b6mf4dc0219570e521b@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 478E5DE2EA
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 02:27:23 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Wed, 07 Jan 2009 16:27:22 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <fa686aa40901070713kca10b27y6c6aac03e6224fac@mail.gmail.com>
+Message-ID: <20090107152722.140970@gmx.net>
+MIME-Version: 1.0
+References: <20090107135457.234150@gmx.net> <20090107141254.140990@gmx.net>
+	<fa686aa40901070713kca10b27y6c6aac03e6224fac@mail.gmail.com>
+Subject: Re: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne
+	boards
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, bzolnier@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 07, 2009 at 11:51:12AM +0800, Li Yang wrote:
-> > I see two sensible options for this situation:
-> >        - Move the MDIO node to outside the gianfar MAC node.  I think
-> > this is already done on some boards with gianfar?
+
+-------- Original-Nachricht --------
+> Datum: Wed, 7 Jan 2009 08:13:06 -0700
+> Von: "Grant Likely" <grant.likely@secretlab.ca>
+> An: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+> CC: linuxppc-dev@ozlabs.org, bzolnier@gmail.com
+> Betreff: Re: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne boards
+
+> On Wed, Jan 7, 2009 at 7:12 AM, Gerhard Pircher <gerhard_pircher@gmx.net>
+> wrote:
+> > The AmigaOne uses the onboard VIA IDE controller in legacy mode (like
+> the
+> > Pegasos).
+> >
+> > Signed-off-by: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > ---
+> >  drivers/ide/via82cxxx.c |    5 +++++
+> >  1 files changed, 5 insertions(+), 0 deletions(-)
 > 
-> Yes, we can use good old way.  But as Scott has moved the MDIO into
-> the gianfar node on MPC8313, maybe it's a better way to describe the
-> relationship of the two parts.
+> This patch needs to also be posted on the linux-ide mailing list.
+Ouch, I only sent it to the maintainer. I'll fix that.
 
-Ah, right, that was to reflect the clock domain situation so that someday
-when I get time to do device power management the kernel can know that by
-shutting down ethernet@25000 it's also shutting down mdio@24520, which is
-also used by ethernet@26000.
+> > diff --git a/drivers/ide/via82cxxx.c b/drivers/ide/via82cxxx.c
+> > index 2a812d3..086f476 100644
+> > --- a/drivers/ide/via82cxxx.c
+> > +++ b/drivers/ide/via82cxxx.c
+> > @@ -450,6 +450,11 @@ static int __devinit via_init_one(struct pci_dev
+> *dev, const struct pci_device_i
+> >                d.host_flags |= IDE_HFLAG_FORCE_LEGACY_IRQS;
+> >  #endif
+> >
+> > +#ifdef CONFIG_AMIGAONE
+> > +       if (machine_is(amigaone))
+> > +               d.host_flags |= IDE_HFLAG_FORCE_LEGACY_IRQS;
+> > +#endif
+> > +
+> 
+> I know you're just following the example of the PEGASOS workaround
+> immediately above; but the #defines are really ugly.  I wonder if
+> there is there a cleaner way to manipulate the flags.
+AFAIK the via82cxxx driver doesn't make use of the pci_get_legacy_ide_irq
+approach.
 
-Adding simple-bus was a bit of a hack, but it preserves the existing
-binding whereby mdio sits under a simple-bus.  Ideally, the mdio node
-would simply be a container for PHY nodes, and would simply be a part of
-gianfar rather than a separate entity.
+Gerhard
 
--Scott
+-- 
+Sensationsangebot verlängert: GMX FreeDSL - Telefonanschluss + DSL 
+für nur 16,37 Euro/mtl.!* http://dsl.gmx.de/?ac=OM.AD.PD003K1308T4569a
