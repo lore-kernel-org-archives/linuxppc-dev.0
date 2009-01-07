@@ -1,18 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f16.google.com (mail-gx0-f16.google.com
-	[209.85.217.16]) by ozlabs.org (Postfix) with ESMTP id 3C6C5DE276
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 03:07:02 +1100 (EST)
-Received: by gxk9 with SMTP id 9so2750959gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 07 Jan 2009 08:07:01 -0800 (PST)
-Message-ID: <fa686aa40901070807i8b91856y34a079c9e0835149@mail.gmail.com>
-Date: Wed, 7 Jan 2009 09:07:00 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Subject: Re: [PATCH 1/5] powerpc: Add platform support for AmigaOne
-In-Reply-To: <20090107135457.234150@gmx.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20090107135457.234150@gmx.net>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2D3D6DE5A2
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 03:07:15 +1100 (EST)
+Message-Id: <EAA6E8B6-668D-4700-A69B-A175B3766B0A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Trent Piepho <tpiepho@freescale.com>
+In-Reply-To: <1228793699-23110-2-git-send-email-tpiepho@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 2/5] powerpc: booke: Remove num_tlbcam_entries
+Date: Wed, 7 Jan 2009 10:04:58 -0600
+References: <1228793699-23110-1-git-send-email-tpiepho@freescale.com>
+	<1228793699-23110-2-git-send-email-tpiepho@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,37 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 7, 2009 at 6:54 AM, Gerhard Pircher <gerhard_pircher@gmx.net> wrote:
-> +
-> +void amigaone_show_cpuinfo(struct seq_file *m)
-> +{
-> +       struct device_node *root;
-> +       const char *model = "";
-> +
-> +       root = of_find_node_by_path("/");
-> +       if (root)
-> +               model = of_get_property(root, "model", NULL);
-> +       seq_printf(m, "machine\t\t: %s\n", model);
-> +
-> +       of_node_put(root);
-> +       return;
-> +}
 
-show_cpuinfo() common code already prints the model.  You can drop this hook.
+On Dec 8, 2008, at 9:34 PM, Trent Piepho wrote:
 
-> +void __init amigaone_setup_arch(void)
-> +{
-> +       struct device_node *np;
-> +
-> +       /* Initialization until calibrate_delay() runs. */
-> +       loops_per_jiffy = 50000000/HZ;
+> This is a global variable defined in fsl_booke_mmu.c with a value  
+> that gets
+> initialized in assembly code in head_fsl_booke.S.
+>
+> It's never used.
+>
+> If some code ever does want to know the number of entries in TLB1,  
+> then
+> "numcams = mfspr(SPRN_TLB1CFG) & 0xfff", is a whole lot simpler than a
+> global initialized during kernel boot from assembly.
+>
+> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> ---
+> arch/powerpc/kernel/head_fsl_booke.S |    4 ----
+> arch/powerpc/mm/fsl_booke_mmu.c      |    1 -
+> arch/powerpc/mm/mmu_decl.h           |    2 --
+> 3 files changed, 0 insertions(+), 7 deletions(-)
 
-If it doesn't noticeably slow down the boot then I would remove this line.
+applied to next
 
-Otherwise looks okay to me.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+- k
