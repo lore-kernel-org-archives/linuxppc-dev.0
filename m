@@ -1,16 +1,15 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id BAC7E4752A
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 01:12:56 +1100 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 07 Jan 2009 15:12:54 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <20090107135457.234150@gmx.net>
-Message-ID: <20090107141254.140990@gmx.net>
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from mout-xforward.kundenserver.de (mout-xforward.kundenserver.de
+	[212.227.17.6]) by ozlabs.org (Postfix) with ESMTP id 9B43B47514
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 01:17:15 +1100 (EST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Building current git for 405 is broken
+Date: Wed, 7 Jan 2009 15:10:45 +0100
 MIME-Version: 1.0
-References: <20090107135457.234150@gmx.net>
-Subject: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne boards
-To: linuxppc-dev@ozlabs.org, bzolnier@gmail.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200901071510.45923.matthias.fuchs@esd-electronics.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,33 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The AmigaOne uses the onboard VIA IDE controller in legacy mode (like the
-Pegasos).
+Hi Benjamin,
 
-Signed-off-by: Gerhard Pircher <gerhard_pircher@gmx.net>
----
- drivers/ide/via82cxxx.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+commit 2a4aca114439 (powerpc/mm: Split low level tlb invalidate for nohash processors)
+breaks building for 40x CPUs. This is what I get when building for the walnut board:
 
-diff --git a/drivers/ide/via82cxxx.c b/drivers/ide/via82cxxx.c
-index 2a812d3..086f476 100644
---- a/drivers/ide/via82cxxx.c
-+++ b/drivers/ide/via82cxxx.c
-@@ -450,6 +450,11 @@ static int __devinit via_init_one(struct pci_dev *dev, const struct pci_device_i
- 		d.host_flags |= IDE_HFLAG_FORCE_LEGACY_IRQS;
- #endif
- 
-+#ifdef CONFIG_AMIGAONE
-+	if (machine_is(amigaone))
-+		d.host_flags |= IDE_HFLAG_FORCE_LEGACY_IRQS;
-+#endif
-+
- 	d.udma_mask = via_config->udma_mask;
- 
- 	vdev = kzalloc(sizeof(*vdev), GFP_KERNEL);
--- 
-1.5.6.5
+  CC      arch/powerpc/kernel/prom.o
+In file included from arch/powerpc/kernel/prom.c:56:
+arch/powerpc/mm/mmu_decl.h: In function '_tlbil_all':
+arch/powerpc/mm/mmu_decl.h:34: error: expected ';' before '}' token
+arch/powerpc/mm/mmu_decl.h:36: error: invalid storage class for function '_tlbil_pid'
+arch/powerpc/mm/mmu_decl.h: In function '_tlbil_pid':
+arch/powerpc/mm/mmu_decl.h:38: error: expected ';' before '}' token
+arch/powerpc/mm/mmu_decl.h:53: warning: ISO C90 forbids mixed declarations and code
+arch/powerpc/mm/mmu_decl.h:62: error: invalid storage class for function '_tlbivax_bcast'
+arch/powerpc/kernel/prom.c:90: error: invalid storage class for function 'find_flat_dt_string'
 
+Seems to be a result of some missing types or whatever. I suppose you are 
+more familiar with that code than I am ;-)
 
--- 
-Psssst! Schon vom neuen GMX MultiMessenger gehört? Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
+Matthias
