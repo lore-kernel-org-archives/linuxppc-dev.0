@@ -1,16 +1,25 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 1FA0347506
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 15:49:34 +1100 (EST)
-Date: Tue, 6 Jan 2009 23:49:17 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: enable dynamic ftrace
-Message-ID: <alpine.DEB.1.10.0901062346360.16964@gandalf.stny.rr.com>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id D0D4CDE0F3
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 15:54:38 +1100 (EST)
+Date: Tue, 6 Jan 2009 20:53:41 -0800
+From: Greg KH <greg@kroah.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 0/6] USB: Fixes for fsl_qe_udc driver
+Message-ID: <20090107045341.GA15842@kroah.com>
+References: <20081225141402.GA30689@oksana.dev.rtsoft.ru>
+	<F4CBCB9E-5C58-4F9B-B0B2-623C81DF1339@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F4CBCB9E-5C58-4F9B-B0B2-623C81DF1339@kernel.crashing.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>, linux-usb@vger.kernel.org,
+	linux-kernel Kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,48 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Jan 06, 2009 at 10:44:13PM -0600, Kumar Gala wrote:
+>
+> On Dec 25, 2008, at 8:14 AM, Anton Vorontsov wrote:
+>
+>> Hi all,
+>>
+>> Just resending some fixes that seem to be lost...
+>
+> Greg,
+>
+> What happened w/this patch set?
 
-The PowerPC changes are now in mainline, you can now enable
-dynamic ftrace on PowerPC.
+As it was sent during the hollidays (on Christmas day at that), it's
+still in my "to-review" queue.  I'll get to it in a few days after I
+resync the USB tree with Linus.
 
-The following patch is in:
+thanks,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-
-    branch: ppc/ftrace-enable
-
-
-Steven Rostedt (1):
-      powerpc: enable dynamic ftrace
-
-----
- arch/powerpc/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
----------------------------
-commit 6a3c90c30ff47ca69e6315ca8968470a628585f5
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Thu Nov 20 07:55:57 2008 -0800
-
-    powerpc: enable dynamic ftrace
-    
-    Impact: let PowerPC compile with dynamic ftrace
-    
-    This patch enables dynamic ftrace. The PowerPC port was dependent on
-    other code not yet in mainline. Now that the code is, we can now
-    let PowerPC compile with dynamic ftrace.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 79f25ce..6d4ae3f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -108,6 +108,8 @@ config ARCH_NO_VIRT_TO_BUS
- config PPC
- 	bool
- 	default y
-+	select HAVE_FTRACE_MCOUNT_RECORD
-+	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_TRACER
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select HAVE_IDE
+greg k-h
