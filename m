@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3644B47509
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 15:28:33 +1100 (EST)
-Message-Id: <6DC0606C-1CDA-4549-8A63-E3F86010291B@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 77863DE014
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 15:40:48 +1100 (EST)
+Message-Id: <35FA8393-FC32-44DC-970E-55EFA16E0D20@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: David Brownell <dbrownell@users.sourceforge.net>
-In-Reply-To: <20081205200936.GA19137@oksana.dev.rtsoft.ru>
+To: Trent Piepho <tpiepho@freescale.com>
+In-Reply-To: <1229543006-8950-1-git-send-email-tpiepho@freescale.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 0/7] OpenFirmware support for the spi_mpc83xx driver
-Date: Tue, 6 Jan 2009 22:28:10 -0600
-References: <20081205200936.GA19137@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH 1/2] POWERPC/fsl-pci: Better ATMU setup
+Date: Tue, 6 Jan 2009 22:38:41 -0600
+References: <1229543006-8950-1-git-send-email-tpiepho@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Trent Piepho <xyzzy@speakeasy.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,52 +24,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 5, 2008, at 2:09 PM, Anton Vorontsov wrote:
+On Dec 17, 2008, at 1:43 PM, Trent Piepho wrote:
 
-> Hi all,
+> The code that sets up the outbound ATMU windows, which is used to  
+> map CPU
+> physical addresses into PCI bus addresses where BARs will be mapped,  
+> didn't
+> work so well.
 >
-> The patch series are used to support SPI via the OF SPI subsystem
-> (driver/of/of_spi.c). Now the driver is able to manage its own
-> chip selects, and doesn't need any auxiliary support from the
-> board files or fsl_soc constructors.
+> For one, it leaked the ioremap() of the ATMU registers.  Another  
+> small bug
+> was the high 20 bits of the PCI bus address were left as zero.  It's  
+> legal
+> for prefetchable memory regions to be above 32 bits, so the high 20  
+> bits
+> might not be zero.
 >
-> The series also contains PowerPC portions of the MMC SPI support.
+> Mainly, it couldn't handle ranges that were not a power of two in  
+> size or
+> were not naturally aligned.  The ATMU windows have these  
+> requirements (size
+> & alignment), but the code didn't bother to check if the ranges it was
+> programming met them.  If they didn't, the windows would silently be
+> programmed incorrectly.
 >
-> Since the series touches spi and powerpc trees, I think it would
-> be most convenient to pass it via one of these trees. The patches
-> doesn't touch any SPI functionality, only some probe routines, so
-> I believe powerpc.git is the best candidate...
+> This new code can handle ranges which are not power of two sized nor
+> naturally aligned.  It simply splits the ranges into multiple valid  
+> ATMU
+> windows.  As there are only four windows, pooly aligned or sized  
+> ranges
+> (which didn't even work before) may run out of windows.  In this  
+> case an
+> error is printed and an effort is made to disable the unmapped  
+> resources.
 >
-> The other reason for powerpc tree is that the patches depends on
-> other patches as found in paulus/powerpc.git + of_gpio_count()
-> as found here:
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-December/065917.html
+> An improvement that could be made would be to make use of the default
+> outbound window.  Iff hose->pci_mem_offset is zero, then it's  
+> possible that
+> some or all of the ranges might not need an outbound window and  
+> could just
+> use the default window.
 >
-> David, if you're OK with the patches, may I ask you to sign off on
-> the ones that touch drivers/spi so that we could pass it via Kumar's
-> powerpc.git?
+> The default ATMU window can support a pci_mem_offset less than zero  
+> too,
+> but pci_mem_offset is unsigned.  One could say the abilities allowed a
+> powerpc pci_controller is neither subset nor a superset of the  
+> abilities of
+> a Freescale PCIe controller.  Thankfully, the most useful bits are  
+> in the
+> intersection of the two abilities.
 >
-> The queue:
->
-> [1/7] powerpc: Implement get_brgfreq() and get_baudrate() stubs
-> [2/7] spi_mpc83xx: Fix sparse warnings
-> [3/7] spi_mpc83xx: Rework chip selects handling
-> [4/7] spi_mpc83xx: Add OF platform driver bindings
-> [5/7] powerpc/fsl_soc: Isolate legacy fsl_spi support to mpc832x_rdb  
-> boards
-> [6/7] powerpc: Add mmc-spi-slot bindings
-> [7/7] powerpc/83xx: Add mmc-spi support via the device tree for  
-> MPC8323E-RDB
->
-> Thanks,
->
-> -- 
-> Anton Vorontsov
-> email: cbouatmailru@gmail.com
-> irc://irc.freenode.net/bd2
+> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+> ---
+> arch/powerpc/sysdev/fsl_pci.c |  104 +++++++++++++++++++++++++++ 
+> +-------------
+> 1 files changed, 71 insertions(+), 33 deletions(-)
 
-David,
-
-Any status on these patches?
+applied
 
 - k
