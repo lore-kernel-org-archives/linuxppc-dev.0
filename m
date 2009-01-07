@@ -1,16 +1,20 @@
-Return-Path: <zhou.yutao@zte.com.cn>
-Received: from mx4.zte.com.cn (mx2.zte.no [202.103.147.155])
-	by ozlabs.org (Postfix) with ESMTP id 57147474CF
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 17:48:09 +1100 (EST)
-In-Reply-To: <d668b9080901062232k2c6ae9e7h549639a3a18f11e6@mail.gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: unsubscribe
-MIME-Version: 1.0
-Message-ID: <OF807D7A7F.C137DF5B-ON48257537.00245E8F-48257537.00249DB9@zte.com.cn>
-From: zhou.yutao@zte.com.cn
-Date: Wed, 7 Jan 2009 14:38:12 +0800
-Content-Type: multipart/alternative;
-	boundary="=_alternative 00249DB248257537_="
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8DE2ADE59A
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 17:51:52 +1100 (EST)
+Subject: Re: [PATCH/RFC] sysfs cache code rewrite
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20090106212533.GB7376@localdomain>
+References: <20081224045554.GA6958@localdomain>
+	<20090106212533.GB7376@localdomain>
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 17:51:42 +1100
+Message-Id: <1231311102.14860.80.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,88 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 00249DB248257537_=
-Content-Type: text/plain; charset="GB2312"
-Content-Transfer-Encoding: base64
+On Tue, 2009-01-06 at 15:25 -0600, Nathan Lynch wrote:
+> Please unsubscribe me from... wait, that's not what I meant to say.
+> 
+> Any thoughts or questions on this one?  I posted this right before the
+> holidays so my feelings aren't hurt by the lack of response (yet!)
+> 
+> To summarize why I think this should go in 2.6.29:
+> - Userspace will now be able to determine the true cache topology
+>   (the current code doesn't tell you which caches are shared between
+>   CPUs).
+> - More complete information will be presented on systems that use
+>   [di]-cache-block-size properties instead of [di]-cache-line-size. 
+> - While overall LOC has increased, the documentation is better, and the
+>   functions are much shorter and less complex.
 
-UGxlYXNlIHVuc3Vic2NyaWJlIG1lLCB0aGFua3MhDQpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXw0KTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdA0KTGludXhw
-cGMtZGV2QG96bGFicy5vcmcNCg0KDQoNCg0Kye7b2tbQ0MvBps6svLzK9dPQz965q8u+DQq12Na3
-o7rJ7tvaytC439DCx/i/xry8xM/Su8K3VzEtQbb+wqUNCrXnu7CjujA3NTUtMjY1MjU2NzQtODUw
-OaOosOy5q8rSo6kNCg0KDQoNCkFLUyA8YXVuZy5hdW5na3lhd3NvZUBnbWFpbC5jb20+IA0Kt6K8
-/sjLOiAgbGludXhwcGMtZGV2LWJvdW5jZXMremhvdS55dXRhbz16dGUuY29tLmNuQG96bGFicy5v
-cmcNCjIwMDktMDEtMDcgMTQ6MzINCg0KytW8/sjLDQpMaW51eHBwYy1kZXZAb3psYWJzLm9yZw0K
-s63LzQ0KDQrW98ziDQp1bnN1YnNjcmliZQ0KDQoNCg0KDQoNCg0KUGxlYXNlIHVuc3Vic2NyaWJl
-IG1lLCB0aGFua3MhDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXw0KTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdA0KTGludXhwcGMtZGV2QG96bGFicy5vcmcN
-Cmh0dHBzOi8vb3psYWJzLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBjLWRldg0KDQoNCg0K
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0N
-ClpURSBJbmZvcm1hdGlvbiBTZWN1cml0eSBOb3RpY2U6IFRoZSBpbmZvcm1hdGlvbiBjb250YWlu
-ZWQgaW4gdGhpcyBtYWlsIGlzIHNvbGVseSBwcm9wZXJ0eSBvZiB0aGUgc2VuZGVyJ3Mgb3JnYW5p
-emF0aW9uLiBUaGlzIG1haWwgY29tbXVuaWNhdGlvbiBpcyBjb25maWRlbnRpYWwuIFJlY2lwaWVu
-dHMgbmFtZWQgYWJvdmUgYXJlIG9ibGlnYXRlZCB0byBtYWludGFpbiBzZWNyZWN5IGFuZCBhcmUg
-bm90IHBlcm1pdHRlZCB0byBkaXNjbG9zZSB0aGUgY29udGVudHMgb2YgdGhpcyBjb21tdW5pY2F0
-aW9uIHRvIG90aGVycy4NClRoaXMgZW1haWwgYW5kIGFueSBmaWxlcyB0cmFuc21pdHRlZCB3aXRo
-IGl0IGFyZSBjb25maWRlbnRpYWwgYW5kIGludGVuZGVkIHNvbGVseSBmb3IgdGhlIHVzZSBvZiB0
-aGUgaW5kaXZpZHVhbCBvciBlbnRpdHkgdG8gd2hvbSB0aGV5IGFyZSBhZGRyZXNzZWQuIElmIHlv
-dSBoYXZlIHJlY2VpdmVkIHRoaXMgZW1haWwgaW4gZXJyb3IgcGxlYXNlIG5vdGlmeSB0aGUgb3Jp
-Z2luYXRvciBvZiB0aGUgbWVzc2FnZS4gQW55IHZpZXdzIGV4cHJlc3NlZCBpbiB0aGlzIG1lc3Nh
-Z2UgYXJlIHRob3NlIG9mIHRoZSBpbmRpdmlkdWFsIHNlbmRlci4NClRoaXMgbWVzc2FnZSBoYXMg
-YmVlbiBzY2FubmVkIGZvciB2aXJ1c2VzIGFuZCBTcGFtIGJ5IFpURSBBbnRpLVNwYW0gc3lzdGVt
-Lg0K
---=_alternative 00249DB248257537_=
-Content-Type: text/html; charset="GB2312"
-Content-Transfer-Encoding: base64
+I'm pretty happy about it. However, it fails build when merged on top of
+linus current upstream due to some cpumask changes.
 
-DQo8YnI+PGZvbnQgc2l6ZT0zIGZhY2U9InNhbnMtc2VyaWYiPlBsZWFzZSB1bnN1YnNjcmliZSBt
-ZSwgdGhhbmtzITwvZm9udD48Zm9udCBzaXplPTI+PHR0Pl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fPGJyPg0KTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdDxi
-cj4NCkxpbnV4cHBjLWRldkBvemxhYnMub3JnPGJyPg0KPC90dD48L2ZvbnQ+PGZvbnQgc2l6ZT0y
-IGZhY2U9InNhbnMtc2VyaWYiPjxicj4NCjxicj4NCjxicj4NCjxicj4NCsnu29rW0NDLwabOrLy8
-yvXT0M/euavLvjxicj4NCrXY1rejusnu29rK0Ljf0MLH+L/GvLzEz9K7wrdXMS1Btv7CpTxicj4N
-CrXnu7CjujA3NTUtMjY1MjU2NzQtODUwOaOosOy5q8rSo6k8L2ZvbnQ+DQo8YnI+DQo8YnI+DQo8
-YnI+DQo8dGFibGUgd2lkdGg9MTAwJT4NCjx0ciB2YWxpZ249dG9wPg0KPHRkIHdpZHRoPTI2JT48
-Zm9udCBzaXplPTEgZmFjZT0ic2Fucy1zZXJpZiI+PGI+QUtTICZsdDthdW5nLmF1bmdreWF3c29l
-QGdtYWlsLmNvbSZndDs8L2I+DQo8L2ZvbnQ+DQo8YnI+PGZvbnQgc2l6ZT0xIGZhY2U9InNhbnMt
-c2VyaWYiPreivP7IyzogJm5ic3A7bGludXhwcGMtZGV2LWJvdW5jZXMremhvdS55dXRhbz16dGUu
-Y29tLmNuQG96bGFicy5vcmc8L2ZvbnQ+DQo8cD48Zm9udCBzaXplPTEgZmFjZT0ic2Fucy1zZXJp
-ZiI+MjAwOS0wMS0wNyAxNDozMjwvZm9udD4NCjx0ZCB3aWR0aD03MyU+DQo8dGFibGUgd2lkdGg9
-MTAwJT4NCjx0ciB2YWxpZ249dG9wPg0KPHRkPg0KPGRpdiBhbGlnbj1yaWdodD48Zm9udCBzaXpl
-PTEgZmFjZT0ic2Fucy1zZXJpZiI+ytW8/sjLPC9mb250PjwvZGl2Pg0KPHRkPjxmb250IHNpemU9
-MSBmYWNlPSJzYW5zLXNlcmlmIj5MaW51eHBwYy1kZXZAb3psYWJzLm9yZzwvZm9udD4NCjx0ciB2
-YWxpZ249dG9wPg0KPHRkPg0KPGRpdiBhbGlnbj1yaWdodD48Zm9udCBzaXplPTEgZmFjZT0ic2Fu
-cy1zZXJpZiI+s63LzTwvZm9udD48L2Rpdj4NCjx0ZD4NCjx0ciB2YWxpZ249dG9wPg0KPHRkPg0K
-PGRpdiBhbGlnbj1yaWdodD48Zm9udCBzaXplPTEgZmFjZT0ic2Fucy1zZXJpZiI+1vfM4jwvZm9u
-dD48L2Rpdj4NCjx0ZD48Zm9udCBzaXplPTEgZmFjZT0ic2Fucy1zZXJpZiI+dW5zdWJzY3JpYmU8
-L2ZvbnQ+PC90YWJsZT4NCjxicj4NCjx0YWJsZT4NCjx0ciB2YWxpZ249dG9wPg0KPHRkPg0KPHRk
-PjwvdGFibGU+DQo8YnI+PC90YWJsZT4NCjxicj4NCjxicj4NCjxicj48Zm9udCBzaXplPTMgZmFj
-ZT0ic2Fucy1zZXJpZiI+UGxlYXNlIHVuc3Vic2NyaWJlIG1lLCB0aGFua3MhPC9mb250Pjxmb250
-IHNpemU9Mj48dHQ+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X188YnI+DQpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0PGJyPg0KTGludXhwcGMtZGV2QG96bGFi
-cy5vcmc8YnI+DQpodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1k
-ZXY8L3R0PjwvZm9udD4NCjxicj4NCjxicj48cHJlPg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NClpURSZuYnNwO0luZm9ybWF0aW9uJm5i
-c3A7U2VjdXJpdHkmbmJzcDtOb3RpY2U6Jm5ic3A7VGhlJm5ic3A7aW5mb3JtYXRpb24mbmJzcDtj
-b250YWluZWQmbmJzcDtpbiZuYnNwO3RoaXMmbmJzcDttYWlsJm5ic3A7aXMmbmJzcDtzb2xlbHkm
-bmJzcDtwcm9wZXJ0eSZuYnNwO29mJm5ic3A7dGhlJm5ic3A7c2VuZGVyJ3MmbmJzcDtvcmdhbml6
-YXRpb24uJm5ic3A7VGhpcyZuYnNwO21haWwmbmJzcDtjb21tdW5pY2F0aW9uJm5ic3A7aXMmbmJz
-cDtjb25maWRlbnRpYWwuJm5ic3A7UmVjaXBpZW50cyZuYnNwO25hbWVkJm5ic3A7YWJvdmUmbmJz
-cDthcmUmbmJzcDtvYmxpZ2F0ZWQmbmJzcDt0byZuYnNwO21haW50YWluJm5ic3A7c2VjcmVjeSZu
-YnNwO2FuZCZuYnNwO2FyZSZuYnNwO25vdCZuYnNwO3Blcm1pdHRlZCZuYnNwO3RvJm5ic3A7ZGlz
-Y2xvc2UmbmJzcDt0aGUmbmJzcDtjb250ZW50cyZuYnNwO29mJm5ic3A7dGhpcyZuYnNwO2NvbW11
-bmljYXRpb24mbmJzcDt0byZuYnNwO290aGVycy4NClRoaXMmbmJzcDtlbWFpbCZuYnNwO2FuZCZu
-YnNwO2FueSZuYnNwO2ZpbGVzJm5ic3A7dHJhbnNtaXR0ZWQmbmJzcDt3aXRoJm5ic3A7aXQmbmJz
-cDthcmUmbmJzcDtjb25maWRlbnRpYWwmbmJzcDthbmQmbmJzcDtpbnRlbmRlZCZuYnNwO3NvbGVs
-eSZuYnNwO2ZvciZuYnNwO3RoZSZuYnNwO3VzZSZuYnNwO29mJm5ic3A7dGhlJm5ic3A7aW5kaXZp
-ZHVhbCZuYnNwO29yJm5ic3A7ZW50aXR5Jm5ic3A7dG8mbmJzcDt3aG9tJm5ic3A7dGhleSZuYnNw
-O2FyZSZuYnNwO2FkZHJlc3NlZC4mbmJzcDtJZiZuYnNwO3lvdSZuYnNwO2hhdmUmbmJzcDtyZWNl
-aXZlZCZuYnNwO3RoaXMmbmJzcDtlbWFpbCZuYnNwO2luJm5ic3A7ZXJyb3ImbmJzcDtwbGVhc2Um
-bmJzcDtub3RpZnkmbmJzcDt0aGUmbmJzcDtvcmlnaW5hdG9yJm5ic3A7b2YmbmJzcDt0aGUmbmJz
-cDttZXNzYWdlLiZuYnNwO0FueSZuYnNwO3ZpZXdzJm5ic3A7ZXhwcmVzc2VkJm5ic3A7aW4mbmJz
-cDt0aGlzJm5ic3A7bWVzc2FnZSZuYnNwO2FyZSZuYnNwO3Rob3NlJm5ic3A7b2YmbmJzcDt0aGUm
-bmJzcDtpbmRpdmlkdWFsJm5ic3A7c2VuZGVyLg0KVGhpcyZuYnNwO21lc3NhZ2UmbmJzcDtoYXMm
-bmJzcDtiZWVuJm5ic3A7c2Nhbm5lZCZuYnNwO2ZvciZuYnNwO3ZpcnVzZXMmbmJzcDthbmQmbmJz
-cDtTcGFtJm5ic3A7YnkmbmJzcDtaVEUmbmJzcDtBbnRpLVNwYW0mbmJzcDtzeXN0ZW0uDQo8L3By
-ZT4=
---=_alternative 00249DB248257537_=--
+I don't know quite the detail of the new cpumask stuff ... It could be
+as simple as passing a pointer instead of the value in the
+cpumask_scnprintf call though...
+
+Can you check and produce a new patch pls ?
+
+Cheers,
+Ben.
