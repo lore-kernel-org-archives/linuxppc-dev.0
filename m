@@ -1,23 +1,18 @@
-Return-Path: <loko@el-kfa.net>
-Received: from taurus.el-kfa.net (unknown [193.24.199.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E1839DDFAE
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 12:30:48 +1100 (EST)
-Received: from localhost (unknown [193.24.199.40])
-	by taurus.el-kfa.net (Postfix) with ESMTP id 4FF5B17021
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 02:02:24 +0100 (CET)
-Received: from taurus.el-kfa.net ([193.24.199.40])
-	by localhost (taurus.el-kfa.net [193.24.199.40]) (amavisd-new,
-	port 10024) with ESMTP id fS+6UV0WGAxo for <linuxppc-dev@ozlabs.org>;
-	Wed,  7 Jan 2009 02:02:00 +0100 (CET)
-Date: Wed, 7 Jan 2009 02:02:00 +0100
-From: "Pawel P. Kusmierski" <loko-r@el-kfa.net>
-To: linuxppc-dev@ozlabs.org
-Subject: Linux on Memec Virtex4 FX12 Minimodule
-Message-ID: <20090107010200.GA89569@taurus.el-kfa.net>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="sm4nu43k4a2Rpi4c"
+Return-Path: <pku.leo@gmail.com>
+Message-ID: <2a27d3730901061951g333d10b6mf4dc0219570e521b@mail.gmail.com>
+Date: Wed, 7 Jan 2009 11:51:12 +0800
+From: "Li Yang" <leoli@freescale.com>
+Sender: pku.leo@gmail.com
+To: "Li Yang" <LeoLi@freescale.com>,
+	"Wood Scott-B07421" <scottwood@freescale.com>,
+	linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Subject: Re: The usage of compatible 'simple-bus'
+In-Reply-To: <20090107020006.GD13731@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+References: <20090106014323.GB29456@yookeroo.seuss>
+	<3A45394FD742FA419B760BB8D398F9ED0B38C9@zch01exm26.fsl.freescale.net>
+	<20090107020006.GD13731@yookeroo.seuss>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,64 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Jan 7, 2009 at 10:00 AM, David Gibson
+<david@gibson.dropbear.id.au> wrote:
+> On Tue, Jan 06, 2009 at 01:46:21PM +0800, Li Yang wrote:
+>> > -----Original Message-----
+>> > From:
+>> > devicetree-discuss-bounces+leoli=freescale.com@ozlabs.org
+>> > [mailto:devicetree-discuss-bounces+leoli=freescale.com@ozlabs.
+>> > org] On Behalf Of David Gibson
+>> > Sent: Tuesday, January 06, 2009 9:43 AM
+>> > To: Wood Scott-B07421
+>> > Cc: linuxppc-dev@ozlabs.org; Li Yang-R58472;
+>> > devicetree-discuss@ozlabs.org
+>> > Subject: Re: The usage of compatible 'simple-bus'
+>> >
+>> > On Mon, Jan 05, 2009 at 01:20:53PM -0600, Scott Wood wrote:
+>> > > On Mon, Jan 05, 2009 at 06:27:39PM +0800, Li Yang wrote:
+>> > > > I got an assumption from the existing device trees that having
+>> > > > 'simple-bus' in the compatible property of a node means that all
+>> > > > child nodes should be added as of_platform_device in platform
+>> > > > initialization phase.  No matter it represents a bus in
+>> > common sense
+>> > > > or not.  Is this truly the case?
+>> > >
+>> > > Yes, simple-bus indicates that the children can be driven
+>> > standalone
+>> > > from any knowledge of the parent bus.
+>> >
+>> > Erm, well, sort of.  Strictly it indicates that the only way
+>> > to locate the child devices of this bus is by using the
+>> > address information in the device tree - there's no way to
+>> > dynamically probe the bus.
+>>
+>> So if I understand correctly, "simple-bus" is intended to be used for
+>> true buses.
+>
+> Generally, yes, although there may be some situations where it's
+> appropriate for other things.  So, for example, in some cases it's
+> used (correctly) for compound devices .  I don't think this particular
+> case is a sensible situation for it, though.
+>
+>> > The fact that this causes of_platform_devices to be
+>> > instantiated is a Linux implementation specific detail (and
+>> > one we might change in future).
+>>
+>> Here we have a common case for SoC that part of a device has its
+>> separate driver besides the driver for the main feature of the whole
+>> device.  The resources used by the sub-device is usually part of the
+>> resources of the parent device.  So it makes sense to put the node of
+>> sub-device beneathe the node of main device.  Shall we have a convention
+>> to mark such devices in device tree so that the sub-device can be
+>> scanned and probed as a standalone of_platform_device?
+>>
+>> If "simple-bus" may cause confusion to do this job as it's not a bus
+>> actually, I propose to use "has-subdevice".
+>
+> As Grant says, you're thinking about what drivers will do with things
+> rather than what the actual hardware setup is, which is what the
+> device tree should describe.
+>
+> I see two sensible options for this situation:
+>        - Move the MDIO node to outside the gianfar MAC node.  I think
+> this is already done on some boards with gianfar?
 
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Yes, we can use good old way.  But as Scott has moved the MDIO into
+the gianfar node on MPC8313, maybe it's a better way to describe the
+relationship of the two parts.
 
+>        - Explicitly add the gianfar device to the list of things to
+> scan for of_platform subdevices.
 
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="posting-ppc-devel.txt"
+I'm not against this solution.  However, the situation is kind of
+common for SoC.  So I was just wondering if we can get to a new
+convention in device tree than maintain a list in the code.  It will
+be easier to figure the situation out by just reading the dts than
+combining with the code.
 
-Dear friends,
-
-I have a following problem:
-I'm trying to boot linux kernel on a PowerPC405 inside a Virtex4 FX12
-sitting on an Avnet/Memec FX12 Mini Module plugged into its mother board.
-I was able to go as far as booting the kernel, mounting a nfs root,
-as well as an ext2 one sitting on a sysace CF.
-The problem is that the kernel stops outputting the following line:
-
-Kernel panic - not syncing: No init found.  Try passing init= option to kernel.
-
-Now, I know the init is being found, both in ext2 and nfs setup, has the
-right rights, and all. I tried supplying a simple printf C program as
-init, even an assembly one, with one stupid syscall to write out a line,
-with the very same effect.
-I edited the init/main.c file around the run_init_process(), and modified it
-to analyse the kernel_execve return value. The effects are:
-
-Freeing unused kernel memory: 104k init
-Failed to execute /sbin/init: -2 <4>: No such file or directory.
-Failed to execute /etc/init: -14 <4>: Bad address.
-Failed to execute /bin/init: -14 <4>: Bad address.
-Failed to execute /bin/sh: -14 <4>: Bad address.
-Kernel panic - not syncing: No init found.  Try passing init= option to kernel.
-
-and after I deleted /sbin/init the effects were:
-
-Failed to execute /sbin/init: -2 <4>: No such file or directory.
-Failed to execute /etc/init: -2 <4>: No such file or directory.
-Failed to execute /bin/init: -14 <4>: Bad address.
-Failed to execute /bin/sh: -14 <4>: Bad address.
-
-The interesting thing is, that in both cases /bin/init does not exist,
-and /etc/init does.
-
-Now am I searching already too low or yet too high?
-I put my kernel configs, dmesgs and xparameters.h here:
-http://keymaster.el-kfa.net/~loko/linux-ppc/
-
-My kernel is pulled from git://git.xilinx.com/linux-2.6-xlnx.git
-I'm using ARCH=ppc in the makefile and building both the kernel
-and the apps (including the buildroot on the nfs and sysace)
-using the same crosstool setup, gcc-3.4.5-glibc-2.3.6.
-
-Many thanks in advance for your help.
--- 
-Pawel Kusmierski
-loko-r a.t el-kfa.net
-
-
---sm4nu43k4a2Rpi4c--
+- Leo
