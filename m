@@ -1,24 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 94212DDFCA
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 11:57:30 +1100 (EST)
-Subject: Re: [PATCH v1] Add support for getting device platform data to I2C
-	device
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20081218174927.GA16574@oksana.dev.rtsoft.ru>
-References: <1229566451-29411-1-git-send-email-Mingkai.hu@freescale.com>
-	<20081218165946.GA4029@oksana.dev.rtsoft.ru>
-	<494A8643.1030105@freescale.com>
-	<20081218174927.GA16574@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Wed, 07 Jan 2009 11:55:21 +1100
-Message-Id: <1231289721.14860.47.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8639BDE731
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 11:59:10 +1100 (EST)
+Date: Wed, 7 Jan 2009 11:59:00 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH] powerpc: cleanup from l64 to ll64 change: drivers/scsi
+Message-Id: <20090107115900.17c0dbb6.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Mingkai Hu <Mingkai.hu@freescale.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: King <brking@linux.vnet.ibm.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
+	linux-scsi@vger.kernel.org, Brian
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +20,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-12-18 at 20:49 +0300, Anton Vorontsov wrote:
+This is a powerpc specific driver.
 
-> Exactly, this matters for non-embedded case. Why would I want totally
-> unneeded I2C bindings built-in into my iBook kernel? ;-)
-> 
-> >> And the solution that everybody seem to agree with (SPI driver example):
-> >> http://lkml.org/lkml/2008/10/30/393
-> >
-> > Hmm, that doesn't seem to allow for any binding mechanism other than  
-> > internal and OF
-> 
-> Yeah, not without hacks (though, we can do some sort of chained pdata
-> handlers, thus we can allow other bindings mechanisms). But so far we
-> don't have anything other than OF and "board files"/raw bindings (I can't
-> actually imagine any other option).
-> 
-> Both approaches have their cons, sure. The difference is: for the
-> $subject approach we'll see the cons immediately, while in my approach
-> the cons are theoretical.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c |   14 +++++++-------
+ drivers/scsi/ibmvscsi/ibmvfc.h |    6 +++---
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-So what's the situation with this patch ? In general, who should be
-considered as "in charge" of the OF i2c stuff btw ?
+This patch on its own will generate several warnings - it depends on the
+actual l64 to ll64 patch that is pending in the powerp queue.  It may be
+easier for someone to just ack this patch so that it can be fed through
+the powerpc tree.
 
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 44f202f..be6cf09 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -933,7 +933,7 @@ static void ibmvfc_get_host_speed(struct Scsi_Host *shost)
+ 			fc_host_speed(shost) = FC_PORTSPEED_16GBIT;
+ 			break;
+ 		default:
+-			ibmvfc_log(vhost, 3, "Unknown port speed: %ld Gbit\n",
++			ibmvfc_log(vhost, 3, "Unknown port speed: %lld Gbit\n",
+ 				   vhost->login_buf->resp.link_speed / 100);
+ 			fc_host_speed(shost) = FC_PORTSPEED_UNKNOWN;
+ 			break;
+@@ -2149,8 +2149,8 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
+ {
+ 	const char *desc = ibmvfc_get_ae_desc(crq->event);
+ 
+-	ibmvfc_log(vhost, 3, "%s event received. scsi_id: %lx, wwpn: %lx,"
+-		   " node_name: %lx\n", desc, crq->scsi_id, crq->wwpn, crq->node_name);
++	ibmvfc_log(vhost, 3, "%s event received. scsi_id: %llx, wwpn: %llx,"
++		   " node_name: %llx\n", desc, crq->scsi_id, crq->wwpn, crq->node_name);
+ 
+ 	switch (crq->event) {
+ 	case IBMVFC_AE_LINK_UP:
+@@ -2184,7 +2184,7 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
+ 		ibmvfc_link_down(vhost, IBMVFC_HALTED);
+ 		break;
+ 	default:
+-		dev_err(vhost->dev, "Unknown async event received: %ld\n", crq->event);
++		dev_err(vhost->dev, "Unknown async event received: %lld\n", crq->event);
+ 		break;
+ 	};
+ }
+@@ -2261,13 +2261,13 @@ static void ibmvfc_handle_crq(struct ibmvfc_crq *crq, struct ibmvfc_host *vhost)
+ 	 * actually sent
+ 	 */
+ 	if (unlikely(!ibmvfc_valid_event(&vhost->pool, evt))) {
+-		dev_err(vhost->dev, "Returned correlation_token 0x%08lx is invalid!\n",
++		dev_err(vhost->dev, "Returned correlation_token 0x%08llx is invalid!\n",
+ 			crq->ioba);
+ 		return;
+ 	}
+ 
+ 	if (unlikely(atomic_read(&evt->free))) {
+-		dev_err(vhost->dev, "Received duplicate correlation_token 0x%08lx!\n",
++		dev_err(vhost->dev, "Received duplicate correlation_token 0x%08llx!\n",
+ 			crq->ioba);
+ 		return;
+ 	}
+@@ -3259,7 +3259,7 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *vhost, u64 scsi_id)
+ 
+ 	tgt = mempool_alloc(vhost->tgt_pool, GFP_KERNEL);
+ 	if (!tgt) {
+-		dev_err(vhost->dev, "Target allocation failure for scsi id %08lx\n",
++		dev_err(vhost->dev, "Target allocation failure for scsi id %08llx\n",
+ 			scsi_id);
+ 		return -ENOMEM;
+ 	}
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
+index babdf3d..87dafd0 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.h
++++ b/drivers/scsi/ibmvscsi/ibmvfc.h
+@@ -691,13 +691,13 @@ struct ibmvfc_host {
+ #define DBG_CMD(CMD) do { if (ibmvfc_debug) CMD; } while (0)
+ 
+ #define tgt_dbg(t, fmt, ...)			\
+-	DBG_CMD(dev_info((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__))
++	DBG_CMD(dev_info((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__))
+ 
+ #define tgt_info(t, fmt, ...)		\
+-	dev_info((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
++	dev_info((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
+ 
+ #define tgt_err(t, fmt, ...)		\
+-	dev_err((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
++	dev_err((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
+ 
+ #define ibmvfc_dbg(vhost, ...) \
+ 	DBG_CMD(dev_info((vhost)->dev, ##__VA_ARGS__))
+-- 
+1.6.0.5
+
+-- 
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
