@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 28EDADE28E
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 09:28:13 +1100 (EST)
-Subject: Re: __pa giving strange phys address on PPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "dibacco@libero.it" <dibacco@libero.it>
-In-Reply-To: <KD4CZC$63E26AC2C9F30D8D9F146E56F7574045@libero.it>
-References: <KD4CZC$63E26AC2C9F30D8D9F146E56F7574045@libero.it>
-Content-Type: text/plain
-Date: Thu, 08 Jan 2009 09:27:59 +1100
-Message-Id: <1231367279.2142.25.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id CE652DDF33
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 09:36:16 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so2667661ywh.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 07 Jan 2009 14:36:15 -0800 (PST)
+Message-ID: <fa686aa40901071436x35fb6c6ar3f711c53d7edf2bc@mail.gmail.com>
+Date: Wed, 7 Jan 2009 15:36:14 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: [PATCH 2/5] powerpc: Generic device tree for all AmigaOne boards
+In-Reply-To: <49652B79.5010502@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20090107135457.234150@gmx.net> <20090107140132.140980@gmx.net>
+	<fa686aa40901070841o3ede1d56tf5f69c33523513f4@mail.gmail.com>
+	<20090107221028.GA18669@ld0162-tx32.am.freescale.net>
+	<fa686aa40901071421w6c4aa48eyd869eb952373a74d@mail.gmail.com>
+	<49652B79.5010502@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-01-07 at 21:59 +0100, dibacco@libero.it wrote:
-> Hi all,
-> 
-> I'm using a linux 2.6.19 (from Denx ELDK) on a PPC MPC880. In a driver
-> (that uses TDM channels) I have some calls to __pa to get the physical
-> address corresponding to a virtual address. The physical address
-> returned by __pa is higher than the maximum physical memory I have on
-> the board. This result make my driver hang. The driver I'm trying to
-> use was written for a 2.4 kernel and I'm wondering if I have to
-> replace the calls to __pa with some other API/MACRO.
+On Wed, Jan 7, 2009 at 3:23 PM, Scott Wood <scottwood@freescale.com> wrote:
+> Grant Likely wrote:
+>>
+>> On Wed, Jan 7, 2009 at 3:10 PM, Scott Wood <scottwood@freescale.com>
+>> wrote:
+>>>
+>>> Why?
+>>
+>> Defensive programming.  To not rely on implicit relationships
+>
+> It doesn't seem any more likely to introduce a fault by specifying the
+> interrupt controller in one place than in many places.
 
-__pa can only be used on memory coming from the kernel linear mapping.
+We do the same thing with #address-cells and #size-cells for the same
+reason.  You can get away with leaving them out; but being explicit is
+more clear.
 
-You probably need to change your driver to use the proper DMA mapping
-APIs instead
+g.
 
-Cheers,
-Ben.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
