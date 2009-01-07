@@ -1,20 +1,14 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 77EFEDE240
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jan 2009 16:37:10 +1100 (EST)
-Date: Wed, 7 Jan 2009 16:36:57 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/cell: fix the prototype of create_vma_map
-Message-Id: <20090107163657.4feddae0.sfr@canb.auug.org.au>
-In-Reply-To: <1231299299.14860.58.camel@pasglop>
-References: <20090107105822.221c4395.sfr@canb.auug.org.au>
-	<1231299299.14860.58.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: [patch] Possible fix for kexec-tools dynamic range allocation
+From: Michael Ellerman <michael@ellerman.id.au>
+To: kexec@lists.infradead.org
+Content-Type: text/plain
+Date: Wed, 07 Jan 2009 17:01:26 +1100
+Message-Id: <1231308086.27416.14.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__7_Jan_2009_16_36_57_+1100_2bOzgx+uOOUKLk1o"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: muvarov@gmail.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Horms <horms@verge.net.au>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +18,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__7_Jan_2009_16_36_57_+1100_2bOzgx+uOOUKLk1o
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi all,
 
-On Wed, 07 Jan 2009 14:34:59 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> On Wed, 2009-01-07 at 10:58 +1100, Stephen Rothwell wrote:
-> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> > ---
-> >  arch/powerpc/oprofile/cell/pr_util.h |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> Arnd, I'm not too sure about this one, what do you think ? Shouldn't the
-> objectid be a u64 and the callers be fixed instead ?
+The patch to dynamically allocate memory regions for ppc64 kexec-tools,
+ie. "ppc64: kexec memory ranges dynamic allocation" (d182ce5), has never
+worked AFAICT.
 
-The *one* caller passes an "unsigned long" and in the function, objectid
-(which is called __spu_elf_start there) is only cast to a "void __user *".
-Don't we assume that all pointers (kernel and user) can fit into an
-"unsigned long"?
+Chandru reported it as broken when it was posted:
+http://lists.infradead.org/pipermail/kexec/2008-October/002751.html
 
-Also the value originally comes from a notifier callback
-(spu_active_notify) which is passed this value as an "unsigned long".
+Still, it's in now, and I'm trying to work out what's going wrong.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The symptom is as reported by Chandru, we end up not being able to
+allocate any memory (in locate_hole()). This is caused by the list of
+memory_ranges being empty.
 
---Signature=_Wed__7_Jan_2009_16_36_57_+1100_2bOzgx+uOOUKLk1o
-Content-Type: application/pgp-signature
+The memory_ranges are empty because they have been realloc'ed (by the
+dynamic alloc code), and the generic code is still looking at the old
+version.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+What I'm not clear on is why the ppc64 code is even calling
+setup_memory_ranges() a second time (in elf_ppc64_load()). It's already
+been called by get_memory_ranges() from my_load(). Or is there another
+route into elf_ppc64_load() that I'm not seeing?
 
-iEYEARECAAYFAklkP3kACgkQjjKRsyhoI8xY2QCfQbqFjvAt/Xw/baQs1EQO7IdN
-gowAn1FPztl2qEm0G1lO/TPC0XzjDP1i
-=WO3w
------END PGP SIGNATURE-----
+And in fact if I just remove that call, then everything is peachy.
 
---Signature=_Wed__7_Jan_2009_16_36_57_+1100_2bOzgx+uOOUKLk1o--
+The following patch makes it work for me at least.
+
+cheers
+
+>From 40958d8f957876ca612b666f40bebf28ea335314 Mon Sep 17 00:00:00 2001
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Wed, 7 Jan 2009 16:57:05 +1100
+Subject: [PATCH] Don't call setup_memory_ranges() again
+
+There's no need to call setup_memory_ranges() again. Furthermore it can
+lead to the memory_ranges being realloc'ed, which results in the generic
+code (locate_hole() etc.) using the free'd memory_ranges.
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ kexec/arch/ppc64/kexec-elf-ppc64.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/kexec/arch/ppc64/kexec-elf-ppc64.c b/kexec/arch/ppc64/kexec-elf-ppc64.c
+index 21533cb..1e2d5a3 100644
+--- a/kexec/arch/ppc64/kexec-elf-ppc64.c
++++ b/kexec/arch/ppc64/kexec-elf-ppc64.c
+@@ -151,8 +151,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
+ 	if (ramdisk && reuse_initrd)
+ 		die("Can't specify --ramdisk or --initrd with --reuseinitrd\n");
+ 
+-	setup_memory_ranges(info->kexec_flags);
+-
+ 	/* Need to append some command line parameters internally in case of
+ 	 * taking crash dumps.
+ 	 */
+-- 
+1.5.3.7.1.g4e596e
