@@ -1,15 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <4965553A.4090003@am.sony.com>
-Date: Wed, 7 Jan 2009 17:22:02 -0800
+Message-ID: <4965553F.8050801@am.sony.com>
+Date: Wed, 7 Jan 2009 17:22:07 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 6/6 v2] mtd/ps3vram: Use msleep in waits
-References: <4963CA52.9030902@am.sony.com> <4963CDF4.1070403@am.sony.com>
-In-Reply-To: <4963CDF4.1070403@am.sony.com>
+Subject: [patch] mtd/ps3vram: Use _PAGE_NO_CACHE in memory ioremap
+References: <4963CDCA.4080802@am.sony.com>
+In-Reply-To: <4963CDCA.4080802@am.sony.com>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: David Woodhouse <David.Woodhouse@intel.com>, Arnd Bergmann <arnd@arndb.de>,
 	Jim Paris <jim@jtan.com>, linuxppc-dev@ozlabs.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	Vivien Chappelier <vivien.chappelier@free.fr>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -20,83 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Subject: [patch] mtd/ps3vram: Use msleep in waits
-
-Replace the use of udelay() with msleep() in the looping wait routines
-ps3vram_notifier_wait() and ps3vram_wait_ring().
+Use _PAGE_NO_CACHE for gpu memory ioremap.  Also,
+add __iomem attribute to gpu memory pointer and
+change use of memset() to memset_io().
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
-v2: Use time_before() in loops.
-
- drivers/mtd/devices/ps3vram.c |   40 +++++++++++++++++-----------------------
- 1 file changed, 17 insertions(+), 23 deletions(-)
+ drivers/mtd/devices/ps3vram.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
 --- a/drivers/mtd/devices/ps3vram.c
 +++ b/drivers/mtd/devices/ps3vram.c
-@@ -109,22 +109,19 @@ static void ps3vram_notifier_reset(struc
- 		notify[i] = 0xffffffff;
- }
+@@ -6,6 +6,7 @@
+  */
  
--static int ps3vram_notifier_wait(struct mtd_info *mtd, int timeout_ms)
-+static int ps3vram_notifier_wait(struct mtd_info *mtd, unsigned int timeout_ms)
- {
- 	struct ps3vram_priv *priv = mtd->priv;
- 	u32 *notify = ps3vram_get_notifier(priv->reports, NOTIFIER);
--
--	timeout_ms *= 1000;
-+	unsigned long timeout = jiffies + msecs_to_jiffies(timeout_ms);
+ #include <linux/io.h>
++#include <linux/mm.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+@@ -69,7 +70,7 @@ struct ps3vram_priv {
+ 	u64 context_handle;
+ 	u32 *ctrl;
+ 	u32 *reports;
+-	u8 *base;
++	u8 __iomem *ddr_base;
+ 	u8 *xdr_buf;
  
- 	do {
--		if (notify[3] == 0)
-+		if (!notify[3])
- 			return 0;
-+		msleep(1);
-+	} while (time_before(jiffies, timeout));
+ 	u32 *fifo_base;
+@@ -425,7 +426,7 @@ static int ps3vram_erase(struct mtd_info
+ 	ps3vram_cache_flush(mtd);
  
--		if (timeout_ms)
--			udelay(1);
--	} while (timeout_ms--);
--
--	return -1;
-+	return -ETIMEDOUT;
- }
+ 	/* Set bytes to 0xFF */
+-	memset(priv->base + instr->addr, 0xFF, instr->len);
++	memset_io(priv->ddr_base + instr->addr, 0xFF, instr->len);
  
- static void ps3vram_init_ring(struct mtd_info *mtd)
-@@ -135,25 +132,22 @@ static void ps3vram_init_ring(struct mtd
- 	priv->ctrl[CTRL_GET] = FIFO_BASE + FIFO_OFFSET;
- }
+ 	mutex_unlock(&priv->lock);
  
--static int ps3vram_wait_ring(struct mtd_info *mtd, int timeout)
-+static int ps3vram_wait_ring(struct mtd_info *mtd, unsigned int timeout_ms)
- {
- 	struct ps3vram_priv *priv = mtd->priv;
-+	unsigned long timeout = jiffies + msecs_to_jiffies(timeout_ms);
+@@ -628,8 +629,9 @@ static int __devinit ps3vram_probe(struc
+ 		goto out_free_context;
+ 	}
  
--	/* wait until setup commands are processed */
--	timeout *= 1000;
--	while (--timeout) {
-+	do {
- 		if (priv->ctrl[CTRL_PUT] == priv->ctrl[CTRL_GET])
--			break;
--		udelay(1);
--	}
--	if (timeout == 0) {
--		dev_dbg(priv->dev, "%s:%d: FIFO timeout (%08x/%08x/%08x)\n",
--			__func__, __LINE__, priv->ctrl[CTRL_PUT],
--			priv->ctrl[CTRL_GET], priv->ctrl[CTRL_TOP]);
--		return -ETIMEDOUT;
--	}
-+			return 0;
-+		msleep(1);
-+	} while (time_before(jiffies, timeout));
- 
--	return 0;
-+	dev_dbg(priv->dev, "%s:%d: FIFO timeout (%08x/%08x/%08x)\n", __func__,
-+		__LINE__, priv->ctrl[CTRL_PUT], priv->ctrl[CTRL_GET],
-+		priv->ctrl[CTRL_TOP]);
+-	priv->base = ioremap(ddr_lpar, ddr_size);
+-	if (!priv->base) {
++	priv->ddr_base = ioremap_flags(ddr_lpar, ddr_size, _PAGE_NO_CACHE);
 +
-+	return -ETIMEDOUT;
- }
- 
- static void ps3vram_out_ring(struct ps3vram_priv *priv, u32 data)
++	if (!priv->ddr_base) {
+ 		dev_err(&dev->core, "%s:%d: ioremap failed\n", __func__,
+ 			__LINE__);
+ 		ret = -ENOMEM;
+@@ -702,7 +704,7 @@ out_unmap_reports:
+ out_unmap_ctrl:
+ 	iounmap(priv->ctrl);
+ out_unmap_vram:
+-	iounmap(priv->base);
++	iounmap(priv->ddr_base);
+ out_free_context:
+ 	lv1_gpu_context_free(priv->context_handle);
+ out_free_memory:
+@@ -728,7 +730,7 @@ static int ps3vram_shutdown(struct ps3_s
+ 	ps3vram_cache_cleanup(&ps3vram_mtd);
+ 	iounmap(priv->reports);
+ 	iounmap(priv->ctrl);
+-	iounmap(priv->base);
++	iounmap(priv->ddr_base);
+ 	lv1_gpu_context_free(priv->context_handle);
+ 	lv1_gpu_memory_free(priv->memory_handle);
+ 	ps3_close_hv_device(dev);
