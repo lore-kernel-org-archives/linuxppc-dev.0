@@ -1,24 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BF27B474CA
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 06:26:38 +1100 (EST)
-Message-Id: <44A459AC-796C-4928-A39E-88F6F6DF159E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090108191021.GA10008@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 1/2] powerpc/fsl_pci: Add MPC83xx PCI-E controller RC mode
-	support
-Date: Thu, 8 Jan 2009 13:24:27 -0600
-References: <20090108013006.GA31653@oksana.dev.rtsoft.ru>
-	<20090108013110.GA11165@oksana.dev.rtsoft.ru>
-	<C65915E8-6544-4229-9ED2-D2BB936D537C@kernel.crashing.org>
-	<20090108191021.GA10008@oksana.dev.rtsoft.ru>
-Cc: Huang Changming <Chang-Ming.Huang@freescale.com>,
-	Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id CB3FA474CA
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 06:27:18 +1100 (EST)
+Date: Thu, 8 Jan 2009 11:27:16 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Message-ID: <20090108192716.GA19863@ovro.caltech.edu>
+References: <20090107195052.GA24981@ovro.caltech.edu>
+	<20090108.111610.132149837.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090108.111610.132149837.davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, shemminger@vyatta.com,
+	linux-kernel@vger.kernel.org, arnd@arndb.de, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,44 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Jan 08, 2009 at 11:16:10AM -0800, David Miller wrote:
+> From: Ira Snyder <iws@ovro.caltech.edu>
+> Date: Wed, 7 Jan 2009 11:50:52 -0800
+> 
+> > This adds support to Linux for a virtual ethernet interface which uses the
+> > PCI bus as its transport mechanism. It creates a simple, familiar, and fast
+> > method of communication for two devices connected by a PCI interface.
+> 
+> Well, it looks like much more than that to me.
+> 
+> What is this UART thing in here for?
+> 
+> I can only assume it's meant to be used as a console port between the
+> x86 host and the powerpc nodes.
+> 
 
-On Jan 8, 2009, at 1:10 PM, Anton Vorontsov wrote:
+Exactly right. I needed it to tell the U-Boot bootloader to tftp the
+kernel and boot the board. These boards don't keep their PCI settings
+(assigned by the BIOS at boot) over a soft or hard reset.
 
-> On Thu, Jan 08, 2009 at 12:50:22AM -0600, Kumar Gala wrote:
->>>
->>> +struct mpc83xx_pcie_priv {
->>> +	void __iomem *cfg_map;
->>> +	u32 dev_base;
->>> +};
->>
->> So was thinking about this and was wondering about doing the  
->> following:
->>
->> hose->cfg_addr /* use instead of dev_base to cache pci bus/dev/fn */
->> hose->cfg_data /* should be the outbound window used for pci cfg  
->> cycles
->> */
->> hose->dn->data /* for IMMR regs to tweak window */
->>
->> thoughts?
->
-> I don't quite like the casts that we'll need to do this.
->
->> Doing this means we should be able to get rid of struct
->> mpc83xx_pcie_priv
->
-> Not sure what benefits this would bring? Saving few bytes of code and
-> data at the cost of losing clean, cast-less, self documented code?..
->
-> I was actually thinking of getting rid of hose->cfg_data usage, and
-> replacing it with mpc83xx_pci_priv->cfg_type0 (and rename
-> mpc83xx_pci_priv->cfg_map to cfg_type1).
->
-> OTOH, I can surely do that what you described, but to me it doesn't
-> look like a great idea (i.e. using irrelevant struct members for
-> hooking our data)...
+I couldn't think of a better way to get them started.
 
-I'm ok if you get rid of cfg_data usage.. than we aren't overloading  
-the indirect variables for 83xx pci cfg cycles
+> You haven't even mentioned this UART aspect even indirectly in the
+> commit message.
+> 
 
-- k
+Sorry, I'll add something about it.
+
+> This just looks like yet another set of virtualization drivers
+> to me.  You could have just have easily built this using your
+> own PCI backplane framework, and using the virtio stuff on top.
+> 
+> And the virtio stuff has all kinds of snazzy optimizations that
+> will likely improve your throughput, it has console drivers that
+> distributions already probe for and attach appropriately, etc.
+> 
+> In short I really don't like this conceptually, it can be done
+> so much better using facilities we already have that are
+> heavily optimized and userland understands already.
+
+I've had a really hard time understanding the virtio code. I haven't
+been able to find much in the way of documentation for it. Can you point
+me to some code that does anything vaguely similar to what you are
+suggesting?
+
+Arnd Bergmann said that there is a similar driver (for different
+hardware) that uses virtio, but it is very slow, because it doesn't use
+the DMA controller to transfer data. I need at very minimum 40MB/sec of
+client -> host data transfer.
+
+Thanks for the comments,
+Ira
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
