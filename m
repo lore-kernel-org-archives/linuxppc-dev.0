@@ -1,22 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 25FB0474C2
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 06:10:25 +1100 (EST)
-Date: Thu, 8 Jan 2009 22:10:21 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc/fsl_pci: Add MPC83xx PCI-E controller RC
-	mode support
-Message-ID: <20090108191021.GA10008@oksana.dev.rtsoft.ru>
-References: <20090108013006.GA31653@oksana.dev.rtsoft.ru>
-	<20090108013110.GA11165@oksana.dev.rtsoft.ru>
-	<C65915E8-6544-4229-9ED2-D2BB936D537C@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <C65915E8-6544-4229-9ED2-D2BB936D537C@kernel.crashing.org>
-Cc: Huang Changming <Chang-Ming.Huang@freescale.com>,
-	Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id CC5EADE423
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 06:16:09 +1100 (EST)
+Date: Thu, 08 Jan 2009 11:16:10 -0800 (PST)
+Message-Id: <20090108.111610.132149837.davem@davemloft.net>
+To: iws@ovro.caltech.edu
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090107195052.GA24981@ovro.caltech.edu>
+References: <20090107195052.GA24981@ovro.caltech.edu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, shemminger@vyatta.com,
+	linux-kernel@vger.kernel.org, arnd@arndb.de, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 08, 2009 at 12:50:22AM -0600, Kumar Gala wrote:
->>
->> +struct mpc83xx_pcie_priv {
->> +	void __iomem *cfg_map;
->> +	u32 dev_base;
->> +};
->
-> So was thinking about this and was wondering about doing the following:
->
-> hose->cfg_addr /* use instead of dev_base to cache pci bus/dev/fn */
-> hose->cfg_data /* should be the outbound window used for pci cfg cycles 
-> */
-> hose->dn->data /* for IMMR regs to tweak window */
->
-> thoughts?
+From: Ira Snyder <iws@ovro.caltech.edu>
+Date: Wed, 7 Jan 2009 11:50:52 -0800
 
-I don't quite like the casts that we'll need to do this.
+> This adds support to Linux for a virtual ethernet interface which uses the
+> PCI bus as its transport mechanism. It creates a simple, familiar, and fast
+> method of communication for two devices connected by a PCI interface.
 
-> Doing this means we should be able to get rid of struct  
-> mpc83xx_pcie_priv
+Well, it looks like much more than that to me.
 
-Not sure what benefits this would bring? Saving few bytes of code and
-data at the cost of losing clean, cast-less, self documented code?..
+What is this UART thing in here for?
 
-I was actually thinking of getting rid of hose->cfg_data usage, and
-replacing it with mpc83xx_pci_priv->cfg_type0 (and rename
-mpc83xx_pci_priv->cfg_map to cfg_type1).
+I can only assume it's meant to be used as a console port between the
+x86 host and the powerpc nodes.
 
-OTOH, I can surely do that what you described, but to me it doesn't
-look like a great idea (i.e. using irrelevant struct members for
-hooking our data)...
+You haven't even mentioned this UART aspect even indirectly in the
+commit message.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+This just looks like yet another set of virtualization drivers
+to me.  You could have just have easily built this using your
+own PCI backplane framework, and using the virtio stuff on top.
+
+And the virtio stuff has all kinds of snazzy optimizations that
+will likely improve your throughput, it has console drivers that
+distributions already probe for and attach appropriately, etc.
+
+In short I really don't like this conceptually, it can be done
+so much better using facilities we already have that are
+heavily optimized and userland understands already.
