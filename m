@@ -1,34 +1,18 @@
-Return-Path: <chandru@in.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7AF0CDE6BB
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 21:29:25 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id n08ARqiX005661
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 21:27:52 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n08ATMnb312614
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 21:29:22 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n08ATMv0004160
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 21:29:22 +1100
-From: Chandru <chandru@in.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-Date: Thu, 8 Jan 2009 15:59:21 +0530
-References: <200812241325.49404.chandru@in.ibm.com>
-	<200901071828.13719.chandru@in.ibm.com>
-	<1231349125.23462.81.camel@nimitz>
-In-Reply-To: <1231349125.23462.81.camel@nimitz>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Thu, 8 Jan 2009 11:34:25 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [patch 0/6] ps3vram driver patches
+In-Reply-To: <200901072053.06037.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0901081120240.25621@vixen.sonytel.be>
+References: <4963CDCA.4080802@am.sony.com> <200901071944.45680.arnd@arndb.de>
+	<49650128.8020200@am.sony.com> <200901072053.06037.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200901081559.22204.chandru@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: David Woodhouse <David.Woodhouse@intel.com>, Jim Paris <jim@jtan.com>,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Vivien Chappelier <vivien.chappelier@free.fr>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,48 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 07 January 2009 22:55:25 Dave Hansen wrote:
+On Wed, 7 Jan 2009, Arnd Bergmann wrote:
+> On Wednesday 07 January 2009, Geoff Levand wrote:
+> > Geert and I were discussing actually removing the direct write to the XDR
+> > memory, and so the need for that ioremap, as the mapping is just used in
+> > ps3vram_erase(), which seems could be removed.
+
+ps3vram_erase() writes all ones to the memory, as that's what done when
+erasing real FLASH. I do not know if the MTD layer can handle it if we don't
+"erase" it to ones.
+
+David?
+
+> Ah, I see. I also forgot to mention that the ioremap_flags change should
+> only be done for actual memory regions, but *not* for memory mapped I/O
+> registers.
+
+This is DDR memory for the RSX.
+
+> > I want to get it converted to a block device, and I will work towards
+> > that, but it will take some time. 燗s it is, it is very useful for typical
+> > systems that are running full desktops like gmome or KDE and do a lot of
+> > swapping. 燤any of the distros now use it, and users want it.
 > 
-> I'm just suggesting making your fix in the ppc code instead of in
-> mm/bootmem.c.
-> 
+> Yes, fine by me.
 
-Here are the changes that helped to boot the kernel. Please review it.
-Thanks,
+One disadvantage of this approach is that it makes life more difficult for
+distro maintainers: their userland has to support both the MTD and the block
+version.
 
-Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>
----
+With kind regards,
 
- arch/powerpc/mm/numa.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+Geert Uytterhoeven
+Software Architect
 
---- linux-2.6.28/arch/powerpc/mm/numa.c.orig	2009-01-08 03:20:41.000000000 -0600
-+++ linux-2.6.28/arch/powerpc/mm/numa.c	2009-01-08 03:50:41.000000000 -0600
-@@ -16,6 +16,7 @@
- #include <linux/module.h>
- #include <linux/nodemask.h>
- #include <linux/cpu.h>
-+#include <linux/pfn.h>
- #include <linux/notifier.h>
- #include <linux/lmb.h>
- #include <linux/of.h>
-@@ -898,9 +899,17 @@ static void mark_reserved_regions_for_ni
- 			 * if reserved region extends past active region
- 			 * then trim size to active region
- 			 */
--			if (end_pfn > node_ar.end_pfn)
-+			if (end_pfn > node_ar.end_pfn) {
- 				reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
- 					- (start_pfn << PAGE_SHIFT);
-+				/*
-+				 * resize it further if the reservation could
-+				 * cross the last page in this node
-+				 */
-+				if (PFN_UP(physbase+reserve_size) >
-+						 node_end_pfn)
-+					reserve_size -= PAGE_SIZE;
-+			}
- 			/*
- 			 * Only worry about *this* node, others may not
- 			 * yet have valid NODE_DATA().
+Sony Techsoft Centre Europe
+The Corporate Village 路 Da Vincilaan 7-D1 路 B-1935 Zaventem 路 Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 路 RPR Brussels
+Fortis 路 BIC GEBABEBB 路 IBAN BE41293037680010
