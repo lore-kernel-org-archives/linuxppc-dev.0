@@ -1,24 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C6795474C3
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 07:36:35 +1100 (EST)
-Subject: Re: [BUG] hvc_console WARN() on current upstream
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090108111116.3f806d67@lxorguk.ukuu.org.uk>
-References: <1231391897.2142.40.camel@pasglop>
-	<200901080857.44090.borntraeger@de.ibm.com>
-	<1231404121.2142.50.camel@pasglop>
-	<20090108111116.3f806d67@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Fri, 09 Jan 2009 07:36:12 +1100
-Message-Id: <1231446972.2142.55.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Christian Borntraeger <borntraeger@de.ibm.com>,
-	Joe Peterson <joe@skyrush.com>, Milton Miller <miltonm@us.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 679EA474C3
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 07:59:53 +1100 (EST)
+Date: Thu, 8 Jan 2009 23:59:51 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Liu Dave <DaveLiu@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc/fsl_pci: Add MPC83xx PCI-E controller RC
+	modesupport
+Message-ID: <20090108205951.GA24829@oksana.dev.rtsoft.ru>
+References: <20090108013006.GA31653@oksana.dev.rtsoft.ru>
+	<20090108013110.GA11165@oksana.dev.rtsoft.ru>
+	<D7CCA83BB0796C49BC0BB53B6AB12089056CC6@zch01exm21.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB12089056CC6@zch01exm21.fsl.freescale.net>
+Cc: Huang Changming-R66093 <Chang-Ming.Huang@freescale.com>,
+	Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-01-08 at 11:11 +0000, Alan Cox wrote:
-> > > Seems that we are in interrupt, doing hvc_poll, which does
-> > > tty_flip_buffer_push
+On Thu, Jan 08, 2009 at 03:27:10PM +0800, Liu Dave wrote:
+> > +static void __iomem *mpc83xx_pcie_remap_cfg(struct pci_bus *bus,
+> > +					    unsigned int devfn, 
 > 
-> Which means that someone has tty->low_latency set and is calling
-> tty_flip_buffer_push in an IRQ. That has never been allowed or safe, and
-> now it hurts ;)
+> [snip]
+> 
+> > +	if (pcie->dev_base == dev_base)
+> > +		goto mapped;
+> > +
+> > +	out_le32(hose->cfg_data + PEX_OUTWIN0_TAL, dev_base);
+> > +
+> > +	pcie->dev_base = dev_base;
+> 
+> Do we need local_irq_save/local_irq_restore between them?
 
-Heh, allright :-) I'll see where that flag is set and clear it when
-using IRQs.
+No, I don't think we need it. drivers/pci/access.c hold an
+irqsave spinlock for ->read and ->write callbacks.
 
-> That comment has been there for some years in varying formats
+> out_le32(PEX_OUTWIN0_TAL,...) and pcie->dev_base = dev_base;
 
-Possibly, I didn't write that code, thanks for pointing me to the
-problem.
+> > +mapped:
+> > +	return pcie->cfg_map + offset;
+> > +}
 
-Cheers,
-Ben.
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
