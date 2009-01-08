@@ -1,23 +1,17 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id EF106DE6A1
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 01:39:59 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id d11so2706155and.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 08 Jan 2009 06:39:58 -0800 (PST)
-Sender: Matt Sealey <neko@genesi-usa.com>
-Message-ID: <49661041.2010302@genesi-usa.com>
-Date: Thu, 08 Jan 2009 08:40:01 -0600
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <robert.richter@amd.com>
+Date: Thu, 8 Jan 2009 16:48:35 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Carl Love <cel@us.ibm.com>
+Subject: Re: [Patch 0/3] Overview, OProfile SPU event profiling support for
+	IBM Cell processor
+Message-ID: <20090108154835.GQ15411@erda.amd.com>
+References: <1228177106.6509.285.camel@carll-linux-desktop>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc/mpc52xx: Properly update irq_desc when set_type()
-	is called.
-References: <20090107192505.26320.23112.stgit@localhost.localdomain>	
-	<4965784D.6090704@genesi-usa.com>
-	<fa686aa40901072053v7803c6afp206e0572a6c79eda@mail.gmail.com>
-In-Reply-To: <fa686aa40901072053v7803c6afp206e0572a6c79eda@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1228177106.6509.285.camel@carll-linux-desktop>
+Cc: linuxppc-dev@ozlabs.org, cel <cel@linux.vnet.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	oprofile-list@lists.sourceforge.net, cbe-oss-dev <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, Jan 7, 2009 at 8:51 PM, Matt Sealey <matt@genesi-usa.com> wrote:
->> Grant Likely wrote:
->>> From: Grant Likely <grant.likely@secretlab.ca>
->>>
->>> The MPC5200 PIC driver doesn't correctly update the .status field of
->>> the irq_desc structure when the set_type hook is called.  This patch
->>> adds the required code.
->>>
->>> Also cleans up the external IRQ typename field to be something easier
->>> to read (very minor).
->>>
->>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> Hi Grant,
->>
->> What does this affect?
+On 01.12.08 16:18:26, Carl Love wrote:
+> This is a rework of the previously posted set of patches.
 > 
-> cat /proc/interrupts
+> Patch 1 is the user level patch to add the SPU events to the user
+> OProfile tool.  
+> 
+> Patch 2 is a kernel patch to do code clean up and restructuring to make
+> it easier to add the new SPU event profiling support.  This patch makes
+> no functional changes.
+> 
+> Patch 3 is a kernel patch to add the SPU event profiling support.
 
-Ah so, completely cosmetic in the end. I was worried I'd have to build a 
-new kernel for a second.. :D
+I applied patch 2 & 3 to:
 
--- Matt
+ git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git cell
+
+The patches did not apply cleanly. I had to change the path to
+arch/powerpc/include/asm/, fix cell/pr_util.h and did some whitespace
+cleanups. Please run your tests on the cell branch.
+
+Thanks,
+
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
