@@ -1,18 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 87964DE76E
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 05:58:48 +1100 (EST)
-Date: Thu, 08 Jan 2009 10:58:48 -0800 (PST)
-Message-Id: <20090108.105848.174722136.davem@davemloft.net>
-To: galak@kernel.crashing.org
-Subject: Re: [PATCH] gianfar: Fixup use of BUS_ID_SIZE
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1231343521-22171-1-git-send-email-galak@kernel.crashing.org>
-References: <1231343521-22171-1-git-send-email-galak@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, kay.sievers@vrfy.org, afleming@freescale.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 25FB0474C2
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 06:10:25 +1100 (EST)
+Date: Thu, 8 Jan 2009 22:10:21 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] powerpc/fsl_pci: Add MPC83xx PCI-E controller RC
+	mode support
+Message-ID: <20090108191021.GA10008@oksana.dev.rtsoft.ru>
+References: <20090108013006.GA31653@oksana.dev.rtsoft.ru>
+	<20090108013110.GA11165@oksana.dev.rtsoft.ru>
+	<C65915E8-6544-4229-9ED2-D2BB936D537C@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <C65915E8-6544-4229-9ED2-D2BB936D537C@kernel.crashing.org>
+Cc: Huang Changming <Chang-Ming.Huang@freescale.com>,
+	Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,13 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed,  7 Jan 2009 09:52:01 -0600
+On Thu, Jan 08, 2009 at 12:50:22AM -0600, Kumar Gala wrote:
+>>
+>> +struct mpc83xx_pcie_priv {
+>> +	void __iomem *cfg_map;
+>> +	u32 dev_base;
+>> +};
+>
+> So was thinking about this and was wondering about doing the following:
+>
+> hose->cfg_addr /* use instead of dev_base to cache pci bus/dev/fn */
+> hose->cfg_data /* should be the outbound window used for pci cfg cycles 
+> */
+> hose->dn->data /* for IMMR regs to tweak window */
+>
+> thoughts?
 
-> Commit b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4 went back to using
-> BUS_ID_SIZE instead of sizeof() as per the larger patch series
-> that will remove "char bus_id[20]" from struct device.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+I don't quite like the casts that we'll need to do this.
 
-Applied, thanks Kumar.
+> Doing this means we should be able to get rid of struct  
+> mpc83xx_pcie_priv
+
+Not sure what benefits this would bring? Saving few bytes of code and
+data at the cost of losing clean, cast-less, self documented code?..
+
+I was actually thinking of getting rid of hose->cfg_data usage, and
+replacing it with mpc83xx_pci_priv->cfg_type0 (and rename
+mpc83xx_pci_priv->cfg_map to cfg_type1).
+
+OTOH, I can surely do that what you described, but to me it doesn't
+look like a great idea (i.e. using irrelevant struct members for
+hooking our data)...
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
