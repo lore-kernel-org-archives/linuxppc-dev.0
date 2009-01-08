@@ -1,36 +1,19 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-nj2ut-4.online-age.net (ext-nj2ut-4.online-age.net
-	[64.14.54.233])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 2ED4A474C3
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 21:15:23 +1100 (EST)
-Received: from int-nj2ut-7.online-age.net (int-nj2ut-7.online-age.net
-	[3.159.237.76])
-	by ext-nj2ut-4.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id n08A6P5c002580
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 05:06:25 -0500
-Received: from cinmlip01.e2k.ad.ge.com (int-nj2ut-7.online-age.net
-	[3.159.237.76])
-	by int-nj2ut-7.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id n08A6P2h028448
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 05:06:25 -0500
-Message-ID: <4965D021.30702@gefanuc.com>
-Date: Thu, 08 Jan 2009 10:06:25 +0000
-From: Martyn Welch <martyn.welch@gefanuc.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 89B3EDE6AD
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 21:26:34 +1100 (EST)
+Message-ID: <4965D4D1.2010901@ru.mvista.com>
+Date: Thu, 08 Jan 2009 13:26:25 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Wim Van Sebroeck <wim@iguana.be>
-Subject: Re: [PATCH 1/2] watchdog: Basic support for GE Fanuc's FPGA based
-	watchdog timer
-References: <20081110123101.8608.352.stgit@ubuntu8041.localdomain>
-	<20081110123125.8608.2251.stgit@ubuntu8041.localdomain>
-	<A23D61BC-CA79-490C-8C70-F4341E7844EA@kernel.crashing.org>
-	<20090107214834.GF11454@infomag.infomag.iguana.be>
-In-Reply-To: <20090107214834.GF11454@infomag.infomag.iguana.be>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits resources on 32 bits archs
+References: <20080422012723.BA9F2DE13F@ozlabs.org>
+In-Reply-To: <20080422012723.BA9F2DE13F@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, adaplas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,24 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wim Van Sebroeck wrote:
-> Hi All,
-> 
->> Any status of acceptance of this?
-> 
-> I changed the ioctl to an unlocked ioctl and removed the temperature ioctl call.
-> It's now in my linux-2.6-watchdog-next tree. Can someone verify that it still works?
-> (http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-next.git;a=summary)
-> 
+Hello.
 
-Hi Wim,
+Benjamin Herrenschmidt wrote:
 
-Thank you for reviewing these patches. I have made the changes you have on my dev tree and, whilst I don't have an SBC610 to hand, I have checked the driver on a similar board which also uses the same watchdog and it's still working as expected.
+> This fixes radeonfb to not truncate 64 bits resources on 32 bits
+> platforms. Unfortunately, there are still issues with addresses
+> returned to userspace via struct fb_fix_screeninfo. This will
+> have to be dealt with separately.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>   
 
-Martyn
+   I'm seeing that this 3 patch series (dating back to April) still 
+unapplied. Have everybody forgotten about them? I'd like to see them 
+finally applied.
 
--- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
+> --- linux-work.orig/drivers/video/aty/radeon_base.c	2008-04-22 11:04:19.000000000 +1000
+> +++ linux-work/drivers/video/aty/radeon_base.c	2008-04-22 11:05:00.000000000 +1000
+> @@ -1886,7 +1886,7 @@ static int __devinit radeon_set_fbinfo (
+>  	info->screen_size = rinfo->mapped_vram;
+>  	/* Fill fix common fields */
+>  	strlcpy(info->fix.id, rinfo->name, sizeof(info->fix.id));
+> -        info->fix.smem_start = rinfo->fb_base_phys;
+> +        info->fix.smem_start = (unsigned long)rinfo->fb_base_phys;
+>          info->fix.smem_len = rinfo->video_ram;
+>          info->fix.type = FB_TYPE_PACKED_PIXELS;
+>          info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+> @@ -1894,7 +1894,7 @@ static int __devinit radeon_set_fbinfo (
+>          info->fix.ypanstep = 1;
+>          info->fix.ywrapstep = 0;
+>          info->fix.type_aux = 0;
+> -        info->fix.mmio_start = rinfo->mmio_base_phys;
+> +        info->fix.mmio_start = (unsigned long)rinfo->mmio_base_phys;
+>          info->fix.mmio_len = RADEON_REGSIZE;
+>  	info->fix.accel = FB_ACCEL_ATI_RADEON;
+>  
+> Index: linux-work/drivers/video/aty/radeonfb.h
+> ===================================================================
+> --- linux-work.orig/drivers/video/aty/radeonfb.h	2008-04-22 11:03:17.000000000 +1000
+> +++ linux-work/drivers/video/aty/radeonfb.h	2008-04-22 11:03:27.000000000 +1000
+> @@ -287,8 +287,8 @@ struct radeonfb_info {
+>  
+>  	char			name[DEVICE_NAME_SIZE];
+>  
+> -	unsigned long		mmio_base_phys;
+> -	unsigned long		fb_base_phys;
+> +	resource_size_t		mmio_base_phys;
+> +	resource_size_t		fb_base_phys;
+>  
+>  	void __iomem		*mmio_base;
+>  	void __iomem		*fb_base;
+
+WBR, Sergei
