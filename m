@@ -1,18 +1,34 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Thu, 8 Jan 2009 18:19:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tore Martin Hagen <thagen@slb.com>
-Subject: Re: Unsubscribe
-Message-Id: <20090108181905.a2e6d7b5.sfr@canb.auug.org.au>
-In-Reply-To: <49630AB3.8070901@slb.com>
-References: <OFD8F688F4.39893FD8-ON65257535.0018ECDE-65257535.00186B27@lntemsys.com>
-	<b4b98b690901042033i5e5b1d3fp91a4c63831cbef6e@mail.gmail.com>
-	<49630AB3.8070901@slb.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__8_Jan_2009_18_19_05_+1100_dex+/fFBXuk5vh3f"
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <DaveLiu@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D0A12DE3FB
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 18:27:33 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n087RDXW006921
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 00:27:24 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n087RBFT013680
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 01:27:12 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 1/2] powerpc/fsl_pci: Add MPC83xx PCI-E controller RC
+	modesupport
+Date: Thu, 8 Jan 2009 15:27:10 +0800
+Message-ID: <D7CCA83BB0796C49BC0BB53B6AB12089056CC6@zch01exm21.fsl.freescale.net>
+In-Reply-To: <20090108013110.GA11165@oksana.dev.rtsoft.ru>
+References: <20090108013006.GA31653@oksana.dev.rtsoft.ru>
+	<20090108013110.GA11165@oksana.dev.rtsoft.ru>
+From: "Liu Dave" <DaveLiu@freescale.com>
+To: "Anton Vorontsov" <avorontsov@ru.mvista.com>,
+	"Kumar Gala" <galak@kernel.crashing.org>
+Cc: Huang Changming-R66093 <Chang-Ming.Huang@freescale.com>,
+	Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,50 +38,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__8_Jan_2009_18_19_05_+1100_dex+/fFBXuk5vh3f
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> +static void __iomem *mpc83xx_pcie_remap_cfg(struct pci_bus *bus,
+> +					    unsigned int devfn,=20
 
-Hi Tore,
+[snip]
 
-On Tue, 06 Jan 2009 08:39:31 +0100 Tore Martin Hagen <thagen@slb.com> wrote:
->
-> The first is that a lot of people has unsubscribed to this list a long=20
-> time ago, and then when it changed name we where suddenly subscribed for=
-=20
-> again.
+> +	if (pcie->dev_base =3D=3D dev_base)
+> +		goto mapped;
+> +
+> +	out_le32(hose->cfg_data + PEX_OUTWIN0_TAL, dev_base);
+> +
+> +	pcie->dev_base =3D dev_base;
 
-I only transferred over people who were currently subscribed to the
-linuxppc-embedded list - some of these may have had their mail delivery
-from the list *disabled*, but there was no easy way to check that, sorry.
+Do we need local_irq_save/local_irq_restore between them?
+out_le32(PEX_OUTWIN0_TAL,...) and pcie->dev_base =3D dev_base;
 
-> The second is that the site=20
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev has an invalid security=
-=20
-> certificate, so we can not really unsubscribe that way.
->=20
-> I suggest that the certificate is updated.
-
-We use a certificate issued by cacert.org.  Unfortunately, a lot of
-browsers do not recognise them as a CA.
-
-You can use http://ozlabs.org/mailman/listinfo/linuxppc-dev instead.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__8_Jan_2009_18_19_05_+1100_dex+/fFBXuk5vh3f
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkllqOkACgkQjjKRsyhoI8ym4gCeK/H5JRLZGa0pC7TV0GMvPEbQ
-3pAAnRyrhM34Z2En71nLCEmgn1fhCvsN
-=TPUt
------END PGP SIGNATURE-----
-
---Signature=_Thu__8_Jan_2009_18_19_05_+1100_dex+/fFBXuk5vh3f--
+> +mapped:
+> +	return pcie->cfg_map + offset;
+> +}
