@@ -1,22 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 679EA474C3
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 07:59:53 +1100 (EST)
-Date: Thu, 8 Jan 2009 23:59:51 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Liu Dave <DaveLiu@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/fsl_pci: Add MPC83xx PCI-E controller RC
-	modesupport
-Message-ID: <20090108205951.GA24829@oksana.dev.rtsoft.ru>
-References: <20090108013006.GA31653@oksana.dev.rtsoft.ru>
-	<20090108013110.GA11165@oksana.dev.rtsoft.ru>
-	<D7CCA83BB0796C49BC0BB53B6AB12089056CC6@zch01exm21.fsl.freescale.net>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id D999FDE914
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 08:51:30 +1100 (EST)
+Date: Thu, 8 Jan 2009 13:51:27 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, shemminger@vyatta.com, arnd@arndb.de,
+	netdev@vger.kernel.org
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Message-ID: <20090108215127.GA28935@ovro.caltech.edu>
+References: <20090107195052.GA24981@ovro.caltech.edu>
+	<20090108.111610.132149837.davem@davemloft.net>
+	<20090108192716.GA19863@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB12089056CC6@zch01exm21.fsl.freescale.net>
-Cc: Huang Changming-R66093 <Chang-Ming.Huang@freescale.com>,
-	Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090108192716.GA19863@ovro.caltech.edu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +25,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 08, 2009 at 03:27:10PM +0800, Liu Dave wrote:
-> > +static void __iomem *mpc83xx_pcie_remap_cfg(struct pci_bus *bus,
-> > +					    unsigned int devfn, 
+On Thu, Jan 08, 2009 at 11:27:16AM -0800, Ira Snyder wrote:
+> On Thu, Jan 08, 2009 at 11:16:10AM -0800, David Miller wrote:
+> > From: Ira Snyder <iws@ovro.caltech.edu>
+> > Date: Wed, 7 Jan 2009 11:50:52 -0800
+> > 
+> > > This adds support to Linux for a virtual ethernet interface which uses the
+> > > PCI bus as its transport mechanism. It creates a simple, familiar, and fast
+> > > method of communication for two devices connected by a PCI interface.
+> > 
+> > Well, it looks like much more than that to me.
+> > 
+> > What is this UART thing in here for?
+> > 
+> > I can only assume it's meant to be used as a console port between the
+> > x86 host and the powerpc nodes.
+> > 
 > 
-> [snip]
+> Exactly right. I needed it to tell the U-Boot bootloader to tftp the
+> kernel and boot the board. These boards don't keep their PCI settings
+> (assigned by the BIOS at boot) over a soft or hard reset.
 > 
-> > +	if (pcie->dev_base == dev_base)
-> > +		goto mapped;
-> > +
-> > +	out_le32(hose->cfg_data + PEX_OUTWIN0_TAL, dev_base);
-> > +
-> > +	pcie->dev_base = dev_base;
+> I couldn't think of a better way to get them started.
 > 
-> Do we need local_irq_save/local_irq_restore between them?
+> > You haven't even mentioned this UART aspect even indirectly in the
+> > commit message.
+> > 
+> 
+> Sorry, I'll add something about it.
+> 
+> > This just looks like yet another set of virtualization drivers
+> > to me.  You could have just have easily built this using your
+> > own PCI backplane framework, and using the virtio stuff on top.
+> > 
+> > And the virtio stuff has all kinds of snazzy optimizations that
+> > will likely improve your throughput, it has console drivers that
+> > distributions already probe for and attach appropriately, etc.
+> > 
+> > In short I really don't like this conceptually, it can be done
+> > so much better using facilities we already have that are
+> > heavily optimized and userland understands already.
+> 
+> I've had a really hard time understanding the virtio code. I haven't
+> been able to find much in the way of documentation for it. Can you point
+> me to some code that does anything vaguely similar to what you are
+> suggesting?
+> 
+> Arnd Bergmann said that there is a similar driver (for different
+> hardware) that uses virtio, but it is very slow, because it doesn't use
+> the DMA controller to transfer data. I need at very minimum 40MB/sec of
+> client -> host data transfer.
+> 
 
-No, I don't think we need it. drivers/pci/access.c hold an
-irqsave spinlock for ->read and ->write callbacks.
+Rusty, since you wrote the virtio code, can you point me at the things I
+would need to implement to use virtio over the PCI bus.
 
-> out_le32(PEX_OUTWIN0_TAL,...) and pcie->dev_base = dev_base;
+The guests (PowerPC computers running Linux) are PCI cards in the host
+system (an Intel Pentium3-M system). The guest computers can access all
+of the host's memory. The guests provide a 1MB (movable) window into
+their memory.
 
-> > +mapped:
-> > +	return pcie->cfg_map + offset;
-> > +}
+The PowerPC computers also have a DMA controller, which I've used to get
+better throughput from my driver. I have a way to create interrupts to
+both the host and guest systems.
+
+I've read your paper titled: "virtio: Towards a De-Facto Standard For
+Virtual I/O Devices"
+
+If I read that correctly, then I should implement all of the functions
+in struct virtqueue_ops appropriately, and the existing virtio drivers
+should just work. The only concern I have there is how to make guest ->
+host transfer use the DMA controller. I've done all programming of it
+from the guest kernel, using the Linux DMAEngine API.
+
+Are there any other implementations other than virtio_ring?
+
+I appreciate any input you can give. If I should be CCing someone else,
+just let me know and I'll drop you from the CC list.
 
 Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Ira
