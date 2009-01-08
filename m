@@ -1,22 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 61B11DE8FD
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 10:47:48 +1100 (EST)
-Date: Thu, 8 Jan 2009 10:47:31 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH] infiniband/ehca: use consistent type
-Message-Id: <20090108104731.6135319c.sfr@canb.auug.org.au>
-In-Reply-To: <adazli2ud36.fsf@cisco.com>
-References: <20081231141453.45d7f2c1.sfr@canb.auug.org.au>
-	<adazli2ud36.fsf@cisco.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1D222DDFB5
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 11:25:24 +1100 (EST)
+Subject: Re: __pa giving strange phys address on PPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "dibacco@libero.it" <dibacco@libero.it>
+In-Reply-To: <KD4DIL$CAE78B389ABC17D576E1A2B47EE54AEE@libero.it>
+References: <KD4DIL$CAE78B389ABC17D576E1A2B47EE54AEE@libero.it>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 11:25:08 +1100
+Message-Id: <1231374308.2142.30.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__8_Jan_2009_10_47_31_+1100_vvae_d6ol7O_vfig"
-Cc: Heiko J Schick <schickhj@de.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	general@lists.openfabrics.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__8_Jan_2009_10_47_31_+1100_vvae_d6ol7O_vfig
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2009-01-07 at 22:11 +0100, dibacco@libero.it wrote:
+> I used __pa on the result of an uncached_mem_alloc. 
 
-Hi Roland,
+No idea what uncached_mem_alloc() is but if that uses the consistent
+memory stuff it won't work with __pa.
 
-On Wed, 07 Jan 2009 11:32:13 -0800 Roland Dreier <rdreier@cisco.com> wrote:
->
-> If we're going to clean this code up, does it make sense to take it
-> further?  More precisely, your patch does:
->=20
-> @@ -226,7 +226,7 @@ u64 hipz_h_alloc_resource_eq(const struct ipz_adapter=
-_handle adapter_handle,
->  			     u32 *eq_ist)
->  {
->  	u64 ret;
-> -	u64 outs[PLPAR_HCALL9_BUFSIZE];
-> +	unsigned long outs[PLPAR_HCALL9_BUFSIZE];
->  	u64 allocate_controls;
->=20
-> but every parameter of ehca_plpar_hcall9() is unsigned long, and the
-> return value is a signed long.  So should we change ret to long and all
-> these other declarations to unsigned long while we're touching the code
-> here?
+> Furthermore __pa should work on the return of a kmalloc?
 
-At least all the others are passed by value and the normal arithmetic
-promotion rules apply so no warnings are issued.  I will see how much of
-a pain it is to change the others.
+Yes. But don't use that, just use the dma allocation/mapping functions
+instead, they return to you both the pa and the dma_addr_t. This is
+better for -many- reasons.
 
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__8_Jan_2009_10_47_31_+1100_vvae_d6ol7O_vfig
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkllPxMACgkQjjKRsyhoI8zgmwCdFRa/El/eC3azYZpe37BLyDLM
-N9EAoJ1dWpJ5w/BUqYQAawLD4P2VgqJX
-=rxj8
------END PGP SIGNATURE-----
-
---Signature=_Thu__8_Jan_2009_10_47_31_+1100_vvae_d6ol7O_vfig--
+Ben.
