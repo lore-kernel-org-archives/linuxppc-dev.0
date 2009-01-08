@@ -1,17 +1,17 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <4965553F.8050801@am.sony.com>
-Date: Wed, 7 Jan 2009 17:22:07 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id DAE41474C8
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 12:30:08 +1100 (EST)
+Date: Thu, 8 Jan 2009 04:30:06 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH v5 0/2] MPC83xx PCI-E support
+Message-ID: <20090108013006.GA31653@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch] mtd/ps3vram: Use _PAGE_NO_CACHE in memory ioremap
-References: <4963CDCA.4080802@am.sony.com>
-In-Reply-To: <4963CDCA.4080802@am.sony.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: David Woodhouse <David.Woodhouse@intel.com>, Arnd Bergmann <arnd@arndb.de>,
-	Jim Paris <jim@jtan.com>, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Vivien Chappelier <vivien.chappelier@free.fr>, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+Cc: Huang Changming <Chang-Ming.Huang@freescale.com>,
+	Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use _PAGE_NO_CACHE for gpu memory ioremap.  Also,
-add __iomem attribute to gpu memory pointer and
-change use of memset() to memset_io().
+Hi all,
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
- drivers/mtd/devices/ps3vram.c |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+Here comes another revision...
 
---- a/drivers/mtd/devices/ps3vram.c
-+++ b/drivers/mtd/devices/ps3vram.c
-@@ -6,6 +6,7 @@
-  */
- 
- #include <linux/io.h>
-+#include <linux/mm.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/list.h>
-@@ -69,7 +70,7 @@ struct ps3vram_priv {
- 	u64 context_handle;
- 	u32 *ctrl;
- 	u32 *reports;
--	u8 *base;
-+	u8 __iomem *ddr_base;
- 	u8 *xdr_buf;
- 
- 	u32 *fifo_base;
-@@ -425,7 +426,7 @@ static int ps3vram_erase(struct mtd_info
- 	ps3vram_cache_flush(mtd);
- 
- 	/* Set bytes to 0xFF */
--	memset(priv->base + instr->addr, 0xFF, instr->len);
-+	memset_io(priv->ddr_base + instr->addr, 0xFF, instr->len);
- 
- 	mutex_unlock(&priv->lock);
- 
-@@ -628,8 +629,9 @@ static int __devinit ps3vram_probe(struc
- 		goto out_free_context;
- 	}
- 
--	priv->base = ioremap(ddr_lpar, ddr_size);
--	if (!priv->base) {
-+	priv->ddr_base = ioremap_flags(ddr_lpar, ddr_size, _PAGE_NO_CACHE);
-+
-+	if (!priv->ddr_base) {
- 		dev_err(&dev->core, "%s:%d: ioremap failed\n", __func__,
- 			__LINE__);
- 		ret = -ENOMEM;
-@@ -702,7 +704,7 @@ out_unmap_reports:
- out_unmap_ctrl:
- 	iounmap(priv->ctrl);
- out_unmap_vram:
--	iounmap(priv->base);
-+	iounmap(priv->ddr_base);
- out_free_context:
- 	lv1_gpu_context_free(priv->context_handle);
- out_free_memory:
-@@ -728,7 +730,7 @@ static int ps3vram_shutdown(struct ps3_s
- 	ps3vram_cache_cleanup(&ps3vram_mtd);
- 	iounmap(priv->reports);
- 	iounmap(priv->ctrl);
--	iounmap(priv->base);
-+	iounmap(priv->ddr_base);
- 	lv1_gpu_context_free(priv->context_handle);
- 	lv1_gpu_memory_free(priv->memory_handle);
- 	ps3_close_hv_device(dev);
+Changes since v4:
+- Corrected PCI-E ranges for MPC837x boards;
+- On MPC837XE-MDS boards PCIE2 can be disabled in favour of PCIE1 x2 mode,
+  in that case U-Boot disables PCIE2 via status property.
+  So, of_device_is_available() check is placed into mpc83xx_add_bridge();
+- Rebased on top of galak/powerpc.git next.
+
+Changes since v3:
+- TAL register programming changed per new reference manual for 83xx
+  processors;
+- dts files no longer specify config window in regs = <>. Instead, PCI-E
+  code reads cfg window BAR to determine config space area;
+- dts files no longer disable pcie nodes, now Linux detects unconfigured
+  PCI-E controllers at run-time.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
