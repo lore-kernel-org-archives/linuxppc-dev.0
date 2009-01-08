@@ -1,22 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-nj2ut-4.online-age.net (ext-nj2ut-4.online-age.net
+	[64.14.54.233])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 818A5DE118
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 19:42:24 +1100 (EST)
-Subject: Re: [BUG] hvc_console WARN() on current upstream
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-In-Reply-To: <200901080857.44090.borntraeger@de.ibm.com>
-References: <1231391897.2142.40.camel@pasglop>
-	<200901080857.44090.borntraeger@de.ibm.com>
-Content-Type: text/plain
-Date: Thu, 08 Jan 2009 19:42:01 +1100
-Message-Id: <1231404121.2142.50.camel@pasglop>
-Mime-Version: 1.0
-Cc: Milton Miller <miltonm@us.ibm.com>, Joe Peterson <joe@skyrush.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client CN "ext-nj2ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 2ED4A474C3
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jan 2009 21:15:23 +1100 (EST)
+Received: from int-nj2ut-7.online-age.net (int-nj2ut-7.online-age.net
+	[3.159.237.76])
+	by ext-nj2ut-4.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id n08A6P5c002580
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 05:06:25 -0500
+Received: from cinmlip01.e2k.ad.ge.com (int-nj2ut-7.online-age.net
+	[3.159.237.76])
+	by int-nj2ut-7.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id n08A6P2h028448
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 05:06:25 -0500
+Message-ID: <4965D021.30702@gefanuc.com>
+Date: Thu, 08 Jan 2009 10:06:25 +0000
+From: Martyn Welch <martyn.welch@gefanuc.com>
+MIME-Version: 1.0
+To: Wim Van Sebroeck <wim@iguana.be>
+Subject: Re: [PATCH 1/2] watchdog: Basic support for GE Fanuc's FPGA based
+	watchdog timer
+References: <20081110123101.8608.352.stgit@ubuntu8041.localdomain>
+	<20081110123125.8608.2251.stgit@ubuntu8041.localdomain>
+	<A23D61BC-CA79-490C-8C70-F4341E7844EA@kernel.crashing.org>
+	<20090107214834.GF11454@infomag.infomag.iguana.be>
+In-Reply-To: <20090107214834.GF11454@infomag.infomag.iguana.be>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,71 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Also including Alan, he's the current tty guru
+Wim Van Sebroeck wrote:
+> Hi All,
+> 
+>> Any status of acceptance of this?
+> 
+> I changed the ioctl to an unlocked ioctl and removed the temperature ioctl call.
+> It's now in my linux-2.6-watchdog-next tree. Can someone verify that it still works?
+> (http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-next.git;a=summary)
+> 
 
-On Thu, 2009-01-08 at 08:57 +0100, Christian Borntraeger wrote:
-> Am Donnerstag, 8. Januar 2009 schrieb Benjamin Herrenschmidt:
-> > ------------[ cut here ]------------
-> > Badness at /home/benh/kernels/linux-powerpc/kernel/mutex.c:135
-> > NIP: c0000000004fe0dc LR: c0000000004fe0c0 CTR: c0000000002c4304
-> > REGS: c00000000fffb660 TRAP: 0700   Not tainted  (2.6.28-test)
-> > MSR: 8000000000021032 <ME,CE,IR,DR>  CR: 28000082  XER: 20000003
-> > TASK = c0000000007bd340[0] 'swapper' THREAD: c000000000874000 CPU: 0
-> > GPR00: 0000000000000000 c00000000fffb8e0 c000000000877438 0000000000000001 
-> > GPR04: 0000000000000000 c0000000225f0928 0000000000000003 0000000008000001 
-> > GPR08: cf3cf3cf3cf3cf3d c000000000e6edc0 c000000000787634 c0000000008d45ac 
-> > GPR12: 0000000028000082 c0000000008b7300 c00000002254db20 0000000000000001 
-> > GPR16: 0000000000000003 c00000002254d940 c00000002254da70 c0000000225f0828 
-> > GPR20: c0000000225f0929 0000000000000000 c00000002254dee8 0000000000000000 
-> > GPR24: 0000000000000000 c0000000002c2604 0000000000000003 c0000000007bd340 
-> > GPR28: c00000002254dee8 c00000002254d800 c0000000007ef2b8 c00000002254dee8 
-> > NIP [c0000000004fe0dc] .mutex_lock_nested+0x90/0x408
-> > LR [c0000000004fe0c0] .mutex_lock_nested+0x74/0x408
-> > Call Trace:
-> > [c00000000fffb9e0] [c0000000002c2604] .echo_set_canon_col+0x28/0x68
-> > [c00000000fffba70] [c0000000002c4db4] .n_tty_receive_buf+0xcbc/0xfe0
-> > [c00000000fffbc10] [c0000000002c80f8] .flush_to_ldisc+0x18c/0x24c
-> > [c00000000fffbcd0] [c0000000002dd02c] .hvc_poll+0x2d0/0x328
-> > [c00000000fffbde0] [c0000000002dd2e4] .hvc_handle_interrupt+0x14/0x3c
-> > [c00000000fffbe50] [c0000000000999a4] .handle_IRQ_event+0x50/0xc0
-> > [c00000000fffbef0] [c00000000009bdec] .handle_fasteoi_irq+0xf8/0x194
-> > [c00000000fffbf90] [c000000000025950] .call_handle_irq+0x1c/0x2c
-> > [c000000000877a30] [c00000000000cd18] .do_IRQ+0x104/0x1dc
-> > [c000000000877ae0] [c000000000004800] hardware_interrupt_entry+0x18/0x98
-> > --- Exception: 501 at .cpu_idle+0x104/0x190
-> >     LR = .cpu_idle+0x104/0x190
-> > [c000000000877dd0] [c000000000011e58] .cpu_idle+0xf8/0x190 (unreliable)
-> > [c000000000877e60] [c000000000500b24] .rest_init+0x7c/0x94
-> > [c000000000877ee0] [c000000000715aec] .start_kernel+0x3f4/0x414
-> > [c000000000877f90] [c000000000008368] .start_here_common+0x1c/0x34
-> > Instruction dump:
-> > 78290464 80090014 5409012f 41820028 4bd5ead5 60000000 2fa30000 419e0018 
-> > e93e8008 80090000 2f800000 409e0008 <0fe00000> 38000000 8b8d01da 980d01da 
-> > 
-> > The machine still boots, so it's not a show stopper.
-> 
-> 
-> Hmmm,
-> 
-> Seems that we are in interrupt, doing hvc_poll, which does
-> tty_flip_buffer_push
-> which calls
-> flush_to_ldisc
-> doing a
-> n_tty_receive_buf
-> and we will finally take a mutex in echo_set_canon_col 
-> 
-> my first guess is that the following patch triggered the Badness:
-> git show a88a69c9
-> commit a88a69c91256418c5907c2f1f8a0ec0a36f9e6cc
-> Author: Joe Peterson <joe@skyrush.com>
-> Date:   Fri Jan 2 13:40:53 2009 +0000
-> 
->     n_tty: Fix loss of echoed characters and remove bkl from n_tty
-> 
-> 
-> I have no idea how to fix this.
-> Joe Peterson CCed.
-> 
-> Christian
-> 
+Hi Wim,
+
+Thank you for reviewing these patches. I have made the changes you have on my dev tree and, whilst I don't have an SBC610 to hand, I have checked the driver on a similar board which also uses the same watchdog and it's still working as expected.
+
+Martyn
+
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
