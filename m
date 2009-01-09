@@ -1,18 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f16.google.com (mail-gx0-f16.google.com
-	[209.85.217.16]) by ozlabs.org (Postfix) with ESMTP id BC5BADDF95
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 10:09:40 +1100 (EST)
-Received: by gxk9 with SMTP id 9so4025484gxk.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 Jan 2009 15:09:38 -0800 (PST)
-Message-ID: <fa686aa40901091509h1db19787t3f7ac53752bb8531@mail.gmail.com>
-Date: Fri, 9 Jan 2009 16:09:37 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Please pull linux-2.6-mpc52xx.git
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 18BC9DE30B
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 10:12:55 +1100 (EST)
+Date: Fri, 9 Jan 2009 17:12:44 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] cacheinfo: rename cache_dir per-cpu variable
+Message-ID: <20090109231244.GA6850@localdomain>
+References: <20090109125327.351b7f65.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090109125327.351b7f65.sfr@canb.auug.org.au>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-next@vger.kernel.org,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hey Ben,
+The per_cpu__ prefix on DECLARE_PER_CPU'd variables is going away;
+rename cache_dir to cache_dir_pcpu.
 
-Here is my last minute pull request.  It's pretty simple stuff all
-around, mostly in the bug-fix category.  One new of_i2c() helper
-function.  Biggest change is the xilinx spi driver; but it doesn't
-even compile without this.  I have not included the media5200 platform
-support patch because it is a little borderline for so late in the
-window.
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/kernel/cacheinfo.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Technically the xilinx changes are 4xx patches and would normally go
-through Josh, but since they only touch Xilinx drivers, and don't
-affect any other 4xx platforms I'm sending them to you directly.
-
-Sorry for the lateness of this pull request, I got mired in board
-breakage over the last week.  Yeah, it's a lame excuse, but it's the
-one I'm using.
-
-The following changes since commit 5886188dc7ba9a76babcd37452f44079a9a77f71:
-  Benjamin Krill (1):
-        serial: Add driver for the Cell Network Processor serial port NWP device
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
-
-Grant Likely (1):
-      powerpc/mpc52xx: Properly update irq_desc when set_type() is called.
-
-John Linn (1):
-      Xilinx: SPI: updated driver for device tree
-
-Jon Smirl (1):
-      drivers/of: Add the of_find_i2c_device_by_node function.
-
-Wolfram Sang (1):
-      powerpc/mpc52xx: remove dead code from GPIO driver
-
-Yuri Tikhonov (1):
-      powerpc/xsysace: add compatible string for non-ipcore instance
-
-roel kluin (1):
-      powerpc/mpc5121: fix NULL test in mpc5121_clk_get utility function.
-
- arch/powerpc/platforms/512x/clock.c        |    4 +-
- arch/powerpc/platforms/52xx/mpc52xx_gpio.c |    3 -
- arch/powerpc/platforms/52xx/mpc52xx_pic.c  |    8 ++-
- drivers/block/xsysace.c                    |    1 +
- drivers/of/of_i2c.c                        |   19 ++++
- drivers/spi/xilinx_spi.c                   |  137 ++++++++++++++++-----------
- include/linux/of_i2c.h                     |    3 +
- 7 files changed, 113 insertions(+), 62 deletions(-)
-
-Thanks,
-g.
+Not sure which route this should go, I assume either Rusty or Ben will
+take it?
 
 
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+index b33f041..bb37b1d 100644
+--- a/arch/powerpc/kernel/cacheinfo.c
++++ b/arch/powerpc/kernel/cacheinfo.c
+@@ -113,7 +113,7 @@ struct cache {
+ 	struct cache *next_local;      /* next cache of >= level */
+ };
+ 
+-static DEFINE_PER_CPU(struct cache_dir *, cache_dir);
++static DEFINE_PER_CPU(struct cache_dir *, cache_dir_pcpu);
+ 
+ /* traversal/modification of this list occurs only at cpu hotplug time;
+  * access is serialized by cpu hotplug locking
+@@ -468,9 +468,9 @@ static struct cache_dir *__cpuinit cacheinfo_create_cache_dir(unsigned int cpu_i
+ 
+ 	cache_dir->kobj = kobj;
+ 
+-	WARN_ON_ONCE(per_cpu(cache_dir, cpu_id) != NULL);
++	WARN_ON_ONCE(per_cpu(cache_dir_pcpu, cpu_id) != NULL);
+ 
+-	per_cpu(cache_dir, cpu_id) = cache_dir;
++	per_cpu(cache_dir_pcpu, cpu_id) = cache_dir;
+ 
+ 	return cache_dir;
+ err:
+@@ -820,13 +820,13 @@ void cacheinfo_cpu_offline(unsigned int cpu_id)
+ 
+ 	/* Prevent userspace from seeing inconsistent state - remove
+ 	 * the sysfs hierarchy first */
+-	cache_dir = per_cpu(cache_dir, cpu_id);
++	cache_dir = per_cpu(cache_dir_pcpu, cpu_id);
+ 
+ 	/* careful, sysfs population may have failed */
+ 	if (cache_dir)
+ 		remove_cache_dir(cache_dir);
+ 
+-	per_cpu(cache_dir, cpu_id) = NULL;
++	per_cpu(cache_dir_pcpu, cpu_id) = NULL;
+ 
+ 	/* clear the CPU's bit in its cache chain, possibly freeing
+ 	 * cache objects */
