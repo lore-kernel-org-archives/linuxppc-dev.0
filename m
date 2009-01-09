@@ -1,21 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 66668474CA
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 02:40:13 +1100 (EST)
-Message-Id: <A231017D-1ECD-4F92-84A4-16BC39E5DC2B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Pieter <phenning@vastech.co.za>
-In-Reply-To: <49675205.9010800@vastech.co.za>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: Trouble moving custom MPC8548 board to U-boot 1.3
-Date: Fri, 9 Jan 2009 09:38:01 -0600
-References: <49635C62.5090307@vastech.co.za>
-	<1231260769.21398.5.camel@ld0161-tx32>
-	<49675205.9010800@vastech.co.za>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE001.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id F1299DDFCE
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 02:52:45 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C97272.4A36E7ED"
+Subject: RE: Linux on Memec Virtex4 FX12 Minimodule
+Date: Fri, 9 Jan 2009 08:52:33 -0700
+In-Reply-To: <20090107010200.GA89569@taurus.el-kfa.net>
+References: <20090107010200.GA89569@taurus.el-kfa.net>
+From: John Linn <John.Linn@xilinx.com>
+To: "Pawel P. Kusmierski" <loko-r@el-kfa.net>,
+	<linuxppc-dev@ozlabs.org>
+Message-ID: <20090109155237.38F0914005C@mail39-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,76 +22,276 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------_=_NextPart_001_01C97272.4A36E7ED
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-On Jan 9, 2009, at 7:32 AM, Pieter wrote:
+Hi Pawel,
 
-> Hi all,
->>> I have spent quite some time trying to move from U-Boot 1.2 to a  
->>> newer
->>> version.. I am stuck at the initialization of the ram. The ram  
->>> checksum
->>> fails and gives me a "total memory of 0". (the board has 512MB and  
->>> work
->>> when booting uboot 1.2)
->>>
->>> can anyone pls. point me in the right direction?
->>>
->>>
->> This is your root cause:  Unable to get the SPD information
->> for the DDR DIMM in slot 0 of controller 0.
->>
->> What part are you using?  Does it support SPD?
->> Is your I2C to it hooked up correctly?
->> Can you dump the SPD information that is read?
->> Does it match the part specs?
->>
->> HTH,
->> jdl
-> I have managed to read the SPD data for the dram. I also confirmed  
-> that
-> the dram control and timing settings correspond to the settings that
-> worked in the previous uboot.
-> I am now able to run uboot up to the "relocate_code". The new Stack
-> pointer is set to 0x0FF8DF58 witch is close enough to what i expected.
-> This is however where the board hangs. (The board also hang when  
-> running
-> the "testram").  I tried reading the data at the new stack pointer but
-> get "SAP: read access failed"  i get the same error when trying to  
-> read
-> any address within the RAM or any address of other devices.  This  
-> leads
-> me to think that my LAW or TLB setup is incorrect.
->
-> Looking at LAW setup: (based on board sbc8548)
->
->    /* LAW(Local Access Window) configuration:
->     * 0x0000_0000     0x1fff_ffff     DDR             512M/Auto
->     * 0x8000_0000     0xbfff_ffff     PCI1 MEM        1G
->     * 0xc000_0000     0xcfff_ffff     PCI1 IO         16M
->     * 0xe000_0000     0xffff_ffff      LBC                        
-> 512M */
->
->    struct law_entry law_table[] = {
->    #ifndef CONFIG_SPD_EEPROM
->            SET_LAW(CONFIG_SYS_DDR_SDRAM_BASE, LAWAR_SIZE_512M,
->    LAWAR_TRGT_IF_DDR),
->    #endif
->            SET_LAW(CONFIG_SYS_PCI1_MEM_PHYS, LAWAR_SIZE_1G,
->    LAWAR_TRGT_IF_PCI1 ),
->            SET_LAW(CONFIG_SYS_PCI1_IO_PHYS, LAWAR_SIZE_16M,
->    LAWAR_TRGT_IF_PCI1),
->            SET_LAW(CONFIG_SYS_LBC_BASE, LAWAR_SIZE_512M,  
-> LAWAR_TRGT_IF_LBC)
->    };
->
-> Since my board uses SPD_EEPROM, where does the LAW entry for DDR get
-> initilized or should the #ifndef statement be removed?
->
->
->
-> Am I on the  right track to solving my problem?
->
+ =
 
-This should be discussed on the u-boot list not the linuxppc-dev list
 
-- k
+Sorry for the delay, I just missed this message.
+
+ =
+
+
+You should really be building arch/powerpc not arch/ppc as no one is
+going to support that.  I realize that's a pain, but arch/ppc has been
+dead for about 6 months now.
+
+ =
+
+
+http://xilinx.wikidot.com <http://xilinx.wikidot.com/>  has a lot more
+information about building the kernel from our GIT tree.
+
+ =
+
+
+You can also post to http://forums.xilinx.com
+<http://forums.xilinx.com/>  in the Embedded Linux forum for more Xilinx
+specific help.
+
+ =
+
+
+I don't understand you're problem either, but I would try building 1st
+with arch=3Dpowerpc and using the ramdisk image that we have on our wiki
+to get a good baseline.  You'll need to generate a device tree for your
+hardware platform but that's not too hard and is explained on the wiki
+also.
+
+ =
+
+
+Thanks,
+
+John
+
+ =
+
+
+ =
+
+
+________________________________
+
+From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf
+Of Pawel P. Kusmierski
+Sent: Tuesday, January 06, 2009 6:02 PM
+To: linuxppc-dev@ozlabs.org
+Subject: Linux on Memec Virtex4 FX12 Minimodule
+
+ =
+
+
+ =
+
+
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
+
+
+------_=_NextPart_001_01C97272.4A36E7ED
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-ascii"=
+>
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Hi Pawel,<o:p></o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Sorry for the delay, I just missed thi=
+s
+message.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>You should really be building arch/pow=
+erpc
+not arch/ppc as no one is going to support that.&nbsp; I realize that&#8217=
+;s a
+pain, but arch/ppc has been dead for about 6 months now.<o:p></o:p></span><=
+/font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><a href=3D"http://xilinx.wikidot.com/"=
+>http://xilinx.wikidot.com</a>
+has a lot more information about building the kernel from our GIT tree.<o:p=
+></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>You can also post to <a
+href=3D"http://forums.xilinx.com/">http://forums.xilinx.com</a> in the Embe=
+dded
+Linux forum for more Xilinx specific help.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>I don&#8217;t understand you&#8217;re
+problem either, but I would try building 1<sup>st</sup> with arch=3Dpowerpc=
+ and
+using the ramdisk image that we have on our wiki to get a good baseline. &n=
+bsp;You&#8217;ll
+need to generate a device tree for your hardware platform but that&#8217;s =
+not
+too hard and is explained on the wiki also.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>John<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span style=
+=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<div style=3D'border:none;border-left:solid blue 1.5pt;padding:0in 0in 0in =
+4.0pt'>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font siz=
+e=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
+
+<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span style=3D'font-si=
+ze:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> linuxppc=
+-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org] <b><span
+style=3D'font-weight:bold'>On Behalf Of </span></b>Pawel P. Kusmierski<br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Tuesday, January 06, 2=
+009
+6:02 PM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> linuxppc-dev@ozlabs.org<=
+br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> Linux on Memec Virt=
+ex4
+FX12 Minimodule</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=3D=
+'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=3D=
+'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</div>
+
+<br clear=3Dall> This email and any attachments are intended for the sole u=
+se of the named recipient(s) and contain(s) confidential information that m=
+ay be proprietary, privileged or copyrighted under applicable law. If you a=
+re not the intended recipient, do not read, copy, or forward this email mes=
+sage or any attachments. Delete this email message and any attachments imme=
+diately.
+</body>
+
+</html>
+
+
+------_=_NextPart_001_01C97272.4A36E7ED--
