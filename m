@@ -1,22 +1,18 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	by ozlabs.org (Postfix) with ESMTP id 09877DE4AF
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 09:55:03 +1100 (EST)
-Date: Sat, 10 Jan 2009 09:34:10 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: mal_probe crash
-Message-ID: <20090109223410.GA18319@gondor.apana.org.au>
-References: <20090107154434.0c9437ef@lappy.seanm.ca>
-	<20090108204634.GB2337@yoda.jdub.homelinux.org>
-	<1231368610.2142.27.camel@pasglop>
-	<Pine.LNX.4.64.0901091533000.13230@vixen.sonytel.be>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f16.google.com (mail-gx0-f16.google.com
+	[209.85.217.16]) by ozlabs.org (Postfix) with ESMTP id BC5BADDF95
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 10:09:40 +1100 (EST)
+Received: by gxk9 with SMTP id 9so4025484gxk.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 09 Jan 2009 15:09:38 -0800 (PST)
+Message-ID: <fa686aa40901091509h1db19787t3f7ac53752bb8531@mail.gmail.com>
+Date: Fri, 9 Jan 2009 16:09:37 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Please pull linux-2.6-mpc52xx.git
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0901091533000.13230@vixen.sonytel.be>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 09, 2009 at 03:42:25PM +0100, Geert Uytterhoeven wrote:
-> On Thu, 8 Jan 2009, Benjamin Herrenschmidt wrote:
->
-> > There isn't that I know of. The EMAC code creates a single NAPI instance
-> > for all EMACs and I think used to completely disconnect things. The old
-> > code created a fake netdev just for NAPI, that became unnecessary with
-> > the new NAPI stuff.... but it looks like the way we do things now
-> > displeases some changes in the network stack. I'll have to dig.
-> 
-> Verified on my Sequoia (which now lost its network :-(
-> 
-> The regression/problem (requiring a valid net_device in netif_napi_add(), even
-> if CONFIG_NETPOLL=n) seems to be introduced by commit
-> d565b0a1a9b6ee7dff46e1f68b26b526ac11ae50 ("net: Add Generic Receive Offload
-> infrastructure").
+Hey Ben,
 
-Yes EMAC just needs to go back to the old fake dev setup.
+Here is my last minute pull request.  It's pretty simple stuff all
+around, mostly in the bug-fix category.  One new of_i2c() helper
+function.  Biggest change is the xilinx spi driver; but it doesn't
+even compile without this.  I have not included the media5200 platform
+support patch because it is a little borderline for so late in the
+window.
 
-Cheers,
+Technically the xilinx changes are 4xx patches and would normally go
+through Josh, but since they only touch Xilinx drivers, and don't
+affect any other 4xx platforms I'm sending them to you directly.
+
+Sorry for the lateness of this pull request, I got mired in board
+breakage over the last week.  Yeah, it's a lame excuse, but it's the
+one I'm using.
+
+The following changes since commit 5886188dc7ba9a76babcd37452f44079a9a77f71:
+  Benjamin Krill (1):
+        serial: Add driver for the Cell Network Processor serial port NWP device
+
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
+
+Grant Likely (1):
+      powerpc/mpc52xx: Properly update irq_desc when set_type() is called.
+
+John Linn (1):
+      Xilinx: SPI: updated driver for device tree
+
+Jon Smirl (1):
+      drivers/of: Add the of_find_i2c_device_by_node function.
+
+Wolfram Sang (1):
+      powerpc/mpc52xx: remove dead code from GPIO driver
+
+Yuri Tikhonov (1):
+      powerpc/xsysace: add compatible string for non-ipcore instance
+
+roel kluin (1):
+      powerpc/mpc5121: fix NULL test in mpc5121_clk_get utility function.
+
+ arch/powerpc/platforms/512x/clock.c        |    4 +-
+ arch/powerpc/platforms/52xx/mpc52xx_gpio.c |    3 -
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c  |    8 ++-
+ drivers/block/xsysace.c                    |    1 +
+ drivers/of/of_i2c.c                        |   19 ++++
+ drivers/spi/xilinx_spi.c                   |  137 ++++++++++++++++-----------
+ include/linux/of_i2c.h                     |    3 +
+ 7 files changed, 113 insertions(+), 62 deletions(-)
+
+Thanks,
+g.
+
+
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
