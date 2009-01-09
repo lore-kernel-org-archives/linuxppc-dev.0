@@ -1,11 +1,11 @@
 Return-Path: <phenning@vastech.co.za>
-Received: from www6.jnb1.host-h.net (www6.jnb1.host-h.net [196.22.132.6])
+Received: from www6.jnb1.host-h.net (www6b.your-server.co.za [196.22.132.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5B2EC47506
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 00:32:46 +1100 (EST)
-Message-ID: <496751E4.2000108@vastech.co.za>
-Date: Fri, 09 Jan 2009 15:32:20 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 4A285476A7
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 00:33:17 +1100 (EST)
+Message-ID: <49675205.9010800@vastech.co.za>
+Date: Fri, 09 Jan 2009 15:32:53 +0200
 From: Pieter <phenning@vastech.co.za>
 MIME-Version: 1.0
 To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
@@ -14,7 +14,7 @@ References: <49635C62.5090307@vastech.co.za>
 	<1231260769.21398.5.camel@ld0161-tx32>
 In-Reply-To: <1231260769.21398.5.camel@ld0161-tx32>
 Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
-	micalg=sha1; boundary="------------ms050702070502090205090402"
+	micalg=sha1; boundary="------------ms060701060001010106020805"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,7 +26,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 This is a cryptographically signed message in MIME format.
 
---------------ms050702070502090205090402
+--------------ms060701060001010106020805
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
@@ -80,16 +80,16 @@ Looking at LAW setup: (based on board sbc8548)
             SET_LAW(CONFIG_SYS_LBC_BASE, LAWAR_SIZE_512M, LAWAR_TRGT_IF_LBC)
     };
 
-Since my board uses SPD_EEPROM, where does the LAW entry for DDR done by
-cpu/mpc8xxx/ddr/util.c  and should not need changing, the base adders is
-correct, as is the law_bar_target_id.
-
-Could you pl suggest some other things i should should look at.
-thanks pieter
+Since my board uses SPD_EEPROM, where does the LAW entry for DDR get
+initilized or should the #ifndef statement be removed?
 
 
 
---------------ms050702070502090205090402
+Am I on the  right track to solving my problem?
+
+
+
+--------------ms060701060001010106020805
 Content-Type: application/x-pkcs7-signature; name="smime.p7s"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="smime.p7s"
@@ -133,17 +133,17 @@ sEie9PAzvw4QBU/dhDK+qnoGRvmnfhhEeiOMdfmg8p1EAUYGef3yZTGCA0QwggNAAgEBMGww
 ZzEwMC4GA1UEAwwnVkFTVGVjaCAyMDA4LTIwMDkgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MQsw
 CQYDVQQGEwJaQTEmMCQGCSqGSIb3DQEJARYXd2VibWFzdGVyQHZhc3RlY2guY28uemECAVww
 CQYFKw4DAhoFAKCCAa0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUx
-DxcNMDkwMTA5MTMzMjIwWjAjBgkqhkiG9w0BCQQxFgQUeuU7LM+yVH1Yjr/J7F9kwSnlGHUw
+DxcNMDkwMTA5MTMzMjUzWjAjBgkqhkiG9w0BCQQxFgQUB3prfbXVsH+t5ZJa2ydmVOd24nIw
 UgYJKoZIhvcNAQkPMUUwQzAKBggqhkiG9w0DBzAOBggqhkiG9w0DAgICAIAwDQYIKoZIhvcN
 AwICAUAwBwYFKw4DAgcwDQYIKoZIhvcNAwICASgwewYJKwYBBAGCNxAEMW4wbDBnMTAwLgYD
 VQQDDCdWQVNUZWNoIDIwMDgtMjAwOSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkxCzAJBgNVBAYT
 AlpBMSYwJAYJKoZIhvcNAQkBFhd3ZWJtYXN0ZXJAdmFzdGVjaC5jby56YQIBXDB9BgsqhkiG
 9w0BCRACCzFuoGwwZzEwMC4GA1UEAwwnVkFTVGVjaCAyMDA4LTIwMDkgQ2VydGlmaWNhdGUg
 QXV0aG9yaXR5MQswCQYDVQQGEwJaQTEmMCQGCSqGSIb3DQEJARYXd2VibWFzdGVyQHZhc3Rl
-Y2guY28uemECAVwwDQYJKoZIhvcNAQEBBQAEggEAV57AVC6e/89f1XJM670YGStvzDbyT4R+
-etl+oxKun9ZpdWSil5aD+hWW8FjHYYbiyPKrtv91ypAaJhSDikp4pmgR5PjD1g1g9x5jQXXQ
-mzQCQOBeFxqoHQp57PrVeABVOsw1/L2BccVr5H5hfrsoFb/Sjd65oFmPSjKcsgnQOBx6SbNr
-uWCO9Tyj3oRrHxoQxr2jfoh0PvExP5NI1C4KQNad/nH0NsFRC1Z4Sl209dVWIZ7g89yG9L9W
-xKedysBdWJ3of7OtQu9wuadIVVUu8qZlw240QVh8yi1xjuVQBC94bgiR+yvwo9U8++nZiTBm
-+y3SR8FNHX9BPJBfWnsX7QAAAAAAAA==
---------------ms050702070502090205090402--
+Y2guY28uemECAVwwDQYJKoZIhvcNAQEBBQAEggEAlLfLLoXhWtrUiOtbC5D1y176jb00HohQ
+X2pLsKvHmZq5Q2DJ8zzWFLfYrBoELbRNNMNKpYDPSeQu1fv7IbFM92J6Sw8b9mz6WuouKdhH
+e4hs20bjToqtAGZ8b6ZyAazTeTw9RCdxkWuwXCpempt4yAVvG9XwGxJJMb40TEVHRt+k8ufa
+nAQdQzPWkX+xm/75Qi4U4yPNoXdT9L1pwli3kK7gz1S/RKcJq0LYjRQgqFbGNIHqpgIvEfXp
++jGcDWl31/tXBJyK+fdalQ0FHjl3g9BOVPhfWj2L/vrzl5xrxo9xZrDuLXNzCFFVshwWl6O2
+fm/CvZ7jaL+Z+M24w9UfxQAAAAAAAA==
+--------------ms060701060001010106020805--
