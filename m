@@ -1,22 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 89846476A6
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 11:19:30 +1100 (EST)
-Message-Id: <58CCA2E4-4A1A-4B93-BAE2-A5FB137DB74E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090108013141.GB11165@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 2/2] powerpc/83xx: Add PCI-E support for all MPC83xx
-	boards with PCI-E
-Date: Thu, 8 Jan 2009 18:17:20 -0600
-References: <20090108013006.GA31653@oksana.dev.rtsoft.ru>
-	<20090108013141.GB11165@oksana.dev.rtsoft.ru>
-Cc: Huang Changming <Chang-Ming.Huang@freescale.com>,
-	Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <cel@us.ibm.com>
+Subject: Re: [Patch 0/3] Overview, OProfile SPU event profiling support for
+	IBM Cell processor
+From: Carl Love <cel@us.ibm.com>
+To: Robert Richter <robert.richter@amd.com>
+In-Reply-To: <20090108154835.GQ15411@erda.amd.com>
+References: <1228177106.6509.285.camel@carll-linux-desktop>
+	<20090108154835.GQ15411@erda.amd.com>
+Content-Type: text/plain
+Date: Thu, 08 Jan 2009 16:26:31 -0800
+Message-Id: <1231460791.6621.54.camel@carll-linux-desktop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cel <cel@linux.vnet.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	oprofile-list@lists.sourceforge.net, cbe-oss-dev <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +23,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 7, 2009, at 7:31 PM, Anton Vorontsov wrote:
+On Thu, 2009-01-08 at 16:48 +0100, Robert Richter wrote:
+> On 01.12.08 16:18:26, Carl Love wrote:
+> > This is a rework of the previously posted set of patches.
+> > 
+> > Patch 1 is the user level patch to add the SPU events to the user
+> > OProfile tool.  
+> > 
+> > Patch 2 is a kernel patch to do code clean up and restructuring to make
+> > it easier to add the new SPU event profiling support.  This patch makes
+> > no functional changes.
+> > 
+> > Patch 3 is a kernel patch to add the SPU event profiling support.
+> 
+> I applied patch 2 & 3 to:
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git cell
+> 
+> The patches did not apply cleanly. I had to change the path to
+> arch/powerpc/include/asm/, fix cell/pr_util.h and did some whitespace
+> cleanups. Please run your tests on the cell branch.
+> 
+> Thanks,
+> 
+> -Robert
+> 
 
-> This patch adds pcie nodes to the appropriate dts files, plus adds
-> some probing code for the boards.
->
-> Also, remove of_device_is_avaliable() check from the mpc837x_mds.c
-> board file, as mpc83xx_add_bridge() has the same check now.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/boot/dts/mpc8315erdb.dts     |   64 ++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/boot/dts/mpc8377_mds.dts     |   64 ++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/boot/dts/mpc8377_rdb.dts     |   64 ++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/boot/dts/mpc8378_mds.dts     |   64 ++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/boot/dts/mpc8378_rdb.dts     |   64 ++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/platforms/83xx/mpc831x_rdb.c |    2 +
-> arch/powerpc/platforms/83xx/mpc837x_mds.c |   10 +---
-> arch/powerpc/platforms/83xx/mpc837x_rdb.c |    2 +
-> 8 files changed, 327 insertions(+), 7 deletions(-)
+I pulled down the git tree, compiled and installed it.  I tested it
+against the OProfile testsuite, which includes SPU event profiling
+tests.  Everything passed.  The patch I submitted was against a 2.6.26
+tree.  You are now on a 2.6.28 tree so perhaps that is why the patch did
+not apply cleanly.  The patch has been out there for some time.  
 
-applied
-
-- k
+            Carl Love
