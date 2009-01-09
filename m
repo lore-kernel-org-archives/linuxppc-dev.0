@@ -1,24 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 0BEA0474C3
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 08:55:41 +1100 (EST)
-Date: Fri, 9 Jan 2009 00:55:39 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v6 1/2] powerpc/fsl_pci: Add MPC83xx PCI-E controller RC
-	mode support
-Message-ID: <20090108215539.GA6183@oksana.dev.rtsoft.ru>
-References: <20090108013006.GA31653@oksana.dev.rtsoft.ru>
-	<20090108013110.GA11165@oksana.dev.rtsoft.ru>
-	<C65915E8-6544-4229-9ED2-D2BB936D537C@kernel.crashing.org>
-	<20090108191021.GA10008@oksana.dev.rtsoft.ru>
-	<44A459AC-796C-4928-A39E-88F6F6DF159E@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <44A459AC-796C-4928-A39E-88F6F6DF159E@kernel.crashing.org>
-Cc: Huang Changming <Chang-Ming.Huang@freescale.com>,
-	Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 085ACDE6D7
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 11:15:22 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n090FGOY002389
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 18:15:17 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc/fsl-booke: Cleanup init/exception setup to be
+	runtime
+Date: Thu,  8 Jan 2009 18:15:15 -0600
+Message-Id: <1231460116-26383-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,354 +22,306 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for PCI-Express controllers as found on the
-newer MPC83xx chips.
+We currently have a few variants of fsl-booke processors (e500v1, e500v2,
+e500mc, and e200).  They all have minor differences that we had previously
+been handling via ifdefs.
 
-The work is loosely based on the Tony Li's patch[1], but unlike the
-original patch, this patch implements sliding window for the Type 1
-transactions using outbound window translations, so we don't have to
-ioremap the whole PCI-E configuration space.
+To move towards having this support the following changes have been made:
 
-[1] http://ozlabs.org/pipermail/linuxppc-dev/2008-January/049028.html
+* PID1, PID2 only exist on e500v1 & e500v2 and should not be accessed on
+  e500mc or e200.  We use MMUCFG[NPIDS] to determine which case we are
+  since we only touch PID1/2 in extremely early init code.
 
-Signed-off-by: Tony Li <tony.li@freescale.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+* Not all IVORs exist on all the processors so introduce cpu_setup
+  functions for each variant to setup the proper IVORs that are either
+  unique or exist but have some variations between the processors
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+ arch/powerpc/include/asm/reg_booke.h      |    1 +
+ arch/powerpc/kernel/Makefile              |    1 +
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S |   31 +++++++++++
+ arch/powerpc/kernel/cputable.c            |    8 +++
+ arch/powerpc/kernel/head_booke.h          |    6 +-
+ arch/powerpc/kernel/head_fsl_booke.S      |   83 +++++++++++++++++++----------
+ 6 files changed, 99 insertions(+), 31 deletions(-)
+ create mode 100644 arch/powerpc/kernel/cpu_setup_fsl_booke.S
 
-On Thu, Jan 08, 2009 at 01:24:27PM -0600, Kumar Gala wrote:
-[...]
-> I'm ok if you get rid of cfg_data usage.. than we aren't overloading the 
-> indirect variables for 83xx pci cfg cycles
-
-Here it is.
-
-Thanks,
-
- arch/powerpc/sysdev/fsl_pci.c |  244 +++++++++++++++++++++++++++++++++++++----
- include/linux/pci_ids.h       |    8 ++
- 2 files changed, 228 insertions(+), 24 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 9817f63..78021d8 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -1,12 +1,16 @@
- /*
-  * MPC83xx/85xx/86xx PCI/PCIE support routing.
-  *
-- * Copyright 2007,2008 Freescale Semiconductor, Inc
-+ * Copyright 2007-2009 Freescale Semiconductor, Inc.
-+ * Copyright 2008-2009 MontaVista Software, Inc.
-  *
-  * Initial author: Xianghua Xiao <x.xiao@freescale.com>
-  * Recode: ZHANG WEI <wei.zhang@freescale.com>
-  * Rewrite the routing for Frescale PCI and PCI Express
-  * 	Roy Zang <tie-fei.zang@freescale.com>
-+ * MPC83xx PCI-Express support:
-+ * 	Tony Li <tony.li@freescale.com>
-+ * 	Anton Vorontsov <avorontsov@ru.mvista.com>
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -27,6 +31,29 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index 6745376..597debe 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -110,6 +110,7 @@
+ #define SPRN_L1CSR0	0x3F2	/* L1 Cache Control and Status Register 0 */
+ #define SPRN_L1CSR1	0x3F3	/* L1 Cache Control and Status Register 1 */
+ #define SPRN_MMUCSR0	0x3F4	/* MMU Control and Status Register 0 */
++#define SPRN_MMUCFG	0x3F7	/* MMU Configuration Register */
+ #define SPRN_PIT	0x3DB	/* Programmable Interval Timer */
+ #define SPRN_BUCSR	0x3F5	/* Branch Unit Control and Status */
+ #define SPRN_L2CSR0	0x3F9	/* L2 Data Cache Control and Status Register 0 */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 8d1a419..d159921 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -61,6 +61,7 @@ obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o \
+ obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
+ obj-$(CONFIG_MODULES)		+= module.o module_$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_44x)		+= cpu_setup_44x.o
++obj-$(CONFIG_FSL_BOOKE)		+= cpu_setup_fsl_booke.o
  
-+static int fsl_pcie_bus_fixup;
-+
-+static void __init quirk_fsl_pcie_header(struct pci_dev *dev)
-+{
-+	/* if we aren't a PCIe don't bother */
-+	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
-+		return;
-+
-+	dev->class = PCI_CLASS_BRIDGE_PCI << 8;
-+	fsl_pcie_bus_fixup = 1;
-+	return;
-+}
-+
-+static int __init fsl_pcie_check_link(struct pci_controller *hose)
-+{
-+	u32 val;
-+
-+	early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
-+	if (val < PCIE_LTSSM_L0)
-+		return 1;
-+	return 0;
-+}
-+
- #if defined(CONFIG_PPC_85xx) || defined(CONFIG_PPC_86xx)
- static int __init setup_one_atmu(struct ccsr_pci __iomem *pci,
- 	unsigned int index, const struct resource *res,
-@@ -159,28 +186,6 @@ static void __init setup_pci_pcsrbar(struct pci_controller *hose)
- #endif
- }
- 
--static int fsl_pcie_bus_fixup;
--
--static void __init quirk_fsl_pcie_header(struct pci_dev *dev)
--{
--	/* if we aren't a PCIe don't bother */
--	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
--		return ;
--
--	dev->class = PCI_CLASS_BRIDGE_PCI << 8;
--	fsl_pcie_bus_fixup = 1;
--	return ;
--}
--
--static int __init fsl_pcie_check_link(struct pci_controller *hose)
--{
--	u32 val;
--	early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
--	if (val < PCIE_LTSSM_L0)
--		return 1;
--	return 0;
--}
--
- void fsl_pcibios_fixup_bus(struct pci_bus *bus)
- {
- 	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
-@@ -294,8 +299,184 @@ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8610, quirk_fsl_pcie_header);
- #endif /* CONFIG_PPC_85xx || CONFIG_PPC_86xx */
- 
- #if defined(CONFIG_PPC_83xx) || defined(CONFIG_PPC_MPC512x)
-+DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8314E, quirk_fsl_pcie_header);
-+DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8314, quirk_fsl_pcie_header);
-+DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8315E, quirk_fsl_pcie_header);
-+DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8315, quirk_fsl_pcie_header);
-+DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8377E, quirk_fsl_pcie_header);
-+DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8377, quirk_fsl_pcie_header);
-+DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8378E, quirk_fsl_pcie_header);
-+DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8378, quirk_fsl_pcie_header);
-+
-+struct mpc83xx_pcie_priv {
-+	void __iomem *cfg_type0;
-+	void __iomem *cfg_type1;
-+	u32 dev_base;
-+};
-+
+ extra-$(CONFIG_PPC_STD_MMU)	:= head_32.o
+ extra-$(CONFIG_PPC64)		:= head_64.o
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+new file mode 100644
+index 0000000..eb4b9ad
+--- /dev/null
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -0,0 +1,31 @@
 +/*
-+ * With the convention of u-boot, the PCIE outbound window 0 serves
-+ * as configuration transactions outbound.
++ * This file contains low level CPU setup functions.
++ * Kumar Gala <galak@kernel.crashing.org>
++ * Copyright 2009 Freescale Semiconductor, Inc.
++ *
++ * Based on cpu_setup_6xx code by
++ * Benjamin Herrenschmidt <benh@kernel.crashing.org>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
 + */
-+#define PEX_OUTWIN0_BAR		0xCA4
-+#define PEX_OUTWIN0_TAL		0xCA8
-+#define PEX_OUTWIN0_TAH		0xCAC
 +
-+static int mpc83xx_pcie_exclude_device(struct pci_bus *bus, unsigned int devfn)
-+{
-+	struct pci_controller *hose = bus->sysdata;
++#include <asm/processor.h>
++#include <asm/cputable.h>
++#include <asm/ppc_asm.h>
 +
-+	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+	/*
-+	 * Workaround for the HW bug: for Type 0 configure transactions the
-+	 * PCI-E controller does not check the device number bits and just
-+	 * assumes that the device number bits are 0.
-+	 */
-+	if (bus->number == hose->first_busno ||
-+			bus->primary == hose->first_busno) {
-+		if (devfn & 0xf8)
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+	}
++_GLOBAL(__setup_cpu_e200)
++	/* enable dedicated debug exception handling resources (Debug APU) */
++	mfspr	r3,SPRN_HID0
++	ori	r3,r3,HID0_DAPUEN@l
++	mtspr	SPRN_HID0,r3
++	b	__setup_e200_ivors
++_GLOBAL(__setup_cpu_e500v1)
++_GLOBAL(__setup_cpu_e500v2)
++	b	__setup_e500_ivors
++_GLOBAL(__setup_cpu_e500mc)
++	b	__setup_e500mc_ivors
 +
-+	if (ppc_md.pci_exclude_device) {
-+		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+	}
-+
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
-+static void __iomem *mpc83xx_pcie_remap_cfg(struct pci_bus *bus,
-+					    unsigned int devfn, int offset)
-+{
-+	struct pci_controller *hose = bus->sysdata;
-+	struct mpc83xx_pcie_priv *pcie = hose->dn->data;
-+	u8 bus_no = bus->number - hose->first_busno;
-+	u32 dev_base = bus_no << 24 | devfn << 16;
-+	int ret;
-+
-+	ret = mpc83xx_pcie_exclude_device(bus, devfn);
-+	if (ret)
-+		return NULL;
-+
-+	offset &= 0xfff;
-+
-+	/* Type 0 */
-+	if (bus->number == hose->first_busno)
-+		return pcie->cfg_type0 + offset;
-+
-+	if (pcie->dev_base == dev_base)
-+		goto mapped;
-+
-+	out_le32(pcie->cfg_type0 + PEX_OUTWIN0_TAL, dev_base);
-+
-+	pcie->dev_base = dev_base;
-+mapped:
-+	return pcie->cfg_type1 + offset;
-+}
-+
-+static int mpc83xx_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
-+				    int offset, int len, u32 *val)
-+{
-+	void __iomem *cfg_addr;
-+
-+	cfg_addr = mpc83xx_pcie_remap_cfg(bus, devfn, offset);
-+	if (!cfg_addr)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	switch (len) {
-+	case 1:
-+		*val = in_8(cfg_addr);
-+		break;
-+	case 2:
-+		*val = in_le16(cfg_addr);
-+		break;
-+	default:
-+		*val = in_le32(cfg_addr);
-+		break;
-+	}
-+
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
-+static int mpc83xx_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
-+				     int offset, int len, u32 val)
-+{
-+	void __iomem *cfg_addr;
-+
-+	cfg_addr = mpc83xx_pcie_remap_cfg(bus, devfn, offset);
-+	if (!cfg_addr)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	switch (len) {
-+	case 1:
-+		out_8(cfg_addr, val);
-+		break;
-+	case 2:
-+		out_le16(cfg_addr, val);
-+		break;
-+	default:
-+		out_le32(cfg_addr, val);
-+		break;
-+	}
-+
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
-+static struct pci_ops mpc83xx_pcie_ops = {
-+	.read = mpc83xx_pcie_read_config,
-+	.write = mpc83xx_pcie_write_config,
-+};
-+
-+static int __init mpc83xx_pcie_setup(struct pci_controller *hose,
-+				     struct resource *reg)
-+{
-+	struct mpc83xx_pcie_priv *pcie;
-+	u32 cfg_bar;
-+	int ret = -ENOMEM;
-+
-+	pcie = zalloc_maybe_bootmem(sizeof(*pcie), GFP_KERNEL);
-+	if (!pcie)
-+		return ret;
-+
-+	pcie->cfg_type0 = ioremap(reg->start, resource_size(reg));
-+	if (!pcie->cfg_type0)
-+		goto err0;
-+
-+	cfg_bar = in_le32(pcie->cfg_type0 + PEX_OUTWIN0_BAR);
-+	if (!cfg_bar) {
-+		/* PCI-E isn't configured. */
-+		ret = -ENODEV;
-+		goto err1;
-+	}
-+
-+	pcie->cfg_type1 = ioremap(cfg_bar, 0x1000);
-+	if (!pcie->cfg_type1)
-+		goto err1;
-+
-+	WARN_ON(hose->dn->data);
-+	hose->dn->data = pcie;
-+	hose->ops = &mpc83xx_pcie_ops;
-+
-+	out_le32(pcie->cfg_type0 + PEX_OUTWIN0_TAH, 0);
-+	out_le32(pcie->cfg_type0 + PEX_OUTWIN0_TAL, 0);
-+
-+	if (fsl_pcie_check_link(hose))
-+		hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-+
-+	return 0;
-+err1:
-+	iounmap(pcie->cfg_type0);
-+err0:
-+	kfree(pcie);
-+	return ret;
-+
-+}
-+
- int __init mpc83xx_add_bridge(struct device_node *dev)
- {
-+	int ret;
- 	int len;
- 	struct pci_controller *hose;
- 	struct resource rsrc_reg;
-@@ -303,6 +484,11 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 	const int *bus_range;
- 	int primary;
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 923f87a..9fdf1b8 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -35,6 +35,10 @@ const char *powerpc_base_platform;
+  * and ppc64
+  */
+ #ifdef CONFIG_PPC32
++extern void __setup_cpu_e200(unsigned long offset, struct cpu_spec* spec);
++extern void __setup_cpu_e500v1(unsigned long offset, struct cpu_spec* spec);
++extern void __setup_cpu_e500v2(unsigned long offset, struct cpu_spec* spec);
++extern void __setup_cpu_e500mc(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_440ep(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_440gx(unsigned long offset, struct cpu_spec* spec);
+@@ -1687,6 +1691,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 			PPC_FEATURE_UNIFIED_CACHE,
+ 		.mmu_features		= MMU_FTR_TYPE_FSL_E,
+ 		.dcache_bsize		= 32,
++		.cpu_setup		= __setup_cpu_e200,
+ 		.machine_check		= machine_check_e200,
+ 		.platform		= "ppc5554",
+ 	}
+@@ -1706,6 +1711,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.num_pmcs		= 4,
+ 		.oprofile_cpu_type	= "ppc/e500",
+ 		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
++		.cpu_setup		= __setup_cpu_e500v1,
+ 		.machine_check		= machine_check_e500,
+ 		.platform		= "ppc8540",
+ 	},
+@@ -1724,6 +1730,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.num_pmcs		= 4,
+ 		.oprofile_cpu_type	= "ppc/e500",
+ 		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
++		.cpu_setup		= __setup_cpu_e500v2,
+ 		.machine_check		= machine_check_e500,
+ 		.platform		= "ppc8548",
+ 	},
+@@ -1739,6 +1746,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.num_pmcs		= 4,
+ 		.oprofile_cpu_type	= "ppc/e500", /* xxx - galak, e500mc? */
+ 		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
++		.cpu_setup		= __setup_cpu_e500mc,
+ 		.machine_check		= machine_check_e500,
+ 		.platform		= "ppce500mc",
+ 	},
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index fce2df9..bec1807 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -70,10 +70,10 @@
  
-+	if (!of_device_is_available(dev)) {
-+		pr_warning("%s: disabled by the firmware.\n",
-+			   dev->full_name);
-+		return -ENODEV;
-+	}
- 	pr_debug("Adding PCI host bridge %s\n", dev->full_name);
+ /* only on e500mc/e200 */
+ #define DEBUG_STACK_BASE	dbgirq_ctx
+-#ifdef CONFIG_PPC_E500MC
+-#define DEBUG_SPRG		SPRN_SPRG9
+-#else
++#ifdef CONFIG_E200
+ #define DEBUG_SPRG		SPRN_SPRG6W
++#else
++#define DEBUG_SPRG		SPRN_SPRG9
+ #endif
  
- 	/* Fetch host bridge registers address */
-@@ -350,7 +536,14 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 	hose->first_busno = bus_range ? bus_range[0] : 0;
- 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+ #define EXC_LVL_FRAME_OVERHEAD	(THREAD_SIZE - INT_FRAME_SIZE - EXC_LVL_SIZE)
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 2f32720..6062669 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -103,10 +103,15 @@ invstr:	mflr	r6				/* Make it accessible */
+ 	or	r7,r7,r4
+ 	mtspr	SPRN_MAS6,r7
+ 	tlbsx	0,r6				/* search MSR[IS], SPID=PID0 */
+-#ifndef CONFIG_E200
+ 	mfspr	r7,SPRN_MAS1
+ 	andis.	r7,r7,MAS1_VALID@h
+ 	bne	match_TLB
++
++	mfspr	r7,SPRN_MMUCFG
++	rlwinm	r7,r7,21,28,31			/* extract MMUCFG[NPIDS] */
++	cmpwi	r7,3
++	bne	match_TLB			/* skip if NPIDS != 3 */
++
+ 	mfspr	r7,SPRN_PID1
+ 	slwi	r7,r7,16
+ 	or	r7,r7,r4
+@@ -120,7 +125,7 @@ invstr:	mflr	r6				/* Make it accessible */
+ 	or	r7,r7,r4
+ 	mtspr	SPRN_MAS6,r7
+ 	tlbsx	0,r6				/* Fall through, we had to match */
+-#endif
++
+ match_TLB:
+ 	mfspr	r7,SPRN_MAS0
+ 	rlwinm	r3,r7,16,20,31			/* Extract MAS0(Entry) */
+@@ -215,14 +220,19 @@ skpinv:	addi	r6,r6,1				/* Increment */
  
--	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 4, 0);
-+	if (of_device_is_compatible(dev, "fsl,mpc8314-pcie")) {
-+		ret = mpc83xx_pcie_setup(hose, &rsrc_reg);
-+		if (ret)
-+			goto err0;
-+	} else {
-+		setup_indirect_pci(hose, rsrc_cfg.start,
-+				   rsrc_cfg.start + 4, 0);
-+	}
+ /* 4. Clear out PIDs & Search info */
+ 	li	r6,0
++	mtspr   SPRN_MAS6,r6
+ 	mtspr	SPRN_PID0,r6
+-#ifndef CONFIG_E200
++
++	mfspr	r7,SPRN_MMUCFG
++	rlwinm	r7,r7,21,28,31			/* extract MMUCFG[NPIDS] */
++	cmpwi	r7,3
++	bne	2f				/* skip if NPIDS != 3 */
++
+ 	mtspr	SPRN_PID1,r6
+ 	mtspr	SPRN_PID2,r6
+-#endif
+-	mtspr	SPRN_MAS6,r6
  
- 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
- 	       "Firmware bus number: %d->%d\n",
-@@ -365,5 +558,8 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 	pci_process_bridge_OF_ranges(hose, dev, primary);
+ /* 5. Invalidate mapping we started in */
++2:
+ 	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
+ 	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
+ 	mtspr	SPRN_MAS0,r7
+@@ -298,19 +308,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	SET_IVOR(12, WatchdogTimer);
+ 	SET_IVOR(13, DataTLBError);
+ 	SET_IVOR(14, InstructionTLBError);
+-	SET_IVOR(15, DebugDebug);
+-#if defined(CONFIG_E500) && !defined(CONFIG_PPC_E500MC)
+ 	SET_IVOR(15, DebugCrit);
+-#endif
+-	SET_IVOR(32, SPEUnavailable);
+-	SET_IVOR(33, SPEFloatingPointData);
+-	SET_IVOR(34, SPEFloatingPointRound);
+-#ifndef CONFIG_E200
+-	SET_IVOR(35, PerformanceMonitor);
+-#endif
+-#ifdef CONFIG_PPC_E500MC
+-	SET_IVOR(36, Doorbell);
+-#endif
  
- 	return 0;
-+err0:
-+	pcibios_free_controller(hose);
-+	return ret;
- }
- #endif /* CONFIG_PPC_83xx */
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index b6e6944..008c90d 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2209,6 +2209,14 @@
- #define PCI_DEVICE_ID_TDI_EHCI          0x0101
+ 	/* Establish the interrupt vector base */
+ 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
+@@ -329,12 +327,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	oris	r2,r2,HID0_DOZE@h
+ 	mtspr	SPRN_HID0, r2
+ #endif
+-#ifdef CONFIG_E200
+-	/* enable dedicated debug exception handling resources (Debug APU) */
+-	mfspr	r2,SPRN_HID0
+-	ori	r2,r2,HID0_DAPUEN@l
+-	mtspr	SPRN_HID0,r2
+-#endif
  
- #define PCI_VENDOR_ID_FREESCALE		0x1957
-+#define PCI_DEVICE_ID_MPC8315E		0x00b4
-+#define PCI_DEVICE_ID_MPC8315		0x00b5
-+#define PCI_DEVICE_ID_MPC8314E		0x00b6
-+#define PCI_DEVICE_ID_MPC8314		0x00b7
-+#define PCI_DEVICE_ID_MPC8378E		0x00c4
-+#define PCI_DEVICE_ID_MPC8378		0x00c5
-+#define PCI_DEVICE_ID_MPC8377E		0x00c6
-+#define PCI_DEVICE_ID_MPC8377		0x00c7
- #define PCI_DEVICE_ID_MPC8548E		0x0012
- #define PCI_DEVICE_ID_MPC8548		0x0013
- #define PCI_DEVICE_ID_MPC8543E		0x0014
+ #if !defined(CONFIG_BDI_SWITCH)
+ 	/*
+@@ -705,16 +697,12 @@ interrupt_base:
+ 
+ 	/* Performance Monitor */
+ 	EXCEPTION(0x2060, PerformanceMonitor, performance_monitor_exception, EXC_XFER_STD)
+-
+-#ifdef CONFIG_PPC_E500MC
++	
+ 	EXCEPTION(0x2070, Doorbell, unknown_exception, EXC_XFER_EE)
+-#endif
+ 
+ 	/* Debug Interrupt */
+ 	DEBUG_DEBUG_EXCEPTION
+-#if defined(CONFIG_E500) && !defined(CONFIG_PPC_E500MC)
+ 	DEBUG_CRIT_EXCEPTION
+-#endif
+ 
+ /*
+  * Local functions
+@@ -897,6 +885,45 @@ KernelSPE:
+  * Global functions
+  */
+ 
++/* Adjust or setup IVORs for e200 */
++_GLOBAL(__setup_e200_ivors)
++	li	r3,DebugDebug@l
++	mtspr	SPRN_IVOR15,r3
++	li	r3,SPEUnavailable@l
++	mtspr	SPRN_IVOR32,r3
++	li	r3,SPEFloatingPointData@l
++	mtspr	SPRN_IVOR33,r3
++	li	r3,SPEFloatingPointRound@l
++	mtspr	SPRN_IVOR34,r3
++	sync
++	blr
++
++/* Adjust or setup IVORs for e500v1/v2 */
++_GLOBAL(__setup_e500_ivors)
++	li	r3,DebugCrit@l
++	mtspr	SPRN_IVOR15,r3
++	li	r3,SPEUnavailable@l
++	mtspr	SPRN_IVOR32,r3
++	li	r3,SPEFloatingPointData@l
++	mtspr	SPRN_IVOR33,r3
++	li	r3,SPEFloatingPointRound@l
++	mtspr	SPRN_IVOR34,r3
++	li	r3,PerformanceMonitor@l
++	mtspr	SPRN_IVOR35,r3
++	sync
++	blr
++
++/* Adjust or setup IVORs for e500mc */
++_GLOBAL(__setup_e500mc_ivors)
++	li	r3,DebugDebug@l
++	mtspr	SPRN_IVOR15,r3
++	li	r3,PerformanceMonitor@l
++	mtspr	SPRN_IVOR35,r3
++	li	r3,Doorbell@l
++	mtspr	SPRN_IVOR36,r3
++	sync
++	blr
++
+ /*
+  * extern void loadcam_entry(unsigned int index)
+  *
 -- 
 1.5.6.5
