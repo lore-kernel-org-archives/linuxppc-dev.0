@@ -1,23 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id B29EBDE301
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 08:02:50 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so3031407yxg.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 Jan 2009 13:02:48 -0800 (PST)
-Message-ID: <fa686aa40901091302y12fa13b4v25bd85079ee4e7ea@mail.gmail.com>
-Date: Fri, 9 Jan 2009 14:02:48 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: [PATCH] powerpc/mpc52xx: Properly update irq_desc when set_type()
-	is called.
-In-Reply-To: <49661041.2010302@genesi-usa.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20090107192505.26320.23112.stgit@localhost.localdomain>
-	<4965784D.6090704@genesi-usa.com>
-	<fa686aa40901072053v7803c6afp206e0572a6c79eda@mail.gmail.com>
-	<49661041.2010302@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1610EDE301
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 08:10:07 +1100 (EST)
+Subject: Re: mal_probe crash
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+In-Reply-To: <200901091549.56943.matthias.fuchs@esd-electronics.com>
+References: <20090107154434.0c9437ef@lappy.seanm.ca>
+	<20090108204634.GB2337@yoda.jdub.homelinux.org>
+	<1231368610.2142.27.camel@pasglop>
+	<200901091549.56943.matthias.fuchs@esd-electronics.com>
+Content-Type: text/plain
+Date: Sat, 10 Jan 2009 08:09:40 +1100
+Message-Id: <1231535380.2142.68.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +26,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 8, 2009 at 7:40 AM, Matt Sealey <matt@genesi-usa.com> wrote:
-> Grant Likely wrote:
->>
->> On Wed, Jan 7, 2009 at 8:51 PM, Matt Sealey <matt@genesi-usa.com> wrote:
->>>
->>> Grant Likely wrote:
->>>>
->>>> From: Grant Likely <grant.likely@secretlab.ca>
->>>>
->>>> The MPC5200 PIC driver doesn't correctly update the .status field of
->>>> the irq_desc structure when the set_type hook is called.  This patch
->>>> adds the required code.
->>>>
->>>> Also cleans up the external IRQ typename field to be something easier
->>>> to read (very minor).
->>>>
->>>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->>>
->>> Hi Grant,
->>>
->>> What does this affect?
->>
->> cat /proc/interrupts
->
-> Ah so, completely cosmetic in the end. I was worried I'd have to build a new
-> kernel for a second.. :D
 
-Not entirely; it affects the details about how irqs are handled.
-check_irq_resend() for example.  I don't think any 5200 platforms
-currently care; but it could be an issue with cascaded IRQ handlers.
+> Could it be that simple. Probably not. It works at a first glace on
+> a 405EP ang GPr board. But it might cause problems when having more than 
+> one EMAC up at the same time.
 
-g.
+I talked with the network folks and that should be ok.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+We only need to be a bit careful in case for some reason the EMAC we
+linked to NAPI get removed/destroyed... We only do all at once for now
+but heh..
+
+Ben.
+
+> Matthias
+> 
+> [PATCH] powerpc: Fix ibm_newemac driver
+> 
+> Since commit d565b0a1a9b6ee7d netif_napi_add must be called
+> if a proper net_device pointer != NULL.
+> 
+> Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+> ---
+>  drivers/net/ibm_newemac/core.c |    3 +++
+>  drivers/net/ibm_newemac/mal.c  |    5 +----
+>  drivers/net/ibm_newemac/mal.h  |    1 +
+>  3 files changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+> index 87a7066..9bd4d6d 100644
+> --- a/drivers/net/ibm_newemac/core.c
+> +++ b/drivers/net/ibm_newemac/core.c
+> @@ -2767,6 +2767,9 @@ static int __devinit emac_probe(struct of_device *ofdev,
+>  	if (dev->mdio_dev != NULL)
+>  		dev->mdio_instance = dev_get_drvdata(&dev->mdio_dev->dev);
+>  
+> +	netif_napi_add(ndev, &dev->mal->napi, mal_poll,
+> +		       CONFIG_IBM_NEW_EMAC_POLL_WEIGHT);
+> +
+>  	/* Register with MAL */
+>  	dev->commac.ops = &emac_commac_ops;
+>  	dev->commac.dev = dev;
+> diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
+> index ecf9798..d5306ae 100644
+> --- a/drivers/net/ibm_newemac/mal.c
+> +++ b/drivers/net/ibm_newemac/mal.c
+> @@ -391,7 +391,7 @@ void mal_poll_enable(struct mal_instance *mal, struct mal_commac *commac)
+>  	napi_schedule(&mal->napi);
+>  }
+>  
+> -static int mal_poll(struct napi_struct *napi, int budget)
+> +int mal_poll(struct napi_struct *napi, int budget)
+>  {
+>  	struct mal_instance *mal = container_of(napi, struct mal_instance, napi);
+>  	struct list_head *l;
+> @@ -613,9 +613,6 @@ static int __devinit mal_probe(struct of_device *ofdev,
+>  	INIT_LIST_HEAD(&mal->list);
+>  	spin_lock_init(&mal->lock);
+>  
+> -	netif_napi_add(NULL, &mal->napi, mal_poll,
+> -		       CONFIG_IBM_NEW_EMAC_POLL_WEIGHT);
+> -
+>  	/* Load power-on reset defaults */
+>  	mal_reset(mal);
+>  
+> diff --git a/drivers/net/ibm_newemac/mal.h b/drivers/net/ibm_newemac/mal.h
+> index 2f0a873..51597bd 100644
+> --- a/drivers/net/ibm_newemac/mal.h
+> +++ b/drivers/net/ibm_newemac/mal.h
+> @@ -282,6 +282,7 @@ void mal_disable_rx_channel(struct mal_instance *mal, int channel);
+>  
+>  void mal_poll_disable(struct mal_instance *mal, struct mal_commac *commac);
+>  void mal_poll_enable(struct mal_instance *mal, struct mal_commac *commac);
+> +int mal_poll(struct napi_struct *napi, int budget);
+>  
+>  /* Add/remove EMAC to/from MAL polling list */
+>  void mal_poll_add(struct mal_instance *mal, struct mal_commac *commac);
