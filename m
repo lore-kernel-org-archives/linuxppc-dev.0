@@ -1,18 +1,26 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 18BC9DE30B
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 10:12:55 +1100 (EST)
-Date: Fri, 9 Jan 2009 17:12:44 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH] cacheinfo: rename cache_dir per-cpu variable
-Message-ID: <20090109231244.GA6850@localdomain>
-References: <20090109125327.351b7f65.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090109125327.351b7f65.sfr@canb.auug.org.au>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-next@vger.kernel.org,
-	ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 186E7DE80A
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 10:13:30 +1100 (EST)
+Subject: Re: mal_probe crash
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+In-Reply-To: <20090109223410.GA18319@gondor.apana.org.au>
+References: <20090107154434.0c9437ef@lappy.seanm.ca>
+	<20090108204634.GB2337@yoda.jdub.homelinux.org>
+	<1231368610.2142.27.camel@pasglop>
+	<Pine.LNX.4.64.0901091533000.13230@vixen.sonytel.be>
+	<20090109223410.GA18319@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Sat, 10 Jan 2009 10:13:11 +1100
+Message-Id: <1231542792.2142.87.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Sean MacLennan <smaclennan@pikatech.com>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,56 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The per_cpu__ prefix on DECLARE_PER_CPU'd variables is going away;
-rename cache_dir to cache_dir_pcpu.
+On Sat, 2009-01-10 at 09:34 +1100, Herbert Xu wrote:
+> On Fri, Jan 09, 2009 at 03:42:25PM +0100, Geert Uytterhoeven wrote:
+> > On Thu, 8 Jan 2009, Benjamin Herrenschmidt wrote:
+> >
+> > > There isn't that I know of. The EMAC code creates a single NAPI instance
+> > > for all EMACs and I think used to completely disconnect things. The old
+> > > code created a fake netdev just for NAPI, that became unnecessary with
+> > > the new NAPI stuff.... but it looks like the way we do things now
+> > > displeases some changes in the network stack. I'll have to dig.
+> > 
+> > Verified on my Sequoia (which now lost its network :-(
+> > 
+> > The regression/problem (requiring a valid net_device in netif_napi_add(), even
+> > if CONFIG_NETPOLL=n) seems to be introduced by commit
+> > d565b0a1a9b6ee7dff46e1f68b26b526ac11ae50 ("net: Add Generic Receive Offload
+> > infrastructure").
+> 
+> Yes EMAC just needs to go back to the old fake dev setup.
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- arch/powerpc/kernel/cacheinfo.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+One thing I wanted to do back then... which triggered the discussion
+with Stephen just before he broke NAPI up from netdev, was to add a core
+function that creates such dummy netdev so that drivers don't have to
+break every time some new internal field changes or such...
 
-Not sure which route this should go, I assume either Rusty or Ben will
-take it?
+I'll give that a spin asap, though it might have to wait for monday.
 
-
-diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
-index b33f041..bb37b1d 100644
---- a/arch/powerpc/kernel/cacheinfo.c
-+++ b/arch/powerpc/kernel/cacheinfo.c
-@@ -113,7 +113,7 @@ struct cache {
- 	struct cache *next_local;      /* next cache of >= level */
- };
- 
--static DEFINE_PER_CPU(struct cache_dir *, cache_dir);
-+static DEFINE_PER_CPU(struct cache_dir *, cache_dir_pcpu);
- 
- /* traversal/modification of this list occurs only at cpu hotplug time;
-  * access is serialized by cpu hotplug locking
-@@ -468,9 +468,9 @@ static struct cache_dir *__cpuinit cacheinfo_create_cache_dir(unsigned int cpu_i
- 
- 	cache_dir->kobj = kobj;
- 
--	WARN_ON_ONCE(per_cpu(cache_dir, cpu_id) != NULL);
-+	WARN_ON_ONCE(per_cpu(cache_dir_pcpu, cpu_id) != NULL);
- 
--	per_cpu(cache_dir, cpu_id) = cache_dir;
-+	per_cpu(cache_dir_pcpu, cpu_id) = cache_dir;
- 
- 	return cache_dir;
- err:
-@@ -820,13 +820,13 @@ void cacheinfo_cpu_offline(unsigned int cpu_id)
- 
- 	/* Prevent userspace from seeing inconsistent state - remove
- 	 * the sysfs hierarchy first */
--	cache_dir = per_cpu(cache_dir, cpu_id);
-+	cache_dir = per_cpu(cache_dir_pcpu, cpu_id);
- 
- 	/* careful, sysfs population may have failed */
- 	if (cache_dir)
- 		remove_cache_dir(cache_dir);
- 
--	per_cpu(cache_dir, cpu_id) = NULL;
-+	per_cpu(cache_dir_pcpu, cpu_id) = NULL;
- 
- 	/* clear the CPU's bit in its cache chain, possibly freeing
- 	 * cache objects */
+Cheers,
+Ben.
