@@ -1,34 +1,16 @@
-Return-Path: <chandru@in.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
+Return-Path: <yanok@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5F30B47506
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 22:13:44 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id n09BCTFR023756
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jan 2009 22:12:29 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n09B7RRm251554
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jan 2009 22:07:27 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n09B7Qpc015896
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jan 2009 22:07:27 +1100
-From: Chandru <chandru@in.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-Date: Fri, 9 Jan 2009 16:37:24 +0530
-References: <200812241325.49404.chandru@in.ibm.com>
-	<200901081559.22204.chandru@in.ibm.com>
-	<1231444992.23462.138.camel@nimitz>
-In-Reply-To: <1231444992.23462.138.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_s/yZJ+kK7Tmw//I"
-Message-Id: <200901091637.24658.chandru@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BE34CDDF9E
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 23:59:11 +1100 (EST)
+From: Ilya Yanok <yanok@emcraft.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: rework dma-noncoherent to use generic vmap/vunmap
+	functions
+Date: Fri,  9 Jan 2009 15:58:35 +0300
+Message-Id: <1231505915-16082-1-git-send-email-yanok@emcraft.com>
+Cc: Ilya Yanok <yanok@emcraft.com>, dzu@denx.de, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,163 +20,771 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_s/yZJ+kK7Tmw//I
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This patch rewrites consistent dma allocations support to use vmalloc
+layer to allocate virtual memory space from vmalloc pool and get rid
+of CONFIG_CONSISTENT_{START,SIZE}.
 
-On Friday 09 January 2009 01:33:12 Dave Hansen wrote:
-> Now I'm even more confused.  Could you please send a fully changelogged
-> patch that describes the problem, and how this fixes it?  This just
-> seems like an off-by-one error, which isn't what I thought we had before
-> at all.
-> 
-> I'm also horribly confused why PFN_UP is needed here.  Is 'physbase' not
-> page aligned?  reserve_size looks like it *has* to be.  'end_pfn' is
-> always (as far as I have ever seen in the kernel) the pfn of the page
-> after the area we are interested in and we treat it as such in that
-> function.  In the case of an unaligned physbase, that wouldn't be true.
-> 
-> Think of the case where we have a 1-byte reservation.  start_pfn will
-> equal end_pfn and we won't go into that while loop at *all* and won't
-> reserve anything.
-> 
-> Does 'end_pfn' need fixing?
-> 
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+---
+ arch/powerpc/Kconfig                           |   25 --
+ arch/powerpc/configs/40x/acadia_defconfig      |    2 -
+ arch/powerpc/configs/40x/ep405_defconfig       |    2 -
+ arch/powerpc/configs/40x/hcu4_defconfig        |    2 -
+ arch/powerpc/configs/40x/kilauea_defconfig     |    2 -
+ arch/powerpc/configs/40x/makalu_defconfig      |    2 -
+ arch/powerpc/configs/40x/virtex_defconfig      |    2 -
+ arch/powerpc/configs/40x/walnut_defconfig      |    2 -
+ arch/powerpc/configs/44x/arches_defconfig      |    2 -
+ arch/powerpc/configs/44x/bamboo_defconfig      |    2 -
+ arch/powerpc/configs/44x/canyonlands_defconfig |    2 -
+ arch/powerpc/configs/44x/ebony_defconfig       |    2 -
+ arch/powerpc/configs/44x/katmai_defconfig      |    2 -
+ arch/powerpc/configs/44x/rainier_defconfig     |    2 -
+ arch/powerpc/configs/44x/sam440ep_defconfig    |    2 -
+ arch/powerpc/configs/44x/sequoia_defconfig     |    2 -
+ arch/powerpc/configs/44x/taishan_defconfig     |    2 -
+ arch/powerpc/configs/44x/virtex5_defconfig     |    2 -
+ arch/powerpc/configs/44x/warp_defconfig        |    2 -
+ arch/powerpc/configs/adder875_defconfig        |    2 -
+ arch/powerpc/configs/c2k_defconfig             |    2 -
+ arch/powerpc/configs/ep88xc_defconfig          |    2 -
+ arch/powerpc/configs/mgsuvd_defconfig          |    2 -
+ arch/powerpc/configs/mpc866_ads_defconfig      |    2 -
+ arch/powerpc/configs/mpc885_ads_defconfig      |    2 -
+ arch/powerpc/configs/ppc40x_defconfig          |    2 -
+ arch/powerpc/configs/ppc44x_defconfig          |    2 -
+ arch/powerpc/configs/prpmc2800_defconfig       |    2 -
+ arch/powerpc/lib/dma-noncoherent.c             |  278 +++--------------------
+ 29 files changed, 37 insertions(+), 320 deletions(-)
 
-Attached is the console log with debug command line parameters enabled and 
-with couple of more debug statements added to the code.  Please take a look at it. 
-
-thanks,
-Chandru
-
-
---Boundary-00=_s/yZJ+kK7Tmw//I
-Content-Type: text/plain;
-  charset="iso 8859-15";
-  name="console_log.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="console_log.txt"
-
-Using 0078209e bytes for initrd buffer
-Please wait, loading kernel...
-Allocated 00d00000 bytes for kernel @ 02d00000
-   Elf64 kernel loaded...
-Loading ramdisk...
-ramdisk loaded 0078209e @ 00d00000
-OF stdout device is: /vdevice/vty@30000000
-Hypertas detected, assuming LPAR !
-command line: root=/dev/disk/by-id/scsi-35000cca0030c7be2-part3  xmon=on crashkernel=256M@32M debug bootmem_debug numa=debug
-memory layout at init:
-  alloc_bottom : 0000000003880000
-  alloc_top    : 0000000010000000
-  alloc_top_hi : 0000000100000000
-  rmo_top      : 0000000010000000
-  ram_top      : 0000000100000000
-Looking for displays
-instantiating rtas at 0x000000000f4e0000 ... done
-boot cpu hw idx 0000000000000000
-copying OF device tree ...
-Building dt strings...
-Building dt structure...
-Device tree strings 0x0000000003a90000 -> 0x0000000003a917bc
-Device tree struct  0x0000000003aa0000 -> 0x0000000003ac0000
-Calling quiesce ...
-returning from prom_init
-Reserving 256MB of memory at 32MB for crashkernel (System RAM: 4096MB)
-Phyp-dump disabled at boot time
-Using pSeries machine description
-Page orders: linear mapping = 24, virtual = 16, io = 12
-Using 1TB segments
-Found initrd at 0xc000000000d00000:0xc00000000148209e
-console [udbg0] enabled
-Partition configured for 4 cpus.
-CPU maps initialized for 2 threads per core
- (thread shift is 1)
-Starting Linux PPC64 #7 SMP Fri Jan 9 04:50:05 CST 2009
------------------------------------------------------
-ppc64_pft_size                = 0x1a
-physicalMemorySize            = 0x100000000
-htab_hash_mask                = 0x7ffff
------------------------------------------------------
-Initializing cgroup subsys cpuset
-Initializing cgroup subsys cpu
-Linux version 2.6.28-1-ppc64 (root@rulerlp10) (gcc version 4.3.2 [gcc-4_3-branch revision 141291] (SUSE Linux) ) #7 SMP Fri Jan 9 04:50:05 CST 2009
-[boot]0012 Setup Arch
-NUMA associativity depth for CPU/Memory: 3
-Node 0 Memory:
-Node 5 Memory: 0x0-0x10000000
-Node 7 Memory: 0x10000000-0x100000000
-adding cpu 0 to node 0
-node 0
-NODE_DATA() = c0000000fffeda80
-node 5
-NODE_DATA() = c000000001f78800
-start_paddr = 0
-end_paddr = 10000000
-bootmap_paddr = 1f60000
-bootmem::init_bootmem_core nid=5 start=0 map=1f6 end=1000 mapsize=200
-bootmem::mark_bootmem_node nid=5 start=0 end=1000 reserve=0 flags=0 bdata->node_min_pfn=0x0 bdata->node_low_pfn=0x1000
-bootmem::__free nid=5 start=0 end=1000
-reserve_bootmem :
-        physbase :0x0  size:0xb70000 reserve_size=0xb70000 nid=5
-        start_pfn:0x0  end_pfn:0xb7
-        node_ar.start_pfn:0x0 node_ar.end_pfn:0x1000
-        node->node_start_pfn:0x0 node->node_spanned_pages:4096
-bootmem::mark_bootmem_node nid=5 start=0 end=b7 reserve=1 flags=0 bdata->node_min_pfn=0x0 bdata->node_low_pfn=0x1000
-bootmem::__reserve nid=5 start=0 end=b7 flags=0
-reserve_bootmem :
-        physbase :0xd00000  size:0x78209e reserve_size=0x78209e nid=5
-        start_pfn:0xd0  end_pfn:0x148
-        node_ar.start_pfn:0x0 node_ar.end_pfn:0x1000
-        node->node_start_pfn:0x0 node->node_spanned_pages:4096
-bootmem::mark_bootmem_node nid=5 start=d0 end=149 reserve=1 flags=0 bdata->node_min_pfn=0x0 bdata->node_low_pfn=0x1000
-bootmem::__reserve nid=5 start=d0 end=149 flags=0
-reserve_bootmem :
-        physbase :0xd00000  size:0x790000 reserve_size=0x790000 nid=5
-        start_pfn:0xd0  end_pfn:0x149
-        node_ar.start_pfn:0x0 node_ar.end_pfn:0x1000
-        node->node_start_pfn:0x0 node->node_spanned_pages:4096
-bootmem::mark_bootmem_node nid=5 start=d0 end=149 reserve=1 flags=0 bdata->node_min_pfn=0x0 bdata->node_low_pfn=0x1000
-bootmem::__reserve nid=5 start=d0 end=149 flags=0
-bootmem::__reserve silent double reserve of PFN d0
-bootmem::__reserve silent double reserve of PFN d1
-...
-...
-...
-bootmem::__reserve silent double reserve of PFN 147
-bootmem::__reserve silent double reserve of PFN 148
-reserve_bootmem :
-        physbase :0x1f60000  size:0x10000 reserve_size=0x10000 nid=5
-        start_pfn:0x1f6  end_pfn:0x1f7
-        node_ar.start_pfn:0x0 node_ar.end_pfn:0x1000
-        node->node_start_pfn:0x0 node->node_spanned_pages:4096
-bootmem::mark_bootmem_node nid=5 start=1f6 end=1f7 reserve=1 flags=0 bdata->node_min_pfn=0x0 bdata->node_low_pfn=0x1000
-bootmem::__reserve nid=5 start=1f6 end=1f7 flags=0
-reserve_bootmem :
-        physbase :0x1f78800  size:0x10087800 reserve_size=0xe090000 nid=5
-        start_pfn:0x1f7  end_pfn:0x1200
-        node_ar.start_pfn:0x0 node_ar.end_pfn:0x1000
-        node->node_start_pfn:0x0 node->node_spanned_pages:4096
-bootmem::mark_bootmem_node nid=5 start=1f7 end=1001 reserve=1 flags=0 bdata->node_min_pfn=0x0 bdata->node_low_pfn=0x1000
-------------[ cut here ]------------
-kernel BUG at mm/bootmem.c:279!
-cpu 0x0: Vector: 700 (Program Check) at [c0000000008a39d0]
-    pc: c000000000676ec0: .mark_bootmem_node+0xb4/0x12c
-    lr: c000000000676e98: .mark_bootmem_node+0x8c/0x12c
-    sp: c0000000008a3c50
-   msr: 8000000000021032
-  current = 0xc0000000007fa820
-  paca    = 0xc000000000962c00
-    pid   = 0, comm = swapper
-kernel BUG at mm/bootmem.c:279!
-enter ? for help
-[c0000000008a3d00] c000000000661d3c .do_init_bootmem+0xc3c/0xd78
-[c0000000008a3e40] c0000000006567f0 .setup_arch+0x1a4/0x21c
-[c0000000008a3ee0] c000000000650868 .start_kernel+0xdc/0x56c
-[c0000000008a3f90] c0000000000083b8 .start_here_common+0x1c/0x64
-0:mon>
-
---Boundary-00=_s/yZJ+kK7Tmw//I--
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 525c13a..a451a06 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -777,31 +777,6 @@ config TASK_SIZE
+ 	default "0x80000000" if PPC_PREP || PPC_8xx
+ 	default "0xc0000000"
+ 
+-config CONSISTENT_START_BOOL
+-	bool "Set custom consistent memory pool address"
+-	depends on ADVANCED_OPTIONS && NOT_COHERENT_CACHE
+-	help
+-	  This option allows you to set the base virtual address
+-	  of the consistent memory pool.  This pool of virtual
+-	  memory is used to make consistent memory allocations.
+-
+-config CONSISTENT_START
+-	hex "Base virtual address of consistent memory pool" if CONSISTENT_START_BOOL
+-	default "0xfd000000" if (NOT_COHERENT_CACHE && 8xx)
+-	default "0xff100000" if NOT_COHERENT_CACHE
+-
+-config CONSISTENT_SIZE_BOOL
+-	bool "Set custom consistent memory pool size"
+-	depends on ADVANCED_OPTIONS && NOT_COHERENT_CACHE
+-	help
+-	  This option allows you to set the size of the
+-	  consistent memory pool.  This pool of virtual memory
+-	  is used to make consistent memory allocations.
+-
+-config CONSISTENT_SIZE
+-	hex "Size of consistent memory pool" if CONSISTENT_SIZE_BOOL
+-	default "0x00200000" if NOT_COHERENT_CACHE
+-
+ config PIN_TLB
+ 	bool "Pinned Kernel TLBs (860 ONLY)"
+ 	depends on ADVANCED_OPTIONS && 8xx
+diff --git a/arch/powerpc/configs/40x/acadia_defconfig b/arch/powerpc/configs/40x/acadia_defconfig
+index 25572cc..ea5d89c 100644
+--- a/arch/powerpc/configs/40x/acadia_defconfig
++++ b/arch/powerpc/configs/40x/acadia_defconfig
+@@ -265,8 +265,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/40x/ep405_defconfig b/arch/powerpc/configs/40x/ep405_defconfig
+index b80ba7a..1f3ebea 100644
+--- a/arch/powerpc/configs/40x/ep405_defconfig
++++ b/arch/powerpc/configs/40x/ep405_defconfig
+@@ -267,8 +267,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/40x/hcu4_defconfig b/arch/powerpc/configs/40x/hcu4_defconfig
+index 45dcb82..bfb010d 100644
+--- a/arch/powerpc/configs/40x/hcu4_defconfig
++++ b/arch/powerpc/configs/40x/hcu4_defconfig
+@@ -265,8 +265,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/40x/kilauea_defconfig b/arch/powerpc/configs/40x/kilauea_defconfig
+index e2f3695..40e181f 100644
+--- a/arch/powerpc/configs/40x/kilauea_defconfig
++++ b/arch/powerpc/configs/40x/kilauea_defconfig
+@@ -265,8 +265,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/40x/makalu_defconfig b/arch/powerpc/configs/40x/makalu_defconfig
+index 413c778..bb2c4ae 100644
+--- a/arch/powerpc/configs/40x/makalu_defconfig
++++ b/arch/powerpc/configs/40x/makalu_defconfig
+@@ -265,8 +265,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/40x/virtex_defconfig b/arch/powerpc/configs/40x/virtex_defconfig
+index 9a9350d..d082d98 100644
+--- a/arch/powerpc/configs/40x/virtex_defconfig
++++ b/arch/powerpc/configs/40x/virtex_defconfig
+@@ -273,8 +273,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/40x/walnut_defconfig b/arch/powerpc/configs/40x/walnut_defconfig
+index 5820e0a..c1c37eb 100644
+--- a/arch/powerpc/configs/40x/walnut_defconfig
++++ b/arch/powerpc/configs/40x/walnut_defconfig
+@@ -268,8 +268,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/arches_defconfig b/arch/powerpc/configs/44x/arches_defconfig
+index 082158d..2784aa4 100644
+--- a/arch/powerpc/configs/44x/arches_defconfig
++++ b/arch/powerpc/configs/44x/arches_defconfig
+@@ -272,8 +272,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/bamboo_defconfig b/arch/powerpc/configs/44x/bamboo_defconfig
+index f47c2f3..4821b4f 100644
+--- a/arch/powerpc/configs/44x/bamboo_defconfig
++++ b/arch/powerpc/configs/44x/bamboo_defconfig
+@@ -276,8 +276,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/canyonlands_defconfig b/arch/powerpc/configs/44x/canyonlands_defconfig
+index 0694756..be68259 100644
+--- a/arch/powerpc/configs/44x/canyonlands_defconfig
++++ b/arch/powerpc/configs/44x/canyonlands_defconfig
+@@ -272,8 +272,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/ebony_defconfig b/arch/powerpc/configs/44x/ebony_defconfig
+index c993757..8e0ce20 100644
+--- a/arch/powerpc/configs/44x/ebony_defconfig
++++ b/arch/powerpc/configs/44x/ebony_defconfig
+@@ -274,8 +274,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/katmai_defconfig b/arch/powerpc/configs/44x/katmai_defconfig
+index e326ee8..d1767b4 100644
+--- a/arch/powerpc/configs/44x/katmai_defconfig
++++ b/arch/powerpc/configs/44x/katmai_defconfig
+@@ -270,8 +270,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/rainier_defconfig b/arch/powerpc/configs/44x/rainier_defconfig
+index 927f829..fb1309f 100644
+--- a/arch/powerpc/configs/44x/rainier_defconfig
++++ b/arch/powerpc/configs/44x/rainier_defconfig
+@@ -274,8 +274,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/sam440ep_defconfig b/arch/powerpc/configs/44x/sam440ep_defconfig
+index 15f48e0..79ded88 100644
+--- a/arch/powerpc/configs/44x/sam440ep_defconfig
++++ b/arch/powerpc/configs/44x/sam440ep_defconfig
+@@ -275,8 +275,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/sequoia_defconfig b/arch/powerpc/configs/44x/sequoia_defconfig
+index 562beea..ef65b9f 100644
+--- a/arch/powerpc/configs/44x/sequoia_defconfig
++++ b/arch/powerpc/configs/44x/sequoia_defconfig
+@@ -276,8 +276,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/taishan_defconfig b/arch/powerpc/configs/44x/taishan_defconfig
+index 427bb6a..6e97ae9 100644
+--- a/arch/powerpc/configs/44x/taishan_defconfig
++++ b/arch/powerpc/configs/44x/taishan_defconfig
+@@ -274,8 +274,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/virtex5_defconfig b/arch/powerpc/configs/44x/virtex5_defconfig
+index 7513d36..5b2ccd6 100644
+--- a/arch/powerpc/configs/44x/virtex5_defconfig
++++ b/arch/powerpc/configs/44x/virtex5_defconfig
+@@ -278,8 +278,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/44x/warp_defconfig b/arch/powerpc/configs/44x/warp_defconfig
+index 59cbd27..126be06 100644
+--- a/arch/powerpc/configs/44x/warp_defconfig
++++ b/arch/powerpc/configs/44x/warp_defconfig
+@@ -266,8 +266,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/adder875_defconfig b/arch/powerpc/configs/adder875_defconfig
+index 024f279..f5e50c0 100644
+--- a/arch/powerpc/configs/adder875_defconfig
++++ b/arch/powerpc/configs/adder875_defconfig
+@@ -265,8 +265,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0x80000000
+-CONFIG_CONSISTENT_START=0xfd000000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/c2k_defconfig b/arch/powerpc/configs/c2k_defconfig
+index 5078594..b877f07 100644
+--- a/arch/powerpc/configs/c2k_defconfig
++++ b/arch/powerpc/configs/c2k_defconfig
+@@ -307,8 +307,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/ep88xc_defconfig b/arch/powerpc/configs/ep88xc_defconfig
+index 870d289..8aacae7 100644
+--- a/arch/powerpc/configs/ep88xc_defconfig
++++ b/arch/powerpc/configs/ep88xc_defconfig
+@@ -265,8 +265,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0x80000000
+-CONFIG_CONSISTENT_START=0xfd000000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/mgsuvd_defconfig b/arch/powerpc/configs/mgsuvd_defconfig
+index fbaa67f..0da7b58 100644
+--- a/arch/powerpc/configs/mgsuvd_defconfig
++++ b/arch/powerpc/configs/mgsuvd_defconfig
+@@ -262,8 +262,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0x80000000
+-CONFIG_CONSISTENT_START=0xfd000000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/mpc866_ads_defconfig b/arch/powerpc/configs/mpc866_ads_defconfig
+index 8272b1a..e16bd69 100644
+--- a/arch/powerpc/configs/mpc866_ads_defconfig
++++ b/arch/powerpc/configs/mpc866_ads_defconfig
+@@ -262,8 +262,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0x80000000
+-CONFIG_CONSISTENT_START=0xfd000000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/mpc885_ads_defconfig b/arch/powerpc/configs/mpc885_ads_defconfig
+index a4283b6..0937771 100644
+--- a/arch/powerpc/configs/mpc885_ads_defconfig
++++ b/arch/powerpc/configs/mpc885_ads_defconfig
+@@ -272,8 +272,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0x80000000
+-CONFIG_CONSISTENT_START=0xfd000000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/ppc40x_defconfig b/arch/powerpc/configs/ppc40x_defconfig
+index 4256e2c..0cbb6c3 100644
+--- a/arch/powerpc/configs/ppc40x_defconfig
++++ b/arch/powerpc/configs/ppc40x_defconfig
+@@ -275,8 +275,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/ppc44x_defconfig b/arch/powerpc/configs/ppc44x_defconfig
+index cfc94cf..54e5583 100644
+--- a/arch/powerpc/configs/ppc44x_defconfig
++++ b/arch/powerpc/configs/ppc44x_defconfig
+@@ -286,8 +286,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/configs/prpmc2800_defconfig b/arch/powerpc/configs/prpmc2800_defconfig
+index 6046dc0..bb61e21 100644
+--- a/arch/powerpc/configs/prpmc2800_defconfig
++++ b/arch/powerpc/configs/prpmc2800_defconfig
+@@ -272,8 +272,6 @@ CONFIG_PAGE_OFFSET=0xc0000000
+ CONFIG_KERNEL_START=0xc0000000
+ CONFIG_PHYSICAL_START=0x00000000
+ CONFIG_TASK_SIZE=0xc0000000
+-CONFIG_CONSISTENT_START=0xff100000
+-CONFIG_CONSISTENT_SIZE=0x00200000
+ CONFIG_NET=y
+ 
+ #
+diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
+index 31734c0..f6c932f 100644
+--- a/arch/powerpc/lib/dma-noncoherent.c
++++ b/arch/powerpc/lib/dma-noncoherent.c
+@@ -29,121 +29,11 @@
+ #include <linux/types.h>
+ #include <linux/highmem.h>
+ #include <linux/dma-mapping.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/tlbflush.h>
+ 
+ /*
+- * This address range defaults to a value that is safe for all
+- * platforms which currently set CONFIG_NOT_COHERENT_CACHE. It
+- * can be further configured for specific applications under
+- * the "Advanced Setup" menu. -Matt
+- */
+-#define CONSISTENT_BASE	(CONFIG_CONSISTENT_START)
+-#define CONSISTENT_END	(CONFIG_CONSISTENT_START + CONFIG_CONSISTENT_SIZE)
+-#define CONSISTENT_OFFSET(x)	(((unsigned long)(x) - CONSISTENT_BASE) >> PAGE_SHIFT)
+-
+-/*
+- * This is the page table (2MB) covering uncached, DMA consistent allocations
+- */
+-static pte_t *consistent_pte;
+-static DEFINE_SPINLOCK(consistent_lock);
+-
+-/*
+- * VM region handling support.
+- *
+- * This should become something generic, handling VM region allocations for
+- * vmalloc and similar (ioremap, module space, etc).
+- *
+- * I envisage vmalloc()'s supporting vm_struct becoming:
+- *
+- *  struct vm_struct {
+- *    struct vm_region	region;
+- *    unsigned long	flags;
+- *    struct page	**pages;
+- *    unsigned int	nr_pages;
+- *    unsigned long	phys_addr;
+- *  };
+- *
+- * get_vm_area() would then call vm_region_alloc with an appropriate
+- * struct vm_region head (eg):
+- *
+- *  struct vm_region vmalloc_head = {
+- *	.vm_list	= LIST_HEAD_INIT(vmalloc_head.vm_list),
+- *	.vm_start	= VMALLOC_START,
+- *	.vm_end		= VMALLOC_END,
+- *  };
+- *
+- * However, vmalloc_head.vm_start is variable (typically, it is dependent on
+- * the amount of RAM found at boot time.)  I would imagine that get_vm_area()
+- * would have to initialise this each time prior to calling vm_region_alloc().
+- */
+-struct vm_region {
+-	struct list_head	vm_list;
+-	unsigned long		vm_start;
+-	unsigned long		vm_end;
+-};
+-
+-static struct vm_region consistent_head = {
+-	.vm_list	= LIST_HEAD_INIT(consistent_head.vm_list),
+-	.vm_start	= CONSISTENT_BASE,
+-	.vm_end		= CONSISTENT_END,
+-};
+-
+-static struct vm_region *
+-vm_region_alloc(struct vm_region *head, size_t size, gfp_t gfp)
+-{
+-	unsigned long addr = head->vm_start, end = head->vm_end - size;
+-	unsigned long flags;
+-	struct vm_region *c, *new;
+-
+-	new = kmalloc(sizeof(struct vm_region), gfp);
+-	if (!new)
+-		goto out;
+-
+-	spin_lock_irqsave(&consistent_lock, flags);
+-
+-	list_for_each_entry(c, &head->vm_list, vm_list) {
+-		if ((addr + size) < addr)
+-			goto nospc;
+-		if ((addr + size) <= c->vm_start)
+-			goto found;
+-		addr = c->vm_end;
+-		if (addr > end)
+-			goto nospc;
+-	}
+-
+- found:
+-	/*
+-	 * Insert this entry _before_ the one we found.
+-	 */
+-	list_add_tail(&new->vm_list, &c->vm_list);
+-	new->vm_start = addr;
+-	new->vm_end = addr + size;
+-
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-	return new;
+-
+- nospc:
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-	kfree(new);
+- out:
+-	return NULL;
+-}
+-
+-static struct vm_region *vm_region_find(struct vm_region *head, unsigned long addr)
+-{
+-	struct vm_region *c;
+-
+-	list_for_each_entry(c, &head->vm_list, vm_list) {
+-		if (c->vm_start == addr)
+-			goto out;
+-	}
+-	c = NULL;
+- out:
+-	return c;
+-}
+-
+-/*
+  * Allocate DMA-coherent memory space and return both the kernel remapped
+  * virtual and bus address for that space.
+  */
+@@ -151,19 +41,17 @@ void *
+ __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
+ {
+ 	struct page *page;
+-	struct vm_region *c;
+ 	unsigned long order;
++	void *v;
++	int i;
++	struct page *pages[PAGE_ALIGN(size)>>PAGE_SHIFT];
++	struct page *end;
+ 	u64 mask = 0x00ffffff, limit; /* ISA default */
+ 
+-	if (!consistent_pte) {
+-		printk(KERN_ERR "%s: not initialised\n", __func__);
+-		dump_stack();
+-		return NULL;
+-	}
+-
++	BUG_ON(!mem_init_done);
+ 	size = PAGE_ALIGN(size);
+ 	limit = (mask + 1) & ~mask;
+-	if ((limit && size >= limit) || size >= (CONSISTENT_END - CONSISTENT_BASE)) {
++	if (limit && size >= limit) {
+ 		printk(KERN_WARNING "coherent allocation too big (requested %#x mask %#Lx)\n",
+ 		       size, mask);
+ 		return NULL;
+@@ -178,6 +66,8 @@ __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
+ 	if (!page)
+ 		goto no_page;
+ 
++	end = page + (1 << order);
++
+ 	/*
+ 	 * Invalidate any data that might be lurking in the
+ 	 * kernel direct-mapped region for device DMA.
+@@ -188,45 +78,34 @@ __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
+ 		flush_dcache_range(kaddr, kaddr + size);
+ 	}
+ 
++	split_page(page, order);
++
+ 	/*
+-	 * Allocate a virtual address in the consistent mapping region.
++	 * Set the "dma handle"
+ 	 */
+-	c = vm_region_alloc(&consistent_head, size,
+-			    gfp & ~(__GFP_DMA | __GFP_HIGHMEM));
+-	if (c) {
+-		unsigned long vaddr = c->vm_start;
+-		pte_t *pte = consistent_pte + CONSISTENT_OFFSET(vaddr);
+-		struct page *end = page + (1 << order);
+-
+-		split_page(page, order);
+-
+-		/*
+-		 * Set the "dma handle"
+-		 */
+-		*handle = page_to_phys(page);
+-
+-		do {
+-			BUG_ON(!pte_none(*pte));
+-
+-			SetPageReserved(page);
+-			set_pte_at(&init_mm, vaddr,
+-				   pte, mk_pte(page, pgprot_noncached(PAGE_KERNEL)));
+-			page++;
+-			pte++;
+-			vaddr += PAGE_SIZE;
+-		} while (size -= PAGE_SIZE);
++	*handle = page_to_phys(page);
++	for (i = 0; i < size>>PAGE_SHIFT; i++)
++		pages[i] = page + i;
++	v = vmap(pages, size>>PAGE_SHIFT, VM_IOREMAP,
++			pgprot_noncached(PAGE_KERNEL));
++	if (!v)
++		goto out;
+ 
+-		/*
+-		 * Free the otherwise unused pages.
+-		 */
+-		while (page < end) {
+-			__free_page(page);
+-			page++;
+-		}
++	do {
++		SetPageReserved(page);
++		page++;
++	} while (size -= PAGE_SIZE);
+ 
+-		return (void *)c->vm_start;
++	/*
++	 * Free the otherwise unused pages.
++	 */
++	while (page < end) {
++		__free_page(page);
++		page++;
+ 	}
+ 
++	return v;
++     out:
+ 	if (page)
+ 		__free_pages(page, order);
+  no_page:
+@@ -239,105 +118,22 @@ EXPORT_SYMBOL(__dma_alloc_coherent);
+  */
+ void __dma_free_coherent(size_t size, void *vaddr)
+ {
+-	struct vm_region *c;
+-	unsigned long flags, addr;
+-	pte_t *ptep;
++	struct page *page;
+ 
+ 	size = PAGE_ALIGN(size);
++	page = vmalloc_to_page(vaddr);
+ 
+-	spin_lock_irqsave(&consistent_lock, flags);
++	vunmap(vaddr);
+ 
+-	c = vm_region_find(&consistent_head, (unsigned long)vaddr);
+-	if (!c)
+-		goto no_area;
+-
+-	if ((c->vm_end - c->vm_start) != size) {
+-		printk(KERN_ERR "%s: freeing wrong coherent size (%ld != %d)\n",
+-		       __func__, c->vm_end - c->vm_start, size);
+-		dump_stack();
+-		size = c->vm_end - c->vm_start;
+-	}
+-
+-	ptep = consistent_pte + CONSISTENT_OFFSET(c->vm_start);
+-	addr = c->vm_start;
+ 	do {
+-		pte_t pte = ptep_get_and_clear(&init_mm, addr, ptep);
+-		unsigned long pfn;
+-
+-		ptep++;
+-		addr += PAGE_SIZE;
+-
+-		if (!pte_none(pte) && pte_present(pte)) {
+-			pfn = pte_pfn(pte);
+-
+-			if (pfn_valid(pfn)) {
+-				struct page *page = pfn_to_page(pfn);
+-				ClearPageReserved(page);
+-
+-				__free_page(page);
+-				continue;
+-			}
+-		}
+-
+-		printk(KERN_CRIT "%s: bad page in kernel page table\n",
+-		       __func__);
++		ClearPageReserved(page);
++		__free_page(page);
++		page++;
+ 	} while (size -= PAGE_SIZE);
+-
+-	flush_tlb_kernel_range(c->vm_start, c->vm_end);
+-
+-	list_del(&c->vm_list);
+-
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-
+-	kfree(c);
+-	return;
+-
+- no_area:
+-	spin_unlock_irqrestore(&consistent_lock, flags);
+-	printk(KERN_ERR "%s: trying to free invalid coherent area: %p\n",
+-	       __func__, vaddr);
+-	dump_stack();
+ }
+ EXPORT_SYMBOL(__dma_free_coherent);
+ 
+ /*
+- * Initialise the consistent memory allocation.
+- */
+-static int __init dma_alloc_init(void)
+-{
+-	pgd_t *pgd;
+-	pud_t *pud;
+-	pmd_t *pmd;
+-	pte_t *pte;
+-	int ret = 0;
+-
+-	do {
+-		pgd = pgd_offset(&init_mm, CONSISTENT_BASE);
+-		pud = pud_alloc(&init_mm, pgd, CONSISTENT_BASE);
+-		pmd = pmd_alloc(&init_mm, pud, CONSISTENT_BASE);
+-		if (!pmd) {
+-			printk(KERN_ERR "%s: no pmd tables\n", __func__);
+-			ret = -ENOMEM;
+-			break;
+-		}
+-		WARN_ON(!pmd_none(*pmd));
+-
+-		pte = pte_alloc_kernel(pmd, CONSISTENT_BASE);
+-		if (!pte) {
+-			printk(KERN_ERR "%s: no pte tables\n", __func__);
+-			ret = -ENOMEM;
+-			break;
+-		}
+-
+-		consistent_pte = pte;
+-	} while (0);
+-
+-	return ret;
+-}
+-
+-core_initcall(dma_alloc_init);
+-
+-/*
+  * make an area consistent.
+  */
+ void __dma_sync(void *vaddr, size_t size, int direction)
+-- 
+1.6.0.6
