@@ -2,17 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 085ACDE6D7
+	by ozlabs.org (Postfix) with ESMTPS id 09C27DE80C
 	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jan 2009 11:15:22 +1100 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n090FGOY002389
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 18:15:17 -0600
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n090FHEV002392
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jan 2009 18:15:18 -0600
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] powerpc/fsl-booke: Cleanup init/exception setup to be
-	runtime
-Date: Thu,  8 Jan 2009 18:15:15 -0600
-Message-Id: <1231460116-26383-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 2/2] powerpc/e500mc: Doorbells need to be taken w/exceptions
+	disabled
+Date: Thu,  8 Jan 2009 18:15:16 -0600
+Message-Id: <1231460116-26383-2-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1231460116-26383-1-git-send-email-galak@kernel.crashing.org>
+References: <1231460116-26383-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,306 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We currently have a few variants of fsl-booke processors (e500v1, e500v2,
-e500mc, and e200).  They all have minor differences that we had previously
-been handling via ifdefs.
-
-To move towards having this support the following changes have been made:
-
-* PID1, PID2 only exist on e500v1 & e500v2 and should not be accessed on
-  e500mc or e200.  We use MMUCFG[NPIDS] to determine which case we are
-  since we only touch PID1/2 in extremely early init code.
-
-* Not all IVORs exist on all the processors so introduce cpu_setup
-  functions for each variant to setup the proper IVORs that are either
-  unique or exist but have some variations between the processors
+We use Doorbell interrupts for IPIs and thus we need to make sure we aren't
+interrupted in the process of processing the IPI.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/reg_booke.h      |    1 +
- arch/powerpc/kernel/Makefile              |    1 +
- arch/powerpc/kernel/cpu_setup_fsl_booke.S |   31 +++++++++++
- arch/powerpc/kernel/cputable.c            |    8 +++
- arch/powerpc/kernel/head_booke.h          |    6 +-
- arch/powerpc/kernel/head_fsl_booke.S      |   83 +++++++++++++++++++----------
- 6 files changed, 99 insertions(+), 31 deletions(-)
- create mode 100644 arch/powerpc/kernel/cpu_setup_fsl_booke.S
+ arch/powerpc/kernel/head_fsl_booke.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index 6745376..597debe 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -110,6 +110,7 @@
- #define SPRN_L1CSR0	0x3F2	/* L1 Cache Control and Status Register 0 */
- #define SPRN_L1CSR1	0x3F3	/* L1 Cache Control and Status Register 1 */
- #define SPRN_MMUCSR0	0x3F4	/* MMU Control and Status Register 0 */
-+#define SPRN_MMUCFG	0x3F7	/* MMU Configuration Register */
- #define SPRN_PIT	0x3DB	/* Programmable Interval Timer */
- #define SPRN_BUCSR	0x3F5	/* Branch Unit Control and Status */
- #define SPRN_L2CSR0	0x3F9	/* L2 Data Cache Control and Status Register 0 */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 8d1a419..d159921 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -61,6 +61,7 @@ obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o \
- obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
- obj-$(CONFIG_MODULES)		+= module.o module_$(CONFIG_WORD_SIZE).o
- obj-$(CONFIG_44x)		+= cpu_setup_44x.o
-+obj-$(CONFIG_FSL_BOOKE)		+= cpu_setup_fsl_booke.o
- 
- extra-$(CONFIG_PPC_STD_MMU)	:= head_32.o
- extra-$(CONFIG_PPC64)		:= head_64.o
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-new file mode 100644
-index 0000000..eb4b9ad
---- /dev/null
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -0,0 +1,31 @@
-+/*
-+ * This file contains low level CPU setup functions.
-+ * Kumar Gala <galak@kernel.crashing.org>
-+ * Copyright 2009 Freescale Semiconductor, Inc.
-+ *
-+ * Based on cpu_setup_6xx code by
-+ * Benjamin Herrenschmidt <benh@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ */
-+
-+#include <asm/processor.h>
-+#include <asm/cputable.h>
-+#include <asm/ppc_asm.h>
-+
-+_GLOBAL(__setup_cpu_e200)
-+	/* enable dedicated debug exception handling resources (Debug APU) */
-+	mfspr	r3,SPRN_HID0
-+	ori	r3,r3,HID0_DAPUEN@l
-+	mtspr	SPRN_HID0,r3
-+	b	__setup_e200_ivors
-+_GLOBAL(__setup_cpu_e500v1)
-+_GLOBAL(__setup_cpu_e500v2)
-+	b	__setup_e500_ivors
-+_GLOBAL(__setup_cpu_e500mc)
-+	b	__setup_e500mc_ivors
-+
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 923f87a..9fdf1b8 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -35,6 +35,10 @@ const char *powerpc_base_platform;
-  * and ppc64
-  */
- #ifdef CONFIG_PPC32
-+extern void __setup_cpu_e200(unsigned long offset, struct cpu_spec* spec);
-+extern void __setup_cpu_e500v1(unsigned long offset, struct cpu_spec* spec);
-+extern void __setup_cpu_e500v2(unsigned long offset, struct cpu_spec* spec);
-+extern void __setup_cpu_e500mc(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_440ep(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_440gx(unsigned long offset, struct cpu_spec* spec);
-@@ -1687,6 +1691,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 			PPC_FEATURE_UNIFIED_CACHE,
- 		.mmu_features		= MMU_FTR_TYPE_FSL_E,
- 		.dcache_bsize		= 32,
-+		.cpu_setup		= __setup_cpu_e200,
- 		.machine_check		= machine_check_e200,
- 		.platform		= "ppc5554",
- 	}
-@@ -1706,6 +1711,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.num_pmcs		= 4,
- 		.oprofile_cpu_type	= "ppc/e500",
- 		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
-+		.cpu_setup		= __setup_cpu_e500v1,
- 		.machine_check		= machine_check_e500,
- 		.platform		= "ppc8540",
- 	},
-@@ -1724,6 +1730,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.num_pmcs		= 4,
- 		.oprofile_cpu_type	= "ppc/e500",
- 		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
-+		.cpu_setup		= __setup_cpu_e500v2,
- 		.machine_check		= machine_check_e500,
- 		.platform		= "ppc8548",
- 	},
-@@ -1739,6 +1746,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.num_pmcs		= 4,
- 		.oprofile_cpu_type	= "ppc/e500", /* xxx - galak, e500mc? */
- 		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
-+		.cpu_setup		= __setup_cpu_e500mc,
- 		.machine_check		= machine_check_e500,
- 		.platform		= "ppce500mc",
- 	},
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index fce2df9..bec1807 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -70,10 +70,10 @@
- 
- /* only on e500mc/e200 */
- #define DEBUG_STACK_BASE	dbgirq_ctx
--#ifdef CONFIG_PPC_E500MC
--#define DEBUG_SPRG		SPRN_SPRG9
--#else
-+#ifdef CONFIG_E200
- #define DEBUG_SPRG		SPRN_SPRG6W
-+#else
-+#define DEBUG_SPRG		SPRN_SPRG9
- #endif
- 
- #define EXC_LVL_FRAME_OVERHEAD	(THREAD_SIZE - INT_FRAME_SIZE - EXC_LVL_SIZE)
 diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 2f32720..6062669 100644
+index 6062669..475c937 100644
 --- a/arch/powerpc/kernel/head_fsl_booke.S
 +++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -103,10 +103,15 @@ invstr:	mflr	r6				/* Make it accessible */
- 	or	r7,r7,r4
- 	mtspr	SPRN_MAS6,r7
- 	tlbsx	0,r6				/* search MSR[IS], SPID=PID0 */
--#ifndef CONFIG_E200
- 	mfspr	r7,SPRN_MAS1
- 	andis.	r7,r7,MAS1_VALID@h
- 	bne	match_TLB
-+
-+	mfspr	r7,SPRN_MMUCFG
-+	rlwinm	r7,r7,21,28,31			/* extract MMUCFG[NPIDS] */
-+	cmpwi	r7,3
-+	bne	match_TLB			/* skip if NPIDS != 3 */
-+
- 	mfspr	r7,SPRN_PID1
- 	slwi	r7,r7,16
- 	or	r7,r7,r4
-@@ -120,7 +125,7 @@ invstr:	mflr	r6				/* Make it accessible */
- 	or	r7,r7,r4
- 	mtspr	SPRN_MAS6,r7
- 	tlbsx	0,r6				/* Fall through, we had to match */
--#endif
-+
- match_TLB:
- 	mfspr	r7,SPRN_MAS0
- 	rlwinm	r3,r7,16,20,31			/* Extract MAS0(Entry) */
-@@ -215,14 +220,19 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 
- /* 4. Clear out PIDs & Search info */
- 	li	r6,0
-+	mtspr   SPRN_MAS6,r6
- 	mtspr	SPRN_PID0,r6
--#ifndef CONFIG_E200
-+
-+	mfspr	r7,SPRN_MMUCFG
-+	rlwinm	r7,r7,21,28,31			/* extract MMUCFG[NPIDS] */
-+	cmpwi	r7,3
-+	bne	2f				/* skip if NPIDS != 3 */
-+
- 	mtspr	SPRN_PID1,r6
- 	mtspr	SPRN_PID2,r6
--#endif
--	mtspr	SPRN_MAS6,r6
- 
- /* 5. Invalidate mapping we started in */
-+2:
- 	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
- 	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
- 	mtspr	SPRN_MAS0,r7
-@@ -298,19 +308,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	SET_IVOR(12, WatchdogTimer);
- 	SET_IVOR(13, DataTLBError);
- 	SET_IVOR(14, InstructionTLBError);
--	SET_IVOR(15, DebugDebug);
--#if defined(CONFIG_E500) && !defined(CONFIG_PPC_E500MC)
- 	SET_IVOR(15, DebugCrit);
--#endif
--	SET_IVOR(32, SPEUnavailable);
--	SET_IVOR(33, SPEFloatingPointData);
--	SET_IVOR(34, SPEFloatingPointRound);
--#ifndef CONFIG_E200
--	SET_IVOR(35, PerformanceMonitor);
--#endif
--#ifdef CONFIG_PPC_E500MC
--	SET_IVOR(36, Doorbell);
--#endif
- 
- 	/* Establish the interrupt vector base */
- 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
-@@ -329,12 +327,6 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	oris	r2,r2,HID0_DOZE@h
- 	mtspr	SPRN_HID0, r2
- #endif
--#ifdef CONFIG_E200
--	/* enable dedicated debug exception handling resources (Debug APU) */
--	mfspr	r2,SPRN_HID0
--	ori	r2,r2,HID0_DAPUEN@l
--	mtspr	SPRN_HID0,r2
--#endif
- 
- #if !defined(CONFIG_BDI_SWITCH)
- 	/*
-@@ -705,16 +697,12 @@ interrupt_base:
- 
+@@ -698,7 +698,7 @@ interrupt_base:
  	/* Performance Monitor */
  	EXCEPTION(0x2060, PerformanceMonitor, performance_monitor_exception, EXC_XFER_STD)
--
--#ifdef CONFIG_PPC_E500MC
-+	
- 	EXCEPTION(0x2070, Doorbell, unknown_exception, EXC_XFER_EE)
--#endif
+ 	
+-	EXCEPTION(0x2070, Doorbell, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x2070, Doorbell, unknown_exception, EXC_XFER_STD)
  
  	/* Debug Interrupt */
  	DEBUG_DEBUG_EXCEPTION
--#if defined(CONFIG_E500) && !defined(CONFIG_PPC_E500MC)
- 	DEBUG_CRIT_EXCEPTION
--#endif
- 
- /*
-  * Local functions
-@@ -897,6 +885,45 @@ KernelSPE:
-  * Global functions
-  */
- 
-+/* Adjust or setup IVORs for e200 */
-+_GLOBAL(__setup_e200_ivors)
-+	li	r3,DebugDebug@l
-+	mtspr	SPRN_IVOR15,r3
-+	li	r3,SPEUnavailable@l
-+	mtspr	SPRN_IVOR32,r3
-+	li	r3,SPEFloatingPointData@l
-+	mtspr	SPRN_IVOR33,r3
-+	li	r3,SPEFloatingPointRound@l
-+	mtspr	SPRN_IVOR34,r3
-+	sync
-+	blr
-+
-+/* Adjust or setup IVORs for e500v1/v2 */
-+_GLOBAL(__setup_e500_ivors)
-+	li	r3,DebugCrit@l
-+	mtspr	SPRN_IVOR15,r3
-+	li	r3,SPEUnavailable@l
-+	mtspr	SPRN_IVOR32,r3
-+	li	r3,SPEFloatingPointData@l
-+	mtspr	SPRN_IVOR33,r3
-+	li	r3,SPEFloatingPointRound@l
-+	mtspr	SPRN_IVOR34,r3
-+	li	r3,PerformanceMonitor@l
-+	mtspr	SPRN_IVOR35,r3
-+	sync
-+	blr
-+
-+/* Adjust or setup IVORs for e500mc */
-+_GLOBAL(__setup_e500mc_ivors)
-+	li	r3,DebugDebug@l
-+	mtspr	SPRN_IVOR15,r3
-+	li	r3,PerformanceMonitor@l
-+	mtspr	SPRN_IVOR35,r3
-+	li	r3,Doorbell@l
-+	mtspr	SPRN_IVOR36,r3
-+	sync
-+	blr
-+
- /*
-  * extern void loadcam_entry(unsigned int index)
-  *
 -- 
 1.5.6.5
