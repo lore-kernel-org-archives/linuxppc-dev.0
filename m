@@ -1,26 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <loko@el-kfa.net>
+Received: from taurus.el-kfa.net (unknown [193.24.199.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 186E7DE80A
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 10:13:30 +1100 (EST)
-Subject: Re: mal_probe crash
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-In-Reply-To: <20090109223410.GA18319@gondor.apana.org.au>
-References: <20090107154434.0c9437ef@lappy.seanm.ca>
-	<20090108204634.GB2337@yoda.jdub.homelinux.org>
-	<1231368610.2142.27.camel@pasglop>
-	<Pine.LNX.4.64.0901091533000.13230@vixen.sonytel.be>
-	<20090109223410.GA18319@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Sat, 10 Jan 2009 10:13:11 +1100
-Message-Id: <1231542792.2142.87.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id 17079DE93F
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jan 2009 06:30:31 +1100 (EST)
+Date: Fri, 9 Jan 2009 20:30:10 +0100
+From: "Pawel P. Kusmierski" <loko@el-kfa.net>
+To: John Linn <John.Linn@xilinx.com>
+Subject: Re: Linux on Memec Virtex4 FX12 Minimodule
+Message-ID: <20090109193010.GA60446@taurus.el-kfa.net>
+References: <20090107010200.GA89569@taurus.el-kfa.net>
+	<20090109155237.38F0914005C@mail39-sin.bigfish.com>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090109155237.38F0914005C@mail39-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, "Pawel P. Kusmierski" <loko-r@el-kfa.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2009-01-10 at 09:34 +1100, Herbert Xu wrote:
-> On Fri, Jan 09, 2009 at 03:42:25PM +0100, Geert Uytterhoeven wrote:
-> > On Thu, 8 Jan 2009, Benjamin Herrenschmidt wrote:
-> >
-> > > There isn't that I know of. The EMAC code creates a single NAPI instance
-> > > for all EMACs and I think used to completely disconnect things. The old
-> > > code created a fake netdev just for NAPI, that became unnecessary with
-> > > the new NAPI stuff.... but it looks like the way we do things now
-> > > displeases some changes in the network stack. I'll have to dig.
-> > 
-> > Verified on my Sequoia (which now lost its network :-(
-> > 
-> > The regression/problem (requiring a valid net_device in netif_napi_add(), even
-> > if CONFIG_NETPOLL=n) seems to be introduced by commit
-> > d565b0a1a9b6ee7dff46e1f68b26b526ac11ae50 ("net: Add Generic Receive Offload
-> > infrastructure").
-> 
-> Yes EMAC just needs to go back to the old fake dev setup.
+John,
 
-One thing I wanted to do back then... which triggered the discussion
-with Stephen just before he broke NAPI up from netdev, was to add a core
-function that creates such dummy netdev so that drivers don't have to
-break every time some new internal field changes or such...
+Thanks a lot for your reply.
+I didn't nottice the http://xilinx.wikidot.com/ site before,
+it looks very interesting.
+I gave ARCH=powerpc a try, but it didn't even boot, so I guess
+I'll try again with the site's guidance and more attention.
 
-I'll give that a spin asap, though it might have to wait for monday.
-
-Cheers,
-Ben.
+Kind regards,
+-- 
+Pawel P. Kusmierski
+loko@el-kfa.net
