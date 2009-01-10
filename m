@@ -1,20 +1,25 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Patch 0/3] Overview, OProfile SPU event profiling support for
-	IBM Cell processor
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 83DC3DDF1F
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Jan 2009 10:33:10 +1100 (EST)
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Carl Love <cel@us.ibm.com>
-In-Reply-To: <1231460791.6621.54.camel@carll-linux-desktop>
-References: <1228177106.6509.285.camel@carll-linux-desktop>
-	<20090108154835.GQ15411@erda.amd.com>
-	<1231460791.6621.54.camel@carll-linux-desktop>
+To: Ira Snyder <iws@ovro.caltech.edu>
+In-Reply-To: <20090108215127.GA28935@ovro.caltech.edu>
+References: <20090107195052.GA24981@ovro.caltech.edu>
+	<20090108.111610.132149837.davem@davemloft.net>
+	<20090108192716.GA19863@ovro.caltech.edu>
+	<20090108215127.GA28935@ovro.caltech.edu>
 Content-Type: text/plain
-Date: Sun, 11 Jan 2009 10:31:09 +1100
-Message-Id: <1231630269.2142.91.camel@pasglop>
+Date: Sun, 11 Jan 2009 10:32:35 +1100
+Message-Id: <1231630355.2142.92.camel@pasglop>
 Mime-Version: 1.0
-Cc: Robert Richter <robert.richter@amd.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev <cbe-oss-dev@ozlabs.org>
+Cc: arnd@arndb.de, netdev@vger.kernel.org,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	shemminger@vyatta.com, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-01-08 at 16:26 -0800, Carl Love wrote:
-> I pulled down the git tree, compiled and installed it.  I tested it
-> against the OProfile testsuite, which includes SPU event profiling
-> tests.  Everything passed.  The patch I submitted was against a 2.6.26
-> tree.  You are now on a 2.6.28 tree so perhaps that is why the patch did
-> not apply cleanly.  The patch has been out there for some time.  
+On Thu, 2009-01-08 at 13:51 -0800, Ira Snyder wrote:
+> The guests (PowerPC computers running Linux) are PCI cards in the host
+> system (an Intel Pentium3-M system). The guest computers can access all
+> of the host's memory. The guests provide a 1MB (movable) window into
+> their memory.
+> 
+> The PowerPC computers also have a DMA controller, which I've used to get
+> better throughput from my driver. I have a way to create interrupts to
+> both the host and guest systems.
 
-When you submited it on Dec 2, it should have been against whatever was
-the latest upstream at the time, not 2.6.26.
+That looks -very- similar to the PCI driver for CAB and Cell triblades
+that was, I think, submitted a while ago. Arnd what's the status with
+that driver ?
 
 Cheers,
 Ben.
