@@ -1,30 +1,16 @@
-Return-Path: <rpurdie@rpsys.net>
-Received: from tim.rpsys.net (93-97-173-237.zone5.bethere.co.uk
-	[93.97.173.237])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 46217DDFC8
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 00:39:15 +1100 (EST)
-Subject: Re: [GIT PULL] LED updates for 2.6.29
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Trent Piepho <xyzzy@speakeasy.org>
-In-Reply-To: <Pine.LNX.4.58.0901110416510.1626@shell2.speakeasy.net>
-References: <1231500186.5317.9.camel@dax.rpnet.com>
-	<Pine.LNX.4.64.0901091231310.22972@t2.domain.actdsltmp>
-	<1231543199.5317.63.camel@dax.rpnet.com>
-	<Pine.LNX.4.58.0901100428230.1626@shell2.speakeasy.net>
-	<1231633983.5330.32.camel@dax.rpnet.com>
-	<Pine.LNX.4.58.0901102138300.1626@shell2.speakeasy.net>
-	<1231674559.5304.13.camel@dax.rpnet.com>
-	<Pine.LNX.4.58.0901110416510.1626@shell2.speakeasy.net>
-Content-Type: text/plain
-Date: Sun, 11 Jan 2009 13:39:05 +0000
-Message-Id: <1231681145.5304.31.camel@dax.rpnet.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Guennadi Liakhovetski <lg@denx.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 18BD3DDF7E
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 02:30:16 +1100 (EST)
+Date: Sun, 11 Jan 2009 18:30:13 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/83xx: Make serial ports work on MPC8315E-RDB w/
+	FSL U-Boots
+Message-ID: <20090111153013.GA31791@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,28 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2009-01-11 at 04:58 -0800, Trent Piepho wrote:
-> It doesn't seem right to merge someone's patches together, make a very
-> small change, and then no longer credit them as the author.  Seems like it
-> defeats the purpose of the SOB lines for tracing the train of custody too.
-> If someone looks to see where the code came from, it will look like you
-> wrote it.  Maybe Freescale will say Intel stole our code?  Without the SOB,
-> what record is there in git that Freescale gave permission to put the code
-> in the kernel?
-> 
-> I also put some significant effort into writing informative commit
-> messages, which have been lost.  Along with Grant's acks for my patches.
+FSL U-Boots use /soc8315@e0000000 node to search and fixup serial
+nodes' clock-frequency properties. Though in upstream kernels we use
+new naming convention -- for IMMR address space dts files specify
+/immr@e0000000 nodes.
 
-It also doesn't make sense to make three changes adding different
-interfaces and rearranging the same section of code three different
-times. I'm dropping the patch, please send me a merged version of those
-patches with a commit message you're happy with. If you want Acked-by
-lines, we'll have to wait for them on the new patch as I'm going to do
-this exactly by the book regardless of time pressures now. Please
-indicate who you want Ack-ed by lines from so I know who to wait for.
-Also, you'd better exclude the suspend/resume change and credit me for
-the bitfield change, just to be 100% sure this is all legally accurate.
+This makes FSL U-Boots fail to fixup the clock frequencies, and that
+leads to serial ports misbehaviour. We can workaround the issue by
+filling the clock frequency values manually.
 
-Regards,
+p.s. For the same reason FSL U-Boots fail to fixup MAC addresses for
+ethernet nodes, so users should either change the .dts file locally
+or set MAC address via `ifconfig hw ether' command.
 
-Richard
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+
+Leon,
+
+With this patch 2.6.28 kernel boots and works fine with the U-Boot
+I took from this image (downloadable from freescale.com):
+
+$ md5sum MPC8315ERDB_20080321-ltib.iso
+009730826366d593347b88fa4fdb9be0  MPC8315ERDB_20080321-ltib.iso
+
+That is, U-Boot 1.3.0-rc2 (Mar 21 2008 - 13:36:09) MPC83XX
+
+ arch/powerpc/boot/dts/mpc8315erdb.dts |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+index 9a4fa2a..88d691c 100644
+--- a/arch/powerpc/boot/dts/mpc8315erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+@@ -257,7 +257,7 @@
+ 			device_type = "serial";
+ 			compatible = "ns16550";
+ 			reg = <0x4500 0x100>;
+-			clock-frequency = <0>;
++			clock-frequency = <133333333>;
+ 			interrupts = <9 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 		};
+@@ -267,7 +267,7 @@
+ 			device_type = "serial";
+ 			compatible = "ns16550";
+ 			reg = <0x4600 0x100>;
+-			clock-frequency = <0>;
++			clock-frequency = <133333333>;
+ 			interrupts = <10 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 		};
+-- 
+1.5.6.5
