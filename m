@@ -1,26 +1,23 @@
-Return-Path: <rpurdie@rpsys.net>
-Received: from tim.rpsys.net (93-97-173-237.zone5.bethere.co.uk
-	[93.97.173.237])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 09B1ADE552
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Jan 2009 12:06:08 +1100 (EST)
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id E4F55474C9
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Jan 2009 12:20:07 +1100 (EST)
+Date: Sun, 11 Jan 2009 02:20:06 +0100 (CET)
+From: Guennadi Liakhovetski <lg@denx.de>
+To: Richard Purdie <rpurdie@rpsys.net>
 Subject: Re: [GIT PULL] LED updates for 2.6.29
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Trent Piepho <xyzzy@speakeasy.org>
-In-Reply-To: <Pine.LNX.4.58.0901100428230.1626@shell2.speakeasy.net>
+In-Reply-To: <1231633983.5330.32.camel@dax.rpnet.com>
+Message-ID: <Pine.LNX.4.64.0901110216030.24501@axis700.grange>
 References: <1231500186.5317.9.camel@dax.rpnet.com>
 	<Pine.LNX.4.64.0901091231310.22972@t2.domain.actdsltmp>
 	<1231543199.5317.63.camel@dax.rpnet.com>
 	<Pine.LNX.4.58.0901100428230.1626@shell2.speakeasy.net>
-Content-Type: text/plain
-Date: Sun, 11 Jan 2009 00:33:03 +0000
-Message-Id: <1231633983.5330.32.camel@dax.rpnet.com>
-Mime-Version: 1.0
+	<1231633983.5330.32.camel@dax.rpnet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Guennadi Liakhovetski <lg@denx.de>,
 	Linus Torvalds <torvalds@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>
+	Trent Piepho <xyzzy@speakeasy.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,54 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2009-01-10 at 04:31 -0800, Trent Piepho wrote:
-> On Fri, 9 Jan 2009, Richard Purdie wrote:
-> > On Fri, 2009-01-09 at 12:37 -0800, Trent Piepho wrote:
-> > > On Fri, 9 Jan 2009, Richard Purdie wrote:
-> > > > for the LED tree updates for 2.6.29. This includes some new drivers,
-> > > > bugfixes and a core improvement resulting in nicer code.
-> > > >
-> > >
-> > > Any chance of these patches getting accepted?  They've been going back and
-> > > forth for months now.
-> > >
-> > > [v2,1/4] leds: Support OpenFirmware led bindings
-> > > http://patchwork.ozlabs.org/patch/13581/
-> > >
-> > > [v2,2/4] leds: Add option to have GPIO LEDs start on
-> > > http://patchwork.ozlabs.org/patch/13580/
-> > >
-> > > [v2,3/4] leds: Let GPIO LEDs keep their current state
-> > > http://patchwork.ozlabs.org/patch/13583/
-> > >
-> > > [v2,4/4] leds: Use tristate property in platform data
-> > > http://patchwork.ozlabs.org/patch/13584/
-> >
-> > I think there was some confusion as to who was going to take them. Are
-> > the PPC people happy with them? If so I'll merge through the LED tree.
-> > There are these and a couple of other patches around which have got lost
-> > in the system. If there is time which I'm hoping there might be, I'll
-> > try and get a second LED tree merge in.
+On Sun, 11 Jan 2009, Richard Purdie wrote:
+
+> Ok, these are now queued in the LED tree:
 > 
-> The LED tree makes more sense for what's left I think.  There was a
-> openfirmware gpio patch, but that's already gone in.  What's left only
-> touches led files and the device tree binding docs.
+> http://git.o-hand.com/cgit.cgi/linux-rpurdie-leds/log/
 > 
-> AFAIK, there were no objections to the patches left.
+> I did merge the last three patches in one and make some changes to deal
+> with some other outstanding issues. Let me know ASAP if there are any
+> problems.
 
-Ok, these are now queued in the LED tree:
+As already replied off-list, looks good mostly to me. Just have to keep in 
+mind, that this version relies on drivers initialising their struct 
+led_classdev instances to 0. Maybe it would be better to set the new 
+max_brightness to 0 (or to LED_FULL) explicitly for them, as I was doing 
+in my v2 of the patch.
 
-http://git.o-hand.com/cgit.cgi/linux-rpurdie-leds/log/
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
 
-I did merge the last three patches in one and make some changes to deal
-with some other outstanding issues. Let me know ASAP if there are any
-problems.
-
-Cheers,
-
-Richard
-
-
--- 
-Richard Purdie
-Intel Open Source Technology Centre
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
