@@ -1,23 +1,29 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+Return-Path: <florian.belser@freenet.de>
+Received: from mout5.freenet.de (mout5.freenet.de [195.4.92.95])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 370AADE197
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 23:05:55 +1100 (EST)
-Date: Mon, 12 Jan 2009 13:05:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.29-rc1 - Badness at kernel/sched.c:4440 with
-	CONFIG_DEBUG_PREEMPT
-Message-ID: <20090112120538.GB24266@elte.hu>
-References: <20090112113914.GC8409@linux.vnet.ibm.com>
+	by ozlabs.org (Postfix) with ESMTPS id 5BA98DE088
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 23:14:40 +1100 (EST)
+Received: from [195.4.92.27] (helo=17.mx.freenet.de)
+	by mout5.freenet.de with esmtpa (ID florian.belser@freenet.de) (port
+	25) (Exim 4.69 #76) id 1LMLga-00013T-LJ
+	for linuxppc-dev@ozlabs.org; Mon, 12 Jan 2009 13:14:34 +0100
+Received: from web6.emo.freenet-rz.de ([194.97.107.219]:53606)
+	by 17.mx.freenet.de with esmtpa (ID florian.belser@freenet.de) (port
+	25) (Exim 4.69 #76) id 1LMLga-0006xM-KG
+	for linuxppc-dev@ozlabs.org; Mon, 12 Jan 2009 13:14:28 +0100
+Received: from localhost ([127.0.0.1] helo=emo.freenet.de)
+	by web6.emo.freenet-rz.de with esmtpa (Exim 4.67 1 (Panther_1))
+	id 1LMLgZ-000726-Ok
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 13:14:27 +0100
+Date: Mon, 12 Jan 2009 13:14:27 +0100
+From: florian.belser@freenet.de
+Subject: Re:mpc5200b configure nand driver via dts 
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090112113914.GC8409@linux.vnet.ibm.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, dhaval@linux.vnet.ibm.com,
-	mel@csn.ul.ie, vatsa@linux.vnet.ibm.com,
-	linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	linuxppc-dev@ozlabs.org, Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Message-Id: <c88a661496413b6403acca005a54be3a@email.freenet.de>
+Content-Type: multipart/alternative;
+	boundary="emo_01_f4c77d4a468325705c8d767d669b16fe"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,62 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--emo_01_f4c77d4a468325705c8d767d669b16fe
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Hi,=0AI forgot to post the following informations:=0Akernel version:
+Linux-2.6.28-rc6=0Au-boot version : 2008.10-rc3=0Athanks=0Aflorian
+belser=0A=0AGratis: Jeden Monat 3 SMS versenden-=0AMit freenetMail - Ihrer
+kostenlose
+E-Mail-Adresse=0Ahttp://email.freenet.de/dienste/emailoffice/produktuebersi=
+cht/basic/sms/index.html?pid=3D6830=0A
 
-> Hi Ingo,
-> 
-> 	While booting up 2.6.29-rc1 kernel on powerpc machine, Kernel
-> Badness warning is seen, when compiled with CONFIG_DEBUG_PREEMPT=y
+--emo_01_f4c77d4a468325705c8d767d669b16fe
+Content-Type: text/html; charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> kernel warning is not seen after reverting the patch.
-> 
-> commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd
-> Author: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date:   Tue Sep 30 20:50:27 2008 +1000
-> 
->     sched: improve preempt debugging
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0
+Transitional//DE"><HTML><HEAD><META HTTP-EQUIV=3D"Content-Type"
+CONTENT=3D"text/html;
+charset=3Dus-ascii"><TITLE>Message</TITLE></HEAD><BODY><P>Hi,</P>
+<P>I forgot to post the following informations:</P>
+<P>kernel version: Linux-2.6.28-rc6</P>
+<P>u-boot version : 2008.10-rc3</P>
+<P>thanks</P>
+<P>florian belser</P>=0A=0A=0A<br>--<br><!-- AdSpace freenet EMO Webmail
+Banner --> =0A<a
+href=3D"http://adserver.freenet.de/click.ng/site=3Dfn&prod=3Dchetools&kat=
+=3Dinhalte&tbl=3Dwebmail&ppos=3D14&TransactionID=3D1231762467741015&rgtg=3D=
+256"
+target=3D"_blank"><img
+src=3D"http://adserver.freenet.de/image.ng/site=3Dfn&prod=3Dchetools&kat=3D=
+inhalte&tbl=3Dwebmail&ppos=3D14&TransactionID=3D1231762467741015&rgtg=3D256=
+"
+border=3D"0"></a><!-- / AdSpace -->=0A</BODY></HTML>
 
-thanks. This has been bisected before by Alexey Zaytsev so i've now 
-reverted the commit in tip/sched/urgent and will send it to Linus ASAP. 
-The revert commit can be found below.
-
-	Ingo
-
---------------------->
->From 01e3eb82278bf45221fc38b391bc5ee0f6a314d6 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 12 Jan 2009 13:00:50 +0100
-Subject: [PATCH] Revert "sched: improve preempt debugging"
-
-This reverts commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd.
-
-This has been reported (and bisected) by Alexey Zaytsev and
-Kamalesh Babulal to produce annoying warnings during bootup
-on both x86 and powerpc.
-
-kernel_locked() is not a valid test in IRQ context (we update the
-BKL's ->lock_depth and the preempt count separately and non-atomicalyy),
-so we cannot put it into the generic preempt debugging checks which
-can run in IRQ contexts too.
-
-Reported-and-bisected-by: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Reported-and-bisected-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8be2c13..3b630d8 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4440,7 +4440,7 @@ void __kprobes sub_preempt_count(int val)
- 	/*
- 	 * Underflow?
- 	 */
--       if (DEBUG_LOCKS_WARN_ON(val > preempt_count() - (!!kernel_locked())))
-+	if (DEBUG_LOCKS_WARN_ON(val > preempt_count()))
- 		return;
- 	/*
- 	 * Is the spinlock portion underflowing?
+--emo_01_f4c77d4a468325705c8d767d669b16fe--
