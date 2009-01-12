@@ -2,20 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D3551DE076
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 02:10:01 +1100 (EST)
-Message-Id: <C37C3C8D-0DAA-4174-9A19-E2983CD32380@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 6872ADE2EF
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 02:10:22 +1100 (EST)
+Message-Id: <27159C32-9F05-4E21-98CE-0F157934D14B@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED13DD10@zch01exm26.fsl.freescale.net>
+To: Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20090111181055.31611474@hyperion.delvare>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc/83xx: Make serial ports work on MPC8315E-RDB
-	w/FSL U-Boots
-Date: Mon, 12 Jan 2009 09:07:48 -0600
-References: <20090111153013.GA31791@oksana.dev.rtsoft.ru>
-	<3A45394FD742FA419B760BB8D398F9ED13DD10@zch01exm26.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/83xx: Move mcu_mpc8349emitx driver out of
+	drivers/i2c/chips/
+Date: Mon, 12 Jan 2009 09:10:02 -0600
+References: <20090111165136.GA26096@oksana.dev.rtsoft.ru>
+	<20090111181055.31611474@hyperion.delvare>
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +26,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 12, 2009, at 1:55 AM, Li Yang wrote:
+On Jan 11, 2009, at 11:10 AM, Jean Delvare wrote:
 
->> -----Original Message-----
->> From: linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org
->> [mailto:linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org]
->> On Behalf Of Anton Vorontsov
->> Sent: Sunday, January 11, 2009 11:30 PM
->> To: Kumar Gala
->> Cc: linuxppc-dev@ozlabs.org
->> Subject: [PATCH] powerpc/83xx: Make serial ports work on
->> MPC8315E-RDB w/FSL U-Boots
->>
->> FSL U-Boots use /soc8315@e0000000 node to search and fixup
->> serial nodes' clock-frequency properties. Though in upstream
->> kernels we use new naming convention -- for IMMR address
->> space dts files specify /immr@e0000000 nodes.
->>
->> This makes FSL U-Boots fail to fixup the clock frequencies,
->> and that leads to serial ports misbehaviour. We can
->> workaround the issue by filling the clock frequency values manually.
+> Hi Anton,
 >
-> Freescale BSP is for customer who needs the out-of-box experience.   
-> It's
-> better tested, but doesn't update very frequently.  I would suggest  
-> the
-> customer to use the upstream u-boot, if they decide to use latest
-> upstream kernel.
+> On Sun, 11 Jan 2009 19:51:36 +0300, Anton Vorontsov wrote:
+>> This patch is used to help Jean Delvare to get rid of drivers/i2c/ 
+>> chips/
+>> directory. The new location suggested by Kumar Gala: as the driver is
+>> 83xx specific it's placed into arch/powerpc/platforms/83xx/.
+>>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 >
-> - Leo
+> Thanks for doing this. Do you expect me to take this patch in my i2c
+> tree, or will it go in some powerpc tree?
 
-Agreed.  However I don't think there is any harm w/the patch as  
-upstream u-boot will update the property.
+I'll pick this up.
 
 - k
