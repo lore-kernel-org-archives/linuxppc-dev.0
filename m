@@ -1,21 +1,18 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [Patch 0/3] Overview,
-	OProfile SPU event profiling support for IBM Cell processor
-Date: Mon, 12 Jan 2009 18:59:30 +0100
-References: <1228177106.6509.285.camel@carll-linux-desktop>
-	<1231776927.6621.112.camel@carll-linux-desktop>
-	<20090112175244.GJ15411@erda.amd.com>
-In-Reply-To: <20090112175244.GJ15411@erda.amd.com>
+Return-Path: <bzolnier@gmail.com>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2/9] sl82c105: remove dead code
+Date: Mon, 12 Jan 2009 18:59:47 +0100
+References: <20090106183520.21193.63704.sendpatchset@localhost.localdomain>
+	<20090106183526.21193.24866.sendpatchset@localhost.localdomain>
+	<496A613F.5090901@ru.mvista.com>
+In-Reply-To: <496A613F.5090901@ru.mvista.com>
 MIME-Version: 1.0
+Message-Id: <200901121859.48001.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200901121859.30897.arnd@arndb.de>
-Cc: Robert Richter <robert.richter@amd.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>,
-	cbe-oss-dev <cbe-oss-dev@ozlabs.org>, Carl Love <cel@us.ibm.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 12 January 2009, Robert Richter wrote:
-> Arnd, I thought the patches were ok for you. If there are still some
-> concerns, we have to make delta patches.
+On Sunday 11 January 2009, Sergei Shtylyov wrote:
+> Hello.
+> 
+> Bartlomiej Zolnierkiewicz wrote:
+> 
+> > CONFIG_LOPEC and CONFIG_SANDPOINT config options are gone.
+> >   
+> 
+>   So these are gone with arch/ppc/?
 
-Yes, that's fine with me, thanks for taking care of the patches!
+Yep.
 
-	Arnd <><
+>   That's a pity -- MV has spent a lot of efforts on porting the latter 
+> to arch/powerpc/ but somehow it haven't got merged upstream. My patches 
+> ot this driver were actually due to it being used on Sandpoint. :-)
+
+Heh, and I cleaned ppc IDE hooks just before these platforms were removed
+(that's how these ifdefs got into sl82c105.c). :-)
+
+Thanks,
+Bart
