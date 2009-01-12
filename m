@@ -1,32 +1,23 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 92F0FDDFB2
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 18:55:40 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n0C7tLS9012464
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 00:55:31 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n0C7tJ4a006502
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 01:55:20 -0600 (CST)
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id BE533DDFA4
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 19:07:58 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.28-git-4 - powerpc - kernel expection 'c01 at
+	.kernel_thread'
+Date: Mon, 12 Jan 2009 09:07:19 +0100
+References: <20090102125752.GA5743@linux.vnet.ibm.com>
+	<200901110108.20848.rjw@sisk.pl>
+	<20090112072132.GA8409@linux.vnet.ibm.com>
+In-Reply-To: <20090112072132.GA8409@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] powerpc/83xx: Make serial ports work on MPC8315E-RDB
-	w/FSL U-Boots
-Date: Mon, 12 Jan 2009 15:55:17 +0800
-Message-ID: <3A45394FD742FA419B760BB8D398F9ED13DD10@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20090111153013.GA31791@oksana.dev.rtsoft.ru>
-References: <20090111153013.GA31791@oksana.dev.rtsoft.ru>
-From: "Li Yang" <LeoLi@freescale.com>
-To: "Anton Vorontsov" <avorontsov@ru.mvista.com>,
-	"Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+  charset="iso-8859-1"
+Message-Id: <200901120907.20418.rjw@sisk.pl>
+Cc: sfr@canb.auug.org.au, linux-mm@kvack.org, mel@csn.ul.ie,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,28 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]=20
-> On Behalf Of Anton Vorontsov
-> Sent: Sunday, January 11, 2009 11:30 PM
-> To: Kumar Gala
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: [PATCH] powerpc/83xx: Make serial ports work on=20
-> MPC8315E-RDB w/FSL U-Boots
->=20
-> FSL U-Boots use /soc8315@e0000000 node to search and fixup=20
-> serial nodes' clock-frequency properties. Though in upstream=20
-> kernels we use new naming convention -- for IMMR address=20
-> space dts files specify /immr@e0000000 nodes.
->=20
-> This makes FSL U-Boots fail to fixup the clock frequencies,=20
-> and that leads to serial ports misbehaviour. We can=20
-> workaround the issue by filling the clock frequency values manually.
+On Monday 12 January 2009, Kamalesh Babulal wrote:
+> * Rafael J. Wysocki <rjw@sisk.pl> [2009-01-11 01:08:19]:
+> 
+> > On Friday 02 January 2009, Kamalesh Babulal wrote:
+> > > Hi,
+> > > 
+> > > 	2.6.28-git4 kernel drops to xmon with kernel expection. Similar kernel
+> > > expection was seen next-20081230 and next-20081231 and was reported 
+> > > earlier at http://lkml.org/lkml/2008/12/31/157
+> > 
+> > Is this a regression from 2.6.27?
+> > 
+> > Rafael
+> >
+> 
+> This is not a regression from 2.6.27, this expection was first seen 
+> next-20081230 patches and then was introduced into 2.6.28-git4 and is 
+> reproducible with 2.6.28-rc1 kernel.
 
-Freescale BSP is for customer who needs the out-of-box experience.  It's
-better tested, but doesn't update very frequently.  I would suggest the
-customer to use the upstream u-boot, if they decide to use latest
-upstream kernel.
+Presumably you meant 2.6.29-rc1 ?  In which case it would be a regression from
+2.6.28 .  Please confirm.
 
-- Leo
+Thanks,
+Rafael
