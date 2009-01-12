@@ -1,21 +1,17 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 374BB474C4
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 08:51:53 +1100 (EST)
-Date: Tue, 13 Jan 2009 00:52:08 +0300
-From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <1473903899.20090113005208@emcraft.com>
-To: "prodyut hazarika" <prodyuth@gmail.com>
-Subject: Re[2]: [PATCH][v3] powerpc 44x: support for 256KB PAGE_SIZE
-In-Reply-To: <49c0ff980901121102t46b1e50cna6fbd333142485b7@mail.gmail.com>
-References: <200901112142.31003.yur@emcraft.com>
-	<49c0ff980901121102t46b1e50cna6fbd333142485b7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: wd@denx.de, yanok@emcraft.com, miltonm@bga.com, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, hugh@veritas.com, akpm@linux-foundation.org, dzu@denx.de
+Return-Path: <travis@cthulhu.engr.sgi.com>
+Received: from relay.sgi.com (relay2.sgi.com [192.48.179.30])
+	by ozlabs.org (Postfix) with ESMTP id 11270DE183
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 09:05:23 +1100 (EST)
+Message-Id: <20090112220520.566552000@polaris-admin.engr.sgi.com>
+References: <20090112220519.566749000@polaris-admin.engr.sgi.com>
+Date: Mon, 12 Jan 2009 14:05:26 -0800
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@redhat.com>
+Subject: [PATCH 7/8] powerpc irq: update powerpc for new irq_desc
+Cc: Jack Steiner <steiner@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +21,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=0D=0AHello Prodyut,
+Impact: cleanup, update to new cpumask API
 
-On Monday, January 12, 2009 you wrote:
+Irq_desc.affinity and irq_desc.pending_mask are now cpumask_var_t's
+so access to them should be using the new cpumask API.
 
-> On Sun, Jan 11, 2009 at 10:42 AM, Yuri Tikhonov <yur@emcraft.com> wrote:
->>
->> This patch adds support for 256KB pages on ppc44x-based boards.
->>
+Signed-off-by: Mike Travis <travis@sgi.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: <linuxppc-dev@ozlabs.org>
+---
+ arch/powerpc/kernel/irq.c             |    2 +-
+ arch/powerpc/platforms/pseries/xics.c |    5 +++--
+ arch/powerpc/sysdev/mpic.c            |    3 ++-
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
-> Hi Yuri,
-> Do you still need the mm/shmem.c patch to avoid division by zero?
+--- linux-2.6-for-ingo.orig/arch/powerpc/kernel/irq.c
++++ linux-2.6-for-ingo/arch/powerpc/kernel/irq.c
+@@ -231,7 +231,7 @@ void fixup_irqs(cpumask_t map)
+ 		if (irq_desc[irq].status & IRQ_PER_CPU)
+ 			continue;
+ 
+-		cpus_and(mask, irq_desc[irq].affinity, map);
++		cpumask_and(&mask, irq_desc[irq].affinity, &map);
+ 		if (any_online_cpu(mask) == NR_CPUS) {
+ 			printk("Breaking affinity for irq %i\n", irq);
+ 			mask = map;
+--- linux-2.6-for-ingo.orig/arch/powerpc/platforms/pseries/xics.c
++++ linux-2.6-for-ingo/arch/powerpc/platforms/pseries/xics.c
+@@ -153,9 +153,10 @@ static int get_irq_server(unsigned int v
+ {
+ 	int server;
+ 	/* For the moment only implement delivery to all cpus or one cpu */
+-	cpumask_t cpumask = irq_desc[virq].affinity;
++	cpumask_t cpumask;
+ 	cpumask_t tmp = CPU_MASK_NONE;
+ 
++	cpumask_copy(&cpumask, irq_desc[virq].affinity);
+ 	if (!distribute_irqs)
+ 		return default_server;
+ 
+@@ -869,7 +870,7 @@ void xics_migrate_irqs_away(void)
+ 		       virq, cpu);
+ 
+ 		/* Reset affinity to all cpus */
+-		irq_desc[virq].affinity = CPU_MASK_ALL;
++		cpumask_setall(irq_desc[virq].affinity);
+ 		desc->chip->set_affinity(virq, cpu_all_mask);
+ unlock:
+ 		spin_unlock_irqrestore(&desc->lock, flags);
+--- linux-2.6-for-ingo.orig/arch/powerpc/sysdev/mpic.c
++++ linux-2.6-for-ingo/arch/powerpc/sysdev/mpic.c
+@@ -566,9 +566,10 @@ static void __init mpic_scan_ht_pics(str
+ #ifdef CONFIG_SMP
+ static int irq_choose_cpu(unsigned int virt_irq)
+ {
+-	cpumask_t mask = irq_desc[virt_irq].affinity;
++	cpumask_t mask;
+ 	int cpuid;
+ 
++	cpumask_copy(&mask, irq_desc[virt_irq].affinity);
+ 	if (cpus_equal(mask, CPU_MASK_ALL)) {
+ 		static int irq_rover;
+ 		static DEFINE_SPINLOCK(irq_rover_lock);
 
- Yes.
-
-> I looked at the mm/shmem.c latest git code, and I see that it doesn't
-> have the needed patch for 256KB page.
-
- Right. We proposed the work-around for this (which just simply=20
-increased the sizes of variables which hold the overflowed values) to=20
-LKML here:
-
-http://lkml.org/lkml/2008/12/19/20
-
- If I understand Hugh right, then such a fix is acceptable, but much=20
-far from the best, so Hugh is about to implement the correct fix for=20
-the problem as soon as he'll find some time (big thanks to him for=20
-this).
-
-> I think another option would be to make 256KB compile only if CONFIG_SHME=
-M=3Dn
-
- Agree. For the current situation it seems the better solution. I'll=20
-update, and re-post the patch shortly.
-
- Regards, Yuri
-
- --
- Yuri Tikhonov, Senior Software Engineer
- Emcraft Systems, www.emcraft.com
+-- 
