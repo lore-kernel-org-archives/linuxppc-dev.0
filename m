@@ -1,29 +1,15 @@
-Return-Path: <florian.belser@freenet.de>
-Received: from mout5.freenet.de (mout5.freenet.de [195.4.92.95])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5BA98DE088
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 23:14:40 +1100 (EST)
-Received: from [195.4.92.27] (helo=17.mx.freenet.de)
-	by mout5.freenet.de with esmtpa (ID florian.belser@freenet.de) (port
-	25) (Exim 4.69 #76) id 1LMLga-00013T-LJ
-	for linuxppc-dev@ozlabs.org; Mon, 12 Jan 2009 13:14:34 +0100
-Received: from web6.emo.freenet-rz.de ([194.97.107.219]:53606)
-	by 17.mx.freenet.de with esmtpa (ID florian.belser@freenet.de) (port
-	25) (Exim 4.69 #76) id 1LMLga-0006xM-KG
-	for linuxppc-dev@ozlabs.org; Mon, 12 Jan 2009 13:14:28 +0100
-Received: from localhost ([127.0.0.1] helo=emo.freenet.de)
-	by web6.emo.freenet-rz.de with esmtpa (Exim 4.67 1 (Panther_1))
-	id 1LMLgZ-000726-Ok
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 13:14:27 +0100
-Date: Mon, 12 Jan 2009 13:14:27 +0100
-From: florian.belser@freenet.de
-Subject: Re:mpc5200b configure nand driver via dts 
-To: linuxppc-dev@ozlabs.org
+Return-Path: <ravi.rao@rflelect.com>
+In-Reply-To: <1146.69.226.238.185.1231701941.squirrel@webmail.ssl.berkeley.edu>
+To: rsterling@ssl.berkeley.edu
+Subject: unsubscribe
 MIME-Version: 1.0
-Message-Id: <c88a661496413b6403acca005a54be3a@email.freenet.de>
+Message-ID: <OFE90A9AE7.1D15C3DB-ON8525753C.004703FD-8525753C.0046FD58@slpower.com>
+From: ravi.rao@rflelect.com
+Date: Mon, 12 Jan 2009 07:56:11 -0500
 Content-Type: multipart/alternative;
-	boundary="emo_01_f4c77d4a468325705c8d767d669b16fe"
+	boundary="=_alternative 0046FD558525753C_="
+Cc: Linuxppc-dev@ozlabs.org,
+	linuxppc-dev-bounces+ravi.rao=rflelect.com@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,38 +19,129 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---emo_01_f4c77d4a468325705c8d767d669b16fe
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
+This is a multipart message in MIME format.
+--=_alternative 0046FD558525753C_=
+Content-Type: text/plain; charset="US-ASCII"
 
-Hi,=0AI forgot to post the following informations:=0Akernel version:
-Linux-2.6.28-rc6=0Au-boot version : 2008.10-rc3=0Athanks=0Aflorian
-belser=0A=0AGratis: Jeden Monat 3 SMS versenden-=0AMit freenetMail - Ihrer
-kostenlose
-E-Mail-Adresse=0Ahttp://email.freenet.de/dienste/emailoffice/produktuebersi=
-cht/basic/sms/index.html?pid=3D6830=0A
+unsubscribe
 
---emo_01_f4c77d4a468325705c8d767d669b16fe
-Content-Type: text/html; charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
+please
+Ravishankar Govindarao
+RFL Electronics Inc.
+E-mail : Ravi.Rao@rflelect.com
+Voice: 973.334.3100 Ext. 233
+Fax: 973.334.3863
+ 
+CONFIDENTIALITY NOTE
+This e-mail, including any attachments, may contain confidential and/or 
+legally privileged information.  The Information is intended only for the 
+use of the individual or entity named on this e-mail .  If you are not the 
+intended recipient, you are hereby notified that any disclosure, copying, 
+distribution, or the taking of any action in reliance on the contents of 
+this transmitted Information is strictly prohibited.  Further, if you are 
+not the intended recipient, please notify us by return e-mail and delete 
+the Information promptly.
+ 
+ 
+ 
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0
-Transitional//DE"><HTML><HEAD><META HTTP-EQUIV=3D"Content-Type"
-CONTENT=3D"text/html;
-charset=3Dus-ascii"><TITLE>Message</TITLE></HEAD><BODY><P>Hi,</P>
-<P>I forgot to post the following informations:</P>
-<P>kernel version: Linux-2.6.28-rc6</P>
-<P>u-boot version : 2008.10-rc3</P>
-<P>thanks</P>
-<P>florian belser</P>=0A=0A=0A<br>--<br><!-- AdSpace freenet EMO Webmail
-Banner --> =0A<a
-href=3D"http://adserver.freenet.de/click.ng/site=3Dfn&prod=3Dchetools&kat=
-=3Dinhalte&tbl=3Dwebmail&ppos=3D14&TransactionID=3D1231762467741015&rgtg=3D=
-256"
-target=3D"_blank"><img
-src=3D"http://adserver.freenet.de/image.ng/site=3Dfn&prod=3Dchetools&kat=3D=
-inhalte&tbl=3Dwebmail&ppos=3D14&TransactionID=3D1231762467741015&rgtg=3D256=
-"
-border=3D"0"></a><!-- / AdSpace -->=0A</BODY></HTML>
 
---emo_01_f4c77d4a468325705c8d767d669b16fe--
+
+rsterling@ssl.berkeley.edu 
+Sent by: linuxppc-dev-bounces+ravi.rao=rflelect.com@ozlabs.org
+01/11/2009 02:25 PM
+
+To
+Linuxppc-dev@ozlabs.org
+cc
+
+Subject
+unsubscribe
+
+
+
+
+
+
+unsubscribe
+
+please
+
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+--=_alternative 0046FD558525753C_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><tt><font size=2>unsubscribe<br>
+<br>
+please</font></tt><font size=2 face="sans-serif"><br>
+</font><font size=2 face="Tms Rmn">Ravishankar Govindarao<br>
+RFL Electronics Inc.<br>
+E-mail</font><font size=1 face="Tms Rmn"> </font><font size=2 face="Tms Rmn">:
+</font><a href=mailto:Ravi.Rao@rflelect.com><font size=2 color=blue face="Tms Rmn"><u>Ravi.Rao@rflelect.com</u></font></a>
+<br><font size=2 face="Tms Rmn">Voice: 973.334.3100 Ext. 233<br>
+Fax: 973.334.3863</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<div align=center>
+<br><font size=2 color=blue face="Tms Rmn"><u>CONFIDENTIALITY NOTE</u></font></div>
+<br><font size=1 face="Tms Rmn">This e-mail, including any attachments,
+may contain confidential and/or legally privileged information.&nbsp; The
+Information is intended only for the use of the individual or entity named
+on this e-mail</font><font size=1 face="Tms Rmn"> </font><font size=1 face="Tms Rmn">.&nbsp;
+If you are not the intended recipient, you are hereby notified that any
+disclosure, copying, distribution, or the taking of any action in reliance
+on the contents of this transmitted Information is strictly prohibited.&nbsp;
+Further, if you are not the intended recipient, please notify us by return
+e-mail and delete the Information promptly.</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<p><font size=3>&nbsp;</font>
+<br>
+<br>
+<br>
+<table width=100%>
+<tr valign=top>
+<td width=40%><font size=1 face="sans-serif"><b>rsterling@ssl.berkeley.edu</b>
+</font>
+<br><font size=1 face="sans-serif">Sent by: linuxppc-dev-bounces+ravi.rao=rflelect.com@ozlabs.org</font>
+<p><font size=1 face="sans-serif">01/11/2009 02:25 PM</font>
+<td width=59%>
+<table width=100%>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">To</font></div>
+<td><font size=1 face="sans-serif">Linuxppc-dev@ozlabs.org</font>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">cc</font></div>
+<td>
+<tr valign=top>
+<td>
+<div align=right><font size=1 face="sans-serif">Subject</font></div>
+<td><font size=1 face="sans-serif">unsubscribe</font></table>
+<br>
+<table>
+<tr valign=top>
+<td>
+<td></table>
+<br></table>
+<br>
+<br>
+<br><tt><font size=2>unsubscribe<br>
+<br>
+please<br>
+<br>
+<br>
+_______________________________________________<br>
+Linuxppc-dev mailing list<br>
+Linuxppc-dev@ozlabs.org<br>
+</font></tt><a href="https://ozlabs.org/mailman/listinfo/linuxppc-dev"><tt><font size=2>https://ozlabs.org/mailman/listinfo/linuxppc-dev<br>
+</font></tt></a>
+<br>
+--=_alternative 0046FD558525753C_=--
