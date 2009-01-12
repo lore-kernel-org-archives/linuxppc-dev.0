@@ -1,15 +1,21 @@
-Return-Path: <zhou.yutao@zte.com.cn>
-Received: from mail.zte.com.cn (mail2.zte.com.cn [202.103.147.144])
-	by ozlabs.org (Postfix) with ESMTP id BA71FDE015
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 16:50:19 +1100 (EST)
-To: Linuxppc-dev@ozlabs.org
-Subject: unsubscribe
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 61E34DDFC9
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 16:58:07 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so3305506ywh.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Jan 2009 21:58:05 -0800 (PST)
+Message-ID: <fa686aa40901112158o5a0d0c73pfbd67825096cca99@mail.gmail.com>
+Date: Sun, 11 Jan 2009 22:58:05 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] powerpc: Generic device tree for all AmigaOne boards
+In-Reply-To: <1231736850.22571.17.camel@pasglop>
 MIME-Version: 1.0
-Message-ID: <OFE7885AD8.0AA03523-ON4825753C.00200208-4825753C.002034A6@zte.com.cn>
-From: zhou.yutao@zte.com.cn
-Date: Mon, 12 Jan 2009 13:49:51 +0800
-Content-Type: multipart/alternative;
-	boundary="=_alternative 002034A14825753C_="
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20090107135457.234150@gmx.net> <20090107140132.140980@gmx.net>
+	<fa686aa40901070841o3ede1d56tf5f69c33523513f4@mail.gmail.com>
+	<1231736850.22571.17.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,54 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 002034A14825753C_=
-Content-Type: text/plain; charset="GB2312"
-Content-Transfer-Encoding: base64
+On Sun, Jan 11, 2009 at 10:07 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2009-01-07 at 09:41 -0700, Grant Likely wrote:
+>> For the flattened device tree, I think we've settled on the convention
+>> that every node with an IRQ connection should have both the
+>> interrupt-parent and interrupts properties.  (ie. don't rely on the
+>> parent node's interrupt-parent property.)
+>
+> Ah ? I use the trick of relying on the parent node regulary :-) Where
+> did we discuss that ?
 
-ye7b2tbQ0MvBps6svLzK9dPQz965q8u+DQq12Na3o7rJ7tvaytC439DCx/i/xry8xM/Su8K3VzEt
-Qbb+wqUNCrXnu7CjujA3NTUtMjY1MjU2NzQtODUwOaOosOy5q8rSo6kNCg0KDQotLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KWlRFIEluZm9y
-bWF0aW9uIFNlY3VyaXR5IE5vdGljZTogVGhlIGluZm9ybWF0aW9uIGNvbnRhaW5lZCBpbiB0aGlz
-IG1haWwgaXMgc29sZWx5IHByb3BlcnR5IG9mIHRoZSBzZW5kZXIncyBvcmdhbml6YXRpb24uIFRo
-aXMgbWFpbCBjb21tdW5pY2F0aW9uIGlzIGNvbmZpZGVudGlhbC4gUmVjaXBpZW50cyBuYW1lZCBh
-Ym92ZSBhcmUgb2JsaWdhdGVkIHRvIG1haW50YWluIHNlY3JlY3kgYW5kIGFyZSBub3QgcGVybWl0
-dGVkIHRvIGRpc2Nsb3NlIHRoZSBjb250ZW50cyBvZiB0aGlzIGNvbW11bmljYXRpb24gdG8gb3Ro
-ZXJzLg0KVGhpcyBlbWFpbCBhbmQgYW55IGZpbGVzIHRyYW5zbWl0dGVkIHdpdGggaXQgYXJlIGNv
-bmZpZGVudGlhbCBhbmQgaW50ZW5kZWQgc29sZWx5IGZvciB0aGUgdXNlIG9mIHRoZSBpbmRpdmlk
-dWFsIG9yIGVudGl0eSB0byB3aG9tIHRoZXkgYXJlIGFkZHJlc3NlZC4gSWYgeW91IGhhdmUgcmVj
-ZWl2ZWQgdGhpcyBlbWFpbCBpbiBlcnJvciBwbGVhc2Ugbm90aWZ5IHRoZSBvcmlnaW5hdG9yIG9m
-IHRoZSBtZXNzYWdlLiBBbnkgdmlld3MgZXhwcmVzc2VkIGluIHRoaXMgbWVzc2FnZSBhcmUgdGhv
-c2Ugb2YgdGhlIGluZGl2aWR1YWwgc2VuZGVyLg0KVGhpcyBtZXNzYWdlIGhhcyBiZWVuIHNjYW5u
-ZWQgZm9yIHZpcnVzZXMgYW5kIFNwYW0gYnkgWlRFIEFudGktU3BhbSBzeXN0ZW0uDQo=
---=_alternative 002034A14825753C_=
-Content-Type: text/html; charset="GB2312"
-Content-Transfer-Encoding: base64
+It is also entirely possible that I'm smoking something exotic.
 
-DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9InNhbnMtc2VyaWYiPjxicj4NCjxicj4NCjxicj4NCjxi
-cj4NCsnu29rW0NDLwabOrLy8yvXT0M/euavLvjxicj4NCrXY1rejusnu29rK0Ljf0MLH+L/GvLzE
-z9K7wrdXMS1Btv7CpTxicj4NCrXnu7CjujA3NTUtMjY1MjU2NzQtODUwOaOosOy5q8rSo6k8L2Zv
-bnQ+DQo8YnI+PHByZT4NCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tDQpaVEUmbmJzcDtJbmZvcm1hdGlvbiZuYnNwO1NlY3VyaXR5Jm5ic3A7
-Tm90aWNlOiZuYnNwO1RoZSZuYnNwO2luZm9ybWF0aW9uJm5ic3A7Y29udGFpbmVkJm5ic3A7aW4m
-bmJzcDt0aGlzJm5ic3A7bWFpbCZuYnNwO2lzJm5ic3A7c29sZWx5Jm5ic3A7cHJvcGVydHkmbmJz
-cDtvZiZuYnNwO3RoZSZuYnNwO3NlbmRlcidzJm5ic3A7b3JnYW5pemF0aW9uLiZuYnNwO1RoaXMm
-bmJzcDttYWlsJm5ic3A7Y29tbXVuaWNhdGlvbiZuYnNwO2lzJm5ic3A7Y29uZmlkZW50aWFsLiZu
-YnNwO1JlY2lwaWVudHMmbmJzcDtuYW1lZCZuYnNwO2Fib3ZlJm5ic3A7YXJlJm5ic3A7b2JsaWdh
-dGVkJm5ic3A7dG8mbmJzcDttYWludGFpbiZuYnNwO3NlY3JlY3kmbmJzcDthbmQmbmJzcDthcmUm
-bmJzcDtub3QmbmJzcDtwZXJtaXR0ZWQmbmJzcDt0byZuYnNwO2Rpc2Nsb3NlJm5ic3A7dGhlJm5i
-c3A7Y29udGVudHMmbmJzcDtvZiZuYnNwO3RoaXMmbmJzcDtjb21tdW5pY2F0aW9uJm5ic3A7dG8m
-bmJzcDtvdGhlcnMuDQpUaGlzJm5ic3A7ZW1haWwmbmJzcDthbmQmbmJzcDthbnkmbmJzcDtmaWxl
-cyZuYnNwO3RyYW5zbWl0dGVkJm5ic3A7d2l0aCZuYnNwO2l0Jm5ic3A7YXJlJm5ic3A7Y29uZmlk
-ZW50aWFsJm5ic3A7YW5kJm5ic3A7aW50ZW5kZWQmbmJzcDtzb2xlbHkmbmJzcDtmb3ImbmJzcDt0
-aGUmbmJzcDt1c2UmbmJzcDtvZiZuYnNwO3RoZSZuYnNwO2luZGl2aWR1YWwmbmJzcDtvciZuYnNw
-O2VudGl0eSZuYnNwO3RvJm5ic3A7d2hvbSZuYnNwO3RoZXkmbmJzcDthcmUmbmJzcDthZGRyZXNz
-ZWQuJm5ic3A7SWYmbmJzcDt5b3UmbmJzcDtoYXZlJm5ic3A7cmVjZWl2ZWQmbmJzcDt0aGlzJm5i
-c3A7ZW1haWwmbmJzcDtpbiZuYnNwO2Vycm9yJm5ic3A7cGxlYXNlJm5ic3A7bm90aWZ5Jm5ic3A7
-dGhlJm5ic3A7b3JpZ2luYXRvciZuYnNwO29mJm5ic3A7dGhlJm5ic3A7bWVzc2FnZS4mbmJzcDtB
-bnkmbmJzcDt2aWV3cyZuYnNwO2V4cHJlc3NlZCZuYnNwO2luJm5ic3A7dGhpcyZuYnNwO21lc3Nh
-Z2UmbmJzcDthcmUmbmJzcDt0aG9zZSZuYnNwO29mJm5ic3A7dGhlJm5ic3A7aW5kaXZpZHVhbCZu
-YnNwO3NlbmRlci4NClRoaXMmbmJzcDttZXNzYWdlJm5ic3A7aGFzJm5ic3A7YmVlbiZuYnNwO3Nj
-YW5uZWQmbmJzcDtmb3ImbmJzcDt2aXJ1c2VzJm5ic3A7YW5kJm5ic3A7U3BhbSZuYnNwO2J5Jm5i
-c3A7WlRFJm5ic3A7QW50aS1TcGFtJm5ic3A7c3lzdGVtLg0KPC9wcmU+
---=_alternative 002034A14825753C_=--
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
