@@ -1,31 +1,18 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DCAFCDE0B0
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 03:03:02 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n0CG1KNm009685
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 11:01:20 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n0CG2tEK183016
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 11:02:55 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n0CG2pEO027059
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 11:02:54 -0500
-Message-ID: <496B696D.1040906@linux.vnet.ibm.com>
-Date: Mon, 12 Jan 2009 10:01:49 -0600
-From: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 435B9DE092
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 03:08:06 +1100 (EST)
+Message-ID: <496B68D9.1040401@grandegger.com>
+Date: Mon, 12 Jan 2009 16:59:21 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] powerpc: cleanup from l64 to ll64 change: drivers/scsi
-References: <20090107115900.17c0dbb6.sfr@canb.auug.org.au>
-In-Reply-To: <20090107115900.17c0dbb6.sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: mpc5200b configure nand driver via dts
+References: <c4fbc703368c62be70c700e6f962eb12@email.freenet.de>
+	<fa686aa40901120648x3c224999sd0da6e80e4fd43be@mail.gmail.com>
+In-Reply-To: <fa686aa40901120648x3c224999sd0da6e80e4fd43be@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, linux-scsi@vger.kernel.org
+Cc: florian.belser@freenet.de, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,104 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Acked by: Brian King <brking@linux.vnet.ibm.com>
+Grant Likely wrote:
+> On Mon, Jan 12, 2009 at 2:07 AM,  <florian.belser@freenet.de> wrote:
+>> hello,
+>>
+>> I have some problems with an mpc5200b based board. It's nearly compatible to
+>> the lite5200b board.
+>> I connected an samsung k9k8g08u0a nand flash via the lpb bus. This works
+>> fine with an self written nand driver.
+>> Now I try to use the standard nand driver from linux and configure it via
+>> the dts file. But this doesn't work and I get
+>> the following output:
+>>
+>>   nand@1,0 {  //cs1
+>>    compatible = "samsung, k9k8g08u08", "cfi-flash";
+>                                           ^^^^^^^^^
+> 
+> NAND Flash is not a CFI flash device.  The cfi-flash driver won't work with it.
+> 
+>> Now my questions are:
+>>  Is there any error in the dts configuration?
+>>  Is it principle posible to configure a nand flash via the dts file (in
+>> combination with mpc5200b)?
+> 
+> It is possible to *describe* the NAND flash via the dts file.  The dts
+> file doesn't configure anything.  It just describes the hardware
+> layout so that you can write or bind the appropriate driver to the
+> device.  I don't know if a device tree binding has been defined for
+> NAND flash yet.
 
-Stephen Rothwell wrote:
-> This is a powerpc specific driver.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  drivers/scsi/ibmvscsi/ibmvfc.c |   14 +++++++-------
->  drivers/scsi/ibmvscsi/ibmvfc.h |    6 +++---
->  2 files changed, 10 insertions(+), 10 deletions(-)
-> 
-> This patch on its own will generate several warnings - it depends on the
-> actual l64 to ll64 patch that is pending in the powerp queue.  It may be
-> easier for someone to just ack this patch so that it can be fed through
-> the powerpc tree.
-> 
-> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-> index 44f202f..be6cf09 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-> @@ -933,7 +933,7 @@ static void ibmvfc_get_host_speed(struct Scsi_Host *shost)
->  			fc_host_speed(shost) = FC_PORTSPEED_16GBIT;
->  			break;
->  		default:
-> -			ibmvfc_log(vhost, 3, "Unknown port speed: %ld Gbit\n",
-> +			ibmvfc_log(vhost, 3, "Unknown port speed: %lld Gbit\n",
->  				   vhost->login_buf->resp.link_speed / 100);
->  			fc_host_speed(shost) = FC_PORTSPEED_UNKNOWN;
->  			break;
-> @@ -2149,8 +2149,8 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
->  {
->  	const char *desc = ibmvfc_get_ae_desc(crq->event);
-> 
-> -	ibmvfc_log(vhost, 3, "%s event received. scsi_id: %lx, wwpn: %lx,"
-> -		   " node_name: %lx\n", desc, crq->scsi_id, crq->wwpn, crq->node_name);
-> +	ibmvfc_log(vhost, 3, "%s event received. scsi_id: %llx, wwpn: %llx,"
-> +		   " node_name: %llx\n", desc, crq->scsi_id, crq->wwpn, crq->node_name);
-> 
->  	switch (crq->event) {
->  	case IBMVFC_AE_LINK_UP:
-> @@ -2184,7 +2184,7 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
->  		ibmvfc_link_down(vhost, IBMVFC_HALTED);
->  		break;
->  	default:
-> -		dev_err(vhost->dev, "Unknown async event received: %ld\n", crq->event);
-> +		dev_err(vhost->dev, "Unknown async event received: %lld\n", crq->event);
->  		break;
->  	};
->  }
-> @@ -2261,13 +2261,13 @@ static void ibmvfc_handle_crq(struct ibmvfc_crq *crq, struct ibmvfc_host *vhost)
->  	 * actually sent
->  	 */
->  	if (unlikely(!ibmvfc_valid_event(&vhost->pool, evt))) {
-> -		dev_err(vhost->dev, "Returned correlation_token 0x%08lx is invalid!\n",
-> +		dev_err(vhost->dev, "Returned correlation_token 0x%08llx is invalid!\n",
->  			crq->ioba);
->  		return;
->  	}
-> 
->  	if (unlikely(atomic_read(&evt->free))) {
-> -		dev_err(vhost->dev, "Received duplicate correlation_token 0x%08lx!\n",
-> +		dev_err(vhost->dev, "Received duplicate correlation_token 0x%08llx!\n",
->  			crq->ioba);
->  		return;
->  	}
-> @@ -3259,7 +3259,7 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *vhost, u64 scsi_id)
-> 
->  	tgt = mempool_alloc(vhost->tgt_pool, GFP_KERNEL);
->  	if (!tgt) {
-> -		dev_err(vhost->dev, "Target allocation failure for scsi id %08lx\n",
-> +		dev_err(vhost->dev, "Target allocation failure for scsi id %08llx\n",
->  			scsi_id);
->  		return -ENOMEM;
->  	}
-> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
-> index babdf3d..87dafd0 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvfc.h
-> +++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-> @@ -691,13 +691,13 @@ struct ibmvfc_host {
->  #define DBG_CMD(CMD) do { if (ibmvfc_debug) CMD; } while (0)
-> 
->  #define tgt_dbg(t, fmt, ...)			\
-> -	DBG_CMD(dev_info((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__))
-> +	DBG_CMD(dev_info((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__))
-> 
->  #define tgt_info(t, fmt, ...)		\
-> -	dev_info((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
-> +	dev_info((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
-> 
->  #define tgt_err(t, fmt, ...)		\
-> -	dev_err((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
-> +	dev_err((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
-> 
->  #define ibmvfc_dbg(vhost, ...) \
->  	DBG_CMD(dev_info((vhost)->dev, ##__VA_ARGS__))
+I find 3 MTD NAND drivers with OF bindings in linux-2.6/drivers/mtd/nand
 
+  $ grep -l of_device *.c
+  fsl_elbc_nand.c
+  fsl_upm.c
+  pasemi_nand.c
 
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+The bindings for the FSL UPM are described in
+http://lxr.linux.no/linux+v2.6.28/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt.
+Something similar is needed for his board (NAND connected to lpb) as well.
+
+>>  I read in some forums that the nand flash must be activated in the u-boot
+>> before it can be configured via dts.
+> 
+> You definitely need to set up the CS line for the NAND before using it
+> in Linux.  Typically this is done in U-Boot, but in a pinch it can be
+> done in the platform support code (arch/powerpc/platforms/52xx/*)
+
+Yep, and also the R/B pin should be handled somehow, preferably using
+the OF GPIO interface.
+
+Wolfgang.
