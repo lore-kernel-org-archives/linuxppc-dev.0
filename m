@@ -1,23 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A0DADE08B
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 06:01:59 +1100 (EST)
-Message-Id: <E8C76EB3-7E8E-4E24-BF20-2BE5C7DA2512@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-In-Reply-To: <c384c5ea0901120920u7cd349b3te9c57301d204aa55@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc/83xx: Make serial ports work on MPC8315E-RDB
-	w/FSL U-Boots
-Date: Mon, 12 Jan 2009 12:59:50 -0600
-References: <20090111153013.GA31791@oksana.dev.rtsoft.ru>
-	<3A45394FD742FA419B760BB8D398F9ED13DD10@zch01exm26.fsl.freescale.net>
-	<C37C3C8D-0DAA-4174-9A19-E2983CD32380@kernel.crashing.org>
-	<c384c5ea0901120920u7cd349b3te9c57301d204aa55@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+Return-Path: <prodyuth@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
+	by ozlabs.org (Postfix) with ESMTP id 17343DE27B
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 06:02:47 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so4649577fga.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 11:02:45 -0800 (PST)
+Message-ID: <49c0ff980901121102t46b1e50cna6fbd333142485b7@mail.gmail.com>
+Date: Mon, 12 Jan 2009 11:02:45 -0800
+From: "prodyut hazarika" <prodyuth@gmail.com>
+To: "Yuri Tikhonov" <yur@emcraft.com>
+Subject: Re: [PATCH][v3] powerpc 44x: support for 256KB PAGE_SIZE
+In-Reply-To: <200901112142.31003.yur@emcraft.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+References: <200901112142.31003.yur@emcraft.com>
+Cc: wd@denx.de, yanok@emcraft.com, miltonm@bga.com, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jan 12, 2009, at 11:20 AM, Leon Woestenberg wrote:
-
-> Hello,
+On Sun, Jan 11, 2009 at 10:42 AM, Yuri Tikhonov <yur@emcraft.com> wrote:
 >
-> On Mon, Jan 12, 2009 at 4:07 PM, Kumar Gala  
-> <galak@kernel.crashing.org> wrote:
->> On Jan 12, 2009, at 1:55 AM, Li Yang wrote:
->>>> -----Original Message-----
->>> Freescale BSP is for customer who needs the out-of-box  
->>> experience.  It's
->>> better tested, but doesn't update very frequently.  I would  
->>> suggest the
->>> customer to use the upstream u-boot, if they decide to use latest
->>> upstream kernel.
->>>
->>
-> The upstream u-boot did however not support PCI Express, which the
-> latest Freescale kernel did.
+> This patch adds support for 256KB pages on ppc44x-based boards.
 >
-> So it was a chicken-egg problem experience for people wanting to test
-> both the latest Freescale kernel as well as Antov's work to bring the
-> PCI Express support upstream.
->
-> Thanks Antov et al,
 
-Please gripe at your Freescale contacts about getting code into  
-mainline/upstream kernel.
+Hi Yuri,
+Do you still need the mm/shmem.c patch to avoid division by zero? I
+looked at the mm/shmem.c latest git code, and I see that it doesn't
+have the needed patch for 256KB page.
+I think another option would be to make 256KB compile only if CONFIG_SHMEM=n
 
-(The more they hear it from customers the more importance it will  
-get.  The team I work on at Freescale can focus on only so much and  
-the other groups need to hear that customers want code in mainline.)
-
-And thanks Anton for cleaning all this up and getting it in a state  
-that is acceptable :)
-
-- k
+Thanks
+Prodyut
