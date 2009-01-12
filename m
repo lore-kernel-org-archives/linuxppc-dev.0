@@ -1,20 +1,31 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id BC442DE042
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 02:44:21 +1100 (EST)
-In-Reply-To: <20090110195040.GA19945@lisas.de>
-References: <1231601482-28123-1-git-send-email-adrian@lisas.de>
-	<c613a7e0a88e249894bafe6d2183fbf2@bga.com>
-	<20090110195040.GA19945@lisas.de>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6550a303b71331432a805ad98ca38103@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] powerpc: Add support to access the flash on SLOF based
-	systems
-Date: Mon, 12 Jan 2009 09:51:23 -0600
-To: Adrian Reber <adrian@lisas.de>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DCAFCDE0B0
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 03:03:02 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n0CG1KNm009685
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 11:01:20 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	n0CG2tEK183016
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 11:02:55 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n0CG2pEO027059
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 11:02:54 -0500
+Message-ID: <496B696D.1040906@linux.vnet.ibm.com>
+Date: Mon, 12 Jan 2009 10:01:49 -0600
+From: Brian King <brking@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] powerpc: cleanup from l64 to ll64 change: drivers/scsi
+References: <20090107115900.17c0dbb6.sfr@canb.auug.org.au>
+In-Reply-To: <20090107115900.17c0dbb6.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	ppc-dev <linuxppc-dev@ozlabs.org>, linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,157 +35,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Acked by: Brian King <brking@linux.vnet.ibm.com>
 
-On Jan 10, 2009, at 1:50 PM, Adrian Reber wrote:
+Stephen Rothwell wrote:
+> This is a powerpc specific driver.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/scsi/ibmvscsi/ibmvfc.c |   14 +++++++-------
+>  drivers/scsi/ibmvscsi/ibmvfc.h |    6 +++---
+>  2 files changed, 10 insertions(+), 10 deletions(-)
+> 
+> This patch on its own will generate several warnings - it depends on the
+> actual l64 to ll64 patch that is pending in the powerp queue.  It may be
+> easier for someone to just ack this patch so that it can be fed through
+> the powerpc tree.
+> 
+> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+> index 44f202f..be6cf09 100644
+> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
+> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+> @@ -933,7 +933,7 @@ static void ibmvfc_get_host_speed(struct Scsi_Host *shost)
+>  			fc_host_speed(shost) = FC_PORTSPEED_16GBIT;
+>  			break;
+>  		default:
+> -			ibmvfc_log(vhost, 3, "Unknown port speed: %ld Gbit\n",
+> +			ibmvfc_log(vhost, 3, "Unknown port speed: %lld Gbit\n",
+>  				   vhost->login_buf->resp.link_speed / 100);
+>  			fc_host_speed(shost) = FC_PORTSPEED_UNKNOWN;
+>  			break;
+> @@ -2149,8 +2149,8 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
+>  {
+>  	const char *desc = ibmvfc_get_ae_desc(crq->event);
+> 
+> -	ibmvfc_log(vhost, 3, "%s event received. scsi_id: %lx, wwpn: %lx,"
+> -		   " node_name: %lx\n", desc, crq->scsi_id, crq->wwpn, crq->node_name);
+> +	ibmvfc_log(vhost, 3, "%s event received. scsi_id: %llx, wwpn: %llx,"
+> +		   " node_name: %llx\n", desc, crq->scsi_id, crq->wwpn, crq->node_name);
+> 
+>  	switch (crq->event) {
+>  	case IBMVFC_AE_LINK_UP:
+> @@ -2184,7 +2184,7 @@ static void ibmvfc_handle_async(struct ibmvfc_async_crq *crq,
+>  		ibmvfc_link_down(vhost, IBMVFC_HALTED);
+>  		break;
+>  	default:
+> -		dev_err(vhost->dev, "Unknown async event received: %ld\n", crq->event);
+> +		dev_err(vhost->dev, "Unknown async event received: %lld\n", crq->event);
+>  		break;
+>  	};
+>  }
+> @@ -2261,13 +2261,13 @@ static void ibmvfc_handle_crq(struct ibmvfc_crq *crq, struct ibmvfc_host *vhost)
+>  	 * actually sent
+>  	 */
+>  	if (unlikely(!ibmvfc_valid_event(&vhost->pool, evt))) {
+> -		dev_err(vhost->dev, "Returned correlation_token 0x%08lx is invalid!\n",
+> +		dev_err(vhost->dev, "Returned correlation_token 0x%08llx is invalid!\n",
+>  			crq->ioba);
+>  		return;
+>  	}
+> 
+>  	if (unlikely(atomic_read(&evt->free))) {
+> -		dev_err(vhost->dev, "Received duplicate correlation_token 0x%08lx!\n",
+> +		dev_err(vhost->dev, "Received duplicate correlation_token 0x%08llx!\n",
+>  			crq->ioba);
+>  		return;
+>  	}
+> @@ -3259,7 +3259,7 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *vhost, u64 scsi_id)
+> 
+>  	tgt = mempool_alloc(vhost->tgt_pool, GFP_KERNEL);
+>  	if (!tgt) {
+> -		dev_err(vhost->dev, "Target allocation failure for scsi id %08lx\n",
+> +		dev_err(vhost->dev, "Target allocation failure for scsi id %08llx\n",
+>  			scsi_id);
+>  		return -ENOMEM;
+>  	}
+> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
+> index babdf3d..87dafd0 100644
+> --- a/drivers/scsi/ibmvscsi/ibmvfc.h
+> +++ b/drivers/scsi/ibmvscsi/ibmvfc.h
+> @@ -691,13 +691,13 @@ struct ibmvfc_host {
+>  #define DBG_CMD(CMD) do { if (ibmvfc_debug) CMD; } while (0)
+> 
+>  #define tgt_dbg(t, fmt, ...)			\
+> -	DBG_CMD(dev_info((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__))
+> +	DBG_CMD(dev_info((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__))
+> 
+>  #define tgt_info(t, fmt, ...)		\
+> -	dev_info((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
+> +	dev_info((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
+> 
+>  #define tgt_err(t, fmt, ...)		\
+> -	dev_err((t)->vhost->dev, "%lX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
+> +	dev_err((t)->vhost->dev, "%llX: " fmt, (t)->scsi_id, ##__VA_ARGS__)
+> 
+>  #define ibmvfc_dbg(vhost, ...) \
+>  	DBG_CMD(dev_info((vhost)->dev, ##__VA_ARGS__))
 
-> On Sat, Jan 10, 2009 at 11:52:56AM -0600, Milton Miller wrote:
->> On Sun Jan 11 at 02:31:22 EST in 2009, Adrian Reber wrote:
->>> This adds support for a simple character device to access the
->>> flash for SLOF based systems like the PowerStation, QS2x and
->>> PXCAB. In the SLOF git there is a user space program with
->>> which the content of the flash for SLOF based systems can
->>> be displayed and modified. This can be used to add a Linux
->>> image to the flash and then directly boot the kernel from the
->>> flash.
->>>
->>> Signed-off-by: Adrian Reber <adrian at lisas.de>
->>> ---
->>>
->>> This is based on the mmio NVRAM driver. I am not sure how useful this
->>> is for anybody else but I am posting it anyway, hoping to get some
->>> feedback. Also hoping it can be included at one point.
->>
->>
->> Normally such drivers are written and mtd drivers.
->>
->> If slof were not an of implementation I would just say put the right
->> properties on the node in the device tree, but the kernel should adapt
->> to real OF.  It should be easy to write a driver to hook up a mtd
->> platform device if this is a direct mapped flash.
->
-> The reason why I did not use mtd is that part of the flash is used by
-> the firmware image and I do not know if that works with mtd, if only a
-> part of the flash can be used. SLOF does also a "CRC" check over the
-> firmware image, so that image must have valid SLOF "CRC". The flash is
-> a direct mapped flash, but the size of the firmware can vary.
 
-
-But you later say you will only be using this driver to read the flash.
-
->>> +       spin_lock_irqsave(&slof_flash_lock, flags);
->>> +
->>> +       memcpy_fromio(tmp, slof_flash_start + *ppos, count);
->>> +
->>> +       spin_unlock_irqrestore(&slof_flash_lock, flags);
->>> +
->>
->> Why do you need a spinlock?  Why does it need to be irq safe?
->
-> I must confess I copied that code from the nvram driver and I do not
-> know if it is necessary.
-
-I'm not sure which driver you ar referring to here.  Which file name?
-
-Its not required for memcpy_fromio.  If you have no indirect indexing 
-or writing to require exclusing against concurrent access ...
-
->
->> This decision is also driving the malloc of the temporary buffer, and
->> you are intentionally returning a short read to userspace.
->>
->>> +
->>> +const struct file_operations slof_flash_fops = {
->>> +       .owner = THIS_MODULE,
->>> +       .llseek = slof_flash_llseek,
->>> +       .read = slof_flash_read,
->>> +};
->>> +
->>
->> You mentioned userspace reflashing the image, but this driver seems to
->> be read only access.
->
-> This driver is read only. I am writing the new flash image using the
-> RTAS functionality to update the firmware flash. Using this device I 
-> can
-> use a userspace tool to add a file to the flash. The tool puts the
-> result on the local filesystem. Then using the normal RTAS flash update
-> it can be rewritten. That way I can add a kernel (with a ramdisk) to 
-> the
-> flash and then let SLOF boot that kernel. This is especially 
-> interesting
-> for the PXCAB Cell based PCI Express card.
-
-Ok you need to highlight that you will be using the platform support to 
-write the image.  Reading the patch (again) it would appear that you 
-are just reading the size of the node from the device tree.  Regardless 
-even if you are trying to cover the whole rom or a portion, read-ony 
-access should be safe, if not secure.
-
->>
->>
->> Can you identify slof from the information in the /openprom node?  I
->
-> Yes I can identify SLOF from the model property in the /openprom node. 
-> I
-> did not do it because there is almost no code accessing the /openprom
-> node and therefore I did not read it.
->
->> don't think all js20 and 21 use slof, although the IBM provided 
->> firmware
->> may also work with this driver.
->
-> There are probably only very few js20/js21 which are using SLOF. I do
-> not think the original IBM product firmware for those blades mentions
-> anything about js20/js21 in the compatible node. I do not have access 
-> to
-> such a system but the compatible node usually has some product number,
-> if I remember it correctly.
->
-> I am pretty sure that the original js20/js21 firmware does not have the
-> flash in the device tree, because RTAS is supposed to be the only valid
-> way to access the flash.
->
->>> +       if ((slof_flash_len <= 0) || (!slof_flash_addr)) {
->>> +               printk(KERN_WARNING "SLOF FLASH: address or length is
->>> 0\n");
->>> +               rc = -EIO;
->>> +               goto out;
->>> +       }
->>
->> Why are these warnings?   again, debug is more approprate
->
-> Copied from the NVRAM driver. Will change it to debug.
-
-Thanks.  These would still apply to a mtd driver.
-
->>> +
->>> +       rc = misc_register(&slof_flash_dev);
->>
->> And as I said, this should be a mtd driver.
->
-> Thanks for the review. Should it also be a mtd driver with the firmware
-> at the beginning of the flash with an unknown size?
->
-> I would also prefer to continue to use the RTAS flash update
-> functionality to write the flash instead of reimplementing it in the
-> operating system.
-
-I don't have a problem  with that, but it should have been mentioned up 
-front.
->
-> My main motivation for this code was to have a way to access the
-> firmware image. The firmware image is using some kind of simple
-> filesystem. I want to be able to modify that filesystem and flash it
-> again. The advantage if I put something in SLOF's filesystem is that I
-> can access that file (in my case boot it) with existing functionality
-> provided by SLOF.
-
-Is SLOF just exposing the user image part of the flash device?  Or is 
-it the raw flash device?
-
-I need to keep this quick, but am intrested in a few more details.  My 
-first reaction is its yet another random misc-device, but I confess to 
-having written one for internal consumption.  But as a misc device it 
-will need to go through lkml review to be merged.
-
-milton
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
