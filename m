@@ -1,22 +1,21 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from mail-bw0-f10.google.com (mail-bw0-f10.google.com
-	[209.85.218.10]) by ozlabs.org (Postfix) with ESMTP id 8B782DE0B7
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 04:24:04 +1100 (EST)
-Received: by bwz3 with SMTP id 3so27726805bwz.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 09:24:02 -0800 (PST)
-Message-ID: <c384c5ea0901120920u7cd349b3te9c57301d204aa55@mail.gmail.com>
-Date: Mon, 12 Jan 2009 18:20:07 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Li Yang" <leoli@freescale.com>
-Subject: Re: [PATCH] powerpc/83xx: Make serial ports work on MPC8315E-RDB
-	w/FSL U-Boots
-In-Reply-To: <C37C3C8D-0DAA-4174-9A19-E2983CD32380@kernel.crashing.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id BF390DE0DC
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 04:30:10 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Add support to access the flash on SLOF based
+	systems
+Date: Mon, 12 Jan 2009 18:29:57 +0100
+References: <1231601482-28123-1-git-send-email-adrian@lisas.de>
+	<20090110195040.GA19945@lisas.de> <496B784C.5010800@gefanuc.com>
+In-Reply-To: <496B784C.5010800@gefanuc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20090111153013.GA31791@oksana.dev.rtsoft.ru>
-	<3A45394FD742FA419B760BB8D398F9ED13DD10@zch01exm26.fsl.freescale.net>
-	<C37C3C8D-0DAA-4174-9A19-E2983CD32380@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200901121829.58489.arnd@arndb.de>
+Cc: Martyn Welch <martyn.welch@gefanuc.com>, Murali N Iyer <mniyer@us.ibm.com>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
-
-On Mon, Jan 12, 2009 at 4:07 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
-> On Jan 12, 2009, at 1:55 AM, Li Yang wrote:
->>> -----Original Message-----
->> Freescale BSP is for customer who needs the out-of-box experience.  It's
->> better tested, but doesn't update very frequently.  I would suggest the
->> customer to use the upstream u-boot, if they decide to use latest
->> upstream kernel.
->>
+On Monday 12 January 2009, Martyn Welch wrote:
+> Adrian Reber wrote:
+> > The reason why I did not use mtd is that part of the flash is used by
+> > the firmware image and I do not know if that works with mtd, if only a
+> > part of the flash can be used. SLOF does also a "CRC" check over the
+> > firmware image, so that image must have valid SLOF "CRC". The flash is
+> > a direct mapped flash, but the size of the firmware can vary.
 >
-The upstream u-boot did however not support PCI Express, which the
-latest Freescale kernel did.
+> It can. MTD can create "partitions" within the flash, for an example
+> see lines 84-110 of arch/powerpc/bootdts/sbc8641d.dts (http://tinyurl.com/7k2kym) 
+> 
+> Partitions can also be labeled as read-only, I guess the CRC could be
+> checked from userspace as necessary. 
 
-So it was a chicken-egg problem experience for people wanting to test
-both the latest Freescale kernel as well as Antov's work to bring the
-PCI Express support upstream.
+Murali has also done a modified firmware for experiments in the past where
+he added the device tree entry for the flash on a PxCAB. As I recall, he did
+not see any problems with that.
 
-Thanks Antov et al,
--- 
-Leon
+	Arnd <><
