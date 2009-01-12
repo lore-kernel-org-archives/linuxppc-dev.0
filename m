@@ -1,21 +1,33 @@
-Return-Path: <cel@us.ibm.com>
-Subject: Re: [Patch 0/3] Overview, OProfile SPU event profiling support for
-	IBM Cell processor
-From: Carl Love <cel@us.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1231630269.2142.91.camel@pasglop>
-References: <1228177106.6509.285.camel@carll-linux-desktop>
-	<20090108154835.GQ15411@erda.amd.com>
-	<1231460791.6621.54.camel@carll-linux-desktop>
-	<1231630269.2142.91.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 12 Jan 2009 08:15:27 -0800
-Message-Id: <1231776927.6621.112.camel@carll-linux-desktop>
-Mime-Version: 1.0
-Cc: Robert Richter <robert.richter@amd.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cel <cel@linux.vnet.ibm.com>, cbe-oss-dev <cbe-oss-dev@ozlabs.org>
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-nj2ut-7.online-age.net (ext-nj2ut-7.online-age.net
+	[64.14.54.237])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-nj2ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 9631EDE0B7
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 04:05:28 +1100 (EST)
+Received: from int-nj2ut-2.online-age.net (int-nj2ut-2.online-age.net
+	[3.159.237.71])
+	by ext-nj2ut-7.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id n0CH5ORq022068
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 12:05:24 -0500
+Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-2.online-age.net
+	[3.159.237.71])
+	by int-nj2ut-2.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id n0CH5JEr002082
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 12:05:24 -0500
+Message-ID: <496B784C.5010800@gefanuc.com>
+Date: Mon, 12 Jan 2009 17:05:16 +0000
+From: Martyn Welch <martyn.welch@gefanuc.com>
+MIME-Version: 1.0
+To: Milton Miller <miltonm@bga.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Add support to access the flash on SLOF based
+	systems
+References: <1231601482-28123-1-git-send-email-adrian@lisas.de>	<c613a7e0a88e249894bafe6d2183fbf2@bga.com>
+	<20090110195040.GA19945@lisas.de>
+In-Reply-To: <20090110195040.GA19945@lisas.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +37,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sun, 2009-01-11 at 10:31 +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-01-08 at 16:26 -0800, Carl Love wrote:
-> > I pulled down the git tree, compiled and installed it.  I tested it
-> > against the OProfile testsuite, which includes SPU event profiling
-> > tests.  Everything passed.  The patch I submitted was against a 2.6.26
-> > tree.  You are now on a 2.6.28 tree so perhaps that is why the patch did
-> > not apply cleanly.  The patch has been out there for some time.  
+Adrian Reber wrote:
+> On Sat, Jan 10, 2009 at 11:52:56AM -0600, Milton Miller wrote:
+>> Normally such drivers are written and mtd drivers.
+>>
+>> If slof were not an of implementation I would just say put the right  
+>> properties on the node in the device tree, but the kernel should adapt  
+>> to real OF.  It should be easy to write a driver to hook up a mtd  
+>> platform device if this is a direct mapped flash.
 > 
-> When you submited it on Dec 2, it should have been against whatever was
-> the latest upstream at the time, not 2.6.26.
+> The reason why I did not use mtd is that part of the flash is used by
+> the firmware image and I do not know if that works with mtd, if only a
+> part of the flash can be used. SLOF does also a "CRC" check over the
+> firmware image, so that image must have valid SLOF "CRC". The flash is
+> a direct mapped flash, but the size of the firmware can vary.
 > 
-> Cheers,
-> Ben.
 
-Ben, Arnd and Robert:
+It can. MTD can create "partitions" within the flash, for an example see lines 84-110 of arch/powerpc/bootdts/sbc8641d.dts (http://tinyurl.com/7k2kym)
 
-The patch was against the latest Arnd Cell Kernel tree at the time it
-was posted. The OProfile for cell patches have all been submitted,
-accepted by Arnd (CELL Kernel maintainer) and pushed up stream by Arnd.
-Arnd has waited for the OProfile maintainer to review and approve the
-change before Arnd would push it upstream.  
+Partitions can also be labeled as read-only, I guess the CRC could be checked from userspace as necessary.
 
-So, at this point, Robert's (OProfile kernel maintainer) and Maynard's
-(OProfile user space maintainer) approval for the patches.  
+HTH,
 
-The question now goes to Arnd and Robert, who is going to push the
-patches upstream?  Looks like Robert is ready to do it, so Arnd do you
-approve the patches?  Would you like to have Robert push the patches
-upstream or would you prefer to do it?  I think we need an
-answer/agreement on this.  
-
-                 Carl Love
+Martyn
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
