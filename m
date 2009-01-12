@@ -1,21 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CB380DE2B7
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 20:30:47 +1100 (EST)
-Received: from ash.ozlabs.ibm.com (ta-1-1.tip.net.au [203.11.71.1])
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 97F1F368006
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 20:30:47 +1100 (EST)
-Date: Mon, 12 Jan 2009 20:30:40 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: please ignore unsubscribe messages
-Message-Id: <20090112203040.e96c40d0.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__12_Jan_2009_20_30_40_+1100_iepfk79p.V/SF1Hg"
+	by ozlabs.org (Postfix) with ESMTPS id 88AF947534
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 20:32:36 +1100 (EST)
+Date: Mon, 12 Jan 2009 10:32:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: origin tree build failure
+Message-ID: <20090112093214.GA6798@elte.hu>
+References: <20090112104837.69feedec.sfr@canb.auug.org.au>
+	<1231719015.22571.4.camel@pasglop> <20090112090552.GD26750@elte.hu>
+	<20090112202427.3b918490.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090112202427.3b918490.sfr@canb.auug.org.au>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
+	Mike Travis <travis@sgi.com>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__12_Jan_2009_20_30_40_+1100_iepfk79p.V/SF1Hg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-I will take care of them as they come up.
+> > It slipped through because it didnt get caught in build tests because 
+> > cpufreq isnt enabled in the powerpc defconfig.
+> 
+> Which is one of the reasons we have linux-next: "integration testing".
 
-For those trying to unsubscribe, please go to
+Build bugs slipped through that net too in the past.
 
-http://ozlabs.org/mailman/options/linuxppc-dev
+And we dont really want developers and maintainers to rely on an external 
+middle man facility to be able to submit patches. So the best method is to 
+make the defconfigs good enough to catch everyday build bugs. Random 
+testing and linux-next can then catch the weird special cases as well.
 
-and fill in your email address and click on "unsubscribe".  If you do not
-get a confirmation email, then maybe you are subscribed with a different
-email address.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__12_Jan_2009_20_30_40_+1100_iepfk79p.V/SF1Hg
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklrDcAACgkQjjKRsyhoI8x2+gCfXdz7Gv35gqAAUJFXG/hU9Yqk
-JJ0AoI32rRK35fz1qWedtfx0wZL45aQ/
-=pcpe
------END PGP SIGNATURE-----
-
---Signature=_Mon__12_Jan_2009_20_30_40_+1100_iepfk79p.V/SF1Hg--
+	Ingo
