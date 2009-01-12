@@ -1,18 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f16.google.com (mail-gx0-f16.google.com
-	[209.85.217.16]) by ozlabs.org (Postfix) with ESMTP id F2F19DDDF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 01:48:44 +1100 (EST)
-Received: by gxk9 with SMTP id 9so5017670gxk.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 06:48:42 -0800 (PST)
-Message-ID: <fa686aa40901120648x3c224999sd0da6e80e4fd43be@mail.gmail.com>
-Date: Mon, 12 Jan 2009 07:48:42 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: florian.belser@freenet.de
-Subject: Re: mpc5200b configure nand driver via dts
-In-Reply-To: <c4fbc703368c62be70c700e6f962eb12@email.freenet.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <c4fbc703368c62be70c700e6f962eb12@email.freenet.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D3551DE076
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 02:10:01 +1100 (EST)
+Message-Id: <C37C3C8D-0DAA-4174-9A19-E2983CD32380@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED13DD10@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc/83xx: Make serial ports work on MPC8315E-RDB
+	w/FSL U-Boots
+Date: Mon, 12 Jan 2009 09:07:48 -0600
+References: <20090111153013.GA31791@oksana.dev.rtsoft.ru>
+	<3A45394FD742FA419B760BB8D398F9ED13DD10@zch01exm26.fsl.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,43 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 12, 2009 at 2:07 AM,  <florian.belser@freenet.de> wrote:
-> hello,
+
+On Jan 12, 2009, at 1:55 AM, Li Yang wrote:
+
+>> -----Original Message-----
+>> From: linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org
+>> [mailto:linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org]
+>> On Behalf Of Anton Vorontsov
+>> Sent: Sunday, January 11, 2009 11:30 PM
+>> To: Kumar Gala
+>> Cc: linuxppc-dev@ozlabs.org
+>> Subject: [PATCH] powerpc/83xx: Make serial ports work on
+>> MPC8315E-RDB w/FSL U-Boots
+>>
+>> FSL U-Boots use /soc8315@e0000000 node to search and fixup
+>> serial nodes' clock-frequency properties. Though in upstream
+>> kernels we use new naming convention -- for IMMR address
+>> space dts files specify /immr@e0000000 nodes.
+>>
+>> This makes FSL U-Boots fail to fixup the clock frequencies,
+>> and that leads to serial ports misbehaviour. We can
+>> workaround the issue by filling the clock frequency values manually.
 >
-> I have some problems with an mpc5200b based board. It's nearly compatible to
-> the lite5200b board.
-> I connected an samsung k9k8g08u0a nand flash via the lpb bus. This works
-> fine with an self written nand driver.
-> Now I try to use the standard nand driver from linux and configure it via
-> the dts file. But this doesn't work and I get
-> the following output:
+> Freescale BSP is for customer who needs the out-of-box experience.   
+> It's
+> better tested, but doesn't update very frequently.  I would suggest  
+> the
+> customer to use the upstream u-boot, if they decide to use latest
+> upstream kernel.
 >
->   nand@1,0 {  //cs1
->    compatible = "samsung, k9k8g08u08", "cfi-flash";
-                                          ^^^^^^^^^
+> - Leo
 
-NAND Flash is not a CFI flash device.  The cfi-flash driver won't work with it.
+Agreed.  However I don't think there is any harm w/the patch as  
+upstream u-boot will update the property.
 
-> Now my questions are:
->  Is there any error in the dts configuration?
->  Is it principle posible to configure a nand flash via the dts file (in
-> combination with mpc5200b)?
-
-It is possible to *describe* the NAND flash via the dts file.  The dts
-file doesn't configure anything.  It just describes the hardware
-layout so that you can write or bind the appropriate driver to the
-device.  I don't know if a device tree binding has been defined for
-NAND flash yet.
-
->  I read in some forums that the nand flash must be activated in the u-boot
-> before it can be configured via dts.
-
-You definitely need to set up the CS line for the NAND before using it
-in Linux.  Typically this is done in U-Boot, but in a pinch it can be
-done in the platform support code (arch/powerpc/platforms/52xx/*)
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+- k
