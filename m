@@ -1,17 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 931A5DE029
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 03:05:15 +1100 (EST)
-Date: Tue, 13 Jan 2009 19:05:13 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH] phylib: Fix Freescale TBI PHY detection
-Message-ID: <20090113160513.GA22083@oksana.dev.rtsoft.ru>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id EE2DDDE0DE
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 03:19:51 +1100 (EST)
+Date: Tue, 13 Jan 2009 17:19:46 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Yuri Tikhonov <yur@emcraft.com>
+Subject: Re[2]: mal_probe crash
+In-Reply-To: <1515542773.20090113015150@emcraft.com>
+Message-ID: <Pine.LNX.4.64.0901131718120.1391@vixen.sonytel.be>
+References: <20090107154434.0c9437ef@lappy.seanm.ca>
+	<1231368610.2142.27.camel@pasglop>
+	<200901091549.56943.matthias.fuchs@esd-electronics.com>
+	<200901091602.05730.matthias.fuchs@esd-electronics.com>
+	<Pine.LNX.4.64.0901091620240.13230@vixen.sonytel.be>
+	<1231536613.2142.74.camel@pasglop> <aday6xknnp2.fsf@cisco.com>
+	<Pine.LNX.4.64.0901121421140.13607@vixen.sonytel.be>
+	<1231796192.22571.30.camel@pasglop>
+	<1515542773.20090113015150@emcraft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Andy Fleming <afleming@freescale.com>, David Miller <davem@davemloft.net>,
-	Giulio Benetti <giulio.benetti@micronovasrl.com>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: Roland Dreier <rdreier@cisco.com>, Sean MacLennan <smaclennan@pikatech.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,69 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Freescale on-chip TBI PHYs reports PHY ID as 0x0, but as of
+On Tue, 13 Jan 2009, Yuri Tikhonov wrote:
+> On Tuesday, January 13, 2009 you wrote:
+> > On Mon, 2009-01-12 at 14:37 +0100, Geert Uytterhoeven wrote:
+> >> On Fri, 9 Jan 2009, Roland Dreier wrote:
+> >> >  > Can you double check that the e1000 isn't copying the PCI resources into
+> >> >  > a unsigned long before ioremap'ing the result, thus cropping the top
+> >> >  > bits ?
+> >> > 
+> >> > as far as I can see, e1000 is using pci_ioremap_bar(), which should do
+> >> > the right thing as long as resource_size_t is the right type (which it
+> >> > looks like it is on PowerPC 44x).
+> >> 
+> >> Indeed, the full 36-bit address is passed to __ioremap() via pci_ioremap_bar(),
+> >> as evidenced from the additional debug output below (see [1]).
+> >> 
+> >> As I don't have any other 3.3V PCI Ethernet cards, I plugged in a 3.3V PCI USB
+> >> 2.0 card in the second PCI slot, and got a similar crash (see [2]).
+> >> 
+> >> Are the PCI slots on the Sequoia known broken under recent Linux kernels? I've
+> >> never used them before...
+> 
+> > Hrm, something is indeed wrong, hard to say what tho. My canyonlands
+> > works fine (460EPx) and I can try a Taishan one of these days (440GX
+> > iirc). What is in sequoia ? I think it's a GX no ?
+> 
+>  Sequoia is equipped with 440EPx.
+> 
+>  I observe the 'mal_probe' crash on the Katmai board too (based on 
+> 440SPe):
 
-commit 3ee82383f0098a2e13acc8cf1be8e47512f41e5a
-Author: Giulio Benetti <giulio.benetti@micronovasrl.com>
-Date:   Thu Nov 13 21:53:13 2008 +0000
+Do PCI cards in the Katmai's PCI-X slot work?
 
-    phy: fix phy address bug
+With kind regards,
 
-    PHYID returns 0xffff and not 0xffffffff when not found and in some
-    case(at91sam9263) 0x0. Maybe this patch could be useful.
+Geert Uytterhoeven
+Software Architect
 
-phy_device.c treats PHY ID == 0x0 as bogus IDs, and that results in
-gianfar driver failure to see the TBI PHYs. This code snippet triggers:
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-	if (!priv->tbiphy) {
-		printk(KERN_WARNING "SGMII mode requires that the device "
-				"tree specify a tbi-handle\n");
-		return;
-	}
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-Although tbi-handle is specified in the device tree.
-
-Btw, technically PHY ID == 0x0 is a valid ID (if we ever see a PHY
-manufactured by Xerox :-).
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-There is one thing I don't actually understand though...
-
-Andy, were you testing the TBI support on a hardware where PHY ID
-!= 0x0 or maybe your TBI PHY support patch (commit b31a1d8b41513b,
-dated Tue Dec 16 15:29:15 2008) was based on a bit outdated kernel
-version? Because according to the git timestamps, the TBI support
-was not working since the submission.
-
-Just in case, the hardware I'm seeing the PHY ID == 0x0 is
-MPC8378E-MDS.
-
-Thanks,
-
- drivers/net/phy/phy_device.c |    9 ---------
- 1 files changed, 0 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index e354601..0a06e4f 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -231,15 +231,6 @@ struct phy_device * get_phy_device(struct mii_bus *bus, int addr)
- 	if ((phy_id & 0x1fffffff) == 0x1fffffff)
- 		return NULL;
- 
--	/*
--	 * Broken hardware is sometimes missing the pull-up resistor on the
--	 * MDIO line, which results in reads to non-existent devices returning
--	 * 0 rather than 0xffff. Catch this here and treat 0 as a non-existent
--	 * device as well.
--	 */
--	if (phy_id == 0)
--		return NULL;
--
- 	dev = phy_device_create(bus, addr, phy_id);
- 
- 	return dev;
--- 
-1.5.6.5
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
