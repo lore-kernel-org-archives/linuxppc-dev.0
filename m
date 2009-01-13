@@ -1,22 +1,32 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 69557DE107
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 14:34:23 +1100 (EST)
-Date: Mon, 12 Jan 2009 19:34:20 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Message-ID: <20090113033420.GA11065@ovro.caltech.edu>
-References: <20090107195052.GA24981@ovro.caltech.edu>
-	<20090108192716.GA19863@ovro.caltech.edu>
-	<20090108215127.GA28935@ovro.caltech.edu>
-	<200901131302.52754.rusty@rustcorp.com.au>
+Return-Path: <mohan@in.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CE5E8474C4
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 15:15:29 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n0D4FZcC009258
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 23:15:35 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	n0D4FPPq185624
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 23:15:25 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n0D4FOrB004695
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jan 2009 23:15:25 -0500
+From: "M. Mohan Kumar" <mohan@in.ibm.com>
+To: kexec@lists.infradead.org
+Subject: Re: [PATCH 0/5 + 2] kexec updates
+Date: Tue, 13 Jan 2009 09:45:20 +0530
+References: <kexec-29-1.miltonm@bga.com> <20090112062359.GK7337@verge.net.au>
+In-Reply-To: <20090112062359.GK7337@verge.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200901131302.52754.rusty@rustcorp.com.au>
-Cc: arnd@arndb.de, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, shemminger@vyatta.com,
-	David Miller <davem@davemloft.net>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200901130945.20596.mohan@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Simon Horman <horms@verge.net.au>,
+	Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,66 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 13, 2009 at 01:02:52PM +1030, Rusty Russell wrote:
-> On Friday 09 January 2009 08:21:27 Ira Snyder wrote:
-> > Rusty, since you wrote the virtio code, can you point me at the things I
-> > would need to implement to use virtio over the PCI bus.
+> On Fri, Jan 02, 2009 at 02:42:38PM -0600, Milton Miller wrote:
+> > Follwing this mail are 5 patches for kexec userspace and two for the
+> > kernel.  The first fixes an array overflow and the second updates
+> > userspace to the merged 2.6.28 kdump support.  The remaining are
+> > cleanups and warning fixes, including one for the common code.
 > > 
-> > The guests (PowerPC computers running Linux) are PCI cards in the host
-> > system (an Intel Pentium3-M system). The guest computers can access all
-> > of the host's memory. The guests provide a 1MB (movable) window into
-> > their memory.
-> > 
-> > The PowerPC computers also have a DMA controller, which I've used to get
-> > better throughput from my driver. I have a way to create interrupts to
-> > both the host and guest systems.
-> > 
-> > I've read your paper titled: "virtio: Towards a De-Facto Standard For
-> > Virtual I/O Devices"
-> > 
-> > If I read that correctly, then I should implement all of the functions
-> > in struct virtqueue_ops appropriately, and the existing virtio drivers
-> > should just work. The only concern I have there is how to make guest ->
-> > host transfer use the DMA controller. I've done all programming of it
-> > from the guest kernel, using the Linux DMAEngine API.
+> > The two patchs for the kernel are independent.
 > 
-> Hi Ira,
+> Hi all,
 > 
->    Interesting system: the guest being able to access the host's memory but not (fully) vice-versa makes this a little different from the current implementations where that was assumed.  virtio assumes that the guest will publish buffers and someone else (ie. the host) will access them.
+> sorry to be a bit slow in responding, this email landed just
+> as I was leaving for a weeks holiday.
 > 
+> The kexec-tools patches seem reasonable to me and I'm happy to merge what I
+> think are the latest versions - thanks Michael for your review.
 
-The guest system /could/ publish all of its RAM, but with 256MB per
-board, 19 boards per cPCI crate, that's way too much for a 32-bit PC to
-map into it's memory space. That's the real reason I use the 1MB
-windows. I could make them bigger (16MB would be fine, I think), but I
-doubt it would make much of a difference to the implementation.
+Hi,
 
->    > Are there any other implementations other than virtio_ring?
-> 
->    There were some earlier implementations, but they were trivial.  And not particularly helpful in your case.
-> 
-> In summary, yes, it should work quite nicely, but rather than publishing the buffers to the host, the host will need to tell the guest where it wants them transferred (possibly using that 1M window, and a notification mechanism).  That will be the complex part I think.
-> 
+I tested both kernel and kexec-tools patches and kdump works fine. Tested on a 
+POWER5 machine.
 
-I've got a system like that right now in the driver that started this
-thread. I tried to mimic the buffer descriptor rings in a network card.
-The virtio system doesn't seem to be too different. I can probably work
-something out.
-
-What's keeping me from getting started is what to do with the
-virtqueue_ops structure once I've got the functions to fill it in. There
-isn't a register_virtqueue_ops() function. I'm not at all sure when to
-use a struct virtio_driver or a struct virtio_device. I hunch I need one
-of these.
-
-If I've understood this whole thing correctly, then I should be able to
-register a virtio_ops on both sides, and then insmod virtio_net and
-virtio_console, and have them "just work".
-
-I guess what I'm looking for is something trivial, something that'll
-insmod and printk() whenever one of the virtqueue_ops pointers is
-called. Something like a template. That's how I really learned when all
-of the uart functions are called, for example.
-
-Thanks,
-Ira
+Regards,
+Mohan.
