@@ -1,9 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <e613c8e37489239652a88cfa34741447530f2415.1231813731.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc: Enable PS3 options and QPACE in ppc64_defconfig
-Date: Tue, 13 Jan 2009 13:30:00 +1100 (EST)
+Return-Path: <rusty@rustcorp.com.au>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Date: Tue, 13 Jan 2009 13:02:52 +1030
+References: <20090107195052.GA24981@ovro.caltech.edu>
+	<20090108192716.GA19863@ovro.caltech.edu>
+	<20090108215127.GA28935@ovro.caltech.edu>
+In-Reply-To: <20090108215127.GA28935@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200901131302.52754.rusty@rustcorp.com.au>
+Cc: arnd@arndb.de, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, shemminger@vyatta.com,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,74 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To increase the amount of code that's built for a defconfig build.
+On Friday 09 January 2009 08:21:27 Ira Snyder wrote:
+> Rusty, since you wrote the virtio code, can you point me at the things I
+> would need to implement to use virtio over the PCI bus.
+> 
+> The guests (PowerPC computers running Linux) are PCI cards in the host
+> system (an Intel Pentium3-M system). The guest computers can access all
+> of the host's memory. The guests provide a 1MB (movable) window into
+> their memory.
+> 
+> The PowerPC computers also have a DMA controller, which I've used to get
+> better throughput from my driver. I have a way to create interrupts to
+> both the host and guest systems.
+> 
+> I've read your paper titled: "virtio: Towards a De-Facto Standard For
+> Virtual I/O Devices"
+> 
+> If I read that correctly, then I should implement all of the functions
+> in struct virtqueue_ops appropriately, and the existing virtio drivers
+> should just work. The only concern I have there is how to make guest ->
+> host transfer use the DMA controller. I've done all programming of it
+> from the guest kernel, using the Linux DMAEngine API.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/configs/ppc64_defconfig |   26 +++++++++++++++++++++++++-
- 1 files changed, 25 insertions(+), 1 deletions(-)
+Hi Ira,
 
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 069ae1b..d4685d1 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -211,11 +211,28 @@ CONFIG_PPC_PASEMI=y
- CONFIG_PPC_PASEMI_IOMMU=y
- # CONFIG_PPC_PASEMI_IOMMU_DMA_FORCE is not set
- CONFIG_PPC_PASEMI_MDIO=y
--# CONFIG_PPC_PS3 is not set
-+CONFIG_PPC_PS3=y
-+
-+#
-+# PS3 Platform Options
-+#
-+# CONFIG_PS3_ADVANCED is not set
-+CONFIG_PS3_HTAB_SIZE=20
-+# CONFIG_PS3_DYNAMIC_DMA is not set
-+CONFIG_PS3_VUART=y
-+CONFIG_PS3_PS3AV=y
-+CONFIG_PS3_SYS_MANAGER=y
-+CONFIG_PS3_STORAGE=m
-+CONFIG_PS3_DISK=m
-+CONFIG_PS3_ROM=m
-+CONFIG_PS3_FLASH=m
-+CONFIG_PS3_LPM=m
- CONFIG_PPC_CELL=y
-+CONFIG_PPC_CELL_COMMON=y
- CONFIG_PPC_CELL_NATIVE=y
- CONFIG_PPC_IBM_CELL_BLADE=y
- CONFIG_PPC_CELLEB=y
-+CONFIG_PPC_CELL_QPACE=y
- 
- #
- # Cell Broadband Engine options
-@@ -981,6 +998,9 @@ CONFIG_E1000=y
- CONFIG_TIGON3=y
- # CONFIG_BNX2 is not set
- CONFIG_SPIDER_NET=m
-+CONFIG_GELIC_NET=m
-+CONFIG_GELIC_WIRELESS=y
-+# CONFIG_GELIC_WIRELESS_OLD_PSK_INTERFACE is not set
- # CONFIG_QLA3XXX is not set
- # CONFIG_ATL1 is not set
- # CONFIG_ATL1E is not set
-@@ -1370,6 +1390,8 @@ CONFIG_FB_RADEON_BACKLIGHT=y
- # CONFIG_FB_PM3 is not set
- # CONFIG_FB_CARMINE is not set
- CONFIG_FB_IBM_GXT4500=y
-+CONFIG_FB_PS3=m
-+CONFIG_FB_PS3_DEFAULT_SIZE_M=9
- # CONFIG_FB_VIRTUAL is not set
- # CONFIG_FB_METRONOME is not set
- CONFIG_BACKLIGHT_LCD_SUPPORT=y
-@@ -1492,6 +1514,8 @@ CONFIG_SND_PCI=y
- CONFIG_SND_PPC=y
- CONFIG_SND_POWERMAC=m
- CONFIG_SND_POWERMAC_AUTO_DRC=y
-+CONFIG_SND_PS3=m
-+CONFIG_SND_PS3_DEFAULT_START_DELAY=2000
- CONFIG_SND_AOA=m
- CONFIG_SND_AOA_FABRIC_LAYOUT=m
- CONFIG_SND_AOA_ONYX=m
--- 
-1.5.3.7.1.g4e596e
+   Interesting system: the guest being able to access the host's memory but not (fully) vice-versa makes this a little different from the current implementations where that was assumed.  virtio assumes that the guest will publish buffers and someone else (ie. the host) will access them.
+
+   > Are there any other implementations other than virtio_ring?
+
+   There were some earlier implementations, but they were trivial.  And not particularly helpful in your case.
+
+In summary, yes, it should work quite nicely, but rather than publishing the buffers to the host, the host will need to tell the guest where it wants them transferred (possibly using that 1M window, and a notification mechanism).  That will be the complex part I think.
+
+Cheers,
+Rusty.
