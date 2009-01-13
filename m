@@ -1,17 +1,26 @@
-Return-Path: <miltonm@bga.com>
-Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id B3A99DE125
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 02:52:16 +1100 (EST)
-In-Reply-To: <20090112062359.GK7337@verge.net.au>
-References: <kexec-29-1.miltonm@bga.com> <20090112062359.GK7337@verge.net.au>
-Mime-Version: 1.0 (Apple Message framework v624)
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 891E3DE199
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 02:52:24 +1100 (EST)
+Message-Id: <3983606C-7DC0-4D3D-B523-4EE5C2BCB80E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+In-Reply-To: <20090107045341.GA15842@kroah.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <db22d11838af3c43c4624a8d2f0b0883@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 0/5 + 2] kexec updates
-Date: Tue, 13 Jan 2009 09:59:08 -0600
-To: Simon Horman <horms@verge.net.au>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, kexec@lists.infradead.org
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 0/6] USB: Fixes for fsl_qe_udc driver
+Date: Tue, 13 Jan 2009 09:49:39 -0600
+References: <20081225141402.GA30689@oksana.dev.rtsoft.ru>
+	<F4CBCB9E-5C58-4F9B-B0B2-623C81DF1339@kernel.crashing.org>
+	<20090107045341.GA15842@kroah.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>, linux-usb@vger.kernel.org,
+	linux-kernel Kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,61 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Jan 12, 2009, at 12:24 AM, Simon Horman wrote:
-> On Fri, Jan 02, 2009 at 02:42:38PM -0600, Milton Miller wrote:
->> Follwing this mail are 5 patches for kexec userspace and two for the
->> kernel.  The first fixes an array overflow and the second updates
->> userspace to the merged 2.6.28 kdump support.  The remaining are
->> cleanups and warning fixes, including one for the common code.
+
+On Jan 6, 2009, at 10:53 PM, Greg KH wrote:
+
+> On Tue, Jan 06, 2009 at 10:44:13PM -0600, Kumar Gala wrote:
 >>
->> The two patchs for the kernel are independent.
+>> On Dec 25, 2008, at 8:14 AM, Anton Vorontsov wrote:
+>>
+>>> Hi all,
+>>>
+>>> Just resending some fixes that seem to be lost...
+>>
+>> Greg,
+>>
+>> What happened w/this patch set?
 >
-> Hi all,
->
-> sorry to be a bit slow in responding, this email landed just
-> as I was leaving for a weeks holiday.
->
+> As it was sent during the hollidays (on Christmas day at that), it's
+> still in my "to-review" queue.  I'll get to it in a few days after I
+> resync the USB tree with Linus.
 
-No problem, I figured as much.
+Any update on the review of these 6 patches?
 
-> The kexec-tools patches seem reasonable to me and I'm happy to merge 
-> what I
-> think are the latest versions - thanks Michael for your review.
->
-> Milton, here are the Subjects, Dates and Message-Ids of what I have in 
-> my
-> queue.  If you could confirm this or repost that would be great.
->
-> #1
-> Subject: [PATCH kexec-tools v2] ppc64: always check number of ranges 
-> when adding them
-> Date: Thu, 08 Jan 2009 06:33:50 -0600
-> Message-ID: <1231418030_141769@mercury.realtime.net>
->
-> #2
-> Subject: [PATCH kexec-tools 2/5] ppc64: update kdump for 2.6.28 
-> relocatable kernel
-> Date: Fri, 02 Jan 2009 15:04:42 -0600
-> Message-Id: <kexec-29-1-2r.miltonm@bga.com>
->
-> #3
-> Subject: [PATCH kexec-tools 3/5] ppc64: segments may be reordered
-> Date: Fri, 02 Jan 2009 15:04:45 -0600
-> Message-Id: <kexec-29-1-3r.miltonm@bga.com>
->
-> #4
-> Subject: [PATCH kexec-tools 4/5] ppc64: cleanups
-> Date: Fri, 02 Jan 2009 15:04:48 -0600
-> Message-Id: <kexec-29-1-4r.miltonm@bga.com>
->
-> #5
-> Subject: [PATCH kexec-tools 5/5] entry wants to be void *
-> Date: Fri, 02 Jan 2009 15:04:51 -0600
-> Message-Id: <kexec-29-1-5r.miltonm@bga.com>
-
-Based on the subjects, yes, those are the lastest versions.
-
-And I assume you saw Mohan's tested message.
-
-Thanks,
-milton
+- k
