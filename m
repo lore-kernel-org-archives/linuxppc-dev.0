@@ -1,29 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 431B4DE2D5
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 13:53:14 +1100 (EST)
-Subject: Re: Re[2]: mal_probe crash
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Yuri Tikhonov <yur@emcraft.com>
-In-Reply-To: <1515542773.20090113015150@emcraft.com>
-References: <20090107154434.0c9437ef@lappy.seanm.ca>
-	<1231368610.2142.27.camel@pasglop>
-	<200901091549.56943.matthias.fuchs@esd-electronics.com>
-	<200901091602.05730.matthias.fuchs@esd-electronics.com>
-	<Pine.LNX.4.64.0901091620240.13230@vixen.sonytel.be>
-	<1231536613.2142.74.camel@pasglop> <aday6xknnp2.fsf@cisco.com>
-	<Pine.LNX.4.64.0901121421140.13607@vixen.sonytel.be>
-	<1231796192.22571.30.camel@pasglop>
-	<1515542773.20090113015150@emcraft.com>
-Content-Type: text/plain
-Date: Tue, 13 Jan 2009 13:52:21 +1100
-Message-Id: <1231815141.22571.35.camel@pasglop>
-Mime-Version: 1.0
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Roland Dreier <rdreier@cisco.com>, Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 69557DE107
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 14:34:23 +1100 (EST)
+Date: Mon, 12 Jan 2009 19:34:20 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Message-ID: <20090113033420.GA11065@ovro.caltech.edu>
+References: <20090107195052.GA24981@ovro.caltech.edu>
+	<20090108192716.GA19863@ovro.caltech.edu>
+	<20090108215127.GA28935@ovro.caltech.edu>
+	<200901131302.52754.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200901131302.52754.rusty@rustcorp.com.au>
+Cc: arnd@arndb.de, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, shemminger@vyatta.com,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,38 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-01-13 at 01:51 +0300, Yuri Tikhonov wrote:
-> On Tuesday, January 13, 2009 you wrote:
+On Tue, Jan 13, 2009 at 01:02:52PM +1030, Rusty Russell wrote:
+> On Friday 09 January 2009 08:21:27 Ira Snyder wrote:
+> > Rusty, since you wrote the virtio code, can you point me at the things I
+> > would need to implement to use virtio over the PCI bus.
+> > 
+> > The guests (PowerPC computers running Linux) are PCI cards in the host
+> > system (an Intel Pentium3-M system). The guest computers can access all
+> > of the host's memory. The guests provide a 1MB (movable) window into
+> > their memory.
+> > 
+> > The PowerPC computers also have a DMA controller, which I've used to get
+> > better throughput from my driver. I have a way to create interrupts to
+> > both the host and guest systems.
+> > 
+> > I've read your paper titled: "virtio: Towards a De-Facto Standard For
+> > Virtual I/O Devices"
+> > 
+> > If I read that correctly, then I should implement all of the functions
+> > in struct virtqueue_ops appropriately, and the existing virtio drivers
+> > should just work. The only concern I have there is how to make guest ->
+> > host transfer use the DMA controller. I've done all programming of it
+> > from the guest kernel, using the Linux DMAEngine API.
 > 
-> > On Mon, 2009-01-12 at 14:37 +0100, Geert Uytterhoeven wrote:
-> >> On Fri, 9 Jan 2009, Roland Dreier wrote:
-> >> >  > Can you double check that the e1000 isn't copying the PCI resources into
-> >> >  > a unsigned long before ioremap'ing the result, thus cropping the top
-> >> >  > bits ?
-> >> > 
-> >> > as far as I can see, e1000 is using pci_ioremap_bar(), which should do
-> >> > the right thing as long as resource_size_t is the right type (which it
-> >> > looks like it is on PowerPC 44x).
-> >> 
-> >> Indeed, the full 36-bit address is passed to __ioremap() via pci_ioremap_bar(),
-> >> as evidenced from the additional debug output below (see [1]).
-> >> 
-> >> As I don't have any other 3.3V PCI Ethernet cards, I plugged in a 3.3V PCI USB
-> >> 2.0 card in the second PCI slot, and got a similar crash (see [2]).
-> >> 
-> >> Are the PCI slots on the Sequoia known broken under recent Linux kernels? I've
-> >> never used them before...
+> Hi Ira,
 > 
-> > Hrm, something is indeed wrong, hard to say what tho. My canyonlands
-> > works fine (460EPx) and I can try a Taishan one of these days (440GX
-> > iirc). What is in sequoia ? I think it's a GX no ?
+>    Interesting system: the guest being able to access the host's memory but not (fully) vice-versa makes this a little different from the current implementations where that was assumed.  virtio assumes that the guest will publish buffers and someone else (ie. the host) will access them.
 > 
->  Sequoia is equipped with 440EPx.
-> 
->  I observe the 'mal_probe' crash on the Katmai board too (based on 
-> 440SPe):
 
-Yes, EMAC is currently busted. We'll fix it asap.
+The guest system /could/ publish all of its RAM, but with 256MB per
+board, 19 boards per cPCI crate, that's way too much for a 32-bit PC to
+map into it's memory space. That's the real reason I use the 1MB
+windows. I could make them bigger (16MB would be fine, I think), but I
+doubt it would make much of a difference to the implementation.
 
-Cheers,
-Ben.
+>    > Are there any other implementations other than virtio_ring?
+> 
+>    There were some earlier implementations, but they were trivial.  And not particularly helpful in your case.
+> 
+> In summary, yes, it should work quite nicely, but rather than publishing the buffers to the host, the host will need to tell the guest where it wants them transferred (possibly using that 1M window, and a notification mechanism).  That will be the complex part I think.
+> 
+
+I've got a system like that right now in the driver that started this
+thread. I tried to mimic the buffer descriptor rings in a network card.
+The virtio system doesn't seem to be too different. I can probably work
+something out.
+
+What's keeping me from getting started is what to do with the
+virtqueue_ops structure once I've got the functions to fill it in. There
+isn't a register_virtqueue_ops() function. I'm not at all sure when to
+use a struct virtio_driver or a struct virtio_device. I hunch I need one
+of these.
+
+If I've understood this whole thing correctly, then I should be able to
+register a virtio_ops on both sides, and then insmod virtio_net and
+virtio_console, and have them "just work".
+
+I guess what I'm looking for is something trivial, something that'll
+insmod and printk() whenever one of the virtqueue_ops pointers is
+called. Something like a template. That's how I really learned when all
+of the uart functions are called, for example.
+
+Thanks,
+Ira
