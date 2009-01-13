@@ -1,16 +1,9 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 13 Jan 2009 13:23:16 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH 11/11][v2] ppc440spe-adma: ADMA driver for PPC440SP(e)
-	systems
-Message-ID: <20090113022316.GA3628@yookeroo.seuss>
-References: <200901130343.56020.yur@emcraft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200901130343.56020.yur@emcraft.com>
-Cc: wd@denx.de, dzu@denx.de, linux-raid@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, yanok@emcraft.com, dan.j.williams@intel.com
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <e613c8e37489239652a88cfa34741447530f2415.1231813731.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc: Enable PS3 options and QPACE in ppc64_defconfig
+Date: Tue, 13 Jan 2009 13:30:00 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,71 +13,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 13, 2009 at 03:43:55AM +0300, Yuri Tikhonov wrote:
-> Adds the platform device definitions and the architecture specific support
-> routines for the ppc440spe adma driver.
-> 
-> Any board equipped with PPC440SP(e) controller may utilize this driver.
-> 
-> diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
-> index 077819b..f2f77c8 100644
-> --- a/arch/powerpc/boot/dts/katmai.dts
-> +++ b/arch/powerpc/boot/dts/katmai.dts
-> @@ -16,7 +16,7 @@
->  
->  / {
->  	#address-cells = <2>;
-> -	#size-cells = <1>;
-> +	#size-cells = <2>;
+To increase the amount of code that's built for a defconfig build.
 
-You've changed the root level size-cells, but haven't updated the
-sub-nodes (such as /memory) accordingly.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/configs/ppc64_defconfig |   26 +++++++++++++++++++++++++-
+ 1 files changed, 25 insertions(+), 1 deletions(-)
 
->  	model = "amcc,katmai";
->  	compatible = "amcc,katmai";
->  	dcr-parent = <&{/cpus/cpu@0}>;
-> @@ -392,6 +392,30 @@
->  				0x0 0x0 0x0 0x3 &UIC3 0xa 0x4 /* swizzled int C */
->  				0x0 0x0 0x0 0x4 &UIC3 0xb 0x4 /* swizzled int D */>;
->  		};
-> +		DMA0: dma0 {
-
-No 'compatible' property, which seems dubious.
-
-> +			interrupt-parent = <&DMA0>;
-> +			interrupts = <0 1>;
-> +			#interrupt-cells = <1>;
-> +			#address-cells = <0>;
-> +			#size-cells = <0>;
-> +			interrupt-map = <
-> +				0 &UIC0 0x14 4
-> +				1 &UIC1 0x16 4>;
-> +		};
-> +		DMA1: dma1 {
-> +			interrupt-parent = <&DMA1>;
-> +			interrupts = <0 1>;
-> +			#interrupt-cells = <1>;
-> +			#address-cells = <0>;
-> +			#size-cells = <0>;
-> +			interrupt-map = <
-> +				0 &UIC0 0x16 4
-> +				1 &UIC1 0x16 4>;
-
-Are these interrupt-maps correct?  The second interrupt from both dma
-controllers is routed to the same line on UIC1?
-
-> +		};
-> +		xor {
-> +			interrupt-parent = <&UIC1>;
-> +			interrupts = <0x1f 4>;
-
-What the hell is this thing?  No compatible property, nor even a
-meaningful name.
-
-> +		};
->  	};
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 069ae1b..d4685d1 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -211,11 +211,28 @@ CONFIG_PPC_PASEMI=y
+ CONFIG_PPC_PASEMI_IOMMU=y
+ # CONFIG_PPC_PASEMI_IOMMU_DMA_FORCE is not set
+ CONFIG_PPC_PASEMI_MDIO=y
+-# CONFIG_PPC_PS3 is not set
++CONFIG_PPC_PS3=y
++
++#
++# PS3 Platform Options
++#
++# CONFIG_PS3_ADVANCED is not set
++CONFIG_PS3_HTAB_SIZE=20
++# CONFIG_PS3_DYNAMIC_DMA is not set
++CONFIG_PS3_VUART=y
++CONFIG_PS3_PS3AV=y
++CONFIG_PS3_SYS_MANAGER=y
++CONFIG_PS3_STORAGE=m
++CONFIG_PS3_DISK=m
++CONFIG_PS3_ROM=m
++CONFIG_PS3_FLASH=m
++CONFIG_PS3_LPM=m
+ CONFIG_PPC_CELL=y
++CONFIG_PPC_CELL_COMMON=y
+ CONFIG_PPC_CELL_NATIVE=y
+ CONFIG_PPC_IBM_CELL_BLADE=y
+ CONFIG_PPC_CELLEB=y
++CONFIG_PPC_CELL_QPACE=y
+ 
+ #
+ # Cell Broadband Engine options
+@@ -981,6 +998,9 @@ CONFIG_E1000=y
+ CONFIG_TIGON3=y
+ # CONFIG_BNX2 is not set
+ CONFIG_SPIDER_NET=m
++CONFIG_GELIC_NET=m
++CONFIG_GELIC_WIRELESS=y
++# CONFIG_GELIC_WIRELESS_OLD_PSK_INTERFACE is not set
+ # CONFIG_QLA3XXX is not set
+ # CONFIG_ATL1 is not set
+ # CONFIG_ATL1E is not set
+@@ -1370,6 +1390,8 @@ CONFIG_FB_RADEON_BACKLIGHT=y
+ # CONFIG_FB_PM3 is not set
+ # CONFIG_FB_CARMINE is not set
+ CONFIG_FB_IBM_GXT4500=y
++CONFIG_FB_PS3=m
++CONFIG_FB_PS3_DEFAULT_SIZE_M=9
+ # CONFIG_FB_VIRTUAL is not set
+ # CONFIG_FB_METRONOME is not set
+ CONFIG_BACKLIGHT_LCD_SUPPORT=y
+@@ -1492,6 +1514,8 @@ CONFIG_SND_PCI=y
+ CONFIG_SND_PPC=y
+ CONFIG_SND_POWERMAC=m
+ CONFIG_SND_POWERMAC_AUTO_DRC=y
++CONFIG_SND_PS3=m
++CONFIG_SND_PS3_DEFAULT_START_DELAY=2000
+ CONFIG_SND_AOA=m
+ CONFIG_SND_AOA_FABRIC_LAYOUT=m
+ CONFIG_SND_AOA_ONYX=m
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.3.7.1.g4e596e
