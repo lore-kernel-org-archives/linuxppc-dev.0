@@ -1,22 +1,17 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 2A302DE11C
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 04:43:07 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Date: Tue, 13 Jan 2009 18:42:53 +0100
-References: <20090107195052.GA24981@ovro.caltech.edu>
-	<200901131733.04341.arnd@arndb.de>
-	<20090113164007.GA7434@ovro.caltech.edu>
-In-Reply-To: <20090113164007.GA7434@ovro.caltech.edu>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from WA4EHSOBE005.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id D7AFDDE0CC
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 06:38:30 +1100 (EST)
+Message-ID: <496CED98.1040902@am.sony.com>
+Date: Tue, 13 Jan 2009 11:38:00 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200901131842.54688.arnd@arndb.de>
-Cc: netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	shemminger@vyatta.com, David Miller <davem@davemloft.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Enable PS3 options and QPACE in ppc64_defconfig
+References: <e613c8e37489239652a88cfa34741447530f2415.1231813731.git.michael@ellerman.id.au>
+In-Reply-To: <e613c8e37489239652a88cfa34741447530f2415.1231813731.git.michael@ellerman.id.au>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 13 January 2009, Ira Snyder wrote:
-> So do you program one channel of the DMA engine from the host side and
-> another channel from the guest side?
+Michael Ellerman wrote:
+> To increase the amount of code that's built for a defconfig build.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+>  arch/powerpc/configs/ppc64_defconfig |   26 +++++++++++++++++++++++++-
+>  1 files changed, 25 insertions(+), 1 deletions(-)
 
-Yes.
+> -# CONFIG_PPC_PS3 is not set
+> +CONFIG_PPC_PS3=y
 
-> I tried to avoid having the host program the DMA controller at all.
-> Using the DMAEngine API on the guest did better than I could achieve by
-> programming the registers manually. I didn't use chaining or any of the
-> fancier features in my tests, though.
+I tested this ppc64_defconfig, and it could boot on PS3.
 
-Our driver unfortunately does not use the DMA API, but it clearly
-should. What this means in your case is that you would need to port
-the freescale DMA engine driver to the host side, to operate on the
-PCI device. Not sure about how specifically this would work on fsl
-hardware, but it seems generally doable.
-
-	Arnd <><
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
