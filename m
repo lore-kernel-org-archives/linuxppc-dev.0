@@ -1,25 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 706D8DDFAD
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 08:04:36 +1100 (EST)
-Subject: Re: [PATCH 1/4] hvc_console: do not set low_latency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <1998eda55e236b70f63c7fb4b956b487@bga.com>
-References: <hvc-console-29-3-1@bga.com>
-	<200901131004.22609.borntraeger@de.ibm.com>
-	<20090113113545.GB26819@cetus.boeblingen.de.ibm.com>
-	<1998eda55e236b70f63c7fb4b956b487@bga.com>
-Content-Type: text/plain
-Date: Wed, 14 Jan 2009 08:04:04 +1100
-Message-Id: <1231880644.22571.47.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-	lkml <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Joe Peterson <joe@skyrush.com>
+	by ozlabs.org (Postfix) with ESMTPS id CBF92DE0F1
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 08:17:41 +1100 (EST)
+Message-Id: <EB245BEE-52C5-40DD-A9DD-A106A5937219@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1231880384.22571.46.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: Please pull from 'next' branch (2.6.29)
+Date: Tue, 13 Jan 2009 15:17:36 -0600
+References: <Pine.LNX.4.64.0901130917190.21289@blarg.am.freescale.net>
+	<1231880384.22571.46.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,80 +25,57 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> So the simplest is to never set it.
+On Jan 13, 2009, at 2:59 PM, Benjamin Herrenschmidt wrote:
 
-I already applied your previous patch. Please send an incremental fix.
+> On Tue, 2009-01-13 at 09:21 -0600, Kumar Gala wrote:
+>> Please pull from 'next' branch of
+>>
+>> (this is my last pull request of 'next' for 2.6.29.  I would like  
+>> to see
+>> the 'powerpc: Unify opcode definitions and support' patch go in but  
+>> leave
+>> that for you to pull in directly).
+>
+> This is really very very very late for these changes, most of them
+> aren't bug fixes at all...
 
-Cheers,
-Ben.
+True.
 
-> milton
-> 
-> > BUG: sleeping function called from invalid context at 
-> > /root/cvs/linux-2.6.git/kernel/mutex.c:207
-> > in_atomic(): 1, irqs_disabled(): 0, pid: 748, name: khvcd
-> > 1 lock held by khvcd/748:
-> >  #0:  (hvc_structs_lock){--..}, at: [<00000000002ceb50>] 
-> > khvcd+0x58/0x12c
-> > CPU: 0 Not tainted 2.6.29-rc1git #29
-> > Process khvcd (pid: 748, task: 000000002fb9a480, ksp: 000000002f66bd78)
-> > 070000000000000a 000000002f66ba00 0000000000000002 (null)
-> >        000000002f66baa0 000000002f66ba18 000000002f66ba18 
-> > 0000000000104f08
-> >        ffffffffffffc000 000000002f66bd78 (null) (null)
-> >        000000002f66ba00 000000000000000c 000000002f66ba00 
-> > 000000002f66ba70
-> >        0000000000466af8 0000000000104f08 000000002f66ba00 
-> > 000000002f66ba50
-> > Call Trace:
-> > ([<0000000000104e7c>] show_trace+0x138/0x158)
-> >  [<0000000000104f62>] show_stack+0xc6/0xf8
-> >  [<0000000000105740>] dump_stack+0xb0/0xc0
-> >  [<000000000013144a>] __might_sleep+0x14e/0x17c
-> >  [<000000000045e226>] mutex_lock_nested+0x42/0x3b4
-> >  [<00000000002c443e>] echo_char_raw+0x3a/0x9c
-> >  [<00000000002c688c>] n_tty_receive_buf+0x1154/0x1208
-> >  [<00000000002ca0a2>] flush_to_ldisc+0x152/0x220
-> >  [<00000000002ca1da>] tty_flip_buffer_push+0x6a/0x90
-> >  [<00000000002cea74>] hvc_poll+0x244/0x2c8
-> >  [<00000000002ceb68>] khvcd+0x70/0x12c
-> >  [<000000000015bbd0>] kthread+0x68/0xa0
-> >  [<0000000000109d5a>] kernel_thread_starter+0x6/0xc
-> >  [<0000000000109d54>] kernel_thread_starter+0x0/0xc
-> > 1 lock held by khvcd/748:
-> >  #0:  (hvc_structs_lock){--..}, at: [<00000000002ceb50>] 
-> > khvcd+0x58/0x12c
-> >
-> >> This wont work, since the call to notifier_add is done later:
-> >> What about:
-> >> ---
-> >>  drivers/char/hvc_console.c |    5 +++--
-> >>  1 file changed, 3 insertions(+), 2 deletions(-)
-> >>
-> >> Index: linux-2.6/drivers/char/hvc_console.c
-> >> ===================================================================
-> >> --- linux-2.6.orig/drivers/char/hvc_console.c
-> >> +++ linux-2.6/drivers/char/hvc_console.c
-> >> @@ -318,8 +318,6 @@ static int hvc_open(struct tty_struct *t
-> >>  	} /* else count == 0 */
-> >>
-> >>  	tty->driver_data = hp;
-> >> -	tty->low_latency = 1; /* Makes flushes to ldisc synchronous. */
-> >> -
-> >>  	hp->tty = tty;
-> >>
-> >>  	spin_unlock_irqrestore(&hp->lock, flags);
-> >> @@ -327,6 +325,9 @@ static int hvc_open(struct tty_struct *t
-> >>  	if (hp->ops->notifier_add)
-> >>  		rc = hp->ops->notifier_add(hp, hp->data);
-> >>
-> >> +	if (!hp->irq_requested)
-> >> +		tty->low_latency = 1; /* Makes flushes to ldisc synchronous. */
-> >> +
-> >>  	/*
-> >>  	 * If the notifier fails we return an error.  The tty layer
-> >>  	 * will call hvc_close() after a failed open but we don't want to 
-> >> clean
-> >
-> > Acked-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-> >
+>> Anton Vorontsov (4):
+>>      powerpc/fsl_pci: Add MPC83xx PCI-E controller RC mode support
+>>      powerpc/83xx: Add PCI-E support for all MPC83xx boards with  
+>> PCI-E
+
+Would like to see this feature added into .29
+
+>>      powerpc/83xx: Make serial ports work on MPC8315E-RDB w/ FSL U- 
+>> Boots
+
+A sort of bug fix.
+
+>>      powerpc/83xx: Move mcu_mpc8349emitx driver out of drivers/i2c/ 
+>> chips/
+
+At Jean's request to move i2c clients out of drivers/i2c.
+
+>> Kumar Gala (2):
+>>      powerpc/fsl-booke: Cleanup init/exception setup to be runtime
+>>      powerpc/e500mc: Doorbells need to be taken w/exceptions disabled
+
+can wait for .30
+
+>> Trent Piepho (3):
+>>      powerpc/fsl-booke: Remove code duplication in lowmem mapping
+>>      powerpc/fsl-booke: Allow larger CAM sizes than 256 MB
+>>      powerpc/fsl-booke: Make CAM entries used for lowmem configurable
+
+Posted we'll before.. finally got around to reviewing them.. but can  
+wait for .30
+
+So the real question I have is when does your next branch start  
+queuing up changes for .30?
+
+I can completely live w/these not going into .29 if they can go into  
+your next branch for .30
+
+- k
