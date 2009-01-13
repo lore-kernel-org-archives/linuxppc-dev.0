@@ -1,20 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AF472DE17C
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 02:45:33 +1100 (EST)
-Message-Id: <EE4E2626-FCCA-4DEB-9CDC-085838C74165@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <1228793699-23110-5-git-send-email-tpiepho@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 5/5] powerpc: booke: Allow larger CAM sizes than 256 MB
-Date: Tue, 13 Jan 2009 09:43:24 -0600
-References: <1228793699-23110-1-git-send-email-tpiepho@freescale.com>
-	<1228793699-23110-5-git-send-email-tpiepho@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id B3A99DE125
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 02:52:16 +1100 (EST)
+In-Reply-To: <20090112062359.GK7337@verge.net.au>
+References: <kexec-29-1.miltonm@bga.com> <20090112062359.GK7337@verge.net.au>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <db22d11838af3c43c4624a8d2f0b0883@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 0/5 + 2] kexec updates
+Date: Tue, 13 Jan 2009 09:59:08 -0600
+To: Simon Horman <horms@verge.net.au>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,52 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Dec 8, 2008, at 9:34 PM, Trent Piepho wrote:
-
-> The code that maps kernel low memory would only use page sizes up to  
-> 256
-> MB.  On E500v2 pages up to 4 GB are supported.
+On Jan 12, 2009, at 12:24 AM, Simon Horman wrote:
+> On Fri, Jan 02, 2009 at 02:42:38PM -0600, Milton Miller wrote:
+>> Follwing this mail are 5 patches for kexec userspace and two for the
+>> kernel.  The first fixes an array overflow and the second updates
+>> userspace to the merged 2.6.28 kdump support.  The remaining are
+>> cleanups and warning fixes, including one for the common code.
+>>
+>> The two patchs for the kernel are independent.
 >
-> However, a page must be aligned to a multiple of the page's size.   
-> I.e.
-> 256 MB pages must aligned to a 256 MB boundary.  This was enforced  
-> by a
-> requirement that the physical and virtual addresses of the start of  
-> lowmem
-> be aligned to 256 MB.  Clearly requiring 1GB or 4GB alignment to allow
-> pages of that size isn't acceptable.
+> Hi all,
 >
-> To solve this, I simply have adjust_total_lowmem() take alignment into
-> account when it decides what size pages to use.  Give it PAGE_OFFSET =
-> 0x7000_0000, PHYSICAL_START = 0x3000_0000, and 2GB of RAM, and it  
-> will map
-> pages like this:
-> PA 0x3000_0000 VA 0x7000_0000 Size 256 MB
-> PA 0x4000_0000 VA 0x8000_0000 Size 1 GB
-> PA 0x8000_0000 VA 0xC000_0000 Size 256 MB
-> PA 0x9000_0000 VA 0xD000_0000 Size 256 MB
-> PA 0xA000_0000 VA 0xE000_0000 Size 256 MB
+> sorry to be a bit slow in responding, this email landed just
+> as I was leaving for a weeks holiday.
 >
-> Because the lowmem mapping code now takes alignment into account,
-> PHYSICAL_ALIGN can be lowered from 256 MB to 64 MB.  Even lower  
-> might be
-> possible.  The lowmem code will work down to 4 kB but it's possible  
-> some of
-> the boot code will fail before then.  Poor alignment will force  
-> small pages
-> to be used, which combined with the limited number of TLB1 pages  
-> available,
-> will result in very little memory getting mapped.  So alignments  
-> less than
-> 64 MB probably aren't very useful anyway.
->
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> ---
-> arch/powerpc/Kconfig            |    2 +-
-> arch/powerpc/mm/fsl_booke_mmu.c |   14 +++++++++++++-
-> 2 files changed, 14 insertions(+), 2 deletions(-)
 
-applied
+No problem, I figured as much.
 
-- k
+> The kexec-tools patches seem reasonable to me and I'm happy to merge 
+> what I
+> think are the latest versions - thanks Michael for your review.
+>
+> Milton, here are the Subjects, Dates and Message-Ids of what I have in 
+> my
+> queue.  If you could confirm this or repost that would be great.
+>
+> #1
+> Subject: [PATCH kexec-tools v2] ppc64: always check number of ranges 
+> when adding them
+> Date: Thu, 08 Jan 2009 06:33:50 -0600
+> Message-ID: <1231418030_141769@mercury.realtime.net>
+>
+> #2
+> Subject: [PATCH kexec-tools 2/5] ppc64: update kdump for 2.6.28 
+> relocatable kernel
+> Date: Fri, 02 Jan 2009 15:04:42 -0600
+> Message-Id: <kexec-29-1-2r.miltonm@bga.com>
+>
+> #3
+> Subject: [PATCH kexec-tools 3/5] ppc64: segments may be reordered
+> Date: Fri, 02 Jan 2009 15:04:45 -0600
+> Message-Id: <kexec-29-1-3r.miltonm@bga.com>
+>
+> #4
+> Subject: [PATCH kexec-tools 4/5] ppc64: cleanups
+> Date: Fri, 02 Jan 2009 15:04:48 -0600
+> Message-Id: <kexec-29-1-4r.miltonm@bga.com>
+>
+> #5
+> Subject: [PATCH kexec-tools 5/5] entry wants to be void *
+> Date: Fri, 02 Jan 2009 15:04:51 -0600
+> Message-Id: <kexec-29-1-5r.miltonm@bga.com>
+
+Based on the subjects, yes, those are the lastest versions.
+
+And I assume you saw Mohan's tested message.
+
+Thanks,
+milton
