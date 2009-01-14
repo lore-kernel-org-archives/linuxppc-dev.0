@@ -1,21 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5BD80DE10B
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 01:35:33 +1100 (EST)
-Message-Id: <A658F527-6373-47A5-BD28-66C657662B72@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090114142135.GA22862@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] dts-bindings/fsl/dma.txt: fix IRQ number in mpc83xx dma
-	example
-Date: Wed, 14 Jan 2009 08:35:27 -0600
-References: <1231942453-17898-1-git-send-email-jacmet@sunsite.dk>
-	<20090114142135.GA22862@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jacmet@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.27])
+	by ozlabs.org (Postfix) with ESMTP id AA6FADE05D
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 01:44:48 +1100 (EST)
+Received: by ey-out-2122.google.com with SMTP id d26so70099eyd.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 06:44:46 -0800 (PST)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: timur@freescale.com,
+	dan.j.williams@intel.com,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH] fsldma: print correct IRQ on mpc83xx
+Date: Wed, 14 Jan 2009 15:44:44 +0100
+Message-Id: <1231944284-18296-1-git-send-email-jacmet@sunsite.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The mpc83xx variant uses a shared IRQ for all channels, so the individual
+channel nodes don't have an interrupt property. Fix the code to print the
+controller IRQ instead if there isn't any for the channel.
 
-On Jan 14, 2009, at 8:21 AM, Anton Vorontsov wrote:
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+ drivers/dma/fsldma.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> Hi Peter,
->
-> On Wed, Jan 14, 2009 at 03:14:13PM +0100, Peter Korsgaard wrote:
->> The DMAC IRQ number of the mpc8349 is 71 and not 47, according to
->> http://www.freescale.com/files/32bit/doc/ref_manual/MPC8349EARMAD.pdf
->>
->> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
->> ---
->> Documentation/powerpc/dts-bindings/fsl/dma.txt |    2 +-
->> 1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/Documentation/powerpc/dts-bindings/fsl/dma.txt b/ 
->> Documentation/powerpc/dts-bindings/fsl/dma.txt
->> index cc45311..3df1552 100644
->> --- a/Documentation/powerpc/dts-bindings/fsl/dma.txt
->> +++ b/Documentation/powerpc/dts-bindings/fsl/dma.txt
->> @@ -38,7 +38,7 @@ Example:
->> 		reg = <82a8 4>;
->> 		ranges = <0 8100 1a4>;
->> 		interrupt-parent = <&ipic>;
->> -		interrupts = <47 8>;
->> +		interrupts = <71 8>;
->
-> 0x47 = 71 ;-) The example is in the dts-v0 format, all the numbers
-> are hexadecimal.
-
-I'm all for changing the docs to dts-v1 syntax but if you are going to  
-do that.  Do it completely for the file.
-
-(reg, ranges, etc..)
-
-- k
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index ca70a21..61b6e08 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -875,7 +875,8 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
+ 	}
+ 
+ 	dev_info(fdev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
+-				compatible, new_fsl_chan->irq);
++		 compatible,
++		 new_fsl_chan->irq != NO_IRQ ? new_fsl_chan->irq : fdev->irq);
+ 
+ 	return 0;
+ 
+-- 
+1.5.6.5
