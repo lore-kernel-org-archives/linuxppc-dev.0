@@ -1,13 +1,14 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <496E6CD5.7090408@am.sony.com>
-Date: Wed, 14 Jan 2009 14:53:09 -0800
+Message-ID: <496E6CEC.90209@am.sony.com>
+Date: Wed, 14 Jan 2009 14:53:32 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 02/13] powerpc/ps3: use dma_addr_t down through the stack
+Subject: Re: [PATCH 04/13] powerpc/ps3: clear_bit/set_bit operate on unsigned
+	longs
 References: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
-	<20090114165810.a6a6c3ab.sfr@canb.auug.org.au>
-In-Reply-To: <20090114165810.a6a6c3ab.sfr@canb.auug.org.au>
+	<20090114170029.702de0cd.sfr@canb.auug.org.au>
+In-Reply-To: <20090114170029.702de0cd.sfr@canb.auug.org.au>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,19 +21,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Stephen Rothwell wrote:
-> Push the dma_addr_t type usage all the way down to where the actual
-> values are manipulated.
+> This fixes these compiler warning:
 > 
-> Now that u64 is "unsigned long long", this removes warnings like:
-> 
-> arch/powerpc/platforms/ps3/system-bus.c:532: warning: passing argument 4 of 'ps3_dma_map' from incompatible pointer type
-> arch/powerpc/platforms/ps3/system-bus.c:649: warning: passing argument 4 of 'ps3_dma_map' from incompatible pointer type
+> arch/powerpc/platforms/ps3/interrupt.c:109: warning: passing argument 2 of 'clear_bit' from incompatible pointer type
+> arch/powerpc/platforms/ps3/interrupt.c:130: warning: passing argument 2 of 'set_bit' from incompatible pointer type
 > 
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 > ---
->  arch/powerpc/include/asm/ps3.h          |    8 +++---
->  arch/powerpc/platforms/ps3/mm.c         |   32 ++++++++++++++++--------------
->  arch/powerpc/platforms/ps3/system-bus.c |    4 +-
->  3 files changed, 23 insertions(+), 21 deletions(-)
+>  arch/powerpc/platforms/ps3/interrupt.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
 
 Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
