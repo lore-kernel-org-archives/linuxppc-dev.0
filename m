@@ -1,20 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 53275DE086
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 02:03:34 +1100 (EST)
-Date: Wed, 14 Jan 2009 18:03:32 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH] phylib: Fix Freescale TBI PHY detection
-Message-ID: <20090114150332.GA839@oksana.dev.rtsoft.ru>
-References: <20090113160513.GA22083@oksana.dev.rtsoft.ru>
+Return-Path: <adrian@rhlx01.hs-esslingen.de>
+Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "rhlx01.hs-esslingen.de", Issuer "HE CA - G02" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B0281DE12F
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 02:56:07 +1100 (EST)
+Date: Wed, 14 Jan 2009 16:56:02 +0100
+From: Adrian Reber <adrian@lisas.de>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] powerpc: Add support to access the flash on SLOF based
+	systems
+Message-ID: <20090114155602.GA19277@lisas.de>
+References: <1231601482-28123-1-git-send-email-adrian@lisas.de>
+	<c613a7e0a88e249894bafe6d2183fbf2@bga.com>
+	<20090110195040.GA19945@lisas.de>
+	<6550a303b71331432a805ad98ca38103@bga.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090113160513.GA22083@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Giulio Benetti <giulio.benetti@micronovasrl.com>,
-	Andy Fleming <afleming@freescale.com>,
-	David Miller <davem@davemloft.net>, netdev@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6550a303b71331432a805ad98ca38103@bga.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,74 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 13, 2009 at 07:05:13PM +0300, Anton Vorontsov wrote:
-> Freescale on-chip TBI PHYs reports PHY ID as 0x0, but as of
-> 
-> commit 3ee82383f0098a2e13acc8cf1be8e47512f41e5a
-> Author: Giulio Benetti <giulio.benetti@micronovasrl.com>
-> Date:   Thu Nov 13 21:53:13 2008 +0000
-> 
->     phy: fix phy address bug
-> 
->     PHYID returns 0xffff and not 0xffffffff when not found and in some
->     case(at91sam9263) 0x0. Maybe this patch could be useful.
-> 
-> phy_device.c treats PHY ID == 0x0 as bogus IDs, and that results in
-> gianfar driver failure to see the TBI PHYs. This code snippet triggers:
-> 
-> 	if (!priv->tbiphy) {
-> 		printk(KERN_WARNING "SGMII mode requires that the device "
-> 				"tree specify a tbi-handle\n");
-> 		return;
-> 	}
-> 
-> Although tbi-handle is specified in the device tree.
-> 
-> Btw, technically PHY ID == 0x0 is a valid ID (if we ever see a PHY
-> manufactured by Xerox :-).
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> 
-> There is one thing I don't actually understand though...
-> 
-> Andy, were you testing the TBI support on a hardware where PHY ID
-> != 0x0 or maybe your TBI PHY support patch (commit b31a1d8b41513b,
-> dated Tue Dec 16 15:29:15 2008) was based on a bit outdated kernel
-> version? Because according to the git timestamps, the TBI support
-> was not working since the submission.
-> 
-> Just in case, the hardware I'm seeing the PHY ID == 0x0 is
-> MPC8378E-MDS.
+On Mon, Jan 12, 2009 at 09:51:23AM -0600, Milton Miller wrote:
+> Is SLOF just exposing the user image part of the flash device?  Or is it 
+> the raw flash device?
 
-I think I got it. Probably the TBI support patch was based on the
-powerpc.git next, and the commit that broke the TBI support
-was in the net-next-2.6 tree.
+SLOF is exposing the raw flash device.
 
-That explains why nobody noticed the issue.
+> I need to keep this quick, but am intrested in a few more details.  My  
+> first reaction is its yet another random misc-device, but I confess to  
+> having written one for internal consumption.  But as a misc device it  
+> will need to go through lkml review to be merged.
 
->  drivers/net/phy/phy_device.c |    9 ---------
->  1 files changed, 0 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-> index e354601..0a06e4f 100644
-> --- a/drivers/net/phy/phy_device.c
-> +++ b/drivers/net/phy/phy_device.c
-> @@ -231,15 +231,6 @@ struct phy_device * get_phy_device(struct mii_bus *bus, int addr)
->  	if ((phy_id & 0x1fffffff) == 0x1fffffff)
->  		return NULL;
->  
-> -	/*
-> -	 * Broken hardware is sometimes missing the pull-up resistor on the
-> -	 * MDIO line, which results in reads to non-existent devices returning
-> -	 * 0 rather than 0xffff. Catch this here and treat 0 as a non-existent
-> -	 * device as well.
-> -	 */
-> -	if (phy_id == 0)
-> -		return NULL;
-> -
->  	dev = phy_device_create(bus, addr, phy_id);
->  
->  	return dev;
-> -- 
-> 1.5.6.5
+I had a look at mtd and it was pretty easy to get it to do the same
+thing as my misc-device was doing with only 5 lines changed in
+drivers/mtd/maps/physmap_of.c
+
+So thanks for pointing me in that direction. What would be now the best
+way to include the SLOF flash properly into the mtd driver?
+
+Should I add additional code to physmap_of.c to detect the flash and
+then use a hardcoded layout for the partition? Because SLOF is missing
+all the necessary properties in the flash device node. Or should I add
+the missing properties in prom_init.c in a fixup_device_tree_slof()
+function? Both versions would lead to the same result but I am unsure
+about which approach is the better one.
+
+		Adrian
