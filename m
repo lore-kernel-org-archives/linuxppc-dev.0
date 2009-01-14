@@ -1,14 +1,13 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <496E6CF7.1040905@am.sony.com>
-Date: Wed, 14 Jan 2009 14:53:43 -0800
+Message-ID: <496E6CE2.2050004@am.sony.com>
+Date: Wed, 14 Jan 2009 14:53:22 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 05/13] powerpc/ps3: ps3_repository_read_mm_info takes
-	u64 * arguments
+Subject: Re: [PATCH 03/13] powerpc/ps3: the lv1_ routines have u64 parameters
 References: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
-	<20090114170128.797f5795.sfr@canb.auug.org.au>
-In-Reply-To: <20090114170128.797f5795.sfr@canb.auug.org.au>
+	<20090114165941.a3145499.sfr@canb.auug.org.au>
+In-Reply-To: <20090114165941.a3145499.sfr@canb.auug.org.au>
 Content-Type: text/plain; charset="ISO-8859-1"
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,14 +20,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Stephen Rothwell wrote:
-> Fixes compiler warnings:
+> We just fix up the reference parameters as the others are dealt with by
+> arithmetic promotion rules and don't cause warnings.
 > 
-> arch/powerpc/platforms/ps3/mm.c:1205: warning: passing argument 2 of 'ps3_repository_read_mm_info' from incompatible pointer type
-> arch/powerpc/platforms/ps3/mm.c:1205: warning: passing argument 3 of 'ps3_repository_read_mm_info' from incompatible pointer type
+> This removes warnings like this:
+> 
+> arch/powerpc/platforms/ps3/interrupt.c:327: warning: passing argument 1 of 'lv1_construct_event_receive_port' from incompatible pointer type
+> 
+> Also, these:
+> 
+> drivers/ps3/ps3-vuart.c:462: warning: passing argument 4 of 'ps3_vuart_raw_read' from incompatible pointer type
+> drivers/ps3/ps3-vuart.c:592: warning: passing argument 4 of 'ps3_vuart_raw_read' from incompatible pointer type
 > 
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 > ---
->  arch/powerpc/platforms/ps3/mm.c |   17 ++++++++---------
->  1 files changed, 8 insertions(+), 9 deletions(-)
+>  arch/powerpc/platforms/ps3/interrupt.c  |    8 +++---
+>  arch/powerpc/platforms/ps3/mm.c         |   38 +++++++++++++++++-------------
+>  arch/powerpc/platforms/ps3/spu.c        |   12 ++++++---
+>  arch/powerpc/platforms/ps3/system-bus.c |    4 ++-
+>  drivers/ps3/ps3-vuart.c                 |   24 ++++++++++---------
+>  5 files changed, 49 insertions(+), 37 deletions(-)
 
 Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
