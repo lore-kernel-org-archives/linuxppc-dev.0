@@ -1,17 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4B444DE002
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 15:15:25 +1100 (EST)
-Subject: [PATCH] Add init_dummy_netdev() and fix EMAC driver using it
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: netdev <netdev@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 14 Jan 2009 15:14:55 +1100
-Message-Id: <1231906495.22571.79.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f20.google.com (mail-gx0-f20.google.com
+	[209.85.217.20]) by ozlabs.org (Postfix) with ESMTP id 54EE0DDFC2
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 17:04:00 +1100 (EST)
+Received: by gxk13 with SMTP id 13so314162gxk.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jan 2009 22:03:59 -0800 (PST)
+Message-ID: <fa686aa40901132203u3074a2c1h3eeb5ae49b938090@mail.gmail.com>
+Date: Tue, 13 Jan 2009 23:03:58 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Matt Sealey" <matt@genesi-usa.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Fwd: [PATCH] powerpc/mpc52xx: Properly update irq_desc when
+	set_type() is called.
+In-Reply-To: <fa686aa40901132203p71bbd6eem2b8173dc8a4e5fc8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20090107192505.26320.23112.stgit@localhost.localdomain>
+	<fa686aa40901072053v7803c6afp206e0572a6c79eda@mail.gmail.com>
+	<49661041.2010302@genesi-usa.com>
+	<fa686aa40901091302y12fa13b4v25bd85079ee4e7ea@mail.gmail.com>
+	<4968D8AF.8050402@genesi-usa.com>
+	<fa686aa40901101425y5ff97f9fgabaa8aa6f0e974c7@mail.gmail.com>
+	<496AB287.5050508@genesi-usa.com>
+	<fa686aa40901112156i69611682icf9ef3a7702fd862@mail.gmail.com>
+	<496C907B.2060609@genesi-usa.com>
+	<fa686aa40901132203p71bbd6eem2b8173dc8a4e5fc8@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,118 +32,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds an init_dummy_netdev() function that gets a network device
-structure (allocation and lifetime entirely under caller's control) and
-initialize the minimum amount of fields so it can be used to schedule
-NAPI polls without registering a full blown interface. This is to be
-used by drivers that need to tie several hardware interfaces to a single
-NAPI poll scheduler due to HW limitations.
+On Tue, Jan 13, 2009 at 6:00 AM, Matt Sealey <matt@genesi-usa.com> wrote:
+> Grant Likely wrote:
+>>
+>>
+>> Theoretically it could call IRQ handlers to be called too often.  It
+>> might possibly be the cause of too many 'BAD' irqs being recorded....
+>
+> That might explain a few USB explosions, where high bandwidth transfers
+> (restoring partimage disks) would make the host controller die (a freeze,
+> then it comes back with 'nobody cared about irq 134' etc.) and perhaps a
+> lockup we saw with openSUSE 11.0 installer..
+>
+>> Now that I think of it, I should probably also change all the internal
+>> IRQs to be LEVEL instead of EDGE.
+>
+> And what does that really affect? I wouldn't think the internal stuff would
+> make any difference what it senses on?
 
-It also updates the ibm_newemac driver to use that, this fixing the
-oops on 2.6.29 due to passing NULL as "dev" to netif_napi_add()
+It took me most of the morning, but I traced through all the code and
+figured out how it is supposed to work.  In this case the type field
+in status is indeed cosmetic.  The only time I can see that it really
+comes into play is when edge IRQs are enabled after being disabled for
+replaying IRQs.  It might be the source of some of the BAD irq count
+on the mpc5200, but it is unlikely.
 
-Symbol is exported GPL only a I don't think we want binary drivers doing
-that sort of acrobatics (if we want them at all).
+The real logic behind handling an IRQ is defined by the handler
+registered with set_irq_chip_and_handler() which the current mpc5200
+PIC driver seems to be doing correctly.  However, for external IRQs,
+the handler is not changed when the IRQ switches from the default edge
+sensitivity to level sensitivity.  Using the wrong handler doesn't
+seem to actively break things, but I'm still investigating to find out
+if it affects performance or results in BAD irq counts.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Regardless, I'm looking at a number of cleanups to the PIC code and
+I'll be posting a patch soon with the intent of getting it into .30.
 
-Index: linux-work/include/linux/netdevice.h
-===================================================================
---- linux-work.orig/include/linux/netdevice.h	2009-01-13 16:13:41.000000000 +1100
-+++ linux-work/include/linux/netdevice.h	2009-01-14 14:13:24.000000000 +1100
-@@ -795,6 +795,7 @@ struct net_device
- 	       NETREG_UNREGISTERING,	/* called unregister_netdevice */
- 	       NETREG_UNREGISTERED,	/* completed unregister todo */
- 	       NETREG_RELEASED,		/* called free_netdev */
-+	       NETREG_DUMMY,		/* dummy device for NAPI poll */
- 	} reg_state;
- 
- 	/* Called from unregister, can be used to call free_netdev */
-@@ -1077,6 +1078,8 @@ extern void		free_netdev(struct net_devi
- extern void		synchronize_net(void);
- extern int 		register_netdevice_notifier(struct notifier_block *nb);
- extern int		unregister_netdevice_notifier(struct notifier_block *nb);
-+extern int		init_dummy_netdev(struct net_device *dev);
-+
- extern int call_netdevice_notifiers(unsigned long val, struct net_device *dev);
- extern struct net_device	*dev_get_by_index(struct net *net, int ifindex);
- extern struct net_device	*__dev_get_by_index(struct net *net, int ifindex);
-Index: linux-work/net/core/dev.c
-===================================================================
---- linux-work.orig/net/core/dev.c	2009-01-13 16:17:52.000000000 +1100
-+++ linux-work/net/core/dev.c	2009-01-14 14:24:03.000000000 +1100
-@@ -4434,6 +4434,45 @@ err_uninit:
- }
- 
- /**
-+ *	init_dummy_netdev	- init a dummy network device for NAPI
-+ *	@dev: device to init
-+ *
-+ *	This takes a network device structure and initialize the minimum
-+ *	amount of fields so it can be used to schedule NAPI polls without
-+ *	registering a full blown interface. This is to be used by drivers
-+ *	that need to tie several hardware interfaces to a single NAPI
-+ *	poll scheduler due to HW limitations.
-+ */
-+int init_dummy_netdev(struct net_device *dev)
-+{
-+	/* Clear everything. Note we don't initialize spinlocks
-+	 * are they aren't supposed to be taken by any of the
-+	 * NAPI code and this dummy netdev is supposed to be
-+	 * only ever used for NAPI polls
-+	 */
-+	memset(dev, 0, sizeof(struct net_device));
-+
-+	/* make sure we BUG if trying to hit standard
-+	 * register/unregister code path
-+	 */
-+	dev->reg_state = NETREG_DUMMY;
-+
-+	/* initialize the ref count */
-+	atomic_set(&dev->refcnt, 1);
-+
-+	/* NAPI wants this */
-+	INIT_LIST_HEAD(&dev->napi_list);
-+
-+	/* a dummy interface is started by default */
-+	set_bit(__LINK_STATE_PRESENT, &dev->state);
-+	set_bit(__LINK_STATE_START, &dev->state);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(init_dummy_netdev);
-+
-+
-+/**
-  *	register_netdev	- register a network device
-  *	@dev: device to register
-  *
-Index: linux-work/drivers/net/ibm_newemac/mal.c
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/mal.c	2009-01-14 14:25:10.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/mal.c	2009-01-14 14:25:30.000000000 +1100
-@@ -613,7 +613,9 @@ static int __devinit mal_probe(struct of
- 	INIT_LIST_HEAD(&mal->list);
- 	spin_lock_init(&mal->lock);
- 
--	netif_napi_add(NULL, &mal->napi, mal_poll,
-+	init_dummy_netdev(&mal->dummy_dev);
-+
-+	netif_napi_add(&mal->dummy_dev, &mal->napi, mal_poll,
- 		       CONFIG_IBM_NEW_EMAC_POLL_WEIGHT);
- 
- 	/* Load power-on reset defaults */
-Index: linux-work/drivers/net/ibm_newemac/mal.h
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/mal.h	2009-01-14 14:24:40.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/mal.h	2009-01-14 14:24:58.000000000 +1100
-@@ -214,6 +214,8 @@ struct mal_instance {
- 	int			index;
- 	spinlock_t		lock;
- 
-+	struct net_device	dummy_dev;
-+
- 	unsigned int features;
- };
- 
+Cheers,
+g.
+
+--
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
