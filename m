@@ -1,20 +1,34 @@
-Return-Path: <slightlyunconventional@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 445C4DE207
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 06:51:44 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so297239ywh.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 11:51:43 -0800 (PST)
-Message-ID: <fb412d760901141151g63d9e888o9437afe6f8e1313a@mail.gmail.com>
-Date: Wed, 14 Jan 2009 13:51:42 -0600
-From: "Hollis Blanchard" <hollis@penguinppc.org>
-Sender: slightlyunconventional@gmail.com
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3] powerpc: Unify opcode definitions and support
-In-Reply-To: <1231884862-10693-1-git-send-email-galak@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1231884862-10693-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <andrew@cesa.opbu.xerox.com>
+Received: from wvmler2.mail.xerox.com (wvmler2.mail.xerox.com [13.8.138.217])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wvmler2.mail.xerox.com",
+	Issuer "AAA Certificate Services" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D4B46DE059
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 07:04:04 +1100 (EST)
+Received: from wvmlir2.mail.xerox.com (wvmlir2.mail.xerox.com [13.147.8.222])
+	by wvmler2.mail.xerox.com (8.14.2/8.13.8) with ESMTP id
+	n0EJmgdN004747
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 11:48:42 -0800
+Received: from wvmlir2.mail.xerox.com (localhost [127.0.0.1])
+	by wvmlir2.mail.xerox.com (8.14.2/8.13.6) with ESMTP id n0EJmXU5010132
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 11:48:33 -0800
+Received: from hermes.opbu.xerox.com (hermes.opbu.xerox.com [13.62.6.81])
+	by wvmlir2.mail.xerox.com (8.14.2/8.13.6) with ESMTP id n0EJmXnW010127
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 11:48:33 -0800
+Received: from pogo.cesa.opbu.xerox.com ([13.253.158.23])
+	by hermes.opbu.xerox.com (8.13.8+Sun/8.13.8) with ESMTP id
+	n0EJmXRa014581
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 11:48:33 -0800 (PST)
+Received: from cesa.opbu.xerox.com (gto.cesa.opbu.xerox.com [13.62.136.98])
+	by pogo.cesa.opbu.xerox.com (8.13.6+Sun/8.13.6) with ESMTP id
+	n0EJmXH3002897
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 11:48:33 -0800 (PST)
+Message-Id: <200901141948.n0EJmXH3002897@pogo.cesa.opbu.xerox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Restore PCI IO space behind Freescale pseudo-bridge
+Date: Wed, 14 Jan 2009 11:48:33 -0800
+From: Andrew Klossner <andrew@cesa.opbu.xerox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +38,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 13, 2009 at 4:14 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
-> Create a new header that becomes a single location for defining PowerPC
-> opcodes used by code that is either generationg instructions
-> at runtime (fixups, debug, etc.), emulating instructions, or just
-> compiling instructions old assemblers don't know about.
->
-> We currently don't handle the floating point emulation or alignment decode
-> as both are better handled by the specific decode support they already
-> have.
->
-> Added support for the new dcbzl, dcbal, msgsnd, tlbilx, & wait instructions
-> since older assemblers don't know about them.
->
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> * Added PPC_ prefixes to everything to ensure namespace
-> * removed defines from traps.c
->
->  arch/powerpc/include/asm/code-patching.h |    4 +-
->  arch/powerpc/include/asm/ppc-opcode.h    |   68 ++++++++++++++++++++++++++++++
->  arch/powerpc/include/asm/ppc_asm.h       |    6 +--
->  arch/powerpc/kernel/crash_dump.c         |    2 +-
->  arch/powerpc/kernel/entry_32.S           |    8 ++--
->  arch/powerpc/kernel/ftrace.c             |    8 ++--
->  arch/powerpc/kernel/head_booke.h         |    2 +-
->  arch/powerpc/kernel/module_64.c          |    2 +-
->  arch/powerpc/kernel/traps.c              |   58 ++++++++-----------------
->  arch/powerpc/lib/feature-fixups.c        |    4 +-
->  10 files changed, 101 insertions(+), 61 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/ppc-opcode.h
+When I moved from 2.6.27 to 2.6.28, one of my devices didn't work
+until I devised the attached patch.  The kernel disallowed PCI I/O
+space resources behind the pseudo-bridge in the Freescale MPC8545
+because that bridge's config-space registers incorrectly report that
+it doesn't forward I/O space transactions.
 
-Shouldn't arch/powerpc/include/asm/disassemble.h be integrated with this?
+Checking for a specific vendor ID is hacky, but it got my system going
+again with only a few perturbed lines.  Is there a more correct way to
+achieve this?
 
--Hollis
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index f36936d..f9f0048 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -985,6 +985,7 @@ static int __devinit pcibios_uninitialized_bridge_resource(struct pci_bus *bus,
+ 	struct pci_dev *dev = bus->self;
+ 	resource_size_t offset;
+ 	u16 command;
++	u16 vendor;
+ 	int i;
+ 
+ 	/* We don't do anything if PCI_PROBE_ONLY is set */
+@@ -1030,7 +1031,16 @@ static int __devinit pcibios_uninitialized_bridge_resource(struct pci_bus *bus,
+ 		 * starting at low addresses -is- valid. What we do instead if that
+ 		 * we consider as unassigned anything that doesn't have IO enabled
+ 		 * in the PCI command register, and that's it.
++		 * However, we don't do that if the bridge is internal to a Freescale
++		 * CPU, as such bridges break the rules by, for example, not populating
++		 * the PCI_COMMAND_IO bit.
+ 		 */
++		pci_read_config_word(dev, PCI_VENDOR_ID, &vendor);
++		if (vendor == PCI_VENDOR_ID_MOTOROLA ||
++		    vendor == PCI_VENDOR_ID_FREESCALE) {
++			return 0;
++		}
++
+ 		pci_read_config_word(dev, PCI_COMMAND, &command);
+ 		if (command & PCI_COMMAND_IO)
+ 			return 0;
