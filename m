@@ -1,19 +1,17 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 6D459474C2
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 21:00:08 +1100 (EST)
-Date: Wed, 14 Jan 2009 11:00:05 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Add init_dummy_netdev() and fix EMAC driver using it
-In-Reply-To: <1231906495.22571.79.camel@pasglop>
-Message-ID: <Pine.LNX.4.64.0901141057110.31703@vixen.sonytel.be>
-References: <1231906495.22571.79.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Cc: netdev <netdev@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <jacmet@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id 6E492DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 01:14:20 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so148168nfd.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 06:14:17 -0800 (PST)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: galak@kernel.crashing.org,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH] dts-bindings/fsl/dma.txt: fix IRQ number in mpc83xx dma
+	example
+Date: Wed, 14 Jan 2009 15:14:13 +0100
+Message-Id: <1231942453-17898-1-git-send-email-jacmet@sunsite.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,66 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 14 Jan 2009, Benjamin Herrenschmidt wrote:
-> This adds an init_dummy_netdev() function that gets a network device
-> structure (allocation and lifetime entirely under caller's control) and
-> initialize the minimum amount of fields so it can be used to schedule
-> NAPI polls without registering a full blown interface. This is to be
-> used by drivers that need to tie several hardware interfaces to a single
-> NAPI poll scheduler due to HW limitations.
-> 
-> It also updates the ibm_newemac driver to use that, this fixing the
-> oops on 2.6.29 due to passing NULL as "dev" to netif_napi_add()
-> 
-> Symbol is exported GPL only a I don't think we want binary drivers doing
-> that sort of acrobatics (if we want them at all).
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+The DMAC IRQ number of the mpc8349 is 71 and not 47, according to
+http://www.freescale.com/files/32bit/doc/ref_manual/MPC8349EARMAD.pdf
 
-Thanks, this fixed my Sequoia!
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+ Documentation/powerpc/dts-bindings/fsl/dma.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Tested-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
-> --- linux-work.orig/include/linux/netdevice.h	2009-01-13 16:13:41.000000000 +1100
-> +++ linux-work/include/linux/netdevice.h	2009-01-14 14:13:24.000000000 +1100
-> @@ -4434,6 +4434,45 @@ err_uninit:
->  }
->  
->  /**
-> + *	init_dummy_netdev	- init a dummy network device for NAPI
-> + *	@dev: device to init
-> + *
-> + *	This takes a network device structure and initialize the minimum
-                                                  ^^^^^^^^^^
-						  initializes
-> + *	amount of fields so it can be used to schedule NAPI polls without
-> + *	registering a full blown interface. This is to be used by drivers
-> + *	that need to tie several hardware interfaces to a single NAPI
-> + *	poll scheduler due to HW limitations.
-> + */
-> +int init_dummy_netdev(struct net_device *dev)
-> +{
-> +	/* Clear everything. Note we don't initialize spinlocks
-> +	 * are they aren't supposed to be taken by any of the
-           ^^^
-	   as
-> +	 * NAPI code and this dummy netdev is supposed to be
-> +	 * only ever used for NAPI polls
-> +	 */
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+diff --git a/Documentation/powerpc/dts-bindings/fsl/dma.txt b/Documentation/powerpc/dts-bindings/fsl/dma.txt
+index cc45311..3df1552 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/dma.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/dma.txt
+@@ -38,7 +38,7 @@ Example:
+ 		reg = <82a8 4>;
+ 		ranges = <0 8100 1a4>;
+ 		interrupt-parent = <&ipic>;
+-		interrupts = <47 8>;
++		interrupts = <71 8>;
+ 		cell-index = <0>;
+ 		dma-channel@0 {
+ 			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+-- 
+1.5.6.5
