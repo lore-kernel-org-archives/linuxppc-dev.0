@@ -1,16 +1,20 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mail-ew0-f20.google.com (mail-ew0-f20.google.com
-	[209.85.219.20]) by ozlabs.org (Postfix) with ESMTP id 6CC86DE126
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 01:52:46 +1100 (EST)
-Received: by ewy13 with SMTP id 13so793635ewy.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 06:52:43 -0800 (PST)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: galak@kernel.crashing.org,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH] dts-bindings/fsl/dma.txt: convert to dts-v1 syntax
-Date: Wed, 14 Jan 2009 15:52:41 +0100
-Message-Id: <1231944761-18500-1-git-send-email-jacmet@sunsite.dk>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 53275DE086
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 02:03:34 +1100 (EST)
+Date: Wed, 14 Jan 2009 18:03:32 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] phylib: Fix Freescale TBI PHY detection
+Message-ID: <20090114150332.GA839@oksana.dev.rtsoft.ru>
+References: <20090113160513.GA22083@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20090113160513.GA22083@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, Giulio Benetti <giulio.benetti@micronovasrl.com>,
+	Andy Fleming <afleming@freescale.com>,
+	David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,100 +24,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Jan 13, 2009 at 07:05:13PM +0300, Anton Vorontsov wrote:
+> Freescale on-chip TBI PHYs reports PHY ID as 0x0, but as of
+> 
+> commit 3ee82383f0098a2e13acc8cf1be8e47512f41e5a
+> Author: Giulio Benetti <giulio.benetti@micronovasrl.com>
+> Date:   Thu Nov 13 21:53:13 2008 +0000
+> 
+>     phy: fix phy address bug
+> 
+>     PHYID returns 0xffff and not 0xffffffff when not found and in some
+>     case(at91sam9263) 0x0. Maybe this patch could be useful.
+> 
+> phy_device.c treats PHY ID == 0x0 as bogus IDs, and that results in
+> gianfar driver failure to see the TBI PHYs. This code snippet triggers:
+> 
+> 	if (!priv->tbiphy) {
+> 		printk(KERN_WARNING "SGMII mode requires that the device "
+> 				"tree specify a tbi-handle\n");
+> 		return;
+> 	}
+> 
+> Although tbi-handle is specified in the device tree.
+> 
+> Btw, technically PHY ID == 0x0 is a valid ID (if we ever see a PHY
+> manufactured by Xerox :-).
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> 
+> There is one thing I don't actually understand though...
+> 
+> Andy, were you testing the TBI support on a hardware where PHY ID
+> != 0x0 or maybe your TBI PHY support patch (commit b31a1d8b41513b,
+> dated Tue Dec 16 15:29:15 2008) was based on a bit outdated kernel
+> version? Because according to the git timestamps, the TBI support
+> was not working since the submission.
+> 
+> Just in case, the hardware I'm seeing the PHY ID == 0x0 is
+> MPC8378E-MDS.
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
----
- Documentation/powerpc/dts-bindings/fsl/dma.txt |   34 ++++++++++++------------
- 1 files changed, 17 insertions(+), 17 deletions(-)
+I think I got it. Probably the TBI support patch was based on the
+powerpc.git next, and the commit that broke the TBI support
+was in the net-next-2.6 tree.
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/dma.txt b/Documentation/powerpc/dts-bindings/fsl/dma.txt
-index cc45311..0732cdd 100644
---- a/Documentation/powerpc/dts-bindings/fsl/dma.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/dma.txt
-@@ -35,30 +35,30 @@ Example:
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		compatible = "fsl,mpc8349-dma", "fsl,elo-dma";
--		reg = <82a8 4>;
--		ranges = <0 8100 1a4>;
-+		reg = <0x82a8 4>;
-+		ranges = <0 0x8100 0x1a4>;
- 		interrupt-parent = <&ipic>;
--		interrupts = <47 8>;
-+		interrupts = <71 8>;
- 		cell-index = <0>;
- 		dma-channel@0 {
- 			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
- 			cell-index = <0>;
--			reg = <0 80>;
-+			reg = <0 0x80>;
- 		};
- 		dma-channel@80 {
- 			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
- 			cell-index = <1>;
--			reg = <80 80>;
-+			reg = <0x80 0x80>;
- 		};
- 		dma-channel@100 {
- 			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
- 			cell-index = <2>;
--			reg = <100 80>;
-+			reg = <0x100 0x80>;
- 		};
- 		dma-channel@180 {
- 			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
- 			cell-index = <3>;
--			reg = <180 80>;
-+			reg = <0x180 0x80>;
- 		};
- 	};
- 
-@@ -93,36 +93,36 @@ Example:
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		compatible = "fsl,mpc8540-dma", "fsl,eloplus-dma";
--		reg = <21300 4>;
--		ranges = <0 21100 200>;
-+		reg = <0x21300 4>;
-+		ranges = <0 0x21100 0x200>;
- 		cell-index = <0>;
- 		dma-channel@0 {
- 			compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
--			reg = <0 80>;
-+			reg = <0 0x80>;
- 			cell-index = <0>;
- 			interrupt-parent = <&mpic>;
--			interrupts = <14 2>;
-+			interrupts = <20 2>;
- 		};
- 		dma-channel@80 {
- 			compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
--			reg = <80 80>;
-+			reg = <0x80 0x80>;
- 			cell-index = <1>;
- 			interrupt-parent = <&mpic>;
--			interrupts = <15 2>;
-+			interrupts = <21 2>;
- 		};
- 		dma-channel@100 {
- 			compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
--			reg = <100 80>;
-+			reg = <0x100 0x80>;
- 			cell-index = <2>;
- 			interrupt-parent = <&mpic>;
--			interrupts = <16 2>;
-+			interrupts = <22 2>;
- 		};
- 		dma-channel@180 {
- 			compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
--			reg = <180 80>;
-+			reg = <0x180 0x80>;
- 			cell-index = <3>;
- 			interrupt-parent = <&mpic>;
--			interrupts = <17 2>;
-+			interrupts = <23 2>;
- 		};
- 	};
- 
--- 
-1.5.6.5
+That explains why nobody noticed the issue.
+
+>  drivers/net/phy/phy_device.c |    9 ---------
+>  1 files changed, 0 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+> index e354601..0a06e4f 100644
+> --- a/drivers/net/phy/phy_device.c
+> +++ b/drivers/net/phy/phy_device.c
+> @@ -231,15 +231,6 @@ struct phy_device * get_phy_device(struct mii_bus *bus, int addr)
+>  	if ((phy_id & 0x1fffffff) == 0x1fffffff)
+>  		return NULL;
+>  
+> -	/*
+> -	 * Broken hardware is sometimes missing the pull-up resistor on the
+> -	 * MDIO line, which results in reads to non-existent devices returning
+> -	 * 0 rather than 0xffff. Catch this here and treat 0 as a non-existent
+> -	 * device as well.
+> -	 */
+> -	if (phy_id == 0)
+> -		return NULL;
+> -
+>  	dev = phy_device_create(bus, addr, phy_id);
+>  
+>  	return dev;
+> -- 
+> 1.5.6.5
