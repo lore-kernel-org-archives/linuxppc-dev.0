@@ -1,24 +1,22 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 906CFDE076
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 05:21:16 +1100 (EST)
-Message-Id: <4DDB8462-ACB6-494A-A1CB-4F56668A4EE1@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090114150332.GA839@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] phylib: Fix Freescale TBI PHY detection
-Date: Wed, 14 Jan 2009 12:20:35 -0600
-References: <20090113160513.GA22083@oksana.dev.rtsoft.ru>
-	<20090114150332.GA839@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Giulio Benetti <giulio.benetti@micronovasrl.com>,
-	Jeff Garzik <jgarzik@pobox.com>,
-	David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+Return-Path: <dan.j.williams@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id 13C8EDE0EE
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 06:00:33 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so695935wfg.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 11:00:26 -0800 (PST)
+Message-ID: <e9c3a7c20901141100r666007cbv76a869eddf292371@mail.gmail.com>
+Date: Wed, 14 Jan 2009 12:00:26 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+Sender: dan.j.williams@gmail.com
+To: "Yuri Tikhonov" <yur@emcraft.com>
+Subject: Re: [RFC PATCH 00/11][v3] md: support for asynchronous execution of
+	RAID6 operations
+In-Reply-To: <200901130342.55633.yur@emcraft.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200901130342.55633.yur@emcraft.com>
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
+	dzu@denx.de, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jan 14, 2009, at 9:03 AM, Anton Vorontsov wrote:
->>
->> There is one thing I don't actually understand though...
->>
->> Andy, were you testing the TBI support on a hardware where PHY ID
->> != 0x0 or maybe your TBI PHY support patch (commit b31a1d8b41513b,
->> dated Tue Dec 16 15:29:15 2008) was based on a bit outdated kernel
->> version? Because according to the git timestamps, the TBI support
->> was not working since the submission.
->>
->> Just in case, the hardware I'm seeing the PHY ID == 0x0 is
->> MPC8378E-MDS.
+On Mon, Jan 12, 2009 at 5:42 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
+>  Hello,
 >
-> I think I got it. Probably the TBI support patch was based on the
-> powerpc.git next, and the commit that broke the TBI support
-> was in the net-next-2.6 tree.
+>  This is the next attempt on asynchronous RAID-6 support. This patch-set
+> has the Dan Williams' comments (Dec, 17) addressed with the following
+> exception:
 >
-> That explains why nobody noticed the issue.
+> - I still think that using 'enum dma_ctrl_flags' for PQ-specific
+> operations is better than introducing another group of flags and
+> enhance the device_prep_dma_pq()/device_prep_dma_pqzero_sum() with one
+> more parameter. If unchanged 'enum dma_ctrl_flags' will be a criteria
+> of acceptance, please let me know - I'll re-implement this exactly as
+> Dan suggested.
 
+Ignore that Dan character :-), dma_ctrl_flags is the proper place for
+this functionality.
 
-Yeah, I dropped the ball.  I saw the patch go in, thought that might  
-break something, but I didn't find time to look into it.  Thanks for  
-finding and reverting this bug.
+However, I do not believe we need/want ASYNC_TX_ZERO_{P,Q}.  I will
+reply to 0002 and 0003 with details.
 
-Acked-by: Andy Fleming <afleming@freescale.com>
+>
+>
+>  Fearing to look like a spammer, I post only those patches, which had
+> been affected by the changes intended to address Dan's comments. These
+> are the following five:
+>
+> 0002-async_tx-add-support-for-asynchronous-GF-multiplica.patch
+> 0003-async_tx-add-support-for-asynchronous-RAID6-recover.patch
+> 0004-md-run-RAID-6-stripe-operations-outside-the-lock.patch
+> 0008-md-asynchronous-handle_parity_check6.patch
+> 0011-ppc440spe-adma-ADMA-driver-for-the-PPC440SP-e-syst.patch
+>
+>  As regarding the other six patches of asynchronous RAID-6 support
+> patchset:
+>
+> 0001-async_tx-don-t-use-src_list-argument-of-async_xor.patch
+> 0005-md-common-schedule_reconstruction-for-raid5-6.patch
+> 0006-md-change-handle_stripe_fill6-to-work-in-asynchrono.patch
+> 0007-md-rewrite-handle_stripe_dirtying6-in-asynchronous.patch
+> 0009-md-change-handle_stripe6-to-work-asynchronously.patch
+> 0010-md-remove-unused-functions.patch
+>
+>  they are the same as in my 09 Dec 2008 post:
+
+Do you have a git tree where you can post this series?  That would
+make it easier for me to track/review.
+
+Thanks,
+Dan
