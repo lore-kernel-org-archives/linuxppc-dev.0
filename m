@@ -1,18 +1,21 @@
-Return-Path: <florian.belser@freenet.de>
-Received: from mout1.freenet.de (mout1.freenet.de [195.4.92.91])
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [93.163.65.50])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3CEBDDE127
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 18:42:09 +1100 (EST)
-Date: Wed, 14 Jan 2009 08:42:01 +0100
-From: florian.belser@freenet.de
-Subject: RE: Re: mpc5200b configure nand driver via dts
-To: Wolfgang Grandegger <wg@grandegger.com>,
-	Grant Likely <grant.likely@secretlab.ca>
+	(Client CN "A common name", Issuer "A common name" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C5997DE1A0
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 18:51:20 +1100 (EST)
+Date: Wed, 14 Jan 2009 08:49:52 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 07/13] powerpc/ps3: printing fixups for l64 to ll64
+	conversion: drivers/block
+Message-ID: <20090114074951.GY30821@kernel.dk>
+References: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
+	<20090114170448.7bffcb81.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Message-Id: <8cf950e79ff6fa37d98c27472f9e88a7@email.freenet.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: florian.belser@freenet.de, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090114170448.7bffcb81.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,117 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Jan 14 2009, Stephen Rothwell wrote:
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/block/ps3disk.c |   18 +++++++++---------
+>  1 files changed, 9 insertions(+), 9 deletions(-)
+> 
+> Jens, if its OK by you, this could go in via the PowerPC tree.
 
-> > On Mon, Jan 12, 2009 at 2:07 AM,  <florian.belser@freenet.de>
-> wrote:
-> >> hello,
-> >>
-> >> I have some problems with an mpc5200b based board. It's nearly
-> compatible to
-> >> the lite5200b board.
-> >> I connected an samsung k9k8g08u0a nand flash via the lpb bus. This
-> works
-> >> fine with an self written nand driver.
-> >> Now I try to use the standard nand driver from linux and configure
-> it via
-> >> the dts file. But this doesn't work and I get
-> >> the following output:
-> >>
-> >>   nand@1,0 {  //cs1
-> >>    compatible =3D "samsung, k9k8g08u08", "cfi-flash";
-> >                                           ^^^^^^^^^
-> >
-> > NAND Flash is not a CFI flash device.  The cfi-flash driver won't
-> work with it.
-Which compatible mode whould you choose ?
-> >
-> >> Now my questions are:
-> >>  Is there any error in the dts configuration?
-> >>  Is it principle posible to configure a nand flash via the dts
-> file (in
-> >> combination with mpc5200b)?
-> >
-> > It is possible to *describe* the NAND flash via the dts file.  The
-> dts
-> > file doesn't configure anything.  It just describes the hardware
-> > layout so that you can write or bind the appropriate driver to the
-> > device.  I don't know if a device tree binding has been defined for
-> > NAND flash yet.
-> I find 3 MTD NAND drivers with OF bindings in
-> linux-2.6/drivers/mtd/nand
->=20
->   $ grep -l of_device *.c
->   fsl_elbc_nand.c
->   fsl_upm.c
->   pasemi_nand.c
->=20
-> The bindings for the FSL UPM are described in
-> http://lxr.linux.no/linux
-v2.6.28/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt.
-> Something similar is needed for his board (NAND connected to lpb) as
-> well.
+Of course.
 
-Am I wrong or is the MTD_NAND_FSL_UPM only useable with PPC_83xx or
-PPC_85xx?
->=20
-> >>  I read in some forums that the nand flash must be activated in
-> the u-boot
-> >> before it can be configured via dts.
-> >
-> > You definitely need to set up the CS line for the NAND before using
-> it
-> > in Linux.  Typically this is done in U-Boot, but in a pinch it can
-> be
-> > done in the platform support code (arch/powerpc/platforms/52xx/*)
->=20
-> Yep, and also the R/B pin should be handled somehow, preferably using
-> the OF GPIO interface.
-
-I set the upper named points in the u-boot, now.=20
-
-+++ b/board/ybox/ybox.c
-@@ -282,6 +282,32 @@ void flash_preinit(void)
-         * executing in flash.
-         */
-        *(vu_long *)MPC5XXX_BOOTCS_CFG &=3D ~0x1; /* clear RO */
-+
-+
-+       /* Configure PSC3_6 as ChipSelect for NAND Flash chip
-+        set PSC3_6 pin as GPIO output */
-+        *(vu_long *)MPC5XXX_GPIO_ENABLE |=3D 0x00001000; /*enable GPIO*/
-+        *(vu_long *)MPC5XXX_GPIO_ODE &=3D  ~0x00001000; /* no OpenDrain
-*/
-+        *(vu_long *)MPC5XXX_GPIO_DIR |=3D 0x00001000; /* Direction =3D
-output */
-+        *(vu_long *)MPC5XXX_GPIO_DATA_O |=3D 0x00001000; /* Set CS to 1
-(low active)*/
-+       /* NAND config*/
-+       /* Configure IRQ_0 as input for Ready/Busy pin*/
-+        *(vu_long *)MPC5XXX_ICTL_EXT &=3D ~0x00000800; /*disable IRQ_0
-interrupt */
-+        *(vu_long *)MPC5XXX_ICTL_EXT |=3D 0x00C00000; /*low active */
-+       *(vu_long *)MPC5XXX_ADDECR &=3D ~0x00020000; /*disable cs1 */
-+
-+        /* Configure the ChipSelect 1 on LocalPlusBus for data
-transfers
-+        there is a config chip select function allready, but beter do
-all for nand
-+        at one place */
-+        /*CS1 start / end address*/
-+        *(vu_long *)MPC5XXX_CS1_START =3D 0x00007000;
-+        *(vu_long *)MPC5XXX_CS1_STOP =3D (0x00007000 + 0x100);
-+        /*CS1 master enable */
-+        *(vu_long *)MPC5XXX_CS_CTRL =3D 0x01;
-+        *(vu_long *)MPC5XXX_CS1_CFG =3D 0x0f0f1800;
-+       *(vu_long *)MPC5XXX_ADDECR |=3D ~0x00020000; /*enable cs1 */
-+        /*enable PIN as ChipSelect*/
-+        *(vu_long *)MPC5XXX_GPS_PORT_CONFIG |=3D 0x80000000;
- }
-
-
-Thanks for your replays
-Best regards
-Florian Belser=0A=0A=0A=0AHeute schon ge"freeMail"t?=0AJetzt kostenlose
-E-Mail-Adresse
-sichern!=0Ahttp://email.freenet.de/dienste/emailoffice/produktuebersicht/ba=
-sic/mail/index.html?pid=3D6831=0A
+-- 
+Jens Axboe
