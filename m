@@ -1,15 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 14 Jan 2009 17:06:02 +1100
+Date: Wed, 14 Jan 2009 17:04:48 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: [PATCH 08/13] powerpc/ps3: printing fixups for l64 to ll64
-	convserion: drivers/char
-Message-Id: <20090114170602.63494028.sfr@canb.auug.org.au>
+Subject: [PATCH 07/13] powerpc/ps3: printing fixups for l64 to ll64
+	conversion: drivers/block
+Message-Id: <20090114170448.7bffcb81.sfr@canb.auug.org.au>
 In-Reply-To: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
 References: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Cc: Jens Axboe <axboe@kernel.dk>, ppc-dev <linuxppc-dev@ozlabs.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,81 +21,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Also a couple of min -> min_t changes.
-
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/char/ps3flash.c |   18 +++++++++---------
+ drivers/block/ps3disk.c |   18 +++++++++---------
  1 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
-index 79b6f46..afbe456 100644
---- a/drivers/char/ps3flash.c
-+++ b/drivers/char/ps3flash.c
-@@ -44,7 +44,7 @@ static ssize_t ps3flash_read_write_sectors(struct ps3_storage_device *dev,
- 	u64 res = ps3stor_read_write_sectors(dev, lpar, start_sector, sectors,
- 					     write);
+Jens, if its OK by you, this could go in via the PowerPC tree.
+
+diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
+index 936466f..bccc42b 100644
+--- a/drivers/block/ps3disk.c
++++ b/drivers/block/ps3disk.c
+@@ -141,7 +141,7 @@ static int ps3disk_submit_request_sg(struct ps3_storage_device *dev,
+ 
+ 	start_sector = req->sector * priv->blocking_factor;
+ 	sectors = req->nr_sectors * priv->blocking_factor;
+-	dev_dbg(&dev->sbd.core, "%s:%u: %s %lu sectors starting at %lu\n",
++	dev_dbg(&dev->sbd.core, "%s:%u: %s %llu sectors starting at %llu\n",
+ 		__func__, __LINE__, op, sectors, start_sector);
+ 
+ 	if (write) {
+@@ -178,7 +178,7 @@ static int ps3disk_submit_flush_request(struct ps3_storage_device *dev,
+ 					      LV1_STORAGE_ATA_HDDOUT, 0, 0, 0,
+ 					      0, &dev->tag);
  	if (res) {
--		dev_err(&dev->sbd.core, "%s:%u: %s failed 0x%lx\n", __func__,
-+		dev_err(&dev->sbd.core, "%s:%u: %s failed 0x%llx\n", __func__,
- 			__LINE__, write ? "write" : "read", res);
- 		return -EIO;
- 	}
-@@ -59,7 +59,7 @@ static ssize_t ps3flash_read_sectors(struct ps3_storage_device *dev,
- 
- 	max_sectors = dev->bounce_size / dev->blk_size;
- 	if (sectors > max_sectors) {
--		dev_dbg(&dev->sbd.core, "%s:%u Limiting sectors to %lu\n",
-+		dev_dbg(&dev->sbd.core, "%s:%u Limiting sectors to %llu\n",
- 			__func__, __LINE__, max_sectors);
- 		sectors = max_sectors;
- 	}
-@@ -144,7 +144,7 @@ static ssize_t ps3flash_read(struct file *file, char __user *buf, size_t count,
- 			goto fail;
- 		}
- 
--		n = min(remaining, sectors_read*dev->blk_size-offset);
-+		n = min_t(u64, remaining, sectors_read*dev->blk_size-offset);
- 		dev_dbg(&dev->sbd.core,
- 			"%s:%u: copy %lu bytes from 0x%p to user 0x%p\n",
- 			__func__, __LINE__, n, dev->bounce_buf+offset, buf);
-@@ -225,7 +225,7 @@ static ssize_t ps3flash_write(struct file *file, const char __user *buf,
- 		if (end_read_sector >= start_read_sector) {
- 			/* Merge head and tail */
- 			dev_dbg(&dev->sbd.core,
--				"Merged head and tail: %lu sectors at %lu\n",
-+				"Merged head and tail: %llu sectors at %llu\n",
- 				chunk_sectors, start_write_sector);
- 			res = ps3flash_read_sectors(dev, start_write_sector,
- 						    chunk_sectors, 0);
-@@ -235,7 +235,7 @@ static ssize_t ps3flash_write(struct file *file, const char __user *buf,
- 			if (head) {
- 				/* Read head */
- 				dev_dbg(&dev->sbd.core,
--					"head: %lu sectors at %lu\n", head,
-+					"head: %llu sectors at %llu\n", head,
- 					start_write_sector);
- 				res = ps3flash_read_sectors(dev,
- 							    start_write_sector,
-@@ -247,7 +247,7 @@ static ssize_t ps3flash_write(struct file *file, const char __user *buf,
- 			    start_write_sector+chunk_sectors) {
- 				/* Read tail */
- 				dev_dbg(&dev->sbd.core,
--					"tail: %lu sectors at %lu\n", tail,
-+					"tail: %llu sectors at %llu\n", tail,
- 					start_read_sector);
- 				sec_off = start_read_sector-start_write_sector;
- 				res = ps3flash_read_sectors(dev,
-@@ -258,7 +258,7 @@ static ssize_t ps3flash_write(struct file *file, const char __user *buf,
- 			}
- 		}
- 
--		n = min(remaining, dev->bounce_size-offset);
-+		n = min_t(u64, remaining, dev->bounce_size-offset);
- 		dev_dbg(&dev->sbd.core,
- 			"%s:%u: copy %lu bytes from user 0x%p to 0x%p\n",
- 			__func__, __LINE__, n, buf, dev->bounce_buf+offset);
-@@ -299,11 +299,11 @@ static irqreturn_t ps3flash_interrupt(int irq, void *data)
+-		dev_err(&dev->sbd.core, "%s:%u: sync cache failed 0x%lx\n",
++		dev_err(&dev->sbd.core, "%s:%u: sync cache failed 0x%llx\n",
+ 			__func__, __LINE__, res);
+ 		end_request(req, 0);
+ 		return 0;
+@@ -238,11 +238,11 @@ static irqreturn_t ps3disk_interrupt(int irq, void *data)
  
  	if (tag != dev->tag)
  		dev_err(&dev->sbd.core,
@@ -106,8 +62,53 @@ index 79b6f46..afbe456 100644
 -		dev_err(&dev->sbd.core, "%s:%u: res=%d status=0x%lx\n",
 +		dev_err(&dev->sbd.core, "%s:%u: res=%d status=0x%llx\n",
  			__func__, __LINE__, res, status);
+ 		return IRQ_HANDLED;
+ 	}
+@@ -269,7 +269,7 @@ static irqreturn_t ps3disk_interrupt(int irq, void *data)
+ 		op = read ? "read" : "write";
+ 	}
+ 	if (status) {
+-		dev_dbg(&dev->sbd.core, "%s:%u: %s failed 0x%lx\n", __func__,
++		dev_dbg(&dev->sbd.core, "%s:%u: %s failed 0x%llx\n", __func__,
+ 			__LINE__, op, status);
+ 		error = -EIO;
  	} else {
- 		dev->lv1_status = status;
+@@ -297,7 +297,7 @@ static int ps3disk_sync_cache(struct ps3_storage_device *dev)
+ 
+ 	res = ps3stor_send_command(dev, LV1_STORAGE_ATA_HDDOUT, 0, 0, 0, 0);
+ 	if (res) {
+-		dev_err(&dev->sbd.core, "%s:%u: sync cache failed 0x%lx\n",
++		dev_err(&dev->sbd.core, "%s:%u: sync cache failed 0x%llx\n",
+ 			__func__, __LINE__, res);
+ 		return -EIO;
+ 	}
+@@ -388,7 +388,7 @@ static int ps3disk_identify(struct ps3_storage_device *dev)
+ 				   sizeof(ata_cmnd), ata_cmnd.buffer,
+ 				   ata_cmnd.arglen);
+ 	if (res) {
+-		dev_err(&dev->sbd.core, "%s:%u: identify disk failed 0x%lx\n",
++		dev_err(&dev->sbd.core, "%s:%u: identify disk failed 0x%llx\n",
+ 			__func__, __LINE__, res);
+ 		return -EIO;
+ 	}
+@@ -426,7 +426,7 @@ static int __devinit ps3disk_probe(struct ps3_system_bus_device *_dev)
+ 
+ 	if (dev->blk_size < 512) {
+ 		dev_err(&dev->sbd.core,
+-			"%s:%u: cannot handle block size %lu\n", __func__,
++			"%s:%u: cannot handle block size %llu\n", __func__,
+ 			__LINE__, dev->blk_size);
+ 		return -EINVAL;
+ 	}
+@@ -512,7 +512,7 @@ static int __devinit ps3disk_probe(struct ps3_system_bus_device *_dev)
+ 		     dev->regions[dev->region_idx].size*priv->blocking_factor);
+ 
+ 	dev_info(&dev->sbd.core,
+-		 "%s is a %s (%lu MiB total, %lu MiB for OtherOS)\n",
++		 "%s is a %s (%llu MiB total, %lu MiB for OtherOS)\n",
+ 		 gendisk->disk_name, priv->model, priv->raw_capacity >> 11,
+ 		 get_capacity(gendisk) >> 11);
+ 
 -- 
 1.6.0.5
 
