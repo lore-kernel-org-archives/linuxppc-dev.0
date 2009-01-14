@@ -1,16 +1,17 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <496E6CFF.8060605@am.sony.com>
-Date: Wed, 14 Jan 2009 14:53:51 -0800
+Message-ID: <496E6D1E.2040600@am.sony.com>
+Date: Wed, 14 Jan 2009 14:54:22 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 06/13] powerpc/ps3: printing fixups for l64 to ll64
-	conversion: arch/powerpc
+Subject: Re: [PATCH 09/13] powerpc/ps3: printing fixups for l64 to ll64
+	conversion: sound/ppc
 References: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
-	<20090114170239.7741b23c.sfr@canb.auug.org.au>
-In-Reply-To: <20090114170239.7741b23c.sfr@canb.auug.org.au>
+	<20090114170755.f64ed692.sfr@canb.auug.org.au>
+In-Reply-To: <20090114170755.f64ed692.sfr@canb.auug.org.au>
 Content-Type: text/plain; charset="ISO-8859-1"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Cc: Takashi Iwai <tiwai@suse.de>, ppc-dev <linuxppc-dev@ozlabs.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,13 +24,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Stephen Rothwell wrote:
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 > ---
->  arch/powerpc/platforms/ps3/device-init.c |   26 +++++++++++++-------------
->  arch/powerpc/platforms/ps3/htab.c        |    2 +-
->  arch/powerpc/platforms/ps3/interrupt.c   |   16 ++++++++--------
->  arch/powerpc/platforms/ps3/mm.c          |   10 +++++-----
->  arch/powerpc/platforms/ps3/os-area.c     |    2 +-
->  arch/powerpc/platforms/ps3/repository.c  |   22 +++++++++++-----------
->  arch/powerpc/platforms/ps3/system-bus.c  |    6 +++---
->  7 files changed, 42 insertions(+), 42 deletions(-)
+>  sound/ppc/snd_ps3.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 
 Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
