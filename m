@@ -1,17 +1,22 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mail-ew0-f20.google.com (mail-ew0-f20.google.com
-	[209.85.219.20]) by ozlabs.org (Postfix) with ESMTP id CFF8ADDFD3
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 03:20:20 +1100 (EST)
-Received: by ewy13 with SMTP id 13so855819ewy.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 08:20:18 -0800 (PST)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: timur@freescale.com,
-	dan.j.williams@intel.com,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH] fsldma: check for NO_IRQ in fsl_dma_chan_remove()
-Date: Wed, 14 Jan 2009 17:20:15 +0100
-Message-Id: <1231950015-19584-1-git-send-email-jacmet@sunsite.dk>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 89885DDE9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 03:30:21 +1100 (EST)
+Message-ID: <496E1317.9070804@freescale.com>
+Date: Wed, 14 Jan 2009 10:30:15 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [PATCH] fsldma: print correct IRQ on mpc83xx
+References: <1231944284-18296-1-git-send-email-jacmet@sunsite.dk>	<496E0E85.7060801@freescale.com>
+	<87iqohc19b.fsf@macbook.be.48ers.dk>
+In-Reply-To: <87iqohc19b.fsf@macbook.be.48ers.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, dan.j.williams@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There's no per-channel IRQ on mpc83xx, so only call free_irq if we have one.
+Peter Korsgaard wrote:
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
----
- drivers/dma/fsldma.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+> Why? Does it buy us anything to request_irq again for each channel?
+> 
+> Now we're at it, it seems like there's a check for != NO_IRQ missing
+> in fsl_dma_chan_remove().
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index ca70a21..f48c0e6 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -890,7 +890,8 @@ err_no_reg:
- 
- static void fsl_dma_chan_remove(struct fsl_dma_chan *fchan)
- {
--	free_irq(fchan->irq, fchan);
-+	if (fchan->irq != NO_IRQ)
-+		free_irq(fchan->irq, fchan);
- 	list_del(&fchan->common.device_node);
- 	iounmap(fchan->reg_base);
- 	kfree(fchan);
+If the device tree doesn't specify an interrupts property in the device channel,
+then I think that's an error.  All the device trees already do that.  So where
+do you see this problem?
+
+
 -- 
-1.5.6.5
+Timur Tabi
+Linux kernel developer at Freescale
