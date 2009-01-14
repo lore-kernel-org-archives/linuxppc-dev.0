@@ -1,16 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 14 Jan 2009 17:07:55 +1100
+Date: Wed, 14 Jan 2009 17:09:30 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: [PATCH 09/13] powerpc/ps3: printing fixups for l64 to ll64
-	conversion: sound/ppc
-Message-Id: <20090114170755.f64ed692.sfr@canb.auug.org.au>
+Subject: [PATCH 10/13] powerpc/ps3: printing fixups for l64 to ll64
+	convserion: drivers/net
+Message-Id: <20090114170930.51291bc6.sfr@canb.auug.org.au>
 In-Reply-To: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
 References: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Takashi Iwai <tiwai@suse.de>, ppc-dev <linuxppc-dev@ozlabs.org>,
-	cbe-oss-dev@ozlabs.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
+	cbe-oss-dev@ozlabs.org, Masakazu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +23,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- sound/ppc/snd_ps3.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ps3_gelic_wireless.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Takashi, if it is OK with you, this could go in via the PowerPC tree.
-
-diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
-index 8f9e385..ff32111 100644
---- a/sound/ppc/snd_ps3.c
-+++ b/sound/ppc/snd_ps3.c
-@@ -477,7 +477,7 @@ static int snd_ps3_pcm_prepare(struct snd_pcm_substream *substream)
- 		card->dma_start_bus_addr[SND_PS3_CH_R] =
- 			runtime->dma_addr + (runtime->dma_bytes / 2);
+diff --git a/drivers/net/ps3_gelic_wireless.c b/drivers/net/ps3_gelic_wireless.c
+index ec23142..335da48 100644
+--- a/drivers/net/ps3_gelic_wireless.c
++++ b/drivers/net/ps3_gelic_wireless.c
+@@ -2168,7 +2168,7 @@ static void gelic_wl_connected_event(struct gelic_wl_info *wl,
+ 		complete(&wl->assoc_done);
+ 		netif_carrier_on(port_to_netdev(wl_port(wl)));
+ 	} else
+-		pr_debug("%s: event %#lx under wpa\n",
++		pr_debug("%s: event %#llx under wpa\n",
+ 				 __func__, event);
+ }
  
--		pr_debug("%s: vaddr=%p bus=%#lx\n", __func__,
-+		pr_debug("%s: vaddr=%p bus=%#llx\n", __func__,
- 			 card->dma_start_vaddr[SND_PS3_CH_L],
- 			 card->dma_start_bus_addr[SND_PS3_CH_L]);
- 
-@@ -1030,7 +1030,7 @@ static int __init snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
- 		pr_info("%s: nullbuffer alloc failed\n", __func__);
- 		goto clean_preallocate;
- 	}
--	pr_debug("%s: null vaddr=%p dma=%#lx\n", __func__,
-+	pr_debug("%s: null vaddr=%p dma=%#llx\n", __func__,
- 		 the_card.null_buffer_start_vaddr,
- 		 the_card.null_buffer_start_dma_addr);
- 	/* set default sample rate/word width */
 -- 
 1.6.0.5
 
