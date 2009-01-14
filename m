@@ -1,17 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 14 Jan 2009 17:11:44 +1100
+Date: Wed, 14 Jan 2009 17:13:39 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: [PATCH 12/13] powerpc/ps3: printing fixups for l64 to ll64
-	conversion: drivers/scsi
-Message-Id: <20090114171144.ec449da3.sfr@canb.auug.org.au>
+Subject: [PATCH 13/13] powerpc/ps3: printing fixups for l64 to ll64
+	conversion: drivers/video
+Message-Id: <20090114171339.09faa843.sfr@canb.auug.org.au>
 In-Reply-To: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
 References: <20090114165450.ebbc11a7.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org,
-	linux-scsi@vger.kernel.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Antonino, cbe-oss-dev@ozlabs.org,
+	Daplas <adaplas@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +23,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/scsi/ps3rom.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/ps3fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-James, if it is OK with you, this could go in via the PowerPC tree.
+Antonino, if it is OK with you, this could go in via the PowerPC tree.
 
-diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
-index ce48e2d..ca0dd33 100644
---- a/drivers/scsi/ps3rom.c
-+++ b/drivers/scsi/ps3rom.c
-@@ -290,11 +290,11 @@ static irqreturn_t ps3rom_interrupt(int irq, void *data)
- 
- 	if (tag != dev->tag)
- 		dev_err(&dev->sbd.core,
--			"%s:%u: tag mismatch, got %lx, expected %lx\n",
-+			"%s:%u: tag mismatch, got %llx, expected %llx\n",
- 			__func__, __LINE__, tag, dev->tag);
- 
- 	if (res) {
--		dev_err(&dev->sbd.core, "%s:%u: res=%d status=0x%lx\n",
-+		dev_err(&dev->sbd.core, "%s:%u: res=%d status=0x%llx\n",
- 			__func__, __LINE__, res, status);
- 		return IRQ_HANDLED;
+diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
+index 38ac805..87f826e 100644
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -1006,7 +1006,7 @@ static int ps3fb_xdr_settings(u64 xdr_lpar, struct device *dev)
+ 			__func__, status);
+ 		return -ENXIO;
  	}
-@@ -364,7 +364,7 @@ static int __devinit ps3rom_probe(struct ps3_system_bus_device *_dev)
+-	dev_dbg(dev, "video:%p ioif:%lx lpar:%lx size:%lx\n",
++	dev_dbg(dev, "video:%p ioif:%lx lpar:%llx size:%lx\n",
+ 		ps3fb_videomemory.address, GPU_IOIF, xdr_lpar,
+ 		ps3fb_videomemory.size);
  
- 	if (dev->blk_size != CD_FRAMESIZE) {
- 		dev_err(&dev->sbd.core,
--			"%s:%u: cannot handle block size %lu\n", __func__,
-+			"%s:%u: cannot handle block size %llu\n", __func__,
- 			__LINE__, dev->blk_size);
- 		return -EINVAL;
+@@ -1133,7 +1133,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ 			__func__, status);
+ 		goto err;
  	}
+-	dev_dbg(&dev->core, "ddr:lpar:0x%lx\n", ddr_lpar);
++	dev_dbg(&dev->core, "ddr:lpar:0x%llx\n", ddr_lpar);
+ 
+ 	status = lv1_gpu_context_allocate(ps3fb.memory_handle, 0,
+ 					  &ps3fb.context_handle,
 -- 
 1.6.0.5
 
