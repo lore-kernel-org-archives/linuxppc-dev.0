@@ -1,19 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/4] powerpc: Add ppc_progress() wrapper
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18799.7994.553829.470138@cargo.ozlabs.ibm.com>
-References: <e3520e2f9806d4f6e4b30587b6d29176e583833d.1232001793.git.michael@ellerman.id.au>
-	<3922453a668745466cb291f889d2c067932e4894.1232001793.git.michael@ellerman.id.au>
-	<18799.7994.553829.470138@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-K+2UhrvpjQcTr+MsiAhr"
-Date: Fri, 16 Jan 2009 10:09:30 +1100
-Message-Id: <1232060970.30268.2.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 1B46CDE360
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 10:28:01 +1100 (EST)
+Date: Thu, 15 Jan 2009 15:27:58 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Message-ID: <20090115232758.GD9091@ovro.caltech.edu>
+References: <20090107195052.GA24981@ovro.caltech.edu>
+	<200901151853.52202.arnd@arndb.de>
+	<20090115182034.GA9091@ovro.caltech.edu>
+	<200901152157.42500.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200901152157.42500.arnd@arndb.de>
+Cc: netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	shemminger@vyatta.com, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Jan 15, 2009 at 09:57:41PM +0100, Arnd Bergmann wrote:
+> On Thursday 15 January 2009, Ira Snyder wrote:
+> > Some sort of Broadcom chipset, I think. Full dmesg and lspci output are
+> > appended.
+> > 
+> > The PCI bridge does mention MSI, so maybe it does support it. Would
+> > using the DMA from the host mean that the guest system couldn't use the
+> > DMA controller at all? All of the channels share the same interrupt line
+> > on the guest. I need one channel on the DMA controller on the guest to
+> > do realtime transfers from some data processing FPGAs on the board.
+> 
+> The PCI-CompactPCI bridge supports MSI, but that does not imply that
+> the host does. My limited understanding of x86 tells me that you need
+> to enable the I/O-APIC in order to use MSI. Your log shows two relavant
+> lines:
+> 
+> [    0.000000] Local APIC disabled by BIOS -- you can enable it with "lapic"
+> and
+> [    2.146845] IO APIC resources could be not be allocated.
+> 
+> I think you first need to enable the local APIC, then find out what the
+> problem with the IO APIC is. If possible, try enabling ACPI (sic) in the
+> BIOS in order to get the APIC support.
+> 
+> If you get that to work, you can use the interrupt line of the DMA controller
+> to signal interrupts to the FSL machine, while using DMA transfers to the
+> MSI address for sending interrupts to the host machine.
+> 
 
---=-K+2UhrvpjQcTr+MsiAhr
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I managed to get the local APIC enabled by adding "lapic" to the kernel
+command line. It didn't seem to change anything.
 
-On Thu, 2009-01-15 at 22:34 +1100, Paul Mackerras wrote:
-> Michael Ellerman writes:
->=20
-> > There's quite a lot of code that does:
-> >=20
-> > if (ppc_md.progress)
-> > 	ppc_md.progress(...)
-> >=20
-> > So move that idiom into a wrapper. Having a wrapper also allows us
-> > to have a fallback to printk if no progress routine is specified.
->=20
-> It certainly used to be the case on ppc32 (and may still be) that
-> ppc_md.progress was called very very early, in some cases before the
-> MMU was set up, so we don't want to call printk from it.  Falling back
-> to udbg_printf would be more appropriate.
+I am totally unable to get the IO APIC working. I hunch that these
+boards have totally broken ACPI support, judging from the kernel log.
+The BIOS doesn't have much in the way of settings, but I tried the ones
+that made sense. No luck there.
 
-Except on some platforms udbg_printf() doesn't work. And all the
-platforms that care still can and do use udbg_progress().
+Oh well. As in our further discussion, the mailbox or doorbell registers
+could be used to trigger DMA interrupts without problems.
 
-This just saves us having several implementations of progress that just
-call printk().
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-K+2UhrvpjQcTr+MsiAhr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklvwioACgkQdSjSd0sB4dJdHQCgzHiAgdZr5DiEf7Ye9j7ATqFv
-dOsAmwYf+SDsFTs89urIkZmDqqsJYV5H
-=kIyz
------END PGP SIGNATURE-----
-
---=-K+2UhrvpjQcTr+MsiAhr--
+Ira
