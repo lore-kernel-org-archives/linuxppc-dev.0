@@ -1,34 +1,20 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E0A87DE04A
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 17:56:45 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n0F6ugIY022405
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 23:56:42 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n0F6ue53019675
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 00:56:41 -0600 (CST)
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 526A4DE296
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 18:23:56 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so388303yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 23:23:54 -0800 (PST)
+Message-ID: <fa686aa40901142323t79e24162rfa73ea66b49d6c71@mail.gmail.com>
+Date: Thu, 15 Jan 2009 00:23:54 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Michael Ellerman" <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/4] powerpc: Add ppc_progress() wrapper
+In-Reply-To: <3922453a668745466cb291f889d2c067932e4894.1232001793.git.michael@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] mmc: Add driver for Freescale eSDHC controllers
-Date: Thu, 15 Jan 2009 14:56:40 +0800
-Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208907AD14@zch01exm21.fsl.freescale.net>
-In-Reply-To: <20090115073955.11d20734@mjolnir.drzeus.cx>
-References: <20090114194631.GA25978@oksana.dev.rtsoft.ru><D7CCA83BB0796C49BC0BB53B6AB1208907ABDB@zch01exm21.fsl.freescale.net><20090114235605.GA13531@oksana.dev.rtsoft.ru><20090115065502.1b719b06@mjolnir.drzeus.cx><D7CCA83BB0796C49BC0BB53B6AB1208907ACF9@zch01exm21.fsl.freescale.net>
-	<20090115073955.11d20734@mjolnir.drzeus.cx>
-From: "Liu Dave" <DaveLiu@freescale.com>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Cc: D'Abbraccio Joe-LJD015 <Joe.D'abbraccio@freescale.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Xie Xiaobo-R63061 <X.Xie@freescale.com>,
-	Lai Kon-LKL001 <Konjin.Lai@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <e3520e2f9806d4f6e4b30587b6d29176e583833d.1232001793.git.michael@ellerman.id.au>
+	<3922453a668745466cb291f889d2c067932e4894.1232001793.git.michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,13 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I'm afraid I haven't seen any readily available sources for their
-> driver. If you meant Ben's version, you can find the latest revision
-> here:
->=20
-> http://marc.info/?t=3D122823266100005
->=20
-> Unfortunately marc.info didn't sort out the threading, but you should
-> be able to find all the patches there or some other LKML archive.
+On Wed, Jan 14, 2009 at 11:43 PM, Michael Ellerman
+<michael@ellerman.id.au> wrote:
+> There's quite a lot of code that does:
+>
+> if (ppc_md.progress)
+>        ppc_md.progress(...)
+>
+> So move that idiom into a wrapper. Having a wrapper also allows us
+> to have a fallback to printk if no progress routine is specified.
+>
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Thanks Pierre, That is my needs.
+Good idea.
+
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+> ---
+>  arch/powerpc/include/asm/machdep.h |    2 ++
+>  arch/powerpc/kernel/setup-common.c |    8 ++++++++
+>  2 files changed, 10 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+> index 6c34a0d..9e4ab07 100644
+> --- a/arch/powerpc/include/asm/machdep.h
+> +++ b/arch/powerpc/include/asm/machdep.h
+> @@ -328,6 +328,8 @@ extern void __devinit smp_generic_take_timebase(void);
+>  /* Print a boot progress message. */
+>  void ppc64_boot_msg(unsigned int src, const char *msg);
+>
+> +extern void ppc_progress(char *msg, unsigned short code);
+> +
+>  static inline void log_error(char *buf, unsigned int err_type, int fatal)
+>  {
+>        if (ppc_md.log_error)
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index 705fc4b..cc4997b 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -669,3 +669,11 @@ static int powerpc_debugfs_init(void)
+>  }
+>  arch_initcall(powerpc_debugfs_init);
+>  #endif
+> +
+> +void ppc_progress(char *msg, unsigned short code)
+> +{
+> +       if (ppc_md.progress)
+> +               ppc_md.progress(msg, code);
+> +       else
+> +               printk(KERN_DEBUG "*** %04x : %s\n", code, msg ? msg : "");
+> +}
+> --
+> 1.5.5
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
