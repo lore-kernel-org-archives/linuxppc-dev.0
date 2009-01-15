@@ -1,22 +1,26 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-	by ozlabs.org (Postfix) with ESMTP id C77E9DE2BB
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 17:27:40 +1100 (EST)
-Message-ID: <496ED504.5040403@intel.com>
-Date: Wed, 14 Jan 2009 23:17:40 -0700
-From: Dan Williams <dan.j.williams@intel.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] fsldma: print correct IRQ on mpc83xx
-References: <1231944284-18296-1-git-send-email-jacmet@sunsite.dk>	<496E0E85.7060801@freescale.com>
-	<87iqohc19b.fsf@macbook.be.48ers.dk>	<496E1317.9070804@freescale.com>
-	<87eiz5c074.fsf@macbook.be.48ers.dk>	<496E15E8.2060106@freescale.com>
-	<87ab9tbsac.fsf@macbook.be.48ers.dk>
-	<496E3D5D.5060701@freescale.com>
-In-Reply-To: <496E3D5D.5060701@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: leoli@freescale.com, zw@zh-kernel.org,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <drzeus-mmc@drzeus.cx>
+Received: from smtp.drzeus.cx (82-117-125-11.tcdsl.calypso.net [82.117.125.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4C8DBDDEEF
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 17:40:01 +1100 (EST)
+Date: Thu, 15 Jan 2009 07:39:55 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Liu Dave" <DaveLiu@freescale.com>
+Subject: Re: [PATCH] mmc: Add driver for Freescale eSDHC controllers
+Message-ID: <20090115073955.11d20734@mjolnir.drzeus.cx>
+In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208907ACF9@zch01exm21.fsl.freescale.net>
+References: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
+	<D7CCA83BB0796C49BC0BB53B6AB1208907ABDB@zch01exm21.fsl.freescale.net>
+	<20090114235605.GA13531@oksana.dev.rtsoft.ru>
+	<20090115065502.1b719b06@mjolnir.drzeus.cx>
+	<D7CCA83BB0796C49BC0BB53B6AB1208907ACF9@zch01exm21.fsl.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: D'Abbraccio Joe-LJD015 <Joe.D'abbraccio@freescale.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Xie
+	Xiaobo-R63061 <X.Xie@freescale.com>,
+	Lai Kon-LKL001 <Konjin.Lai@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Peter Korsgaard wrote:
+On Thu, 15 Jan 2009 14:11:09 +0800
+"Liu Dave" <DaveLiu@freescale.com> wrote:
+
+> > Probably because it was quicker. Samsung did the same thing, but now
+> > Ben Dooks has patches to properly support it via sdhci.
 > 
->> The only minor issues we have is the cosmetic problem of the driver
->> printing NO_IRQ (E.G. this patch), and the driver calling
->> free_irq(NO_IRQ) (E.G. the other patch I sent today) in the release
->> path.
-> 
-> Ok, I understand.
-> 
-> ACK on the patches.
+> Pierre,
+> What samsung driver are you talking? Could you point it to me?
 > 
 
-Ok, Li Yang and Zhang Wei have been silent recently on fsldma patches. 
-Applied to async_tx.git/fixes
+I'm afraid I haven't seen any readily available sources for their
+driver. If you meant Ben's version, you can find the latest revision
+here:
 
-Thanks,
-Dan
+http://marc.info/?t=122823266100005
+
+Unfortunately marc.info didn't sort out the threading, but you should
+be able to find all the patches there or some other LKML archive.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
