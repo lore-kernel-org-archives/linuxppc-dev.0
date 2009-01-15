@@ -1,22 +1,20 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id D74FFDE1D7
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 12:06:32 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m33so652901wag.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 17:06:31 -0800 (PST)
-Message-ID: <e9c3a7c20901141706v17215220s22d973f81369be72@mail.gmail.com>
-Date: Wed, 14 Jan 2009 18:06:31 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Yuri Tikhonov" <yur@emcraft.com>
-Subject: Re: [PATCH 03/11][v3] async_tx: add support for asynchronous RAID6
-	recovery operations
-In-Reply-To: <200901130343.14016.yur@emcraft.com>
+Return-Path: <neko@genesi-usa.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 53292DE287
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 12:30:14 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so353978yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jan 2009 17:30:12 -0800 (PST)
+Sender: Matt Sealey <neko@genesi-usa.com>
+Message-ID: <496E91A4.7030406@genesi-usa.com>
+Date: Wed, 14 Jan 2009 19:30:12 -0600
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200901130343.14016.yur@emcraft.com>
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
-	dzu@denx.de, yanok@emcraft.com
+To: Stefan Strobl <nst@gersys.de>
+Subject: Re: ADS5121 how to use /dev/ttyPSC
+References: <496E172D.9060304@gersys.de>
+In-Reply-To: <496E172D.9060304@gersys.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 12, 2009 at 5:43 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
-> +       /* (2) Calculate Q+Qxy */
-> +       lptrs[0] = ptrs[failb];
-> +       lptrs[1] = ptrs[disks-1];
-> +       lptrs[2] = NULL;
-> +       tx = async_pq(lptrs, NULL, 0, 1, bytes, ASYNC_TX_DEP_ACK,
-> +                     tx, NULL, NULL);
-> +
-> +       /* (3) Calculate P+Pxy */
-> +       lptrs[0] = ptrs[faila];
-> +       lptrs[1] = ptrs[disks-2];
-> +       lptrs[2] = NULL;
-> +       tx = async_pq(lptrs, NULL, 0, 1, bytes, ASYNC_TX_DEP_ACK,
-> +                     tx, NULL, NULL);
-> +
+Stefan Strobl wrote:
+> Hi
+> 
+> I'm new to Kernel 2.6 and OF.
+> 
+> I'm using a ADS5121 board with kernel from denx (ads5121 branch from
+> linux-2.6-denx). According to my dts file both PSC3 and PSC4 should be
+> accessible through /dev/ttyPSC0 and /dev/ttyPSC1 respectively.
+> 
+> When I simply try to run: "$ echo "Hello" > /dev/ttyPSC*" I can't see
+> any data coming out from the ports.
 
-These two calls convinced me that ASYNC_TX_PQ_ZERO_{P,Q} need to go.
-A 1-source async_pq operation does not make sense.  These should be:
+Are you sending it to just one of them at a time and just abbreviating 
+your mail here to include both with a *, or are you really putting that 
+asterisk in there when you test?
 
-       /* (2) Calculate Q+Qxy */
-       lptrs[0] = ptrs[disks-1];
-       lptrs[1] = ptrs[failb];
-       tx = async_xor(lptrs[0], lptrs, 0, 2, bytes,
-                      ASYNC_TX_XOR_DROP_DST|ASYNC_TX_DEP_ACK, tx, NULL, NULL);
+> And when trying to initialize the ports using termios commands I'm
+> getting the Error "Inappropriate ioctl for device".
 
-        /* (3) Calculate P+Pxy */
-       lptrs[0] = ptrs[disks-2];
-       lptrs[1] = ptrs[faila];
-       tx = async_xor(lptrs[0], lptrs, 0, 2, bytes,
-                      ASYNC_TX_XOR_DROP_DST|ASYNC_TX_DEP_ACK, tx, NULL, NULL);
+You're doing this manually or with an application?
 
-Regards,
-Dan
+> But I can see the driver ttyPSC with major 204 in /proc/devices and I
+> can also open the device successfully. I am also able to configure
+> either port as CONSOLE in U-Boot so the Hardware is ok.
+
+So you're getting debug output (udbg type stuff) on them?
+
+-- Matt Sealey
