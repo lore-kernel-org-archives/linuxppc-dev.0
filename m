@@ -1,20 +1,21 @@
-Return-Path: <mfuchs@ma-fu.de>
-Received: from mail-in-15.arcor-online.net (mail-in-15.arcor-online.net
-	[151.189.21.55])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1CE35DE098
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 06:43:46 +1100 (EST)
-From: Matthias Fuchs <mfuchs@ma-fu.de>
-To: linux-serial@vger.kernel.org
-Subject: [PATCH] serial: Add 16850 uart type support to OF uart driver
-Date: Thu, 15 Jan 2009 20:43:35 +0100
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 284C6474C3
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 07:57:55 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Rusty Russell <rusty@rustcorp.com.au>, David Miller <davem@davemloft.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	shemminger@vyatta.com, netdev@vger.kernel.org
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Date: Thu, 15 Jan 2009 21:57:41 +0100
+References: <20090107195052.GA24981@ovro.caltech.edu>
+	<200901151853.52202.arnd@arndb.de>
+	<20090115182034.GA9091@ovro.caltech.edu>
+In-Reply-To: <20090115182034.GA9091@ovro.caltech.edu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200901152043.35949.mfuchs@ma-fu.de>
-Cc: linuxppc-dev@ozlabs.org
+  charset="iso-8859-1"
+Message-Id: <200901152157.42500.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(Resend because former version does not apply cleanly anymore)
+On Thursday 15 January 2009, Ira Snyder wrote:
+> Some sort of Broadcom chipset, I think. Full dmesg and lspci output are
+> appended.
+> 
+> The PCI bridge does mention MSI, so maybe it does support it. Would
+> using the DMA from the host mean that the guest system couldn't use the
+> DMA controller at all? All of the channels share the same interrupt line
+> on the guest. I need one channel on the DMA controller on the guest to
+> do realtime transfers from some data processing FPGAs on the board.
 
-This patch adds support for "ns16850" as supported value
-of the compatible node in flat device tree uart descriptions.
+The PCI-CompactPCI bridge supports MSI, but that does not imply that
+the host does. My limited understanding of x86 tells me that you need
+to enable the I/O-APIC in order to use MSI. Your log shows two relavant
+lines:
 
-This is needed for example when you have a XR16C2850 uart
-connected to a PPC405's external bus controller.
+[    0.000000] Local APIC disabled by BIOS -- you can enable it with "lapic"
+and
+[    2.146845] IO APIC resources could be not be allocated.
 
-Signed-off-by: Matthias Fuchs <mfuchs@ma-fu.de>
----
- drivers/serial/of_serial.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I think you first need to enable the local APIC, then find out what the
+problem with the IO APIC is. If possible, try enabling ACPI (sic) in the
+BIOS in order to get the APIC support.
 
-diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-index a821e3a..14f8fa9 100644
---- a/drivers/serial/of_serial.c
-+++ b/drivers/serial/of_serial.c
-@@ -163,6 +163,7 @@ static struct of_device_id __devinitdata of_platform_serial_table[] = {
- 	{ .type = "serial", .compatible = "ns16450",  .data = (void *)PORT_16450, },
- 	{ .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550, },
- 	{ .type = "serial", .compatible = "ns16750",  .data = (void *)PORT_16750, },
-+	{ .type = "serial", .compatible = "ns16850",  .data = (void *)PORT_16850, },
- #ifdef CONFIG_SERIAL_OF_PLATFORM_NWPSERIAL
- 	{ .type = "serial", .compatible = "ibm,qpace-nwp-serial",
- 					.data = (void *)PORT_NWPSERIAL, },
--- 
-1.5.6.3
+If you get that to work, you can use the interrupt line of the DMA controller
+to signal interrupts to the FSL machine, while using DMA transfers to the
+MSI address for sending interrupts to the host machine.
+
+	Arnd <><
