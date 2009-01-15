@@ -1,14 +1,15 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 8F25A47582
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 17:47:26 +1100 (EST)
-Date: Wed, 14 Jan 2009 22:47:26 -0800 (PST)
-Message-Id: <20090114.224726.240718844.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 0AC3DDE2C3
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 17:47:54 +1100 (EST)
+Date: Wed, 14 Jan 2009 22:47:55 -0800 (PST)
+Message-Id: <20090114.224755.212103296.davem@davemloft.net>
 To: michael@ellerman.id.au
-Subject: Re: [PATCH 1/2] powerpc: Allow debugging of LMBs with lmb=debug
+Subject: Re: [PATCH 2/2] lmb: Rework lmb_dump_all() output
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <aab322f087db2ecc390ea5e224db143cf77d3067.1232001859.git.michael@ellerman.id.au>
+In-Reply-To: <d6b34db0a2fc1979448c0408bafb9ed33688fc54.1232001859.git.michael@ellerman.id.au>
 References: <aab322f087db2ecc390ea5e224db143cf77d3067.1232001859.git.michael@ellerman.id.au>
+	<d6b34db0a2fc1979448c0408bafb9ed33688fc54.1232001859.git.michael@ellerman.id.au>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -22,15 +23,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Thu, 15 Jan 2009 17:46:01 +1100 (EST)
+Date: Thu, 15 Jan 2009 17:46:02 +1100 (EST)
 
-> The lmb debugging can be turned on at boottime with lmb=debug on the
-> command line. However on powerpc that doesn't work, because we don't
-> necessarily call lmb_dump_all().
-> 
-> So always call lmb_dump_all() after lmb_analyze(), no output is
-> generated unless lmb=debug is found on the command line.
+> The lmb_dump_all() output didn't include the RMO size, which is
+> interesting on powerpc. The output was also a bit spacey and not well
+> aligned, and didn't show you the end addresses.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
 Acked-by: David S. Miller <davem@davemloft.net>
+
+> DaveM, if you like we could make the RMO display conditional on it being
+> non-zero, which would hide it on sparc presumably.
+
+Not necessary.
