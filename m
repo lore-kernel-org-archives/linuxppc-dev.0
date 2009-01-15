@@ -1,23 +1,22 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 2F9FCDE1CC
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 08:40:59 +1100 (EST)
-Date: Thu, 15 Jan 2009 13:40:56 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Message-ID: <20090115214056.GC9091@ovro.caltech.edu>
-References: <20090107195052.GA24981@ovro.caltech.edu>
-	<200901151853.52202.arnd@arndb.de>
-	<20090115192129.GB9091@ovro.caltech.edu>
-	<200901152222.55006.arnd@arndb.de>
+Return-Path: <dan.j.williams@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id 0E0EE474D2
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 08:51:40 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1348963wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 13:51:39 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200901152222.55006.arnd@arndb.de>
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev@vger.kernel.org,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	shemminger@vyatta.com, David Miller <davem@davemloft.net>
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <200812090057.33890.yur@emcraft.com>
+References: <200812090057.33890.yur@emcraft.com>
+Date: Thu, 15 Jan 2009 14:51:39 -0700
+Message-ID: <e9c3a7c20901151351p5e1b4641h1b4c8ba1ae5dcc73@mail.gmail.com>
+Subject: Re: [PATCH 07/11] md: rewrite handle_stripe_dirtying6 in asynchronous
+	way
+From: Dan Williams <dan.j.williams@intel.com>
+To: Yuri Tikhonov <yur@emcraft.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
+	dzu@denx.de, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 15, 2009 at 10:22:53PM +0100, Arnd Bergmann wrote:
-> On Thursday 15 January 2009, Ira Snyder wrote:
-> > I have another question for you Arnd.
-> > 
-> > What did you use as the host and guest drivers when you ran virtio over
-> > PCI? Did you use two unmodified instances of virtio_net (one on host,
-> > one on guest) for networking, or did you write new virtio drivers for
-> > those? How about for virtio_console (if you ran it at all).
-> 
-> Jan-Bernd may be able to tell you details about this, and send you the
-> driver code that his interns implemented for it.
-> This was only doing virtio_net between two machines using MMIO transfers,
-> i.e. the DMA engine was unused, but there was a mailbox interrupt (if you
-> have one of these, you won't need MSI, btw -- just write a DMA to it).
-> 
+On Mon, Dec 8, 2008 at 2:57 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
+> Rewrite handle_stripe_dirtying6 function to work asynchronously.
+>
+> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+> ---
+>  drivers/md/raid5.c |  113 ++++++++++++++--------------------------------------
+>  1 files changed, 30 insertions(+), 83 deletions(-)
+>
+> diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+> index e08ed4f..f0b47bd 100644
+> --- a/drivers/md/raid5.c
+> +++ b/drivers/md/raid5.c
+> @@ -2485,99 +2485,46 @@ static void handle_stripe_dirtying6(raid5_conf_t *conf,
+>                struct stripe_head *sh, struct stripe_head_state *s,
+>                struct r6_state *r6s, int disks)
+>  {
+> -       int rcw = 0, must_compute = 0, pd_idx = sh->pd_idx, i;
+> +       int rcw = 0, pd_idx = sh->pd_idx, i;
+>        int qd_idx = r6s->qd_idx;
+> +
+> +       set_bit(STRIPE_HANDLE, &sh->state);
+>        for (i = disks; i--; ) {
+>                struct r5dev *dev = &sh->dev[i];
+> -               /* Would I have to read this buffer for reconstruct_write */
+> -               if (!test_bit(R5_OVERWRITE, &dev->flags)
+> -                   && i != pd_idx && i != qd_idx
+> -                   && (!test_bit(R5_LOCKED, &dev->flags)
+> -                           ) &&
+> -                   !test_bit(R5_UPTODATE, &dev->flags)) {
+> -                       if (test_bit(R5_Insync, &dev->flags)) rcw++;
+> -                       else {
+> -                               pr_debug("raid6: must_compute: "
+> -                                       "disk %d flags=%#lx\n", i, dev->flags);
+> -                               must_compute++;
+> +               /* check if we haven't enough data */
+> +               if (!test_bit(R5_OVERWRITE, &dev->flags) &&
+> +                   i != pd_idx && i != qd_idx &&
+> +                   !test_bit(R5_LOCKED, &dev->flags) &&
+> +                   !(test_bit(R5_UPTODATE, &dev->flags) ||
+> +                     test_bit(R5_Wantcompute, &dev->flags))) {
+> +                       rcw++;
+> +                       if (!test_bit(R5_Insync, &dev->flags))
+> +                               continue; /* it's a failed drive */
+> +
+> +                       if (
+> +                         test_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
+> +                               pr_debug("Read_old stripe %llu "
+> +                                       "block %d for Reconstruct\n",
+> +                                    (unsigned long long)sh->sector, i);
+> +                               set_bit(R5_LOCKED, &dev->flags);
+> +                               set_bit(R5_Wantread, &dev->flags);
+> +                               s->locked++;
+> +                       } else {
+> +                               pr_debug("Request delayed stripe %llu "
+> +                                       "block %d for Reconstruct\n",
+> +                                    (unsigned long long)sh->sector, i);
+> +                               set_bit(STRIPE_DELAYED, &sh->state);
+> +                               set_bit(STRIPE_HANDLE, &sh->state);
 
-Thanks. Jan-Bernd, I'm looking forward to any input you have.
+What's the reasoning behind changing the logic here, i.e. removing
+must_compute and such?  I'd feel more comfortable seeing copy and
+paste where possible with cleanups separated out into their own patch.
 
-I'd be happy enough to use mmio at this point. My early attempts with
-this driver only used mmio as well. The DMA was bolted on later.
-
-I do have mailboxes (two inbound, two outbound) which can generate
-interrupts, as well as doorbell registers (one inbound, one outbound).
-The doorbell register's bits are "write 1 to clear", and can only be
-cleared by the opposite side.
-
-All of them can cause interrupts over PCI. I used the doorbell registers
-to communicate which action needed to be taken in my driver. One
-doorbell for "receive packet(s)", another for "packet transmission(s)
-complete", etc. I used the mailboxes to transfer characters for the
-virtual serial port.
-
-Ira
+--
+Dan
