@@ -1,19 +1,25 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 2DBA3DE027
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 01:25:38 +1100 (EST)
-Message-ID: <496F4760.1010007@denx.de>
-Date: Thu, 15 Jan 2009 15:25:36 +0100
-From: Anatolij Gustschin <agust@denx.de>
+Return-Path: <ben@fluff.org.uk>
+Received: from kira.home.fluff.org (aeryn.fluff.org.uk [87.194.8.8])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5F615DE35C
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 01:36:01 +1100 (EST)
+Date: Thu, 15 Jan 2009 14:35:35 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] mmc: Add driver for Freescale eSDHC controllers
+Message-ID: <20090115143535.GT12431@fluff.org.uk>
+References: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
+	<D7CCA83BB0796C49BC0BB53B6AB1208907ABDB@zch01exm21.fsl.freescale.net>
+	<20090114235605.GA13531@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Jean-Michel Hautbois <jhautbois@gmail.com>
-Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
-References: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>	
-	<496F318D.6010302@denx.de>
-	<8cad0aa0901150510o7a8146f1m2045e252c5e1cf24@mail.gmail.com>
-In-Reply-To: <8cad0aa0901150510o7a8146f1m2045e252c5e1cf24@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090114235605.GA13531@oksana.dev.rtsoft.ru>
+Cc: Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	D'Abbraccio Joe-LJD015 <Joe.D'abbraccio@freescale.com>,
+	linuxppc-dev@ozlabs.org, Lai Kon-LKL001 <Konjin.Lai@freescale.com>,
+	Xie Xiaobo-R63061 <X.Xie@freescale.com>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jean-Michel Hautbois wrote:
-> I just tried. I created a dtb from the file
-> arch/powerpc/boot/dst/mpc8272ads.dts file.
-> It is not rebboting, but handling (my "run" led is switching off).
+On Thu, Jan 15, 2009 at 02:56:05AM +0300, Anton Vorontsov wrote:
+> On Thu, Jan 15, 2009 at 07:37:00AM +0800, Liu Dave wrote:
+> > > This patch adds support for the Freescale Enhanced Secure Digital
+> > > Host Controller Interface as found in some Freescale PowerPC
+> > > microprocessors (e.g. MPC837x SOCs).
+> > 
+> > The Freescale ESDHC controller is basically compatible with the
+> > standard SDHC controller. but the eshdc expand some bits.
+> > 
+> > The esdhc.c is much like the orignal sdhci.c.
+> > it is possible to merge them.
 > 
-> => tftp 2000000 mpc8272ads.dtb
-> Using FCC1 ETHERNET device
-> TFTP from server 10.0.0.1; our IP address is 10.0.0.2
-> Filename 'mpc8272ads.dtb'.
-> Load address: 0x2000000
-> Loading: #
-> done
-> Bytes transferred = 4442 (115a hex)
-> => bootm FF800000 FF980000 2000000
-> ## Booting kernel from Legacy Image at ff800000 ...
->    Image Name:   Linux-2.6.29-rc1-01197-g5a7b6e7-
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    1487167 Bytes =  1.4 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
-> ## Loading init Ramdisk from Legacy Image at ff980000 ...
->    Image Name:   Simple Embedded Linux Framework
->    Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
->    Data Size:    1730966 Bytes =  1.7 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
-> ## Flattened Device Tree blob at 02000000
->    Booting using the fdt blob at 0x2000000
->    Uncompressing Kernel Image ... OK
->    Loading Ramdisk to 039d7000, end 03b7d996 ... OK
->    Loading Device Tree to 007fb000, end 007ff159 ... OK
-> Unable to update property /cpus/cpu@0:bus-frequency, err=FDT_ERR_NOTFOUND
-> Unable to update property /cpus/cpu@0:timebase-frequency,
-> err=FDT_ERR_NOTFOUND
-> Unable to update property /cpus/cpu@0:clock-frequency, err=FDT_ERR_NOTFOUND
+> Ah. I wonder why Freescale just didn't write some patches for sdhci,
+> but copied the code instead...
 
-try to fix "ft_cpu_setup()" in your u-boot source for mpc8272ads
-and use "PowerPC,8272@0" as cpu_path instead of "cpu@0".
+For the same reasons earthmen like tea.
 
-Best regards,
-Anatolij
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
