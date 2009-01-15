@@ -1,20 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 23293474C3
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 08:57:57 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] mmc: Add driver for Freescale eSDHC controllers
-Date: Thu, 15 Jan 2009 22:52:31 +0100
-References: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
+Return-Path: <dan.j.williams@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.168])
+	by ozlabs.org (Postfix) with ESMTP id 1D51DDE333
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 09:28:36 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1363610wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 14:28:35 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200901152252.32480.arnd@arndb.de>
-Cc: Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>,
-	linux-kernel@vger.kernel.org, Konjin Lai <Konjin.Lai@freescale.com>,
-	Xie Xiaobo <X.Xie@freescale.com>, Pierre Ossman <drzeus-mmc@drzeus.cx>
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <e9c3a7c20901151351p5e1b4641h1b4c8ba1ae5dcc73@mail.gmail.com>
+References: <200812090057.33890.yur@emcraft.com>
+	<e9c3a7c20901151351p5e1b4641h1b4c8ba1ae5dcc73@mail.gmail.com>
+Date: Thu, 15 Jan 2009 15:21:18 -0700
+Message-ID: <e9c3a7c20901151421o69522f71rfe6d7d9621de47eb@mail.gmail.com>
+Subject: Re: [PATCH 07/11] md: rewrite handle_stripe_dirtying6 in asynchronous
+	way
+From: Dan Williams <dan.j.williams@intel.com>
+To: Yuri Tikhonov <yur@emcraft.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
+	dzu@denx.de, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 14 January 2009, Anton Vorontsov wrote:
->=20
-> +config MMC_ESDHC
-> +=A0=A0=A0=A0=A0=A0=A0tristate "Freescale Enhanced SD Host Controller Int=
-erface support"
-> +=A0=A0=A0=A0=A0=A0=A0depends on FSL_SOC
-> +=A0=A0=A0=A0=A0=A0=A0help
-> +=A0=A0=A0=A0=A0=A0=A0 =A0This selects the Freescale Enhanced SD Host Con=
-troller Interface
-> +=A0=A0=A0=A0=A0=A0=A0 =A0as found in some Freescale PowerPC microprocess=
-ors.
-> +
-> +=A0=A0=A0=A0=A0=A0=A0 =A0If unsure, say N.
+On Thu, Jan 15, 2009 at 2:51 PM, Dan Williams <dan.j.williams@intel.com> wrote:
+> On Mon, Dec 8, 2008 at 2:57 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
+> What's the reasoning behind changing the logic here, i.e. removing
+> must_compute and such?  I'd feel more comfortable seeing copy and
+> paste where possible with cleanups separated out into their own patch.
+>
 
+Ok, I now see why this change was made.  Please make this changelog
+more descriptive than "Rewrite handle_stripe_dirtying6 function to
+work asynchronously."
 
-The naming could be improved, calling it ESDHC instead of ESDHCI is very
-confusing: SDHCI is the controller chip while SDHC is a type of card (high
-capacity SD). This driver clearly does not refer to the card type but
-rather to the controller.
-
-	Arnd <><
+Regards,
+Dan
