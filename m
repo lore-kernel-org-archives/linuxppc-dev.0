@@ -1,23 +1,17 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 45219DE2A0
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 10:31:34 +1100 (EST)
-Date: Thu, 15 Jan 2009 15:31:31 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Message-ID: <20090115233131.GE9091@ovro.caltech.edu>
-References: <20090107195052.GA24981@ovro.caltech.edu>
-	<200901152222.55006.arnd@arndb.de>
-	<20090115214056.GC9091@ovro.caltech.edu>
-	<200901152353.25052.arnd@arndb.de>
+Return-Path: <amrutasai.p@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.174])
+	by ozlabs.org (Postfix) with ESMTP id EC7E0DE060
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 02:49:38 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1194875wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 07:49:37 -0800 (PST)
+Message-ID: <dd2f3b320901150749u2312c2f3q909b05c3440f28bc@mail.gmail.com>
+Date: Thu, 15 Jan 2009 21:19:37 +0530
+From: "Sai Amruta" <amrutasai.p@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: MPC8313 NAND driver limitation
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200901152353.25052.arnd@arndb.de>
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev@vger.kernel.org,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	shemminger@vyatta.com, David Miller <davem@davemloft.net>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_267910_14405294.1232034577126"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 15, 2009 at 11:53:24PM +0100, Arnd Bergmann wrote:
-> On Thursday 15 January 2009, Ira Snyder wrote:
-> > I do have mailboxes (two inbound, two outbound) which can generate
-> > interrupts, as well as doorbell registers (one inbound, one outbound).
-> > The doorbell register's bits are "write 1 to clear", and can only be
-> > cleared by the opposite side.
-> > 
-> 
-> Ok, in this case, you should be able to use one of these to implement
-> the DMA complete interrupt, but adding an extra DMA transfer to the
-> mailbox after each transfer that you want to get notified for.
+------=_Part_267910_14405294.1232034577126
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Yep. I wouldn't have come up with that idea on my own, but it seems
-obvious now :)
+Hi,
 
-It seems a little strange to keep the DMA descriptors host memory (the
-DMA controller will need to issue a PCI read to get them) but I guess
-that is how real network cards work.
+System details:
+Linux: 2.6.26-1
+Processor: MPC8313
 
-Thanks,
-Ira
+The current freescale NAND controller driver is using "command completion
+(CC)" interrupt from FCM block to know the completion read and write
+operations. After issuing NAND read/write operation and before FCM CC
+interrupt, access to other Local Bus chip selects will failed. I have found
+that it was a limitation with freescale FCM block.
+To come across this limitation, i have implemented busy wait loop in driver.
+
+I have spent lot of effort to find root cause, so that i would like to
+publish my observations here which may help somebody who is using MPC8313.
+-- 
+--Amru
+
+------=_Part_267910_14405294.1232034577126
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br><br>System details:<br>Linux: 2.6.26-1<br>Processor: MPC8313<br clear="all"><br>The
+current freescale NAND controller driver is using &quot;command completion
+(CC)&quot; interrupt from FCM block to know the completion read and write
+operations. After issuing NAND read/write operation and before FCM CC
+interrupt, access to other Local Bus chip selects will failed. I have
+found that it was a limitation with freescale FCM block.<br>
+To come across this limitation, i have implemented busy wait loop in driver.<br><br>I
+have spent lot of effort to find root cause, so that i would like to
+publish my observations here which may help somebody who is using
+MPC8313.<br>-- <br>--Amru<br>
+
+------=_Part_267910_14405294.1232034577126--
