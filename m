@@ -1,18 +1,23 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 1E7E2DE146
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 02:05:49 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LNTmy-0006az-Ts
-	for linuxppc-dev@ozlabs.org; Thu, 15 Jan 2009 07:05:44 -0800
-Message-ID: <21479519.post@talk.nabble.com>
-Date: Thu, 15 Jan 2009 07:05:44 -0800 (PST)
-From: wael showair <showair2003@yahoo.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Internal assembler error for instruction icbt
+Return-Path: <jhautbois@gmail.com>
+Received: from mail-bw0-f10.google.com (mail-bw0-f10.google.com
+	[209.85.218.10]) by ozlabs.org (Postfix) with ESMTP id 1E033DE25F
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 02:06:15 +1100 (EST)
+Received: by bwz3 with SMTP id 3so3407083bwz.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 07:06:13 -0800 (PST)
+Message-ID: <8cad0aa0901150706u72538941rbc22655d5a8905ea@mail.gmail.com>
+Date: Thu, 15 Jan 2009 16:06:06 +0100
+From: "Jean-Michel Hautbois" <jhautbois@gmail.com>
+To: "Anatolij Gustschin" <agust@denx.de>
+Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
+In-Reply-To: <496F4760.1010007@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="----=_Part_11823_13410472.1232031966165"
+References: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>
+	<496F318D.6010302@denx.de>
+	<8cad0aa0901150510o7a8146f1m2045e252c5e1cf24@mail.gmail.com>
+	<496F4760.1010007@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,55 +27,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_11823_13410472.1232031966165
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-hi All,
-i have LTIB version 6.2.2 with which i have built linux kernel 2.6.19-rc5
-for my board where its processor is MPC8555.i built the kernel Image
-successfuly without any problems
-But Now i want to upgrade the linux kernel to 2.6.27 but unfortunately i got
-the following error:
+2009/1/15 Anatolij Gustschin <agust@denx.de>
 
+> Jean-Michel Hautbois wrote:
+> > I just tried. I created a dtb from the file
+> > arch/powerpc/boot/dst/mpc8272ads.dts file.
+> > It is not rebboting, but handling (my "run" led is switching off).
+> >
+> > => tftp 2000000 mpc8272ads.dtb
+> > Using FCC1 ETHERNET device
+> > TFTP from server 10.0.0.1; our IP address is 10.0.0.2
+> > Filename 'mpc8272ads.dtb'.
+> > Load address: 0x2000000
+> > Loading: #
+> > done
+> > Bytes transferred = 4442 (115a hex)
+> > => bootm FF800000 FF980000 2000000
+> > ## Booting kernel from Legacy Image at ff800000 ...
+> >    Image Name:   Linux-2.6.29-rc1-01197-g5a7b6e7-
+> >    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+> >    Data Size:    1487167 Bytes =  1.4 MB
+> >    Load Address: 00000000
+> >    Entry Point:  00000000
+> >    Verifying Checksum ... OK
+> > ## Loading init Ramdisk from Legacy Image at ff980000 ...
+> >    Image Name:   Simple Embedded Linux Framework
+> >    Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+> >    Data Size:    1730966 Bytes =  1.7 MB
+> >    Load Address: 00000000
+> >    Entry Point:  00000000
+> >    Verifying Checksum ... OK
+> > ## Flattened Device Tree blob at 02000000
+> >    Booting using the fdt blob at 0x2000000
+> >    Uncompressing Kernel Image ... OK
+> >    Loading Ramdisk to 039d7000, end 03b7d996 ... OK
+> >    Loading Device Tree to 007fb000, end 007ff159 ... OK
+> > Unable to update property /cpus/cpu@0:bus-frequency,
+> err=FDT_ERR_NOTFOUND
+> > Unable to update property /cpus/cpu@0:timebase-frequency,
+> > err=FDT_ERR_NOTFOUND
+> > Unable to update property /cpus/cpu@0:clock-frequency,
+> err=FDT_ERR_NOTFOUND
+>
+> try to fix "ft_cpu_setup()" in your u-boot source for mpc8272ads
+> and use "PowerPC,8272@0" as cpu_path instead of "cpu@0".
+>
+> Best regards,
+> Anatolij
+>
 
-************************************************************************
- Using /home/test/ltib-6.2.2-sv/rpm/BUILD/linux-2.6.27 as source for kernel
-  GEN     /home/test/ltib-6.2.2-sv/rpm/BUILD/kbuild/mpc8555amc/Makefile
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL   
-/home/test/ltib-6.2.2-sv/rpm/BUILD/linux-2.6.27/scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  CALL   
-/home/test/ltib-6.2.2-sv/rpm/BUILD/linux-2.6.27/arch/powerpc/kernel/systbl_chk.sh
-  CC      arch/powerpc/kernel/prom_init.o
-  CALL   
-/home/test/ltib-6.2.2-sv/rpm/BUILD/linux-2.6.27/arch/powerpc/kernel/prom_init_check.sh
-  BOOTCC  arch/powerpc/boot/4xx.o
-Assembler messages:
-Error: Internal assembler error for instruction icbt
-Internal error, aborting at
-/usr/src/RPM/BUILD/crosstool/source/binutils-2.15/gas/config/tc-ppc.c line
-1300 in ppc_setup_opcodes
-Please report this bug.
-make[2]: *** [arch/powerpc/boot/4xx.o] Error 2
-make[1]: *** [zImage] Error 2
-make: *** [sub-make] Error 2
-error: Bad exit status from /home/test/ltib-6.2.2-sv/tmp/rpm-tmp.81042
-(%build)
+I don't have the three errors relative to cpu@0, but it still handles...
 
+------=_Part_11823_13410472.1232031966165
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-RPM build errors:
-    Bad exit status from /home/test/ltib-6.2.2-sv/tmp/rpm-tmp.81042 (%build)
-Failed building kernel-2.6.27-mpc8555amc
-************************************************************************
+<div class="gmail_quote">2009/1/15 Anatolij Gustschin <span dir="ltr">&lt;<a href="mailto:agust@denx.de">agust@denx.de</a>&gt;</span><br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+<div><div></div><div class="Wj3C7c">Jean-Michel Hautbois wrote:<br>
+&gt; I just tried. I created a dtb from the file<br>
+&gt; arch/powerpc/boot/dst/mpc8272ads.dts file.<br>
+&gt; It is not rebboting, but handling (my &quot;run&quot; led is switching off).<br>
+&gt;<br>
+&gt; =&gt; tftp 2000000 mpc8272ads.dtb<br>
+&gt; Using FCC1 ETHERNET device<br>
+&gt; TFTP from server 10.0.0.1; our IP address is 10.0.0.2<br>
+&gt; Filename &#39;mpc8272ads.dtb&#39;.<br>
+&gt; Load address: 0x2000000<br>
+&gt; Loading: #<br>
+&gt; done<br>
+&gt; Bytes transferred = 4442 (115a hex)<br>
+&gt; =&gt; bootm FF800000 FF980000 2000000<br>
+&gt; ## Booting kernel from Legacy Image at ff800000 ...<br>
+&gt; &nbsp; &nbsp;Image Name: &nbsp; Linux-2.6.29-rc1-01197-g5a7b6e7-<br>
+&gt; &nbsp; &nbsp;Image Type: &nbsp; PowerPC Linux Kernel Image (gzip compressed)<br>
+&gt; &nbsp; &nbsp;Data Size: &nbsp; &nbsp;1487167 Bytes = &nbsp;1.4 MB<br>
+&gt; &nbsp; &nbsp;Load Address: 00000000<br>
+&gt; &nbsp; &nbsp;Entry Point: &nbsp;00000000<br>
+&gt; &nbsp; &nbsp;Verifying Checksum ... OK<br>
+&gt; ## Loading init Ramdisk from Legacy Image at ff980000 ...<br>
+&gt; &nbsp; &nbsp;Image Name: &nbsp; Simple Embedded Linux Framework<br>
+&gt; &nbsp; &nbsp;Image Type: &nbsp; PowerPC Linux RAMDisk Image (gzip compressed)<br>
+&gt; &nbsp; &nbsp;Data Size: &nbsp; &nbsp;1730966 Bytes = &nbsp;1.7 MB<br>
+&gt; &nbsp; &nbsp;Load Address: 00000000<br>
+&gt; &nbsp; &nbsp;Entry Point: &nbsp;00000000<br>
+&gt; &nbsp; &nbsp;Verifying Checksum ... OK<br>
+&gt; ## Flattened Device Tree blob at 02000000<br>
+&gt; &nbsp; &nbsp;Booting using the fdt blob at 0x2000000<br>
+&gt; &nbsp; &nbsp;Uncompressing Kernel Image ... OK<br>
+&gt; &nbsp; &nbsp;Loading Ramdisk to 039d7000, end 03b7d996 ... OK<br>
+&gt; &nbsp; &nbsp;Loading Device Tree to 007fb000, end 007ff159 ... OK<br>
+&gt; Unable to update property /cpus/cpu@0:bus-frequency, err=FDT_ERR_NOTFOUND<br>
+&gt; Unable to update property /cpus/cpu@0:timebase-frequency,<br>
+&gt; err=FDT_ERR_NOTFOUND<br>
+&gt; Unable to update property /cpus/cpu@0:clock-frequency, err=FDT_ERR_NOTFOUND<br>
+<br>
+</div></div>try to fix &quot;ft_cpu_setup()&quot; in your u-boot source for mpc8272ads<br>
+and use &quot;PowerPC,8272@0&quot; as cpu_path instead of &quot;cpu@0&quot;.<br>
+<br>
+Best regards,<br>
+<font color="#888888">Anatolij<br>
+</font></blockquote></div><br>I don&#39;t have the three errors relative to cpu@0, but it still handles...<br>
 
-i think that i have to upgrade the cross toolchain that i m using, actually
-it is version 3.4.3?
-is there a certain version of toolchain that i have to use to build linux
-kernel 2.6.27?
-
-My last question is how can i upgrade the toolchain i m using?
-
-thanks in advance for ur help
--- 
-View this message in context: http://www.nabble.com/Internal-assembler-error-for-instruction-icbt-tp21479519p21479519.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+------=_Part_11823_13410472.1232031966165--
