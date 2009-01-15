@@ -1,22 +1,18 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 50812DE29C
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 03:54:03 +1100 (EST)
-Date: Thu, 15 Jan 2009 08:54:00 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Message-ID: <20090115165359.GA2230@ovro.caltech.edu>
-References: <20090107195052.GA24981@ovro.caltech.edu>
-	<200901131842.54688.arnd@arndb.de>
-	<20090115001251.GA10745@ovro.caltech.edu>
-	<200901151358.34250.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200901151358.34250.arnd@arndb.de>
-Cc: netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	shemminger@vyatta.com, David Miller <davem@davemloft.net>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4FF5BDE124
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 04:22:22 +1100 (EST)
+Subject: [PATCH] snd-aoa: handle older machines
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Thu, 15 Jan 2009 18:21:48 +0100
+Message-Id: <1232040108.5839.42.camel@johannes>
+Mime-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>,
+	ALSA development <alsa-devel@alsa-project.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +22,207 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 15, 2009 at 01:58:33PM +0100, Arnd Bergmann wrote:
-> On Thursday 15 January 2009, Ira Snyder wrote:
-> 
-> > The only problem with that is that you cannot route interrupts from the
-> > DMA controller over PCI with the PowerPC core running. Which makes it
-> > mostly useless for this case.
-> 
-> If the host supports MSI, you can simply program the DMA controller to
-> write the correct message to the inbound address of the MSI interrupt
-> controller!
-> 
-> All modern host systems should have MSI, as this is required by the
-> PCIe specification, but it still somewhat limits the choice of your
-> hosts.
-> 
+This patch changes snd-aoa to handle some older machines that are
+currently handled by snd-powermac. snd-aoa has a number of advantages
+though, notably it can autoload better and is generally a more modern
+driver.
 
-These are PCI boards, not PCIe. The host computers are all Pentium3-M
-systems. I tried enabling MSI on the Freescale boards in the driver, by
-calling pci_enable_msi() during probe(), and it failed. I'm pretty sure
-I can't do MSI.
+By hardcoding the accepted device-ids (last hunk of the patch) I'm
+trying to avoid regressions because this driver will otherwise load
+automatically and not let snd-powermac load. People who are unhappy
+with snd-powermac and have a device-id property in the device tree
+are encouraged to read this patch and make a patch to amend this as
+appropriate.
 
-I'll keep thinking about how to manage the DMA. Feel free to toss around
-any ideas you have, though.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+ sound/aoa/fabrics/layout.c       |   74 ++++++++++++++++++++++++++++++---------
+ sound/aoa/soundbus/i2sbus/core.c |   22 ++++++++---
+ 2 files changed, 74 insertions(+), 22 deletions(-)
 
-Ira
+--- wireless-testing.orig/sound/aoa/fabrics/layout.c	2009-01-13 17:01:04.000000000 +0100
++++ wireless-testing/sound/aoa/fabrics/layout.c	2009-01-15 18:15:28.000000000 +0100
+@@ -1,16 +1,14 @@
+ /*
+- * Apple Onboard Audio driver -- layout fabric
++ * Apple Onboard Audio driver -- layout/machine id fabric
+  *
+- * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ * Copyright 2006-2008 Johannes Berg <johannes@sipsolutions.net>
+  *
+  * GPL v2, can be found in COPYING.
+  *
+  *
+- * This fabric module looks for sound codecs
+- * based on the layout-id property in the device tree.
+- *
++ * This fabric module looks for sound codecs based on the
++ * layout-id or device-id property in the device tree.
+  */
+-
+ #include <asm/prom.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
+@@ -63,7 +61,7 @@ struct codec_connect_info {
+ #define LAYOUT_FLAG_COMBO_LINEOUT_SPDIF	(1<<0)
+ 
+ struct layout {
+-	unsigned int layout_id;
++	unsigned int layout_id, device_id;
+ 	struct codec_connect_info codecs[MAX_CODECS_PER_BUS];
+ 	int flags;
+ 
+@@ -111,6 +109,10 @@ MODULE_ALIAS("sound-layout-96");
+ MODULE_ALIAS("sound-layout-98");
+ MODULE_ALIAS("sound-layout-100");
+ 
++MODULE_ALIAS("aoa-device-id-14");
++MODULE_ALIAS("aoa-device-id-22");
++MODULE_ALIAS("aoa-device-id-35");
++
+ /* onyx with all but microphone connected */
+ static struct codec_connection onyx_connections_nomic[] = {
+ 	{
+@@ -518,6 +520,27 @@ static struct layout layouts[] = {
+ 		.connections = onyx_connections_noheadphones,
+ 	  },
+ 	},
++	/* PowerMac3,4 */
++	{ .device_id = 14,
++	  .codecs[0] = {
++		.name = "tas",
++		.connections = tas_connections_noline,
++	  },
++	},
++	/* PowerMac3,6 */
++	{ .device_id = 22,
++	  .codecs[0] = {
++		.name = "tas",
++		.connections = tas_connections_all,
++	  },
++	},
++	/* PowerBook5,2 */
++	{ .device_id = 35,
++	  .codecs[0] = {
++		.name = "tas",
++		.connections = tas_connections_all,
++	  },
++	},
+ 	{}
+ };
+ 
+@@ -526,7 +549,7 @@ static struct layout *find_layout_by_id(
+ 	struct layout *l;
+ 
+ 	l = layouts;
+-	while (l->layout_id) {
++	while (l->codecs[0].name) {
+ 		if (l->layout_id == id)
+ 			return l;
+ 		l++;
+@@ -534,6 +557,19 @@ static struct layout *find_layout_by_id(
+ 	return NULL;
+ }
+ 
++static struct layout *find_layout_by_device(unsigned int id)
++{
++	struct layout *l;
++
++	l = layouts;
++	while (l->codecs[0].name) {
++		if (l->device_id == id)
++			return l;
++		l++;
++	}
++	return NULL;
++}
++
+ static void use_layout(struct layout *l)
+ {
+ 	int i;
+@@ -938,8 +974,8 @@ static struct aoa_fabric layout_fabric =
+ static int aoa_fabric_layout_probe(struct soundbus_dev *sdev)
+ {
+ 	struct device_node *sound = NULL;
+-	const unsigned int *layout_id;
+-	struct layout *layout;
++	const unsigned int *id;
++	struct layout *layout = NULL;
+ 	struct layout_dev *ldev = NULL;
+ 	int err;
+ 
+@@ -952,15 +988,18 @@ static int aoa_fabric_layout_probe(struc
+ 		if (sound->type && strcasecmp(sound->type, "soundchip") == 0)
+ 			break;
+ 	}
+-	if (!sound) return -ENODEV;
++	if (!sound)
++		return -ENODEV;
+ 
+-	layout_id = of_get_property(sound, "layout-id", NULL);
+-	if (!layout_id)
+-		goto outnodev;
+-	printk(KERN_INFO "snd-aoa-fabric-layout: found bus with layout %d\n",
+-	       *layout_id);
++	id = of_get_property(sound, "layout-id", NULL);
++	if (id) {
++		layout = find_layout_by_id(*id);
++	} else {
++		id = of_get_property(sound, "device-id", NULL);
++		if (id)
++			layout = find_layout_by_device(*id);
++	}
+ 
+-	layout = find_layout_by_id(*layout_id);
+ 	if (!layout) {
+ 		printk(KERN_ERR "snd-aoa-fabric-layout: unknown layout\n");
+ 		goto outnodev;
+@@ -976,6 +1015,7 @@ static int aoa_fabric_layout_probe(struc
+ 	ldev->layout = layout;
+ 	ldev->gpio.node = sound->parent;
+ 	switch (layout->layout_id) {
++	case 0:  /* anything with device_id, not layout_id */
+ 	case 41: /* that unknown machine no one seems to have */
+ 	case 51: /* PowerBook5,4 */
+ 	case 58: /* Mac Mini */
+--- wireless-testing.orig/sound/aoa/soundbus/i2sbus/core.c	2009-01-13 17:01:04.000000000 +0100
++++ wireless-testing/sound/aoa/soundbus/i2sbus/core.c	2009-01-15 18:15:34.000000000 +0100
+@@ -1,7 +1,7 @@
+ /*
+  * i2sbus driver
+  *
+- * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ * Copyright 2006-2008 Johannes Berg <johannes@sipsolutions.net>
+  *
+  * GPL v2, can be found in COPYING.
+  */
+@@ -186,13 +186,25 @@ static int i2sbus_add_dev(struct macio_d
+ 		}
+ 	}
+ 	if (i == 1) {
+-		const u32 *layout_id =
+-			of_get_property(sound, "layout-id", NULL);
+-		if (layout_id) {
+-			layout = *layout_id;
++		const u32 *id = of_get_property(sound, "layout-id", NULL);
++
++		if (id) {
++			layout = *id;
+ 			snprintf(dev->sound.modalias, 32,
+ 				 "sound-layout-%d", layout);
+ 			ok = 1;
++		} else {
++			id = of_get_property(sound, "device-id", NULL);
++			/*
++			 * We probably cannot handle all device-id machines,
++			 * so restrict to those we do handle for now.
++			 */
++			if (id && (*id == 22 || *id == 14 || *id == 35)) {
++				snprintf(dev->sound.modalias, 32,
++					 "aoa-device-id-%d", *id);
++				ok = 1;
++				layout = -1;
++			}
+ 		}
+ 	}
+ 	/* for the time being, until we can handle non-layout-id
