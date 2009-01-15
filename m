@@ -1,36 +1,25 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 00976DE2D8
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 20:17:57 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id n0F9HoEr381258
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 09:17:50 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
-	ESMTP id n0F9Ho743756208
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 10:17:50 +0100
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id n0F9HnWb024374
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 10:17:50 +0100
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/4 v2] hvc_console: remove tty->low_latency
-Date: Thu, 15 Jan 2009 10:17:48 +0100
-References: <hvc-console-29-3-1@bga.com> <1231880644.22571.47.camel@pasglop>
-	<20090115091544.GC895@cetus.boeblingen.de.ibm.com>
-In-Reply-To: <20090115091544.GC895@cetus.boeblingen.de.ibm.com>
+Return-Path: <pku.leo@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
+	by ozlabs.org (Postfix) with ESMTP id F08DCDE341
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 22:21:06 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1081505wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 03:21:05 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200901151017.48995.borntraeger@de.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Joe Peterson <joe@skyrush.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Sender: pku.leo@gmail.com
+In-Reply-To: <496ED504.5040403@intel.com>
+References: <1231944284-18296-1-git-send-email-jacmet@sunsite.dk>
+	<496E0E85.7060801@freescale.com> <87iqohc19b.fsf@macbook.be.48ers.dk>
+	<496E1317.9070804@freescale.com> <87eiz5c074.fsf@macbook.be.48ers.dk>
+	<496E15E8.2060106@freescale.com> <87ab9tbsac.fsf@macbook.be.48ers.dk>
+	<496E3D5D.5060701@freescale.com> <496ED504.5040403@intel.com>
+Date: Thu, 15 Jan 2009 19:21:04 +0800
+Message-ID: <2a27d3730901150321p4e5dcd50p16ddb0ccee5bc5bf@mail.gmail.com>
+Subject: Re: [PATCH] fsldma: print correct IRQ on mpc83xx
+From: Li Yang <leoli@freescale.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: zw@zh-kernel.org, Timur Tabi <timur@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,22 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-> ---
->  drivers/char/hvc_console.c |    2 --
->  1 file changed, 2 deletions(-)
-> 
-> --- a/drivers/char/hvc_console.c
-> +++ b/drivers/char/hvc_console.c
-> @@ -318,8 +318,6 @@ static int hvc_open(struct tty_struct *t
->  	} /* else count == 0 */
-> 
->  	tty->driver_data = hp;
-> -	if (!hp->irq_requested)
-> -		tty->low_latency = 1; /* Makes flushes to ldisc synchronous. */
-> 
->  	hp->tty = tty;
-> 
-> 
+On Thu, Jan 15, 2009 at 2:17 PM, Dan Williams <dan.j.williams@intel.com> wrote:
+> Timur Tabi wrote:
+>>
+>> Peter Korsgaard wrote:
+>>
+>>> The only minor issues we have is the cosmetic problem of the driver
+>>> printing NO_IRQ (E.G. this patch), and the driver calling
+>>> free_irq(NO_IRQ) (E.G. the other patch I sent today) in the release
+>>> path.
+>>
+>> Ok, I understand.
+>>
+>> ACK on the patches.
+>>
+>
+> Ok, Li Yang and Zhang Wei have been silent recently on fsldma patches.
+> Applied to async_tx.git/fixes
 
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Sorry for the delay, was trapped by an upcoming release.
+
+For the two patches from Peter,
+
+Acked-by: Li Yang <leoli@freescale.com>
+
+- Leo
