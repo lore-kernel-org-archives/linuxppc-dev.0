@@ -1,23 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.8])
-	by ozlabs.org (Postfix) with ESMTP id 7E167DE13B
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 09:53:59 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Date: Thu, 15 Jan 2009 23:53:24 +0100
-References: <20090107195052.GA24981@ovro.caltech.edu>
-	<200901152222.55006.arnd@arndb.de>
-	<20090115214056.GC9091@ovro.caltech.edu>
-In-Reply-To: <20090115214056.GC9091@ovro.caltech.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200901152353.25052.arnd@arndb.de>
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev@vger.kernel.org,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, shemminger@vyatta.com,
-	David Miller <davem@davemloft.net>, Ira Snyder <iws@ovro.caltech.edu>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6D48C474CD
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 10:01:18 +1100 (EST)
+Subject: Re: [PATCH 2/4] powerpc: Add ppc_progress() wrapper
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18799.7994.553829.470138@cargo.ozlabs.ibm.com>
+References: <e3520e2f9806d4f6e4b30587b6d29176e583833d.1232001793.git.michael@ellerman.id.au>
+	<3922453a668745466cb291f889d2c067932e4894.1232001793.git.michael@ellerman.id.au>
+	<18799.7994.553829.470138@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 10:01:01 +1100
+Message-Id: <1232060461.22571.125.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 15 January 2009, Ira Snyder wrote:
-> I do have mailboxes (two inbound, two outbound) which can generate
-> interrupts, as well as doorbell registers (one inbound, one outbound).
-> The doorbell register's bits are "write 1 to clear", and can only be
-> cleared by the opposite side.
+
+> It certainly used to be the case on ppc32 (and may still be) that
+> ppc_md.progress was called very very early, in some cases before the
+> MMU was set up, so we don't want to call printk from it.  Falling back
+> to udbg_printf would be more appropriate.
 > 
+> The idea of ppc_md.progress was that if you need to debug very early
+> boot and you have something that you can poke with absolutely minimal
+> setup and observe externally, you can hook that up to ppc_md.progress
+> and get an idea where the system is dying.  Once you get to the point
+> where printk works then you can just use printk.
 
-Ok, in this case, you should be able to use one of these to implement
-the DMA complete interrupt, but adding an extra DMA transfer to the
-mailbox after each transfer that you want to get notified for.
+Right, printk shouldn't be called before lockdep is initialized, though
+I don't see a call to lockdep_init on ppc32 ..
 
-	Arnd <><
+Appart from that, printk is pretty safe as long as we have some kind
+of translation from PAGE_OFFSET that covers the kernel text, data and
+bss, which we do have fairly early.
+
+I think the reasons we did that back then is that printk output will end
+up nowhere. Nowadays however, we have udbg console which can possibly be
+initialized very early too.
+
+I'd say let's keep that patch on the back burner until we get a chance
+to play a bit more with that stuff.
+
+Among other things, I still want to change the early initialization
+order of ppc32 to look more like ppc64 which would help in that are as
+well so ...
+
+Cheers,
+Ben.
+ 
