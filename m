@@ -1,22 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 71D64DE1CE
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 14:46:12 +1100 (EST)
-Message-Id: <533AEE7C-0605-43E9-BB9F-615BE6761202@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] mmc: Add driver for Freescale eSDHC controllers
-Date: Wed, 14 Jan 2009 21:43:50 -0600
-References: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
-Cc: Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Xie Xiaobo <X.Xie@freescale.com>, Konjin Lai <Konjin.Lai@freescale.com>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id B5E9EDDE2A
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 15:44:07 +1100 (EST)
+Date: Wed, 14 Jan 2009 20:44:07 -0800 (PST)
+Message-Id: <20090114.204407.253886327.davem@davemloft.net>
+To: galak@kernel.crashing.org
+Subject: Re: [PATCH v2] powerpc/fs_enet: Add missing irq free in error path.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <606FE12E-797E-4C0C-8FA7-5C162BD959A9@kernel.crashing.org>
+References: <1D4ED273-13FB-4D2F-82B1-89D2F6F0B9A1@kernel.crashing.org>
+	<490636B4.2010202@consentry.com>
+	<606FE12E-797E-4C0C-8FA7-5C162BD959A9@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, mditto@consentry.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Tue, 13 Jan 2009 10:28:15 -0600
 
-On Jan 14, 2009, at 1:46 PM, Anton Vorontsov wrote:
+> 
+> On Oct 27, 2008, at 4:46 PM, Mike Ditto wrote:
+> 
+> > If something goes wrong attaching to phy driver, we weren't freeing
+> > the IRQ.
+> >
+> > Signed-off-by: Mike Ditto <mditto@consentry.com>
+ ...
+> This seems to have gotten lost in the shuffle.  Can you please apply.
 
-> From: Xie Xiaobo <X.Xie@freescale.com>
->
-> This patch adds support for the Freescale Enhanced Secure Digital
-> Host Controller Interface as found in some Freescale PowerPC
-> microprocessors (e.g. MPC837x SOCs).
->
-> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
-> Signed-off-by: Konjin Lai <Konjin.Lai@freescale.com>
-> Signed-off-by: Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> drivers/mmc/host/Kconfig  |    9 +
-> drivers/mmc/host/Makefile |    1 +
-> drivers/mmc/host/esdhc.c  | 1321 ++++++++++++++++++++++++++++++++++++ 
-> +++++++++
-> drivers/mmc/host/esdhc.h  |  255 +++++++++
-> 4 files changed, 1586 insertions(+), 0 deletions(-)
-> create mode 100644 drivers/mmc/host/esdhc.c
-> create mode 100644 drivers/mmc/host/esdhc.h
+The netdev patchwork never saw it for some reason.
 
-Want to work some device tree docs for this.
-
-- k
+Applied, thanks.
