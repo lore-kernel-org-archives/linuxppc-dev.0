@@ -1,17 +1,22 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 8A245DE2F5
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 23:58:10 +1100 (EST)
-Message-ID: <496F318D.6010302@denx.de>
-Date: Thu, 15 Jan 2009 13:52:29 +0100
-From: Anatolij Gustschin <agust@denx.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 9F653DE301
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 23:58:49 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Date: Thu, 15 Jan 2009 13:58:33 +0100
+References: <20090107195052.GA24981@ovro.caltech.edu>
+	<200901131842.54688.arnd@arndb.de>
+	<20090115001251.GA10745@ovro.caltech.edu>
+In-Reply-To: <20090115001251.GA10745@ovro.caltech.edu>
 MIME-Version: 1.0
-To: Jean-Michel Hautbois <jhautbois@gmail.com>
-Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
-References: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>
-In-Reply-To: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200901151358.34250.arnd@arndb.de>
+Cc: netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	shemminger@vyatta.com, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jean-Michel Hautbois wrote:
+On Thursday 15 January 2009, Ira Snyder wrote:
 
-> I have a MPC8272ADS board, 64MB RAM, 8MB Flash.
-> I compiled u-boot using the existing config file, and compiled my linux
-> kernel successfully with the defconfig file too.
-> 
-> I have updated u-boot, downloaded my kernel file, and a ramdisk image
-> from the eldk distribution.
-> I have tried using a lot of bootargs (
-> bootargs root=/dev/ram rw console=ttyS0,115200
-> bootargs through nfs, etc.)
-> 
-> When I am resetting my card, it reboots:
-> bootargs=root=/dev/ram rw console=ttyS0,115200
-> bootcmd=bootm ff800000 ff980000
+> The only problem with that is that you cannot route interrupts from the
+> DMA controller over PCI with the PowerPC core running. Which makes it
+> mostly useless for this case.
 
-you also need to build a device tree blob for mpc8272ads, load it
-into RAM or flash and boot using "bootm" command as follows:
+If the host supports MSI, you can simply program the DMA controller to
+write the correct message to the inbound address of the MSI interrupt
+controller!
 
-=> bootm ff800000 ff980000 %FDT_ADDR%"
+All modern host systems should have MSI, as this is required by the
+PCIe specification, but it still somewhat limits the choice of your
+hosts.
 
-See also http://www.denx.de/wiki/view/DULG/BootingEmbeddedLinux
-
-Best regards,
-Anatolij
+	Arnd <><
