@@ -1,26 +1,9 @@
-Return-Path: <drzeus-mmc@drzeus.cx>
-Received: from smtp.drzeus.cx (82-117-125-11.tcdsl.calypso.net [82.117.125.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4C8DBDDEEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 17:40:01 +1100 (EST)
-Date: Thu, 15 Jan 2009 07:39:55 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "Liu Dave" <DaveLiu@freescale.com>
-Subject: Re: [PATCH] mmc: Add driver for Freescale eSDHC controllers
-Message-ID: <20090115073955.11d20734@mjolnir.drzeus.cx>
-In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208907ACF9@zch01exm21.fsl.freescale.net>
-References: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
-	<D7CCA83BB0796C49BC0BB53B6AB1208907ABDB@zch01exm21.fsl.freescale.net>
-	<20090114235605.GA13531@oksana.dev.rtsoft.ru>
-	<20090115065502.1b719b06@mjolnir.drzeus.cx>
-	<D7CCA83BB0796C49BC0BB53B6AB1208907ACF9@zch01exm21.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: D'Abbraccio Joe-LJD015 <Joe.D'abbraccio@freescale.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Xie
-	Xiaobo-R63061 <X.Xie@freescale.com>,
-	Lai Kon-LKL001 <Konjin.Lai@freescale.com>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <e3520e2f9806d4f6e4b30587b6d29176e583833d.1232001793.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/4] powerpc: Remove unused ppc64_terminate_msg()
+Date: Thu, 15 Jan 2009 17:43:15 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,33 +13,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 15 Jan 2009 14:11:09 +0800
-"Liu Dave" <DaveLiu@freescale.com> wrote:
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/include/asm/machdep.h |    2 --
+ arch/powerpc/kernel/setup_64.c     |    7 -------
+ 2 files changed, 0 insertions(+), 9 deletions(-)
 
-> > Probably because it was quicker. Samsung did the same thing, but now
-> > Ben Dooks has patches to properly support it via sdhci.
-> 
-> Pierre,
-> What samsung driver are you talking? Could you point it to me?
-> 
-
-I'm afraid I haven't seen any readily available sources for their
-driver. If you meant Ben's version, you can find the latest revision
-here:
-
-http://marc.info/?t=122823266100005
-
-Unfortunately marc.info didn't sort out the threading, but you should
-be able to find all the patches there or some other LKML archive.
-
-Rgds
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 2740c44..6c34a0d 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -327,8 +327,6 @@ extern void __devinit smp_generic_take_timebase(void);
+  */
+ /* Print a boot progress message. */
+ void ppc64_boot_msg(unsigned int src, const char *msg);
+-/* Print a termination message (print only -- does not stop the kernel) */
+-void ppc64_terminate_msg(unsigned int src, const char *msg);
+ 
+ static inline void log_error(char *buf, unsigned int err_type, int fatal)
+ {
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 2d34196..73e16e2 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -578,13 +578,6 @@ void ppc64_boot_msg(unsigned int src, const char *msg)
+ 	printk("[boot]%04x %s\n", src, msg);
+ }
+ 
+-/* Print a termination message (print only -- does not stop the kernel) */
+-void ppc64_terminate_msg(unsigned int src, const char *msg)
+-{
+-	ppc64_do_msg(PPC64_LINUX_FUNCTION|PPC64_TERM_MESSAGE|src, msg);
+-	printk("[terminate]%04x %s\n", src, msg);
+-}
+-
+ void cpu_die(void)
+ {
+ 	if (ppc_md.cpu_die)
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+1.5.5
