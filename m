@@ -2,14 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4FF5BDE124
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 04:22:22 +1100 (EST)
-Subject: [PATCH] snd-aoa: handle older machines
+	by ozlabs.org (Postfix) with ESMTPS id 1F6B4DE313
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 04:23:04 +1100 (EST)
+Subject: [PATCH] snd-aoa: handle master-amp if present
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Thu, 15 Jan 2009 18:21:48 +0100
-Message-Id: <1232040108.5839.42.camel@johannes>
+Date: Thu, 15 Jan 2009 18:22:31 +0100
+Message-Id: <1232040151.5839.43.camel@johannes>
 Mime-Version: 1.0
 Cc: Takashi Iwai <tiwai@suse.de>,
 	ALSA development <alsa-devel@alsa-project.org>
@@ -22,207 +22,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch changes snd-aoa to handle some older machines that are
-currently handled by snd-powermac. snd-aoa has a number of advantages
-though, notably it can autoload better and is generally a more modern
-driver.
-
-By hardcoding the accepted device-ids (last hunk of the patch) I'm
-trying to avoid regressions because this driver will otherwise load
-automatically and not let snd-powermac load. People who are unhappy
-with snd-powermac and have a device-id property in the device tree
-are encouraged to read this patch and make a patch to amend this as
-appropriate.
+Some machines have a master amp GPIO that needs to be toggled to
+get sound output, in addition to speaker/headphone/line-out amps.
+This makes snd-aoa handle it, if present in the device tree, thus
+making snd-aoa be able to output sound on PowerMac3,6, which was
+previously handled by snd-powermac which also doesn't use the
+master amp GPIO.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 ---
- sound/aoa/fabrics/layout.c       |   74 ++++++++++++++++++++++++++++++---------
- sound/aoa/soundbus/i2sbus/core.c |   22 ++++++++---
- 2 files changed, 74 insertions(+), 22 deletions(-)
+ sound/aoa/aoa-gpio.h          |    2 ++
+ sound/aoa/core/gpio-feature.c |   17 ++++++++++++++++-
+ sound/aoa/fabrics/layout.c    |    7 +++++++
+ 3 files changed, 25 insertions(+), 1 deletion(-)
 
---- wireless-testing.orig/sound/aoa/fabrics/layout.c	2009-01-13 17:01:04.000000000 +0100
-+++ wireless-testing/sound/aoa/fabrics/layout.c	2009-01-15 18:15:28.000000000 +0100
-@@ -1,16 +1,14 @@
- /*
-- * Apple Onboard Audio driver -- layout fabric
-+ * Apple Onboard Audio driver -- layout/machine id fabric
-  *
-- * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
-+ * Copyright 2006-2008 Johannes Berg <johannes@sipsolutions.net>
-  *
-  * GPL v2, can be found in COPYING.
-  *
-  *
-- * This fabric module looks for sound codecs
-- * based on the layout-id property in the device tree.
-- *
-+ * This fabric module looks for sound codecs based on the
-+ * layout-id or device-id property in the device tree.
-  */
--
- #include <asm/prom.h>
- #include <linux/list.h>
- #include <linux/module.h>
-@@ -63,7 +61,7 @@ struct codec_connect_info {
- #define LAYOUT_FLAG_COMBO_LINEOUT_SPDIF	(1<<0)
+--- wireless-testing.orig/sound/aoa/aoa-gpio.h	2009-01-15 18:09:48.000000000 +0100
++++ wireless-testing/sound/aoa/aoa-gpio.h	2009-01-15 18:15:47.000000000 +0100
+@@ -34,10 +34,12 @@ struct gpio_methods {
+ 	void (*set_headphone)(struct gpio_runtime *rt, int on);
+ 	void (*set_speakers)(struct gpio_runtime *rt, int on);
+ 	void (*set_lineout)(struct gpio_runtime *rt, int on);
++	void (*set_master)(struct gpio_runtime *rt, int on);
  
- struct layout {
--	unsigned int layout_id;
-+	unsigned int layout_id, device_id;
- 	struct codec_connect_info codecs[MAX_CODECS_PER_BUS];
- 	int flags;
+ 	int (*get_headphone)(struct gpio_runtime *rt);
+ 	int (*get_speakers)(struct gpio_runtime *rt);
+ 	int (*get_lineout)(struct gpio_runtime *rt);
++	int (*get_master)(struct gpio_runtime *rt);
  
-@@ -111,6 +109,10 @@ MODULE_ALIAS("sound-layout-96");
- MODULE_ALIAS("sound-layout-98");
- MODULE_ALIAS("sound-layout-100");
+ 	void (*set_hw_reset)(struct gpio_runtime *rt, int on);
  
-+MODULE_ALIAS("aoa-device-id-14");
-+MODULE_ALIAS("aoa-device-id-22");
-+MODULE_ALIAS("aoa-device-id-35");
-+
- /* onyx with all but microphone connected */
- static struct codec_connection onyx_connections_nomic[] = {
- 	{
-@@ -518,6 +520,27 @@ static struct layout layouts[] = {
- 		.connections = onyx_connections_noheadphones,
- 	  },
- 	},
-+	/* PowerMac3,4 */
-+	{ .device_id = 14,
-+	  .codecs[0] = {
-+		.name = "tas",
-+		.connections = tas_connections_noline,
-+	  },
-+	},
-+	/* PowerMac3,6 */
-+	{ .device_id = 22,
-+	  .codecs[0] = {
-+		.name = "tas",
-+		.connections = tas_connections_all,
-+	  },
-+	},
-+	/* PowerBook5,2 */
-+	{ .device_id = 35,
-+	  .codecs[0] = {
-+		.name = "tas",
-+		.connections = tas_connections_all,
-+	  },
-+	},
- 	{}
- };
+--- wireless-testing.orig/sound/aoa/core/gpio-feature.c	2009-01-15 18:09:48.000000000 +0100
++++ wireless-testing/sound/aoa/core/gpio-feature.c	2009-01-15 18:18:09.000000000 +0100
+@@ -14,7 +14,7 @@
+ #include <linux/interrupt.h>
+ #include "../aoa.h"
  
-@@ -526,7 +549,7 @@ static struct layout *find_layout_by_id(
- 	struct layout *l;
+-/* TODO: these are 20 global variables
++/* TODO: these are lots of global variables
+  * that aren't used on most machines...
+  * Move them into a dynamically allocated
+  * structure and use that.
+@@ -23,6 +23,7 @@
+ /* these are the GPIO numbers (register addresses as offsets into
+  * the GPIO space) */
+ static int headphone_mute_gpio;
++static int master_mute_gpio;
+ static int amp_mute_gpio;
+ static int lineout_mute_gpio;
+ static int hw_reset_gpio;
+@@ -32,6 +33,7 @@ static int linein_detect_gpio;
  
- 	l = layouts;
--	while (l->layout_id) {
-+	while (l->codecs[0].name) {
- 		if (l->layout_id == id)
- 			return l;
- 		l++;
-@@ -534,6 +557,19 @@ static struct layout *find_layout_by_id(
- 	return NULL;
+ /* see the SWITCH_GPIO macro */
+ static int headphone_mute_gpio_activestate;
++static int master_mute_gpio_activestate;
+ static int amp_mute_gpio_activestate;
+ static int lineout_mute_gpio_activestate;
+ static int hw_reset_gpio_activestate;
+@@ -156,6 +158,7 @@ static int ftr_gpio_get_##name(struct gp
+ FTR_GPIO(headphone, 0);
+ FTR_GPIO(amp, 1);
+ FTR_GPIO(lineout, 2);
++FTR_GPIO(master, 3);
+ 
+ static void ftr_gpio_set_hw_reset(struct gpio_runtime *rt, int on)
+ {
+@@ -172,6 +175,8 @@ static void ftr_gpio_set_hw_reset(struct
+ 			  hw_reset_gpio, v);
  }
  
-+static struct layout *find_layout_by_device(unsigned int id)
-+{
-+	struct layout *l;
++static struct gpio_methods methods;
 +
-+	l = layouts;
-+	while (l->codecs[0].name) {
-+		if (l->device_id == id)
-+			return l;
-+		l++;
-+	}
-+	return NULL;
-+}
-+
- static void use_layout(struct layout *l)
+ static void ftr_gpio_all_amps_off(struct gpio_runtime *rt)
  {
- 	int i;
-@@ -938,8 +974,8 @@ static struct aoa_fabric layout_fabric =
- static int aoa_fabric_layout_probe(struct soundbus_dev *sdev)
- {
- 	struct device_node *sound = NULL;
--	const unsigned int *layout_id;
--	struct layout *layout;
-+	const unsigned int *id;
-+	struct layout *layout = NULL;
- 	struct layout_dev *ldev = NULL;
- 	int err;
+ 	int saved;
+@@ -181,6 +186,8 @@ static void ftr_gpio_all_amps_off(struct
+ 	ftr_gpio_set_headphone(rt, 0);
+ 	ftr_gpio_set_amp(rt, 0);
+ 	ftr_gpio_set_lineout(rt, 0);
++	if (methods.set_master)
++		ftr_gpio_set_master(rt, 0);
+ 	rt->implementation_private = saved;
+ }
  
-@@ -952,15 +988,18 @@ static int aoa_fabric_layout_probe(struc
- 		if (sound->type && strcasecmp(sound->type, "soundchip") == 0)
- 			break;
- 	}
--	if (!sound) return -ENODEV;
-+	if (!sound)
-+		return -ENODEV;
+@@ -193,6 +200,8 @@ static void ftr_gpio_all_amps_restore(st
+ 	ftr_gpio_set_headphone(rt, (s>>0)&1);
+ 	ftr_gpio_set_amp(rt, (s>>1)&1);
+ 	ftr_gpio_set_lineout(rt, (s>>2)&1);
++	if (methods.set_master)
++		ftr_gpio_set_master(rt, (s>>3)&1);
+ }
  
--	layout_id = of_get_property(sound, "layout-id", NULL);
--	if (!layout_id)
--		goto outnodev;
--	printk(KERN_INFO "snd-aoa-fabric-layout: found bus with layout %d\n",
--	       *layout_id);
-+	id = of_get_property(sound, "layout-id", NULL);
-+	if (id) {
-+		layout = find_layout_by_id(*id);
-+	} else {
-+		id = of_get_property(sound, "device-id", NULL);
-+		if (id)
-+			layout = find_layout_by_device(*id);
+ static void ftr_handle_notify(struct work_struct *work)
+@@ -231,6 +240,12 @@ static void ftr_gpio_init(struct gpio_ru
+ 	get_gpio("hw-reset", "audio-hw-reset",
+ 		 &hw_reset_gpio,
+ 		 &hw_reset_gpio_activestate);
++	if (get_gpio("master-mute", NULL,
++		     &master_mute_gpio,
++		     &master_mute_gpio_activestate)) {
++		methods.set_master = ftr_gpio_set_master;
++		methods.get_master = ftr_gpio_get_master;
 +	}
  
--	layout = find_layout_by_id(*layout_id);
- 	if (!layout) {
- 		printk(KERN_ERR "snd-aoa-fabric-layout: unknown layout\n");
- 		goto outnodev;
-@@ -976,6 +1015,7 @@ static int aoa_fabric_layout_probe(struc
- 	ldev->layout = layout;
- 	ldev->gpio.node = sound->parent;
- 	switch (layout->layout_id) {
-+	case 0:  /* anything with device_id, not layout_id */
- 	case 41: /* that unknown machine no one seems to have */
- 	case 51: /* PowerBook5,4 */
- 	case 58: /* Mac Mini */
---- wireless-testing.orig/sound/aoa/soundbus/i2sbus/core.c	2009-01-13 17:01:04.000000000 +0100
-+++ wireless-testing/sound/aoa/soundbus/i2sbus/core.c	2009-01-15 18:15:34.000000000 +0100
-@@ -1,7 +1,7 @@
- /*
-  * i2sbus driver
-  *
-- * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
-+ * Copyright 2006-2008 Johannes Berg <johannes@sipsolutions.net>
-  *
-  * GPL v2, can be found in COPYING.
-  */
-@@ -186,13 +186,25 @@ static int i2sbus_add_dev(struct macio_d
- 		}
- 	}
- 	if (i == 1) {
--		const u32 *layout_id =
--			of_get_property(sound, "layout-id", NULL);
--		if (layout_id) {
--			layout = *layout_id;
-+		const u32 *id = of_get_property(sound, "layout-id", NULL);
-+
-+		if (id) {
-+			layout = *id;
- 			snprintf(dev->sound.modalias, 32,
- 				 "sound-layout-%d", layout);
- 			ok = 1;
-+		} else {
-+			id = of_get_property(sound, "device-id", NULL);
-+			/*
-+			 * We probably cannot handle all device-id machines,
-+			 * so restrict to those we do handle for now.
-+			 */
-+			if (id && (*id == 22 || *id == 14 || *id == 35)) {
-+				snprintf(dev->sound.modalias, 32,
-+					 "aoa-device-id-%d", *id);
-+				ok = 1;
-+				layout = -1;
-+			}
- 		}
- 	}
- 	/* for the time being, until we can handle non-layout-id
+ 	headphone_detect_node = get_gpio("headphone-detect", NULL,
+ 					 &headphone_detect_gpio,
+--- wireless-testing.orig/sound/aoa/fabrics/layout.c	2009-01-15 18:15:28.000000000 +0100
++++ wireless-testing/sound/aoa/fabrics/layout.c	2009-01-15 18:15:47.000000000 +0100
+@@ -600,6 +600,7 @@ struct layout_dev {
+ 	struct snd_kcontrol *headphone_ctrl;
+ 	struct snd_kcontrol *lineout_ctrl;
+ 	struct snd_kcontrol *speaker_ctrl;
++	struct snd_kcontrol *master_ctrl;
+ 	struct snd_kcontrol *headphone_detected_ctrl;
+ 	struct snd_kcontrol *lineout_detected_ctrl;
+ 
+@@ -651,6 +652,7 @@ static struct snd_kcontrol_new n##_ctl =
+ AMP_CONTROL(headphone, "Headphone Switch");
+ AMP_CONTROL(speakers, "Speakers Switch");
+ AMP_CONTROL(lineout, "Line-Out Switch");
++AMP_CONTROL(master, "Master Switch");
+ 
+ static int detect_choice_get(struct snd_kcontrol *kcontrol,
+ 			     struct snd_ctl_elem_value *ucontrol)
+@@ -891,6 +893,11 @@ static void layout_attached_codec(struct
+  	lineout = codec->gpio->methods->get_detect(codec->gpio,
+ 						   AOA_NOTIFY_LINE_OUT);
+ 
++	if (codec->gpio->methods->set_master) {
++		ctl = snd_ctl_new1(&master_ctl, codec->gpio);
++		ldev->master_ctrl = ctl;
++		aoa_snd_ctl_add(ctl);
++	}
+ 	while (cc->connected) {
+ 		if (cc->connected & CC_SPEAKERS) {
+ 			if (headphones <= 0 && lineout <= 0)
