@@ -1,13 +1,15 @@
 Return-Path: <daniel.ng1234@gmail.com>
 Received: from mail-gx0-f25.google.com (mail-gx0-f25.google.com
-	[209.85.217.25]) by ozlabs.org (Postfix) with ESMTP id 42BE8DE136
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 12:41:15 +1100 (EST)
-Received: by gxk6 with SMTP id 6so107782gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 17:41:14 -0800 (PST)
+	[209.85.217.25]) by ozlabs.org (Postfix) with ESMTP id 4829FDE2F8
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 14:40:04 +1100 (EST)
+Received: by gxk6 with SMTP id 6so128661gxk.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 19:40:03 -0800 (PST)
 MIME-Version: 1.0
-Date: Fri, 16 Jan 2009 12:22:39 +1100
-Message-ID: <547eba1b0901151722p4a6afce4nc769fcb8cff82ea6@mail.gmail.com>
-Subject: Re: Device Tree setup for 8272-based board
+In-Reply-To: <547eba1b0901151722p4a6afce4nc769fcb8cff82ea6@mail.gmail.com>
+References: <547eba1b0901151722p4a6afce4nc769fcb8cff82ea6@mail.gmail.com>
+Date: Fri, 16 Jan 2009 14:40:03 +1100
+Message-ID: <547eba1b0901151940x588ead2bk52342ea1cecc6db0@mail.gmail.com>
+Subject: Device Tree setup for 8272-based board
 From: Daniel Ng <daniel.ng1234@gmail.com>
 To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
@@ -60,7 +62,8 @@ pings to the board fail.
 What sort of debug output is available to me at this point?
 
 I've tried various values for 'console' but I'm quite certain 'ttyCPM0' is the
-one to use (just a reminder that it is a PPC-8272-based board).
+one to use as this is what I was using when it was working with Linux 2.6.14
+and an old (pre-Device Tree) version of u-boot.
 
 I've even tried enabling the 'Early serial debugging for Freescale CPM-based
 serial ports' option in the Kernel config. Unfortunately this doesn't result
@@ -155,6 +158,7 @@ linux,stdout-path = "/soc/cpm/serial@11a00";
 };
 
 
+NB: I'm using cuboot-pq2.c
 
 Cheers,
 Daniel
