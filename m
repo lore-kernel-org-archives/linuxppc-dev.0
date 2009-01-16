@@ -1,25 +1,19 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 63543DE2F3
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 01:46:05 +1100 (EST)
-Date: Fri, 16 Jan 2009 17:46:03 +0300
-From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <1675190812.20090116174603@emcraft.com>
-To: Cheng Renquan <crquan@gmail.com>
-Subject: Re[2]: [PATCH 07/11] md: rewrite handle_stripe_dirtying6 in
-	asynchronous way
-In-Reply-To: <91b13c310901151707x48b1ef8av1609c3a622c19565@mail.gmail.com>
-References: <200812090057.33890.yur@emcraft.com>
-	<e9c3a7c20901151351p5e1b4641h1b4c8ba1ae5dcc73@mail.gmail.com>
-	<e9c3a7c20901151421o69522f71rfe6d7d9621de47eb@mail.gmail.com>
-	<91b13c310901151707x48b1ef8av1609c3a622c19565@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: wd@denx.de, dzu@denx.de, linux-raid@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, yanok@emcraft.com,
-	Dan Williams <dan.j.williams@intel.com>
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id A1F90DE259
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 01:54:03 +1100 (EST)
+In-Reply-To: <200901130149.43588.yur@emcraft.com>
+References: <200901130149.43588.yur@emcraft.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f341f40f2bfa0818be32a86da62ada9b@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH][v4] powerpc 44x: support for 256KB PAGE_SIZE
+Date: Fri, 16 Jan 2009 09:00:33 -0600
+To: Yuri Tikhonov <yur@emcraft.com>
+Cc: wd@denx.de, dzu@denx.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	hugh@veritas.com, akpm@linux-foundation.org, prodyuth@gmail.com,
+	yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,52 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=0D=0AHello Cheng,
+On Jan 12, 2009, at 4:49 PM, Yuri Tikhonov wrote:
 
-On Friday, January 16, 2009 you wrote:
+> This patch adds support for 256KB pages on ppc44x-based boards.
 
-> Ack, could you please make the changelog more descriptive?
-> and or add some of your benchmark results?
+Another day, another comment.  The motivation for reply was the second 
+comment below.
 
- Of course. We did benchmarking using the Xdd tool like follows:
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 84b8613..18f33ef 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -443,6 +443,19 @@ config PPC_64K_PAGES
+>  	bool "64k page size" if 44x || PPC_STD_MMU_64
+>  	select PPC_HAS_HASH_64K if PPC_STD_MMU_64
+>
+> +config PPC_256K_PAGES
+> +	bool "256k page size" if 44x
+> +	depends on !STDBINUTILS && !SHMEM
 
-# xdd -op write -kbytes $kbytes -reqsize $reqsize -dio-passes 2 =E2=80=93ve=
-rbose -target $target_device
+depends on !STDBINUTILS && (!SHMEM || BROKEN)
 
- where
+to identify that it is not fundamentally incompatable just not a chance 
+of working without other changes.
 
-$kbytes =3D data disks * size of disk
-$reqsize=3D data disks * chunk size
-$target_device =3D /dev/md0
+> +	help
+> +	  Make the page size 256k.
+> +
+> +	  As the ELF standard only requires alignment to support page
+> +	  sizes up to 64k, you will need to compile all of your user
+> +	  space applications with a non-standard binutils settings
+> +	  (see the STDBINUTILS description for details).
+> +
+> +	  Say N unless you know what you are doing.
+> +
+>  endchoice
+>
+>  config FORCE_MAX_ZONEORDER
 
- This way we did write of full array size, and thus achieved the=20
-maximum performance.
 
- The test cases were RAID-6 built on the top of 14 S-ATA drives=20
-connected to 2 LSI cards (7+7) inserted into the 800 MHz Katmai board=20
-(based on ppc440spe) equipped with 4GB of 800 MHz DRAM .
+> diff --git a/arch/powerpc/platforms/44x/Kconfig 
+> b/arch/powerpc/platforms/44x/Kconfig
+> index 3496bc0..d02e8c8 100644
+> --- a/arch/powerpc/platforms/44x/Kconfig
+> +++ b/arch/powerpc/platforms/44x/Kconfig
+> @@ -214,6 +214,18 @@ config 440SPe
+>  	bool
+>  	select IBM_NEW_EMAC_EMAC4
+>
+> +config STDBINUTILS
+> +	bool "Using standard binutils settings"
+> +	depends on 44x
+> +	default y
 
- Here are the results (Psw - write throughput with s/w RAID-6; Phw -=20
-write throughput with the h/w accelerated RAID-6):
 
- PAGE_SIZE=3D4KB, chunk=3D64/128/256 KB
-        Psw =3D 71/72/74 MBps
-        Phw =3D 128/136/139 MBps
+I think this should be
 
- PAGE_SIZE=3D16KB, chunk=3D256/512/1024 KB
-        Psw =3D 81/81/82 MBps
-        Phw =3D 205/244/239 MBps
+config STDBINUTILS
+	bool "Using standard binutils settings" if 44x
+	default y
 
- PAGE_SIZE=3D64KB, chunk=3D1024/2048/4096 KB
-        Psw =3D 84/84/85 MBps
-        Phw =3D 258/253/258 MBps
+that way we imply that all powerpc users are using the standard 
+binutils instead of only those using a 44x platform.  We still get the 
+intended effect of asking the user only on 44x.
 
- PAGE_SIZE=3D256KB, chunk=3D4096/8192/16384 KB
-        Psw =3D 81/83/83 MBps
-        Phw =3D 288/275/274 MBps
+I haven't looked at the resulting question or config order to see if it 
+makes sense to leave it here or put it closer to the page size.
 
- Regards, Yuri
 
- --
- Yuri Tikhonov, Senior Software Engineer
- Emcraft Systems, www.emcraft.com
+> +	help
+> +	  Turning this option off allows you to select 256KB PAGE_SIZE on 
+> 44x.
+> +	  Note, that kernel will be able to run only those applications,
+> +	  which had been compiled using binutils later than 2.17.50.0.3 with
+> +	  '-zmax-page-size' set to 256K (the default is 64K). Or, if using
+> +	  the older binutils, you can patch them with a trivial patch, which
+> +	  changes the ELF_MAXPAGESIZE definition from 0x10000 to 0x40000.
+> +
+>  config 460EX
+>  	bool
+>  	select PPC_FPU
+> -- 
+> 1.6.0.6
+
+milton
