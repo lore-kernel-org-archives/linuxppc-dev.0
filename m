@@ -1,18 +1,19 @@
-Return-Path: <daniel.ng1234@gmail.com>
-Received: from mail-gx0-f25.google.com (mail-gx0-f25.google.com
-	[209.85.217.25]) by ozlabs.org (Postfix) with ESMTP id 4829FDE2F8
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 14:40:04 +1100 (EST)
-Received: by gxk6 with SMTP id 6so128661gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jan 2009 19:40:03 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <547eba1b0901151722p4a6afce4nc769fcb8cff82ea6@mail.gmail.com>
-References: <547eba1b0901151722p4a6afce4nc769fcb8cff82ea6@mail.gmail.com>
-Date: Fri, 16 Jan 2009 14:40:03 +1100
-Message-ID: <547eba1b0901151940x588ead2bk52342ea1cecc6db0@mail.gmail.com>
-Subject: Device Tree setup for 8272-based board
-From: Daniel Ng <daniel.ng1234@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9608DDE37E
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 16:27:45 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 16:27:32 +1100
+Message-Id: <1232083652.22571.138.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,143 +23,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
+Hi Linus !
 
-> Scott Wood freescale.com> writes:
-> > Yes, if u-boot is providing junk, then you'll probably want to hack up
-> > the wrapper to ignore it. Or just upgrade u-boot to one that works.
+Here are mostly a bunch of fixups for the u64 change in the PS3 code which
+was pretty bad in that area. For bits out of arch/powerpc, we generally have
+either subsystem maintainer explicit ack or verbal ack via email or irc. Only
+davem didn't have a chance to reply yet so I left the drivers/net patch out.
 
-So, I've gotten the latest u-boot installed and working. Here's my boot
-sequence-
-
-## Booting kernel from Legacy Image at 00200000 ...
-Image Name: Linux-2.6.27-xxx
-Image Type: PowerPC Linux Kernel Image (gzip compressed)
-Data Size: 1337540 Bytes = 1.3 MB
-Load Address: 00400000
-Entry Point: 00400b8c
-Verifying Checksum ... OK
-Uncompressing Kernel Image ... OK
-Memory <- <0x0 0x2000000> (32MB)
-CPU clock-frequency <- 0x13ab6680 (330MHz)
-CPU timebase-frequency <- 0xfbc520 (17MHz)
-CPU bus-frequency <- 0x3ef1480 (66MHz)
-
-zImage starting: loaded at 0x00400000 (sp: 0x01f789c8)
-Allocating 0x2c96d0 bytes for kernel ...
-gunzipping (0x00000000 <- 0x0040c000:0x006c6e28)...done 0x2a819c bytes
-
-Linux/PowerPC load: root=/dev/mtdblock4 rw rootfstype=cramfs
-mtdparts=flash:256K(ub
-oot),128K(env1),128K(env2),1536K(linux1),6144K(root1),4096K(app1),1536K
-(linux2),614
-4K(root2),4096K(app2),1536K(usr),-(usb) panic=1 console=ttyCPM0 mem=32M usbid=1
-Finalizing device tree... flat tree at 0x40ad90
-
-
--after that everything seems to freeze. There is no more console output, and
-pings to the board fail.
-
-What sort of debug output is available to me at this point?
-
-I've tried various values for 'console' but I'm quite certain 'ttyCPM0' is the
-one to use as this is what I was using when it was working with Linux 2.6.14
-and an old (pre-Device Tree) version of u-boot.
-
-I've even tried enabling the 'Early serial debugging for Freescale CPM-based
-serial ports' option in the Kernel config. Unfortunately this doesn't result
-in any noticeable difference.
-
-Can you explain why my board is freezing?
-
-Here is my Device Tree. It is a stripped-down version of mpc8272ads.dts (PCI
-has been removed among many others). I have tried to minimise the tree just to
-keep things simple.
-
-Perhaps I removed something I shouldn't have?-
-
-/dts-v1/;
-
-/ {
-model = "HPXRED";
-compatible = "fsl,mpc8272ads";
-#address-cells = <1>;
-#size-cells = <1>;
-
-cpus {
-#address-cells = <1>;
-#size-cells = <0>;
-
-PowerPC,8272@0 {
-device_type = "cpu";
-reg = <0x0>;
-d-cache-line-size = <32>;
-i-cache-line-size = <32>;
-d-cache-size = <16384>;
-i-cache-size = <16384>;
-timebase-frequency = <0>;
-bus-frequency = <0>;
-clock-frequency = <0>;
-};
-};
-soc@f0000000 {
-#address-cells = <1>;
-#size-cells = <1>;
-device_type = "soc";
-compatible = "fsl,mpc8272", "fsl,pq2-soc";
-ranges = <0x0 0xf0000000 0x53000>;
-
-// Temporary -- will go away once kernel uses ranges for
-get_immrbase().
-reg = <0xf0000000 0x53000>;
-
-cpm@119c0 {
-#address-cells = <1>;
-#size-cells = <1>;
-compatible = "fsl,mpc8272-cpm", "fsl,cpm2";
-reg = <0x119c0 0x30>;
-ranges;
-
-muram@0 {
-#address-cells = <1>;
-#size-cells = <1>;
-ranges = <0x0 0x0 0x10000>;
-
-data@0 {
-compatible = "fsl,cpm-muram-data";
-reg = <0x0 0x2000 0x9800 0x800>;
-};
-};
-
-serial@11a00 {
-device_type = "serial";
-compatible = "fsl,mpc8272-scc-uart",
-"fsl,cpm2-scc-uart";
-reg = <0x11a00 0x20 0x8000 0x100>;
-interrupts = <40 8>;
-interrupt-parent = <&PIC>;
-fsl,cpm-brg = <1>;
-fsl,cpm-command = <0x800000>;
-};
-
-};
-
-PIC: interrupt-controller@10c00 {
-#interrupt-cells = <2>;
-interrupt-controller;
-reg = <0x10c00 0x80>;
-compatible = "fsl,mpc8272-pic", "fsl,cpm2-pic";
-};
-
-};
-
-chosen {
-linux,stdout-path = "/soc/cpm/serial@11a00";
-};
-};
-
-
-NB: I'm using cuboot-pq2.c
+The rest is a 3 bug fixes and one little one liner that got lost in the
+noise adding an UART type to our OF driver wrapper.
 
 Cheers,
-Daniel
+Ben.
+
+The following changes since commit 7cb36b6ccdca03bd87e8faca7fd920643dd1aec7:
+  Linus Torvalds (1):
+        Merge branch 'sched-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Dave Kleikamp (1):
+      powerpc: is_hugepage_only_range() must account for both 4kB and 64kB slices
+
+Hendrik Brueckner (1):
+      hvc_console: Remove tty->low_latency
+
+Matthias Fuchs (1):
+      serial: Add 16850 uart type support to OF uart driver
+
+Michael Neuling (1):
+      powerpc: Get the number of SLBs from "slb-size" property
+
+Stephen Rothwell (13):
+      powerpc: Cleanup from l64 to ll64 change drivers/scsi
+      powerpc/ps3: set_dabr() takes an unsigned long
+      powerpc/ps3: Use dma_addr_t down through the stack
+      powerpc/ps3: The lv1_ routines have u64 parameters
+      powerpc/ps3: clear_bit()/set_bit() operate on unsigned longs
+      powerpc/ps3: ps3_repository_read_mm_info() takes u64 * arguments
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion arch/powerpc
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/block
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/char
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion sound/ppc
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/ps3
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/scsi
+      powerpc/ps3: printing fixups for l64 to ll64 conversion drivers/video
+
+ arch/powerpc/include/asm/ps3.h           |    8 +-
+ arch/powerpc/kernel/prom.c               |    5 ++
+ arch/powerpc/mm/slice.c                  |   11 +++-
+ arch/powerpc/platforms/ps3/device-init.c |   26 ++++----
+ arch/powerpc/platforms/ps3/htab.c        |    2 +-
+ arch/powerpc/platforms/ps3/interrupt.c   |   28 +++++----
+ arch/powerpc/platforms/ps3/mm.c          |   97 ++++++++++++++++--------------
+ arch/powerpc/platforms/ps3/os-area.c     |    2 +-
+ arch/powerpc/platforms/ps3/repository.c  |   22 ++++----
+ arch/powerpc/platforms/ps3/setup.c       |    2 +-
+ arch/powerpc/platforms/ps3/spu.c         |   12 +++-
+ arch/powerpc/platforms/ps3/system-bus.c  |   14 +++--
+ drivers/block/ps3disk.c                  |   18 +++---
+ drivers/char/hvc_console.c               |    2 -
+ drivers/char/ps3flash.c                  |   18 +++---
+ drivers/ps3/ps3-lpm.c                    |   16 +++---
+ drivers/ps3/ps3-vuart.c                  |   32 +++++-----
+ drivers/ps3/ps3stor_lib.c                |   14 ++--
+ drivers/scsi/ibmvscsi/ibmvfc.c           |   14 ++--
+ drivers/scsi/ibmvscsi/ibmvfc.h           |    6 +-
+ drivers/scsi/ps3rom.c                    |    6 +-
+ drivers/serial/of_serial.c               |    1 +
+ drivers/video/ps3fb.c                    |    4 +-
+ sound/ppc/snd_ps3.c                      |    4 +-
+ 24 files changed, 196 insertions(+), 168 deletions(-)
