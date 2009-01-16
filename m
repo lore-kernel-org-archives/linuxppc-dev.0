@@ -1,9 +1,9 @@
 Return-Path: <jhautbois@gmail.com>
-Received: from mail-ew0-f20.google.com (mail-ew0-f20.google.com
-	[209.85.219.20]) by ozlabs.org (Postfix) with ESMTP id 385C2DE2FB
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 04:40:44 +1100 (EST)
-Received: by ewy13 with SMTP id 13so2424368ewy.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 09:40:42 -0800 (PST)
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
+	by ozlabs.org (Postfix) with ESMTP id 76A38DDFB5
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 04:44:54 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so474582nfd.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 09:44:51 -0800 (PST)
 MIME-Version: 1.0
 In-Reply-To: <20090116172903.GA722@ld0162-tx32.am.freescale.net>
 References: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>
@@ -13,8 +13,8 @@ References: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>
 	<8cad0aa0901150706u72538941rbc22655d5a8905ea@mail.gmail.com>
 	<8cad0aa0901160406l3db9c025ubdcac40b4b464d23@mail.gmail.com>
 	<20090116172903.GA722@ld0162-tx32.am.freescale.net>
-Date: Fri, 16 Jan 2009 18:40:42 +0100
-Message-ID: <8cad0aa0901160940icf719b5pef1214270141ea@mail.gmail.com>
+Date: Fri, 16 Jan 2009 18:44:51 +0100
+Message-ID: <8cad0aa0901160944l48bd0e99wa13f23907838376d@mail.gmail.com>
 Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
 From: Jean-Michel Hautbois <jhautbois@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
@@ -32,7 +32,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 2009/1/16 Scott Wood <scottwood@freescale.com>:
 > On Fri, Jan 16, 2009 at 01:06:06PM +0100, Jean-Michel Hautbois wrote:
 >> Could it be a problem in my bootargs command line ?
->> I mean, maybe the console=ttyS0,11500 wrong ?
+>> I mean, maybe the console=3DttyS0,11500 wrong ?
 >> Because my "Run" LED is on...
 >>
 >> I tried ttyS0, ttyCPM0, tty0.
@@ -45,7 +45,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > -Scott
 >
 
-No, I haven't tried it... How can I do it :) ?
-/chosen/linux,stdout-path is set to  "/soc/cpm/serial@11a00"
+Well, I have to say, yes, I tried:
+CONFIG_PPC_EARLY_DEBUG_CPM=3Dy
+CONFIG_PPC_EARLY_DEBUG_CPM_ADDR=3D0xf0001ff8
+
+I have also tried without specifying the console outp=FBt:
+setenv bootargs root=3D/dev/ram rw
+
+Nothing more...
 
 JM
