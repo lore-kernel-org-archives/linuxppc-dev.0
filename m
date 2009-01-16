@@ -2,22 +2,24 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7757ADDFE0
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 01:24:06 +1100 (EST)
-Date: Fri, 16 Jan 2009 17:24:03 +0300
+	by ozlabs.org (Postfix) with ESMTPS id 63543DE2F3
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 01:46:05 +1100 (EST)
+Date: Fri, 16 Jan 2009 17:46:03 +0300
 From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <1141743016.20090116172403@emcraft.com>
-To: Dan Williams <dan.j.williams@intel.com>
+Message-ID: <1675190812.20090116174603@emcraft.com>
+To: Cheng Renquan <crquan@gmail.com>
 Subject: Re[2]: [PATCH 07/11] md: rewrite handle_stripe_dirtying6 in
 	asynchronous way
-In-Reply-To: <e9c3a7c20901151421o69522f71rfe6d7d9621de47eb@mail.gmail.com>
+In-Reply-To: <91b13c310901151707x48b1ef8av1609c3a622c19565@mail.gmail.com>
 References: <200812090057.33890.yur@emcraft.com>
 	<e9c3a7c20901151351p5e1b4641h1b4c8ba1ae5dcc73@mail.gmail.com>
 	<e9c3a7c20901151421o69522f71rfe6d7d9621de47eb@mail.gmail.com>
+	<91b13c310901151707x48b1ef8av1609c3a622c19565@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
-	dzu@denx.de, yanok@emcraft.com
+Content-Type: text/plain; charset=utf-8
+Cc: wd@denx.de, dzu@denx.de, linux-raid@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, yanok@emcraft.com,
+	Dan Williams <dan.j.williams@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,49 +29,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+=0D=0AHello Cheng,
+
 On Friday, January 16, 2009 you wrote:
 
-> On Thu, Jan 15, 2009 at 2:51 PM, Dan Williams <dan.j.williams@intel.com> =
-wrote:
->> On Mon, Dec 8, 2008 at 2:57 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
->> What's the reasoning behind changing the logic here, i.e. removing
->> must_compute and such?  I'd feel more comfortable seeing copy and
->> paste where possible with cleanups separated out into their own patch.
->>
+> Ack, could you please make the changelog more descriptive?
+> and or add some of your benchmark results?
 
-> Ok, I now see why this change was made.  Please make this changelog
-> more descriptive than "Rewrite handle_stripe_dirtying6 function to
-> work asynchronously."
+ Of course. We did benchmarking using the Xdd tool like follows:
 
- Sure, how about the following:
+# xdd -op write -kbytes $kbytes -reqsize $reqsize -dio-passes 2 =E2=80=93ve=
+rbose -target $target_device
 
-"
+ where
 
- md: rewrite handle_stripe_dirtying6 in asynchronous way
+$kbytes =3D data disks * size of disk
+$reqsize=3D data disks * chunk size
+$target_device =3D /dev/md0
 
- Processing stripe dirtying in asynchronous way requires some changes=20
-to the handle_stripe_dirtying6() algorithm.
+ This way we did write of full array size, and thus achieved the=20
+maximum performance.
 
- In the synchronous implementation of the stripe dirtying we processed=20
-dirtying of a degraded stripe (with partially changed strip(s) located=20
-on the failed drive(s)) inside one handle_stripe_dirtying6() call:
-- we computed the missed strips from the old parities, and thus got=20
-the fully up-to-date stripe, then
-- we did reconstruction using the new data to write.
+ The test cases were RAID-6 built on the top of 14 S-ATA drives=20
+connected to 2 LSI cards (7+7) inserted into the 800 MHz Katmai board=20
+(based on ppc440spe) equipped with 4GB of 800 MHz DRAM .
 
- In the asynchronous case of handle_stripe_dirtying6() we don't=20
-process anything right inside this function (since we under the lock),=20
-but only schedule the necessary operations with flags. Thus, if=20
-handle_stripe_dirtying6() is performed on the top of a degraded array=20
-we should schedule the reconstruction operation when the failed strips=20
-are marked (by previously called fetch_block6()) as to be computed=20
-(with the R5_Wantcompute flag), and all the other strips of the stripe=20
-are UPTODATE. The schedule_reconstruction() function will set the=20
-STRIPE_OP_POSTXOR flag [for new parity calculation], which is then=20
-handled in raid_run_ops() after the STRIPE_OP_COMPUTE_BLK one [which=20
-causes computing of the data missed].
+ Here are the results (Psw - write throughput with s/w RAID-6; Phw -=20
+write throughput with the h/w accelerated RAID-6):
 
-"
+ PAGE_SIZE=3D4KB, chunk=3D64/128/256 KB
+        Psw =3D 71/72/74 MBps
+        Phw =3D 128/136/139 MBps
+
+ PAGE_SIZE=3D16KB, chunk=3D256/512/1024 KB
+        Psw =3D 81/81/82 MBps
+        Phw =3D 205/244/239 MBps
+
+ PAGE_SIZE=3D64KB, chunk=3D1024/2048/4096 KB
+        Psw =3D 84/84/85 MBps
+        Phw =3D 258/253/258 MBps
+
+ PAGE_SIZE=3D256KB, chunk=3D4096/8192/16384 KB
+        Psw =3D 81/83/83 MBps
+        Phw =3D 288/275/274 MBps
 
  Regards, Yuri
 
