@@ -1,28 +1,24 @@
-Return-Path: <jhautbois@gmail.com>
-Received: from mail-ew0-f20.google.com (mail-ew0-f20.google.com
-	[209.85.219.20]) by ozlabs.org (Postfix) with ESMTP id 88E72DDEE8
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 05:23:30 +1100 (EST)
-Received: by ewy13 with SMTP id 13so2453151ewy.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 10:23:28 -0800 (PST)
+Return-Path: <dan.j.williams@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id A62ABDE161
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 05:28:14 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m33so1356867wag.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 10:28:13 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <4970CBA9.60809@freescale.com>
-References: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>
-	<496F318D.6010302@denx.de>
-	<8cad0aa0901150510o7a8146f1m2045e252c5e1cf24@mail.gmail.com>
-	<496F4760.1010007@denx.de>
-	<8cad0aa0901150706u72538941rbc22655d5a8905ea@mail.gmail.com>
-	<8cad0aa0901160406l3db9c025ubdcac40b4b464d23@mail.gmail.com>
-	<20090116172903.GA722@ld0162-tx32.am.freescale.net>
-	<8cad0aa0901160944l48bd0e99wa13f23907838376d@mail.gmail.com>
-	<8cad0aa0901160953te6c7d1cg3a4df7de7da7d182@mail.gmail.com>
-	<4970CBA9.60809@freescale.com>
-Date: Fri, 16 Jan 2009 19:23:28 +0100
-Message-ID: <8cad0aa0901161023u382e3973w917e8fb6da8b7207@mail.gmail.com>
-Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
-From: Jean-Michel Hautbois <jhautbois@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <1328000796.20090116144156@emcraft.com>
+References: <200901130343.06895.yur@emcraft.com>
+	<e9c3a7c20901141656g2fec1802vcecc4ae433838bb3@mail.gmail.com>
+	<1328000796.20090116144156@emcraft.com>
+Date: Fri, 16 Jan 2009 11:28:04 -0700
+Message-ID: <e9c3a7c20901161028v3320b14ay68df8360fff2b8a5@mail.gmail.com>
+Subject: Re: Re[2]: [PATCH 02/11][v3] async_tx: add support for asynchronous
+	GF multiplication
+From: Dan Williams <dan.j.williams@intel.com>
+To: Yuri Tikhonov <yur@emcraft.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
+	dzu@denx.de, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,26 +28,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2009/1/16 Scott Wood <scottwood@freescale.com>:
-> Jean-Michel Hautbois wrote:
->>
->> OK, I just tried a make of my kernel (already compiled yesterday), and
->> it generated a cuImage.mpc8272ads kernel image (which it didn't do
->> yesterday).
->> I don't know why this image was generated, but I tried to reboot using
->> this one.
+On Fri, Jan 16, 2009 at 4:41 AM, Yuri Tikhonov <yur@emcraft.com> wrote:
+>> I don't think this will work as we will be mixing Q into the new P and
+>> P into the new Q.  In order to support (src_cnt > device->max_pq) we
+>> need to explicitly tell the driver that the operation is being
+>> continued (DMA_PREP_CONTINUE) and to apply different coeffeicients to
+>> P and Q to cancel the effect of including them as sources.
 >
-> Use uImage if you are providing a device tree from u-boot.  cuImage is for
-> older u-boots that don't support this, though you could still try using it
-> on a modern u-boot with a one- or two-argument bootm command to try to
-> isolate the problem.
+>  With DMA_PREP_ZERO_P/Q approach, the Q isn't mixed into new P, and P
+> isn't mixed into new Q. For your example of max_pq=4:
 >
-> -Scott
+>  p, q = PQ(src0, src1, src2, src3, src4, COEF({01}, {02}, {04}, {08}, {10}))
+>
+>  with the current implementation will be split into:
+>
+>  p, q = PQ(src0, src1, src2, src3, COEF({01}, {02}, {04}, {08})
+>  p`,q` = PQ(src4, COEF({10}))
+>
+>  which will result to the following:
+>
+>  p = ((dma_flags & DMA_PREP_ZERO_P) ? 0 : old_p) + src0 + src1 + src2 + src3
+>  q = ((dma_flags & DMA_PREP_ZERO_Q) ? 0 : old_q) + {01}*src0 + {02}*src1 + {04}*src2 + {08}*src3
+>
+>  p` = p + src4
+>  q` = q + {10}*src4
 >
 
-Well it seems to be a (very) bad idea to use ucImage, because I cannot
-have my u-boot prompt after resetting my board...
-My LEDs are blinking (LD4 and LD 9) and my LD20 is off (when it should be on).
+Huh?  Does the ppc440spe engine have some notion of flagging a source
+as old_p/old_q?  Otherwise I do not see how the engine will not turn
+this into:
 
-I am blocked (without the prompt on my serial line !).
-JM
+p` = p + src4 + q
+q` = q + {10}*src4 + {x}*p
+
+I think you missed the fact that we have passed p and q back in as
+sources.  Unless we have multiple p destinations and multiple q
+destinations, or hardware support for continuations I do not see how
+you can guarantee this split.
+
+>  I'm afraid that the difference (13/4, 125/32) is very significant, so
+> getting rid of DMA_PREP_ZERO_P/Q will eat most of the improvement
+> which could be achieved with the current approach.
+
+Data corruption is a slightly higher cost :-).
+
+>
+>>  but at this point I do not see a cleaner alternatve for engines like iop13xx.
+>
+>  I can't find any description of iop13xx processors at Intel's
+> web-site, only 3xx:
+>
+> http://www.intel.com/design/iio/index.htm?iid=ipp_embed+embed_io
+>
+>  So, it's hard for me to do any suggestions. I just wonder - doesn't
+> iop13xx allow users to program destination addresses into the sources
+> fields of descriptors?
+
+Yes it does, but the engine does not know it is a destination.
+
+Take a look at page 496 of the following and tell me if you come to a
+different conclusion.
+http://download.intel.com/design/iio/docs/31503602.pdf
+
+Thanks,
+Dan
