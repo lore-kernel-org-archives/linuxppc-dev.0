@@ -1,22 +1,22 @@
-Return-Path: <jhautbois@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.188])
-	by ozlabs.org (Postfix) with ESMTP id DC726DE152
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 23:06:09 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id e27so435747nfd.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 04:06:06 -0800 (PST)
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 891A9DE361
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 23:13:23 +1100 (EST)
+Date: Fri, 16 Jan 2009 15:13:19 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <775016772.20090116151319@emcraft.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re[2]: [PATCH 11/11][v2] ppc440spe-adma: ADMA driver for PPC440SP(e)
+	systems
+In-Reply-To: <20090115022446.GA30657@oksana.dev.rtsoft.ru>
+References: <200901130343.56020.yur@emcraft.com>
+	<20090115022446.GA30657@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-In-Reply-To: <8cad0aa0901150706u72538941rbc22655d5a8905ea@mail.gmail.com>
-References: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>
-	<496F318D.6010302@denx.de>
-	<8cad0aa0901150510o7a8146f1m2045e252c5e1cf24@mail.gmail.com>
-	<496F4760.1010007@denx.de>
-	<8cad0aa0901150706u72538941rbc22655d5a8905ea@mail.gmail.com>
-Date: Fri, 16 Jan 2009 13:06:06 +0100
-Message-ID: <8cad0aa0901160406l3db9c025ubdcac40b4b464d23@mail.gmail.com>
-Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
-From: Jean-Michel Hautbois <jhautbois@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=windows-1251
+Cc: wd@denx.de, dzu@denx.de, linux-raid@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, yanok@emcraft.com, dan.j.williams@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +26,174 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> try to fix "ft_cpu_setup()" in your u-boot source for mpc8272ads
->> and use "PowerPC,8272@0" as cpu_path instead of "cpu@0".
->>
->> Best regards,
->> Anatolij
->
-I am currently going until this step:
+=0D=0A Hello Anton,
 
-## Booting kernel from Legacy Image at 00400000 ...
-   Image Name:   Linux-2.6.29-rc1-01197-g5a7b6e7-
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1505515 Bytes =  1.4 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-## Loading init Ramdisk from Legacy Image at ff980000 ...
-   Image Name:   Simple Embedded Linux Framework
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    1730966 Bytes =  1.7 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-## Flattened Device Tree blob at 02000000
-   Booting using the fdt blob at 0x2000000
-   Uncompressing Kernel Image ... OK
-   Loading Ramdisk to 039d7000, end 03b7d996 ... OK
-   Loading Device Tree to 007fb000, end 007ff159 ... OK
+ Thanks for review. Please note the general note I made in "Re[2]:=20
+[PATCH 11/11][v2] ppc440spe-adma: ADMA driver for PPC440SP(e)=20
+systems".
 
+ All your comments make sense, so we'll try to address these in the=20
+next version of the driver. Some comments below.
 
-Could it be a problem in my bootargs command line ?
-I mean, maybe the console=ttyS0,11500 wrong ?
-Because my "Run" LED is on...
+On Thursday, January 15, 2009 you wrote:
 
-I tried ttyS0, ttyCPM0, tty0.
-And I don't have any "Starting kernel..." message.
+> Hello Yuri,
 
-Thx in advance.
-Best Regards,
-JM
+> On Tue, Jan 13, 2009 at 03:43:55AM +0300, Yuri Tikhonov wrote:
+>> Adds the platform device definitions and the architecture specific suppo=
+rt
+>> routines for the ppc440spe adma driver.
+>>=20
+>> Any board equipped with PPC440SP(e) controller may utilize this driver.
+>>=20
+>> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+>> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+>> ---
+
+> Quite complex and interesting driver, I must say.
+> Have you thought about splitting ppc440spe-adma.c into multiple
+> files, btw?
+
+ Admittedly, no. But I guess this makes sense. The driver supports two=20
+different types of DMA devices of ppc440spe: DMA0,1 and DMA2[XOR=20
+engine]. So, we could split the driver at least in two, which would=20
+definitely simplified the code.=20
+
+> A few comments down below...
+
+> [...]
+>> +typedef struct ppc440spe_adma_device {
+
+> Please avoid typedefs.
+
+ OK.
+
+> [...]
+>> +/*
+>> + * Descriptor of allocated CDB
+>> + */
+>> +typedef struct {
+>> +     dma_cdb_t               *vaddr; /* virtual address of CDB */
+>> +     dma_addr_t              paddr;  /* physical address of CDB */
+>> +     /*
+>> +      * Additional fields
+>> +      */
+>> +     struct list_head        link;   /* link in processing list */
+>> +     u32                     status; /* status of the CDB */
+>> +     /* status bits:  */
+>> +     #define DMA_CDB_DONE    (1<<0)  /* CDB processing competed */
+>> +     #define DMA_CDB_CANCEL  (1<<1)  /* waiting thread was interrupted =
+*/
+>> +} dma_cdbd_t;
+
+> It seems there are no users of this struct.
+
+ Indeed. This is an useless inheritance of some old version of the=20
+driver. Will remove this in the next patch.
+
+[..]
+
+>> +/**
+>> + * ppc440spe_desc_init_dma01pq - initialize the descriptors for PQ oper=
+ation
+>> + * qith DMA0/1
+>> + */
+>> +static inline void ppc440spe_desc_init_dma01pq(ppc440spe_desc_t *desc,
+>> +             int dst_cnt, int src_cnt, unsigned long flags,
+>> +             unsigned long op)
+>> +{
+
+> Way to big for inline. The same for all the inlines.
+
+> Btw, ppc_async_tx_find_best_channel() looks too big for inline
+> and also too big to be in a .h file.
+
+ OK, will be moved to the appropriate .c.
+
+[..]
+
+> [...]
+>> +static int ppc440spe_test_raid6 (ppc440spe_ch_t *chan)
+>> +{
+>> +     ppc440spe_desc_t *sw_desc, *iter;
+>> +     struct page *pg;
+>> +     char *a;
+>> +     dma_addr_t dma_addr, addrs[2];
+>> +     unsigned long op =3D 0;
+>> +     int rval =3D 0;
+>> +
+>> +     /*FIXME*/
+
+> ?
+
+>> +
+>> +     set_bit(PPC440SPE_DESC_WXOR, &op);
+>> +
+>> +     pg =3D alloc_page(GFP_KERNEL);
+>> +     if (!pg)
+>> +             return -ENOMEM;
+>> +
+
+>> +
+>> +/**
+>> + * ppc440spe_adma_probe - probe the asynch device
+>> + */
+>> +static int __devinit ppc440spe_adma_probe(struct platform_device *pdev)
+>> +{
+>> +     struct resource *res;
+
+> Why is this a platform driver? What's the point of describing
+> DMA nodes in the device tree w/o actually using them (don't count
+> interrupts)? There are a lot of hard-coded addresses in the code...
+> :-/
+
+> And arch/powerpc/platforms/44x/ppc440spe_dma_engines.c file
+> reminds me arch/ppc-style bindings. ;-)
+
+ Right. This driver is a not-completed port from the arch/ppc branch.
+
+>> +     int ret=3D0, irq1, irq2, initcode =3D PPC_ADMA_INIT_OK;
+>> +     void *regs;
+>> +     ppc440spe_dev_t *adev;
+>> +     ppc440spe_ch_t *chan;
+>> +     ppc440spe_aplat_t *plat_data;
+>> +     struct ppc_dma_chan_ref *ref;
+>> +     struct device_node *dp;
+>> +     char s[10];
+>> +
+
+> [...]
+>> +static int __init ppc440spe_adma_init (void)
+>> +{
+>> +     int rval, i;
+>> +     struct proc_dir_entry *p;
+>> +
+>> +     for (i =3D 0; i < PPC440SPE_ADMA_ENGINES_NUM; i++)
+>> +             ppc_adma_devices[i] =3D -1;
+>> +
+>> +     rval =3D platform_driver_register(&ppc440spe_adma_driver);
+>> +
+>> +     if (rval =3D=3D 0) {
+>> +             /* Create /proc entries */
+>> +             ppc440spe_proot =3D proc_mkdir(PPC440SPE_R6_PROC_ROOT, NUL=
+L);
+>> +             if (!ppc440spe_proot) {
+>> +                     printk(KERN_ERR "%s: failed to create %s proc "
+>> +                         "directory\n",__func__,PPC440SPE_R6_PROC_ROOT);
+>> +                     /* User will not be able to enable h/w RAID-6 */
+>> +                     return rval;
+>> +             }
+
+> /proc? Why /proc? The driver has nothing to do with Linux VM subsystem
+> or processes. I think /sys/ interface would suit better for this, no?
+> Either way, userspace interfaces should be documented somehow
+> (probably Documentation/ABI/, or at least some comments in the
+> code).
+
+ Agree, we'll fix this.
+
+ Regards, Yuri
+
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
