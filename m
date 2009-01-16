@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9608DDE37E
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 16:27:45 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 16 Jan 2009 16:27:32 +1100
-Message-Id: <1232083652.22571.138.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTPS id 40AE8474C7
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 20:03:59 +1100 (EST)
+Date: Fri, 16 Jan 2009 12:03:56 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <13156621.20090116120356@emcraft.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re[2]: [PATCH 11/11][v2] ppc440spe-adma: ADMA driver for PPC440SP(e)
+	systems
+In-Reply-To: <20090113022316.GA3628@yookeroo.seuss>
+References: <200901130343.56020.yur@emcraft.com>
+	<20090113022316.GA3628@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Cc: wd@denx.de, dzu@denx.de, linux-raid@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, yanok@emcraft.com, dan.j.williams@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,76 +26,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linus !
+=0D=0A Hello David,
 
-Here are mostly a bunch of fixups for the u64 change in the PS3 code which
-was pretty bad in that area. For bits out of arch/powerpc, we generally have
-either subsystem maintainer explicit ack or verbal ack via email or irc. Only
-davem didn't have a chance to reply yet so I left the drivers/net patch out.
+ Thanks a lot for review.
 
-The rest is a 3 bug fixes and one little one liner that got lost in the
-noise adding an UART type to our OF driver wrapper.
+ The general note to be made here is that the changes to the DTS file=20
+made by this patch are necessary for a ppc440spe ADMA driver, which is=20
+a not-completed arch/powerpc port from the arch/ppc branch, and which=20
+uses DT (well, incorrectly) just to get interrupts. Otherwise, it's=20
+just a platform device driver.
 
-Cheers,
-Ben.
+ We provided this ADMA driver just as the reference of driver, which=20
+implements the RAID-6 related low-level stuff. ppc440spe ADMA in its=20
+current state is far from ready for merging. We'll elaborate on its=20
+cleaning up then (surely, taking into account all the comments made=20
+from community). But, even now, the driver works, so we publish this=20
+so interested people could use and test it.
 
-The following changes since commit 7cb36b6ccdca03bd87e8faca7fd920643dd1aec7:
-  Linus Torvalds (1):
-        Merge branch 'sched-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+ Some comments mixed in below.
 
-are available in the git repository at:
+On Tuesday, January 13, 2009 you wrote:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+> On Tue, Jan 13, 2009 at 03:43:55AM +0300, Yuri Tikhonov wrote:
+>> Adds the platform device definitions and the architecture specific suppo=
+rt
+>> routines for the ppc440spe adma driver.
+>>=20
+>> Any board equipped with PPC440SP(e) controller may utilize this driver.
+>>=20
+>> diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/ka=
+tmai.dts
+>> index 077819b..f2f77c8 100644
+>> --- a/arch/powerpc/boot/dts/katmai.dts
+>> +++ b/arch/powerpc/boot/dts/katmai.dts
+>> @@ -16,7 +16,7 @@
+>> =20
+>>  / {
+>>       #address-cells =3D <2>;
+>> -     #size-cells =3D <1>;
+>> +     #size-cells =3D <2>;
 
-Dave Kleikamp (1):
-      powerpc: is_hugepage_only_range() must account for both 4kB and 64kB slices
+> You've changed the root level size-cells, but haven't updated the
+> sub-nodes (such as /memory) accordingly.
 
-Hendrik Brueckner (1):
-      hvc_console: Remove tty->low_latency
+ Thanks, we'll fix this in the next version of this patch.
 
-Matthias Fuchs (1):
-      serial: Add 16850 uart type support to OF uart driver
+>>       model =3D "amcc,katmai";
+>>       compatible =3D "amcc,katmai";
+>>       dcr-parent =3D <&{/cpus/cpu@0}>;
+>> @@ -392,6 +392,30 @@
+>>                               0x0 0x0 0x0 0x3 &UIC3 0xa 0x4 /* swizzled =
+int C */
+>>                               0x0 0x0 0x0 0x4 &UIC3 0xb 0x4 /* swizzled =
+int D */>;
+>>               };
+>> +             DMA0: dma0 {
 
-Michael Neuling (1):
-      powerpc: Get the number of SLBs from "slb-size" property
+> No 'compatible' property, which seems dubious.
 
-Stephen Rothwell (13):
-      powerpc: Cleanup from l64 to ll64 change drivers/scsi
-      powerpc/ps3: set_dabr() takes an unsigned long
-      powerpc/ps3: Use dma_addr_t down through the stack
-      powerpc/ps3: The lv1_ routines have u64 parameters
-      powerpc/ps3: clear_bit()/set_bit() operate on unsigned longs
-      powerpc/ps3: ps3_repository_read_mm_info() takes u64 * arguments
-      powerpc/ps3: Printing fixups for l64 to ll64 conversion arch/powerpc
-      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/block
-      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/char
-      powerpc/ps3: Printing fixups for l64 to ll64 conversion sound/ppc
-      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/ps3
-      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/scsi
-      powerpc/ps3: printing fixups for l64 to ll64 conversion drivers/video
+ OK, we'll fix.
 
- arch/powerpc/include/asm/ps3.h           |    8 +-
- arch/powerpc/kernel/prom.c               |    5 ++
- arch/powerpc/mm/slice.c                  |   11 +++-
- arch/powerpc/platforms/ps3/device-init.c |   26 ++++----
- arch/powerpc/platforms/ps3/htab.c        |    2 +-
- arch/powerpc/platforms/ps3/interrupt.c   |   28 +++++----
- arch/powerpc/platforms/ps3/mm.c          |   97 ++++++++++++++++--------------
- arch/powerpc/platforms/ps3/os-area.c     |    2 +-
- arch/powerpc/platforms/ps3/repository.c  |   22 ++++----
- arch/powerpc/platforms/ps3/setup.c       |    2 +-
- arch/powerpc/platforms/ps3/spu.c         |   12 +++-
- arch/powerpc/platforms/ps3/system-bus.c  |   14 +++--
- drivers/block/ps3disk.c                  |   18 +++---
- drivers/char/hvc_console.c               |    2 -
- drivers/char/ps3flash.c                  |   18 +++---
- drivers/ps3/ps3-lpm.c                    |   16 +++---
- drivers/ps3/ps3-vuart.c                  |   32 +++++-----
- drivers/ps3/ps3stor_lib.c                |   14 ++--
- drivers/scsi/ibmvscsi/ibmvfc.c           |   14 ++--
- drivers/scsi/ibmvscsi/ibmvfc.h           |    6 +-
- drivers/scsi/ps3rom.c                    |    6 +-
- drivers/serial/of_serial.c               |    1 +
- drivers/video/ps3fb.c                    |    4 +-
- sound/ppc/snd_ps3.c                      |    4 +-
- 24 files changed, 196 insertions(+), 168 deletions(-)
+>> +                     interrupt-parent =3D <&DMA0>;
+>> +                     interrupts =3D <0 1>;
+>> +                     #interrupt-cells =3D <1>;
+>> +                     #address-cells =3D <0>;
+>> +                     #size-cells =3D <0>;
+>> +                     interrupt-map =3D <
+>> +                             0 &UIC0 0x14 4
+>> +                             1 &UIC1 0x16 4>;
+>> +             };
+>> +             DMA1: dma1 {
+>> +                     interrupt-parent =3D <&DMA1>;
+>> +                     interrupts =3D <0 1>;
+>> +                     #interrupt-cells =3D <1>;
+>> +                     #address-cells =3D <0>;
+>> +                     #size-cells =3D <0>;
+>> +                     interrupt-map =3D <
+>> +                             0 &UIC0 0x16 4
+>> +                             1 &UIC1 0x16 4>;
+
+> Are these interrupt-maps correct?  The second interrupt from both dma
+> controllers is routed to the same line on UIC1?
+
+ The map is correct:
+
+- first interrupts are 'DMAx Command Status FIFO Needs Service';
+- second interrupt is 'DMA Error', both DMA engines share common error IRQ.
+
+
+>> +             };
+>> +             xor {
+>> +                     interrupt-parent =3D <&UIC1>;
+>> +                     interrupts =3D <0x1f 4>;
+
+> What the hell is this thing?  No compatible property, nor even a
+> meaningful name.
+
+ This is the XOR accelerator, the dedicated DMA engine of ppc440spe=20
+equipped with the ability to do XOR operations in h/w. I guess, it=20
+could be named like DMA2.
+
+ Regards, Yuri
+
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
