@@ -1,34 +1,23 @@
-Return-Path: <chandru@in.ibm.com>
-Received: from e23smtp08.au.ibm.com (unknown [202.81.31.141])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A2EFDDE2F6
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 23:33:15 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp08.au.ibm.com (8.13.1/8.13.1) with ESMTP id n0H4G1TP027376
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 23:16:01 -0500
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n0GCHco64419822
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 23:17:38 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n0GCGY9G002452
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 23:16:35 +1100
-From: Chandru <chandru@in.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-Date: Fri, 16 Jan 2009 17:46:36 +0530
-References: <200812241325.49404.chandru@in.ibm.com>
-	<200901091637.24658.chandru@in.ibm.com>
-	<200901151335.27649.chandru@in.ibm.com>
-In-Reply-To: <200901151335.27649.chandru@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7757ADDFE0
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 01:24:06 +1100 (EST)
+Date: Fri, 16 Jan 2009 17:24:03 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <1141743016.20090116172403@emcraft.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re[2]: [PATCH 07/11] md: rewrite handle_stripe_dirtying6 in
+	asynchronous way
+In-Reply-To: <e9c3a7c20901151421o69522f71rfe6d7d9621de47eb@mail.gmail.com>
+References: <200812090057.33890.yur@emcraft.com>
+	<e9c3a7c20901151351p5e1b4641h1b4c8ba1ae5dcc73@mail.gmail.com>
+	<e9c3a7c20901151421o69522f71rfe6d7d9621de47eb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200901161746.36584.chandru@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
+	dzu@denx.de, yanok@emcraft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,24 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 15 January 2009 13:35:27 Chandru wrote:
-> Hello Dave, From the debug console output, if there is anything you can add
-> here, pls let me know.
+On Friday, January 16, 2009 you wrote:
 
-As we can see from the console output here,  physbase isn't page aligned when 
-the panic occurs.  So we could as well send (start_pfn << PAGE_SHIFT) to 
-reserve_bootmem_node() instead of physbase. your thoughts ?.
+> On Thu, Jan 15, 2009 at 2:51 PM, Dan Williams <dan.j.williams@intel.com> =
+wrote:
+>> On Mon, Dec 8, 2008 at 2:57 PM, Yuri Tikhonov <yur@emcraft.com> wrote:
+>> What's the reasoning behind changing the logic here, i.e. removing
+>> must_compute and such?  I'd feel more comfortable seeing copy and
+>> paste where possible with cleanups separated out into their own patch.
+>>
 
-Also end_pfn in mark_reserved_region_for_nid() is defined as 
+> Ok, I now see why this change was made.  Please make this changelog
+> more descriptive than "Rewrite handle_stripe_dirtying6 function to
+> work asynchronously."
 
-unsigned long end_pfn = ((physbase + size) >> PAGE_SHIFT);
+ Sure, how about the following:
 
-Does this refer to the pfn after the area that we are interested in ?.  We have 
-atleast two fixes here,  
-1. Limit start and end to bdata->node_min_pfn  and bdata->node_low_pfn in 
-reserve_bootmem_node() and add comments out in there that the caller of the 
-funtion should be aware of how much are they reserving. 
-2. send (start_pfn << PAGE_SHIFT) to reserve_bootmem_node() instead of 
-physbase. 
+"
 
-Chandru
+ md: rewrite handle_stripe_dirtying6 in asynchronous way
+
+ Processing stripe dirtying in asynchronous way requires some changes=20
+to the handle_stripe_dirtying6() algorithm.
+
+ In the synchronous implementation of the stripe dirtying we processed=20
+dirtying of a degraded stripe (with partially changed strip(s) located=20
+on the failed drive(s)) inside one handle_stripe_dirtying6() call:
+- we computed the missed strips from the old parities, and thus got=20
+the fully up-to-date stripe, then
+- we did reconstruction using the new data to write.
+
+ In the asynchronous case of handle_stripe_dirtying6() we don't=20
+process anything right inside this function (since we under the lock),=20
+but only schedule the necessary operations with flags. Thus, if=20
+handle_stripe_dirtying6() is performed on the top of a degraded array=20
+we should schedule the reconstruction operation when the failed strips=20
+are marked (by previously called fetch_block6()) as to be computed=20
+(with the R5_Wantcompute flag), and all the other strips of the stripe=20
+are UPTODATE. The schedule_reconstruction() function will set the=20
+STRIPE_OP_POSTXOR flag [for new parity calculation], which is then=20
+handled in raid_run_ops() after the STRIPE_OP_COMPUTE_BLK one [which=20
+causes computing of the data missed].
+
+"
+
+ Regards, Yuri
+
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
