@@ -1,22 +1,34 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A9C03DE2FA
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 02:19:01 +1100 (EST)
-Date: Fri, 16 Jan 2009 18:18:42 +0300
-From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <1336101832.20090116181842@emcraft.com>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re[2]: [PATCH][v4] powerpc 44x: support for 256KB PAGE_SIZE
-In-Reply-To: <f341f40f2bfa0818be32a86da62ada9b@bga.com>
-References: <200901130149.43588.yur@emcraft.com>
-	<f341f40f2bfa0818be32a86da62ada9b@bga.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Cc: wd@denx.de, dzu@denx.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	hugh@veritas.com, akpm@linux-foundation.org, prodyuth@gmail.com,
-	yanok@emcraft.com
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 78688DE28B
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 04:29:25 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n0GHT49W002225
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 10:29:16 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n0GHT35w001103
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jan 2009 11:29:03 -0600 (CST)
+Date: Fri, 16 Jan 2009 11:29:03 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Jean-Michel Hautbois <jhautbois@gmail.com>
+Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
+Message-ID: <20090116172903.GA722@ld0162-tx32.am.freescale.net>
+References: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>
+	<496F318D.6010302@denx.de>
+	<8cad0aa0901150510o7a8146f1m2045e252c5e1cf24@mail.gmail.com>
+	<496F4760.1010007@denx.de>
+	<8cad0aa0901150706u72538941rbc22655d5a8905ea@mail.gmail.com>
+	<8cad0aa0901160406l3db9c025ubdcac40b4b464d23@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8cad0aa0901160406l3db9c025ubdcac40b4b464d23@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,66 +38,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Milton,
+On Fri, Jan 16, 2009 at 01:06:06PM +0100, Jean-Michel Hautbois wrote:
+> Could it be a problem in my bootargs command line ?
+> I mean, maybe the console=ttyS0,11500 wrong ?
+> Because my "Run" LED is on...
+> 
+> I tried ttyS0, ttyCPM0, tty0.
 
-On Friday, January 16, 2009 you wrote:
+It should be ttyCPM0, or just leave it out and make sure that
+/chosen/linux,stdout-path is set properly.
 
-> On Jan 12, 2009, at 4:49 PM, Yuri Tikhonov wrote:
+Have you tried enabling early CPM debugging output?
 
->> This patch adds support for 256KB pages on ppc44x-based boards.
-
-> Another day, another comment.  The motivation for reply was the second
-> comment below.
-
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 84b8613..18f33ef 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -443,6 +443,19 @@ config PPC_64K_PAGES
->>       bool "64k page size" if 44x || PPC_STD_MMU_64
->>       select PPC_HAS_HASH_64K if PPC_STD_MMU_64
->>
->> +config PPC_256K_PAGES
->> +     bool "256k page size" if 44x
->> +     depends on !STDBINUTILS && !SHMEM
-
-> depends on !STDBINUTILS && (!SHMEM || BROKEN)
-
-> to identify that it is not fundamentally incompatable just not a chance
-> of working without other changes.
-
- This makes sense.
-
-[..]
-
->> +config STDBINUTILS
->> +     bool "Using standard binutils settings"
->> +     depends on 44x
->> +     default y
-
-
-> I think this should be
-
-> config STDBINUTILS
->         bool "Using standard binutils settings" if 44x
->         default y
-
-> that way we imply that all powerpc users are using the standard=20
-> binutils instead of only those using a 44x platform.  We still get the
-> intended effect of asking the user only on 44x.
-
-> I haven't looked at the resulting question or config order to see if it
-> makes sense to leave it here or put it closer to the page size.
-
- I'm not sure about this. For 44x platforms - the STDBINUTILS option=20
-is reasonable, because it's used in the PAGE_SIZE selection process.=20
-But as regarding the other powerpcs the STDBINUTILS option will do=20
-nothing, but taking a superfluous string in configs. Are you sure this=20
-will be better ?
-
- Regards, Yuri
-
- --
- Yuri Tikhonov, Senior Software Engineer
- Emcraft Systems, www.emcraft.com
+-Scott
