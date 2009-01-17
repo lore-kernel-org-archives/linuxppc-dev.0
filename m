@@ -1,24 +1,12 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F0A3CDDEFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 23:26:57 +1100 (EST)
-Date: Sat, 17 Jan 2009 15:26:57 +0300
-From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <20244211.20090117152657@emcraft.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re[4]: [PATCH 03/11][v3] async_tx: add support for asynchronous RAID6
-	recovery operations
-In-Reply-To: <e9c3a7c20901161037l6ab42609td327f6f33406e2d@mail.gmail.com>
-References: <200901130343.14016.yur@emcraft.com>
-	<e9c3a7c20901141706v17215220s22d973f81369be72@mail.gmail.com>
-	<498243073.20090116145142@emcraft.com>
-	<e9c3a7c20901161037l6ab42609td327f6f33406e2d@mail.gmail.com>
+Return-Path: <roel.kluin@gmail.com>
+Message-ID: <4972456C.1050301@gmail.com>
+Date: Sat, 17 Jan 2009 21:54:04 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org, wd@denx.de,
-	dzu@denx.de, yanok@emcraft.com
+To: geoffrey.levand@am.sony.com
+Subject: [PATCH] PS3 ps3av_set_video_mode() make id signed
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,36 +16,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday, January 16, 2009 you wrote:
+vi drivers/video/ps3fb.c +618
+static int ps3fb_set_par(struct fb_info *info)
+{
+        struct ps3fb_par *par = info->par;
+... [ and at line 660 ] ...
+	if (ps3av_set_video_mode(par->new_mode_id))
 
-> On Fri, Jan 16, 2009 at 4:51 AM, Yuri Tikhonov <yur@emcraft.com> wrote:
->>  The reason why I preferred to use async_pq() instead of async_xor()
->> here is to maximize the chance that the whole D+D recovery operation
->> will be handled in one ADMA device, i.e. without channels switch and
->> the latency introduced because of that.
->>
+now new_mode_id is an int
 
-> This should be a function of the async_tx_find_channel implementation.
->  The default version tries to keep a chain of operations on one
-> channel.
+vi drivers/video/ps3fb.c +132
+struct ps3fb_par {
+...
+        int new_mode_id;
+...
+};
 
-> struct dma_chan *
-> __async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
->         enum dma_transaction_type tx_type)
-> {
->         /* see if we can keep the chain on one channel */
->         if (depend_tx &&
->             dma_has_cap(tx_type, depend_tx->chan->device->cap_mask))
->                 return depend_tx->chan;
->         return dma_find_channel(tx_type);
-> }
+vi drivers/ps3/ps3av.c +844
+int ps3av_set_video_mode(u32 id)
 
- Right. Then I need to update my ADMA driver, and add support for=20
-explicit DMA_XOR capability on channels which can process DMA_PQ.
-Thanks.
+-------------------------^^^
 
- Regards, Yuri
+{
+...
+	if (... || id < 0) {
 
- --
- Yuri Tikhonov, Senior Software Engineer
- Emcraft Systems, www.emcraft.com
+--------------------^^^
+
+		dev_dbg(&ps3av->dev->core, "%s: error id :%d\n", __func__, id);
+                return -EINVAL;
+        }
+...
+		id = ps3av_auto_videomode(&ps3av->av_hw_conf);
+                if (id < 1) {
+---------------------^^^
+                        printk(KERN_ERR "%s: invalid id :%d\n", __func__, id);
+                        return -EINVAL;
+                }
+...
+	ps3av->ps3av_mode = id;
+
+vi drivers/ps3/ps3av.c +763
+static int ps3av_auto_videomode()
+
+-------^^^
+
++42
+static struct ps3av {
+...
+        int ps3av_mode;
+...
+};
+
+--------------------->8---------------8<-------------------
+make id signed so a negative id will get noticed
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
+index 5324978..7aa6d41 100644
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -838,7 +838,7 @@ static int ps3av_get_hw_conf(struct ps3av *ps3av)
+ }
+ 
+ /* set mode using id */
+-int ps3av_set_video_mode(u32 id)
++int ps3av_set_video_mode(int id)
+ {
+ 	int size;
+ 	u32 option;
