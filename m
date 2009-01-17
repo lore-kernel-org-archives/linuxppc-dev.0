@@ -1,24 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id BD7F2DE0FE
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 10:06:37 +1100 (EST)
-Date: Sat, 17 Jan 2009 10:06:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH] infiniband/ehca: use consistent type
-Message-Id: <20090117100632.61dc13ee.sfr@canb.auug.org.au>
-In-Reply-To: <adamydqdfv1.fsf@cisco.com>
-References: <20081231141453.45d7f2c1.sfr@canb.auug.org.au>
-	<adazlhqdgk4.fsf@cisco.com>
-	<20090117094625.1500c8e7.sfr@canb.auug.org.au>
-	<adamydqdfv1.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__17_Jan_2009_10_06_32_+1100_wNnwZo9HBLCv69g/"
-Cc: Heiko J Schick <schickhj@de.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
-	ppc-dev <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	general@lists.openfabrics.org
+Return-Path: <vgallardo@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id A5C69DE13D
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jan 2009 11:14:51 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH] ibm_newemac: Add support for Arches CPU0 SGMII0 to
+	CPU1SGMII0
+Date: Fri, 16 Jan 2009 16:14:43 -0800
+Message-ID: <0CA0A16855646F4FA96D25A158E299D605B6134D@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <0CA0A16855646F4FA96D25A158E299D605505DDC@SDCEXCHANGE01.ad.amcc.com>
+References: <0CA0A16855646F4FA96D25A158E299D60546CA64@SDCEXCHANGE01.ad.amcc.com>
+	<0CA0A16855646F4FA96D25A158E299D605505DDC@SDCEXCHANGE01.ad.amcc.com>
+From: "Victor Gallardo" <vgallardo@amcc.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,44 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__17_Jan_2009_10_06_32_+1100_wNnwZo9HBLCv69g/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Josh,
 
-Hi Roland,
+I see you are delegated for this patch submission any ideas when it will =
+be accepted.
 
-On Fri, 16 Jan 2009 14:51:30 -0800 Roland Dreier <rdreier@cisco.com> wrote:
->
->  > Sorry to appear picky, but how is that different from the patch "power=
-pc:
->  > cleanup from powerpc l64 to ll64 change: drivers/infiniband" that I se=
-nt
->  > to you on Jan 7?
->=20
-> Well, I didn't lose my version and forget all about it ;)
+http://patchwork.ozlabs.org/patch/6814/
 
-I figured it was something simple.
+Thanks,
 
-> Seriously, I must have lost that patch, sorry about that.  I'll dig it
-> out and replace mine so you get credit.
+-Victor Gallardo
 
-Thanks.  /me needs all the credit he can get :-)
+-----Original Message-----
+From: linuxppc-dev-bounces+vgallardo=3Damcc.com@ozlabs.org =
+[mailto:linuxppc-dev-bounces+vgallardo=3Damcc.com@ozlabs.org] On Behalf =
+Of Victor Gallardo
+Sent: Monday, November 10, 2008 10:07 AM
+To: Josh Boyer; benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org
+Subject: RE: [PATCH] ibm_newemac: Add support for Arches CPU0 SGMII0 to =
+CPU1SGMII0
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Hello Josh and Ben,
 
---Signature=_Sat__17_Jan_2009_10_06_32_+1100_wNnwZo9HBLCv69g/
-Content-Type: application/pgp-signature
+Who should I ask to get this patch integrated into the Linux tree?
+	http://ozlabs.org/pipermail/linuxppc-dev/2008-November/064834.html
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Thanks,
 
-iEYEARECAAYFAklxEvgACgkQjjKRsyhoI8ydDwCfaJ52rnM8q9Y1q5BgNECH9Z71
-zgAAoJvXhvAF22Vycu0u7K09LAGrGtiz
-=HPtH
------END PGP SIGNATURE-----
-
---Signature=_Sat__17_Jan_2009_10_06_32_+1100_wNnwZo9HBLCv69g/--
+Victor Gallardo
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
