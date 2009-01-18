@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DAC03DDF27
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 08:44:43 +1100 (EST)
-Subject: Re: [BUG] 2.6.28-git12: "powerpc/pci: Reserve legacy regions on
-	PCI" broke my G3
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mikael Pettersson <mikpe@it.uu.se>
-In-Reply-To: <200901172246.n0HMkvrv004832@harpo.it.uu.se>
-References: <200901172246.n0HMkvrv004832@harpo.it.uu.se>
-Content-Type: text/plain
-Date: Mon, 19 Jan 2009 08:44:20 +1100
-Message-Id: <1232315060.23611.44.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <philippe.reynes@isismpp.fr>
+Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr (sp604003av.neufgp.fr
+	[84.96.92.124]) by ozlabs.org (Postfix) with ESMTP id 73D06DDF45
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 03:04:40 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C97985.AAE6C045"
+Subject: [PATCH] add i2c eeprom to dts for mpc 837x rdb
+Date: Sun, 18 Jan 2009 16:57:48 +0100
+Message-ID: <761F451C5F17F74DAEE4661DA5ABBC1621515A@factorix.ISISTHIBAUD.local>
+References: <761F451C5F17F74DAEE4661DA5ABBC160181BE95@factorix.ISISTHIBAUD.local>
+	<761F451C5F17F74DAEE4661DA5ABBC16215158@factorix.ISISTHIBAUD.local>
+From: "Reynes Philippe" <philippe.reynes@isismpp.fr>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +21,233 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2009-01-17 at 23:46 +0100, Mikael Pettersson wrote:
-> The 2.6.29-rc kernels hang during boot on my PowerMac G3 (Beige).
-> The last messages I see on the console are
-> 
-> Kernel command line: ramdisk_size=8192
-> irq: Found primary Apple PIC /pci/mac-io for 64 irqs
-> irq: System has 64 possible interrupts
-> 
-> and then it hangs until I reboot it. Unfortunately I don't have a serial cable
-> compatible with the G3's serial port so I can't set up a serial console.
-> 
-> Eventually I narrowed the cause down to "powerpc/pci: Reserve legacy regions on PCI"
-> (commit c1f343028d35ba4e88cd4a3c44e0d8b8a84264ee) in 2.6.28-git12. Reverting that
-> from 2.6.29-rc2 results in a kernel that boots ok and works reliably.
-> 
-> The problem seems system specific as both my G5 and my G4 had no problems at all
-> with 2.6.29-rc1.
+This is a multi-part message in MIME format.
 
-Thanks, I'll try to narrow it down, but it will take a week or so as I'm
-away attending LCA. I think I have one of these Beige G3's in the office
-somewhere....
+------_=_NextPart_001_01C97985.AAE6C045
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
+---
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts =
+b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index 9413af3..a8276d4 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -116,6 +116,12 @@
+ 			interrupts =3D <14 0x8>;
+ 			interrupt-parent =3D <&ipic>;
+ 			dfsrr;
++
++			at24@50 {
++				compatible =3D "at24,24c256";
++				reg =3D <0x50>;
++			};
++
+ 			rtc@68 {
+ 				compatible =3D "dallas,ds1339";
+ 				reg =3D <0x68>;
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts =
+b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 23c10ce..4ee2639 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -116,6 +116,12 @@
+ 			interrupts =3D <14 0x8>;
+ 			interrupt-parent =3D <&ipic>;
+ 			dfsrr;
++
++			at24@50 {
++				compatible =3D "at24,24c256";
++				reg =3D <0x50>;
++			};
++
+ 			rtc@68 {
+ 				compatible =3D "dallas,ds1339";
+ 				reg =3D <0x68>;
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts =
+b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index 72cdc3c..2c06d39 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -116,6 +116,12 @@
+ 			interrupts =3D <14 0x8>;
+ 			interrupt-parent =3D <&ipic>;
+ 			dfsrr;
++
++			at24@50 {
++				compatible =3D "at24,24c256";
++				reg =3D <0x50>;
++			};
++
+ 			rtc@68 {
+ 				compatible =3D "dallas,ds1339";
+ 				reg =3D <0x68>;
+
+
+------_=_NextPart_001_01C97985.AAE6C045
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3DISO-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7638.1">
+<TITLE>[PATCH] add i2c eeprom to dts for mpc 837x rdb</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>Signed-off-by: Philippe Reynes =
+&lt;philippe.reynes@isismpp.fr&gt;<BR>
+---<BR>
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts =
+b/arch/powerpc/boot/dts/mpc8377_rdb.dts<BR>
+index 9413af3..a8276d4 100644<BR>
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts<BR>
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts<BR>
+@@ -116,6 +116,12 @@<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;14 =
+0x8&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
+&lt;&amp;ipic&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<BR>
++<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at24@50 {<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
+&quot;at24,24c256&quot;;<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x50&gt;;<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
++<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
+&quot;dallas,ds1339&quot;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x68&gt;;<BR>
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts =
+b/arch/powerpc/boot/dts/mpc8378_rdb.dts<BR>
+index 23c10ce..4ee2639 100644<BR>
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts<BR>
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts<BR>
+@@ -116,6 +116,12 @@<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;14 =
+0x8&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
+&lt;&amp;ipic&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<BR>
++<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at24@50 {<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
+&quot;at24,24c256&quot;;<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x50&gt;;<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
++<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
+&quot;dallas,ds1339&quot;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x68&gt;;<BR>
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts =
+b/arch/powerpc/boot/dts/mpc8379_rdb.dts<BR>
+index 72cdc3c..2c06d39 100644<BR>
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts<BR>
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts<BR>
+@@ -116,6 +116,12 @@<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;14 =
+0x8&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
+&lt;&amp;ipic&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<BR>
++<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at24@50 {<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
+&quot;at24,24c256&quot;;<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x50&gt;;<BR>
++&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
++<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
+&quot;dallas,ds1339&quot;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x68&gt;;<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C97985.AAE6C045--
