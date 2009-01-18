@@ -1,18 +1,18 @@
-Return-Path: <philippe.reynes@isismpp.fr>
-Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr
-	(neuf-infra-smtp-out-sp604003av.neufgp.fr [84.96.92.124])
-	by ozlabs.org (Postfix) with ESMTP id 15456DDDEF
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 04:15:02 +1100 (EST)
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 20FD1474C5
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 06:43:56 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Sun, 18 Jan 2009 20:43:53 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <20081219051455.EBC28DE04A@ozlabs.org>
+Message-ID: <20090118194353.85500@gmx.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C97990.4AA3971D"
-Subject: [PATCH] add i2c eeprom to dts for mpc 837x rdb
-Date: Sun, 18 Jan 2009 18:13:55 +0100
-Message-ID: <761F451C5F17F74DAEE4661DA5ABBC1621515B@factorix.ISISTHIBAUD.local>
-References: <761F451C5F17F74DAEE4661DA5ABBC160181BE95@factorix.ISISTHIBAUD.local>
-	<761F451C5F17F74DAEE4661DA5ABBC16215158@factorix.ISISTHIBAUD.local>
-From: "Reynes Philippe" <philippe.reynes@isismpp.fr>
-To: <linuxppc-dev@ozlabs.org>
+References: <20081219051455.EBC28DE04A@ozlabs.org>
+Subject: Re: [PATCH 9/10] powerpc/mm: Rework usage of
+	_PAGE_COHERENT/NO_CACHE/GUARDED v2
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,233 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C97990.4AA3971D
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+-------- Original-Nachricht --------
+> Datum: Fri, 19 Dec 2008 16:13:51 +1100
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: Paul Mackerras <paulus@samba.org>
+> CC: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
+> Betreff: [PATCH 9/10] powerpc/mm: Rework usage of	_PAGE_COHERENT/NO_CACHE/GUARDED v2
 
-Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
----
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index 9413af3..a8276d4 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -116,6 +116,12 @@
- 			interrupts =3D <14 0x8>;
- 			interrupt-parent =3D <&ipic>;
- 			dfsrr;
-+
-+			at24@50 {
-+				compatible =3D "at24,24c256";
-+				reg =3D <0x50>;
-+			};
-+
- 			rtc@68 {
- 				compatible =3D "dallas,ds1339";
- 				reg =3D <0x68>;
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 23c10ce..4ee2639 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -116,6 +116,12 @@
- 			interrupts =3D <14 0x8>;
- 			interrupt-parent =3D <&ipic>;
- 			dfsrr;
-+
-+			at24@50 {
-+				compatible =3D "at24,24c256";
-+				reg =3D <0x50>;
-+			};
-+
- 			rtc@68 {
- 				compatible =3D "dallas,ds1339";
- 				reg =3D <0x68>;
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index 72cdc3c..2c06d39 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -116,6 +116,12 @@
- 			interrupts =3D <14 0x8>;
- 			interrupt-parent =3D <&ipic>;
- 			dfsrr;
-+
-+			at24@50 {
-+				compatible =3D "at24,24c256";
-+				reg =3D <0x50>;
-+			};
-+
- 			rtc@68 {
- 				compatible =3D "dallas,ds1339";
- 				reg =3D <0x68>;
+> Currently, we never set _PAGE_COHERENT in the PTEs, we just OR it in
+> in the hash code based on some CPU feature bit. We also manipulate
+> _PAGE_NO_CACHE and _PAGE_GUARDED by hand in all sorts of places.
+> 
+> This changes the logic so that instead, the PTE now contains
+> _PAGE_COHERENT for all normal RAM pages thay have I = 0 on platforms
+> that need it. The hash code clears it if the feature bit is not set.
+This somehow breaks Linux on my AmigaOne, as its northbridge doesn't like pages
+marked as coherent. I removed the CPU_FTR_NEED_COHERENT feature bit
+in setup_32.c before the fixups are done, but the system still locks up (doing the
+fixup in the platform code is too late). It only works stable, if I remove the
+_PAGE_COHERENT flag in pgtable-ppc32.h below.
 
+> +#if defined(CONFIG_SMP) || defined(CONFIG_PPC_STD_MMU)
+> +#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT)
 
-------_=_NextPart_001_01C97990.4AA3971D
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+>  BEGIN_FTR_SECTION
+> -	ori	r8,r8,_PAGE_COHERENT	/* set M (coherence required) */
+> -END_FTR_SECTION_IFSET(CPU_FTR_NEED_COHERENT)
+> +	rlwinm	r8,r8,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
+> +END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+I'm pretty sure that the hack for setup_32.c above protects this code in hash_low_32.S/
+create_hpte() from being overwritten with nops. But I wonder which other paths exists
+in the memory management code to set the coherent flag in PTEs? Any ideas how I
+can get it to work without removing _PAGE_COHERENT from _PAGE_BASE?
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3DISO-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">
-<TITLE>[PATCH] add i2c eeprom to dts for mpc 837x rdb</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
+Thanks!
 
-<P><FONT SIZE=3D2>Signed-off-by: Philippe Reynes =
-&lt;philippe.reynes@isismpp.fr&gt;<BR>
----<BR>
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8377_rdb.dts<BR>
-index 9413af3..a8276d4 100644<BR>
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts<BR>
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts<BR>
-@@ -116,6 +116,12 @@<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;14 =
-0x8&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
-&lt;&amp;ipic&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<BR>
-+<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at24@50 {<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;at24,24c256&quot;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x50&gt;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
-+<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;dallas,ds1339&quot;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x68&gt;;<BR>
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8378_rdb.dts<BR>
-index 23c10ce..4ee2639 100644<BR>
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts<BR>
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts<BR>
-@@ -116,6 +116,12 @@<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;14 =
-0x8&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
-&lt;&amp;ipic&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<BR>
-+<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at24@50 {<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;at24,24c256&quot;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x50&gt;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
-+<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;dallas,ds1339&quot;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x68&gt;;<BR>
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8379_rdb.dts<BR>
-index 72cdc3c..2c06d39 100644<BR>
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts<BR>
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts<BR>
-@@ -116,6 +116,12 @@<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;14 =
-0x8&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
-&lt;&amp;ipic&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<BR>
-+<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at24@50 {<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;at24,24c256&quot;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x50&gt;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
-+<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;dallas,ds1339&quot;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x68&gt;;<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C97990.4AA3971D--
+Gerhard
+-- 
+Sensationsangebot verlängert: GMX FreeDSL - Telefonanschluss + DSL 
+für nur 16,37 Euro/mtl.!* http://dsl.gmx.de/?ac=OM.AD.PD003K1308T4569a
