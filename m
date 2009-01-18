@@ -1,16 +1,20 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E9F7EDDF22
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Jan 2009 10:02:58 +1100 (EST)
-Date: Sat, 17 Jan 2009 23:46:57 +0100 (MET)
-Message-Id: <200901172246.n0HMkvrv004832@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: benh@kernel.crashing.org
-Subject: [BUG] 2.6.28-git12: "powerpc/pci: Reserve legacy regions on PCI"
-	broke my G3
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id B0956DDF5C
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Jan 2009 13:25:24 +1100 (EST)
+In-Reply-To: <1336101832.20090116181842@emcraft.com>
+References: <200901130149.43588.yur@emcraft.com>
+	<f341f40f2bfa0818be32a86da62ada9b@bga.com>
+	<1336101832.20090116181842@emcraft.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6206e2ad09c4ee677275859dc6d5046e@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: Re[2]: [PATCH][v4] powerpc 44x: support for 256KB PAGE_SIZE
+Date: Sat, 17 Jan 2009 20:32:25 -0600
+To: Yuri Tikhonov <yur@emcraft.com>
+Cc: yanok@emcraft.com, dzu@denx.de, linuxppc-dev@ozlabs.org, hugh@veritas.com,
+	paulus@samba.org, akpm@linux-foundation.org, prodyuth@gmail.com, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,21 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 2.6.29-rc kernels hang during boot on my PowerMac G3 (Beige).
-The last messages I see on the console are
+On Jan 16, 2009, at 9:18 AM, Yuri Tikhonov wrote:
+> On Friday, January 16, 2009 you wrote:
+>> On Jan 12, 2009, at 4:49 PM, Yuri Tikhonov wrote:
+>
+>>> This patch adds support for 256KB pages on ppc44x-based boards.
+>
+>
+>>> +config STDBINUTILS
+>>> +     bool "Using standard binutils settings"
+>>> +     depends on 44x
+>>> +     default y
+>
+>
+>> I think this should be
+>
+>> config STDBINUTILS
+>>         bool "Using standard binutils settings" if 44x
+>>         default y
+>
+>> that way we imply that all powerpc users are using the standard
+>> binutils instead of only those using a 44x platform.  We still get the
+>> intended effect of asking the user only on 44x.
+>
+>> I haven't looked at the resulting question or config order to see if 
+>> it
+>> makes sense to leave it here or put it closer to the page size.
+>
+>  I'm not sure about this. For 44x platforms - the STDBINUTILS option
+> is reasonable, because it's used in the PAGE_SIZE selection process.
+> But as regarding the other powerpcs the STDBINUTILS option will do
+> nothing, but taking a superfluous string in configs. Are you sure this
+> will be better ?
 
-Kernel command line: ramdisk_size=8192
-irq: Found primary Apple PIC /pci/mac-io for 64 irqs
-irq: System has 64 possible interrupts
 
-and then it hangs until I reboot it. Unfortunately I don't have a serial cable
-compatible with the G3's serial port so I can't set up a serial console.
+Ok I tried this out in menuconfig.  You are right that the depends on 
+makes sense as it removes the option from the config file as not 
+relevant.  But right now to enable 256K pages one has to go to platform 
+setup to find this dependency, then has to go to general setup to find 
+the shmem option at the bottom of the list in the embedded/expert 
+section, then finally go to the kernel options menu to finally choose 
+the page size.
 
-Eventually I narrowed the cause down to "powerpc/pci: Reserve legacy regions on PCI"
-(commit c1f343028d35ba4e88cd4a3c44e0d8b8a84264ee) in 2.6.28-git12. Reverting that
-from 2.6.29-rc2 results in a kernel that boots ok and works reliably.
+Moving this question just before the page size choice removes one of 
+those hidden menu, so I suggest that it be moved to just before the 
+option that it allow be selected.
 
-The problem seems system specific as both my G5 and my G4 had no problems at all
-with 2.6.29-rc1.
-
-/Mikael
+milton
