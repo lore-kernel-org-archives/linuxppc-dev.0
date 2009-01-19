@@ -1,32 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1A009DDF38
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 04:29:55 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n0JHTZB1023385
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 10:29:46 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n0JHTZ6k013002
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 11:29:35 -0600 (CST)
-Date: Mon, 19 Jan 2009 11:29:34 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Daniel Ng <daniel.ng1234@gmail.com>
-Subject: Re: Device Tree setup for 8272-based board
-Message-ID: <20090119172934.GE23019@ld0162-tx32.am.freescale.net>
-References: <547eba1b0901151722p4a6afce4nc769fcb8cff82ea6@mail.gmail.com>
-	<547eba1b0901151940x588ead2bk52342ea1cecc6db0@mail.gmail.com>
-	<20090116181405.GB722@ld0162-tx32.am.freescale.net>
-	<547eba1b0901181758q27d09f1fx7d07d7385f028312@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <547eba1b0901181758q27d09f1fx7d07d7385f028312@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <bzolnier@gmail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.187])
+	by ozlabs.org (Postfix) with ESMTP id 77A54DDE9E
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 05:34:27 +1100 (EST)
+Received: by mu-out-0910.google.com with SMTP id w1so2139229mue.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 10:34:24 -0800 (PST)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Subject: Re: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne
+	boards
+Date: Mon, 19 Jan 2009 19:28:35 +0100
+References: <20090112233909.221080@gmx.net> <1231822958.22571.38.camel@pasglop>
+	<20090113123337.199060@gmx.net>
+In-Reply-To: <20090113123337.199060@gmx.net>
+MIME-Version: 1.0
+Message-Id: <200901191928.35474.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,62 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 19, 2009 at 12:58:41PM +1100, Daniel Ng wrote:
-> Hi Scott,
-> On Sat, Jan 17, 2009 at 5:14 AM, Scott Wood <scottwood@freescale.com> wrote:
-> >
-> >> /dts-v1/;
-> >>
-> >> / {
-> >> model = "HPXRED";
-> >> compatible = "fsl,mpc8272ads";
-> >
-> > Is it 100% compatible?  If not, change the compatible to something else
-> > (and make sure your board code matches it).
+On Tuesday 13 January 2009, Gerhard Pircher wrote:
 > 
-> My board is similar to the mpc8272ads, so it is not 100% compatible. So I guess
-> I will have to define my own DTS, correct?
-
-Yes.
-
-> How would I be able to tell if I need my own cuboot-*.c file as well?
-
-The separate cuboot files are based on separate bd_t layouts -- if bd_t
-is the same, you don't need a new file.  That said, if you're dealing
-with modern u-boot, it'd be better to just pass a device tree and use
-uImage.
-
-> > Do you currently have mpc8272ads support enabled in the kernel?  If the
-> > kernel doesn't find a matching ppc_md, you won't get any debug output.
+> -------- Original-Nachricht --------
+> > Datum: Tue, 13 Jan 2009 16:02:38 +1100
+> > Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
+> > Betreff: Re: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne boards
 > 
-> No, since it is not an mpc8272ads board.
+> > > Yes, it can wait.
+> > > Although I would like to know from the powerpc maintainer, if my
+> > > platform patches could still go in 2.6.29, if I resend them in the next days? I
+> > > guess it's too late, right?
+> > 
+> > Yes it is. I'll put them in -next after -rc2 or later, when we are happy
+> > with them. That gives us a bit of time to do extra polishing.
+> Good, then I'll send out a new patch for the IDE driver and the current one
+> can be reverted.
 
-But the device tree claims that it is.
+The following patchset fixes core IDE PCI code to always use
+pci_get_legacy_ide_irq() and ide_pci_is_in_compatibility_mode():
 
-> What exactly are we matching here?
-> Is it just the Platform Name in the .config file eg. CONFIG_MPC8272_ADS?
-> If I use [compatible = "fsl,hpxred";] this doesn't seem to make a difference
-> in the behaviour.
+http://lkml.org/lkml/2009/1/19/163
 
-In order for the kernel to boot, there has to be platform code built in
-whose probe() function recognizes the device tree as one that it
-supports.
+so via82cxxx specific solution is no longer necessary.
 
-> Is the ppc_md generated from the Device Tree? Can you please point me to
-> the relevant file/s to see how this is done?
+[ IOW I'll keep your previous patch and the #ifdef issue will
+  solve itself after the above patchset is merged. ]
 
-ppc_md is in platform files such as
-arch/powerpc/platforms/82xx/mpc8272_ads.c.
-
-> Also, which kernel file deals with searching for/reading the ppc_md?
-
-probe_machine() in arch/powerpc/kernel/setup-common.c.
-
-> > You can use udbg_printf() directly after the call to udbg_early_init()
-> > though.
-> 
-> Would I use these in cuboot-*.c?
-
-No, this is in the kernel, not the bootwrapper.
-
--Scott
+Thanks,
+Bart
