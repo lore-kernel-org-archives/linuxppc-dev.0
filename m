@@ -1,17 +1,11 @@
-Return-Path: <philippe.reynes@isismpp.fr>
-Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr (sp604003av.neufgp.fr
-	[84.96.92.124]) by ozlabs.org (Postfix) with ESMTP id 73D06DDF45
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 03:04:40 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C97985.AAE6C045"
-Subject: [PATCH] add i2c eeprom to dts for mpc 837x rdb
-Date: Sun, 18 Jan 2009 16:57:48 +0100
-Message-ID: <761F451C5F17F74DAEE4661DA5ABBC1621515A@factorix.ISISTHIBAUD.local>
-References: <761F451C5F17F74DAEE4661DA5ABBC160181BE95@factorix.ISISTHIBAUD.local>
-	<761F451C5F17F74DAEE4661DA5ABBC16215158@factorix.ISISTHIBAUD.local>
-From: "Reynes Philippe" <philippe.reynes@isismpp.fr>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Message-Id: <d1c931db79adf22f3506aa0343aec5361600b37e.1232325038.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] pci/msi: Use #ifdefs instead of weak functions
+Date: Mon, 19 Jan 2009 11:31:00 +1100 (EST)
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@redhat.com,
+	hpa@zytor.com, linux-pci@atrey.karlin.mff.cuni.cz, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,233 +15,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Weak functions aren't all they're cracked up to be. They lead to
+incorrect binaries with some toolchains, they require us to have empty
+functions we otherwise wouldn't, and the unused code is not elided
+(as of gcc 4.3.2 anyway).
 
-------_=_NextPart_001_01C97985.AAE6C045
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+So replace the weak MSI arch hooks with the #define foo foo idiom. We no
+longer need empty versions of arch_setup/teardown_msi_irq().
 
-Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
+This is less source (by 1 line!), and results in smaller binaries too:
+
+   text	   data	    bss	    dec	    hex	filename
+9354300	1693916	 678424	11726640 b2ef30	build/powerpc/vmlinux-before
+9354052	1693852	 678424	11726328 b2edf8	build/powerpc/vmlinux-after
+
+Also smaller on x86_64 and arm (iop13xx).
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index 9413af3..a8276d4 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -116,6 +116,12 @@
- 			interrupts =3D <14 0x8>;
- 			interrupt-parent =3D <&ipic>;
- 			dfsrr;
-+
-+			at24@50 {
-+				compatible =3D "at24,24c256";
-+				reg =3D <0x50>;
-+			};
-+
- 			rtc@68 {
- 				compatible =3D "dallas,ds1339";
- 				reg =3D <0x68>;
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 23c10ce..4ee2639 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -116,6 +116,12 @@
- 			interrupts =3D <14 0x8>;
- 			interrupt-parent =3D <&ipic>;
- 			dfsrr;
-+
-+			at24@50 {
-+				compatible =3D "at24,24c256";
-+				reg =3D <0x50>;
-+			};
-+
- 			rtc@68 {
- 				compatible =3D "dallas,ds1339";
- 				reg =3D <0x68>;
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index 72cdc3c..2c06d39 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -116,6 +116,12 @@
- 			interrupts =3D <14 0x8>;
- 			interrupt-parent =3D <&ipic>;
- 			dfsrr;
-+
-+			at24@50 {
-+				compatible =3D "at24,24c256";
-+				reg =3D <0x50>;
-+			};
-+
- 			rtc@68 {
- 				compatible =3D "dallas,ds1339";
- 				reg =3D <0x68>;
+ arch/powerpc/include/asm/pci.h |    4 ++++
+ arch/x86/include/asm/pci.h     |    3 +++
+ drivers/pci/msi.c              |   26 +++++++++-----------------
+ 3 files changed, 16 insertions(+), 17 deletions(-)
 
-
-------_=_NextPart_001_01C97985.AAE6C045
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3DISO-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">
-<TITLE>[PATCH] add i2c eeprom to dts for mpc 837x rdb</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>Signed-off-by: Philippe Reynes =
-&lt;philippe.reynes@isismpp.fr&gt;<BR>
----<BR>
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8377_rdb.dts<BR>
-index 9413af3..a8276d4 100644<BR>
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts<BR>
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts<BR>
-@@ -116,6 +116,12 @@<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;14 =
-0x8&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
-&lt;&amp;ipic&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<BR>
-+<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at24@50 {<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;at24,24c256&quot;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x50&gt;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
-+<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;dallas,ds1339&quot;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x68&gt;;<BR>
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8378_rdb.dts<BR>
-index 23c10ce..4ee2639 100644<BR>
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts<BR>
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts<BR>
-@@ -116,6 +116,12 @@<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;14 =
-0x8&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
-&lt;&amp;ipic&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<BR>
-+<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at24@50 {<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;at24,24c256&quot;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x50&gt;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
-+<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;dallas,ds1339&quot;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x68&gt;;<BR>
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts =
-b/arch/powerpc/boot/dts/mpc8379_rdb.dts<BR>
-index 72cdc3c..2c06d39 100644<BR>
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts<BR>
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts<BR>
-@@ -116,6 +116,12 @@<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;14 =
-0x8&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
-&lt;&amp;ipic&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dfsrr;<BR>
-+<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at24@50 {<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;at24,24c256&quot;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x50&gt;;<BR>
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
-+<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;dallas,ds1339&quot;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0x68&gt;;<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C97985.AAE6C045--
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 3548159..ba17d5d 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -114,6 +114,10 @@ extern int pci_domain_nr(struct pci_bus *bus);
+ /* Decide whether to display the domain number in /proc */
+ extern int pci_proc_domain(struct pci_bus *bus);
+ 
++/* MSI arch hooks */
++#define arch_setup_msi_irqs arch_setup_msi_irqs
++#define arch_teardown_msi_irqs arch_teardown_msi_irqs
++#define arch_msi_check_device arch_msi_check_device
+ 
+ struct vm_area_struct;
+ /* Map a range of PCI memory or I/O space for a device into user space */
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index a977de2..a0301bf 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -86,6 +86,9 @@ static inline void early_quirks(void) { }
+ 
+ extern void pci_iommu_alloc(void);
+ 
++/* MSI arch hook */
++#define arch_setup_msi_irqs arch_setup_msi_irqs
++
+ #endif  /* __KERNEL__ */
+ 
+ #ifdef CONFIG_X86_32
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index b4a90ba..aa791db 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -27,20 +27,15 @@ static int pci_msi_enable = 1;
+ 
+ /* Arch hooks */
+ 
+-int __attribute__ ((weak))
+-arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
++#ifndef arch_msi_check_device
++int arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
+ {
+ 	return 0;
+ }
++#endif
+ 
+-int __attribute__ ((weak))
+-arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *entry)
+-{
+-	return 0;
+-}
+-
+-int __attribute__ ((weak))
+-arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
++#ifndef arch_setup_msi_irqs
++int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ {
+ 	struct msi_desc *entry;
+ 	int ret;
+@@ -53,14 +48,10 @@ arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ 
+ 	return 0;
+ }
++#endif
+ 
+-void __attribute__ ((weak)) arch_teardown_msi_irq(unsigned int irq)
+-{
+-	return;
+-}
+-
+-void __attribute__ ((weak))
+-arch_teardown_msi_irqs(struct pci_dev *dev)
++#ifndef arch_teardown_msi_irqs
++void arch_teardown_msi_irqs(struct pci_dev *dev)
+ {
+ 	struct msi_desc *entry;
+ 
+@@ -69,6 +60,7 @@ arch_teardown_msi_irqs(struct pci_dev *dev)
+ 			arch_teardown_msi_irq(entry->irq);
+ 	}
+ }
++#endif
+ 
+ static void __msi_set_enable(struct pci_dev *dev, int pos, int enable)
+ {
+-- 
+1.5.5
