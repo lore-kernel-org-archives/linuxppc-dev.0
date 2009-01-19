@@ -1,22 +1,26 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.187])
-	by ozlabs.org (Postfix) with ESMTP id 77A54DDE9E
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 05:34:27 +1100 (EST)
-Received: by mu-out-0910.google.com with SMTP id w1so2139229mue.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 10:34:24 -0800 (PST)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Subject: Re: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne
-	boards
-Date: Mon, 19 Jan 2009 19:28:35 +0100
-References: <20090112233909.221080@gmx.net> <1231822958.22571.38.camel@pasglop>
-	<20090113123337.199060@gmx.net>
-In-Reply-To: <20090113123337.199060@gmx.net>
-MIME-Version: 1.0
-Message-Id: <200901191928.35474.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
+Return-Path: <Lee.Nipper@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1B03BDDF2A
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 07:50:00 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n0JKnpUS004485
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 13:49:57 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n0JKnoPV000797
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 14:49:50 -0600 (CST)
+Subject: powerpc ftrace functionality
+From: Lee Nipper <lee.nipper@freescale.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Mon, 19 Jan 2009 14:51:18 -0600
+Message-Id: <1232398278.24188.318.camel@al08linux99>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 13 January 2009, Gerhard Pircher wrote:
-> 
-> -------- Original-Nachricht --------
-> > Datum: Tue, 13 Jan 2009 16:02:38 +1100
-> > Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> > CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
-> > Betreff: Re: [PATCH 5/5] ide: Force VIA IDE legacy interrupts for AmigaOne boards
-> 
-> > > Yes, it can wait.
-> > > Although I would like to know from the powerpc maintainer, if my
-> > > platform patches could still go in 2.6.29, if I resend them in the next days? I
-> > > guess it's too late, right?
-> > 
-> > Yes it is. I'll put them in -next after -rc2 or later, when we are happy
-> > with them. That gives us a bit of time to do extra polishing.
-> Good, then I'll send out a new patch for the IDE driver and the current one
-> can be reverted.
+Is ftrace functional with latest kernel on powerpc (32-bit) ?
 
-The following patchset fixes core IDE PCI code to always use
-pci_get_legacy_ide_irq() and ide_pci_is_in_compatibility_mode():
+I was checking basic functionality using the README steps.
+The output of tracing/trace includes the header but nothing more (no trace lines).
+It appears broken unless I'm missing something.
 
-http://lkml.org/lkml/2009/1/19/163
+Below is the interaction.
 
-so via82cxxx specific solution is no longer necessary.
+Lee
 
-[ IOW I'll keep your previous patch and the #ifdef issue will
-  solve itself after the above patchset is merged. ]
-
-Thanks,
-Bart
+# mkdir /debug
+# mount -t debugfs nodev /debug
+# cat /debug/tracing/available_tracers
+wakeup function sched_switch nop
+# cat /debug/tracing/current_tracer
+nop
+# echo sched_switch > /debug/tracing/current_tracer
+# cat /debug/tracing/current_tracer
+sched_switch
+# cat /debug/tracing/trace_options
+print-parent nosym-offset nosym-addr noverbose noraw nohex nobin noblock nostack
+trace nosched-tree ftrace_printk noftrace_preempt nobranch annotate nouserstackt
+race nosym-userobj noprintk-msg-only 
+# echo 1 > /debug/tracing/tracing_enabled
+# sleep 1
+# cat /debug/tracing/trace > /tmp/trace.txt
+# echo 0 > /debug/tracing/tracing_enabled
+# cat /tmp/trace.txt
+# tracer: sched_switch
+#
+#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+#              | |       |          |         |
+#
+#
+#
+# uname -a
+Linux freescale 2.6.29-rc2-00013-gf3b8436 #12 Mon Jan 19 11:28:33 CST 2009 ppc unknown
+# 
+# gunzip -c - < /proc/config.gz | egrep 'FTRACE|FUNCTION|SCHED_TRACER'
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_FUNCTION_TRACER=y
+CONFIG_SCHED_TRACER=y
+CONFIG_DYNAMIC_FTRACE=y
+CONFIG_FTRACE_MCOUNT_RECORD=y
+CONFIG_FTRACE_SELFTEST=y
+CONFIG_FTRACE_STARTUP_TEST=y
+# dmesg | grep trace
+ftrace: allocating 8054 entries in 40 pages
+Testing tracer nop: PASSED
+Testing tracer sched_switch: PASSED
+Testing tracer function: PASSED
+Testing dynamic ftrace: PASSED
+Testing tracer wakeup: PASSED
+# 
