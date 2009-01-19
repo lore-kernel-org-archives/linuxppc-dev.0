@@ -1,28 +1,14 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-cn0ut-5.online-age.net (ext-cn0ut-5.online-age.net
-	[63.210.253.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-cn0ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7497CDE079
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 22:39:13 +1100 (EST)
-Received: from int-cn0ut-4.online-age.net (int-cn0ut-4.online-age.net
-	[3.159.252.73])
-	by ext-cn0ut-5.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id n0JBWp82030140
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 06:32:51 -0500
-Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-4.online-age.net
-	[3.159.252.73])
-	by int-cn0ut-4.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id n0JBWohi007417
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 06:32:51 -0500
-From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH 0/3] powerpc/86xx: Board support for GE Fanuc SBC310
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 19 Jan 2009 11:32:41 +0000
-Message-ID: <20090119112130.9225.82681.stgit@ubuntu8041.localdomain>
+Return-Path: <wg@grandegger.com>
+Message-ID: <49746D98.9080300@grandegger.com>
+Date: Mon, 19 Jan 2009 13:10:00 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: Floating point exceptions with MPC5200
+References: <497448F4.7080806@grandegger.com> <20090119100347.GA27655@iram.es>
+In-Reply-To: <20090119100347.GA27655@iram.es>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,14 +18,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following series implements basic support for the GE Fanuc SBC310, a
-6U single board computer, based on the Freescale MPC8641D.
+Gabriel Paubert wrote:
+> On Mon, Jan 19, 2009 at 10:33:40AM +0100, Wolfgang Grandegger wrote:
+>> Hello,
+>>
+>> I want to provoke a "floating point exception" by doing a division by 0.
+>> The expection does come as expected on my x86 PC:
+>>
+>>   $ ./divby0
+>>   Floating point exception
+>>
+>> but not on my MPC5200 board. Any idea why? I think the processor can
+>> handle all floating-point exceptions. I'm using Linux 2.6.28 and the
+>> ELDK v4.2.
+> 
+> No, the PPC continue happily after performing an _integer_ division by zero.
+> It is in the architecture specification AFAIR and allowed by C and other 
+> language definitions. 
+> 
+> This is not exactly a floating point exception per se: it has a different
+> vector on x86, that the Linux kernel remaps to a floating point exception,
+> although numeric exception would be more correct. PPC implements all 
+> standard IEEE754 floating point exceptions (you have to enable them 
+> with fesetenv() or something equivalent, but it's the same on all 
+> architectures).
+> 
+> Even the C++ headers acknowledge this, see for example: 
+> /usr/include/c++/4.3/powerpc-linux-gnu/bits/cpu_defines.h
+> (or a similar file on your system, note that older versions
+> of GCC got it wrong, but I can't remember when it was fixed).
 
-This series provides:
- - The ability to boot the board with a serial console.
- - Ethernet support.
- - Sata and USB.
- - Support for one of the 2 available watchdog timers.
- - Basic support for the on board GPIO.
+I get the "Floating point exception" signal when I explicitly enable
+them with fesetenv() as you suggested:
 
-Martyn
+  $ cat divby0.c
+  #include <stdio.h>
+  #define __USE_GNU
+  #include <fenv.h>
+
+  int main(int argc, char* argv[])
+  {
+      double fa = 10., fb = 0., fc;
+      int ia = 10, ib = 0, ic;
+
+      printf("excepts=%#x\n", fegetexcept());
+      fesetenv(FE_NOMASK_ENV);
+      printf("excepts=%#x\n", fegetexcept());
+
+      ic = ia / ib;
+      printf("ic=%d\n", ic);
+
+      fc = fa / fb;
+      printf("c=%f\n", fc);
+
+      return 0;
+  }
+
+  $ ./divby0
+  excepts=0
+  excepts=0x3e000000
+  ic=0
+  Floating point exception
+
+See "man fesetenv" for further information. On the x86 PC, I even get a
+SIGFPE signal for the integer division by 0.
+
+Thanks for the quick help.
+
+Wolfgang.
