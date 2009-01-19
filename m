@@ -1,14 +1,29 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <49746D98.9080300@grandegger.com>
-Date: Mon, 19 Jan 2009 13:10:00 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <DaveLiu@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8FCD4DE001
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 23:53:32 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n0JCrCvg016714
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 05:53:17 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n0JCrBMe013504
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 06:53:11 -0600 (CST)
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: Floating point exceptions with MPC5200
-References: <497448F4.7080806@grandegger.com> <20090119100347.GA27655@iram.es>
-In-Reply-To: <20090119100347.GA27655@iram.es>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: MPC8313 init ram
+Date: Mon, 19 Jan 2009 20:53:05 +0800
+Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208907B0FA@zch01exm21.fsl.freescale.net>
+In-Reply-To: <BLU127-W329ABEB411D1862CA610B9B5D30@phx.gbl>
+References: <BLU127-W329ABEB411D1862CA610B9B5D30@phx.gbl>
+From: "Liu Dave" <DaveLiu@freescale.com>
+To: "??" <noname1.c@hotmail.com>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,71 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gabriel Paubert wrote:
-> On Mon, Jan 19, 2009 at 10:33:40AM +0100, Wolfgang Grandegger wrote:
->> Hello,
->>
->> I want to provoke a "floating point exception" by doing a division by 0.
->> The expection does come as expected on my x86 PC:
->>
->>   $ ./divby0
->>   Floating point exception
->>
->> but not on my MPC5200 board. Any idea why? I think the processor can
->> handle all floating-point exceptions. I'm using Linux 2.6.28 and the
->> ELDK v4.2.
-> 
-> No, the PPC continue happily after performing an _integer_ division by zero.
-> It is in the architecture specification AFAIR and allowed by C and other 
-> language definitions. 
-> 
-> This is not exactly a floating point exception per se: it has a different
-> vector on x86, that the Linux kernel remaps to a floating point exception,
-> although numeric exception would be more correct. PPC implements all 
-> standard IEEE754 floating point exceptions (you have to enable them 
-> with fesetenv() or something equivalent, but it's the same on all 
-> architectures).
-> 
-> Even the C++ headers acknowledge this, see for example: 
-> /usr/include/c++/4.3/powerpc-linux-gnu/bits/cpu_defines.h
-> (or a similar file on your system, note that older versions
-> of GCC got it wrong, but I can't remember when it was fixed).
+> Now i'm porting the u-boot to my board refer to the mpc8313erdb.
+> I see that in the header file mpc8313erdb.h there is a define:=20
+> #define CFG_INIT_RAM_ADDR 0xFD000000
+> In the memory map ,this address does not locate at any window.
+> So what is the ram?
 
-I get the "Floating point exception" signal when I explicitly enable
-them with fesetenv() as you suggested:
+xiangyu,
 
-  $ cat divby0.c
-  #include <stdio.h>
-  #define __USE_GNU
-  #include <fenv.h>
+It is one trick, we are using the L1-data cache as RAM before the DDR
+memory is available.
 
-  int main(int argc, char* argv[])
-  {
-      double fa = 10., fb = 0., fc;
-      int ia = 10, ib = 0, ic;
+It is one question about u-boot, please send it to u-boot@lists.denx.de
+in the future.
 
-      printf("excepts=%#x\n", fegetexcept());
-      fesetenv(FE_NOMASK_ENV);
-      printf("excepts=%#x\n", fegetexcept());
-
-      ic = ia / ib;
-      printf("ic=%d\n", ic);
-
-      fc = fa / fb;
-      printf("c=%f\n", fc);
-
-      return 0;
-  }
-
-  $ ./divby0
-  excepts=0
-  excepts=0x3e000000
-  ic=0
-  Floating point exception
-
-See "man fesetenv" for further information. On the x86 PC, I even get a
-SIGFPE signal for the integer division by 0.
-
-Thanks for the quick help.
-
-Wolfgang.
+Thanks, Dave=20
