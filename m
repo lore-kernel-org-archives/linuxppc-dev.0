@@ -1,15 +1,19 @@
-Return-Path: <arieswar24b@yahoo.de>
-Received: from web25801.mail.ukl.yahoo.com (web25801.mail.ukl.yahoo.com
-	[217.12.10.186]) by ozlabs.org (Postfix) with SMTP id EF1B3DDEF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 00:22:17 +1100 (EST)
-Date: Tue, 20 Jan 2009 13:15:36 +0000 (GMT)
-From: Dave Best <arieswar24b@yahoo.de>
-Subject: Bestcomm tasks and interrupts on MPC5200(B)
-To: linuxppc-dev@ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 943E0DDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 00:57:17 +1100 (EST)
+Message-ID: <4975D838.5080703@denx.de>
+Date: Tue, 20 Jan 2009 14:57:12 +0100
+From: Anatolij Gustschin <agust@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-ID: <381238.78267.qm@web25801.mail.ukl.yahoo.com>
-Reply-To: arieswar24b@yahoo.de
+To: Julian Calaby <julian.calaby@gmail.com>
+Subject: Re: [PATCH] mb862xx: Restrict compliation of platform driver to PPC
+References: <496A89A1.8050302@gmail.com>
+In-Reply-To: <496A89A1.8050302@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
+	Matteo Fortini <m.fortini@selcomgroup.com>, linux-kernel@vger.kernel.org,
+	Krzysztof Helt <krzysztof.h1@poczta.fm>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm trying to write a driver which uses the Local Plus Bus on my MPC5200B a=
-nd therefore have to use BestComm DMA, which requires me to use a Gen_BD ta=
-sk for data transfer with Local Plus.
-I tried to follow the fec driver that is currently used and took a peek at =
-the mpc52xx-ac97 driver which at least uses the same kind of bus as I.
+Julian Calaby wrote:
+> mb862xx: Restrict compliation of platform driver to PPC
+> 
+> The OpenFirmware part of this driver is uncompilable on SPARC due to it's dependance on several PPC specific functions.
+> 
+> Restricting this to PPC to prevent these build errors.
+> 
+> This was found using randconfig builds.
+> 
+> Signed-off-by: Julian Calaby <julian.calaby@gmail.com>
 
-Initialising the task, resetting and enabling works fine. Even request_irq =
-reports no error, but when I start a transfer it hangs and if I am lucky, a=
-n interrupt occurs after quite some time. But it's always the BestComm ethe=
-rnet rx task which produces an RFIFO interrupt, presumably after the watchd=
-og catches on.=20
-If this happens my interrupt occurs to.
-
-I tried to debug this situation but I am still clueless.
-If I use the MPC5200 Interrupt emulation registers to force an interrupt fo=
-r my interface to occur, nothing happens except that it hangs.
-
-Any hints, tips or help appreciated.
-
-Dave=0A=0A=0A      
+Acked-by: Anatolij Gustschin <agust@denx.de>
