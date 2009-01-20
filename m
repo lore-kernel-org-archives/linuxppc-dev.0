@@ -1,22 +1,17 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtai101.cox.net (fed1rmmtai101.cox.net [68.230.241.4])
-	by ozlabs.org (Postfix) with ESMTP id A2C39DDF91
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 06:23:05 +1100 (EST)
-Date: Tue, 20 Jan 2009 11:47:02 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Subject: Re: [Patch] NULL pointer deref with corrupted squashfs image
-Message-ID: <20090120184702.GB30203@smtp.west.cox.net>
-References: <20090113124027.GB16333@alice> <20090116174525.GA31869@alice>
-	<20090116190725.GA19453@logfs.org>
-	<20090116230700.GP6710@smtp.west.cox.net>
-	<20090117134916.GA29641@logfs.org> <20090120163957.GA21339@alice>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id B1F00DDDF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 09:51:34 +1100 (EST)
+Date: Wed, 21 Jan 2009 08:30:01 +1100
+From: Simon Horman <horms@verge.net.au>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [patch] Possible fix for kexec-tools dynamic range allocation
+Message-ID: <20090120212959.GA3564@verge.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20090120163957.GA21339@alice>
-Cc: chris@zankel.net, phillip@lougher.demon.co.uk,
-	=?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-	linuxppc-dev@ozlabs.org, rpurdie@rpsys.net, linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1231308086.27416.14.camel@localhost>
+Cc: Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, muvarov@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +21,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 20, 2009 at 05:47:14PM +0100, Eric Sesterhenn wrote:
-> * Jörn Engel (joern@logfs.org) wrote:
-> > On Fri, 16 January 2009 16:07:00 -0700, Tom Rini wrote:
-> > > 
-> > > Sounds like a plan to me, except maybe zlib_inflate_unsafe() and a
-> > > comment above the wrapper saying what/why is going on?
-> > 
-> > Eric, will you do the honors?  Since you did all the hard work before,
-> > you derserve the fame as well. :)
+On Wed, Jan 07, 2009 at 05:01:26PM +1100, Michael Ellerman wrote:
+> Hi all,
 > 
-> Since I am not sure either about xtensa I added chris to the cc list.
+> The patch to dynamically allocate memory regions for ppc64 kexec-tools,
+> ie. "ppc64: kexec memory ranges dynamic allocation" (d182ce5), has never
+> worked AFAICT.
+> 
+> Chandru reported it as broken when it was posted:
+> http://lists.infradead.org/pipermail/kexec/2008-October/002751.html
+> 
+> Still, it's in now, and I'm trying to work out what's going wrong.
+> 
+> The symptom is as reported by Chandru, we end up not being able to
+> allocate any memory (in locate_hole()). This is caused by the list of
+> memory_ranges being empty.
+> 
+> The memory_ranges are empty because they have been realloc'ed (by the
+> dynamic alloc code), and the generic code is still looking at the old
+> version.
+> 
+> What I'm not clear on is why the ppc64 code is even calling
+> setup_memory_ranges() a second time (in elf_ppc64_load()). It's already
+> been called by get_memory_ranges() from my_load(). Or is there another
+> route into elf_ppc64_load() that I'm not seeing?
+> 
+> And in fact if I just remove that call, then everything is peachy.
+> 
+> The following patch makes it work for me at least.
 
-How about we just change all callers from arch/*/boot to use the _unsafe
-version?  Then..
+Hi Michael,
 
-> +/*
-> +    These two wrappers decide wheter strm->next_out gets checked for NULL.
-> +    The zlib_inflate_unsafe() version got added because the PPC zImage
-> +    gets extracted to memory address 0 and therefore
-> +    we avoid this check for zlib_inflate_unsafe()
+I must confess that I don't have a complete understanding of this problem.
+Does Bernhard's recent patch (sorry that I applied it even though
+it came in after your patch) help this problem?
 
-These two wrappers decide wheter strm->next_out gets checked for NULL.
-The zlib_inflate_unsafe() version is primarily used in the pre-Linux
-'boot' directory code to allow for extraction to memory address 0 and
-therefore we avoid this check.
+commit 95c74405638c786bc76fbca5e4e8427dfe26e907
+Author: Bernhard Walle <bwalle@suse.de>
+Date:   Fri Jan 16 19:11:34 2009 +0100
+Subject: Fix memory corruption when using realloc_memory_ranges()
+
+> >From 40958d8f957876ca612b666f40bebf28ea335314 Mon Sep 17 00:00:00 2001
+> From: Michael Ellerman <michael@ellerman.id.au>
+> Date: Wed, 7 Jan 2009 16:57:05 +1100
+> Subject: [PATCH] Don't call setup_memory_ranges() again
+> 
+> There's no need to call setup_memory_ranges() again. Furthermore it can
+> lead to the memory_ranges being realloc'ed, which results in the generic
+> code (locate_hole() etc.) using the free'd memory_ranges.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+>  kexec/arch/ppc64/kexec-elf-ppc64.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kexec/arch/ppc64/kexec-elf-ppc64.c b/kexec/arch/ppc64/kexec-elf-ppc64.c
+> index 21533cb..1e2d5a3 100644
+> --- a/kexec/arch/ppc64/kexec-elf-ppc64.c
+> +++ b/kexec/arch/ppc64/kexec-elf-ppc64.c
+> @@ -151,8 +151,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
+>  	if (ramdisk && reuse_initrd)
+>  		die("Can't specify --ramdisk or --initrd with --reuseinitrd\n");
+>  
+> -	setup_memory_ranges(info->kexec_flags);
+> -
+>  	/* Need to append some command line parameters internally in case of
+>  	 * taking crash dumps.
+>  	 */
+> -- 
+> 1.5.3.7.1.g4e596e
+> 
+> 
 
 -- 
-Tom Rini
+Simon Horman
+  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
+  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
