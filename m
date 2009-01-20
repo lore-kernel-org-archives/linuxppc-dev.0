@@ -1,15 +1,17 @@
-Return-Path: <roel.kluin@gmail.com>
-Message-ID: <4975F455.8020004@gmail.com>
-Date: Tue, 20 Jan 2009 16:57:09 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] PS3 ps3av_set_video_mode() make id signed
-References: <4972456C.1050301@gmail.com>
-	<alpine.LRH.2.00.0901201018440.31271@vixen.sonytel.be>
-In-Reply-To: <alpine.LRH.2.00.0901201018440.31271@vixen.sonytel.be>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E5C74DDF55
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 02:58:35 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n0KFwQHp024493
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 09:58:26 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Fix typo in mpc8572ds dts
+Date: Tue, 20 Jan 2009 09:58:25 -0600
+Message-Id: <1232467105-25102-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,104 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The localbus node flash had a minor typo for a read-only property.
 
->> make id signed so a negative id will get noticed
-> 
-> Thanks for noticing! It looks OK, except...
-
-> 1. You forgot to update the forward declaration of ps3av_set_video_mode() in
->    arch/powerpc/include/asm/ps3av.h (did you compile this succesfully?)
-
-fixed that (and no, sorry, I didn't compile test it, I have to focus a bit on
-a biotechnology exam, maybe later).
-
-> 2. You forgot to change `u32 id' in ps3av_probe().
-
-ok, changed it. but I am not sure whether the last two hunks are ok. Should
-we error out like this or just let the negative value be assigned to
-ps3av->ps3av_mode? If not, is there more cleanup required?
-
-> Can you please make these changes, too? Thx again!
-
-No problem.
-
---------------------->8-------------------------8<------------------------
-Make id signed so a negative id will get noticed. Error out if
-ps3av_auto_videomode() fails.
-
-
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/ps3av.h |    2 +-
- drivers/ps3/ps3av.c              |   16 ++++++++++++----
- 2 files changed, 13 insertions(+), 5 deletions(-)
+ arch/powerpc/boot/dts/mpc8572ds.dts |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ps3av.h b/arch/powerpc/include/asm/ps3av.h
-index cd24ac1..0427b0b 100644
---- a/arch/powerpc/include/asm/ps3av.h
-+++ b/arch/powerpc/include/asm/ps3av.h
-@@ -730,7 +730,7 @@ extern int ps3av_cmd_av_get_hw_conf(struct ps3av_pkt_av_get_hw_conf *);
- extern int ps3av_cmd_video_get_monitor_info(struct ps3av_pkt_av_get_monitor_info *,
- 					    u32);
+diff --git a/arch/powerpc/boot/dts/mpc8572ds.dts b/arch/powerpc/boot/dts/mpc8572ds.dts
+index 3dcc001..359c3b7 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds.dts
+@@ -89,7 +89,7 @@
  
--extern int ps3av_set_video_mode(u32);
-+extern int ps3av_set_video_mode(int);
- extern int ps3av_set_audio_mode(u32, u32, u32, u32, u32);
- extern int ps3av_get_auto_mode(void);
- extern int ps3av_get_mode(void);
-diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
-index 5324978..235e87f 100644
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -838,7 +838,7 @@ static int ps3av_get_hw_conf(struct ps3av *ps3av)
- }
+ 			ramdisk@0 {
+ 				reg = <0x0 0x03000000>;
+-				readl-only;
++				read-only;
+ 			};
  
- /* set mode using id */
--int ps3av_set_video_mode(u32 id)
-+int ps3av_set_video_mode(int id)
- {
- 	int size;
- 	u32 option;
-@@ -940,7 +940,7 @@ EXPORT_SYMBOL_GPL(ps3av_audio_mute);
- static int ps3av_probe(struct ps3_system_bus_device *dev)
- {
- 	int res;
--	u32 id;
-+	int id;
- 
- 	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
- 	dev_dbg(&dev->core, "  timeout=%d\n", timeout);
-@@ -962,8 +962,10 @@ static int ps3av_probe(struct ps3_system_bus_device *dev)
- 	init_completion(&ps3av->done);
- 	complete(&ps3av->done);
- 	ps3av->wq = create_singlethread_workqueue("ps3avd");
--	if (!ps3av->wq)
-+	if (!ps3av->wq) {
-+		res = -ENOMEM;
- 		goto fail;
-+	}
- 
- 	switch (ps3_os_area_get_av_multi_out()) {
- 	case PS3_PARAM_AV_MULTI_OUT_NTSC:
-@@ -994,6 +996,12 @@ static int ps3av_probe(struct ps3_system_bus_device *dev)
- 		safe_mode = 1;
- #endif /* CONFIG_FB */
- 	id = ps3av_auto_videomode(&ps3av->av_hw_conf);
-+	if (id < 0) {
-+		printk(KERN_ERR "%s: invalid id :%d\n", __func__, id);
-+		res = -EINVAL;
-+		goto fail;
-+	}
-+
- 	safe_mode = 0;
- 
- 	mutex_lock(&ps3av->mutex);
-@@ -1007,7 +1015,7 @@ static int ps3av_probe(struct ps3_system_bus_device *dev)
- fail:
- 	kfree(ps3av);
- 	ps3av = NULL;
--	return -ENOMEM;
-+	return res;
- }
- 
- static int ps3av_remove(struct ps3_system_bus_device *dev)
+ 			diagnostic@3000000 {
+-- 
+1.5.6.6
