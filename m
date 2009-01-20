@@ -1,22 +1,27 @@
-Return-Path: <snakebyte@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 77046DDF5A
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 03:47:26 +1100 (EST)
-Date: Tue, 20 Jan 2009 17:47:14 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-Subject: Re: [Patch] NULL pointer deref with corrupted squashfs image
-Message-ID: <20090120163957.GA21339@alice>
-References: <20090113124027.GB16333@alice> <20090116174525.GA31869@alice>
-	<20090116190725.GA19453@logfs.org>
-	<20090116230700.GP6710@smtp.west.cox.net>
-	<20090117134916.GA29641@logfs.org>
+Return-Path: <jhautbois@gmail.com>
+Received: from mail-bw0-f17.google.com (mail-bw0-f17.google.com
+	[209.85.218.17]) by ozlabs.org (Postfix) with ESMTP id A4DFCDDF13
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 04:07:58 +1100 (EST)
+Received: by bwz10 with SMTP id 10so597287bwz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 09:07:54 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090117134916.GA29641@logfs.org>
-Cc: Tom Rini <trini@kernel.crashing.org>, chris@zankel.net,
-	phillip@lougher.demon.co.uk, linuxppc-dev@ozlabs.org,
-	rpurdie@rpsys.net, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20090120163155.GA8978@ld0162-tx32.am.freescale.net>
+References: <496F318D.6010302@denx.de> <496F4760.1010007@denx.de>
+	<8cad0aa0901150706u72538941rbc22655d5a8905ea@mail.gmail.com>
+	<8cad0aa0901160406l3db9c025ubdcac40b4b464d23@mail.gmail.com>
+	<20090116172903.GA722@ld0162-tx32.am.freescale.net>
+	<8cad0aa0901160944l48bd0e99wa13f23907838376d@mail.gmail.com>
+	<8cad0aa0901160953te6c7d1cg3a4df7de7da7d182@mail.gmail.com>
+	<4970CBA9.60809@freescale.com>
+	<8cad0aa0901200256n6122d17eh90f56e9cb8cae775@mail.gmail.com>
+	<20090120163155.GA8978@ld0162-tx32.am.freescale.net>
+Date: Tue, 20 Jan 2009 18:05:56 +0100
+Message-ID: <8cad0aa0901200905y642f1a39qc8c52a076edbd123@mail.gmail.com>
+Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,102 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* J=C3=B6rn Engel (joern@logfs.org) wrote:
-> On Fri, 16 January 2009 16:07:00 -0700, Tom Rini wrote:
-> >=20
-> > Sounds like a plan to me, except maybe zlib_inflate_unsafe() and a
-> > comment above the wrapper saying what/why is going on?
->=20
-> Eric, will you do the honors?  Since you did all the hard work before,
-> you derserve the fame as well. :)
+2009/1/20 Scott Wood <scottwood@freescale.com>:
+> On Tue, Jan 20, 2009 at 11:56:58AM +0100, Jean-Michel Hautbois wrote:
+>> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 162=
+56
+>> Kernel command line: root=3D/dev/ram rw
+>> PID hash table entries: 256 (order: 8, 1024 bytes)
+>> time_init: decrementer frequency =3D 25.000000 MHz
+>> time_init: processor frequency   =3D 400.000000 MHz
+>> clocksource: timebase mult[a000000] shift[22] registered
+>> clockevent: decrementer mult[666] sh=EF=BF=BD
+>
+> That looks like something is failing when the real (as opposed to early
+> debug) serial driver starts.  Try commenting out the call to cpm_setbrg
+> in drivers/serial/cpm_uart/cpm_uart_cpm2.h; if that makes a difference,
+> there's something wrong with the brg node in the device tree.
+>
+> -Scott
+>
+It is *a lot* better !
+I am finishing into a kernel panic, but it is a normal thing (bad initramfs=
+).
 
-Since I am not sure either about xtensa I added chris to the cc list.
+Well, that was using the cuImage. When I try to use the uImage and the
+FDT file, I am stopped here:
+  Uncompressing Kernel Image ... OK
+   Loading Ramdisk to 039d7000, end 03b7d996 ... OK
+   Loading Device Tree to 007fa000, end 007fffff ... OK
 
-
-Some callees of zlib_inflate() might accidentally pass a NULL
-pointer in strm->next_out which zlib_inflate() should catch.
-Others like the powerpc gunzip_partial expect to be able
-to extract a zImage to memory location 0. This introduces
-zlib_inflate_usafe() for those and adds a check for the rest
-
-Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-
---- linux/arch/powerpc/boot/gunzip_util.c.orig	2009-01-20 10:23:11.00000000=
-0 +0100
-+++ linux/arch/powerpc/boot/gunzip_util.c	2009-01-20 10:23:31.000000000 +01=
-00
-@@ -109,7 +109,7 @@ int gunzip_partial(struct gunzip_state *
-=20
- 		state->s.next_out =3D dst;
- 		state->s.avail_out =3D dstlen;
--		r =3D zlib_inflate(&state->s, Z_FULL_FLUSH);
-+		r =3D zlib_inflate_unsafe(&state->s, Z_FULL_FLUSH);
- 		if (r !=3D Z_OK && r !=3D Z_STREAM_END)
- 			fatal("inflate returned %d msg: %s\n\r", r, state->s.msg);
- 		len =3D state->s.next_out - (unsigned char *)dst;
---- linux/include/linux/zlib.h.orig	2009-01-20 10:11:33.000000000 +0100
-+++ linux/include/linux/zlib.h	2009-01-20 10:19:56.000000000 +0100
-@@ -329,7 +329,23 @@ extern int zlib_inflateInit (z_streamp s
- */
-=20
-=20
--extern int zlib_inflate (z_streamp strm, int flush);
-+extern int __zlib_inflate (z_streamp strm, int flush, int check_out);
-+/*
-+    These two wrappers decide wheter strm->next_out gets checked for NULL.
-+    The zlib_inflate_unsafe() version got added because the PPC zImage
-+    gets extracted to memory address 0 and therefore
-+    we avoid this check for zlib_inflate_unsafe()
-+*/
-+static inline int zlib_inflate(z_streamp strm, int flush)
-+{
-+	return __zlib_inflate(strm, flush, 1);
-+}
-+
-+static inline int zlib_inflate_unsafe(z_streamp strm, int flush)
-+{
-+	return __zlib_inflate(strm, flush, 0);
-+}
-+
- /*
-     inflate decompresses as much data as possible, and stops when the input
-   buffer becomes empty or the output buffer becomes full. It may introduce
---- linux/lib/zlib_inflate/inflate_syms.c.orig	2009-01-20 10:22:21.00000000=
-0 +0100
-+++ linux/lib/zlib_inflate/inflate_syms.c	2009-01-20 10:22:32.000000000 +01=
-00
-@@ -11,7 +11,7 @@
- #include <linux/zlib.h>
-=20
- EXPORT_SYMBOL(zlib_inflate_workspacesize);
--EXPORT_SYMBOL(zlib_inflate);
-+EXPORT_SYMBOL(__zlib_inflate);
- EXPORT_SYMBOL(zlib_inflateInit2);
- EXPORT_SYMBOL(zlib_inflateEnd);
- EXPORT_SYMBOL(zlib_inflateReset);
---- linux/lib/zlib_inflate/inflate.c.orig	2009-01-20 10:20:14.000000000 +01=
-00
-+++ linux/lib/zlib_inflate/inflate.c	2009-01-20 10:22:03.000000000 +0100
-@@ -329,7 +329,7 @@ static int zlib_inflateSyncPacket(z_stre
-    will return Z_BUF_ERROR if it has not reached the end of the stream.
-  */
-=20
--int zlib_inflate(z_streamp strm, int flush)
-+int __zlib_inflate(z_streamp strm, int flush, int check_out)
- {
-     struct inflate_state *state;
-     const unsigned char *next;  /* next input */
-@@ -347,8 +347,10 @@ int zlib_inflate(z_streamp strm, int flu
-     static const unsigned short order[19] =3D /* permutation of code lengt=
-hs */
-         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
-=20
--    /* Do not check for strm->next_out =3D=3D NULL here as ppc zImage
--       inflates to strm->next_out =3D 0 */
-+    /* We only check strm->next_out if the callee requests it,
-+       since ppc extracts the ppc zImage to 0 */
-+    if (check_out && !strm->next_out)
-+        return Z_STREAM_ERROR;
-=20
-     if (strm =3D=3D NULL || strm->state =3D=3D NULL ||
-         (strm->next_in =3D=3D NULL && strm->avail_in !=3D 0))
+JM
