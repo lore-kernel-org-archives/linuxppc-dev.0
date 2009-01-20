@@ -1,14 +1,12 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 914B3DDF86
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 15:12:08 +1100 (EST)
-Date: Mon, 19 Jan 2009 23:12:05 -0500
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 5F3A6DDF8C
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 15:21:39 +1100 (EST)
+Date: Mon, 19 Jan 2009 23:21:36 -0500
 From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Warp patches for the new ndfc driver
-Message-ID: <20090119231205.2378e31f@lappy.seanm.ca>
-In-Reply-To: <20090109232011.19f6e780@lappy.seanm.ca>
-References: <20090109232011.19f6e780@lappy.seanm.ca>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Defconfig support
+Message-ID: <20090119232136.717eddf3@lappy.seanm.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,22 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 9 Jan 2009 23:20:11 -0500
-"Sean MacLennan" <sean.maclennan@ottawa.kanatek.ca> wrote:
+Since the list seems quiet right now, thought I would ask a question.
+Up till now I haven't really worried about the warp defconfig being up
+to date since, realistically, the stock kernel was not usable on the
+warp. Since it usually boots from NAND, the lack of an ndfc driver
+made it unbootable in a production system.
 
-> Woo hoo! The ndfc driver finally got in the kernel! These patches
-> update the warp to use the new driver.
+However, the 2.6.29 kernel will boot, so the defconfig problem becomes
+more acute. The problem is keeping the changes that are required for
+the warp while also handling the normal changes that happen every
+release.
 
-Just a bump and a comment to see who is reading this ;) 
+For example, the current git diff shows CONFIG_SIMPLE_GPIO which is
+just a new feature and can be safely left unset. But the watchdog made
+it into the kernel, so CONFIG_PIKA_WDT should be set for a warp.
 
-2.6.29 is a very important release for the Warp because with the
-ndfc driver, and assuming this patch or something like it is accepted,
-you will be able to get a working kernel for the warp from kernel.org.
-It will be missing SD support and LED support, but everything else will
-work :)
-
-But it seems to me that otherwise, 2.6.29 seems to be a very quiet
-release. Has anybody else noticed this?
+Any ideas for a good way of handling this?
 
 Cheers,
    Sean
