@@ -1,33 +1,15 @@
-Return-Path: <chandru@in.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [59.145.155.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 05F01DDED1
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 19:13:50 +1100 (EST)
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28smtp09.in.ibm.com (8.13.1/8.13.1) with ESMTP id n0K7xT1o012765
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 13:29:29 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n0K8Bkvg938086
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 13:41:46 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.13.1/8.13.3) with ESMTP id n0K8DhPO007994
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 19:13:43 +1100
-Message-ID: <497587B6.9010306@in.ibm.com>
-Date: Tue, 20 Jan 2009 13:43:42 +0530
-From: Chandru <chandru@in.ibm.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Tue, 20 Jan 2009 10:21:17 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Roel Kluin <roel.kluin@gmail.com>
+Subject: Re: [PATCH] PS3 ps3av_set_video_mode() make id signed
+In-Reply-To: <4972456C.1050301@gmail.com>
+Message-ID: <alpine.LRH.2.00.0901201018440.31271@vixen.sonytel.be>
+References: <4972456C.1050301@gmail.com>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-References: <200812241325.49404.chandru@in.ibm.com>
-	<200901161746.36584.chandru@in.ibm.com>
-	<1232128377.27278.69.camel@nimitz>
-	<200901191700.03580.chandru@in.ibm.com>
-In-Reply-To: <200901191700.03580.chandru@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,46 +19,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Chandru wrote:
-> In case either physbase or reserve_size are not page aligned and in addition
-> if the following condition is also true
->
-> node_ar.end_pfn = node->node_end_pfn = PFN_DOWN(physbase+reserve_size).
->
-> we may hit the BUG_ON(end > bdata->node_low_pfn) in mark_bootmem_node() in
-> mm/bootmem.c Hence pass the pfn that the physbase is part of and align
-> reserve_size before calling reserve_bootmem_node().
->
-> Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
-> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/numa.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> --- linux-2.6.29-rc2/arch/powerpc/mm/numa.c.orig	2009-01-19 16:14:49.000000000 +0530
-> +++ linux-2.6.29-rc2/arch/powerpc/mm/numa.c	2009-01-19 16:36:38.000000000 +0530
-> @@ -901,7 +901,8 @@ static void mark_reserved_regions_for_ni
->  		get_node_active_region(start_pfn, &node_ar);
->  		while (start_pfn < end_pfn &&
->  			node_ar.start_pfn < node_ar.end_pfn) {
-> -			unsigned long reserve_size = size;
-> +			unsigned long reserve_size = (size >> PAGE_SHIFT) <<
-> +								PAGE_SHIFT;
->  			/*
->  			 * if reserved region extends past active region
->  			 * then trim size to active region
-> @@ -917,7 +918,8 @@ static void mark_reserved_regions_for_ni
->  				dbg("reserve_bootmem %lx %lx nid=%d\n",
->  					physbase, reserve_size, node_ar.nid);
->  				reserve_bootmem_node(NODE_DATA(node_ar.nid),
-> -						physbase, reserve_size,
-> +						(start_pfn << PAGE_SHIFT),
-> +						reserve_size,
->  						BOOTMEM_DEFAULT);
->  			}
->  			/*
->   
-does this patch look good ?, do you concur with it ?
+On Sat, 17 Jan 2009, Roel Kluin wrote:
+> vi drivers/video/ps3fb.c +618
+> static int ps3fb_set_par(struct fb_info *info)
+> {
+>         struct ps3fb_par *par = info->par;
+> ... [ and at line 660 ] ...
+> 	if (ps3av_set_video_mode(par->new_mode_id))
+> 
+> now new_mode_id is an int
+> 
+> vi drivers/video/ps3fb.c +132
+> struct ps3fb_par {
+> ...
+>         int new_mode_id;
+> ...
+> };
+> 
+> vi drivers/ps3/ps3av.c +844
+> int ps3av_set_video_mode(u32 id)
+> 
+> -------------------------^^^
+> 
+> {
+> ...
+> 	if (... || id < 0) {
+> 
+> --------------------^^^
+> 
+> 		dev_dbg(&ps3av->dev->core, "%s: error id :%d\n", __func__, id);
+>                 return -EINVAL;
+>         }
+> ...
+> 		id = ps3av_auto_videomode(&ps3av->av_hw_conf);
+>                 if (id < 1) {
+> ---------------------^^^
+>                         printk(KERN_ERR "%s: invalid id :%d\n", __func__, id);
+>                         return -EINVAL;
+>                 }
+> ...
+> 	ps3av->ps3av_mode = id;
+> 
+> vi drivers/ps3/ps3av.c +763
+> static int ps3av_auto_videomode()
+> 
+> -------^^^
+> 
+> +42
+> static struct ps3av {
+> ...
+>         int ps3av_mode;
+> ...
+> };
+> 
+> --------------------->8---------------8<-------------------
+> make id signed so a negative id will get noticed
 
-thanks,
-Chandru
+Thanks for noticing! It looks OK, except...
+
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
+> index 5324978..7aa6d41 100644
+> --- a/drivers/ps3/ps3av.c
+> +++ b/drivers/ps3/ps3av.c
+> @@ -838,7 +838,7 @@ static int ps3av_get_hw_conf(struct ps3av *ps3av)
+>  }
+>  
+>  /* set mode using id */
+> -int ps3av_set_video_mode(u32 id)
+> +int ps3av_set_video_mode(int id)
+>  {
+>  	int size;
+>  	u32 option;
+
+1. You forgot to update the forward declaration of ps3av_set_video_mode() in
+   arch/powerpc/include/asm/ps3av.h (did you compile this succesfully?)
+
+2. You forgot to change `u32 id' in ps3av_probe().
+
+Can you please make these changes, too? Thx again!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
