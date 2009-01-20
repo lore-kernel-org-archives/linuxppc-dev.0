@@ -1,23 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 164F7DDDE0
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 12:19:48 +1100 (EST)
-Date: Tue, 20 Jan 2009 04:19:45 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Julian Calaby <julian.calaby@gmail.com>
-Subject: Re: [PATCH] mb862xx: Restrict compliation of platform driver to PPC
-Message-ID: <20090120011945.GA23380@oksana.dev.rtsoft.ru>
+Return-Path: <julian.calaby@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.235])
+	by ozlabs.org (Postfix) with ESMTP id 6FCA1DDF58
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 13:00:21 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so3112963rvb.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jan 2009 18:00:19 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20090120011945.GA23380@oksana.dev.rtsoft.ru>
 References: <496A89A1.8050302@gmail.com>
 	<646765f40901191650v5320f5e4tcc5fb7da0555ade1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <646765f40901191650v5320f5e4tcc5fb7da0555ade1@mail.gmail.com>
+	<20090120011945.GA23380@oksana.dev.rtsoft.ru>
+Date: Tue, 20 Jan 2009 13:00:19 +1100
+Message-ID: <646765f40901191800y27530acaw74edc01abdd13e68@mail.gmail.com>
+Subject: Re: [PATCH] mb862xx: Restrict compliation of platform driver to PPC
+From: Julian Calaby <julian.calaby@gmail.com>
+To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
 	Matteo Fortini <m.fortini@selcomgroup.com>, linux-kernel@vger.kernel.org,
 	Krzysztof Helt <krzysztof.h1@poczta.fm>, linuxppc-dev@ozlabs.org,
 	Andrew Morton <akpm@linux-foundation.org>,
 	Anatolij Gustschin <agust@denx.de>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,77 +29,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 20, 2009 at 11:50:33AM +1100, Julian Calaby wrote:
-> Ping?
-> 
-> Does anyone maintain this driver?
+On Tue, Jan 20, 2009 at 12:19, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> Should be Anatolij. ;-)
 
-Should be Anatolij. ;-)
+Who is the first person on the list, I guess he's missed this or isn't
+reading his email.
 
-But I'm interested in this driver as well.
+> But I'm interested in this driver as well.
+>
+> FWIW, the patch looks OK, except for the long lines in the commit log.
 
-FWIW, the patch looks OK, except for the long lines in the commit log.
-Also you'd better mention exact build error in the commit log.
+I don't expect this to be applied as is. There is a better fix out
+there, but I don't know the hardware so I'm not sure what it is.
 
-Reviewed-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Also you'd better mention exact build error in the commit log.
 
+Essentially it's a huge list of missing definitions for functions
+which aren't defined for SPARC. I'll reply with it if you really want
+it, however they look to be PPC specific. If they were generic I would
+have simply included the correct files so that it compiled, rather
+than this nasty hack.
 
-(Btw, we'd better fix the build for sparc instead of adding another
-"depends on". Could anybody point to some recent, working sparc cross
-toolchain? Last time I googled for it I found only some prehistoric
-versions that I didn't bother to try...)
+It also appears that these functions are not defined in the headers
+that this driver includes.
 
-> (akpm: Sorry for cc'ing you on this, I'm not sure who else to send it to)
-> 
-> On Mon, Jan 12, 2009 at 11:06, Julian Calaby <julian.calaby@gmail.com> wrote:
-> > mb862xx: Restrict compliation of platform driver to PPC
-> >
-> > The OpenFirmware part of this driver is uncompilable on SPARC due to it's dependance on several PPC specific functions.
-> >
-> > Restricting this to PPC to prevent these build errors.
-> >
-> > This was found using randconfig builds.
-> >
-> > Signed-off-by: Julian Calaby <julian.calaby@gmail.com>
-> >
-> > ---
-> >
-> > A couple of notes:
-> >
-> > 1. After looking at the includes used by this driver, the OF part may not compile cleanly on PPC either as it doesn't appear to pull in the required headers for all the functions and constants it uses.
-> >
-> > 2. Also, this bug will *not* show up in allmodconfigs or allyesconfigs as the OF part of this driver is prevented from building when the PCI driver is built, and the PCI driver appears first.
-> >
-> > 3. This patch is over DaveM's sparc-2.6 git tree as of today.
-> >
-> > 4. I apologise for the massive cross-posting - I am not sure where exactly to send this patch.
-> >
-> > 5. Please note that I am not a member of any of these lists, so please keep me CC'd.
-> >
-> > Thanks,
-> >
-> > Julian Calaby
-> >
-> > ---
-> >  drivers/video/Kconfig |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> > index 6372f8b..8f18169 100644
-> > --- a/drivers/video/Kconfig
-> > +++ b/drivers/video/Kconfig
-> > @@ -2111,6 +2111,7 @@ config FB_MB862XX_LIME
-> >        bool "Lime GDC"
-> >        depends on FB_MB862XX
-> >        depends on OF && !FB_MB862XX_PCI_GDC
-> > +       depends on PPC
-> >        select FB_FOREIGN_ENDIAN
-> >        select FB_LITTLE_ENDIAN
-> >        ---help---
-> >
-> >
+> (Btw, we'd better fix the build for sparc instead of adding another
+> "depends on". Could anybody point to some recent, working sparc cross
+> toolchain? Last time I googled for it I found only some prehistoric
+> versions that I didn't bother to try...)
+
+Before we commit to fixing this properly, is it really worth it? Is
+this hardware ever likely to be used with SPARC?
+
+Given that there are PCI and OF versions of the driver, it seems to me
+that this is available as a PCI expansion card, and as a graphics chip
+built into some PPC motherboards. The initial commit says: "Lime GDC
+support is known to work on PPC440EPx based lwmon5 and MPC8544E based
+socrates embedded boards, both equipped with Lime GDC." so I'm
+guessing that this graphics chip is designed for embedded boards. I
+can find references to it's use in embedded automotive applications on
+Google but I can't find any reference to the Fujitsu LIME (MB86276)
+and SPARC on Google.
+
+Note that the PCI version of this driver compiles fine with both
+allyesconfig and allmodconfig.
+
+If you're sure you want to do this, I'd check out crosstool for a
+SPARC cross-complier.
+
+Two other things:
+1. SPARC32 and SPARC64 can be compiled with the same compiler.
+2. These two platforms have slightly different OpenFirmware interfaces
+- so fixing it for both of these will be a pain.
+
+Thanks,
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+.Plan: https://sites.google.com/site/juliancalaby/
