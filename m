@@ -1,17 +1,35 @@
-Return-Path: <arieswar24b@yahoo.de>
-Received: from web25803.mail.ukl.yahoo.com (web25803.mail.ukl.yahoo.com
-	[217.12.10.188]) by ozlabs.org (Postfix) with SMTP id C1379DDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 23:57:40 +1100 (EST)
-Date: Wed, 21 Jan 2009 12:57:38 +0000 (GMT)
-From: Dave Best <arieswar24b@yahoo.de>
-Subject: Re: Bestcomm tasks and interrupts on MPC5200(B)
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40901200804l24a10f56g50c3812f8730a513@mail.gmail.com>
+Return-Path: <tklein@de.ibm.com>
+Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CCE4ADDDCA
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 01:52:14 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate3.de.ibm.com (8.13.8/8.13.8) with ESMTP id n0LEq6lv089442
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 14:52:06 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.1) with
+	ESMTP id n0LEq6AD3535014
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 15:52:06 +0100
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id n0LEq5fX026910
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 15:52:05 +0100
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 1/3] ehea: Use net_device_ops structure
+From: Thomas Klein <tklein@de.ibm.com>
+Date: Wed, 21 Jan 2009 15:49:00 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-ID: <131068.85091.qm@web25803.mail.ukl.yahoo.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: arieswar24b@yahoo.de
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200901211549.01120.tklein@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>, Hannes Hering <hering2@de.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Jan-Bernd Themann <ossthema@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,79 +39,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for the driver.=20
-I am looking into this.
+Adapt to lately introduced net_device_ops structure.
 
-I still have some trouble to compile and use the driver:
-- I currently use the 2.6.23.1 kernel source which was provide along with  =
-the pcm030 board by Phytec. And i guess your driver was compile along with =
-a newer driver as i can't find the "strict_strtoul" and "strict_strtol" fun=
-ctions in my kernel but i copied their source into my code. The same with "=
-of_find_matching_node" which i tried to exchange with "of_find_compatible_n=
-ode" but somehow my devicetree does not include the neccesay compatible typ=
-es. Here I tried "of_find_node_by_type" with "soc" and it seemed to work.
-The biggest problem seems to be "irq_create_of_mapping" for the localplus i=
-sr. It's giving me a kernel OOPS by trying to access data from 0x00000010.
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-If you could point out if I have to use a newer Kernel, and which, to solve=
- these problems or how i can code around these with my current kernel sourc=
-e.
-
-
-Anyway, I looked over your code and only found that you first create an int=
-errupt routine for the localplus in general before creating the bestcomm ta=
-sk.
-As far as I thought it was enough to create the bestcomm task and enable it=
-. And it was upon Bestcomm to watch over its tasks and to look for interrup=
-t sources according to their initiators/requestors to trigger their ISR.
-
-In your example the local plus fifo would trigger its ISR when its done tra=
-nsfering the blocksize and reset the status bits and start over. The task w=
-ould run its ISR when its buffer is filled to create a new one.
-
-If thats the way to go, i will try it out.
-
-Thanks
-Dave
-
---- Grant Likely <grant.likely@secretlab.ca> schrieb am Di, 20.1.2009:
-
-> Von: Grant Likely <grant.likely@secretlab.ca>
-> Betreff: Re: Bestcomm tasks and interrupts on MPC5200(B)
-> An: arieswar24b@yahoo.de
-> CC: linuxppc-dev@ozlabs.org
-> Datum: Dienstag, 20. Januar 2009, 17:04
-> On Tue, Jan 20, 2009 at 6:15 AM, Dave Best
-> <arieswar24b@yahoo.de> wrote:
-> > I'm trying to write a driver which uses the Local
-> Plus Bus on my MPC5200B and therefore have to use BestComm
-> DMA, which requires me to use a Gen_BD task for data
-> transfer with Local Plus.
-> > I tried to follow the fec driver that is currently
-> used and took a peek at the mpc52xx-ac97 driver which at
-> least uses the same kind of bus as I.
-> >
-> > Initialising the task, resetting and enabling works
-> fine. Even request_irq reports no error, but when I start a
-> transfer it hangs and if I am lucky, an interrupt occurs
-> after quite some time. But it's always the BestComm
-> ethernet rx task which produces an RFIFO interrupt,
-> presumably after the watchdog catches on.
-> > If this happens my interrupt occurs to.
->=20
-> Are you using the LocalPlus fifo device for the transfer
-> (you need to
-> if you aren't)?
->=20
-> I've attached a test driver that demonstrates how to do
-> FIFO only and
-> FIFO+DMA transfers over the localplus bus.
->=20
-> g.
->=20
->=20
->=20
->=20
-> --=20
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.=0A=0A=0A      
+---
+diff -Nurp -X dontdiff linux-2.6.29/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+--- linux-2.6.29/drivers/net/ehea/ehea.h	2009-01-16 12:03:27.000000000 +0100
++++ patched_kernel/drivers/net/ehea/ehea.h	2009-01-20 15:10:28.000000000 +0100
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0096"
++#define DRV_VERSION	"EHEA_0097"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff -Nurp -X dontdiff linux-2.6.29/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-2.6.29/drivers/net/ehea/ehea_main.c	2009-01-16 12:03:27.000000000 +0100
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2009-01-20 15:10:28.000000000 +0100
+@@ -3069,6 +3069,22 @@ static void ehea_unregister_port(struct
+ 	of_device_unregister(&port->ofdev);
+ }
+ 
++static const struct net_device_ops ehea_netdev_ops = {
++	.ndo_open		= ehea_open,
++	.ndo_stop		= ehea_stop,
++	.ndo_start_xmit		= ehea_start_xmit,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller	= ehea_netpoll,
++#endif
++	.ndo_get_stats		= ehea_get_stats,
++	.ndo_set_mac_address	= ehea_set_mac_addr,
++	.ndo_set_multicast_list	= ehea_set_multicast_list,
++	.ndo_change_mtu		= ehea_change_mtu,
++	.ndo_vlan_rx_register	= ehea_vlan_rx_register,
++	.ndo_vlan_rx_add_vid	= ehea_vlan_rx_add_vid,
++	.ndo_vlan_rx_kill_vid	= ehea_vlan_rx_kill_vid
++};
++
+ struct ehea_port *ehea_setup_single_port(struct ehea_adapter *adapter,
+ 					 u32 logical_port_id,
+ 					 struct device_node *dn)
+@@ -3121,19 +3137,9 @@ struct ehea_port *ehea_setup_single_port
+ 	/* initialize net_device structure */
+ 	memcpy(dev->dev_addr, &port->mac_addr, ETH_ALEN);
+ 
+-	dev->open = ehea_open;
+-#ifdef CONFIG_NET_POLL_CONTROLLER
+-	dev->poll_controller = ehea_netpoll;
+-#endif
+-	dev->stop = ehea_stop;
+-	dev->hard_start_xmit = ehea_start_xmit;
+-	dev->get_stats = ehea_get_stats;
+-	dev->set_multicast_list = ehea_set_multicast_list;
+-	dev->set_mac_address = ehea_set_mac_addr;
+-	dev->change_mtu = ehea_change_mtu;
+-	dev->vlan_rx_register = ehea_vlan_rx_register;
+-	dev->vlan_rx_add_vid = ehea_vlan_rx_add_vid;
+-	dev->vlan_rx_kill_vid = ehea_vlan_rx_kill_vid;
++	dev->netdev_ops = &ehea_netdev_ops;
++	ehea_set_ethtool_ops(dev);
++
+ 	dev->features = NETIF_F_SG | NETIF_F_FRAGLIST | NETIF_F_TSO
+ 		      | NETIF_F_HIGHDMA | NETIF_F_IP_CSUM | NETIF_F_HW_VLAN_TX
+ 		      | NETIF_F_HW_VLAN_RX | NETIF_F_HW_VLAN_FILTER
+@@ -3142,7 +3148,6 @@ struct ehea_port *ehea_setup_single_port
+ 	dev->watchdog_timeo = EHEA_WATCH_DOG_TIMEOUT;
+ 
+ 	INIT_WORK(&port->reset_task, ehea_reset_port);
+-	ehea_set_ethtool_ops(dev);
+ 
+ 	ret = register_netdev(dev);
+ 	if (ret) {
