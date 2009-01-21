@@ -1,24 +1,23 @@
-Return-Path: <daniel.ng1234@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.188])
-	by ozlabs.org (Postfix) with ESMTP id DA6AFDDED1
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 18:37:35 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j67so225339rne.16
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jan 2009 23:37:33 -0800 (PST)
+Return-Path: <snakebyte@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 0ECE7DDED3
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 19:34:25 +1100 (EST)
+Date: Wed, 21 Jan 2009 09:34:18 +0100
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Subject: Re: [Patch] NULL pointer deref with corrupted squashfs image
+Message-ID: <20090121083418.GA5865@alice>
+References: <20090113124027.GB16333@alice> <20090116174525.GA31869@alice>
+	<20090116190725.GA19453@logfs.org>
+	<20090116230700.GP6710@smtp.west.cox.net>
+	<20090117134916.GA29641@logfs.org> <20090120163957.GA21339@alice>
+	<20090120184702.GB30203@smtp.west.cox.net>
 MIME-Version: 1.0
-In-Reply-To: <20090120164124.GC8978@ld0162-tx32.am.freescale.net>
-References: <547eba1b0901151722p4a6afce4nc769fcb8cff82ea6@mail.gmail.com>
-	<547eba1b0901151940x588ead2bk52342ea1cecc6db0@mail.gmail.com>
-	<20090116181405.GB722@ld0162-tx32.am.freescale.net>
-	<547eba1b0901181758q27d09f1fx7d07d7385f028312@mail.gmail.com>
-	<547eba1b0901192323i2a505dcg841d42092dc5dd5d@mail.gmail.com>
-	<20090120164124.GC8978@ld0162-tx32.am.freescale.net>
-Date: Wed, 21 Jan 2009 18:37:32 +1100
-Message-ID: <547eba1b0901202337g624f79b2uaa7f7f2f61990ad1@mail.gmail.com>
-Subject: Re: Device Tree setup for 8272-based board
-From: Daniel Ng <daniel.ng1234@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090120184702.GB30203@smtp.west.cox.net>
+Cc: chris@zankel.net, phillip@lougher.demon.co.uk,
+	=?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+	linuxppc-dev@ozlabs.org, rpurdie@rpsys.net, linux-fsdevel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,196 +27,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
+* Tom Rini (trini@kernel.crashing.org) wrote:
+> On Tue, Jan 20, 2009 at 05:47:14PM +0100, Eric Sesterhenn wrote:
+> > * J=C3=B6rn Engel (joern@logfs.org) wrote:
+> > > On Fri, 16 January 2009 16:07:00 -0700, Tom Rini wrote:
+> > > >=20
+> > > > Sounds like a plan to me, except maybe zlib_inflate_unsafe() and a
+> > > > comment above the wrapper saying what/why is going on?
+> > >=20
+> > > Eric, will you do the honors?  Since you did all the hard work before,
+> > > you derserve the fame as well. :)
+> >=20
+> > Since I am not sure either about xtensa I added chris to the cc list.
+>=20
+> How about we just change all callers from arch/*/boot to use the _unsafe
+> version?  Then..
+>=20
+> > +/*
+> > +    These two wrappers decide wheter strm->next_out gets checked for N=
+ULL.
+> > +    The zlib_inflate_unsafe() version got added because the PPC zImage
+> > +    gets extracted to memory address 0 and therefore
+> > +    we avoid this check for zlib_inflate_unsafe()
+>=20
+> These two wrappers decide wheter strm->next_out gets checked for NULL.
+> The zlib_inflate_unsafe() version is primarily used in the pre-Linux
+> 'boot' directory code to allow for extraction to memory address 0 and
+> therefore we avoid this check.
 
-On Wed, Jan 21, 2009 at 3:41 AM, Scott Wood <scottwood@freescale.com> wrote=
-:
-> On Tue, Jan 20, 2009 at 06:23:08PM +1100, Daniel Ng wrote:
->> PID hash table entries: 128 (order: 7, 512 bytes)
->> time_init: decrementer frequency =3D 16.500000 MHz
->> time_init: processor frequency   =3D 330.000000 MHz
->> clocksource: timebase mult[f26c9b2] shift[22] registered
->> clockevent: decrementer mult[439] shift[16] cpu[0]
->> Console: colour dummy =FC
->>
->> -at this point the board just reboots.
->
-> Looks like something goes wrong when the real serial driver kicks in.
-
-I've managed to enable more debug and see the following boot sequence:
-
-cpm_uart_init_port()
-OF: ** translation for device /soc@f0000000/cpm@119c0/serial@11a00 **
-OF: bus is default (na=3D1, ns=3D1) on /soc@f0000000/cpm@119c0
-OF: translating address: 00011a00
-OF: parent bus is default (na=3D1, ns=3D1) on /soc@f0000000
-OF: no ranges, 1:1 translation
-OF: parent translation for: 00000000
-OF: with offset: 11a00
-OF: one level translation: 00011a00
-OF: parent bus is default (na=3D1, ns=3D1) on /
-OF: walking ranges...
-OF: default map, cp=3D0, s=3D53000, da=3D11a00
-OF: parent translation for: f0000000
-OF: with offset: 11a00
-OF: one level translation: f0011a00
-OF: reached root node
-OF: ** translation for device /soc@f0000000/cpm@119c0/serial@11a00 **
-OF: bus is default (na=3D1, ns=3D1) on /soc@f0000000/cpm@119c0
-OF: translating address: 00008000
-OF: parent bus is default (na=3D1, ns=3D1) on /soc@f0000000
-OF: no ranges, 1:1 translation
-OF: parent translation for: 00000000
-OF: with offset: 8000
-OF: one level translation: 00008000
-OF: parent bus is default (na=3D1, ns=3D1) on /
-OF: walking ranges...
-OF: default map, cp=3D0, s=3D53000, da=3D8000
-OF: parent translation for: f0000000
-OF: with offset: 8000
-OF: one level translation: f0008000
-OF: reached root node
-of_irq_map_one: dev=3D/soc@f0000000/cpm@119c0/serial@11a00, index=3D0
- intsize=3D2 intlen=3D2
-of_irq_map_raw:
-par=3D/soc@f0000000/interrupt-controller@10c00,intspec=3D[0x00000028 0x
-00000008...],ointsize=3D2
-of_irq_map_raw: ipar=3D/soc@f0000000/interrupt-controller@10c00, size=3D2
- -> addrsize=3D1
- -> got it !
-irq: irq_create_mapping(0xc02d1320, 0x28)
-irq: -> using host @c02d1320
-irq: -> obtained virq 40
-cpm2_pic_host_map(40, 0x28)
-of_get_gpio exited with status -2
-of_get_gpio exited with status -2
-of_get_gpio exited with status -2
-of_get_gpio exited with status -2
-of_get_gpio exited with status -2
-of_get_gpio exited with status -2
-cpm_uart_request_port()
-CPM uart[=FE
-
-I think the of_get_gpio() error messages are a result of the following
-code in cpm_uart_init_port()-
-
-  for (i =3D 0; i < NUM_GPIOS; i++)
-    pinfo->gpios[i] =3D of_get_gpio(np, i);
-
--why is this code here? Is it for processing modem control lines? I
-know our board doesn't make use of the modem control lines for
-ttyCPM0. Therefore, have I misconfigured something in the Device Tree?
-
-Here's the relevant part of the Device Tree-
-
-    cpm@119c0 {
-      #address-cells =3D <1>;
-      #size-cells =3D <1>;
-      #interrupt-cells =3D <2>;
-      compatible =3D "fsl,mpc8272-cpm", "fsl,cpm2";
-      reg =3D <0x119c0 0x30>;
-      ranges;
-
-      muram@0 {
-        #address-cells =3D <1>;
-        #size-cells =3D <1>;
-        ranges =3D <0x0 0x0 0x10000>;
-
-        data@0 {
-          compatible =3D "fsl,cpm-muram-data";
-          reg =3D <0x0 0x2000 0x9800 0x800>;
-        };
-      };
-
-      brg@119f0 {
-        compatible =3D "fsl,mpc8272-brg",
-                     "fsl,cpm2-brg",
-                     "fsl,cpm-brg";
-        reg =3D <0x119f0 0x10 0x115f0 0x10>;
-      };
-
-      serial@11a00 {
-        device_type =3D "serial";
-        compatible =3D "fsl,mpc8272-scc-uart",
-                     "fsl,cpm2-scc-uart";
-        reg =3D <0x11a00 0x20 0x8000 0x100>;
-        interrupts =3D <40 8>;
-        interrupt-parent =3D <&PIC>;
-        fsl,cpm-brg =3D <1>;
-        fsl,cpm-command =3D <0x800000>;
-      };
-
-  };
-
-    PIC: interrupt-controller@10c00 {
-      #interrupt-cells =3D <2>;
-      interrupt-controller;
-      reg =3D <0x10c00 0x80>;
-      compatible =3D "fsl,mpc8272-pic", "fsl,cpm2-pic";
-    };
+This integrates Feedback from Tom to change xtensa and a comment, and
+the callee/caller replace noticed by joern.
 
 
-Would you please explain what the following lines mean, so I can use
-some more appropriate values for my particular board?-
-
-1) In the serial@11a00 node-
-
-a) reg =3D <0x11a00 0x20 0x8000 0x100>;
-b) interrupts =3D <40 8>;
-c) fsl,cpm-brg =3D <1>;
-d) fsl,cpm-command =3D <0x800000>;
 
 
-2) In the brg@119f0 node-
-reg =3D <0x119f0 0x10 0x115f0 0x10>;
+Some callers of zlib_inflate() might accidentally pass a NULL
+pointer in strm->next_out which zlib_inflate() should catch.
+Others like the powerpc gunzip_partial expect to be able
+to extract a zImage to memory location 0. This introduces
+zlib_inflate_usafe() for those and adds a check for the rest
 
 
-3) In the PIC: interrupt-controller@10c00 node-
-reg =3D <0x10c00 0x80>;
+Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
 
-
-I have read the relevant documentation under Documentation/powerpc and
-Documentation/powerpc/dts-bindings, but these do not seem to go into
-enough detail eg.
-Documentation/powerpc/dts-bindings/fsl/cpm_qe/cpm/brg.txt says the
-following about the reg property-
-
-- reg : There may be an arbitrary number of reg resources; BRG
-  numbers are assigned to these in order.
-
--> does this mean that each number represents a BRG register? So there
-can be a maximum of 1+8=3D9 reg values, since there are 8 BRG registers?
-
-As for Documentation/powerpc/dts-bindings/fsl/cpm_qe/serial.txt, there
-is no explanation at all for what the 'reg', 'interrupts', 'brg' and
-'command' values mean... Am I missing something obvious?
-
-Similarly for Documentation/powerpc/dts-bindings/fsl/cpm_qe/pic.txt,
-there is no explanation of the 'reg' value. Also, it mentions a
-'second interrupt cell' but I only see one in the example it gives.
-Here is what it says-
-
-* Interrupt Controllers
-
-Currently defined compatibles:
-- fsl,cpm1-pic
-  - only one interrupt cell
-- fsl,pq1-pic
-- fsl,cpm2-pic
-  - second interrupt cell is level/sense:
-    - 2 is falling edge
-    - 8 is active low
-
-Example:
-  interrupt-controller@10c00 {
-    #interrupt-cells =3D <2>;
-    interrupt-controller;
-    reg =3D <10c00 80>;
-    compatible =3D "mpc8272-pic", "fsl,cpm2-pic";
-  };
-
-
-Does the level/sense refer to ALL interrupts?
-
-Cheers,
-Daniel
+--- linux/arch/powerpc/boot/gunzip_util.c.orig	2009-01-21 09:27:39.00000000=
+0 +0100
++++ linux/arch/powerpc/boot/gunzip_util.c	2009-01-21 09:27:51.000000000 +01=
+00
+@@ -109,7 +109,7 @@ int gunzip_partial(struct gunzip_state *
+=20
+ 		state->s.next_out =3D dst;
+ 		state->s.avail_out =3D dstlen;
+-		r =3D zlib_inflate(&state->s, Z_FULL_FLUSH);
++		r =3D zlib_inflate_unsafe(&state->s, Z_FULL_FLUSH);
+ 		if (r !=3D Z_OK && r !=3D Z_STREAM_END)
+ 			fatal("inflate returned %d msg: %s\n\r", r, state->s.msg);
+ 		len =3D state->s.next_out - (unsigned char *)dst;
+--- linux/arch/xtensa/boot/lib/zmem.c.orig	2009-01-21 09:22:44.000000000 +0=
+100
++++ linux/arch/xtensa/boot/lib/zmem.c	2009-01-21 09:22:26.000000000 +0100
+@@ -68,7 +68,7 @@ void gunzip (void *dst, int dstlen, unsi
+         s.avail_in =3D *lenp - i;
+         s.next_out =3D dst;
+         s.avail_out =3D dstlen;
+-        r =3D zlib_inflate(&s, Z_FINISH);
++        r =3D zlib_inflate_unsafe(&s, Z_FINISH);
+         if (r !=3D Z_OK && r !=3D Z_STREAM_END) {
+                 //puts("inflate returned "); puthex(r); puts("\n");
+                 exit();
+--- linux/include/linux/zlib.h.orig	2009-01-21 09:27:28.000000000 +0100
++++ linux/include/linux/zlib.h	2009-01-21 09:28:55.000000000 +0100
+@@ -329,7 +329,23 @@ extern int zlib_inflateInit (z_streamp s
+ */
+=20
+=20
+-extern int zlib_inflate (z_streamp strm, int flush);
++extern int __zlib_inflate (z_streamp strm, int flush, int check_out);
++/*
++    These two wrappers decide wheter strm->next_out gets checked for NULL.
++    The zlib_inflate_unsafe() version is primarily used in the pre-Linux
++    'boot' directory code to allow for extraction to memory address 0 and
++    therefore we avoid this check.
++*/
++static inline int zlib_inflate(z_streamp strm, int flush)
++{
++	return __zlib_inflate(strm, flush, 1);
++}
++
++static inline int zlib_inflate_unsafe(z_streamp strm, int flush)
++{
++	return __zlib_inflate(strm, flush, 0);
++}
++
+ /*
+     inflate decompresses as much data as possible, and stops when the input
+   buffer becomes empty or the output buffer becomes full. It may introduce
+--- linux/lib/zlib_inflate/inflate.c.orig	2009-01-21 09:27:11.000000000 +01=
+00
++++ linux/lib/zlib_inflate/inflate.c	2009-01-21 09:29:10.000000000 +0100
+@@ -329,7 +329,7 @@ static int zlib_inflateSyncPacket(z_stre
+    will return Z_BUF_ERROR if it has not reached the end of the stream.
+  */
+=20
+-int zlib_inflate(z_streamp strm, int flush)
++int __zlib_inflate(z_streamp strm, int flush, int check_out)
+ {
+     struct inflate_state *state;
+     const unsigned char *next;  /* next input */
+@@ -347,8 +347,10 @@ int zlib_inflate(z_streamp strm, int flu
+     static const unsigned short order[19] =3D /* permutation of code lengt=
+hs */
+         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
+=20
+-    /* Do not check for strm->next_out =3D=3D NULL here as ppc zImage
+-       inflates to strm->next_out =3D 0 */
++    /* We only check strm->next_out if the caller requests it,
++       since ppc extracts the ppc zImage to 0 */
++    if (check_out && !strm->next_out)
++        return Z_STREAM_ERROR;
+=20
+     if (strm =3D=3D NULL || strm->state =3D=3D NULL ||
+         (strm->next_in =3D=3D NULL && strm->avail_in !=3D 0))
+--- linux/lib/zlib_inflate/inflate_syms.c.orig	2009-01-21 09:27:16.00000000=
+0 +0100
++++ linux/lib/zlib_inflate/inflate_syms.c	2009-01-21 09:27:51.000000000 +01=
+00
+@@ -11,7 +11,7 @@
+ #include <linux/zlib.h>
+=20
+ EXPORT_SYMBOL(zlib_inflate_workspacesize);
+-EXPORT_SYMBOL(zlib_inflate);
++EXPORT_SYMBOL(__zlib_inflate);
+ EXPORT_SYMBOL(zlib_inflateInit2);
+ EXPORT_SYMBOL(zlib_inflateEnd);
+ EXPORT_SYMBOL(zlib_inflateReset);
