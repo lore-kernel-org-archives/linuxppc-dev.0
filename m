@@ -1,19 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.187])
-	by ozlabs.org (Postfix) with ESMTP id 3AAEFDE007
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 07:55:44 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 6316DDDF2F
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 07:55:50 +1100 (EST)
 Received: by rn-out-0910.google.com with SMTP id j67so462393rne.16
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 12:55:44 -0800 (PST)
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 12:55:49 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 7/8] powerpc/5200: Refactor mpc5200 interrupt controller driver
+Subject: [PATCH 8/8] powerpc/5200: Rework GPT driver to also be an IRQ
+	controller
 To: linuxppc-dev@ozlabs.org
-Date: Wed, 21 Jan 2009 13:55:41 -0700
-Message-ID: <20090121205540.31232.77034.stgit@localhost.localdomain>
+Date: Wed, 21 Jan 2009 13:55:46 -0700
+Message-ID: <20090121205546.31232.74885.stgit@localhost.localdomain>
 In-Reply-To: <20090121205506.31232.27908.stgit@localhost.localdomain>
 References: <20090121205506.31232.27908.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,270 +27,585 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-Rework the mpc5200-pic driver to simplify it and fix up the setting
-of desc->status when set_type is called for internal IRQs (so they
-are reported as level, not edge).  The simplification is due to
-splitting off the handling of external IRQs into a separate block
-so they don't need to be handled as exceptions in the normal
-CRIT, MAIN and PERP paths.
+This patch adds IRQ controller support to the MPC5200 General
+Purpose Timer (GPT) device driver.  With this patch the mpc5200-gpt
+driver supports both GPIO and IRQ functions.
+
+The GPT driver was contained within the mpc52xx_gpio.c file, but this
+patch moves it out into a new file (mpc52xx_gpt.c) since it has more
+than just GPIO functionality now and it was only grouped with the
+mpc52xx-gpio drivers as a matter of convenience before.  Also, this
+driver will most likely get extended again to also provide support
+for the timer function.
+
+Implementation node: Alternately, I could have tried to implement
+the IRQ support as a separate driver and left the GPIO portion alone.
+However, multiple functions of this device (ie. GPIO input+interrupt
+controller, or timer+GPIO) can be active at the same time and the
+registers are shared so it is safer to contain all functionality
+within a single driver.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+CC: Sascha Hauer <s.hauer@pengutronix.de>
 CC: Wolfram Sang <w.sang@pengutronix.de>
+CC: linuxppc-dev@ozlabs.org
 ---
 
- arch/powerpc/platforms/52xx/mpc52xx_pic.c |  145 ++++++++++++-----------------
- 1 files changed, 58 insertions(+), 87 deletions(-)
+ arch/powerpc/platforms/52xx/Makefile       |    2 
+ arch/powerpc/platforms/52xx/mpc52xx_gpio.c |   85 ------
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c  |  429 ++++++++++++++++++++++++++++
+ 3 files changed, 430 insertions(+), 86 deletions(-)
+ create mode 100644 arch/powerpc/platforms/52xx/mpc52xx_gpt.c
 
 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-index c0a9559..277c9c5 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-@@ -190,10 +190,10 @@ static void mpc52xx_extirq_ack(unsigned int virq)
+diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
+index 9dfbde2..bfd4f52 100644
+--- a/arch/powerpc/platforms/52xx/Makefile
++++ b/arch/powerpc/platforms/52xx/Makefile
+@@ -1,7 +1,7 @@
+ #
+ # Makefile for 52xx based boards
+ #
+-obj-y				+= mpc52xx_pic.o mpc52xx_common.o
++obj-y				+= mpc52xx_pic.o mpc52xx_common.o mpc52xx_gpt.o
+ obj-$(CONFIG_PCI)		+= mpc52xx_pci.o
  
- static int mpc52xx_extirq_set_type(unsigned int virq, unsigned int flow_type)
- {
--	struct irq_desc *desc = get_irq_desc(virq);
- 	u32 ctrl_reg, type;
- 	int irq;
- 	int l2irq;
-+	void *handler = handle_level_irq;
- 
- 	irq = irq_map[virq].hwirq;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
-@@ -201,32 +201,21 @@ static int mpc52xx_extirq_set_type(unsigned int virq, unsigned int flow_type)
- 	pr_debug("%s: irq=%x. l2=%d flow_type=%d\n", __func__, irq, l2irq, flow_type);
- 
- 	switch (flow_type) {
--	case IRQF_TRIGGER_HIGH:
--		type = 0;
--		break;
--	case IRQF_TRIGGER_RISING:
--		type = 1;
--		break;
--	case IRQF_TRIGGER_FALLING:
--		type = 2;
--		break;
--	case IRQF_TRIGGER_LOW:
--		type = 3;
--		break;
-+	case IRQF_TRIGGER_HIGH: type = 0; break;
-+	case IRQF_TRIGGER_RISING: type = 1; handler = handle_edge_irq; break;
-+	case IRQF_TRIGGER_FALLING: type = 2; handler = handle_edge_irq; break;
-+	case IRQF_TRIGGER_LOW: type = 3; break;
- 	default:
- 		type = 0;
- 	}
- 
--	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
--	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
--	if (flow_type & (IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW))
--		desc->status |= IRQ_LEVEL;
--
- 	ctrl_reg = in_be32(&intr->ctrl);
- 	ctrl_reg &= ~(0x3 << (22 - (l2irq * 2)));
- 	ctrl_reg |= (type << (22 - (l2irq * 2)));
- 	out_be32(&intr->ctrl, ctrl_reg);
- 
-+	__set_irq_handler_unlocked(virq, handler);
-+
- 	return 0;
- }
- 
-@@ -241,6 +230,11 @@ static struct irq_chip mpc52xx_extirq_irqchip = {
- /*
-  * Main interrupt irq_chip
-  */
-+static int mpc52xx_null_set_type(unsigned int virq, unsigned int flow_type)
-+{
-+	return 0; /* Do nothing so that the sense mask will get updated */
-+}
-+
- static void mpc52xx_main_mask(unsigned int virq)
- {
- 	int irq;
-@@ -268,6 +262,7 @@ static struct irq_chip mpc52xx_main_irqchip = {
- 	.mask = mpc52xx_main_mask,
- 	.mask_ack = mpc52xx_main_mask,
- 	.unmask = mpc52xx_main_unmask,
-+	.set_type = mpc52xx_null_set_type,
+ obj-$(CONFIG_PPC_MPC5200_SIMPLE) += mpc5200_simple.o
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
+index 07f89ae..2b8d8ef 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
+@@ -354,88 +354,6 @@ static struct of_platform_driver mpc52xx_simple_gpiochip_driver = {
+ 	.remove = mpc52xx_gpiochip_remove,
  };
  
- /*
-@@ -300,6 +295,7 @@ static struct irq_chip mpc52xx_periph_irqchip = {
- 	.mask = mpc52xx_periph_mask,
- 	.mask_ack = mpc52xx_periph_mask,
- 	.unmask = mpc52xx_periph_unmask,
-+	.set_type = mpc52xx_null_set_type,
- };
- 
- /*
-@@ -343,9 +339,19 @@ static struct irq_chip mpc52xx_sdma_irqchip = {
- 	.mask = mpc52xx_sdma_mask,
- 	.unmask = mpc52xx_sdma_unmask,
- 	.ack = mpc52xx_sdma_ack,
-+	.set_type = mpc52xx_null_set_type,
- };
- 
- /**
-+ * mpc52xx_is_extirq - Returns true if hwirq number is for an external IRQ
-+ */
-+static int mpc52xx_is_extirq(int l1, int l2)
-+{
-+	return ((l1 == 0) && (l2 == 0)) ||
-+	       ((l1 == 1) && (l2 >= 1) && (l2 <= 3));
-+}
-+
-+/**
-  * mpc52xx_irqhost_xlate - translate virq# from device tree interrupts property
-  */
- static int mpc52xx_irqhost_xlate(struct irq_host *h, struct device_node *ct,
-@@ -363,38 +369,23 @@ static int mpc52xx_irqhost_xlate(struct irq_host *h, struct device_node *ct,
- 
- 	intrvect_l1 = (int)intspec[0];
- 	intrvect_l2 = (int)intspec[1];
--	intrvect_type = (int)intspec[2];
-+	intrvect_type = (int)intspec[2] & 0x3;
- 
- 	intrvect_linux = (intrvect_l1 << MPC52xx_IRQ_L1_OFFSET) &
- 			 MPC52xx_IRQ_L1_MASK;
- 	intrvect_linux |= intrvect_l2 & MPC52xx_IRQ_L2_MASK;
- 
--	pr_debug("return %x, l1=%d, l2=%d\n", intrvect_linux, intrvect_l1,
--		 intrvect_l2);
--
- 	*out_hwirq = intrvect_linux;
--	*out_flags = mpc52xx_map_senses[intrvect_type];
-+	*out_flags = IRQ_TYPE_LEVEL_LOW;
-+	if (mpc52xx_is_extirq(intrvect_l1, intrvect_l2))
-+		*out_flags = mpc52xx_map_senses[intrvect_type];
- 
-+	pr_debug("return %x, l1=%d, l2=%d\n", intrvect_linux, intrvect_l1,
-+		 intrvect_l2);
- 	return 0;
- }
- 
- /**
-- * mpc52xx_irqx_gettype - determine the IRQ sense type (level/edge)
+-/*
+- * GPIO LIB API implementation for gpt GPIOs.
 - *
-- * Only external IRQs need this.
+- * Each gpt only has a single GPIO.
 - */
--static int mpc52xx_irqx_gettype(int irq)
+-static int mpc52xx_gpt_gpio_get(struct gpio_chip *gc, unsigned int gpio)
 -{
--	int type;
--	u32 ctrl_reg;
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct mpc52xx_gpt __iomem *regs = mm_gc->regs;
 -
--	ctrl_reg = in_be32(&intr->ctrl);
--	type = (ctrl_reg >> (22 - irq * 2)) & 0x3;
--
--	return mpc52xx_map_senses[type];
+-	return (in_be32(&regs->status) & (1 << (31 - 23))) ? 1 : 0;
 -}
 -
--/**
-  * mpc52xx_irqhost_map - Hook to map from virq to an irq_chip structure
-  */
- static int mpc52xx_irqhost_map(struct irq_host *h, unsigned int virq,
-@@ -402,68 +393,46 @@ static int mpc52xx_irqhost_map(struct irq_host *h, unsigned int virq,
+-static void
+-mpc52xx_gpt_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+-{
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct mpc52xx_gpt __iomem *regs = mm_gc->regs;
+-
+-	if (val)
+-		out_be32(&regs->mode, 0x34);
+-	else
+-		out_be32(&regs->mode, 0x24);
+-
+-	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
+-}
+-
+-static int mpc52xx_gpt_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+-{
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct mpc52xx_gpt __iomem *regs = mm_gc->regs;
+-
+-	out_be32(&regs->mode, 0x04);
+-
+-	return 0;
+-}
+-
+-static int
+-mpc52xx_gpt_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+-{
+-	mpc52xx_gpt_gpio_set(gc, gpio, val);
+-	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
+-
+-	return 0;
+-}
+-
+-static int __devinit mpc52xx_gpt_gpiochip_probe(struct of_device *ofdev,
+-					const struct of_device_id *match)
+-{
+-	struct of_mm_gpio_chip *mmchip;
+-	struct of_gpio_chip *chip;
+-
+-	mmchip = kzalloc(sizeof(*mmchip), GFP_KERNEL);
+-	if (!mmchip)
+-		return -ENOMEM;
+-
+-	chip = &mmchip->of_gc;
+-
+-	chip->gpio_cells          = 2;
+-	chip->gc.ngpio            = 1;
+-	chip->gc.direction_input  = mpc52xx_gpt_gpio_dir_in;
+-	chip->gc.direction_output = mpc52xx_gpt_gpio_dir_out;
+-	chip->gc.get              = mpc52xx_gpt_gpio_get;
+-	chip->gc.set              = mpc52xx_gpt_gpio_set;
+-
+-	return of_mm_gpiochip_add(ofdev->node, mmchip);
+-}
+-
+-static const struct of_device_id mpc52xx_gpt_gpiochip_match[] = {
+-	{
+-		.compatible = "fsl,mpc5200-gpt-gpio",
+-	},
+-	{}
+-};
+-
+-static struct of_platform_driver mpc52xx_gpt_gpiochip_driver = {
+-	.name = "gpio_gpt",
+-	.match_table = mpc52xx_gpt_gpiochip_match,
+-	.probe = mpc52xx_gpt_gpiochip_probe,
+-	.remove = mpc52xx_gpiochip_remove,
+-};
+-
+ static int __init mpc52xx_gpio_init(void)
  {
- 	int l1irq;
- 	int l2irq;
--	struct irq_chip *good_irqchip;
-+	struct irq_chip *irqchip;
- 	void *good_handle;
- 	int type;
-+	u32 reg;
+ 	if (of_register_platform_driver(&mpc52xx_wkup_gpiochip_driver))
+@@ -444,9 +362,6 @@ static int __init mpc52xx_gpio_init(void)
+ 	if (of_register_platform_driver(&mpc52xx_simple_gpiochip_driver))
+ 		printk(KERN_ERR "Unable to register simple GPIO driver\n");
  
- 	l1irq = (irq & MPC52xx_IRQ_L1_MASK) >> MPC52xx_IRQ_L1_OFFSET;
- 	l2irq = irq & MPC52xx_IRQ_L2_MASK;
- 
- 	/*
--	 * Most of ours IRQs will be level low
--	 * Only external IRQs on some platform may be others
-+	 * External IRQs are handled differently by the hardware so they are
-+	 * handled by a dedicated irq_chip structure.
- 	 */
--	type = IRQ_TYPE_LEVEL_LOW;
-+	if (mpc52xx_is_extirq(l1irq, l2irq)) {
-+		reg = in_be32(&intr->ctrl);
-+		type = mpc52xx_map_senses[(reg >> (22 - l2irq * 2)) & 0x3];
-+		if ((type == IRQ_TYPE_EDGE_FALLING) ||
-+		    (type == IRQ_TYPE_EDGE_RISING))
-+			good_handle = handle_edge_irq;
-+		else
-+			good_handle = handle_level_irq;
-+
-+		set_irq_chip_and_handler(virq, &mpc52xx_extirq_irqchip, good_handle);
-+		pr_debug("%s: External IRQ%i virq=%x, hw=%x. type=%x\n",
-+			 __func__, l2irq, virq, (int)irq, type);
-+		return 0;
-+	}
- 
-+	/* It is an internal SOC irq.  Choose the correct irq_chip */
- 	switch (l1irq) {
--	case MPC52xx_IRQ_L1_CRIT:
--		pr_debug("%s: Critical. l2=%x\n", __func__, l2irq);
+-	if (of_register_platform_driver(&mpc52xx_gpt_gpiochip_driver))
+-		printk(KERN_ERR "Unable to register gpt GPIO driver\n");
 -
--		BUG_ON(l2irq != 0);
--
--		type = mpc52xx_irqx_gettype(l2irq);
--		good_irqchip = &mpc52xx_extirq_irqchip;
--		break;
--
--	case MPC52xx_IRQ_L1_MAIN:
--		pr_debug("%s: Main IRQ[1-3] l2=%x\n", __func__, l2irq);
--
--		if ((l2irq >= 1) && (l2irq <= 3)) {
--			type = mpc52xx_irqx_gettype(l2irq);
--			good_irqchip = &mpc52xx_extirq_irqchip;
--		} else {
--			good_irqchip = &mpc52xx_main_irqchip;
--		}
--		break;
--
--	case MPC52xx_IRQ_L1_PERP:
--		pr_debug("%s: Peripherals. l2=%x\n", __func__, l2irq);
--		good_irqchip = &mpc52xx_periph_irqchip;
--		break;
--
--	case MPC52xx_IRQ_L1_SDMA:
--		pr_debug("%s: SDMA. l2=%x\n", __func__, l2irq);
--		good_irqchip = &mpc52xx_sdma_irqchip;
--		break;
--
-+	case MPC52xx_IRQ_L1_MAIN: irqchip = &mpc52xx_main_irqchip; break;
-+	case MPC52xx_IRQ_L1_PERP: irqchip = &mpc52xx_periph_irqchip; break;
-+	case MPC52xx_IRQ_L1_SDMA: irqchip = &mpc52xx_sdma_irqchip; break;
- 	default:
--		pr_err("%s: invalid virq requested (0x%x)\n", __func__, virq);
-+		pr_err("%s: invalid irq: virq=%i, l1=%i, l2=%i\n",
-+		       __func__, virq, l1irq, l2irq);
- 		return -EINVAL;
- 	}
- 
--	switch (type) {
--	case IRQ_TYPE_EDGE_FALLING:
--	case IRQ_TYPE_EDGE_RISING:
--		good_handle = handle_edge_irq;
--		break;
--	default:
--		good_handle = handle_level_irq;
--	}
--
--	set_irq_chip_and_handler(virq, good_irqchip, good_handle);
--
--	pr_debug("%s: virq=%x, hw=%x. type=%x\n", __func__, virq,
--		 (int)irq, type);
-+	set_irq_chip_and_handler(virq, irqchip, handle_level_irq);
-+	pr_debug("%s: virq=%x, l1=%i, l2=%i\n", __func__, virq, l1irq, l2irq);
- 
  	return 0;
  }
-@@ -502,6 +471,8 @@ void __init mpc52xx_init_irq(void)
- 		panic(__FILE__	": find_and_map failed on 'mpc5200-bestcomm'. "
- 				"Check node !");
  
-+	pr_debug("MPC5200 IRQ controller mapped to 0x%p\n", intr);
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+new file mode 100644
+index 0000000..612a8a3
+--- /dev/null
++++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+@@ -0,0 +1,429 @@
++/*
++ * MPC5200 General Purpose Timer device driver
++ *
++ * Copyright (c) 2009 Secret Lab Technologies Ltd.
++ * Copyright (c) 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ *
++ * This file is a driver for the the General Purpose Timer (gpt) devices
++ * found on the MPC5200 SoC.  Each timer has an IO pin which can be used
++ * for GPIO or can be used to raise interrupts.  The timer function can
++ * be used independently from the IO pin, or it can be used to control
++ * output signals or measure input signals.
++ *
++ * This driver supports the GPIO and IRQ controller functions of the GPT
++ * device.  Timer functions are not yet supported, nor is the watchdog
++ * timer.
++ *
++ * To use the GPIO function, the following two properties must be added
++ * to the device tree node for the gpt device (typically in the .dts file
++ * for the board):
++ * 	gpio-controller;
++ * 	#gpio-cells = < 2 >;
++ * This driver will register the GPIO pin if it finds the gpio-controller
++ * property in the device tree.
++ *
++ * To use the IRQ controller function, the following two properties must
++ * be added to the device tree node for the gpt device:
++ * 	interrupt-controller;
++ * 	#interrupt-cells = < 1 >;
++ * The IRQ controller binding only uses one cell to specify the interrupt,
++ * and the IRQ flags are encoded in the cell.  A cell is not used to encode
++ * the IRQ number because the GPT only has a single IRQ source.  For flags,
++ * a value of '1' means rising edge sensitive and '2' means falling edge.
++ *
++ * The GPIO and the IRQ controller functions can be used at the same time,
++ * but in this use case the IO line will only work as an input.  Trying to
++ * use it as a GPIO output will not work.
++ *
++ * When using the GPIO line as an output, it can either be driven as normal
++ * IO, or it can be an OC output.  At the moment it is the responsibility
++ * of the bootloader or the platform setup code to set the output mode.
++ * This driver does not change the output mode setting.
++ */
 +
- 	/* Disable all interrupt sources. */
- 	out_be32(&sdma->IntPend, 0xffffffff);	/* 1 means clear pending */
- 	out_be32(&sdma->IntMask, 0xffffffff);	/* 1 means disabled */
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/of_gpio.h>
++#include <linux/kernel.h>
++
++#include <asm/time.h>
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/mpc52xx.h>
++
++MODULE_DESCRIPTION("Freescale MPC52xx gpt driver");
++MODULE_AUTHOR("Sascha Hauer, Grant Likely");
++MODULE_LICENSE("GPL");
++
++/**
++ * struct mpc52xx_gpt - Private data structure for MPC52xx GPT driver
++ * @dev: pointer to device structure
++ * @regs: virtual address of GPT registers
++ * @of_gc: of_gpio_chip instance structure; used when GPIO is enabled
++ * @irqhost: Pointer to irq_host instance; used when IRQ mode is supported
++ */
++struct mpc52xx_gpt_priv {
++	struct device *dev;
++	struct mpc52xx_gpt __iomem *regs;
++	spinlock_t lock;
++	struct of_gpio_chip of_gc;
++	struct irq_host *irqhost;
++};
++
++#define MPC52xx_GPT_GPIO_MODE_MASK	0x00000030
++#define MPC52xx_GPT_GPIO_MODE_OUTPUT	0x00000020
++#define MPC52xx_GPT_GPIO_OUTPUT_HIGH	0x00000010
++
++/* ---------------------------------------------------------------------
++ * Cascaded interrupt controller hooks
++ */
++
++static void mpc52xx_gpt_irq_unmask(unsigned int virq)
++{
++	struct mpc52xx_gpt_priv *gpt = get_irq_chip_data(virq);
++	unsigned long flags;
++
++	spin_lock_irqsave(&gpt->lock, flags);
++	out_be32(&gpt->regs->mode, in_be32(&gpt->regs->mode) | 0x100);
++	spin_unlock_irqrestore(&gpt->lock, flags);
++}
++
++static void mpc52xx_gpt_irq_mask(unsigned int virq)
++{
++	struct mpc52xx_gpt_priv *gpt = get_irq_chip_data(virq);
++	unsigned long flags;
++
++	spin_lock_irqsave(&gpt->lock, flags);
++	out_be32(&gpt->regs->mode, in_be32(&gpt->regs->mode) & ~0x100);
++	spin_unlock_irqrestore(&gpt->lock, flags);
++}
++
++static void mpc52xx_gpt_irq_ack(unsigned int virq)
++{
++	struct mpc52xx_gpt_priv *gpt = get_irq_chip_data(virq);
++
++	out_be32(&gpt->regs->status, 0xf);
++}
++
++static int mpc52xx_gpt_irq_set_type(unsigned int virq, unsigned int flow_type)
++{
++	struct mpc52xx_gpt_priv *gpt = get_irq_chip_data(virq);
++	unsigned long flags;
++	u32 reg;
++
++	dev_dbg(gpt->dev, "%s: virq=%i type=%x\n", __func__, virq, flow_type);
++
++	spin_lock_irqsave(&gpt->lock, flags);
++	reg = in_be32(&gpt->regs->mode) & ~0x30000;
++	if (flow_type & IRQF_TRIGGER_RISING)
++		reg |= 0x10000;
++	if (flow_type & IRQF_TRIGGER_FALLING)
++		reg |= 0x20000;
++	out_be32(&gpt->regs->mode, reg);
++	spin_unlock_irqrestore(&gpt->lock, flags);
++
++	return 0;
++}
++
++static struct irq_chip mpc52xx_gpt_irq_chip = {
++	.typename = "MPC52xx GPT",
++	.unmask = mpc52xx_gpt_irq_unmask,
++	.mask = mpc52xx_gpt_irq_mask,
++	.ack = mpc52xx_gpt_irq_ack,
++	.set_type = mpc52xx_gpt_irq_set_type,
++};
++
++void mpc52xx_gpt_irq_cascade(unsigned int virq, struct irq_desc *desc)
++{
++	struct mpc52xx_gpt_priv *gpt = get_irq_data(virq);
++	int sub_virq;
++	u32 status;
++
++	/* Ask the FPGA for IRQ status.  If 'val' is 0, then no irqs
++	 * are pending.  'ffs()' is 1 based */
++	status = in_be32(&gpt->regs->status) | 0xF;
++	if (status) {
++		sub_virq = irq_linear_revmap(gpt->irqhost, 0);
++		generic_handle_irq(sub_virq);
++	}
++}
++
++static int mpc52xx_gpt_irq_map(struct irq_host *h, unsigned int virq,
++			       irq_hw_number_t hw)
++{
++	struct mpc52xx_gpt_priv *gpt = h->host_data;
++
++	dev_dbg(gpt->dev, "%s: h=%p, virq=%i\n", __func__, h, virq);
++	set_irq_chip_data(virq, gpt);
++	set_irq_chip_and_handler(virq, &mpc52xx_gpt_irq_chip, handle_edge_irq);
++
++	return 0;
++}
++
++static int mpc52xx_gpt_irq_xlate(struct irq_host *h, struct device_node *ct,
++				 u32 *intspec, unsigned int intsize,
++				 irq_hw_number_t *out_hwirq,
++				 unsigned int *out_flags)
++{
++	struct mpc52xx_gpt_priv *gpt = h->host_data;
++
++	dev_dbg(gpt->dev, "%s: flags=%i\n", __func__, intspec[0]);
++
++	if ((intsize < 1) || (intspec[0] < 1) || (intspec[0] > 3)) {
++		dev_err(gpt->dev, "bad irq specifier in %s\n", ct->full_name);
++		return -ENODEV;
++	}
++
++	*out_hwirq = 0; /* The GPT only has 1 IRQ line */
++	*out_flags = intspec[0];
++
++	WARN_ON(*out_flags == 0);
++
++	return 0;
++}
++
++static struct irq_host_ops mpc52xx_gpt_irq_ops = {
++	.map = mpc52xx_gpt_irq_map,
++	.xlate = mpc52xx_gpt_irq_xlate,
++};
++
++static void
++mpc52xx_gpt_irq_setup(struct mpc52xx_gpt_priv *gpt, struct device_node *node)
++{
++	int cascade_virq;
++	unsigned long flags;
++	u32 val;
++
++	/* Only setup cascaded IRQ if device tree claims the GPT is
++	 * an interrupt controller */
++	if (!of_find_property(node, "interrupt-controller", NULL))
++		return;
++
++	cascade_virq = irq_of_parse_and_map(node, 0);
++
++	gpt->irqhost = irq_alloc_host(node, IRQ_HOST_MAP_LINEAR, 1,
++				      &mpc52xx_gpt_irq_ops, -1);
++	if (!gpt->irqhost) {
++		dev_err(gpt->dev, "irq_alloc_host() failed\n");
++		return;
++	}
++
++	gpt->irqhost->host_data = gpt;
++
++	set_irq_data(cascade_virq, gpt);
++	set_irq_chained_handler(cascade_virq, mpc52xx_gpt_irq_cascade);
++
++	/* Set to Input Capture mode */
++	spin_lock_irqsave(&gpt->lock, flags);
++	val = in_be32(&gpt->regs->mode) & ~0x7;
++	out_be32(&gpt->regs->mode, val | 0x1); /* IC mode */
++	spin_unlock_irqrestore(&gpt->lock, flags);
++
++	dev_dbg(gpt->dev, "%s() complete. virq=%i\n", __func__, cascade_virq);
++
++	return;
++}
++
++
++/* ---------------------------------------------------------------------
++ * GPIOLIB hooks
++ */
++#if defined(CONFIG_GPIOLIB)
++static inline struct mpc52xx_gpt_priv *gc_to_mpc52xx_gpt(struct gpio_chip *gc)
++{
++	return container_of(to_of_gpio_chip(gc), struct mpc52xx_gpt_priv,of_gc);
++}
++
++static int mpc52xx_gpt_gpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct mpc52xx_gpt_priv *gpt = gc_to_mpc52xx_gpt(gc);
++
++	return (in_be32(&gpt->regs->status) >> 8) & 1;
++}
++
++static void
++mpc52xx_gpt_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct mpc52xx_gpt_priv *gpt = gc_to_mpc52xx_gpt(gc);
++	unsigned long flags;
++	u32 tmp;
++
++	dev_dbg(gpt->dev, "%s: gpio:%d val:%d\n", __func__, gpio, val);
++
++	spin_lock_irqsave(&gpt->lock, flags);
++	tmp = in_be32(&gpt->regs->mode) & ~MPC52xx_GPT_GPIO_MODE_MASK;
++	out_be32(&gpt->regs->mode, tmp | (val ? 0x30 : 0x20));
++	spin_unlock_irqrestore(&gpt->lock, flags);
++}
++
++static int mpc52xx_gpt_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct mpc52xx_gpt_priv *gpt = gc_to_mpc52xx_gpt(gc);
++	unsigned long flags;
++	u32 tmp;
++
++	dev_dbg(gpt->dev, "%s: gpio:%d\n", __func__, gpio);
++
++	spin_lock_irqsave(&gpt->lock, flags);
++	tmp = in_be32(&gpt->regs->mode) & ~MPC52xx_GPT_GPIO_MODE_MASK;
++	out_be32(&gpt->regs->mode, tmp);
++	spin_unlock_irqrestore(&gpt->lock, flags);
++
++	return 0;
++}
++
++static int
++mpc52xx_gpt_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	mpc52xx_gpt_gpio_set(gc, gpio, val);
++	return 0;
++}
++
++static void
++mpc52xx_gpt_gpio_setup(struct mpc52xx_gpt_priv *gpt, struct device_node *node)
++{
++	int rc;
++
++	/* Only setup GPIO if the device tree claims the GPT is
++	 * a GPIO controller */
++	if (!of_find_property(node, "gpio-controller", NULL))
++		return;
++
++	gpt->of_gc.gc.label = kstrdup(node->full_name, GFP_KERNEL);
++	if (!gpt->of_gc.gc.label) {
++		dev_err(gpt->dev, "out of memory\n");
++		return;
++	}
++
++	gpt->of_gc.gpio_cells = 2;
++	gpt->of_gc.gc.ngpio = 1;
++	gpt->of_gc.gc.direction_input  = mpc52xx_gpt_gpio_dir_in;
++	gpt->of_gc.gc.direction_output = mpc52xx_gpt_gpio_dir_out;
++	gpt->of_gc.gc.get = mpc52xx_gpt_gpio_get;
++	gpt->of_gc.gc.set = mpc52xx_gpt_gpio_set;
++	gpt->of_gc.gc.base = -1;
++	gpt->of_gc.xlate = of_gpio_simple_xlate;
++	node->data = &gpt->of_gc;
++	of_node_get(node);
++
++	rc = gpiochip_add(&gpt->of_gc.gc);
++	if (rc)
++		dev_err(gpt->dev, "gpiochip_add() failed; rc=%i\n", rc);
++
++	dev_dbg(gpt->dev, "%s() complete.\n", __func__);
++}
++#else /* defined(CONFIG_GPIOLIB) */
++static void
++mpc52xx_gpt_gpio_setup(struct mpc52xx_gpt_priv *, struct device_node *) { }
++#endif /* defined(CONFIG_GPIOLIB) */
++
++/***********************************************************************
++ * SYSFS attributes
++ */
++#if defined(CONFIG_SYSFS)
++static ssize_t mpc52xx_gpt_show_regs(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct mpc52xx_gpt_priv *gpt = dev_get_drvdata(dev);
++	int i, len = 0;
++	u32 __iomem *regs = (void __iomem *) gpt->regs;
++
++	for (i = 0; i < 4; i++)
++		len += sprintf(buf + len, "%.8x ", in_be32(regs + i));
++	len += sprintf(buf + len, "\n");
++
++	return len;
++}
++
++static struct device_attribute mpc52xx_gpt_attrib[] = {
++	__ATTR(regs, S_IRUGO | S_IWUSR, mpc52xx_gpt_show_regs, NULL),
++};
++
++static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *gpt)
++{
++	int i, err = 0;
++
++	for (i = 0; i < ARRAY_SIZE(mpc52xx_gpt_attrib); i++)
++		err |= device_create_file(gpt->dev, &mpc52xx_gpt_attrib[i]);
++
++	if (err)
++		dev_err(gpt->dev, "device_create_file() failed\n");
++}
++
++#else /* defined(CONFIG_SYSFS) */
++static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *) { return 0; }
++#endif /* defined(CONFIG_SYSFS) */
++
++/* ---------------------------------------------------------------------
++ * of_platform bus binding code
++ */
++static int __devinit mpc52xx_gpt_probe(struct of_device *ofdev,
++				       const struct of_device_id *match)
++{
++	struct mpc52xx_gpt_priv *gpt;
++	u32 val;
++
++	gpt = kzalloc(sizeof *gpt, GFP_KERNEL);
++	if (!gpt)
++		return -ENOMEM;
++
++	spin_lock_init(&gpt->lock);
++	gpt->dev = &ofdev->dev;
++	gpt->regs = of_iomap(ofdev->node, 0);
++	if (!gpt->regs) {
++		kfree(gpt);
++		return -ENOMEM;
++	}
++
++	/* Setup external pin in GPIO mode */
++	val = in_be32(&gpt->regs->mode) & ~0x7;
++	out_be32(&gpt->regs->mode, val | 0x4);
++
++	dev_set_drvdata(&ofdev->dev, gpt);
++
++	mpc52xx_gpt_create_attribs(gpt);
++	mpc52xx_gpt_gpio_setup(gpt, ofdev->node);
++	mpc52xx_gpt_irq_setup(gpt, ofdev->node);
++
++	return 0;
++}
++
++static int mpc52xx_gpt_remove(struct of_device *ofdev)
++{
++	return -EBUSY;
++}
++
++static const struct of_device_id mpc52xx_gpt_match[] = {
++	{ .compatible = "fsl,mpc5200-gpt", },
++
++	/* Depreciated compatible values; don't use for new dts files */
++	{ .compatible = "fsl,mpc5200-gpt-gpio", },
++	{ .compatible = "mpc5200-gpt", },
++	{}
++};
++
++static struct of_platform_driver mpc52xx_gpt_driver = {
++	.name = "mpc52xx-gpt",
++	.match_table = mpc52xx_gpt_match,
++	.probe = mpc52xx_gpt_probe,
++	.remove = mpc52xx_gpt_remove,
++};
++
++static int __init mpc52xx_gpt_init(void)
++{
++	if (of_register_platform_driver(&mpc52xx_gpt_driver))
++		pr_err("error registering MPC52xx GPT driver\n");
++
++	return 0;
++}
++
++/* Make sure GPIOs and IRQs get set up before anyone tries to use them */
++subsys_initcall(mpc52xx_gpt_init);
