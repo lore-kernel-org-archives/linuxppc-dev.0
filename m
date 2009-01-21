@@ -1,23 +1,26 @@
-Return-Path: <snakebyte@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 0ECE7DDED3
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 19:34:25 +1100 (EST)
-Date: Wed, 21 Jan 2009 09:34:18 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: Tom Rini <trini@kernel.crashing.org>
-Subject: Re: [Patch] NULL pointer deref with corrupted squashfs image
-Message-ID: <20090121083418.GA5865@alice>
-References: <20090113124027.GB16333@alice> <20090116174525.GA31869@alice>
-	<20090116190725.GA19453@logfs.org>
-	<20090116230700.GP6710@smtp.west.cox.net>
-	<20090117134916.GA29641@logfs.org> <20090120163957.GA21339@alice>
-	<20090120184702.GB30203@smtp.west.cox.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090120184702.GB30203@smtp.west.cox.net>
-Cc: chris@zankel.net, phillip@lougher.demon.co.uk,
-	=?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-	linuxppc-dev@ozlabs.org, rpurdie@rpsys.net, linux-fsdevel@vger.kernel.org
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 49B1CDDDEE
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 20:27:12 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n0L9QbC1009091
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 02:26:52 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n0L9QZmJ028239
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jan 2009 03:26:36 -0600 (CST)
+From: Li Yang <leoli@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH] powerpc/mpc8313erdb: fix kernel panic because mdio device is
+	not probed
+Date: Wed, 21 Jan 2009 17:46:57 +0800
+Message-Id: <1232531217-16103-1-git-send-email-leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,137 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Tom Rini (trini@kernel.crashing.org) wrote:
-> On Tue, Jan 20, 2009 at 05:47:14PM +0100, Eric Sesterhenn wrote:
-> > * J=C3=B6rn Engel (joern@logfs.org) wrote:
-> > > On Fri, 16 January 2009 16:07:00 -0700, Tom Rini wrote:
-> > > >=20
-> > > > Sounds like a plan to me, except maybe zlib_inflate_unsafe() and a
-> > > > comment above the wrapper saying what/why is going on?
-> > >=20
-> > > Eric, will you do the honors?  Since you did all the hard work before,
-> > > you derserve the fame as well. :)
-> >=20
-> > Since I am not sure either about xtensa I added chris to the cc list.
->=20
-> How about we just change all callers from arch/*/boot to use the _unsafe
-> version?  Then..
->=20
-> > +/*
-> > +    These two wrappers decide wheter strm->next_out gets checked for N=
-ULL.
-> > +    The zlib_inflate_unsafe() version got added because the PPC zImage
-> > +    gets extracted to memory address 0 and therefore
-> > +    we avoid this check for zlib_inflate_unsafe()
->=20
-> These two wrappers decide wheter strm->next_out gets checked for NULL.
-> The zlib_inflate_unsafe() version is primarily used in the pre-Linux
-> 'boot' directory code to allow for extraction to memory address 0 and
-> therefore we avoid this check.
+Probe the new mdio node added by b31a1d8b.  Fix kernel panic problem when
+gianfar driver wants to get the of_platform_device of that mdio.
 
-This integrates Feedback from Tom to change xtensa and a comment, and
-the callee/caller replace noticed by joern.
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+Supersede the patch to add "simple-bus" to gianfar node to fix this problem.
 
+ arch/powerpc/boot/dts/mpc8313erdb.dts     |    2 +-
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-
-
-Some callers of zlib_inflate() might accidentally pass a NULL
-pointer in strm->next_out which zlib_inflate() should catch.
-Others like the powerpc gunzip_partial expect to be able
-to extract a zImage to memory location 0. This introduces
-zlib_inflate_usafe() for those and adds a check for the rest
-
-
-Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-
---- linux/arch/powerpc/boot/gunzip_util.c.orig	2009-01-21 09:27:39.00000000=
-0 +0100
-+++ linux/arch/powerpc/boot/gunzip_util.c	2009-01-21 09:27:51.000000000 +01=
-00
-@@ -109,7 +109,7 @@ int gunzip_partial(struct gunzip_state *
-=20
- 		state->s.next_out =3D dst;
- 		state->s.avail_out =3D dstlen;
--		r =3D zlib_inflate(&state->s, Z_FULL_FLUSH);
-+		r =3D zlib_inflate_unsafe(&state->s, Z_FULL_FLUSH);
- 		if (r !=3D Z_OK && r !=3D Z_STREAM_END)
- 			fatal("inflate returned %d msg: %s\n\r", r, state->s.msg);
- 		len =3D state->s.next_out - (unsigned char *)dst;
---- linux/arch/xtensa/boot/lib/zmem.c.orig	2009-01-21 09:22:44.000000000 +0=
-100
-+++ linux/arch/xtensa/boot/lib/zmem.c	2009-01-21 09:22:26.000000000 +0100
-@@ -68,7 +68,7 @@ void gunzip (void *dst, int dstlen, unsi
-         s.avail_in =3D *lenp - i;
-         s.next_out =3D dst;
-         s.avail_out =3D dstlen;
--        r =3D zlib_inflate(&s, Z_FINISH);
-+        r =3D zlib_inflate_unsafe(&s, Z_FINISH);
-         if (r !=3D Z_OK && r !=3D Z_STREAM_END) {
-                 //puts("inflate returned "); puthex(r); puts("\n");
-                 exit();
---- linux/include/linux/zlib.h.orig	2009-01-21 09:27:28.000000000 +0100
-+++ linux/include/linux/zlib.h	2009-01-21 09:28:55.000000000 +0100
-@@ -329,7 +329,23 @@ extern int zlib_inflateInit (z_streamp s
- */
-=20
-=20
--extern int zlib_inflate (z_streamp strm, int flush);
-+extern int __zlib_inflate (z_streamp strm, int flush, int check_out);
-+/*
-+    These two wrappers decide wheter strm->next_out gets checked for NULL.
-+    The zlib_inflate_unsafe() version is primarily used in the pre-Linux
-+    'boot' directory code to allow for extraction to memory address 0 and
-+    therefore we avoid this check.
-+*/
-+static inline int zlib_inflate(z_streamp strm, int flush)
-+{
-+	return __zlib_inflate(strm, flush, 1);
-+}
-+
-+static inline int zlib_inflate_unsafe(z_streamp strm, int flush)
-+{
-+	return __zlib_inflate(strm, flush, 0);
-+}
-+
- /*
-     inflate decompresses as much data as possible, and stops when the input
-   buffer becomes empty or the output buffer becomes full. It may introduce
---- linux/lib/zlib_inflate/inflate.c.orig	2009-01-21 09:27:11.000000000 +01=
-00
-+++ linux/lib/zlib_inflate/inflate.c	2009-01-21 09:29:10.000000000 +0100
-@@ -329,7 +329,7 @@ static int zlib_inflateSyncPacket(z_stre
-    will return Z_BUF_ERROR if it has not reached the end of the stream.
-  */
-=20
--int zlib_inflate(z_streamp strm, int flush)
-+int __zlib_inflate(z_streamp strm, int flush, int check_out)
- {
-     struct inflate_state *state;
-     const unsigned char *next;  /* next input */
-@@ -347,8 +347,10 @@ int zlib_inflate(z_streamp strm, int flu
-     static const unsigned short order[19] =3D /* permutation of code lengt=
-hs */
-         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
-=20
--    /* Do not check for strm->next_out =3D=3D NULL here as ppc zImage
--       inflates to strm->next_out =3D 0 */
-+    /* We only check strm->next_out if the caller requests it,
-+       since ppc extracts the ppc zImage to 0 */
-+    if (check_out && !strm->next_out)
-+        return Z_STREAM_ERROR;
-=20
-     if (strm =3D=3D NULL || strm->state =3D=3D NULL ||
-         (strm->next_in =3D=3D NULL && strm->avail_in !=3D 0))
---- linux/lib/zlib_inflate/inflate_syms.c.orig	2009-01-21 09:27:16.00000000=
-0 +0100
-+++ linux/lib/zlib_inflate/inflate_syms.c	2009-01-21 09:27:51.000000000 +01=
-00
-@@ -11,7 +11,7 @@
- #include <linux/zlib.h>
-=20
- EXPORT_SYMBOL(zlib_inflate_workspacesize);
--EXPORT_SYMBOL(zlib_inflate);
-+EXPORT_SYMBOL(__zlib_inflate);
- EXPORT_SYMBOL(zlib_inflateInit2);
- EXPORT_SYMBOL(zlib_inflateEnd);
- EXPORT_SYMBOL(zlib_inflateReset);
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index a2125f4..d532f99 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -185,7 +185,7 @@
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+-			compatible = "gianfar", "simple-bus";
++			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <37 0x8 36 0x8 35 0x8>;
+diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+index a428f8d..20e3d1e 100644
+--- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+@@ -71,6 +71,7 @@ static int __init mpc831x_rdb_probe(void)
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+ 	{ .compatible = "simple-bus" },
++	{ .compatible = "gianfar" },
+ 	{},
+ };
+ 
+-- 
+1.5.5.1.248.g4b17
