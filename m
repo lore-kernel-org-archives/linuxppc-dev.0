@@ -1,13 +1,13 @@
 Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 0E756DDF0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 13:15:31 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4154FDDDF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 13:17:57 +1100 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LPp6M-0006QL-Mo
-	for linuxppc-dev@ozlabs.org; Wed, 21 Jan 2009 18:15:26 -0800
-Message-ID: <21593750.post@talk.nabble.com>
-Date: Wed, 21 Jan 2009 18:15:26 -0800 (PST)
+	(envelope-from <bounces@nabble.com>) id 1LPp8h-0006Tc-Rh
+	for linuxppc-dev@ozlabs.org; Wed, 21 Jan 2009 18:17:51 -0800
+Message-ID: <21593752.post@talk.nabble.com>
+Date: Wed, 21 Jan 2009 18:17:51 -0800 (PST)
 From: Daniel Ng99 <daniel_ng11@lycos.com>
 To: linuxppc-dev@ozlabs.org
 Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
@@ -172,5 +172,5 @@ Daniel
 
 --=20
 View this message in context: http://www.nabble.com/-MPC8272ADS-Cannot-star=
-t-my-Linux-Kernel-tp21476017p21593750.html
+t-my-Linux-Kernel-tp21476017p21593752.html
 Sent from the linuxppc-dev mailing list archive at Nabble.com.
