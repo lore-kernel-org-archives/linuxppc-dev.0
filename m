@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 4BD1ADDF15
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 13:00:37 +1100 (EST)
-Date: Thu, 22 Jan 2009 05:00:35 +0300
+	by ozlabs.org (Postfix) with ESMTP id 132E1DDEFE
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 13:00:40 +1100 (EST)
+Date: Thu, 22 Jan 2009 05:00:37 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 07/10] sdhci: Add support for hosts that don't specify
-	clocks in the cap. register
-Message-ID: <20090122020035.GG11492@oksana.dev.rtsoft.ru>
+Subject: [PATCH 08/10] sdhci: Add set_clock callback
+Message-ID: <20090122020037.GH11492@oksana.dev.rtsoft.ru>
 References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -26,62 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-FSL eSDHC hosts don't provide clocks bits in the capabilities register,
-instead we're getting clocks values from the device tree.
+FSL eSDHC hosts have incompatible register map to manage the SDCLK.
+This patch adds set_clock callback so that drivers could overwrite
+set_clock behaviour.
 
-There is somewhat similar change[1] from Ben Dooks, the change adds
-callbacks for getting the clocks. But for eSDHC the callbacks are
-superfluous, since the clocks are static.
+Similar patch[1] was posted by Ben Dooks, though in Ben's version the
+callback is named change_clock, plus the patch has some unrelated bits
+that makes the patch difficult to reuse.
 
-[1] http://lkml.org/lkml/2008/12/2/157
+[1] http://lkml.org/lkml/2008/12/2/160
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   31 +++++++++++++++----------------
- 1 files changed, 15 insertions(+), 16 deletions(-)
+ drivers/mmc/host/sdhci.c |    5 +++++
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 7 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 57b8ffe..9ac088a 100644
+index 9ac088a..e456ae0 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -1693,24 +1693,23 @@ int sdhci_add_host(struct sdhci_host *host)
- 		mmc_dev(host->mmc)->dma_mask = &host->dma_mask;
- 	}
+@@ -959,6 +959,11 @@ static void sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	if (clock == host->clock)
+ 		return;
  
--	host->max_clk =
--		(caps & SDHCI_CLOCK_BASE_MASK) >> SDHCI_CLOCK_BASE_SHIFT;
--	if (host->max_clk == 0) {
--		printk(KERN_ERR "%s: Hardware doesn't specify base clock "
--			"frequency.\n", mmc_hostname(mmc));
--		return -ENODEV;
-+	if (!host->max_clk) {
-+		host->max_clk = (caps & SDHCI_CLOCK_BASE_MASK) >>
-+						SDHCI_CLOCK_BASE_SHIFT;
-+		if (host->max_clk == 0) {
-+			printk(KERN_ERR "%s: Hardware doesn't specify base "
-+				"clock frequency.\n", mmc_hostname(mmc));
-+			return -ENODEV;
-+		}
-+		host->max_clk *= 1000000;
- 	}
--	host->max_clk *= 1000000;
++	if (host->ops->set_clock) {
++		host->ops->set_clock(host, clock);
++		return;
++	}
++
+ 	sdhci_writew(host, SDHCI_CLOCK_CONTROL, 0);
  
--	host->timeout_clk =
--		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
--	if (host->timeout_clk == 0) {
--		printk(KERN_ERR "%s: Hardware doesn't specify timeout clock "
--			"frequency.\n", mmc_hostname(mmc));
--		return -ENODEV;
-+	if (!host->timeout_clk) {
-+		host->timeout_clk = (caps & SDHCI_TIMEOUT_CLK_MASK) >>
-+						SDHCI_TIMEOUT_CLK_SHIFT;
-+		if (caps & SDHCI_TIMEOUT_CLK_UNIT)
-+			host->timeout_clk *= 1000;
- 	}
--	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
--		host->timeout_clk *= 1000;
+ 	if (clock == 0)
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 7e3b01f..39cfd5a 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -303,6 +303,8 @@ struct sdhci_ops {
+ 	void		(*writew)(struct sdhci_host *host, int reg, u16 val);
+ 	void		(*writeb)(struct sdhci_host *host, int reg, u8 val);
  
- 	/*
- 	 * Set host parameters.
++	void	(*set_clock)(struct sdhci_host *host, unsigned int clock);
++
+ 	int		(*enable_dma)(struct sdhci_host *host);
+ };
+ 
 -- 
 1.5.6.5
