@@ -1,20 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC68CDDDF6
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 16:16:20 +1100 (EST)
-Subject: Re: 2.6.29-rc powerpc G5 Xorg legacy_mem regression
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0901212045370.26621@blonde.anvils>
-References: <Pine.LNX.4.64.0901212045370.26621@blonde.anvils>
-Content-Type: text/plain
-Date: Thu, 22 Jan 2009 16:16:10 +1100
-Message-Id: <1232601370.23611.98.camel@pasglop>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 7AA97DDF76
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 16:26:33 +1100 (EST)
+Date: Wed, 21 Jan 2009 21:26:34 -0800 (PST)
+Message-Id: <20090121.212634.237965647.davem@davemloft.net>
+To: linuxppc-dev@ozlabs.org
+Subject: perf_counter vs. oprofile
+From: David Miller <davem@davemloft.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, "Rafael J. Wysocki" <rjw@sisl.pl>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +20,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> That's as far as I took it: I can see there's code to set up
-> "Legacy VGA memory" but it looks like that's not coming into play.
-> dmesg and .config attached: I think you'll get to the point much
-> quicker than I would.
-> 
-> Though I bet you're busy at the moment: no hurry, I can comment
-> out the pci_create_legacy_files() from drivers/pci/bus.c for now.
+Paul, I just noticed that right now if perf counter is enabled, the
+oprofile module load will always fail because the powerpc perf counter
+support unconditionally grabs the PMC hardware using
+reserve_pmc_hardware() in an arch_initcall()
 
-It's actually an X bug :-(
+There really needs to be a way to segregate these multiple users of
+the PMC device.  For example, if I'm not using the perf counter
+APIs at all I should be able to use oprofile if I want to.
 
-IE, I always create the legacy files, I just make mmap fail when legacy
-VGA isn't available. This is the right way to do it, as it properly
-informs X that yes, I do support the new API and no, there's no point in
-trying to access legacy VGA memory on this machine.
-
-I honestly don't see how I can fix that without making proper support
-for legacy memory / IO impossible, and thus guaranteeing that X will
-eternally continue to crap on random bits of /dev/mem in the future :-(
-
-Cheers,
-Ben.
+Anyways, just FYI...
