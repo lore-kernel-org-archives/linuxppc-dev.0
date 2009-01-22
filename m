@@ -1,26 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 72F42DDEEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 05:31:17 +1100 (EST)
-Date: Thu, 22 Jan 2009 21:31:15 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 02/10] sdhci: Add support for bus-specific IO memory
-	accessors
-Message-ID: <20090122183115.GA27961@oksana.dev.rtsoft.ru>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DCC72DDEF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 06:16:05 +1100 (EST)
+Message-Id: <5FF82BD4-AA84-4645-A703-F146C226F07C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090122020041.GJ11492@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 10/10] mmc: Add OpenFirmware bindings for SDHCI driver
+Date: Thu, 22 Jan 2009 13:15:01 -0600
 References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
-	<20090122020019.GB11492@oksana.dev.rtsoft.ru>
-	<200901221255.49724.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200901221255.49724.arnd@arndb.de>
-Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
+	<20090122020041.GJ11492@oksana.dev.rtsoft.ru>
+Cc: sdhci-devel@list.drzeus.cx, Arnd Bergmann <arnd@arndb.de>,
 	Liu Dave <DaveLiu@freescale.com>,
 	Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>,
-	linuxppc-dev@ozlabs.org, Konjin Lai <Konjin.Lai@freescale.com>,
-	Ben Dooks <ben-linux@fluff.org>, Pierre Ossman <drzeus-sdhci@drzeus.cx>,
-	Xie Xiaobo <X.Xie@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Konjin Lai <Konjin.Lai@freescale.com>, Ben Dooks <ben-linux@fluff.org>,
+	Pierre Ossman <drzeus-sdhci@drzeus.cx>, Xie Xiaobo <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,62 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 22, 2009 at 12:55:48PM +0100, Arnd Bergmann wrote:
-> On Thursday 22 January 2009, Anton Vorontsov wrote:
-> > +       /*
-> > +        * These accessors duplicate sdhci_ops, but there are two reasons for
-> > +        * this:
-> > +        * 1. sdhci_ops are const, so the sdhci driver won't able to assign
-> > +        *    default ops;
-> 
-> You could assign the pointer to a const default_sdhci_ops structure,
-> which IMHO would be cleaner than copying the function pointers
-> separately.
 
-This won't work because ops also specify non-memory accessors ops
-(i.e. enable_dma, set_clock, ...), so we can't just assign
-default_ops ptr.
+On Jan 21, 2009, at 8:00 PM, Anton Vorontsov wrote:
 
-> > +        * 2. Using host->X instead of host->ops->X saves us one dereference.
-> > +        *    This can be useful in PIO mode. (Though the benefit of this
-> > +        *    is negligibly small).
-> > +        */
-> 
-> I doubt that this is even measurable.
+> This patch adds a new driver: sdhci-of. The driver is similar to
+> the sdhci-pci, it contains common probe code, and controller-specific
+> ops and quirks.
+>
+> So far there are only Freescale eSDHC ops and quirks.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> drivers/mmc/host/Kconfig    |   10 ++
+> drivers/mmc/host/Makefile   |    1 +
+> drivers/mmc/host/sdhci-of.c |  274 ++++++++++++++++++++++++++++++++++ 
+> +++++++++
+> 3 files changed, 285 insertions(+), 0 deletions(-)
+> create mode 100644 drivers/mmc/host/sdhci-of.c
 
-Yeah, I didn't even bother w/ measuring. ;-)
+Still griping about lack of OF binding docs for this.
 
-> If it was, you could still use a copy of that structure, like
-> 
-> struct sdhci_host {
-> 	...
-> 	struct sdhci_ops ops; /* not struct sdhci_ops *ops */
-> 	...
-> };
-> 
-> and do an assignment of the structure, like
-> 
-> static void assign_ops(struct sdhci_host *host, struct sdhci_ops *ops)
-> {
-> 	host->ops = *ops;
-> }
+:)
 
-This will work. Pierre, what do you think? That way drivers
-will call this routine instead of "host->ops = driver_ops_ptr".
-
-The other option would be to remove const from the ops. Or implement
-another non-const ops struct (struct sdhci_io_ops?).
-
-In any way, the type-checked variant will be even longer to type:
-
-host->mem_ops->writel(val, host->ioaddr + reg);
-host->ops.writel(val, host->ioaddr + reg);
-host->writel(val, host->ioaddr + reg);
-
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
