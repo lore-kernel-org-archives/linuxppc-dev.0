@@ -1,24 +1,15 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
-	by ozlabs.org (Postfix) with ESMTP id 00DECDDE25
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 23:09:20 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 10/10] mmc: Add OpenFirmware bindings for SDHCI driver
-Date: Thu, 22 Jan 2009 13:05:28 +0100
-References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
-	<20090122020041.GJ11492@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090122020041.GJ11492@oksana.dev.rtsoft.ru>
+Return-Path: <rs.shreeram@gdatech.co.in>
+Message-ID: <49786135.5030404@gdatech.co.in>
+Date: Thu, 22 Jan 2009 17:36:13 +0530
+From: shreeram <rs.shreeram@gdatech.co.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200901221305.29532.arnd@arndb.de>
-Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
-	Liu Dave <DaveLiu@freescale.com>,
-	Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>,
-	linuxppc-dev@ozlabs.org, Konjin Lai <Konjin.Lai@freescale.com>,
-	Ben Dooks <ben-linux@fluff.org>, Pierre Ossman <drzeus-sdhci@drzeus.cx>,
-	Xie Xiaobo <X.Xie@freescale.com>
+To: wael showair <showair2003@yahoo.com>
+Subject: Re: eth0: Could not attach to PHY
+References: <mailman.1613.1232571316.4534.linuxppc-dev@ozlabs.org>
+	<49783993.4090408@denx.de>
+In-Reply-To: <49783993.4090408@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 22 January 2009, Anton Vorontsov wrote:
-> This patch adds a new driver: sdhci-of. The driver is similar to
-> the sdhci-pci, it contains common probe code, and controller-specific
-> ops and quirks.
-> 
-> So far there are only Freescale eSDHC ops and quirks.
 
-Looks very good overall.
+Heiko Schocher wrote:
+> Hello wael,
+>
+> wael showair <showair2003@yahoo.com> wrote:
+>   
+>> i have a board with MPC8555 processor
+>> uboot version 1.1.6
+>> linux kernel 2.6.19-rc5
+>> ltib version: 6.2.2-sv
+>> gcc 3.4.3
+>>
+>> it boots successfully
+>> i want to upgrade my linux kernel to 2.6.27
+>> i upgraded the following:
+>> ltib version 8.1.2-sv
+>> gcc 4.1
+>> linux kernel 2.6.27
+>> & i kept the uboot with the same version 1.1.6
+>>
+>> the kernel booting stucks as follows:
+>>     
+If you have a board which is not an evaluation board please check you 
+phy address.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+-- 
 
-> +	ret = of_address_to_resource(np, 0, &mem);
-> +	if (ret)
-> +		goto err_no_addr;
-> +
-> +	host->ioaddr = ioremap(mem.start, resource_size(&mem));
-> +	if (!host->ioaddr) {
-> +		ret = -ENOMEM;
-> +		goto err_addr_map;
-> +	}
+-_-
+ .
 
-Minor improvement: you could use of_iomap to do this in one step.
-
-	Arnd <><
+Regards,
+R.S.Shree Ram
+GDA Technologies Ltd.
