@@ -4,33 +4,34 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2FCF3DDEFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 04:05:48 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 03C08DDEF8
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 04:36:27 +1100 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n0MH5S67009120
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 10:05:39 -0700 (MST)
+	n0MHaOq7019738
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 10:36:24 -0700 (MST)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
 	[10.82.19.112])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n0MH5RLb017998
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 11:05:27 -0600 (CST)
-Date: Thu, 22 Jan 2009 11:05:26 -0600
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n0MHaNPW019043
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 11:36:23 -0600 (CST)
+Date: Thu, 22 Jan 2009 11:36:22 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Daniel Ng <daniel.ng1234@gmail.com>
-Subject: Re: Device Tree setup for 8272-based board
-Message-ID: <20090122170526.GB18012@ld0162-tx32.am.freescale.net>
-References: <547eba1b0901151722p4a6afce4nc769fcb8cff82ea6@mail.gmail.com>
-	<547eba1b0901151940x588ead2bk52342ea1cecc6db0@mail.gmail.com>
-	<20090116181405.GB722@ld0162-tx32.am.freescale.net>
-	<547eba1b0901181758q27d09f1fx7d07d7385f028312@mail.gmail.com>
-	<547eba1b0901192323i2a505dcg841d42092dc5dd5d@mail.gmail.com>
-	<20090120164124.GC8978@ld0162-tx32.am.freescale.net>
-	<547eba1b0901202337g624f79b2uaa7f7f2f61990ad1@mail.gmail.com>
-	<20090121175225.GB31266@ld0162-tx32.am.freescale.net>
-	<547eba1b0901212347v47c9ee4at40e2188c50351952@mail.gmail.com>
+To: Daniel Ng99 <daniel_ng11@lycos.com>
+Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
+Message-ID: <20090122173622.GA18427@ld0162-tx32.am.freescale.net>
+References: <496F4760.1010007@denx.de>
+	<8cad0aa0901150706u72538941rbc22655d5a8905ea@mail.gmail.com>
+	<8cad0aa0901160406l3db9c025ubdcac40b4b464d23@mail.gmail.com>
+	<20090116172903.GA722@ld0162-tx32.am.freescale.net>
+	<8cad0aa0901160944l48bd0e99wa13f23907838376d@mail.gmail.com>
+	<8cad0aa0901160953te6c7d1cg3a4df7de7da7d182@mail.gmail.com>
+	<4970CBA9.60809@freescale.com>
+	<8cad0aa0901200256n6122d17eh90f56e9cb8cae775@mail.gmail.com>
+	<20090120163155.GA8978@ld0162-tx32.am.freescale.net>
+	<21593750.post@talk.nabble.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <547eba1b0901212347v47c9ee4at40e2188c50351952@mail.gmail.com>
+In-Reply-To: <21593750.post@talk.nabble.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -41,33 +42,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 22, 2009 at 06:47:01PM +1100, Daniel Ng wrote:
-> Thanks Scott. What is the meaning of the Ethernet reg field?:
+On Wed, Jan 21, 2009 at 06:15:26PM -0800, Daniel Ng99 wrote:
+> So the brg node looks like this-
 > 
-> reg = <0x11300 0x20 0x8400 0x100 0x11390 0x1>;
+>       brg@119f0 {
+>         compatible = "fsl,mpc8272-brg",
+>                      "fsl,cpm2-brg";
+>         reg = <0x119f0 0x10 0x115f0 0x10>;
+>         clock-frequency = <0>;
 > 
-> Is it-
+> But aren't the BRG registers 32 bits, so shouldn't we use?:
 > 
-> 0x11300-> GFMR1 ie. the GFMR for FCC1?
-> 0x20-> GFMR1 Fields are a total of 32 bits?
-> 0x8400-> initial value of bits 0-15 of GFMR1?
-> 0x100-> initial value of bits 16-31 of GFMR1?
-> 0x11390-> GFEMR1?
-> 0x1-> length of GFEMR1 is 1 bit in size?? (this doesn't make sense
-> because it's a 3-bit field)
-> Where would we specify the initial value of GFEMR1?
+>        reg = <0x119f0 0x20 0x115f0 0x20>;
 
-No, it's 3 pairs of offset/length (reg is *always* a list of
-address/size pairs, with the number of cells per address or size
-component depending on #address-cells/#size-cells in the parent node). 
-Length is in bytes, not bits.
+reg lengths are bytes, not bits.
 
-The first is the FCC register block, the second is the parameter RAM, and
-the third is GFEMR.
+> -either way, changing these values doesn't seem to make a difference in my
+> board's behaviour. Why?
 
-There are no "initial values" in the device tree -- it describes what the
-hardware is, not how to program it.  fsl,cpm-command may seem like the
-latter, but it describes how a specific device is identified to the CPM
-core.
+The change above told it that the system has 16 BRGs rather than 8. 
+However, this change did not affect the position of the BRG1 register.
+
+> Regarding the following line in the serial@11a00 node:
+> 
+> fsl,cpm-brg = <1>;
+> 
+> -If I change the above number to anything other than 1 (even nonsense like
+> '99') then it also seems to work. Why? 
+
+Because BRG1 is already set up by u-boot.
+
+> Adding 'clock-frequency = <0>;' to the brg node doesn't seem to make a
+> difference to my board's behaviour.
+
+Try setting it to the actual BRG clock.
 
 -Scott
