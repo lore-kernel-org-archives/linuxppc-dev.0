@@ -1,13 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18808.6885.373593.934704@cargo.ozlabs.ibm.com>
-Date: Thu, 22 Jan 2009 18:06:13 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Miller <davem@davemloft.net>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id B5DE4DDF51
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 18:12:10 +1100 (EST)
+Date: Wed, 21 Jan 2009 23:12:10 -0800 (PST)
+Message-Id: <20090121.231210.261407216.davem@davemloft.net>
+To: paulus@samba.org
 Subject: Re: perf_counter vs. oprofile
-In-Reply-To: <20090121.212634.237965647.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18808.6885.373593.934704@cargo.ozlabs.ibm.com>
 References: <20090121.212634.237965647.davem@davemloft.net>
+	<18808.6885.373593.934704@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -18,29 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller writes:
+From: Paul Mackerras <paulus@samba.org>
+Date: Thu, 22 Jan 2009 18:06:13 +1100
 
-> Paul, I just noticed that right now if perf counter is enabled, the
-> oprofile module load will always fail because the powerpc perf counter
-> support unconditionally grabs the PMC hardware using
-> reserve_pmc_hardware() in an arch_initcall()
-> 
-> There really needs to be a way to segregate these multiple users of
-> the PMC device.  For example, if I'm not using the perf counter
-> APIs at all I should be able to use oprofile if I want to.
-> 
-> Anyways, just FYI...
+> Out of curiosity, what ppc hardware are you using perf_counters on?
+> A G5?
 
-Sure.  I know the current situation is distinctly sub-optimal but I
-wanted to get something going so I could start playing with it.  (All
-the perf_counter stuff is very much beta code at the moment IMHO.)
-What I intend to do is claim the PMU when the first counter gets
-opened and release it when the last counter gets closed, but that will
-need some support in the core, I think.  I'm on vacation at the moment
-and travelling, so I won't get to it in the next two weeks though. :)
+An UltraSPARC-IIIi :-)
 
-Out of curiosity, what ppc hardware are you using perf_counters on?
-A G5?
-
-Regards,
-Paul.
+I just wanted to make sure you realized the conflict, and you
+obviously do.
