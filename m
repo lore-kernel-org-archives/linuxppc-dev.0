@@ -1,19 +1,18 @@
 Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 992FBDDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 22:56:59 +1100 (EST)
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
+	by ozlabs.org (Postfix) with ESMTP id 00DECDDE25
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 23:09:20 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 02/10] sdhci: Add support for bus-specific IO memory
-	accessors
-Date: Thu, 22 Jan 2009 12:55:48 +0100
+Subject: Re: [PATCH 10/10] mmc: Add OpenFirmware bindings for SDHCI driver
+Date: Thu, 22 Jan 2009 13:05:28 +0100
 References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
-	<20090122020019.GB11492@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090122020019.GB11492@oksana.dev.rtsoft.ru>
+	<20090122020041.GJ11492@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090122020041.GJ11492@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Message-Id: <200901221255.49724.arnd@arndb.de>
+Message-Id: <200901221305.29532.arnd@arndb.de>
 Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
 	Liu Dave <DaveLiu@freescale.com>,
 	Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>,
@@ -30,40 +29,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thursday 22 January 2009, Anton Vorontsov wrote:
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/*
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * These accessors duplicate s=
-dhci_ops, but there are two reasons for
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * this:
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * 1. sdhci_ops are const, so =
-the sdhci driver won't able to assign
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * =C2=A0 =C2=A0default ops;
+> This patch adds a new driver: sdhci-of. The driver is similar to
+> the sdhci-pci, it contains common probe code, and controller-specific
+> ops and quirks.
+> 
+> So far there are only Freescale eSDHC ops and quirks.
 
-You could assign the pointer to a const default_sdhci_ops structure,
-which IMHO would be cleaner than copying the function pointers
-separately.
+Looks very good overall.
 
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * 2. Using host->X instead of=
- host->ops->X saves us one dereference.
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * =C2=A0 =C2=A0This can be us=
-eful in PIO mode. (Though the benefit of this
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 * =C2=A0 =C2=A0is negligibly =
-small).
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 */
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-I doubt that this is even measurable. If it was, you could still use a copy
-of that structure, like
+> +	ret = of_address_to_resource(np, 0, &mem);
+> +	if (ret)
+> +		goto err_no_addr;
+> +
+> +	host->ioaddr = ioremap(mem.start, resource_size(&mem));
+> +	if (!host->ioaddr) {
+> +		ret = -ENOMEM;
+> +		goto err_addr_map;
+> +	}
 
-struct sdhci_host {
-	...
-	struct sdhci_ops ops; /* not struct sdhci_ops *ops */
-	...
-};
-
-and do an assignment of the structure, like
-
-static void assign_ops(struct sdhci_host *host, struct sdhci_ops *ops)
-{
-	host->ops =3D *ops;
-}
+Minor improvement: you could use of_iomap to do this in one step.
 
 	Arnd <><
