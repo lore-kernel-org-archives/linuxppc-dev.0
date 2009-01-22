@@ -1,16 +1,26 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 3786EDDDDB
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 05:09:33 +1100 (EST)
-Date: Thu, 22 Jan 2009 21:09:30 +0300
+	by ozlabs.org (Postfix) with ESMTP id 72F42DDEEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 05:31:17 +1100 (EST)
+Date: Thu, 22 Jan 2009 21:31:15 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH] phylib: Fix oops in suspend/resume paths
-Message-ID: <20090122180930.GA27624@oksana.dev.rtsoft.ru>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 02/10] sdhci: Add support for bus-specific IO memory
+	accessors
+Message-ID: <20090122183115.GA27961@oksana.dev.rtsoft.ru>
+References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
+	<20090122020019.GB11492@oksana.dev.rtsoft.ru>
+	<200901221255.49724.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-Cc: netdev@vger.kernel.org, Andy Fleming <afleming@freescale.com>,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
+In-Reply-To: <200901221255.49724.arnd@arndb.de>
+Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
+	Liu Dave <DaveLiu@freescale.com>,
+	Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>,
+	linuxppc-dev@ozlabs.org, Konjin Lai <Konjin.Lai@freescale.com>,
+	Ben Dooks <ben-linux@fluff.org>, Pierre Ossman <drzeus-sdhci@drzeus.cx>,
+	Xie Xiaobo <X.Xie@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,69 +30,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Suspend/resume routines check for phydrv != NULL, but that is
-wrong because "phydrv" comes from container_of(drv). If drv is NULL,
-then container_of(drv) will return non-NULL result, and the checks
-won't work.
+On Thu, Jan 22, 2009 at 12:55:48PM +0100, Arnd Bergmann wrote:
+> On Thursday 22 January 2009, Anton Vorontsov wrote:
+> > +       /*
+> > +        * These accessors duplicate sdhci_ops, but there are two reasons for
+> > +        * this:
+> > +        * 1. sdhci_ops are const, so the sdhci driver won't able to assign
+> > +        *    default ops;
+> 
+> You could assign the pointer to a const default_sdhci_ops structure,
+> which IMHO would be cleaner than copying the function pointers
+> separately.
 
-The Freescale TBI PHYs are driver-less, so "drv" is NULL, and that
-leads to the following oops:
+This won't work because ops also specify non-memory accessors ops
+(i.e. enable_dma, set_clock, ...), so we can't just assign
+default_ops ptr.
 
-Unable to handle kernel paging request for data at address 0xffffffe4
-Faulting instruction address: 0xc0215554
-Oops: Kernel access of bad area, sig: 11 [#1]
-[...]
-NIP [c0215554] mdio_bus_suspend+0x34/0x70
-LR [c01cc508] suspend_device+0x258/0x2bc
-Call Trace:
-[cfad3da0] [cfad3db8] 0xcfad3db8 (unreliable)
-[cfad3db0] [c01cc508] suspend_device+0x258/0x2bc
-[cfad3dd0] [c01cc62c] dpm_suspend+0xc0/0x140
-[cfad3e20] [c01cc6f4] device_suspend+0x48/0x5c
-[cfad3e40] [c0068dd8] suspend_devices_and_enter+0x8c/0x148
-[cfad3e60] [c00690f8] enter_state+0x100/0x118
-[cfad3e80] [c00691c0] state_store+0xb0/0xe4
-[cfad3ea0] [c018c938] kobj_attr_store+0x24/0x3c
-[cfad3eb0] [c00ea9a8] flush_write_buffer+0x58/0x7c
-[cfad3ed0] [c00eadf0] sysfs_write_file+0x58/0xa0
-[cfad3ef0] [c009e810] vfs_write+0xb4/0x16c
-[cfad3f10] [c009ed40] sys_write+0x4c/0x90
-[cfad3f40] [c0014954] ret_from_syscall+0x0/0x38
-[...]
+> > +        * 2. Using host->X instead of host->ops->X saves us one dereference.
+> > +        *    This can be useful in PIO mode. (Though the benefit of this
+> > +        *    is negligibly small).
+> > +        */
+> 
+> I doubt that this is even measurable.
 
-This patch fixes the issue, plus removes unneeded parentheses
-and fixes indentation level in mdio_bus_suspend().
+Yeah, I didn't even bother w/ measuring. ;-)
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/phy/mdio_bus.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+> If it was, you could still use a copy of that structure, like
+> 
+> struct sdhci_host {
+> 	...
+> 	struct sdhci_ops ops; /* not struct sdhci_ops *ops */
+> 	...
+> };
+> 
+> and do an assignment of the structure, like
+> 
+> static void assign_ops(struct sdhci_host *host, struct sdhci_ops *ops)
+> {
+> 	host->ops = *ops;
+> }
 
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index 11adf6e..811a637 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -296,9 +296,8 @@ static int mdio_bus_suspend(struct device * dev, pm_message_t state)
- 	struct phy_driver *phydrv = to_phy_driver(drv);
- 	struct phy_device *phydev = to_phy_device(dev);
- 
--	if ((!device_may_wakeup(phydev->dev.parent)) &&
--		(phydrv && phydrv->suspend))
--			ret = phydrv->suspend(phydev);
-+	if (drv && phydrv->suspend && !device_may_wakeup(phydev->dev.parent))
-+		ret = phydrv->suspend(phydev);
- 
- 	return ret;
- }
-@@ -310,8 +309,7 @@ static int mdio_bus_resume(struct device * dev)
- 	struct phy_driver *phydrv = to_phy_driver(drv);
- 	struct phy_device *phydev = to_phy_device(dev);
- 
--	if ((!device_may_wakeup(phydev->dev.parent)) &&
--		(phydrv && phydrv->resume))
-+	if (drv && phydrv->resume && !device_may_wakeup(phydev->dev.parent))
- 		ret = phydrv->resume(phydev);
- 
- 	return ret;
+This will work. Pierre, what do you think? That way drivers
+will call this routine instead of "host->ops = driver_ops_ptr".
+
+The other option would be to remove const from the ops. Or implement
+another non-const ops struct (struct sdhci_io_ops?).
+
+In any way, the type-checked variant will be even longer to type:
+
+host->mem_ops->writel(val, host->ioaddr + reg);
+host->ops.writel(val, host->ioaddr + reg);
+host->writel(val, host->ioaddr + reg);
+
+
+Thanks,
+
 -- 
-1.5.6.5
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
