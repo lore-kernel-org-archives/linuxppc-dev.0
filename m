@@ -1,21 +1,31 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E1506DDF0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 13:00:42 +1100 (EST)
-Date: Thu, 22 Jan 2009 05:00:41 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 10/10] mmc: Add OpenFirmware bindings for SDHCI driver
-Message-ID: <20090122020041.GJ11492@oksana.dev.rtsoft.ru>
-References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 0E756DDF0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 13:15:31 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LPp6M-0006QL-Mo
+	for linuxppc-dev@ozlabs.org; Wed, 21 Jan 2009 18:15:26 -0800
+Message-ID: <21593750.post@talk.nabble.com>
+Date: Wed, 21 Jan 2009 18:15:26 -0800 (PST)
+From: Daniel Ng99 <daniel_ng11@lycos.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [MPC8272ADS]Cannot start my Linux Kernel
+In-Reply-To: <20090120163155.GA8978@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
-Cc: sdhci-devel@list.drzeus.cx, Arnd Bergmann <arnd@arndb.de>,
-	linux-kernel@vger.kernel.org, Liu Dave <DaveLiu@freescale.com>,
-	Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>,
-	linuxppc-dev@ozlabs.org, Konjin Lai <Konjin.Lai@freescale.com>,
-	Ben Dooks <ben-linux@fluff.org>, Xie Xiaobo <X.Xie@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+References: <8cad0aa0901150342s2362e53bqf9472c1dc239636c@mail.gmail.com>
+	<496F318D.6010302@denx.de>
+	<8cad0aa0901150510o7a8146f1m2045e252c5e1cf24@mail.gmail.com>
+	<496F4760.1010007@denx.de>
+	<8cad0aa0901150706u72538941rbc22655d5a8905ea@mail.gmail.com>
+	<8cad0aa0901160406l3db9c025ubdcac40b4b464d23@mail.gmail.com>
+	<20090116172903.GA722@ld0162-tx32.am.freescale.net>
+	<8cad0aa0901160944l48bd0e99wa13f23907838376d@mail.gmail.com>
+	<8cad0aa0901160953te6c7d1cg3a4df7de7da7d182@mail.gmail.com>
+	<4970CBA9.60809@freescale.com>
+	<8cad0aa0901200256n6122d17eh90f56e9cb8cae775@mail.gmail.com>
+	<20090120163155.GA8978@ld0162-tx32.am.freescale.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,332 +35,142 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a new driver: sdhci-of. The driver is similar to
-the sdhci-pci, it contains common probe code, and controller-specific
-ops and quirks.
 
-So far there are only Freescale eSDHC ops and quirks.
+I am using my own 8272-based board (it is similar to the 8272 ADS) with Lin=
+ux
+2.6.27 and u-boot-2009-Jan-rc1.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mmc/host/Kconfig    |   10 ++
- drivers/mmc/host/Makefile   |    1 +
- drivers/mmc/host/sdhci-of.c |  274 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 285 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mmc/host/sdhci-of.c
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index dfa585f..8b5cdef 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -65,6 +65,16 @@ config MMC_RICOH_MMC
- 
- 	  If unsure, say Y.
- 
-+config MMC_SDHCI_OF
-+	tristate "SDHCI support on OpenFirmware platforms"
-+	depends on MMC_SDHCI && PPC_OF
-+	help
-+	  This selects the OF Secure Digital Host Controller Interface.
-+	  So far there is only Freescale eSDHC controller known to exists
-+	  on OF platforms.
-+
-+	  If unsure, say N.
-+
- config MMC_OMAP
- 	tristate "TI OMAP Multimedia Card Interface support"
- 	depends on ARCH_OMAP
-diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-index f485328..5296793 100644
---- a/drivers/mmc/host/Makefile
-+++ b/drivers/mmc/host/Makefile
-@@ -12,6 +12,7 @@ obj-$(CONFIG_MMC_IMX)		+= imxmmc.o
- obj-$(CONFIG_MMC_SDHCI)		+= sdhci.o
- obj-$(CONFIG_MMC_SDHCI_PCI)	+= sdhci-pci.o
- obj-$(CONFIG_MMC_RICOH_MMC)	+= ricoh_mmc.o
-+obj-$(CONFIG_MMC_SDHCI_OF)	+= sdhci-of.o
- obj-$(CONFIG_MMC_WBSD)		+= wbsd.o
- obj-$(CONFIG_MMC_AU1X)		+= au1xmmc.o
- obj-$(CONFIG_MMC_OMAP)		+= omap.o
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-new file mode 100644
-index 0000000..8ee89a1
---- /dev/null
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -0,0 +1,274 @@
-+/*
-+ * OpenFirmware bindings for Secure Digital Host Controller Interface.
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ * Copyright (c) 2009 MontaVista Software, Inc.
-+ *
-+ * Authors: Xiaobo Xie <X.Xie@freescale.com>
-+ *	    Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or (at
-+ * your option) any later version.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/mmc/host.h>
-+#include "sdhci.h"
-+
-+struct sdhci_of_data {
-+	unsigned int quirks;
-+	struct sdhci_ops ops;
-+};
-+
-+/*
-+ * Ops and quirks for the Freescale eSDHC controller.
-+ */
-+
-+#define ESDHC_DMA_SYSCTL	0x40c
-+#define ESDHC_DMA_SNOOP		0x00000040
-+
-+#define ESDHC_SYSTEM_CONTROL	0x2c
-+#define ESDHC_CLOCK_MASK	0x0000fff0
-+#define ESDHC_PREDIV_SHIFT	8
-+#define ESDHC_DIVIDER_SHIFT	4
-+#define ESDHC_CLOCK_PEREN	0x00000004
-+#define ESDHC_CLOCK_HCKEN	0x00000002
-+#define ESDHC_CLOCK_IPGEN	0x00000001
-+
-+static u32 esdhc_readl(struct sdhci_host *host, int reg)
-+{
-+	return in_be32(host->ioaddr + reg);
-+}
-+
-+static u16 esdhc_readw(struct sdhci_host *host, int reg)
-+{
-+	return in_be16(host->ioaddr + (reg ^ 0x2));
-+}
-+
-+static u8 esdhc_readb(struct sdhci_host *host, int reg)
-+{
-+	return in_8(host->ioaddr + (reg ^ 0x3));
-+}
-+
-+static void esdhc_writel(struct sdhci_host *host, int reg, u32 val)
-+{
-+	out_be32(host->ioaddr + reg, val);
-+}
-+
-+static void esdhc_writew(struct sdhci_host *host, int reg, u16 val)
-+{
-+	int base = reg & ~0x3;
-+	int shift = (reg & 0x2) * 8;
-+
-+	clrsetbits_be32(host->ioaddr + base, 0xffff << shift, val << shift);
-+}
-+
-+static void esdhc_writeb(struct sdhci_host *host, int reg, u8 val)
-+{
-+	int base = reg & ~0x3;
-+	int shift = (reg & 0x3) * 8;
-+
-+	clrsetbits_be32(host->ioaddr + base , 0xff << shift, val << shift);
-+}
-+
-+static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
-+{
-+	int div;
-+	int pre_div = 1;
-+
-+	setbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
-+		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN);
-+
-+	clrbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_MASK);
-+
-+	if (clock == 0)
-+		goto out;
-+
-+	if (host->max_clk / 16 > clock) {
-+		for (; pre_div < 256; pre_div *= 2) {
-+			if (host->max_clk / pre_div < clock*16)
-+				break;
-+		}
-+	}
-+
-+	for (div = 1; div <= 16; div++) {
-+		if (host->max_clk / (div * pre_div) <= clock)
-+			break;
-+	}
-+
-+	pre_div >>= 1;
-+	div -= 1;
-+
-+	setbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL,
-+		div << ESDHC_DIVIDER_SHIFT | pre_div << ESDHC_PREDIV_SHIFT);
-+	mdelay(10);
-+out:
-+	host->clock = clock;
-+}
-+
-+static int esdhc_enable_dma(struct sdhci_host *host)
-+{
-+	setbits32(host->ioaddr + ESDHC_DMA_SYSCTL, ESDHC_DMA_SNOOP);
-+	return 0;
-+}
-+
-+static struct sdhci_of_data sdhci_esdhc = {
-+	.quirks = SDHCI_QUIRK_FSL |
-+		  SDHCI_QUIRK_32BIT_REGISTERS |
-+		  SDHCI_QUIRK_PIO_IRQS_DURING_DMA |
-+		  SDHCI_QUIRK_BROKEN_CARD_DETECTION |
-+		  SDHCI_QUIRK_INVERTED_WRITE_PROTECT |
-+		  SDHCI_QUIRK_NO_BUSY_IRQ |
-+		  SDHCI_QUIRK_NO_CARD_NO_RESET,
-+	.ops = {
-+		.readl = esdhc_readl,
-+		.readw = esdhc_readw,
-+		.readb = esdhc_readb,
-+		.writel = esdhc_writel,
-+		.writew = esdhc_writew,
-+		.writeb = esdhc_writeb,
-+		.set_clock = esdhc_set_clock,
-+		.enable_dma = esdhc_enable_dma,
-+	},
-+};
-+
-+#ifdef CONFIG_PM
-+
-+static int sdhci_of_suspend(struct of_device *ofdev, pm_message_t state)
-+{
-+	struct sdhci_host *host = dev_get_drvdata(&ofdev->dev);
-+
-+	return mmc_suspend_host(host->mmc, state);
-+}
-+
-+static int sdhci_of_resume(struct of_device *ofdev)
-+{
-+	struct sdhci_host *host = dev_get_drvdata(&ofdev->dev);
-+
-+	return mmc_resume_host(host->mmc);
-+}
-+
-+#else
-+
-+#define sdhci_of_suspend NULL
-+#define sdhci_of_resume NULL
-+
-+#endif
-+
-+static int __devinit sdhci_of_probe(struct of_device *ofdev,
-+				 const struct of_device_id *match)
-+{
-+	struct device_node *np = ofdev->node;
-+	struct sdhci_of_data *sdhci_of_data = match->data;
-+	struct sdhci_host *host;
-+	struct resource mem;
-+	const u32 *clk;
-+	int size;
-+	int ret;
-+
-+	host = sdhci_alloc_host(&ofdev->dev, sizeof(*host));
-+	if (!host)
-+		return -ENOMEM;
-+
-+	dev_set_drvdata(&ofdev->dev, host);
-+
-+	ret = of_address_to_resource(np, 0, &mem);
-+	if (ret)
-+		goto err_no_addr;
-+
-+	host->ioaddr = ioremap(mem.start, resource_size(&mem));
-+	if (!host->ioaddr) {
-+		ret = -ENOMEM;
-+		goto err_addr_map;
-+	}
-+
-+	host->irq = irq_of_parse_and_map(np, 0);
-+	if (!host->irq) {
-+		ret = -EINVAL;
-+		goto err_no_irq;
-+	}
-+
-+	host->hw_name = dev_name(&ofdev->dev);
-+	if (sdhci_of_data) {
-+		host->quirks = sdhci_of_data->quirks;
-+		host->ops = &sdhci_of_data->ops;
-+	}
-+
-+	clk = of_get_property(np, "clock-frequency", &size);
-+	if (clk && size == sizeof(*clk) && *clk) {
-+		host->max_clk = *clk;
-+		host->timeout_clk = *clk / 1000;
-+	}
-+
-+	ret = sdhci_add_host(host);
-+	if (ret)
-+		goto err_add_host;
-+
-+	return 0;
-+
-+err_add_host:
-+	irq_dispose_mapping(host->irq);
-+err_no_irq:
-+	iounmap(host->ioaddr);
-+err_addr_map:
-+err_no_addr:
-+	sdhci_free_host(host);
-+	return ret;
-+}
-+
-+static int __devexit sdhci_of_remove(struct of_device *ofdev)
-+{
-+	struct sdhci_host *host = dev_get_drvdata(&ofdev->dev);
-+
-+	sdhci_remove_host(host, 0);
-+	sdhci_free_host(host);
-+	irq_dispose_mapping(host->irq);
-+	iounmap(host->ioaddr);
-+	return 0;
-+}
-+
-+static const struct of_device_id sdhci_of_match[] = {
-+	{
-+		.compatible = "fsl,esdhc",
-+		.data = &sdhci_esdhc,
-+	},
-+	{
-+		.compatible = "generic-sdhci",
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, sdhci_of_match);
-+
-+static struct of_platform_driver sdhci_of_driver = {
-+	.driver.name = "sdhci-of",
-+	.match_table = sdhci_of_match,
-+	.probe = sdhci_of_probe,
-+	.remove = __devexit_p(sdhci_of_remove),
-+	.suspend = sdhci_of_suspend,
-+	.resume	= sdhci_of_resume,
-+};
-+
-+static int __init sdhci_of_init(void)
-+{
-+	return of_register_platform_driver(&sdhci_of_driver);
-+}
-+module_init(sdhci_of_init);
-+
-+static void __exit sdhci_of_exit(void)
-+{
-+	of_unregister_platform_driver(&sdhci_of_driver);
-+}
-+module_exit(sdhci_of_exit);
-+
-+MODULE_DESCRIPTION("Secure Digital Host Controller Interface OF driver");
-+MODULE_AUTHOR("Xiaobo Xie <X.Xie@freescale.com>, "
-+	      "Anton Vorontsov <avorontsov@ru.mvista.com>");
-+MODULE_LICENSE("GPL");
--- 
-1.5.6.5
+Scott Wood-2 wrote:
+>=20
+> On Tue, Jan 20, 2009 at 11:56:58AM +0100, Jean-Michel Hautbois wrote:
+> That looks like something is failing when the real (as opposed to early
+> debug) serial driver starts.  Try commenting out the call to cpm_setbrg
+> in drivers/serial/cpm_uart/cpm_uart_cpm2.h; if that makes a difference,
+> there's something wrong with the brg node in the device tree.
+>=20
+
+This works- I can see the rest of the debug messages and it gets to booting
+the rootfs.
+
+So the brg node looks like this-
+
+      brg@119f0 {
+        compatible =3D "fsl,mpc8272-brg",
+                     "fsl,cpm2-brg";
+        reg =3D <0x119f0 0x10 0x115f0 0x10>;
+        clock-frequency =3D <0>;
+
+But aren't the BRG registers 32 bits, so shouldn't we use?:
+
+       reg =3D <0x119f0 0x20 0x115f0 0x20>;
+
+-either way, changing these values doesn't seem to make a difference in my
+board's behaviour. Why?
+
+Regarding the following line in the serial@11a00 node:
+
+fsl,cpm-brg =3D <1>;
+
+-If I change the above number to anything other than 1 (even nonsense like
+'99') then it also seems to work. Why? Does this mean the clock for BRG1 is
+set incorrectly? Where do I set this?
+
+Adding 'clock-frequency =3D <0>;' to the brg node doesn't seem to make a
+difference to my board's behaviour.
+
+What is actually happening here? Is it freezing up in the switch over from
+the early boot console driver to the proper linux console driver? Which of
+these drivers is cpm_uart_cpm2.h for? Why does it still work when we commen=
+t
+out the call to 'set_brg()'?
+
+Here's the relevant part of the 'working' boot sequence. Notice there are
+still some funny characters when the CPM serial driver kicks in (near the
+bottom). Should this be of concern?-
+
+time_init: decrementer frequency =3D 16.500000 MHz
+time_init: processor frequency   =3D 330.000000 MHz
+clocksource: timebase mult[f26c9b2] shift[22] registered
+clockevent: decrementer mult[439] shift[16] cpu[0]
+Console: colour dummy device 80x25
+cpm_uart_init_port()
+OF: ** translation for device /soc@f0000000/cpm@119c0/serial@11a00 **
+OF: bus is default (na=3D1, ns=3D1) on /soc@f0000000/cpm@119c0
+OF: translating address: 00011a00
+OF: parent bus is default (na=3D1, ns=3D1) on /soc@f0000000
+OF: no ranges, 1:1 translation
+OF: parent translation for: 00000000
+OF: with offset: 11a00
+OF: one level translation: 00011a00
+OF: parent bus is default (na=3D1, ns=3D1) on /
+OF: walking ranges...
+OF: default map, cp=3D0, s=3D53000, da=3D11a00
+OF: parent translation for: f0000000
+OF: with offset: 11a00
+OF: one level translation: f0011a00
+OF: reached root node
+OF: ** translation for device /soc@f0000000/cpm@119c0/serial@11a00 **
+OF: bus is default (na=3D1, ns=3D1) on /soc@f0000000/cpm@119c0
+OF: translating address: 00008000
+OF: parent bus is default (na=3D1, ns=3D1) on /soc@f0000000
+OF: no ranges, 1:1 translation
+OF: parent translation for: 00000000
+OF: with offset: 8000
+OF: one level translation: 00008000
+OF: parent bus is default (na=3D1, ns=3D1) on /
+OF: walking ranges...
+OF: default map, cp=3D0, s=3D53000, da=3D8000
+OF: parent translation for: f0000000
+OF: with offset: 8000
+OF: one level translation: f0008000
+OF: reached root node
+of_irq_map_one: dev=3D/soc@f0000000/cpm@119c0/serial@11a00, index=3D0
+ intsize=3D2 intlen=3D2
+of_irq_map_raw:
+par=3D/soc@f0000000/interrupt-controller@10c00,intspec=3D[0x00000028 0x
+00000008...],ointsize=3D2
+of_irq_map_raw: ipar=3D/soc@f0000000/interrupt-controller@10c00, size=3D2
+ -> addrsize=3D1
+ -> got it !
+irq: irq_create_mapping(0xc02d1320, 0x28)
+irq: -> using host @c02d1320
+irq: -> obtained virq 40
+cpm2_pic_host_map(40, 0x28)
+of_get_gpio exited with status -2
+of_get_gpio exited with status -2
+of_get_gpio exited with status -2
+of_get_gpio exited with status -2
+of_get_gpio exited with status -2
+of_get_gpio exited with status -2
+cpm_uart_request_port()
+CPM uart[=C3=BEDentry cache hash table entries: 4096 (order: 2, 16384 bytes=
+)
+Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
+Memory: 29840k/32768k available (2372k kernel code, 2928k reserved, 100k
+data, 126k
+ bss, 116k init)
+SLUB: Genslabs=3D12, HWalign=3D32, Order=3D0-3, MinObjects=3D0, CPUs=3D1, N=
+odes=3D1
+Calibrating delay loop... 32.89 BogoMIPS (lpj=3D65792)
+Mount-cache hash table entries: 512
+
+Cheers,
+Daniel
+
+
+
+
+
+
+
+
+
+=20
+
+
+
+--=20
+View this message in context: http://www.nabble.com/-MPC8272ADS-Cannot-star=
+t-my-Linux-Kernel-tp21476017p21593750.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
