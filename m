@@ -1,16 +1,17 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 2DE7CDDF2E
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 00:16:14 +1100 (EST)
-Message-ID: <4979BB83.5060506@matrix-vision.de>
-Date: Fri, 23 Jan 2009 13:43:47 +0100
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <jwboyer@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 570AADDEE4
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 01:03:54 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id l24so1542507waf.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 06:03:52 -0800 (PST)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Fri, 23 Jan 2009 09:03:44 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Please pull 'merge' branch of 4xx git tree
+Message-ID: <20090123140344.GA17808@yoda.jdub.homelinux.org>
 MIME-Version: 1.0
-To: Sai Amruta <amrutasai.p@gmail.com>
-Subject: Re: MicroSD (SPI mode) support in Linux-2.6.26-1
-References: <dd2f3b320901221959w956ccc6r3b700633acbefd3a@mail.gmail.com>
-In-Reply-To: <dd2f3b320901221959w956ccc6r3b700633acbefd3a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,29 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Ben,
 
-Sai Amruta wrote:
-> Hi All,
->
-> I am using linux-2.6.26 on MPC8567 and microSD is connected through 
-> SPI interface.
-> Is the existing mmc driver supports microSD?
-yes - it's working perfectly fine on my MPC8343.
-Even with SDHC cards ;-)
+Please pull the following changes for 2.6.29.  Mostly defconfig
+updates, but a few smaller fixes as well.
 
-cheers,
-Andre
->
-> -- 
-> --Amru
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+thx,
+josh
 
+The following changes since commit f3b8436ad9a8ad36b3c9fa1fe030c7f38e5d3d0b:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
 
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler
-Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
+
+Grant Erickson (1):
+      powerpc/4xx: DTS: Add Add'l SDRAM0 Compatible and Interrupt Info
+
+Josh Boyer (3):
+      powerpc/40x: Update PowerPC 40x defconfigs
+      powerpc/44x: Update PowerPC 44x defconfigs
+      powerpc/4xx: Update multi-board PowerPC 4xx defconfigs
+
+Sean MacLennan (1):
+      powerpc/44x: Warp patches for the new NDFC driver
+
+ arch/powerpc/boot/cuboot-warp.c                |   43 -------
+ arch/powerpc/boot/dts/haleakala.dts            |    5 +-
+ arch/powerpc/boot/dts/kilauea.dts              |    5 +-
+ arch/powerpc/boot/dts/makalu.dts               |    5 +-
+ arch/powerpc/boot/dts/warp.dts                 |   42 +++++++-
+ arch/powerpc/configs/40x/acadia_defconfig      |   76 ++++++++++----
+ arch/powerpc/configs/40x/ep405_defconfig       |   87 +++++++++++----
+ arch/powerpc/configs/40x/hcu4_defconfig        |   78 ++++++++++----
+ arch/powerpc/configs/40x/kilauea_defconfig     |   76 ++++++++++----
+ arch/powerpc/configs/40x/makalu_defconfig      |   76 ++++++++++----
+ arch/powerpc/configs/40x/virtex_defconfig      |   53 ++++++---
+ arch/powerpc/configs/40x/walnut_defconfig      |   84 +++++++++++----
+ arch/powerpc/configs/44x/arches_defconfig      |   60 +++++++---
+ arch/powerpc/configs/44x/bamboo_defconfig      |   76 +++++++++----
+ arch/powerpc/configs/44x/canyonlands_defconfig |   60 +++++++---
+ arch/powerpc/configs/44x/ebony_defconfig       |   84 +++++++++++----
+ arch/powerpc/configs/44x/katmai_defconfig      |   76 +++++++++----
+ arch/powerpc/configs/44x/rainier_defconfig     |   83 +++++++++++----
+ arch/powerpc/configs/44x/sam440ep_defconfig    |   77 +++++++++----
+ arch/powerpc/configs/44x/sequoia_defconfig     |   83 +++++++++++----
+ arch/powerpc/configs/44x/taishan_defconfig     |   83 +++++++++++----
+ arch/powerpc/configs/44x/virtex5_defconfig     |   53 ++++++---
+ arch/powerpc/configs/44x/warp_defconfig        |  140 ++++++++++++++++++------
+ arch/powerpc/configs/ppc40x_defconfig          |   77 ++++++++++---
+ arch/powerpc/configs/ppc44x_defconfig          |   79 ++++++++++---
+ arch/powerpc/platforms/44x/Makefile            |    1 -
+ arch/powerpc/platforms/44x/warp-nand.c         |  135 -----------------------
+ 27 files changed, 1204 insertions(+), 593 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/44x/warp-nand.c
