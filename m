@@ -1,23 +1,17 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id E64D8DDF71
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 21:31:52 +1100 (EST)
-Message-ID: <49799C8C.80903@denx.de>
-Date: Fri, 23 Jan 2009 11:31:40 +0100
-From: Anatolij Gustschin <agust@denx.de>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id 2DE7CDDF2E
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 00:16:14 +1100 (EST)
+Message-ID: <4979BB83.5060506@matrix-vision.de>
+Date: Fri, 23 Jan 2009 13:43:47 +0100
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-To: Julian Calaby <julian.calaby@gmail.com>
-Subject: Re: [PATCH] mb862xx: Restrict compliation of platform driver to PPC
-References: <496A89A1.8050302@gmail.com>	
-	<646765f40901191650v5320f5e4tcc5fb7da0555ade1@mail.gmail.com>	
-	<20090120011945.GA23380@oksana.dev.rtsoft.ru>
-	<646765f40901191800y27530acaw74edc01abdd13e68@mail.gmail.com>
-In-Reply-To: <646765f40901191800y27530acaw74edc01abdd13e68@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
-	Matteo Fortini <m.fortini@selcomgroup.com>, linux-kernel@vger.kernel.org,
-	Krzysztof Helt <krzysztof.h1@poczta.fm>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
+To: Sai Amruta <amrutasai.p@gmail.com>
+Subject: Re: MicroSD (SPI mode) support in Linux-2.6.26-1
+References: <dd2f3b320901221959w956ccc6r3b700633acbefd3a@mail.gmail.com>
+In-Reply-To: <dd2f3b320901221959w956ccc6r3b700633acbefd3a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,33 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Julian Calaby wrote:
-> On Tue, Jan 20, 2009 at 12:19, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
->> Should be Anatolij. ;-)
-> 
-> Who is the first person on the list, I guess he's missed this or isn't
-> reading his email.
 
-I missed this, sorry.
+Sai Amruta wrote:
+> Hi All,
+>
+> I am using linux-2.6.26 on MPC8567 and microSD is connected through 
+> SPI interface.
+> Is the existing mmc driver supports microSD?
+yes - it's working perfectly fine on my MPC8343.
+Even with SDHC cards ;-)
 
-> Before we commit to fixing this properly, is it really worth it? Is
-> this hardware ever likely to be used with SPARC?
+cheers,
+Andre
+>
+> -- 
+> --Amru
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-I don't think it will ever be used with SPARC, so your patch is Ok.
 
-> Given that there are PCI and OF versions of the driver, it seems to me
-> that this is available as a PCI expansion card, and as a graphics chip
-> built into some PPC motherboards. The initial commit says: "Lime GDC
-> support is known to work on PPC440EPx based lwmon5 and MPC8544E based
-> socrates embedded boards, both equipped with Lime GDC." so I'm
-> guessing that this graphics chip is designed for embedded boards. I
-> can find references to it's use in embedded automotive applications on
-> Google but I can't find any reference to the Fujitsu LIME (MB86276)
-> and SPARC on Google.
-
-If LIME chip should ever be used with SPARC, support for this
-could be added later. LIME doesn't have PCI interface, it is
-connected to the host cpu bus. PCI version of the driver is for
-CoralP and Carmine chips which have PCI interface.
-
-Anatolij
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
