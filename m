@@ -1,18 +1,17 @@
-Return-Path: <wolfgang@leila.ping.de>
-Received: from lilly.ping.de (lilly.ping.de [83.97.42.2])
-	by ozlabs.org (Postfix) with SMTP id 02CFADDFC3
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 02:48:21 +1100 (EST)
-Date: Fri, 23 Jan 2009 14:40:02 +0100
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: MicroSD (SPI mode) support in Linux-2.6.26-1
-Message-ID: <20090123134001.GR2004@leila.ping.de>
-References: <dd2f3b320901221959w956ccc6r3b700633acbefd3a@mail.gmail.com>
-	<4979BB83.5060506@matrix-vision.de>
+Return-Path: <ben@codiert.org>
+Received: from cursor.subgra.de (cursor.subgra.de [78.46.252.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "cursor.subgra.de", Issuer "cursor.subgra.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id EB3BFDDFC4
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 02:51:38 +1100 (EST)
+Date: Fri, 23 Jan 2009 16:51:42 +0100
+From: Benjamin Krill <ben@codiert.org>
+To: linux-mtd@lists.infradead.org, dwg@au1.ibm.com, linuxppc-dev@ozlabs.org,
+	vwool@ru.mvista.com
+Subject: [PATCH] Check name property to determine partition nodes.
+Message-ID: <20090123155142.GA481@codiert.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4979BB83.5060506@matrix-vision.de>
-From: wolfgang@leila.ping.de (Wolfgang Wegner)
-Cc: linuxppc-dev@ozlabs.org, Sai Amruta <amrutasai.p@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Andre,
+SLOF has a further node which could not be evaluate
+by the current routine. The current routine returns
+because the node hasn't the required reg property. As
+fix this patch adds a check to determine the partition
+child nodes.
 
-On Fri, Jan 23, 2009 at 01:43:47PM +0100, Andre Schwarz wrote:
-> 
-> Sai Amruta wrote:
-> >Hi All,
-> >
-> >I am using linux-2.6.26 on MPC8567 and microSD is connected through 
-> >SPI interface.
-> >Is the existing mmc driver supports microSD?
-> yes - it's working perfectly fine on my MPC8343.
-> Even with SDHC cards ;-)
+Signed-off-by: Benjamin Krill <ben@codiert.org>
+---
+ drivers/mtd/ofpart.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-that's great to hear - is there anything like a HOWTO on how to set
-this up on top of the SPI driver (probably involving some custom GPIO
-stuff for card and WP detection) out there?
-I tried to but did not get it to work on MCF53xx (uClinux 2.6.23-uc0)
-and probably did not find the right search strings either.
-
-Regards,
-Wolfgang
+diff --git a/drivers/mtd/ofpart.c b/drivers/mtd/ofpart.c
+index 9e45b3f..c852cc2 100644
+--- a/drivers/mtd/ofpart.c
++++ b/drivers/mtd/ofpart.c
+@@ -46,6 +46,11 @@ int __devinit of_mtd_parse_partitions(struct device *dev,
+ 		const u32 *reg;
+ 		int len;
+ 
++		/* check if this is a partition node */
++		partname = of_get_property(pp, "name", &len);
++		if (strcmp(partname, "partition") != 0)
++			continue;
++
+ 		reg = of_get_property(pp, "reg", &len);
+ 		if (!reg || (len != 2 * sizeof(u32))) {
+ 			of_node_put(pp);
+-- 
+1.6.0.6
