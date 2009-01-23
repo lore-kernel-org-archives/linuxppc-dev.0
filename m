@@ -1,21 +1,28 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <Lee.Nipper@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 305BCDDF46
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 03:21:18 +1100 (EST)
-Message-ID: <4979EE74.6040306@freescale.com>
-Date: Fri, 23 Jan 2009 10:21:08 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Johns Daniel <johns.daniel@gmail.com>
-Subject: Re: Common kernel image for e300 and e500v2
-References: <ba5d9360901230705v750a958au7eeaa923aadc41ad@mail.gmail.com>
-In-Reply-To: <ba5d9360901230705v750a958au7eeaa923aadc41ad@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 0B841DDFE0
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 03:51:10 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n0NGp6eQ014312
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 09:51:07 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n0NGp6i2007602
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 10:51:06 -0600 (CST)
+Subject: Re: powerpc ftrace functionality
+From: Lee Nipper <lee.nipper@freescale.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1232398278.24188.318.camel@al08linux99>
+References: <1232398278.24188.318.camel@al08linux99>
+Content-Type: text/plain
+Date: Fri, 23 Jan 2009 10:52:41 -0600
+Message-Id: <1232729561.9573.47.camel@al08linux99>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +32,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johns Daniel wrote:
-> Is it possible -- and prudent -- to use a single kernel binary image
-> for two similar boards, one based on an e300 core and the other on an
-> e500v2 core?
+On Mon, 2009-01-19 at 13:51 -0700, Lee Nipper wrote:
+> Is ftrace functional with latest kernel on powerpc (32-bit) ?
 
-No, it is not possible.  They use different MMUs, and the kernel does 
-not support choosing between them at runtime.
+> It appears broken unless I'm missing something.
 
-> I was surprised to see that the e500v2-targeted toolchain did build
-> the kernel for the e300 board just fine. Don't know whether this will
-> always be true?
 
-"always" is a strong word, but it should generally work.
+FWIW, 2.6.29-rc2 powerpc ftrace works with one patch
+from Steven Rostedt added in:
 
--Scott
+http://git.kernel.org/?p=linux/kernel/git/rostedt/linux-2.6-trace.git;a=commit;h=082605de5f82eb692cc90f7fda071cc01bb5ac34
+
+-Lee
