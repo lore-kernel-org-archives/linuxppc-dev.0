@@ -1,19 +1,16 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id CA7F3DDF04
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 01:46:18 +1100 (EST)
-Message-ID: <4979D839.3060503@matrix-vision.de>
-Date: Fri, 23 Jan 2009 15:46:17 +0100
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <johns.daniel@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
+	by ozlabs.org (Postfix) with ESMTP id 8D72DDDF9D
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 02:05:17 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so1162885qwb.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 07:05:16 -0800 (PST)
 MIME-Version: 1.0
-To: Wolfgang Wegner <wolfgang@leila.ping.de>
-Subject: Re: MicroSD (SPI mode) support in Linux-2.6.26-1
-References: <dd2f3b320901221959w956ccc6r3b700633acbefd3a@mail.gmail.com>
-	<4979BB83.5060506@matrix-vision.de>
-	<20090123134001.GR2004@leila.ping.de>
-In-Reply-To: <20090123134001.GR2004@leila.ping.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Sai Amruta <amrutasai.p@gmail.com>
+Date: Fri, 23 Jan 2009 09:05:16 -0600
+Message-ID: <ba5d9360901230705v750a958au7eeaa923aadc41ad@mail.gmail.com>
+Subject: Common kernel image for e300 and e500v2
+From: Johns Daniel <johns.daniel@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,104 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Wegner wrote:
-> Hi Andre,
->
-> On Fri, Jan 23, 2009 at 01:43:47PM +0100, Andre Schwarz wrote:
->   
->> Sai Amruta wrote:
->>     
->>> Hi All,
->>>
->>> I am using linux-2.6.26 on MPC8567 and microSD is connected through 
->>> SPI interface.
->>> Is the existing mmc driver supports microSD?
->>>       
->> yes - it's working perfectly fine on my MPC8343.
->> Even with SDHC cards ;-)
->>     
->
-> that's great to hear - is there anything like a HOWTO on how to set
-> this up on top of the SPI driver (probably involving some custom GPIO
-> stuff for card and WP detection) out there?
-> I tried to but did not get it to work on MCF53xx (uClinux 2.6.23-uc0)
-> and probably did not find the right search strings either.
->
-> Regards,
-> Wolfgang
->
->   
-I'm sorry - no README.
-All I can do is provide the info how it works for me :
+Is it possible -- and prudent -- to use a single kernel binary image
+for two similar boards, one based on an e300 core and the other on an
+e500v2 core?
 
-platform code : provide init and chips select functions.
+I was surprised to see that the e500v2-targeted toolchain did build
+the kernel for the e300 board just fine. Don't know whether this will
+always be true?
 
-static void mvblm7_spi_activate_cs(u8 cs, u8 polarity)
-{
-        u32 data = in_be32( mvblm7_gpio + 2 );
-        if (polarity)
-                out_be32( mvblm7_gpio + 2, data | MVBLM7_MMC_CS );
-        else
-                out_be32( mvblm7_gpio + 2, data & ~MVBLM7_MMC_CS );
-}
+The next logical step was to configure and customize the kernel just
+right so that a single binary image will work on both boards. I am not
+sure this is possible -- and, even if possible, whether this is
+kosher!
 
-static void mvblm7_spi_deactivate_cs(u8 cs, u8 polarity)
-{
-        u32 data = in_be32( mvblm7_gpio + 2 );
-        if (!polarity)
-                out_be32( mvblm7_gpio + 2, data | MVBLM7_MMC_CS );
-        else
-                out_be32( mvblm7_gpio + 2, data & ~MVBLM7_MMC_CS );
-}
+Would love to hear the technical nuances involved with this...
 
-static struct mmc_spi_platform_data mvblm7_mmc_pdata = {
-        .ocr_mask = MMC_VDD_33_34,
-};
-
-static struct spi_board_info mvblm7_spi_boardinfo = {
-        .bus_num = 0x7000,
-        .chip_select = 0,
-        .max_speed_hz = 50000000,
-        .modalias = "mmc_spi",
-        .platform_data = &mvblm7_mmc_pdata,
-};
-
-static int __init mvblm7_spi_init(void)
-{
-        return fsl_spi_init(&mvblm7_spi_boardinfo, 1,
-                            mvblm7_spi_activate_cs,
-                            mvblm7_spi_deactivate_cs);
-}
-
-machine_device_initcall(mvblm7, mvblm7_spi_init);
-
-
-Kernel config :
-CONFIG_MMC=y
-CONFIG_MMC_BLOCK=y
-CONFIG_MMC_BLOCK_BOUNCE=y
-CONFIG_MMC_SPI=m
-
-and of course the driver for your SPI controller ...
-
-CONFIG_SPI=y
-CONFIG_SPI_MASTER=y
-CONFIG_SPI_MPC83xx=y
-
-
-I've had no time to set up hotplug/card detect features.
-Actually my system boots with card plugged in and and I do a "insmod 
-mmc_spi.ko" -> card gets probed.
-
-->mount -t vfat /dev/mmcblk0p1  /mnt/mmc
-
-
-hope this helps.
-
-
-cheers,
-Andre
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler
-Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
+-- Johns
