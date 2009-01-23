@@ -1,16 +1,19 @@
-Return-Path: <johns.daniel@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
-	by ozlabs.org (Postfix) with ESMTP id 8D72DDDF9D
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 02:05:17 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so1162885qwb.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 07:05:16 -0800 (PST)
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id A7CCCDDF9E
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 02:27:33 +1100 (EST)
+Message-ID: <4979E1E4.8090807@matrix-vision.de>
+Date: Fri, 23 Jan 2009 16:27:32 +0100
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Date: Fri, 23 Jan 2009 09:05:16 -0600
-Message-ID: <ba5d9360901230705v750a958au7eeaa923aadc41ad@mail.gmail.com>
-Subject: Common kernel image for e300 and e500v2
-From: Johns Daniel <johns.daniel@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Wolfgang Wegner <wolfgang@leila.ping.de>
+Subject: Re: MicroSD (SPI mode) support in Linux-2.6.26-1
+References: <dd2f3b320901221959w956ccc6r3b700633acbefd3a@mail.gmail.com>
+	<4979BB83.5060506@matrix-vision.de>
+	<20090123134001.GR2004@leila.ping.de>
+In-Reply-To: <20090123134001.GR2004@leila.ping.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,19 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Is it possible -- and prudent -- to use a single kernel binary image
-for two similar boards, one based on an e300 core and the other on an
-e500v2 core?
+Wolfgang Wegner wrote:
+> Hi Andre,
+>
+> On Fri, Jan 23, 2009 at 01:43:47PM +0100, Andre Schwarz wrote:
+>   
+>> Sai Amruta wrote:
+>>     
+>>> Hi All,
+>>>
+>>> I am using linux-2.6.26 on MPC8567 and microSD is connected through 
+>>> SPI interface.
+>>> Is the existing mmc driver supports microSD?
+>>>       
+>> yes - it's working perfectly fine on my MPC8343.
+>> Even with SDHC cards ;-)
+>>     
+>
+> that's great to hear - is there anything like a HOWTO on how to set
+> this up on top of the SPI driver (probably involving some custom GPIO
+> stuff for card and WP detection) out there?
+> I tried to but did not get it to work on MCF53xx (uClinux 2.6.23-uc0)
+> and probably did not find the right search strings either.
+>
+> Regards,
+> Wolfgang
+>
+>   
+Wolfgang,
 
-I was surprised to see that the e500v2-targeted toolchain did build
-the kernel for the e300 board just fine. Don't know whether this will
-always be true?
+of course I forgot the most important messages ... ;-)
 
-The next logical step was to configure and customize the kernel just
-right so that a single binary image will work on both boards. I am not
-sure this is possible -- and, even if possible, whether this is
-kosher!
 
-Would love to hear the technical nuances involved with this...
+mvBL-M7> insmod /modules/mmc_spi.ko
+mvBL-M7> dmesg -c
+mmc_spi spi28672.0: SD/MMC host mmc0, no DMA, no WP, no poweroff
+mmc0: host does not support reading read-only switch. assuming write-enable.
+mmc0: new SD card on SPI
+mmcblk0: mmc0:0000 SD02G 1921024KiB
+ mmcblk0: p1
+mvBL-M7> mount /mnt/mmc/
+mvBL-M7> ls /mnt/mmc/
+TestApp.JPG                       do
+TestCSharpApp.exe                 mvBlueCOUGAR.msi
+autostart                         mvPPC_6XX-NAND-20081010-0946.tgz
+distribution.zip                  uInitrd.mvblm7_nova
+mvBL-M7>
 
--- Johns
+
+
+cheers,
+Andre
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
