@@ -1,23 +1,25 @@
-Return-Path: <ratheeshreddy@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
-	by ozlabs.org (Postfix) with ESMTP id 2D071DDF37
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 19:48:19 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so4827118rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 00:48:17 -0800 (PST)
+Return-Path: <snakebyte@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 848BADDF70
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 19:56:29 +1100 (EST)
+Date: Fri, 23 Jan 2009 09:56:21 +0100
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: Phillip Lougher <phil.lougher@gmail.com>
+Subject: Re: Warning and BUG with btrfs and corrupted image
+Message-ID: <20090123085620.GA12650@alice>
+References: <20090113142147.GE16333@alice>
+	<1231857643.29164.28.camel@think.oraclecorp.com>
+	<20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz>
+	<20090120063150.GC5854@alice>
+	<1232457065.15042.2.camel@think.oraclecorp.com>
+	<20090120165131.GB21339@alice>
+	<cce9e37e0901211815l2195858cob6e68ac8ad93e679@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090122180001.GB18427@ld0162-tx32.am.freescale.net>
-References: <21589420.post@talk.nabble.com> <49783993.4090408@denx.de>
-	<21605367.post@talk.nabble.com>
-	<1232646323.4661.3.camel@r54964-12.am.freescale.net>
-	<20090122180001.GB18427@ld0162-tx32.am.freescale.net>
-Date: Fri, 23 Jan 2009 14:18:17 +0530
-Message-ID: <c94019ff0901230048m73b3d918k4544c73d07d3fbb0@mail.gmail.com>
-Subject: Re: eth0: Could not attach to PHY
-From: Ratheesh <ratheeshreddy@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: multipart/alternative; boundary=00163645924649b89b0461227391
-Cc: linuxppc-dev@ozlabs.org, wael showair <showair2003@yahoo.com>,
-	Haiying Wang <Haiying.Wang@freescale.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <cce9e37e0901211815l2195858cob6e68ac8ad93e679@mail.gmail.com>
+Cc: Tom Rini <trini@kernel.crashing.org>, chris@zankel.net,
+	=?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+	linuxppc-dev@ozlabs.org, rpurdie@rpsys.net, linux-fsdevel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,80 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---00163645924649b89b0461227391
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Hi
-The device tree format has changed from linux-2.6.24. You need to port the
-U-Boot to the latest version. Even I faced the same issue.
-
-Regards
-Ratheesh
-
-On Thu, Jan 22, 2009 at 11:30 PM, Scott Wood <scottwood@freescale.com>wrote:
-
-> On Thu, Jan 22, 2009 at 12:45:22PM -0500, Haiying Wang wrote:
-> > On Thu, 2009-01-22 at 06:37 -0800, wael showair wrote:
+* Phillip Lougher (phil.lougher@gmail.com) wrote:
+> On Tue, Jan 20, 2009 at 4:51 PM, Eric Sesterhenn <snakebyte@gmx.de> wrote:
+> 
+> > I already tested squashfs. One issue is basically a problem with
+> > the zlib-api for which i just posted a patch here
+> > http://marc.info/?t=123212807300003&r=1&w=2
 > >
-> > >             mdio@24520 {
-> > >                     #address-cells = <1>;
-> > >                     #size-cells = <0>;
-> > >                     device_type = "mdio";
-> > >                     compatible = "gianfar";
-> > >                     reg = <24520 20>;
-> > >                     linux,phandle = <24520>;
-> >
-> > Change compatible to "gianfar-mdio".
->
-> "fsl,gianfar-mdio"
->
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+> 
+> Thanks for testing Squashfs.  I've not ignored your emails, but I've
+> been busy job hunting, and so have not had time to look into this
+> until now.
 
---00163645924649b89b0461227391
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+no problem, made me take a closer look at the issue :-) Hope you were
+successfull
 
-Hi<br>The device tree format has changed from linux-2.6.24. You need to por=
-t the U-Boot to the latest version. Even I faced the same issue.<br><br>Reg=
-ards<br>Ratheesh<br><br><div class=3D"gmail_quote">On Thu, Jan 22, 2009 at =
-11:30 PM, Scott Wood <span dir=3D"ltr">&lt;<a href=3D"mailto:scottwood@free=
-scale.com">scottwood@freescale.com</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
-204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class=3D"Ih2=
-E3d">On Thu, Jan 22, 2009 at 12:45:22PM -0500, Haiying Wang wrote:<br>
-&gt; On Thu, 2009-01-22 at 06:37 -0800, wael showair wrote:<br>
-&gt;<br>
-&gt; &gt; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; mdio@24520 {<br>
-&gt; &gt; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
-bsp; #address-cells =3D &lt;1&gt;;<br>
-&gt; &gt; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
-bsp; #size-cells =3D &lt;0&gt;;<br>
-&gt; &gt; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
-bsp; device_type =3D &quot;mdio&quot;;<br>
-&gt; &gt; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
-bsp; compatible =3D &quot;gianfar&quot;;<br>
-&gt; &gt; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
-bsp; reg =3D &lt;24520 20&gt;;<br>
-&gt; &gt; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &n=
-bsp; linux,phandle =3D &lt;24520&gt;;<br>
-&gt;<br>
-&gt; Change compatible to &quot;gianfar-mdio&quot;.<br>
-<br>
-</div>&quot;fsl,gianfar-mdio&quot;<br>
-<font color=3D"#888888"><br>
--Scott<br>
-</font><div><div></div><div class=3D"Wj3C7c">______________________________=
-_________________<br>
-Linuxppc-dev mailing list<br>
-<a href=3D"mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org</a><br>
-<a href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-dev" target=3D"_bla=
-nk">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br>
-</div></div></blockquote></div><br>
+> I hardened Squashfs against fsfuzzer back in November 2006 (remember
+> the month of kernel bugs, or MOKB, which highlighted a number of
+> issues with Squashfs).  Your testing has thrown up a regression that I
+> inadvertently  put in last month!
 
---00163645924649b89b0461227391--
+Thats why I do the fsfuzzer tests for every kernel i test :-)
+
+will you do the "wheter" -> "whether" change for the other patch locally
+and push it or do you want me to send a changed version?
+
+> > The other is an overwritten redzone (also reported in this thread
+> > http://marc.info/?l=linux-fsdevel&m=123212794425497&w=2)
+> > Looks like a length parameter is passed to squashfs_read_data
+> > which is bigger than ((msblk->block_size >> msblk->devblksize_log2) +
+> > 1), so the kcalloced buffer gets overwritten later.
+> 
+> As part of the mainlining effort I changed Squashfs to allocate
+> buffers in 4K page sizes rather than use vmalloced large buffers.   As
+> far as zlib goes, it means zlib_inflate now decompresses into a
+> sequence of 4K buffers rather than one large buffer.   What this means
+> is zlib_inflate is called repeatedly moving to the next 4K page
+> whenever zlib_inflate asks for another buffer (stream.avail_out == 0).
+> 
+> Your testing have thrown up the case where zlib_inflate is asking for
+> too many output buffers, i.e. it has returned with Z_OK,
+> stream.avail_in !=0 (more input data to be processed), and
+> stream.avail_out == 0 (I'd like another output buffer).  but it has
+> consumed all the output buffers.  This isn't checked (the code assumes
+> zlib will do the right thing on corrupt data and bomb out).  My guess
+> is either zlib_inflate is getting confused with corrupt data, or
+> fsfuzzer gets lucky sometimes and corrupts the filesystem to point to
+> another valid but larger compressed block (i.e. in your test
+> filesystems the 4K datablock is being corrupted to point to an 8K
+> metadata block).
+> 
+> This ultimately leads to an oops in zlib_inflate where it has been
+> passed a bogus or NULL steam.next_out pointer.
+> 
+> I'll create a patch and send it to you if you're happy to test it.
+
+Sure, just throw it in my direction.
+
+Greetings, Eric
