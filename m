@@ -1,16 +1,9 @@
-Return-Path: <amrutasai.p@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.225])
-	by ozlabs.org (Postfix) with ESMTP id 03779DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 14:59:18 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so4727960rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jan 2009 19:59:17 -0800 (PST)
-MIME-Version: 1.0
-Date: Fri, 23 Jan 2009 09:29:16 +0530
-Message-ID: <dd2f3b320901221959w956ccc6r3b700633acbefd3a@mail.gmail.com>
-Subject: MicroSD (SPI mode) support in Linux-2.6.26-1
-From: Sai Amruta <amrutasai.p@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=001636458728b0ac4904611e699d
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <1859474fb4aabec9224df5ea2263180d504913fd.1232693349.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/4] powerpc/pseries: Fix MSI-X interrupt querying
+Date: Fri, 23 Jan 2009 17:54:31 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,23 +13,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---001636458728b0ac4904611e699d
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+We need to increment i in the loop that queries what interrupts firmware
+gave us, otherwise we'll incorrectly use the first value over and over.
 
-Hi All,
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/pseries/msi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I am using linux-2.6.26 on MPC8567 and microSD is connected through SPI
-interface.
-Is the existing mmc driver supports microSD?
-
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index f15222b..4af7aa3 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -199,7 +199,7 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 
+ 	i = 0;
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
+-		hwirq = rtas_query_irq_number(pdn, i);
++		hwirq = rtas_query_irq_number(pdn, i++);
+ 		if (hwirq < 0) {
+ 			pr_debug("rtas_msi: error (%d) getting hwirq\n", rc);
+ 			return hwirq;
 -- 
---Amru
-
---001636458728b0ac4904611e699d
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Hi All,<br><br>I am using linux-2.6.26 on MPC8567 and microSD is connected through SPI interface.<br>Is the existing mmc driver supports microSD?<br clear="all"><br>-- <br>--Amru<br>
-
---001636458728b0ac4904611e699d--
+1.5.3.7.1.g4e596e
