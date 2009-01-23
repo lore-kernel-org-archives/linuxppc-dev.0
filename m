@@ -1,20 +1,16 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 60075DDFAC
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 06:50:43 +1100 (EST)
-Date: Fri, 23 Jan 2009 22:50:41 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 6/6] powerpc/fsl_soc: Isolate legacy fsl_spi support to
-	mpc832x_rdb boards
-Message-ID: <20090123195041.GF21237@oksana.dev.rtsoft.ru>
-References: <20090123194958.GA17355@oksana.dev.rtsoft.ru>
+Return-Path: <walsh.benj@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
+	by ozlabs.org (Postfix) with ESMTP id 48152DE034
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 07:59:48 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so5104051rvb.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 12:59:47 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090123194958.GA17355@oksana.dev.rtsoft.ru>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 23 Jan 2009 15:59:47 -0500
+Message-ID: <cb298a870901231259h6bd1ae2ag2baeb20173219664@mail.gmail.com>
+Subject: Maple PPC970 kexec crash-dump problems
+From: Benjamin Walsh <walsh.benj@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=000e0cd22cd849918004612cab6c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,275 +20,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The advantages of this:
-- Don't encourage legacy support;
-- Less external symbols, less code to compile-in for !MPC832x_RDB
-  platforms.
+--000e0cd22cd849918004612cab6c
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/platforms/83xx/mpc832x_rdb.c |  107 +++++++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_soc.c             |  107 -----------------------------
- arch/powerpc/sysdev/fsl_soc.h             |    4 -
- 3 files changed, 107 insertions(+), 111 deletions(-)
+Hi all,
 
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index e1e7eeb..567ded7 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -20,6 +20,7 @@
- #include <linux/spi/mmc_spi.h>
- #include <linux/mmc/host.h>
- #include <linux/of_platform.h>
-+#include <linux/fsl_devices.h>
- 
- #include <asm/time.h>
- #include <asm/ipic.h>
-@@ -39,6 +40,112 @@
- #endif
- 
- #ifdef CONFIG_QUICC_ENGINE
-+static int __init of_fsl_spi_probe(char *type, char *compatible, u32 sysclk,
-+				   struct spi_board_info *board_infos,
-+				   unsigned int num_board_infos,
-+				   void (*cs_control)(struct spi_device *dev,
-+						      bool on))
-+{
-+	struct device_node *np;
-+	unsigned int i = 0;
-+
-+	for_each_compatible_node(np, type, compatible) {
-+		int ret;
-+		unsigned int j;
-+		const void *prop;
-+		struct resource res[2];
-+		struct platform_device *pdev;
-+		struct fsl_spi_platform_data pdata = {
-+			.cs_control = cs_control,
-+		};
-+
-+		memset(res, 0, sizeof(res));
-+
-+		pdata.sysclk = sysclk;
-+
-+		prop = of_get_property(np, "reg", NULL);
-+		if (!prop)
-+			goto err;
-+		pdata.bus_num = *(u32 *)prop;
-+
-+		prop = of_get_property(np, "cell-index", NULL);
-+		if (prop)
-+			i = *(u32 *)prop;
-+
-+		prop = of_get_property(np, "mode", NULL);
-+		if (prop && !strcmp(prop, "cpu-qe"))
-+			pdata.qe_mode = 1;
-+
-+		for (j = 0; j < num_board_infos; j++) {
-+			if (board_infos[j].bus_num == pdata.bus_num)
-+				pdata.max_chipselect++;
-+		}
-+
-+		if (!pdata.max_chipselect)
-+			continue;
-+
-+		ret = of_address_to_resource(np, 0, &res[0]);
-+		if (ret)
-+			goto err;
-+
-+		ret = of_irq_to_resource(np, 0, &res[1]);
-+		if (ret == NO_IRQ)
-+			goto err;
-+
-+		pdev = platform_device_alloc("mpc83xx_spi", i);
-+		if (!pdev)
-+			goto err;
-+
-+		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
-+		if (ret)
-+			goto unreg;
-+
-+		ret = platform_device_add_resources(pdev, res,
-+						    ARRAY_SIZE(res));
-+		if (ret)
-+			goto unreg;
-+
-+		ret = platform_device_add(pdev);
-+		if (ret)
-+			goto unreg;
-+
-+		goto next;
-+unreg:
-+		platform_device_del(pdev);
-+err:
-+		pr_err("%s: registration failed\n", np->full_name);
-+next:
-+		i++;
-+	}
-+
-+	return i;
-+}
-+
-+static int __init fsl_spi_init(struct spi_board_info *board_infos,
-+			       unsigned int num_board_infos,
-+			       void (*cs_control)(struct spi_device *spi,
-+						  bool on))
-+{
-+	u32 sysclk = -1;
-+	int ret;
-+
-+	/* SPI controller is either clocked from QE or SoC clock */
-+	sysclk = get_brgfreq();
-+	if (sysclk == -1) {
-+		sysclk = fsl_get_sys_freq();
-+		if (sysclk == -1)
-+			return -ENODEV;
-+	}
-+
-+	ret = of_fsl_spi_probe(NULL, "fsl,spi", sysclk, board_infos,
-+			       num_board_infos, cs_control);
-+	if (!ret)
-+		of_fsl_spi_probe("spi", "fsl_spi", sysclk, board_infos,
-+				 num_board_infos, cs_control);
-+
-+	return spi_register_board_info(board_infos, num_board_infos);
-+}
-+
- static void mpc83xx_spi_cs_control(struct spi_device *spi, bool on)
- {
- 	pr_debug("%s %d %d\n", __func__, spi->chip_select, on);
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 0a545a9..18e49ef 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -413,113 +413,6 @@ err:
- 
- arch_initcall(fsl_usb_of_init);
- 
--static int __init of_fsl_spi_probe(char *type, char *compatible, u32 sysclk,
--				   struct spi_board_info *board_infos,
--				   unsigned int num_board_infos,
--				   void (*cs_control)(struct spi_device *dev,
--						      bool on))
--{
--	struct device_node *np;
--	unsigned int i = 0;
--
--	for_each_compatible_node(np, type, compatible) {
--		int ret;
--		unsigned int j;
--		const void *prop;
--		struct resource res[2];
--		struct platform_device *pdev;
--		struct fsl_spi_platform_data pdata = {
--			.cs_control = cs_control,
--		};
--
--		memset(res, 0, sizeof(res));
--
--		pdata.sysclk = sysclk;
--
--		prop = of_get_property(np, "reg", NULL);
--		if (!prop)
--			goto err;
--		pdata.bus_num = *(u32 *)prop;
--
--		prop = of_get_property(np, "cell-index", NULL);
--		if (prop)
--			i = *(u32 *)prop;
--
--		prop = of_get_property(np, "mode", NULL);
--		if (prop && !strcmp(prop, "cpu-qe"))
--			pdata.qe_mode = 1;
--
--		for (j = 0; j < num_board_infos; j++) {
--			if (board_infos[j].bus_num == pdata.bus_num)
--				pdata.max_chipselect++;
--		}
--
--		if (!pdata.max_chipselect)
--			continue;
--
--		ret = of_address_to_resource(np, 0, &res[0]);
--		if (ret)
--			goto err;
--
--		ret = of_irq_to_resource(np, 0, &res[1]);
--		if (ret == NO_IRQ)
--			goto err;
--
--		pdev = platform_device_alloc("mpc83xx_spi", i);
--		if (!pdev)
--			goto err;
--
--		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
--		if (ret)
--			goto unreg;
--
--		ret = platform_device_add_resources(pdev, res,
--						    ARRAY_SIZE(res));
--		if (ret)
--			goto unreg;
--
--		ret = platform_device_add(pdev);
--		if (ret)
--			goto unreg;
--
--		goto next;
--unreg:
--		platform_device_del(pdev);
--err:
--		pr_err("%s: registration failed\n", np->full_name);
--next:
--		i++;
--	}
--
--	return i;
--}
--
--int __init fsl_spi_init(struct spi_board_info *board_infos,
--			unsigned int num_board_infos,
--			void (*cs_control)(struct spi_device *spi, bool on))
--{
--	u32 sysclk = -1;
--	int ret;
--
--#ifdef CONFIG_QUICC_ENGINE
--	/* SPI controller is either clocked from QE or SoC clock */
--	sysclk = get_brgfreq();
--#endif
--	if (sysclk == -1) {
--		sysclk = fsl_get_sys_freq();
--		if (sysclk == -1)
--			return -ENODEV;
--	}
--
--	ret = of_fsl_spi_probe(NULL, "fsl,spi", sysclk, board_infos,
--			       num_board_infos, cs_control);
--	if (!ret)
--		of_fsl_spi_probe("spi", "fsl_spi", sysclk, board_infos,
--				 num_board_infos, cs_control);
--
--	return spi_register_board_info(board_infos, num_board_infos);
--}
--
- #if defined(CONFIG_PPC_85xx) || defined(CONFIG_PPC_86xx)
- static __be32 __iomem *rstcr;
- 
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index b5f3456..42381bb 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -19,10 +19,6 @@ extern u32 fsl_get_sys_freq(void);
- struct spi_board_info;
- struct device_node;
- 
--extern int fsl_spi_init(struct spi_board_info *board_infos,
--			unsigned int num_board_infos,
--			void (*cs_control)(struct spi_device *spi, bool on));
--
- extern void fsl_rstcr_restart(char *cmd);
- 
- #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
--- 
-1.5.6.5
+I am trying to use kexec with a crash dump kernel on a Maple board (Motorola
+ATCA6101 to be precise). This board is running a two-CPU PPC970FX. I am
+running a 2.6.27-10 kernel and have tried both older kexec-tools and the
+newest ones. I have tried SMP and non-SMP kernels.
+
+Using kexec -l to fast boot works correctly. However, loading a crash dump
+kernel and triggering a crash via echo c > /proc/sysrq-trigger simply hangs
+the board. I have traced the sequence down to after the call to
+kexec_copy_flush(), when the CPU returns to real-address mode (bl
+real_mode). At this point I have no further debugging information.
+
+Two things could help me:
+
+- Getting the fix if this is a known issue and a fix exists. I have looked
+at recent patches and nothing lept to mind, mostly relocatable kernel
+support.
+- Obtaining the address of the serial port @3f8 in real mode. The init
+sequence with udbg ON says that the physical address of the port is
+0xf40003f8; however, setting it up in poll mode and trying to stuff
+characters in the tx buffer doesn't produce anything.
+
+Has anyone recently tried to use the serial port in real mode ?
+
+Thanks for any help.
+
+Ben
+
+--000e0cd22cd849918004612cab6c
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi all,<br><br>I am trying to use kexec with a crash dump kernel on a Maple=
+ board (Motorola ATCA6101 to be precise). This board is running a two-CPU P=
+PC970FX. I am running a 2.6.27-10 kernel and have tried both older kexec-to=
+ols and the newest ones. I have tried SMP and non-SMP kernels.<br>
+<br>Using kexec -l to fast boot works correctly. However, loading a crash d=
+ump kernel and triggering a crash via echo c &gt; /proc/sysrq-trigger simpl=
+y hangs the board. I have traced the sequence down to after the call to kex=
+ec_copy_flush(), when the CPU returns to real-address mode (bl real_mode). =
+At this point I have no further debugging information.<br>
+<br>Two things could help me:<br><br>- Getting the fix if this is a known i=
+ssue and a fix exists. I have looked at recent patches and nothing lept to =
+mind, mostly relocatable kernel support.<br>- Obtaining the address of the =
+serial port @3f8 in real mode. The init sequence with udbg ON says that the=
+ physical address of the port is 0xf40003f8; however, setting it up in poll=
+ mode and trying to stuff characters in the tx buffer doesn&#39;t produce a=
+nything.<br>
+<br>Has anyone recently tried to use the serial port in real mode ?<br><br>=
+Thanks for any help.<br><br>Ben<br><br>
+
+--000e0cd22cd849918004612cab6c--
