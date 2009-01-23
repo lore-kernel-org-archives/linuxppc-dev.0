@@ -1,16 +1,21 @@
-Return-Path: <walsh.benj@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
-	by ozlabs.org (Postfix) with ESMTP id 48152DE034
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 07:59:48 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so5104051rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jan 2009 12:59:47 -0800 (PST)
-MIME-Version: 1.0
-Date: Fri, 23 Jan 2009 15:59:47 -0500
-Message-ID: <cb298a870901231259h6bd1ae2ag2baeb20173219664@mail.gmail.com>
-Subject: Maple PPC970 kexec crash-dump problems
-From: Benjamin Walsh <walsh.benj@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=000e0cd22cd849918004612cab6c
+Return-Path: <Michele.Pallaro@alcatel-lucent.it>
+Received: from smail6.alcatel.fr (colt-na5.alcatel.fr [62.23.212.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smail.alcatel.fr", Issuer "smail.alcatel.fr" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 6C974DE010
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 05:00:21 +1100 (EST)
+Subject: Re: Non-contiguous physical memory
+From: Michele Pallaro <michele.pallaro@alcatel-lucent.it>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <3725D962-7F25-4A77-8D87-9BBA0A78D406@kernel.crashing.org>
+References: <bc81dc640901210718l18edbc6ehffbb6709c0daac3f@mail.gmail.com>
+	<3725D962-7F25-4A77-8D87-9BBA0A78D406@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 23 Jan 2009 18:52:08 +0100
+Message-Id: <1232733128.6271.19.camel@ITVIMNXI34497>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Aaron Pace <kodiakuppercut@gmail.com>
+Reply-To: michele.pallaro@alcatel-lucent.it
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,60 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---000e0cd22cd849918004612cab6c
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hello,
+	I have a similar problem with my custom board CPU mpc8548 (E500V2) with
+4Gbytes of RAM
 
-Hi all,
+	  0x0000_0000 --    0x7FFF_FFFF  2Gbytes
+	0x1_0000_0000 -- 0x1_7FFF_FFFF   2Gbytes
 
-I am trying to use kexec with a crash dump kernel on a Maple board (Motorola
-ATCA6101 to be precise). This board is running a two-CPU PPC970FX. I am
-running a 2.6.27-10 kernel and have tried both older kexec-tools and the
-newest ones. I have tried SMP and non-SMP kernels.
+I Enable the option PHYS_64BIT, and set in dts
 
-Using kexec -l to fast boot works correctly. However, loading a crash dump
-kernel and triggering a crash via echo c > /proc/sysrq-trigger simply hangs
-the board. I have traced the sequence down to after the call to
-kexec_copy_flush(), when the CPU returns to real-address mode (bl
-real_mode). At this point I have no further debugging information.
+memory {
+                #address-cells = <2>;
+                #size-cells = <1>;   
+                device_type = "memory";
+                reg = <00000000 00000000 00000000 7FFFFFFF
+                       00000001 00000000 00000000 7FFFFFFF>;
+        };  
 
-Two things could help me:
+But the kernel can see just 2Gbytes of memory.
+How the kernel can see the other 2Gbytes ?
 
-- Getting the fix if this is a known issue and a fix exists. I have looked
-at recent patches and nothing lept to mind, mostly relocatable kernel
-support.
-- Obtaining the address of the serial port @3f8 in real mode. The init
-sequence with udbg ON says that the physical address of the port is
-0xf40003f8; however, setting it up in poll mode and trying to stuff
-characters in the tx buffer doesn't produce anything.
+	Michele
+	
 
-Has anyone recently tried to use the serial port in real mode ?
-
-Thanks for any help.
-
-Ben
-
---000e0cd22cd849918004612cab6c
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi all,<br><br>I am trying to use kexec with a crash dump kernel on a Maple=
- board (Motorola ATCA6101 to be precise). This board is running a two-CPU P=
-PC970FX. I am running a 2.6.27-10 kernel and have tried both older kexec-to=
-ols and the newest ones. I have tried SMP and non-SMP kernels.<br>
-<br>Using kexec -l to fast boot works correctly. However, loading a crash d=
-ump kernel and triggering a crash via echo c &gt; /proc/sysrq-trigger simpl=
-y hangs the board. I have traced the sequence down to after the call to kex=
-ec_copy_flush(), when the CPU returns to real-address mode (bl real_mode). =
-At this point I have no further debugging information.<br>
-<br>Two things could help me:<br><br>- Getting the fix if this is a known i=
-ssue and a fix exists. I have looked at recent patches and nothing lept to =
-mind, mostly relocatable kernel support.<br>- Obtaining the address of the =
-serial port @3f8 in real mode. The init sequence with udbg ON says that the=
- physical address of the port is 0xf40003f8; however, setting it up in poll=
- mode and trying to stuff characters in the tx buffer doesn&#39;t produce a=
-nything.<br>
-<br>Has anyone recently tried to use the serial port in real mode ?<br><br>=
-Thanks for any help.<br><br>Ben<br><br>
-
---000e0cd22cd849918004612cab6c--
+On Wed, 2009-01-21 at 11:28 -0600, Kumar Gala wrote:
+> On Jan 21, 2009, at 9:18 AM, Aaron Pace wrote:
+> 
+> > Hello,
+> >
+> > I'm working on a design using a Freescale MPC8572 processor.
+> > We are using 4 gigs of memory, and also need a window of 512 megs for
+> > PCI-E devices.
+> > What I have done is set up the first 2G of memory from 0x0 - 0x7f, the
+> > PCI windows from 0x8 - 0x9f, localbus devices + CCSRBAR from 0xf -
+> > 0xffffffff, and the second 2G of ram from 0x1.0000.0000 -
+> > 0x1.8000.0000.
+> > I've got this set up in U-boot (although it only uses the low mem),
+> > but Linux will only use the first contiguous physical area (the
+> > message is "Only using first contiguous memory region").
+> > Is it possible to have multiple non-contiguous physical memory chunks
+> > used for memory allocation?
+> > If not, is there a better way to set this up without losing large
+> > chunks of memory?
+> 
+> Its possible in that Linux supports this.  However the PPC32 code does  
+> not exist and would need to be added to support non-contiguous memory  
+> ranges.
+> 
+> What exact PCI-E needs do you have?  Is PCI-E performance critical?   
+> Is (are) your pci device(s) 64-bit address capable?
+> 
+> I ask because depending on the answers doing straight 4G and PCI above  
+> that range might be sufficient for your needs.
+> 
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
