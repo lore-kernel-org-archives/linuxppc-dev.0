@@ -1,17 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id C122D474C2
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 12:47:05 +1100 (EST)
-To: Rob Gubler <rgubler@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Ebony DTS compile error
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <e4ef24880901231707y7baad5f6kc1f6bde2c30bf29f@mail.gmail.com>
-References: <e4ef24880901231707y7baad5f6kc1f6bde2c30bf29f@mail.gmail.com>
-Date: Sat, 24 Jan 2009 02:47:01 +0100
-Message-Id: <20090124014701.71561832E425@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 63689DE05F
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 18:46:06 +1100 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <cb298a870901231259h6bd1ae2ag2baeb20173219664@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <02f6bf324a381ee5c2fc5e91313dbca9@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: Maple PPC970 kexec crash-dump problems
+Date: Sat, 24 Jan 2009 01:52:45 -0600
+To: Benjamin Walsh <walsh.benj@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +20,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Rob Gubler,
+On Sat Jan 24 at 07:59:47 EST in 2009, Benjamin Walsh wrote:
+> I am trying to use kexec with a crash dump kernel on a Maple board 
+> (Motorola
+> ATCA6101 to be precise). This board is running a two-CPU PPC970FX. I am
+> running a 2.6.27-10 kernel and have tried both older kexec-tools and 
+> the
+> newest ones. I have tried SMP and non-SMP kernels.
 
-in message <e4ef24880901231707y7baad5f6kc1f6bde2c30bf29f@mail.gmail.com> you wrote:
+Once you start the second cpu it is likly executing instructions 
+somewhere.
+
+Priory to 2.6.27 you had to compile a fixxed offset kerenl to run 
+kdump.  With 2.6.27 that option was removed and replaced with teh 
+relocatable kerenl.  However, becasue of the way linux interacts with 
+open firmware, the kernel will still move itself to 0 unless a specific 
+flag is set.   The location of the flag was changed twice during the 
+merge process, and the patches for kexec-tools were not made until 
+early this year.
+
+> Using kexec -l to fast boot works correctly. However, loading a crash 
+> dump
+> kernel and triggering a crash via echo c > /proc/sysrq-trigger simply 
+> hangs
+> the board. I have traced the sequence down to after the call to
+> kexec_copy_flush(), when the CPU returns to real-address mode (bl
+> real_mode). At this point I have no further debugging information.
+
+
+> Two things could help me:
 >
-> I'm an ELDK 4.2 user.  I'm trying to compile the ebony.dts file included in
-> the 2.6.24 kernel but the Device Tree Compiler, dtc, complains of a syntax
-> error.
+> - Getting the fix if this is a known issue and a fix exists. I have 
+> looked
+> at recent patches and nothing lept to mind, mostly relocatable kernel
+> support.
 
-Yes, there is a version conflict. The 2.6.24 kernel still uses an old
-dts format, which is incompatible with recent dtc versiosn.
+That is a major change.
 
-> Is anyone aware of a version of DTC that will compile the ebony.dts file
-> included with the 2.6.24 kernel?  Or, an updated ebony.dts file that works
-> with DTC 1.2.0-gb2b4990b.  Any other suggestions would be great.  Thanks!
+That said, I don't know if anyone has tested kexec panic beyond pseries 
+for 64 bit powerpc.
 
-Is there any specific reson for you to use the old 2.6.24 kernel?
+I know Paul originally prototyped the relocatable patch on a powermac, 
+but I dont' know what if any smp testing he performed.   And you said 
+you are actualy on maple not a powermac, so the startup issues are 
+different.
 
-If not, I'd recommend that you clone the git repository and use recent
-code - this will build fine with current versions of the dtc.
+> - Obtaining the address of the serial port @3f8 in real mode. The init
+> sequence with udbg ON says that the physical address of the port is
+> 0xf40003f8; however, setting it up in poll mode and trying to stuff
+> characters in the tx buffer doesn't produce anything.
 
-Best regards,
+Ah yes.  In real mode you can only talk to cacheable memory without 
+implementation specific assistance.  However, if you look in the kernel 
+for the maple early udbg support, you will find the code you need to 
+talk to that serial port in real mode.
 
-Wolfgang Denk
+>
+> Has anyone recently tried to use the serial port in real mode ?
+>
+> Thanks for any help.
+>
+> Ben
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-What is tolerance? -- it is the consequence of humanity. We  are  all
-formed  of frailty and error; let us pardon reciprocally each other's
-folly -- that is the first law of nature.                  - Voltaire
+Hope this gets you started.  I wrote a lot of the kernel code, but I 
+had the advantage of external jtag access to the processor to see where 
+it when ended up when it went astray.
+
+milton
