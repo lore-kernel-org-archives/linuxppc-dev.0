@@ -1,26 +1,15 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
-	by ozlabs.org (Postfix) with ESMTP id CE80EDE0DF
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Jan 2009 17:42:30 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id d14so798654and.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jan 2009 22:42:28 -0800 (PST)
-Sender: Matt Sealey <neko@genesi-usa.com>
-Message-ID: <497C09D9.50004@genesi-usa.com>
-Date: Sun, 25 Jan 2009 00:42:33 -0600
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <jonsmirl@gmail.com>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 10/10] mmc: Add OpenFirmware bindings for SDHCI driver
-References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
-	<20090122020041.GJ11492@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090122020041.GJ11492@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
-	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-	Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>,
-	linuxppc-dev@ozlabs.org, Xie Xiaobo <X.Xie@freescale.com>,
-	sdhci-devel@list.drzeus.cx, Pierre Ossman <drzeus-sdhci@drzeus.cx>,
-	Konjin Lai <Konjin.Lai@freescale.com>
+In-Reply-To: <fa686aa40901242224i3f4c8d3fkae964126aa69282e@mail.gmail.com>
+References: <9e4733910901241720j157b7946t58792a9b2b21f1a3@mail.gmail.com>
+	<fa686aa40901242224i3f4c8d3fkae964126aa69282e@mail.gmail.com>
+Date: Sun, 25 Jan 2009 10:44:38 -0500
+Message-ID: <9e4733910901250744l40587f00j4f74bb2606313ab@mail.gmail.com>
+Subject: Re: mpc5200 and PWM
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,22 +19,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
->  
->  	  If unsure, say Y.
->  
-> +config MMC_SDHCI_OF
-> +	tristate "SDHCI support on OpenFirmware platforms"
-> +	depends on MMC_SDHCI && PPC_OF
-> +	help
-> +	  This selects the OF Secure Digital Host Controller Interface.
-> +	  So far there is only Freescale eSDHC controller known to exists
-> +	  on OF platforms.
+On Sun, Jan 25, 2009 at 1:24 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Sat, Jan 24, 2009 at 6:20 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+>> Is it possible to use Bestcomm with PWM to generate complex waveforms?
+>> For example change the frequency and duty cycle after each cycle? Has
+>> anyone tried doing this? I'd like to build a table of count/width
+>> pairs and then feed them to the PWM pin without taking an interrupt on
+>> each cycle.
+>
+> I assume you're looking at using one of the GPT PWMs devices, correct?
 
-Nit; would probably be better English as
+Yes, so this is as hard as I thought it would be. I think I'll stick
+with Plan A and use a PSC to make the wave form.
 
-	This selects the OF support for Secure Digital Host Controller
-	Interfaces. So far, only the Freescale eSDHC controller is known
-	to exist on OF platforms.
+We're trying to figure out a cheap way to add X10/Insteon support. You
+can buy PIC chips to do it but they cost $10 with the software
+license. The external transmit receive circuitry costs about $2 to
+build. I have the output from it hooked up to a PSC. The signals are
+131.65Khz BPSK. I need to get the mpc5200 to make and decode those
+signals.
 
--- Matt Sealey <matt@genesi-usa.com>
+We want to use X10/Insteon in combination with a keypad to do volume
+and channel selection. But it works the other way around too. The same
+circuit can turn the lights off/on.
+
+I'd love to get a GPL driver in the kernel for X10/Insteon that just
+needs the $2 of external circuitry. I'll write one if I can figure out
+how to do the low level signal processing (my background in it is
+zero) to get at the packets. I'm not having much luck decoding the
+BPSK since it has a lot of noise and frequency variance in it.
+
+>  If so, the you probably cannot do what you want easily.  While you
+> may be able to writing a custom bestcomm task to write into the PWM
+> registers, the bestcomm engine isn't wired up to the PWM and so cannot
+> be triggered on PWM events.
+>
+> However, the gpio blocks are wired up to the Bestcomm engine so they
+> can be used as requestors, so if you wired up the PWM output to one of
+> the GPIO inputs, then you may be able to do something with that.
+>
+> g.
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+>
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
