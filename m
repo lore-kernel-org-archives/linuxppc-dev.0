@@ -1,18 +1,17 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 4F26CDE100
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 09:33:46 +1100 (EST)
-Date: Mon, 26 Jan 2009 14:33:47 -0800 (PST)
-Message-Id: <20090126.143347.147047233.davem@davemloft.net>
-To: afleming@freescale.com
-Subject: Re: [PATCH] gianfar: Revive VLAN support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <324701F1-4A84-41A6-BC2D-4A61A8E135D9@freescale.com>
-References: <20090126205043.GA15581@oksana.dev.rtsoft.ru>
-	<324701F1-4A84-41A6-BC2D-4A61A8E135D9@freescale.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jgarzik@pobox.com
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id CCF96DDF03
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 09:36:48 +1100 (EST)
+To: Matteo Fortini <matteo.fortini@mta.it>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Booting uncompressed kernel image
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <497D9BC8.0@mta.it>
+References: <497D9BC8.0@mta.it>
+Date: Mon, 26 Jan 2009 23:36:45 +0100
+Message-Id: <20090126223645.791B7832E416@gemini.denx.de>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Andy Fleming <afleming@freescale.com>
-Date: Mon, 26 Jan 2009 15:07:37 -0600
+Dear Matteo Fortini,
 
-> 
-> On Jan 26, 2009, at 2:50 PM, Anton Vorontsov wrote:
-> 
-> > commit 77ecaf2d5a8bfd548eed3f05c1c2e6573d5de4ba ("gianfar: Fix VLAN
-> > HW feature related frame/buffer size calculation") wrongly removed
-> > priv->vlgrp assignment, and now priv->vlgrp is always NULL.
- ...
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> 
-> Acked-by: Andy Fleming <afleming@freescale.com>
+In message <497D9BC8.0@mta.it> you wrote:
+>
+> I built an uncompressed uImage using mkimage --no-gzip -C none in the 
+> wrapper scripts.
 
-Applied, thanks guys.
+Hm... you must be using a funny version of mkimage, then. The cod in
+mainline will bail out on "--no-gzip".
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+If I can have honesty, it's easier to overlook mistakes.
+	-- Kirk, "Space Seed", stardate 3141.9
