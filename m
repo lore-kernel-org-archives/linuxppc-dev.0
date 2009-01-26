@@ -1,17 +1,16 @@
-Return-Path: <l.fu@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 13A77DE0D3
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 02:23:42 +1100 (EST)
-Message-ID: <497DD577.9040209@pengutronix.de>
-Date: Mon, 26 Jan 2009 16:23:35 +0100
-From: Luotao Fu <l.fu@pengutronix.de>
+Return-Path: <remis.developer@googlemail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id ECB47DE11E
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 01:39:10 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so2224568ywh.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jan 2009 06:39:08 -0800 (PST)
 MIME-Version: 1.0
-To: Matteo Fortini <matteo.fortini@mta.it>
-Subject: Re: Booting uncompressed kernel image
-References: <497D9EF1.4030403@mta.it>
-In-Reply-To: <497D9EF1.4030403@mta.it>
-Content-Type: multipart/mixed; boundary="------------000201070701010002040704"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Mon, 26 Jan 2009 15:39:08 +0100
+Message-ID: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
+Subject: Dynamic-ftrace not working in PlayStation3
+From: Remis Lima Baima <remis.developer@googlemail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,117 +20,179 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------000201070701010002040704
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hi to all. I was tracing a bug in the snd_usb_audio driver
+(PlayStation 3, Kernel 2.6.29-rc2,
+git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git) and
+for that I tried to use the "dynamic ftrace" to get less debug output.
+But it did not work at all. Ftrace (without the "dynamic ftrace"
+support) works normally. So I traced the "dynamic ftrace" bug and I
+think that I found the bug location but I got stucked. Could anyone
+help, please? Below is the link with the debug output:
 
-Matteo Fortini wrote:
-> Hi all,
-> I built an uncompressed uImage using mkimage --no-gzip -C none in the
-> wrapper scripts.
-> Only, u-boot recognizes it as uncompressed and launches the kernel
-> properly (it's around 4MB), but in the end linux just prints
-> OK and stops.
-Powerpc make compress the bin image with gzip first, before it generates
-the image header.  If the u-boot reads the image header properly doesn't
-mean that the kernel is really unpacked.
->
-> Has anyone done the same?
-me ;-) I did it with a mpc5200b board and linux 2.6.23. You can try the
-patch attached to this mail. It worked for me[TM]. ;-)
+PS1: The problem seems to happen in the file
+"./git/linux-2.6/arch/powerpc/kernel/ftrace.c" around the line 217:
+"if (ptr != GET_ADDR(addr)) {". It returns true.
+PS2: I enabled the "DEBUGP" macro to get the debug output below and
+changed the line 218 to "printk(KERN_ERR "addr does not match \nptr:
+%lx \naddr: %lx \nGET_ADDR(addr): %lx \n", ptr, addr,
+GET_ADDR(addr));".
 
-Cheers
-Luotao Fu
-
--- 
-Pengutronix e.K.                           | Dipl.-Ing. Luotao Fu        |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-
-
---------------000201070701010002040704
-Content-Type: text/plain;
- name="make_uncompressed_image.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="make_uncompressed_image.diff"
-
-Subject: Create an uncomrpessed uImage
-From: Luotao Fu <l.fu@pengutronix.de>
-
-This one adds a make target to create an uncomrpessed uImage format for powerpc,
-which is usable by uboot. We call the target nuImage for now. We need this to
-verify if we can boost up the boot speed.
-
-Signed-off-by: Luotao Fu <l.fu@pengutrnoix.de>
-
----
- arch/powerpc/Makefile      |    2 +-
- arch/powerpc/boot/Makefile |    3 +++
- arch/powerpc/boot/wrapper  |   15 ++++++++++++++-
- 3 files changed, 18 insertions(+), 2 deletions(-)
-
-Index: arch/powerpc/boot/wrapper
-===================================================================
---- arch/powerpc/boot/wrapper.orig
-+++ arch/powerpc/boot/wrapper
-@@ -133,7 +133,7 @@ coff)
-     platformo=$object/of.o
-     lds=$object/zImage.coff.lds
-     ;;
--miboot|uboot)
-+miboot|uboot|decuboot)
-     # miboot and U-boot want just the bare bits, not an ELF binary
-     ext=bin
-     objflags="-O binary"
-@@ -190,6 +190,19 @@ uboot)
-     fi
-     exit 0
-     ;;
-+decuboot)
-+    rm -f "$ofile"
-+    vmz_uncomp=`basename $vmz $gzip`
-+    gunzip -c $vmz > $vmz_uncomp
-+    mkimage -A ppc -O linux -T kernel -C none -a 00000000 -e 00000000 \
-+	$uboot_version -d "$vmz_uncomp" "$ofile"
-+    rm $vmz_uncomp
-+    vmz="$vmz$gzip"
-+    if [ -z "$cacheit" ]; then
-+	rm -f "$vmz"
-+    fi
-+    exit 0
-+    ;;
- esac
- 
- addsec() {
-Index: arch/powerpc/boot/Makefile
-===================================================================
---- arch/powerpc/boot/Makefile.orig
-+++ arch/powerpc/boot/Makefile
-@@ -195,6 +195,9 @@ $(obj)/zImage.initrd.ps3: vmlinux  $(wra
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,uboot)
- 
-+$(obj)/nuImage: vmlinux $(wrapperbits)
-+	$(call if_changed,wrap,decuboot)
-+
- $(obj)/cuImage.%: vmlinux $(dts) $(wrapperbits)
- 	$(call if_changed,wrap,cuboot-$*,$(dts))
- 
-Index: arch/powerpc/Makefile
-===================================================================
---- arch/powerpc/Makefile.orig
-+++ arch/powerpc/Makefile
-@@ -148,7 +148,7 @@ all: $(KBUILD_IMAGE)
- 
- CPPFLAGS_vmlinux.lds	:= -Upowerpc
- 
--BOOT_TARGETS = zImage zImage.initrd uImage
-+BOOT_TARGETS = zImage zImage.initrd uImage nuImage
- 
- PHONY += $(BOOT_TARGETS)
- 
-
---------------000201070701010002040704--
+//*************************************************************************************************************************************
+ip:d000000000045aec jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d0000000000458d0 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d000000000045838 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d0000000000456dc jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d000000000045624 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d0000000000453b4 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d00000000004527c jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d000000000045204 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d00000000004519c jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d000000000044844 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d000000000044770 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d00000000004465c jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d00000000004444c jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d000000000044390 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d00000000004427c jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d0000000000441f8 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d00000000004418c jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d000000000044118 jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d00000000004402c jumps to d000000000046340 r2: d000000000050c00
+3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+ip:d00000000008cce0 jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008cb90 jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008ca10 jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008c924 jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008c808 jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008c57c jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008c4ac jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008c328 jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008c260 jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008c0d4 jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ip:d00000000008c02c jumps to d00000000008d8b0 r2: d000000000097cc0
+3d82ffff 398c5bf0 ffff5bf0 toc: d00000000008d8d0 c0000000 00007cac
+ps3_system_bus_match:362: dev=10.2(ioc0_03), drv=10.2(ps3vram): match
+ps3_system_bus_match:362: dev=10.2(ioc0_03), drv=10.2(ps3vram): match
+ps3vram ioc0_03: created ram cache: 7 entries, 256 KiB each
+mtd: Giving out device 0 to ps3vram
+ps3vram ioc0_03: reserved 245 MiB of gpu memory
+ip:d0000000000cd944 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cd840 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cd550 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cd4a8 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cd414 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cd2a8 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cd0d4 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cd018 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000ccf54 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cce0c jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000ccc8c jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000ccbac jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000ccaf8 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cca10 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc998 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc940 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc828 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc7b8 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc5bc jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc408 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc2dc jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc268 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc208 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc1b4 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc170 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc0b4 jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ip:d0000000000cc01c jumps to d0000000000cdff8 r2: d0000000000d8e20
+3d82ffff 398c51d8 ffff51d8 toc: d0000000000ce018 c0000000 00007cac
+ps3_system_bus_match:362: dev=11.0(lpm_01), drv=11.0(ps3-lpm): match
+ps3_system_bus_match:362: dev=11.0(lpm_01), drv=11.0(ps3-lpm): match
+ps3-lpm lpm_01:  <- ps3_lpm_probe:1245:
+ip:d0000000003fe280 jumps to d0000000003ffad8 r2: d000000000422c70
+3d82fffe 398cce68 fffece68 toc: d00000000040faf8 6c656400 5f5f6b73
+addr does not match
+ptr: 6c6564005f5f6b73
+addr: c0000000004ff128
+GET_ADDR(addr): c000000000007cac
+------------[ cut here ]------------
+Badness at /home/remis/git/linux-2.6/kernel/trace/ftrace.c:441
+NIP: c0000000000b1cb8 LR: c0000000000b335c CTR: 0000000000000000
+REGS: c00000000d82b780 TRAP: 0700   Not tainted
+(2.6.29-rc2-00839-g22530b0-dirty)
+MSR: 8000000000020032 <CE,IR,DR>  CR: 24002482  XER: 00000000
+TASK = c00000000d7be440[1237] 'modprobe' THREAD: c00000000d828000 CPU: 0
+GPR00: 0000000000000001 c00000000d82ba00 c00000000054bf18 ffffffffffffffea
+GPR04: d0000000003fe280 c00000000006076c 0000000000000000 0000000000000002
+GPR08: 0000000000000000 c000000000b94df0 c000000002a92c20 c00000000d7be440
+GPR12: 0000000024002484 c00000000057d300 d000000000417a50 c00000000d82bc78
+GPR16: d000000000285fe8 0000000000000549 d00000000028560c d000000000417a18
+GPR20: d000000000416ee8 d000000000417a00 000000032945b5f0 0000000000000001
+GPR24: c0000000004ff128 c00000000d552560 c0000000004b0270 d0000000003fe280
+GPR28: d0000000003fe280 c00000000d552588 c0000000004f8948 c00000000d82ba00
+NIP [c0000000000b1cb8] .ftrace_bug+0x98/0x210
+LR [c0000000000b335c] .ftrace_convert_nops+0x23c/0x344
+Call Trace:
+[c00000000d82ba00] [c0000000004ff128] _mcount+0x0/0x18 (unreliable)
+[c00000000d82baa0] [c0000000000b335c] .ftrace_convert_nops+0x23c/0x344
+[c00000000d82bb70] [c0000000000b349c] .ftrace_init_module+0x38/0x50
+[c00000000d82bbf0] [c0000000000a0870] .load_module+0x12dc/0x1898
+[c00000000d82bd80] [c0000000000a0ffc] .SyS_init_module+0x90/0x248
+[c00000000d82be30] [c0000000000074dc] syscall_exit+0x0/0x40
+Instruction dump:
+41be0010 e93e8010 38000001 9009002c e93e8000 e97e8008 e87e80c0 48000130
+80090030 7c000034 5400d97e 78000020 <0b000000> 2fa00000 41be0010 e93e8010
+ftrace failed to modify [<d0000000003fe280>] 0xd0000000003fe280
+ actual: 48:00:18:59
+//*************************************************************************************************************************************
