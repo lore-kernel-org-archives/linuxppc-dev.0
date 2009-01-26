@@ -1,20 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <imp@bsdimp.com>
+Received: from harmony.bsdimp.com (bsdimp.com [199.45.160.85])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F15E4DE0FC
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 08:35:45 +1100 (EST)
-Message-Id: <DAC46F37-CA69-4666-874C-760ACE14CD88@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <1232531217-16103-1-git-send-email-leoli@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc/mpc8313erdb: fix kernel panic because mdio device
-	is not probed
-Date: Mon, 26 Jan 2009 15:35:36 -0600
-References: <1232531217-16103-1-git-send-email-leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id EBDAEDE0E0
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 09:33:35 +1100 (EST)
+Date: Mon, 26 Jan 2009 15:26:20 -0700 (MST)
+Message-Id: <20090126.152620.1498421823.imp@bsdimp.com>
+To: matt@genesi-usa.com
+Subject: Re: [PATCH 10/10] mmc: Add OpenFirmware bindings for SDHCI driver
+From: "M. Warner Losh" <imp@bsdimp.com>
+In-Reply-To: <497C09D9.50004@genesi-usa.com>
+References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
+	<20090122020041.GJ11492@oksana.dev.rtsoft.ru>
+	<497C09D9.50004@genesi-usa.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sdhci-devel@list.drzeus.cx, arnd@arndb.de, DaveLiu@freescale.com,
+	Joe.D'abbraccio@freescale.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Konjin.Lai@freescale.com,
+	ben-linux@fluff.org, drzeus-sdhci@drzeus.cx, X.Xie@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In message: <497C09D9.50004@genesi-usa.com>
+            Matt Sealey <matt@genesi-usa.com> writes:
+: Anton Vorontsov wrote:
+: >  
+: >  	  If unsure, say Y.
+: >  
+: > +config MMC_SDHCI_OF
+: > +	tristate "SDHCI support on OpenFirmware platforms"
+: > +	depends on MMC_SDHCI && PPC_OF
+: > +	help
+: > +	  This selects the OF Secure Digital Host Controller Interface.
+: > +	  So far there is only Freescale eSDHC controller known to exists
+: > +	  on OF platforms.
+: 
+: Nit; would probably be better English as
+: 
+: 	This selects the OF support for Secure Digital Host Controller
+: 	Interfaces. So far, only the Freescale eSDHC controller is known
+: 	to exist on OF platforms.
 
-On Jan 21, 2009, at 3:46 AM, Li Yang wrote:
+Is this the SD Association standard host controller interface, or a
+custom one by Freescale?  If the former, then I'd suggest:
 
-> Probe the new mdio node added by b31a1d8b.  Fix kernel panic problem  
-> when
-> gianfar driver wants to get the of_platform_device of that mdio.
->
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> Supersede the patch to add "simple-bus" to gianfar node to fix this  
-> problem.
+	This selects OF support for the SD Association standard Secure
+	Digital Host Controller Interface (version x.xx).  So far,
+	only the Freescale eSDHC controller is the only example on OF
+	platforms.
 
-applied to merge
+if the latter:
 
-- k
+	This selects OF support for Freescale's custom Secure Digital
+	Host Controller Interface.  So far, only the Freescale eSDHC
+	controller is the only example on OF platforms.
+
+Warner
