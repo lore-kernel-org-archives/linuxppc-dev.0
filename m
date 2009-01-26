@@ -1,20 +1,16 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 1AF01DDF55
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jan 2009 20:26:11 +1100 (EST)
-Date: Mon, 26 Jan 2009 10:26:05 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/8] powerpc/5200: update device tree binding documentation
-Message-ID: <20090126092605.GB28453@pengutronix.de>
-References: <20090121205506.31232.27908.stgit@localhost.localdomain>
-	<20090125194853.GB26917@pengutronix.de>
-	<fa686aa40901251746x644e22c6tf8862103c04db1dc@mail.gmail.com>
+Return-Path: <jhautbois@gmail.com>
+Received: from mail-ew0-f21.google.com (mail-ew0-f21.google.com
+	[209.85.219.21]) by ozlabs.org (Postfix) with ESMTP id EC532DDF4B
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jan 2009 21:22:58 +1100 (EST)
+Received: by ewy14 with SMTP id 14so365675ewy.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jan 2009 02:22:56 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Yylu36WmvOXNoKYn"
-In-Reply-To: <fa686aa40901251746x644e22c6tf8862103c04db1dc@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, devtree-discuss@ozlabs.org
+Date: Mon, 26 Jan 2009 11:17:05 +0100
+Message-ID: <8cad0aa0901260217u5a981c77gc09caba76cce32a7@mail.gmail.com>
+Subject: Help needed with initramfs
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=0015174c46465cfea30461600ac3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--0015174c46465cfea30461600ac3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
---Yylu36WmvOXNoKYn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi everybody !
 
+I have a working Kernel with a NFS mounted root filesystem.
+I am trying to use my root file system, but with the use of initramfs.
 
-> >> +system-frequency     Fsystem frequency; source of all
-> >
-> > Fsystem? Typo?
->=20
-> Not really, that's the name of the clock in the MP5200 user guide.
-> I'll clarify what I've written here though.
+Compiling the kernel is not a problem, but when booting, I have the
+following error:
 
-That will be helpful.
+"Insufficient memory for kernel at address 0! (_start=00400000, uncompressed
+size=005a0b0c)"
 
-> > The unit would be nice here, too, I think.
->=20
-> Unit?  Do you mean stating that it is in Hz?
+I understand that my load address is 0x400000 and that the image is too big,
+but I can't find where this load adress is defined.
+It seems (from the .../arch/powerpc/boot/wrapper file) that this adress is
+calculated from the _start adress in the objfile.
 
-Yes, like in the frequency next to it.
+Is it possible to change this adress ?
+What can I do (with the idea of not reducing the size of my rootfs) ?
 
-Kind regards,
+Thanks in advance !
+Best Regards,
+JM
 
-   Wolfram
+--0015174c46465cfea30461600ac3
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-PS: The other patches look good to me, too. I just want to test them on
-a real phyCORE-tiny this week.
+Hi everybody !<br><br>I have a working Kernel with a NFS mounted root filesystem.<br>I am trying to use my root file system, but with the use of initramfs.<br><br>Compiling the kernel is not a problem, but when booting, I have the following error:<br>
+<br>&quot;Insufficient memory for kernel at address 0! (_start=00400000, uncompressed size=005a0b0c)&quot;<br><br>I understand that my load address is 0x400000 and that the image is too big, but I can&#39;t find where this load adress is defined.<br>
+It seems (from the .../arch/powerpc/boot/wrapper file) that this adress is calculated from the _start adress in the objfile.<br><br>Is it possible to change this adress ?<br>What can I do (with the idea of not reducing the size of my rootfs) ?<br>
+<br>Thanks in advance !<br>Best Regards,<br>JM<br>
 
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-
---Yylu36WmvOXNoKYn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkl9ga0ACgkQD27XaX1/VRunoQCeKV8ZHSgWJ78sHIHDajFZRBkE
-a8sAn1DkrQxKT64jjWfsTwW5wQ5XGBwb
-=76P8
------END PGP SIGNATURE-----
-
---Yylu36WmvOXNoKYn--
+--0015174c46465cfea30461600ac3--
