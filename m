@@ -1,21 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <neko@genesi-usa.com>
 Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 6FC14DE0FF
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 04:54:57 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so2456240ywh.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 09:54:55 -0800 (PST)
+	by ozlabs.org (Postfix) with ESMTP id ECF5A4F38E
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 04:56:08 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so2456508ywh.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 09:56:07 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <b5e2fc790901270952p42fefb5fx63b77449528a448c@mail.gmail.com>
-References: <20090121205506.31232.27908.stgit@localhost.localdomain>
-	<20090121205540.31232.77034.stgit@localhost.localdomain>
-	<b5e2fc790901270952p42fefb5fx63b77449528a448c@mail.gmail.com>
-Date: Tue, 27 Jan 2009 10:54:55 -0700
-Message-ID: <fa686aa40901270954l44d5d8feh464ffc7389abc56f@mail.gmail.com>
-Subject: Re: [PATCH 7/8] powerpc/5200: Refactor mpc5200 interrupt controller
-	driver
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Matt Sealey <matt@genesi-usa.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090127043315.26160.43312.stgit@localhost.localdomain>
+References: <20090127043315.26160.43312.stgit@localhost.localdomain>
+Date: Tue, 27 Jan 2009 11:56:06 -0600
+Message-ID: <b5e2fc790901270956q4448ac4brd0f6ea177ace9ade@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/5200: Bugfix for PCI mapping of memory and IMMR
+From: Matt Sealey <matt@genesi-usa.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,26 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 27, 2009 at 10:52 AM, Matt Sealey <matt@genesi-usa.com> wrote:
-> On Wed, Jan 21, 2009 at 2:55 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->> Rework the mpc5200-pic driver to simplify it and fix up the setting
->> of desc->status when set_type is called for internal IRQs (so they
->> are reported as level, not edge).  The simplification is due to
->> splitting off the handling of external IRQs into a separate block
->> so they don't need to be handled as exceptions in the normal
->> CRIT, MAIN and PERP paths.
+On Mon, Jan 26, 2009 at 10:34 PM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 >
-> Can I assume this has absolutely no functional impact compared to the
-> old one? It doesn't change any behaviour, just implements exactly the
-> same in a much nicer way?
+> This patch ensures that memory gets properly mapped into the PCI
+> address space.  Without this patch, the memory window BAR is left
+> at whatever value happened to be loaded into the BAR when Linux
+> was booted.  Without this patch, memory could end up getting mapped
+> at any of the 1G address boundaries instead of at '0' where Linux
+> expects it.
+>
+> Similarly, this patch also ensures that the internally memory mapped
+> registers (IMMR) are mapped to the correct PCI address range.
+>
+> Without this patch, PCI appears to work correctly until a PCI
+> device is inserted which DMAs into memory.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+> This is a bugfix that I intend to merge into 2.6.29 and once it is
+> mainlined get it added to the stable queue.  If you have a 5200 system,
+> please test and make sure it works for you.
+>
+> Thanks
+> g.
+>
+>  arch/powerpc/platforms/52xx/mpc52xx_pci.c |   24 ++++++++++--------------
+>  1 files changed, 10 insertions(+), 14 deletions(-)
+>
 
-Plus small bug fixes.  It should have no functional impact on stuff
-that already works.
+This doesn't affect Efika, right?
 
-g.
+What's the expected impact and how come nobody tried a DMA-capable PCI
+card in an MPC5200B board before? :)
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
