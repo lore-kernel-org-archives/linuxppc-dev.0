@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 682CDDE054
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 01:58:37 +1100 (EST)
-Message-Id: <0D5BDAF5-E5FD-42FC-977C-B83664FE4C78@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: tglx@linutronix.de, mingo@elte.hu
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: sharing an interrupt between a cascaded/chained pic and another device
-Date: Tue, 27 Jan 2009 08:57:54 -0600
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linux-kernel Kernel <linux-kernel@vger.kernel.org>,
-	Peters Ted <Ted.Peters@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f20.google.com (mail-gx0-f20.google.com
+	[209.85.217.20]) by ozlabs.org (Postfix) with ESMTP id CEF77DE06F
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 03:25:44 +1100 (EST)
+MIME-Version: 1.0
+In-Reply-To: <20090126092605.GB28453@pengutronix.de>
+References: <20090121205506.31232.27908.stgit@localhost.localdomain>
+	<20090125194853.GB26917@pengutronix.de>
+	<fa686aa40901251746x644e22c6tf8862103c04db1dc@mail.gmail.com>
+	<20090126092605.GB28453@pengutronix.de>
+Date: Tue, 27 Jan 2009 09:25:43 -0700
+Message-ID: <fa686aa40901270825i7bfb8142y95dbb441413c4b72@mail.gmail.com>
+Subject: Re: [PATCH 1/8] powerpc/5200: update device tree binding
+	documentation
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devtree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thomas, Ingo,
+On Mon, Jan 26, 2009 at 2:26 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+>
+>> >> +system-frequency     Fsystem frequency; source of all
+>> >
+>> > Fsystem? Typo?
+>>
+>> Not really, that's the name of the clock in the MP5200 user guide.
+>> I'll clarify what I've written here though.
+>
+> That will be helpful.
+>
+>> > The unit would be nice here, too, I think.
+>>
+>> Unit?  Do you mean stating that it is in Hz?
+>
+> Yes, like in the frequency next to it.
+>
+> Kind regards,
+>
+>   Wolfram
+>
+> PS: The other patches look good to me, too. I just want to test them on
+> a real phyCORE-tiny this week.
 
-Do we have any support in the kernel today to deal with a IRQ on the  
-root PIC being used for both a chained PIC and shared with another HW  
-device.  We have a board that guys went and did it and as I look at  
-the kernel code it doesn't seem like this crazy situation is currently  
-supported.
+Thanks,
 
-- k
+I want to get these queued up into -next ASAP, so let me know when
+you've had a chance to try them.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
