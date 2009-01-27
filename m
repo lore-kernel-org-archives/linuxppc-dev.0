@@ -1,21 +1,20 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
-	by ozlabs.org (Postfix) with ESMTP id C935DDE0D4
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 01:16:18 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so1600414qwb.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 06:16:16 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <497EAEAF.3010108@trimble.com>
-References: <497E81DD.9020408@trimble.com>
-	<fa686aa40901262101r48771b8oc9fdbb6a0ede01e8@mail.gmail.com>
-	<497EAEAF.3010108@trimble.com>
-Date: Tue, 27 Jan 2009 09:10:00 -0500
-Message-ID: <9e4733910901270610qd40bbacm8f1f1bf0bcc63ae9@mail.gmail.com>
-Subject: Re: any luck with wireless USB adaptors?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: mike_timmons@trimble.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6BA04DE0F3
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 01:31:24 +1100 (EST)
+Message-Id: <07B22E7C-2C6F-43FB-84FB-EE5CC9FCE74A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <497EC957.2050205@conspiracy.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc/cpm2 Fix set interrupt type
+Date: Tue, 27 Jan 2009 08:31:16 -0600
+References: <497EC957.2050205@conspiracy.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	paulfax <paulfax@conspiracy.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,80 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 27, 2009 at 1:50 AM, Mike Timmons <mike_timmons@trimble.com> wrote:
-> Thanks. Yes, USB  wi fi is what I'm after.  I did find the driver I needed
-> after enabling the WLAN80211 and EXPERIMENTAL options. The device discovery
-> appears to work, and with wireless tools I can iwconfig and see my
-> interface.
->
-> QUESTION: when I "ifoncfig wlan0 up" it results in an attempt to load a
-> firmwmare file as follows. as you can see, it fails. What are these firmware
-> files? I can't find it in my build output. How do I build it or where do I
-> get it? Where would I put it on my target?
 
-Kconfig
-Device drivers
-  generic driver options
-     user space firmware support
-        check - include in-kernel firmware blobs in kernel binary
+On Jan 27, 2009, at 2:44 AM, paulfax wrote:
 
+> This is a simple change to correct problems when using set_irq_type  
+> on platforms using CPM2.
+> This code correct the problem on most platform but still fails on  
+> 8272 derived platforms for some interrupts.
+> On 8272 PC2 & 3 are missing and PC 23 & 29 are added, which this  
+> patch does not address.
 >
-> I did search for answers to these questions and tried to stick an rt73.bin
-> of unknown origin (to me anyway) in /lib/firmware but I got the same error.
->
-> -sh-2.05b# ifconfig wlan0 up
-> [ 2212.027071] phy1 -> rt2x00lib_request_firmware: Info - Loading firmware
-> file 'rt73.bin'.
-> [ 2272.058793] phy1 -> rt2x00lib_request_firmware: Error - Failed to request
-> Firmware.
-> SIOCSIFFLAGS: No such file or directory
->
-> Thanks again,
-> Mike
->
->
->
-> \
-> Grant Likely wrote:
->>
->> On Mon, Jan 26, 2009 at 8:39 PM, Mike Timmons <mike_timmons@trimble.com>
->> wrote:
->>
->>>
->>> I'm running 2.6.24 with Freescale's lite5200 as my base. I'm interested
->>> in
->>> this USB adaptor for wireless USB, but my web search does not make me
->>> confident that my effort will yield fruit.
->>>
->>> Can anyone direct me to a good source outlining success stories with
->>> wireless USB adaptors? At present I'm mesing with Linksys WUSB54GC and
->>> some
->>> driver source from Ralink, but my cross-compile is not working.
->>>
->>
->> Umm, the WUSB54GC is not a "wireless USB" adapter.  It is a USB WiFi
->> adapter.  If you're looking for wireless USB then it is the wrong
->> device.
->>
->> If you are looking for a suitable wifi adapter, then that device
->> should work, but if you can go with a PCI or a miniPCI WiFi adapter
->> instead then you should get better performance.  The 5200 only has USB
->> 1.1.
->>
->> I'm having good success with an Atheros miniPCI adapter at the moment
->> using a 2.6.28 kernel.
->>
->> g.
->>
+> Signed-off-by: Paul Bilke <paul at conspiracy.net>
+> ---
+
+Anton,
+
+Is this something you can review and look into the 8272 issue?
+
+- k
+
+> diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/ 
+> cpm2_pic.c
+> index b16ca3e..78f1f7c 100644
+> --- a/arch/powerpc/sysdev/cpm2_pic.c
+> +++ b/arch/powerpc/sysdev/cpm2_pic.c
+> @@ -165,7 +165,7 @@ static int cpm2_set_irq_type(unsigned int virq,  
+> unsigned int flow_type)
+>                        edibit = (14 - (src - CPM2_IRQ_EXT1));
+>        else
+>                if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0)
+> -                       edibit = (31 - (src - CPM2_IRQ_PORTC15));
+> +                       edibit = (31 - (CPM2_IRQ_PORTC0 - src));
+>                else
+>                        return (flow_type & IRQ_TYPE_LEVEL_LOW) ? 0 :  
+> -EINVAL;
 >
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
