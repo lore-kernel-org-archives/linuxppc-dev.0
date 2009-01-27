@@ -1,16 +1,17 @@
-Return-Path: <paulfax@conspiracy.net>
-Received: from ns.seriouslyclued.net (ns.seriouslyclued.net [209.189.226.66])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "", Issuer "My Company Ltd" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 39F9BDDFCF
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 19:51:00 +1100 (EST)
-Message-ID: <497EC957.2050205@conspiracy.net>
-Date: Tue, 27 Jan 2009 02:44:07 -0600
-From: paulfax <paulfax@conspiracy.net>
+Return-Path: <Matteo.Fortini@mta.it>
+Received: from dig-mailtc.digitek.int (mail-dgt.mta.it [93.63.228.226])
+	by ozlabs.org (Postfix) with ESMTP id 31B08DE03E
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 21:03:56 +1100 (EST)
+Message-ID: <497EDC08.4080204@mta.it>
+Date: Tue, 27 Jan 2009 11:03:52 +0100
+From: Matteo Fortini <matteo.fortini@mta.it>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/cpm2 Fix set interrupt type
-Content-Type: text/plain; charset=ISO-8859-1
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: Booting uncompressed kernel image
+References: <497D9BC8.0@mta.it> <20090126223645.791B7832E416@gemini.denx.de>
+In-Reply-To: <20090126223645.791B7832E416@gemini.denx.de>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,25 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a simple change to correct problems when using set_irq_type on platforms using CPM2.
-This code correct the problem on most platform but still fails on 8272 derived platforms for some interrupts.
-On 8272 PC2 & 3 are missing and PC 23 & 29 are added, which this patch does not address.
+You're right,
+to be precise, the --no-gzip option was given to the wrapper script, the 
+option I gave to mkimage was -C none.
 
-Signed-off-by: Paul Bilke <paul at conspiracy.net>
----
+The change in the wrapper script was adding:
+case "$platform" in
+ubootraw)
+    rm -f "$ofile"
+    mkimage -A ppc -O linux -T kernel -C none -a 00000000 -e 00000000 \
+    $uboot_version -d "$vmz" "$ofile"
+    if [ -z "$cacheit" ]; then
+    rm -f "$vmz"
+    fi
+    exit 0
+    ;;
+esac
 
 
+and I called wrapper as
+./arch/powerpc/boot/wrapper  -c -o arch/powerpc/boot/uImage -p ubootraw 
+-C "powerpc-e300c3-linux-gnu-" --no-gzip vmlinux
 
+Anyway, I'll check the solution given by Luotao, thanks!
 
-diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
-index b16ca3e..78f1f7c 100644
---- a/arch/powerpc/sysdev/cpm2_pic.c
-+++ b/arch/powerpc/sysdev/cpm2_pic.c
-@@ -165,7 +165,7 @@ static int cpm2_set_irq_type(unsigned int virq, unsigned int flow_type)
-                        edibit = (14 - (src - CPM2_IRQ_EXT1));
-        else
-                if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0)
--                       edibit = (31 - (src - CPM2_IRQ_PORTC15));
-+                       edibit = (31 - (CPM2_IRQ_PORTC0 - src));
-                else
-                        return (flow_type & IRQ_TYPE_LEVEL_LOW) ? 0 : -EINVAL;
+Regards,
+Matteo
+
+Wolfgang Denk ha scritto:
+> Dear Matteo Fortini,
+>
+> In message <497D9BC8.0@mta.it> you wrote:
+>   
+>> I built an uncompressed uImage using mkimage --no-gzip -C none in the 
+>> wrapper scripts.
+>>     
+>
+> Hm... you must be using a funny version of mkimage, then. The cod in
+> mainline will bail out on "--no-gzip".
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+>   
