@@ -1,17 +1,18 @@
-Return-Path: <Matteo.Fortini@mta.it>
-Received: from dig-mailtc.digitek.int (mail-dgt.mta.it [93.63.228.226])
-	by ozlabs.org (Postfix) with ESMTP id 31B08DE03E
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 21:03:56 +1100 (EST)
-Message-ID: <497EDC08.4080204@mta.it>
-Date: Tue, 27 Jan 2009 11:03:52 +0100
-From: Matteo Fortini <matteo.fortini@mta.it>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 12F89DE0FE
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 23:02:03 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LRmdg-0007vS-TW
+	for linuxppc-dev@ozlabs.org; Tue, 27 Jan 2009 04:01:56 -0800
+Message-ID: <21683674.post@talk.nabble.com>
+Date: Tue, 27 Jan 2009 04:01:56 -0800 (PST)
+From: wael showair <showair2003@yahoo.com>
+To: linuxppc-dev@ozlabs.org
+Subject: using dma engine on MPC8555 processor
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: Booting uncompressed kernel image
-References: <497D9BC8.0@mta.it> <20090126223645.791B7832E416@gemini.denx.de>
-In-Reply-To: <20090126223645.791B7832E416@gemini.denx.de>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-You're right,
-to be precise, the --no-gzip option was given to the wrapper script, the 
-option I gave to mkimage was -C none.
 
-The change in the wrapper script was adding:
-case "$platform" in
-ubootraw)
-    rm -f "$ofile"
-    mkimage -A ppc -O linux -T kernel -C none -a 00000000 -e 00000000 \
-    $uboot_version -d "$vmz" "$ofile"
-    if [ -z "$cacheit" ]; then
-    rm -f "$vmz"
-    fi
-    exit 0
-    ;;
-esac
+Hi All,
+i have an evaluation board with MPC8555 processor.
+linux kernel 2.6.27
+i have read the Documentation of my board, i found that it contains DMA
+engine.
+i know that there fsldma.c & fsldma.h
+all my target is that i want to test the DMA on my board.
+i want to transfer data from source to destination & i imagine that the DMA
+will raise an interrupt after it finishes the transfer.
 
+so i believe there must be some APIs related to the DMA engine which do the
+following:
+1. initialize the DMA by determining the src & dest addresses. Also
+determines which channel to use.
+2. register an interrupt handler for the DMA interrupt line.
+3. fire the DMA.
 
-and I called wrapper as
-./arch/powerpc/boot/wrapper  -c -o arch/powerpc/boot/uImage -p ubootraw 
--C "powerpc-e300c3-linux-gnu-" --no-gzip vmlinux
-
-Anyway, I'll check the solution given by Luotao, thanks!
-
-Regards,
-Matteo
-
-Wolfgang Denk ha scritto:
-> Dear Matteo Fortini,
->
-> In message <497D9BC8.0@mta.it> you wrote:
->   
->> I built an uncompressed uImage using mkimage --no-gzip -C none in the 
->> wrapper scripts.
->>     
->
-> Hm... you must be using a funny version of mkimage, then. The cod in
-> mainline will bail out on "--no-gzip".
->
-> Best regards,
->
-> Wolfgang Denk
->
->   
+where can i find these APIs, or i m missing something?
+thanks in advance for ur help
+-- 
+View this message in context: http://www.nabble.com/using-dma-engine-on-MPC8555-processor-tp21683674p21683674.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
