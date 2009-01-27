@@ -1,19 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f20.google.com (mail-gx0-f20.google.com
-	[209.85.217.20]) by ozlabs.org (Postfix) with ESMTP id E7A4ADE0E9
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 05:06:28 +1100 (EST)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 97EE8DDF65
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 05:14:16 +1100 (EST)
+Date: Tue, 27 Jan 2009 21:14:14 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/cpm2 Fix set interrupt type
+Message-ID: <20090127181414.GA23299@oksana.dev.rtsoft.ru>
+References: <497EC957.2050205@conspiracy.net>
+	<07B22E7C-2C6F-43FB-84FB-EE5CC9FCE74A@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <b5e2fc790901271000r1b7b6313ta63a6e59e2a176e9@mail.gmail.com>
-References: <20090121205506.31232.27908.stgit@localhost.localdomain>
-	<b5e2fc790901271000r1b7b6313ta63a6e59e2a176e9@mail.gmail.com>
-Date: Tue, 27 Jan 2009 11:06:26 -0700
-Message-ID: <fa686aa40901271006g5e179c7fu680c74a4c45580d9@mail.gmail.com>
-Subject: Re: [PATCH 1/8] powerpc/5200: update device tree binding
-	documentation
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Matt Sealey <matt@genesi-usa.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devtree-discuss@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <07B22E7C-2C6F-43FB-84FB-EE5CC9FCE74A@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	paulfax <paulfax@conspiracy.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 27, 2009 at 11:00 AM, Matt Sealey <matt@genesi-usa.com> wrote:
-> On Wed, Jan 21, 2009 at 2:55 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->> This patch updates the mpc5200 binding documentation to match
->> actual usage conventions, to remove incorrect information, and
->> to remove topics which are more thoroughly described elsewhere.
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> CC: devtree-discuss@ozlabs.org
->> CC: Wolfram Sang <w.sang@pengutronix.de>
+On Tue, Jan 27, 2009 at 08:31:16AM -0600, Kumar Gala wrote:
+>
+> On Jan 27, 2009, at 2:44 AM, paulfax wrote:
+>
+>> This is a simple change to correct problems when using set_irq_type on 
+>> platforms using CPM2.
+>> This code correct the problem on most platform but still fails on 8272 
+>> derived platforms for some interrupts.
+>> On 8272 PC2 & 3 are missing and PC 23 & 29 are added, which this patch 
+>> does not address.
+
+This is the same as in MPC8555.
+
+>> Signed-off-by: Paul Bilke <paul at conspiracy.net>
 >> ---
->> +It is *strongly* recommended that 5200B device trees follow this convention
->> +(instead of only listing the base mpc5200 item).
->> +
->> +ie. ethernet on mpc5200: compatible = "fsl,mpc5200-ethernet";
->> +    ethernet on mpc5200b: compatible = "fsl,mpc5200b-ethernet",
->> +                                       "fsl,mpc5200-ethernet";
 >
-> snip
+> Anton,
 >
->> +ethernet@<addr>        fsl,mpc5200-fec          MPC5200 ethernet device
->
-> snip
->
->> +fsl,mpc5200-fec nodes
->> +---------------------
->> +The FEC node can specify one of the following properties to configure
->> +the MII link:
->
->
-> Is it fec or ethernet? Obviously the first one is an example only but
-> it should least reflect real life..
+> Is this something you can review
 
-Good catch.  It should be -fec.  Fixed.
+Sure. According to MPC8555 and MPC8272 reference manuals,
+current code indeed has the issue, and the patch correctly
+fixes it. SIEXR register map looks like this (bits are in
+big-endian numbering scheme):
 
-g.
+[0:1] - PC0..PC1
+[2:13] - PC4..PC15
+[14:15] - PC23 and PC29
+
+Let's look into fixed version, assuming we got src 48 (PC29):
+
+edibit = (31 - (CPM2_IRQ_PORTC0 - src));
+edibit = (31 - (63 - 48)) = 16
+
+1 << 16 points to PC29 (bit 15 in big-endian bit numbering scheme),
+just as it should be.
+
+The same code should work for MPC8560 too (where there are no
+PC23 & PC29, but PC2 and PC3).
+
+> and look into the 8272 issue?
+
+I don't actually see any issues wrt 8272. To me, it looks like
+the fixed code should work fine...
+
+Reviewed-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+
+
+>> diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/ 
+>> cpm2_pic.c
+>> index b16ca3e..78f1f7c 100644
+>> --- a/arch/powerpc/sysdev/cpm2_pic.c
+>> +++ b/arch/powerpc/sysdev/cpm2_pic.c
+>> @@ -165,7 +165,7 @@ static int cpm2_set_irq_type(unsigned int virq,  
+>> unsigned int flow_type)
+>>                        edibit = (14 - (src - CPM2_IRQ_EXT1));
+>>        else
+>>                if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0)
+>> -                       edibit = (31 - (src - CPM2_IRQ_PORTC15));
+>> +                       edibit = (31 - (CPM2_IRQ_PORTC0 - src));
+>>                else
+>>                        return (flow_type & IRQ_TYPE_LEVEL_LOW) ? 0 :  
+>> -EINVAL;
+
+Thanks,
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
