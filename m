@@ -1,22 +1,19 @@
-Return-Path: <linville@tuxdriver.com>
-Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E60DEDDF4B
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 05:31:02 +1100 (EST)
-Date: Tue, 27 Jan 2009 12:55:00 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Mike Timmons <mike_timmons@trimble.com>
-Subject: Re: any luck with wireless USB adaptors?
-Message-ID: <20090127175500.GB11849@tuxdriver.com>
-References: <497E81DD.9020408@trimble.com>
-	<fa686aa40901262101r48771b8oc9fdbb6a0ede01e8@mail.gmail.com>
-	<497EAEAF.3010108@trimble.com>
-	<9e4733910901270610qd40bbacm8f1f1bf0bcc63ae9@mail.gmail.com>
-	<497F4437.5060909@trimble.com>
+Return-Path: <philippe.reynes@isismpp.fr>
+Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr (sp604003av.neufgp.fr
+	[84.96.92.124]) by ozlabs.org (Postfix) with ESMTP id 1D39EDE06B
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 08:29:51 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <497F4437.5060909@trimble.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] add i2c eeprom to dts for mpc 837x rdb
+Date: Tue, 27 Jan 2009 18:55:21 +0100
+Message-ID: <761F451C5F17F74DAEE4661DA5ABBC1616C446@factorix.ISISTHIBAUD.local>
+References: <761F451C5F17F74DAEE4661DA5ABBC160181BE95@factorix.ISISTHIBAUD.local>
+	<761F451C5F17F74DAEE4661DA5ABBC16215158@factorix.ISISTHIBAUD.local>
+	<761F451C5F17F74DAEE4661DA5ABBC1621515A@factorix.ISISTHIBAUD.local>
+	<7FAC732F-383E-4228-9770-3F791EA215FC@freescale.com>
+From: "Reynes Philippe" <philippe.reynes@isismpp.fr>
+To: "Kumar Gala" <kumar.gala@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,20 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 27, 2009 at 11:28:23AM -0600, Mike Timmons wrote:
-> Thanks Jon. I'm still struggling with this rt73.bin issue. My 2.6.24  
-> Kconfig presents options slightly different from what you describe  
-> below. I've tried a few different settings and I placed the rt73.bin you  
-> sent me under /lib/firmware.
->
-> I'm still getting the "failure to load rt73.bin" error on "ifconfig  
-> wlan0 up".
-
-http://wireless.kernel.org/en/users/Drivers/rt73usb#devicefirmware
-
-Hth!
-
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
+---
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index 9413af3..a8276d4 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -116,6 +116,12 @@
+                        interrupts =3D <14 0x8>;
+                        interrupt-parent =3D <&ipic>;
+                        dfsrr;
++
++                       at24@50 {
++                               compatible =3D "at24,24c256";
++                               reg =3D <0x50>;
++                       };
++
+                        rtc@68 {
+                                compatible =3D "dallas,ds1339";
+                                reg =3D <0x68>;
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 23c10ce..4ee2639 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -116,6 +116,12 @@
+                        interrupts =3D <14 0x8>;
+                        interrupt-parent =3D <&ipic>;
+                        dfsrr;
++
++                       at24@50 {
++                               compatible =3D "at24,24c256";
++                               reg =3D <0x50>;
++                       };
++
+                        rtc@68 {
+                                compatible =3D "dallas,ds1339";
+                                reg =3D <0x68>;
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index 72cdc3c..2c06d39 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -116,6 +116,12 @@
+                        interrupts =3D <14 0x8>;
+                        interrupt-parent =3D <&ipic>;
+                        dfsrr;
++
++                       at24@50 {
++                               compatible =3D "at24,24c256";
++                               reg =3D <0x50>;
++                       };
++
+                        rtc@68 {
+                                compatible =3D "dallas,ds1339";
+                                reg =3D <0x68>;
