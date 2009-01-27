@@ -1,15 +1,15 @@
-Return-Path: <edfuchs@uni-kassel.de>
-Received: from hrz-ws39.hrz.uni-kassel.de (smtp.hrz.uni-kassel.de
-	[141.51.12.230]) by ozlabs.org (Postfix) with ESMTP id A01F3DE0C9
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 21:06:53 +1100 (EST)
+Return-Path: <lists.kel@gmail.com>
+Received: from hrz-ws41.hrz.uni-kassel.de (smtp.hrz.uni-kassel.de
+	[141.51.12.231]) by ozlabs.org (Postfix) with ESMTP id 32D7DDE0D3
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 00:25:12 +1100 (EST)
 Received: from [192.168.101.211] (rs-pc1.rs.eecs.uni-kassel.de
 	[141.51.112.154])
-	by hrz-ws39.hrz.uni-kassel.de (8.14.0/8.14.0) with ESMTP id
-	n0R9sjI8017002
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 10:54:46 +0100
-Message-ID: <497ED9E9.1090300@uni-kassel.de>
-Date: Tue, 27 Jan 2009 10:54:49 +0100
-From: Eduard Fuchs <edfuchs@uni-kassel.de>
+	by hrz-ws41.hrz.uni-kassel.de (8.14.0/8.14.0) with ESMTP id
+	n0RD5vi5025562
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 14:05:57 +0100
+Message-ID: <497F06B8.6080602@gmail.com>
+Date: Tue, 27 Jan 2009 14:06:00 +0100
+From: Eduard Fuchs <lists.kel@gmail.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
 Subject: Problem with console init
@@ -50,12 +50,3 @@ Thank you in advance
 Best regards,
 
 Eduard Fuchs
-
-
--- 
-
-  Eduard Fuchs                            Telefon:    +49 (561) 804-6596
-  Universität Kassel                          Fax:    +49 (561) 804-6588
-  Wilhelmshöher Allee 71                   E-Mail: edfuchs@uni-kassel.de
-  34121 Kassel                     WWW: http://www.rs.eecs.uni-kassel.de
-  Raum 1125:1127          FG Rechnerarchitektur und Systemprogrammierung
