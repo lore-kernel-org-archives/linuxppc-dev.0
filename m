@@ -1,18 +1,20 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 06F874F382
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 05:00:06 +1100 (EST)
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 116B6DDF11
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 05:03:22 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so2456839yxg.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 10:03:21 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20090121205506.31232.27908.stgit@localhost.localdomain>
-References: <20090121205506.31232.27908.stgit@localhost.localdomain>
-Date: Tue, 27 Jan 2009 12:00:00 -0600
-Message-ID: <b5e2fc790901271000r1b7b6313ta63a6e59e2a176e9@mail.gmail.com>
-Subject: Re: [PATCH 1/8] powerpc/5200: update device tree binding
-	documentation
-From: Matt Sealey <matt@genesi-usa.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, devtree-discuss@ozlabs.org
+In-Reply-To: <b5e2fc790901270956q4448ac4brd0f6ea177ace9ade@mail.gmail.com>
+References: <20090127043315.26160.43312.stgit@localhost.localdomain>
+	<b5e2fc790901270956q4448ac4brd0f6ea177ace9ade@mail.gmail.com>
+Date: Tue, 27 Jan 2009 11:03:20 -0700
+Message-ID: <fa686aa40901271003r641a199yfdcb22a7f90c3cee@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/5200: Bugfix for PCI mapping of memory and IMMR
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Matt Sealey <matt@genesi-usa.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 21, 2009 at 2:55 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+On Tue, Jan 27, 2009 at 10:56 AM, Matt Sealey <matt@genesi-usa.com> wrote:
+> On Mon, Jan 26, 2009 at 10:34 PM, Grant Likely
+> <grant.likely@secretlab.ca> wrote:
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> This patch ensures that memory gets properly mapped into the PCI
+>> address space.  Without this patch, the memory window BAR is left
+>> at whatever value happened to be loaded into the BAR when Linux
+>> was booted.  Without this patch, memory could end up getting mapped
+>> at any of the 1G address boundaries instead of at '0' where Linux
+>> expects it.
+>>
+>> Similarly, this patch also ensures that the internally memory mapped
+>> registers (IMMR) are mapped to the correct PCI address range.
+>>
+>> Without this patch, PCI appears to work correctly until a PCI
+>> device is inserted which DMAs into memory.
+>>
+>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>> ---
+>>
+>> This is a bugfix that I intend to merge into 2.6.29 and once it is
+>> mainlined get it added to the stable queue.  If you have a 5200 system,
+>> please test and make sure it works for you.
+>>
+>> Thanks
+>> g.
+>>
+>>  arch/powerpc/platforms/52xx/mpc52xx_pci.c |   24 ++++++++++--------------
+>>  1 files changed, 10 insertions(+), 14 deletions(-)
+>>
 >
-> This patch updates the mpc5200 binding documentation to match
-> actual usage conventions, to remove incorrect information, and
-> to remove topics which are more thoroughly described elsewhere.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> CC: devtree-discuss@ozlabs.org
-> CC: Wolfram Sang <w.sang@pengutronix.de>
-> ---
-> +It is *strongly* recommended that 5200B device trees follow this convention
-> +(instead of only listing the base mpc5200 item).
-> +
-> +ie. ethernet on mpc5200: compatible = "fsl,mpc5200-ethernet";
-> +    ethernet on mpc5200b: compatible = "fsl,mpc5200b-ethernet",
-> +                                       "fsl,mpc5200-ethernet";
+> This doesn't affect Efika, right?
 
-snip
+Correct
 
-> +ethernet@<addr>        fsl,mpc5200-fec          MPC5200 ethernet device
+> What's the expected impact and how come nobody tried a DMA-capable PCI
+> card in an MPC5200B board before? :)
 
-snip
+Most of the board I have don't hit the bug, but only because on most
+boards U-Boot is setting the BAR to a sane value.  I discovered the
+bug on a custom board where u-boot didn't do the right thing with PCI.
 
-> +fsl,mpc5200-fec nodes
-> +---------------------
-> +The FEC node can specify one of the following properties to configure
-> +the MII link:
-
-
-Is it fec or ethernet? Obviously the first one is an example only but
-it should least reflect real life..
+g.
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
