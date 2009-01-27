@@ -1,20 +1,16 @@
-Return-Path: <jhautbois@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
-	by ozlabs.org (Postfix) with ESMTP id 28B3CDE024
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 19:18:16 +1100 (EST)
-Received: by fk-out-0910.google.com with SMTP id 18so3631456fkq.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 00:18:14 -0800 (PST)
+Return-Path: <paulfax@conspiracy.net>
+Received: from ns.seriouslyclued.net (ns.seriouslyclued.net [209.189.226.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "", Issuer "My Company Ltd" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 39F9BDDFCF
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 19:51:00 +1100 (EST)
+Message-ID: <497EC957.2050205@conspiracy.net>
+Date: Tue, 27 Jan 2009 02:44:07 -0600
+From: paulfax <paulfax@conspiracy.net>
 MIME-Version: 1.0
-In-Reply-To: <20090126170929.GA5820@ld0162-tx32.am.freescale.net>
-References: <8cad0aa0901260217u5a981c77gc09caba76cce32a7@mail.gmail.com>
-	<20090126170929.GA5820@ld0162-tx32.am.freescale.net>
-Date: Tue, 27 Jan 2009 09:18:14 +0100
-Message-ID: <8cad0aa0901270018l197ed1dei305819bcbffa9ae@mail.gmail.com>
-Subject: Re: Help needed with initramfs
-From: Jean-Michel Hautbois <jhautbois@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: multipart/alternative; boundary=001636c598d62dc79b0461727f69
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/cpm2 Fix set interrupt type
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,61 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---001636c598d62dc79b0461727f69
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+This is a simple change to correct problems when using set_irq_type on platforms using CPM2.
+This code correct the problem on most platform but still fails on 8272 derived platforms for some interrupts.
+On 8272 PC2 & 3 are missing and PC 23 & 29 are added, which this patch does not address.
 
-2009/1/26 Scott Wood <scottwood@freescale.com>
+Signed-off-by: Paul Bilke <paul at conspiracy.net>
+---
 
-> On Mon, Jan 26, 2009 at 11:17:05AM +0100, Jean-Michel Hautbois wrote:
-> > I understand that my load address is 0x400000 and that the image is too
-> big,
-> > but I can't find where this load adress is defined.
-> > It seems (from the .../arch/powerpc/boot/wrapper file) that this adress
-> is
-> > calculated from the _start adress in the objfile.
-> >
-> > Is it possible to change this adress ?
-> > What can I do (with the idea of not reducing the size of my rootfs) ?
->
-> You can change link_address in arch/powerpc/boot/wrapper, or provide a
-> vmlinux_alloc method in the wrapper ops struct.
->
-> -Scott
->
 
-Thanks !
-It works perfectly :)
 
-JM
 
---001636c598d62dc79b0461727f69
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div class=3D"gmail_quote">2009/1/26 Scott Wood <span dir=3D"ltr">&lt;<a hr=
-ef=3D"mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt;</span=
-><br><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(=
-204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div><div></div><div class=3D"Wj3C7c">On Mon, Jan 26, 2009 at 11:17:05AM +0=
-100, Jean-Michel Hautbois wrote:<br>
-&gt; I understand that my load address is 0x400000 and that the image is to=
-o big,<br>
-&gt; but I can&#39;t find where this load adress is defined.<br>
-&gt; It seems (from the .../arch/powerpc/boot/wrapper file) that this adres=
-s is<br>
-&gt; calculated from the _start adress in the objfile.<br>
-&gt;<br>
-&gt; Is it possible to change this adress ?<br>
-&gt; What can I do (with the idea of not reducing the size of my rootfs) ?<=
-br>
-<br>
-</div></div>You can change link_address in arch/powerpc/boot/wrapper, or pr=
-ovide a<br>
-vmlinux_alloc method in the wrapper ops struct.<br>
-<font color=3D"#888888"><br>
--Scott<br>
-</font></blockquote></div><br>Thanks !<br>It works perfectly :)<br><br>JM<b=
-r>
-
---001636c598d62dc79b0461727f69--
+diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
+index b16ca3e..78f1f7c 100644
+--- a/arch/powerpc/sysdev/cpm2_pic.c
++++ b/arch/powerpc/sysdev/cpm2_pic.c
+@@ -165,7 +165,7 @@ static int cpm2_set_irq_type(unsigned int virq, unsigned int flow_type)
+                        edibit = (14 - (src - CPM2_IRQ_EXT1));
+        else
+                if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0)
+-                       edibit = (31 - (src - CPM2_IRQ_PORTC15));
++                       edibit = (31 - (CPM2_IRQ_PORTC0 - src));
+                else
+                        return (flow_type & IRQ_TYPE_LEVEL_LOW) ? 0 : -EINVAL;
