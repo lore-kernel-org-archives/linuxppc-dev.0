@@ -1,21 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f20.google.com (mail-gx0-f20.google.com
-	[209.85.217.20]) by ozlabs.org (Postfix) with ESMTP id CEF77DE06F
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 03:25:44 +1100 (EST)
-MIME-Version: 1.0
-In-Reply-To: <20090126092605.GB28453@pengutronix.de>
-References: <20090121205506.31232.27908.stgit@localhost.localdomain>
-	<20090125194853.GB26917@pengutronix.de>
-	<fa686aa40901251746x644e22c6tf8862103c04db1dc@mail.gmail.com>
-	<20090126092605.GB28453@pengutronix.de>
-Date: Tue, 27 Jan 2009 09:25:43 -0700
-Message-ID: <fa686aa40901270825i7bfb8142y95dbb441413c4b72@mail.gmail.com>
-Subject: Re: [PATCH 1/8] powerpc/5200: update device tree binding
-	documentation
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devtree-discuss@ozlabs.org
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0B4D4DE10D
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 04:18:20 +1100 (EST)
+Message-Id: <7FAC732F-383E-4228-9770-3F791EA215FC@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Reynes Philippe <philippe.reynes@isismpp.fr>
+In-Reply-To: <761F451C5F17F74DAEE4661DA5ABBC1621515A@factorix.ISISTHIBAUD.local>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] add i2c eeprom to dts for mpc 837x rdb
+Date: Tue, 27 Jan 2009 11:18:10 -0600
+References: <761F451C5F17F74DAEE4661DA5ABBC160181BE95@factorix.ISISTHIBAUD.local>
+	<761F451C5F17F74DAEE4661DA5ABBC16215158@factorix.ISISTHIBAUD.local>
+	<761F451C5F17F74DAEE4661DA5ABBC1621515A@factorix.ISISTHIBAUD.local>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +27,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 26, 2009 at 2:26 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
->
->> >> +system-frequency     Fsystem frequency; source of all
->> >
->> > Fsystem? Typo?
->>
->> Not really, that's the name of the clock in the MP5200 user guide.
->> I'll clarify what I've written here though.
->
-> That will be helpful.
->
->> > The unit would be nice here, too, I think.
->>
->> Unit?  Do you mean stating that it is in Hz?
->
-> Yes, like in the frequency next to it.
->
-> Kind regards,
->
->   Wolfram
->
-> PS: The other patches look good to me, too. I just want to test them on
-> a real phyCORE-tiny this week.
+Your patch is in MIME format and doesn't apply cleanly.  Can you  
+repost in a way that the patch can be applied
 
-Thanks,
+- k
 
-I want to get these queued up into -next ASAP, so let me know when
-you've had a chance to try them.
+On Jan 18, 2009, at 9:57 AM, Reynes Philippe wrote:
 
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
+> ---
+> diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/ 
+> boot/dts/mpc8377_rdb.dts
+> index 9413af3..a8276d4 100644
+> --- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> @@ -116,6 +116,12 @@
+>                         interrupts = <14 0x8>;
+>                         interrupt-parent = <&ipic>;
+>                         dfsrr;
+> +
+> +                       at24@50 {
+> +                               compatible = "at24,24c256";
+> +                               reg = <0x50>;
+> +                       };
+> +
+>                         rtc@68 {
+>                                 compatible = "dallas,ds1339";
+>                                 reg = <0x68>;
+> diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/ 
+> boot/dts/mpc8378_rdb.dts
+> index 23c10ce..4ee2639 100644
+> --- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> @@ -116,6 +116,12 @@
+>                         interrupts = <14 0x8>;
+>                         interrupt-parent = <&ipic>;
+>                         dfsrr;
+> +
+> +                       at24@50 {
+> +                               compatible = "at24,24c256";
+> +                               reg = <0x50>;
+> +                       };
+> +
+>                         rtc@68 {
+>                                 compatible = "dallas,ds1339";
+>                                 reg = <0x68>;
+> diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/ 
+> boot/dts/mpc8379_rdb.dts
+> index 72cdc3c..2c06d39 100644
+> --- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> @@ -116,6 +116,12 @@
+>                         interrupts = <14 0x8>;
+>                         interrupt-parent = <&ipic>;
+>                         dfsrr;
+> +
+> +                       at24@50 {
+> +                               compatible = "at24,24c256";
+> +                               reg = <0x50>;
+> +                       };
+> +
+>                         rtc@68 {
+>                                 compatible = "dallas,ds1339";
+>                                 reg = <0x68>;
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
