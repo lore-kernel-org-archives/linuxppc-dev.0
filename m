@@ -1,18 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6CEDFDE0D2
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 04:37:20 +1100 (EST)
-Message-Id: <BE3F7CE3-DD51-480A-B965-A48FD3BDE2A8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-In-Reply-To: <1231944761-18500-1-git-send-email-jacmet@sunsite.dk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] dts-bindings/fsl/dma.txt: convert to dts-v1 syntax
-Date: Tue, 27 Jan 2009 11:37:14 -0600
-References: <1231944761-18500-1-git-send-email-jacmet@sunsite.dk>
+Return-Path: <neko@genesi-usa.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 609B7DDF94
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 04:52:42 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so2454385yxg.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 09:52:40 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20090121205540.31232.77034.stgit@localhost.localdomain>
+References: <20090121205506.31232.27908.stgit@localhost.localdomain>
+	<20090121205540.31232.77034.stgit@localhost.localdomain>
+Date: Tue, 27 Jan 2009 11:52:40 -0600
+Message-ID: <b5e2fc790901270952p42fefb5fx63b77449528a448c@mail.gmail.com>
+Subject: Re: [PATCH 7/8] powerpc/5200: Refactor mpc5200 interrupt controller
+	driver
+From: Matt Sealey <matt@genesi-usa.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,16 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jan 14, 2009, at 8:52 AM, Peter Korsgaard wrote:
-
+On Wed, Jan 21, 2009 at 2:55 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 >
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-> ---
-> Documentation/powerpc/dts-bindings/fsl/dma.txt |   34 +++++++++++ 
-> +------------
-> 1 files changed, 17 insertions(+), 17 deletions(-)
+> Rework the mpc5200-pic driver to simplify it and fix up the setting
+> of desc->status when set_type is called for internal IRQs (so they
+> are reported as level, not edge).  The simplification is due to
+> splitting off the handling of external IRQs into a separate block
+> so they don't need to be handled as exceptions in the normal
+> CRIT, MAIN and PERP paths.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> CC: Wolfram Sang <w.sang@pengutronix.de>
 
-applied to next (for 2.6.30)
+Can I assume this has absolutely no functional impact compared to the
+old one? It doesn't change any behaviour, just implements exactly the
+same in a much nicer way?
 
-- k
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
