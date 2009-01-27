@@ -1,21 +1,20 @@
-Return-Path: <mike_timmons@trimble.com>
-Received: from snvl-smtp1.trimble.com (snvl-smtp1.trimble.com [155.63.64.31])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "snvl-smtp1.trimble.com", Issuer "Trimble CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 77DB6DDF39
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 17:50:34 +1100 (EST)
-Message-ID: <497EAEAF.3010108@trimble.com>
-Date: Tue, 27 Jan 2009 00:50:23 -0600
-From: Mike Timmons <mike_timmons@trimble.com>
+Return-Path: <jhautbois@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
+	by ozlabs.org (Postfix) with ESMTP id 28B3CDE024
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 19:18:16 +1100 (EST)
+Received: by fk-out-0910.google.com with SMTP id 18so3631456fkq.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jan 2009 00:18:14 -0800 (PST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: any luck with wireless USB adaptors?
-References: <497E81DD.9020408@trimble.com>
-	<fa686aa40901262101r48771b8oc9fdbb6a0ede01e8@mail.gmail.com>
-In-Reply-To: <fa686aa40901262101r48771b8oc9fdbb6a0ede01e8@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090126170929.GA5820@ld0162-tx32.am.freescale.net>
+References: <8cad0aa0901260217u5a981c77gc09caba76cce32a7@mail.gmail.com>
+	<20090126170929.GA5820@ld0162-tx32.am.freescale.net>
+Date: Tue, 27 Jan 2009 09:18:14 +0100
+Message-ID: <8cad0aa0901270018l197ed1dei305819bcbffa9ae@mail.gmail.com>
+Subject: Re: Help needed with initramfs
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=001636c598d62dc79b0461727f69
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: mike_timmons@trimble.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,56 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks. Yes, USB  wi fi is what I'm after.  I did find the driver I 
-needed after enabling the WLAN80211 and EXPERIMENTAL options. The device 
-discovery appears to work, and with wireless tools I can iwconfig and 
-see my interface.
+--001636c598d62dc79b0461727f69
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-QUESTION: when I "ifoncfig wlan0 up" it results in an attempt to load a 
-firmwmare file as follows. as you can see, it fails. What are these 
-firmware files? I can't find it in my build output. How do I build it or 
-where do I get it? Where would I put it on my target?
+2009/1/26 Scott Wood <scottwood@freescale.com>
 
-I did search for answers to these questions and tried to stick an 
-rt73.bin of unknown origin (to me anyway) in /lib/firmware but I got the 
-same error.
-
--sh-2.05b# ifconfig wlan0 up
-[ 2212.027071] phy1 -> rt2x00lib_request_firmware: Info - Loading 
-firmware file 'rt73.bin'.
-[ 2272.058793] phy1 -> rt2x00lib_request_firmware: Error - Failed to 
-request Firmware.
-SIOCSIFFLAGS: No such file or directory
-
-Thanks again,
-Mike
-
-
-
-\
-Grant Likely wrote:
-> On Mon, Jan 26, 2009 at 8:39 PM, Mike Timmons <mike_timmons@trimble.com> wrote:
->   
->> I'm running 2.6.24 with Freescale's lite5200 as my base. I'm interested in
->> this USB adaptor for wireless USB, but my web search does not make me
->> confident that my effort will yield fruit.
->>
->> Can anyone direct me to a good source outlining success stories with
->> wireless USB adaptors? At present I'm mesing with Linksys WUSB54GC and some
->> driver source from Ralink, but my cross-compile is not working.
->>     
+> On Mon, Jan 26, 2009 at 11:17:05AM +0100, Jean-Michel Hautbois wrote:
+> > I understand that my load address is 0x400000 and that the image is too
+> big,
+> > but I can't find where this load adress is defined.
+> > It seems (from the .../arch/powerpc/boot/wrapper file) that this adress
+> is
+> > calculated from the _start adress in the objfile.
+> >
+> > Is it possible to change this adress ?
+> > What can I do (with the idea of not reducing the size of my rootfs) ?
 >
-> Umm, the WUSB54GC is not a "wireless USB" adapter.  It is a USB WiFi
-> adapter.  If you're looking for wireless USB then it is the wrong
-> device.
+> You can change link_address in arch/powerpc/boot/wrapper, or provide a
+> vmlinux_alloc method in the wrapper ops struct.
 >
-> If you are looking for a suitable wifi adapter, then that device
-> should work, but if you can go with a PCI or a miniPCI WiFi adapter
-> instead then you should get better performance.  The 5200 only has USB
-> 1.1.
+> -Scott
 >
-> I'm having good success with an Atheros miniPCI adapter at the moment
-> using a 2.6.28 kernel.
->
-> g.
->   
+
+Thanks !
+It works perfectly :)
+
+JM
+
+--001636c598d62dc79b0461727f69
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<div class=3D"gmail_quote">2009/1/26 Scott Wood <span dir=3D"ltr">&lt;<a hr=
+ef=3D"mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt;</span=
+><br><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(=
+204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+<div><div></div><div class=3D"Wj3C7c">On Mon, Jan 26, 2009 at 11:17:05AM +0=
+100, Jean-Michel Hautbois wrote:<br>
+&gt; I understand that my load address is 0x400000 and that the image is to=
+o big,<br>
+&gt; but I can&#39;t find where this load adress is defined.<br>
+&gt; It seems (from the .../arch/powerpc/boot/wrapper file) that this adres=
+s is<br>
+&gt; calculated from the _start adress in the objfile.<br>
+&gt;<br>
+&gt; Is it possible to change this adress ?<br>
+&gt; What can I do (with the idea of not reducing the size of my rootfs) ?<=
+br>
+<br>
+</div></div>You can change link_address in arch/powerpc/boot/wrapper, or pr=
+ovide a<br>
+vmlinux_alloc method in the wrapper ops struct.<br>
+<font color=3D"#888888"><br>
+-Scott<br>
+</font></blockquote></div><br>Thanks !<br>It works perfectly :)<br><br>JM<b=
+r>
+
+--001636c598d62dc79b0461727f69--
