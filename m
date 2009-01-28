@@ -1,22 +1,18 @@
-Return-Path: <jhsiao@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 15F52DDE9F
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 04:38:21 +1100 (EST)
-Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v5
-From: James Hsiao <jhsiao@amcc.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-In-Reply-To: <20090128035937.GA13157@gondor.apana.org.au>
-References: <1231788650.5533.16.camel@jhsiao-usb>
-	<20090128035937.GA13157@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Wed, 28 Jan 2009 09:41:56 -0800
-Message-Id: <1233164516.4809.9.camel@jhsiao-usb>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org
-Reply-To: jhsiao@amcc.com
+Return-Path: <Regis.Odeye@kontron.com>
+Received: from mail.kontron-modular.com (mail.kontron-modular.com
+	[213.179.130.140]) by ozlabs.org (Postfix) with ESMTP id 2644ADDFC2
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 05:14:17 +1100 (EST)
+Message-ID: <4980A076.3030905@kontron.com>
+Date: Wed, 28 Jan 2009 19:14:14 +0100
+From: =?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: MPIC Timers as clocksource
+References: <49806DE7.6090101@kontron.com>
+	<9FE267F5-A95D-475D-A4EE-DD9174E6AC9E@kernel.crashing.org>
+In-Reply-To: <9FE267F5-A95D-475D-A4EE-DD9174E6AC9E@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Herbert,
+Kumar Gala wrote:
+>
+> On Jan 28, 2009, at 8:38 AM, Régis Odeyé wrote:
+>
+>> Hi everybody,
+>> Is there anyone who implemented a clocksource driver 
+>> (drivers/clocksource) to deal with the MPIC timers especially with 
+>> 86xx and 85xx soc's ?
+>> Regards.
+>>
+>> --
+>
+> We have some code for using the timers but not as a clocksource.. Out 
+> of interest why do want this?
+>
+> - k
+We have a plan to use an external clock signal to drive those timers. 
+This signal is common with other boards in a same enclosure so we could 
+synchronize our boards with those timers.
+Could you point me out to the related code even if there is some 
+adaptations to get a clocksource driver.
+Regards.
 
-I will re submit the patch with proper changelog.
-I had the change log this way is for the reviewer easy to see the
-difference. But, I agree this is not proper for a newly created driver.
+-- 
+Régis ODEYE
 
-Thanks
-James 
-On Wed, 2009-01-28 at 14:59 +1100, Herbert Xu wrote:
-> On Mon, Jan 12, 2009 at 11:30:50AM -0800, James Hsiao wrote:
-> > This is the 5th submission of AMCC's security driver.
-> > - remove aad support in build pd function, since we didn't release any
-> > algorithm that use aead yet.
-> > 
-> > - changed some hardcode value to #defines
-> > 
-> > - changed local_irq_disable/enable to spinlock_irq_save/restore
-> > 
-> > - fixed bug in crypto4xx_probe on error exit.
-> > 
-> > 
-> > Signed-off-by: James Hsiao <jhsiao@amcc.com>
-> 
-> I was going to apply this but you didn't give me a changelog
-> that I can throw into the tree without feeling guilty!
-> 
-> Please always attach a proper changelog with each submission
-> so I don't have to do this.  You can put the changelog elsewhere
-> in the email.
-> 
-> Thanks,
+Kontron Modular Computers SA
+150, rue M. Berthelot / ZI Toulon Est / BP 244 / Fr 83078 TOULON Cedex 9
+Phone: (33) 4 98 16 34 86           Fax: (33) 4 98 16 34 01
+E-mail: regis.odeye@kontron.com  Web : www.kontron.com
