@@ -1,17 +1,17 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	by ozlabs.org (Postfix) with ESMTP id 5903CDDE1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 14:59:56 +1100 (EST)
-Date: Wed, 28 Jan 2009 14:59:37 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: James Hsiao <jhsiao@amcc.com>
-Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v5
-Message-ID: <20090128035937.GA13157@gondor.apana.org.au>
-References: <1231788650.5533.16.camel@jhsiao-usb>
+Return-Path: <arjan@linux.intel.com>
+Received: from azsmga101.ch.intel.com (mga07.intel.com [143.182.124.22])
+	by ozlabs.org (Postfix) with ESMTP id AA39BDE0AB
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 16:04:01 +1100 (EST)
+Message-ID: <497FE4E7.8070303@linux.intel.com>
+Date: Tue, 27 Jan 2009 20:53:59 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1231788650.5533.16.camel@jhsiao-usb>
-Cc: linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] bootgraph: fix for use with dot symbols
+References: <19599.1233113450@neuling.org>
+In-Reply-To: <19599.1233113450@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,30 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 12, 2009 at 11:30:50AM -0800, James Hsiao wrote:
-> This is the 5th submission of AMCC's security driver.
-> - remove aad support in build pd function, since we didn't release any
-> algorithm that use aead yet.
+Michael Neuling wrote:
+> powerpc has dot symbols, so the dmesg output looks like:
+>  
+> <4>[    0.327310] calling  .migration_init+0x0/0x9c @ 1
+> <4>[    0.327595] initcall .migration_init+0x0/0x9c returned 1 after 0 usecs
 > 
-> - changed some hardcode value to #defines
-> 
-> - changed local_irq_disable/enable to spinlock_irq_save/restore
-> 
-> - fixed bug in crypto4xx_probe on error exit.
-> 
-> 
-> Signed-off-by: James Hsiao <jhsiao@amcc.com>
+> The below fixes bootgraph.pl so it handles this correctly.  
 
-I was going to apply this but you didn't give me a changelog
-that I can throw into the tree without feeling guilty!
 
-Please always attach a proper changelog with each submission
-so I don't have to do this.  You can put the changelog elsewhere
-in the email.
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+question for the ppc folks.... why does the "print symbol" magic format string
+thing print a dot symbol and not the real function name?
+Should that be fixed instead?
