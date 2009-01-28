@@ -1,18 +1,22 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 8C90CDE074
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 20:50:48 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: How to bring up fs_enet on 2.6.27?
-Date: Wed, 28 Jan 2009 10:50:39 +0100
-References: <547eba1b0901272104r69f80c88yf99bb009ff886688@mail.gmail.com>
-In-Reply-To: <547eba1b0901272104r69f80c88yf99bb009ff886688@mail.gmail.com>
+Return-Path: <philippe.reynes@isismpp.fr>
+Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr (sp604003av.neufgp.fr
+	[84.96.92.124]) by ozlabs.org (Postfix) with ESMTP id CEC80DE076
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 21:41:31 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2493386.EOPoPvodch";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200901281050.44952.laurentp@cse-semaphore.com>
-Cc: Daniel Ng <daniel.ng1234@gmail.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: [PATCH] add i2c eeprom to dts for mpc 837x rdb
+Date: Wed, 28 Jan 2009 11:07:44 +0100
+Message-ID: <761F451C5F17F74DAEE4661DA5ABBC1616C447@factorix.ISISTHIBAUD.local>
+References: <761F451C5F17F74DAEE4661DA5ABBC160181BE95@factorix.ISISTHIBAUD.local>
+	<761F451C5F17F74DAEE4661DA5ABBC16215158@factorix.ISISTHIBAUD.local>
+	<761F451C5F17F74DAEE4661DA5ABBC1621515A@factorix.ISISTHIBAUD.local>
+	<7FAC732F-383E-4228-9770-3F791EA215FC@freescale.com>
+	<761F451C5F17F74DAEE4661DA5ABBC1616C446@factorix.ISISTHIBAUD.local>
+	<0A7AE75B-7D27-4396-9708-824F834322D3@freescale.com>
+From: "Reynes Philippe" <philippe.reynes@isismpp.fr>
+To: "Kumar Gala" <kumar.gala@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,69 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart2493386.EOPoPvodch
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This patch is based on galak powerpc tree (branch next). I've done it
+again as previous one don't apply properly, and change space by tab.
 
-Hi Daniel,
-
-On Wednesday 28 January 2009 06:04:11 Daniel Ng wrote:
-> Hi,
->
-> I'm trying to bring the primary Ethernet interface up on my 8272-based
-> board running 2.6.27.
->
-> Previously, I had this same hardware working with 2.6.14 using the
-> following driver:
->
-> linux-2.6.14/arch/ppc/8260_io/fcc_enet.c
->
-> This doesn't exist anymore in 2.6.27. From reading the code comments,
-> I think the new driver I should be using is:
->
-> linux-2.6.27/drivers/net/fs_enet/fs_enet-main.c
-
-That's right.
-
-> The PHY is an Intel LXT972. I have selected the closest-matching
-> Kernel config option 'LXT970'.
->
-> The primary ethernet uses FCC2.
-
-Make sure FS_ENET_HAS_FCC is set in your kernel configuration.
-
-[snip]
-
-> The fs_enet probe() function doesn't seem to get called (I had put a
-> panic() in it). Should it?
-
-Yes it should.
-
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart2493386.EOPoPvodch
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmAKm8ACgkQlyYWY4YEWhWDawCfVWYNT3t05wjlIpfq4Qj8VYOB
-WJYAn0AO9BlIVXU3uM/yA3LdbnR0lzKD
-=S14V
------END PGP SIGNATURE-----
-
---nextPart2493386.EOPoPvodch--
+Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
+---
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index 9413af3..a8276d4 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -116,6 +116,12 @@
+ 			interrupts =3D <14 0x8>;
+ 			interrupt-parent =3D <&ipic>;
+ 			dfsrr;
++
++			at24@50 {
++				compatible =3D "at24,24c256";
++				reg =3D <0x50>;
++			};
++
+ 			rtc@68 {
+ 				compatible =3D "dallas,ds1339";
+ 				reg =3D <0x68>;
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 23c10ce..4ee2639 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -116,6 +116,12 @@
+ 			interrupts =3D <14 0x8>;
+ 			interrupt-parent =3D <&ipic>;
+ 			dfsrr;
++
++			at24@50 {
++				compatible =3D "at24,24c256";
++				reg =3D <0x50>;
++			};
++
+ 			rtc@68 {
+ 				compatible =3D "dallas,ds1339";
+ 				reg =3D <0x68>;
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index 72cdc3c..2c06d39 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -116,6 +116,12 @@
+ 			interrupts =3D <14 0x8>;
+ 			interrupt-parent =3D <&ipic>;
+ 			dfsrr;
++
++			at24@50 {
++				compatible =3D "at24,24c256";
++				reg =3D <0x50>;
++			};
++
+ 			rtc@68 {
+ 				compatible =3D "dallas,ds1339";
+ 				reg =3D <0x68>;
