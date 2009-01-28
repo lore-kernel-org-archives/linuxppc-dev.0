@@ -1,12 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-MIME-Version: 1.0
-Subject: [PATCH] bootgraph: fix for use with dot symbols
-Date: Wed, 28 Jan 2009 14:30:50 +1100
-Message-ID: <19599.1233113450@neuling.org>
-Sender: mikey@neuling.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, anton@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 60731DE0BA
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 14:42:28 +1100 (EST)
+Subject: RE: [PATCH] ibm_newemac: Add support for Arches CPU0 SGMII0 to
+	CPU1SGMII0
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Victor Gallardo <vgallardo@amcc.com>
+In-Reply-To: <0CA0A16855646F4FA96D25A158E299D605B6134D@SDCEXCHANGE01.ad.amcc.com>
+References: <0CA0A16855646F4FA96D25A158E299D60546CA64@SDCEXCHANGE01.ad.amcc.com>
+	<0CA0A16855646F4FA96D25A158E299D605505DDC@SDCEXCHANGE01.ad.amcc.com>
+	<0CA0A16855646F4FA96D25A158E299D605B6134D@SDCEXCHANGE01.ad.amcc.com>
+Content-Type: text/plain
+Date: Wed, 28 Jan 2009 14:42:13 +1100
+Message-Id: <1233114133.6963.22.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,37 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-powerpc has dot symbols, so the dmesg output looks like:
- 
-<4>[    0.327310] calling  .migration_init+0x0/0x9c @ 1
-<4>[    0.327595] initcall .migration_init+0x0/0x9c returned 1 after 0 usecs
+On Fri, 2009-01-16 at 16:14 -0800, Victor Gallardo wrote:
+> Hi Josh,
+> 
+> I see you are delegated for this patch submission any ideas when it will be accepted.
+> 
+> http://patchwork.ozlabs.org/patch/6814/
 
-The below fixes bootgraph.pl so it handles this correctly.  
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- scripts/bootgraph.pl |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-ozlabs/scripts/bootgraph.pl
-===================================================================
---- linux-2.6-ozlabs.orig/scripts/bootgraph.pl
-+++ linux-2.6-ozlabs/scripts/bootgraph.pl
-@@ -51,7 +51,7 @@ my %pidctr;
- 
- while (<>) {
- 	my $line = $_;
--	if ($line =~ /([0-9\.]+)\] calling  ([a-zA-Z0-9\_]+)\+/) {
-+	if ($line =~ /([0-9\.]+)\] calling  ([a-zA-Z0-9\_\.]+)\+/) {
- 		my $func = $2;
- 		if ($done == 0) {
- 			$start{$func} = $1;
-@@ -87,7 +87,7 @@ while (<>) {
- 		$count = $count + 1;
- 	}
- 
--	if ($line =~ /([0-9\.]+)\] initcall ([a-zA-Z0-9\_]+)\+.*returned/) {
-+	if ($line =~ /([0-9\.]+)\] initcall ([a-zA-Z0-9\_\.]+)\+.*returned/) {
- 		if ($done == 0) {
- 			$end{$2} = $1;
- 			$maxtime = $1;
+Victor, re-send to netdev with my Ack included.
+
+Cheers,
+Ben.
+
+> Thanks,
+> 
+> -Victor Gallardo
+> 
+> -----Original Message-----
+> From: linuxppc-dev-bounces+vgallardo=amcc.com@ozlabs.org [mailto:linuxppc-dev-bounces+vgallardo=amcc.com@ozlabs.org] On Behalf Of Victor Gallardo
+> Sent: Monday, November 10, 2008 10:07 AM
+> To: Josh Boyer; benh@kernel.crashing.org
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: RE: [PATCH] ibm_newemac: Add support for Arches CPU0 SGMII0 to CPU1SGMII0
+> 
+> Hello Josh and Ben,
+> 
+> Who should I ask to get this patch integrated into the Linux tree?
+> 	http://ozlabs.org/pipermail/linuxppc-dev/2008-November/064834.html
+> 
+> Thanks,
+> 
+> Victor Gallardo
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
