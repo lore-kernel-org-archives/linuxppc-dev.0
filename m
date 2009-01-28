@@ -1,18 +1,16 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E3D6B474FB
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 07:39:15 +1100 (EST)
-Date: Wed, 28 Jan 2009 23:39:14 +0300
+	by ozlabs.org (Postfix) with ESMTP id 9794FDDF3D
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 07:52:21 +1100 (EST)
+Date: Wed, 28 Jan 2009 23:52:20 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH -next 2/2] phylib: Rework suspend/resume code to check
-	netdev wakeup capability
-Message-ID: <20090128203914.GB14693@oksana.dev.rtsoft.ru>
+Subject: [PATCH] gianfar: Fix sparse warnings
+Message-ID: <20090128205220.GA25701@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, Giuseppe Cavallaro <peppe.cavallaro@st.com>,
-	Andy Fleming <afleming@freescale.com>,
-	David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+Cc: netdev@vger.kernel.org, Andy Fleming <afleming@freescale.com>,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,107 +20,174 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In most cases (e.g. PCI drivers) MDIO and MAC controllers are
-represented by the same device. But for SOC ethernets we have
-separate devices. So, in SOC case, checking whether MDIO
-controller may wakeup is not only makes little sense, but also
-prevents us from doing per-netdevice wakeup management.
+This patch fixes following sparse warnings:
 
-This patch reworks suspend/resume code so that now it checks
-for net device's wakeup flags, not MDIO controller's ones.
-
-Each netdevice should manage its wakeup flags, and phylib will
-decide whether suspend an attached PHY or not.
+  CHECK   gianfar_ethtool.c
+gianfar_ethtool.c:610:26: warning: symbol 'gfar_ethtool_ops' was not declared. Should it be static?
+  CHECK   gianfar_mii.c
+gianfar_mii.c:108:35: warning: cast adds address space to expression (<asn:2>)
+gianfar_mii.c:119:35: warning: cast adds address space to expression (<asn:2>)
+gianfar_mii.c:128:35: warning: cast adds address space to expression (<asn:2>)
+gianfar_mii.c:272:5: warning: cast removes address space of expression
+gianfar_mii.c:271:15: warning: cast adds address space to expression (<asn:2>)
+gianfar_mii.c:340:11: warning: cast adds address space to expression (<asn:2>)
+  CHECK   gianfar_sysfs.c
+gianfar_sysfs.c:84:1: warning: symbol 'dev_attr_bd_stash' was not declared. Should it be static?
+gianfar_sysfs.c:133:1: warning: symbol 'dev_attr_rx_stash_size' was not declared. Should it be static?
+gianfar_sysfs.c:175:1: warning: symbol 'dev_attr_rx_stash_index' was not declared. Should it be static?
+gianfar_sysfs.c:213:1: warning: symbol 'dev_attr_fifo_threshold' was not declared. Should it be static?
+gianfar_sysfs.c:250:1: warning: symbol 'dev_attr_fifo_starve' was not declared. Should it be static?
+gianfar_sysfs.c:287:1: warning: symbol 'dev_attr_fifo_starve_off' was not declared. Should it be static?
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/net/phy/mdio_bus.c |   54 ++++++++++++++++++++++++++++++++-----------
- 1 files changed, 40 insertions(+), 14 deletions(-)
+ drivers/net/gianfar.c       |    2 --
+ drivers/net/gianfar.h       |    2 ++
+ drivers/net/gianfar_mii.c   |   12 ++++++------
+ drivers/net/gianfar_sysfs.c |   21 +++++++++++----------
+ 4 files changed, 19 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index 811a637..bb29ae3 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -21,6 +21,7 @@
- #include <linux/interrupt.h>
- #include <linux/init.h>
- #include <linux/delay.h>
-+#include <linux/device.h>
- #include <linux/netdevice.h>
- #include <linux/etherdevice.h>
- #include <linux/skbuff.h>
-@@ -286,33 +287,58 @@ static int mdio_bus_match(struct device *dev, struct device_driver *drv)
- 		(phydev->phy_id & phydrv->phy_id_mask));
- }
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 3a8359e..4fc07b6 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -141,8 +141,6 @@ void gfar_start(struct net_device *dev);
+ static void gfar_clear_exact_match(struct net_device *dev);
+ static void gfar_set_mac_for_addr(struct net_device *dev, int num, u8 *addr);
  
-+static bool mdio_bus_phy_may_suspend(struct phy_device *phydev)
-+{
-+	struct device_driver *drv = phydev->dev.driver;
-+	struct phy_driver *phydrv = to_phy_driver(drv);
-+	struct net_device *netdev = phydev->attached_dev;
-+
-+	if (!drv || !phydrv->suspend)
-+		return false;
-+
-+	/* PHY not attached? May suspend. */
-+	if (!netdev)
-+		return true;
-+
-+	/*
-+	 * Don't suspend PHY if the attched netdev parent may wakeup.
-+	 * The parent may point to a PCI device, as in tg3 driver.
-+	 */
-+	if (netdev->dev.parent && device_may_wakeup(netdev->dev.parent))
-+		return false;
-+
-+	/*
-+	 * Also don't suspend PHY if the netdev itself may wakeup. This
-+	 * is the case for devices w/o underlaying pwr. mgmt. aware bus,
-+	 * e.g. SoC devices.
-+	 */
-+	if (device_may_wakeup(&netdev->dev))
-+		return false;
-+
-+	return true;
-+}
-+
- /* Suspend and resume.  Copied from platform_suspend and
-  * platform_resume
-  */
- static int mdio_bus_suspend(struct device * dev, pm_message_t state)
- {
--	int ret = 0;
--	struct device_driver *drv = dev->driver;
--	struct phy_driver *phydrv = to_phy_driver(drv);
-+	struct phy_driver *phydrv = to_phy_driver(dev->driver);
- 	struct phy_device *phydev = to_phy_device(dev);
- 
--	if (drv && phydrv->suspend && !device_may_wakeup(phydev->dev.parent))
--		ret = phydrv->suspend(phydev);
+-extern const struct ethtool_ops gfar_ethtool_ops;
 -
--	return ret;
-+	if (!mdio_bus_phy_may_suspend(phydev))
-+		return 0;
-+	return phydrv->suspend(phydev);
- }
+ MODULE_AUTHOR("Freescale Semiconductor, Inc");
+ MODULE_DESCRIPTION("Gianfar Ethernet Driver");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
+index b1a8334..7820720 100644
+--- a/drivers/net/gianfar.h
++++ b/drivers/net/gianfar.h
+@@ -830,4 +830,6 @@ int gfar_local_mdio_write(struct gfar_mii __iomem *regs, int mii_id,
+ 			  int regnum, u16 value);
+ int gfar_local_mdio_read(struct gfar_mii __iomem *regs, int mii_id, int regnum);
  
- static int mdio_bus_resume(struct device * dev)
++extern const struct ethtool_ops gfar_ethtool_ops;
++
+ #endif /* __GIANFAR_H */
+diff --git a/drivers/net/gianfar_mii.c b/drivers/net/gianfar_mii.c
+index f49a426..64e4679 100644
+--- a/drivers/net/gianfar_mii.c
++++ b/drivers/net/gianfar_mii.c
+@@ -105,7 +105,7 @@ int gfar_local_mdio_read(struct gfar_mii __iomem *regs, int mii_id, int regnum)
+  * All PHY configuration is done through the TSEC1 MIIM regs */
+ int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value)
  {
--	int ret = 0;
--	struct device_driver *drv = dev->driver;
--	struct phy_driver *phydrv = to_phy_driver(drv);
-+	struct phy_driver *phydrv = to_phy_driver(dev->driver);
- 	struct phy_device *phydev = to_phy_device(dev);
+-	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
++	struct gfar_mii __iomem *regs = (void __force __iomem *)bus->priv;
  
--	if (drv && phydrv->resume && !device_may_wakeup(phydev->dev.parent))
--		ret = phydrv->resume(phydev);
--
--	return ret;
-+	if (!mdio_bus_phy_may_suspend(phydev))
-+		return 0;
-+	return phydrv->resume(phydev);
+ 	/* Write to the local MII regs */
+ 	return(gfar_local_mdio_write(regs, mii_id, regnum, value));
+@@ -116,7 +116,7 @@ int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value)
+  * configuration has to be done through the TSEC1 MIIM regs */
+ int gfar_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
+ {
+-	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
++	struct gfar_mii __iomem *regs = (void __force __iomem *)bus->priv;
+ 
+ 	/* Read the local MII regs */
+ 	return(gfar_local_mdio_read(regs, mii_id, regnum));
+@@ -125,7 +125,7 @@ int gfar_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
+ /* Reset the MIIM registers, and wait for the bus to free */
+ static int gfar_mdio_reset(struct mii_bus *bus)
+ {
+-	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
++	struct gfar_mii __iomem *regs = (void __force __iomem *)bus->priv;
+ 	unsigned int timeout = PHY_INIT_TIMEOUT;
+ 
+ 	mutex_lock(&bus->mdio_lock);
+@@ -268,8 +268,8 @@ static int gfar_mdio_probe(struct of_device *ofdev,
+ 	 * Also, we have to cast back to struct gfar_mii because of
+ 	 * definition weirdness done in gianfar.h.
+ 	 */
+-	enet_regs = (struct gfar __iomem *)
+-		((char *)regs - offsetof(struct gfar, gfar_mii_regs));
++	enet_regs = (struct gfar __force __iomem *)
++		((char __force *)regs - offsetof(struct gfar, gfar_mii_regs));
+ 
+ 	for_each_child_of_node(np, tbi) {
+ 		if (!strncmp(tbi->type, "tbi-phy", 8))
+@@ -337,7 +337,7 @@ static int gfar_mdio_remove(struct of_device *ofdev)
+ 
+ 	dev_set_drvdata(&ofdev->dev, NULL);
+ 
+-	iounmap((void __iomem *)bus->priv);
++	iounmap((void __force __iomem *)bus->priv);
+ 	bus->priv = NULL;
+ 	kfree(bus->irq);
+ 	mdiobus_free(bus);
+diff --git a/drivers/net/gianfar_sysfs.c b/drivers/net/gianfar_sysfs.c
+index 782c201..74e0b4d 100644
+--- a/drivers/net/gianfar_sysfs.c
++++ b/drivers/net/gianfar_sysfs.c
+@@ -81,7 +81,7 @@ static ssize_t gfar_set_bd_stash(struct device *dev,
+ 	return count;
  }
  
- struct bus_type mdio_bus_type = {
+-DEVICE_ATTR(bd_stash, 0644, gfar_show_bd_stash, gfar_set_bd_stash);
++static DEVICE_ATTR(bd_stash, 0644, gfar_show_bd_stash, gfar_set_bd_stash);
+ 
+ static ssize_t gfar_show_rx_stash_size(struct device *dev,
+ 				       struct device_attribute *attr, char *buf)
+@@ -130,8 +130,8 @@ out:
+ 	return count;
+ }
+ 
+-DEVICE_ATTR(rx_stash_size, 0644, gfar_show_rx_stash_size,
+-	    gfar_set_rx_stash_size);
++static DEVICE_ATTR(rx_stash_size, 0644, gfar_show_rx_stash_size,
++		   gfar_set_rx_stash_size);
+ 
+ /* Stashing will only be enabled when rx_stash_size != 0 */
+ static ssize_t gfar_show_rx_stash_index(struct device *dev,
+@@ -172,8 +172,8 @@ out:
+ 	return count;
+ }
+ 
+-DEVICE_ATTR(rx_stash_index, 0644, gfar_show_rx_stash_index,
+-	    gfar_set_rx_stash_index);
++static DEVICE_ATTR(rx_stash_index, 0644, gfar_show_rx_stash_index,
++		   gfar_set_rx_stash_index);
+ 
+ static ssize_t gfar_show_fifo_threshold(struct device *dev,
+ 					struct device_attribute *attr,
+@@ -210,8 +210,8 @@ static ssize_t gfar_set_fifo_threshold(struct device *dev,
+ 	return count;
+ }
+ 
+-DEVICE_ATTR(fifo_threshold, 0644, gfar_show_fifo_threshold,
+-	    gfar_set_fifo_threshold);
++static DEVICE_ATTR(fifo_threshold, 0644, gfar_show_fifo_threshold,
++		   gfar_set_fifo_threshold);
+ 
+ static ssize_t gfar_show_fifo_starve(struct device *dev,
+ 				     struct device_attribute *attr, char *buf)
+@@ -247,7 +247,8 @@ static ssize_t gfar_set_fifo_starve(struct device *dev,
+ 	return count;
+ }
+ 
+-DEVICE_ATTR(fifo_starve, 0644, gfar_show_fifo_starve, gfar_set_fifo_starve);
++static DEVICE_ATTR(fifo_starve, 0644, gfar_show_fifo_starve,
++		   gfar_set_fifo_starve);
+ 
+ static ssize_t gfar_show_fifo_starve_off(struct device *dev,
+ 					 struct device_attribute *attr,
+@@ -284,8 +285,8 @@ static ssize_t gfar_set_fifo_starve_off(struct device *dev,
+ 	return count;
+ }
+ 
+-DEVICE_ATTR(fifo_starve_off, 0644, gfar_show_fifo_starve_off,
+-	    gfar_set_fifo_starve_off);
++static DEVICE_ATTR(fifo_starve_off, 0644, gfar_show_fifo_starve_off,
++		   gfar_set_fifo_starve_off);
+ 
+ void gfar_init_sysfs(struct net_device *dev)
+ {
 -- 
 1.5.6.5
