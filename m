@@ -1,17 +1,20 @@
-Return-Path: <Regis.Odeye@kontron.com>
-Received: from mail.kontron-modular.com (mail.kontron-modular.com
-	[213.179.130.140]) by ozlabs.org (Postfix) with ESMTP id 2644ADDFC2
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 05:14:17 +1100 (EST)
-Message-ID: <4980A076.3030905@kontron.com>
-Date: Wed, 28 Jan 2009 19:14:14 +0100
-From: =?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B56AFDDFCC
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 06:18:23 +1100 (EST)
+Message-Id: <F9EA18FC-BFF5-46A6-BD6D-7AD213192AE8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: =?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
+In-Reply-To: <4980A076.3030905@kontron.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
 Subject: Re: MPIC Timers as clocksource
+Date: Wed, 28 Jan 2009 13:17:55 -0600
 References: <49806DE7.6090101@kontron.com>
 	<9FE267F5-A95D-475D-A4EE-DD9174E6AC9E@kernel.crashing.org>
-In-Reply-To: <9FE267F5-A95D-475D-A4EE-DD9174E6AC9E@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<4980A076.3030905@kontron.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,33 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->
-> On Jan 28, 2009, at 8:38 AM, Régis Odeyé wrote:
->
->> Hi everybody,
->> Is there anyone who implemented a clocksource driver 
->> (drivers/clocksource) to deal with the MPIC timers especially with 
->> 86xx and 85xx soc's ?
->> Regards.
+
+On Jan 28, 2009, at 12:14 PM, R=E9gis Odey=E9 wrote:
+
+> Kumar Gala wrote:
 >>
->> --
->
-> We have some code for using the timers but not as a clocksource.. Out 
-> of interest why do want this?
->
-> - k
-We have a plan to use an external clock signal to drive those timers. 
-This signal is common with other boards in a same enclosure so we could 
-synchronize our boards with those timers.
-Could you point me out to the related code even if there is some 
-adaptations to get a clocksource driver.
-Regards.
+>> On Jan 28, 2009, at 8:38 AM, R=E9gis Odey=E9 wrote:
+>>
+>>> Hi everybody,
+>>> Is there anyone who implemented a clocksource driver (drivers/=20
+>>> clocksource) to deal with the MPIC timers especially with 86xx and =20=
 
--- 
-Régis ODEYE
+>>> 85xx soc's ?
+>>> Regards.
+>>>
+>>> --
+>>
+>> We have some code for using the timers but not as a clocksource.. =20
+>> Out of interest why do want this?
+>>
+>> - k
+> We have a plan to use an external clock signal to drive those =20
+> timers. This signal is common with other boards in a same enclosure =20=
 
-Kontron Modular Computers SA
-150, rue M. Berthelot / ZI Toulon Est / BP 244 / Fr 83078 TOULON Cedex 9
-Phone: (33) 4 98 16 34 86           Fax: (33) 4 98 16 34 01
-E-mail: regis.odeye@kontron.com  Web : www.kontron.com
+> so we could synchronize our boards with those timers.
+> Could you point me out to the related code even if there is some =20
+> adaptations to get a clocksource driver.
+
+I'll post some code.
+
+As for clocksource.. last time I looked at that it was more about =20
+using a timer as the single kernel reference clock.
+
+- k=
