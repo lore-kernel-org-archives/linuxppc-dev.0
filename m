@@ -1,20 +1,25 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id BBB93DDF2D
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 10:26:58 +1100 (EST)
-To: Rob Gubler <rgubler@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Ebony DTS compile error
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <e4ef24880901271415q166a20e0m53d495c3dc2f80a3@mail.gmail.com>
-References: <e4ef24880901231707y7baad5f6kc1f6bde2c30bf29f@mail.gmail.com>
-	<20090124014701.71561832E425@gemini.denx.de>
-	<20090126232028.GB10495@yookeroo.seuss>
-	<e4ef24880901271415q166a20e0m53d495c3dc2f80a3@mail.gmail.com>
-Date: Wed, 28 Jan 2009 00:26:48 +0100
-Message-Id: <20090127232648.8B49C832E416@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7259CDE0BE
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 11:36:26 +1100 (EST)
+Message-Id: <0A7AE75B-7D27-4396-9708-824F834322D3@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Reynes Philippe <philippe.reynes@isismpp.fr>
+In-Reply-To: <761F451C5F17F74DAEE4661DA5ABBC1616C446@factorix.ISISTHIBAUD.local>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] add i2c eeprom to dts for mpc 837x rdb
+Date: Tue, 27 Jan 2009 18:35:49 -0600
+References: <761F451C5F17F74DAEE4661DA5ABBC160181BE95@factorix.ISISTHIBAUD.local>
+	<761F451C5F17F74DAEE4661DA5ABBC16215158@factorix.ISISTHIBAUD.local>
+	<761F451C5F17F74DAEE4661DA5ABBC1621515A@factorix.ISISTHIBAUD.local>
+	<7FAC732F-383E-4228-9770-3F791EA215FC@freescale.com>
+	<761F451C5F17F74DAEE4661DA5ABBC1616C446@factorix.ISISTHIBAUD.local>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +29,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Rob Gubler,
+what kernel tree are these against?  I still have issues applying this.
 
-In message <e4ef24880901271415q166a20e0m53d495c3dc2f80a3@mail.gmail.com> you wrote:
->
-> My only attachment to this kernel is it looks like the IPIPE and Xenomai
-> patches have already been applied to the 2.6.24 kernel provided by ELDK
-> 4.2.  In the past applying these patches for an x86 machine wasn't always a
-> simple task.  I was hoping to save myself some time.
+Also, you are using spaces instead of tabs.
 
-You will find that applying the Xenomai patches to our tree is really
-straightforward. The last version that has received "official" support
-(i. e was added to Xenomai mainline) is v2.6.28, and tested with our tree.
+- k
 
-> What git URL / path do you recommend I use to clone the repository?  I found
+On Jan 27, 2009, at 11:55 AM, Reynes Philippe wrote:
 
-http://git.denx.de/?p=linux-2.6-denx.git
-
-> some instructions on rebuilding the ELDK from scratch (
-> http://www.denx.de/wiki/view/DULG/ELDKRebuilding).   Are these the
-> instructions I should be following?
-
-Please see http://www.denx.de/wiki/view/DULG/LinuxConfiguration
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I have often regretted my speech, never my silence.
+> Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
+> ---
+> diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> index 9413af3..a8276d4 100644
+> --- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> @@ -116,6 +116,12 @@
+>                        interrupts = <14 0x8>;
+>                        interrupt-parent = <&ipic>;
+>                        dfsrr;
+> +
+> +                       at24@50 {
+> +                               compatible = "at24,24c256";
+> +                               reg = <0x50>;
+> +                       };
+> +
+>                        rtc@68 {
+>                                compatible = "dallas,ds1339";
+>                                reg = <0x68>;
+> diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> index 23c10ce..4ee2639 100644
+> --- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> @@ -116,6 +116,12 @@
+>                        interrupts = <14 0x8>;
+>                        interrupt-parent = <&ipic>;
+>                        dfsrr;
+> +
+> +                       at24@50 {
+> +                               compatible = "at24,24c256";
+> +                               reg = <0x50>;
+> +                       };
+> +
+>                        rtc@68 {
+>                                compatible = "dallas,ds1339";
+>                                reg = <0x68>;
+> diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> index 72cdc3c..2c06d39 100644
+> --- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> @@ -116,6 +116,12 @@
+>                        interrupts = <14 0x8>;
+>                        interrupt-parent = <&ipic>;
+>                        dfsrr;
+> +
+> +                       at24@50 {
+> +                               compatible = "at24,24c256";
+> +                               reg = <0x50>;
+> +                       };
+> +
+>                        rtc@68 {
+>                                compatible = "dallas,ds1339";
+>                                reg = <0x68>;
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
