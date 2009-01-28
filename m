@@ -1,12 +1,12 @@
 Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
-	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 5085DDDFC8
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 09:41:26 +1100 (EST)
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id D0A27DDF7A
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 09:41:29 +1100 (EST)
 From: Nathan Lynch <ntl@pobox.com>
 To: containers@lists.osdl.org
-Subject: [PATCH 2/3] powerpc: wire up checkpoint and restart syscalls
-Date: Wed, 28 Jan 2009 16:41:17 -0600
-Message-Id: <1233182478-27113-3-git-send-email-ntl@pobox.com>
+Subject: [PATCH 3/3] allow checkpoint/restart on powerpc
+Date: Wed, 28 Jan 2009 16:41:18 -0600
+Message-Id: <1233182478-27113-4-git-send-email-ntl@pobox.com>
 In-Reply-To: <1233182478-27113-1-git-send-email-ntl@pobox.com>
 References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
 Cc: linuxppc-dev@ozlabs.org
@@ -21,37 +21,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Nathan Lynch <ntl@pobox.com>
 ---
- arch/powerpc/include/asm/systbl.h |    2 ++
- arch/powerpc/include/asm/unistd.h |    4 +++-
- 2 files changed, 5 insertions(+), 1 deletions(-)
+ checkpoint/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 803def2..cdb60b4 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -322,3 +322,5 @@ SYSCALL_SPU(epoll_create1)
- SYSCALL_SPU(dup3)
- SYSCALL_SPU(pipe2)
- SYSCALL(inotify_init1)
-+SYSCALL(checkpoint)
-+SYSCALL(restart)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index e07d0c7..2e333a1 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -341,10 +341,12 @@
- #define __NR_dup3		316
- #define __NR_pipe2		317
- #define __NR_inotify_init1	318
-+#define __NR_checkpoint		319
-+#define __NR_restart		320
- 
- #ifdef __KERNEL__
- 
--#define __NR_syscalls		319
-+#define __NR_syscalls		321
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
+diff --git a/checkpoint/Kconfig b/checkpoint/Kconfig
+index ffaa635..00036aa 100644
+--- a/checkpoint/Kconfig
++++ b/checkpoint/Kconfig
+@@ -1,7 +1,7 @@
+ config CHECKPOINT_RESTART
+ 	prompt "Enable checkpoint/restart (EXPERIMENTAL)"
+ 	def_bool n
+-	depends on X86_32 && EXPERIMENTAL
++	depends on (X86_32 || PPC) && EXPERIMENTAL
+ 	help
+ 	  Application checkpoint/restart is the ability to save the
+ 	  state of a running application so that it can later resume
 -- 
 1.5.5
