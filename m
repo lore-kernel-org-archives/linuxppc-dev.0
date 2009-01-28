@@ -1,21 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3EAEADDFE6
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 16:37:27 +1100 (EST)
-Message-Id: <E601679F-F6E5-4DE0-A6AB-B7191F496C49@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Andrew Klossner <andrew@cesa.opbu.xerox.com>
-In-Reply-To: <200901271813.n0RIDBHq023872@pogo.cesa.opbu.xerox.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] Restore PCI IO space behind Freescale pseudo-bridge 
-Date: Tue, 27 Jan 2009 23:37:09 -0600
-References: <200901271813.n0RIDBHq023872@pogo.cesa.opbu.xerox.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7F7ADDE090
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 19:53:36 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 28 Jan 2009 17:41:37 +1100
+Message-Id: <1233124897.6963.29.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +23,140 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Linus !
 
-On Jan 27, 2009, at 12:13 PM, Andrew Klossner wrote:
+Please fine here some defconfig updates and a few small fixes for 2.6.29
+The following changes since commit e4a7ca29039e615ce13a61b9c6abfb2aa394e9a1:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/usb-2.6
 
-> Kumar, you wrote:
->
->> Any resolution to all this.. Not exactly sure what change impacts
->> things and what part of our screwy HW is causing issues.
->
-> The change in question is commit  
-> b556151110ff003ce77d84597400c84824690ccf.
->
-> The fundamental problem is that the "PCI Bus Command" register, the 16
-> bits at offset 4 in config space for both the PCI and PCI-Express bus
-> interfaces, does not populate PCI_COMMAND_IO, the least-significant
-> bit.  The PCI bridge standard says that software must set this bit to
-> 1 before the bridge can respond as a slave to I/O space access,
-> including access to devices on the subordinate bus.  The FSL parts
-> ignore this requirement and control response to I/O space with the
-> (vendor-specific) outbound window attributes registers (POWARn.)
-> 2.6.28 differs from 2.6.27 in that it examines this bit and sees that
-> it's set to 0, then observes that the I/O space window starts at
-> offset 0 and concludes that no I/O space resource should be allocated
-> for the bridge.
->
-> We are using the patch I emailed.  It's ugly in that it hard-codes the
-> Freescale vendor ID, but it works for us.
+are available in the git repository at:
 
-I guess I'm confused what the actual breakage is beyond some printk  
-messages.
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-We "fixup" the resources in fsl_pcibios_fixup_bus() so Ben's change  
-shouldn't have an impact.  Does something actually stop functioning?
+Benjamin Herrenschmidt (2):
+      Merge commit 'kumar/kumar-merge' into merge
+      Merge commit 'jwb/jwb-merge' into merge
 
-> Another option would have been to configure our I/O space window to
-> start at an offset other than 0.  This would take me some time to
-> achieve, and it feels ugly.
+Gerhard Pircher (1):
+      powerpc/mm: Fix handling of _PAGE_COHERENT in BAT setup code
 
+Grant Erickson (1):
+      powerpc/4xx: DTS: Add Add'l SDRAM0 Compatible and Interrupt Info
 
-agreed, that's not the right solution.
+Josh Boyer (4):
+      powerpc/40x: Update PowerPC 40x defconfigs
+      powerpc/44x: Update PowerPC 44x defconfigs
+      powerpc/4xx: Update multi-board PowerPC 4xx defconfigs
+      powerpc: Remove arch/ppc cruft from Kconfig
 
-- k
+Kumar Gala (6):
+      powerpc/85xx: Fix typo in mpc8572ds dts
+      powerpc/85xx: Update defconfigs
+      powerpc/83xx: Update defconfigs
+      powerpc/86xx: Update defconfigs
+      powerpc/8xx: Update defconfigs
+      powerpc/embedded6xx: Update defconfigs
+
+Li Yang (1):
+      powerpc/mpc8313erdb: fix kernel panic because mdio device is not probed
+
+Robert Jennings (1):
+      powerpc/pseries: Correct VIO bus accounting problem in CMO env.
+
+Sean MacLennan (1):
+      powerpc/44x: Warp patches for the new NDFC driver
+
+Stephen Rothwell (2):
+      powerpc: Printing fix for l64 to ll64 conversion: phyp_dump.c
+      powerpc: More printing warning fixes for the l64 to ll64 conversion
+
+ arch/powerpc/Kconfig                              |    4 -
+ arch/powerpc/boot/cuboot-warp.c                   |   43 ------
+ arch/powerpc/boot/dts/haleakala.dts               |    5 +-
+ arch/powerpc/boot/dts/kilauea.dts                 |    5 +-
+ arch/powerpc/boot/dts/makalu.dts                  |    5 +-
+ arch/powerpc/boot/dts/mpc8313erdb.dts             |    2 +-
+ arch/powerpc/boot/dts/mpc8572ds.dts               |    2 +-
+ arch/powerpc/boot/dts/warp.dts                    |   42 ++++++-
+ arch/powerpc/configs/40x/acadia_defconfig         |   76 ++++++++---
+ arch/powerpc/configs/40x/ep405_defconfig          |   87 ++++++++++---
+ arch/powerpc/configs/40x/hcu4_defconfig           |   78 +++++++++---
+ arch/powerpc/configs/40x/kilauea_defconfig        |   76 ++++++++---
+ arch/powerpc/configs/40x/makalu_defconfig         |   76 ++++++++---
+ arch/powerpc/configs/40x/virtex_defconfig         |   53 ++++++---
+ arch/powerpc/configs/40x/walnut_defconfig         |   84 +++++++++---
+ arch/powerpc/configs/44x/arches_defconfig         |   60 ++++++---
+ arch/powerpc/configs/44x/bamboo_defconfig         |   76 ++++++++---
+ arch/powerpc/configs/44x/canyonlands_defconfig    |   60 ++++++---
+ arch/powerpc/configs/44x/ebony_defconfig          |   84 +++++++++---
+ arch/powerpc/configs/44x/katmai_defconfig         |   76 ++++++++---
+ arch/powerpc/configs/44x/rainier_defconfig        |   83 +++++++++---
+ arch/powerpc/configs/44x/sam440ep_defconfig       |   77 ++++++++---
+ arch/powerpc/configs/44x/sequoia_defconfig        |   83 +++++++++---
+ arch/powerpc/configs/44x/taishan_defconfig        |   83 +++++++++---
+ arch/powerpc/configs/44x/virtex5_defconfig        |   53 ++++++---
+ arch/powerpc/configs/44x/warp_defconfig           |  138 +++++++++++++++-----
+ arch/powerpc/configs/83xx/asp8347_defconfig       |   91 +++++++++----
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  103 +++++++++++----
+ arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  103 +++++++++++----
+ arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |   86 +++++++++----
+ arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |   89 +++++++++----
+ arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  100 ++++++++++-----
+ arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |   98 ++++++++++-----
+ arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |   84 ++++++++----
+ arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |   93 ++++++++++----
+ arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   88 +++++++++----
+ arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |   84 +++++++++----
+ arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |   90 +++++++++----
+ arch/powerpc/configs/83xx/sbc834x_defconfig       |   74 +++++++----
+ arch/powerpc/configs/85xx/ksi8560_defconfig       |   79 ++++++++----
+ arch/powerpc/configs/85xx/mpc8536_ds_defconfig    |  111 ++++++++++++----
+ arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   66 +++++++---
+ arch/powerpc/configs/85xx/mpc8544_ds_defconfig    |  111 ++++++++++++----
+ arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   73 ++++++++---
+ arch/powerpc/configs/85xx/mpc8568mds_defconfig    |   86 +++++++++----
+ arch/powerpc/configs/85xx/mpc8572_ds_defconfig    |   80 +++++++++---
+ arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   69 +++++++---
+ arch/powerpc/configs/85xx/sbc8548_defconfig       |   60 ++++++---
+ arch/powerpc/configs/85xx/sbc8560_defconfig       |   66 +++++++---
+ arch/powerpc/configs/85xx/stx_gp3_defconfig       |   88 +++++++++----
+ arch/powerpc/configs/85xx/tqm8540_defconfig       |   81 +++++++++----
+ arch/powerpc/configs/85xx/tqm8541_defconfig       |   88 +++++++++----
+ arch/powerpc/configs/85xx/tqm8548_defconfig       |   84 +++++++++----
+ arch/powerpc/configs/85xx/tqm8555_defconfig       |   88 +++++++++----
+ arch/powerpc/configs/85xx/tqm8560_defconfig       |   88 +++++++++----
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig    |  136 +++++++++++++++-----
+ arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |   83 +++++++++----
+ arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |  111 ++++++++++++-----
+ arch/powerpc/configs/86xx/sbc8641d_defconfig      |  102 +++++++++++----
+ arch/powerpc/configs/adder875_defconfig           |   65 ++++++---
+ arch/powerpc/configs/c2k_defconfig                |  118 ++++++++++++-----
+ arch/powerpc/configs/ep8248e_defconfig            |   77 ++++++++----
+ arch/powerpc/configs/ep88xc_defconfig             |   65 ++++++---
+ arch/powerpc/configs/linkstation_defconfig        |  110 ++++++++++------
+ arch/powerpc/configs/mgcoge_defconfig             |   74 ++++++++---
+ arch/powerpc/configs/mgsuvd_defconfig             |   63 ++++++---
+ arch/powerpc/configs/mpc7448_hpc2_defconfig       |   71 +++++++----
+ arch/powerpc/configs/mpc8272_ads_defconfig        |   77 ++++++++----
+ arch/powerpc/configs/mpc83xx_defconfig            |  107 +++++++++++-----
+ arch/powerpc/configs/mpc85xx_defconfig            |  120 +++++++++++++-----
+ arch/powerpc/configs/mpc866_ads_defconfig         |   64 ++++++---
+ arch/powerpc/configs/mpc86xx_defconfig            |  143 ++++++++++++++++-----
+ arch/powerpc/configs/mpc885_ads_defconfig         |   65 ++++++---
+ arch/powerpc/configs/ppc40x_defconfig             |   77 +++++++++---
+ arch/powerpc/configs/ppc44x_defconfig             |   79 +++++++++---
+ arch/powerpc/configs/pq2fads_defconfig            |   87 +++++++++----
+ arch/powerpc/configs/prpmc2800_defconfig          |   96 ++++++++++----
+ arch/powerpc/configs/storcenter_defconfig         |   85 ++++++++----
+ arch/powerpc/kernel/vio.c                         |    7 +-
+ arch/powerpc/mm/ppc_mmu_32.c                      |    6 +-
+ arch/powerpc/platforms/44x/Makefile               |    1 -
+ arch/powerpc/platforms/44x/warp-nand.c            |  135 -------------------
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c         |    1 +
+ arch/powerpc/platforms/pseries/phyp_dump.c        |   26 ++--
+ drivers/edac/cell_edac.c                          |    8 +-
+ drivers/mtd/nand/fsl_elbc_nand.c                  |    8 +-
+ drivers/mtd/nand/pasemi_nand.c                    |    4 +-
+ 87 files changed, 4353 insertions(+), 1930 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/44x/warp-nand.c
