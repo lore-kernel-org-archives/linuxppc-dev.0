@@ -1,19 +1,13 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	by ozlabs.org (Postfix) with ESMTP id 8683DDDF7B
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 08:29:20 +1100 (EST)
-Date: Thu, 29 Jan 2009 08:29:08 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: James Hsiao <jhsiao@amcc.com>
-Subject: Re: [PATCH] AMCC Crypto4xx Device Driver v5
-Message-ID: <20090128212908.GC22141@gondor.apana.org.au>
-References: <1231788650.5533.16.camel@jhsiao-usb>
-	<20090128035937.GA13157@gondor.apana.org.au>
-	<1233164516.4809.9.camel@jhsiao-usb>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1233164516.4809.9.camel@jhsiao-usb>
-Cc: linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 4FE56DDFC7
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 09:41:26 +1100 (EST)
+From: Nathan Lynch <ntl@pobox.com>
+To: containers@lists.osdl.org
+Subject: [RFC/PATCH 0/3] checkpoint/restart for powerpc
+Date: Wed, 28 Jan 2009 16:41:15 -0600
+Message-Id: <1233182478-27113-1-git-send-email-ntl@pobox.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +17,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 28, 2009 at 09:41:56AM -0800, James Hsiao wrote:
-> 
-> I will re submit the patch with proper changelog.
-> I had the change log this way is for the reviewer easy to see the
-> difference. But, I agree this is not proper for a newly created driver.
+This series is a first attempt at enabling checkpoint/restart for
+powerpc.  It is based on Oren Laadan's v13 checkpoint/restart series:
 
-Oh yeah I have nothing against the changelog you had but it should
-be present along with the patch description so it can actually
-be applied.
+http://lkml.org/lkml/2009/1/27/227
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Nathan Lynch (3):
+  powerpc: bare minimum checkpoint/restart implementation
+  powerpc: wire up checkpoint and restart syscalls
+  allow checkpoint/restart on powerpc
+
+ arch/powerpc/include/asm/checkpoint_hdr.h |   40 +++++
+ arch/powerpc/include/asm/systbl.h         |    2 +
+ arch/powerpc/include/asm/unistd.h         |    4 +-
+ arch/powerpc/mm/Makefile                  |    1 +
+ arch/powerpc/mm/checkpoint.c              |  261 +++++++++++++++++++++++++++++
+ checkpoint/Kconfig                        |    2 +-
+ 6 files changed, 308 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/checkpoint_hdr.h
+ create mode 100644 arch/powerpc/mm/checkpoint.c
