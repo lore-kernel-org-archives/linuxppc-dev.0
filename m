@@ -1,15 +1,20 @@
-Return-Path: <lherrera@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id ADB34DDFE1
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 11:25:20 +1100 (EST)
+Return-Path: <daniel.ng1234@gmail.com>
+Received: from mail-gx0-f20.google.com (mail-gx0-f20.google.com
+	[209.85.217.20]) by ozlabs.org (Postfix) with ESMTP id 69560DDF37
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 11:42:33 +1100 (EST)
+Received: by gxk13 with SMTP id 13so7412614gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jan 2009 16:42:31 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: [QUESTION] PPC4xx SPI mode
-Date: Wed, 28 Jan 2009 19:08:11 -0500
-Message-ID: <6FCCA913376DD7488F4139A4D11B8F48146489@troe2k1.cs.myharris.net>
-From: "Herrera-Bendezu, Luis" <lherrera@harris.com>
-To: <linuxppc-dev@ozlabs.org>
+In-Reply-To: <200901281050.44952.laurentp@cse-semaphore.com>
+References: <547eba1b0901272104r69f80c88yf99bb009ff886688@mail.gmail.com>
+	<200901281050.44952.laurentp@cse-semaphore.com>
+Date: Thu, 29 Jan 2009 11:42:31 +1100
+Message-ID: <547eba1b0901281642i7683e72fsd82233373d6bf858@mail.gmail.com>
+Subject: Re: How to bring up fs_enet on 2.6.27?
+From: Daniel Ng <daniel.ng1234@gmail.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,22 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am using PPC440EPx SPI driver to access devices with different clock
-polarities (SPI_MODE_0 and SPI_MODE_2), but otherwise similar SPI
-parameters (max clock frequency, bits per word, etc.) If spidev is
-used to modify clock polarity via ioctl SPI_IOC_WR_MODE, it does not
-have any effect on the controller.
+Thanks for your help so far Laurent-
 
-This list has dicussed a related issue:
-http://ozlabs.org/pipermail/linuxppc-dev/2009-January/066749.html
+On Wed, Jan 28, 2009 at 8:50 PM, Laurent Pinchart
+<laurentp@cse-semaphore.com> wrote:
+>
+> Make sure FS_ENET_HAS_FCC is set in your kernel configuration.
 
-that explains why SPI_IOC_WR_MODE does not work, function
-spi_ppc4xx_setupxfer() is called only once by spi_ppc4xx_setup()
-function. Any subsequent call just ignores request to change SPI
-configuration and does not report any error.
+Yep, I've done that...
 
-Is this how the driver is supposed to work?
-Can the above usage be acommodated into the driver?
+>
+> [snip]
+>
+>> The fs_enet probe() function doesn't seem to get called (I had put a
+>> panic() in it). Should it?
+>
+> Yes it should.
 
-Thanks,
-Luis
+Ok, so it isn't being called. What code calls the fs_enet probe()
+function? What could be the reason why this isn't being called? ie. do
+I need to set something else?
+
+Should the device just be available as 'eth2', so that I can do
+'ifconfig eth2 192.168.1.33'?
+
+Cheers,
+Daniel
