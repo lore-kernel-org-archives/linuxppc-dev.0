@@ -1,17 +1,17 @@
-Return-Path: <lherrera@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 3A039DE03F
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 07:38:31 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
+Return-Path: <gerickson@nuovations.com>
+Received: from relay00.pair.com (relay00.pair.com [209.68.5.9])
+	by ozlabs.org (Postfix) with SMTP id 83E7EDE0D6
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 07:40:56 +1100 (EST)
+Date: Thu, 29 Jan 2009 12:40:47 -0800
+Subject: Re: toolchain for building linux-2.6.27.8 or 2.6.28.1  ...
+From: Grant Erickson <gerickson@nuovations.com>
+To: <mike_timmons@trimble.com>
+Message-ID: <C5A7544F.14345%gerickson@nuovations.com>
+In-Reply-To: <498208E0.7000707@trimble.com>
+Mime-version: 1.0
+Content-type: text/plain;
 	charset="US-ASCII"
-Subject: RE: [QUESTION] PPC4xx SPI mode
-Date: Thu, 29 Jan 2009 15:38:17 -0500
-Message-ID: <6FCCA913376DD7488F4139A4D11B8F488BD2B4@troe2k1.cs.myharris.net>
-In-Reply-To: <6FCCA913376DD7488F4139A4D11B8F48146489@troe2k1.cs.myharris.net>
-References: <6FCCA913376DD7488F4139A4D11B8F48146489@troe2k1.cs.myharris.net>
-From: "Herrera-Bendezu, Luis" <lherrera@harris.com>
-To: <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,54 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Actually SPI_IOC_WR_MODE changes are not used for file I/O read() and
-write(). SPI_IOC_MESSAGE uses modified SPI parameters only when ioctl()
-argument struct spio_ioc_transfer fields: speed_hz and bits_per_word are
-non-zero.
+On 1/29/09 11:52 AM, Mike Timmons wrote:
+> Questions:
+> 1) if I want to cross-compile a kernel later than 2.6.24 to hopefully
+> get better WAN device support (and clearer options for fw loading),
+> which kernel should I try, and which toolchain?
+> 
+> the ltib repository does not appear to have a toolchain newer than
+> gcc-3.4.3-glibc-2.3.6 (for 603e)
+> 
+> Admissions, disclaimers, etc
+> 1) I'm using the same ltib script I have used for the 2.6.24 build with
+> toolchain gcc-3.4.3-glibc-2.3.6 (for 603e).
+> I'm simply modifying the kernel spec file to use 2.6.28.1 (and specifyin
+> a custom toolchain).
+> I've also tried to compile 2.6.27.8. I get the same error.
 
-This mechanism is enforced by spi_bitbang.c function bitbang_work()
-that calls setup_transfer function (in my case spi_ppc4xx_setupxfer())
-only when the above condition is true.
+Mike:
 
-On the other hand, read() and write() queue their messages with struct
-spi_transfer fields speed_hz and bits_per_word set to 0.=20
-
-IMHO all three cases should behave similarly.
+Denx's ELDK 4.1 or 4.2 make a great "It Just Works" solution. I've used 4.1
+running from 2.6.23 up to 2.6.27.11 and 4.2 from 2.6.26 to 2.6.27.11 with
+zero problems or issues.
 
 Regards,
-Luis=20
 
------Original Message-----
-From: linuxppc-dev-bounces+lherrera=3Dharris.com@ozlabs.org
-[mailto:linuxppc-dev-bounces+lherrera=3Dharris.com@ozlabs.org] On Behalf
-Of Herrera-Bendezu, Luis
-Sent: Wednesday, January 28, 2009 7:08 PM
-To: linuxppc-dev@ozlabs.org
-Subject: [QUESTION] PPC4xx SPI mode
-
-
-I am using PPC440EPx SPI driver to access devices with different clock
-polarities (SPI_MODE_0 and SPI_MODE_2), but otherwise similar SPI
-parameters (max clock frequency, bits per word, etc.) If spidev is
-used to modify clock polarity via ioctl SPI_IOC_WR_MODE, it does not
-have any effect on the controller.
-
-This list has dicussed a related issue:
-http://ozlabs.org/pipermail/linuxppc-dev/2009-January/066749.html
-
-that explains why SPI_IOC_WR_MODE does not work, function
-spi_ppc4xx_setupxfer() is called only once by spi_ppc4xx_setup()
-function. Any subsequent call just ignores request to change SPI
-configuration and does not report any error.
-
-Is this how the driver is supposed to work?
-Can the above usage be acommodated into the driver?
-
-Thanks,
-Luis
-
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Grant Erickson
