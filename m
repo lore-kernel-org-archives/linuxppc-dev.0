@@ -1,11 +1,16 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4981ADC9.3000009@grandegger.com>
-Date: Thu, 29 Jan 2009 14:23:21 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <philippe.reynes@isismpp.fr>
+Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr (sp604003av.neufgp.fr
+	[84.96.92.124]) by ozlabs.org (Postfix) with ESMTP id D8A03DE010
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 04:37:21 +1100 (EST)
 MIME-Version: 1.0
-To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH] PowerPC: MPC85xx: TQM85xx: fix sensitivity of CAN interrupts
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: [PATCH] add gpio to mpc837X rdb
+Date: Thu, 29 Jan 2009 18:37:15 +0100
+Message-ID: <761F451C5F17F74DAEE4661DA5ABBC1616C448@factorix.ISISTHIBAUD.local>
+From: "Reynes Philippe" <philippe.reynes@isismpp.fr>
+To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
+Cc: Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,73 +20,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
 ---
- arch/powerpc/boot/dts/tqm8548-bigflash.dts |    4 ++--
- arch/powerpc/boot/dts/tqm8548.dts          |    4 ++--
- arch/powerpc/boot/dts/tqm8560.dts          |    4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
-
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-@@ -370,14 +370,14 @@
- 		can0@2,0 {
- 			compatible = "intel,82527"; // Bosch CC770
- 			reg = <2 0x0 0x100>;
--			interrupts = <4 0>;
-+			interrupts = <4 1>;
- 			interrupt-parent = <&mpic>;
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index 165463f..45c9f03 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -109,6 +109,24 @@
+ 			reg =3D <0x200 0x100>;
  		};
- 
- 		can1@2,100 {
- 			compatible = "intel,82527"; // Bosch CC770
- 			reg = <2 0x100 0x100>;
--			interrupts = <4 0>;
-+			interrupts = <4 1>;
- 			interrupt-parent = <&mpic>;
+=20
++		gpio1: gpio-controller@c00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8347-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xc00 0x100>;
++			interrupts =3D <74 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
++		gpio2: gpio-controller@d00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8347-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xd00 0x100>;
++			interrupts =3D <75 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells =3D <1>;
+ 			#size-cells =3D <0>;
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index f9830ae..7863d11 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -109,6 +109,24 @@
+ 			reg =3D <0x200 0x100>;
  		};
- 
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8548.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548.dts
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8548.dts
-@@ -370,14 +370,14 @@
- 		can0@2,0 {
- 			compatible = "intel,82527"; // Bosch CC770
- 			reg = <2 0x0 0x100>;
--			interrupts = <4 0>;
-+			interrupts = <4 1>;
- 			interrupt-parent = <&mpic>;
+=20
++		gpio1: gpio-controller@c00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8347-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xc00 0x100>;
++			interrupts =3D <74 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
++		gpio2: gpio-controller@d00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8347-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xd00 0x100>;
++			interrupts =3D <75 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells =3D <1>;
+ 			#size-cells =3D <0>;
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index 2c06d39..485d28b 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -107,6 +107,24 @@
+ 			reg =3D <0x200 0x100>;
  		};
- 
- 		can1@2,100 {
- 			compatible = "intel,82527"; // Bosch CC770
- 			reg = <2 0x100 0x100>;
--			interrupts = <4 0>;
-+			interrupts = <4 1>;
- 			interrupt-parent = <&mpic>;
- 		};
- 
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8560.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8560.dts
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8560.dts
-@@ -340,14 +340,14 @@
- 		can0@2,0 {
- 			compatible = "intel,82527"; // Bosch CC770
- 			reg = <2 0x0 0x100>;
--			interrupts = <4 0>;
-+			interrupts = <4 1>;
- 			interrupt-parent = <&mpic>;
- 		};
- 
- 		can1@2,100 {
- 			compatible = "intel,82527"; // Bosch CC770
- 			reg = <2 0x100 0x100>;
--			interrupts = <4 0>;
-+			interrupts = <4 1>;
- 			interrupt-parent = <&mpic>;
- 		};
- 	};
+=20
++		gpio1: gpio-controller@c00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8347-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xc00 0x100>;
++			interrupts =3D <74 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
++		gpio2: gpio-controller@d00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8347-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xd00 0x100>;
++			interrupts =3D <75 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells =3D <1>;
+ 			#size-cells =3D <0>;
