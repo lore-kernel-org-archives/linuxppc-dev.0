@@ -1,17 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C33D4474CF
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 08:34:31 +1100 (EST)
-Date: Fri, 30 Jan 2009 00:34:29 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Steven Rostedt <srostedt@redhat.com>
-Subject: 2.6.28-rt on PowerPC
-Message-ID: <20090129213429.GA29014@oksana.dev.rtsoft.ru>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 5C8CEDDF1E
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 08:40:47 +1100 (EST)
+Date: Thu, 29 Jan 2009 15:40:35 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
+	implementation
+Message-ID: <20090129214035.GB6913@localdomain>
+References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
+	<1233182478-27113-2-git-send-email-ntl@pobox.com>
+	<49814FA2.9060108@cs.columbia.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-rt-users@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49814FA2.9060108@cs.columbia.edu>
+Cc: containers@lists.osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,189 +24,159 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Steven,
+Hey Oren, thanks for taking a look.
 
-I know 2.6.28-rt isn't yet ready, but I could not resist to try
-it anyway. ;-)
+Oren Laadan wrote:
+> 
+> Nathan Lynch wrote:
+> > 
+> > What doesn't work:
+> > * restarting a 32-bit task from a 64-bit task and vice versa
+> 
+> Is there a test to bail if we attempt to checkpoint such tasks ?
 
-Here are few issues and ways to solve them:
-
-Currently the -rt tree doesn't link for arch/powerpc:
-
-  LD      .tmp_vmlinux1
-  arch/powerpc/kernel/built-in.o: In function `show_interrupts':
-  (.text+0x27bc): undefined reference to `__call_bad_lock_func'
-  arch/powerpc/kernel/built-in.o: In function `show_interrupts':
-  (.text+0x28b0): undefined reference to `__call_bad_lock_func'
-  make: *** [.tmp_vmlinux1] Error 1
-
-This can be trivially fixed:
-
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 838857f..cc7dd12 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -183,7 +183,7 @@ int show_interrupts(struct seq_file *p, void *v)
- 
- 	if (i < NR_IRQS) {
- 		desc = get_irq_desc(i);
--		acquire_lock_irqsave(&desc->lock, flags);
-+		spin_lock_irqsave(&desc->lock, flags);
- 		action = desc->action;
- 		if (!action || !action->handler)
- 			goto skip;
-@@ -204,7 +204,7 @@ int show_interrupts(struct seq_file *p, void *v)
- 			seq_printf(p, ", %s", action->name);
- 		seq_putc(p, '\n');
- skip:
--		release_lock_irqrestore(&desc->lock, flags);
-+		spin_unlock_irqrestore(&desc->lock, flags);
- 	} else if (i == NR_IRQS) {
- #if defined(CONFIG_PPC32) && defined(CONFIG_TAU_INT)
- 		if (tau_initialized){
-
---
+No, but I'll add one if it looks too hard to fix for the next round.
 
 
+> > +struct cr_hdr_cpu {
+> > +	struct pt_regs pt_regs;
+> 
+> It has been suggested (as done in x86/32 code) not to use 'struct pt_regs'
+> because it "can (and has) changed on x86" and because "it only container
+> the registers that the kernel trashes, not all usermode registers".
+> 
+> https://lists.linux-foundation.org/pipermail/containers/2008-August/012355.html
 
-While booting, this bug appears:
+Yeah, I considered that discussion, but the situation is different for
+powerpc (someone on linuxppc-dev smack me if I'm wrong here :)
+pt_regs is part of the ABI, and it encompasses all user mode registers
+except for floating point, which are handled separately.
 
-BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
-in_atomic(): 1 [00010001], irqs_disabled(): 1, pid: 1, name: swapper
-Call Trace:
-[cf82f9a0] [c0008be8] show_stack+0x4c/0x16c (unreliable)
-[cf82f9e0] [c001c184] __might_sleep+0xd8/0xf8
-[cf82f9f0] [c02b7758] rt_spin_lock+0x30/0x78
-[cf82fa00] [c001853c] ipic_mask_irq+0x3c/0xb0
-[cf82fa20] [c0054064] handle_level_irq+0x40/0x178
-[cf82fa40] [c00068ec] do_IRQ+0x68/0xe0
-[cf82fa50] [c0012924] ret_from_except+0x0/0x14
---- Exception: 501 at internal_add_timer+0x4/0xe0
 
-This is trivially solved by converting arch/powerpc/sysdev/ipic.c
-back to spinlocks (ipic_lock).
+> > +	/* relevant fields from thread_struct */
+> > +	double fpr[32][TS_FPRWIDTH];
+> 
+> Can TS_FPRWIDTH change between sub-archs or kernel versions ?  If so, it
+> needs to be stated explicitly.
+> 
+> > +	unsigned int fpscr;
+> > +	int fpexc_mode;
+> > +	/* unsigned int align_ctl; this is never updated? */
+> > +	unsigned long dabr;
+> 
+> Are these fields always guarantee to compile to the same number of bytes
+> regardless of 32/64 bit choice of compiler (or sub-arch?) ?
+> 
+> In the x86(32/64) architecture we use types with explicit size such as
+> __u32 and the like to ensure that it always compiled to the same
+> size.
 
-Assuming that converting-back is automatic, there are few other
-chained interrupt controllers you might want to convert-back:
-
-arch/powerpc/sysdev/i8259.c (i8259_lock)
-arch/powerpc/sysdev/mpic.c (mpic_lock)
-arch/powerpc/sysdev/qe_lib/qe_ic.c (qe_ic_lock)
+Yeah, I'll have to fix these up.
 
 
 
-After this, kernel boots up to the userspace, but then bugs in the
-middle (note: this is NFS boot, network activity etc.)...
+> > +static void cr_hdr_init(struct cr_hdr *hdr, __s16 type, __s16 len, __u32 parent)
+> > +{
+> > +	hdr->type = type;
+> > +	hdr->len = len;
+> > +	hdr->parent = parent;
+> > +}
+> > +
+> 
+> This function is rather generic and useful to non-arch-dependent and other
+> architectures code. Perhaps put in a separate patch ?
 
-INIT: version 2.86 booting
-Starting the hotplug events dispatcher: udevd.
-Synthesizing the initial hotplug events...done.
-Waiting for /dev to be fully populated...done.
-Activating swap...done.
-Remounting root filesystem...done.
-Checking all file systems: fsck
-fsck 1.40 (29-Jun-2007)
-Checking SELinux contexts: selinux-basics.
-Starting network interfaces: done.
-Starting portmap daemon....
-Cleaning: /tmp /var/lock /var/run done.
-Setting pseudo-terminal access permissions...done.
-Updating /etc/motd...done.
-INIT: Entering runlevel: 3
-Starting irqbalance.
-Starting system log daemon: syslogd
-BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
-in_atomic(): 1 [00000100], irqs_disabled(): 0, pid: 7, name: sirq-net-rx/0
-Call Trace:
-[cf84bc20] [c0008be8] show_stack+0x4c/0x16c (unreliable)
-[cf84bc60] [c001c194] __might_sleep+0xd8/0xf8
-[cf84bc70] [c02b7768] rt_spin_lock+0x30/0x78
-[cf84bc80] [c00800e0] kmem_cache_alloc+0x50/0x17c
-[cf84bcb0] [c02568a4] ip_append_data+0x974/0x978
-[cf84bd30] [c027aa0c] icmp_push_reply+0x54/0x128
-[cf84bd50] [c027b59c] icmp_send+0x284/0x380
-[cf84be40] [c0277328] __udp4_lib_rcv+0x3d4/0x5a0
-[cf84bea0] [c0253208] ip_local_deliver_finish+0x74/0x128
-[cf84bec0] [c0252fd0] ip_rcv_finish+0x148/0x30c
-[cf84bf00] [c0236774] netif_receive_skb+0x21c/0x2e8
-[cf84bf30] [c0238ecc] process_backlog+0x98/0x138
-[cf84bf60] [c0238b24] net_rx_action+0xd4/0x198
-[cf84bf90] [c002989c] ksoftirqd+0x108/0x23c
-[cf84bfd0] [c003c918] kthread+0x48/0x84
-[cf84bff0] [c00120b0] kernel_thread+0x4c/0x68
-BUG: scheduling while atomic: sirq-net-rx/0/7/0x10000101, CPU#0
-Modules linked in:
-Call Trace:
-[cf84bee0] [c0008be8] show_stack+0x4c/0x16c (unreliable)
-[cf84bf20] [c001e418] __schedule_bug+0x6c/0x80
-[cf84bf30] [c02b5fdc] schedule+0x2e8/0x31c
-[cf84bf70] [c001e460] __cond_resched+0x34/0x60
-[cf84bf80] [c02b6348] _cond_resched+0x50/0x58
-[cf84bf90] [c00298b8] ksoftirqd+0x124/0x23c
-[cf84bfd0] [c003c918] kthread+0x48/0x84
-[cf84bff0] [c00120b0] kernel_thread+0x4c/0x68
+Alright.  By the way, why are cr_hdr->type and cr_hdr->len signed
+types?
 
 
-And now this looks like not PowerPC specific... Converting mm/slab.c
-back to spinlocks results in another, but similar bug in anther mm
-routine:
+> > +int cr_write_cpu(struct cr_ctx *ctx, struct task_struct *t)
+> > +{
+> > +	struct cr_hdr_cpu *cpu_hdr;
+> > +	struct pt_regs *pt_regs;
+> > +	struct cr_hdr cr_hdr;
+> > +	u32 parent;
+> > +	int ret;
+> > +
+> > +	cpu_hdr = cr_hbuf_get(ctx, sizeof(*cpu_hdr));
+> > +	if (!cpu_hdr)
+> > +		return -ENOMEM;
+> > +
+> > +	parent = task_pid_vnr(t);
+> > +
+> > +	cr_hdr_init(&cr_hdr, CR_HDR_CPU, sizeof(*cpu_hdr), parent);
+> > +
+> > +	/* pt_regs: GPRs, MSR, etc */
+> > +	pt_regs = task_pt_regs(t);
+> > +	cpu_hdr->pt_regs = *pt_regs;
+> > +
+> > +	/* FP state */
+> > +	memcpy(cpu_hdr->fpr, t->thread.fpr, sizeof(cpu_hdr->fpr));
+> 
+> As note above, is sizeof(cpu_hdr->fpr) the same on all chips ?
 
-BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
-in_atomic(): 1 [00000001], irqs_disabled(): 0, pid: 1003, name: net.agent
-Call Trace:
-[cf057c40] [c0008be8] show_stack+0x4c/0x16c (unreliable)
-[cf057c80] [c001c194] __might_sleep+0xd8/0xf8
-[cf057c90] [c02b7768] rt_spin_lock+0x30/0x78
-[cf057ca0] [c005d0ec] free_hot_cold_page+0xf8/0x35c
-[cf057cc0] [c007f0b0] kmem_freepages+0xd8/0x134
-[cf057cd0] [c007f620] slab_destroy+0x38/0xe0
-[cf057cf0] [c007f814] free_block+0x14c/0x158
-[cf057d30] [c007f174] cache_flusharray+0x68/0x150
-[cf057d60] [c007f4fc] kmem_cache_free+0x110/0x140
-[cf057d80] [c006eb04] remove_vma+0x78/0xc0
-[cf057d90] [c006eccc] exit_mmap+0x180/0x208
-[cf057dc0] [c00210c8] mmput+0x64/0x114
-[cf057de0] [c008b580] exec_mmap+0xd8/0x1b4
-[cf057e10] [c008b7c4] flush_old_exec+0x50/0x1d0
-[cf057e40] [c00c2fac] load_elf_binary+0x2b0/0x96c
-[cf057eb0] [c008ad6c] search_binary_handler+0xf4/0x31c
-[cf057ef0] [c008c220] do_execve+0x1b4/0x1ec
-[cf057f20] [c000983c] sys_execve+0x50/0x7c
-[cf057f40] [c001228c] ret_from_syscall+0x0/0x38
---- Exception: c01 at 0xfeab104
-    LR = 0x10024540
+It can differ depending on kernel configuration.
 
-..proves that "convert-back" trick isn't panacea. ;-) So, before
-I'll dig into this.. is this known issue? Any ideas of proper
-fixing?
 
-FWIW, following options enabled:
+> > +/* restart APIs */
+> > +
+> 
+> The restart APIs belong in a separate file: arch/powerpc/mm/restart.c
 
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_PREEMPT_RT=y
-CONFIG_PREEMPT=y
-CONFIG_PREEMPT_RCU=y
-CONFIG_PREEMPT_SOFTIRQS=y
-CONFIG_PREEMPT_HARDIRQS=y
-CONFIG_DEBUG_FS=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_SCHED_DEBUG=y
-CONFIG_DEBUG_RT_MUTEXES=y
-CONFIG_DEBUG_PI_LIST=y
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_SLAB=y
-CONFIG_SLABINFO=y
-# CONFIG_HIGHMEM is not set
+Explain why, please?  This isn't a lot of code, and it seems likely
+that checkpoint and restart paths will share data structures and tend
+to be modified together over time.
 
-Thanks,
 
-p.s. Btw, having the convert-back script in scripts/ would be
-useful. Could not find it anywhere.
+> > +		pr_debug("%s: unexpected thread_hdr contents: 0x%lx\n",
+> > +			 __func__, (unsigned long)thread_hdr->unimplemented);
+> 
+> Given the macro for 'pr_fmt' in include/linux/checkpoint.h, the use of
+> __func__ is redunant.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+It seems to me that defining your own pr_fmt in a "public" header like
+that is inappropriate, or at least unconventional.  Any file that
+happens to include linux/checkpoint.h will have any prior definitions
+of pr_fmt overridden, no?
+
+
+> > +	regs = task_pt_regs(current);
+> > +	*regs = cpu_hdr->pt_regs;
+> > +
+> > +	regs->msr = sanitize_msr(regs->msr);
+> > +
+> > +	/* FP state */
+> > +	memcpy(current->thread.fpr, cpu_hdr->fpr, sizeof(current->thread.fpr));
+> > +	current->thread.fpscr.val = cpu_hdr->fpscr;
+> > +	current->thread.fpexc_mode = cpu_hdr->fpexc_mode;
+> > +
+> > +	/* debug registers */
+> > +	current->thread.dabr = cpu_hdr->dabr;
+> 
+> I'm unfamiliar with powerpc; is it necessary to sanitize any of the registers
+> here ?  For instance, can the user cause harm with specially crafted values
+> of some registers ?
+
+I had this in mind with the treatment of MSR, but I'll check on the
+others, thanks.
+
+
+> > +int cr_read_mm_context(struct cr_ctx *ctx, struct mm_struct *mm, int rparent)
+> > +{
+> > +	struct cr_hdr_mm_context *mm_hdr;
+> > +	int ret;
+> > +
+> > +	mm_hdr = cr_hbuf_get(ctx, sizeof(*mm_hdr));
+> > +	if (!mm_hdr)
+> > +		return -ENOMEM;
+> > +
+> > +	ret = cr_read_obj_type(ctx, mm_hdr, sizeof(*mm_hdr),
+> > +				  CR_HDR_MM_CONTEXT);
+> > +	if (ret != rparent)
+> > +		goto out;
+> 
+> Seems like 'ret' isn't set to an error value if the 'goto' executes.
+
+It returns whatever error value cr_read_obj_type() returns.  Hrm.  I
+guess if the image is garbage, cr_read_obj_type can potentially return
+a non-error value that still isn't the desired value, is that right?
