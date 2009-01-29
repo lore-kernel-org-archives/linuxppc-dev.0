@@ -1,21 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <orenl@cs.columbia.edu>
+Received: from jalapeno.cc.columbia.edu (jalapeno.cc.columbia.edu
+	[128.59.29.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 94F8EDE010
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 04:54:57 +1100 (EST)
-Message-ID: <4981ED3E.9050602@freescale.com>
-Date: Thu, 29 Jan 2009 11:54:06 -0600
-From: Scott Wood <scottwood@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DDBC8DE05F
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 18:01:10 +1100 (EST)
+Message-ID: <49814FA2.9060108@cs.columbia.edu>
+Date: Thu, 29 Jan 2009 01:41:38 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC/example] powerpc: add the mpic global timer support
-References: <Pine.LNX.4.64.0901062200550.19321@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0901062200550.19321@blarg.am.freescale.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, regis.odeye@kontron.com
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
+	implementation
+References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
+	<1233182478-27113-2-git-send-email-ntl@pobox.com>
+In-Reply-To: <1233182478-27113-2-git-send-email-ntl@pobox.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: containers@lists.osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,79 +26,408 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> +		timer@41100 {
-> +			compatible = "fsl,mpic-global-timer";
-> +			reg = <0x41100 0x204>;
-> +			interrupts = <0xf7 0x2>;
-> +			interrupt-parent = <&mpic>;
-> +		};
+Nathan,
 
-Why is this a separate node from the MPIC?  Seems like it should at 
-least be a child node, if not just implied by one of the compatibles on 
-the mpic node.
+Thanks for the patch. Looks good, see some comments below.
+(disclaimer: I'm not very familiar with ppc architecture)
 
-> +static ssize_t mpic_tm_timeout_store(struct device *dev,
-> +				struct device_attribute *attr,
-> +				const char *buf, size_t count)
+Nathan Lynch wrote:
+> The only thing of significance here is that the checkpointed task's
+> pt_regs and fp state are saved and restored (see cr_write_cpu and
+> cr_read_cpu); the rest of the code consists of dummy implementations
+> of the APIs the arch needs to provide to the checkpoint/restart core.
+> 
+> What works:
+> * self and external checkpoint of simple (single thread, one open
+>   file) 32- and 64-bit processes on a ppc64 kernel
+> 
+> What doesn't work:
+> * restarting a 32-bit task from a 64-bit task and vice versa
+
+Is there a test to bail if we attempt to checkpoint such tasks ?
+
+> 
+> Untested:
+> * ppc32 (but it builds)
+> 
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+> ---
+>  arch/powerpc/include/asm/checkpoint_hdr.h |   40 +++++
+>  arch/powerpc/mm/Makefile                  |    1 +
+>  arch/powerpc/mm/checkpoint.c              |  261 +++++++++++++++++++++++++++++
+>  3 files changed, 302 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/checkpoint_hdr.h
+>  create mode 100644 arch/powerpc/mm/checkpoint.c
+> 
+> diff --git a/arch/powerpc/include/asm/checkpoint_hdr.h b/arch/powerpc/include/asm/checkpoint_hdr.h
+> new file mode 100644
+> index 0000000..752c53f
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/checkpoint_hdr.h
+> @@ -0,0 +1,40 @@
+> +#ifndef __ASM_PPC_CKPT_HDR_H
+> +#define __ASM_PPC_CKPT_HDR_H
+> +/*
+> + *  Checkpoint/restart - architecture specific headers ppc
+> + *
+> + *  Copyright (C) 2008 Oren Laadan
+> + *
+> + *  This file is subject to the terms and conditions of the GNU General Public
+> + *  License.  See the file COPYING in the main directory of the Linux
+> + *  distribution for more details.
+> + */
+> +
+> +#include <linux/types.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/mmu.h>
+> +#include <asm/processor.h>
+> +
+> +struct cr_hdr_head_arch {
+> +	__u32 unimplemented;
+> +};
+> +
+> +struct cr_hdr_thread {
+> +	__u32 unimplemented;
+> +};
+> +
+> +struct cr_hdr_cpu {
+> +	struct pt_regs pt_regs;
+
+It has been suggested (as done in x86/32 code) not to use 'struct pt_regs'
+because it "can (and has) changed on x86" and because "it only container
+the registers that the kernel trashes, not all usermode registers".
+
+https://lists.linux-foundation.org/pipermail/containers/2008-August/012355.html
+
+> +	/* relevant fields from thread_struct */
+> +	double fpr[32][TS_FPRWIDTH];
+
+Can TS_FPRWIDTH change between sub-archs or kernel versions ?  If so, it
+needs to be stated explicitly.
+
+> +	unsigned int fpscr;
+> +	int fpexc_mode;
+> +	/* unsigned int align_ctl; this is never updated? */
+> +	unsigned long dabr;
+
+Are these fields always guarantee to compile to the same number of bytes
+regardless of 32/64 bit choice of compiler (or sub-arch?) ?
+
+In the x86(32/64) architecture we use types with explicit size such as
+__u32 and the like to ensure that it always compiled to the same size.
+
+> +};
+> +
+> +struct cr_hdr_mm_context {
+> +	__u32 unimplemented;
+> +};
+> +
+> +#endif /* __ASM_PPC_CKPT_HDR__H */
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index e7392b4..8a523a0 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -24,3 +24,4 @@ obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
+>  obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
+>  obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
+>  obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
+> +obj-$(CONFIG_CHECKPOINT_RESTART) += checkpoint.o
+> diff --git a/arch/powerpc/mm/checkpoint.c b/arch/powerpc/mm/checkpoint.c
+> new file mode 100644
+> index 0000000..8cdff24
+> --- /dev/null
+> +++ b/arch/powerpc/mm/checkpoint.c
+> @@ -0,0 +1,261 @@
+> +/*
+> + *  Checkpoint/restart - architecture specific support for powerpc.
+> + *  Based on x86 implementation.
+> + *
+> + *  Copyright (C) 2008 Oren Laadan
+> + *  Copyright 2009 IBM Corp.
+> + *
+> + *  This file is subject to the terms and conditions of the GNU General Public
+> + *  License.  See the file COPYING in the main directory of the Linux
+> + *  distribution for more details.
+> + */
+> +
+> +#define DEBUG 1 /* for pr_debug */
+> +
+> +#include <linux/checkpoint.h>
+> +#include <linux/checkpoint_hdr.h>
+> +#include <linux/kernel.h>
+> +#include <asm/processor.h>
+> +
+> +static void cr_hdr_init(struct cr_hdr *hdr, __s16 type, __s16 len, __u32 parent)
 > +{
-> +	struct mpic_tm_priv *priv = dev_get_drvdata(dev);
-> +	unsigned long interval = simple_strtoul(buf, NULL, 0);
-> +	unsigned long temp;
+> +	hdr->type = type;
+> +	hdr->len = len;
+> +	hdr->parent = parent;
+> +}
 > +
-> +	if (interval > 0x7fffffff) {
-> +		dev_dbg(dev, "mpic_tm: interval %lu (in ns) too long\n", interval);
-> +		return -EINVAL;
-> +	}
-> +
-> +	interval *= priv->ticks_per_sec;
 
-In nanoseconds, or seconds?
+This function is rather generic and useful to non-arch-dependent and other
+architectures code. Perhaps put in a separate patch ?
 
-> +static DEVICE_ATTR(timeout, 0660, mpic_tm_timeout_show, mpic_tm_timeout_store);
-> +
-> +static int __devinit mpic_tm_probe(struct of_device *dev,
-> +				const struct of_device_id *match)
+> +/* dump the thread_struct of a given task */
+> +int cr_write_thread(struct cr_ctx *ctx, struct task_struct *t)
 > +{
-> +	struct device_node *np = dev->node;
-> +	struct resource res;
-> +	struct mpic_tm_priv *priv;
-> +	struct mpic_type *type = match->data;
-> +	int has_tcr = type->has_tcr;
-> +	u32 busfreq = fsl_get_sys_freq();
-> +	int ret = 0;
+> +	struct cr_hdr_thread *thread_hdr;
+> +	struct cr_hdr cr_hdr;
+> +	u32 parent;
+> +	int ret;
 > +
-> +	if (busfreq == 0) {
-> +		dev_err(&dev->dev, "mpic_tm: No bus frequency in device tree.\n");
-> +		return -ENODEV;
-> +	}
-
-Maybe put clock-frequency in the timer (or mpic) node itself?
-
-This seems to try to support non-FSL MPIC timers, but fsl_get_sys_freq() 
-wouldn't be appropriate in such a case.
-
-> +	priv = kmalloc(sizeof(struct mpic_tm_priv), GFP_KERNEL);
-> +	if (!priv)
+> +	thread_hdr = cr_hbuf_get(ctx, sizeof(*thread_hdr));
+> +	if (!thread_hdr)
 > +		return -ENOMEM;
 > +
-> +	spin_lock_init(&priv->lock);
-> +	dev_set_drvdata(&dev->dev, priv);
+> +	parent = task_pid_vnr(t);
 > +
-> +	ret = of_address_to_resource(np, 0, &res);
-> +	if (ret)
+> +	cr_hdr_init(&cr_hdr, CR_HDR_THREAD, sizeof(*thread_hdr), parent);
+> +
+> +	thread_hdr->unimplemented = 0xdeadbeef;
+> +
+> +	ret = cr_write_obj(ctx, &cr_hdr, thread_hdr);
+> +	cr_hbuf_put(ctx, sizeof(*thread_hdr));
+> +
+> +	return ret;
+> +}
+> +
+> +/* dump the cpu state and registers of a given task */
+> +int cr_write_cpu(struct cr_ctx *ctx, struct task_struct *t)
+> +{
+> +	struct cr_hdr_cpu *cpu_hdr;
+> +	struct pt_regs *pt_regs;
+> +	struct cr_hdr cr_hdr;
+> +	u32 parent;
+> +	int ret;
+> +
+> +	cpu_hdr = cr_hbuf_get(ctx, sizeof(*cpu_hdr));
+> +	if (!cpu_hdr)
+> +		return -ENOMEM;
+> +
+> +	parent = task_pid_vnr(t);
+> +
+> +	cr_hdr_init(&cr_hdr, CR_HDR_CPU, sizeof(*cpu_hdr), parent);
+> +
+> +	/* pt_regs: GPRs, MSR, etc */
+> +	pt_regs = task_pt_regs(t);
+> +	cpu_hdr->pt_regs = *pt_regs;
+> +
+> +	/* FP state */
+> +	memcpy(cpu_hdr->fpr, t->thread.fpr, sizeof(cpu_hdr->fpr));
+
+As note above, is sizeof(cpu_hdr->fpr) the same on all chips ?
+
+> +	cpu_hdr->fpscr = t->thread.fpscr.val;
+> +	cpu_hdr->fpexc_mode = t->thread.fpexc_mode;
+> +
+> +	/* Handle DABR for now, dbcr[01] later */
+> +	cpu_hdr->dabr = t->thread.dabr;
+> +
+> +	/* ToDo: Altivec/VSX/SPE state */
+> +
+> +	ret = cr_write_obj(ctx, &cr_hdr, cpu_hdr);
+> +	cr_hbuf_put(ctx, sizeof(*cpu_hdr));
+> +
+> +	return ret;
+> +}
+> +
+> +int cr_write_head_arch(struct cr_ctx *ctx)
+> +{
+> +	struct cr_hdr_head_arch *arch_hdr;
+> +	struct cr_hdr cr_hdr;
+> +	int ret;
+> +
+> +	arch_hdr = cr_hbuf_get(ctx, sizeof(*arch_hdr));
+> +	if (!arch_hdr)
+> +		return -ENOMEM;
+> +
+> +	cr_hdr_init(&cr_hdr, CR_HDR_HEAD_ARCH, sizeof(*arch_hdr), 0);
+> +
+> +	arch_hdr->unimplemented = 0xdeadbeef;
+> +
+> +	ret = cr_write_obj(ctx, &cr_hdr, arch_hdr);
+> +	cr_hbuf_put(ctx, sizeof(*arch_hdr));
+> +
+> +	return ret;
+> +}
+> +
+> +/* dump the mm->context state */
+> +int cr_write_mm_context(struct cr_ctx *ctx, struct mm_struct *mm, int parent)
+> +{
+> +	struct cr_hdr_mm_context *mm_hdr;
+> +	struct cr_hdr cr_hdr;
+> +	size_t size;
+> +	int ret;
+> +
+> +	size = sizeof(*mm_hdr);
+> +
+> +	mm_hdr = cr_hbuf_get(ctx, size);
+> +	if (!mm_hdr)
+> +		return -ENOMEM;
+> +
+> +	cr_hdr_init(&cr_hdr, CR_HDR_MM_CONTEXT, size, parent);
+> +
+> +	mm_hdr->unimplemented = 0xdeadbeef;
+> +
+> +	ret = cr_write_obj(ctx, &cr_hdr, mm_hdr);
+> +	cr_hbuf_put(ctx, size);
+> +
+> +	return ret;
+> +}
+> +
+> +/* restart APIs */
+> +
+
+The restart APIs belong in a separate file: arch/powerpc/mm/restart.c
+
+> +/* read the thread_struct into the current task */
+> +int cr_read_thread(struct cr_ctx *ctx)
+> +{
+> +	struct cr_hdr_thread *thread_hdr;
+> +	int ret;
+> +
+> +	thread_hdr = cr_hbuf_get(ctx, sizeof(*thread_hdr));
+> +	if (!thread_hdr)
+> +		return -ENOMEM;
+> +
+> +	ret = cr_read_obj_type(ctx, thread_hdr, sizeof(*thread_hdr),
+> +				  CR_HDR_THREAD);
+> +	if (ret < 0)
+> +		goto out;
+> +
+> +	ret = 0;
+> +
+> +	if (thread_hdr->unimplemented != 0xdeadbeef) {
+> +		pr_debug("%s: unexpected thread_hdr contents: 0x%lx\n",
+> +			 __func__, (unsigned long)thread_hdr->unimplemented);
+
+Given the macro for 'pr_fmt' in include/linux/checkpoint.h, the use of
+__func__ is redunant.
+
+> +		ret = -EINVAL;
+> +	}
+> +out:
+> +	cr_hbuf_put(ctx, sizeof(*thread_hdr));
+> +	return ret;
+> +}
+> +
+> +/* Based on the MSR value from a checkpoint image, produce an MSR
+> + * value that is appropriate for the restored task.  Right now we only
+> + * check for MSR_SF (64-bit) for PPC64.
+> + */
+> +static unsigned long sanitize_msr(unsigned long msr_ckpt)
+> +{
+> +#ifdef CONFIG_PPC32
+> +	return MSR_USER;
+> +#else
+> +	if (msr_ckpt & MSR_SF)
+> +		return MSR_USER64;
+> +	return MSR_USER32;
+> +#endif
+> +}
+> +
+> +int cr_read_cpu(struct cr_ctx *ctx)
+> +{
+> +	struct cr_hdr_cpu *cpu_hdr;
+> +	struct pt_regs *regs;
+> +	int ret;
+> +
+> +	cpu_hdr = cr_hbuf_get(ctx, sizeof(*cpu_hdr));
+> +	if (!cpu_hdr)
+> +		return -ENOMEM;
+> +
+> +	ret = cr_read_obj_type(ctx, cpu_hdr, sizeof(*cpu_hdr),
+> +				  CR_HDR_CPU);
+> +	if (ret < 0)
+> +		goto out;
+> +
+> +	ret = 0;
+> +
+> +	regs = task_pt_regs(current);
+> +	*regs = cpu_hdr->pt_regs;
+> +
+> +	regs->msr = sanitize_msr(regs->msr);
+> +
+> +	/* FP state */
+> +	memcpy(current->thread.fpr, cpu_hdr->fpr, sizeof(current->thread.fpr));
+> +	current->thread.fpscr.val = cpu_hdr->fpscr;
+> +	current->thread.fpexc_mode = cpu_hdr->fpexc_mode;
+> +
+> +	/* debug registers */
+> +	current->thread.dabr = cpu_hdr->dabr;
+
+I'm unfamiliar with powerpc; is it necessary to sanitize any of the registers
+here ?  For instance, can the user cause harm with specially crafted values
+of some registers ?
+
+> +out:
+> +	cr_hbuf_put(ctx, sizeof(*cpu_hdr));
+> +	return ret;
+> +}
+> +
+> +int cr_read_head_arch(struct cr_ctx *ctx)
+> +{
+> +	struct cr_hdr_head_arch *arch_hdr;
+> +	int ret;
+> +
+> +	arch_hdr = cr_hbuf_get(ctx, sizeof(*arch_hdr));
+> +	if (!arch_hdr)
+> +		return -ENOMEM;
+> +
+> +	ret = cr_read_obj_type(ctx, arch_hdr, sizeof(*arch_hdr),
+> +				  CR_HDR_HEAD_ARCH);
+> +	if (ret < 0)
+> +		goto out;
+> +
+> +	ret = 0;
+> +
+> +	if (arch_hdr->unimplemented != 0xdeadbeef) {
+> +		pr_debug("%s: unexpected arch_hdr contents: 0x%lx\n",
+> +			 __func__, (unsigned long)arch_hdr->unimplemented);
+
+Same as above: __func__ is redundant.
+
+> +		ret = -EINVAL;
+> +	}
+> +out:
+> +	cr_hbuf_put(ctx, sizeof(*arch_hdr));
+> +	return ret;
+> +}
+> +
+> +int cr_read_mm_context(struct cr_ctx *ctx, struct mm_struct *mm, int rparent)
+> +{
+> +	struct cr_hdr_mm_context *mm_hdr;
+> +	int ret;
+> +
+> +	mm_hdr = cr_hbuf_get(ctx, sizeof(*mm_hdr));
+> +	if (!mm_hdr)
+> +		return -ENOMEM;
+> +
+> +	ret = cr_read_obj_type(ctx, mm_hdr, sizeof(*mm_hdr),
+> +				  CR_HDR_MM_CONTEXT);
+> +	if (ret != rparent)
 > +		goto out;
 
-of_iomap()?
+Seems like 'ret' isn't set to an error value if the 'goto' executes.
 
-> +	ret = request_irq(priv->irq, mpic_tm_isr, 0, "mpic timer 0", priv);
-> +	if (ret)
-> +		goto out;
+> +
+> +	ret = 0;
+> +
+> +	if (mm_hdr->unimplemented != 0xdeadbeef) {
+> +		pr_debug("%s: unexpected mm_hdr contents: 0x%lx\n",
+> +			 __func__, (unsigned long)mm_hdr->unimplemented);
 
-Hardcoded zero in string?
+Again, __func__ redundant.
 
-> +	printk("MPIC global timer init done.\n");
+> +		ret = -EINVAL;
+> +	}
+> +
+> +out:
+> +	cr_hbuf_put(ctx, sizeof(*mm_hdr));
+> +	return ret;
+> +}
 
-KERN_DEBUG?
+Thanks,
 
--Scott
+Oren.
