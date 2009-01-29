@@ -1,27 +1,20 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DE948DDF02
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 10:24:52 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n0TNMhta014805
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 16:22:43 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n0TNOlDD026702
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 16:24:47 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n0TNOlnh000825
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 16:24:47 -0700
-Message-Id: <200901292324.n0TNOktd000814@d03av02.boulder.ibm.com>
-Subject: [PATCH 1/1] powerpc: Fix partition migration hang under load
-To: benh@kernel.crashing.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 29 Jan 2009 17:23:23 -0600
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+Return-Path: <jblack547@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id BFB44DE0A6
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 10:27:56 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so77333yxg.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 15:27:52 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <49823647.2010701@freescale.com>
+References: <b77025b40901291441j7790f85ewd70ee81dc09ed55b@mail.gmail.com>
+	<49823647.2010701@freescale.com>
+Date: Thu, 29 Jan 2009 16:27:52 -0700
+Message-ID: <b77025b40901291527j74705c10y322e8bd8a0828600@mail.gmail.com>
+Subject: Re: mpc8270 and fs_enet
+From: James Black <jblack547@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,71 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I thought the same thing. So I verified the memory map. We did have a
+conflict with the SPI stomping the FCC temp so we moved that. An
+interesting note is that we drop packets from time to time on the MCC
+as well due to a similar ready bit problem. The CPM never clears the
+bit.
 
-While testing partition migration with heavy CPU load using
-shared processors, it was observed that sometimes the migration
-would never complete and would appear to hang. Currently, the
-migration code assumes that if H_SUCCESS is returned from the H_JOIN
-then the migration is complete and the processor is waking up on
-the target system. If there was an outstanding PROD to the processor
-when the H_JOIN is called, however, it will return H_SUCCESS on the source
-system, causing the migration to hang, or in some scenarios cause
-the kernel to crash on the complete call waking the caller
-of rtas_percpu_suspend_me. Fix this by calling H_JOIN multiple times
-if necessary during the migration.
+------------------------------------------------------------------
+IMMR memory map
+------------------------------------------------------------------
+> FCC1      Parameters    0x8400        256
+> FCC1      Temp buffer   0x9000        128
+> SCC1      Parameters    0x8000        256
+> SCC2      Parameters    0x8100        256
+> SCC4      Parameters    0x8300        256
+> SMC1      Parameters    0x0000         64
+> SMC2      Parameters    0x0040         64
+> SCC1      Buff Desc     0x0080         64
+> SCC2      Buff Desc     0x00C0         64
+> SCC4      Buff Desc     0x0100         64
+> SPI       Param Pointer 0x89FC          2
+> SPI       Parameters    0x9000         76
+> MCC2      Global Param  0x8800        128
+> MCC2      HDLC Param    0x2000       8192
+> MCC2      Extra Param   0xB000       1024
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
 
- arch/powerpc/kernel/rtas.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff -puN arch/powerpc/kernel/rtas.c~powerpc_migration_hang_fix arch/powerpc/kernel/rtas.c
---- linux-2.6/arch/powerpc/kernel/rtas.c~powerpc_migration_hang_fix	2009-01-29 17:19:58.000000000 -0600
-+++ linux-2.6-bjking1/arch/powerpc/kernel/rtas.c	2009-01-29 17:19:58.000000000 -0600
-@@ -46,6 +46,7 @@ EXPORT_SYMBOL(rtas);
- 
- struct rtas_suspend_me_data {
- 	atomic_t working; /* number of cpus accessing this struct */
-+	atomic_t done;
- 	int token; /* ibm,suspend-me */
- 	int error;
- 	struct completion *complete; /* wait on this until working == 0 */
-@@ -689,7 +690,7 @@ static int ibm_suspend_me_token = RTAS_U
- #ifdef CONFIG_PPC_PSERIES
- static void rtas_percpu_suspend_me(void *info)
- {
--	long rc;
-+	long rc = H_SUCCESS;
- 	unsigned long msr_save;
- 	int cpu;
- 	struct rtas_suspend_me_data *data =
-@@ -701,7 +702,8 @@ static void rtas_percpu_suspend_me(void 
- 	msr_save = mfmsr();
- 	mtmsr(msr_save & ~(MSR_EE));
- 
--	rc = plpar_hcall_norets(H_JOIN);
-+	while (rc == H_SUCCESS && !atomic_read(&data->done))
-+		rc = plpar_hcall_norets(H_JOIN);
- 
- 	mtmsr(msr_save);
- 
-@@ -724,6 +726,9 @@ static void rtas_percpu_suspend_me(void 
- 		       smp_processor_id(), rc);
- 		data->error = rc;
- 	}
-+
-+	atomic_set(&data->done, 1);
-+
- 	/* This cpu did the suspend or got an error; in either case,
- 	 * we need to prod all other other cpus out of join state.
- 	 * Extra prods are harmless.
-@@ -766,6 +771,7 @@ static int rtas_ibm_suspend_me(struct rt
- 	}
- 
- 	atomic_set(&data.working, 0);
-+	atomic_set(&data.done, 0);
- 	data.token = rtas_token("ibm,suspend-me");
- 	data.error = 0;
- 	data.complete = &done;
-_
+On Thu, Jan 29, 2009 at 4:05 PM, Scott Wood <scottwood@freescale.com> wrote:
+> James Black wrote:
+>>
+>> I've got an mpc8270 running the fs_enet v1.0 driver and we are having
+>> problems with randomly corrupted tx buffer descriptor ready bits. The
+>> CPM never clears the bit. This is a 2.6.19.2 kernel. We have the same
+>> kernel with the 8260_io driver (kernel is from the denx ELDK4.2)
+>> running on the mpc8250 that works perfect.
+>
+> Is it possible that some other CPM block is configured to use the same DPRAM
+> area that the descriptors are in?
+>
+> -Scott
+>
+
+
+
+-- 
+Jim Black
+Senior Software Engineer
+Aztek Networks, Inc.
+2477 55th Street, Suite 202
+Boulder, CO 80301
+www.azteknetworks.com
