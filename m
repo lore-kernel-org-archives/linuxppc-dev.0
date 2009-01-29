@@ -1,22 +1,26 @@
-Return-Path: <orenl@cs.columbia.edu>
-Received: from jalapeno.cc.columbia.edu (jalapeno.cc.columbia.edu
-	[128.59.29.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DDBC8DE05F
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 18:01:10 +1100 (EST)
-Message-ID: <49814FA2.9060108@cs.columbia.edu>
-Date: Thu, 29 Jan 2009 01:41:38 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id DD622DDFAB
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 20:38:25 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LSTLo-0006FK-OK
+	for linuxppc-dev@ozlabs.org; Thu, 29 Jan 2009 01:38:20 -0800
+Message-ID: <21723361.post@talk.nabble.com>
+Date: Thu, 29 Jan 2009 01:38:20 -0800 (PST)
+From: velumani <velumani.t@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: R: R: USB on lite5200 does not work.
+In-Reply-To: <9e4733910811220735o378f785arfa3b577b2420f213@mail.gmail.com>
 MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
-	implementation
-References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
-	<1233182478-27113-2-git-send-email-ntl@pobox.com>
-In-Reply-To: <1233182478-27113-2-git-send-email-ntl@pobox.com>
 Content-Type: text/plain; charset=us-ascii
-Cc: containers@lists.osdl.org, linuxppc-dev@ozlabs.org
+References: <47602D18F269934AB73B7E550804A1E00213796C@FBCMST09V03.fbc.local>
+	<fa686aa40811200656g783947f5l609650b707c6c883@mail.gmail.com>
+	<fa686aa40811200749xd9f8701ud6ee9b77b4c21001@mail.gmail.com>
+	<47602D18F269934AB73B7E550804A1E002137973@FBCMST09V03.fbc.local>
+	<fa686aa40811210659l3b9a4eefwf6eb59f66386d379@mail.gmail.com>
+	<4927F7DF.6070605@alice.it>
+	<9e4733910811220735o378f785arfa3b577b2420f213@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,408 +30,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nathan,
 
-Thanks for the patch. Looks good, see some comments below.
-(disclaimer: I'm not very familiar with ppc architecture)
+Hi,
 
-Nathan Lynch wrote:
-> The only thing of significance here is that the checkpointed task's
-> pt_regs and fp state are saved and restored (see cr_write_cpu and
-> cr_read_cpu); the rest of the code consists of dummy implementations
-> of the APIs the arch needs to provide to the checkpoint/restart core.
-> 
-> What works:
-> * self and external checkpoint of simple (single thread, one open
->   file) 32- and 64-bit processes on a ppc64 kernel
-> 
-> What doesn't work:
-> * restarting a 32-bit task from a 64-bit task and vice versa
+Did you get any solution for this problem. We are also facing this issue...
 
-Is there a test to bail if we attempt to checkpoint such tasks ?
-
-> 
-> Untested:
-> * ppc32 (but it builds)
-> 
-> Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> ---
->  arch/powerpc/include/asm/checkpoint_hdr.h |   40 +++++
->  arch/powerpc/mm/Makefile                  |    1 +
->  arch/powerpc/mm/checkpoint.c              |  261 +++++++++++++++++++++++++++++
->  3 files changed, 302 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/checkpoint_hdr.h
->  create mode 100644 arch/powerpc/mm/checkpoint.c
-> 
-> diff --git a/arch/powerpc/include/asm/checkpoint_hdr.h b/arch/powerpc/include/asm/checkpoint_hdr.h
-> new file mode 100644
-> index 0000000..752c53f
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/checkpoint_hdr.h
-> @@ -0,0 +1,40 @@
-> +#ifndef __ASM_PPC_CKPT_HDR_H
-> +#define __ASM_PPC_CKPT_HDR_H
-> +/*
-> + *  Checkpoint/restart - architecture specific headers ppc
-> + *
-> + *  Copyright (C) 2008 Oren Laadan
-> + *
-> + *  This file is subject to the terms and conditions of the GNU General Public
-> + *  License.  See the file COPYING in the main directory of the Linux
-> + *  distribution for more details.
-> + */
-> +
-> +#include <linux/types.h>
-> +#include <asm/ptrace.h>
-> +#include <asm/mmu.h>
-> +#include <asm/processor.h>
-> +
-> +struct cr_hdr_head_arch {
-> +	__u32 unimplemented;
-> +};
-> +
-> +struct cr_hdr_thread {
-> +	__u32 unimplemented;
-> +};
-> +
-> +struct cr_hdr_cpu {
-> +	struct pt_regs pt_regs;
-
-It has been suggested (as done in x86/32 code) not to use 'struct pt_regs'
-because it "can (and has) changed on x86" and because "it only container
-the registers that the kernel trashes, not all usermode registers".
-
-https://lists.linux-foundation.org/pipermail/containers/2008-August/012355.html
-
-> +	/* relevant fields from thread_struct */
-> +	double fpr[32][TS_FPRWIDTH];
-
-Can TS_FPRWIDTH change between sub-archs or kernel versions ?  If so, it
-needs to be stated explicitly.
-
-> +	unsigned int fpscr;
-> +	int fpexc_mode;
-> +	/* unsigned int align_ctl; this is never updated? */
-> +	unsigned long dabr;
-
-Are these fields always guarantee to compile to the same number of bytes
-regardless of 32/64 bit choice of compiler (or sub-arch?) ?
-
-In the x86(32/64) architecture we use types with explicit size such as
-__u32 and the like to ensure that it always compiled to the same size.
-
-> +};
-> +
-> +struct cr_hdr_mm_context {
-> +	__u32 unimplemented;
-> +};
-> +
-> +#endif /* __ASM_PPC_CKPT_HDR__H */
-> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-> index e7392b4..8a523a0 100644
-> --- a/arch/powerpc/mm/Makefile
-> +++ b/arch/powerpc/mm/Makefile
-> @@ -24,3 +24,4 @@ obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
->  obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
->  obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
->  obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
-> +obj-$(CONFIG_CHECKPOINT_RESTART) += checkpoint.o
-> diff --git a/arch/powerpc/mm/checkpoint.c b/arch/powerpc/mm/checkpoint.c
-> new file mode 100644
-> index 0000000..8cdff24
-> --- /dev/null
-> +++ b/arch/powerpc/mm/checkpoint.c
-> @@ -0,0 +1,261 @@
-> +/*
-> + *  Checkpoint/restart - architecture specific support for powerpc.
-> + *  Based on x86 implementation.
-> + *
-> + *  Copyright (C) 2008 Oren Laadan
-> + *  Copyright 2009 IBM Corp.
-> + *
-> + *  This file is subject to the terms and conditions of the GNU General Public
-> + *  License.  See the file COPYING in the main directory of the Linux
-> + *  distribution for more details.
-> + */
-> +
-> +#define DEBUG 1 /* for pr_debug */
-> +
-> +#include <linux/checkpoint.h>
-> +#include <linux/checkpoint_hdr.h>
-> +#include <linux/kernel.h>
-> +#include <asm/processor.h>
-> +
-> +static void cr_hdr_init(struct cr_hdr *hdr, __s16 type, __s16 len, __u32 parent)
-> +{
-> +	hdr->type = type;
-> +	hdr->len = len;
-> +	hdr->parent = parent;
-> +}
-> +
-
-This function is rather generic and useful to non-arch-dependent and other
-architectures code. Perhaps put in a separate patch ?
-
-> +/* dump the thread_struct of a given task */
-> +int cr_write_thread(struct cr_ctx *ctx, struct task_struct *t)
-> +{
-> +	struct cr_hdr_thread *thread_hdr;
-> +	struct cr_hdr cr_hdr;
-> +	u32 parent;
-> +	int ret;
-> +
-> +	thread_hdr = cr_hbuf_get(ctx, sizeof(*thread_hdr));
-> +	if (!thread_hdr)
-> +		return -ENOMEM;
-> +
-> +	parent = task_pid_vnr(t);
-> +
-> +	cr_hdr_init(&cr_hdr, CR_HDR_THREAD, sizeof(*thread_hdr), parent);
-> +
-> +	thread_hdr->unimplemented = 0xdeadbeef;
-> +
-> +	ret = cr_write_obj(ctx, &cr_hdr, thread_hdr);
-> +	cr_hbuf_put(ctx, sizeof(*thread_hdr));
-> +
-> +	return ret;
-> +}
-> +
-> +/* dump the cpu state and registers of a given task */
-> +int cr_write_cpu(struct cr_ctx *ctx, struct task_struct *t)
-> +{
-> +	struct cr_hdr_cpu *cpu_hdr;
-> +	struct pt_regs *pt_regs;
-> +	struct cr_hdr cr_hdr;
-> +	u32 parent;
-> +	int ret;
-> +
-> +	cpu_hdr = cr_hbuf_get(ctx, sizeof(*cpu_hdr));
-> +	if (!cpu_hdr)
-> +		return -ENOMEM;
-> +
-> +	parent = task_pid_vnr(t);
-> +
-> +	cr_hdr_init(&cr_hdr, CR_HDR_CPU, sizeof(*cpu_hdr), parent);
-> +
-> +	/* pt_regs: GPRs, MSR, etc */
-> +	pt_regs = task_pt_regs(t);
-> +	cpu_hdr->pt_regs = *pt_regs;
-> +
-> +	/* FP state */
-> +	memcpy(cpu_hdr->fpr, t->thread.fpr, sizeof(cpu_hdr->fpr));
-
-As note above, is sizeof(cpu_hdr->fpr) the same on all chips ?
-
-> +	cpu_hdr->fpscr = t->thread.fpscr.val;
-> +	cpu_hdr->fpexc_mode = t->thread.fpexc_mode;
-> +
-> +	/* Handle DABR for now, dbcr[01] later */
-> +	cpu_hdr->dabr = t->thread.dabr;
-> +
-> +	/* ToDo: Altivec/VSX/SPE state */
-> +
-> +	ret = cr_write_obj(ctx, &cr_hdr, cpu_hdr);
-> +	cr_hbuf_put(ctx, sizeof(*cpu_hdr));
-> +
-> +	return ret;
-> +}
-> +
-> +int cr_write_head_arch(struct cr_ctx *ctx)
-> +{
-> +	struct cr_hdr_head_arch *arch_hdr;
-> +	struct cr_hdr cr_hdr;
-> +	int ret;
-> +
-> +	arch_hdr = cr_hbuf_get(ctx, sizeof(*arch_hdr));
-> +	if (!arch_hdr)
-> +		return -ENOMEM;
-> +
-> +	cr_hdr_init(&cr_hdr, CR_HDR_HEAD_ARCH, sizeof(*arch_hdr), 0);
-> +
-> +	arch_hdr->unimplemented = 0xdeadbeef;
-> +
-> +	ret = cr_write_obj(ctx, &cr_hdr, arch_hdr);
-> +	cr_hbuf_put(ctx, sizeof(*arch_hdr));
-> +
-> +	return ret;
-> +}
-> +
-> +/* dump the mm->context state */
-> +int cr_write_mm_context(struct cr_ctx *ctx, struct mm_struct *mm, int parent)
-> +{
-> +	struct cr_hdr_mm_context *mm_hdr;
-> +	struct cr_hdr cr_hdr;
-> +	size_t size;
-> +	int ret;
-> +
-> +	size = sizeof(*mm_hdr);
-> +
-> +	mm_hdr = cr_hbuf_get(ctx, size);
-> +	if (!mm_hdr)
-> +		return -ENOMEM;
-> +
-> +	cr_hdr_init(&cr_hdr, CR_HDR_MM_CONTEXT, size, parent);
-> +
-> +	mm_hdr->unimplemented = 0xdeadbeef;
-> +
-> +	ret = cr_write_obj(ctx, &cr_hdr, mm_hdr);
-> +	cr_hbuf_put(ctx, size);
-> +
-> +	return ret;
-> +}
-> +
-> +/* restart APIs */
-> +
-
-The restart APIs belong in a separate file: arch/powerpc/mm/restart.c
-
-> +/* read the thread_struct into the current task */
-> +int cr_read_thread(struct cr_ctx *ctx)
-> +{
-> +	struct cr_hdr_thread *thread_hdr;
-> +	int ret;
-> +
-> +	thread_hdr = cr_hbuf_get(ctx, sizeof(*thread_hdr));
-> +	if (!thread_hdr)
-> +		return -ENOMEM;
-> +
-> +	ret = cr_read_obj_type(ctx, thread_hdr, sizeof(*thread_hdr),
-> +				  CR_HDR_THREAD);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = 0;
-> +
-> +	if (thread_hdr->unimplemented != 0xdeadbeef) {
-> +		pr_debug("%s: unexpected thread_hdr contents: 0x%lx\n",
-> +			 __func__, (unsigned long)thread_hdr->unimplemented);
-
-Given the macro for 'pr_fmt' in include/linux/checkpoint.h, the use of
-__func__ is redunant.
-
-> +		ret = -EINVAL;
-> +	}
-> +out:
-> +	cr_hbuf_put(ctx, sizeof(*thread_hdr));
-> +	return ret;
-> +}
-> +
-> +/* Based on the MSR value from a checkpoint image, produce an MSR
-> + * value that is appropriate for the restored task.  Right now we only
-> + * check for MSR_SF (64-bit) for PPC64.
-> + */
-> +static unsigned long sanitize_msr(unsigned long msr_ckpt)
-> +{
-> +#ifdef CONFIG_PPC32
-> +	return MSR_USER;
-> +#else
-> +	if (msr_ckpt & MSR_SF)
-> +		return MSR_USER64;
-> +	return MSR_USER32;
-> +#endif
-> +}
-> +
-> +int cr_read_cpu(struct cr_ctx *ctx)
-> +{
-> +	struct cr_hdr_cpu *cpu_hdr;
-> +	struct pt_regs *regs;
-> +	int ret;
-> +
-> +	cpu_hdr = cr_hbuf_get(ctx, sizeof(*cpu_hdr));
-> +	if (!cpu_hdr)
-> +		return -ENOMEM;
-> +
-> +	ret = cr_read_obj_type(ctx, cpu_hdr, sizeof(*cpu_hdr),
-> +				  CR_HDR_CPU);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = 0;
-> +
-> +	regs = task_pt_regs(current);
-> +	*regs = cpu_hdr->pt_regs;
-> +
-> +	regs->msr = sanitize_msr(regs->msr);
-> +
-> +	/* FP state */
-> +	memcpy(current->thread.fpr, cpu_hdr->fpr, sizeof(current->thread.fpr));
-> +	current->thread.fpscr.val = cpu_hdr->fpscr;
-> +	current->thread.fpexc_mode = cpu_hdr->fpexc_mode;
-> +
-> +	/* debug registers */
-> +	current->thread.dabr = cpu_hdr->dabr;
-
-I'm unfamiliar with powerpc; is it necessary to sanitize any of the registers
-here ?  For instance, can the user cause harm with specially crafted values
-of some registers ?
-
-> +out:
-> +	cr_hbuf_put(ctx, sizeof(*cpu_hdr));
-> +	return ret;
-> +}
-> +
-> +int cr_read_head_arch(struct cr_ctx *ctx)
-> +{
-> +	struct cr_hdr_head_arch *arch_hdr;
-> +	int ret;
-> +
-> +	arch_hdr = cr_hbuf_get(ctx, sizeof(*arch_hdr));
-> +	if (!arch_hdr)
-> +		return -ENOMEM;
-> +
-> +	ret = cr_read_obj_type(ctx, arch_hdr, sizeof(*arch_hdr),
-> +				  CR_HDR_HEAD_ARCH);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = 0;
-> +
-> +	if (arch_hdr->unimplemented != 0xdeadbeef) {
-> +		pr_debug("%s: unexpected arch_hdr contents: 0x%lx\n",
-> +			 __func__, (unsigned long)arch_hdr->unimplemented);
-
-Same as above: __func__ is redundant.
-
-> +		ret = -EINVAL;
-> +	}
-> +out:
-> +	cr_hbuf_put(ctx, sizeof(*arch_hdr));
-> +	return ret;
-> +}
-> +
-> +int cr_read_mm_context(struct cr_ctx *ctx, struct mm_struct *mm, int rparent)
-> +{
-> +	struct cr_hdr_mm_context *mm_hdr;
-> +	int ret;
-> +
-> +	mm_hdr = cr_hbuf_get(ctx, sizeof(*mm_hdr));
-> +	if (!mm_hdr)
-> +		return -ENOMEM;
-> +
-> +	ret = cr_read_obj_type(ctx, mm_hdr, sizeof(*mm_hdr),
-> +				  CR_HDR_MM_CONTEXT);
-> +	if (ret != rparent)
-> +		goto out;
-
-Seems like 'ret' isn't set to an error value if the 'goto' executes.
-
-> +
-> +	ret = 0;
-> +
-> +	if (mm_hdr->unimplemented != 0xdeadbeef) {
-> +		pr_debug("%s: unexpected mm_hdr contents: 0x%lx\n",
-> +			 __func__, (unsigned long)mm_hdr->unimplemented);
-
-Again, __func__ redundant.
-
-> +		ret = -EINVAL;
-> +	}
-> +
-> +out:
-> +	cr_hbuf_put(ctx, sizeof(*mm_hdr));
-> +	return ret;
-> +}
+This problem does not happen in our board on every reboot but happens
+occationaly. If you have got any solution please let me know.
 
 Thanks,
+Velumani
 
-Oren.
+Jon Smirl wrote:
+> 
+> If you are using a 33.333Mz crystal it is not possible to generate
+> exactly 48Mhz for USB. Best you can do is 48.11Mz. With a 33Mhz
+> crystal you can make 48Mhz exactly. But that's probably not your
+> problem, that just results in errors on the USB bus. Some USB devices
+> don't care and others will get errors.
+> 
+> On Sat, Nov 22, 2008 at 7:15 AM, Gianfranco Casanova
+> <gianfranco.casanova@alice.it> wrote:
+>> Grant Likely ha scritto:
+>>>
+>>> On Fri, Nov 21, 2008 at 1:36 AM,  <gianfranco.casanova@alice.it> wrote:
+>>>>
+>>>> The main HW difference between our board and lite5200 is:
+>>>> console on PSC3 and
+>>>
+>>> [...]
+>>>>
+>>>> on our HW defined as:
+>>>>        /* Radionav configuration */
+>>>>        port_config =  0x0C712E66;
+>>>>
+>>>
+>>> You've got quite a bit of difference than just console on PSC3.  USB
+>>> is on the Ethernet pin group instead of on the USB pin group.  Does
+>>> the kernel change the value of port_config when it boots, or does it
+>>> leave the value setup by U-Boot intact?
+>>
+>> As far as I sow from debugger no.
+>>
+>> We are able to boot with a mini operating system (see previous post).
+>> Plugging USB the system get frozen.
+>>
+>> We have got the same version of kernel compiled on PPC ARCH and USB, in
+>> this
+>> case, works.
+>>
+>> Between PPC and PowerPC from debugger there is only one difference the
+>> label
+>> for USB interrupt, in PPC is 50 in PowerPC is 134.
+>>
+>> I've already checked CDM register and GPIO register and all are the same.
+>>
+>> From USB register only one difference on HDDC values (not important from
+>> my
+>> point of view).
+>>
+>> Our processor frequency is different from lite5200. We are thinking that
+>> scaling frequency processor to determine frequency of USB bus is
+>> different
+>> in PPC and PowerPC. Other street we are looking for is some WR  patchs
+>> from
+>> lite5200 on PowerPC that are not accepted from our HW.
+>>
+>>>> I still do not understand our bug with USB.
+>>>> Have you got some suggestions or some test to be performed in order to
+>>>> find
+>>>> out a solutions?
+>>>
+>>> Not over a quick exchange via email.
+>>
+>> Yes of course :)
+>>
+>>> Your kernel is too old and USB
+>>> debugging can be complex.  I'd need to be working with your hardware
+>>> to figure out what is going on.
+>>
+>> I see. We also wont debug USB.
+>> Thaks J
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>
+> 
+> 
+> 
+> -- 
+> Jon Smirl
+> jonsmirl@gmail.com
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
+
+-- 
+View this message in context: http://www.nabble.com/USB-on-lite5200-does-not-work.-tp20601948p21723361.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
