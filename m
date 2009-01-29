@@ -1,23 +1,19 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.27])
-	by ozlabs.org (Postfix) with ESMTP id 07BCEDDF21
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 06:17:39 +1100 (EST)
-Received: by ey-out-2122.google.com with SMTP id 9so19013eyd.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 11:17:35 -0800 (PST)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-To: "Reynes Philippe" <philippe.reynes@isismpp.fr>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 58CB1DDFB5
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 06:20:35 +1100 (EST)
+Date: Thu, 29 Jan 2009 22:20:31 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Reynes Philippe <philippe.reynes@isismpp.fr>
 Subject: Re: [PATCH] add gpio to mpc837X rdb
+Message-ID: <20090129192031.GA17060@oksana.dev.rtsoft.ru>
 References: <761F451C5F17F74DAEE4661DA5ABBC1616C448@factorix.ISISTHIBAUD.local>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Thu, 29 Jan 2009 20:17:33 +0100
-In-Reply-To: <761F451C5F17F74DAEE4661DA5ABBC1616C448@factorix.ISISTHIBAUD.local>
-	(Reynes Philippe's message of "Thu\,
-	29 Jan 2009 18\:37\:15 +0100")
-Message-ID: <87y6wtq5v6.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <761F451C5F17F74DAEE4661DA5ABBC1616C448@factorix.ISISTHIBAUD.local>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Kumar Gala <kumar.gala@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Reynes" == Reynes Philippe <philippe.reynes@isismpp.fr> writes:
+On Thu, Jan 29, 2009 at 06:37:15PM +0100, Reynes Philippe wrote:
+> Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
+> ---
+> diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> index 165463f..45c9f03 100644
+> --- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> @@ -109,6 +109,24 @@
+>  			reg = <0x200 0x100>;
+>  		};
+>  
+> +		gpio1: gpio-controller@c00 {
+> +			#gpio-cells = <2>;
+> +			compatible = "fsl,mpc8347-gpio",
 
-Hi,
+I think this should be "fsl,mpc8377-gpio", "fsl,mpc8349-gpio".
 
- Reynes> Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
- 
- Reynes> +		gpio1: gpio-controller@c00 {
- Reynes> +			#gpio-cells = <2>;
- Reynes> +			compatible = "fsl,mpc8347-gpio",
- Reynes> "fsl,mpc8349-gpio";
+[...]
+> --- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> @@ -109,6 +109,24 @@
+>  			reg = <0x200 0x100>;
+>  		};
+>  
+> +		gpio1: gpio-controller@c00 {
+> +			#gpio-cells = <2>;
+> +			compatible = "fsl,mpc8347-gpio",
+> "fsl,mpc8349-gpio";
 
-The patch is wordwrapped, and you should use fsl,mpc8377-gpio, not
-mpc8347 (E.G. <actual platform>, mpc8349)
+"fsl,mpc8378-gpio", "fsl,mpc8349-gpio".
+
+[...]
+> --- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> @@ -107,6 +107,24 @@
+>  			reg = <0x200 0x100>;
+>  		};
+>  
+> +		gpio1: gpio-controller@c00 {
+> +			#gpio-cells = <2>;
+> +			compatible = "fsl,mpc8347-gpio",
+> "fsl,mpc8349-gpio";
+
+"fsl,mpc8379-gpio", "fsl,mpc8349-gpio".
+
+Thanks,
 
 -- 
-Bye, Peter Korsgaard
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
