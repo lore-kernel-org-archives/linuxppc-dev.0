@@ -1,20 +1,19 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id CBE82DE115
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 04:57:10 +1100 (EST)
-Subject: Re: 2.6.28-rt on PowerPC
-From: Steven Rostedt <srostedt@redhat.com>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090130174545.GA846@oksana.dev.rtsoft.ru>
-References: <20090129213429.GA29014@oksana.dev.rtsoft.ru>
-	<1233270043.3833.57.camel@localhost.localdomain>
-	<20090130174545.GA846@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 12:57:01 -0500
-Message-Id: <1233338221.3833.65.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-rt-users@vger.kernel.org
+Return-Path: <bms.monteiro@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.178])
+	by ozlabs.org (Postfix) with ESMTP id 3CDD8DE0B0
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 07:16:50 +1100 (EST)
+Received: by el-out-1112.google.com with SMTP id s27so64685ele.3
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 12:16:48 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <498208E0.7000707@trimble.com>
+References: <498208E0.7000707@trimble.com>
+Date: Thu, 29 Jan 2009 20:16:47 +0000
+Message-ID: <d43ae5a00901291216i81af684le53e534533b9c4b2@mail.gmail.com>
+Subject: Re: toolchain for building linux-2.6.27.8 or 2.6.28.1 ...
+From: Bruno Monteiro <bms.monteiro@gmail.com>
+To: mike_timmons@trimble.com
+Content-Type: multipart/alternative; boundary=000e0cd1a1fc985c420461a4c4b2
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,113 +23,170 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--000e0cd1a1fc985c420461a4c4b2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Fri, 2009-01-30 at 20:45 +0300, Anton Vorontsov wrote:
-> On Thu, Jan 29, 2009 at 06:00:43PM -0500, Steven Rostedt wrote:
-> [...]
-> > > BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
-> > > in_atomic(): 1 [00000100], irqs_disabled(): 0, pid: 7, name: sirq-net-rx/0
-> > > Call Trace:
-> > > [cf84bc20] [c0008be8] show_stack+0x4c/0x16c (unreliable)
-> > > [cf84bc60] [c001c194] __might_sleep+0xd8/0xf8
-> > > [cf84bc70] [c02b7768] rt_spin_lock+0x30/0x78
-> > > [cf84bc80] [c00800e0] kmem_cache_alloc+0x50/0x17c
-> > > [cf84bcb0] [c02568a4] ip_append_data+0x974/0x978
-> > > [cf84bd30] [c027aa0c] icmp_push_reply+0x54/0x128
-> > > [cf84bd50] [c027b59c] icmp_send+0x284/0x380
-> > > [cf84be40] [c0277328] __udp4_lib_rcv+0x3d4/0x5a0
-> > > [cf84bea0] [c0253208] ip_local_deliver_finish+0x74/0x128
-> [...]
-> > Turn on CONFIG_PREEMPT_TRACE (not TRACER) and it should show the
-> > location that left preemption disabled.
-> 
-> Thank you Steven, PREEMPT_TRACE is a great tool indeed (though on
-> PowerPC it doesn't work out of the box, but easily fixable).
+Hi Mike,
 
-Cool, I'd be interested in those fixes.
+For cross compile issue you should try
+crosstool-ng<http://ymorin.is-a-geek.org/dokuwiki/projects/crosstool>.
+It works fine with ppc 405.
 
-> 
-> So, the result:
-> 
-> ---------------------------
-> | preempt count: 00000100 ]
-> | 1-level deep critical section nesting:
-> ----------------------------------------
-> .. [<c002d9fc>] .... local_bh_disable+0x1c/0x34
-> .....[<c02afef8>] ..   ( <= icmp_send+0xac/0x388)
-> 
-> icmp_send() calls icmp_xmit_lock() that disables bottom halves,
-> then icmp_send() calls ip_append_data() that tries to allocate
-> things with GFP_ATOMIC, which should be OK...
+Regards,
+Bruno
 
-I'll have a look at that code. to find out what's up with it.
 
-> 
-> I guess now this isn't true for -rt kernels, correct? A comment
-> in slab.c ("which in turn implies that nobody does allocations
-> from atomic contexts") seem to confirm this.
-> 
-> (A bit unrelated question: If that's how things work now (i.e.
-> GFP_ATOMIC is equal to GFP_KERNEL or vice-versa), how should we
-> allocate things in IRQF_NODELAY/TIMER interrupts?)
+On Thu, Jan 29, 2009 at 7:52 PM, Mike Timmons <mike_timmons@trimble.com>wrote:
 
-Preallocate ;-)  Actually, we could never really allocate from NODELAY
-or TIMER interrupts in -rt. If we did, we were just lucky it worked.
+> I wrote a couple days ago needing advice on USB wi fi. I made some progress
+> but then I hit a snag loading the USB wi fi adapter firmware.
+>
+> Jon schooled me on the firmware topic (thanks Jon), and advised me to
+> select the following Kconfig options
+>
+> Kconfig
+> Device drivers
+>  generic driver options
+>    user space firmware support
+>       check - include in-kernel firmware blobs in kernel binary
+>
+>
+> My 2.6.24 kernel didn't offer these options, and I also suspected that
+> since 2.6.24 some progress on the ralink drivers I need has been made I
+> figured I'd just try a new kernel build and try to get my ralink-equipped
+> Linksys WUSB54GC to work.
+>
+> Trouble:
+> -I was using  Ltib Toolchain (gcc-3.4.3-glibc-2.3.6 (for 603e)) to build my
+> 2.6.24 kernel.
+> -It looks like somewhere after 2.6.24 this toolchain stopped successfully
+> compiling the kernel.
+>
+> So,
+> -I used crosstool and built 4.1.0 and 4.1.1 toolchains. Both produce the
+> following error:
+>
+>  OBJCOPY arch/powerpc/kernel/vdso32/vdso32.so
+> objcopy: Unable to recognise the format of the input file
+> `arch/powerpc/kernel/vdso32/vdso32.so.dbg'
+> make[3]: *** [arch/powerpc/kernel/vdso32/vdso32.so] Error 1
+> make[2]: *** [arch/powerpc/kernel/vdso32] Error 2
+>
+>
+> Questions:
+> 1) if I want to cross-compile a kernel later than 2.6.24 to hopefully get
+> better WAN device support (and clearer options for fw loading), which kernel
+> should I try, and which toolchain?
+>
+> the ltib repository does not appear to have a toolchain newer than
+>  gcc-3.4.3-glibc-2.3.6 (for 603e)
+>
+> Admissions, disclaimers, etc
+> 1) I'm using the same ltib script I have used for the 2.6.24 build with
+> toolchain gcc-3.4.3-glibc-2.3.6 (for 603e).
+> I'm simply modifying the kernel spec file to use 2.6.28.1 (and specifyin a
+> custom toolchain).
+> I've also tried to compile 2.6.27.8. I get the same error.
+>
+>
+> I think I'm slipping into version compatibility hell at this point. Please
+> throw me a rope if you can by way of advice if you can.
+>
+> Thanks!
+>
+> -Mike
+>
+>
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-> 
-> Anyway, this snippet fixes the issue:
-> 
-> diff --git a/net/ipv4/icmp.c b/net/ipv4/icmp.c
-> index 6bccfbe..4a4862b 100644
-> --- a/net/ipv4/icmp.c
-> +++ b/net/ipv4/icmp.c
-> @@ -222,6 +222,9 @@ static inline struct sock *icmp_xmit_lock(struct net *net)
->  		local_bh_enable();
->  		return NULL;
->  	}
-> +#ifdef CONFIG_PREEMPT_RT
-> +	local_bh_enable();
-> +#endif
+--000e0cd1a1fc985c420461a4c4b2
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-That is definitely just a work around. I'll have to look at it to see
-the main problem.
+Hi Mike,<br><br>For cross compile issue you should try <a href=3D"http://ym=
+orin.is-a-geek.org/dokuwiki/projects/crosstool">crosstool-ng</a>. It works =
+fine with ppc 405.<br><br>Regards,<br>Bruno<br><br><br><div class=3D"gmail_=
+quote">
+On Thu, Jan 29, 2009 at 7:52 PM, Mike Timmons <span dir=3D"ltr">&lt;<a href=
+=3D"mailto:mike_timmons@trimble.com">mike_timmons@trimble.com</a>&gt;</span=
+> wrote:<br><blockquote class=3D"gmail_quote" style=3D"border-left: 1px sol=
+id rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+I wrote a couple days ago needing advice on USB wi fi. I made some progress=
+ but then I hit a snag loading the USB wi fi adapter firmware.<br>
+<br>
+Jon schooled me on the firmware topic (thanks Jon), and advised me to selec=
+t the following Kconfig options<br>
+<br>
+Kconfig<br>
+Device drivers<br>
+&nbsp;generic driver options<br>
+ &nbsp; &nbsp;user space firmware support<br>
+ &nbsp; &nbsp; &nbsp; check - include in-kernel firmware blobs in kernel bi=
+nary<br>
+<br>
+<br>
+My 2.6.24 kernel didn&#39;t offer these options, and I also suspected that =
+since 2.6.24 some progress on the ralink drivers I need has been made I fig=
+ured I&#39;d just try a new kernel build and try to get my ralink-equipped =
+Linksys WUSB54GC to work.<br>
 
->  	return sk;
->  }
->  
-> --
-> 
-> Now the kernel is able to boot up to the login prompt, cool!
-> 
-> But after a while this pops up:
-> 
-> INFO: task sirq-high/0:4 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> sirq-high/0   D 00000000     0     4      2
-> Call Trace:
-> [cf839eb0] [60320800] 0x60320800 (unreliable)
-> [cf839f70] [c0009b34] __switch_to+0x50/0x74
-> [cf839f90] [c02ee48c] schedule+0x19c/0x380
-> [cf839fd0] [c00427ac] kthread+0x34/0x8c
-> [cf839ff0] [c001354c] kernel_thread+0x4c/0x68
-> ---------------------------
-> | preempt count: 00000002 ]
-> | 2-level deep critical section nesting:
-> ----------------------------------------
-> .. [<c02ee340>] .... schedule+0x50/0x380
-> .....[<c00427ac>] ..   ( <= kthread+0x34/0x8c)
-> .. [<c02f0700>] .... _spin_lock_irq+0x2c/0x4c
-> .....[<c02ee388>] ..   ( <= schedule+0x98/0x380)
-> 
-> 
-> And keeps popping up every 120 seconds, though both kernel and
-> userspace stay alive.
+<br>
+Trouble:<br>
+-I was using &nbsp;Ltib Toolchain (gcc-3.4.3-glibc-2.3.6 (for 603e)) to bui=
+ld my 2.6.24 kernel.<br>
+-It looks like somewhere after 2.6.24 this toolchain stopped successfully c=
+ompiling the kernel.<br>
+<br>
+So,<br>
+-I used crosstool and built 4.1.0 and 4.1.1 toolchains. Both produce the fo=
+llowing error:<br>
+<br>
+&nbsp;OBJCOPY arch/powerpc/kernel/vdso32/vdso32.so<br>
+objcopy: Unable to recognise the format of the input file `arch/powerpc/ker=
+nel/vdso32/vdso32.so.dbg&#39;<br>
+make[3]: *** [arch/powerpc/kernel/vdso32/vdso32.so] Error 1<br>
+make[2]: *** [arch/powerpc/kernel/vdso32] Error 2<br>
+<br>
+<br>
+Questions:<br>
+1) if I want to cross-compile a kernel later than 2.6.24 to hopefully get b=
+etter WAN device support (and clearer options for fw loading), which kernel=
+ should I try, and which toolchain?<br>
+<br>
+the ltib repository does not appear to have a toolchain newer than &nbsp;gc=
+c-3.4.3-glibc-2.3.6 (for 603e)<br>
+<br>
+Admissions, disclaimers, etc<br>
+1) I&#39;m using the same ltib script I have used for the 2.6.24 build with=
+ toolchain gcc-3.4.3-glibc-2.3.6 (for 603e).<br>
+I&#39;m simply modifying the kernel spec file to use 2.6.28.1 (and specifyi=
+n a custom toolchain).<br>
+I&#39;ve also tried to compile 2.6.27.8. I get the same error.<br>
+<br>
+<br>
+I think I&#39;m slipping into version compatibility hell at this point. Ple=
+ase throw me a rope if you can by way of advice if you can.<br>
+<br>
+Thanks!<br>
+<br>
+-Mike<br>
+<br>
+<br>
+<br>
+<br>
+_______________________________________________<br>
+Linuxppc-dev mailing list<br>
+<a href=3D"mailto:Linuxppc-dev@ozlabs.org" target=3D"_blank">Linuxppc-dev@o=
+zlabs.org</a><br>
+<a href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-dev" target=3D"_bla=
+nk">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br>
+</blockquote></div><br>
 
-Hmm, that will also take more looking into to. That is probably specific
-to PPC.
-
-Again, my focus is currently on getting all the main pieces in. The
-archs will still have to wait. But thanks for taking the time to look at
-it. It gives me a preview to what I will need to deal with.
-
--- Steve
+--000e0cd1a1fc985c420461a4c4b2--
