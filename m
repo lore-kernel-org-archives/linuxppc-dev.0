@@ -2,13 +2,13 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 95287DE042
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 16:10:11 +1100 (EST)
-Date: Wed, 28 Jan 2009 23:09:42 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTPS id 312CBDE486
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 16:10:39 +1100 (EST)
+Date: Wed, 28 Jan 2009 23:10:33 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: regis.odeye@kontron.com
-Subject: [RFC/example] powerpc: add the mpic global timer support
-Message-ID: <Pine.LNX.4.64.0901062200550.19321@blarg.am.freescale.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull from 'next' branch (for 2.6.30)
+Message-ID: <Pine.LNX.4.64.0901282309450.28856@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -21,521 +21,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Dave Liu <daveliu@freescale.com>
+Please pull from 'next' branch of
 
-The mpic timer works as wake up source for power management,
-the max timer period is 336 seconds when the CCB freq is 400MHz.
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
 
-to setup timer, type
-echo 30 > /sys/devices/ffe00000.soc8572/ffe41100.timer/timeout
+to receive the following updates:
 
-before the system enter to sleep mode.
+ Documentation/powerpc/dts-bindings/fsl/dma.txt |   34
+ arch/powerpc/Kconfig                           |   19
+ arch/powerpc/boot/dts/gef_sbc310.dts           |  364 +++++
+ arch/powerpc/boot/dts/mpc8315erdb.dts          |   64
+ arch/powerpc/boot/dts/mpc8377_mds.dts          |   64
+ arch/powerpc/boot/dts/mpc8377_rdb.dts          |   70 +
+ arch/powerpc/boot/dts/mpc8378_mds.dts          |   64
+ arch/powerpc/boot/dts/mpc8378_rdb.dts          |   70 +
+ arch/powerpc/boot/dts/mpc8379_rdb.dts          |    6
+ arch/powerpc/configs/86xx/gef_sbc310_defconfig | 1613 +++++++++++++++++++++++++
+ arch/powerpc/include/asm/reg_booke.h           |    1
+ arch/powerpc/kernel/Makefile                   |    1
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S      |   31
+ arch/powerpc/kernel/cputable.c                 |    8
+ arch/powerpc/kernel/head_booke.h               |    6
+ arch/powerpc/kernel/head_fsl_booke.S           |   81 -
+ arch/powerpc/mm/fsl_booke_mmu.c                |   93 -
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c      |    2
+ arch/powerpc/platforms/83xx/mpc837x_mds.c      |   10
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c      |    2
+ arch/powerpc/platforms/86xx/Kconfig            |   10
+ arch/powerpc/platforms/86xx/Makefile           |    1
+ arch/powerpc/platforms/86xx/gef_gpio.c         |   36
+ arch/powerpc/platforms/86xx/gef_sbc310.c       |  230 +++
+ arch/powerpc/sysdev/cpm2.c                     |    3
+ arch/powerpc/sysdev/fsl_pci.c                  |  244 +++
+ drivers/watchdog/Kconfig                       |    2
+ include/linux/pci_ids.h                        |    8
+ 28 files changed, 3003 insertions(+), 134 deletions(-)
 
-Signed-off-by: Dave Liu <daveliu@freescale.com>
----
+Anton Vorontsov (2):
+      powerpc/fsl_pci: Add MPC83xx PCI-E controller RC mode support
+      powerpc/83xx: Add PCI-E support for all MPC83xx boards with PCI-E
 
-Posting this both as a example of timer code for Regis as well as code for
-partial review.. need to clean up a number of things.
+Kumar Gala (2):
+      powerpc/fsl-booke: Cleanup init/exception setup to be runtime
+      powerpc/fsl: Ensure PCI_QUIRKS are enabled for FSL_PCI
 
-- k
+Laurent Pinchart (1):
+      cpm2: Round the baud-rate clock divider to the nearest integer.
 
- arch/powerpc/boot/dts/mpc8572ds.dts |    7 +
- arch/powerpc/include/asm/mpic.h     |    1 +
- arch/powerpc/sysdev/Makefile        |    2 +-
- arch/powerpc/sysdev/mpic.c          |   89 ++++++++++++-
- arch/powerpc/sysdev/mpic_timer.c    |  257 +++++++++++++++++++++++++++++++++++
- 5 files changed, 350 insertions(+), 6 deletions(-)
- create mode 100644 arch/powerpc/sysdev/mpic_timer.c
+Martyn Welch (3):
+      powerpc/86xx: Board support for GE Fanuc SBC310
+      powerpc/86xx: Default configutation for GE Fanuc's SBC310
+      powerpc/86xx: Extend GE Fanuc GPIO driver for the SBC310
 
-diff --git a/arch/powerpc/boot/dts/mpc8572ds.dts b/arch/powerpc/boot/dts/mpc8572ds.dts
-index 82a8845..f3620a6 100644
---- a/arch/powerpc/boot/dts/mpc8572ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8572ds.dts
-@@ -464,6 +464,13 @@
- 			fsl,has-rstcr;
- 		};
+Peter Korsgaard (1):
+      powerpc: convert dts-bindings/fsl/dma.txt to dts-v1 syntax
 
-+		timer@41100 {
-+			compatible = "fsl,mpic-global-timer";
-+			reg = <0x41100 0x204>;
-+			interrupts = <0xf7 0x2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
- 		msi@41600 {
- 			compatible = "fsl,mpc8572-msi", "fsl,mpic-msi";
- 			reg = <0x41600 0x80>;
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index eb685ed..a98be7d 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -254,6 +254,7 @@ struct mpic
- #ifdef CONFIG_SMP
- 	struct irq_chip		hc_ipi;
- #endif
-+	struct irq_chip		hc_tm;
- 	const char		*name;
- 	/* Flags */
- 	unsigned int		flags;
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index a90054b..58414fa 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -3,7 +3,7 @@ EXTRA_CFLAGS			+= -mno-minimal-toc
- endif
+Reynes Philippe (1):
+      powerpc/83xx: Add i2c eeprom to dts for MPC837x RDB
 
- mpic-msi-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o mpic_u3msi.o mpic_pasemi_msi.o
--obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y)
-+obj-$(CONFIG_MPIC)		+= mpic.o mpic_timer.o $(mpic-msi-obj-y)
- fsl-msi-obj-$(CONFIG_PCI_MSI)	+= fsl_msi.o
-
- obj-$(CONFIG_PPC_MPC106)	+= grackle.o
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index e1d77ab..0cd9dac 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -207,6 +207,22 @@ static inline void _mpic_ipi_write(struct mpic *mpic, unsigned int ipi, u32 valu
- 	_mpic_write(mpic->reg_type, &mpic->gregs, offset, value);
- }
-
-+static inline u32 _mpic_tm_read(struct mpic *mpic, unsigned int tm)
-+{
-+	unsigned int offset = MPIC_INFO(TIMER_VECTOR_PRI) +
-+			      (tm * MPIC_INFO(TIMER_STRIDE));
-+
-+	return _mpic_read(mpic->reg_type, &mpic->tmregs, offset);
-+}
-+
-+static inline void _mpic_tm_write(struct mpic *mpic, unsigned int tm, u32 value)
-+{
-+	unsigned int offset = MPIC_INFO(TIMER_VECTOR_PRI) +
-+			      (tm * MPIC_INFO(TIMER_STRIDE));
-+
-+	_mpic_write(mpic->reg_type, &mpic->tmregs, offset, value);
-+}
-+
- static inline u32 _mpic_cpu_read(struct mpic *mpic, unsigned int reg)
- {
- 	unsigned int cpu = 0;
-@@ -259,6 +275,8 @@ static inline void _mpic_irq_write(struct mpic *mpic, unsigned int src_no,
- #define mpic_write(b,r,v)	_mpic_write(mpic->reg_type,&(b),(r),(v))
- #define mpic_ipi_read(i)	_mpic_ipi_read(mpic,(i))
- #define mpic_ipi_write(i,v)	_mpic_ipi_write(mpic,(i),(v))
-+#define mpic_tm_read(i)		_mpic_tm_read(mpic,(i))
-+#define mpic_tm_write(i,v)	_mpic_tm_write(mpic,(i),(v))
- #define mpic_cpu_read(i)	_mpic_cpu_read(mpic,(i))
- #define mpic_cpu_write(i,v)	_mpic_cpu_write(mpic,(i),(v))
- #define mpic_irq_read(s,r)	_mpic_irq_read(mpic,(s),(r))
-@@ -612,7 +630,8 @@ static int irq_choose_cpu(unsigned int virt_irq)
- #define mpic_irq_to_hw(virq)	((unsigned int)irq_map[virq].hwirq)
-
- /* Find an mpic associated with a given linux interrupt */
--static struct mpic *mpic_find(unsigned int irq, unsigned int *is_ipi)
-+static struct mpic *mpic_find(unsigned int irq, unsigned int *is_ipi,
-+			      unsigned int *is_tm)
- {
- 	unsigned int src = mpic_irq_to_hw(irq);
- 	struct mpic *mpic;
-@@ -625,6 +644,9 @@ static struct mpic *mpic_find(unsigned int irq, unsigned int *is_ipi)
- 	if (is_ipi)
- 		*is_ipi = (src >= mpic->ipi_vecs[0] &&
- 			   src <= mpic->ipi_vecs[3]);
-+	if (is_tm)
-+		*is_tm = (src >= mpic->timer_vecs[0] &&
-+			  src <= mpic->timer_vecs[3]);
-
- 	return mpic;
- }
-@@ -648,6 +670,12 @@ static inline struct mpic * mpic_from_ipi(unsigned int ipi)
- }
- #endif
-
-+/* Get the mpic structure from the tm number */
-+static inline struct mpic * mpic_from_tm(unsigned int tm)
-+{
-+	return irq_desc[tm].chip_data;
-+}
-+
- /* Get the mpic structure from the irq number */
- static inline struct mpic * mpic_from_irq(unsigned int irq)
- {
-@@ -817,6 +845,32 @@ static void mpic_end_ipi(unsigned int irq)
-
- #endif /* CONFIG_SMP */
-
-+static void mpic_unmask_tm(unsigned int irq)
-+{
-+	struct mpic *mpic = mpic_from_tm(irq);
-+	unsigned int src = mpic_irq_to_hw(irq) - mpic->timer_vecs[0];
-+
-+	DBG("%s: enable_tm: %d (tm %d)\n", mpic->name, irq, src);
-+	mpic_tm_write(src, mpic_tm_read(src) & ~MPIC_VECPRI_MASK);
-+	mpic_tm_read(src);
-+}
-+
-+static void mpic_mask_tm(unsigned int irq)
-+{
-+	struct mpic *mpic = mpic_from_tm(irq);
-+	unsigned int src = mpic_irq_to_hw(irq) - mpic->timer_vecs[0];
-+
-+	mpic_tm_write(src, mpic_tm_read(src) | MPIC_VECPRI_MASK);
-+	mpic_tm_read(src);
-+}
-+
-+static void mpic_end_tm(unsigned int irq)
-+{
-+	struct mpic *mpic = mpic_from_tm(irq);
-+
-+	mpic_eoi(mpic);
-+}
-+
- void mpic_set_affinity(unsigned int irq, cpumask_t cpumask)
- {
- 	struct mpic *mpic = mpic_from_irq(irq);
-@@ -930,6 +984,12 @@ static struct irq_chip mpic_ipi_chip = {
- };
- #endif /* CONFIG_SMP */
-
-+static struct irq_chip mpic_tm_chip = {
-+	.mask		= mpic_mask_tm,
-+	.unmask		= mpic_unmask_tm,
-+	.eoi		= mpic_end_tm,
-+};
-+
- #ifdef CONFIG_MPIC_U3_HT_IRQS
- static struct irq_chip mpic_irq_ht_chip = {
- 	.startup	= mpic_startup_ht_irq,
-@@ -961,6 +1021,15 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
- 	if (mpic->protected && test_bit(hw, mpic->protected))
- 		return -EINVAL;
-
-+	else if (hw >= mpic->timer_vecs[0] && hw <= mpic->timer_vecs[3]) {
-+		WARN_ON(!(mpic->flags & MPIC_PRIMARY));
-+
-+		DBG("mpic: mapping as timer\n");
-+		set_irq_chip_data(virq, mpic);
-+		set_irq_chip_and_handler(virq, &mpic->hc_tm,
-+					 handle_fasteoi_irq);
-+		return 0;
-+	}
- #ifdef CONFIG_SMP
- 	else if (hw >= mpic->ipi_vecs[0]) {
- 		WARN_ON(!(mpic->flags & MPIC_PRIMARY));
-@@ -1090,6 +1159,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	mpic->hc_ipi.typename = name;
- #endif /* CONFIG_SMP */
-
-+	mpic->hc_tm = mpic_tm_chip;
-+	mpic->hc_tm.typename = name;
-+
- 	mpic->flags = flags;
- 	mpic->isu_size = isu_size;
- 	mpic->irq_count = irq_count;
-@@ -1279,15 +1351,17 @@ void __init mpic_init(struct mpic *mpic)
- 	/* Set current processor priority to max */
- 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
-
--	/* Initialize timers: just disable them all */
-+	/* Initialize timers to our reserved vectors and mask them for now */
- 	for (i = 0; i < 4; i++) {
- 		mpic_write(mpic->tmregs,
- 			   i * MPIC_INFO(TIMER_STRIDE) +
--			   MPIC_INFO(TIMER_DESTINATION), 0);
-+			   MPIC_INFO(TIMER_DESTINATION),
-+			   1 << hard_smp_processor_id());
- 		mpic_write(mpic->tmregs,
- 			   i * MPIC_INFO(TIMER_STRIDE) +
- 			   MPIC_INFO(TIMER_VECTOR_PRI),
- 			   MPIC_VECPRI_MASK |
-+			   (9 << MPIC_VECPRI_PRIORITY_SHIFT) |
- 			   (mpic->timer_vecs[0] + i));
- 	}
-
-@@ -1378,8 +1452,8 @@ void __init mpic_set_serial_int(struct mpic *mpic, int enable)
-
- void mpic_irq_set_priority(unsigned int irq, unsigned int pri)
- {
--	unsigned int is_ipi;
--	struct mpic *mpic = mpic_find(irq, &is_ipi);
-+	unsigned int is_ipi, is_tm;
-+	struct mpic *mpic = mpic_find(irq, &is_ipi, &is_tm);
- 	unsigned int src = mpic_irq_to_hw(irq);
- 	unsigned long flags;
- 	u32 reg;
-@@ -1393,6 +1467,11 @@ void mpic_irq_set_priority(unsigned int irq, unsigned int pri)
- 			~MPIC_VECPRI_PRIORITY_MASK;
- 		mpic_ipi_write(src - mpic->ipi_vecs[0],
- 			       reg | (pri << MPIC_VECPRI_PRIORITY_SHIFT));
-+	} else if (is_tm) {
-+		reg = mpic_tm_read(src - mpic->timer_vecs[0]) &
-+			~MPIC_VECPRI_PRIORITY_MASK;
-+		mpic_tm_write(src - mpic->timer_vecs[0],
-+			      reg | (pri << MPIC_VECPRI_PRIORITY_SHIFT));
- 	} else {
- 		reg = mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI))
- 			& ~MPIC_VECPRI_PRIORITY_MASK;
-diff --git a/arch/powerpc/sysdev/mpic_timer.c b/arch/powerpc/sysdev/mpic_timer.c
-new file mode 100644
-index 0000000..1d39732
---- /dev/null
-+++ b/arch/powerpc/sysdev/mpic_timer.c
-@@ -0,0 +1,257 @@
-+/*
-+ * Copyright (c) 2008 Freescale Semiconductor, Inc. All rights reserved.
-+ * Dave Liu <daveliu@freescale.com>
-+ * copy from the 83xx GTM driver and modify for MPIC global timer,
-+ * implement the global timer 0 function.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/mm.h>
-+#include <linux/delay.h>
-+#include <linux/fs.h>
-+#include <linux/string.h>
-+#include <linux/interrupt.h>
-+#include <linux/sysfs.h>
-+#include <linux/of_platform.h>
-+
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+
-+#include <sysdev/fsl_soc.h>
-+
-+#define MPIC_TIMER_TCR_OFFSET		0x200
-+#define MPIC_TIMER_TCR_CLKDIV_64	0x00000300
-+#define MPIC_TIMER_STOP			0x80000000
-+
-+struct mpic_tm_regs {
-+	u32	gtccr;
-+	u32	res0[3];
-+	u32	gtbcr;
-+	u32	res1[3];
-+	u32	gtvpr;
-+	u32	res2[3];
-+	u32	gtdr;
-+	u32	res3[3];
-+};
-+
-+struct mpic_tm_priv {
-+	struct mpic_tm_regs __iomem *regs;
-+	int irq;
-+	int ticks_per_sec;
-+	spinlock_t lock;
-+};
-+
-+struct mpic_type {
-+	int has_tcr;
-+};
-+
-+static irqreturn_t mpic_tm_isr(int irq, void *dev_id)
-+{
-+	struct mpic_tm_priv *priv = dev_id;
-+	unsigned long flags;
-+	unsigned long temp;
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+	temp = in_be32(&priv->regs->gtbcr);
-+	temp |= MPIC_TIMER_STOP; /* counting inhibited */
-+	out_be32(&priv->regs->gtbcr, temp);
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static ssize_t mpic_tm_timeout_store(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	struct mpic_tm_priv *priv = dev_get_drvdata(dev);
-+	unsigned long interval = simple_strtoul(buf, NULL, 0);
-+	unsigned long temp;
-+
-+	if (interval > 0x7fffffff) {
-+		dev_dbg(dev, "mpic_tm: interval %lu (in ns) too long\n", interval);
-+		return -EINVAL;
-+	}
-+
-+	interval *= priv->ticks_per_sec;
-+
-+	if (interval > 0x7fffffff) {
-+		dev_dbg(dev, "mpic_tm: interval %lu (in ticks) too long\n",
-+			interval);
-+		return -EINVAL;
-+	}
-+
-+	spin_lock_irq(&priv->lock);
-+
-+	/* stop timer 0 */
-+	temp = in_be32(&priv->regs->gtbcr);
-+	temp |= MPIC_TIMER_STOP; /* counting inhibited */
-+	out_be32(&priv->regs->gtbcr, temp);
-+
-+	if (interval != 0) {
-+		/* start timer */
-+		out_be32(&priv->regs->gtbcr, interval | MPIC_TIMER_STOP);
-+		out_be32(&priv->regs->gtbcr, interval);
-+	}
-+
-+	spin_unlock_irq(&priv->lock);
-+	return count;
-+}
-+
-+static ssize_t mpic_tm_timeout_show(struct device *dev,
-+				struct device_attribute *attr,
-+				char *buf)
-+{
-+	struct mpic_tm_priv *priv = dev_get_drvdata(dev);
-+	int timeout = 0;
-+
-+	spin_lock_irq(&priv->lock);
-+
-+	if (!(in_be32(&priv->regs->gtbcr) & MPIC_TIMER_STOP)) {
-+		timeout = in_be32(&priv->regs->gtccr);
-+		timeout += priv->ticks_per_sec - 1;
-+		timeout /= priv->ticks_per_sec;
-+	}
-+
-+	spin_unlock_irq(&priv->lock);
-+	return sprintf(buf, "%u\n", timeout);
-+}
-+
-+static DEVICE_ATTR(timeout, 0660, mpic_tm_timeout_show, mpic_tm_timeout_store);
-+
-+static int __devinit mpic_tm_probe(struct of_device *dev,
-+				const struct of_device_id *match)
-+{
-+	struct device_node *np = dev->node;
-+	struct resource res;
-+	struct mpic_tm_priv *priv;
-+	struct mpic_type *type = match->data;
-+	int has_tcr = type->has_tcr;
-+	u32 busfreq = fsl_get_sys_freq();
-+	int ret = 0;
-+
-+	if (busfreq == 0) {
-+		dev_err(&dev->dev, "mpic_tm: No bus frequency in device tree.\n");
-+		return -ENODEV;
-+	}
-+
-+	priv = kmalloc(sizeof(struct mpic_tm_priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&priv->lock);
-+	dev_set_drvdata(&dev->dev, priv);
-+
-+	ret = of_address_to_resource(np, 0, &res);
-+	if (ret)
-+		goto out;
-+
-+	priv->irq = irq_of_parse_and_map(np, 0);
-+	if (priv->irq == NO_IRQ) {
-+		dev_err(&dev->dev, "MPIC global timer0 exists in device tree "
-+				"without an IRQ.\n");
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	ret = request_irq(priv->irq, mpic_tm_isr, 0, "mpic timer 0", priv);
-+	if (ret)
-+		goto out;
-+
-+	priv->regs = ioremap(res.start, res.end - res.start + 1);
-+	if (!priv->regs) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	/*
-+	 * MPIC implementation from Freescale has the TCR register,
-+	 * the MPIC_TIMER_TCR_OFFSET is 0x200 from global timer base
-+	 * the default clock source to the MPIC timer 0 is CCB freq / 8.
-+	 * to extend the timer period, we divide the timer clock source
-+	 * as CCB freq / 64, so the max timer period is 336 seconds
-+	 * when the CCB frequence is 400MHz.
-+	 */
-+	if (!has_tcr) {
-+		priv->ticks_per_sec = busfreq / 8;
-+	} else {
-+		u32 __iomem *tcr;
-+		tcr = (u32 __iomem *)((u32)priv->regs + MPIC_TIMER_TCR_OFFSET);
-+		out_be32(tcr, in_be32(tcr) | MPIC_TIMER_TCR_CLKDIV_64);
-+		priv->ticks_per_sec = busfreq / 64;
-+	}
-+
-+	ret = device_create_file(&dev->dev, &dev_attr_timeout);
-+	if (ret)
-+		goto out;
-+
-+	printk("MPIC global timer init done.\n");
-+
-+	return 0;
-+
-+out:
-+	kfree(priv);
-+	return ret;
-+}
-+
-+static int __devexit mpic_tm_remove(struct of_device *dev)
-+{
-+	struct mpic_tm_priv *priv = dev_get_drvdata(&dev->dev);
-+
-+	device_remove_file(&dev->dev, &dev_attr_timeout);
-+	free_irq(priv->irq, priv);
-+	iounmap(priv->regs);
-+
-+	dev_set_drvdata(&dev->dev, NULL);
-+	kfree(priv);
-+	return 0;
-+}
-+
-+static struct mpic_type mpic_types[] = {
-+	{
-+		.has_tcr = 0,
-+	},
-+	{
-+		.has_tcr = 1,
-+	}
-+};
-+
-+static struct of_device_id mpic_tm_match[] = {
-+	{
-+		.compatible = "mpic-global-timer",
-+		.data = &mpic_types[0],
-+	},
-+	{
-+		.compatible = "fsl,mpic-global-timer",
-+		.data = &mpic_types[1],
-+	},
-+	{},
-+};
-+
-+static struct of_platform_driver mpic_tm_driver = {
-+	.name = "mpic-global-timer",
-+	.match_table = mpic_tm_match,
-+	.probe = mpic_tm_probe,
-+	.remove = __devexit_p(mpic_tm_remove)
-+};
-+
-+static int __init mpic_tm_init(void)
-+{
-+	return of_register_platform_driver(&mpic_tm_driver);
-+}
-+
-+static void __exit mpic_tm_exit(void)
-+{
-+	of_unregister_platform_driver(&mpic_tm_driver);
-+}
-+
-+module_init(mpic_tm_init);
-+module_exit(mpic_tm_exit);
--- 
-1.5.6.5
+Trent Piepho (3):
+      powerpc/fsl-booke: Remove code duplication in lowmem mapping
+      powerpc/fsl-booke: Allow larger CAM sizes than 256 MB
+      powerpc/fsl-booke: Make CAM entries used for lowmem configurable
