@@ -1,20 +1,17 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 2C522DE028
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 08:33:37 +1100 (EST)
-Date: Thu, 29 Jan 2009 22:33:31 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 7/8] powerpc/5200: Refactor mpc5200 interrupt
-	controller driver
-Message-ID: <20090129213331.GF1406@pengutronix.de>
-References: <20090121205506.31232.27908.stgit@localhost.localdomain>
-	<20090121205540.31232.77034.stgit@localhost.localdomain>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id C33D4474CF
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 08:34:31 +1100 (EST)
+Date: Fri, 30 Jan 2009 00:34:29 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Subject: 2.6.28-rt on PowerPC
+Message-ID: <20090129213429.GA29014@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MZf7D3rAEoQgPanC"
-In-Reply-To: <20090121205540.31232.77034.stgit@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-rt-users@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,319 +21,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Steven,
 
---MZf7D3rAEoQgPanC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I know 2.6.28-rt isn't yet ready, but I could not resist to try
+it anyway. ;-)
 
-On Wed, Jan 21, 2009 at 01:55:41PM -0700, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->=20
-> Rework the mpc5200-pic driver to simplify it and fix up the setting
-> of desc->status when set_type is called for internal IRQs (so they
-> are reported as level, not edge).  The simplification is due to
-> splitting off the handling of external IRQs into a separate block
-> so they don't need to be handled as exceptions in the normal
-> CRIT, MAIN and PERP paths.
->=20
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> CC: Wolfram Sang <w.sang@pengutronix.de>
+Here are few issues and ways to solve them:
 
-Can't say much about this one as I have never dealt with the PIC
-directly so far. Yet, my phyCORE-MPC5200B-tiny behaves normal, so
+Currently the -rt tree doesn't link for arch/powerpc:
 
-Tested-by: Wolfram Sang <w.sang@pengutronix.de>
+  LD      .tmp_vmlinux1
+  arch/powerpc/kernel/built-in.o: In function `show_interrupts':
+  (.text+0x27bc): undefined reference to `__call_bad_lock_func'
+  arch/powerpc/kernel/built-in.o: In function `show_interrupts':
+  (.text+0x28b0): undefined reference to `__call_bad_lock_func'
+  make: *** [.tmp_vmlinux1] Error 1
 
-> ---
->=20
->  arch/powerpc/platforms/52xx/mpc52xx_pic.c |  145 ++++++++++++-----------=
-------
->  1 files changed, 58 insertions(+), 87 deletions(-)
->=20
->=20
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/pla=
-tforms/52xx/mpc52xx_pic.c
-> index c0a9559..277c9c5 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-> @@ -190,10 +190,10 @@ static void mpc52xx_extirq_ack(unsigned int virq)
-> =20
->  static int mpc52xx_extirq_set_type(unsigned int virq, unsigned int flow_=
-type)
->  {
-> -	struct irq_desc *desc =3D get_irq_desc(virq);
->  	u32 ctrl_reg, type;
->  	int irq;
->  	int l2irq;
-> +	void *handler =3D handle_level_irq;
-> =20
->  	irq =3D irq_map[virq].hwirq;
->  	l2irq =3D irq & MPC52xx_IRQ_L2_MASK;
-> @@ -201,32 +201,21 @@ static int mpc52xx_extirq_set_type(unsigned int vir=
-q, unsigned int flow_type)
->  	pr_debug("%s: irq=3D%x. l2=3D%d flow_type=3D%d\n", __func__, irq, l2irq=
-, flow_type);
-> =20
->  	switch (flow_type) {
-> -	case IRQF_TRIGGER_HIGH:
-> -		type =3D 0;
-> -		break;
-> -	case IRQF_TRIGGER_RISING:
-> -		type =3D 1;
-> -		break;
-> -	case IRQF_TRIGGER_FALLING:
-> -		type =3D 2;
-> -		break;
-> -	case IRQF_TRIGGER_LOW:
-> -		type =3D 3;
-> -		break;
-> +	case IRQF_TRIGGER_HIGH: type =3D 0; break;
-> +	case IRQF_TRIGGER_RISING: type =3D 1; handler =3D handle_edge_irq; brea=
-k;
-> +	case IRQF_TRIGGER_FALLING: type =3D 2; handler =3D handle_edge_irq; bre=
-ak;
-> +	case IRQF_TRIGGER_LOW: type =3D 3; break;
->  	default:
->  		type =3D 0;
->  	}
-> =20
-> -	desc->status &=3D ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
-> -	desc->status |=3D flow_type & IRQ_TYPE_SENSE_MASK;
-> -	if (flow_type & (IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW))
-> -		desc->status |=3D IRQ_LEVEL;
-> -
->  	ctrl_reg =3D in_be32(&intr->ctrl);
->  	ctrl_reg &=3D ~(0x3 << (22 - (l2irq * 2)));
->  	ctrl_reg |=3D (type << (22 - (l2irq * 2)));
->  	out_be32(&intr->ctrl, ctrl_reg);
-> =20
-> +	__set_irq_handler_unlocked(virq, handler);
-> +
->  	return 0;
->  }
-> =20
-> @@ -241,6 +230,11 @@ static struct irq_chip mpc52xx_extirq_irqchip =3D {
->  /*
->   * Main interrupt irq_chip
->   */
-> +static int mpc52xx_null_set_type(unsigned int virq, unsigned int flow_ty=
-pe)
-> +{
-> +	return 0; /* Do nothing so that the sense mask will get updated */
-> +}
-> +
->  static void mpc52xx_main_mask(unsigned int virq)
->  {
->  	int irq;
-> @@ -268,6 +262,7 @@ static struct irq_chip mpc52xx_main_irqchip =3D {
->  	.mask =3D mpc52xx_main_mask,
->  	.mask_ack =3D mpc52xx_main_mask,
->  	.unmask =3D mpc52xx_main_unmask,
-> +	.set_type =3D mpc52xx_null_set_type,
->  };
-> =20
->  /*
-> @@ -300,6 +295,7 @@ static struct irq_chip mpc52xx_periph_irqchip =3D {
->  	.mask =3D mpc52xx_periph_mask,
->  	.mask_ack =3D mpc52xx_periph_mask,
->  	.unmask =3D mpc52xx_periph_unmask,
-> +	.set_type =3D mpc52xx_null_set_type,
->  };
-> =20
->  /*
-> @@ -343,9 +339,19 @@ static struct irq_chip mpc52xx_sdma_irqchip =3D {
->  	.mask =3D mpc52xx_sdma_mask,
->  	.unmask =3D mpc52xx_sdma_unmask,
->  	.ack =3D mpc52xx_sdma_ack,
-> +	.set_type =3D mpc52xx_null_set_type,
->  };
-> =20
->  /**
-> + * mpc52xx_is_extirq - Returns true if hwirq number is for an external I=
-RQ
-> + */
-> +static int mpc52xx_is_extirq(int l1, int l2)
-> +{
-> +	return ((l1 =3D=3D 0) && (l2 =3D=3D 0)) ||
-> +	       ((l1 =3D=3D 1) && (l2 >=3D 1) && (l2 <=3D 3));
-> +}
-> +
-> +/**
->   * mpc52xx_irqhost_xlate - translate virq# from device tree interrupts p=
-roperty
->   */
->  static int mpc52xx_irqhost_xlate(struct irq_host *h, struct device_node =
-*ct,
-> @@ -363,38 +369,23 @@ static int mpc52xx_irqhost_xlate(struct irq_host *h=
-, struct device_node *ct,
-> =20
->  	intrvect_l1 =3D (int)intspec[0];
->  	intrvect_l2 =3D (int)intspec[1];
-> -	intrvect_type =3D (int)intspec[2];
-> +	intrvect_type =3D (int)intspec[2] & 0x3;
-> =20
->  	intrvect_linux =3D (intrvect_l1 << MPC52xx_IRQ_L1_OFFSET) &
->  			 MPC52xx_IRQ_L1_MASK;
->  	intrvect_linux |=3D intrvect_l2 & MPC52xx_IRQ_L2_MASK;
-> =20
-> -	pr_debug("return %x, l1=3D%d, l2=3D%d\n", intrvect_linux, intrvect_l1,
-> -		 intrvect_l2);
-> -
->  	*out_hwirq =3D intrvect_linux;
-> -	*out_flags =3D mpc52xx_map_senses[intrvect_type];
-> +	*out_flags =3D IRQ_TYPE_LEVEL_LOW;
-> +	if (mpc52xx_is_extirq(intrvect_l1, intrvect_l2))
-> +		*out_flags =3D mpc52xx_map_senses[intrvect_type];
-> =20
-> +	pr_debug("return %x, l1=3D%d, l2=3D%d\n", intrvect_linux, intrvect_l1,
-> +		 intrvect_l2);
->  	return 0;
->  }
-> =20
->  /**
-> - * mpc52xx_irqx_gettype - determine the IRQ sense type (level/edge)
-> - *
-> - * Only external IRQs need this.
-> - */
-> -static int mpc52xx_irqx_gettype(int irq)
-> -{
-> -	int type;
-> -	u32 ctrl_reg;
-> -
-> -	ctrl_reg =3D in_be32(&intr->ctrl);
-> -	type =3D (ctrl_reg >> (22 - irq * 2)) & 0x3;
-> -
-> -	return mpc52xx_map_senses[type];
-> -}
-> -
-> -/**
->   * mpc52xx_irqhost_map - Hook to map from virq to an irq_chip structure
->   */
->  static int mpc52xx_irqhost_map(struct irq_host *h, unsigned int virq,
-> @@ -402,68 +393,46 @@ static int mpc52xx_irqhost_map(struct irq_host *h, =
-unsigned int virq,
->  {
->  	int l1irq;
->  	int l2irq;
-> -	struct irq_chip *good_irqchip;
-> +	struct irq_chip *irqchip;
->  	void *good_handle;
->  	int type;
-> +	u32 reg;
-> =20
->  	l1irq =3D (irq & MPC52xx_IRQ_L1_MASK) >> MPC52xx_IRQ_L1_OFFSET;
->  	l2irq =3D irq & MPC52xx_IRQ_L2_MASK;
-> =20
->  	/*
-> -	 * Most of ours IRQs will be level low
-> -	 * Only external IRQs on some platform may be others
-> +	 * External IRQs are handled differently by the hardware so they are
-> +	 * handled by a dedicated irq_chip structure.
->  	 */
-> -	type =3D IRQ_TYPE_LEVEL_LOW;
-> +	if (mpc52xx_is_extirq(l1irq, l2irq)) {
-> +		reg =3D in_be32(&intr->ctrl);
-> +		type =3D mpc52xx_map_senses[(reg >> (22 - l2irq * 2)) & 0x3];
-> +		if ((type =3D=3D IRQ_TYPE_EDGE_FALLING) ||
-> +		    (type =3D=3D IRQ_TYPE_EDGE_RISING))
-> +			good_handle =3D handle_edge_irq;
-> +		else
-> +			good_handle =3D handle_level_irq;
-> +
-> +		set_irq_chip_and_handler(virq, &mpc52xx_extirq_irqchip, good_handle);
-> +		pr_debug("%s: External IRQ%i virq=3D%x, hw=3D%x. type=3D%x\n",
-> +			 __func__, l2irq, virq, (int)irq, type);
-> +		return 0;
-> +	}
-> =20
-> +	/* It is an internal SOC irq.  Choose the correct irq_chip */
->  	switch (l1irq) {
-> -	case MPC52xx_IRQ_L1_CRIT:
-> -		pr_debug("%s: Critical. l2=3D%x\n", __func__, l2irq);
-> -
-> -		BUG_ON(l2irq !=3D 0);
-> -
-> -		type =3D mpc52xx_irqx_gettype(l2irq);
-> -		good_irqchip =3D &mpc52xx_extirq_irqchip;
-> -		break;
-> -
-> -	case MPC52xx_IRQ_L1_MAIN:
-> -		pr_debug("%s: Main IRQ[1-3] l2=3D%x\n", __func__, l2irq);
-> -
-> -		if ((l2irq >=3D 1) && (l2irq <=3D 3)) {
-> -			type =3D mpc52xx_irqx_gettype(l2irq);
-> -			good_irqchip =3D &mpc52xx_extirq_irqchip;
-> -		} else {
-> -			good_irqchip =3D &mpc52xx_main_irqchip;
-> -		}
-> -		break;
-> -
-> -	case MPC52xx_IRQ_L1_PERP:
-> -		pr_debug("%s: Peripherals. l2=3D%x\n", __func__, l2irq);
-> -		good_irqchip =3D &mpc52xx_periph_irqchip;
-> -		break;
-> -
-> -	case MPC52xx_IRQ_L1_SDMA:
-> -		pr_debug("%s: SDMA. l2=3D%x\n", __func__, l2irq);
-> -		good_irqchip =3D &mpc52xx_sdma_irqchip;
-> -		break;
-> -
-> +	case MPC52xx_IRQ_L1_MAIN: irqchip =3D &mpc52xx_main_irqchip; break;
-> +	case MPC52xx_IRQ_L1_PERP: irqchip =3D &mpc52xx_periph_irqchip; break;
-> +	case MPC52xx_IRQ_L1_SDMA: irqchip =3D &mpc52xx_sdma_irqchip; break;
->  	default:
-> -		pr_err("%s: invalid virq requested (0x%x)\n", __func__, virq);
-> +		pr_err("%s: invalid irq: virq=3D%i, l1=3D%i, l2=3D%i\n",
-> +		       __func__, virq, l1irq, l2irq);
->  		return -EINVAL;
->  	}
-> =20
-> -	switch (type) {
-> -	case IRQ_TYPE_EDGE_FALLING:
-> -	case IRQ_TYPE_EDGE_RISING:
-> -		good_handle =3D handle_edge_irq;
-> -		break;
-> -	default:
-> -		good_handle =3D handle_level_irq;
-> -	}
-> -
-> -	set_irq_chip_and_handler(virq, good_irqchip, good_handle);
-> -
-> -	pr_debug("%s: virq=3D%x, hw=3D%x. type=3D%x\n", __func__, virq,
-> -		 (int)irq, type);
-> +	set_irq_chip_and_handler(virq, irqchip, handle_level_irq);
-> +	pr_debug("%s: virq=3D%x, l1=3D%i, l2=3D%i\n", __func__, virq, l1irq, l2=
-irq);
-> =20
->  	return 0;
->  }
-> @@ -502,6 +471,8 @@ void __init mpc52xx_init_irq(void)
->  		panic(__FILE__	": find_and_map failed on 'mpc5200-bestcomm'. "
->  				"Check node !");
-> =20
-> +	pr_debug("MPC5200 IRQ controller mapped to 0x%p\n", intr);
-> +
->  	/* Disable all interrupt sources. */
->  	out_be32(&sdma->IntPend, 0xffffffff);	/* 1 means clear pending */
->  	out_be32(&sdma->IntMask, 0xffffffff);	/* 1 means disabled */
->=20
+This can be trivially fixed:
 
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 838857f..cc7dd12 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -183,7 +183,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 
+ 	if (i < NR_IRQS) {
+ 		desc = get_irq_desc(i);
+-		acquire_lock_irqsave(&desc->lock, flags);
++		spin_lock_irqsave(&desc->lock, flags);
+ 		action = desc->action;
+ 		if (!action || !action->handler)
+ 			goto skip;
+@@ -204,7 +204,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 			seq_printf(p, ", %s", action->name);
+ 		seq_putc(p, '\n');
+ skip:
+-		release_lock_irqrestore(&desc->lock, flags);
++		spin_unlock_irqrestore(&desc->lock, flags);
+ 	} else if (i == NR_IRQS) {
+ #if defined(CONFIG_PPC32) && defined(CONFIG_TAU_INT)
+ 		if (tau_initialized){
 
---MZf7D3rAEoQgPanC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+--
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkmCIKsACgkQD27XaX1/VRsmzQCgrkJTdGCVzYQPTYjzunt485um
-fe4AoL2fWFwhdjtsZsKB3hio29RGt3IA
-=kYaR
------END PGP SIGNATURE-----
 
---MZf7D3rAEoQgPanC--
+While booting, this bug appears:
+
+BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
+in_atomic(): 1 [00010001], irqs_disabled(): 1, pid: 1, name: swapper
+Call Trace:
+[cf82f9a0] [c0008be8] show_stack+0x4c/0x16c (unreliable)
+[cf82f9e0] [c001c184] __might_sleep+0xd8/0xf8
+[cf82f9f0] [c02b7758] rt_spin_lock+0x30/0x78
+[cf82fa00] [c001853c] ipic_mask_irq+0x3c/0xb0
+[cf82fa20] [c0054064] handle_level_irq+0x40/0x178
+[cf82fa40] [c00068ec] do_IRQ+0x68/0xe0
+[cf82fa50] [c0012924] ret_from_except+0x0/0x14
+--- Exception: 501 at internal_add_timer+0x4/0xe0
+
+This is trivially solved by converting arch/powerpc/sysdev/ipic.c
+back to spinlocks (ipic_lock).
+
+Assuming that converting-back is automatic, there are few other
+chained interrupt controllers you might want to convert-back:
+
+arch/powerpc/sysdev/i8259.c (i8259_lock)
+arch/powerpc/sysdev/mpic.c (mpic_lock)
+arch/powerpc/sysdev/qe_lib/qe_ic.c (qe_ic_lock)
+
+
+
+After this, kernel boots up to the userspace, but then bugs in the
+middle (note: this is NFS boot, network activity etc.)...
+
+INIT: version 2.86 booting
+Starting the hotplug events dispatcher: udevd.
+Synthesizing the initial hotplug events...done.
+Waiting for /dev to be fully populated...done.
+Activating swap...done.
+Remounting root filesystem...done.
+Checking all file systems: fsck
+fsck 1.40 (29-Jun-2007)
+Checking SELinux contexts: selinux-basics.
+Starting network interfaces: done.
+Starting portmap daemon....
+Cleaning: /tmp /var/lock /var/run done.
+Setting pseudo-terminal access permissions...done.
+Updating /etc/motd...done.
+INIT: Entering runlevel: 3
+Starting irqbalance.
+Starting system log daemon: syslogd
+BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
+in_atomic(): 1 [00000100], irqs_disabled(): 0, pid: 7, name: sirq-net-rx/0
+Call Trace:
+[cf84bc20] [c0008be8] show_stack+0x4c/0x16c (unreliable)
+[cf84bc60] [c001c194] __might_sleep+0xd8/0xf8
+[cf84bc70] [c02b7768] rt_spin_lock+0x30/0x78
+[cf84bc80] [c00800e0] kmem_cache_alloc+0x50/0x17c
+[cf84bcb0] [c02568a4] ip_append_data+0x974/0x978
+[cf84bd30] [c027aa0c] icmp_push_reply+0x54/0x128
+[cf84bd50] [c027b59c] icmp_send+0x284/0x380
+[cf84be40] [c0277328] __udp4_lib_rcv+0x3d4/0x5a0
+[cf84bea0] [c0253208] ip_local_deliver_finish+0x74/0x128
+[cf84bec0] [c0252fd0] ip_rcv_finish+0x148/0x30c
+[cf84bf00] [c0236774] netif_receive_skb+0x21c/0x2e8
+[cf84bf30] [c0238ecc] process_backlog+0x98/0x138
+[cf84bf60] [c0238b24] net_rx_action+0xd4/0x198
+[cf84bf90] [c002989c] ksoftirqd+0x108/0x23c
+[cf84bfd0] [c003c918] kthread+0x48/0x84
+[cf84bff0] [c00120b0] kernel_thread+0x4c/0x68
+BUG: scheduling while atomic: sirq-net-rx/0/7/0x10000101, CPU#0
+Modules linked in:
+Call Trace:
+[cf84bee0] [c0008be8] show_stack+0x4c/0x16c (unreliable)
+[cf84bf20] [c001e418] __schedule_bug+0x6c/0x80
+[cf84bf30] [c02b5fdc] schedule+0x2e8/0x31c
+[cf84bf70] [c001e460] __cond_resched+0x34/0x60
+[cf84bf80] [c02b6348] _cond_resched+0x50/0x58
+[cf84bf90] [c00298b8] ksoftirqd+0x124/0x23c
+[cf84bfd0] [c003c918] kthread+0x48/0x84
+[cf84bff0] [c00120b0] kernel_thread+0x4c/0x68
+
+
+And now this looks like not PowerPC specific... Converting mm/slab.c
+back to spinlocks results in another, but similar bug in anther mm
+routine:
+
+BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
+in_atomic(): 1 [00000001], irqs_disabled(): 0, pid: 1003, name: net.agent
+Call Trace:
+[cf057c40] [c0008be8] show_stack+0x4c/0x16c (unreliable)
+[cf057c80] [c001c194] __might_sleep+0xd8/0xf8
+[cf057c90] [c02b7768] rt_spin_lock+0x30/0x78
+[cf057ca0] [c005d0ec] free_hot_cold_page+0xf8/0x35c
+[cf057cc0] [c007f0b0] kmem_freepages+0xd8/0x134
+[cf057cd0] [c007f620] slab_destroy+0x38/0xe0
+[cf057cf0] [c007f814] free_block+0x14c/0x158
+[cf057d30] [c007f174] cache_flusharray+0x68/0x150
+[cf057d60] [c007f4fc] kmem_cache_free+0x110/0x140
+[cf057d80] [c006eb04] remove_vma+0x78/0xc0
+[cf057d90] [c006eccc] exit_mmap+0x180/0x208
+[cf057dc0] [c00210c8] mmput+0x64/0x114
+[cf057de0] [c008b580] exec_mmap+0xd8/0x1b4
+[cf057e10] [c008b7c4] flush_old_exec+0x50/0x1d0
+[cf057e40] [c00c2fac] load_elf_binary+0x2b0/0x96c
+[cf057eb0] [c008ad6c] search_binary_handler+0xf4/0x31c
+[cf057ef0] [c008c220] do_execve+0x1b4/0x1ec
+[cf057f20] [c000983c] sys_execve+0x50/0x7c
+[cf057f40] [c001228c] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xfeab104
+    LR = 0x10024540
+
+..proves that "convert-back" trick isn't panacea. ;-) So, before
+I'll dig into this.. is this known issue? Any ideas of proper
+fixing?
+
+FWIW, following options enabled:
+
+CONFIG_NO_HZ=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_PREEMPT_RT=y
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_RCU=y
+CONFIG_PREEMPT_SOFTIRQS=y
+CONFIG_PREEMPT_HARDIRQS=y
+CONFIG_DEBUG_FS=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_SCHED_DEBUG=y
+CONFIG_DEBUG_RT_MUTEXES=y
+CONFIG_DEBUG_PI_LIST=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_SLAB=y
+CONFIG_SLABINFO=y
+# CONFIG_HIGHMEM is not set
+
+Thanks,
+
+p.s. Btw, having the convert-back script in scripts/ would be
+useful. Could not find it anywhere.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
