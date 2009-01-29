@@ -1,26 +1,17 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id DD622DDFAB
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 20:38:25 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LSTLo-0006FK-OK
-	for linuxppc-dev@ozlabs.org; Thu, 29 Jan 2009 01:38:20 -0800
-Message-ID: <21723361.post@talk.nabble.com>
-Date: Thu, 29 Jan 2009 01:38:20 -0800 (PST)
-From: velumani <velumani.t@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: R: R: USB on lite5200 does not work.
-In-Reply-To: <9e4733910811220735o378f785arfa3b577b2420f213@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <47602D18F269934AB73B7E550804A1E00213796C@FBCMST09V03.fbc.local>
-	<fa686aa40811200656g783947f5l609650b707c6c883@mail.gmail.com>
-	<fa686aa40811200749xd9f8701ud6ee9b77b4c21001@mail.gmail.com>
-	<47602D18F269934AB73B7E550804A1E002137973@FBCMST09V03.fbc.local>
-	<fa686aa40811210659l3b9a4eefwf6eb59f66386d379@mail.gmail.com>
-	<4927F7DF.6070605@alice.it>
-	<9e4733910811220735o378f785arfa3b577b2420f213@mail.gmail.com>
+Return-Path: <why@r54964-12.am.freescale.net>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DE868DDEF1
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 05:39:15 +1100 (EST)
+From: Haiying Wang <Haiying.Wang@freescale.com>
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Subject: [PATCH] ucc_geth: Change uec phy id to the same format as gianfar's
+Date: Thu, 29 Jan 2009 13:39:02 -0500
+Message-Id: <1233254342-8435-1-git-send-email-Haiying.Wang@freescale.com>
+Cc: Haiying Wang <Haiying.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,105 +21,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The commit b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4 changes the gianfar's phy id to
+the format like "mdio@xxxx:xx", but uec still uses the old format like "xxxxxxxx:xx".
+For the board whose UEC uses gianfar-mdio like MPC8568MDS, the phy can not be attached
+because of the incompatible phy id format. This patch changes uec's phy id to the same
+format as gianfar's.
 
-Hi,
+Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+---
+ drivers/net/ucc_geth.c           |   20 ++++++++++++++++++--
+ drivers/net/ucc_geth.h           |    2 ++
+ drivers/net/ucc_geth_mii.c       |   12 +++++++++++-
+ drivers/net/ucc_geth_mii.h       |    1 +
+ 4 files changed, 32 insertions(+), 3 deletions(-)
 
-Did you get any solution for this problem. We are also facing this issue...
-
-This problem does not happen in our board on every reboot but happens
-occationaly. If you have got any solution please let me know.
-
-Thanks,
-Velumani
-
-Jon Smirl wrote:
-> 
-> If you are using a 33.333Mz crystal it is not possible to generate
-> exactly 48Mhz for USB. Best you can do is 48.11Mz. With a 33Mhz
-> crystal you can make 48Mhz exactly. But that's probably not your
-> problem, that just results in errors on the USB bus. Some USB devices
-> don't care and others will get errors.
-> 
-> On Sat, Nov 22, 2008 at 7:15 AM, Gianfranco Casanova
-> <gianfranco.casanova@alice.it> wrote:
->> Grant Likely ha scritto:
->>>
->>> On Fri, Nov 21, 2008 at 1:36 AM,  <gianfranco.casanova@alice.it> wrote:
->>>>
->>>> The main HW difference between our board and lite5200 is:
->>>> console on PSC3 and
->>>
->>> [...]
->>>>
->>>> on our HW defined as:
->>>>        /* Radionav configuration */
->>>>        port_config =  0x0C712E66;
->>>>
->>>
->>> You've got quite a bit of difference than just console on PSC3.  USB
->>> is on the Ethernet pin group instead of on the USB pin group.  Does
->>> the kernel change the value of port_config when it boots, or does it
->>> leave the value setup by U-Boot intact?
->>
->> As far as I sow from debugger no.
->>
->> We are able to boot with a mini operating system (see previous post).
->> Plugging USB the system get frozen.
->>
->> We have got the same version of kernel compiled on PPC ARCH and USB, in
->> this
->> case, works.
->>
->> Between PPC and PowerPC from debugger there is only one difference the
->> label
->> for USB interrupt, in PPC is 50 in PowerPC is 134.
->>
->> I've already checked CDM register and GPIO register and all are the same.
->>
->> From USB register only one difference on HDDC values (not important from
->> my
->> point of view).
->>
->> Our processor frequency is different from lite5200. We are thinking that
->> scaling frequency processor to determine frequency of USB bus is
->> different
->> in PPC and PowerPC. Other street we are looking for is some WR  patchs
->> from
->> lite5200 on PowerPC that are not accepted from our HW.
->>
->>>> I still do not understand our bug with USB.
->>>> Have you got some suggestions or some test to be performed in order to
->>>> find
->>>> out a solutions?
->>>
->>> Not over a quick exchange via email.
->>
->> Yes of course :)
->>
->>> Your kernel is too old and USB
->>> debugging can be complex.  I'd need to be working with your hardware
->>> to figure out what is going on.
->>
->> I see. We also wont debug USB.
->> Thaks J
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
-> 
-> 
-> 
-> -- 
-> Jon Smirl
-> jonsmirl@gmail.com
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
-
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 1144122..6ffeffa 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -1536,6 +1536,11 @@ static void adjust_link(struct net_device *dev)
+ static int init_phy(struct net_device *dev)
+ {
+ 	struct ucc_geth_private *priv = netdev_priv(dev);
++	struct device_node *np = priv->node;
++	struct device_node *phy, *mdio;
++	const phandle *ph;
++	char bus_name[MII_BUS_ID_SIZE];
++	const unsigned int *id;
+ 	struct phy_device *phydev;
+ 	char phy_id[BUS_ID_SIZE];
+ 
+@@ -1543,9 +1548,19 @@ static int init_phy(struct net_device *dev)
+ 	priv->oldspeed = 0;
+ 	priv->oldduplex = -1;
+ 
+-	snprintf(phy_id, sizeof(phy_id), PHY_ID_FMT, priv->ug_info->mdio_bus,
+-		 priv->ug_info->phy_address);
++	ph = of_get_property(np, "phy-handle", NULL);
++	phy = of_find_node_by_phandle(*ph);
++	mdio = of_get_parent(phy);
++
++	id = of_get_property(phy, "reg", NULL);
++
++	of_node_put(phy);
++	of_node_put(mdio);
+ 
++	uec_mdio_bus_name(bus_name, mdio);
++	snprintf(phy_id, sizeof(phy_id), "%s:%02x",
++                                bus_name, *id);
++
+ 	phydev = phy_connect(dev, phy_id, &adjust_link, 0, priv->phy_interface);
+ 
+ 	if (IS_ERR(phydev)) {
+@@ -3748,6 +3763,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 
+ 	ugeth->ug_info = ug_info;
+ 	ugeth->dev = dev;
++	ugeth->node = np;
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
+index 8f699cb..16cbe42 100644
+--- a/drivers/net/ucc_geth.h
++++ b/drivers/net/ucc_geth.h
+@@ -1186,6 +1186,8 @@ struct ucc_geth_private {
+ 	int oldspeed;
+ 	int oldduplex;
+ 	int oldlink;
++
++	struct device_node *node;
+ };
+ 
+ void uec_set_ethtool_ops(struct net_device *netdev);
+diff --git a/drivers/net/ucc_geth_mii.c b/drivers/net/ucc_geth_mii.c
+index c001d26..5463591 100644
+--- a/drivers/net/ucc_geth_mii.c
++++ b/drivers/net/ucc_geth_mii.c
+@@ -156,7 +156,7 @@ static int uec_mdio_probe(struct of_device *ofdev, const struct of_device_id *ma
+ 	if (err)
+ 		goto reg_map_fail;
+ 
+-	snprintf(new_bus->id, MII_BUS_ID_SIZE, "%x", res.start);
++	uec_mdio_bus_name(new_bus->id, np);
+ 
+ 	new_bus->irq = kmalloc(32 * sizeof(int), GFP_KERNEL);
+ 
+@@ -283,3 +283,13 @@ void uec_mdio_exit(void)
+ {
+ 	of_unregister_platform_driver(&uec_mdio_driver);
+ }
++
++void uec_mdio_bus_name(char *name, struct device_node *np)
++{
++        const u32 *reg;
++
++        reg = of_get_property(np, "reg", NULL);
++
++        snprintf(name, MII_BUS_ID_SIZE, "%s@%x", np->name, reg ? *reg : 0);
++}
++
+diff --git a/drivers/net/ucc_geth_mii.h b/drivers/net/ucc_geth_mii.h
+index 1e45b20..840cf80 100644
+--- a/drivers/net/ucc_geth_mii.h
++++ b/drivers/net/ucc_geth_mii.h
+@@ -97,4 +97,5 @@ int uec_mdio_read(struct mii_bus *bus, int mii_id, int regnum);
+ int uec_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value);
+ int __init uec_mdio_init(void);
+ void uec_mdio_exit(void);
++void uec_mdio_bus_name(char *name, struct device_node *np);
+ #endif				/* __UEC_MII_H */
 -- 
-View this message in context: http://www.nabble.com/USB-on-lite5200-does-not-work.-tp20601948p21723361.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+1.6.0.2
