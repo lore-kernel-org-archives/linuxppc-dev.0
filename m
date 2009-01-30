@@ -1,20 +1,22 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 36E6CDE14E
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 12:51:18 +1100 (EST)
-Subject: Re: 2.6.28-rt on PowerPC
-From: Steven Rostedt <srostedt@redhat.com>
-To: frank.rowand@am.sony.com
-In-Reply-To: <49823A13.50703@am.sony.com>
-References: <20090129213429.GA29014@oksana.dev.rtsoft.ru>
-	<1233270043.3833.57.camel@localhost.localdomain>
-	<49823A13.50703@am.sony.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5D63EDE0B2
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 13:09:06 +1100 (EST)
+Subject: Re: Broken PCI on Sequoia
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090130001842.GB3943@zod.rchland.ibm.com>
+References: <alpine.LRH.2.00.0901291819440.22142@vixen.sonytel.be>
+	<1233267061.18767.5.camel@pasglop>
+	<20090130001842.GB3943@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Thu, 29 Jan 2009 20:51:09 -0500
-Message-Id: <1233280269.3833.60.camel@localhost.localdomain>
+Date: Fri, 30 Jan 2009 13:08:53 +1100
+Message-Id: <1233281333.18767.15.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-rt-users@vger.kernel.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +27,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Thu, 2009-01-29 at 15:21 -0800, Frank Rowand wrote:
-> Steven Rostedt wrote:
+> Yeah.  In fact, I think you have that bug in almost every board.  You only
+> updated Bamboo and Canyonlands with the initial patch and the changelog
+> says "other boards can be updated separately."  Nobody did that.  So not
+> so weird after all.
 
-> Your email can at an opportune time for me...  I was starting to try
-> 2.6.28-rt on ARM and quickly came to the conclusion that the arch
-> patches weren't the focus yet.  But I'm currently side-tracked with
-> getting my board to even boot a vanilla 2.6.28 kernel first.  Do
-> you expect to get to the arches in the next week or two?  If not,
-> I may head down that path for ARM myself.
+I still don't see off hand what's wrong in the code..
 
-I'm going to try to apply the arch patches, but I do not have an arm
-board myself. I do have a PPC64 box that works, but that's about it. I
-have a powerbook too, but that box has never been able to boot an -rt
-kernel. Who knows, maybe this one will boot.
+Geert, any chance you can sprinkle printk's in
+ppc4xx_configure_pci_PMMs() ? I'd like to see the arguments to the
+various calls to ppc4xx_setup_one_pci_PMM(), and the value of
+hose->pci_mem_offset and hose->isa_mem_phys & size.
 
-I will create an rt/arm and an rt/ppc branch for the specific changes on
-each. I'll try to get them next week (maybe tomorrow if things go better
-than planned).
-
--- Steve
+Cheers,
+Ben.
