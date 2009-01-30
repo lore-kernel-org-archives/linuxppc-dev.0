@@ -1,17 +1,19 @@
-Return-Path: <philippe.reynes@isismpp.fr>
-Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr
-	(neuf-infra-smtp-out-sp604003av.neufgp.fr [84.96.92.124])
-	by ozlabs.org (Postfix) with ESMTP id 634DBDE199
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 01:34:14 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: [PATCH] add lm75 to mpc 837x rdb dts
-Date: Fri, 30 Jan 2009 15:34:10 +0100
-Message-ID: <761F451C5F17F74DAEE4661DA5ABBC1616C452@factorix.ISISTHIBAUD.local>
-From: "Reynes Philippe" <philippe.reynes@isismpp.fr>
-To: <linuxppc-dev@ozlabs.org>
-Cc: Kumar Gala <kumar.gala@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BCD1ADE1C8
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 01:42:53 +1100 (EST)
+Message-Id: <F764D461-8EFB-4B31-ABFC-ECBB7A3FBA01@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <4982F311.4050507@gefanuc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: Booting 2.6.29-rc3 on mpc8661d_hpcn failing
+Date: Fri, 30 Jan 2009 08:42:39 -0600
+References: <4982F311.4050507@gefanuc.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,56 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
----
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index e747486..38507ee 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -137,6 +137,11 @@
- 			interrupt-parent =3D <&ipic>;
- 			dfsrr;
-=20
-+			dtt@48 {
-+				compatible =3D "national, lm75";
-+				reg =3D <0x48>;
-+			};
-+
- 			at24@50 {
- 				compatible =3D "at24,24c256";
- 				reg =3D <0x50>;
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index f4c8682..d731780 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -137,6 +137,11 @@
- 			interrupt-parent =3D <&ipic>;
- 			dfsrr;
-=20
-+			dtt@48 {
-+				compatible =3D "national, lm75";
-+				reg =3D <0x48>;
-+			};
-+
- 			at24@50 {
- 				compatible =3D "at24,24c256";
- 				reg =3D <0x50>;
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index 1985cef..d3b78b2 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -135,6 +135,11 @@
- 			interrupt-parent =3D <&ipic>;
- 			dfsrr;
-=20
-+			dtt@48 {
-+				compatible =3D "national, lm75";
-+				reg =3D <0x48>;
-+			};
-+
- 			at24@50 {
- 				compatible =3D "at24,24c256";
- 				reg =3D <0x50>;
+
+On Jan 30, 2009, at 6:31 AM, Martyn Welch wrote:
+
+> Hi Guys,
+>
+> It seems that 2.6.29-rc3 is not booting on the MPC8641 HPCN. I have  
+> just updated u-boot to the latest git to see if that improved  
+> matters, however I get stuck at the following. Any ideas?
+
+did you update your .dtb as well?
+
+- k
