@@ -1,18 +1,19 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id C041EDE164
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 19:33:08 +1100 (EST)
-Message-ID: <4982BB3F.3080509@matrix-vision.de>
-Date: Fri, 30 Jan 2009 09:33:03 +0100
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <philippe.reynes@isismpp.fr>
+Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr
+	(neuf-infra-smtp-out-sp604003av.neufgp.fr [84.96.92.124])
+	by ozlabs.org (Postfix) with ESMTP id 98BD1DE055
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 20:58:05 +1100 (EST)
 MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [PATCH] powerpc/5200: Bugfix for PCI mapping of memory and IMMR
-References: <20090127043315.26160.43312.stgit@localhost.localdomain>
-	<b5e2fc790901270956q4448ac4brd0f6ea177ace9ade@mail.gmail.com>
-In-Reply-To: <b5e2fc790901270956q4448ac4brd0f6ea177ace9ade@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] add gpio to mpc837X rdb
+Date: Fri, 30 Jan 2009 10:57:59 +0100
+Message-ID: <761F451C5F17F74DAEE4661DA5ABBC1616C44A@factorix.ISISTHIBAUD.local>
+References: <761F451C5F17F74DAEE4661DA5ABBC1616C448@factorix.ISISTHIBAUD.local>
+	<20090129192031.GA17060@oksana.dev.rtsoft.ru>
+From: "Reynes Philippe" <philippe.reynes@isismpp.fr>
+To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
+Cc: Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,55 +23,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matt Sealey wrote:
-> On Mon, Jan 26, 2009 at 10:34 PM, Grant Likely
-> <grant.likely@secretlab.ca> wrote:
->   
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->> This patch ensures that memory gets properly mapped into the PCI
->> address space.  Without this patch, the memory window BAR is left
->> at whatever value happened to be loaded into the BAR when Linux
->> was booted.  Without this patch, memory could end up getting mapped
->> at any of the 1G address boundaries instead of at '0' where Linux
->> expects it.
->>
->> Similarly, this patch also ensures that the internally memory mapped
->> registers (IMMR) are mapped to the correct PCI address range.
->>
->> Without this patch, PCI appears to work correctly until a PCI
->> device is inserted which DMAs into memory.
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> ---
->>
->> This is a bugfix that I intend to merge into 2.6.29 and once it is
->> mainlined get it added to the stable queue.  If you have a 5200 system,
->> please test and make sure it works for you.
->>
->> Thanks
->> g.
->>
->>  arch/powerpc/platforms/52xx/mpc52xx_pci.c |   24 ++++++++++--------------
->>  1 files changed, 10 insertions(+), 14 deletions(-)
->>
->>     
->
-> This doesn't affect Efika, right?
->
-> What's the expected impact and how come nobody tried a DMA-capable PCI
-> card in an MPC5200B board before? :)
->
->   
-We're running a MPC5200B based board with an external FPGA pumping as 
-much data into the CPU's memory as possible using scatter-gather DMA. No 
-problems so far ... besides the lousy PCI target performance of the 
-5200, of course. Of course we've been always running latest u-boot.
-
-regards,
-Andre
-
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler
-Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
+Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
+---
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index 165463f..e747486 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -109,6 +109,24 @@
+ 			reg =3D <0x200 0x100>;
+ 		};
+=20
++		gpio1: gpio-controller@c00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8377-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xc00 0x100>;
++			interrupts =3D <74 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
++		gpio2: gpio-controller@d00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8377-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xd00 0x100>;
++			interrupts =3D <75 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells =3D <1>;
+ 			#size-cells =3D <0>;
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index f9830ae..f4c8682 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -109,6 +109,24 @@
+ 			reg =3D <0x200 0x100>;
+ 		};
+=20
++		gpio1: gpio-controller@c00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8378-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xc00 0x100>;
++			interrupts =3D <74 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
++		gpio2: gpio-controller@d00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8378-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xd00 0x100>;
++			interrupts =3D <75 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells =3D <1>;
+ 			#size-cells =3D <0>;
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index 2c06d39..1985cef 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -107,6 +107,24 @@
+ 			reg =3D <0x200 0x100>;
+ 		};
+=20
++		gpio1: gpio-controller@c00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8379-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xc00 0x100>;
++			interrupts =3D <74 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
++		gpio2: gpio-controller@d00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8379-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xd00 0x100>;
++			interrupts =3D <75 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells =3D <1>;
+ 			#size-cells =3D <0>;
