@@ -1,17 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 0D5B3DDFCD
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 04:05:57 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so181845yxg.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 09:05:55 -0800 (PST)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 280F6DE105
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 04:45:47 +1100 (EST)
+Date: Fri, 30 Jan 2009 20:45:45 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Subject: Re: 2.6.28-rt on PowerPC
+Message-ID: <20090130174545.GA846@oksana.dev.rtsoft.ru>
+References: <20090129213429.GA29014@oksana.dev.rtsoft.ru>
+	<1233270043.3833.57.camel@localhost.localdomain>
 MIME-Version: 1.0
-Date: Fri, 30 Jan 2009 10:05:54 -0700
-Message-ID: <fa686aa40901300905h7ed39d59g334ee7a3074c42c6@mail.gmail.com>
-Subject: Re: Please pull 'merge' branch of linux-2.6-mpc52xx.git
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1233270043.3833.57.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-rt-users@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,103 +24,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hey Ben,
+On Thu, Jan 29, 2009 at 06:00:43PM -0500, Steven Rostedt wrote:
+[...]
+> > BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
+> > in_atomic(): 1 [00000100], irqs_disabled(): 0, pid: 7, name: sirq-net-rx/0
+> > Call Trace:
+> > [cf84bc20] [c0008be8] show_stack+0x4c/0x16c (unreliable)
+> > [cf84bc60] [c001c194] __might_sleep+0xd8/0xf8
+> > [cf84bc70] [c02b7768] rt_spin_lock+0x30/0x78
+> > [cf84bc80] [c00800e0] kmem_cache_alloc+0x50/0x17c
+> > [cf84bcb0] [c02568a4] ip_append_data+0x974/0x978
+> > [cf84bd30] [c027aa0c] icmp_push_reply+0x54/0x128
+> > [cf84bd50] [c027b59c] icmp_send+0x284/0x380
+> > [cf84be40] [c0277328] __udp4_lib_rcv+0x3d4/0x5a0
+> > [cf84bea0] [c0253208] ip_local_deliver_finish+0x74/0x128
+[...]
+> Turn on CONFIG_PREEMPT_TRACE (not TRACER) and it should show the
+> location that left preemption disabled.
 
-Updating my pull request; I've added one more patch as can been seen
-in the diffstat.  The new one is a documentation-only change.
+Thank you Steven, PREEMPT_TRACE is a great tool indeed (though on
+PowerPC it doesn't work out of the box, but easily fixable).
 
-g.
+So, the result:
 
+---------------------------
+| preempt count: 00000100 ]
+| 1-level deep critical section nesting:
+----------------------------------------
+.. [<c002d9fc>] .... local_bh_disable+0x1c/0x34
+.....[<c02afef8>] ..   ( <= icmp_send+0xac/0x388)
 
-The following changes since commit 18e352e4a73465349711a9324767e1b2453383e2:
-  Linus Torvalds (1):
-        Linux 2.6.29-rc3
+icmp_send() calls icmp_xmit_lock() that disables bottom halves,
+then icmp_send() calls ip_append_data() that tries to allocate
+things with GFP_ATOMIC, which should be OK...
 
-are available in the git repository at:
+I guess now this isn't true for -rt kernels, correct? A comment
+in slab.c ("which in turn implies that nobody does allocations
+from atomic contexts") seem to confirm this.
 
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx merge
+(A bit unrelated question: If that's how things work now (i.e.
+GFP_ATOMIC is equal to GFP_KERNEL or vice-versa), how should we
+allocate things in IRQF_NODELAY/TIMER interrupts?)
 
-Grant Likely (3):
-      powerpc/5200: update defconfigs
-      powerpc/5200: Bugfix for PCI mapping of memory and IMMR
-      powerpc/5200: update device tree binding documentation
+Anyway, this snippet fixes the issue:
 
- Documentation/powerpc/dts-bindings/fsl/mpc5200.txt |  180 +++++++++++++
- .../powerpc/mpc52xx-device-tree-bindings.txt       |  277 --------------------
- arch/powerpc/configs/52xx/cm5200_defconfig         |   83 +++++--
- arch/powerpc/configs/52xx/lite5200b_defconfig      |   86 +++++--
- arch/powerpc/configs/52xx/motionpro_defconfig      |   85 +++++--
- arch/powerpc/configs/52xx/pcm030_defconfig         |   82 ++++--
- arch/powerpc/configs/52xx/tqm5200_defconfig        |   89 +++++--
- arch/powerpc/configs/mpc5200_defconfig             |  104 ++++++--
- arch/powerpc/platforms/52xx/mpc52xx_pci.c          |   24 +-
- 9 files changed, 576 insertions(+), 434 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/fsl/mpc5200.txt
- delete mode 100644 Documentation/powerpc/mpc52xx-device-tree-bindings.txt
+diff --git a/net/ipv4/icmp.c b/net/ipv4/icmp.c
+index 6bccfbe..4a4862b 100644
+--- a/net/ipv4/icmp.c
++++ b/net/ipv4/icmp.c
+@@ -222,6 +222,9 @@ static inline struct sock *icmp_xmit_lock(struct net *net)
+ 		local_bh_enable();
+ 		return NULL;
+ 	}
++#ifdef CONFIG_PREEMPT_RT
++	local_bh_enable();
++#endif
+ 	return sk;
+ }
+ 
+--
 
-On Thu, Jan 29, 2009 at 5:31 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> Ummm, I'm batting 1000 today.... Please pull the **MERGE** branch of
-> linux-2.6-mpc52xx.git tree (The URL below was correct though).
->
-> g.
->
-> On Thu, Jan 29, 2009 at 5:29 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->> Oops, forgot to CC the mailing list.
->>
->> g.
->>
->> On Thu, Jan 29, 2009 at 5:28 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->>> Hi Ben,
->>>
->>> Here is the traditional defconfig update plus a bugfix for mpc5200
->>> PCI.  Please pull into 2.6.29.
->>>
->>> Thanks,
->>> g.
->>>
->>> The following changes since commit 18e352e4a73465349711a9324767e1b2453383e2:
->>>  Linus Torvalds (1):
->>>        Linux 2.6.29-rc3
->>>
->>> are available in the git repository at:
->>>
->>>  git://git.secretlab.ca/git/linux-2.6-mpc52xx merge
->>>
->>> Grant Likely (2):
->>>      powerpc/5200: update defconfigs
->>>      powerpc/5200: Bugfix for PCI mapping of memory and IMMR
->>>
->>>  arch/powerpc/configs/52xx/cm5200_defconfig    |   83 ++++++++++++++------
->>>  arch/powerpc/configs/52xx/lite5200b_defconfig |   86 +++++++++++++++-----
->>>  arch/powerpc/configs/52xx/motionpro_defconfig |   85 +++++++++++++++-----
->>>  arch/powerpc/configs/52xx/pcm030_defconfig    |   82 +++++++++++++------
->>>  arch/powerpc/configs/52xx/tqm5200_defconfig   |   89 +++++++++++++++------
->>>  arch/powerpc/configs/mpc5200_defconfig        |  104 ++++++++++++++++++-------
->>>  arch/powerpc/platforms/52xx/mpc52xx_pci.c     |   24 +++----
->>>  7 files changed, 396 insertions(+), 157 deletions(-)
->>>
->>>
->>> --
->>> Grant Likely, B.Sc., P.Eng.
->>> Secret Lab Technologies Ltd.
->>>
->>
->>
->>
->> --
->> Grant Likely, B.Sc., P.Eng.
->> Secret Lab Technologies Ltd.
->>
->
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
->
+Now the kernel is able to boot up to the login prompt, cool!
+
+But after a while this pops up:
+
+INFO: task sirq-high/0:4 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+sirq-high/0   D 00000000     0     4      2
+Call Trace:
+[cf839eb0] [60320800] 0x60320800 (unreliable)
+[cf839f70] [c0009b34] __switch_to+0x50/0x74
+[cf839f90] [c02ee48c] schedule+0x19c/0x380
+[cf839fd0] [c00427ac] kthread+0x34/0x8c
+[cf839ff0] [c001354c] kernel_thread+0x4c/0x68
+---------------------------
+| preempt count: 00000002 ]
+| 2-level deep critical section nesting:
+----------------------------------------
+.. [<c02ee340>] .... schedule+0x50/0x380
+.....[<c00427ac>] ..   ( <= kthread+0x34/0x8c)
+.. [<c02f0700>] .... _spin_lock_irq+0x2c/0x4c
+.....[<c02ee388>] ..   ( <= schedule+0x98/0x380)
 
 
+And keeps popping up every 120 seconds, though both kernel and
+userspace stay alive.
+
+Thanks,
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
