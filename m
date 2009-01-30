@@ -1,21 +1,22 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id DC3ADDE0E0
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 23:35:43 +1100 (EST)
-Date: Fri, 30 Jan 2009 13:35:22 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Broken PCI on Sequoia
-In-Reply-To: <1233281333.18767.15.camel@pasglop>
-Message-ID: <alpine.LRH.2.00.0901301334220.13283@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0901291819440.22142@vixen.sonytel.be>
-	<1233267061.18767.5.camel@pasglop>
-	<20090130001842.GB3943@zod.rchland.ibm.com>
-	<1233281333.18767.15.camel@pasglop>
+Return-Path: <jwboyer@gmail.com>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.189])
+	by ozlabs.org (Postfix) with ESMTP id 869BCDE1C4
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 00:08:03 +1100 (EST)
+Received: by rn-out-0910.google.com with SMTP id j67so318977rne.16
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 05:08:01 -0800 (PST)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Fri, 30 Jan 2009 08:07:57 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Subject: Re: 2.6.28-rt on PowerPC
+Message-ID: <20090130130757.GB31192@yoda.jdub.homelinux.org>
+References: <20090129213429.GA29014@oksana.dev.rtsoft.ru>
+	<1233270043.3833.57.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1233270043.3833.57.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-rt-users@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,104 +26,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 30 Jan 2009, Benjamin Herrenschmidt wrote:
-> > Yeah.  In fact, I think you have that bug in almost every board.  You only
-> > updated Bamboo and Canyonlands with the initial patch and the changelog
-> > says "other boards can be updated separately."  Nobody did that.  So not
-> > so weird after all.
-> 
-> I still don't see off hand what's wrong in the code..
-> 
-> Geert, any chance you can sprinkle printk's in
-> ppc4xx_configure_pci_PMMs() ? I'd like to see the arguments to the
-> various calls to ppc4xx_setup_one_pci_PMM(), and the value of
-> hose->pci_mem_offset and hose->isa_mem_phys & size.
+On Thu, Jan 29, 2009 at 06:00:43PM -0500, Steven Rostedt wrote:
+>
+>On Fri, 2009-01-30 at 00:34 +0300, Anton Vorontsov wrote:
+>> Hi Steven,
+>> 
+>> I know 2.6.28-rt isn't yet ready, but I could not resist to try
+>> it anyway. ;-)
+>> 
+>> Here are few issues and ways to solve them:
+>> 
+>> Currently the -rt tree doesn't link for arch/powerpc:
+>> 
+>>   LD      .tmp_vmlinux1
+>>   arch/powerpc/kernel/built-in.o: In function `show_interrupts':
+>>   (.text+0x27bc): undefined reference to `__call_bad_lock_func'
+>>   arch/powerpc/kernel/built-in.o: In function `show_interrupts':
+>>   (.text+0x28b0): undefined reference to `__call_bad_lock_func'
+>>   make: *** [.tmp_vmlinux1] Error 1
+>
+>Thanks! I have not yet had the chance to apply any arch patches yet. I
+>do plan on doing so after getting the code mostly working on x86.
+>
+>> 
+>> This can be trivially fixed:
+>> 
+>> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+>> index 838857f..cc7dd12 100644
+>> --- a/arch/powerpc/kernel/irq.c
+>> +++ b/arch/powerpc/kernel/irq.c
+>> @@ -183,7 +183,7 @@ int show_interrupts(struct seq_file *p, void *v)
+>>  
+>>  	if (i < NR_IRQS) {
+>>  		desc = get_irq_desc(i);
+>> -		acquire_lock_irqsave(&desc->lock, flags);
+>> +		spin_lock_irqsave(&desc->lock, flags);
+>>  		action = desc->action;
+>>  		if (!action || !action->handler)
+>>  			goto skip;
+>> @@ -204,7 +204,7 @@ int show_interrupts(struct seq_file *p, void *v)
+>>  			seq_printf(p, ", %s", action->name);
+>>  		seq_putc(p, '\n');
+>>  skip:
+>> -		release_lock_irqrestore(&desc->lock, flags);
+>> +		spin_unlock_irqrestore(&desc->lock, flags);
+>>  	} else if (i == NR_IRQS) {
+>>  #if defined(CONFIG_PPC32) && defined(CONFIG_TAU_INT)
+>>  		if (tau_initialized){
+>> 
+>> --
+>> 
+>> 
+>> 
+>> While booting, this bug appears:
+>> 
+>> BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
+>> in_atomic(): 1 [00010001], irqs_disabled(): 1, pid: 1, name: swapper
+>> Call Trace:
+>> [cf82f9a0] [c0008be8] show_stack+0x4c/0x16c (unreliable)
+>> [cf82f9e0] [c001c184] __might_sleep+0xd8/0xf8
+>> [cf82f9f0] [c02b7758] rt_spin_lock+0x30/0x78
+>> [cf82fa00] [c001853c] ipic_mask_irq+0x3c/0xb0
+>> [cf82fa20] [c0054064] handle_level_irq+0x40/0x178
+>> [cf82fa40] [c00068ec] do_IRQ+0x68/0xe0
+>> [cf82fa50] [c0012924] ret_from_except+0x0/0x14
+>> --- Exception: 501 at internal_add_timer+0x4/0xe0
+>> 
+>> This is trivially solved by converting arch/powerpc/sysdev/ipic.c
+>> back to spinlocks (ipic_lock).
+>> 
+>> Assuming that converting-back is automatic, there are few other
+>> chained interrupt controllers you might want to convert-back:
+>> 
+>> arch/powerpc/sysdev/i8259.c (i8259_lock)
+>> arch/powerpc/sysdev/mpic.c (mpic_lock)
+>> arch/powerpc/sysdev/qe_lib/qe_ic.c (qe_ic_lock)
 
-| PCI host bridge /plb/pci@1ec000000 (primary) ranges:
-|  MEM 0x0000000180000000..0x00000001bfffffff -> 0x0000000080000000 
-|   IO 0x00000001e8000000..0x00000001e800ffff -> 0x0000000000000000
-|   IO 0x00000001e8800000..0x00000001ebffffff -> 0x0000000000000000
-|  \--> Skipped (too many) !
-| 4xx PCI DMA offset set to 0x00000000
-| ppc4xx_configure_pci_PMMs: i = 0, hose->pci_mem_offset = 0x100000000
-| ppc4xx_setup_one_pci_PMM:     hose = 0xcf825000
-| ppc4xx_setup_one_pci_PMM:     reg = 0xd1000000
-| ppc4xx_setup_one_pci_PMM:     plb_addr = 0x180000000
-| ppc4xx_setup_one_pci_PMM:     pci_addr = 0x80000000
-| ppc4xx_setup_one_pci_PMM:     size = 0x40000000
-| ppc4xx_setup_one_pci_PMM:     flags = 0x200
-| ppc4xx_setup_one_pci_PMM:     index = 0
-| /plb/pci@1ec000000: Resource out of range
-                      ^^^^^^^^^^^^^^^^^^^^^
-because plb_addr + size lies outside 32-bit space.
+arch/powerpc/sysdev/uic.c has spin_locks in the struct for each
+UIC instance.  They can be cascaded as well.
 
-| ppc4xx_configure_pci_PMMs: hose->isa_mem_phys = 0x0, hose->isa_mem_size = 0x0
-| PCI: Probing PCI hardware
-| PCI: Hiding 4xx host bridge resources 0000:00:00.0
-| pci 0000:00:0a.0: PME# supported from D0 D1 D2 D3hot
-| pci 0000:00:0a.0: PME# disabled
-| pci 0000:00:0a.1: PME# supported from D0 D1 D2 D3hot
-| pci 0000:00:0a.1: PME# disabled
-| pci 0000:00:0a.2: PME# supported from D0 D1 D2 D3hot
-| pci 0000:00:0a.2: PME# disabled
-
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index 77fae5f..70684ee 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -16,6 +16,8 @@
-  *
-  */
- 
-+#define pr_fmt(fmt)  "%s: " fmt, __func__
-+
- #undef DEBUG
- 
- #include <linux/kernel.h>
-@@ -204,6 +206,13 @@ static int __init ppc4xx_setup_one_pci_PMM(struct pci_controller	*hose,
- {
- 	u32 ma, pcila, pciha;
- 
-+pr_info("    hose = 0x%p\n", hose);
-+pr_info("    reg = 0x%p\n", reg);
-+pr_info("    plb_addr = 0x%llx\n", plb_addr);
-+pr_info("    pci_addr = 0x%llx\n", pci_addr);
-+pr_info("    size = 0x%llx\n", size);
-+pr_info("    flags = 0x%x\n", flags);
-+pr_info("    index = %d\n", index);
- 	if ((plb_addr + size) > 0xffffffffull || !is_power_of_2(size) ||
- 	    size < 0x1000 || (plb_addr & (size - 1)) != 0) {
- 		printk(KERN_WARNING "%s: Resource out of range\n",
-@@ -244,6 +253,7 @@ static void __init ppc4xx_configure_pci_PMMs(struct pci_controller *hose,
- 		}
- 
- 		/* Configure the resource */
-+pr_info("i = %d, hose->pci_mem_offset = 0x%llx\n", i, hose->pci_mem_offset);
- 		if (ppc4xx_setup_one_pci_PMM(hose, reg,
- 					     res->start,
- 					     res->start - hose->pci_mem_offset,
-@@ -260,6 +270,7 @@ static void __init ppc4xx_configure_pci_PMMs(struct pci_controller *hose,
- 		}
- 	}
- 
-+pr_info("hose->isa_mem_phys = 0x%llx, hose->isa_mem_size = 0x%llx\n", hose->isa_mem_phys, hose->isa_mem_size);
- 	/* Handle ISA memory hole if not already covered */
- 	if (j <= 2 && !found_isa_hole && hose->isa_mem_size)
- 		if (ppc4xx_setup_one_pci_PMM(hose, reg, hose->isa_mem_phys, 0,
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+josh
