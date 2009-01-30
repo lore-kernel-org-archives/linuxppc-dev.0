@@ -1,19 +1,18 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id ED431DE147
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 12:28:20 +1100 (EST)
-Date: Thu, 29 Jan 2009 17:28:16 -0800 (PST)
-Message-Id: <20090129.172816.174153340.davem@davemloft.net>
-To: galak@kernel.crashing.org
-Subject: Re: [PATCH] ucc_geth: Change uec phy id to the same format as
-	gianfar's
+	by ozlabs.org (Postfix) with ESMTP id E9BDBDDFC3
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 12:31:36 +1100 (EST)
+Date: Thu, 29 Jan 2009 17:31:33 -0800 (PST)
+Message-Id: <20090129.173133.268065861.davem@davemloft.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] gianfar: Fix Wake-on-LAN support
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <FD1B55B4-574B-4B77-889D-FD81D77DCA5E@kernel.crashing.org>
-References: <1233254342-8435-1-git-send-email-Haiying.Wang@freescale.com>
-	<FD1B55B4-574B-4B77-889D-FD81D77DCA5E@kernel.crashing.org>
+In-Reply-To: <20090128203545.GA13928@oksana.dev.rtsoft.ru>
+References: <20090128203545.GA13928@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Haiying.Wang@freescale.com, netdev@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org,
+	jgarzik@pobox.com, peppe.cavallaro@st.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Thu, 29 Jan 2009 12:42:38 -0600
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date: Wed, 28 Jan 2009 23:35:45 +0300
 
+> commit 0f0ca340e57bd7446855fefd07a64249acf81223 ("phy: power
+> management support") caused a regression in the gianfar driver.
 > 
-> On Jan 29, 2009, at 12:39 PM, Haiying Wang wrote:
+> Now phylib turns off PHY power during suspend, and thus WOL
+> doesn't work anymore.
 > 
-> > The commit b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4 changes the gianfar's phy id to
-> > the format like "mdio@xxxx:xx", but uec still uses the old format like "xxxxxxxx:xx".
-> > For the board whose UEC uses gianfar-mdio like MPC8568MDS, the phy can not be attached
-> > because of the incompatible phy id format. This patch changes uec's phy id to the same
-> > format as gianfar's.
-> >
-> > Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
-> > ---
-> > drivers/net/ucc_geth.c           |   20 ++++++++++++++++++--
-> > drivers/net/ucc_geth.h           |    2 ++
-> > drivers/net/ucc_geth_mii.c       |   12 +++++++++++-
-> > drivers/net/ucc_geth_mii.h       |    1 +
-> > 4 files changed, 32 insertions(+), 3 deletions(-)
+> This patch workarounds the issue by enabling wakeup in the MDIO
+> device, i.e. just restores the old behaviour for the gianfar
+> driver. Note that this way all PHYs on a given MDIO bus won't
+> be turned off during suspend, which isn't good from the power
+> saving point of view.
 > 
-> David,
+> A proper, per netdevice wakeup management support will need
+> a bit reworked phylib suspend/resume logic.
 > 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Applied to net-2.6, thanks.
+Applied, thanks Anton.
