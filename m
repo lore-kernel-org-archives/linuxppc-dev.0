@@ -1,30 +1,22 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-cn0ut-5.online-age.net (ext-cn0ut-5.online-age.net
-	[63.210.253.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-cn0ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EB3EBDE1D9
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 00:17:16 +1100 (EST)
-Received: from int-cn0ut-4.online-age.net (int-cn0ut-4.online-age.net
-	[3.159.252.73])
-	by ext-cn0ut-5.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id n0UDHDmB006866
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 08:17:13 -0500
-Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-4.online-age.net
-	[3.159.252.73])
-	by int-cn0ut-4.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id n0UDHC1c002728
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 08:17:12 -0500
-Message-ID: <4982FDD0.7000409@gefanuc.com>
-Date: Fri, 30 Jan 2009 13:17:04 +0000
-From: Martyn Welch <martyn.welch@gefanuc.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.182])
+	by ozlabs.org (Postfix) with ESMTP id 9ACB3DDFB1
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 00:17:59 +1100 (EST)
+Received: by el-out-1112.google.com with SMTP id s27so199207ele.3
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 05:17:57 -0800 (PST)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Fri, 30 Jan 2009 08:16:01 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Madhulika Madishetty <mmadishetty@amcc.com>
+Subject: Re: [PATCH 1/1 v2] AMCC PPC 460SX redwood SoC platform initial
+	framework
+Message-ID: <20090130131601.GA2784@yoda.jdub.homelinux.org>
+References: <AC5E1C3367E37D44970B81A6ADD1DA2C06C31EE8@SDCEXCHANGE01.ad.amcc.com>
 MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: Booting 2.6.29-rc3 on mpc8661d_hpcn failing
-References: <4982F311.4050507@gefanuc.com>
-In-Reply-To: <4982F311.4050507@gefanuc.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C06C31EE8@SDCEXCHANGE01.ad.amcc.com>
+Cc: Feng Kan <fkan@amcc.com>, linuxppc-dev@ozlabs.org, Loc Ho <lho@amcc.com>,
+	Tirumala Reddy Marri <tmarri@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,23 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Martyn Welch wrote:
-> Hi Guys,
+On Thu, Jan 29, 2009 at 01:05:08PM -0800, Madhulika Madishetty wrote:
 > 
-> It seems that 2.6.29-rc3 is not booting on the MPC8641 HPCN. I have just 
-> updated u-boot to the latest git to see if that improved matters, 
-> however I get stuck at the following. Any ideas?
-> 
+>Resubmitting patch without the confidentiality notice.
+>
+>From: Madhulika Madishetty <mmadishetty@amcc.com>
+>
+>This patch contains initial framework for the AMCC Redwood board.
+>
+>Signed-off-by: Madhulika Madishetty <mmadishetty@amcc.com>
+>Signed-off-by: Tirumala Marri <tmarri@amcc.com>
+>Signed-off-by: Feng Kan <fkan@amcc.com>
+>Signed-off-by: Vidhyananth Venkatasamy <vvenkatasamy@amcc.com>
+>Signed-off-by: Preetesh Parekh <pparekh@amcc.com>
+>Acked-by: Loc Ho <lho@amcc.com>
+>Acked-by: Feng Kan <fkan@amcc.com>
+>---
+> arch/powerpc/boot/dts/redwood.dts          |  245 ++++++
+> arch/powerpc/configs/44x/redwood_defconfig | 1174
+>++++++++++++++++++++++++++++
+> arch/powerpc/kernel/cpu_setup_44x.S        |    1 +
+> arch/powerpc/kernel/cputable.c             |   13 +
+> arch/powerpc/platforms/44x/Kconfig         |   19 +
+> arch/powerpc/platforms/44x/ppc44x_simple.c |    1 +
+> 6 files changed, 1453 insertions(+), 0 deletions(-)  create mode 100644
+>arch/powerpc/boot/dts/redwood.dts  create mode 100644
+>arch/powerpc/configs/44x/redwood_defconfig
 
-Gah! That lost it's formatting some how, sorry.
+>From a code perspective, this looks much improved from the last time it was
+submitted.  Good job there.
 
-I have just tried 2.6.29-rc2 and I get the same.
+However, the patch itself appears to be word-wrapped or otherwise corrupted:
 
-Martyn
+[jwboyer@yoda linux-2.6]$ git am -i ~/Download/1-1-v2-AMCC-PPC-460SX-redwood-SoC-platform-initial-framework.patch
+Applying AMCC PPC 460SX redwood SoC platform initial framework
+fatal: corrupt patch at line 55
+Patch failed at 0001.
 
+You need to teach your email program (or mail server perhaps) to not do that.
 
--- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
+josh
