@@ -1,20 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9CFEFDDFAB
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 14:08:00 +1100 (EST)
-Date: Fri, 30 Jan 2009 06:07:58 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 2.6.28-rt on PowerPC
-Message-ID: <20090130030758.GA7004@oksana.dev.rtsoft.ru>
-References: <20090129213429.GA29014@oksana.dev.rtsoft.ru>
-	<1233281510.18767.17.camel@pasglop>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from VA3EHSOBE005.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 08776474C1
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 14:12:56 +1100 (EST)
+Message-ID: <49827003.5050307@am.sony.com>
+Date: Thu, 29 Jan 2009 19:12:03 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1233281510.18767.17.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+To: Remis Lima Baima <remis.developer@googlemail.com>
+Subject: Re: Dynamic-ftrace not working in PlayStation3
+References: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
+In-Reply-To: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 30, 2009 at 01:11:50PM +1100, Benjamin Herrenschmidt wrote:
+Hi,
+
+Remis Lima Baima wrote:
+> Hi to all. I was tracing a bug in the snd_usb_audio driver
+> (PlayStation 3, Kernel 2.6.29-rc2,
+> git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git) and
+> for that I tried to use the "dynamic ftrace" to get less debug output.
+> But it did not work at all. Ftrace (without the "dynamic ftrace"
+> support) works normally. So I traced the "dynamic ftrace" bug and I
+> think that I found the bug location but I got stucked. Could anyone
+> help, please? Below is the link with the debug output:
 > 
-> > This is trivially solved by converting arch/powerpc/sysdev/ipic.c
-> > back to spinlocks (ipic_lock).
-> > 
-> > Assuming that converting-back is automatic, there are few other
-> > chained interrupt controllers you might want to convert-back:
-> > 
-> > arch/powerpc/sysdev/i8259.c (i8259_lock)
-> > arch/powerpc/sysdev/mpic.c (mpic_lock)
-> > arch/powerpc/sysdev/qe_lib/qe_ic.c (qe_ic_lock)
+> PS1: The problem seems to happen in the file
+> "./git/linux-2.6/arch/powerpc/kernel/ftrace.c" around the line 217:
+> "if (ptr != GET_ADDR(addr)) {". It returns true.
+> PS2: I enabled the "DEBUGP" macro to get the debug output below and
+> changed the line 218 to "printk(KERN_ERR "addr does not match \nptr:
+> %lx \naddr: %lx \nGET_ADDR(addr): %lx \n", ptr, addr,
+> GET_ADDR(addr));".
 > 
-> Except that a bunch of those can be both primary and chained...
+> //*************************************************************************************************************************************
+> ip:d000000000045aec jumps to d000000000046340 r2: d000000000050c00
+> 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+> ip:d0000000000458d0 jumps to d000000000046340 r2: d000000000050c00
+> 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+> ip:d000000000045838 jumps to d000000000046340 r2: d000000000050c00
+> 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+> ip:d0000000000456dc jumps to d000000000046340 r2: d000000000050c00
+> 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
+...
+> ps3_system_bus_match:362: dev=11.0(lpm_01), drv=11.0(ps3-lpm): match
+> ps3_system_bus_match:362: dev=11.0(lpm_01), drv=11.0(ps3-lpm): match
+> ps3-lpm lpm_01:  <- ps3_lpm_probe:1245:
+> ip:d0000000003fe280 jumps to d0000000003ffad8 r2: d000000000422c70
+> 3d82fffe 398cce68 fffece68 toc: d00000000040faf8 6c656400 5f5f6b73
+> addr does not match
+> ptr: 6c6564005f5f6b73
+> addr: c0000000004ff128
+> GET_ADDR(addr): c000000000007cac
 
-Yeah, thanks for correcting.
+I don't know so much about ftrace, but to get a better idea of the
+problem, could you try with the patch below?
 
-> It's
-> simply not a solution to have to "convert" interrupt controller code to
-> use a different locking scheme depending on whether they are chained or
-> primary...
+Is ps3-lpm built as a loadable module, and if so, is it the first one
+that got loaded?
 
-Actually, it doesn't matter whether a controller is a root IC or
-cascaded. Just as primary handlers, chained handlers don't run in
-threads, thus spinlocks should be used, not sleeping locks.
+Also, try to either build with CONFIG_PS3_LPM=n, or delete ps3-lpm.ko
+so it does not get loaded to see what happens.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+-Geoff
+
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -23,7 +23,7 @@
+ #if 0
+ #define DEBUGP printk
+ #else
+-#define DEBUGP(fmt , ...)	do { } while (0)
++#define DEBUGP printk
+ #endif
+ 
+ static unsigned int ftrace_nop = PPC_NOP_INSTR;
+@@ -213,6 +213,8 @@ __ftrace_make_nop(struct module *mod,
+ 
+ 	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
+ 
++	printk("ptr %lx, addr %lx, GET_ADDR %lx\n", ptr, addr, GET_ADDR(addr));
++
+ 	/* This should match what was called */
+ 	if (ptr != GET_ADDR(addr)) {
+ 		printk(KERN_ERR "addr does not match %lx\n", ptr);
