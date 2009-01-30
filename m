@@ -1,18 +1,33 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 891A9DE06E
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 14:38:18 +1100 (EST)
-Date: Thu, 29 Jan 2009 22:38:16 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: Dynamic-ftrace not working in PlayStation3
-In-Reply-To: <49827003.5050307@am.sony.com>
-Message-ID: <alpine.DEB.1.10.0901292234520.6222@gandalf.stny.rr.com>
-References: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
-	<49827003.5050307@am.sony.com>
+Return-Path: <serge@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AD955DDFCD
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 14:55:34 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n0U3s7Uq003910
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 20:54:07 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	n0U3tV8b155588
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 20:55:31 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n0U3tVUp011254
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 20:55:31 -0700
+Date: Thu, 29 Jan 2009 21:55:30 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
+	implementation
+Message-ID: <20090130035530.GA30595@us.ibm.com>
+References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
+	<1233182478-27113-2-git-send-email-ntl@pobox.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Remis Lima Baima <remis.developer@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1233182478-27113-2-git-send-email-ntl@pobox.com>
+Cc: containers@lists.osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,87 +37,374 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Thu, 29 Jan 2009, Geoff Levand wrote:
-
-> > 
-> > //*************************************************************************************************************************************
-> > ip:d000000000045aec jumps to d000000000046340 r2: d000000000050c00
-> > 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-> > ip:d0000000000458d0 jumps to d000000000046340 r2: d000000000050c00
-> > 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-> > ip:d000000000045838 jumps to d000000000046340 r2: d000000000050c00
-> > 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-> > ip:d0000000000456dc jumps to d000000000046340 r2: d000000000050c00
-> > 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-> ...
-
-So I take it that the above showed that the code worked for some?
-
-> > ps3_system_bus_match:362: dev=11.0(lpm_01), drv=11.0(ps3-lpm): match
-> > ps3_system_bus_match:362: dev=11.0(lpm_01), drv=11.0(ps3-lpm): match
-> > ps3-lpm lpm_01:  <- ps3_lpm_probe:1245:
-> > ip:d0000000003fe280 jumps to d0000000003ffad8 r2: d000000000422c70
-
-Could you find out what that function is? Perhaps do a:
-
-	printk("ip:%pF\n", ip);
-
-As long as you have kallsyms on, that should point to the function that's 
-the problem.
-
-> > 3d82fffe 398cce68 fffece68 toc: d00000000040faf8 6c656400 5f5f6b73
-> > addr does not match
-> > ptr: 6c6564005f5f6b73
-
-ptr is the same info as the last line above.
-
-> > addr: c0000000004ff128
-> > GET_ADDR(addr): c000000000007cac
+Quoting Nathan Lynch (ntl@pobox.com):
+> The only thing of significance here is that the checkpointed task's
+> pt_regs and fp state are saved and restored (see cr_write_cpu and
+> cr_read_cpu); the rest of the code consists of dummy implementations
+> of the APIs the arch needs to provide to the checkpoint/restart core.
 > 
-> I don't know so much about ftrace, but to get a better idea of the
-> problem, could you try with the patch below?
+> What works:
+> * self and external checkpoint of simple (single thread, one open
+>   file) 32- and 64-bit processes on a ppc64 kernel
 > 
-> Is ps3-lpm built as a loadable module, and if so, is it the first one
-> that got loaded?
+> What doesn't work:
+> * restarting a 32-bit task from a 64-bit task and vice versa
 > 
-> Also, try to either build with CONFIG_PS3_LPM=n, or delete ps3-lpm.ko
-> so it does not get loaded to see what happens.
+> Untested:
+> * ppc32 (but it builds)
 > 
-> -Geoff
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+> ---
+>  arch/powerpc/include/asm/checkpoint_hdr.h |   40 +++++
+>  arch/powerpc/mm/Makefile                  |    1 +
+>  arch/powerpc/mm/checkpoint.c              |  261 +++++++++++++++++++++++++++++
+>  3 files changed, 302 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/checkpoint_hdr.h
+>  create mode 100644 arch/powerpc/mm/checkpoint.c
 > 
-> --- a/arch/powerpc/kernel/ftrace.c
-> +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -23,7 +23,7 @@
->  #if 0
-
-Heh, I would have just done:
-
-- #if 0
-+ #if 1
-
-;-)
-
-
--- Steve
-
->  #define DEBUGP printk
->  #else
-> -#define DEBUGP(fmt , ...)	do { } while (0)
-> +#define DEBUGP printk
->  #endif
->  
->  static unsigned int ftrace_nop = PPC_NOP_INSTR;
-> @@ -213,6 +213,8 @@ __ftrace_make_nop(struct module *mod,
->  
->  	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
->  
-> +	printk("ptr %lx, addr %lx, GET_ADDR %lx\n", ptr, addr, GET_ADDR(addr));
+> diff --git a/arch/powerpc/include/asm/checkpoint_hdr.h b/arch/powerpc/include/asm/checkpoint_hdr.h
+> new file mode 100644
+> index 0000000..752c53f
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/checkpoint_hdr.h
+> @@ -0,0 +1,40 @@
+> +#ifndef __ASM_PPC_CKPT_HDR_H
+> +#define __ASM_PPC_CKPT_HDR_H
+> +/*
+> + *  Checkpoint/restart - architecture specific headers ppc
+> + *
+> + *  Copyright (C) 2008 Oren Laadan
+> + *
+> + *  This file is subject to the terms and conditions of the GNU General Public
+> + *  License.  See the file COPYING in the main directory of the Linux
+> + *  distribution for more details.
+> + */
 > +
->  	/* This should match what was called */
->  	if (ptr != GET_ADDR(addr)) {
->  		printk(KERN_ERR "addr does not match %lx\n", ptr);
+> +#include <linux/types.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/mmu.h>
+> +#include <asm/processor.h>
+> +
+> +struct cr_hdr_head_arch {
+> +	__u32 unimplemented;
+> +};
+> +
+> +struct cr_hdr_thread {
+> +	__u32 unimplemented;
+> +};
+> +
+> +struct cr_hdr_cpu {
+> +	struct pt_regs pt_regs;
+> +	/* relevant fields from thread_struct */
+> +	double fpr[32][TS_FPRWIDTH];
+> +	unsigned int fpscr;
+> +	int fpexc_mode;
+> +	/* unsigned int align_ctl; this is never updated? */
+> +	unsigned long dabr;
+> +};
+> +
+> +struct cr_hdr_mm_context {
+> +	__u32 unimplemented;
+> +};
+> +
+> +#endif /* __ASM_PPC_CKPT_HDR__H */
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index e7392b4..8a523a0 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -24,3 +24,4 @@ obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
+>  obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
+>  obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
+>  obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
+> +obj-$(CONFIG_CHECKPOINT_RESTART) += checkpoint.o
+> diff --git a/arch/powerpc/mm/checkpoint.c b/arch/powerpc/mm/checkpoint.c
+> new file mode 100644
+> index 0000000..8cdff24
+> --- /dev/null
+> +++ b/arch/powerpc/mm/checkpoint.c
+> @@ -0,0 +1,261 @@
+> +/*
+> + *  Checkpoint/restart - architecture specific support for powerpc.
+> + *  Based on x86 implementation.
+> + *
+> + *  Copyright (C) 2008 Oren Laadan
+> + *  Copyright 2009 IBM Corp.
+> + *
+> + *  This file is subject to the terms and conditions of the GNU General Public
+> + *  License.  See the file COPYING in the main directory of the Linux
+> + *  distribution for more details.
+> + */
+> +
+> +#define DEBUG 1 /* for pr_debug */
+> +
+> +#include <linux/checkpoint.h>
+> +#include <linux/checkpoint_hdr.h>
+> +#include <linux/kernel.h>
+> +#include <asm/processor.h>
+> +
+> +static void cr_hdr_init(struct cr_hdr *hdr, __s16 type, __s16 len, __u32 parent)
+> +{
+> +	hdr->type = type;
+> +	hdr->len = len;
+> +	hdr->parent = parent;
+> +}
+> +
+> +/* dump the thread_struct of a given task */
+> +int cr_write_thread(struct cr_ctx *ctx, struct task_struct *t)
+> +{
+> +	struct cr_hdr_thread *thread_hdr;
+> +	struct cr_hdr cr_hdr;
+> +	u32 parent;
+> +	int ret;
+> +
+> +	thread_hdr = cr_hbuf_get(ctx, sizeof(*thread_hdr));
+> +	if (!thread_hdr)
+> +		return -ENOMEM;
+> +
+> +	parent = task_pid_vnr(t);
+> +
+> +	cr_hdr_init(&cr_hdr, CR_HDR_THREAD, sizeof(*thread_hdr), parent);
+
+All you're writing here is the vpid, right?  The arch-independent
+code already stores that?
+
+> +
+> +	thread_hdr->unimplemented = 0xdeadbeef;
+> +
+> +	ret = cr_write_obj(ctx, &cr_hdr, thread_hdr);
+> +	cr_hbuf_put(ctx, sizeof(*thread_hdr));
+> +
+> +	return ret;
+> +}
+> +
+> +/* dump the cpu state and registers of a given task */
+> +int cr_write_cpu(struct cr_ctx *ctx, struct task_struct *t)
+> +{
+> +	struct cr_hdr_cpu *cpu_hdr;
+> +	struct pt_regs *pt_regs;
+> +	struct cr_hdr cr_hdr;
+> +	u32 parent;
+> +	int ret;
+> +
+> +	cpu_hdr = cr_hbuf_get(ctx, sizeof(*cpu_hdr));
+> +	if (!cpu_hdr)
+> +		return -ENOMEM;
+> +
+> +	parent = task_pid_vnr(t);
+> +
+> +	cr_hdr_init(&cr_hdr, CR_HDR_CPU, sizeof(*cpu_hdr), parent);
+> +
+> +	/* pt_regs: GPRs, MSR, etc */
+> +	pt_regs = task_pt_regs(t);
+> +	cpu_hdr->pt_regs = *pt_regs;
+> +
+> +	/* FP state */
+> +	memcpy(cpu_hdr->fpr, t->thread.fpr, sizeof(cpu_hdr->fpr));
+> +	cpu_hdr->fpscr = t->thread.fpscr.val;
+> +	cpu_hdr->fpexc_mode = t->thread.fpexc_mode;
+> +
+> +	/* Handle DABR for now, dbcr[01] later */
+> +	cpu_hdr->dabr = t->thread.dabr;
+> +
+> +	/* ToDo: Altivec/VSX/SPE state */
+> +
+> +	ret = cr_write_obj(ctx, &cr_hdr, cpu_hdr);
+> +	cr_hbuf_put(ctx, sizeof(*cpu_hdr));
+> +
+> +	return ret;
+> +}
+> +
+> +int cr_write_head_arch(struct cr_ctx *ctx)
+> +{
+> +	struct cr_hdr_head_arch *arch_hdr;
+> +	struct cr_hdr cr_hdr;
+> +	int ret;
+> +
+> +	arch_hdr = cr_hbuf_get(ctx, sizeof(*arch_hdr));
+> +	if (!arch_hdr)
+> +		return -ENOMEM;
+> +
+> +	cr_hdr_init(&cr_hdr, CR_HDR_HEAD_ARCH, sizeof(*arch_hdr), 0);
+> +
+> +	arch_hdr->unimplemented = 0xdeadbeef;
+
+No need to write this just for the sake of writing something, imo.
+
+> +	ret = cr_write_obj(ctx, &cr_hdr, arch_hdr);
+> +	cr_hbuf_put(ctx, sizeof(*arch_hdr));
+> +
+> +	return ret;
+> +}
+> +
+> +/* dump the mm->context state */
+> +int cr_write_mm_context(struct cr_ctx *ctx, struct mm_struct *mm, int parent)
+> +{
+> +	struct cr_hdr_mm_context *mm_hdr;
+> +	struct cr_hdr cr_hdr;
+> +	size_t size;
+> +	int ret;
+> +
+> +	size = sizeof(*mm_hdr);
+> +
+> +	mm_hdr = cr_hbuf_get(ctx, size);
+> +	if (!mm_hdr)
+> +		return -ENOMEM;
+> +
+> +	cr_hdr_init(&cr_hdr, CR_HDR_MM_CONTEXT, size, parent);
+> +
+> +	mm_hdr->unimplemented = 0xdeadbeef;
+
+Again
+
+> +	ret = cr_write_obj(ctx, &cr_hdr, mm_hdr);
+> +	cr_hbuf_put(ctx, size);
+> +
+> +	return ret;
+> +}
+> +
+> +/* restart APIs */
+> +
+> +/* read the thread_struct into the current task */
+> +int cr_read_thread(struct cr_ctx *ctx)
+> +{
+> +	struct cr_hdr_thread *thread_hdr;
+> +	int ret;
+> +
+> +	thread_hdr = cr_hbuf_get(ctx, sizeof(*thread_hdr));
+> +	if (!thread_hdr)
+> +		return -ENOMEM;
+> +
+> +	ret = cr_read_obj_type(ctx, thread_hdr, sizeof(*thread_hdr),
+> +				  CR_HDR_THREAD);
+> +	if (ret < 0)
+> +		goto out;
+> +
+> +	ret = 0;
+> +
+> +	if (thread_hdr->unimplemented != 0xdeadbeef) {
+> +		pr_debug("%s: unexpected thread_hdr contents: 0x%lx\n",
+> +			 __func__, (unsigned long)thread_hdr->unimplemented);
+> +		ret = -EINVAL;
+> +	}
+
+DROP
+
+> +out:
+> +	cr_hbuf_put(ctx, sizeof(*thread_hdr));
+> +	return ret;
+> +}
+> +
+> +/* Based on the MSR value from a checkpoint image, produce an MSR
+> + * value that is appropriate for the restored task.  Right now we only
+> + * check for MSR_SF (64-bit) for PPC64.
+> + */
+> +static unsigned long sanitize_msr(unsigned long msr_ckpt)
+> +{
+> +#ifdef CONFIG_PPC32
+> +	return MSR_USER;
+> +#else
+> +	if (msr_ckpt & MSR_SF)
+> +		return MSR_USER64;
+> +	return MSR_USER32;
+> +#endif
+> +}
+> +
+> +int cr_read_cpu(struct cr_ctx *ctx)
+> +{
+> +	struct cr_hdr_cpu *cpu_hdr;
+> +	struct pt_regs *regs;
+> +	int ret;
+> +
+> +	cpu_hdr = cr_hbuf_get(ctx, sizeof(*cpu_hdr));
+> +	if (!cpu_hdr)
+> +		return -ENOMEM;
+> +
+> +	ret = cr_read_obj_type(ctx, cpu_hdr, sizeof(*cpu_hdr),
+> +				  CR_HDR_CPU);
+> +	if (ret < 0)
+> +		goto out;
+> +
+> +	ret = 0;
+> +
+> +	regs = task_pt_regs(current);
+> +	*regs = cpu_hdr->pt_regs;
+> +
+> +	regs->msr = sanitize_msr(regs->msr);
+> +
+> +	/* FP state */
+> +	memcpy(current->thread.fpr, cpu_hdr->fpr, sizeof(current->thread.fpr));
+> +	current->thread.fpscr.val = cpu_hdr->fpscr;
+> +	current->thread.fpexc_mode = cpu_hdr->fpexc_mode;
+> +
+> +	/* debug registers */
+> +	current->thread.dabr = cpu_hdr->dabr;
+> +out:
+> +	cr_hbuf_put(ctx, sizeof(*cpu_hdr));
+> +	return ret;
+> +}
+> +
+> +int cr_read_head_arch(struct cr_ctx *ctx)
+> +{
+> +	struct cr_hdr_head_arch *arch_hdr;
+> +	int ret;
+> +
+> +	arch_hdr = cr_hbuf_get(ctx, sizeof(*arch_hdr));
+> +	if (!arch_hdr)
+> +		return -ENOMEM;
+> +
+> +	ret = cr_read_obj_type(ctx, arch_hdr, sizeof(*arch_hdr),
+> +				  CR_HDR_HEAD_ARCH);
+> +	if (ret < 0)
+> +		goto out;
+> +
+> +	ret = 0;
+> +
+> +	if (arch_hdr->unimplemented != 0xdeadbeef) {
+> +		pr_debug("%s: unexpected arch_hdr contents: 0x%lx\n",
+> +			 __func__, (unsigned long)arch_hdr->unimplemented);
+> +		ret = -EINVAL;
+
+DROP
+
+> +	}
+> +out:
+> +	cr_hbuf_put(ctx, sizeof(*arch_hdr));
+> +	return ret;
+> +}
+> +
+> +int cr_read_mm_context(struct cr_ctx *ctx, struct mm_struct *mm, int rparent)
+> +{
+> +	struct cr_hdr_mm_context *mm_hdr;
+> +	int ret;
+> +
+> +	mm_hdr = cr_hbuf_get(ctx, sizeof(*mm_hdr));
+> +	if (!mm_hdr)
+> +		return -ENOMEM;
+> +
+> +	ret = cr_read_obj_type(ctx, mm_hdr, sizeof(*mm_hdr),
+> +				  CR_HDR_MM_CONTEXT);
+> +	if (ret != rparent)
+> +		goto out;
+> +
+> +	ret = 0;
+> +
+> +	if (mm_hdr->unimplemented != 0xdeadbeef) {
+> +		pr_debug("%s: unexpected mm_hdr contents: 0x%lx\n",
+> +			 __func__, (unsigned long)mm_hdr->unimplemented);
+> +		ret = -EINVAL;
+
+DROP
+
+> +	}
+> +
+> +out:
+> +	cr_hbuf_put(ctx, sizeof(*mm_hdr));
+> +	return ret;
+> +}
+> -- 
+> 1.5.5
 > 
-> 
-> 
-> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
