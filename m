@@ -1,22 +1,32 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.182])
-	by ozlabs.org (Postfix) with ESMTP id 9ACB3DDFB1
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 00:17:59 +1100 (EST)
-Received: by el-out-1112.google.com with SMTP id s27so199207ele.3
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 05:17:57 -0800 (PST)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Fri, 30 Jan 2009 08:16:01 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Madhulika Madishetty <mmadishetty@amcc.com>
-Subject: Re: [PATCH 1/1 v2] AMCC PPC 460SX redwood SoC platform initial
-	framework
-Message-ID: <20090130131601.GA2784@yoda.jdub.homelinux.org>
-References: <AC5E1C3367E37D44970B81A6ADD1DA2C06C31EE8@SDCEXCHANGE01.ad.amcc.com>
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 170B8DE147
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 01:10:22 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n0UE97sW002578
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 07:09:07 -0700
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	n0UEAAqp185656
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 07:10:10 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n0UEA9rw014486
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 07:10:10 -0700
+Message-ID: <498309ED.4080807@linux.vnet.ibm.com>
+Date: Fri, 30 Jan 2009 08:08:45 -0600
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C06C31EE8@SDCEXCHANGE01.ad.amcc.com>
-Cc: Feng Kan <fkan@amcc.com>, linuxppc-dev@ozlabs.org, Loc Ho <lho@amcc.com>,
-	Tirumala Reddy Marri <tmarri@amcc.com>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [PATCH 1/1] powerpc: Fix partition migration hang under load
+References: <200901292324.n0TNOktd000814@d03av02.boulder.ibm.com>
+	<20090130003829.GC6913@localdomain>
+In-Reply-To: <20090130003829.GC6913@localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 29, 2009 at 01:05:08PM -0800, Madhulika Madishetty wrote:
+Nathan Lynch wrote:
+> Brian King wrote:
+>> While testing partition migration with heavy CPU load using
+>> shared processors, it was observed that sometimes the migration
+>> would never complete and would appear to hang. Currently, the
+>> migration code assumes that if H_SUCCESS is returned from the H_JOIN
+>> then the migration is complete and the processor is waking up on
+>> the target system. If there was an outstanding PROD to the processor
+>> when the H_JOIN is called, however, it will return H_SUCCESS on the source
+>> system
 > 
->Resubmitting patch without the confidentiality notice.
->
->From: Madhulika Madishetty <mmadishetty@amcc.com>
->
->This patch contains initial framework for the AMCC Redwood board.
->
->Signed-off-by: Madhulika Madishetty <mmadishetty@amcc.com>
->Signed-off-by: Tirumala Marri <tmarri@amcc.com>
->Signed-off-by: Feng Kan <fkan@amcc.com>
->Signed-off-by: Vidhyananth Venkatasamy <vvenkatasamy@amcc.com>
->Signed-off-by: Preetesh Parekh <pparekh@amcc.com>
->Acked-by: Loc Ho <lho@amcc.com>
->Acked-by: Feng Kan <fkan@amcc.com>
->---
-> arch/powerpc/boot/dts/redwood.dts          |  245 ++++++
-> arch/powerpc/configs/44x/redwood_defconfig | 1174
->++++++++++++++++++++++++++++
-> arch/powerpc/kernel/cpu_setup_44x.S        |    1 +
-> arch/powerpc/kernel/cputable.c             |   13 +
-> arch/powerpc/platforms/44x/Kconfig         |   19 +
-> arch/powerpc/platforms/44x/ppc44x_simple.c |    1 +
-> 6 files changed, 1453 insertions(+), 0 deletions(-)  create mode 100644
->arch/powerpc/boot/dts/redwood.dts  create mode 100644
->arch/powerpc/configs/44x/redwood_defconfig
+> Hmm, did you determine where that outstanding H_PROD is coming from?
+> AFAICT this is the only code which uses that hcall, and all processors
+> should have "consumed" their prods from one migration before another
+> migration can commence.
 
->From a code perspective, this looks much improved from the last time it was
-submitted.  Good job there.
+Not for certain. After a successful migration we PROD all the processors,
+including the one doing all the PRODs. Not sure if this is where the
+PROD was coming from that was causing the migration hang or not. The failing
+testcase involved keeping the CPUs extremely busy and migrating back and
+forth between two systems. 
 
-However, the patch itself appears to be word-wrapped or otherwise corrupted:
+-Brian
 
-[jwboyer@yoda linux-2.6]$ git am -i ~/Download/1-1-v2-AMCC-PPC-460SX-redwood-SoC-platform-initial-framework.patch
-Applying AMCC PPC 460SX redwood SoC platform initial framework
-fatal: corrupt patch at line 55
-Patch failed at 0001.
-
-You need to teach your email program (or mail server perhaps) to not do that.
-
-josh
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
