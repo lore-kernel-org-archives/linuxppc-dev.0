@@ -1,18 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 135BFDE1D9
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 17:14:43 +1100 (EST)
-Message-Id: <CCC6C674-09CB-4FC7-9F3E-87E8D5D0E114@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090130022651.08955DE108@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [RFC/PATCH] powerpc: Rework I$/D$ coherency
-Date: Fri, 30 Jan 2009 00:14:32 -0600
-References: <20090130022651.08955DE108@ozlabs.org>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id C041EDE164
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 19:33:08 +1100 (EST)
+Message-ID: <4982BB3F.3080509@matrix-vision.de>
+Date: Fri, 30 Jan 2009 09:33:03 +0100
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+MIME-Version: 1.0
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: [PATCH] powerpc/5200: Bugfix for PCI mapping of memory and IMMR
+References: <20090127043315.26160.43312.stgit@localhost.localdomain>
+	<b5e2fc790901270956q4448ac4brd0f6ea177ace9ade@mail.gmail.com>
+In-Reply-To: <b5e2fc790901270956q4448ac4brd0f6ea177ace9ade@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,78 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Matt Sealey wrote:
+> On Mon, Jan 26, 2009 at 10:34 PM, Grant Likely
+> <grant.likely@secretlab.ca> wrote:
+>   
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> This patch ensures that memory gets properly mapped into the PCI
+>> address space.  Without this patch, the memory window BAR is left
+>> at whatever value happened to be loaded into the BAR when Linux
+>> was booted.  Without this patch, memory could end up getting mapped
+>> at any of the 1G address boundaries instead of at '0' where Linux
+>> expects it.
+>>
+>> Similarly, this patch also ensures that the internally memory mapped
+>> registers (IMMR) are mapped to the correct PCI address range.
+>>
+>> Without this patch, PCI appears to work correctly until a PCI
+>> device is inserted which DMAs into memory.
+>>
+>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>> ---
+>>
+>> This is a bugfix that I intend to merge into 2.6.29 and once it is
+>> mainlined get it added to the stable queue.  If you have a 5200 system,
+>> please test and make sure it works for you.
+>>
+>> Thanks
+>> g.
+>>
+>>  arch/powerpc/platforms/52xx/mpc52xx_pci.c |   24 ++++++++++--------------
+>>  1 files changed, 10 insertions(+), 14 deletions(-)
+>>
+>>     
+>
+> This doesn't affect Efika, right?
+>
+> What's the expected impact and how come nobody tried a DMA-capable PCI
+> card in an MPC5200B board before? :)
+>
+>   
+We're running a MPC5200B based board with an external FPGA pumping as 
+much data into the CPU's memory as possible using scatter-gather DMA. No 
+problems so far ... besides the lousy PCI target performance of the 
+5200, of course. Of course we've been always running latest u-boot.
 
-On Jan 29, 2009, at 8:26 PM, Benjamin Herrenschmidt wrote:
+regards,
+Andre
 
-> Index: linux-work/arch/powerpc/include/asm/pgtable-ppc64.h
-> ===================================================================
-> --- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc64.h	 
-> 2009-01-28 16:00:26.000000000 +1100
-> +++ linux-work/arch/powerpc/include/asm/pgtable-ppc64.h	2009-01-29  
-> 10:50:58.000000000 +1100
-> @@ -125,6 +125,8 @@
-> #define _PTEIDX_SECONDARY	0x8
-> #define _PTEIDX_GROUP_IX	0x7
->
-> +/* To make some generic powerpc code happy */
-> +#define _PAGE_HWEXEC		0
->
-> /*
->  * POWER4 and newer have per page execute protection, older chips  
-> can only
-> @@ -285,6 +287,10 @@ static inline unsigned long pte_update(s
-> 	: "r" (ptep), "r" (clr), "m" (*ptep), "i" (_PAGE_BUSY)
-> 	: "cc" );
->
-> +	/* huge pages use the old page table lock */
-> +	if (!huge)
-> +		assert_pte_locked(mm, addr);
-> +
-> 	if (old & _PAGE_HASHPTE)
-> 		hpte_need_flush(mm, addr, ptep, old, huge);
-> 	return old;
-> @@ -359,23 +365,12 @@ static inline void pte_clear(struct mm_s
-> 	pte_update(mm, addr, ptep, ~0UL, 0);
-> }
->
-> -/*
-> - * set_pte stores a linux PTE into the linux page table.
-> - */
-> -static inline void set_pte_at(struct mm_struct *mm, unsigned long  
-> addr,
-> -			      pte_t *ptep, pte_t pte)
-> -{
-> -	if (pte_present(*ptep))
-> -		pte_clear(mm, addr, ptep);
-> -	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
-> -	*ptep = pte;
-> -}
->
-> /* Set the dirty and/or accessed bits atomically in a linux PTE, this
->  * function doesn't need to flush the hash entry
->  */
-> #define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
 
-should the #define go since its in pgtable.h now?
-
->
-> -static inline void __ptep_set_access_flags(pte_t *ptep, pte_t  
-> entry, int dirty)
-> +static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
-> {
-> 	unsigned long bits = pte_val(entry) &
-> 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
-> @@ -392,15 +387,6 @@ static inline void __ptep_set_access_fla
-> 	:"r" (bits), "r" (ptep), "m" (*ptep), "i" (_PAGE_BUSY)
-> 	:"cc");
-> }
-> -#define  ptep_set_access_flags(__vma, __address, __ptep, __entry,  
-> __dirty) \
-> -({									   \
-> -	int __changed = !pte_same(*(__ptep), __entry);			   \
-> -	if (__changed) {						   \
-> -		__ptep_set_access_flags(__ptep, __entry, __dirty);    	   \
-> -		flush_tlb_page_nohash(__vma, __address);		   \
-> -	}								   \
-> -	__changed;							   \
-> -})
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
