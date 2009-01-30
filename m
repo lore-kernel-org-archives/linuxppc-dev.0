@@ -1,22 +1,30 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.189])
-	by ozlabs.org (Postfix) with ESMTP id 869BCDE1C4
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 00:08:03 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j67so318977rne.16
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 05:08:01 -0800 (PST)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Fri, 30 Jan 2009 08:07:57 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Steven Rostedt <srostedt@redhat.com>
-Subject: Re: 2.6.28-rt on PowerPC
-Message-ID: <20090130130757.GB31192@yoda.jdub.homelinux.org>
-References: <20090129213429.GA29014@oksana.dev.rtsoft.ru>
-	<1233270043.3833.57.camel@localhost.localdomain>
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from ext-cn0ut-5.online-age.net (ext-cn0ut-5.online-age.net
+	[63.210.253.234])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-cn0ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id EB3EBDE1D9
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 00:17:16 +1100 (EST)
+Received: from int-cn0ut-4.online-age.net (int-cn0ut-4.online-age.net
+	[3.159.252.73])
+	by ext-cn0ut-5.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id n0UDHDmB006866
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 08:17:13 -0500
+Received: from cinmlip01.e2k.ad.ge.com (int-cn0ut-4.online-age.net
+	[3.159.252.73])
+	by int-cn0ut-4.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id n0UDHC1c002728
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 08:17:12 -0500
+Message-ID: <4982FDD0.7000409@gefanuc.com>
+Date: Fri, 30 Jan 2009 13:17:04 +0000
+From: Martyn Welch <martyn.welch@gefanuc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1233270043.3833.57.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-rt-users@vger.kernel.org
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: Booting 2.6.29-rc3 on mpc8661d_hpcn failing
+References: <4982F311.4050507@gefanuc.com>
+In-Reply-To: <4982F311.4050507@gefanuc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,83 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 29, 2009 at 06:00:43PM -0500, Steven Rostedt wrote:
->
->On Fri, 2009-01-30 at 00:34 +0300, Anton Vorontsov wrote:
->> Hi Steven,
->> 
->> I know 2.6.28-rt isn't yet ready, but I could not resist to try
->> it anyway. ;-)
->> 
->> Here are few issues and ways to solve them:
->> 
->> Currently the -rt tree doesn't link for arch/powerpc:
->> 
->>   LD      .tmp_vmlinux1
->>   arch/powerpc/kernel/built-in.o: In function `show_interrupts':
->>   (.text+0x27bc): undefined reference to `__call_bad_lock_func'
->>   arch/powerpc/kernel/built-in.o: In function `show_interrupts':
->>   (.text+0x28b0): undefined reference to `__call_bad_lock_func'
->>   make: *** [.tmp_vmlinux1] Error 1
->
->Thanks! I have not yet had the chance to apply any arch patches yet. I
->do plan on doing so after getting the code mostly working on x86.
->
->> 
->> This can be trivially fixed:
->> 
->> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
->> index 838857f..cc7dd12 100644
->> --- a/arch/powerpc/kernel/irq.c
->> +++ b/arch/powerpc/kernel/irq.c
->> @@ -183,7 +183,7 @@ int show_interrupts(struct seq_file *p, void *v)
->>  
->>  	if (i < NR_IRQS) {
->>  		desc = get_irq_desc(i);
->> -		acquire_lock_irqsave(&desc->lock, flags);
->> +		spin_lock_irqsave(&desc->lock, flags);
->>  		action = desc->action;
->>  		if (!action || !action->handler)
->>  			goto skip;
->> @@ -204,7 +204,7 @@ int show_interrupts(struct seq_file *p, void *v)
->>  			seq_printf(p, ", %s", action->name);
->>  		seq_putc(p, '\n');
->>  skip:
->> -		release_lock_irqrestore(&desc->lock, flags);
->> +		spin_unlock_irqrestore(&desc->lock, flags);
->>  	} else if (i == NR_IRQS) {
->>  #if defined(CONFIG_PPC32) && defined(CONFIG_TAU_INT)
->>  		if (tau_initialized){
->> 
->> --
->> 
->> 
->> 
->> While booting, this bug appears:
->> 
->> BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
->> in_atomic(): 1 [00010001], irqs_disabled(): 1, pid: 1, name: swapper
->> Call Trace:
->> [cf82f9a0] [c0008be8] show_stack+0x4c/0x16c (unreliable)
->> [cf82f9e0] [c001c184] __might_sleep+0xd8/0xf8
->> [cf82f9f0] [c02b7758] rt_spin_lock+0x30/0x78
->> [cf82fa00] [c001853c] ipic_mask_irq+0x3c/0xb0
->> [cf82fa20] [c0054064] handle_level_irq+0x40/0x178
->> [cf82fa40] [c00068ec] do_IRQ+0x68/0xe0
->> [cf82fa50] [c0012924] ret_from_except+0x0/0x14
->> --- Exception: 501 at internal_add_timer+0x4/0xe0
->> 
->> This is trivially solved by converting arch/powerpc/sysdev/ipic.c
->> back to spinlocks (ipic_lock).
->> 
->> Assuming that converting-back is automatic, there are few other
->> chained interrupt controllers you might want to convert-back:
->> 
->> arch/powerpc/sysdev/i8259.c (i8259_lock)
->> arch/powerpc/sysdev/mpic.c (mpic_lock)
->> arch/powerpc/sysdev/qe_lib/qe_ic.c (qe_ic_lock)
+Martyn Welch wrote:
+> Hi Guys,
+> 
+> It seems that 2.6.29-rc3 is not booting on the MPC8641 HPCN. I have just 
+> updated u-boot to the latest git to see if that improved matters, 
+> however I get stuck at the following. Any ideas?
+> 
 
-arch/powerpc/sysdev/uic.c has spin_locks in the struct for each
-UIC instance.  They can be cascaded as well.
+Gah! That lost it's formatting some how, sorry.
 
-josh
+I have just tried 2.6.29-rc2 and I get the same.
+
+Martyn
+
+
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
