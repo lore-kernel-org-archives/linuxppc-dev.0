@@ -1,32 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 75D6DDE161
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 11:19:04 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n0U0GqSq026830
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 19:16:52 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n0U0IwXc197154
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 19:18:58 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n0U0Iww8016748
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 19:18:58 -0500
-Date: Thu, 29 Jan 2009 19:18:42 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Broken PCI on Sequoia
-Message-ID: <20090130001842.GB3943@zod.rchland.ibm.com>
-References: <alpine.LRH.2.00.0901291819440.22142@vixen.sonytel.be>
-	<1233267061.18767.5.camel@pasglop>
+Return-Path: <glikely@secretlab.ca>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.183])
+	by ozlabs.org (Postfix) with ESMTP id 162F3DE182
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 11:29:26 +1100 (EST)
+Received: by el-out-1112.google.com with SMTP id s27so117989ele.3
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jan 2009 16:29:24 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1233267061.18767.5.camel@pasglop>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+In-Reply-To: <fa686aa40901291628k5b58e485n2eadb59d851e7b0e@mail.gmail.com>
+References: <fa686aa40901291628k5b58e485n2eadb59d851e7b0e@mail.gmail.com>
+Date: Thu, 29 Jan 2009 17:29:24 -0700
+Message-ID: <fa686aa40901291629q37ca42a9j6c38a3fe26a9d979@mail.gmail.com>
+Subject: Re: Please pull 'next' branch of linux-2.6-mpc52xx.git
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,23 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 30, 2009 at 09:11:01AM +1100, Benjamin Herrenschmidt wrote:
->On Thu, 2009-01-29 at 18:37 +0100, Geert Uytterhoeven wrote:
->> 	Hi Ben, Josh,
->
->
-> .../...
->
->> Git-reverting this commit on top of 2.6.29-rc3 makes the crash go away.
->> 
->> Perhaps sequoia.dts (and other 44x DTS files) had to be changed, too?
->
->Weird, maybe I have a bug when there is no ISA hole in the DT, I'll have
->a look later today.
+Oops, forgot to CC the mailing list.
 
-Yeah.  In fact, I think you have that bug in almost every board.  You only
-updated Bamboo and Canyonlands with the initial patch and the changelog
-says "other boards can be updated separately."  Nobody did that.  So not
-so weird after all.
+g.
 
-josh
+On Thu, Jan 29, 2009 at 5:28 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> Hi Ben,
+>
+> Here is the traditional defconfig update plus a bugfix for mpc5200
+> PCI.  Please pull into 2.6.29.
+>
+> Thanks,
+> g.
+>
+> The following changes since commit 18e352e4a73465349711a9324767e1b2453383e2:
+>  Linus Torvalds (1):
+>        Linux 2.6.29-rc3
+>
+> are available in the git repository at:
+>
+>  git://git.secretlab.ca/git/linux-2.6-mpc52xx merge
+>
+> Grant Likely (2):
+>      powerpc/5200: update defconfigs
+>      powerpc/5200: Bugfix for PCI mapping of memory and IMMR
+>
+>  arch/powerpc/configs/52xx/cm5200_defconfig    |   83 ++++++++++++++------
+>  arch/powerpc/configs/52xx/lite5200b_defconfig |   86 +++++++++++++++-----
+>  arch/powerpc/configs/52xx/motionpro_defconfig |   85 +++++++++++++++-----
+>  arch/powerpc/configs/52xx/pcm030_defconfig    |   82 +++++++++++++------
+>  arch/powerpc/configs/52xx/tqm5200_defconfig   |   89 +++++++++++++++------
+>  arch/powerpc/configs/mpc5200_defconfig        |  104 ++++++++++++++++++-------
+>  arch/powerpc/platforms/52xx/mpc52xx_pci.c     |   24 +++----
+>  7 files changed, 396 insertions(+), 157 deletions(-)
+>
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
