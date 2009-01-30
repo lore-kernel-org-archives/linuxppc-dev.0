@@ -1,20 +1,21 @@
-Return-Path: <Frank_Rowand@sonyusa.com>
-Received: from VA3EHSOBE001.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id D0C48DDF02
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jan 2009 10:22:28 +1100 (EST)
-Message-ID: <49823A13.50703@am.sony.com>
-Date: Thu, 29 Jan 2009 15:21:55 -0800
-From: Frank Rowand <frank.rowand@am.sony.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id D2CD9DDF55
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 07:25:52 +1100 (EST)
+Date: Fri, 30 Jan 2009 14:25:44 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
+	implementation
+Message-ID: <20090130202544.GG6913@localdomain>
+References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
+	<1233182478-27113-2-git-send-email-ntl@pobox.com>
+	<49814FA2.9060108@cs.columbia.edu> <20090129214035.GB6913@localdomain>
+	<49824599.5030503@cs.columbia.edu>
 MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-Subject: Re: 2.6.28-rt on PowerPC
-References: <20090129213429.GA29014@oksana.dev.rtsoft.ru>
-	<1233270043.3833.57.camel@localhost.localdomain>
-In-Reply-To: <1233270043.3833.57.camel@localhost.localdomain>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-rt-users@vger.kernel.org
-Reply-To: frank.rowand@am.sony.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49824599.5030503@cs.columbia.edu>
+Cc: containers@lists.osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Steven Rostedt wrote:
-> On Fri, 2009-01-30 at 00:34 +0300, Anton Vorontsov wrote:
->> Hi Steven,
->>
->> I know 2.6.28-rt isn't yet ready, but I could not resist to try
->> it anyway. ;-)
->>
->> Here are few issues and ways to solve them:
->>
->> Currently the -rt tree doesn't link for arch/powerpc:
->>
->>   LD      .tmp_vmlinux1
->>   arch/powerpc/kernel/built-in.o: In function `show_interrupts':
->>   (.text+0x27bc): undefined reference to `__call_bad_lock_func'
->>   arch/powerpc/kernel/built-in.o: In function `show_interrupts':
->>   (.text+0x28b0): undefined reference to `__call_bad_lock_func'
->>   make: *** [.tmp_vmlinux1] Error 1
+Oren Laadan wrote:
 > 
-> Thanks! I have not yet had the chance to apply any arch patches yet. I
-> do plan on doing so after getting the code mostly working on x86.
+> Nathan Lynch wrote:
+> > 
+> > Oren Laadan wrote:
+> >> Nathan Lynch wrote:
+> >>> +		pr_debug("%s: unexpected thread_hdr contents: 0x%lx\n",
+> >>> +			 __func__, (unsigned long)thread_hdr->unimplemented);
+> >> Given the macro for 'pr_fmt' in include/linux/checkpoint.h, the use of
+> >> __func__ is redunant.
+> > 
+> > It seems to me that defining your own pr_fmt in a "public" header like
+> > that is inappropriate, or at least unconventional.  Any file that
+> > happens to include linux/checkpoint.h will have any prior definitions
+> > of pr_fmt overridden, no?
+> > 
+> 
+> Hmmm.. didn't think of it this way. Using the pr_debug() there was yet
+> another feedback from LKML, and it seemed reasonable to me. Can you
+> think of a case where linux/checkpoint.h will happen to be included
+> in checkpoint-related code ?
 
-Your email can at an opportune time for me...  I was starting to try
-2.6.28-rt on ARM and quickly came to the conclusion that the arch
-patches weren't the focus yet.  But I'm currently side-tracked with
-getting my board to even boot a vanilla 2.6.28 kernel first.  Do
-you expect to get to the arches in the next week or two?  If not,
-I may head down that path for ARM myself.
+(Assume you meant "included in checkpoint-unrelated code")
 
-Thanks!
-
--Frank Rowand
+I could see checkpoint.h being included by files that don't
+exclusively deal with C/R.  If you want a uniform debug statement
+format for C/R-related code, that's fine, but this isn't the way to do
+it.  See the existing users (almost all in drivers/s390).
