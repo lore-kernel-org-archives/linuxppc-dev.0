@@ -1,21 +1,30 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 3ED76474CA
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 17:20:05 +1100 (EST)
-Date: Sat, 31 Jan 2009 01:20:03 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: Dynamic-ftrace not working in PlayStation3
-In-Reply-To: <4983BFA2.9010703@am.sony.com>
-Message-ID: <alpine.DEB.1.10.0901310110100.19448@gandalf.stny.rr.com>
-References: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
-	<49827003.5050307@am.sony.com>
-	<alpine.DEB.1.10.0901292234520.6222@gandalf.stny.rr.com>
-	<4983BFA2.9010703@am.sony.com>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E1B2DDE10B
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 17:25:43 +1100 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id n0V6PgrR000337
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 17:25:42 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	n0V6Q0K9643134
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 17:26:00 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n0V6Pgqc004338
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jan 2009 17:25:42 +1100
+Message-ID: <4983EEE3.3080208@in.ibm.com>
+Date: Sat, 31 Jan 2009 11:55:39 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Remis Lima Baima <remis.developer@googlemail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [Patch] 2.6.29-rc3-git2 - Fix net/ipv6/ip6mr.o build break
+Content-Type: multipart/mixed; boundary="------------040102010908060506040102"
+Cc: yoshfuji@linux-ipv6.org, Mel Gorman <mel@csn.ul.ie>, davem@davemloft.net,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,160 +34,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------040102010908060506040102
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-[ added Ben and Paul to Cc, since they helped me write the code ]
+allmodconfig build breaks with following error.
 
-On Fri, 30 Jan 2009, Geoff Levand wrote:
+ CHK     include/linux/version.h
+ CHK     include/linux/utsrelease.h
+ SYMLINK include/asm -> include/asm-powerpc
+ CALL    scripts/checksyscalls.sh
+ CHK     include/linux/compile.h
+ CALL    arch/powerpc/kernel/systbl_chk.sh
+ CALL    arch/powerpc/kernel/prom_init_check.sh
+ CC [M]  net/ipv6/ip6mr.o
+net/ipv6/ip6mr.c: In function pim6_rcv:
+net/ipv6/ip6mr.c:366: error: implicit declaration of function csum_ipv6_magic
+make[2]: *** [net/ipv6/ip6mr.o] Error 1
+make[1]: *** [net/ipv6] Error 2
+make: *** [net] Error 2
 
-> Hi,
-> 
-> I did a bit of work on this today.
-> 
-> Steven Rostedt wrote:
-> >> > ip:d000000000045aec jumps to d000000000046340 r2: d000000000050c00
-> >> > 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-> >> > ip:d0000000000458d0 jumps to d000000000046340 r2: d000000000050c00
-> >> > 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-> >> > ip:d000000000045838 jumps to d000000000046340 r2: d000000000050c00
-> >> > 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-> >> > ip:d0000000000456dc jumps to d000000000046340 r2: d000000000050c00
-> >> > 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-> >> ...
-> > 
-> > So I take it that the above showed that the code worked for some?
-> 
-> In my trials it blows up on the first load_module() call, and for my
-> config that was usbcore:
+Following patch fixes this issue.
 
-But does it blow up on the first instance? If it does not, then those 
-instances are working.
-
-> 
-> ip:d000000000305298 jumps to d000000000306ad8 r2: d000000000329bb8 3d82fffe 398ccf20 fffecf20 toc: d000000000316af8 5f666f72 5f726573
-> ptr 5f666f725f726573, addr c0000000005d0e40, GET_ADDR c000000000007cac
-> <3>addr does not match 5f666f725f726573
-> <0>------------[ cut here ]------------
-> <3>Badness at /home/geoff/projects/cell/ps3-linux-dev/kernel/trace/ftrace.c:441
-> NIP: c0000000000b3038 LR: c0000000000b46bc CTR: 0000000000000000
-> REGS: c00000001d143780 TRAP: 0700   Not tainted  (2.6.29-rc3-02162-gec97e82-dirty)
-> MSR: 8000000000020032 <CE,IR,DR>  CR: 42222442  XER: 00000000
-> TASK = c000000006f64640[373] 'modprobe' THREAD: c00000001d140000 CPU: 1
-> <6>GPR00: 0000000000000001 c00000001d143a00 c000000000625988 ffffffffffffffea
-> <6>GPR04: d000000000305298 c0000000000628c0 0000000000000000 0000000000000002
-> <6>GPR08: 0000000000000000 c000000000c6ce80 0000000000020000 c000000006f64640
-> <6>GPR12: 0000000042222444 c000000000655500 d00000000031e9d0 c00000001d143c78
-> <6>GPR16: d00000000018cbe0 0000000000000549 d00000000018c208 d00000000031e998
-> <6>GPR20: d00000000031de00 d00000000031e980 00000001e48bc1f0 0000000000000001
-> <6>GPR24: c0000000005d0e40 c00000001d47b2b8 c000000000576270 d000000000305298
-> <6>GPR28: d000000000305298 c00000001d47b2e0 c0000000005c6960 c00000001d143a00
-> NIP [c0000000000b3038] .ftrace_bug+0x98/0x210
-> LR [c0000000000b46bc] .ftrace_convert_nops+0x23c/0x344
-> Call Trace:
-> [c00000001d143a00] [c0000000000628c0] .vprintk+0x394/0x42c (unreliable)
-> [c00000001d143aa0] [c0000000000b46bc] .ftrace_convert_nops+0x23c/0x344
-> [c00000001d143b70] [c0000000000b47fc] .ftrace_init_module+0x38/0x50
-> [c00000001d143bf0] [c0000000000a1c70] .load_module+0x12e0/0x189c
-> [c00000001d143d80] [c0000000000a23fc] .SyS_init_module+0x90/0x248
-> [c00000001d143e30] [c0000000000074dc] syscall_exit+0x0/0x40
-> Instruction dump:
-> 41fe0010 e93e8010 38000001 9009002c e93e8000 e97e8008 e87e80b0 48000130
-> 80090030 7c000034 5400d97e 78000020 <0b000000> 2fa00000 41fe0010 e93e8010
-> <6>ftrace failed to modify [<d000000000305298>] 0xd000000000305298
->  actual: 48:00:18:41
-> <6>usbcore: registered new interface driver usbfs
-> 
->  
-> This ptr of 5f666f725f726573 seems bogus.  I think this code is not
-> working correctly:
-
-Well, obviously the code is not working correctly, if it is blowing up
- ;-)
-
-> 
-> 	offset = (unsigned)((unsigned short)jmp[0]) << 16 |
-> 		(unsigned)((unsigned short)jmp[1]);
-> 
-> 	tramp = mod->arch.toc + offset + 32;
-> 
-> 	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
-> 		printk(KERN_ERR "Failed to read %lx\n", tramp);
-> 		return -EFAULT;
-> 	}
-> 
-> 	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
-> 
-> addr and GET_ADDR(addr) seem OK, System.map shows both to be _mcount.
-> If I force it to continue with this:
-> 
-> 	if (ptr != GET_ADDR(addr)) {
-> 		printk(KERN_ERR "addr does not match %lx\n", ptr);
-> 		//return -EINVAL;
-
-Please do not do that! You risk writing random stuff over random memory.
-
-If the ptr does not equal what we want, then we can not guarantee that we
-are writing what we want to where we want.
-
-> 	}
-> 
-> It loads a lot of modules, but eventually it fails with the
-> following, which seems to mean a bad tramp value.
-> 
-> ip:d0000000005f08cc jumps to d0000000005f1920 r2: d0000000006031c8 3d82ffff 398ce758 ffffe758 toc: d000000000601940<3>Failed to read d000000000601940
-> <0>------------[ cut here ]------------
-> <3>Badness at /home/geoff/projects/cell/ps3-linux-dev/kernel/trace/ftrace.c:436
-> NIP: c0000000000b3000 LR: c0000000000b46dc CTR: 0000000000000001
-> REGS: c00000001d5b7780 TRAP: 0700   Not tainted  (2.6.29-rc3-02162-gec97e82-dirty)
-> MSR: 8000000000020032 <CE,IR,DR>  CR: 22222442  XER: 20000000
-> TASK = c000000006fea7c0[712] 'modprobe' THREAD: c00000001d5b4000 CPU: 0
-> <6>GPR00: 0000000000000001 c00000001d5b7a00 c000000000625998 fffffffffffffff2
-> <6>GPR04: d0000000005f08cc c000000000062054 0000000000000000 0000000000000002
-> <6>GPR08: 0000000000000000 c000000000c6ce80 000000000001ffff c000000006fea7c0
-> <6>GPR12: 0000000022222444 c000000000655300 d0000000005f9fd0 c00000001d5b7c78
-> <6>GPR16: d000000000565c58 0000000000000215 d0000000005653e5 d0000000005f9f98
-> <6>GPR20: d0000000005f9860 d0000000005f9f80 00000002cfe82a50 0000000000000001
-> <6>GPR24: c0000000005d0e50 c00000001d21e6f0 c000000000576270 d0000000005f08cc
-> <6>GPR28: d0000000005f08cc c00000001d21e718 c0000000005c6960 c00000001d5b7a00
-> NIP [c0000000000b3000] .ftrace_bug+0x60/0x210
-> LR [c0000000000b46dc] .ftrace_convert_nops+0x25c/0x364
-> Call Trace:
-> [c00000001d5b7a00] [0000000000000004] 0x4 (unreliable)
-> [c00000001d5b7aa0] [c0000000000b46dc] .ftrace_convert_nops+0x25c/0x364
-> [c00000001d5b7b70] [c0000000000b481c] .ftrace_init_module+0x38/0x50
-> [c00000001d5b7bf0] [c0000000000a1c70] .load_module+0x12e0/0x189c
-> [c00000001d5b7d80] [c0000000000a23fc] .SyS_init_module+0x90/0x248
-> [c00000001d5b7e30] [c0000000000074dc] syscall_exit+0x0/0x40
-> Instruction dump:
-> 419e001c 2f83ffff 419e010c 2f83ffea e93e8010 409e013c 48000040 e93e8010
-> 8009002c 7c000034 5400d97e 78000020 <0b000000> 2fa00000 41fe0010 e93e8010
-> <6>ftrace faulted on modifying [<d0000000005f08cc>] 0xd0000000005f08cc
-
-The following I snipped out of your previous email (and this goes with the 
-above).
-
-> 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-> ip:d0000000000456dc jumps to d000000000046340 r2: d000000000050c00
-> 3d82ffff 398c5740 ffff5740 toc: d000000000046360 c0000000 00007cac
-
-Here the ptr == c0000000 00007cac, which looks like a legitimate address,
-and everything worked fine and dandy.
-
-...
-> ps3_system_bus_match:362: dev=11.0(lpm_01), drv=11.0(ps3-lpm): match
-> ps3_system_bus_match:362: dev=11.0(lpm_01), drv=11.0(ps3-lpm): match
-> ps3-lpm lpm_01:  <- ps3_lpm_probe:1245:
-> ip:d0000000003fe280 jumps to d0000000003ffad8 r2: d000000000422c70
-> 3d82fffe 398cce68 fffece68 toc: d00000000040faf8 6c656400 5f5f6b73
-
-Here the pointer is bogus.  We need to find out why. Is the r2 "toc" that 
-is used bogus? We may need to disassemble the module and look at it 
-deeper. I'm not an PPC expect, I just based my code off of the module_64.c 
-code.
-
--- Steve
+thanks
+-Sachin
 
 
-> addr does not match
-> ptr: 6c6564005f5f6b73
-> addr: c0000000004ff128
-> GET_ADDR(addr): c000000000007cac
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+---
+
+
+
+--------------040102010908060506040102
+Content-Type: text/x-patch;
+ name="fix-ipv6-ip6mr-build-break.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix-ipv6-ip6mr-build-break.patch"
+
+* Fix ip6mr build break (undefined csum_ipv6_magic symbol)
+
+Signed-off-by : Sachin Sant (sachinp@in.ibm.com)
+---
+
+diff -Naurp a/net/ipv6/ip6mr.c b/net/ipv6/ip6mr.c
+--- a/net/ipv6/ip6mr.c	2009-01-31 13:58:00.000000000 +0530
++++ b/net/ipv6/ip6mr.c	2009-01-31 13:59:16.000000000 +0530
+@@ -43,6 +43,7 @@
+ #include <net/netlink.h>
+ 
+ #include <net/ipv6.h>
++#include <net/ip6_checksum.h>
+ #include <net/ip6_route.h>
+ #include <linux/mroute6.h>
+ #include <linux/pim.h>
+
+--------------040102010908060506040102--
