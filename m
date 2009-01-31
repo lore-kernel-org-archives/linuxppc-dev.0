@@ -1,17 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 40F1FDDEE3
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Feb 2009 06:06:53 +1100 (EST)
-Date: Sat, 31 Jan 2009 22:06:50 +0300
+	by ozlabs.org (Postfix) with ESMTP id B0148DDF63
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Feb 2009 06:14:46 +1100 (EST)
+Date: Sat, 31 Jan 2009 22:14:44 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] ftrace: On PowerPC we don't need frame pointers for
-	CALLER_ADDRs
-Message-ID: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+Subject: [PATCH -rt] powerpc/tracing: Add support for "PREEMPT_TRACE" tracer
+Message-ID: <20090131191444.GA6896@oksana.dev.rtsoft.ru>
+References: <1233338221.3833.65.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <1233338221.3833.65.camel@localhost.localdomain>
+Cc: linux-rt-users@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,59 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-According to this discussion:
+The support is pretty straightforward: issue print_preempt_trace()
+just after the call trace.
 
-http://lkml.org/lkml/2008/7/25/338
-http://lkml.org/lkml/2008/7/26/72
-
-Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
-makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
-requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. Therefore
-tracing is completely useless on PowerPC:
-
-[...]
-  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
-  <idle>-0       0X.h3    9us+: 0 (0)
-  <idle>-0       0X..3   72us : 0 (0)
-  <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
-
-On PPC we can safely use __builtin_return_address(1..6) w/o frame
-pointers, and with this patch the trace output looks OK:
-
-[...]
-  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
-  <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
-  <idle>-0       0X..3   87us : cpu_idle (__got2_end)
-  <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
+Without CONFIG_PREEMPT_TRACE=y the print_preempt_trace() call turns
+into no-op.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
 
-Btw, on PowerPC tracing is also broken w/o "ring-buffer: fix alignment
-problem" patch (currently collecting dust in the -tip tree, commit
-082605de5f82eb692cc90f7fda071cc01bb5ac34). Any chance the fix go into
-Linus' tree, to not waste other people's time bisecting and debugging
-the problem? ;-)
+On Fri, Jan 30, 2009 at 12:57:01PM -0500, Steven Rostedt wrote:
+[...]
+> > > Turn on CONFIG_PREEMPT_TRACE (not TRACER) and it should show the
+> > > location that left preemption disabled.
+> > 
+> > Thank you Steven, PREEMPT_TRACE is a great tool indeed (though on
+> > PowerPC it doesn't work out of the box, but easily fixable).
+> 
+> Cool, I'd be interested in those fixes.
 
-For google: tracing, regression, "ring-buffer: move some metadata
-into buffer page", commit abc9b56d66fbd4d93302ef4bf6fa726e1b8255f9,
-answer is here.
+Here it is. "ftrace: On PowerPC we don't need frame pointers for
+CALLER_ADDRs" patch (http://lkml.org/lkml/2009/1/31/141) is also
+needed for this to work.
 
- include/linux/ftrace.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Thanks,
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 9c5bc6b..13eba02 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -146,7 +146,7 @@ static inline void __ftrace_enabled_restore(int enabled)
- #endif
+ arch/powerpc/kernel/process.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 957bded..b8642bf 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1020,7 +1020,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 	printk("Call Trace:\n");
+ 	do {
+ 		if (!validate_sp(sp, tsk, STACK_FRAME_OVERHEAD))
+-			return;
++			goto out;
+ 
+ 		stack = (unsigned long *) sp;
+ 		newsp = stack[0];
+@@ -1049,6 +1049,8 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 
+ 		sp = newsp;
+ 	} while (count++ < kstack_depth_to_print);
++out:
++	print_preempt_trace(tsk);
  }
  
--#ifdef CONFIG_FRAME_POINTER
-+#if defined(CONFIG_FRAME_POINTER) || defined(CONFIG_PPC)
- /* TODO: need to fix this for ARM */
- # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
- # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
+ void dump_stack(void)
 -- 
 1.5.6.5
