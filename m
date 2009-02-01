@@ -1,15 +1,15 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 971F8DDF0D
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Feb 2009 19:54:29 +1100 (EST)
-Date: Sun, 01 Feb 2009 00:54:25 -0800 (PST)
-Message-Id: <20090201.005425.122181645.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id BF6B2DE0F0
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Feb 2009 19:54:36 +1100 (EST)
+Date: Sun, 01 Feb 2009 00:54:32 -0800 (PST)
+Message-Id: <20090201.005432.26823195.davem@davemloft.net>
 To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH -next 1/2] gianfar: Implement proper, per netdevice
-	wakeup management
+Subject: Re: [PATCH -next 2/2] phylib: Rework suspend/resume code to check
+	netdev wakeup capability
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090128203854.GA14693@oksana.dev.rtsoft.ru>
-References: <20090128203854.GA14693@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090128203914.GB14693@oksana.dev.rtsoft.ru>
+References: <20090128203914.GB14693@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org,
@@ -24,12 +24,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Wed, 28 Jan 2009 23:38:54 +0300
+Date: Wed, 28 Jan 2009 23:39:14 +0300
 
-> This patch implements wakeup management for the gianfar driver.
+> In most cases (e.g. PCI drivers) MDIO and MAC controllers are
+> represented by the same device. But for SOC ethernets we have
+> separate devices. So, in SOC case, checking whether MDIO
+> controller may wakeup is not only makes little sense, but also
+> prevents us from doing per-netdevice wakeup management.
 > 
-> The driver should set wakeup enable if WOL is enabled, so that
-> phylib won't power off an attached PHY.
+> This patch reworks suspend/resume code so that now it checks
+> for net device's wakeup flags, not MDIO controller's ones.
+> 
+> Each netdevice should manage its wakeup flags, and phylib will
+> decide whether suspend an attached PHY or not.
 > 
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
