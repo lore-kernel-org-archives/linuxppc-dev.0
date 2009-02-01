@@ -1,19 +1,18 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id BF6B2DE0F0
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Feb 2009 19:54:36 +1100 (EST)
-Date: Sun, 01 Feb 2009 00:54:32 -0800 (PST)
-Message-Id: <20090201.005432.26823195.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 9456DDE243
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Feb 2009 19:54:46 +1100 (EST)
+Date: Sun, 01 Feb 2009 00:54:42 -0800 (PST)
+Message-Id: <20090201.005442.48682561.davem@davemloft.net>
 To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH -next 2/2] phylib: Rework suspend/resume code to check
-	netdev wakeup capability
+Subject: Re: [PATCH] gianfar: Fix sparse warnings
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090128203914.GB14693@oksana.dev.rtsoft.ru>
-References: <20090128203914.GB14693@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090128205220.GA25701@oksana.dev.rtsoft.ru>
+References: <20090128205220.GA25701@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org,
-	jgarzik@pobox.com, peppe.cavallaro@st.com
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, jgarzik@pobox.com,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +23,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Wed, 28 Jan 2009 23:39:14 +0300
+Date: Wed, 28 Jan 2009 23:52:20 +0300
 
-> In most cases (e.g. PCI drivers) MDIO and MAC controllers are
-> represented by the same device. But for SOC ethernets we have
-> separate devices. So, in SOC case, checking whether MDIO
-> controller may wakeup is not only makes little sense, but also
-> prevents us from doing per-netdevice wakeup management.
-> 
-> This patch reworks suspend/resume code so that now it checks
-> for net device's wakeup flags, not MDIO controller's ones.
-> 
-> Each netdevice should manage its wakeup flags, and phylib will
-> decide whether suspend an attached PHY or not.
-> 
+> This patch fixes following sparse warnings:
+ ...
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Applied.
+Also applied, thanks.
