@@ -1,21 +1,15 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 79579DDE24
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 03:52:47 +1100 (EST)
-Date: Mon, 2 Feb 2009 11:52:43 -0500
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id B2AB6DDF01
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 04:02:03 +1100 (EST)
+Date: Mon, 2 Feb 2009 12:01:59 -0500
 From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Grzegorz Bernacki" <gjb@semihalf.com>
-Subject: Re: [PATCH] Add support for the digsy MTC board.
-Message-ID: <20090202115243.0a13ebb1@lappy.seanm.ca>
-In-Reply-To: <498722F4.3070800@semihalf.com>
-References: <1233329630876-git-send-email-gjb@semihalf.com>
-	<fa686aa40901300859t4da76ce3hf943adc48abb9b9c@mail.gmail.com>
-	<4986EC33.9000600@semihalf.com>
-	<20090202111101.5f95bd8b@lappy.seanm.ca>
-	<498722F4.3070800@semihalf.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Jean Delvare
+	<khali@linux-fr.org>, ben-linux@fluff.org
+Subject: [PATCH] i2c: i2c-ibm_iic message can be confusing
+Message-ID: <20090202120159.2478d7af@lappy.seanm.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +19,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 02 Feb 2009 17:44:36 +0100
-"Grzegorz Bernacki" <gjb@semihalf.com> wrote:
+This is a trivial patch that does not need to be in 2.6.29. While
+tracking down an EEPROM problem, I found the messages confusing... it
+looked like the EEPROM was being started before the I2C driver!
 
-> I enabled CONFIG_EEPROM_LEGACY in my defconfig and I can see eeprom 
-> detected in dmesg and I can also read/write to it via file 
-> /sys/bus/i2c/devices/0-0050/eeprom.
+Here is an example:
 
-Thanks for trying that! Now I need to see what I am doing different.
+at24 0-0052: 512 byte 24c04 EEPROM (writable)
+ibm-iic ef600700.i2c: using standard (100 kHz) mode
+ad7414 0-004a: chip found
+
+It looks like the at24 starts first, then the i2c driver, then the
+ad7414. By moving the message to after the of scan, we always get the
+driver, then the devices.
 
 Cheers,
    Sean
+
+Print the i2c driver message before scanning for devices so that the
+logs show the driver, then the devices. Currently you can get
+device(s), driver, device(s).
+
+Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+---
+diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
+index 88f0db7..7fc0729 100644
+--- a/drivers/i2c/busses/i2c-ibm_iic.c
++++ b/drivers/i2c/busses/i2c-ibm_iic.c
+@@ -756,12 +756,12 @@ static int __devinit iic_probe(struct of_device *ofdev,
+ 		goto error_cleanup;
+ 	}
+ 
+-	/* Now register all the child nodes */
+-	of_register_i2c_devices(adap, np);
+-
+ 	dev_info(&ofdev->dev, "using %s mode\n",
+ 		 dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
+ 
++	/* Now register all the child nodes */
++	of_register_i2c_devices(adap, np);
++
+ 	return 0;
+ 
+ error_cleanup:
+ 
