@@ -1,15 +1,19 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 0EB1ADDE06
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 01:59:57 +1100 (EST)
-Message-ID: <49870A66.8030302@harris.com>
-Date: Mon, 02 Feb 2009 09:59:50 -0500
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f20.google.com (mail-gx0-f20.google.com
+	[209.85.217.20]) by ozlabs.org (Postfix) with ESMTP id 419CC4757B
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 02:00:22 +1100 (EST)
+Received: by gxk13 with SMTP id 13so1584005gxk.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 02 Feb 2009 07:00:21 -0800 (PST)
 MIME-Version: 1.0
-To: Lixin Yao <Lixin.Yao@HSTX.com>
-Subject: Re: Can not get PATA to work for Compact Flash with 2.6.28 kernel
-References: <03D77CA4AC7F4D48A6AB5DA3F1001B3F10A4B2@exchtxus2.HSTX.global.vpn>
-In-Reply-To: <03D77CA4AC7F4D48A6AB5DA3F1001B3F10A4B2@exchtxus2.HSTX.global.vpn>
+In-Reply-To: <4986EC33.9000600@semihalf.com>
+References: <1233329630876-git-send-email-gjb@semihalf.com>
+	<fa686aa40901300859t4da76ce3hf943adc48abb9b9c@mail.gmail.com>
+	<4986EC33.9000600@semihalf.com>
+Date: Mon, 2 Feb 2009 08:00:20 -0700
+Message-ID: <fa686aa40902020700m4c868246l8ef7296d7a176e@mail.gmail.com>
+Subject: Re: [PATCH] Add support for the digsy MTC board.
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Grzegorz Bernacki <gjb@semihalf.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,37 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Lixin Yao wrote:
-> 
-> 
-> I use a San Disk compact flash (CF) card on a board with MPC8248
-> processor. The CF is connected to data and address bus of the processor
-> and operates in TRUE IDE mode. The registers are memory mapped. I can
-> read the file system on the CF in u-boot (1.3.4). U-boot can identify
-> the CF and mount file system correctly.
-> 
-> The hardware is known good hardware.
-> 
-> I use 2.6.28 kernel and configured support for PATA for the CF.
+On Mon, Feb 2, 2009 at 5:50 AM, Grzegorz Bernacki <gjb@semihalf.com> wrote:
+> Grant Likely wrote:
+>>> diff --git a/arch/powerpc/configs/52xx/digsy_mtc_defconfig b/arch/powerpc/configs/52xx/digsy_mtc_defconfig
+>>> new file mode 100644
+>>> index 0000000..ad70d5b
+>>> --- /dev/null
+>>> +++ b/arch/powerpc/configs/52xx/digsy_mtc_defconfig
+>
+> I would like to have support for following devices in defconfig for digsy:
+> - LXT PHY
+> - RTC DS1337
+> - EEPROM AT24
+> - MTD partitioning based on OF description
+>
+> If you dont mind I can add them to generic mpc5200 defconfig, otherwise
+> I think that separate defconfig is needed.
 
-The second register set does not start at register 0.  It starts
-at register 6.  We are using 1 chip select from the processor,
-and generate two chip selects to the CF that are 0x80 apart (on
-a sequoia board).
+No problem, go ahead.
 
-So here is what I am using on the modified sequoia board.  Note
-the 0x00000098 - you might think it should be 0x00000080 as per
-the discussion above, but because the second register set starts
-at 6, you have to build that into the address.  
+>> Do you *really* need your own defconfig for the digsy_mtc.  I've
+>> grudgingly accepted them for other boards under the argument that the
+>> defconfig reflects a specific application of the board.  However, I'd
+>> much rather see the digsy added to the multiplatform
+>> mpc5200_defconfig, especially considering that the MTC looks like it's
+>> supposed to be a general purpose platform.
+>
+>> There is a lot of direct copy/paste from the lite5200.c board file,
+>> but the big scary warning comment about not duplicating this code was
+>> deleted in the copy (so I know you saw it).  Is Semihalf responsible
+>> for the U-Boot port to the digsy-mtc?  If so then please fix the
+>> port_config and clock settings in u-boot.
+>>
+>
+> I will update port config and clock settings in u-boot and use mpc5200_simple
+> instead of creating a new file for digsy.
+>
+> BTW,
+> I noticed that there are some problems with mounting file system
+> over NFS on Linux-2.6.29-rc3, I see following messages:
+> ...
+> [  339.813807] nfs: server 192.168.1.1 not responding, still trying
+> [  339.832144] nfs: server 192.168.1.1 OK
+> ...
+>
+> I haven't noticed in on Linux-2.6.29-rc2. Is there any known problem?
 
-pata@1,0 {
-compatible = "harris,hydra_temp-pata", "ata-generic";
-bank-width = <2>;
-reg = <0x00000001 0x00000000 0x00000020 0x00000001 0x00000098 0x00000004>;
-reg-shift = <2>;
-pio-mode = <6>;
-interrupt-parent = <&UIC0>;
-interrupts = <0x1b 0x4>;
-};
+Hmm, I've not seen that problem, but I'll look out for it.
 
-	Steve
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
