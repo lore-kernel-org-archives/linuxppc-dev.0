@@ -1,19 +1,24 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id F3107DDEFA
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 03:11:05 +1100 (EST)
-Date: Mon, 2 Feb 2009 11:11:01 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Grzegorz Bernacki" <gjb@semihalf.com>
-Subject: Re: [PATCH] Add support for the digsy MTC board.
-Message-ID: <20090202111101.5f95bd8b@lappy.seanm.ca>
-In-Reply-To: <4986EC33.9000600@semihalf.com>
-References: <1233329630876-git-send-email-gjb@semihalf.com>
-	<fa686aa40901300859t4da76ce3hf943adc48abb9b9c@mail.gmail.com>
-	<4986EC33.9000600@semihalf.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B4621DDF48
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 03:12:02 +1100 (EST)
+Message-Id: <D06DAB0F-1477-4CA6-A06D-0F7B62939C86@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <498718B6.3030307@gefanuc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: Booting 2.6.29-rc3 on mpc8661d_hpcn failing
+Date: Mon, 2 Feb 2009 10:11:46 -0600
+References: <4982F311.4050507@gefanuc.com>
+	<F764D461-8EFB-4B31-ABFC-ECBB7A3FBA01@kernel.crashing.org>
+	<9B0CCADB-C891-42B2-BE94-0927B5715A00@kernel.crashing.org>
+	<4986BEB9.3030606@gefanuc.com>
+	<E00697F4-1313-49C2-9F8A-79FC9E511022@kernel.crashing.org>
+	<498718B6.3030307@gefanuc.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 02 Feb 2009 13:50:59 +0100
-"Grzegorz Bernacki" <gjb@semihalf.com> wrote:
 
+On Feb 2, 2009, at 10:00 AM, Martyn Welch wrote:
 
-> I would like to have support for following devices in defconfig for
-> digsy:
-> - LXT PHY
-> - RTC DS1337
-> - EEPROM AT24
-> - MTD partitioning based on OF description
+> Kumar Gala wrote:
+>> On Feb 2, 2009, at 3:36 AM, Martyn Welch wrote:
+>>> Becky Bruce wrote:
+>>>> On Jan 30, 2009, at 8:42 AM, Kumar Gala wrote:
+>>>>>
+>>>>> On Jan 30, 2009, at 6:31 AM, Martyn Welch wrote:
+>>>>>
+>>>>>> Hi Guys,
+>>>>>>
+>>>>>> It seems that 2.6.29-rc3 is not booting on the MPC8641 HPCN. I  
+>>>>>> have just updated u-boot to the latest git to see if that  
+>>>>>> improved matters, however I get stuck at the following. Any  
+>>>>>> ideas?
+>>>>>
+>>>>> did you update your .dtb as well?
+>>>
+>>> Yup, just double checked it. SOC mapped at ffe00000. If I use the  
+>>> wrong DTB I don't get any serial output...
+>>>
+>>>> We've changed the memory map for that board in the latest u-boot,  
+>>>> which is why you need a new .dtb.  If this still failing, let me  
+>>>> know, and I'll give it a try on my board and see what's up since  
+>>>> this is probably my fault :)
+>>>
+>>> It appears the same problem is affecting our sbc610 as well, the  
+>>> location of the SOC hasn't changed on that board.
+>>>
+>>> Martyn
+>> Hm.. maybe try a git-bisect between 2.6.28 and 2.6.29-rc3?
+>
+> That's was today's "little" task. I was just in the process of  
+> writing an email :-)
+>
+> It got me to the following commit:
+>
+> commit 64b3d0e8122b422e879b23d42f9e0e8efbbf9744
+> Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>
+>   powerpc/mm: Rework usage of _PAGE_COHERENT/NO_CACHE/GUARDED
+>
+> I tried reverting it, but as I had kinda thought, that really didn't  
+> help.
+>
+> I'm just recompiling to check that I didn't screw-up during the  
+> bisection.
 
-I am seeing a problem where if I enable CONFIG_EEPROM_LEGACY and
-CONFIG_EEPROM_AT24, then the at24 driver does not work. Would you mind
-trying that?
+Hmm.
 
-> BTW,
-> I noticed that there are some problems with mounting file system
-> over NFS on Linux-2.6.29-rc3, I see following messages:
-> ...
-> [  339.813807] nfs: server 192.168.1.1 not responding, still trying
-> [  339.832144] nfs: server 192.168.1.1 OK
-> ...
-> 
-> I haven't noticed in on Linux-2.6.29-rc2. Is there any known problem?
+take a look at this thread.
 
-Does it only happen at mount time? We get this quite often at work,
-but it never happens at home. I assumed it was just due to the flaky
-networking at work.
+http://ozlabs.org/pipermail/linuxppc-dev/2009-January/067437.html
 
-Cheers,
-   Sean
+- k
