@@ -1,24 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B4621DDF48
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 03:12:02 +1100 (EST)
-Message-Id: <D06DAB0F-1477-4CA6-A06D-0F7B62939C86@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <498718B6.3030307@gefanuc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Booting 2.6.29-rc3 on mpc8661d_hpcn failing
-Date: Mon, 2 Feb 2009 10:11:46 -0600
-References: <4982F311.4050507@gefanuc.com>
-	<F764D461-8EFB-4B31-ABFC-ECBB7A3FBA01@kernel.crashing.org>
-	<9B0CCADB-C891-42B2-BE94-0927B5715A00@kernel.crashing.org>
-	<4986BEB9.3030606@gefanuc.com>
-	<E00697F4-1313-49C2-9F8A-79FC9E511022@kernel.crashing.org>
-	<498718B6.3030307@gefanuc.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id 61BD4DDF77
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 03:17:23 +1100 (EST)
+Message-ID: <49871C8C.8030200@matrix-vision.de>
+Date: Mon, 02 Feb 2009 17:17:16 +0100
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+MIME-Version: 1.0
+To: Grzegorz Bernacki <gjb@semihalf.com>
+Subject: Re: [PATCH] Add support for the digsy MTC board.
+References: <1233329630876-git-send-email-gjb@semihalf.com>	<fa686aa40901300859t4da76ce3hf943adc48abb9b9c@mail.gmail.com>
+	<4986EC33.9000600@semihalf.com>
+In-Reply-To: <4986EC33.9000600@semihalf.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,59 +22,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Feb 2, 2009, at 10:00 AM, Martyn Welch wrote:
-
-> Kumar Gala wrote:
->> On Feb 2, 2009, at 3:36 AM, Martyn Welch wrote:
->>> Becky Bruce wrote:
->>>> On Jan 30, 2009, at 8:42 AM, Kumar Gala wrote:
->>>>>
->>>>> On Jan 30, 2009, at 6:31 AM, Martyn Welch wrote:
->>>>>
->>>>>> Hi Guys,
->>>>>>
->>>>>> It seems that 2.6.29-rc3 is not booting on the MPC8641 HPCN. I  
->>>>>> have just updated u-boot to the latest git to see if that  
->>>>>> improved matters, however I get stuck at the following. Any  
->>>>>> ideas?
->>>>>
->>>>> did you update your .dtb as well?
->>>
->>> Yup, just double checked it. SOC mapped at ffe00000. If I use the  
->>> wrong DTB I don't get any serial output...
->>>
->>>> We've changed the memory map for that board in the latest u-boot,  
->>>> which is why you need a new .dtb.  If this still failing, let me  
->>>> know, and I'll give it a try on my board and see what's up since  
->>>> this is probably my fault :)
->>>
->>> It appears the same problem is affecting our sbc610 as well, the  
->>> location of the SOC hasn't changed on that board.
->>>
->>> Martyn
->> Hm.. maybe try a git-bisect between 2.6.28 and 2.6.29-rc3?
+Grzegorz Bernacki wrote:
+> Grant Likely wrote:
+>   
+>>> +/dts-v1/;
+>>> +
+>>> +/ {
+>>> +       model = "mtc,digsy";
+>>> +       compatible = "mtc,digsy";
+>>>       
+>> This should be something like:  "intercontrol,digsy-mtc".  Compatible
+>> values should be in the form "<vendor>,<model>".
+>>
+>>     
 >
-> That's was today's "little" task. I was just in the process of  
-> writing an email :-)
+> ok, I will change it
 >
-> It got me to the following commit:
+>   
+>>> +               mpc5200_pic: interrupt-controller@500 {
+>>> +                       // 5200 interrupts are encoded into two levels;
+>>> +                       interrupt-controller;
+>>> +                       #interrupt-cells = <3>;
+>>> +                       device_type = "interrupt-controller";
+>>>       
+>> Drop device_type here.
+>>     
 >
-> commit 64b3d0e8122b422e879b23d42f9e0e8efbbf9744
-> Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ok, I will drop it
 >
->   powerpc/mm: Rework usage of _PAGE_COHERENT/NO_CACHE/GUARDED
+>   
+>>> +                       compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
+>>> +                       reg = <0x500 0x80>;
+>>> +               };
+>>> +
+>>> +               timer@600 {     // General Purpose Timer
+>>> +                       compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+>>> +                       cell-index = <0>;
+>>>       
+>> Drop cell-index on all the timer nodes.  If you compare this file with
+>> the current cm5200.dts in mainline then you'll see the properties that
+>> you can drop.
+>>
+>> Otherwise the device tree looks pretty good.
+>>
+>>     
+>>> diff --git a/arch/powerpc/configs/52xx/digsy_mtc_defconfig b/arch/powerpc/configs/52xx/digsy_mtc_defconfig
+>>> new file mode 100644
+>>> index 0000000..ad70d5b
+>>> --- /dev/null
+>>> +++ b/arch/powerpc/configs/52xx/digsy_mtc_defconfig
+>>>       
 >
-> I tried reverting it, but as I had kinda thought, that really didn't  
-> help.
+> I would like to have support for following devices in defconfig for digsy:
+> - LXT PHY
+> - RTC DS1337
+> - EEPROM AT24
+> - MTD partitioning based on OF description
 >
-> I'm just recompiling to check that I didn't screw-up during the  
-> bisection.
+> If you dont mind I can add them to generic mpc5200 defconfig, otherwise
+> I think that separate defconfig is needed.
+>
+>   
+>> Do you *really* need your own defconfig for the digsy_mtc.  I've
+>> grudgingly accepted them for other boards under the argument that the
+>> defconfig reflects a specific application of the board.  However, I'd
+>> much rather see the digsy added to the multiplatform
+>> mpc5200_defconfig, especially considering that the MTC looks like it's
+>> supposed to be a general purpose platform.
+>>     
+>
+>   
+>> There is a lot of direct copy/paste from the lite5200.c board file,
+>> but the big scary warning comment about not duplicating this code was
+>> deleted in the copy (so I know you saw it).  Is Semihalf responsible
+>> for the U-Boot port to the digsy-mtc?  If so then please fix the
+>> port_config and clock settings in u-boot.
+>>
+>>     
+>
+> I will update port config and clock settings in u-boot and use mpc5200_simple
+> instead of creating a new file for digsy.
+>
+> BTW,
+> I noticed that there are some problems with mounting file system
+> over NFS on Linux-2.6.29-rc3, I see following messages:
+> ...
+> [  339.813807] nfs: server 192.168.1.1 not responding, still trying
+> [  339.832144] nfs: server 192.168.1.1 OK
+> ...
+>
+> I haven't noticed in on Linux-2.6.29-rc2. Is there any known problem?
+>
+>   
+We also had this kind of problem - after feeding some nfs options it 
+worked :
 
-Hmm.
+rsize=8192,wsize=8192,soft,intr,tcp,nolock
 
-take a look at this thread.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2009-January/067437.html
+Cheers,
+Andre
+> regards,
+> Grzesiek
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>   
 
-- k
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
