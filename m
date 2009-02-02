@@ -1,9 +1,9 @@
 Return-Path: <benh@ozlabs.org>
 To: David Airlie <airlied@linux.ie>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 02 Feb 2009 16:55:46 +1100
-Subject: [PATCH 2/3] drm: Split drm_map and drm_local_map
-Message-Id: <20090202055558.4F200DDF4B@ozlabs.org>
+Date: Mon, 02 Feb 2009 16:55:47 +1100
+Subject: [PATCH 3/3] drm: Make drm_local_map use a resource_size_t offset
+Message-Id: <20090202055559.8D600DDF51@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, dri-devel@lists.sf.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -14,488 +14,356 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Once upon a time, the DRM made the distinction between the drm_map
-data structure exchanged with user space and the drm_local_map used
-in the kernel.
+This changes drm_local_map to use a resource_size for its "offset"
+member instead of an unsigned long, thus allowing 32-bit machines
+with a >32-bit physical address space to be able to store there
+their register or framebuffer addresses when those are above 4G,
+such as when using a PCI video card on a recent AMCC 440 SoC.
 
-For some reasons, while the BSD port still has that "feature", the
-linux part abused drm_map for kernel internal usage as the local
-map only existed as a typedef of the struct drm_map.
+This patch isn't as "trivial" as it sounds: A few functions needed
+to have some unsigned long/int changed to resource_size_t and a few
+printk's had to be adjusted.
 
-This patch fixes it by declaring struct drm_local_map separately
-(though its content is currently identical to the userspace variant),
-and changing the kernel code to only use that, except when it's a
-user<->kernel interface (ie. ioctl).
+But also, because userspace isn't capable of passing such offsets,
+I had to modify drm_find_matching_map() to ignore the offset passed
+in for maps of type _DRM_FRAMEBUFFER or _DRM_REGISTERS.
 
-This allows subsequent changes to the in-kernel format
-
-I've also replaced the use of drm_local_map_t with struct drm_local_map
-in a couple of places. Mostly by accident but they are the same (the
-former is a typedef of the later) and I have some remote plans and
-half finished patch to completely kill the drm_local_map_t typedef
-so I left those bits in.
+If we ever support multiple _DRM_FRAMEBUFFER or _DRM_REGISTERS maps
+for a given device, we might have to change that trick, but I don't
+think that happens on any current driver.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- drivers/gpu/drm/drm_bufs.c      |   46 ++++++++++++++++++++++-----------------
- drivers/gpu/drm/drm_context.c   |    4 +--
- drivers/gpu/drm/drm_drv.c       |    2 -
- drivers/gpu/drm/drm_gem.c       |    2 -
- drivers/gpu/drm/drm_memory.c    |    6 ++---
- drivers/gpu/drm/drm_proc.c      |    2 -
- drivers/gpu/drm/drm_vm.c        |   12 +++++-----
- drivers/gpu/drm/i810/i810_drv.h |    4 +--
- drivers/gpu/drm/i830/i830_drv.h |    4 +--
- drivers/gpu/drm/i915/i915_gem.c |    4 +--
- include/drm/drmP.h              |   47 +++++++++++++++++++++++++---------------
- 11 files changed, 76 insertions(+), 57 deletions(-)
+ drivers/gpu/drm/drm_bufs.c         |   33 ++++++++++++++++++++++++---------
+ drivers/gpu/drm/drm_proc.c         |    4 ++--
+ drivers/gpu/drm/drm_vm.c           |   22 ++++++++++++----------
+ drivers/gpu/drm/mga/mga_dma.c      |   17 +++++++++--------
+ drivers/gpu/drm/mga/mga_drv.h      |    4 ++--
+ drivers/gpu/drm/r128/r128_cce.c    |    7 ++++---
+ drivers/gpu/drm/radeon/radeon_cp.c |    9 +++++----
+ include/drm/drmP.h                 |   12 ++++++------
+ 8 files changed, 64 insertions(+), 44 deletions(-)
 
---- linux-work.orig/drivers/gpu/drm/drm_bufs.c	2009-02-02 15:27:55.000000000 +1100
-+++ linux-work/drivers/gpu/drm/drm_bufs.c	2009-02-02 16:00:35.000000000 +1100
-@@ -50,7 +50,7 @@ resource_size_t drm_get_resource_len(str
- EXPORT_SYMBOL(drm_get_resource_len);
- 
- static struct drm_map_list *drm_find_matching_map(struct drm_device *dev,
--					     drm_local_map_t *map)
-+						  struct drm_local_map *map)
+--- linux-work.orig/drivers/gpu/drm/drm_bufs.c	2009-02-02 16:29:54.000000000 +1100
++++ linux-work/drivers/gpu/drm/drm_bufs.c	2009-02-02 16:29:54.000000000 +1100
+@@ -54,11 +54,25 @@ static struct drm_map_list *drm_find_mat
  {
  	struct drm_map_list *entry;
  	list_for_each_entry(entry, &dev->maplist, head) {
-@@ -89,13 +89,8 @@ static int drm_map_handle(struct drm_dev
- }
+-		if (entry->map && (entry->master == dev->primary->master) && (map->type == entry->map->type) &&
+-		    ((entry->map->offset == map->offset) ||
+-		     ((map->type == _DRM_SHM) && (map->flags&_DRM_CONTAINS_LOCK)))) {
++		/* Due to userspace API breakage, we ignore the map offset
++		 * for maps of type _DRM_FRAMEBUFFER or _DRM_REGISTERS
++		 */
++		if (!entry->map ||
++		    map->type != entry->map->type ||
++		    entry->master != dev->primary->master)
++			continue;
++		switch (map->type) {
++		case _DRM_SHM:
++			if (map->flags != _DRM_CONTAINS_LOCK)
++				break;
++		case _DRM_REGISTERS:
++		case _DRM_FRAME_BUFFER:
+ 			return entry;
++		default: /* Make gcc happy */
++			;
+ 		}
++		if (entry->map->offset == map->offset)
++			return entry;
+ 	}
  
- /**
-- * Ioctl to specify a range of memory that is available for mapping by a non-root process.
-- *
-- * \param inode device inode.
-- * \param file_priv DRM file private.
-- * \param cmd command.
-- * \param arg pointer to a drm_map structure.
-- * \return zero on success or a negative value on error.
-+ * Core function to create a range of memory available for mapping by a
-+ * non-root process.
-  *
-  * Adjusts the memory offset to its absolute value according to the mapping
+ 	return NULL;
+@@ -96,7 +110,7 @@ static int drm_map_handle(struct drm_dev
   * type.  Adds the map to the map list drm_device::maplist. Adds MTRR's where
-@@ -106,7 +101,7 @@ static int drm_addmap_core(struct drm_de
+  * applicable and if supported by the kernel.
+  */
+-static int drm_addmap_core(struct drm_device * dev, unsigned int offset,
++static int drm_addmap_core(struct drm_device * dev, resource_size_t offset,
+ 			   unsigned int size, enum drm_map_type type,
  			   enum drm_map_flags flags,
  			   struct drm_map_list ** maplist)
- {
--	struct drm_map *map;
-+	struct drm_local_map *map;
- 	struct drm_map_list *list;
- 	drm_dma_handle_t *dmah;
- 	unsigned long user_token;
-@@ -329,7 +324,7 @@ static int drm_addmap_core(struct drm_de
+@@ -124,9 +138,9 @@ static int drm_addmap_core(struct drm_de
+ 		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+ 		return -EINVAL;
+ 	}
+-	DRM_DEBUG("offset = 0x%08lx, size = 0x%08lx, type = %d\n",
+-		  map->offset, map->size, map->type);
+-	if ((map->offset & (~PAGE_MASK)) || (map->size & (~PAGE_MASK))) {
++	DRM_DEBUG("offset = 0x%08llx, size = 0x%08lx, type = %d\n",
++		  (unsigned long long)map->offset, map->size, map->type);
++	if ((map->offset & (~(resource_size_t)PAGE_MASK)) || (map->size & (~PAGE_MASK))) {
+ 		drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+ 		return -EINVAL;
+ 	}
+@@ -254,7 +268,8 @@ static int drm_addmap_core(struct drm_de
+ 			drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+ 			return -EPERM;
+ 		}
+-		DRM_DEBUG("AGP offset = 0x%08lx, size = 0x%08lx\n", map->offset, map->size);
++		DRM_DEBUG("AGP offset = 0x%08llx, size = 0x%08lx\n",
++			  (unsigned long long)map->offset, map->size);
  
- int drm_addmap(struct drm_device * dev, unsigned int offset,
+ 		break;
+ 	case _DRM_GEM:
+@@ -322,7 +337,7 @@ static int drm_addmap_core(struct drm_de
+ 	return 0;
+ 	}
+ 
+-int drm_addmap(struct drm_device * dev, unsigned int offset,
++int drm_addmap(struct drm_device * dev, resource_size_t offset,
  	       unsigned int size, enum drm_map_type type,
--	       enum drm_map_flags flags, drm_local_map_t ** map_ptr)
-+	       enum drm_map_flags flags, struct drm_local_map ** map_ptr)
+ 	       enum drm_map_flags flags, struct drm_local_map ** map_ptr)
  {
- 	struct drm_map_list *list;
- 	int rc;
-@@ -342,6 +337,17 @@ int drm_addmap(struct drm_device * dev, 
- 
- EXPORT_SYMBOL(drm_addmap);
- 
-+/**
-+ * Ioctl to specify a range of memory that is available for mapping by a
-+ * non-root process.
-+ *
-+ * \param inode device inode.
-+ * \param file_priv DRM file private.
-+ * \param cmd command.
-+ * \param arg pointer to a drm_map structure.
-+ * \return zero on success or a negative value on error.
-+ *
-+ */
- int drm_addmap_ioctl(struct drm_device *dev, void *data,
- 		     struct drm_file *file_priv)
- {
-@@ -367,19 +373,13 @@ int drm_addmap_ioctl(struct drm_device *
-  * Remove a map private from list and deallocate resources if the mapping
-  * isn't in use.
-  *
-- * \param inode device inode.
-- * \param file_priv DRM file private.
-- * \param cmd command.
-- * \param arg pointer to a struct drm_map structure.
-- * \return zero on success or a negative value on error.
-- *
-  * Searches the map on drm_device::maplist, removes it from the list, see if
-  * its being used, and free any associate resource (such as MTRR's) if it's not
-  * being on use.
-  *
-  * \sa drm_addmap
-  */
--int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map)
-+int drm_rmmap_locked(struct drm_device *dev, struct drm_local_map *map)
- {
- 	struct drm_map_list *r_list = NULL, *list_t;
- 	drm_dma_handle_t dmah;
-@@ -442,7 +442,7 @@ int drm_rmmap_locked(struct drm_device *
- }
- EXPORT_SYMBOL(drm_rmmap_locked);
- 
--int drm_rmmap(struct drm_device *dev, drm_local_map_t *map)
-+int drm_rmmap(struct drm_device *dev, struct drm_local_map *map)
- {
- 	int ret;
- 
-@@ -462,12 +462,18 @@ EXPORT_SYMBOL(drm_rmmap);
-  * One use case might be after addmap is allowed for normal users for SHM and
-  * gets used by drivers that the server doesn't need to care about.  This seems
-  * unlikely.
-+ *
-+ * \param inode device inode.
-+ * \param file_priv DRM file private.
-+ * \param cmd command.
-+ * \param arg pointer to a struct drm_map structure.
-+ * \return zero on success or a negative value on error.
-  */
- int drm_rmmap_ioctl(struct drm_device *dev, void *data,
- 		    struct drm_file *file_priv)
- {
- 	struct drm_map *request = data;
--	drm_local_map_t *map = NULL;
-+	struct drm_local_map *map = NULL;
- 	struct drm_map_list *r_list;
- 	int ret;
- 
-@@ -1534,7 +1540,7 @@ int drm_mapbufs(struct drm_device *dev, 
- 			&& (dma->flags & _DRM_DMA_USE_SG))
- 		    || (drm_core_check_feature(dev, DRIVER_FB_DMA)
- 			&& (dma->flags & _DRM_DMA_USE_FB))) {
--			struct drm_map *map = dev->agp_buffer_map;
-+			struct drm_local_map *map = dev->agp_buffer_map;
- 			unsigned long token = dev->agp_buffer_token;
- 
- 			if (!map) {
-Index: linux-work/drivers/gpu/drm/drm_context.c
-===================================================================
---- linux-work.orig/drivers/gpu/drm/drm_context.c	2009-02-02 15:27:55.000000000 +1100
-+++ linux-work/drivers/gpu/drm/drm_context.c	2009-02-02 15:29:36.000000000 +1100
-@@ -143,7 +143,7 @@ int drm_getsareactx(struct drm_device *d
- 		    struct drm_file *file_priv)
- {
- 	struct drm_ctx_priv_map *request = data;
--	struct drm_map *map;
-+	struct drm_local_map *map;
- 	struct drm_map_list *_entry;
- 
- 	mutex_lock(&dev->struct_mutex);
-@@ -186,7 +186,7 @@ int drm_setsareactx(struct drm_device *d
- 		    struct drm_file *file_priv)
- {
- 	struct drm_ctx_priv_map *request = data;
--	struct drm_map *map = NULL;
-+	struct drm_local_map *map = NULL;
- 	struct drm_map_list *r_list = NULL;
- 
- 	mutex_lock(&dev->struct_mutex);
-Index: linux-work/drivers/gpu/drm/drm_drv.c
-===================================================================
---- linux-work.orig/drivers/gpu/drm/drm_drv.c	2009-02-02 15:27:55.000000000 +1100
-+++ linux-work/drivers/gpu/drm/drm_drv.c	2009-02-02 15:29:36.000000000 +1100
-@@ -530,7 +530,7 @@ int drm_ioctl(struct inode *inode, struc
- 
- EXPORT_SYMBOL(drm_ioctl);
- 
--drm_local_map_t *drm_getsarea(struct drm_device *dev)
-+struct drm_local_map *drm_getsarea(struct drm_device *dev)
- {
- 	struct drm_map_list *entry;
- 
-Index: linux-work/drivers/gpu/drm/drm_gem.c
-===================================================================
---- linux-work.orig/drivers/gpu/drm/drm_gem.c	2009-02-02 15:27:55.000000000 +1100
-+++ linux-work/drivers/gpu/drm/drm_gem.c	2009-02-02 15:29:36.000000000 +1100
-@@ -479,7 +479,7 @@ int drm_gem_mmap(struct file *filp, stru
- 	struct drm_file *priv = filp->private_data;
- 	struct drm_device *dev = priv->minor->dev;
- 	struct drm_gem_mm *mm = dev->mm_private;
--	struct drm_map *map = NULL;
-+	struct drm_local_map *map = NULL;
- 	struct drm_gem_object *obj;
- 	struct drm_hash_item *hash;
- 	unsigned long prot;
-Index: linux-work/drivers/gpu/drm/drm_memory.c
-===================================================================
---- linux-work.orig/drivers/gpu/drm/drm_memory.c	2009-02-02 15:27:55.000000000 +1100
-+++ linux-work/drivers/gpu/drm/drm_memory.c	2009-02-02 15:29:36.000000000 +1100
-@@ -159,7 +159,7 @@ static inline void *agp_remap(unsigned l
- 
- #endif				/* debug_memory */
- 
--void drm_core_ioremap(struct drm_map *map, struct drm_device *dev)
-+void drm_core_ioremap(struct drm_local_map *map, struct drm_device *dev)
- {
- 	if (drm_core_has_AGP(dev) &&
- 	    dev->agp && dev->agp->cant_use_aperture && map->type == _DRM_AGP)
-@@ -169,12 +169,12 @@ void drm_core_ioremap(struct drm_map *ma
- }
- EXPORT_SYMBOL(drm_core_ioremap);
- 
--void drm_core_ioremap_wc(struct drm_map *map, struct drm_device *dev)
-+void drm_core_ioremap_wc(struct drm_local_map *map, struct drm_device *dev)
- {
- 	map->handle = ioremap_wc(map->offset, map->size);
- }
- EXPORT_SYMBOL(drm_core_ioremap_wc);
--void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev)
-+void drm_core_ioremapfree(struct drm_local_map *map, struct drm_device *dev)
- {
- 	if (!map->handle || !map->size)
- 		return;
 Index: linux-work/drivers/gpu/drm/drm_proc.c
 ===================================================================
---- linux-work.orig/drivers/gpu/drm/drm_proc.c	2009-02-02 15:27:55.000000000 +1100
-+++ linux-work/drivers/gpu/drm/drm_proc.c	2009-02-02 16:00:35.000000000 +1100
-@@ -247,7 +247,7 @@ static int drm__vm_info(char *buf, char 
- 	struct drm_minor *minor = (struct drm_minor *) data;
- 	struct drm_device *dev = minor->dev;
- 	int len = 0;
--	struct drm_map *map;
-+	struct drm_local_map *map;
- 	struct drm_map_list *r_list;
- 
- 	/* Hardcoded from _DRM_FRAME_BUFFER,
+--- linux-work.orig/drivers/gpu/drm/drm_proc.c	2009-02-02 16:29:54.000000000 +1100
++++ linux-work/drivers/gpu/drm/drm_proc.c	2009-02-02 16:29:54.000000000 +1100
+@@ -276,9 +276,9 @@ static int drm__vm_info(char *buf, char 
+ 			type = "??";
+ 		else
+ 			type = types[map->type];
+-		DRM_PROC_PRINT("%4d 0x%08lx 0x%08lx %4.4s  0x%02x 0x%08lx ",
++		DRM_PROC_PRINT("%4d 0x%08llx 0x%08lx %4.4s  0x%02x 0x%08lx ",
+ 			       i,
+-			       map->offset,
++			       (unsigned long long)map->offset,
+ 			       map->size, type, map->flags,
+ 			       (unsigned long) r_list->user_token);
+ 		if (map->mtrr < 0) {
 Index: linux-work/drivers/gpu/drm/drm_vm.c
 ===================================================================
---- linux-work.orig/drivers/gpu/drm/drm_vm.c	2009-02-02 15:27:55.000000000 +1100
-+++ linux-work/drivers/gpu/drm/drm_vm.c	2009-02-02 16:00:35.000000000 +1100
-@@ -91,7 +91,7 @@ static int drm_do_vm_fault(struct vm_are
- {
- 	struct drm_file *priv = vma->vm_file->private_data;
- 	struct drm_device *dev = priv->minor->dev;
--	struct drm_map *map = NULL;
-+	struct drm_local_map *map = NULL;
- 	struct drm_map_list *r_list;
- 	struct drm_hash_item *hash;
+--- linux-work.orig/drivers/gpu/drm/drm_vm.c	2009-02-02 16:29:54.000000000 +1100
++++ linux-work/drivers/gpu/drm/drm_vm.c	2009-02-02 16:29:54.000000000 +1100
+@@ -115,9 +115,9 @@ static int drm_do_vm_fault(struct vm_are
+ 		 * Using vm_pgoff as a selector forces us to use this unusual
+ 		 * addressing scheme.
+ 		 */
+-		unsigned long offset = (unsigned long)vmf->virtual_address -
+-								vma->vm_start;
+-		unsigned long baddr = map->offset + offset;
++		resource_size_t offset = (unsigned long)vmf->virtual_address -
++			vma->vm_start;
++		resource_size_t baddr = map->offset + offset;
+ 		struct drm_agp_mem *agpmem;
+ 		struct page *page;
  
-@@ -176,7 +176,7 @@ static int drm_do_vm_fault(struct vm_are
-  */
- static int drm_do_vm_shm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
--	struct drm_map *map = (struct drm_map *) vma->vm_private_data;
-+	struct drm_local_map *map = vma->vm_private_data;
- 	unsigned long offset;
- 	unsigned long i;
- 	struct page *page;
-@@ -209,7 +209,7 @@ static void drm_vm_shm_close(struct vm_a
- 	struct drm_file *priv = vma->vm_file->private_data;
- 	struct drm_device *dev = priv->minor->dev;
- 	struct drm_vma_entry *pt, *temp;
--	struct drm_map *map;
-+	struct drm_local_map *map;
- 	struct drm_map_list *r_list;
- 	int found_maps = 0;
+@@ -149,8 +149,10 @@ static int drm_do_vm_fault(struct vm_are
+ 		vmf->page = page;
  
-@@ -322,7 +322,7 @@ static int drm_do_vm_dma_fault(struct vm
-  */
- static int drm_do_vm_sg_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
--	struct drm_map *map = (struct drm_map *) vma->vm_private_data;
-+	struct drm_local_map *map = vma->vm_private_data;
- 	struct drm_file *priv = vma->vm_file->private_data;
- 	struct drm_device *dev = priv->minor->dev;
- 	struct drm_sg_mem *entry = dev->sg;
-@@ -512,7 +512,7 @@ static int drm_mmap_dma(struct file *fil
+ 		DRM_DEBUG
+-		    ("baddr = 0x%lx page = 0x%p, offset = 0x%lx, count=%d\n",
+-		     baddr, __va(agpmem->memory->memory[offset]), offset,
++		    ("baddr = 0x%llx page = 0x%p, offset = 0x%llx, count=%d\n",
++		     (unsigned long long)baddr,
++		     __va(agpmem->memory->memory[offset]),
++		     (unsigned long long)offset,
+ 		     page_count(page));
+ 		return 0;
+ 	}
+@@ -512,14 +514,14 @@ static int drm_mmap_dma(struct file *fil
  	return 0;
  }
  
--unsigned long drm_core_get_map_ofs(struct drm_map * map)
-+unsigned long drm_core_get_map_ofs(struct drm_local_map * map)
+-unsigned long drm_core_get_map_ofs(struct drm_local_map * map)
++resource_size_t drm_core_get_map_ofs(struct drm_local_map * map)
  {
  	return map->offset;
  }
-@@ -547,7 +547,7 @@ int drm_mmap_locked(struct file *filp, s
+ 
+ EXPORT_SYMBOL(drm_core_get_map_ofs);
+ 
+-unsigned long drm_core_get_reg_ofs(struct drm_device *dev)
++resource_size_t drm_core_get_reg_ofs(struct drm_device *dev)
  {
+ #ifdef __alpha__
+ 	return dev->hose->dense_mem_base - dev->hose->mem_space->start;
+@@ -548,7 +550,7 @@ int drm_mmap_locked(struct file *filp, s
  	struct drm_file *priv = filp->private_data;
  	struct drm_device *dev = priv->minor->dev;
--	struct drm_map *map = NULL;
-+	struct drm_local_map *map = NULL;
- 	unsigned long offset = 0;
+ 	struct drm_local_map *map = NULL;
+-	unsigned long offset = 0;
++	resource_size_t offset = 0;
  	struct drm_hash_item *hash;
  
+ 	DRM_DEBUG("start = 0x%lx, end = 0x%lx, page offset = 0x%lx\n",
+@@ -623,9 +625,9 @@ int drm_mmap_locked(struct file *filp, s
+ 				       vma->vm_page_prot))
+ 			return -EAGAIN;
+ 		DRM_DEBUG("   Type = %d; start = 0x%lx, end = 0x%lx,"
+-			  " offset = 0x%lx\n",
++			  " offset = 0x%llx\n",
+ 			  map->type,
+-			  vma->vm_start, vma->vm_end, map->offset + offset);
++			  vma->vm_start, vma->vm_end, (unsigned long long)(map->offset + offset));
+ 		vma->vm_ops = &drm_vm_ops;
+ 		break;
+ 	case _DRM_CONSISTENT:
+Index: linux-work/drivers/gpu/drm/mga/mga_dma.c
+===================================================================
+--- linux-work.orig/drivers/gpu/drm/mga/mga_dma.c	2009-02-02 16:29:50.000000000 +1100
++++ linux-work/drivers/gpu/drm/mga/mga_dma.c	2009-02-02 16:29:54.000000000 +1100
+@@ -148,8 +148,8 @@ void mga_do_dma_flush(drm_mga_private_t 
+ 		primary->space = head - tail;
+ 	}
+ 
+-	DRM_DEBUG("   head = 0x%06lx\n", head - dev_priv->primary->offset);
+-	DRM_DEBUG("   tail = 0x%06lx\n", tail - dev_priv->primary->offset);
++	DRM_DEBUG("   head = 0x%06lx\n", (unsigned long)(head - dev_priv->primary->offset));
++	DRM_DEBUG("   tail = 0x%06lx\n", (unsigned long)(tail - dev_priv->primary->offset));
+ 	DRM_DEBUG("  space = 0x%06x\n", primary->space);
+ 
+ 	mga_flush_write_combine();
+@@ -187,7 +187,7 @@ void mga_do_dma_wrap_start(drm_mga_priva
+ 		primary->space = head - dev_priv->primary->offset;
+ 	}
+ 
+-	DRM_DEBUG("   head = 0x%06lx\n", head - dev_priv->primary->offset);
++	DRM_DEBUG("   head = 0x%06lx\n", (unsigned long)(head - dev_priv->primary->offset));
+ 	DRM_DEBUG("   tail = 0x%06x\n", primary->tail);
+ 	DRM_DEBUG("   wrap = %d\n", primary->last_wrap);
+ 	DRM_DEBUG("  space = 0x%06x\n", primary->space);
+@@ -239,7 +239,7 @@ static void mga_freelist_print(struct dr
+ 	for (entry = dev_priv->head->next; entry; entry = entry->next) {
+ 		DRM_INFO("   %p   idx=%2d  age=0x%x 0x%06lx\n",
+ 			 entry, entry->buf->idx, entry->age.head,
+-			 entry->age.head - dev_priv->primary->offset);
++			 (unsigned long)(entry->age.head - dev_priv->primary->offset));
+ 	}
+ 	DRM_INFO("\n");
+ }
+@@ -340,10 +340,10 @@ static struct drm_buf *mga_freelist_get(
+ 
+ 	DRM_DEBUG("   tail=0x%06lx %d\n",
+ 		  tail->age.head ?
+-		  tail->age.head - dev_priv->primary->offset : 0,
++		  (unsigned long)(tail->age.head - dev_priv->primary->offset) : 0,
+ 		  tail->age.wrap);
+ 	DRM_DEBUG("   head=0x%06lx %d\n",
+-		  head - dev_priv->primary->offset, wrap);
++		  (unsigned long)(head - dev_priv->primary->offset), wrap);
+ 
+ 	if (TEST_AGE(&tail->age, head, wrap)) {
+ 		prev = dev_priv->tail->prev;
+@@ -366,8 +366,9 @@ int mga_freelist_put(struct drm_device *
+ 	drm_mga_freelist_t *head, *entry, *prev;
+ 
+ 	DRM_DEBUG("age=0x%06lx wrap=%d\n",
+-		  buf_priv->list_entry->age.head -
+-		  dev_priv->primary->offset, buf_priv->list_entry->age.wrap);
++		  (unsigned long)(buf_priv->list_entry->age.head -
++				  dev_priv->primary->offset),
++		  buf_priv->list_entry->age.wrap);
+ 
+ 	entry = buf_priv->list_entry;
+ 	head = dev_priv->head;
+Index: linux-work/drivers/gpu/drm/mga/mga_drv.h
+===================================================================
+--- linux-work.orig/drivers/gpu/drm/mga/mga_drv.h	2009-02-02 16:29:54.000000000 +1100
++++ linux-work/drivers/gpu/drm/mga/mga_drv.h	2009-02-02 16:29:54.000000000 +1100
+@@ -317,8 +317,8 @@ do {									\
+ 		DRM_INFO( "\n" );					\
+ 		DRM_INFO( "   tail=0x%06x head=0x%06lx\n",		\
+ 			  dev_priv->prim.tail,				\
+-			  MGA_READ( MGA_PRIMADDRESS ) -			\
+-			  dev_priv->primary->offset );			\
++			  (unsigned long)(MGA_READ(MGA_PRIMADDRESS) -	\
++					  dev_priv->primary->offset));	\
+ 	}								\
+ 	if ( !test_bit( 0, &dev_priv->prim.wrapped ) ) {		\
+ 		if ( dev_priv->prim.space <				\
+Index: linux-work/drivers/gpu/drm/r128/r128_cce.c
+===================================================================
+--- linux-work.orig/drivers/gpu/drm/r128/r128_cce.c	2009-02-02 16:29:50.000000000 +1100
++++ linux-work/drivers/gpu/drm/r128/r128_cce.c	2009-02-02 16:29:54.000000000 +1100
+@@ -525,11 +525,12 @@ static int r128_do_init_cce(struct drm_d
+ 	} else
+ #endif
+ 	{
+-		dev_priv->cce_ring->handle = (void *)dev_priv->cce_ring->offset;
++		dev_priv->cce_ring->handle =
++			(void *)(unsigned long)dev_priv->cce_ring->offset;
+ 		dev_priv->ring_rptr->handle =
+-		    (void *)dev_priv->ring_rptr->offset;
++			(void *)(unsigned long)dev_priv->ring_rptr->offset;
+ 		dev->agp_buffer_map->handle =
+-		    (void *)dev->agp_buffer_map->offset;
++			(void *)(unsigned long)dev->agp_buffer_map->offset;
+ 	}
+ 
+ #if __OS_HAS_AGP
+Index: linux-work/drivers/gpu/drm/radeon/radeon_cp.c
+===================================================================
+--- linux-work.orig/drivers/gpu/drm/radeon/radeon_cp.c	2009-02-02 16:29:50.000000000 +1100
++++ linux-work/drivers/gpu/drm/radeon/radeon_cp.c	2009-02-02 16:29:54.000000000 +1100
+@@ -1052,11 +1052,12 @@ static int radeon_do_init_cp(struct drm_
+ 	} else
+ #endif
+ 	{
+-		dev_priv->cp_ring->handle = (void *)dev_priv->cp_ring->offset;
++		dev_priv->cp_ring->handle =
++			(void *)(unsigned long)dev_priv->cp_ring->offset;
+ 		dev_priv->ring_rptr->handle =
+-		    (void *)dev_priv->ring_rptr->offset;
++			(void *)(unsigned long)dev_priv->ring_rptr->offset;
+ 		dev->agp_buffer_map->handle =
+-		    (void *)dev->agp_buffer_map->offset;
++			(void *)(unsigned long)dev->agp_buffer_map->offset;
+ 
+ 		DRM_DEBUG("dev_priv->cp_ring->handle %p\n",
+ 			  dev_priv->cp_ring->handle);
+@@ -1167,7 +1168,7 @@ static int radeon_do_init_cp(struct drm_
+ 		/* if we have an offset set from userspace */
+ 		if (dev_priv->pcigart_offset_set) {
+ 			dev_priv->gart_info.bus_addr =
+-			    dev_priv->pcigart_offset + dev_priv->fb_location;
++				(resource_size_t)dev_priv->pcigart_offset + dev_priv->fb_location;
+ 			dev_priv->gart_info.mapping.offset =
+ 			    dev_priv->pcigart_offset + dev_priv->fb_aper_offset;
+ 			dev_priv->gart_info.mapping.size =
 Index: linux-work/include/drm/drmP.h
 ===================================================================
---- linux-work.orig/include/drm/drmP.h	2009-02-02 15:27:56.000000000 +1100
-+++ linux-work/include/drm/drmP.h	2009-02-02 16:00:35.000000000 +1100
-@@ -523,19 +523,32 @@ struct drm_mm {
- 
- 
- /**
-+ * Kernel side of a mapping
-+ */
-+struct drm_local_map {
-+	unsigned long offset;	 /**< Requested physical address (0 for SAREA)*/
-+	unsigned long size;	 /**< Requested physical size (bytes) */
-+	enum drm_map_type type;	 /**< Type of memory to map */
-+	enum drm_map_flags flags;	 /**< Flags */
-+	void *handle;		 /**< User-space: "Handle" to pass to mmap() */
-+				 /**< Kernel-space: kernel-virtual address */
-+	int mtrr;		 /**< MTRR slot used */
-+};
-+
-+typedef struct drm_local_map drm_local_map_t;
-+
-+/**
-  * Mappings list
+--- linux-work.orig/include/drm/drmP.h	2009-02-02 16:29:54.000000000 +1100
++++ linux-work/include/drm/drmP.h	2009-02-02 16:29:54.000000000 +1100
+@@ -526,7 +526,7 @@ struct drm_mm {
+  * Kernel side of a mapping
   */
- struct drm_map_list {
- 	struct list_head head;		/**< list head */
- 	struct drm_hash_item hash;
--	struct drm_map *map;			/**< mapping */
-+	struct drm_local_map *map;	/**< mapping */
- 	uint64_t user_token;
- 	struct drm_master *master;
- 	struct drm_mm_node *file_offset_node;	/**< fake offset */
- };
- 
--typedef struct drm_map drm_local_map_t;
--
- /**
-  * Context handle list
-  */
-@@ -560,7 +573,7 @@ struct drm_ati_pcigart_info {
- 	dma_addr_t bus_addr;
- 	dma_addr_t table_mask;
- 	struct drm_dma_handle *table_handle;
--	drm_local_map_t mapping;
-+	struct drm_local_map mapping;
- 	int table_size;
- };
- 
-@@ -747,7 +760,7 @@ struct drm_driver {
+ struct drm_local_map {
+-	unsigned long offset;	 /**< Requested physical address (0 for SAREA)*/
++	resource_size_t offset;	 /**< Requested physical address (0 for SAREA)*/
+ 	unsigned long size;	 /**< Requested physical size (bytes) */
+ 	enum drm_map_type type;	 /**< Type of memory to map */
+ 	enum drm_map_flags flags;	 /**< Flags */
+@@ -760,8 +760,8 @@ struct drm_driver {
  					struct drm_file *file_priv);
  	void (*reclaim_buffers_idlelocked) (struct drm_device *dev,
  					    struct drm_file *file_priv);
--	unsigned long (*get_map_ofs) (struct drm_map * map);
-+	unsigned long (*get_map_ofs) (struct drm_local_map * map);
- 	unsigned long (*get_reg_ofs) (struct drm_device *dev);
+-	unsigned long (*get_map_ofs) (struct drm_local_map * map);
+-	unsigned long (*get_reg_ofs) (struct drm_device *dev);
++	resource_size_t (*get_map_ofs) (struct drm_local_map * map);
++	resource_size_t (*get_reg_ofs) (struct drm_device *dev);
  	void (*set_version) (struct drm_device *dev,
  			     struct drm_set_version *sv);
-@@ -932,7 +945,7 @@ struct drm_device {
- 	sigset_t sigmask;
  
- 	struct drm_driver *driver;
--	drm_local_map_t *agp_buffer_map;
-+	struct drm_local_map *agp_buffer_map;
- 	unsigned int agp_buffer_token;
- 	struct drm_minor *control;		/**< Control node for card */
- 	struct drm_minor *primary;		/**< render type primary screen head */
-@@ -1049,7 +1062,7 @@ extern int drm_release(struct inode *ino
+@@ -1062,8 +1062,8 @@ extern int drm_release(struct inode *ino
  extern int drm_mmap(struct file *filp, struct vm_area_struct *vma);
  extern int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma);
  extern void drm_vm_open_locked(struct vm_area_struct *vma);
--extern unsigned long drm_core_get_map_ofs(struct drm_map * map);
-+extern unsigned long drm_core_get_map_ofs(struct drm_local_map * map);
- extern unsigned long drm_core_get_reg_ofs(struct drm_device *dev);
+-extern unsigned long drm_core_get_map_ofs(struct drm_local_map * map);
+-extern unsigned long drm_core_get_reg_ofs(struct drm_device *dev);
++extern resource_size_t drm_core_get_map_ofs(struct drm_local_map * map);
++extern resource_size_t drm_core_get_reg_ofs(struct drm_device *dev);
  extern unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait);
  
-@@ -1155,11 +1168,11 @@ extern int drm_addbufs_agp(struct drm_de
+ 				/* Memory management support (drm_memory.h) */
+@@ -1166,7 +1166,7 @@ extern int drm_i_have_hw_lock(struct drm
+ 				/* Buffer management support (drm_bufs.h) */
+ extern int drm_addbufs_agp(struct drm_device *dev, struct drm_buf_desc * request);
  extern int drm_addbufs_pci(struct drm_device *dev, struct drm_buf_desc * request);
- extern int drm_addmap(struct drm_device *dev, unsigned int offset,
+-extern int drm_addmap(struct drm_device *dev, unsigned int offset,
++extern int drm_addmap(struct drm_device *dev, resource_size_t offset,
  		      unsigned int size, enum drm_map_type type,
--		      enum drm_map_flags flags, drm_local_map_t ** map_ptr);
-+		      enum drm_map_flags flags, struct drm_local_map **map_ptr);
+ 		      enum drm_map_flags flags, struct drm_local_map **map_ptr);
  extern int drm_addmap_ioctl(struct drm_device *dev, void *data,
- 			    struct drm_file *file_priv);
--extern int drm_rmmap(struct drm_device *dev, drm_local_map_t *map);
--extern int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map);
-+extern int drm_rmmap(struct drm_device *dev, struct drm_local_map *map);
-+extern int drm_rmmap_locked(struct drm_device *dev, struct drm_local_map *map);
- extern int drm_rmmap_ioctl(struct drm_device *dev, void *data,
- 			   struct drm_file *file_priv);
- extern int drm_addbufs(struct drm_device *dev, void *data,
-@@ -1261,7 +1274,7 @@ extern struct proc_dir_entry *drm_proc_r
- 
- extern struct idr drm_minors_idr;
- 
--extern drm_local_map_t *drm_getsarea(struct drm_device *dev);
-+extern struct drm_local_map *drm_getsarea(struct drm_device *dev);
- 
- 				/* Proc support (drm_proc.h) */
- extern int drm_proc_init(struct drm_minor *minor, int minor_id,
-@@ -1376,12 +1389,12 @@ int drm_gem_open_ioctl(struct drm_device
- void drm_gem_open(struct drm_device *dev, struct drm_file *file_private);
- void drm_gem_release(struct drm_device *dev, struct drm_file *file_private);
- 
--extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
--extern void drm_core_ioremap_wc(struct drm_map *map, struct drm_device *dev);
--extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
-+extern void drm_core_ioremap(struct drm_local_map *map, struct drm_device *dev);
-+extern void drm_core_ioremap_wc(struct drm_local_map *map, struct drm_device *dev);
-+extern void drm_core_ioremapfree(struct drm_local_map *map, struct drm_device *dev);
- 
--static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev,
--						   unsigned int token)
-+static __inline__ struct drm_local_map *drm_core_findmap(struct drm_device *dev,
-+							 unsigned int token)
- {
- 	struct drm_map_list *_entry;
- 	list_for_each_entry(_entry, &dev->maplist, head)
-@@ -1408,7 +1421,7 @@ static __inline__ int drm_device_is_pcie
- 	return pci_find_capability(dev->pdev, PCI_CAP_ID_EXP);
- }
- 
--static __inline__ void drm_core_dropmap(struct drm_map *map)
-+static __inline__ void drm_core_dropmap(struct drm_local_map *map)
- {
- }
- 
-Index: linux-work/drivers/gpu/drm/i810/i810_drv.h
-===================================================================
---- linux-work.orig/drivers/gpu/drm/i810/i810_drv.h	2009-02-02 16:00:49.000000000 +1100
-+++ linux-work/drivers/gpu/drm/i810/i810_drv.h	2009-02-02 16:00:53.000000000 +1100
-@@ -77,8 +77,8 @@ typedef struct _drm_i810_ring_buffer {
- } drm_i810_ring_buffer_t;
- 
- typedef struct drm_i810_private {
--	struct drm_map *sarea_map;
--	struct drm_map *mmio_map;
-+	struct drm_local_map *sarea_map;
-+	struct drm_local_map *mmio_map;
- 
- 	drm_i810_sarea_t *sarea_priv;
- 	drm_i810_ring_buffer_t ring;
-Index: linux-work/drivers/gpu/drm/i830/i830_drv.h
-===================================================================
---- linux-work.orig/drivers/gpu/drm/i830/i830_drv.h	2009-02-02 16:01:25.000000000 +1100
-+++ linux-work/drivers/gpu/drm/i830/i830_drv.h	2009-02-02 16:01:29.000000000 +1100
-@@ -84,8 +84,8 @@ typedef struct _drm_i830_ring_buffer {
- } drm_i830_ring_buffer_t;
- 
- typedef struct drm_i830_private {
--	struct drm_map *sarea_map;
--	struct drm_map *mmio_map;
-+	struct drm_local_map *sarea_map;
-+	struct drm_local_map *mmio_map;
- 
- 	drm_i830_sarea_t *sarea_priv;
- 	drm_i830_ring_buffer_t ring;
-Index: linux-work/drivers/gpu/drm/i915/i915_gem.c
-===================================================================
---- linux-work.orig/drivers/gpu/drm/i915/i915_gem.c	2009-02-02 16:01:58.000000000 +1100
-+++ linux-work/drivers/gpu/drm/i915/i915_gem.c	2009-02-02 16:02:09.000000000 +1100
-@@ -627,7 +627,7 @@ i915_gem_create_mmap_offset(struct drm_g
- 	struct drm_gem_mm *mm = dev->mm_private;
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
- 	struct drm_map_list *list;
--	struct drm_map *map;
-+	struct drm_local_map *map;
- 	int ret = 0;
- 
- 	/* Set the object up for mmap'ing */
-@@ -2857,7 +2857,7 @@ void i915_gem_free_object(struct drm_gem
- 	struct drm_device *dev = obj->dev;
- 	struct drm_gem_mm *mm = dev->mm_private;
- 	struct drm_map_list *list;
--	struct drm_map *map;
-+	struct drm_local_map *map;
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
- 
- 	while (obj_priv->pin_count > 0)
