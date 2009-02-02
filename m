@@ -1,20 +1,17 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 0F75DDDF1E
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 01:04:48 +1100 (EST)
-Subject: Re: [PATCH] ftrace: On PowerPC we don't need frame pointers for
-	CALLER_ADDRs
-From: Steven Rostedt <srostedt@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1233534919.18767.69.camel@pasglop>
-References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
-	<1233534919.18767.69.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 02 Feb 2009 09:04:15 -0500
-Message-Id: <1233583455.16878.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 0EB1ADDE06
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 01:59:57 +1100 (EST)
+Message-ID: <49870A66.8030302@harris.com>
+Date: Mon, 02 Feb 2009 09:59:50 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
+MIME-Version: 1.0
+To: Lixin Yao <Lixin.Yao@HSTX.com>
+Subject: Re: Can not get PATA to work for Compact Flash with 2.6.28 kernel
+References: <03D77CA4AC7F4D48A6AB5DA3F1001B3F10A4B2@exchtxus2.HSTX.global.vpn>
+In-Reply-To: <03D77CA4AC7F4D48A6AB5DA3F1001B3F10A4B2@exchtxus2.HSTX.global.vpn>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,84 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Mon, 2009-02-02 at 11:35 +1100, Benjamin Herrenschmidt wrote:
-> On Sat, 2009-01-31 at 22:06 +0300, Anton Vorontsov wrote:
-> > According to this discussion:
-> > 
-> > http://lkml.org/lkml/2008/7/25/338
-> > http://lkml.org/lkml/2008/7/26/72
-> > 
-> > Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
-> > makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
-> > requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. Therefore
-> > tracing is completely useless on PowerPC:
+Lixin Yao wrote:
 > 
-> But we need them for -pg which ftrace uses no ? (ie, gcc forces you to
-> have -fno-omit-frame-pointers with -fpg iirc).
-
-Yes, ftrace function tracing requires -pg which requires FRAME_POINTER
-turned on.
-
 > 
-> Now, regardless, I agree that on PPC, __builtin_return_address() should
-> always work with our without that cruft, so we may as well apply that
-> patch...
+> I use a San Disk compact flash (CF) card on a board with MPC8248
+> processor. The CF is connected to data and address bus of the processor
+> and operates in TRUE IDE mode. The registers are memory mapped. I can
+> read the file system on the CF in u-boot (1.3.4). U-boot can identify
+> the CF and mount file system correctly.
 > 
-> > [...]
-> >   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
-> >   <idle>-0       0X.h3    9us+: 0 (0)
-> >   <idle>-0       0X..3   72us : 0 (0)
-> >   <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
-> > 
-> > On PPC we can safely use __builtin_return_address(1..6) w/o frame
-> > pointers, and with this patch the trace output looks OK:
-> > 
-> > [...]
-> >   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
-> >   <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
-> >   <idle>-0       0X..3   87us : cpu_idle (__got2_end)
-> >   <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
-> > 
-> > Btw, on PowerPC tracing is also broken w/o "ring-buffer: fix alignment
-> > problem" patch (currently collecting dust in the -tip tree, commit
-> > 082605de5f82eb692cc90f7fda071cc01bb5ac34). Any chance the fix go into
-> > Linus' tree, to not waste other people's time bisecting and debugging
-> > the problem? ;-)
-> > 
-> > For google: tracing, regression, "ring-buffer: move some metadata
-> > into buffer page", commit abc9b56d66fbd4d93302ef4bf6fa726e1b8255f9,
-> > answer is here.
-> > 
-> >  include/linux/ftrace.h |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> > index 9c5bc6b..13eba02 100644
-> > --- a/include/linux/ftrace.h
-> > +++ b/include/linux/ftrace.h
-> > @@ -146,7 +146,7 @@ static inline void __ftrace_enabled_restore(int enabled)
-> >  #endif
-> >  }
-> >  
-> > -#ifdef CONFIG_FRAME_POINTER
-> > +#if defined(CONFIG_FRAME_POINTER) || defined(CONFIG_PPC)
-
-Perhaps we should add a HAVE_NORMAL_FRAME_POINTERS in 
-arch/powerpc/Kconfig under PPC and then we can change the above line to:
-
-#if defined(CONFIG_FRAME_POINTERS) || \
-		defined(CONFIG_HAVE_NORMAL_FRAME_POINTERS)
-
-This way when another arch wants to belong to this, we do not need to
-have a list of archs here.
-
--- Steve
-
-> >  /* TODO: need to fix this for ARM */
-> >  # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-> >  # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
+> The hardware is known good hardware.
 > 
+> I use 2.6.28 kernel and configured support for PATA for the CF.
+
+The second register set does not start at register 0.  It starts
+at register 6.  We are using 1 chip select from the processor,
+and generate two chip selects to the CF that are 0x80 apart (on
+a sequoia board).
+
+So here is what I am using on the modified sequoia board.  Note
+the 0x00000098 - you might think it should be 0x00000080 as per
+the discussion above, but because the second register set starts
+at 6, you have to build that into the address.  
+
+pata@1,0 {
+compatible = "harris,hydra_temp-pata", "ata-generic";
+bank-width = <2>;
+reg = <0x00000001 0x00000000 0x00000020 0x00000001 0x00000098 0x00000004>;
+reg-shift = <2>;
+pio-mode = <6>;
+interrupt-parent = <&UIC0>;
+interrupts = <0x1b 0x4>;
+};
+
+	Steve
