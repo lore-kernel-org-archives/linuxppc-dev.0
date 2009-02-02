@@ -1,20 +1,20 @@
-Return-Path: <gjb@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F0030DDD0C
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Feb 2009 23:50:28 +1100 (EST)
-Message-ID: <4986EC33.9000600@semihalf.com>
-Date: Mon, 02 Feb 2009 13:50:59 +0100
-From: Grzegorz Bernacki <gjb@semihalf.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] Add support for the digsy MTC board.
-References: <1233329630876-git-send-email-gjb@semihalf.com>
-	<fa686aa40901300859t4da76ce3hf943adc48abb9b9c@mail.gmail.com>
-In-Reply-To: <fa686aa40901300859t4da76ce3hf943adc48abb9b9c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <srostedt@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 0F75DDDF1E
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 01:04:48 +1100 (EST)
+Subject: Re: [PATCH] ftrace: On PowerPC we don't need frame pointers for
+	CALLER_ADDRs
+From: Steven Rostedt <srostedt@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1233534919.18767.69.camel@pasglop>
+References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+	<1233534919.18767.69.camel@pasglop>
+Content-Type: text/plain
+Date: Mon, 02 Feb 2009 09:04:15 -0500
+Message-Id: <1233583455.16878.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,85 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
->> +/dts-v1/;
->> +
->> +/ {
->> +       model = "mtc,digsy";
->> +       compatible = "mtc,digsy";
-> 
-> This should be something like:  "intercontrol,digsy-mtc".  Compatible
-> values should be in the form "<vendor>,<model>".
-> 
 
-ok, I will change it
-
->> +               mpc5200_pic: interrupt-controller@500 {
->> +                       // 5200 interrupts are encoded into two levels;
->> +                       interrupt-controller;
->> +                       #interrupt-cells = <3>;
->> +                       device_type = "interrupt-controller";
+On Mon, 2009-02-02 at 11:35 +1100, Benjamin Herrenschmidt wrote:
+> On Sat, 2009-01-31 at 22:06 +0300, Anton Vorontsov wrote:
+> > According to this discussion:
+> > 
+> > http://lkml.org/lkml/2008/7/25/338
+> > http://lkml.org/lkml/2008/7/26/72
+> > 
+> > Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
+> > makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
+> > requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. Therefore
+> > tracing is completely useless on PowerPC:
 > 
-> Drop device_type here.
+> But we need them for -pg which ftrace uses no ? (ie, gcc forces you to
+> have -fno-omit-frame-pointers with -fpg iirc).
 
-ok, I will drop it
-
->> +                       compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
->> +                       reg = <0x500 0x80>;
->> +               };
->> +
->> +               timer@600 {     // General Purpose Timer
->> +                       compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
->> +                       cell-index = <0>;
-> 
-> Drop cell-index on all the timer nodes.  If you compare this file with
-> the current cm5200.dts in mainline then you'll see the properties that
-> you can drop.
-> 
-> Otherwise the device tree looks pretty good.
-> 
->> diff --git a/arch/powerpc/configs/52xx/digsy_mtc_defconfig b/arch/powerpc/configs/52xx/digsy_mtc_defconfig
->> new file mode 100644
->> index 0000000..ad70d5b
->> --- /dev/null
->> +++ b/arch/powerpc/configs/52xx/digsy_mtc_defconfig
-
-I would like to have support for following devices in defconfig for digsy:
-- LXT PHY
-- RTC DS1337
-- EEPROM AT24
-- MTD partitioning based on OF description
-
-If you dont mind I can add them to generic mpc5200 defconfig, otherwise
-I think that separate defconfig is needed.
+Yes, ftrace function tracing requires -pg which requires FRAME_POINTER
+turned on.
 
 > 
-> Do you *really* need your own defconfig for the digsy_mtc.  I've
-> grudgingly accepted them for other boards under the argument that the
-> defconfig reflects a specific application of the board.  However, I'd
-> much rather see the digsy added to the multiplatform
-> mpc5200_defconfig, especially considering that the MTC looks like it's
-> supposed to be a general purpose platform.
-
-> There is a lot of direct copy/paste from the lite5200.c board file,
-> but the big scary warning comment about not duplicating this code was
-> deleted in the copy (so I know you saw it).  Is Semihalf responsible
-> for the U-Boot port to the digsy-mtc?  If so then please fix the
-> port_config and clock settings in u-boot.
+> Now, regardless, I agree that on PPC, __builtin_return_address() should
+> always work with our without that cruft, so we may as well apply that
+> patch...
 > 
+> > [...]
+> >   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
+> >   <idle>-0       0X.h3    9us+: 0 (0)
+> >   <idle>-0       0X..3   72us : 0 (0)
+> >   <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
+> > 
+> > On PPC we can safely use __builtin_return_address(1..6) w/o frame
+> > pointers, and with this patch the trace output looks OK:
+> > 
+> > [...]
+> >   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
+> >   <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
+> >   <idle>-0       0X..3   87us : cpu_idle (__got2_end)
+> >   <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> > 
+> > Btw, on PowerPC tracing is also broken w/o "ring-buffer: fix alignment
+> > problem" patch (currently collecting dust in the -tip tree, commit
+> > 082605de5f82eb692cc90f7fda071cc01bb5ac34). Any chance the fix go into
+> > Linus' tree, to not waste other people's time bisecting and debugging
+> > the problem? ;-)
+> > 
+> > For google: tracing, regression, "ring-buffer: move some metadata
+> > into buffer page", commit abc9b56d66fbd4d93302ef4bf6fa726e1b8255f9,
+> > answer is here.
+> > 
+> >  include/linux/ftrace.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> > index 9c5bc6b..13eba02 100644
+> > --- a/include/linux/ftrace.h
+> > +++ b/include/linux/ftrace.h
+> > @@ -146,7 +146,7 @@ static inline void __ftrace_enabled_restore(int enabled)
+> >  #endif
+> >  }
+> >  
+> > -#ifdef CONFIG_FRAME_POINTER
+> > +#if defined(CONFIG_FRAME_POINTER) || defined(CONFIG_PPC)
 
-I will update port config and clock settings in u-boot and use mpc5200_simple
-instead of creating a new file for digsy.
+Perhaps we should add a HAVE_NORMAL_FRAME_POINTERS in 
+arch/powerpc/Kconfig under PPC and then we can change the above line to:
 
-BTW,
-I noticed that there are some problems with mounting file system
-over NFS on Linux-2.6.29-rc3, I see following messages:
-...
-[  339.813807] nfs: server 192.168.1.1 not responding, still trying
-[  339.832144] nfs: server 192.168.1.1 OK
-...
+#if defined(CONFIG_FRAME_POINTERS) || \
+		defined(CONFIG_HAVE_NORMAL_FRAME_POINTERS)
 
-I haven't noticed in on Linux-2.6.29-rc2. Is there any known problem?
+This way when another arch wants to belong to this, we do not need to
+have a list of archs here.
 
-regards,
-Grzesiek
+-- Steve
+
+> >  /* TODO: need to fix this for ARM */
+> >  # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+> >  # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
+> 
