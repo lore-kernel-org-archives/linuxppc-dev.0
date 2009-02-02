@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC62BDDF4C
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Feb 2009 17:13:20 +1100 (EST)
-Subject: [git pull] Please pull from powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: multipart/alternative; boundary="=-l7le0IuedpIlKmenWaKH"
-Date: Mon, 02 Feb 2009 17:13:09 +1100
-Message-Id: <1233555189.18767.77.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id E9850DDF35
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Feb 2009 19:24:43 +1100 (EST)
+Date: Mon, 2 Feb 2009 09:24:36 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Remis <remis.developer@googlemail.com>
+Subject: Re: Dynamic-ftrace not working in PlayStation3
+In-Reply-To: <a25370a30902010528l2c11444ch843da0bfd91d05f@mail.gmail.com>
+Message-ID: <alpine.LRH.2.00.0902020922450.12201@vixen.sonytel.be>
+References: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
+	<alpine.DEB.1.10.0901292234520.6222@gandalf.stny.rr.com>
+	<4983BFA2.9010703@am.sony.com> <200901311125.34755.arnd@arndb.de>
+	<a25370a30902010528l2c11444ch843da0bfd91d05f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Steven Rostedt <rostedt@goodmis.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,130 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 1 Feb 2009, Remis wrote:
+> Complementing what Arnd said, we got the dynamic ftrace to work. Just
+> changed 4 things in the *menuconfig*.
+> Before these were built as modules (this is the default I guess):
+> CONFIG_USB=m
+> CONFIG_SOUND=m
+> CONFIG_SND=m
+> CONFIG_SND_USB_AUDIO=m
+> 
+> Then got them built into the kernel:
+> CONFIG_USB=y
+> CONFIG_SOUND=y
+> CONFIG_SND=y
+> CONFIG_SND_USB_AUDIO=y
+> 
+> And everything worked just fine.
+> In my config when I also tried to build the *CONFIG_SND_PS3* into the
+> kernel, the kernel did not boot (probably another bug !? :-).
 
---=-l7le0IuedpIlKmenWaKH
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+JFYI, I always use CONFIG_SND_PS3=y in my PS3 kernels, so it should work.
+Probably it conflicts with something else I have not enabled...
 
-Hi Linus !
+With kind regards,
 
-Some updates for 2.6.29. Note the atyfb change. This is a fix shielded
-in #ifdef CONFIG_PPC, there is no fbdev maintainer, so Andrew and I
-decided to send it via my tree. It's a simple workaround for an ooooold
-regression.
+Geert Uytterhoeven
+Software Architect
 
-The rest is mostly small stuff from Grant who missed -rc2 probably due
-to being away (defconfig updates, a small bug fix), a regression fix
-in our PCI code and a lost patch in Stephen serie of u64 conversion.
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Cheers,
-Ben.
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-The following changes since commit 45c82b5a770be66845687a7d027c8b52946d59af:
-  Linus Torvalds (1):
-        Merge branch 'header-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Benjamin Herrenschmidt (1):
-      powerpc: Fix oops on some machines due to incorrect pr_debug()
-
-Grant Likely (3):
-      powerpc/5200: update defconfigs
-      powerpc/5200: Bugfix for PCI mapping of memory and IMMR
-      powerpc/5200: update device tree binding documentation
-
-Risto Suominen (1):
-      fbdev/atyfb: Fix DSP config on some PowerMacs & PowerBooks
-
-Stephen Rothwell (1):
-      powerpc/ps3: Printing fixups for l64 to ll64 convserion drivers/net
-
- Documentation/powerpc/dts-bindings/fsl/mpc5200.txt |  180 +++++++++++++
- .../powerpc/mpc52xx-device-tree-bindings.txt       |  277 --------------------
- arch/powerpc/configs/52xx/cm5200_defconfig         |   83 +++++--
- arch/powerpc/configs/52xx/lite5200b_defconfig      |   86 +++++--
- arch/powerpc/configs/52xx/motionpro_defconfig      |   85 +++++--
- arch/powerpc/configs/52xx/pcm030_defconfig         |   82 ++++--
- arch/powerpc/configs/52xx/tqm5200_defconfig        |   89 +++++--
- arch/powerpc/configs/mpc5200_defconfig             |  104 ++++++--
- arch/powerpc/kernel/pci-common.c                   |    5 +-
- arch/powerpc/platforms/52xx/mpc52xx_pci.c          |   24 +-
- drivers/net/ps3_gelic_wireless.c                   |    2 +-
- drivers/video/aty/mach64_ct.c                      |   11 +
- 12 files changed, 590 insertions(+), 438 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/fsl/mpc5200.txt
- delete mode 100644 Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-
-
---=-l7le0IuedpIlKmenWaKH
-Content-Type: text/html; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
-<HTML>
-<HEAD>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
-  <META NAME="GENERATOR" CONTENT="GtkHTML/3.24.1.1">
-</HEAD>
-<BODY>
-<PRE>
-Hi Linus !
-
-Some updates for 2.6.29. Note the atyfb change. This is a fix shielded
-in #ifdef CONFIG_PPC, there is no fbdev maintainer, so Andrew and I
-decided to send it via my tree. It's a simple workaround for an ooooold
-regression.
-
-The rest is mostly small stuff from Grant who missed -rc2 probably due
-to being away (defconfig updates, a small bug fix), a regression fix
-in our PCI code and a lost patch in Stephen serie of u64 conversion.
-
-Cheers,
-Ben.
-
-The following changes since commit 45c82b5a770be66845687a7d027c8b52946d59af:
-&nbsp; Linus Torvalds (1):
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Merge branch 'header-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-
-are available in the git repository at:
-
-&nbsp; git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Benjamin Herrenschmidt (1):
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; powerpc: Fix oops on some machines due to incorrect pr_debug()
-
-Grant Likely (3):
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; powerpc/5200: update defconfigs
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; powerpc/5200: Bugfix for PCI mapping of memory and IMMR
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; powerpc/5200: update device tree binding documentation
-
-Risto Suominen (1):
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fbdev/atyfb: Fix DSP config on some PowerMacs &amp; PowerBooks
-
-Stephen Rothwell (1):
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; powerpc/ps3: Printing fixups for l64 to ll64 convserion drivers/net
-
- Documentation/powerpc/dts-bindings/fsl/mpc5200.txt |&nbsp; 180 +++++++++++++
- .../powerpc/mpc52xx-device-tree-bindings.txt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 277 --------------------
- arch/powerpc/configs/52xx/cm5200_defconfig&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; 83 +++++--
- arch/powerpc/configs/52xx/lite5200b_defconfig&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; 86 +++++--
- arch/powerpc/configs/52xx/motionpro_defconfig&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; 85 +++++--
- arch/powerpc/configs/52xx/pcm030_defconfig&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; 82 ++++--
- arch/powerpc/configs/52xx/tqm5200_defconfig&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; 89 +++++--
- arch/powerpc/configs/mpc5200_defconfig&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 104 ++++++--
- arch/powerpc/kernel/pci-common.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; 5 +-
- arch/powerpc/platforms/52xx/mpc52xx_pci.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; 24 +-
- drivers/net/ps3_gelic_wireless.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; 2 +-
- drivers/video/aty/mach64_ct.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; 11 +
- 12 files changed, 590 insertions(+), 438 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/fsl/mpc5200.txt
- delete mode 100644 Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-
-</PRE>
-</BODY>
-</HTML>
-
---=-l7le0IuedpIlKmenWaKH--
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
