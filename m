@@ -1,22 +1,21 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id E9850DDF35
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Feb 2009 19:24:43 +1100 (EST)
-Date: Mon, 2 Feb 2009 09:24:36 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Remis <remis.developer@googlemail.com>
-Subject: Re: Dynamic-ftrace not working in PlayStation3
-In-Reply-To: <a25370a30902010528l2c11444ch843da0bfd91d05f@mail.gmail.com>
-Message-ID: <alpine.LRH.2.00.0902020922450.12201@vixen.sonytel.be>
-References: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
-	<alpine.DEB.1.10.0901292234520.6222@gandalf.stny.rr.com>
-	<4983BFA2.9010703@am.sony.com> <200901311125.34755.arnd@arndb.de>
-	<a25370a30902010528l2c11444ch843da0bfd91d05f@mail.gmail.com>
+Return-Path: <philippe.reynes@isismpp.fr>
+Received: from neuf-infra-smtp-out-sp604003av.neufgp.fr
+	(neuf-infra-smtp-out-sp604003av.neufgp.fr [84.96.92.124])
+	by ozlabs.org (Postfix) with ESMTP id 33757DDEE9
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Feb 2009 20:14:53 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Steven Rostedt <rostedt@goodmis.org>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] add gpio to mpc837X rdb
+Date: Mon, 2 Feb 2009 10:13:51 +0100
+Message-ID: <761F451C5F17F74DAEE4661DA5ABBC1616C455@factorix.ISISTHIBAUD.local>
+References: <761F451C5F17F74DAEE4661DA5ABBC1616C448@factorix.ISISTHIBAUD.local>
+	<20090129192031.GA17060@oksana.dev.rtsoft.ru>
+	<0819EFA5-E86A-4D7F-8C60-06721B8072D8@freescale.com>
+From: "Reynes Philippe" <philippe.reynes@isismpp.fr>
+To: "Kumar Gala" <kumar.gala@freescale.com>,
+	<avorontsov@ru.mvista.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,41 +25,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 1 Feb 2009, Remis wrote:
-> Complementing what Arnd said, we got the dynamic ftrace to work. Just
-> changed 4 things in the *menuconfig*.
-> Before these were built as modules (this is the default I guess):
-> CONFIG_USB=m
-> CONFIG_SOUND=m
-> CONFIG_SND=m
-> CONFIG_SND_USB_AUDIO=m
-> 
-> Then got them built into the kernel:
-> CONFIG_USB=y
-> CONFIG_SOUND=y
-> CONFIG_SND=y
-> CONFIG_SND_USB_AUDIO=y
-> 
-> And everything worked just fine.
-> In my config when I also tried to build the *CONFIG_SND_PS3* into the
-> kernel, the kernel did not boot (probably another bug !? :-).
-
-JFYI, I always use CONFIG_SND_PS3=y in my PS3 kernels, so it should work.
-Probably it conflicts with something else I have not enabled...
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+Signed-off-by: Philippe Reynes <philippe.reynes@isismpp.fr>
+---
+Index: powerpc/arch/powerpc/boot/dts/mpc8377_rdb.dts
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- powerpc.orig/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ powerpc/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -109,6 +109,24 @@
+ 			reg =3D <0x200 0x100>;
+ 		};
+=20
++		gpio1: gpio-controller@c00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8377-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xc00 0x100>;
++			interrupts =3D <74 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
++		gpio2: gpio-controller@d00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8377-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xd00 0x100>;
++			interrupts =3D <75 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells =3D <1>;
+ 			#size-cells =3D <0>;
+Index: powerpc/arch/powerpc/boot/dts/mpc8378_rdb.dts
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- powerpc.orig/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ powerpc/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -109,6 +109,24 @@
+ 			reg =3D <0x200 0x100>;
+ 		};
+=20
++		gpio1: gpio-controller@c00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8378-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xc00 0x100>;
++			interrupts =3D <74 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
++		gpio2: gpio-controller@d00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8378-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xd00 0x100>;
++			interrupts =3D <75 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells =3D <1>;
+ 			#size-cells =3D <0>;
+Index: powerpc/arch/powerpc/boot/dts/mpc8379_rdb.dts
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- powerpc.orig/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ powerpc/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -107,6 +107,24 @@
+ 			reg =3D <0x200 0x100>;
+ 		};
+=20
++		gpio1: gpio-controller@c00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8379-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xc00 0x100>;
++			interrupts =3D <74 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
++		gpio2: gpio-controller@d00 {
++			#gpio-cells =3D <2>;
++			compatible =3D "fsl,mpc8379-gpio",
+"fsl,mpc8349-gpio";
++			reg =3D <0xd00 0x100>;
++			interrupts =3D <75 0x8>;
++			interrupt-parent =3D <&ipic>;
++			gpio-controller;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells =3D <1>;
+ 			#size-cells =3D <0>;
