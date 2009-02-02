@@ -1,10 +1,22 @@
-Return-Path: <benh@ozlabs.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 674A4DDF40
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Feb 2009 11:35:39 +1100 (EST)
+Subject: Re: [PATCH] ftrace: On PowerPC we don't need frame pointers for
+	CALLER_ADDRs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 02 Feb 2009 11:24:18 +1100
-Subject: [PATCH] powerpc/44x: Fix address decoding setup of PCI 2.x cells
-Message-Id: <20090202002429.ADA74DDF43@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+Content-Type: text/plain
+Date: Mon, 02 Feb 2009 11:35:19 +1100
+Message-Id: <1233534919.18767.69.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,49 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PCI 2.x cells used on some 44x SoCs only let us configure the decode
-for the low 32-bit of the incoming PLB addresses. The top 4 bits (this
-is a 36-bit bus) are hard wired to different values depending on the
-specific SoC in use. Our code used to work "by accident" until I added
-support for the ISA memory holes and while at it added more validity
-checking of the addresses.
+On Sat, 2009-01-31 at 22:06 +0300, Anton Vorontsov wrote:
+> According to this discussion:
+> 
+> http://lkml.org/lkml/2008/7/25/338
+> http://lkml.org/lkml/2008/7/26/72
+> 
+> Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
+> makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
+> requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. Therefore
+> tracing is completely useless on PowerPC:
 
-This patch should bring it back to working condition. It still relies
-on the device-tree being correct but that's somewhat a pre-requisite
-for anything to work anyway.
+But we need them for -pg which ftrace uses no ? (ie, gcc forces you to
+have -fno-omit-frame-pointers with -fpg iirc).
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Now, regardless, I agree that on PPC, __builtin_return_address() should
+always work with our without that cruft, so we may as well apply that
+patch...
 
-This is untested. Geert, can you give it a go on Sequoia and let me
-know if it fixes your problem ?
-
- arch/powerpc/sysdev/ppc4xx_pci.c |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
---- linux-work.orig/arch/powerpc/sysdev/ppc4xx_pci.c	2009-02-02 11:15:35.000000000 +1100
-+++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.c	2009-02-02 11:19:03.000000000 +1100
-@@ -204,6 +204,23 @@ static int __init ppc4xx_setup_one_pci_P
- {
- 	u32 ma, pcila, pciha;
- 
-+	/* Hack warning ! The "old" PCI 2.x cell only let us configure the low
-+	 * 32-bit of incoming PLB addresses. The top 4 bits of the 36-bit
-+	 * address are actually hard wired to a value that appears to depend
-+	 * on the specific SoC. For example, it's 0 on 440EP and 1 on 440EPx.
-+	 *
-+	 * The trick here is we just crop those top bits and ignore them when
-+	 * programming the chip. That means the device-tree has to be right
-+	 * for the specific part used (we don't print a warning if it's wrong
-+	 * but on the other hand, you'll crash quickly enough), but at least
-+	 * this code should work whatever the hard coded value is
-+	 */
-+	plb_addr &= 0xffffffffull;
-+
-+	/* Note: Due to the above hack, the test below doesn't actually test
-+	 * if you address is above 4G, but it tests that address and
-+	 * (address + size) are both contained in the same 4G
-+	 */
- 	if ((plb_addr + size) > 0xffffffffull || !is_power_of_2(size) ||
- 	    size < 0x1000 || (plb_addr & (size - 1)) != 0) {
- 		printk(KERN_WARNING "%s: Resource out of range\n",
+> [...]
+>   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
+>   <idle>-0       0X.h3    9us+: 0 (0)
+>   <idle>-0       0X..3   72us : 0 (0)
+>   <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
+> 
+> On PPC we can safely use __builtin_return_address(1..6) w/o frame
+> pointers, and with this patch the trace output looks OK:
+> 
+> [...]
+>   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
+>   <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
+>   <idle>-0       0X..3   87us : cpu_idle (__got2_end)
+>   <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> 
+> Btw, on PowerPC tracing is also broken w/o "ring-buffer: fix alignment
+> problem" patch (currently collecting dust in the -tip tree, commit
+> 082605de5f82eb692cc90f7fda071cc01bb5ac34). Any chance the fix go into
+> Linus' tree, to not waste other people's time bisecting and debugging
+> the problem? ;-)
+> 
+> For google: tracing, regression, "ring-buffer: move some metadata
+> into buffer page", commit abc9b56d66fbd4d93302ef4bf6fa726e1b8255f9,
+> answer is here.
+> 
+>  include/linux/ftrace.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> index 9c5bc6b..13eba02 100644
+> --- a/include/linux/ftrace.h
+> +++ b/include/linux/ftrace.h
+> @@ -146,7 +146,7 @@ static inline void __ftrace_enabled_restore(int enabled)
+>  #endif
+>  }
+>  
+> -#ifdef CONFIG_FRAME_POINTER
+> +#if defined(CONFIG_FRAME_POINTER) || defined(CONFIG_PPC)
+>  /* TODO: need to fix this for ARM */
+>  # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+>  # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
