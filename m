@@ -1,20 +1,24 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id E2456DDF1A
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 02:54:01 +1100 (EST)
-Date: Tue, 3 Feb 2009 07:51:56 -0800
-From: Greg KH <greg@kroah.com>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [Patch] fix lcd panel driver build failure
-Message-ID: <20090203155156.GA27652@kroah.com>
-References: <49885F9A.6040703@in.ibm.com> <20090203152502.GC12398@1wt.eu>
-	<4988658A.1060306@in.ibm.com> <20090203154756.GF12398@1wt.eu>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 792F4DDF64
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 03:07:07 +1100 (EST)
+Date: Tue, 3 Feb 2009 17:06:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH v2] ftrace: On PowerPC we don't need frame pointers for
+	CALLER_ADDRs
+Message-ID: <20090203160645.GA9020@elte.hu>
+References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+	<1233534919.18767.69.camel@pasglop>
+	<1233583455.16878.3.camel@localhost.localdomain>
+	<20090203145649.GA19955@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090203154756.GF12398@1wt.eu>
-Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20090203145649.GA19955@oksana.dev.rtsoft.ru>
+Cc: Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,11 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 03, 2009 at 04:47:56PM +0100, Willy Tarreau wrote:
-> Thanks Sachin !
+
+* Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+
+> According to this discussion:
 > 
-> Greg, could you please merge this one into your staging tree ?
+> http://lkml.org/lkml/2008/7/25/338
+> http://lkml.org/lkml/2008/7/26/72
+> 
+> Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
+> makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
+> requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. [...]
 
-I will do that, thanks.
+hm, why not add PPC to FRAME_POINTERS list of architectures, and select it 
+from the powerpc arch Kconfig? Does that cause complications somewhere?
 
-greg k-h
+	Ingo
