@@ -1,38 +1,22 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from ext-nj2ut-9.online-age.net (ext-nj2ut-9.online-age.net
-	[64.14.54.239])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 48234DDEF3
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 23:23:00 +1100 (EST)
-Received: from int-nj2ut-3.online-age.net (int-nj2ut-3.online-age.net
-	[3.159.237.72])
-	by ext-nj2ut-9.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id n13CMuUT006699
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Feb 2009 07:22:56 -0500
-Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-3.online-age.net
-	[3.159.237.72])
-	by int-nj2ut-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id n13CMpel009307
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Feb 2009 07:22:56 -0500
-Message-ID: <49883719.9030300@gefanuc.com>
-Date: Tue, 03 Feb 2009 12:22:49 +0000
-From: Martyn Welch <martyn.welch@gefanuc.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id ECB28DDE08
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 01:56:51 +1100 (EST)
+Date: Tue, 3 Feb 2009 17:56:49 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH v2] ftrace: On PowerPC we don't need frame pointers for
+	CALLER_ADDRs
+Message-ID: <20090203145649.GA19955@oksana.dev.rtsoft.ru>
+References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+	<1233534919.18767.69.camel@pasglop>
+	<1233583455.16878.3.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Booting 2.6.29-rc3 on mpc8661d_hpcn failing
-References: <4982F311.4050507@gefanuc.com>	
-	<F764D461-8EFB-4B31-ABFC-ECBB7A3FBA01@kernel.crashing.org>	
-	<9B0CCADB-C891-42B2-BE94-0927B5715A00@kernel.crashing.org>	
-	<4986BEB9.3030606@gefanuc.com>	
-	<E00697F4-1313-49C2-9F8A-79FC9E511022@kernel.crashing.org>	
-	<498718B6.3030307@gefanuc.com>	
-	<D06DAB0F-1477-4CA6-A06D-0F7B62939C86@kernel.crashing.org>	
-	<49871D3E.80809@gefanuc.com> <1233607753.18767.103.camel@pasglop>
-In-Reply-To: <1233607753.18767.103.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1233583455.16878.3.camel@localhost.localdomain>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,32 +26,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->>>> commit 64b3d0e8122b422e879b23d42f9e0e8efbbf9744
->>>> Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>>
->>>>   powerpc/mm: Rework usage of _PAGE_COHERENT/NO_CACHE/GUARDED
->>>>
->>>> I tried reverting it, but as I had kinda thought, that really didn't 
->>>> help.
->>>>
->>>> I'm just recompiling to check that I didn't screw-up during the 
->>>> bisection.
+According to this discussion:
+
+http://lkml.org/lkml/2008/7/25/338
+http://lkml.org/lkml/2008/7/26/72
+
+Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
+makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
+requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. Therefore
+tracing is completely useless on PowerPC:
+
+[...]
+  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
+  <idle>-0       0X.h3    9us+: 0 (0)
+  <idle>-0       0X..3   72us : 0 (0)
+  <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
+
+This patch introduces a ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol,
+when selected the CALLER_ADDR macros are available without the
+FRAME_POINTER Kconfig symbol.
+
+With this patch the trace output turns into:
+
+[...]
+  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
+  <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
+  <idle>-0       0X..3   87us : cpu_idle (__got2_end)
+  <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+
+On Mon, Feb 02, 2009 at 09:04:15AM -0500, Steven Rostedt wrote:
+[...]
+> > > -#ifdef CONFIG_FRAME_POINTER
+> > > +#if defined(CONFIG_FRAME_POINTER) || defined(CONFIG_PPC)
 > 
-> Is this a chip that must not have M set ? Or something else ? You guys
-> have to help if you CC me, I have about 0 idea what a MPC8661d is :-)
+> Perhaps we should add a HAVE_NORMAL_FRAME_POINTERS in 
+> arch/powerpc/Kconfig under PPC and then we can change the above line to:
 > 
+> #if defined(CONFIG_FRAME_POINTERS) || \
+> 		defined(CONFIG_HAVE_NORMAL_FRAME_POINTERS)
+> 
+> This way when another arch wants to belong to this, we do not need to
+> have a list of archs here.
 
-Sorry, my fault. It's a Freescale SOC with two e600 cores. Beyond that, I'm afraid I'm a little out of my depth. 
+Would it be better if we introduce ARCH_HAS_NORMAL_FRAME_POINTERS
+in lib/Kconfig.debug, along with ARCH_WANT_FRAME_POINTERS?
 
-> Also, does 4c456a67f501b8b15542c7c21c28812bf88f484b help ?
+Note that we can't use ARCH_WANT_FRAME_POINTERS for our needs since
+that symbol is used for other (mostly cosmetic) purposes: whether we
+we want CONFIG_FRAME_POINTER depend on CONFIG_DEBUG_KERNEL, and
+whether frame pointers should be default =y (see commit
+da4276b8299a6544dc41ac2485d3ffca5811b3fb).
 
-I believe that to be included in 2.6.29-rc3 if my (rather rudimentary) git skills haven't let me down? The problem persists in 2.6.29-rc3.
+ arch/powerpc/Kconfig   |    1 +
+ include/linux/ftrace.h |    3 ++-
+ lib/Kconfig.debug      |    6 ++++++
+ 3 files changed, 9 insertions(+), 1 deletions(-)
 
-Martyn
-
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 74cc312..d1c67bd 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -111,6 +111,7 @@ config PPC
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+ 	select HAVE_DYNAMIC_FTRACE
+ 	select HAVE_FUNCTION_TRACER
++	select ARCH_HAS_NORMAL_FRAME_POINTERS
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_IDE
+ 	select HAVE_IOREMAP_PROT
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 7840e71..ede3fe2 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -237,7 +237,8 @@ static inline void __ftrace_enabled_restore(int enabled)
+ #endif
+ }
+ 
+-#ifdef CONFIG_FRAME_POINTER
++#if defined(CONFIG_FRAME_POINTER) || \
++		defined(CONFIG_ARCH_HAS_NORMAL_FRAME_POINTERS)
+ /* TODO: need to fix this for ARM */
+ # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+ # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 29044f5..808f4e2 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -579,6 +579,12 @@ config ARCH_WANT_FRAME_POINTERS
+ 	bool
+ 	help
+ 
++config ARCH_HAS_NORMAL_FRAME_POINTERS
++	bool
++	help
++	  Architectures should select this symbol if their ABI implies
++	  having a frame pointer.
++
+ config FRAME_POINTER
+ 	bool "Compile the kernel with frame pointers"
+ 	depends on DEBUG_KERNEL && \
 -- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
+1.5.6.5
