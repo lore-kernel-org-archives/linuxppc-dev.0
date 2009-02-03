@@ -1,18 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6F18FDDEE7
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 20:29:18 +1100 (EST)
-Subject: Re: [PowerPC] 2.6.29-rc3-git4 build break : truncated relocation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 18FD5DDF3E
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 21:03:24 +1100 (EST)
+Date: Tue, 3 Feb 2009 21:03:11 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Subject: Re: [PowerPC] 2.6.29-rc3-git4 build break : truncated relocation
+Message-Id: <20090203210311.45fcad19.sfr@canb.auug.org.au>
 In-Reply-To: <49880C42.8060702@in.ibm.com>
 References: <49880C42.8060702@in.ibm.com>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 20:28:53 +1100
-Message-Id: <1233653333.16867.85.camel@pasglop>
 Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__3_Feb_2009_21_03_11_+1100_J7rAUZW3+vqg_ifu"
 Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
 	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,13 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-02-03 at 14:50 +0530, Sachin P. Sant wrote:
-> 2.6.29-rc3-git4 allyesconfig build breaks with following error
+--Signature=_Tue__3_Feb_2009_21_03_11_+1100_J7rAUZW3+vqg_ifu
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think it's the recurrent problem of allyesconfig generating a kernel
-too big for our linker especially when ftrace is enabled.
+Hi Sachin,
 
-We need to see if it's worth the pain of working around it with the
-toolchain guys. Probably not tho...
+To make allyesconfig build currently, you need to turn
+CONFIG_PROFILE_ALL_BRANCHES off.  It makes drivers/built-in.o too large
+(increases the text size from about 32M to 47M) and the linker can't add
+the usual trampolines because we prelink it.
 
-Ben.
+Paulus suggested an old solution, but it seemed to hit a binutils
+limitation.  I will have another try ...
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__3_Feb_2009_21_03_11_+1100_J7rAUZW3+vqg_ifu
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmIFl8ACgkQjjKRsyhoI8xqHwCgpRxDKaYKHvC80XluboMLhxdt
+vSMAoLH8atapb1g27isZWwLEpGF6K3Rn
+=PPpU
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__3_Feb_2009_21_03_11_+1100_J7rAUZW3+vqg_ifu--
