@@ -1,17 +1,24 @@
-Return-Path: <aaronleefly@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.186])
-	by ozlabs.org (Postfix) with ESMTP id E10BADDF69
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 03:12:36 +1100 (EST)
-Received: by ti-out-0910.google.com with SMTP id w7so1340274tib.13
-	for <linuxppc-dev@ozlabs.org>; Tue, 03 Feb 2009 08:12:35 -0800 (PST)
-From: "Li Jun (Aaron)" <aaronleefly@gmail.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: linux2.6.23-rc2 enable apu for xilinx virtex4 ml403 board-ppc405
-Date: Wed, 4 Feb 2009 00:12:26 +0800
-Message-ID: <000a01c9861a$36c80680$a4581380$@com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 26F38DDF32
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 03:19:58 +1100 (EST)
+Date: Tue, 3 Feb 2009 19:19:55 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] ftrace: On PowerPC we don't need frame pointers for
+	CALLER_ADDRs
+Message-ID: <20090203161955.GA776@oksana.dev.rtsoft.ru>
+References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+	<1233534919.18767.69.camel@pasglop>
+	<1233583455.16878.3.camel@localhost.localdomain>
+	<20090203145649.GA19955@oksana.dev.rtsoft.ru>
+	<20090203160645.GA9020@elte.hu>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_000B_01C9865D.44EB4680"
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20090203160645.GA9020@elte.hu>
+Cc: Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,189 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
+On Tue, Feb 03, 2009 at 05:06:45PM +0100, Ingo Molnar wrote:
+> 
+> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > According to this discussion:
+> > 
+> > http://lkml.org/lkml/2008/7/25/338
+> > http://lkml.org/lkml/2008/7/26/72
+> > 
+> > Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
+> > makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
+> > requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. [...]
+> 
+> hm, why not add PPC to FRAME_POINTERS list of architectures, and select it 
+> from the powerpc arch Kconfig? Does that cause complications somewhere?
 
-------=_NextPart_000_000B_01C9865D.44EB4680
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+-fno-omit-frame-pointers makes the code worse w/o any actual
+benefit that we would use. Plus, there is a long standing bug in
+gcc that makes -fno-omit-frame-pointer generate wrong code for PPC
+targets:
 
-Hi,
+http://lkml.org/lkml/2008/9/2/25
 
-I am now using impulse c and xilinx virtex4 ml403 board to do a project.
+That is, the only tracer that needs[1] -fno-omit-frame-pointer is
+"FUNCTION_TRCER", but we workaround the issue via -mno-sched-epilog,
+quoting arch/powerpc/Makefile:
 
-And I want to run the application through APU in the linux environment.
+# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
+ifeq ($(CONFIG_FUNCTION_TRACER),y)
+KBUILD_CFLAGS           += -mno-sched-epilog
+endif
 
- 
+[1] Btw, why exactly do we need the -fno-omit-frame-pointer for
+"FUNCTION_TRCER" tracer? Why just -pg isn't sufficient?..
 
-So I need to enable the apu for the linux 2.6.23-rc kernel. Then use cross
-compiler(crosstool-0.43) to make zImage.
-
- 
-
-Does anybody have patch for linux 2.6 to enable apu/fpu? Or any guide for
-this?
-
- 
-
-I am a new guy in this field, hope can get help!
-
- 
-
-Thanks very much!
-
-
-
- 
-
-Best regards,
-
-Li Jun
-
- 
-
-
-------=_NextPart_000_000B_01C9865D.44EB4680
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:SimSun;
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
-@font-face
-	{font-family:SimSun;
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:Verdana;
-	panose-1:2 11 6 4 3 5 4 4 2 4;}
-@font-face
-	{font-family:SimSun;
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	text-align:justify;
-	text-justify:inter-ideograph;
-	font-size:10.5pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
- /* Page Definitions */
- @page Section1
-	{size:612.0pt 792.0pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DZH-CN link=3Dblue vlink=3Dpurple =
-style=3D'text-justify-trim:punctuation'>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><span lang=3DEN-US>Hi,<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'>I am now using impulse c and xilinx virtex4 ml403 board =
-to do a
-project.<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'>And I want to run the application through APU in the =
-linux environment.<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'><o:p>&nbsp;</o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'>So I need to enable the apu for the linux 2.6.23-rc =
-kernel. Then
-use cross compiler(crosstool-0.43) to make zImage.<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'>&nbsp;<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'>Does anybody have patch for linux 2.6 to enable apu/fpu? =
-Or any guide
-for this?<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'><o:p>&nbsp;</o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'>I am a new guy in this field, hope can get =
-help!<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'><o:p>&nbsp;</o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:"Verdana","sans-serif";
-color:#222222'>Thanks very much!<br>
-<br>
-</span><span lang=3DEN-US><o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US>Best =
-regards,<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US>Li Jun<o:p></o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_000B_01C9865D.44EB4680--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
