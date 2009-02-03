@@ -1,20 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 18FD5DDF3E
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 21:03:24 +1100 (EST)
-Date: Tue, 3 Feb 2009 21:03:11 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Sachin P. Sant" <sachinp@in.ibm.com>
-Subject: Re: [PowerPC] 2.6.29-rc3-git4 build break : truncated relocation
-Message-Id: <20090203210311.45fcad19.sfr@canb.auug.org.au>
-In-Reply-To: <49880C42.8060702@in.ibm.com>
-References: <49880C42.8060702@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__3_Feb_2009_21_03_11_+1100_J7rAUZW3+vqg_ifu"
-Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <airlied@linux.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 83041DE0AC
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 20:15:10 +1100 (EST)
+Date: Tue, 3 Feb 2009 09:06:30 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/3] drm: Make drm_local_map use a resource_size_t offset
+In-Reply-To: <1233651720.16867.82.camel@pasglop>
+Message-ID: <alpine.DEB.2.00.0902030906160.31073@skynet.skynet.ie>
+References: <20090202055559.8D600DDF51@ozlabs.org>
+	<1233608464.4932.15.camel@gaiman>
+	<1233609688.18767.118.camel@pasglop>
+	<21d7e9970902030039n786b831dm4395b802e0c87b45@mail.gmail.com>
+	<1233651720.16867.82.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@gmail.com>,
+	dri-devel@lists.sf.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__3_Feb_2009_21_03_11_+1100_J7rAUZW3+vqg_ifu
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> 
+> BTW. Do you guys want me to remove the drm_local_map_t typedef
+> completely in favor of struct drm_local_map ? I have a patch here going
+> part way through that, it's fairly trivial, so if you want it, I can
+> easily finish it.
 
-Hi Sachin,
+One less typedef is always welcome.
 
-To make allyesconfig build currently, you need to turn
-CONFIG_PROFILE_ALL_BRANCHES off.  It makes drivers/built-in.o too large
-(increases the text size from about 32M to 47M) and the linker can't add
-the usual trampolines because we prelink it.
-
-Paulus suggested an old solution, but it seemed to hit a binutils
-limitation.  I will have another try ...
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__3_Feb_2009_21_03_11_+1100_J7rAUZW3+vqg_ifu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmIFl8ACgkQjjKRsyhoI8xqHwCgpRxDKaYKHvC80XluboMLhxdt
-vSMAoLH8atapb1g27isZWwLEpGF6K3Rn
-=PPpU
------END PGP SIGNATURE-----
-
---Signature=_Tue__3_Feb_2009_21_03_11_+1100_J7rAUZW3+vqg_ifu--
+Dave.
+> 
+> Cheers,
+> Ben.
+> 
+> 
+> 
+> ------------------------------------------------------------------------------
+> Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
+> software. With Adobe AIR, Ajax developers can use existing skills and code to
+> build responsive, highly engaging applications that combine the power of local
+> resources and data with the reach of the web. Download the Adobe AIR SDK and
+> Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com
+> --
+> _______________________________________________
+> Dri-devel mailing list
+> Dri-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/dri-devel
+> 
+> 
