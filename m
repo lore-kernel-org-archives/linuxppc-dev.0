@@ -1,24 +1,31 @@
-Return-Path: <airlied@linux.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+Return-Path: <sachinp@in.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 83041DE0AC
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 20:15:10 +1100 (EST)
-Date: Tue, 3 Feb 2009 09:06:30 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] drm: Make drm_local_map use a resource_size_t offset
-In-Reply-To: <1233651720.16867.82.camel@pasglop>
-Message-ID: <alpine.DEB.2.00.0902030906160.31073@skynet.skynet.ie>
-References: <20090202055559.8D600DDF51@ozlabs.org>
-	<1233608464.4932.15.camel@gaiman>
-	<1233609688.18767.118.camel@pasglop>
-	<21d7e9970902030039n786b831dm4395b802e0c87b45@mail.gmail.com>
-	<1233651720.16867.82.camel@pasglop>
+	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 23486DDEF0
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 21:36:15 +1100 (EST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+	by e28smtp02.in.ibm.com (8.13.1/8.13.1) with ESMTP id n13AaAQ3029321
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Feb 2009 16:06:10 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	n13AXqVA3948596
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Feb 2009 16:03:52 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+	by d28av02.in.ibm.com (8.13.1/8.13.3) with ESMTP id n13AaAoE032361
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Feb 2009 21:36:10 +1100
+Message-ID: <49881E19.7050006@in.ibm.com>
+Date: Tue, 03 Feb 2009 16:06:09 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Dave Airlie <airlied@gmail.com>,
-	dri-devel@lists.sf.net
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PowerPC] 2.6.29-rc3-git4 build break : truncated relocation
+References: <49880C42.8060702@in.ibm.com>
+	<20090203210311.45fcad19.sfr@canb.auug.org.au>
+In-Reply-To: <20090203210311.45fcad19.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,31 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 
-> BTW. Do you guys want me to remove the drm_local_map_t typedef
-> completely in favor of struct drm_local_map ? I have a patch here going
-> part way through that, it's fairly trivial, so if you want it, I can
-> easily finish it.
+Stephen Rothwell wrote:
+> Hi Sachin,
+>
+> To make allyesconfig build currently, you need to turn
+> CONFIG_PROFILE_ALL_BRANCHES off.  It makes drivers/built-in.o too large
+> (increases the text size from about 32M to 47M) and the linker can't add
+> the usual trampolines because we prelink it.
+>   
+Ok will enable this option. Thanks
 
-One less typedef is always welcome.
+-- 
 
-Dave.
-> 
-> Cheers,
-> Ben.
-> 
-> 
-> 
-> ------------------------------------------------------------------------------
-> Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
-> software. With Adobe AIR, Ajax developers can use existing skills and code to
-> build responsive, highly engaging applications that combine the power of local
-> resources and data with the reach of the web. Download the Adobe AIR SDK and
-> Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
-> 
-> 
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
