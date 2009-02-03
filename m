@@ -1,31 +1,23 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 23486DDEF0
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 21:36:15 +1100 (EST)
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28smtp02.in.ibm.com (8.13.1/8.13.1) with ESMTP id n13AaAQ3029321
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Feb 2009 16:06:10 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
-	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n13AXqVA3948596
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Feb 2009 16:03:52 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
-	by d28av02.in.ibm.com (8.13.1/8.13.3) with ESMTP id n13AaAoE032361
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Feb 2009 21:36:10 +1100
-Message-ID: <49881E19.7050006@in.ibm.com>
-Date: Tue, 03 Feb 2009 16:06:09 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id 59BE1DDF34
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Feb 2009 22:09:01 +1100 (EST)
+Message-ID: <498825C8.3040406@matrix-vision.de>
+Date: Tue, 03 Feb 2009 12:08:56 +0100
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PowerPC] 2.6.29-rc3-git4 build break : truncated relocation
-References: <49880C42.8060702@in.ibm.com>
-	<20090203210311.45fcad19.sfr@canb.auug.org.au>
-In-Reply-To: <20090203210311.45fcad19.sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] Add support for the digsy MTC board.
+References: <1233329630876-git-send-email-gjb@semihalf.com>	
+	<fa686aa40901300859t4da76ce3hf943adc48abb9b9c@mail.gmail.com>	
+	<4986EC33.9000600@semihalf.com>
+	<49871C8C.8030200@matrix-vision.de>	 <49872268.10003@semihalf.com>	
+	<20090202235811.AD8E78322908@gemini.denx.de>
+	<fa686aa40902021605m3a694f40l77d90f2079ef2e83@mail.gmail.com>
+In-Reply-To: <fa686aa40902021605m3a694f40l77d90f2079ef2e83@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: tech-denx@semihalf.com, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,21 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell wrote:
-> Hi Sachin,
->
-> To make allyesconfig build currently, you need to turn
-> CONFIG_PROFILE_ALL_BRANCHES off.  It makes drivers/built-in.o too large
-> (increases the text size from about 32M to 47M) and the linker can't add
-> the usual trampolines because we prelink it.
+Grant Likely wrote:
+> On Mon, Feb 2, 2009 at 4:58 PM, Wolfgang Denk <wd@denx.de> wrote:
 >   
-Ok will enable this option. Thanks
+>> Dear Grzegorz Bernacki,
+>>
+>> In message <49872268.10003@semihalf.com> you wrote:
+>>     
+>>>> We also had this kind of problem - after feeding some nfs options it
+>>>> worked :
+>>>>
+>>>> rsize=8192,wsize=8192,soft,intr,tcp,nolock
+>>>>         
+>>> it seems that it helps.
+>>>       
+>> Can you please find out which of these changes is the relevant part?
+>>     
+>
+> Probably the ",tcp" bit
+>
+> g.
+>
+>   
+yes - obviously the retry counter of lost udp packets is pretty small 
+inside the nfs client or server.
+The problem only occurs when there's fairly high traffic and/or low 
+performance switches are used and UDP packets get lost frequently.
 
--- 
+regards,
+Andre
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler
+Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner, Hans-Joachim Reich
