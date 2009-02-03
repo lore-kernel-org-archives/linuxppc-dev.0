@@ -1,22 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id ECB28DDE08
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 01:56:51 +1100 (EST)
-Date: Tue, 3 Feb 2009 17:56:49 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v2] ftrace: On PowerPC we don't need frame pointers for
-	CALLER_ADDRs
-Message-ID: <20090203145649.GA19955@oksana.dev.rtsoft.ru>
-References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
-	<1233534919.18767.69.camel@pasglop>
-	<1233583455.16878.3.camel@localhost.localdomain>
+Return-Path: <jwboyer@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id EB49FDDEF1
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 02:10:58 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so697215ywh.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 03 Feb 2009 07:10:57 -0800 (PST)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Tue, 3 Feb 2009 10:10:50 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/44x: Fix address decoding setup of PCI 2.x cells
+Message-ID: <20090203151050.GA10541@yoda.jdub.homelinux.org>
+References: <20090202002429.ADA74DDF43@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1233583455.16878.3.camel@localhost.localdomain>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090202002429.ADA74DDF43@ozlabs.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,107 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-According to this discussion:
+On Mon, Feb 02, 2009 at 11:24:18AM +1100, Benjamin Herrenschmidt wrote:
+>The PCI 2.x cells used on some 44x SoCs only let us configure the decode
+>for the low 32-bit of the incoming PLB addresses. The top 4 bits (this
+>is a 36-bit bus) are hard wired to different values depending on the
+>specific SoC in use. Our code used to work "by accident" until I added
+>support for the ISA memory holes and while at it added more validity
+>checking of the addresses.
+>
+>This patch should bring it back to working condition. It still relies
+>on the device-tree being correct but that's somewhat a pre-requisite
+>for anything to work anyway.
+>
+>Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>---
+>
+>This is untested. Geert, can you give it a go on Sequoia and let me
+>know if it fixes your problem ?
 
-http://lkml.org/lkml/2008/7/25/338
-http://lkml.org/lkml/2008/7/26/72
+Since Geert tested it somewhat successfully, perhaps we should get
+this one into 2.6.29.  I have no other fixes outstanding, so feel
+free to pull it in yourself.
 
-Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
-makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
-requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. Therefore
-tracing is completely useless on PowerPC:
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-[...]
-  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
-  <idle>-0       0X.h3    9us+: 0 (0)
-  <idle>-0       0X..3   72us : 0 (0)
-  <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
-
-This patch introduces a ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol,
-when selected the CALLER_ADDR macros are available without the
-FRAME_POINTER Kconfig symbol.
-
-With this patch the trace output turns into:
-
-[...]
-  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
-  <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
-  <idle>-0       0X..3   87us : cpu_idle (__got2_end)
-  <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-On Mon, Feb 02, 2009 at 09:04:15AM -0500, Steven Rostedt wrote:
-[...]
-> > > -#ifdef CONFIG_FRAME_POINTER
-> > > +#if defined(CONFIG_FRAME_POINTER) || defined(CONFIG_PPC)
-> 
-> Perhaps we should add a HAVE_NORMAL_FRAME_POINTERS in 
-> arch/powerpc/Kconfig under PPC and then we can change the above line to:
-> 
-> #if defined(CONFIG_FRAME_POINTERS) || \
-> 		defined(CONFIG_HAVE_NORMAL_FRAME_POINTERS)
-> 
-> This way when another arch wants to belong to this, we do not need to
-> have a list of archs here.
-
-Would it be better if we introduce ARCH_HAS_NORMAL_FRAME_POINTERS
-in lib/Kconfig.debug, along with ARCH_WANT_FRAME_POINTERS?
-
-Note that we can't use ARCH_WANT_FRAME_POINTERS for our needs since
-that symbol is used for other (mostly cosmetic) purposes: whether we
-we want CONFIG_FRAME_POINTER depend on CONFIG_DEBUG_KERNEL, and
-whether frame pointers should be default =y (see commit
-da4276b8299a6544dc41ac2485d3ffca5811b3fb).
-
- arch/powerpc/Kconfig   |    1 +
- include/linux/ftrace.h |    3 ++-
- lib/Kconfig.debug      |    6 ++++++
- 3 files changed, 9 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 74cc312..d1c67bd 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -111,6 +111,7 @@ config PPC
- 	select HAVE_FTRACE_MCOUNT_RECORD
- 	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_TRACER
-+	select ARCH_HAS_NORMAL_FRAME_POINTERS
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select HAVE_IDE
- 	select HAVE_IOREMAP_PROT
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 7840e71..ede3fe2 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -237,7 +237,8 @@ static inline void __ftrace_enabled_restore(int enabled)
- #endif
- }
- 
--#ifdef CONFIG_FRAME_POINTER
-+#if defined(CONFIG_FRAME_POINTER) || \
-+		defined(CONFIG_ARCH_HAS_NORMAL_FRAME_POINTERS)
- /* TODO: need to fix this for ARM */
- # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
- # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 29044f5..808f4e2 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -579,6 +579,12 @@ config ARCH_WANT_FRAME_POINTERS
- 	bool
- 	help
- 
-+config ARCH_HAS_NORMAL_FRAME_POINTERS
-+	bool
-+	help
-+	  Architectures should select this symbol if their ABI implies
-+	  having a frame pointer.
-+
- config FRAME_POINTER
- 	bool "Compile the kernel with frame pointers"
- 	depends on DEBUG_KERNEL && \
--- 
-1.5.6.5
+josh
