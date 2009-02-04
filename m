@@ -1,35 +1,17 @@
-Return-Path: <serge@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <mike_timmons@trimble.com>
+Received: from snvl-smtp1.trimble.com (snvl-smtp1.trimble.com [155.63.64.31])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 96D29DDE07
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 02:54:15 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n14Fqhwb025827
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Feb 2009 08:52:43 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n14Fs963191816
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Feb 2009 08:54:11 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n14Fs6Rh023531
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Feb 2009 08:54:08 -0700
-Date: Wed, 4 Feb 2009 09:54:06 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
-	implementation
-Message-ID: <20090204155406.GA2039@us.ibm.com>
-References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
-	<1233182478-27113-2-git-send-email-ntl@pobox.com>
-	<1233718789.16867.156.camel@pasglop>
+	(Client CN "snvl-smtp1.trimble.com", Issuer "Trimble CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 03D04DDDF0
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 03:45:47 +1100 (EST)
+Message-ID: <4989C635.1050605@trimble.com>
+Date: Wed, 04 Feb 2009 10:45:41 -0600
+From: Mike Timmons <mike_timmons@trimble.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1233718789.16867.156.camel@pasglop>
-Cc: containers@lists.osdl.org, linuxppc-dev@ozlabs.org,
-	Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: kernel 2.6.24 USB wi fi device firmware loading issue(s): rt73.bin...
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Reply-To: mike_timmons@trimble.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,27 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Quoting Benjamin Herrenschmidt (benh@kernel.crashing.org):
-> 
-> > +struct cr_hdr_cpu {
-> > +	struct pt_regs pt_regs;
-> > +	/* relevant fields from thread_struct */
-> > +	double fpr[32][TS_FPRWIDTH];
-> > +	unsigned int fpscr;
-> > +	int fpexc_mode;
-> > +	/* unsigned int align_ctl; this is never updated? */
-> > +	unsigned long dabr;
-> > +};
-> 
-> Is there some version or other identification somewhere ? If not there
-> should be. ie, we're going to add things here. For example, what about
-> the vector registers ? Also, some CPUs will have more HW debug registers
-> than just the DABR (we plan to add support for all the BookE architected
-> IACs and DACs for example), etc...
+I received great help last week in getting a USB wi fi device working. 
+Thanks again, but can someone read below and advise me on kernel 2.6.24? 
+The best out-of-the box solution for me was 2.6.27.8, for which I needed 
+a Denx eldx toolchain in place of the toolchain I was using to compile 
+2.6.24. The significance of all this is that I did get  USB wi fi 
+working, but...
 
-The arch-independent checkpoint header does have kernel
-maj:min:rev:patch info.  We expect to have to do more,
-assuming that the .config can change the arch-dependent
-cpu header (i.e. perhaps TS_FPRWIDTH could be changed).
+I'm not in a position to upgrade from 2.6.24 at this time. I need to get 
+the USB wi wi (Linksys WUSB54GC) working under 2.6.24.
 
--serge
+After success with linking firmware with the 2.6.27.8 kernel, 2.6.24 I 
+keep hitting this error when loading from user space (I don't appear to 
+have the, "link with kernel" option with 2.6.24)...
+
+sh-2.05b# ifconfig wlan0 up
+[  764.744354] phy0 -> rt2x00lib_request_firmware: Info - Loading 
+firmware file 'rt73.bin'.
+
+After a considerable delay I get an error that indicates the file can't 
+be found.
+
+I have spent many, many hours following leads (and links) this group has 
+directed me to. Thanks again. I'm either missing a very simple step or 
+indeed support under 6.2.24 is not good. Please advise. I've done the 
+following...
+
+1)placed rt73.bin in various locations (/lib/firmware, 
+lib/firmware/'uname -a', and the location specified by my 
+/etc/hotplug/firmware.agent), according to tips on some threads I've read.
+
+None of this appears to make a difference.
+
+2) I'm a bit confused by the hotplug dependancy, although I do have 
+hotplug enabled. "hotplug" makes me think I should be configuring some 
+script to load the firmware upon device insertion, but, "ifconfig wlan0 
+up" appears to want to load the firmware anyway so I'm guessing if I 
+just get rt73.bin installed correctly it should work.
+
+Comparing my working 2.6.27.8 to 2.6.24 in the areas of, "firmware" and 
+the ralink rt2x00 drivers reveals MANY changes, no doubt for the better.
+
+QUESTIONS:
+1) Am I missing something VERY simple on this firmware loading topic 
+that should make this work under 2.6.24, or am I bumping into the reason 
+so much of this code has changed between 2.6.24 and 2.6.27.8?
+-linking firmware with the lernel at compile time is a nice, obvious 
+method offered by the later kernel. I'm confused by the userspace method 
+and I think this is where my problem lay.
+
+2) am I correctly, "installing" the firmware just by placing rt73.bin in 
+the correct location in my filesystem, or is there some other magic 
+required before, "request_firmware()" will work?
+
+Just when I thought I understood some of the kernel I hit a new topic: 
+firmware loading! Any help much appreciated...
+
+-Mike
