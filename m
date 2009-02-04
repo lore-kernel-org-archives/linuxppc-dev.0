@@ -1,20 +1,18 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id EB78CDDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 08:52:31 +1100 (EST)
-Date: Wed, 4 Feb 2009 16:52:28 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Dynamic-ftrace not working in PlayStation3
-In-Reply-To: <200901311125.34755.arnd@arndb.de>
-Message-ID: <alpine.DEB.1.10.0902041650240.18695@gandalf.stny.rr.com>
-References: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
-	<alpine.DEB.1.10.0901292234520.6222@gandalf.stny.rr.com>
-	<4983BFA2.9010703@am.sony.com> <200901311125.34755.arnd@arndb.de>
+Return-Path: <julia@diku.dk>
+Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mgw1.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 9EFF8DDEEF
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 09:06:43 +1100 (EST)
+Date: Wed, 4 Feb 2009 22:43:04 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] arch/powerpc: Eliminate double sizeof
+Message-ID: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Remis Lima Baima <remis.developer@googlemail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Julia Lawall <julia@diku.dk>
 
-On Sat, 31 Jan 2009, Arnd Bergmann wrote:
+Taking sizeof the result of sizeof is quite strange and does not seem to be
+what is wanted here.
 
-> On Saturday 31 January 2009, Geoff Levand wrote:
-> > > 
-> > > So I take it that the above showed that the code worked for some?
-> > 
-> > In my trials it blows up on the first load_module() call, and for my
-> > config that was usbcore:
-> 
-> I looked into it some more with Remis yesterday, and we got ftrace
-> working by building usbcore and alsa into the kernel. Incidentally,
-> usbcore is the largest module in this installation (~3MB), which
-> indicates that it is in some way either related to the size of the
-> module.
-> 
-> > This ptr of 5f666f725f726573 seems bogus.  I think this code is not
-> > working correctly:
-> 
-> This is an ascii string "_for_res", probably part of
-> usb_lock_device_for_reset. We saw the same behaviour, but
-> a different string.
+This was fixed using the following semantic patch.
+(http://www.emn.fr/x-info/coccinelle/)
 
-OK, I've been able to reproduce it. It looks like the assumptions of the 
-trampoline that I've made is not correct if the size of the module is over 
-some limit.  I had to make usb-core into a module, and I see the same 
-bug.
+// <smpl>
+@@
+expression E;
+@@
 
-I'll take a deeper look into it.
+- sizeof (
+  sizeof (E)
+- )
 
--- Steve
+@@
+type T;
+@@
+
+- sizeof (
+  sizeof (T)
+- )
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -u -p a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+--- a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
++++ b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+@@ -186,7 +186,7 @@ out_unmap_regs:
+ 	iounmap(priv->regs);
+ out_free_bootmem:
+ 	free_bootmem((unsigned long)priv,
+-	             sizeof(sizeof(struct pq2ads_pci_pic)));
++	             sizeof(struct pq2ads_pci_pic));
+ 	of_node_put(np);
+ out_unmap_irq:
+ 	irq_dispose_mapping(irq);
