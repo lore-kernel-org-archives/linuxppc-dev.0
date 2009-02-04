@@ -1,26 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 65574DDEDA
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 08:23:50 +1100 (EST)
-Date: Wed, 4 Feb 2009 13:23:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
-Message-Id: <20090204132313.e3047e2f.akpm@linux-foundation.org>
-In-Reply-To: <adad4dym2zp.fsf@cisco.com>
-References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
-	<1233712248.16867.131.camel@pasglop>
-	<20090203211329.d6190a08.akpm@linux-foundation.org>
-	<aday6wmn2vr.fsf@cisco.com>
-	<20090203222601.747ca8b7.akpm@linux-foundation.org>
-	<adad4dym2zp.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, eli@mellanox.co.il
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8B74DDDDCA
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 08:26:33 +1100 (EST)
+Date: Wed, 4 Feb 2009 22:26:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as possible
+Message-ID: <20090204212612.GN22608@elte.hu>
+References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
+	<20090204150835.GA30027@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090204150835.GA30027@oksana.dev.rtsoft.ru>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,58 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 04 Feb 2009 11:11:22 -0800
-Roland Dreier <rdreier@cisco.com> wrote:
 
->  > >  > 	huge_page_size(page_hstate(page))
-> 
->  > > That would suit.  I assume the intention is for that to be usable by
->  > > driver modules on any architecture?
-> 
->  > erm, you overestimate the amount of planning and forethought which goes
->  > into these things ;)
-> 
->  > The lack of any EXPORT_SYMBOL(size_to_hstate) is a broadish hint.
-> 
-> Heh.  Looking into the implementation, it seems that I could actually do
-> 
-> 	PAGE_SIZE << compound_order(page)
-> 
-> directly (since there's no reason to go from size to hstate and back to
-> size.  I don't know all the details of these VM internals, but that
-> seems to only work on the first (small) page of a giant page?  Which
-> causes problems for what we're trying to do here...
-> 
-> To summarize the goal, we are mapping user memory to a device that has
-> its own page tables, where the device's page tables can also use
-> multiple page sizes.  Using big pages on the device leads to similar
-> efficiencies as hugetlb pages do on the CPU, and in fact if a user has
-> used hugetlb pages for the memory they're giving to the device, that's a
-> very strong hint that the device should use big pages too.
-> 
-> But one valid situation we have to handle in the driver is if, say,
-> userspace has a hugetlb mapped at virtual address 0x200000, and wants to
-> map 0x80000 bytes at 0x280000 to the device.  In that case, we're going
-> to do essentially
-> 
-> 	get_user_pages(..., 0x280000, 0x80000 / PAGE_SIZE, ...)
-> 
-> and get_user_pages() is going to give us a bunch of normal PAGE_SIZE
-> pages starting at offset 0x800000 within the compound page that makes up
-> the huge page mapped at 0x200000.
-> 
-> get_user_pages() also gives us the vma back, and we can see from
-> is_vm_hugetlb_page() (-- BTW can I just say that a function
-> is_xxx_page() that operates on vmas is horribly misnamed --) that these
-> pages all come from a hugetlb mapping, but figuring out the size of that
-> mapping is I guess a challenge.
+* Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-compound_head() will convert any page* inside a hugepage into a pointer
-to the head page.  It should work OK for regular pages as well as
-CONFIG_HUGETLB=n.
+> This patch gives arches more freedom on overwriting CFLAGS, specifically
+> on PowerPC we want to remove -fno-omit-frame-pointer flag.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  Makefile |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Makefile b/Makefile
+> index 7715b2c..d1ba93f 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -525,8 +525,6 @@ else
+>  KBUILD_CFLAGS	+= -O2
+>  endif
+>  
+> -include $(srctree)/arch/$(SRCARCH)/Makefile
+> -
+>  ifneq (CONFIG_FRAME_WARN,0)
+>  KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
+>  endif
+> @@ -555,6 +553,8 @@ ifdef CONFIG_DEBUG_SECTION_MISMATCH
+>  KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
+>  endif
+>  
+> +include $(srctree)/arch/$(SRCARCH)/Makefile
+> +
+>  # arch Makefile may override CC so keep this after arch Makefile is included
+>  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+>  CHECKFLAGS     += $(NOSTDINC_FLAGS)
+> -- 
 
-So..
+this patch is really for Sam to judge - Cc:-ed him.
 
-	PAGE_SIZE << compound_order(compound_head(page))
-
-?
+	Ingo
