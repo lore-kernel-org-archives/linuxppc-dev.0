@@ -1,14 +1,23 @@
-Return-Path: <nst@gersys.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
-	by ozlabs.org (Postfix) with ESMTP id DD83CDDEFF
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 01:04:44 +1100 (EST)
-Message-ID: <4989A075.9090906@gersys.de>
-Date: Wed, 04 Feb 2009 15:04:37 +0100
-From: Stefan Strobl <nst@gersys.de>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 5F943DDE9F
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 01:26:29 +1100 (EST)
+Message-ID: <4989A591.8090807@harris.com>
+Date: Wed, 04 Feb 2009 09:26:25 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: ADS5121 problem using audio interface
+To: Lixin Yao <Lixin.Yao@HSTX.com>
+Subject: Re: Can not get PATA to work for Compact Flash with 2.6.28 kernel
+References: <03D77CA4AC7F4D48A6AB5DA3F1001B3F10A4B2@exchtxus2.HSTX.global.vpn>
+	<49870A66.8030302@harris.com>
+	<03D77CA4AC7F4D48A6AB5DA3F1001B3F10A4B7@exchtxus2.HSTX.global.vpn>
+	<49872152.1050902@harris.com>
+	<03D77CA4AC7F4D48A6AB5DA3F1001B3F10A4B9@exchtxus2.HSTX.global.vpn>
+	<49876AFB.3060207@harris.com>
+	<03D77CA4AC7F4D48A6AB5DA3F1001B3F10A4BC@exchtxus2.HSTX.global.vpn>
+In-Reply-To: <03D77CA4AC7F4D48A6AB5DA3F1001B3F10A4BC@exchtxus2.HSTX.global.vpn>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Aaron Pace <kodiakuppercut@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,91 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
+Lixin Yao wrote:
+> I redefined io functions in libata-sff.c, byte operations are converted
+> to 16bit word operations. Maybe I should ask for HW changes in new
+> revisions of the board.
+> 
 
-I'm trying to get the audio interface working on my ADS5121 Rev4.0 and
-have some questions.
+I do recommend that.  We got it wrong on our first board too. :-)  It
+is much better to get the hardware right than to carry your endian SW
+patch forever.
 
-I did manage to record and play audio files of type raw and format
-S32_BE like this:
+Two other potential issues: 1) making sure the "most significant
+byte enable" is used, so that byte writes work correctly.  You most
+likely have this correct already, or you would not have gotten this
+far.
 
-$ arecord -traw -c2 -fS32_BE -Dhw:0,0 testfile
-$ aplay -traw -c2 -fS32_BE -Dhw:0,0 testfile
+And 2) make sure you allow for the hold time / turn-off time of the
+CF.  We use a 440EPx, and cannot set up the external bus controller
+to generate valid cycles in all cases.  So, we added some flip-flops
+to stretch the rising edge of the chip select, which guarantees proper
+timing.  (I'm going a bit far afield from the purpose of this mailing
+list, so if you want more details, please contact me directly.)
 
-I am not able to get the auto conversion work, so that I could play a
-wav file of any format. I'm getting this error:
-
-$ aplay -Dplughw:0,0 test.wav
-Playing WAVE 'test.wav' : Signed 16 bit Little Endian, Rate 44100 Hz, Mono
-ALSA lib pcm_plug.c:773:(snd_pcm_plug_hw_refine_schange) Unable to find
-an usable access for 'plughw:0,0'
-aplay: set_params:901: Sample format non available
-
-I'm not sure, but I expect this to be a problem of my ALSA configuration
-and this is where I'm stuck.
-Does anyone have a working ALSA configuration file for the ads5121?
-Or any other hints on how to overcome this problem?
-Does anyone know how to convert wav files so that they can be played in
-raw mode?
-
-Many thanks
-Stefan.
-
------
-These are the steps I performed to get audio work:
-
-I'm using kernel 2.6.24.6 (linux-2.6-denx.git/ads5121) with ALSA-1.0.15
-built into the kernel and ELDK-4.2.
-
-1. Build and install alsa-lib-1.0.15 and alsa-utils-1.0.15 natively on
-the target.
-
-$ wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.0.15.tar.bz2
-$ tar xf alsa-lib-1.0.15.tar.bz2
-$ cd alsa-lib-1.0.15
-$ ./configure
-$ make
-$ make install
-
-$ wget ftp://ftp.alsa-project.org/pub/utils/alsa-utils-1.0.15.tar.bz2
-$ tar xf alsa-utils-1.0.15.tar.bz2
-$ cd alsa-utils-1.0.15
-$ ./configure --disable-nls
-$ make
-$ make install
-
-2. Manually create the device nodes, with Minor numbers according to
-output from /proc/asound/devices
-
-$ cat /proc/asound/devices
-  0: [ 0]   : control
-  1:        : sequencer
- 16: [ 0- 0]: digital audio playback
- 24: [ 0- 0]: digital audio capture
- 33:        : timer
-
-$ mkdir /dev/snd
-$ mknod /dev/snd/pcmC0D0p c 116 16
-$ mknod /dev/snd/pcmC0D0c c 116 24
-$ mknod /dev/snd/controlC0 c 116 0
-$ mknod /dev/snd/timer c 116 33
-$ mknod /dev/snd/seq c 116 1
-
-3. Run aplay...
-
-$ aplay -l
-**** List of PLAYBACK Hardware Devices ****
-card 0: ADS [MPC5121 ADS], device 0: AC97 AC97 HiFi-<NULL>-0 []
-  Subdevices: 1/1
-  Subdevice #0: subdevice #0
-
-$ aplay -L
-default:CARD=ADS
-    MPC5121 ADS,
-    Default Audio Device
-null
-    Discard all samples (playback) or generate zero samples (capture)
-
-$ aplay -traw -c2 -fS32_BE -Dhw:0,0 /dev/urandom
-$ arecord -traw -c2 -fS32_BE -Dhw:0,0 testfile
-$ aplay -traw -c2 -fS32_BE -Dhw:0,0 testfile
+	Steve
