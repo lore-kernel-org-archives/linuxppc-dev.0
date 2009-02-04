@@ -1,16 +1,25 @@
-Return-Path: <tobias.knutsson@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.173])
-	by ozlabs.org (Postfix) with ESMTP id 23533DDDF0
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 03:53:33 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so2677269wfg.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Feb 2009 08:53:32 -0800 (PST)
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 19EDFDDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 06:11:26 +1100 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
+	<1233712248.16867.131.camel@pasglop>
+	<20090203211329.d6190a08.akpm@linux-foundation.org>
+	<aday6wmn2vr.fsf@cisco.com>
+	<20090203222601.747ca8b7.akpm@linux-foundation.org>
+Date: Wed, 04 Feb 2009 11:11:22 -0800
+In-Reply-To: <20090203222601.747ca8b7.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Tue, 3 Feb 2009 22:26:01 -0800")
+Message-ID: <adad4dym2zp.fsf@cisco.com>
 MIME-Version: 1.0
-Date: Wed, 4 Feb 2009 17:53:32 +0100
-Message-ID: <ccb913ac0902040853o395a7f25x855b477453c76c33@mail.gmail.com>
-Subject: MPC5200 PCI Issues
-From: Tobias Knutsson <tobias.knutsson@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Eli Cohen <eli@mellanox.co.il>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,69 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am currently trying to get an MPC5200-based board to run Linux
-2.6.28. Most of the devices are working, however i have some issues
-with the PCI-bus. More precisely, the issue is that all of
-the cards' IO-regions are mapped to address 0x0.
+ > >  > 	huge_page_size(page_hstate(page))
 
-In my device tree I have the following:
+ > > That would suit.  I assume the intention is for that to be usable by
+ > > driver modules on any architecture?
 
-       pci@f0000d00 {
-               #interrupt-cells =3D <1>;
-               #size-cells =3D <2>;
-               #address-cells =3D <3>;
-               device_type =3D "pci";
-               compatible =3D "fsl,mpc5200b-pci","fsl,mpc5200-pci";
-               reg =3D <0xf0000d00 0x100>;
-               interrupt-map-mask =3D <0xf800 0 0 7>;
-               interrupt-map =3D <0xb000 0 0 1 &mpc5200_pic 0 0 3 // MPC520=
-0
-                                0xb000 0 0 2 &mpc5200_pic 0 0 3
-                                0xb000 0 0 3 &mpc5200_pic 0 0 3
-                                0xb000 0 0 4 &mpc5200_pic 0 0 3
+ > erm, you overestimate the amount of planning and forethought which goes
+ > into these things ;)
 
-                                0xb800 0 0 1 &mpc5200_pic 1 1 3 // c64x0
-                                0xb800 0 0 2 &mpc5200_pic 1 1 3
-                                0xb800 0 0 3 &mpc5200_pic 1 1 3
-                                0xb800 0 0 4 &mpc5200_pic 1 1 3
+ > The lack of any EXPORT_SYMBOL(size_to_hstate) is a broadish hint.
 
-                                0xc000 0 0 1 &mpc5200_pic 1 1 3 // c64x1
-                                0xc000 0 0 2 &mpc5200_pic 1 1 3
-                                0xc000 0 0 3 &mpc5200_pic 1 1 3
-                                0xc000 0 0 4 &mpc5200_pic 1 1 3
+Heh.  Looking into the implementation, it seems that I could actually do
 
-                                0xc800 0 0 1 &mpc5200_pic 1 1 3 // c64x2
-                                0xc800 0 0 2 &mpc5200_pic 1 1 3
-                                0xc800 0 0 3 &mpc5200_pic 1 1 3
-                                0xc800 0 0 4 &mpc5200_pic 1 1 3
+	PAGE_SIZE << compound_order(page)
 
-                                0xd000 0 0 1 &mpc5200_pic 1 1 3 // c64x3
-                                0xd000 0 0 2 &mpc5200_pic 1 1 3
-                                0xd000 0 0 3 &mpc5200_pic 1 1 3
-                                0xd000 0 0 4 &mpc5200_pic 1 1 3
+directly (since there's no reason to go from size to hstate and back to
+size.  I don't know all the details of these VM internals, but that
+seems to only work on the first (small) page of a giant page?  Which
+causes problems for what we're trying to do here...
 
-                                0xd800 0 0 1 &mpc5200_pic 1 1 3 // c64x4
-                                0xd800 0 0 2 &mpc5200_pic 1 1 3
-                                0xd800 0 0 3 &mpc5200_pic 1 1 3
-                                0xd800 0 0 4 &mpc5200_pic 1 1 3>;
+To summarize the goal, we are mapping user memory to a device that has
+its own page tables, where the device's page tables can also use
+multiple page sizes.  Using big pages on the device leads to similar
+efficiencies as hugetlb pages do on the CPU, and in fact if a user has
+used hugetlb pages for the memory they're giving to the device, that's a
+very strong hint that the device should use big pages too.
 
-               clock-frequency =3D <0x1e84800>;  //<0>; // From boot loader
-               interrupts =3D <2 8 0 2 9 0 2 10 0>;
-               interrupt-parent =3D <&mpc5200_pic>;
-               bus-range =3D <0 0>;
-               ranges =3D <0x02000000 0 0x50000000 0x50000000 0 0x10000000
-                         0x01000000 0 0x00000000 0x60000000 0 0x01000000>;
-       };
+But one valid situation we have to handle in the driver is if, say,
+userspace has a hugetlb mapped at virtual address 0x200000, and wants to
+map 0x80000 bytes at 0x280000 to the device.  In that case, we're going
+to do essentially
 
-The cards' memory regions are mapped out fine to different addresses
-in the 0x50000000-0x60000000 range. However, the IO regions are all mapped
-to zero.
+	get_user_pages(..., 0x280000, 0x80000 / PAGE_SIZE, ...)
 
-Do you have any idea on what could be wrong or in which direction I
-should be looking?
+and get_user_pages() is going to give us a bunch of normal PAGE_SIZE
+pages starting at offset 0x800000 within the compound page that makes up
+the huge page mapped at 0x200000.
 
+get_user_pages() also gives us the vma back, and we can see from
+is_vm_hugetlb_page() (-- BTW can I just say that a function
+is_xxx_page() that operates on vmas is horribly misnamed --) that these
+pages all come from a hugetlb mapping, but figuring out the size of that
+mapping is I guess a challenge.
 
---=20
-
-H=E4lsningar/Regards
-Tobias Knutsson
+ - R.
