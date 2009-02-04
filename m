@@ -1,25 +1,19 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-fx0-f11.google.com (mail-fx0-f11.google.com
-	[209.85.220.11]) by ozlabs.org (Postfix) with ESMTP id 8A897DDE98
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 03:50:27 +1100 (EST)
-Received: by fxm4 with SMTP id 4so3808507fxm.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Feb 2009 08:50:24 -0800 (PST)
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 727B3DDD1B
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 04:54:57 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so950455yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 04 Feb 2009 09:54:55 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20090204153643.GA16681@oksana.dev.rtsoft.ru>
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
-	<20090204150840.GC30027@oksana.dev.rtsoft.ru>
-	<c62985530902040726x34aeee7fr3b2937d898d3061e@mail.gmail.com>
-	<20090204153643.GA16681@oksana.dev.rtsoft.ru>
-Date: Wed, 4 Feb 2009 17:50:24 +0100
-Message-ID: <c62985530902040850u5f9e7ca2w6ffbf553ec15eec5@mail.gmail.com>
-Subject: Re: [PATCH 3/3] tracing: Tracers that use CALLER_ADDR macros should
-	select FRAME_POINTER
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: avorontsov@ru.mvista.com, Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <ccb913ac0902040853o395a7f25x855b477453c76c33@mail.gmail.com>
+References: <ccb913ac0902040853o395a7f25x855b477453c76c33@mail.gmail.com>
+Date: Wed, 4 Feb 2009 10:54:55 -0700
+Message-ID: <fa686aa40902040954m5eb9d259t7168a82484643060@mail.gmail.com>
+Subject: Re: MPC5200 PCI Issues
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Tobias Knutsson <tobias.knutsson@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Ingo Molnar <mingo@elte.hu>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,42 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2009/2/4 Steven Rostedt <srostedt@redhat.com>:
+On Wed, Feb 4, 2009 at 9:53 AM, Tobias Knutsson
+<tobias.knutsson@gmail.com> wrote:
+>               clock-frequency = <0x1e84800>;  //<0>; // From boot loader
+>               interrupts = <2 8 0 2 9 0 2 10 0>;
+>               interrupt-parent = <&mpc5200_pic>;
+>               bus-range = <0 0>;
+>               ranges = <0x02000000 0 0x50000000 0x50000000 0 0x10000000
+>                         0x01000000 0 0x00000000 0x60000000 0 0x01000000>;
+>       };
 >
-> >From ftrace.h:
+> The cards' memory regions are mapped out fine to different addresses
+> in the 0x50000000-0x60000000 range. However, the IO regions are all mapped
+> to zero.
 >
-> #ifdef CONFIG_FRAME_POINTER
-> /* TODO: need to fix this for ARM */
-> # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-> # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-> # define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
-> # define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
-> # define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
-> # define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
-> # define CALLER_ADDR6 ((unsigned long)__builtin_return_address(6))
-> #else
-> # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-> # define CALLER_ADDR1 0UL
-> # define CALLER_ADDR2 0UL
-> # define CALLER_ADDR3 0UL
-> # define CALLER_ADDR4 0UL
-> # define CALLER_ADDR5 0UL
-> # define CALLER_ADDR6 0UL
-> #endif
->
-> Yep!
->
+> Do you have any idea on what could be wrong or in which direction I
+> should be looking?
 
-Ok.
+Hmmm.  Your ranges property looks okay to me.  The MPC5200 setup code
+may be doing the wrong thing.  Turn on debug at the top of
+arch/powerpc/platforms/mpc52xx/mpc52xx_pci.c and post your kernel
+output.
 
-2009/2/4 Anton Vorontsov <avorontsov@ru.mvista.com>:
-> It depends on the architecture. On PowerPC we always have frame pointers,
-> thus __builtin_return_address(1..) will always work. On x86 it won't work
-> that way.
->
-> Thanks,
->
-> --
-> Anton Vorontsov
+g.
 
-Thanks for your answers!
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
