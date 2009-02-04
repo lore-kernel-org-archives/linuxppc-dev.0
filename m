@@ -1,21 +1,20 @@
-Return-Path: <linville@tuxdriver.com>
-Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 26064DDEEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 08:45:55 +1100 (EST)
-Date: Wed, 4 Feb 2009 16:39:14 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-Subject: Re: [PATCH v2 1/4] Add platform support for AmigaOne
-Message-ID: <20090204213914.GB15411@tuxdriver.com>
-References: <20090202212139.69160@gmx.net> <20090202213910.258290@gmx.net>
-	<1233719407.16867.164.camel@pasglop>
-	<20090204205941.GB17771@iram.es> <20090204213531.164090@gmx.net>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id EB78CDDE0A
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 08:52:31 +1100 (EST)
+Date: Wed, 4 Feb 2009 16:52:28 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Dynamic-ftrace not working in PlayStation3
+In-Reply-To: <200901311125.34755.arnd@arndb.de>
+Message-ID: <alpine.DEB.1.10.0902041650240.18695@gandalf.stny.rr.com>
+References: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
+	<alpine.DEB.1.10.0901292234520.6222@gandalf.stny.rr.com>
+	<4983BFA2.9010703@am.sony.com> <200901311125.34755.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090204213531.164090@gmx.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Remis Lima Baima <remis.developer@googlemail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 04, 2009 at 10:35:31PM +0100, Gerhard Pircher wrote:
-> 
-> -------- Original-Nachricht --------
-> > Datum: Wed, 4 Feb 2009 21:59:41 +0100
-> > Von: Gabriel Paubert <paubert@iram.es>
-> > An: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > CC: Gerhard Pircher <gerhard_pircher@gmx.net>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
-> > Betreff: Re: [PATCH v2 1/4] Add platform support for AmigaOne
-> 
-> > On Wed, Feb 04, 2009 at 02:50:07PM +1100, Benjamin Herrenschmidt wrote:
-> > > 
-> > > > + hose->first_busno = bus_range ? bus_range[0] : 0;
-> > > > + hose->last_busno = bus_range ? bus_range[1] : 0xff;
-> > > > +
-> > > > + setup_indirect_pci(hose, 0xfec00cf8, 0xfee00cfc, 0);
-> > > 
-> > > Minor in the context of amigaone but still... the above should come
-> > > from the device-tree... I suppose those are really just IO space
-> > > addresses cf8 and cfc, in which case, an option is to call that first:
-> > 
-> > Hmm, the first is feC...,the other one feE..., 2Mbytes apart.
-> > 
-> > I don't know the hardware but I've never seen something like that.
-> > Of course a typo is always a possibility...
-> The Pegasos 1 uses the same northbridge and chrp_find_bridges() calls
-> setup_indirect_pci() with the same addresses.
 
-As a proud owner, I concur that those numbers are correct...
+On Sat, 31 Jan 2009, Arnd Bergmann wrote:
 
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+> On Saturday 31 January 2009, Geoff Levand wrote:
+> > > 
+> > > So I take it that the above showed that the code worked for some?
+> > 
+> > In my trials it blows up on the first load_module() call, and for my
+> > config that was usbcore:
+> 
+> I looked into it some more with Remis yesterday, and we got ftrace
+> working by building usbcore and alsa into the kernel. Incidentally,
+> usbcore is the largest module in this installation (~3MB), which
+> indicates that it is in some way either related to the size of the
+> module.
+> 
+> > This ptr of 5f666f725f726573 seems bogus.  I think this code is not
+> > working correctly:
+> 
+> This is an ascii string "_for_res", probably part of
+> usb_lock_device_for_reset. We saw the same behaviour, but
+> a different string.
+
+OK, I've been able to reproduce it. It looks like the assumptions of the 
+trampoline that I've made is not correct if the size of the module is over 
+some limit.  I had to make usb-core into a module, and I see the same 
+bug.
+
+I'll take a deeper look into it.
+
+-- Steve
