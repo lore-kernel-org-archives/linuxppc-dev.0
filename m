@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5B31FDDEF7
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 16:22:22 +1100 (EST)
-Subject: Re: [PATCH 1/2] powerpc: G4 oprofile: variable number of counters
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Octavian Purdila <opurdila@ixiacom.com>
-In-Reply-To: <1231246535-13151-2-git-send-email-opurdila@ixiacom.com>
-References: <1231246535-13151-1-git-send-email-opurdila@ixiacom.com>
-	<1231246535-13151-2-git-send-email-opurdila@ixiacom.com>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 16:22:14 +1100
-Message-Id: <1233724934.16867.290.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <nickpiggin@yahoo.com.au>
+Received: from smtp109.mail.mud.yahoo.com (smtp109.mail.mud.yahoo.com
+	[209.191.85.219]) by ozlabs.org (Postfix) with SMTP id 47DE9DDED1
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 16:38:47 +1100 (EST)
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+Date: Wed, 4 Feb 2009 16:31:38 +1100
+References: <20090203164930.GA10101@mtls03>
+	<1233712248.16867.131.camel@pasglop>
+	<20090203211329.d6190a08.akpm@linux-foundation.org>
+In-Reply-To: <20090203211329.d6190a08.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200902041631.39784.nickpiggin@yahoo.com.au>
+Cc: linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>,
+	linux-kernel@vger.kernel.org, Eli Cohen <eli@mellanox.co.il>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-01-06 at 14:55 +0200, Octavian Purdila wrote:
-> For ppc750 processors which use 4 performance counters instead of the
-> 6 G4 uses but otherwise is compatible with G4.
-> 
-> Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
-> ---
->  arch/powerpc/oprofile/op_model_7450.c |   21 +++++++++++----------
->  1 files changed, 11 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/oprofile/op_model_7450.c b/arch/powerpc/oprofile/op_model_7450.c
-> index cc599eb..97348f5 100644
-> --- a/arch/powerpc/oprofile/op_model_7450.c
-> +++ b/arch/powerpc/oprofile/op_model_7450.c
-> @@ -29,7 +29,7 @@
->  static unsigned long reset_value[OP_MAX_COUNTER];
->  
->  static int oprofile_running;
-> -static u32 mmcr0_val, mmcr1_val, mmcr2_val;
-> +static u32 mmcr0_val, mmcr1_val, mmcr2_val, ctrs;
+On Wednesday 04 February 2009 16:13:29 Andrew Morton wrote:
+> On Wed, 04 Feb 2009 12:50:48 +1100 Benjamin Herrenschmidt 
+> > Do the generic hugetlbfs code provides such an API ? If not, we may need
+> > to add one.
+>
+> I think it's something like
+>
+> 	huge_page_size(page_hstate(page))
 
-This may be static but it's still a global scope as far as kernel
-symbols are concerned. Care to give it a slightly better name ? num_pmcs
-would probably be already more telling.
-
-Cheers,
-Ben.
+That would work if you have a page, yes. If you want to query which hugepage
+sizes are available, then you probably want for_each_hstate() (which is only
+within mm/hugetlb.c at the moment, but I have no objections to exporting it
+and symbols it requires).
