@@ -1,25 +1,18 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 19EDFDDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 06:11:26 +1100 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
-References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
-	<1233712248.16867.131.camel@pasglop>
-	<20090203211329.d6190a08.akpm@linux-foundation.org>
-	<aday6wmn2vr.fsf@cisco.com>
-	<20090203222601.747ca8b7.akpm@linux-foundation.org>
-Date: Wed, 04 Feb 2009 11:11:22 -0800
-In-Reply-To: <20090203222601.747ca8b7.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Tue, 3 Feb 2009 22:26:01 -0800")
-Message-ID: <adad4dym2zp.fsf@cisco.com>
+Return-Path: <alan@nishioka.com>
+Received: from pro34.abac.com (pro34.abac.com [66.226.64.35])
+	by ozlabs.org (Postfix) with ESMTP id 45E69DDEDD
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 06:48:02 +1100 (EST)
+Message-ID: <4989E8FC.9090002@nishioka.com>
+Date: Wed, 04 Feb 2009 11:14:04 -0800
+From: Alan Nishioka <alan@nishioka.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Eli Cohen <eli@mellanox.co.il>
+To: mike_timmons@trimble.com
+Subject: Re: kernel 2.6.24 USB wi fi device firmware loading issue(s):
+	rt73.bin...
+References: <4989C635.1050605@trimble.com>
+In-Reply-To: <4989C635.1050605@trimble.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,47 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > >  > 	huge_page_size(page_hstate(page))
+request_firmware uses the hotplug code so the kernel doesn't have any 
+sourceless binaries compiled into it.  on init, the driver requests the 
+firmware, user mode hotplug daemon loads the firmware from disk and 
+gives the driver a pointer to it.
 
- > > That would suit.  I assume the intention is for that to be usable by
- > > driver modules on any architecture?
+since this is a short term problem, i would suggest converting rt73.bin 
+to a header file and compiling it into the kernel.  you have to make a 
+few minor changes to where request_firmware is called, but in the end 
+firmware is just an array of bytes with a pointer to it.  this is what i 
+did when i was testing usb wifi a little while ago.
 
- > erm, you overestimate the amount of planning and forethought which goes
- > into these things ;)
+i am probably going to open source hell for suggesting this, but i'm a 
+hardware engineer, so i am in hell already.
 
- > The lack of any EXPORT_SYMBOL(size_to_hstate) is a broadish hint.
+alan nishioka
 
-Heh.  Looking into the implementation, it seems that I could actually do
 
-	PAGE_SIZE << compound_order(page)
-
-directly (since there's no reason to go from size to hstate and back to
-size.  I don't know all the details of these VM internals, but that
-seems to only work on the first (small) page of a giant page?  Which
-causes problems for what we're trying to do here...
-
-To summarize the goal, we are mapping user memory to a device that has
-its own page tables, where the device's page tables can also use
-multiple page sizes.  Using big pages on the device leads to similar
-efficiencies as hugetlb pages do on the CPU, and in fact if a user has
-used hugetlb pages for the memory they're giving to the device, that's a
-very strong hint that the device should use big pages too.
-
-But one valid situation we have to handle in the driver is if, say,
-userspace has a hugetlb mapped at virtual address 0x200000, and wants to
-map 0x80000 bytes at 0x280000 to the device.  In that case, we're going
-to do essentially
-
-	get_user_pages(..., 0x280000, 0x80000 / PAGE_SIZE, ...)
-
-and get_user_pages() is going to give us a bunch of normal PAGE_SIZE
-pages starting at offset 0x800000 within the compound page that makes up
-the huge page mapped at 0x200000.
-
-get_user_pages() also gives us the vma back, and we can see from
-is_vm_hugetlb_page() (-- BTW can I just say that a function
-is_xxx_page() that operates on vmas is horribly misnamed --) that these
-pages all come from a hugetlb mapping, but figuring out the size of that
-mapping is I guess a challenge.
-
- - R.
+Mike Timmons wrote:
+> I received great help last week in getting a USB wi fi device working. 
+> Thanks again, but can someone read below and advise me on kernel 
+> 2.6.24? The best out-of-the box solution for me was 2.6.27.8, for 
+> which I needed a Denx eldx toolchain in place of the toolchain I was 
+> using to compile 2.6.24. The significance of all this is that I did 
+> get  USB wi fi working, but...
+>
+> I'm not in a position to upgrade from 2.6.24 at this time. I need to 
+> get the USB wi wi (Linksys WUSB54GC) working under 2.6.24.
