@@ -1,15 +1,14 @@
-Return-Path: <rbietry@hst.nasa.gov>
-Received: from hst-mailscan1.hst.nasa.gov (hst-mailscan1.hst.nasa.gov
-	[198.118.114.181]) by ozlabs.org (Postfix) with ESMTP id A9F1BDDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 00:59:07 +1100 (EST)
+Return-Path: <nst@gersys.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
+	by ozlabs.org (Postfix) with ESMTP id DD83CDDEFF
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 01:04:44 +1100 (EST)
+Message-ID: <4989A075.9090906@gersys.de>
+Date: Wed, 04 Feb 2009 15:04:37 +0100
+From: Stefan Strobl <nst@gersys.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C986CF.505C6CD8"
-Subject: unsubscribe
-Date: Wed, 4 Feb 2009 08:48:49 -0500
-Message-ID: <7B3A4EC40E824E44B1D34BCE85F33B97933F18@mailx.hstexchange.local>
-From: "Bietry, Ray" <rbietry@hst.nasa.gov>
-To: <linuxppc-dev@ozlabs.org>
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: ADS5121 problem using audio interface
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,69 +18,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi
 
-------_=_NextPart_001_01C986CF.505C6CD8
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+I'm trying to get the audio interface working on my ADS5121 Rev4.0 and
+have some questions.
 
-=20
+I did manage to record and play audio files of type raw and format
+S32_BE like this:
 
+$ arecord -traw -c2 -fS32_BE -Dhw:0,0 testfile
+$ aplay -traw -c2 -fS32_BE -Dhw:0,0 testfile
 
-------_=_NextPart_001_01C986CF.505C6CD8
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+I am not able to get the auto conversion work, so that I could play a
+wav file of any format. I'm getting this error:
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+$ aplay -Dplughw:0,0 test.wav
+Playing WAVE 'test.wav' : Signed 16 bit Little Endian, Rate 44100 Hz, Mono
+ALSA lib pcm_plug.c:773:(snd_pcm_plug_hw_refine_schange) Unable to find
+an usable access for 'plughw:0,0'
+aplay: set_params:901: Sample format non available
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
+I'm not sure, but I expect this to be a problem of my ALSA configuration
+and this is where I'm stuck.
+Does anyone have a working ALSA configuration file for the ads5121?
+Or any other hints on how to overcome this problem?
+Does anyone know how to convert wav files so that they can be played in
+raw mode?
 
-</head>
+Many thanks
+Stefan.
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+-----
+These are the steps I performed to get audio work:
 
-<div class=3DSection1>
+I'm using kernel 2.6.24.6 (linux-2.6-denx.git/ads5121) with ALSA-1.0.15
+built into the kernel and ELDK-4.2.
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+1. Build and install alsa-lib-1.0.15 and alsa-utils-1.0.15 natively on
+the target.
 
-</div>
+$ wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.0.15.tar.bz2
+$ tar xf alsa-lib-1.0.15.tar.bz2
+$ cd alsa-lib-1.0.15
+$ ./configure
+$ make
+$ make install
 
-</body>
+$ wget ftp://ftp.alsa-project.org/pub/utils/alsa-utils-1.0.15.tar.bz2
+$ tar xf alsa-utils-1.0.15.tar.bz2
+$ cd alsa-utils-1.0.15
+$ ./configure --disable-nls
+$ make
+$ make install
 
-</html>
+2. Manually create the device nodes, with Minor numbers according to
+output from /proc/asound/devices
 
-------_=_NextPart_001_01C986CF.505C6CD8--
+$ cat /proc/asound/devices
+  0: [ 0]   : control
+  1:        : sequencer
+ 16: [ 0- 0]: digital audio playback
+ 24: [ 0- 0]: digital audio capture
+ 33:        : timer
+
+$ mkdir /dev/snd
+$ mknod /dev/snd/pcmC0D0p c 116 16
+$ mknod /dev/snd/pcmC0D0c c 116 24
+$ mknod /dev/snd/controlC0 c 116 0
+$ mknod /dev/snd/timer c 116 33
+$ mknod /dev/snd/seq c 116 1
+
+3. Run aplay...
+
+$ aplay -l
+**** List of PLAYBACK Hardware Devices ****
+card 0: ADS [MPC5121 ADS], device 0: AC97 AC97 HiFi-<NULL>-0 []
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+
+$ aplay -L
+default:CARD=ADS
+    MPC5121 ADS,
+    Default Audio Device
+null
+    Discard all samples (playback) or generate zero samples (capture)
+
+$ aplay -traw -c2 -fS32_BE -Dhw:0,0 /dev/urandom
+$ arecord -traw -c2 -fS32_BE -Dhw:0,0 testfile
+$ aplay -traw -c2 -fS32_BE -Dhw:0,0 testfile
