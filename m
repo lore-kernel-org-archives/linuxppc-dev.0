@@ -1,22 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AD64BDDE28
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 09:14:28 +1100 (EST)
-Message-ID: <498A1315.5060200@freescale.com>
-Date: Wed, 04 Feb 2009 16:13:41 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH] arch/powerpc: Eliminate double sizeof
-References: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 10077DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 10:05:59 +1100 (EST)
+Subject: Re: Dynamic-ftrace not working in PlayStation3
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <alpine.DEB.1.10.0902041650240.18695@gandalf.stny.rr.com>
+References: <a25370a30901260639u3ab97112qf6688667d39e6706@mail.gmail.com>
+	<alpine.DEB.1.10.0901292234520.6222@gandalf.stny.rr.com>
+	<4983BFA2.9010703@am.sony.com> <200901311125.34755.arnd@arndb.de>
+	<alpine.DEB.1.10.0902041650240.18695@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 10:05:23 +1100
+Message-Id: <1233788723.4612.10.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Remis Lima Baima <remis.developer@googlemail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Julia Lawall wrote:
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> ---
->  arch/powerpc/platforms/82xx/pq2ads-pci-pic.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+
+> OK, I've been able to reproduce it. It looks like the assumptions of the 
+> trampoline that I've made is not correct if the size of the module is over 
+> some limit.  I had to make usb-core into a module, and I see the same 
+> bug.
 > 
-> diff -u -p a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-> --- a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-> +++ b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-> @@ -186,7 +186,7 @@ out_unmap_regs:
->  	iounmap(priv->regs);
->  out_free_bootmem:
->  	free_bootmem((unsigned long)priv,
-> -	             sizeof(sizeof(struct pq2ads_pci_pic)));
-> +	             sizeof(struct pq2ads_pci_pic));
->  	of_node_put(np);
->  out_unmap_irq:
->  	irq_dispose_mapping(irq);
+> I'll take a deeper look into it.
 
-ACK
+Thanks ! I've been a bit swamped lately and didn't get a chance to dig
+into that one .. yet. Let me know if you are stuck tho.
 
--Scott
+Cheers
+Ben.
