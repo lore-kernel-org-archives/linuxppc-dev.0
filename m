@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5611CDDEDA
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 15:44:10 +1100 (EST)
-Subject: Re: [PATCH] powerpc: rework dma-noncoherent to use generic
-	vmap/vunmap functions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ilya Yanok <yanok@emcraft.com>
-In-Reply-To: <1231505915-16082-1-git-send-email-yanok@emcraft.com>
-References: <1231505915-16082-1-git-send-email-yanok@emcraft.com>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 15:43:45 +1100
-Message-Id: <1233722625.16867.249.camel@pasglop>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4B49BDDE1C
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 16:14:16 +1100 (EST)
+Date: Tue, 3 Feb 2009 21:13:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+Message-Id: <20090203211329.d6190a08.akpm@linux-foundation.org>
+In-Reply-To: <1233712248.16867.131.camel@pasglop>
+References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
+	<1233712248.16867.131.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, wd@denx.de, dzu@denx.de
+Content-Type: text/plain; charset=US-ASCII
+Cc: Eli Cohen <eli@mellanox.co.il>, Roland Dreier <rdreier@cisco.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2009-01-09 at 15:58 +0300, Ilya Yanok wrote:
-> This patch rewrites consistent dma allocations support to use vmalloc
-> layer to allocate virtual memory space from vmalloc pool and get rid
-> of CONFIG_CONSISTENT_{START,SIZE}.
+On Wed, 04 Feb 2009 12:50:48 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-So as commented before, please drop the defconfig updates.
+> On Tue, 2009-02-03 at 17:08 -0800, Roland Dreier wrote:
+> > Forwarding Eli's patch below, since PowerPC guys may have missed it.  I
+> > guess the question for Ben et al is whether there is any issue with
+> > exporting HPAGE_SHIFT for modules (can be EXPORT_SYMBOL_GPL if you feel
+> > it's an internal detail).  It would probably make sense to roll this
+> > change into the mlx4 change that Eli alludes to below and merge through
+> > my tree (with ppc maintainer acks of course), rather than splitting this
+> > patch out and introducing cross-tree dependencies (and also separating
+> > the rationale for the change from the change itself).
+> > 
+> > Thanks,
+> >   Roland
+> > 
+> > 
+> > Drivers may want to take advantage of the large pages used for memory obtained
+> > from hugetlbfs. One example is mlx4_ib which can use much less MTT entries (in
+> > the order of HPAGE_SIZE / PAGE_SIZE) when registering such memory, thus scale
+> > significantly better when registering larger memory regions. Other drivers
+> > could also benefit from this.
+> 
+> Except that we support multiple large page sizes nowadays ... I think
+> the size can be specified per mountpoint of hugetlbfs no ? Thus things
+> like mellanox would have to query the page size used for a given
+> mapping.
+> 
+> Do the generic hugetlbfs code provides such an API ? If not, we may need
+> to add one.
+> 
 
-I'm happy with the idea but I have a few nits with the implementation:
+I think it's something like
 
-> -/*
->   * Allocate DMA-coherent memory space and return both the kernel remapped
->   * virtual and bus address for that space.
->   */
-> @@ -151,19 +41,17 @@ void *
->  __dma_alloc_coherent(size_t size, dma_addr_t *handle, gfp_t gfp)
->  {
->  	struct page *page;
-> -	struct vm_region *c;
->  	unsigned long order;
-> +	void *v;
-> +	int i;
-> +	struct page *pages[PAGE_ALIGN(size)>>PAGE_SHIFT];
-
-I'm not -too- fan of that page list one the stack up there.
-
-I understand why you don't wantto kmalloc something here etc... but
-that's what __vmalloc_area() does and it's somewhat useful to keep track
-of the page array that way, it might prove handy in the future.
-
-Might even be worth adding a generic patch to add a VM_COHERENT_DMA flag
-so they can be listed as such and make sure you set the "caller" field
-yourself with your own caller.
-
-(Hint: look at the output of /proc/vmallocinfo)
-
-Also, the mucking around with PG_Reserved shouldn't be of any use
-anymore.
-
-Cheers,
-Ben.
+	huge_page_size(page_hstate(page))
