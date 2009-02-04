@@ -1,25 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <wli@movementarian.org>
+Received: from movementarian.org (movementarian.org [79.99.65.163])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A0071DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 17:27:08 +1100 (EST)
-Date: Tue, 3 Feb 2009 22:26:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland Dreier <rdreier@cisco.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A3E89DDEF0
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2009 17:57:07 +1100 (EST)
+Date: Wed, 4 Feb 2009 01:17:47 -0500
+From: wli@movementarian.org
+To: Nick Piggin <nickpiggin@yahoo.com.au>
 Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
-Message-Id: <20090203222601.747ca8b7.akpm@linux-foundation.org>
-In-Reply-To: <aday6wmn2vr.fsf@cisco.com>
-References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
+Message-ID: <20090204061747.GB10229@movementarian.org>
+References: <20090203164930.GA10101@mtls03>
 	<1233712248.16867.131.camel@pasglop>
 	<20090203211329.d6190a08.akpm@linux-foundation.org>
-	<aday6wmn2vr.fsf@cisco.com>
+	<200902041631.39784.nickpiggin@yahoo.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Eli Cohen <eli@mellanox.co.il>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200902041631.39784.nickpiggin@yahoo.com.au>
+Cc: Eli Cohen <eli@mellanox.co.il>, Roland Dreier <rdreier@cisco.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,17 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 03 Feb 2009 22:16:08 -0800 Roland Dreier <rdreier@cisco.com> wrote:
+On Wed, 04 Feb 2009 12:50:48 +1100 Benjamin Herrenschmidt 
+>>> Do the generic hugetlbfs code provides such an API ? If not, we may need
+>>> to add one.
 
->  > I think it's something like
->  > 
->  > 	huge_page_size(page_hstate(page))
-> 
-> That would suit.  I assume the intention is for that to be usable by
-> driver modules on any architecture?
-> 
+On Wednesday 04 February 2009 16:13:29 Andrew Morton wrote:
+>> I think it's something like
+>> 	huge_page_size(page_hstate(page))
 
-erm, you overestimate the amount of planning and forethought which goes
-into these things ;)
+On Wed, Feb 04, 2009 at 04:31:38PM +1100, Nick Piggin wrote:
+> That would work if you have a page, yes. If you want to query which hugepage
+> sizes are available, then you probably want for_each_hstate() (which is only
+> within mm/hugetlb.c at the moment, but I have no objections to exporting it
+> and symbols it requires).
 
-The lack of any EXPORT_SYMBOL(size_to_hstate) is a broadish hint.
+Exciting things have happened in mm/hugetlb.c while I was out sick.
+I've got quite some catching up to do.
+
+
+-- wli
