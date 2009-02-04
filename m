@@ -1,14 +1,17 @@
-Return-Path: <wli@movementarian.org>
-Received: from movementarian.org (movementarian.org [79.99.65.163])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4F940DDED7
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 08:01:03 +1100 (EST)
-Date: Wed, 4 Feb 2009 16:00:37 -0500
-From: wli@movementarian.org
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 65574DDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 08:23:50 +1100 (EST)
+Date: Wed, 4 Feb 2009 13:23:13 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Roland Dreier <rdreier@cisco.com>
 Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
-Message-ID: <20090204210037.GC10229@movementarian.org>
+Message-Id: <20090204132313.e3047e2f.akpm@linux-foundation.org>
+In-Reply-To: <adad4dym2zp.fsf@cisco.com>
 References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
 	<1233712248.16867.131.camel@pasglop>
 	<20090203211329.d6190a08.akpm@linux-foundation.org>
@@ -16,10 +19,8 @@ References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
 	<20090203222601.747ca8b7.akpm@linux-foundation.org>
 	<adad4dym2zp.fsf@cisco.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <adad4dym2zp.fsf@cisco.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Eli Cohen <eli@mellanox.co.il>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, eli@mellanox.co.il
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,18 +30,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 04, 2009 at 11:11:22AM -0800, Roland Dreier wrote:
+On Wed, 04 Feb 2009 11:11:22 -0800
+Roland Dreier <rdreier@cisco.com> wrote:
+
+>  > >  > 	huge_page_size(page_hstate(page))
+> 
+>  > > That would suit.  I assume the intention is for that to be usable by
+>  > > driver modules on any architecture?
+> 
+>  > erm, you overestimate the amount of planning and forethought which goes
+>  > into these things ;)
+> 
+>  > The lack of any EXPORT_SYMBOL(size_to_hstate) is a broadish hint.
+> 
 > Heh.  Looking into the implementation, it seems that I could actually do
+> 
 > 	PAGE_SIZE << compound_order(page)
+> 
 > directly (since there's no reason to go from size to hstate and back to
 > size.  I don't know all the details of these VM internals, but that
 > seems to only work on the first (small) page of a giant page?  Which
 > causes problems for what we're trying to do here...
+> 
+> To summarize the goal, we are mapping user memory to a device that has
+> its own page tables, where the device's page tables can also use
+> multiple page sizes.  Using big pages on the device leads to similar
+> efficiencies as hugetlb pages do on the CPU, and in fact if a user has
+> used hugetlb pages for the memory they're giving to the device, that's a
+> very strong hint that the device should use big pages too.
+> 
+> But one valid situation we have to handle in the driver is if, say,
+> userspace has a hugetlb mapped at virtual address 0x200000, and wants to
+> map 0x80000 bytes at 0x280000 to the device.  In that case, we're going
+> to do essentially
+> 
+> 	get_user_pages(..., 0x280000, 0x80000 / PAGE_SIZE, ...)
+> 
+> and get_user_pages() is going to give us a bunch of normal PAGE_SIZE
+> pages starting at offset 0x800000 within the compound page that makes up
+> the huge page mapped at 0x200000.
+> 
+> get_user_pages() also gives us the vma back, and we can see from
+> is_vm_hugetlb_page() (-- BTW can I just say that a function
+> is_xxx_page() that operates on vmas is horribly misnamed --) that these
+> pages all come from a hugetlb mapping, but figuring out the size of that
+> mapping is I guess a challenge.
 
-You should be able to find the head of a compound page using the
-compound_head() inline, so try
+compound_head() will convert any page* inside a hugepage into a pointer
+to the head page.  It should work OK for regular pages as well as
+CONFIG_HUGETLB=n.
+
+So..
 
 	PAGE_SIZE << compound_order(compound_head(page))
 
-
--- wli
+?
