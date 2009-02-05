@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 96D29DDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 16:53:38 +1100 (EST)
-Message-Id: <C50C2A8C-956C-49FF-98BC-7F46231AFBF3@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id DE2FBDDECF
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 16:56:29 +1100 (EST)
+Message-Id: <360B601C-FDC4-4F36-A716-6AD33FC0CD8B@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1233806493.4612.65.camel@pasglop>
+To: Madhulika Madishetty <mmadishetty@amcc.com>
+In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C06D09DB5@SDCEXCHANGE01.ad.amcc.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [ANN] Introducing new "test" branch in powerpc.git tree
-Date: Wed, 4 Feb 2009 23:53:32 -0600
-References: <1233806493.4612.65.camel@pasglop>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 1/1 v3] AMCC PPC 460SX redwood SoC platform initial
+	framework
+Date: Wed, 4 Feb 2009 23:56:16 -0600
+References: <AC5E1C3367E37D44970B81A6ADD1DA2C06D09DB5@SDCEXCHANGE01.ad.amcc.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,49 +25,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 4, 2009, at 10:01 PM, Benjamin Herrenschmidt wrote:
+On Feb 4, 2009, at 5:45 PM, Madhulika Madishetty wrote:
 
-> Hoy !
->
-> So I've been annoyed for some time by the way we do our preparation  
-> for
-> the next merge window. The "next" branch is defined as not being  
-> rebased
-> ever (well, as much as possible), which makes it impossible to just
-> stash things early in there and rebase if needed, which is a useful
-> exercise in the weeks leading to the merge window to be able to test
-> patches, fix them, etc... while keeping a good idea of what's  
-> planned to
-> go in.
->
-> Thus I've created a "test" branch. I'll push it out later today with
-> various things pending. For pulls from sub-maintainers, I'll probably
-> merge into "next" quickly (ie. a day or two after hitting "test" just
-> enough time to find gross problems). That will allow me to be more
-> pro-active also at pulling things off the mailing list and sticking  
-> them
-> there even if some cosmetic changes have been requested to the patch  
-> as
-> I will have no issue rebasing it when the new patch comes in.
->
-> Now, one important rule is: test will be reset at the beginning of  
-> every
-> merge window. I will not let it degenerate into the old linuxppc-dev  
-> bk
-> tree that drifted for years and had things that never got merged.
->
-> I'm also not sure whether sub-maintainers should do the same thing  
-> with
-> a "test" branch of their own. I certainly don't mind if they rebase
-> their "next" branches so I'm happy for them to play the same game
-> directly into their 'next' branch as long as the day they ask me to  
-> pull
-> it into the real 'next', they are reasonably confident that the  
-> stuff in
-> there is stable.
->
-> For any complaint, see my secretary in the Oort cloud.
+> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/ 
+> cputable.c
+> index 923f87a..5c40da4 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -43,6 +43,7 @@ extern void __setup_cpu_440spe(unsigned long  
+> offset, struct cpu_spec* spec);
+> extern void __setup_cpu_440x5(unsigned long offset, struct cpu_spec*  
+> spec);
+> extern void __setup_cpu_460ex(unsigned long offset, struct cpu_spec*  
+> spec);
+> extern void __setup_cpu_460gt(unsigned long offset, struct cpu_spec*  
+> spec);
+> +extern void __setup_cpu_460sx(unsigned long offset, struct cpu_spec  
+> *spec);
+> extern void __setup_cpu_603(unsigned long offset, struct cpu_spec*  
+> spec);
+> extern void __setup_cpu_604(unsigned long offset, struct cpu_spec*  
+> spec);
+> extern void __setup_cpu_750(unsigned long offset, struct cpu_spec*  
+> spec);
+> @@ -1634,6 +1635,18 @@ static struct cpu_spec __initdata cpu_specs[]  
+> = {
+> 		.machine_check		= machine_check_440A,
+> 		.platform		= "ppc440",
+> 	},
+> +	{ /* 460SX */
+> +		.pvr_mask		= 0xffffff00,
+> +		.pvr_value		= 0x13541800,
+> +		.cpu_name		= "460SX",
+> +		.cpu_features		= CPU_FTRS_44X,
+> +		.cpu_user_features	= COMMON_USER_BOOKE,
+> +		.icache_bsize		= 32,
+> +		.dcache_bsize		= 32,
+> +		.cpu_setup		= __setup_cpu_460sx,
+> +		.machine_check		= machine_check_440A,
+> +		.platform		= "ppc440",
+> +	},
 
-Are you going to ask "test" get pulled into Stephen's -next tree?
+This needs to be updated to include the new mmu_features field.
 
 - k
