@@ -1,20 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DE2FBDDECF
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 16:56:29 +1100 (EST)
-Message-Id: <360B601C-FDC4-4F36-A716-6AD33FC0CD8B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Madhulika Madishetty <mmadishetty@amcc.com>
-In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C06D09DB5@SDCEXCHANGE01.ad.amcc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 1/1 v3] AMCC PPC 460SX redwood SoC platform initial
-	framework
-Date: Wed, 4 Feb 2009 23:56:16 -0600
-References: <AC5E1C3367E37D44970B81A6ADD1DA2C06D09DB5@SDCEXCHANGE01.ad.amcc.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <03212009@bjtu.edu.cn>
+Message-ID: <433816769.08918@bjtu.edu.cn>
+Date: Thu, 5 Feb 2009 14:59:31 +0800
+From: "03212009" <03212009@bjtu.edu.cn>
+To: "Linuxppc-dev" <Linuxppc-dev@ozlabs.org>
+Subject: 
+Message-ID: <200902051459313438090@bjtu.edu.cn>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon263640830470_====="
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +18,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 4, 2009, at 5:45 PM, Madhulika Madishetty wrote:
+This is a multi-part message in MIME format.
 
-> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/ 
-> cputable.c
-> index 923f87a..5c40da4 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -43,6 +43,7 @@ extern void __setup_cpu_440spe(unsigned long  
-> offset, struct cpu_spec* spec);
-> extern void __setup_cpu_440x5(unsigned long offset, struct cpu_spec*  
-> spec);
-> extern void __setup_cpu_460ex(unsigned long offset, struct cpu_spec*  
-> spec);
-> extern void __setup_cpu_460gt(unsigned long offset, struct cpu_spec*  
-> spec);
-> +extern void __setup_cpu_460sx(unsigned long offset, struct cpu_spec  
-> *spec);
-> extern void __setup_cpu_603(unsigned long offset, struct cpu_spec*  
-> spec);
-> extern void __setup_cpu_604(unsigned long offset, struct cpu_spec*  
-> spec);
-> extern void __setup_cpu_750(unsigned long offset, struct cpu_spec*  
-> spec);
-> @@ -1634,6 +1635,18 @@ static struct cpu_spec __initdata cpu_specs[]  
-> = {
-> 		.machine_check		= machine_check_440A,
-> 		.platform		= "ppc440",
-> 	},
-> +	{ /* 460SX */
-> +		.pvr_mask		= 0xffffff00,
-> +		.pvr_value		= 0x13541800,
-> +		.cpu_name		= "460SX",
-> +		.cpu_features		= CPU_FTRS_44X,
-> +		.cpu_user_features	= COMMON_USER_BOOKE,
-> +		.icache_bsize		= 32,
-> +		.dcache_bsize		= 32,
-> +		.cpu_setup		= __setup_cpu_460sx,
-> +		.machine_check		= machine_check_440A,
-> +		.platform		= "ppc440",
-> +	},
+--=====003_Dragon263640830470_=====
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-This needs to be updated to include the new mmu_features field.
 
-- k
+
+2009-02-05 
+
+
+
+03212009 
+
+--=====003_Dragon263640830470_=====
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=us-ascii">
+<META content="MSHTML 6.00.2900.3492" name=GENERATOR><LINK 
+href="BLOCKQUOTE{margin-Top: 0px; margin-Bottom: 0px; margin-Left: 2em}" 
+rel=stylesheet></HEAD>
+<BODY style="FONT-SIZE: 10pt; MARGIN: 10px; FONT-FAMILY: verdana">
+<DIV><FONT face=Verdana size=2></FONT>&nbsp;</DIV>
+<DIV><FONT face=Verdana size=2></FONT>&nbsp;</DIV>
+<DIV align=left><FONT face=Verdana color=#c0c0c0 size=2>2009-02-05 
+</FONT></DIV><FONT face=Verdana size=2>
+<HR style="WIDTH: 122px; HEIGHT: 2px" align=left SIZE=2>
+
+<DIV><FONT face=Verdana color=#c0c0c0 size=2><SPAN>03212009</SPAN> 
+</FONT></DIV></FONT></BODY></HTML>
+
+--=====003_Dragon263640830470_=====--
