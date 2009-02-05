@@ -1,20 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.178])
-	by ozlabs.org (Postfix) with ESMTP id B0A79DDE23
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 03:06:40 +1100 (EST)
-Received: by el-out-1112.google.com with SMTP id s27so159298ele.3
-	for <linuxppc-dev@ozlabs.org>; Thu, 05 Feb 2009 08:06:38 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20090205094504.GA3101@pengutronix.de>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 9FD42DDE06
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 03:10:24 +1100 (EST)
+Date: Thu, 5 Feb 2009 17:10:15 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [ANN] Introducing new "test" branch in powerpc.git tree
+Message-ID: <20090205161015.GC3101@pengutronix.de>
 References: <1233806493.4612.65.camel@pasglop>
 	<fa686aa40902042020y265f1312w35ad4d4d7c20e230@mail.gmail.com>
 	<20090205094504.GA3101@pengutronix.de>
-Date: Thu, 5 Feb 2009 09:06:37 -0700
-Message-ID: <fa686aa40902050806s998f88fie02bb8131b1effc1@mail.gmail.com>
-Subject: Re: [ANN] Introducing new "test" branch in powerpc.git tree
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	<fa686aa40902050806s998f88fie02bb8131b1effc1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="H8ygTp4AXg6deix2"
+In-Reply-To: <fa686aa40902050806s998f88fie02bb8131b1effc1@mail.gmail.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,23 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 5, 2009 at 2:45 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> On Wed, Feb 04, 2009 at 09:20:04PM -0700, Grant Likely wrote:
->
->> what to do with it.  The only difference is that mine isn't usually
->> public.  If people want to see it, then I push it out, but otherwise I
->> just wait until I've got a real pull request.
->
-> I'd like to see that tree public, so I can check anytime if you already
-> have picked up a patch or if it has been overlooked...
 
-Sure, I can push it out.  It will be a little haphazard though.  I
-maintain it using stacked git, so not all the things that I have in
-the stack are actually applied at any given time, but I will try to
-keep it up to date as I pick things up.
+--H8ygTp4AXg6deix2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-g.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> Sure, I can push it out.  It will be a little haphazard though.  I
+> maintain it using stacked git, so not all the things that I have in
+> the stack are actually applied at any given time, but I will try to
+> keep it up to date as I pick things up.
+
+Cool, thanks, this will do!
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--H8ygTp4AXg6deix2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmLD2cACgkQD27XaX1/VRuYVgCdHcZN6XBtxTIaqSDJhvsO4tlZ
+ogwAoJrGyzAn+HWng17CvPPCl+RPh2ek
+=KJZN
+-----END PGP SIGNATURE-----
+
+--H8ygTp4AXg6deix2--
