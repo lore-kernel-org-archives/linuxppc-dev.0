@@ -1,25 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id CE14CDDEF5
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 12:30:25 +1100 (EST)
-Date: Thu, 5 Feb 2009 04:30:23 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] powerpc: Make it possible to safely select
-	CONFIG_FRAME_POINTER
-Message-ID: <20090205013023.GA31417@oksana.dev.rtsoft.ru>
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
-	<20090204150838.GB30027@oksana.dev.rtsoft.ru>
-	<1233793889.4612.33.camel@pasglop>
-	<1233794154.16878.20.camel@localhost.localdomain>
-	<1233796531.4612.35.camel@pasglop>
+Return-Path: <orenl@cs.columbia.edu>
+Received: from serrano.cc.columbia.edu (serrano.cc.columbia.edu [128.59.29.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 666C1DDEF1
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 14:30:12 +1100 (EST)
+Message-ID: <498A5D38.9030009@cs.columbia.edu>
+Date: Wed, 04 Feb 2009 22:30:00 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1233796531.4612.35.camel@pasglop>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
-Reply-To: avorontsov@ru.mvista.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
+	implementation
+References: <1233182478-27113-1-git-send-email-ntl@pobox.com>	
+	<1233182478-27113-2-git-send-email-ntl@pobox.com>	
+	<1233718789.16867.156.camel@pasglop>
+	<20090204155406.GA2039@us.ibm.com>	
+	<1233781099.4612.1.camel@pasglop>
+	<498A284E.4050501@cs.columbia.edu>
+	<1233793012.4612.32.camel@pasglop>
+In-Reply-To: <1233793012.4612.32.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: containers@lists.osdl.org, "Serge E. Hallyn" <serue@us.ibm.com>,
+	Nathan Lynch <ntl@pobox.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,31 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 05, 2009 at 12:15:31PM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-02-04 at 19:35 -0500, Steven Rostedt wrote:
-> > On Thu, 2009-02-05 at 11:31 +1100, Benjamin Herrenschmidt wrote:
-> > > On Wed, 2009-02-04 at 18:08 +0300, Anton Vorontsov wrote:
-> > > > Remove -fno-omit-frame-pointer flag from CFLAGS.
-> > > > Remove -fno-omit-frame-pointer workarounds.
-> > > 
-> > > But what about -pg -requires -fno-omit-frame-pointer ?
-> > 
-> > I don't think it requires -fno-omit-frame-pointer. It is just
-> > incompatible with -fomit-frame-pointer.
+
+
+Benjamin Herrenschmidt wrote:
+> On Wed, 2009-02-04 at 18:44 -0500, Oren Laadan wrote:
+>> * Anything that is decided at compiled time should probably go to the arch-
+>> dependent header.
+>>
+>> * Anything that can change at boot time (e.g., for x86 that would include
+>> the capabilities of the FPU), or even run time (is there any ?) should
+>> be described to the letter (in fine print) in 'struct cr_hdr_cpu' and
+>> friends.
 > 
-> From a quick test, you seem to be right.
+> I think we should avoid compile time completely.
+
+For instance, TASK_COMM_LEN is currently defined as 16; but in future
+(or custom) kernel it may be different; so in the task header I put a
+field that explicitly indicates this length, just in case. I think it's
+useful to be able to detect such inconsistencies.
+
+(of course this example is not arch-specific; and it would be wiser to
+have one such entry for the entire checkpoint image instead of one for
+each process)
+
+I concur with the rest below.
+
+Oren
+
 > 
-> Now the question of course is whether -pg will internally trigger
-> the bug for which we need the workaround tho...
-
-According to http://marc.info/?l=linux-kernel&m=121958694215835&w=4
-just removing -fno-omit-frame-pointer solved the problem.
-
-But I'll double check that on the actual hardware.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> We mostly try to have kernels running on everything anyway, and there's
+> no reason not to be able to move a snapshot to a different CPU if it's
+> not using a feature of the CPU that is different.
+> 
+> Nathan, what about you start the structure with a 64 bit bitmask that
+> indicates what "records" are present followed by concatenated records ?
+> 
+> IE. The "main" state (pt_regs) wouldn't change, but then, you could have
+> a list of things:
+> 
+>  - FPRs
+>  - old style VSX
+>  - VSRs
+>  - Freescale SPE state
+>  - DABR
+>  - BookE IAC/DACs
+>  - tbd...
+> 
+> Then, when resuming a snapshot, we can use some bit masks trickery
+> indicating the validity on a given target. IE. If CPU has no VSX and
+> original program uses VSX then you can't resume. But if CPU has VSR you
+> can.. etc... We can keep it trivial at fist, especting the same
+> features, and try to be smart later.
+> 
+> Ben.
+> 
+> 
+> 
