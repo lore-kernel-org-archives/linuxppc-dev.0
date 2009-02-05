@@ -1,20 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 36FE8DDE00
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 01:43:10 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LV5Ra-0002jc-93
-	for linuxppc-dev@ozlabs.org; Thu, 05 Feb 2009 06:43:06 -0800
-Message-ID: <21852712.post@talk.nabble.com>
-Date: Thu, 5 Feb 2009 06:43:06 -0800 (PST)
-From: Felix Radensky <felix@embedded-sol.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: ndfc driver on Kilauea board
-In-Reply-To: <21851244.post@talk.nabble.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
+	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id CDFDCDDE22
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 02:23:26 +1100 (EST)
+Received: by qyk14 with SMTP id 14so722274qyk.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Feb 2009 07:23:25 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <21851244.post@talk.nabble.com>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <20090205115100.GD422@sirena.org.uk>
+References: <49889CFA.7070308@freescale.com> <4989F3F4.7070207@consentry.com>
+	<20090205115100.GD422@sirena.org.uk>
+Date: Thu, 5 Feb 2009 09:18:04 -0600
+Message-ID: <ed82fe3e0902050718w1c7bfff3r883eea185b66299@mail.gmail.com>
+Subject: Re: Calling wait_event_interruptible_timeout() in I2C wait functions
+From: Timur Tabi <timur@freescale.com>
+To: Mark Brown <broonie@sirena.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
+	Mike Ditto <mditto@consentry.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Feb 5, 2009 at 5:51 AM, Mark Brown <broonie@sirena.org.uk> wrote:
 
+> This is exactly the problem for users that caused Timur to run into this
+> - further up the stack we're trying to do cleanup that involves writing
+> via I2C but the I2C writes error out due to the signal.
 
+Well, there's not much discussion on this issue, so I'm going to make
+the change to an uninterruptible wait and see if it fixes my problem.
+If so, I'll post a patch for i2c-mpc.c and see how far I get.
 
-Felix Radensky wrote:
-> 
-> Hi,
-> 
-> I'm trying to enable Linux ndfc driver on Kilauea (ppc405ex) board rev 1.2
-> running
-> u-boot v2009.01 and linux-2.6.29-rc3. I've enabled NDFC in kernel config
-> and
-> updated kilauea.dts as described in
-> Documentation/powerpc/dts-bindings/4xx/ndfc.txt
-> NDFC chip select is 1, so it matches the example in ndfc.txt
-> However driver probe routine is not called by the kernel, and NAND is not
-> identified. What am I missing ?  The same driver (backported) works for me
-> on custom 460EX board with u-boot-1.3.4 and linux-2.6.28
-> 
-> Thanks a lot in advance.
-> 
-> Felix.
-> 
-
-U-boot on Kilauea ships with the following  definitions:
-
-fdt_addr=0xfc1e0000
-net_nfs_fdt=tftp 200000 ${bootfile};tftp ${fdt_addr} ${fdt_file};run nfsargs
-addip addtty;bootm 200000 - ${fdt_addr}
-
-I was running net_nfs_fdt to download kernel and fdt from network, but in
-reality
-fdt stored on flash was used, which has no ndfc definitions. Now that I'm
-using 
-a proper ftd, NAND is properly identified.
-
-Sorry for the noise.
-
-Felix.
 -- 
-View this message in context: http://www.nabble.com/ndfc-driver-on-Kilauea-board-tp21851244p21852712.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Timur Tabi
+Linux kernel developer at Freescale
