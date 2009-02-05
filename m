@@ -1,27 +1,19 @@
-Return-Path: <orenl@cs.columbia.edu>
-Received: from serrano.cc.columbia.edu (serrano.cc.columbia.edu [128.59.29.6])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 666C1DDEF1
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 14:30:12 +1100 (EST)
-Message-ID: <498A5D38.9030009@cs.columbia.edu>
-Date: Wed, 04 Feb 2009 22:30:00 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
-	implementation
-References: <1233182478-27113-1-git-send-email-ntl@pobox.com>	
-	<1233182478-27113-2-git-send-email-ntl@pobox.com>	
-	<1233718789.16867.156.camel@pasglop>
-	<20090204155406.GA2039@us.ibm.com>	
-	<1233781099.4612.1.camel@pasglop>
-	<498A284E.4050501@cs.columbia.edu>
-	<1233793012.4612.32.camel@pasglop>
-In-Reply-To: <1233793012.4612.32.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: containers@lists.osdl.org, "Serge E. Hallyn" <serue@us.ibm.com>,
-	Nathan Lynch <ntl@pobox.com>, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 1354CDDE17
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 15:01:39 +1100 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n1541YHV002806
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Feb 2009 22:01:35 -0600
+Subject: [ANN] Introducing new "test" branch in powerpc.git tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 15:01:33 +1100
+Message-Id: <1233806493.4612.65.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,59 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hoy !
 
+So I've been annoyed for some time by the way we do our preparation for
+the next merge window. The "next" branch is defined as not being rebased
+ever (well, as much as possible), which makes it impossible to just
+stash things early in there and rebase if needed, which is a useful
+exercise in the weeks leading to the merge window to be able to test
+patches, fix them, etc... while keeping a good idea of what's planned to
+go in.
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2009-02-04 at 18:44 -0500, Oren Laadan wrote:
->> * Anything that is decided at compiled time should probably go to the arch-
->> dependent header.
->>
->> * Anything that can change at boot time (e.g., for x86 that would include
->> the capabilities of the FPU), or even run time (is there any ?) should
->> be described to the letter (in fine print) in 'struct cr_hdr_cpu' and
->> friends.
-> 
-> I think we should avoid compile time completely.
+Thus I've created a "test" branch. I'll push it out later today with
+various things pending. For pulls from sub-maintainers, I'll probably
+merge into "next" quickly (ie. a day or two after hitting "test" just
+enough time to find gross problems). That will allow me to be more
+pro-active also at pulling things off the mailing list and sticking them
+there even if some cosmetic changes have been requested to the patch as
+I will have no issue rebasing it when the new patch comes in.
 
-For instance, TASK_COMM_LEN is currently defined as 16; but in future
-(or custom) kernel it may be different; so in the task header I put a
-field that explicitly indicates this length, just in case. I think it's
-useful to be able to detect such inconsistencies.
+Now, one important rule is: test will be reset at the beginning of every
+merge window. I will not let it degenerate into the old linuxppc-dev bk
+tree that drifted for years and had things that never got merged.
 
-(of course this example is not arch-specific; and it would be wiser to
-have one such entry for the entire checkpoint image instead of one for
-each process)
+I'm also not sure whether sub-maintainers should do the same thing with
+a "test" branch of their own. I certainly don't mind if they rebase
+their "next" branches so I'm happy for them to play the same game
+directly into their 'next' branch as long as the day they ask me to pull
+it into the real 'next', they are reasonably confident that the stuff in
+there is stable.
 
-I concur with the rest below.
+For any complaint, see my secretary in the Oort cloud.
 
-Oren
-
-> 
-> We mostly try to have kernels running on everything anyway, and there's
-> no reason not to be able to move a snapshot to a different CPU if it's
-> not using a feature of the CPU that is different.
-> 
-> Nathan, what about you start the structure with a 64 bit bitmask that
-> indicates what "records" are present followed by concatenated records ?
-> 
-> IE. The "main" state (pt_regs) wouldn't change, but then, you could have
-> a list of things:
-> 
->  - FPRs
->  - old style VSX
->  - VSRs
->  - Freescale SPE state
->  - DABR
->  - BookE IAC/DACs
->  - tbd...
-> 
-> Then, when resuming a snapshot, we can use some bit masks trickery
-> indicating the validity on a given target. IE. If CPU has no VSX and
-> original program uses VSX then you can't resume. But if CPU has VSR you
-> can.. etc... We can keep it trivial at fist, especting the same
-> features, and try to be smart later.
-> 
-> Ben.
-> 
-> 
-> 
+Cheers,
+Ben.
