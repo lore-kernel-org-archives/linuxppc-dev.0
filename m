@@ -2,25 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CBE6EDDF07
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 10:56:40 +1100 (EST)
-Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+	by ozlabs.org (Postfix) with ESMTPS id A1E1BDDE08
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Feb 2009 11:17:31 +1100 (EST)
+Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
+	implementation
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Roland Dreier <rdreier@cisco.com>
-In-Reply-To: <adad4dym2zp.fsf@cisco.com>
-References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
-	<1233712248.16867.131.camel@pasglop>
-	<20090203211329.d6190a08.akpm@linux-foundation.org>
-	<aday6wmn2vr.fsf@cisco.com>
-	<20090203222601.747ca8b7.akpm@linux-foundation.org>
-	<adad4dym2zp.fsf@cisco.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+In-Reply-To: <498A284E.4050501@cs.columbia.edu>
+References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
+	<1233182478-27113-2-git-send-email-ntl@pobox.com>
+	<1233718789.16867.156.camel@pasglop> <20090204155406.GA2039@us.ibm.com>
+	<1233781099.4612.1.camel@pasglop>  <498A284E.4050501@cs.columbia.edu>
 Content-Type: text/plain
-Date: Thu, 05 Feb 2009 10:55:29 +1100
-Message-Id: <1233791729.4612.28.camel@pasglop>
+Date: Thu, 05 Feb 2009 11:16:52 +1100
+Message-Id: <1233793012.4612.32.camel@pasglop>
 Mime-Version: 1.0
-Cc: Eli Cohen <eli@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: containers@lists.osdl.org, "Serge E. Hallyn" <serue@us.ibm.com>,
+	Nathan Lynch <ntl@pobox.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,41 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2009-02-04 at 18:44 -0500, Oren Laadan wrote:
+> * Anything that is decided at compiled time should probably go to the arch-
+> dependent header.
+> 
+> * Anything that can change at boot time (e.g., for x86 that would include
+> the capabilities of the FPU), or even run time (is there any ?) should
+> be described to the letter (in fine print) in 'struct cr_hdr_cpu' and
+> friends.
 
-> get_user_pages() also gives us the vma back, and we can see from
-> is_vm_hugetlb_page() (-- BTW can I just say that a function
-> is_xxx_page() that operates on vmas is horribly misnamed --) that these
-> pages all come from a hugetlb mapping, but figuring out the size of that
-> mapping is I guess a challenge.
+I think we should avoid compile time completely.
 
-Note that g_u_p() has all sort of shortcommings... we were discussing
-some of that recently due to bugs reported from the field.
+We mostly try to have kernels running on everything anyway, and there's
+no reason not to be able to move a snapshot to a different CPU if it's
+not using a feature of the CPU that is different.
 
-The problem mostly is that you cannot guarantee that the physical page
-will remain mapped to that virtual address in the process. For example,
-if your code is part of some library used by an application, and that
-application somewhere does a fork/exec (for example, a system() call to
-run a shell helper), copy-on-write will hit, and you may end up with
-the child process getting the original physical page and the original
-process getting the copy...
+Nathan, what about you start the structure with a 64 bit bitmask that
+indicates what "records" are present followed by concatenated records ?
 
-So your HW will still DMA to a valid page (ie, it's count will have
-been incremented) but it's not going to be the one the application
-uses any more.
+IE. The "main" state (pt_regs) wouldn't change, but then, you could have
+a list of things:
 
-There are similar issues that can be cause, afaik, by madvise, etc...
+ - FPRs
+ - old style VSX
+ - VSRs
+ - Freescale SPE state
+ - DABR
+ - BookE IAC/DACs
+ - tbd...
 
-We've been discussing that at KS with various people, Linus says g_u_p()
-sucks, don't do that :-) Most of the time, the other approach should be
-used, ie, the driver allocates memory, and userspace mmap's it, in which
-case you get access to the VMA to set flags such as don't copy on fork.
+Then, when resuming a snapshot, we can use some bit masks trickery
+indicating the validity on a given target. IE. If CPU has no VSX and
+original program uses VSX then you can't resume. But if CPU has VSR you
+can.. etc... We can keep it trivial at fist, especting the same
+features, and try to be smart later.
 
-An option possibly would be to make fork() pre-COW pages with an
-elevated count to ensure that at least the original process is the one
-to keep the original physical page... but that has other potential side
-effects or performance issues.
-
-A can of worms..
-
-Cheers,
 Ben.
