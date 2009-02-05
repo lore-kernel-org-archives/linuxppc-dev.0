@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id A633ADDEF3
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 06:04:54 +1100 (EST)
-Date: Thu, 5 Feb 2009 22:04:51 +0300
+	by ozlabs.org (Postfix) with ESMTP id 8293ADDE08
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 06:05:01 +1100 (EST)
+Date: Thu, 5 Feb 2009 22:04:59 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/3] powerpc/83xx: Convert existing sdhc nodes to new bindings
-Message-ID: <20090205190451.GB3348@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/3] powerpc/83xx: Add FSL eSDHC support for MPC837x-RDB boards
+Message-ID: <20090205190459.GC3348@oksana.dev.rtsoft.ru>
 References: <20090205190403.GA27976@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -21,84 +21,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-- sdhc node renamed to sdhci ("sdhc" name is confusing since SDHC is
-  used to name Secure Digital High Capacity cards, while SDHCI is an
-  interface).
+Simply add appropriate sdhci nodes.
 
-- Get rid of "fsl,esdhc" compatible entry, it's replaced by the
-  "fsl,<chip>-esdhc" scheme;
-
-- Get rid of `model' property.
+Note that U-Boot should configure pin multiplexing for eSDHC prior
+to Linux could use it. U-Boot should also fill-in the clock-frequency
+property (eSDHC clock depends on board-specific SCCR[ESDHCCM] bits).
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/mpc8377_mds.dts |    7 ++++---
- arch/powerpc/boot/dts/mpc8378_mds.dts |    7 ++++---
- arch/powerpc/boot/dts/mpc8379_mds.dts |    7 ++++---
- 3 files changed, 12 insertions(+), 9 deletions(-)
+ arch/powerpc/boot/dts/mpc8377_rdb.dts |    9 +++++++++
+ arch/powerpc/boot/dts/mpc8378_rdb.dts |    9 +++++++++
+ arch/powerpc/boot/dts/mpc8379_rdb.dts |    9 +++++++++
+ 3 files changed, 27 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index a519e85..3e3ec8f 100644
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -313,12 +313,13 @@
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index b4ab3d0..6f4d614 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -291,6 +291,15 @@
  			fsl,descriptor-types-mask = <0x3ab0ebf>;
  		};
  
--		sdhc@2e000 {
--			model = "eSDHC";
--			compatible = "fsl,esdhc";
 +		sdhci@2e000 {
 +			compatible = "fsl,mpc8377-esdhc", "fsl,mpc8379-esdhc";
- 			reg = <0x2e000 0x1000>;
- 			interrupts = <42 0x8>;
- 			interrupt-parent = <&ipic>;
++			reg = <0x2e000 0x1000>;
++			interrupts = <42 0x8>;
++			interrupt-parent = <&ipic>;
 +			/* Filled in by U-Boot */
 +			clock-frequency = <0>;
- 		};
- 
++		};
++
  		sata@18000 {
-diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
-index 6bbee49..c3b212c 100644
---- a/arch/powerpc/boot/dts/mpc8378_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-@@ -313,12 +313,13 @@
+ 			compatible = "fsl,mpc8377-sata", "fsl,pq-sata";
+ 			reg = <0x18000 0x1000>;
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 1b05fb0..6457ef1 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -289,6 +289,15 @@
  			fsl,descriptor-types-mask = <0x3ab0ebf>;
  		};
  
--		sdhc@2e000 {
--			model = "eSDHC";
--			compatible = "fsl,esdhc";
 +		sdhci@2e000 {
 +			compatible = "fsl,mpc8378-esdhc", "fsl,mpc8379-esdhc";
- 			reg = <0x2e000 0x1000>;
- 			interrupts = <42 0x8>;
- 			interrupt-parent = <&ipic>;
++			reg = <0x2e000 0x1000>;
++			interrupts = <42 0x8>;
++			interrupt-parent = <&ipic>;
 +			/* Filled in by U-Boot */
 +			clock-frequency = <0>;
- 		};
- 
++		};
++
  		/* IPIC
-diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
-index acf06c4..1b61cda 100644
---- a/arch/powerpc/boot/dts/mpc8379_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
-@@ -310,12 +310,13 @@
+ 		 * interrupts cell = <intr #, sense>
+ 		 * sense values match linux IORESOURCE_IRQ_* defines:
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index 72cdc3c..203fff2 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -288,6 +288,15 @@
  			fsl,descriptor-types-mask = <0x3ab0ebf>;
  		};
  
--		sdhc@2e000 {
--			model = "eSDHC";
--			compatible = "fsl,esdhc";
 +		sdhci@2e000 {
 +			compatible = "fsl,mpc8379-esdhc";
- 			reg = <0x2e000 0x1000>;
- 			interrupts = <42 0x8>;
- 			interrupt-parent = <&ipic>;
++			reg = <0x2e000 0x1000>;
++			interrupts = <42 0x8>;
++			interrupt-parent = <&ipic>;
 +			/* Filled in by U-Boot */
 +			clock-frequency = <0>;
- 		};
- 
++		};
++
  		sata@18000 {
+ 			compatible = "fsl,mpc8379-sata", "fsl,pq-sata";
+ 			reg = <0x18000 0x1000>;
 -- 
 1.5.6.5
