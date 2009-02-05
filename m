@@ -1,18 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 58A45DDDF9
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 00:21:41 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LV4Ak-0007HV-5H
-	for linuxppc-dev@ozlabs.org; Thu, 05 Feb 2009 05:21:38 -0800
-Message-ID: <21851244.post@talk.nabble.com>
-Date: Thu, 5 Feb 2009 05:21:38 -0800 (PST)
-From: Felix Radensky <felix@embedded-sol.com>
-To: linuxppc-dev@ozlabs.org
-Subject: ndfc driver on Kilauea board
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id D8A1FDDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 00:36:54 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Thu, 05 Feb 2009 14:36:51 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1233780436.4612.0.camel@pasglop>
+Message-ID: <20090205133651.81040@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+References: <20090202212139.69160@gmx.net>  <20090202213910.258290@gmx.net>	
+	<1233719407.16867.164.camel@pasglop>  <20090204120928.102380@gmx.net>
+	<1233780436.4612.0.camel@pasglop>
+Subject: [RFC] Error handling in *_add/find_bridges()
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi!
 
-Hi,
+I have a minor question about the error handling in the various *_add/find_bridges functions, which are used to detect and initialize
+PHBs. AFAIK all of them return an error code that is never checked in
+the platform setup code (e.g. when there is no memory for the
+pci_controller struct).
+Shouldn't the kernel panic (BUG();), when it can't initialize the PHB
+for whatever reason and the platform depends on a working PCI bus?
 
-I'm trying to enable Linux ndfc driver on Kilauea (ppc405ex) board rev 1.2
-running
-u-boot v2009.01 and linux-2.6.29-rc3. I've enabled NDFC in kernel config and
-updated kilauea.dts as described in
-Documentation/powerpc/dts-bindings/4xx/ndfc.txt
-NDFC chip select is 1, so it matches the example in ndfc.txt
-However driver probe routine is not called by the kernel, and NAND is not
-identified. What am I missing ?  The same driver (backported) works for me
-on custom 460EX board with u-boot-1.3.4 and linux-2.6.28
+Thanks!
 
-Thanks a lot in advance.
+regards,
 
-Felix.
+Gerhard
 -- 
-View this message in context: http://www.nabble.com/ndfc-driver-on-Kilauea-board-tp21851244p21851244.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Jetzt 1 Monat kostenlos! GMX FreeDSL - Telefonanschluss + DSL 
+für nur 17,95 Euro/mtl.!* http://dsl.gmx.de/?ac=OM.AD.PD003K11308T4569a
