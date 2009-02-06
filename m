@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C5CC1DDED2
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:39:34 +1100 (EST)
-Message-Id: <DCE813B1-89CE-41BA-8D8C-86A9C122212F@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 5E232DDECF
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:44:54 +1100 (EST)
+Message-Id: <67331C84-5400-4FE5-B6FA-395F13A482F8@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090205201040.GB3425@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Julia Lawall <julia@diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 2/2] powerpc/83xx: Fix TSEC0 workability on MPC8313E-RDB
-	boards
-Date: Fri, 6 Feb 2009 10:39:26 -0600
-References: <20090205201040.GB3425@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] arch/powerpc: Eliminate double sizeof
+Date: Fri, 6 Feb 2009 10:44:44 -0600
+References: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
+Cc: linuxppc-dev@ozlabs.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +25,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 5, 2009, at 2:10 PM, Anton Vorontsov wrote:
+On Feb 4, 2009, at 3:43 PM, Julia Lawall wrote:
 
-> TSEC0 is connected to Vitesse 7385 5-port switch. The switch
-> isn't connected to any mdio bus, the link to the switch is fixed
-> to Full-duplex 1000 Mb/s (no pause).
+> From: Julia Lawall <julia@diku.dk>
 >
-> This patch fixes following failure during bootup:
+> Taking sizeof the result of sizeof is quite strange and does not  
+> seem to be
+> what is wanted here.
 >
-> mdio@24520:01 not found
-> eth0: Could not attach to PHY
-> IP-Config: Failed to open eth0
+> This was fixed using the following semantic patch.
+> (http://www.emn.fr/x-info/coccinelle/)
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> // <smpl>
+> @@
+> expression E;
+> @@
+>
+> - sizeof (
+>  sizeof (E)
+> - )
+>
+> @@
+> type T;
+> @@
+>
+> - sizeof (
+>  sizeof (T)
+> - )
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 > ---
-> arch/powerpc/boot/dts/mpc8313erdb.dts           |    9 ++-------
-> arch/powerpc/configs/83xx/mpc8313_rdb_defconfig |    2 +-
-> 2 files changed, 3 insertions(+), 8 deletions(-)
+> arch/powerpc/platforms/82xx/pq2ads-pci-pic.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-applied to merge
+applied
 
 - k
