@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C5D6EDDE17
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:39:31 +1100 (EST)
-Message-Id: <F910B89A-8CFE-4C46-A676-DCC5DAD55510@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id C5CC1DDED2
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:39:34 +1100 (EST)
+Message-Id: <DCE813B1-89CE-41BA-8D8C-86A9C122212F@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090205201032.GA3425@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+In-Reply-To: <20090205201040.GB3425@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 1/2] powerpc/83xx: Fix missing #{address,
-	size}-cells in mpc8313erdb.dts
-Date: Fri, 6 Feb 2009 10:39:20 -0600
-References: <20090205201032.GA3425@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 2/2] powerpc/83xx: Fix TSEC0 workability on MPC8313E-RDB
+	boards
+Date: Fri, 6 Feb 2009 10:39:26 -0600
+References: <20090205201040.GB3425@oksana.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,24 +27,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Feb 5, 2009, at 2:10 PM, Anton Vorontsov wrote:
 
-> commit b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4 ("gianfar: Convert
-> gianfar to an of_platform_driver") introduced a child node for
-> the ethernet@25000 controller, but no address and size cells
-> specifiers were added, and that makes dtc unhappy:
+> TSEC0 is connected to Vitesse 7385 5-port switch. The switch
+> isn't connected to any mdio bus, the link to the switch is fixed
+> to Full-duplex 1000 Mb/s (no pause).
 >
-> DTC: dts->dtb  on file "arch/powerpc/boot/dts/mpc8313erdb.dts"
-> Warning (reg_format): "reg" property in /soc8313@e0000000/ 
-> ethernet@25000/mdio@25520 has invalid length (8 bytes) (#address- 
-> cells == 2, #size-cells == 1)
-> Warning (avoid_default_addr_size): Relying on default #address-cells  
-> value for /soc8313@e0000000/ethernet@25000/mdio@25520
-> Warning (avoid_default_addr_size): Relying on default #size-cells  
-> value for /soc8313@e0000000/ethernet@25000/mdio@25520
+> This patch fixes following failure during bootup:
+>
+> mdio@24520:01 not found
+> eth0: Could not attach to PHY
+> IP-Config: Failed to open eth0
 >
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> arch/powerpc/boot/dts/mpc8313erdb.dts |    2 ++
-> 1 files changed, 2 insertions(+), 0 deletions(-)
+> arch/powerpc/boot/dts/mpc8313erdb.dts           |    9 ++-------
+> arch/powerpc/configs/83xx/mpc8313_rdb_defconfig |    2 +-
+> 2 files changed, 3 insertions(+), 8 deletions(-)
+
 
 applied to merge
 
