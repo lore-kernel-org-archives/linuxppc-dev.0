@@ -1,19 +1,29 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 3DA12DDE1E
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 02:37:44 +1100 (EST)
-Date: Fri, 6 Feb 2009 18:37:41 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: FSL eSDHC bindings update
-Message-ID: <20090206153741.GA17699@oksana.dev.rtsoft.ru>
-References: <20090205190403.GA27976@oksana.dev.rtsoft.ru>
-	<A7909298-D656-4BDE-BB02-0D6A8036045D@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <A7909298-D656-4BDE-BB02-0D6A8036045D@kernel.crashing.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 23BD8DDE11
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:04:57 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n16G4rAY005398
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Feb 2009 09:04:54 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n16G4rkY022179
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Feb 2009 10:04:53 -0600 (CST)
+Date: Fri, 6 Feb 2009 10:04:52 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: Build breakage for CONFIG_PM but no CONFIG_SUSPEND
+Message-ID: <20090206160452.GB1641@ld0162-tx32.am.freescale.net>
+References: <1436.1233879027@neuling.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1436.1233879027@neuling.org>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 05, 2009 at 08:52:56PM -0600, Kumar Gala wrote:
-> On Feb 5, 2009, at 1:04 PM, Anton Vorontsov wrote:
->> On Thu, Jan 22, 2009 at 01:15:01PM -0600, Kumar Gala wrote:
->>> On Jan 21, 2009, at 8:00 PM, Anton Vorontsov wrote:
->>>> This patch adds a new driver: sdhci-of. The driver is similar to
->>>> the sdhci-pci, it contains common probe code, and controller- 
->>>> specific
->>>> ops and quirks.
->>>>
->>>> So far there are only Freescale eSDHC ops and quirks.
->>>>
->>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>>> ---
->>>> drivers/mmc/host/Kconfig    |   10 ++
->>>> drivers/mmc/host/Makefile   |    1 +
->>>> drivers/mmc/host/sdhci-of.c |  274 ++++++++++++++++++++++++++++++++ 
->>>> ++
->>>> +++++++++
->>>> 3 files changed, 285 insertions(+), 0 deletions(-)
->>>> create mode 100644 drivers/mmc/host/sdhci-of.c
->>>
->>> Still griping about lack of OF binding docs for this.
->>
->> Here they're.
->>
->> I'm assuming that MPC8536 is the first chip in 85xx family with eSDHC.
->
-> thanks.  MPC8536 is the first.  Do we need a u-boot patch for clock- 
-> frequency on 85xx?
+On Fri, Feb 06, 2009 at 11:10:27AM +1100, Michael Neuling wrote:
+> I noticed this doing some randconfig testing (.config below).  I have
+> CONFIG_PM but no CONFIG_SUSPEND.  Bug is against mainline.  
+> 
+> arch/powerpc/sysdev/built-in.o: In function `ipic_suspend':
+> ipic.c:(.text+0x6b34): undefined reference to `fsl_deep_sleep'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> make: *** [sub-make] Error 2
+> 
+> Looks like #ifdef CONFIG_PM in arch/powerpc/sysdev/ipic.c should be
+> CONFIG_SUSPEND.  d49747bdfb2ddebea24d1580da55b79d093d48a9 introduced
+> this.
+> 
+> Maybe this fixes it?
+> 
+> 
+> Fix build when we have CONFIG_PM but no CONFIG_SUSPEND.  
 
-Yes, I'll prepare U-Boot patches soon (on top of Andy Fleming's
-eSDHC work):
-http://www.mail-archive.com/u-boot@lists.denx.de/msg04183.html
+ACK.  That was a leftover from before CONFIG_SUSPEND was introduced.
 
-W/o the U-Boot patches SDHCI driver will just fail to probe
-(gracefully, saying that the controller doesn't specify sdclk).
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+-Scott
