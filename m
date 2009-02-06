@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 376A7DDF04
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 13:53:02 +1100 (EST)
-Message-Id: <A7909298-D656-4BDE-BB02-0D6A8036045D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090205190403.GA27976@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: FSL eSDHC bindings update
-Date: Thu, 5 Feb 2009 20:52:56 -0600
-References: <20090205190403.GA27976@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 6C6DADDED2
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 17:07:28 +1100 (EST)
+Date: Fri, 6 Feb 2009 01:07:26 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] ftrace, powerpc: replace debug macro with proper
+	pr_deug
+In-Reply-To: <20090206060527.148611255@goodmis.org>
+Message-ID: <alpine.DEB.1.10.0902060106440.5262@gandalf.stny.rr.com>
+References: <20090206060328.181057235@goodmis.org>
+	<20090206060527.148611255@goodmis.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Michael Neuling <mikey@neuling.org>, Steven Rostedt <srostedt@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +26,127 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 5, 2009, at 1:04 PM, Anton Vorontsov wrote:
+[ forgot to add linuxppc ]
 
-> On Thu, Jan 22, 2009 at 01:15:01PM -0600, Kumar Gala wrote:
->> On Jan 21, 2009, at 8:00 PM, Anton Vorontsov wrote:
->>> This patch adds a new driver: sdhci-of. The driver is similar to
->>> the sdhci-pci, it contains common probe code, and controller- 
->>> specific
->>> ops and quirks.
->>>
->>> So far there are only Freescale eSDHC ops and quirks.
->>>
->>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>> ---
->>> drivers/mmc/host/Kconfig    |   10 ++
->>> drivers/mmc/host/Makefile   |    1 +
->>> drivers/mmc/host/sdhci-of.c |  274 ++++++++++++++++++++++++++++++++ 
->>> ++
->>> +++++++++
->>> 3 files changed, 285 insertions(+), 0 deletions(-)
->>> create mode 100644 drivers/mmc/host/sdhci-of.c
->>
->> Still griping about lack of OF binding docs for this.
->
-> Here they're.
->
-> I'm assuming that MPC8536 is the first chip in 85xx family with eSDHC.
+On Fri, 6 Feb 2009, Steven Rostedt wrote:
 
-thanks.  MPC8536 is the first.  Do we need a u-boot patch for clock- 
-frequency on 85xx?
-
-- k
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> Impact: cleanup
+> 
+> The PowerPC ftrace code uses a hacked up DEBUGP macro for prints.
+> This patch converts it to the standard pr_debug.
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  arch/powerpc/kernel/ftrace.c |   26 ++++++++++----------------
+>  1 files changed, 10 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+> index 5355244..a913f91 100644
+> --- a/arch/powerpc/kernel/ftrace.c
+> +++ b/arch/powerpc/kernel/ftrace.c
+> @@ -20,12 +20,6 @@
+>  #include <asm/code-patching.h>
+>  #include <asm/ftrace.h>
+>  
+> -#if 0
+> -#define DEBUGP printk
+> -#else
+> -#define DEBUGP(fmt , ...)	do { } while (0)
+> -#endif
+> -
+>  static unsigned int ftrace_nop = PPC_NOP_INSTR;
+>  
+>  #ifdef CONFIG_PPC32
+> @@ -175,7 +169,7 @@ __ftrace_make_nop(struct module *mod,
+>  	 * 0xe8, 0x4c, 0x00, 0x28,    ld      r2,40(r12)
+>  	 */
+>  
+> -	DEBUGP("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
+> +	pr_debug("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
+>  
+>  	/* Find where the trampoline jumps to */
+>  	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
+> @@ -183,7 +177,7 @@ __ftrace_make_nop(struct module *mod,
+>  		return -EFAULT;
+>  	}
+>  
+> -	DEBUGP(" %08x %08x", jmp[0], jmp[1]);
+> +	pr_debug(" %08x %08x", jmp[0], jmp[1]);
+>  
+>  	/* verify that this is what we expect it to be */
+>  	if (((jmp[0] & 0xffff0000) != 0x3d820000) ||
+> @@ -198,18 +192,18 @@ __ftrace_make_nop(struct module *mod,
+>  	offset = (unsigned)((unsigned short)jmp[0]) << 16 |
+>  		(unsigned)((unsigned short)jmp[1]);
+>  
+> -	DEBUGP(" %x ", offset);
+> +	pr_debug(" %x ", offset);
+>  
+>  	/* get the address this jumps too */
+>  	tramp = mod->arch.toc + offset + 32;
+> -	DEBUGP("toc: %lx", tramp);
+> +	pr_debug("toc: %lx", tramp);
+>  
+>  	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
+>  		printk(KERN_ERR "Failed to read %lx\n", tramp);
+>  		return -EFAULT;
+>  	}
+>  
+> -	DEBUGP(" %08x %08x\n", jmp[0], jmp[1]);
+> +	pr_debug(" %08x %08x\n", jmp[0], jmp[1]);
+>  
+>  	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
+>  
+> @@ -286,7 +280,7 @@ __ftrace_make_nop(struct module *mod,
+>  	 *  0x4e, 0x80, 0x04, 0x20  bctr
+>  	 */
+>  
+> -	DEBUGP("ip:%lx jumps to %lx", ip, tramp);
+> +	pr_debug("ip:%lx jumps to %lx", ip, tramp);
+>  
+>  	/* Find where the trampoline jumps to */
+>  	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
+> @@ -294,7 +288,7 @@ __ftrace_make_nop(struct module *mod,
+>  		return -EFAULT;
+>  	}
+>  
+> -	DEBUGP(" %08x %08x ", jmp[0], jmp[1]);
+> +	pr_debug(" %08x %08x ", jmp[0], jmp[1]);
+>  
+>  	/* verify that this is what we expect it to be */
+>  	if (((jmp[0] & 0xffff0000) != 0x3d600000) ||
+> @@ -310,7 +304,7 @@ __ftrace_make_nop(struct module *mod,
+>  	if (tramp & 0x8000)
+>  		tramp -= 0x10000;
+>  
+> -	DEBUGP(" %x ", tramp);
+> +	pr_debug(" %x ", tramp);
+>  
+>  	if (tramp != addr) {
+>  		printk(KERN_ERR
+> @@ -413,7 +407,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+>  	/* ld r2,40(r1) */
+>  	op[1] = 0xe8410028;
+>  
+> -	DEBUGP("write to %lx\n", rec->ip);
+> +	pr_debug("write to %lx\n", rec->ip);
+>  
+>  	if (probe_kernel_write((void *)ip, op, MCOUNT_INSN_SIZE * 2))
+>  		return -EPERM;
+> @@ -453,7 +447,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+>  		return -EINVAL;
+>  	}
+>  
+> -	DEBUGP("write to %lx\n", rec->ip);
+> +	pr_debug("write to %lx\n", rec->ip);
+>  
+>  	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
+>  		return -EPERM;
+> -- 
+> 1.5.6.5
+> 
+> -- 
+> 
+> 
