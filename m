@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5E232DDECF
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:44:54 +1100 (EST)
-Message-Id: <67331C84-5400-4FE5-B6FA-395F13A482F8@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id D4995DDDEF
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:44:58 +1100 (EST)
+Message-Id: <53A787DC-EDA9-4961-87D8-75ECB79DA60B@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Julia Lawall <julia@diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
+To: paulfax <paulfax@conspiracy.net>
+In-Reply-To: <497EC957.2050205@conspiracy.net>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] arch/powerpc: Eliminate double sizeof
-Date: Fri, 6 Feb 2009 10:44:44 -0600
-References: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
-Cc: linuxppc-dev@ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/cpm2 Fix set interrupt type
+Date: Fri, 6 Feb 2009 10:44:52 -0600
+References: <497EC957.2050205@conspiracy.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +24,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 4, 2009, at 3:43 PM, Julia Lawall wrote:
+On Jan 27, 2009, at 2:44 AM, paulfax wrote:
 
-> From: Julia Lawall <julia@diku.dk>
+> This is a simple change to correct problems when using set_irq_type  
+> on platforms using CPM2.
+> This code correct the problem on most platform but still fails on  
+> 8272 derived platforms for some interrupts.
+> On 8272 PC2 & 3 are missing and PC 23 & 29 are added, which this  
+> patch does not address.
 >
-> Taking sizeof the result of sizeof is quite strange and does not  
-> seem to be
-> what is wanted here.
->
-> This was fixed using the following semantic patch.
-> (http://www.emn.fr/x-info/coccinelle/)
->
-> // <smpl>
-> @@
-> expression E;
-> @@
->
-> - sizeof (
->  sizeof (E)
-> - )
->
-> @@
-> type T;
-> @@
->
-> - sizeof (
->  sizeof (T)
-> - )
-> // </smpl>
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> Signed-off-by: Paul Bilke <paul at conspiracy.net>
 > ---
-> arch/powerpc/platforms/82xx/pq2ads-pci-pic.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>
+>
+>
+> diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/ 
+> cpm2_pic.c
+> index b16ca3e..78f1f7c 100644
+> --- a/arch/powerpc/sysdev/cpm2_pic.c
+> +++ b/arch/powerpc/sysdev/cpm2_pic.c
+> @@ -165,7 +165,7 @@ static int cpm2_set_irq_type(unsigned int virq,  
+> unsigned int flow_type)
+>                        edibit = (14 - (src - CPM2_IRQ_EXT1));
+>        else
+>                if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0)
+> -                       edibit = (31 - (src - CPM2_IRQ_PORTC15));
+> +                       edibit = (31 - (CPM2_IRQ_PORTC0 - src));
+>                else
+>                        return (flow_type & IRQ_TYPE_LEVEL_LOW) ? 0 :  
+> -EINVAL;
+
 
 applied
 
