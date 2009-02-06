@@ -1,16 +1,18 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id D2A1EDDE9E
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 13:42:25 +1100 (EST)
-Subject: Re: ftrace compile error with 32 bit PPC with mainline
-From: Steven Rostedt <srostedt@redhat.com>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <1307.1233887821@neuling.org>
-References: <1307.1233887821@neuling.org>
-Content-Type: text/plain
-Date: Thu, 05 Feb 2009 21:42:18 -0500
-Message-Id: <1233888138.16878.48.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 376A7DDF04
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 13:53:02 +1100 (EST)
+Message-Id: <A7909298-D656-4BDE-BB02-0D6A8036045D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20090205190403.GA27976@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: FSL eSDHC bindings update
+Date: Thu, 5 Feb 2009 20:52:56 -0600
+References: <20090205190403.GA27976@oksana.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,15 +24,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+On Feb 5, 2009, at 1:04 PM, Anton Vorontsov wrote:
 
-On Fri, 2009-02-06 at 13:37 +1100, Michael Neuling wrote:
+> On Thu, Jan 22, 2009 at 01:15:01PM -0600, Kumar Gala wrote:
+>> On Jan 21, 2009, at 8:00 PM, Anton Vorontsov wrote:
+>>> This patch adds a new driver: sdhci-of. The driver is similar to
+>>> the sdhci-pci, it contains common probe code, and controller- 
+>>> specific
+>>> ops and quirks.
+>>>
+>>> So far there are only Freescale eSDHC ops and quirks.
+>>>
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> ---
+>>> drivers/mmc/host/Kconfig    |   10 ++
+>>> drivers/mmc/host/Makefile   |    1 +
+>>> drivers/mmc/host/sdhci-of.c |  274 ++++++++++++++++++++++++++++++++ 
+>>> ++
+>>> +++++++++
+>>> 3 files changed, 285 insertions(+), 0 deletions(-)
+>>> create mode 100644 drivers/mmc/host/sdhci-of.c
+>>
+>> Still griping about lack of OF binding docs for this.
+>
+> Here they're.
+>
+> I'm assuming that MPC8536 is the first chip in 85xx family with eSDHC.
 
-> # CONFIG_MODULES is not set
+thanks.  MPC8536 is the first.  Do we need a u-boot patch for clock- 
+frequency on 85xx?
 
-
-Those are module references. I never tested with modules turned off.
-I'll write up a patch tonight.
-
-Thanks,
-
--- Steve
+- k
