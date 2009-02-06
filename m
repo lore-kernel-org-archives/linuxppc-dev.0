@@ -1,19 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 304B0DDE26
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 01:00:52 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
-	galak@kernel.crashing.org, broonie@opensource.wolfsonmicro.com,
-	mditto@consentry.com
-Subject: [PATCH] i2c-mpc: do not allow interruptions when waiting for I2C to
-	complete
-Date: Fri,  6 Feb 2009 08:00:37 -0600
-Message-Id: <1233928837-3401-1-git-send-email-timur@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 3DA12DDE1E
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 02:37:44 +1100 (EST)
+Date: Fri, 6 Feb 2009 18:37:41 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: FSL eSDHC bindings update
+Message-ID: <20090206153741.GA17699@oksana.dev.rtsoft.ru>
+References: <20090205190403.GA27976@oksana.dev.rtsoft.ru>
+	<A7909298-D656-4BDE-BB02-0D6A8036045D@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <A7909298-D656-4BDE-BB02-0D6A8036045D@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,54 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The i2c_wait() function is using wait_event_interruptible_timeout() to wait for
-the I2C controller to signal that it has completed an I2C bus operation.  If
-the process that causes the I2C operation terminated abruptly, the wait will
-be interrupted, returning an error.  It is better to let the I2C operation
-finished before the process exits.
+On Thu, Feb 05, 2009 at 08:52:56PM -0600, Kumar Gala wrote:
+> On Feb 5, 2009, at 1:04 PM, Anton Vorontsov wrote:
+>> On Thu, Jan 22, 2009 at 01:15:01PM -0600, Kumar Gala wrote:
+>>> On Jan 21, 2009, at 8:00 PM, Anton Vorontsov wrote:
+>>>> This patch adds a new driver: sdhci-of. The driver is similar to
+>>>> the sdhci-pci, it contains common probe code, and controller- 
+>>>> specific
+>>>> ops and quirks.
+>>>>
+>>>> So far there are only Freescale eSDHC ops and quirks.
+>>>>
+>>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>>> ---
+>>>> drivers/mmc/host/Kconfig    |   10 ++
+>>>> drivers/mmc/host/Makefile   |    1 +
+>>>> drivers/mmc/host/sdhci-of.c |  274 ++++++++++++++++++++++++++++++++ 
+>>>> ++
+>>>> +++++++++
+>>>> 3 files changed, 285 insertions(+), 0 deletions(-)
+>>>> create mode 100644 drivers/mmc/host/sdhci-of.c
+>>>
+>>> Still griping about lack of OF binding docs for this.
+>>
+>> Here they're.
+>>
+>> I'm assuming that MPC8536 is the first chip in 85xx family with eSDHC.
+>
+> thanks.  MPC8536 is the first.  Do we need a u-boot patch for clock- 
+> frequency on 85xx?
 
-It is safe to use wait_event_timeout() instead, because the timeout will allow
-the process to exit if the I2C bus hangs.  It's also better to allow the
-I2C operation to finish, because unacknowledged I2C operations can cause the
-I2C bus to hang.
+Yes, I'll prepare U-Boot patches soon (on top of Andy Fleming's
+eSDHC work):
+http://www.mail-archive.com/u-boot@lists.denx.de/msg04183.html
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+W/o the U-Boot patches SDHCI driver will just fail to probe
+(gracefully, saying that the controller doesn't specify sdclk).
 
-A similar change should probably be done to i2c-cpm.c, and maybe all other
-I2C drivers.  Not many use wait_event_interruptible_timeout().
-
- drivers/i2c/busses/i2c-mpc.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index a9a45fc..c0ace48 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -70,7 +70,7 @@ static irqreturn_t mpc_i2c_isr(int irq, void *dev_id)
- 		/* Read again to allow register to stabilise */
- 		i2c->interrupt = readb(i2c->base + MPC_I2C_SR);
- 		writeb(0, i2c->base + MPC_I2C_SR);
--		wake_up_interruptible(&i2c->queue);
-+		wake_up(&i2c->queue);
- 	}
- 	return IRQ_HANDLED;
- }
-@@ -115,13 +115,10 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
- 		writeb(0, i2c->base + MPC_I2C_SR);
- 	} else {
- 		/* Interrupt mode */
--		result = wait_event_interruptible_timeout(i2c->queue,
-+		result = wait_event_timeout(i2c->queue,
- 			(i2c->interrupt & CSR_MIF), timeout * HZ);
- 
--		if (unlikely(result < 0)) {
--			pr_debug("I2C: wait interrupted\n");
--			writeccr(i2c, 0);
--		} else if (unlikely(!(i2c->interrupt & CSR_MIF))) {
-+		if (unlikely(!(i2c->interrupt & CSR_MIF))) {
- 			pr_debug("I2C: wait timeout\n");
- 			writeccr(i2c, 0);
- 			result = -ETIMEDOUT;
 -- 
-1.5.5
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
