@@ -1,20 +1,14 @@
-Return-Path: <michel@daenzer.net>
-Received: from smtp-wifi.orange.fr (smtp-wifi-out.orange.fr [80.12.242.163])
-	by ozlabs.org (Postfix) with ESMTP id 931BEDDEF7
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 05:07:36 +1100 (EST)
-Subject: Re: [ANN] Introducing new "test" branch in powerpc.git tree
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20090205205809.GA10793@zod.rchland.ibm.com>
-References: <1233806493.4612.65.camel@pasglop>
-	<20090205134700.GB3000@yoda.jdub.homelinux.org>
-	<1233867382.4612.98.camel@pasglop>
-	<20090205205809.GA10793@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 06 Feb 2009 18:42:36 +0100
-Message-Id: <1233942156.5081.454.camel@thor.local>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <wd@denx.de>
+To: David Jander <david.jander@protonic.nl>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: MPC5121e, MBX driver, pvr.ko ...
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <200902060824.06851.david.jander@protonic.nl>
+References: <200902060824.06851.david.jander@protonic.nl>
+Date: Fri, 06 Feb 2009 20:17:10 +0100
+Message-Id: <20090206191710.C16B78322908@gemini.denx.de>
+Cc: Linuxppc-dev <Linuxppc-dev@ozlabs.org>, John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +18,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-02-05 at 15:58 -0500, Josh Boyer wrote:
-> On Fri, Feb 06, 2009 at 07:56:22AM +1100, Benjamin Herrenschmidt wrote:
-> >
-> >> Which begs the question of what master is for.  So far, it's just been
-> >> a mirror of next from what I can tell.  Maybe it should just track
-> >> Linus' tree?
-> >
-> >I've been wondering myself what to do with it ... I may just leave it to
-> >track linus indeed. Or maybe just delete it.
->=20
-> I don't think you can delete it without hosing people who try to clone it=
-.
+Dear David,
 
-The branch to check out by git clone can be overridden via a special
-file in the .git directory in the shared repository. Unfortunately
-though, I don't remember what it's called...
+In message <200902060824.06851.david.jander@protonic.nl> you wrote:
+> 
+> I decided to try out Application Note AN3793 from Freescale (3D Graphics on 
+> the ADS512101 Board Using OpenGL ES).
+> 
+> I started trying to load the provided (binary!) kernel modules into our 
+> kernel, but I am geeting errors inserting the modules using 
 
+The binary kernel modules are a mess. Not  only  they  are  a  pretty
+clear  GPL license violation (and I wonder what Freescale is going to
+do to sort this out), but it effectively always locks you down to the
+specific LTIB kernel version (and probably even to  a  specific  DTS)
+they were built against. Open source? Forget it.
 
---=20
-Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Send lawyers, guns and money..."  - Lyrics from a Warren Zevon song
