@@ -1,16 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C5A60DE0CE
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:52:00 +1100 (EST)
-Date: Fri, 6 Feb 2009 10:51:54 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <miltonm@bga.com>
+Received: from mercury.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 8428ADDEE3
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:54:27 +1100 (EST)
+In-Reply-To: <1233720433.16867.185.camel@pasglop>
+References: <1231160724_126472@mercury.realtime.net>
+	<1233720433.16867.185.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6eae2dfd216825bd50e057005780ca5e@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] powerpc: use common cpu_die
+Date: Fri, 6 Feb 2009 11:02:34 -0600
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull from 'merge' branch (for 2.6.29)
-Message-ID: <Pine.LNX.4.64.0902061051330.378@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,28 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'merge' branch of
+On Feb 3, 2009, at 10:07 PM, Benjamin Herrenschmidt wrote:
+>> --- work.git.orig/arch/powerpc/platforms/powermac/setup.c-static void 
+>> pmac_cpu_die(void)
+>> +static void pmac64_cpu_die(void)
+  ...
+>> --- work.git.orig/arch/powerpc/platforms/powermac/smp.c	2009-01-05 
+>> 02:09:08.000000000 -0600
+>> -void cpu_die(void)
+>> +void pmac32_cpu_die(void)
+>>  {
+>>  	local_irq_disable();
+>>  	cpu_dead[smp_processor_id()] = 1;
+>
+> Hi Milton ! Any chance you can move both pmac32 and pmac64 variants 
+> into
+> the same file ?
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
+I'm sure I could, but (1) it should be an incremental patch, (2) it 
+would only be compile tested again, and (3)  I didn't look to see how 
+it would fit.  I was doing the minimal patch that left the code intact; 
+it's possible that more consolidation could be done.
 
-to receive the following updates:
-
- arch/powerpc/boot/dts/mpc8313erdb.dts           |   11 ++++-------
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig |    2 +-
- arch/powerpc/platforms/82xx/pq2ads-pci-pic.c    |    2 +-
- arch/powerpc/sysdev/cpm2_pic.c                  |    2 +-
- arch/powerpc/sysdev/ipic.c                      |    2 +-
- 5 files changed, 8 insertions(+), 11 deletions(-)
-
-Anton Vorontsov (2):
-      powerpc/83xx: Fix missing #{address,size}-cells in mpc8313erdb.dts
-      powerpc/83xx: Fix TSEC0 workability on MPC8313E-RDB boards
-
-Julia Lawall (1):
-      arch/powerpc: Eliminate double sizeof
-
-Michael Neuling (1):
-      powerpc/83xx: Build breakage for CONFIG_PM but no CONFIG_SUSPEND
-
-paulfax (1):
-      powerpc/cpm2: Fix set interrupt type
+milton
