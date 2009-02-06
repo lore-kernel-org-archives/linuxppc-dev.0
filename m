@@ -1,12 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B6DADDDED9
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 05:06:51 +1100 (EST)
-Date: Fri, 6 Feb 2009 21:06:50 +0300
+	by ozlabs.org (Postfix) with ESMTP id 95B9CDDEDD
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 05:06:53 +1100 (EST)
+Date: Fri, 6 Feb 2009 21:06:52 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 04/11] sdhci: Add support for card-detection polling
-Message-ID: <20090206180650.GD11548@oksana.dev.rtsoft.ru>
+Subject: [PATCH 05/11] sdhci: Add support for hosts reporting inverted
+	write-protect state
+Message-ID: <20090206180652.GE11548@oksana.dev.rtsoft.ru>
 References: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -23,56 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds SDHCI_QUIRK_BROKEN_CARD_DETECTION quirk. When specified,
-sdhci driver will set MMC_CAP_NEEDS_POLL MMC host capability, and won't
-enable card insert/remove interrupts.
+This patch adds SDHCI_QUIRK_INVERTED_WRITE_PROTECT quirk. When
+specified, the sdhci driver will invert WP state.
 
-This is needed for hosts with unreliable card detection, such as FSL
-eSDHC. The original eSDHC driver was tring to "debounce" card-detection
-IRQs by reading present state and disabling particular interrupts. But
-with this debouncing scheme I noticed that sometimes we miss card
-insertion/removal events.
+p.s. Actually, the quirk is more board-specific than
+     controller-specific.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |    6 ++++++
+ drivers/mmc/host/sdhci.c |    2 ++
  drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 8 insertions(+), 0 deletions(-)
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index b7a79a0..45c5f1f 100644
+index 45c5f1f..85f3780 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -162,6 +162,9 @@ static void sdhci_init(struct sdhci_host *host)
- 		SDHCI_INT_DMA_END | SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE |
- 		SDHCI_INT_ADMA_ERROR;
+@@ -1121,6 +1121,8 @@ static int sdhci_get_ro(struct mmc_host *mmc)
  
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		intmask &= ~(SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT);
-+
- 	sdhci_writel(host, intmask, SDHCI_INT_ENABLE);
- 	sdhci_writel(host, intmask, SDHCI_SIGNAL_ENABLE);
+ 	spin_unlock_irqrestore(&host->lock, flags);
+ 
++	if (host->quirks & SDHCI_QUIRK_INVERTED_WRITE_PROTECT)
++		return !!(present & SDHCI_WRITE_PROTECT);
+ 	return !(present & SDHCI_WRITE_PROTECT);
  }
-@@ -1684,6 +1687,9 @@ int sdhci_add_host(struct sdhci_host *host)
- 	mmc->f_max = host->max_clk;
- 	mmc->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
  
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		mmc->caps |= MMC_CAP_NEEDS_POLL;
-+
- 	if ((caps & SDHCI_CAN_DO_HISPD) ||
- 		(host->quirks & SDHCI_QUIRK_FORCE_HIGHSPEED))
- 		mmc->caps |= MMC_CAP_SD_HIGHSPEED;
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 5a5c119..03f035e 100644
+index 03f035e..fd151a1 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -227,6 +227,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_FORCE_HIGHSPEED			(1<<14)
- /* Controller does not provide transfer-complete interrupt when not busy */
+@@ -229,6 +229,8 @@ struct sdhci_host {
  #define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<15)
-+/* Controller has unreliable card detection */
-+#define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
+ /* Controller has unreliable card detection */
+ #define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
++/* Controller reports inverted write-protect state */
++#define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<17)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
