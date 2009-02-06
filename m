@@ -2,19 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EDB30DDED8
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:50:08 +1100 (EST)
-Message-Id: <54B86BEF-B0C1-452D-B990-E9B99B708CA9@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id C5A60DE0CE
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:52:00 +1100 (EST)
+Date: Fri, 6 Feb 2009 10:51:54 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090205190459.GC3348@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 3/3] powerpc/83xx: Add FSL eSDHC support for MPC837x-RDB
-	boards
-Date: Fri, 6 Feb 2009 10:50:01 -0600
-References: <20090205190403.GA27976@oksana.dev.rtsoft.ru>
-	<20090205190459.GC3348@oksana.dev.rtsoft.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull from 'merge' branch (for 2.6.29)
+Message-ID: <Pine.LNX.4.64.0902061051330.378@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,23 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'merge' branch of
 
-On Feb 5, 2009, at 1:04 PM, Anton Vorontsov wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-> Simply add appropriate sdhci nodes.
->
-> Note that U-Boot should configure pin multiplexing for eSDHC prior
-> to Linux could use it. U-Boot should also fill-in the clock-frequency
-> property (eSDHC clock depends on board-specific SCCR[ESDHCCM] bits).
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/boot/dts/mpc8377_rdb.dts |    9 +++++++++
-> arch/powerpc/boot/dts/mpc8378_rdb.dts |    9 +++++++++
-> arch/powerpc/boot/dts/mpc8379_rdb.dts |    9 +++++++++
-> 3 files changed, 27 insertions(+), 0 deletions(-)
+to receive the following updates:
 
+ arch/powerpc/boot/dts/mpc8313erdb.dts           |   11 ++++-------
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig |    2 +-
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c    |    2 +-
+ arch/powerpc/sysdev/cpm2_pic.c                  |    2 +-
+ arch/powerpc/sysdev/ipic.c                      |    2 +-
+ 5 files changed, 8 insertions(+), 11 deletions(-)
 
-applied to next
+Anton Vorontsov (2):
+      powerpc/83xx: Fix missing #{address,size}-cells in mpc8313erdb.dts
+      powerpc/83xx: Fix TSEC0 workability on MPC8313E-RDB boards
 
-- k
+Julia Lawall (1):
+      arch/powerpc: Eliminate double sizeof
+
+Michael Neuling (1):
+      powerpc/83xx: Build breakage for CONFIG_PM but no CONFIG_SUSPEND
+
+paulfax (1):
+      powerpc/cpm2: Fix set interrupt type
