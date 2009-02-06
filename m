@@ -1,21 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A5C16DDE11
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:37:13 +1100 (EST)
-Message-Id: <291AD70D-BBC6-42B7-AF7A-0968C35C58A2@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <1436.1233879027@neuling.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C5D6EDDE17
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 03:39:31 +1100 (EST)
+Message-Id: <F910B89A-8CFE-4C46-A676-DCC5DAD55510@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090205201032.GA3425@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Build breakage for CONFIG_PM but no CONFIG_SUSPEND 
-Date: Fri, 6 Feb 2009 10:37:04 -0600
-References: <1436.1233879027@neuling.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/83xx: Fix missing #{address,
+	size}-cells in mpc8313erdb.dts
+Date: Fri, 6 Feb 2009 10:39:20 -0600
+References: <20090205201032.GA3425@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +25,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 5, 2009, at 6:10 PM, Michael Neuling wrote:
+On Feb 5, 2009, at 2:10 PM, Anton Vorontsov wrote:
 
-> I noticed this doing some randconfig testing (.config below).  I have
-> CONFIG_PM but no CONFIG_SUSPEND.  Bug is against mainline.
+> commit b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4 ("gianfar: Convert
+> gianfar to an of_platform_driver") introduced a child node for
+> the ethernet@25000 controller, but no address and size cells
+> specifiers were added, and that makes dtc unhappy:
 >
-> arch/powerpc/sysdev/built-in.o: In function `ipic_suspend':
-> ipic.c:(.text+0x6b34): undefined reference to `fsl_deep_sleep'
-> make[1]: *** [.tmp_vmlinux1] Error 1
-> make: *** [sub-make] Error 2
+> DTC: dts->dtb  on file "arch/powerpc/boot/dts/mpc8313erdb.dts"
+> Warning (reg_format): "reg" property in /soc8313@e0000000/ 
+> ethernet@25000/mdio@25520 has invalid length (8 bytes) (#address- 
+> cells == 2, #size-cells == 1)
+> Warning (avoid_default_addr_size): Relying on default #address-cells  
+> value for /soc8313@e0000000/ethernet@25000/mdio@25520
+> Warning (avoid_default_addr_size): Relying on default #size-cells  
+> value for /soc8313@e0000000/ethernet@25000/mdio@25520
 >
-> Looks like #ifdef CONFIG_PM in arch/powerpc/sysdev/ipic.c should be
-> CONFIG_SUSPEND.  d49747bdfb2ddebea24d1580da55b79d093d48a9 introduced
-> this.
->
-> Maybe this fixes it?
->
->
-> Fix build when we have CONFIG_PM but no CONFIG_SUSPEND.
->
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> arch/powerpc/sysdev/ipic.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
+> arch/powerpc/boot/dts/mpc8313erdb.dts |    2 ++
+> 1 files changed, 2 insertions(+), 0 deletions(-)
 
-applied (ignore my noise from earlier)
+applied to merge
 
 - k
