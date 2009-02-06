@@ -1,24 +1,13 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from localhost.localdomain (cpe-74-67-89-75.stny.res.rr.com
-	[74.67.89.75])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F01B9DDE9F
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2009 18:18:50 +1100 (EST)
-Subject: Re: [PATCH 2/2] powerpc, ftrace: fix compile error when modules
-	not configured
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <12951.1233901432@neuling.org>
-References: <20090206060328.181057235@goodmis.org>
-	<20090206060527.369616736@goodmis.org> <12951.1233901432@neuling.org>
-Content-Type: text/plain
-Date: Fri, 06 Feb 2009 01:27:06 -0500
-Message-Id: <1233901626.16878.51.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <david.jander@protonic.nl>
+From: David Jander <david.jander@protonic.nl>
+To: "Linuxppc-dev" <Linuxppc-dev@ozlabs.org>
+Subject: MPC5121e, MBX driver, pvr.ko ...
+Date: Fri, 6 Feb 2009 08:24:06 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200902060824.06851.david.jander@protonic.nl>
+Cc: John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,30 +18,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2009-02-06 at 17:23 +1100, Michael Neuling wrote:
-> In message <20090206060527.369616736@goodmis.org> you wrote:
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > Michael Neuling reported a compile bug when dynamic ftrace was
-> > configured in and modules were not. This was due to the ftrace
-> > code referencing module specific structures.
-> > 
-> > Reported-by: Michael Neuling <mikey@neuling.org>
-> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> 
-> Steve,
-> 
-> Thanks, fixes the error I was seeing.  
+Hi all,
 
-Cool.
+I have a custom board with a MPC5121e (rev 1.5) on it. It is the latest git 
+kernel from denx ads5121 head with our BSP mixed in.
 
-> 
-> As an aside, is there anyway we can merge some of the code in
-> arch/powerpc/kernel/ftrace.c between 32 and 64bit?  There seems to be a
-> lot of repeated code in there with only minor changes.
+I decided to try out Application Note AN3793 from Freescale (3D Graphics on 
+the ADS512101 Board Using OpenGL ES).
 
-It looks similar, but there's enough differences that I would like to
-keep them separate. The code is complex enough and has a lot of subtle
-differences between the two archs.
+I started trying to load the provided (binary!) kernel modules into our 
+kernel, but I am geeting errors inserting the modules using 
+insmod: 'clcdc.ko' complains about not being able to register de device major 
+number, and 'dbgdrv.ko' oopses with a BUG() in percpu_modfree()! This 
+function should never be called in a non-SMP kernel, so I suspect there are 
+some important differences between the kernel I have and the one the 
+binary-only drivers where built against :-(
 
--- Steve
+In another approach I managed to load the provided kernel binary (which is 
+built for the ADS512101 evaluation board) on our platform, by tweaking our 
+device-tree until it booted without crashing. In the end I was able to load 
+all the modules and run the OpenGL-ES demo programs.
+I can't believe this is the intended way of doing this, so I'd like to know if 
+there is someone else who has managed to get the MBX running OpenGL-ES on a 
+custom board with a custom build of the kernel.
+
+Note: the kernel version number is still the same: 2.6.24.6, only difference 
+AFAIK is some minor unrelated patches to drivers for other MPC5121 SoC 
+devices, and probably some different configuration options. Apparently this 
+is enough to break binary compatibility for the drivers :-(
+
+Any hint is appreciated...
+
+Best regards,
+
+-- 
+David Jander
+Protonic Holland.
