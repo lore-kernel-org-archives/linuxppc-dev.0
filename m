@@ -1,16 +1,17 @@
-Return-Path: <sumedhtirodkar@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.238])
-	by ozlabs.org (Postfix) with ESMTP id B8F2CDDD1C
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 17:13:04 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so1033666rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 06 Feb 2009 22:13:02 -0800 (PST)
-MIME-Version: 1.0
-Date: Sat, 7 Feb 2009 11:43:02 +0530
-Message-ID: <d2b9ccd90902062213l48c063e1gd536a347f1fbe861@mail.gmail.com>
-Subject: hash-table creation...
-From: sumedh tirodkar <sumedhtirodkar@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 6A33ADDDE0
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2009 19:22:19 +1100 (EST)
+Date: Sat, 07 Feb 2009 00:22:14 -0800 (PST)
+Message-Id: <20090207.002214.259050726.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] powerpc: Rework I$/D$ coherency (v2)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090202001035.E1390DDF3D@ozlabs.org>
+References: <20090202001035.E1390DDF3D@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,14 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 02 Feb 2009 11:10:24 +1100
 
-I wanted algorithm for creating hash tables used in paging mechanism..
-In the manual that i read i got algorithm to convert Effective Address
-to Real Address using these hash tables that are created..but i could
-not find how these hash tables are created in first place using the
-Real addresses.
-Is there any document available for the same?
+> +/* has to be a macro because of include dependencies */
+> +static inline int is_exec_fault(void)
+> +{
+> +	return current->thread.regs && TRAP(current->thread.regs) == 0x400;
+> +}
 
-Regards,
-Sumedh
+Nice macro :-)
