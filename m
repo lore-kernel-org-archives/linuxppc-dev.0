@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C235DDD04
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Feb 2009 12:40:40 +1100 (EST)
-Subject: Re: hash-table creation...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: sumedh tirodkar <sumedhtirodkar@gmail.com>
-In-Reply-To: <d2b9ccd90902062213l48c063e1gd536a347f1fbe861@mail.gmail.com>
-References: <d2b9ccd90902062213l48c063e1gd536a347f1fbe861@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 08 Feb 2009 08:17:00 +1100
-Message-Id: <1234041420.31963.66.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paul@burly.ondioline.org>
+Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
+	by ozlabs.org (Postfix) with ESMTP id 87F6BDDD0B
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Feb 2009 15:35:05 +1100 (EST)
+From: Paul Collins <paul@burly.ondioline.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Badness at kernel/time/timekeeping.c:98 in pmud
+	(timekeeping_suspended)
+References: <87prihcepl.fsf@burly.wgtn.ondioline.org>
+	<200901211713.39630.rjw@sisk.pl>
+	<87k58nda87.fsf@burly.wgtn.ondioline.org>
+Date: Sun, 08 Feb 2009 17:35:02 +1300
+In-Reply-To: <87k58nda87.fsf@burly.wgtn.ondioline.org> (Paul Collins's message
+	of "Thu, 22 Jan 2009 21:19:04 +1300")
+Message-ID: <874oz5pmvd.fsf@burly.wgtn.ondioline.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2009-02-07 at 11:43 +0530, sumedh tirodkar wrote:
-> Hello,
-> 
-> I wanted algorithm for creating hash tables used in paging mechanism..
-> In the manual that i read i got algorithm to convert Effective Address
-> to Real Address using these hash tables that are created..but i could
-> not find how these hash tables are created in first place using the
-> Real addresses.
-> Is there any document available for the same?
+Paul Collins <paul@burly.ondioline.org> writes:
 
-There's one MMU hash table. It's allocated & cleared by the kernel
-during early boot or by the hypervisor and pointed to by the SDR1
-register.
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>
+>> On Wednesday 21 January 2009, Paul Collins wrote:
+>>> Got a couple of these on a PowerBook running 2.6.29-rc2 either during
+>>> suspend or resume -- it's hard to tell.  (The suspend message is
+>>> timestamped in syslog with the time I resumed, so I guess it was
+>>> buffered along with the subsequent "Badness" messages.)
+>>
+>> Please check if the patch from http://lkml.org/lkml/2009/1/13/144 fixes the
+>> problem for you.
+>
+> It does not fix the problem.
 
-It's populated by code in arch/powerpc/mm/hash_low_64.S or
-hash_low_32.S, typically as the result of a hash miss exception.
+I'm also getting this warning since 2.6.28.1, which incorporated commit
+1c5745aa380efb6417b5681104b007c8612fb496 ("sched_clock: prevent
+scd->clock from moving backwards, take #2") as commit
+e268dcdd404f4558cdd24c8ecede3e064df8fa33, this being the patch that
+introduced the WARN_ON(timekeeping_suspended) check.
 
-Ben.
+-- 
+Paul Collins
+Wellington, New Zealand
+
+Dag vijandelijk luchtschip de huismeester is dood
