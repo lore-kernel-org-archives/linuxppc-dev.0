@@ -1,24 +1,24 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+Return-Path: <drzeus@drzeus.cx>
+Received: from smtp.drzeus.cx (82-117-125-11.tcdsl.calypso.net [82.117.125.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C035DDDDA1
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Feb 2009 02:11:35 +1100 (EST)
-Date: Sun, 8 Feb 2009 16:11:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Badness at kernel/time/timekeeping.c:98 in pmud
-	(timekeeping_suspended)
-Message-ID: <20090208151122.GB5314@elte.hu>
-References: <87prihcepl.fsf@burly.wgtn.ondioline.org>
-	<87k58nda87.fsf@burly.wgtn.ondioline.org>
-	<874oz5pmvd.fsf@burly.wgtn.ondioline.org>
-	<200902081439.31548.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200902081439.31548.rjw@sisk.pl>
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Paul Collins <paul@burly.ondioline.org>, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id 3336EDDD1C
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Feb 2009 07:39:07 +1100 (EST)
+Date: Sun, 8 Feb 2009 21:33:34 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH RFC 0/11] FSL eSDHC support: second call for comments
+Message-ID: <20090208213334.3a4fb015@mjolnir.drzeus.cx>
+In-Reply-To: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
+References: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1;
+	boundary="=_freyr.drzeus.cx-3084-1234125220-0001-2"
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx,
+	Pierre Ossman <drzeus-sdhci@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,33 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+--=_freyr.drzeus.cx-3084-1234125220-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> On Sunday 08 February 2009, Paul Collins wrote:
-> > Paul Collins <paul@burly.ondioline.org> writes:
-> > 
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> > >
-> > >> On Wednesday 21 January 2009, Paul Collins wrote:
-> > >>> Got a couple of these on a PowerBook running 2.6.29-rc2 either during
-> > >>> suspend or resume -- it's hard to tell.  (The suspend message is
-> > >>> timestamped in syslog with the time I resumed, so I guess it was
-> > >>> buffered along with the subsequent "Badness" messages.)
-> > >>
-> > >> Please check if the patch from http://lkml.org/lkml/2009/1/13/144 fixes the
-> > >> problem for you.
-> > >
-> > > It does not fix the problem.
-> > 
-> > I'm also getting this warning since 2.6.28.1, which incorporated commit
-> > 1c5745aa380efb6417b5681104b007c8612fb496 ("sched_clock: prevent
-> > scd->clock from moving backwards, take #2") as commit
-> > e268dcdd404f4558cdd24c8ecede3e064df8fa33, this being the patch that
-> > introduced the WARN_ON(timekeeping_suspended) check.
-> 
-> Hm, I thought the timekeeping suspend problem was fixed in this commit.  Ingo?
+On Fri, 6 Feb 2009 21:05:20 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-Thomas? :-)
+> Hi all,
+>=20
+> There were only a few comments on the previous version. So, here is
+> the second call for comments.
+>=20
 
-	Ingo
+Yeah sorry, haven't really had time for looking over your patches
+properly. See my first comments to relevant patches now though.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-3084-1234125220-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkmPQaMACgkQ7b8eESbyJLjO0ACg+kl1KS78vxdAzQOqM/PBIk8W
+k4QAoOwpo238RFQm+uqZALfWIJXTlHA3
+=ARuk
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-3084-1234125220-0001-2--
