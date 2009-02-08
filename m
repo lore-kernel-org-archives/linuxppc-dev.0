@@ -1,17 +1,18 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 4778EDDD1B
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Feb 2009 17:22:43 +1100 (EST)
-Date: Sun, 8 Feb 2009 01:22:40 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] ftrace, powerpc64: fix math to calculate offset in TOC
-Message-ID: <alpine.DEB.1.10.0902080118480.30802@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
-	Remis Lima Baima <remis.developer@googlemail.com>,
-	Ingo Molnar <mingo@elte.hu>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [patch] powerpc/ps3: Use hard coded values for LV1 device type
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <498CF52E.4040903@am.sony.com>
+References: <498C6C49.1010200@in.ibm.com>  <498CF52E.4040903@am.sony.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-2zWsJziVFUysDEjiLLMk"
+Date: Sun, 08 Feb 2009 22:29:50 +1100
+Message-Id: <1234092590.10240.4.camel@localhost>
+Mime-Version: 1.0
+Cc: Mel Gorman <mel@csn.ul.ie>, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,59 +23,88 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Paul,
+--=-2zWsJziVFUysDEjiLLMk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I found the bug that was causing large modules to fail in setting
-up dynamic ftrace. It wound up being a simple math error. To calculate
-the offset in the TOC, I had used an OR, but the bottom half was
-a signed extended short, and it should have been an addition.
-The fix is in my tree below, as well as posted here.
+On Fri, 2009-02-06 at 18:42 -0800, Geoff Levand wrote:
+> Change the PS3 platform code to use hard coded numbers for its
+> LV1 device types.
+>=20
+> The PS3 platform code was incorrectly using some scsi block
+> constants for the device type returned from the LV1 hypervisor.
+>=20
+> Fixes build errors like these when CONFIG_BLOCK=3Dn:
+>=20
+>   In file included from include/scsi/scsi.h:12,
+>                    from arch/powerpc/platforms/ps3/platform.h:25,
+>                    from arch/powerpc/platforms/ps3/setup.c:36:
+>   include/scsi/scsi_cmnd.h:27:25: warning: "BLK_MAX_CDB" is not defined
+>   include/scsi/scsi_cmnd.h:28:3: error: #error MAX_COMMAND_SIZE can not b=
+e bigger than BLK_MAX_CDB
+>=20
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> ---
+> Ben,
+>=20
+> Please send upstream for 2.6.29.
+>=20
+> -Geoff
+>=20
+>  arch/powerpc/platforms/ps3/platform.h |    8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+>=20
+> --- a/arch/powerpc/platforms/ps3/platform.h
+> +++ b/arch/powerpc/platforms/ps3/platform.h
+> @@ -22,8 +22,6 @@
+>  #define _PS3_PLATFORM_H
+> =20
+>  #include <linux/rtc.h>
+> -#include <scsi/scsi.h>
+> -
+>  #include <asm/ps3.h>
+> =20
+>  /* htab */
+> @@ -83,12 +81,12 @@ enum ps3_bus_type {
+>  };
+> =20
+>  enum ps3_dev_type {
+> -	PS3_DEV_TYPE_STOR_DISK =3D TYPE_DISK,	/* 0 */
+> +	PS3_DEV_TYPE_STOR_DISK =3D 0, /* TYPE_DISK */
+>  	PS3_DEV_TYPE_SB_GELIC =3D 3,
+>  	PS3_DEV_TYPE_SB_USB =3D 4,
+> -	PS3_DEV_TYPE_STOR_ROM =3D TYPE_ROM,	/* 5 */
+> +	PS3_DEV_TYPE_STOR_ROM =3D 5, /* TYPE_ROM */
+>  	PS3_DEV_TYPE_SB_GPIO =3D 6,
+> -	PS3_DEV_TYPE_STOR_FLASH =3D TYPE_RBC,	/* 14 */
+> +	PS3_DEV_TYPE_STOR_FLASH =3D 14, /* TYPE_RBC */
 
--- Steve
+This looks like you're just papering over the bug, by hardcoding the
+same values that are in the scsi header. Or are they really independent,
+in which case I'd say the comments are confusing.
 
+cheers
 
-The following patch is in:
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-    branch: ppc/ftrace
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
+--=-2zWsJziVFUysDEjiLLMk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Steven Rostedt (1):
-      ftrace, powerpc64: fix math to calculate offset in TOC
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-----
- arch/powerpc/kernel/ftrace.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
----------------------------
-commit 60e611577d908119bb515ead908a46b025a4c9f9
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Sat Feb 7 22:00:26 2009 -0800
+iEYEABECAAYFAkmOwi4ACgkQdSjSd0sB4dJhVACZAYPYCza7+oitZUhTMgNPKAu0
+5FMAn0Xd+7usLLspiOTieWbbNN7GCee2
+=T8zu
+-----END PGP SIGNATURE-----
 
-    ftrace, powerpc64: fix math to calculate offset in TOC
-    
-    Impact: fix dynamic ftrace with large modules in PPC64
-    
-    The math to calculate the offset into the TOC that is taken from reading
-    the trampoline is incorrect. The bottom half of the offset is a signed
-    extended short. The current code was using an OR to create the offset
-    when it should have been using an addition.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 88c641d..4112175 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -191,8 +191,9 @@ __ftrace_make_nop(struct module *mod,
- 		return -EINVAL;
- 	}
- 
--	offset = (unsigned)((unsigned short)jmp[0]) << 16 |
--		(unsigned)((unsigned short)jmp[1]);
-+	/* The bottom half is signed extended */
-+	offset = ((unsigned)((unsigned short)jmp[0]) << 16) +
-+		(int)((short)jmp[1]);
- 
- 	pr_debug(" %x ", offset);
- 
+--=-2zWsJziVFUysDEjiLLMk--
