@@ -1,22 +1,17 @@
-Return-Path: <paul@burly.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id 87F6BDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Feb 2009 15:35:05 +1100 (EST)
-From: Paul Collins <paul@burly.ondioline.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Badness at kernel/time/timekeeping.c:98 in pmud
-	(timekeeping_suspended)
-References: <87prihcepl.fsf@burly.wgtn.ondioline.org>
-	<200901211713.39630.rjw@sisk.pl>
-	<87k58nda87.fsf@burly.wgtn.ondioline.org>
-Date: Sun, 08 Feb 2009 17:35:02 +1300
-In-Reply-To: <87k58nda87.fsf@burly.wgtn.ondioline.org> (Paul Collins's message
-	of "Thu, 22 Jan 2009 21:19:04 +1300")
-Message-ID: <874oz5pmvd.fsf@burly.wgtn.ondioline.org>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 4778EDDD1B
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Feb 2009 17:22:43 +1100 (EST)
+Date: Sun, 8 Feb 2009 01:22:40 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] ftrace, powerpc64: fix math to calculate offset in TOC
+Message-ID: <alpine.DEB.1.10.0902080118480.30802@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
+	Remis Lima Baima <remis.developer@googlemail.com>,
+	Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Collins <paul@burly.ondioline.org> writes:
 
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->
->> On Wednesday 21 January 2009, Paul Collins wrote:
->>> Got a couple of these on a PowerBook running 2.6.29-rc2 either during
->>> suspend or resume -- it's hard to tell.  (The suspend message is
->>> timestamped in syslog with the time I resumed, so I guess it was
->>> buffered along with the subsequent "Badness" messages.)
->>
->> Please check if the patch from http://lkml.org/lkml/2009/1/13/144 fixes the
->> problem for you.
->
-> It does not fix the problem.
+Paul,
 
-I'm also getting this warning since 2.6.28.1, which incorporated commit
-1c5745aa380efb6417b5681104b007c8612fb496 ("sched_clock: prevent
-scd->clock from moving backwards, take #2") as commit
-e268dcdd404f4558cdd24c8ecede3e064df8fa33, this being the patch that
-introduced the WARN_ON(timekeeping_suspended) check.
+I found the bug that was causing large modules to fail in setting
+up dynamic ftrace. It wound up being a simple math error. To calculate
+the offset in the TOC, I had used an OR, but the bottom half was
+a signed extended short, and it should have been an addition.
+The fix is in my tree below, as well as posted here.
 
--- 
-Paul Collins
-Wellington, New Zealand
+-- Steve
 
-Dag vijandelijk luchtschip de huismeester is dood
+
+The following patch is in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: ppc/ftrace
+
+
+Steven Rostedt (1):
+      ftrace, powerpc64: fix math to calculate offset in TOC
+
+----
+ arch/powerpc/kernel/ftrace.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+---------------------------
+commit 60e611577d908119bb515ead908a46b025a4c9f9
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Sat Feb 7 22:00:26 2009 -0800
+
+    ftrace, powerpc64: fix math to calculate offset in TOC
+    
+    Impact: fix dynamic ftrace with large modules in PPC64
+    
+    The math to calculate the offset into the TOC that is taken from reading
+    the trampoline is incorrect. The bottom half of the offset is a signed
+    extended short. The current code was using an OR to create the offset
+    when it should have been using an addition.
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 88c641d..4112175 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -191,8 +191,9 @@ __ftrace_make_nop(struct module *mod,
+ 		return -EINVAL;
+ 	}
+ 
+-	offset = (unsigned)((unsigned short)jmp[0]) << 16 |
+-		(unsigned)((unsigned short)jmp[1]);
++	/* The bottom half is signed extended */
++	offset = ((unsigned)((unsigned short)jmp[0]) << 16) +
++		(int)((short)jmp[1]);
+ 
+ 	pr_debug(" %x ", offset);
+ 
