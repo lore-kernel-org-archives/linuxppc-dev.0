@@ -2,20 +2,20 @@ Return-Path: <drzeus@drzeus.cx>
 Received: from smtp.drzeus.cx (82-117-125-11.tcdsl.calypso.net [82.117.125.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0677DDDD0B
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Feb 2009 08:06:58 +1100 (EST)
-Date: Sun, 8 Feb 2009 22:06:47 +0100
+	by ozlabs.org (Postfix) with ESMTPS id C32E2DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Feb 2009 08:12:19 +1100 (EST)
+Date: Sun, 8 Feb 2009 22:12:09 +0100
 From: Pierre Ossman <drzeus@drzeus.cx>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 09/11] sdhci: Add set_clock callback
-Message-ID: <20090208220647.33022d92@mjolnir.drzeus.cx>
-In-Reply-To: <20090206180659.GI11548@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 10/11] sdhci: Add quirk for Freescale eSDHC controllers
+Message-ID: <20090208221209.628ae782@mjolnir.drzeus.cx>
+In-Reply-To: <20090206180701.GJ11548@oksana.dev.rtsoft.ru>
 References: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
-	<20090206180659.GI11548@oksana.dev.rtsoft.ru>
+	<20090206180701.GJ11548@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg=PGP-SHA1;
-	boundary="=_freyr.drzeus.cx-4745-1234127211-0001-2"
+	boundary="=_freyr.drzeus.cx-5168-1234127533-0001-2"
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
 	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
@@ -31,29 +31,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 This is a MIME-formatted message.  If you see this text it means that your
 E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-4745-1234127211-0001-2
+--=_freyr.drzeus.cx-5168-1234127533-0001-2
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 6 Feb 2009 21:06:59 +0300
+On Fri, 6 Feb 2009 21:07:01 +0300
 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-> FSL eSDHC hosts have incompatible register map to manage the SDCLK.
-> This patch adds set_clock callback so that drivers could overwrite
-> set_clock behaviour.
+> This patch adds SDHCI_QUIRK_FSL quirk. The quirk is used to instruct
+> the sdhci driver about various FSL eSDHC host incompatibilities:
 >=20
-> Similar patch[1] was posted by Ben Dooks, though in Ben's version the
-> callback is named change_clock, plus the patch has some unrelated bits
-> that makes the patch difficult to reuse.
->=20
-> [1] http://lkml.org/lkml/2008/12/2/160
->=20
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
 
-A set_clock() callback is reasonable as there might be a clock source
-that needs to be set up, but completely overriding the normal routine
-(i.e. the "return") should be quirked IMO.
+No device quirks please. They should be for specific bugs, not lumping
+things together like this. Otherwise we'll soon have an unmanageable
+mess.
+
+> 1) FSL eSDHC controllers can support maximum block size up to 4096
+>    bytes. The MBL (Maximum Block Length) field in the capabilities
+>    register extended by one bit.
+>=20
+>    (Should we implement a dedicated quirk for this? I.e.
+>     SDHCI_QUIRK_MAX_BLK_SZ_4096?)
+>=20
+
+Yes please. It would have to mean "always support 4096" though, not
+"turn reserved bit 18 into a block length bit".
+
+> 2) sdhci_init() is needed after error conditions.
+>=20
+>    (Can we safely do this for all controllers?)
+>=20
+
+Please investigate which part of sdhci_init() is needed. How does it
+break without this?
+
+> 3) Small udelay is needed to make eSDHC work in PIO mode. Without
+>    the delay reading causes endless interrupt storm, and writing
+>    corrupts data. The first guess would be that we must wait for
+>    some bit in some register, but I didn't find any reliable bits
+>    that changes before and after the delay. Though, more investigation
+>    on this is in my todo list.
+
+Please try to investigate more, but if you cannot improve it further
+then a specific quirk can be added.
 
 Rgds
 --=20
@@ -64,7 +84,7 @@ Rgds
   for SMTP traffic and consider using PGP for end-to-end
   encryption.
 
---=_freyr.drzeus.cx-4745-1234127211-0001-2
+--=_freyr.drzeus.cx-5168-1234127533-0001-2
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename=signature.asc
@@ -72,9 +92,9 @@ Content-Disposition: attachment; filename=signature.asc
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEYEARECAAYFAkmPSWoACgkQ7b8eESbyJLgXRgCgvtck8mukBbgKNWOIOKo4Ot07
-gy0AoLjU6SR0saqGyhnMXmABQjtryjRB
-=deMA
+iEYEARECAAYFAkmPSq0ACgkQ7b8eESbyJLgjjQCgyathcL66j5iDPRcZlgl8CHEo
+KGQAnA5EUTkXhM3F8YyCJoI+UfSig7y3
+=poeB
 -----END PGP SIGNATURE-----
 
---=_freyr.drzeus.cx-4745-1234127211-0001-2--
+--=_freyr.drzeus.cx-5168-1234127533-0001-2--
