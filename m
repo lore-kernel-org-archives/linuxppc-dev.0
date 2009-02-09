@@ -1,24 +1,20 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CBDBADDD1C
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Feb 2009 23:09:39 +1100 (EST)
-Date: Mon, 9 Feb 2009 13:03:53 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Badness at kernel/time/timekeeping.c:98 in pmud
-	(timekeeping_suspended)
-In-Reply-To: <200902081439.31548.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0902091302310.415@localhost.localdomain>
-References: <87prihcepl.fsf@burly.wgtn.ondioline.org>
-	<87k58nda87.fsf@burly.wgtn.ondioline.org>
-	<874oz5pmvd.fsf@burly.wgtn.ondioline.org>
-	<200902081439.31548.rjw@sisk.pl>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 4BE96DDDA5
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 02:02:31 +1100 (EST)
+Date: Mon, 9 Feb 2009 10:02:28 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] ftrace, powerpc64: fix math to calculate offset in TOC
+In-Reply-To: <20090209094014.GE7930@elte.hu>
+Message-ID: <alpine.DEB.1.10.0902091000400.14528@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0902080118480.30802@gandalf.stny.rr.com>
+	<20090209094014.GE7930@elte.hu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Paul Collins <paul@burly.ondioline.org>, linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Remis Lima Baima <remis.developer@googlemail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,36 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 8 Feb 2009, Rafael J. Wysocki wrote:
 
-> On Sunday 08 February 2009, Paul Collins wrote:
-> > Paul Collins <paul@burly.ondioline.org> writes:
-> > 
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> > >
-> > >> On Wednesday 21 January 2009, Paul Collins wrote:
-> > >>> Got a couple of these on a PowerBook running 2.6.29-rc2 either during
-> > >>> suspend or resume -- it's hard to tell.  (The suspend message is
-> > >>> timestamped in syslog with the time I resumed, so I guess it was
-> > >>> buffered along with the subsequent "Badness" messages.)
-> > >>
-> > >> Please check if the patch from http://lkml.org/lkml/2009/1/13/144 fixes the
-> > >> problem for you.
-> > >
-> > > It does not fix the problem.
-> > 
-> > I'm also getting this warning since 2.6.28.1, which incorporated commit
-> > 1c5745aa380efb6417b5681104b007c8612fb496 ("sched_clock: prevent
-> > scd->clock from moving backwards, take #2") as commit
-> > e268dcdd404f4558cdd24c8ecede3e064df8fa33, this being the patch that
-> > introduced the WARN_ON(timekeeping_suspended) check.
+On Mon, 9 Feb 2009, Ingo Molnar wrote:
+
 > 
-> Hm, I thought the timekeeping suspend problem was fixed in this commit.  Ingo?
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > 
+> > Paul,
+> > 
+> > I found the bug that was causing large modules to fail in setting
+> > up dynamic ftrace. It wound up being a simple math error. To calculate
+> > the offset in the TOC, I had used an OR, but the bottom half was
+> > a signed extended short, and it should have been an addition.
+> > The fix is in my tree below, as well as posted here.
+> 
+> Looks like a .29 candidate?
 
-The commit fixed the problem with sched_clock, but it does not fix
-problems where other parts of the kernel call timekeeping functions
-_AFTER_ timekeeping has been suspended.
+Ingo,
 
-Thanks,
+I think Ben pulled them into their tree. The changes are specific to ppc, 
+and will probably get better user testing there. Unless you feel that we 
+have a bit of ppc testers using tip.
 
-	tglx
+-- Steve
