@@ -1,12 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: [PATCH] powerpc: add missing sparsemem.h include
-Date: Mon, 09 Feb 2009 11:49:39 +1100
-Message-ID: <13807.1234140579@neuling.org>
-Sender: mikey@neuling.org
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from accolon.hansenpartnership.com (accolon.hansenpartnership.com
+	[76.243.235.52]) by ozlabs.org (Postfix) with ESMTP id 4487BDDDA5
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Feb 2009 15:05:15 +1100 (EST)
+Subject: Re: [patch] powerpc/ps3: Use hard coded values for LV1 device type
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1234138267.31963.77.camel@pasglop>
+References: <498C6C49.1010200@in.ibm.com>  <498CF52E.4040903@am.sony.com>
+	<1234092590.10240.4.camel@localhost>
+	<1234138267.31963.77.camel@pasglop>
+Content-Type: text/plain
+Date: Sun, 08 Feb 2009 21:59:48 -0600
+Message-Id: <1234151988.8776.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, Jens Axboe <jens.axboe@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,26 +25,173 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc/platforms/pseries/hotplug-memory.c uses
-remove_section_mapping() but doesn't include sparsemem.h which defines
-it.  This can cause compilation fails for some configs. 
+On Mon, 2009-02-09 at 11:11 +1100, Benjamin Herrenschmidt wrote:
+> On Sun, 2009-02-08 at 22:29 +1100, Michael Ellerman wrote:
+> > On Fri, 2009-02-06 at 18:42 -0800, Geoff Levand wrote:
+> > > Change the PS3 platform code to use hard coded numbers for its
+> > > LV1 device types.
+> > > 
+> > > The PS3 platform code was incorrectly using some scsi block
+> > > constants for the device type returned from the LV1 hypervisor.
+> > > 
+> > > Fixes build errors like these when CONFIG_BLOCK=n:
+> > > 
+> > >   In file included from include/scsi/scsi.h:12,
+> > >                    from arch/powerpc/platforms/ps3/platform.h:25,
+> > >                    from arch/powerpc/platforms/ps3/setup.c:36:
+> > >   include/scsi/scsi_cmnd.h:27:25: warning: "BLK_MAX_CDB" is not defined
+> > >   include/scsi/scsi_cmnd.h:28:3: error: #error MAX_COMMAND_SIZE can not be bigger than BLK_MAX_CDB
+> 
+> Adding Jens and James on CC since I think a proper fix lies in blkdev.h
+> or scsi*.h
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+And cc'd linux-scsi
+
+> So basically, the whole of blkdev.h is inside a big ifdef
+> CONFIG_BLOCK... which means that scsi_cmnd.h can't build which in turn
+> makes scsi.h fail.
+
+Well, look at it from our point of view; it's impossible to build SCSI
+without block, so a little interdependence is easy to get.
+
+> The PS3 platform code wants to use some of the standard SCSI types from
+> there though, as they are part of the hypervisor ABI. (And in fact it
+> can be argued that non-block devices using SCSI do exist, such as
+> scanners, no ?)
+> 
+> Any reason other than pre-historical to have blkdev.h shielded like
+> that ?
+
+Actually, I think the fix lies in scsi.h ... we can make that into a
+nicely independent protocol header file.  Your current woes come because
+it pulls in scsi_cmnd.h ... perhaps just getting rid of this will fix
+it.
+
+Can the rest of linux-scsi verify that the fix below doesn't break
+something else?
+
+I found one cockup: block/cmd-filter.c is apparently not including
+linuc/blkdev.h directly but via scsi/scsi.h ... I fixed this up.
+
+> Cheers,
+> Ben.
+> 
+> > > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> > > ---
+> > > Ben,
+> > > 
+> > > Please send upstream for 2.6.29.
+> > > 
+> > > -Geoff
+> > > 
+> > >  arch/powerpc/platforms/ps3/platform.h |    8 +++-----
+> > >  1 file changed, 3 insertions(+), 5 deletions(-)
+> > > 
+> > > --- a/arch/powerpc/platforms/ps3/platform.h
+> > > +++ b/arch/powerpc/platforms/ps3/platform.h
+> > > @@ -22,8 +22,6 @@
+> > >  #define _PS3_PLATFORM_H
+> > >  
+> > >  #include <linux/rtc.h>
+> > > -#include <scsi/scsi.h>
+> > > -
+> > >  #include <asm/ps3.h>
+> > >  
+> > >  /* htab */
+> > > @@ -83,12 +81,12 @@ enum ps3_bus_type {
+> > >  };
+> > >  
+> > >  enum ps3_dev_type {
+> > > -	PS3_DEV_TYPE_STOR_DISK = TYPE_DISK,	/* 0 */
+> > > +	PS3_DEV_TYPE_STOR_DISK = 0, /* TYPE_DISK */
+> > >  	PS3_DEV_TYPE_SB_GELIC = 3,
+> > >  	PS3_DEV_TYPE_SB_USB = 4,
+> > > -	PS3_DEV_TYPE_STOR_ROM = TYPE_ROM,	/* 5 */
+> > > +	PS3_DEV_TYPE_STOR_ROM = 5, /* TYPE_ROM */
+> > >  	PS3_DEV_TYPE_SB_GPIO = 6,
+> > > -	PS3_DEV_TYPE_STOR_FLASH = TYPE_RBC,	/* 14 */
+> > > +	PS3_DEV_TYPE_STOR_FLASH = 14, /* TYPE_RBC */
+> > 
+> > This looks like you're just papering over the bug, by hardcoding the
+> > same values that are in the scsi header. Or are they really independent,
+> > in which case I'd say the comments are confusing.
+> > 
+> > cheers
+
+James
+
 ---
-This is against mainline, so should be pushed up soon-ish...
 
- arch/powerpc/platforms/pseries/hotplug-memory.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-memory.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -14,6 +14,7 @@
- #include <asm/firmware.h>
- #include <asm/machdep.h>
- #include <asm/pSeries_reconfig.h>
-+#include <asm/sparsemem.h>
+diff --git a/block/cmd-filter.c b/block/cmd-filter.c
+index 504b275..572bbc2 100644
+--- a/block/cmd-filter.c
++++ b/block/cmd-filter.c
+@@ -22,6 +22,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/capability.h>
+ #include <linux/bitops.h>
++#include <linux/blkdev.h>
  
- static int pseries_remove_lmb(unsigned long base, unsigned int lmb_size)
- {
+ #include <scsi/scsi.h>
+ #include <linux/cdrom.h>
+diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
+index 80d7f60..084478e 100644
+--- a/include/scsi/scsi.h
++++ b/include/scsi/scsi.h
+@@ -9,7 +9,8 @@
+ #define _SCSI_SCSI_H
+ 
+ #include <linux/types.h>
+-#include <scsi/scsi_cmnd.h>
++
++struct scsi_cmnd;
+ 
+ /*
+  * The maximum number of SG segments that we will put inside a
+@@ -439,22 +440,6 @@ static inline int scsi_is_wlun(unsigned int lun)
+ #define host_byte(result)   (((result) >> 16) & 0xff)
+ #define driver_byte(result) (((result) >> 24) & 0xff)
+ 
+-static inline void set_msg_byte(struct scsi_cmnd *cmd, char status)
+-{
+-	cmd->result |= status << 8;
+-}
+-
+-static inline void set_host_byte(struct scsi_cmnd *cmd, char status)
+-{
+-	cmd->result |= status << 16;
+-}
+-
+-static inline void set_driver_byte(struct scsi_cmnd *cmd, char status)
+-{
+-	cmd->result |= status << 24;
+-}
+-
+-
+ #define sense_class(sense)  (((sense) >> 4) & 0x7)
+ #define sense_error(sense)  ((sense) & 0xf)
+ #define sense_valid(sense)  ((sense) & 0x80);
+diff --git a/include/scsi/scsi_cmnd.h b/include/scsi/scsi_cmnd.h
+index 855bf95..43b50d3 100644
+--- a/include/scsi/scsi_cmnd.h
++++ b/include/scsi/scsi_cmnd.h
+@@ -291,4 +291,19 @@ static inline struct scsi_data_buffer *scsi_prot(struct scsi_cmnd *cmd)
+ #define scsi_for_each_prot_sg(cmd, sg, nseg, __i)		\
+ 	for_each_sg(scsi_prot_sglist(cmd), sg, nseg, __i)
+ 
++static inline void set_msg_byte(struct scsi_cmnd *cmd, char status)
++{
++	cmd->result |= status << 8;
++}
++
++static inline void set_host_byte(struct scsi_cmnd *cmd, char status)
++{
++	cmd->result |= status << 16;
++}
++
++static inline void set_driver_byte(struct scsi_cmnd *cmd, char status)
++{
++	cmd->result |= status << 24;
++}
++
+ #endif /* _SCSI_SCSI_CMND_H */
