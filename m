@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 32BD1DDDA8
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 02:32:30 +1100 (EST)
-Message-Id: <ED186496-3882-4E87-9BEC-B56FE09C5827@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <2a27d3730902082347n7f0eb48dq8c4ecccda290f9c8@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 2/2] powerpc/83xx: Fix TSEC0 workability on MPC8313E-RDB
-	boards
-Date: Mon, 9 Feb 2009 09:32:18 -0600
-References: <20090205201040.GB3425@oksana.dev.rtsoft.ru>
-	<2a27d3730902082347n7f0eb48dq8c4ecccda290f9c8@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <remisbaima@gmail.com>
+Received: from mail-bw0-f168.google.com (mail-bw0-f168.google.com
+	[209.85.218.168]) by ozlabs.org (Postfix) with ESMTP id 31B71DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 00:16:24 +1100 (EST)
+Received: by bwz12 with SMTP id 12so2665996bwz.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 09 Feb 2009 05:16:21 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20090209094014.GE7930@elte.hu>
+References: <alpine.DEB.1.10.0902080118480.30802@gandalf.stny.rr.com>
+	<20090209094014.GE7930@elte.hu>
+Date: Mon, 9 Feb 2009 14:08:26 +0100
+Message-ID: <9fe197cb0902090508v514808c9wc558c18b96ceaa6a@mail.gmail.com>
+Subject: Re: [PATCH] ftrace, powerpc64: fix math to calculate offset in TOC
+From: Remis Lima Baima <remisbaima@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Arnd Bergmann <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I have just tried the patch here and everything worked great!
+Very well done.
 
-On Feb 9, 2009, at 1:47 AM, Li Yang wrote:
-
+On Mon, Feb 9, 2009 at 10:40 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> It's a complex case for RDB boards.  The revision A and revision B
-> boards DO always connect TSEC0 to Vitesse switch.  While the latest
-> revision C board has one setting to connect TSEC0 to a Marvell PHY and
-> MDIO bus.  In BSP we have several DTS's for each setting of the board,
-> shouldn't we do the same for upstream?
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+>>
+>> Paul,
+>>
+>> I found the bug that was causing large modules to fail in setting
+>> up dynamic ftrace. It wound up being a simple math error. To calculate
+>> the offset in the TOC, I had used an OR, but the bottom half was
+>> a signed extended short, and it should have been an addition.
+>> The fix is in my tree below, as well as posted here.
+>
+> Looks like a .29 candidate?
+>
+>        Ingo
 
-Is this something we can detect and deal with in u-boot?  If not than  
-having multiple .dts for the revisions seems like the only solution.
+I agree. A functional ("out-of-the-box") dynamic-ftrace helps quite a lot ;-)
 
-- k
+
+Regards,
+Remis
