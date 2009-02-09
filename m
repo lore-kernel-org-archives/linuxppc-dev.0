@@ -1,18 +1,30 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E01E0DDD1B
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Feb 2009 17:50:56 +1100 (EST)
-Date: Mon, 9 Feb 2009 17:50:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1BFFBDDDA0
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Feb 2009 18:19:26 +1100 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id n197ICrl005313
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Feb 2009 18:18:12 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	n197JdgY1110080
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Feb 2009 18:19:39 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n197JKXx005549
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Feb 2009 18:19:21 +1100
+Message-ID: <498FD8F7.8010103@in.ibm.com>
+Date: Mon, 09 Feb 2009 12:49:19 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: 2.6.29-rc4-git1 build break : cell/spu_profiler.o
-Message-Id: <20090209175043.04889757.sfr@canb.auug.org.au>
-In-Reply-To: <498FD09D.2070207@in.ibm.com>
 References: <498FD09D.2070207@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__9_Feb_2009_17_50_43_+1100_CO+r+h28L77lbVGU"
+	<20090209175043.04889757.sfr@canb.auug.org.au>
+In-Reply-To: <20090209175043.04889757.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org, arnd@arndb.de,
 	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,47 +36,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__9_Feb_2009_17_50_43_+1100_CO+r+h28L77lbVGU
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Stephen Rothwell wrote:
+> See http://patchwork.ozlabs.org/patch/22628/
+Thanks Stephen. The above patch fixed this build break.
 
-Hi Sachin,
+Regards
+-Sachin
 
-On Mon, 09 Feb 2009 12:13:41 +0530 "Sachin P. Sant" <sachinp@in.ibm.com> wr=
-ote:
->
-> 2.6.29-rc4-git1 randconfig build on powerpc fails with
->=20
->   CALL    arch/powerpc/kernel/prom_init_check.sh
->   CC [M]  arch/powerpc/oprofile/cell/spu_profiler.o
-> arch/powerpc/oprofile/cell/spu_profiler.c: In function set_spu_profiling_=
-frequency:
-> arch/powerpc/oprofile/cell/spu_profiler.c:52: error: ppc_proc_freq undecl=
-ared (first use in this function)
-> arch/powerpc/oprofile/cell/spu_profiler.c:52: error: (Each undeclared ide=
-ntifier is reported only once
-> arch/powerpc/oprofile/cell/spu_profiler.c:52: error: for each function it=
- appears in.)
-> make[1]: *** [arch/powerpc/oprofile/cell/spu_profiler.o] Error 1
-> make: *** [arch/powerpc/oprofile] Error 2
+-- 
 
-See http://patchwork.ozlabs.org/patch/22628/
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__9_Feb_2009_17_50_43_+1100_CO+r+h28L77lbVGU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmP0kMACgkQjjKRsyhoI8wwlwCfZJ34WciOJudPOTTWaZXt1mTL
-8+MAoIhiMt58woHG35lyjt0+6w5Eu4P0
-=BwRE
------END PGP SIGNATURE-----
-
---Signature=_Mon__9_Feb_2009_17_50_43_+1100_CO+r+h28L77lbVGU--
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
