@@ -1,19 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
-	by ozlabs.org (Postfix) with ESMTP id 3B757DDDA8
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 02:55:27 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Michael Neuling <mikey@neuling.org>
-Subject: [PATCH] powerpc/cell: fix dependency in cpufreq
-Date: Tue, 10 Feb 2009 16:55:16 +0100
-References: <18282.1234226812@neuling.org> <22829.1234230526@neuling.org>
-	<25212.1234231317@neuling.org>
-In-Reply-To: <25212.1234231317@neuling.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200902101655.17013.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Christian Krafft <parabelboi@bopserverein.de>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E7E7EDDDA7
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 02:56:14 +1100 (EST)
+Date: Tue, 10 Feb 2009 16:55:54 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for
+	I2C   to complete
+Message-ID: <20090210165554.0da8bf7c@hyperion.delvare>
+In-Reply-To: <ed82fe3e0902100659p2eec9de6j61f9ffb504d60a89@mail.gmail.com>
+References: <1233928837-3401-1-git-send-email-timur@freescale.com>
+	<ed82fe3e0902100659p2eec9de6j61f9ffb504d60a89@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
+	Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,80 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-cbe_cpufreq has a partial dependency on cbe_cpufreq_pmi, which cannot
-be easily expressed in Kconfig. This fixes it by introducing an
-extra Kconfig symbol CBE_CPUFREQ_PMI_ENABLE. To make the dependency
-clearer, turn PPC_PMI into an automatic symbol.
+On Tue, 10 Feb 2009 08:59:57 -0600, Timur Tabi wrote:
+> On Fri, Feb 6, 2009 at 8:00 AM, Timur Tabi <timur@freescale.com> wrote:
+> > The i2c_wait() function is using wait_event_interruptible_timeout() to wait for
+> > the I2C controller to signal that it has completed an I2C bus operation.  If
+> > the process that causes the I2C operation terminated abruptly, the wait will
+> > be interrupted, returning an error.  It is better to let the I2C operation
+> > finished before the process exits.
+> >
+> > It is safe to use wait_event_timeout() instead, because the timeout will allow
+> > the process to exit if the I2C bus hangs.  It's also better to allow the
+> > I2C operation to finish, because unacknowledged I2C operations can cause the
+> > I2C bus to hang.
+> >
+> > Signed-off-by: Timur Tabi <timur@freescale.com>
+> 
+> Jean,
+> 
+> Could you pick up this patch for 2.6.30?
 
-Reported-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+No, that's something for either Ben Dooks (Cc'd) or the powerpc tree.
 
----
-
-This is the best I could come up with.
-
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -91,15 +91,6 @@ config RTAS_FLASH
- 	tristate "Firmware flash interface"
- 	depends on PPC64 && RTAS_PROC
- 
--config PPC_PMI
--	tristate "Support for PMI"
--	depends on PPC_IBM_CELL_BLADE
--	help
--	  PMI (Platform Management Interrupt) is a way to
--	  communicate with the BMC (Baseboard Management Controller).
--	  It is used in some IBM Cell blades.
--	default m
--
- config MMIO_NVRAM
- 	bool
- 	default n
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index 5cc3279..037f59a 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -98,7 +98,7 @@ config PPC_IBM_CELL_RESETBUTTON
- 
- config PPC_IBM_CELL_POWERBUTTON
- 	tristate "IBM Cell Blade power button"
--	depends on PPC_IBM_CELL_BLADE && PPC_PMI && INPUT_EVDEV
-+	depends on PPC_IBM_CELL_BLADE && INPUT_EVDEV
- 	default y
- 	help
- 	  Support Powerbutton on IBM Cell blades.
-@@ -118,9 +118,9 @@ config CBE_CPUFREQ
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 	  If you don't have such processor, say N
- 
--config CBE_CPUFREQ_PMI
--	tristate "CBE frequency scaling using PMI interface"
--	depends on CBE_CPUFREQ && PPC_PMI && EXPERIMENTAL
-+config CBE_CPUFREQ_PMI_ENABLE
-+	bool "CBE frequency scaling using PMI interface"
-+	depends on CBE_CPUFREQ && EXPERIMENTAL
- 	default n
- 	help
- 	  Select this, if you want to use the PMI interface
-@@ -128,6 +128,20 @@ config CBE_CPUFREQ_PMI
- 	  processor will not only be able to run at lower speed,
- 	  but also at lower core voltage.
- 
-+config CBE_CPUFREQ_PMI
-+	tristate
-+	depends on CBE_CPUFREQ_PMI_ENABLE
-+	default CBE_CPUFREQ
-+
-+config PPC_PMI
-+	tristate
-+	default y
-+	depends on CBE_CPUFREQ_PMI || PPC_IBM_CELL_POWERBUTTON
-+	help
-+	  PMI (Platform Management Interrupt) is a way to
-+	  communicate with the BMC (Baseboard Management Controller).
-+	  It is used in some IBM Cell blades.
-+
- config CBE_CPUFREQ_SPU_GOVERNOR
- 	tristate "CBE frequency scaling based on SPU usage"
- 	depends on SPU_FS && CPU_FREQ
+-- 
+Jean Delvare
