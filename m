@@ -1,17 +1,26 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 6E382DDDEF
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 03:22:52 +1100 (EST)
-Date: Tue, 10 Feb 2009 08:22:49 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Scott Coulter <scott.coulter@cyclone.com>
-Subject: Re: correct way for handling PCIe in endpoint mode
-Message-ID: <20090210162249.GB9592@ovro.caltech.edu>
-References: <43EB80E07C42E1408726E4905FB96B04C074D9@CYBORG3.cyclone.com>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 8D421DDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 03:28:30 +1100 (EST)
+Date: Tue, 10 Feb 2009 17:28:19 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for
+	I2C   to complete
+Message-ID: <20090210162819.GC15678@pengutronix.de>
+References: <1233928837-3401-1-git-send-email-timur@freescale.com>
+	<ed82fe3e0902100659p2eec9de6j61f9ffb504d60a89@mail.gmail.com>
+	<20090210165554.0da8bf7c@hyperion.delvare>
+	<4991A4F2.8030506@freescale.com>
+	<20090210171000.1f45cc2d@hyperion.delvare>
+	<4991A970.70508@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <43EB80E07C42E1408726E4905FB96B04C074D9@CYBORG3.cyclone.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ghzN8eJ9Qlbqn3iT"
+In-Reply-To: <4991A970.70508@freescale.com>
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	Kumar Gala <kumar.gala@freescale.com>, linux-i2c@vger.kernel.org,
+	Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 10, 2009 at 07:39:47AM -0500, Scott Coulter wrote:
-> 
-> Hi all,
-> 
-> Maybe a silly questions, but what is the suggested way for handling a
-> processor which has a PCIe interface, but the interface is not
-> configured to be the root complex (endpoint only)?
-> 
-> Should the PCIe interface appear in the dts?  If so, with what
-> parameters?
-> 
-> Should the kernel config contain CONFIG_PCI, etc. ?
-> 
 
-I'm in a similar situation, except I'm using PCI instead of PCIe. I've
-tried both removing the PCI interface from the dts, and disabling
-CONFIG_PCI. Both work fine.
+--ghzN8eJ9Qlbqn3iT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You probably don't want to leave the PCI interface in the dts and also
-leave CONFIG_PCI enabled. I ran into some really strange issues this
-way... (Linux ran through the quirks and tried to re-initialize a
-network card, even though the driver was disabled, etc.)
+> I don't see his Signed-off-by on any patch to i2c-mpc.c for the past
+> three years (at least).  I do see yours, however.  You have directly
 
-I think the suggested way is to remove the PCI interface from the dts,
-that way you can potentially share a kernel between similar boards with
-and without PCI root interfaces, just by changing the dts.
+Ben is the I2C-"embedded"-maintainer. This job was created less than
+a year ago, this is why you don't see sob from him regarding this
+driver.
 
-Ira
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--ghzN8eJ9Qlbqn3iT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmRqyMACgkQD27XaX1/VRsljQCgruu/3sbaE9DKIa8s34hrG4WV
+FOcAoMsTjfDCvW8ldExbvhDFzdTF95EG
+=eWN5
+-----END PGP SIGNATURE-----
+
+--ghzN8eJ9Qlbqn3iT--
