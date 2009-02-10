@@ -1,14 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] powerpc/cell: fix dependency in cpufreq 
-In-reply-to: <200902101655.17013.arnd@arndb.de> 
-References: <18282.1234226812@neuling.org> <22829.1234230526@neuling.org>
-	<25212.1234231317@neuling.org> <200902101655.17013.arnd@arndb.de>
-Date: Wed, 11 Feb 2009 09:27:23 +1100
-Message-ID: <24452.1234304843@neuling.org>
-Sender: mikey@neuling.org
-Cc: linuxppc-dev@ozlabs.org, Christian Krafft <parabelboi@bopserverein.de>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from SG2EHSOBE002.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 3C199DDDAB
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 09:47:15 +1100 (EST)
+Message-ID: <499203BB.5010902@am.sony.com>
+Date: Tue, 10 Feb 2009 14:46:19 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [patch] powerpc/ps3: Use hard coded values for LV1 device type
+References: <498C6C49.1010200@in.ibm.com> <498CF52E.4040903@am.sony.com>	
+	<1234092590.10240.4.camel@localhost>
+	<1234138267.31963.77.camel@pasglop>
+	<1234151988.8776.4.camel@localhost.localdomain>
+In-Reply-To: <1234151988.8776.4.camel@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, Jens Axboe <jens.axboe@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,95 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> cbe_cpufreq has a partial dependency on cbe_cpufreq_pmi, which cannot
-> be easily expressed in Kconfig. This fixes it by introducing an
-> extra Kconfig symbol CBE_CPUFREQ_PMI_ENABLE. To make the dependency
-> clearer, turn PPC_PMI into an automatic symbol.
+James Bottomley wrote:
+> On Mon, 2009-02-09 at 11:11 +1100, Benjamin Herrenschmidt wrote:
+>> The PS3 platform code wants to use some of the standard SCSI types from
+>> there though, as they are part of the hypervisor ABI. (And in fact it
+>> can be argued that non-block devices using SCSI do exist, such as
+>> scanners, no ?)
+>> 
+>> Any reason other than pre-historical to have blkdev.h shielded like
+>> that ?
 > 
-> Reported-by: Michael Neuling <mikey@neuling.org>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Acked-by: Michael Neuling <mikey@neuling.org>
-
-Arnd, this fixes one of the problems, but not the cbe table issue I
-reported in the same thread here (sorry I should have stared a new
-thread):
-
-http://ozlabs.org/pipermail/linuxppc-dev/2009-February/068154.html
-
-Seems to be a similar problem when CONFIG_CPU_FREQ_TABLE is a module.
-
-Mikey
-
+> Actually, I think the fix lies in scsi.h ... we can make that into a
+> nicely independent protocol header file.  Your current woes come because
+> it pulls in scsi_cmnd.h ... perhaps just getting rid of this will fix
+> it.
 > 
-> ---
+> Can the rest of linux-scsi verify that the fix below doesn't break
+> something else?
 > 
-> This is the best I could come up with.
-> 
-> --- a/arch/powerpc/platforms/Kconfig
-> +++ b/arch/powerpc/platforms/Kconfig
-> @@ -91,15 +91,6 @@ config RTAS_FLASH
->  	tristate "Firmware flash interface"
->  	depends on PPC64 && RTAS_PROC
->  
-> -config PPC_PMI
-> -	tristate "Support for PMI"
-> -	depends on PPC_IBM_CELL_BLADE
-> -	help
-> -	  PMI (Platform Management Interrupt) is a way to
-> -	  communicate with the BMC (Baseboard Management Controller).
-> -	  It is used in some IBM Cell blades.
-> -	default m
-> -
->  config MMIO_NVRAM
->  	bool
->  	default n
-> diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cel
-l/Kconfig
-> index 5cc3279..037f59a 100644
-> --- a/arch/powerpc/platforms/cell/Kconfig
-> +++ b/arch/powerpc/platforms/cell/Kconfig
-> @@ -98,7 +98,7 @@ config PPC_IBM_CELL_RESETBUTTON
->  
->  config PPC_IBM_CELL_POWERBUTTON
->  	tristate "IBM Cell Blade power button"
-> -	depends on PPC_IBM_CELL_BLADE && PPC_PMI && INPUT_EVDEV
-> +	depends on PPC_IBM_CELL_BLADE && INPUT_EVDEV
->  	default y
->  	help
->  	  Support Powerbutton on IBM Cell blades.
-> @@ -118,9 +118,9 @@ config CBE_CPUFREQ
->  	  For details, take a look at <file:Documentation/cpu-freq/>.
->  	  If you don't have such processor, say N
->  
-> -config CBE_CPUFREQ_PMI
-> -	tristate "CBE frequency scaling using PMI interface"
-> -	depends on CBE_CPUFREQ && PPC_PMI && EXPERIMENTAL
-> +config CBE_CPUFREQ_PMI_ENABLE
-> +	bool "CBE frequency scaling using PMI interface"
-> +	depends on CBE_CPUFREQ && EXPERIMENTAL
->  	default n
->  	help
->  	  Select this, if you want to use the PMI interface
-> @@ -128,6 +128,20 @@ config CBE_CPUFREQ_PMI
->  	  processor will not only be able to run at lower speed,
->  	  but also at lower core voltage.
->  
-> +config CBE_CPUFREQ_PMI
-> +	tristate
-> +	depends on CBE_CPUFREQ_PMI_ENABLE
-> +	default CBE_CPUFREQ
-> +
-> +config PPC_PMI
-> +	tristate
-> +	default y
-> +	depends on CBE_CPUFREQ_PMI || PPC_IBM_CELL_POWERBUTTON
-> +	help
-> +	  PMI (Platform Management Interrupt) is a way to
-> +	  communicate with the BMC (Baseboard Management Controller).
-> +	  It is used in some IBM Cell blades.
-> +
->  config CBE_CPUFREQ_SPU_GOVERNOR
->  	tristate "CBE frequency scaling based on SPU usage"
->  	depends on SPU_FS && CPU_FREQ
-> 
+> I found one cockup: block/cmd-filter.c is apparently not including
+> linuc/blkdev.h directly but via scsi/scsi.h ... I fixed this up.
+...
+> diff --git a/block/cmd-filter.c b/block/cmd-filter.c
+> diff --git a/include/scsi/scsi_cmnd.h b/include/scsi/scsi_cmnd.h
+
+I tested this scsi header fix on PS3 and it fixes the BLK_MAX_CDB
+not defined build error when CONFIG_BLOCK=n.
+
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
