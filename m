@@ -1,13 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] powerpc/cell: fix dependency in cpufreq 
-In-reply-to: <1234227692.8149.58.camel@localhost> 
-References: <18282.1234226812@neuling.org> <1234227692.8149.58.camel@localhost>
-Date: Tue, 10 Feb 2009 12:48:46 +1100
-Message-ID: <22829.1234230526@neuling.org>
-Sender: mikey@neuling.org
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D5E12DDDBB
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 16:03:54 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 10 Feb 2009 16:03:12 +1100
+Message-Id: <1234242192.31963.472.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,29 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > cbe_cpufreq.c uses cbe_cpufreq_has_pmi which is provided by
-> > cbe_cpufreq_pmi.c.  Hence CBE_CPUFREQ depends on CBE_CPUFREQ_PMI.
-> >=20
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> > I'm not 100% sure is this the right fix.  Should CBE_CPUFREQ really
-> > depend on CBE_CPUFREQ_PMI?
-> 
-> No I don't think it is. Look at platforms/cell/cbe_cpufreq.h, the
-> intention seems to be that if PMI isn't built in then that variable is
-> hardcoded to 0 and we never use the pmi routines.
+Hi Linus !
 
----
-#if defined(CONFIG_CBE_CPUFREQ_PMI) || defined(CONFIG_CBE_CPUFREQ_PMI_MODULE)
-extern bool cbe_cpufreq_has_pmi;
-#else
-#define cbe_cpufreq_has_pmi (0)
-#endif
---
+A few powerpc bits for you for 2.6.29. A few bug and regression fixes
+(after this pull, it will be regressions only), a couple of board
+device tree updates and some trivialities such as build breakage with
+random config options due to missing includes.
 
-So, I think this is bust.  If cpufreq_pmi is in a module, how does
-cpufreq use cbe_cpufreq_has_pmi if the module is not inserted?  
+Among others, this should solve the regressions with X being broken
+on PowerMacs due to the legacy_mem files in sysfs returning an error on
+mmap.
 
-Arnd?
+The following changes since commit 4c098bcd55fad34dcf224bf8343db6a9ac58fc68:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../mason/btrfs-unstable
 
-Mikey
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Ananth N Mavinakayanahalli (1):
+      powerpc: Don't emulate mr. instructions
+
+Anton Vorontsov (2):
+      powerpc/83xx: Fix missing #{address,size}-cells in mpc8313erdb.dts
+      powerpc/83xx: Fix TSEC0 workability on MPC8313E-RDB boards
+
+Benjamin Herrenschmidt (1):
+      powerpc/pci: mmap anonymous memory when legacy_mem doesn't exist
+
+Julia Lawall (1):
+      arch/powerpc: Eliminate double sizeof
+
+Kumar Gala (1):
+      powerpc/fsl-booke: Fix mapping functions to use phys_addr_t
+
+Michael Neuling (3):
+      powerpc/83xx: Build breakage for CONFIG_PM but no CONFIG_SUSPEND
+      powerpc/cell: Add missing #include for oprofile
+      powerpc: Add missing sparsemem.h include
+
+Steven Rostedt (1):
+      powerpc/ftrace: Fix math to calculate offset in TOC
+
+paulfax (1):
+      powerpc/cpm2: Fix set interrupt type
+
+ arch/powerpc/boot/dts/mpc8313erdb.dts           |   11 ++++-------
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig |    2 +-
+ arch/powerpc/kernel/ftrace.c                    |    5 +++--
+ arch/powerpc/kernel/pci-common.c                |   17 +++++++++++++++--
+ arch/powerpc/lib/sstep.c                        |    2 ++
+ arch/powerpc/mm/fsl_booke_mmu.c                 |    4 ++--
+ arch/powerpc/mm/pgtable_32.c                    |    4 ++--
+ arch/powerpc/oprofile/cell/spu_profiler.c       |    1 +
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c    |    2 +-
+ arch/powerpc/platforms/pseries/hotplug-memory.c |    1 +
+ arch/powerpc/sysdev/cpm2_pic.c                  |    2 +-
+ arch/powerpc/sysdev/ipic.c                      |    2 +-
+ 12 files changed, 34 insertions(+), 19 deletions(-)
