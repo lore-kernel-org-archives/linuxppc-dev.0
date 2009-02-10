@@ -1,14 +1,24 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id ABE5FDDE28
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 03:14:09 +1100 (EST)
-Date: Tue, 10 Feb 2009 17:13:50 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Disable mv643xx Ethernet port 0 on Pegasos
-Message-ID: <20090210161350.GA2596@iram.es>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 79750DDDA8
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 03:21:34 +1100 (EST)
+Message-ID: <4991A970.70508@freescale.com>
+Date: Tue, 10 Feb 2009 10:21:04 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for
+	I2C   to complete
+References: <1233928837-3401-1-git-send-email-timur@freescale.com>	<ed82fe3e0902100659p2eec9de6j61f9ffb504d60a89@mail.gmail.com>	<20090210165554.0da8bf7c@hyperion.delvare>	<4991A4F2.8030506@freescale.com>
+	<20090210171000.1f45cc2d@hyperion.delvare>
+In-Reply-To: <20090210171000.1f45cc2d@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,137 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-After the last changes, the mv643xx_eth driver now detects
-a spurious interface on port 0. Since only port 1 is actually
-connected to a PHY, remove its description.
+Jean Delvare wrote:
 
-Signed-off-by: Gabriel Paubert <paubert@iram.es>
+> To the best of my knowledge i2c-mpc falls into the "embedded platforms"
+> category and is thus under Ben's responsibility.
 
----
+I don't see his Signed-off-by on any patch to i2c-mpc.c for the past
+three years (at least).  I do see yours, however.  You have directly
+applied similar patches in the recent past, so of course I will assume
+that you would apply this one.
 
-Tested on the last batch of Pegasos produced. Caveat: do not enable
-the Marvell PHY driver in your config, however the generic one works.
-
-
-diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/powerpc/platforms/chrp/pegasos_eth.c
-index 130ff72..039fc8e 100644
---- a/arch/powerpc/platforms/chrp/pegasos_eth.c
-+++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
-@@ -21,8 +21,8 @@
- #define PEGASOS2_SRAM_BASE 			(0xf2000000)
- #define PEGASOS2_SRAM_SIZE			(256*1024)
- 
--#define PEGASOS2_SRAM_BASE_ETH0			(PEGASOS2_SRAM_BASE)
--#define PEGASOS2_SRAM_BASE_ETH1			(PEGASOS2_SRAM_BASE_ETH0 + (PEGASOS2_SRAM_SIZE / 2) )
-+#define PEGASOS2_SRAM_BASE_ETH_PORT0			(PEGASOS2_SRAM_BASE)
-+#define PEGASOS2_SRAM_BASE_ETH_PORT1			(PEGASOS2_SRAM_BASE_ETH_PORT0 + (PEGASOS2_SRAM_SIZE / 2) )
- 
- 
- #define PEGASOS2_SRAM_RXRING_SIZE		(PEGASOS2_SRAM_SIZE/4)
-@@ -47,75 +47,42 @@ static struct platform_device mv643xx_eth_shared_device = {
- 	.resource	= mv643xx_eth_shared_resources,
- };
- 
--static struct resource mv643xx_eth0_resources[] = {
-+static struct resource mv643xx_eth_port1_resources[] = {
- 	[0] = {
--		.name	= "eth0 irq",
-+		.name	= "eth port1 irq",
- 		.start	= 9,
- 		.end	= 9,
- 		.flags	= IORESOURCE_IRQ,
- 	},
- };
- 
--
--static struct mv643xx_eth_platform_data eth0_pd = {
--	.shared		= &mv643xx_eth_shared_device,
--	.port_number	= 0,
--
--	.tx_sram_addr = PEGASOS2_SRAM_BASE_ETH0,
--	.tx_sram_size = PEGASOS2_SRAM_TXRING_SIZE,
--	.tx_queue_size = PEGASOS2_SRAM_TXRING_SIZE/16,
--
--	.rx_sram_addr = PEGASOS2_SRAM_BASE_ETH0 + PEGASOS2_SRAM_TXRING_SIZE,
--	.rx_sram_size = PEGASOS2_SRAM_RXRING_SIZE,
--	.rx_queue_size = PEGASOS2_SRAM_RXRING_SIZE/16,
--};
--
--static struct platform_device eth0_device = {
--	.name		= MV643XX_ETH_NAME,
--	.id		= 0,
--	.num_resources	= ARRAY_SIZE(mv643xx_eth0_resources),
--	.resource	= mv643xx_eth0_resources,
--	.dev = {
--		.platform_data = &eth0_pd,
--	},
--};
--
--static struct resource mv643xx_eth1_resources[] = {
--	[0] = {
--		.name	= "eth1 irq",
--		.start	= 9,
--		.end	= 9,
--		.flags	= IORESOURCE_IRQ,
--	},
--};
--
--static struct mv643xx_eth_platform_data eth1_pd = {
-+static struct mv643xx_eth_platform_data eth_port1_pd = {
- 	.shared		= &mv643xx_eth_shared_device,
- 	.port_number	= 1,
-+	.phy_addr	= MV643XX_ETH_PHY_ADDR(7),
- 
--	.tx_sram_addr = PEGASOS2_SRAM_BASE_ETH1,
-+	.tx_sram_addr = PEGASOS2_SRAM_BASE_ETH_PORT1,
- 	.tx_sram_size = PEGASOS2_SRAM_TXRING_SIZE,
- 	.tx_queue_size = PEGASOS2_SRAM_TXRING_SIZE/16,
- 
--	.rx_sram_addr = PEGASOS2_SRAM_BASE_ETH1 + PEGASOS2_SRAM_TXRING_SIZE,
-+	.rx_sram_addr = PEGASOS2_SRAM_BASE_ETH_PORT1 + PEGASOS2_SRAM_TXRING_SIZE,
- 	.rx_sram_size = PEGASOS2_SRAM_RXRING_SIZE,
- 	.rx_queue_size = PEGASOS2_SRAM_RXRING_SIZE/16,
- };
- 
--static struct platform_device eth1_device = {
-+static struct platform_device eth_port1_device = {
- 	.name		= MV643XX_ETH_NAME,
- 	.id		= 1,
--	.num_resources	= ARRAY_SIZE(mv643xx_eth1_resources),
--	.resource	= mv643xx_eth1_resources,
-+	.num_resources	= ARRAY_SIZE(mv643xx_eth_port1_resources),
-+	.resource	= mv643xx_eth_port1_resources,
- 	.dev = {
--		.platform_data = &eth1_pd,
-+		.platform_data = &eth_port1_pd,
- 	},
- };
- 
- static struct platform_device *mv643xx_eth_pd_devs[] __initdata = {
- 	&mv643xx_eth_shared_device,
--	&eth0_device,
--	&eth1_device,
-+	&eth_port1_device,
- };
- 
- /***********/
-@@ -191,15 +158,10 @@ static int __init mv643xx_eth_add_pds(void)
- 
- 		if ( Enable_SRAM() < 0)
- 		{
--			eth0_pd.tx_sram_addr = 0;
--			eth0_pd.tx_sram_size = 0;
--			eth0_pd.rx_sram_addr = 0;
--			eth0_pd.rx_sram_size = 0;
--
--			eth1_pd.tx_sram_addr = 0;
--			eth1_pd.tx_sram_size = 0;
--			eth1_pd.rx_sram_addr = 0;
--			eth1_pd.rx_sram_size = 0;
-+			eth_port1_pd.tx_sram_addr = 0;
-+			eth_port1_pd.tx_sram_size = 0;
-+			eth_port1_pd.rx_sram_addr = 0;
-+			eth_port1_pd.rx_sram_size = 0;
- 
- #ifdef BE_VERBOSE
- 			printk("Pegasos II/Marvell MV64361: Can't enable the "
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
