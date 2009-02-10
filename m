@@ -1,26 +1,20 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 8D421DDDF3
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 03:28:30 +1100 (EST)
-Date: Tue, 10 Feb 2009 17:28:19 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for
-	I2C   to complete
-Message-ID: <20090210162819.GC15678@pengutronix.de>
-References: <1233928837-3401-1-git-send-email-timur@freescale.com>
-	<ed82fe3e0902100659p2eec9de6j61f9ffb504d60a89@mail.gmail.com>
-	<20090210165554.0da8bf7c@hyperion.delvare>
-	<4991A4F2.8030506@freescale.com>
-	<20090210171000.1f45cc2d@hyperion.delvare>
-	<4991A970.70508@freescale.com>
+Return-Path: <linasvepstas@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 6F02CDDDA7
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 04:14:12 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so258138yxb.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 09:14:10 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ghzN8eJ9Qlbqn3iT"
-In-Reply-To: <4991A970.70508@freescale.com>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	Kumar Gala <kumar.gala@freescale.com>, linux-i2c@vger.kernel.org,
-	Ben Dooks <ben-linux@fluff.org>
+In-Reply-To: <4990EF8B.7060203@us.ibm.com>
+References: <4990EF8B.7060203@us.ibm.com>
+Date: Tue, 10 Feb 2009 11:14:10 -0600
+Message-ID: <3ae3aa420902100914t572da49chf22b5fdda644033f@mail.gmail.com>
+Subject: Re: [PATCH] Only disable/enable LSI interrupts in EEH
+From: Linas Vepstas <linasvepstas@gmail.com>
+To: Mike Mason <mmlnx@us.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, ellerman@au1.ibm.com, paulus@samba.org
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,38 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+2009/2/9 Mike Mason <mmlnx@us.ibm.com>:
+> The EEH code disables and enables interrupts during the
+> device recovery process.  This is unnecessary for MSI
+> and MSI-X interrupts because they are effectively disabled
+> by the DMA Stopped state when an EEH error occurs.  The current code is also
+> incorrect for MSI-X interrupts.  It
+> doesn't take into account that MSI-X interrupts are tracked
+> in a different way than LSI/MSI interrupts.  This patch ensures only LSI
+> interrupts are disabled/enabled.
+>
+> The patch also includes a couple minor formatting fixes.
+>
+>
+> Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
 
---ghzN8eJ9Qlbqn3iT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Looks good to me.
+Acked-by: Linas Vepstas <linasvepstas@gmail.com>
 
-> I don't see his Signed-off-by on any patch to i2c-mpc.c for the past
-> three years (at least).  I do see yours, however.  You have directly
+On a somewhat-related note: there was an issue (I forget
+the details) where the kernel needed to shadow some sort
+of MSI state so that it could be correctly, um, kept-track-of,
+after an EEH reset (it didn't need to be restored, because
+firmware did this(?)).  After some digging around and
+discussion, we concluded that some generic PPC MSI
+code needed to be altered to track this state, and/or
+the main kernel MSI code needed to be changed to
+(not?) track this state.  Mike Ellerman seemed to best
+grasp this area ... was this ever fixed?
 
-Ben is the I2C-"embedded"-maintainer. This job was created less than
-a year ago, this is why you don't see sob from him regarding this
-driver.
+Or perhaps this is an alternate fix for that bug? It may
+well have been that calling the MSI disable triggered
+the problem, I don't remember now.
 
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---ghzN8eJ9Qlbqn3iT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmRqyMACgkQD27XaX1/VRsljQCgruu/3sbaE9DKIa8s34hrG4WV
-FOcAoMsTjfDCvW8ldExbvhDFzdTF95EG
-=eWN5
------END PGP SIGNATURE-----
-
---ghzN8eJ9Qlbqn3iT--
+--linas
