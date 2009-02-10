@@ -2,22 +2,28 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 06980DDDA7
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 02:30:57 +1100 (EST)
-Message-Id: <6413661A-2719-46F5-AC06-C83C088DCCA1@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 7076BDDDA2
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 02:41:05 +1100 (EST)
+Message-Id: <0F214C64-7F77-4A5B-9937-0E6D7941AAEC@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090210151047.GA25086@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <1233750122.23240.11.camel@ubuntu8041.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] powerpc/83xx: Revive Marvell PHY option on MPC8313E-RDB
-	rev. C boards
-Date: Tue, 10 Feb 2009 09:30:49 -0600
-References: <20090205201040.GB3425@oksana.dev.rtsoft.ru>
-	<2a27d3730902082347n7f0eb48dq8c4ecccda290f9c8@mail.gmail.com>
-	<ED186496-3882-4E87-9BEC-B56FE09C5827@kernel.crashing.org>
-	<20090210151047.GA25086@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
+Subject: Re: Booting 2.6.29-rc3 on mpc8661d_hpcn failing
+Date: Tue, 10 Feb 2009 09:40:52 -0600
+References: <4982F311.4050507@gefanuc.com>
+	<F764D461-8EFB-4B31-ABFC-ECBB7A3FBA01@kernel.crashing.org>
+	<9B0CCADB-C891-42B2-BE94-0927B5715A00@kernel.crashing.org>
+	<4986BEB9.3030606@gefanuc.com>
+	<E00697F4-1313-49C2-9F8A-79FC9E511022@kernel.crashing.org>
+	<498718B6.3030307@gefanuc.com>
+	<D06DAB0F-1477-4CA6-A06D-0F7B62939C86@kernel.crashing.org>
+	<49871D3E.80809@gefanuc.com> <1233607753.18767.103.camel@pasglop>
+	<49883719.9030300@gefanuc.com> <498867C0.2000607@gefanuc.com>
+	<1233708479.16867.129.camel@pasglop>
+	<1233750122.23240.11.camel@ubuntu8041.localdomain>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +33,6 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Feb 10, 2009, at 9:10 AM, Anton Vorontsov wrote:
-
-> commit e85477f516c2de7ed515fcf94ceab5282eba7fa4 ("powerpc/83xx: Fix
-> TSEC0 workability on MPC8313E-RDB boards") fixed TSEC0 workability for
-> rev. A and rev. B boards by using fixed-link property for VSC 7385
-> 5-port switch. But rev. C boards have an option where TSEC0 connected
-> to a Marvell PHY, which is a normal PHY on MDIO bus.
->
-> So far U-Boot does not fix up TSEC0 nodes for MPC8313E-RDB boards, so
-> we'd better include two device-tree files: one that specify Vitesse
-> PHY and another for boards with Marvell PHY option.
->
-> Reported-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->
-> Li, thanks for heads-up!
->
-> One thing though: documentation says that Marvell PHY address is
-> 0x3, while old device tree and this patch:
->
-> http://www.bitshrine.org/gpp/linux-fsl-2.6.23-MPC8313ERDB-add-default-dts.patch
->
-> says "0x1"... I don't have any rev. C boards, so it would
-> be great if somebody could confirm that 0x1 is the actual address.
->
-> arch/powerpc/boot/dts/mpc8313erdb_marvell_phy.dts |  401 ++++++++++++ 
-> +++++++++
-> arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |    2 +-
-> 2 files changed, 402 insertions(+), 1 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/mpc8313erdb_marvell_phy.dts
-
-did we decide that we don't have any bcsr or something that convey  
-board rev or this setting?
+I might have missed this but what u-boot rev are you using?
 
 - k
