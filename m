@@ -1,31 +1,15 @@
-Return-Path: <mmlnx@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3A8E4DDDA1
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 08:12:26 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n1ALA9o5001198
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 14:10:09 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n1ALCLc0188928
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 14:12:21 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n1ALCL0m026230
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 14:12:21 -0700
-Message-ID: <4991EDB5.8070803@us.ibm.com>
-Date: Tue, 10 Feb 2009 13:12:21 -0800
-From: Mike Mason <mmlnx@us.ibm.com>
+Return-Path: <scott.coulter@cyclone.com>
+Received: from CYBORG3.cyclone.com (cyborg3.cyclone.com [69.37.28.78])
+	by ozlabs.org (Postfix) with ESMTP id 4C6B6DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 08:43:47 +1100 (EST)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Only disable/enable LSI interrupts in EEH
-References: <4990EF8B.7060203@us.ibm.com>
-In-Reply-To: <4990EF8B.7060203@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linasvepstas@gmail.com, paulus@samba.org, ellerman@au1.ibm.com
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: 2.6.27.6 kernel Bad trap boot problem on MPC8568E
+Date: Tue, 10 Feb 2009 16:44:45 -0500
+Message-ID: <43EB80E07C42E1408726E4905FB96B04C07522@CYBORG3.cyclone.com>
+From: "Scott Coulter" <scott.coulter@cyclone.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,139 +19,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm resubmitting this patch with a couple changes
-suggested by Michael Ellerman.  1) the new functions
-should be static, and 2) some people may object to
-including unrelated formating changes.
+Hi,
 
-=========================================================
+I am trying to get a 2.6.27.6 kernel to boot on an MPC8568E processor.  =
+The kernel/patches/compiler came from Freescale's LTIB release in =
+December 2008.  Using the same kernel source, toolchain, and ramdisk =
+image, I can boot and run an SMP kernel on the MPC8572E processor which =
+is on the same board.  This is what I see on the 8568E processor:
 
-The EEH code disables and enables interrupts during the
-device recovery process.  This is unnecessary for MSI
-and MSI-X interrupts because they are effectively disabled
-by the DMA Stopped state when an EEH error occurs.  The
-current code is also incorrect for MSI-X interrupts.  It
-doesn't take into account that MSI-X interrupts are tracked
-in a different way than LSI/MSI interrupts.  This patch 
-ensures only LSI interrupts are disabled/enabled.
+...
+brd: module loaded
+loop: module loaded
+fsl_pm.ko: loading ...
+fsl_pm.ko: no SoC node, ignoring
+fsl_pm.ko: hal initialisation
+Gianfar MII Bus: probed
+eth0: Gianfar Ethernet Controller Version 1.4-skbr1.1.4, =
+00:80:4d:22:00:66
+eth0: MTU =3D 1500 (frame size=3D1524, truesize=3D1800)
+eth0: Running with NAPI enabled
+eth0: 128/128 RX/TX BD ring size
+eth1: Gianfar Ethernet Controller Version 1.4-skbr1.1.4, =
+00:80:4d:22:40:66
+eth1: MTU =3D 1500 (frame size=3D1524, truesize=3D1800)
+eth1: Running with NAPI enabled
+eth1: 128/128 RX/TX BD ring size
+mice: PS/2 mouse device common for all mice
+i2c /dev entries driver
+EDAC MC: Ver: 2.1.0 Feb  9 2009
+TCP cubic registered
+NET: Registered protocol family 17
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 144k init
+Bad trap at PC: 100b7354, SR: 2d000, vector=3D2020
+init has generated signal 5 but has no handler for it
+Kernel panic - not syncing: Attempted to kill init!
+Rebooting in 180 seconds..
 
-Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
-Acked-by: Linas Vepstas <linasvepstas@gmail.com>
+I am not using a debugger, so I can't see where the SIGTRAP would be =
+coming from.
+
+Thanks in advance,
+
+Scott
 
 
---- arch/powerpc/platforms/pseries/eeh_driver.c-orig	2009-02-10 07:12:31.000000000 -0800
-+++ arch/powerpc/platforms/pseries/eeh_driver.c	2009-02-10 08:19:54.000000000 -0800
-@@ -76,6 +76,40 @@ static int irq_in_use(unsigned int irq)
- 	return rc;
- }
- 
-+/**
-+ * eeh_disable_irq - disable interrupt for the recovering device
-+ */
-+static void eeh_disable_irq(struct pci_dev *dev)
-+{
-+	struct device_node *dn = pci_device_to_OF_node(dev);
-+
-+	/* Don't disable MSI and MSI-X interrupts. They are
-+	 * effectively disabled by the DMA Stopped state 
-+	 * when an EEH error occurs.
-+	*/
-+	if (dev->msi_enabled || dev->msix_enabled)
-+		return;
-+
-+	if (!irq_in_use(dev->irq))
-+		return;
-+
-+	PCI_DN(dn)->eeh_mode |= EEH_MODE_IRQ_DISABLED;
-+	disable_irq_nosync(dev->irq);
-+}
-+
-+/**
-+ * eeh_enable_irq - enable interrupt for the recovering device
-+ */
-+static void eeh_enable_irq(struct pci_dev *dev)
-+{
-+	struct device_node *dn = pci_device_to_OF_node(dev);
-+
-+	if ((PCI_DN(dn)->eeh_mode) & EEH_MODE_IRQ_DISABLED) {
-+		PCI_DN(dn)->eeh_mode &= ~EEH_MODE_IRQ_DISABLED;
-+		enable_irq(dev->irq);
-+	}
-+}
-+
- /* ------------------------------------------------------- */
- /**
-  * eeh_report_error - report pci error to each device driver
-@@ -95,11 +129,8 @@ static void eeh_report_error(struct pci_
- 	if (!driver)
- 		return;
- 
--	if (irq_in_use (dev->irq)) {
--		struct device_node *dn = pci_device_to_OF_node(dev);
--		PCI_DN(dn)->eeh_mode |= EEH_MODE_IRQ_DISABLED;
--		disable_irq_nosync(dev->irq);
--	}
-+	eeh_disable_irq(dev);
-+
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->error_detected)
- 		return;
-@@ -144,15 +175,12 @@ static void eeh_report_reset(struct pci_
- {
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver = dev->driver;
--	struct device_node *dn = pci_device_to_OF_node(dev);
- 
- 	if (!driver)
- 		return;
- 
--	if ((PCI_DN(dn)->eeh_mode) & EEH_MODE_IRQ_DISABLED) {
--		PCI_DN(dn)->eeh_mode &= ~EEH_MODE_IRQ_DISABLED;
--		enable_irq(dev->irq);
--	}
-+	eeh_enable_irq(dev);
-+
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->slot_reset)
- 		return;
-@@ -171,17 +199,14 @@ static void eeh_report_reset(struct pci_
- static void eeh_report_resume(struct pci_dev *dev, void *userdata)
- {
- 	struct pci_driver *driver = dev->driver;
--	struct device_node *dn = pci_device_to_OF_node(dev);
- 
- 	dev->error_state = pci_channel_io_normal;
- 
- 	if (!driver)
- 		return;
- 
--	if ((PCI_DN(dn)->eeh_mode) & EEH_MODE_IRQ_DISABLED) {
--		PCI_DN(dn)->eeh_mode &= ~EEH_MODE_IRQ_DISABLED;
--		enable_irq(dev->irq);
--	}
-+	eeh_enable_irq(dev);
-+
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->resume)
- 		return;
-@@ -205,15 +230,12 @@ static void eeh_report_failure(struct pc
- 	if (!driver)
- 		return;
- 
--	if (irq_in_use (dev->irq)) {
--		struct device_node *dn = pci_device_to_OF_node(dev);
--		PCI_DN(dn)->eeh_mode |= EEH_MODE_IRQ_DISABLED;
--		disable_irq_nosync(dev->irq);
--	}
--	if (!driver->err_handler)
--		return;
--	if (!driver->err_handler->error_detected)
-+	eeh_disable_irq(dev);
-+
-+	if (!driver->err_handler ||
-+	    !driver->err_handler->error_detected)
- 		return;
-+
- 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
- }
- 
+
+___________________________________________________________________=20
+=A0 Scott N. Coulter=20
+=A0 Senior Software Engineer=20
+=A0=20
+=A0 Cyclone Microsystems=A0=A0=A0=A0=A0=A0=A0=A0=A0=20
+=A0 370 James Street=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 Phone:=A0 =
+203.786.5536 ext. 118=20
+=A0 New Haven, CT 06513-3051=A0=A0=A0=A0=A0 Email:=A0 =
+scott.coulter@cyclone.com=20
+=A0 =
+U.S.A.=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+ Web:=A0=A0=A0 http://www.cyclone.com=20
+___________________________________________________________________=20
