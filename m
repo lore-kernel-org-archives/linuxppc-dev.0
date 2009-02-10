@@ -2,16 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C5024F3C7
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 14:20:59 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n1A3KsWU022944
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Feb 2009 21:20:55 -0600
+	by ozlabs.org (Postfix) with ESMTPS id BD9AFDDDE0
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 14:25:17 +1100 (EST)
+Date: Mon, 9 Feb 2009 21:25:12 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/fsl-booke: Fix mapping functions to use phys_addr_t
-Date: Mon,  9 Feb 2009 21:20:54 -0600
-Message-Id: <1234236054-29429-1-git-send-email-galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull from 'merge' branch (updated)(for 2.6.29)
+Message-ID: <Pine.LNX.4.64.0902092123490.29563@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fixed v_mapped_by_tlbcam() and p_mapped_by_tlbcam() to use phys_addr_t
-instead of unsigned long.  In 36-bit physical mode we really need these
-functions to deal with phys_addr_t when trying to match a physical
-address or when returning one.
+Please pull from 'merge' branch of
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/mm/fsl_booke_mmu.c |    4 ++--
- arch/powerpc/mm/pgtable_32.c    |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index 1971e4e..ea6e41e 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -73,7 +73,7 @@ extern unsigned int tlbcam_index;
- /*
-  * Return PA for this VA if it is mapped by a CAM, or 0
-  */
--unsigned long v_mapped_by_tlbcam(unsigned long va)
-+phys_addr_t v_mapped_by_tlbcam(unsigned long va)
- {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
-@@ -85,7 +85,7 @@ unsigned long v_mapped_by_tlbcam(unsigned long va)
- /*
-  * Return VA for a given PA or 0 if not mapped
-  */
--unsigned long p_mapped_by_tlbcam(unsigned long pa)
-+unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
- {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 22972cd..58bcaeb 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -61,8 +61,8 @@ void setbat(int index, unsigned long virt, phys_addr_t phys,
- 
- #ifdef HAVE_TLBCAM
- extern unsigned int tlbcam_index;
--extern unsigned long v_mapped_by_tlbcam(unsigned long va);
--extern unsigned long p_mapped_by_tlbcam(unsigned long pa);
-+extern phys_addr_t v_mapped_by_tlbcam(unsigned long va);
-+extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
- #else /* !HAVE_TLBCAM */
- #define v_mapped_by_tlbcam(x)	(0UL)
- #define p_mapped_by_tlbcam(x)	(0UL)
--- 
-1.5.6.6
+to receive the following updates:
+
+ arch/powerpc/boot/dts/mpc8313erdb.dts           |   11 ++++-------
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig |    2 +-
+ arch/powerpc/mm/fsl_booke_mmu.c                 |    4 ++--
+ arch/powerpc/mm/pgtable_32.c                    |    4 ++--
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c    |    2 +-
+ arch/powerpc/sysdev/cpm2_pic.c                  |    2 +-
+ arch/powerpc/sysdev/ipic.c                      |    2 +-
+ 7 files changed, 12 insertions(+), 15 deletions(-)
+
+Anton Vorontsov (2):
+      powerpc/83xx: Fix missing #{address,size}-cells in mpc8313erdb.dts
+      powerpc/83xx: Fix TSEC0 workability on MPC8313E-RDB boards
+
+Julia Lawall (1):
+      arch/powerpc: Eliminate double sizeof
+
+Kumar Gala (1):
+      powerpc/fsl-booke: Fix mapping functions to use phys_addr_t
+
+Michael Neuling (1):
+      powerpc/83xx: Build breakage for CONFIG_PM but no CONFIG_SUSPEND
+
+paulfax (1):
+      powerpc/cpm2: Fix set interrupt type
+
+(added the one patch from me that fixes 36-bit physical support on
+85xx/e500)
+
+- k
