@@ -1,24 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 79750DDDA8
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 03:21:34 +1100 (EST)
-Message-ID: <4991A970.70508@freescale.com>
-Date: Tue, 10 Feb 2009 10:21:04 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 6E382DDDEF
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 03:22:52 +1100 (EST)
+Date: Tue, 10 Feb 2009 08:22:49 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Scott Coulter <scott.coulter@cyclone.com>
+Subject: Re: correct way for handling PCIe in endpoint mode
+Message-ID: <20090210162249.GB9592@ovro.caltech.edu>
+References: <43EB80E07C42E1408726E4905FB96B04C074D9@CYBORG3.cyclone.com>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for
-	I2C   to complete
-References: <1233928837-3401-1-git-send-email-timur@freescale.com>	<ed82fe3e0902100659p2eec9de6j61f9ffb504d60a89@mail.gmail.com>	<20090210165554.0da8bf7c@hyperion.delvare>	<4991A4F2.8030506@freescale.com>
-	<20090210171000.1f45cc2d@hyperion.delvare>
-In-Reply-To: <20090210171000.1f45cc2d@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
-	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <43EB80E07C42E1408726E4905FB96B04C074D9@CYBORG3.cyclone.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jean Delvare wrote:
+On Tue, Feb 10, 2009 at 07:39:47AM -0500, Scott Coulter wrote:
+> 
+> Hi all,
+> 
+> Maybe a silly questions, but what is the suggested way for handling a
+> processor which has a PCIe interface, but the interface is not
+> configured to be the root complex (endpoint only)?
+> 
+> Should the PCIe interface appear in the dts?  If so, with what
+> parameters?
+> 
+> Should the kernel config contain CONFIG_PCI, etc. ?
+> 
 
-> To the best of my knowledge i2c-mpc falls into the "embedded platforms"
-> category and is thus under Ben's responsibility.
+I'm in a similar situation, except I'm using PCI instead of PCIe. I've
+tried both removing the PCI interface from the dts, and disabling
+CONFIG_PCI. Both work fine.
 
-I don't see his Signed-off-by on any patch to i2c-mpc.c for the past
-three years (at least).  I do see yours, however.  You have directly
-applied similar patches in the recent past, so of course I will assume
-that you would apply this one.
+You probably don't want to leave the PCI interface in the dts and also
+leave CONFIG_PCI enabled. I ran into some really strange issues this
+way... (Linux ran through the quirks and tried to re-initialize a
+network card, even though the driver was disabled, etc.)
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+I think the suggested way is to remove the PCI interface from the dts,
+that way you can potentially share a kernel between similar boards with
+and without PCI root interfaces, just by changing the dts.
+
+Ira
