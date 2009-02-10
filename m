@@ -1,20 +1,23 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 602D5DDDA0
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 02:12:04 +1100 (EST)
-Date: Tue, 10 Feb 2009 16:11:56 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for
-	I2C to complete
-Message-ID: <20090210151156.GA15678@pengutronix.de>
-References: <1233928837-3401-1-git-send-email-timur@freescale.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="TB36FDmn/VVEgNH/"
-In-Reply-To: <1233928837-3401-1-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, mditto@consentry.com,
-	broonie@opensource.wolfsonmicro.com, linux-i2c@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 06980DDDA7
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 02:30:57 +1100 (EST)
+Message-Id: <6413661A-2719-46F5-AC06-C83C088DCCA1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20090210151047.GA25086@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc/83xx: Revive Marvell PHY option on MPC8313E-RDB
+	rev. C boards
+Date: Tue, 10 Feb 2009 09:30:49 -0600
+References: <20090205201040.GB3425@oksana.dev.rtsoft.ru>
+	<2a27d3730902082347n7f0eb48dq8c4ecccda290f9c8@mail.gmail.com>
+	<ED186496-3882-4E87-9BEC-B56FE09C5827@kernel.crashing.org>
+	<20090210151047.GA25086@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +28,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---TB36FDmn/VVEgNH/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Feb 10, 2009, at 9:10 AM, Anton Vorontsov wrote:
 
-On Fri, Feb 06, 2009 at 08:00:37AM -0600, Timur Tabi wrote:
-> The i2c_wait() function is using wait_event_interruptible_timeout() to wa=
-it for
-> the I2C controller to signal that it has completed an I2C bus operation. =
- If
-> the process that causes the I2C operation terminated abruptly, the wait w=
-ill
-> be interrupted, returning an error.  It is better to let the I2C operation
-> finished before the process exits.
->=20
-> It is safe to use wait_event_timeout() instead, because the timeout will =
-allow
-> the process to exit if the I2C bus hangs.  It's also better to allow the
-> I2C operation to finish, because unacknowledged I2C operations can cause =
-the
-> I2C bus to hang.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> commit e85477f516c2de7ed515fcf94ceab5282eba7fa4 ("powerpc/83xx: Fix
+> TSEC0 workability on MPC8313E-RDB boards") fixed TSEC0 workability for
+> rev. A and rev. B boards by using fixed-link property for VSC 7385
+> 5-port switch. But rev. C boards have an option where TSEC0 connected
+> to a Marvell PHY, which is a normal PHY on MDIO bus.
+>
+> So far U-Boot does not fix up TSEC0 nodes for MPC8313E-RDB boards, so
+> we'd better include two device-tree files: one that specify Vitesse
+> PHY and another for boards with Marvell PHY option.
+>
+> Reported-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>
+> Li, thanks for heads-up!
+>
+> One thing though: documentation says that Marvell PHY address is
+> 0x3, while old device tree and this patch:
+>
+> http://www.bitshrine.org/gpp/linux-fsl-2.6.23-MPC8313ERDB-add-default-dts.patch
+>
+> says "0x1"... I don't have any rev. C boards, so it would
+> be great if somebody could confirm that 0x1 is the actual address.
+>
+> arch/powerpc/boot/dts/mpc8313erdb_marvell_phy.dts |  401 ++++++++++++ 
+> +++++++++
+> arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |    2 +-
+> 2 files changed, 402 insertions(+), 1 deletions(-)
+> create mode 100644 arch/powerpc/boot/dts/mpc8313erdb_marvell_phy.dts
 
-Acked-by: Wolfram Sang <w.sang@pengutronix.de>
+did we decide that we don't have any bcsr or something that convey  
+board rev or this setting?
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---TB36FDmn/VVEgNH/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmRmTwACgkQD27XaX1/VRvD6gCghacTrahXacggGU1+ZWtk9yeJ
-+BwAn0IpNXSVXfUM2XAVzdnomK4yOowT
-=vZgE
------END PGP SIGNATURE-----
-
---TB36FDmn/VVEgNH/--
+- k
