@@ -1,21 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 1C83CDDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 02:10:49 +1100 (EST)
-Date: Tue, 10 Feb 2009 18:10:47 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/83xx: Revive Marvell PHY option on MPC8313E-RDB
-	rev. C boards
-Message-ID: <20090210151047.GA25086@oksana.dev.rtsoft.ru>
-References: <20090205201040.GB3425@oksana.dev.rtsoft.ru>
-	<2a27d3730902082347n7f0eb48dq8c4ecccda290f9c8@mail.gmail.com>
-	<ED186496-3882-4E87-9BEC-B56FE09C5827@kernel.crashing.org>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 602D5DDDA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 02:12:04 +1100 (EST)
+Date: Tue, 10 Feb 2009 16:11:56 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for
+	I2C to complete
+Message-ID: <20090210151156.GA15678@pengutronix.de>
+References: <1233928837-3401-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <ED186496-3882-4E87-9BEC-B56FE09C5827@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="TB36FDmn/VVEgNH/"
+In-Reply-To: <1233928837-3401-1-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, mditto@consentry.com,
+	broonie@opensource.wolfsonmicro.com, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,454 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-commit e85477f516c2de7ed515fcf94ceab5282eba7fa4 ("powerpc/83xx: Fix
-TSEC0 workability on MPC8313E-RDB boards") fixed TSEC0 workability for
-rev. A and rev. B boards by using fixed-link property for VSC 7385
-5-port switch. But rev. C boards have an option where TSEC0 connected
-to a Marvell PHY, which is a normal PHY on MDIO bus.
 
-So far U-Boot does not fix up TSEC0 nodes for MPC8313E-RDB boards, so
-we'd better include two device-tree files: one that specify Vitesse
-PHY and another for boards with Marvell PHY option.
+--TB36FDmn/VVEgNH/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Reported-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+On Fri, Feb 06, 2009 at 08:00:37AM -0600, Timur Tabi wrote:
+> The i2c_wait() function is using wait_event_interruptible_timeout() to wa=
+it for
+> the I2C controller to signal that it has completed an I2C bus operation. =
+ If
+> the process that causes the I2C operation terminated abruptly, the wait w=
+ill
+> be interrupted, returning an error.  It is better to let the I2C operation
+> finished before the process exits.
+>=20
+> It is safe to use wait_event_timeout() instead, because the timeout will =
+allow
+> the process to exit if the I2C bus hangs.  It's also better to allow the
+> I2C operation to finish, because unacknowledged I2C operations can cause =
+the
+> I2C bus to hang.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 
-Li, thanks for heads-up!
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
 
-One thing though: documentation says that Marvell PHY address is
-0x3, while old device tree and this patch:
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-http://www.bitshrine.org/gpp/linux-fsl-2.6.23-MPC8313ERDB-add-default-dts.patch
+--TB36FDmn/VVEgNH/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-says "0x1"... I don't have any rev. C boards, so it would
-be great if somebody could confirm that 0x1 is the actual address.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
- arch/powerpc/boot/dts/mpc8313erdb_marvell_phy.dts |  401 +++++++++++++++++++++
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |    2 +-
- 2 files changed, 402 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/mpc8313erdb_marvell_phy.dts
+iEYEARECAAYFAkmRmTwACgkQD27XaX1/VRvD6gCghacTrahXacggGU1+ZWtk9yeJ
++BwAn0IpNXSVXfUM2XAVzdnomK4yOowT
+=vZgE
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb_marvell_phy.dts b/arch/powerpc/boot/dts/mpc8313erdb_marvell_phy.dts
-new file mode 100644
-index 0000000..3f84cd0
---- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc8313erdb_marvell_phy.dts
-@@ -0,0 +1,401 @@
-+/*
-+ * MPC8313E RDB Device Tree Source
-+ *
-+ * Copyright 2005, 2006, 2007 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+
-+/ {
-+	model = "MPC8313ERDB";
-+	compatible = "MPC8313ERDB", "MPC831xRDB", "MPC83xxRDB";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	aliases {
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		pci0 = &pci0;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,8313@0 {
-+			device_type = "cpu";
-+			reg = <0x0>;
-+			d-cache-line-size = <32>;
-+			i-cache-line-size = <32>;
-+			d-cache-size = <16384>;
-+			i-cache-size = <16384>;
-+			timebase-frequency = <0>;	// from bootloader
-+			bus-frequency = <0>;		// from bootloader
-+			clock-frequency = <0>;		// from bootloader
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x08000000>;	// 128MB at 0
-+	};
-+
-+	localbus@e0005000 {
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		compatible = "fsl,mpc8313-elbc", "fsl,elbc", "simple-bus";
-+		reg = <0xe0005000 0x1000>;
-+		interrupts = <77 0x8>;
-+		interrupt-parent = <&ipic>;
-+
-+		// CS0 and CS1 are swapped when
-+		// booting from nand, but the
-+		// addresses are the same.
-+		ranges = <0x0 0x0 0xfe000000 0x00800000
-+		          0x1 0x0 0xe2800000 0x00008000
-+		          0x2 0x0 0xf0000000 0x00020000
-+		          0x3 0x0 0xfa000000 0x00008000>;
-+
-+		flash@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x800000>;
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
-+
-+		nand@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8313-fcm-nand",
-+			             "fsl,elbc-fcm-nand";
-+			reg = <0x1 0x0 0x2000>;
-+
-+			u-boot@0 {
-+				reg = <0x0 0x100000>;
-+				read-only;
-+			};
-+
-+			kernel@100000 {
-+				reg = <0x100000 0x300000>;
-+			};
-+
-+			fs@400000 {
-+				reg = <0x400000 0x1c00000>;
-+			};
-+		};
-+	};
-+
-+	soc8313@e0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		device_type = "soc";
-+		compatible = "simple-bus";
-+		ranges = <0x0 0xe0000000 0x00100000>;
-+		reg = <0xe0000000 0x00000200>;
-+		bus-frequency = <0>;
-+
-+		wdt@200 {
-+			device_type = "watchdog";
-+			compatible = "mpc83xx_wdt";
-+			reg = <0x200 0x100>;
-+		};
-+
-+		sleep-nexus {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "simple-bus";
-+			sleep = <&pmc 0x03000000>;
-+			ranges;
-+
-+			i2c@3000 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				cell-index = <0>;
-+				compatible = "fsl-i2c";
-+				reg = <0x3000 0x100>;
-+				interrupts = <14 0x8>;
-+				interrupt-parent = <&ipic>;
-+				dfsrr;
-+				rtc@68 {
-+					compatible = "dallas,ds1339";
-+					reg = <0x68>;
-+				};
-+			};
-+
-+			crypto@30000 {
-+				compatible = "fsl,sec2.2", "fsl,sec2.1",
-+				             "fsl,sec2.0";
-+				reg = <0x30000 0x10000>;
-+				interrupts = <11 0x8>;
-+				interrupt-parent = <&ipic>;
-+				fsl,num-channels = <1>;
-+				fsl,channel-fifo-len = <24>;
-+				fsl,exec-units-mask = <0x4c>;
-+				fsl,descriptor-types-mask = <0x0122003f>;
-+			};
-+		};
-+
-+		i2c@3100 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			cell-index = <1>;
-+			compatible = "fsl-i2c";
-+			reg = <0x3100 0x100>;
-+			interrupts = <15 0x8>;
-+			interrupt-parent = <&ipic>;
-+			dfsrr;
-+		};
-+
-+		spi@7000 {
-+			cell-index = <0>;
-+			compatible = "fsl,spi";
-+			reg = <0x7000 0x1000>;
-+			interrupts = <16 0x8>;
-+			interrupt-parent = <&ipic>;
-+			mode = "cpu";
-+		};
-+
-+		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
-+		usb@23000 {
-+			compatible = "fsl-usb2-dr";
-+			reg = <0x23000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = <&ipic>;
-+			interrupts = <38 0x8>;
-+			phy_type = "utmi_wide";
-+			sleep = <&pmc 0x00300000>;
-+		};
-+
-+		enet0: ethernet@24000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			sleep = <&pmc 0x20000000>;
-+			ranges;
-+
-+			cell-index = <0>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <0x24000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <37 0x8 36 0x8 35 0x8>;
-+			interrupt-parent = <&ipic>;
-+			tbi-handle = < &tbi0 >;
-+			phy-handle = < &phy1 >;
-+			fsl,magic-packet;
-+
-+			mdio@24520 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				compatible = "fsl,gianfar-mdio";
-+				reg = <0x24520 0x20>;
-+				phy1: ethernet-phy@1 {
-+					interrupt-parent = <&ipic>;
-+					interrupts = <19 0x8>;
-+					reg = <0x1>;
-+					device_type = "ethernet-phy";
-+				};
-+				phy4: ethernet-phy@4 {
-+					interrupt-parent = <&ipic>;
-+					interrupts = <20 0x8>;
-+					reg = <0x4>;
-+					device_type = "ethernet-phy";
-+				};
-+				tbi0: tbi-phy@11 {
-+					reg = <0x11>;
-+					device_type = "tbi-phy";
-+				};
-+			};
-+		};
-+
-+		enet1: ethernet@25000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			cell-index = <1>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <0x25000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <34 0x8 33 0x8 32 0x8>;
-+			interrupt-parent = <&ipic>;
-+			tbi-handle = < &tbi1 >;
-+			phy-handle = < &phy4 >;
-+			sleep = <&pmc 0x10000000>;
-+			fsl,magic-packet;
-+
-+			mdio@25520 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				compatible = "fsl,gianfar-tbi";
-+				reg = <0x25520 0x20>;
-+
-+				tbi1: tbi-phy@11 {
-+					reg = <0x11>;
-+					device_type = "tbi-phy";
-+				};
-+			};
-+
-+
-+		};
-+
-+		serial0: serial@4500 {
-+			cell-index = <0>;
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <0x4500 0x100>;
-+			clock-frequency = <0>;
-+			interrupts = <9 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
-+		serial1: serial@4600 {
-+			cell-index = <1>;
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <0x4600 0x100>;
-+			clock-frequency = <0>;
-+			interrupts = <10 0x8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
-+		/* IPIC
-+		 * interrupts cell = <intr #, sense>
-+		 * sense values match linux IORESOURCE_IRQ_* defines:
-+		 * sense == 8: Level, low assertion
-+		 * sense == 2: Edge, high-to-low change
-+		 */
-+		ipic: pic@700 {
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0x700 0x100>;
-+			device_type = "ipic";
-+		};
-+
-+		pmc: power@b00 {
-+			compatible = "fsl,mpc8313-pmc", "fsl,mpc8349-pmc";
-+			reg = <0xb00 0x100 0xa00 0x100>;
-+			interrupts = <80 8>;
-+			interrupt-parent = <&ipic>;
-+			fsl,mpc8313-wakeup-timer = <&gtm1>;
-+
-+			/* Remove this (or change to "okay") if you have
-+			 * a REVA3 or later board, if you apply one of the
-+			 * workarounds listed in section 8.5 of the board
-+			 * manual, or if you are adapting this device tree
-+			 * to a different board.
-+			 */
-+			status = "fail";
-+		};
-+
-+		gtm1: timer@500 {
-+			compatible = "fsl,mpc8313-gtm", "fsl,gtm";
-+			reg = <0x500 0x100>;
-+			interrupts = <90 8 78 8 84 8 72 8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+
-+		timer@600 {
-+			compatible = "fsl,mpc8313-gtm", "fsl,gtm";
-+			reg = <0x600 0x100>;
-+			interrupts = <91 8 79 8 85 8 73 8>;
-+			interrupt-parent = <&ipic>;
-+		};
-+	};
-+
-+	sleep-nexus {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "simple-bus";
-+		sleep = <&pmc 0x00010000>;
-+		ranges;
-+
-+		pci0: pci@e0008500 {
-+			cell-index = <1>;
-+			interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-+			interrupt-map = <
-+					/* IDSEL 0x0E -mini PCI */
-+					 0x7000 0x0 0x0 0x1 &ipic 18 0x8
-+					 0x7000 0x0 0x0 0x2 &ipic 18 0x8
-+					 0x7000 0x0 0x0 0x3 &ipic 18 0x8
-+					 0x7000 0x0 0x0 0x4 &ipic 18 0x8
-+
-+					/* IDSEL 0x0F - PCI slot */
-+					 0x7800 0x0 0x0 0x1 &ipic 17 0x8
-+					 0x7800 0x0 0x0 0x2 &ipic 18 0x8
-+					 0x7800 0x0 0x0 0x3 &ipic 17 0x8
-+					 0x7800 0x0 0x0 0x4 &ipic 18 0x8>;
-+			interrupt-parent = <&ipic>;
-+			interrupts = <66 0x8>;
-+			bus-range = <0x0 0x0>;
-+			ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
-+				  0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
-+				  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
-+			clock-frequency = <66666666>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <0xe0008500 0x100		/* internal registers */
-+			       0xe0008300 0x8>;		/* config space access registers */
-+			compatible = "fsl,mpc8349-pci";
-+			device_type = "pci";
-+		};
-+
-+		dma@82a8 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8313-dma", "fsl,elo-dma";
-+			reg = <0xe00082a8 4>;
-+			ranges = <0 0xe0008100 0x1a8>;
-+			interrupt-parent = <&ipic>;
-+			interrupts = <71 8>;
-+
-+			dma-channel@0 {
-+				compatible = "fsl,mpc8313-dma-channel",
-+				             "fsl,elo-dma-channel";
-+				reg = <0 0x28>;
-+				interrupt-parent = <&ipic>;
-+				interrupts = <71 8>;
-+				cell-index = <0>;
-+			};
-+
-+			dma-channel@80 {
-+				compatible = "fsl,mpc8313-dma-channel",
-+				             "fsl,elo-dma-channel";
-+				reg = <0x80 0x28>;
-+				interrupt-parent = <&ipic>;
-+				interrupts = <71 8>;
-+				cell-index = <1>;
-+			};
-+
-+			dma-channel@100 {
-+				compatible = "fsl,mpc8313-dma-channel",
-+				             "fsl,elo-dma-channel";
-+				reg = <0x100 0x28>;
-+				interrupt-parent = <&ipic>;
-+				interrupts = <71 8>;
-+				cell-index = <2>;
-+			};
-+
-+			dma-channel@180 {
-+				compatible = "fsl,mpc8313-dma-channel",
-+				             "fsl,elo-dma-channel";
-+				reg = <0x180 0x28>;
-+				interrupt-parent = <&ipic>;
-+				interrupts = <71 8>;
-+				cell-index = <3>;
-+			};
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig b/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
-index 409d017..cf908af 100644
---- a/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
-+++ b/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
-@@ -638,7 +638,7 @@ CONFIG_PHYLIB=y
- #
- # MII PHY device drivers
- #
--# CONFIG_MARVELL_PHY is not set
-+CONFIG_MARVELL_PHY=y
- # CONFIG_DAVICOM_PHY is not set
- # CONFIG_QSEMI_PHY is not set
- # CONFIG_LXT_PHY is not set
--- 
-1.5.6.5
+--TB36FDmn/VVEgNH/--
