@@ -1,21 +1,18 @@
-Return-Path: <ben@fluff.org.uk>
-Received: from kira.home.fluff.org (aeryn.fluff.org.uk [87.194.8.8])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 904B3DDF27
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 11:17:28 +1100 (EST)
-Date: Wed, 11 Feb 2009 00:17:14 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for
-	I2C to complete
-Message-ID: <20090211001714.GB19758@fluff.org.uk>
-References: <1233928837-3401-1-git-send-email-timur@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1233928837-3401-1-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, mditto@consentry.com,
-	broonie@opensource.wolfsonmicro.com, linux-i2c@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id CEBF2DDDAC
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 11:26:21 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n1B0QGTo030459
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Feb 2009 18:26:17 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/fsl-booke: Add new ISA 2.06 page sizes and MAS
+	defines
+Date: Tue, 10 Feb 2009 18:26:16 -0600
+Message-Id: <1234311976-22026-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,66 +22,143 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 06, 2009 at 08:00:37AM -0600, Timur Tabi wrote:
-> The i2c_wait() function is using wait_event_interruptible_timeout() to wait for
-> the I2C controller to signal that it has completed an I2C bus operation.  If
-> the process that causes the I2C operation terminated abruptly, the wait will
-> be interrupted, returning an error.  It is better to let the I2C operation
-> finished before the process exits.
-> 
-> It is safe to use wait_event_timeout() instead, because the timeout will allow
-> the process to exit if the I2C bus hangs.  It's also better to allow the
-> I2C operation to finish, because unacknowledged I2C operations can cause the
-> I2C bus to hang.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-Acked-by: Ben Dooks <ben-linux@fluff.org>
-> ---
-> 
-> A similar change should probably be done to i2c-cpm.c, and maybe all other
-> I2C drivers.  Not many use wait_event_interruptible_timeout().
-> 
->  drivers/i2c/busses/i2c-mpc.c |    9 +++------
->  1 files changed, 3 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-> index a9a45fc..c0ace48 100644
-> --- a/drivers/i2c/busses/i2c-mpc.c
-> +++ b/drivers/i2c/busses/i2c-mpc.c
-> @@ -70,7 +70,7 @@ static irqreturn_t mpc_i2c_isr(int irq, void *dev_id)
->  		/* Read again to allow register to stabilise */
->  		i2c->interrupt = readb(i2c->base + MPC_I2C_SR);
->  		writeb(0, i2c->base + MPC_I2C_SR);
-> -		wake_up_interruptible(&i2c->queue);
-> +		wake_up(&i2c->queue);
->  	}
->  	return IRQ_HANDLED;
->  }
-> @@ -115,13 +115,10 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
->  		writeb(0, i2c->base + MPC_I2C_SR);
->  	} else {
->  		/* Interrupt mode */
-> -		result = wait_event_interruptible_timeout(i2c->queue,
-> +		result = wait_event_timeout(i2c->queue,
->  			(i2c->interrupt & CSR_MIF), timeout * HZ);
->  
-> -		if (unlikely(result < 0)) {
-> -			pr_debug("I2C: wait interrupted\n");
-> -			writeccr(i2c, 0);
-> -		} else if (unlikely(!(i2c->interrupt & CSR_MIF))) {
-> +		if (unlikely(!(i2c->interrupt & CSR_MIF))) {
->  			pr_debug("I2C: wait timeout\n");
->  			writeccr(i2c, 0);
->  			result = -ETIMEDOUT;
-> -- 
-> 1.5.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The Power ISA 2.06 added power of two page sizes to the embedded MMU
+architecture.  Its done it such a way to be code compatiable with the
+existing HW.  Made the minor code changes to support both power of two
+and power of four page sizes.  Also added some new MAS bits and macros
+that are defined as part of the 2.06 ISA.
 
+Note, its still invalid to try and use a page size that isn't supported
+by cpu.
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+* Fixed MAS6_ISIZE macro
+
+ arch/powerpc/include/asm/mmu-fsl-booke.h |   54 ++++++++++++++++++++----------
+ arch/powerpc/kernel/head_fsl_booke.S     |    2 +-
+ arch/powerpc/mm/fsl_booke_mmu.c          |    2 +-
+ 3 files changed, 38 insertions(+), 20 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mmu-fsl-booke.h b/arch/powerpc/include/asm/mmu-fsl-booke.h
+index 3f941c0..e69a165 100644
+--- a/arch/powerpc/include/asm/mmu-fsl-booke.h
++++ b/arch/powerpc/include/asm/mmu-fsl-booke.h
+@@ -6,21 +6,37 @@
+ 
+ /* Book-E defined page sizes */
+ #define BOOKE_PAGESZ_1K		0
+-#define BOOKE_PAGESZ_4K		1
+-#define BOOKE_PAGESZ_16K	2
+-#define BOOKE_PAGESZ_64K	3
+-#define BOOKE_PAGESZ_256K	4
+-#define BOOKE_PAGESZ_1M		5
+-#define BOOKE_PAGESZ_4M		6
+-#define BOOKE_PAGESZ_16M	7
+-#define BOOKE_PAGESZ_64M	8
+-#define BOOKE_PAGESZ_256M	9
+-#define BOOKE_PAGESZ_1GB	10
+-#define BOOKE_PAGESZ_4GB	11
+-#define BOOKE_PAGESZ_16GB	12
+-#define BOOKE_PAGESZ_64GB	13
+-#define BOOKE_PAGESZ_256GB	14
+-#define BOOKE_PAGESZ_1TB	15
++#define BOOKE_PAGESZ_2K		1
++#define BOOKE_PAGESZ_4K		2
++#define BOOKE_PAGESZ_8K		3
++#define BOOKE_PAGESZ_16K	4
++#define BOOKE_PAGESZ_32K	5
++#define BOOKE_PAGESZ_64K	6
++#define BOOKE_PAGESZ_128K	7
++#define BOOKE_PAGESZ_256K	8
++#define BOOKE_PAGESZ_512K	9
++#define BOOKE_PAGESZ_1M		10
++#define BOOKE_PAGESZ_2M		11
++#define BOOKE_PAGESZ_4M		12
++#define BOOKE_PAGESZ_8M		13
++#define BOOKE_PAGESZ_16M	14
++#define BOOKE_PAGESZ_32M	15
++#define BOOKE_PAGESZ_64M	16
++#define BOOKE_PAGESZ_128M	17
++#define BOOKE_PAGESZ_256M	18
++#define BOOKE_PAGESZ_512M	19
++#define BOOKE_PAGESZ_1GB	20
++#define BOOKE_PAGESZ_2GB	21
++#define BOOKE_PAGESZ_4GB	22
++#define BOOKE_PAGESZ_8GB	23
++#define BOOKE_PAGESZ_16GB	24
++#define BOOKE_PAGESZ_32GB	25
++#define BOOKE_PAGESZ_64GB	26
++#define BOOKE_PAGESZ_128GB	27
++#define BOOKE_PAGESZ_256GB	28
++#define BOOKE_PAGESZ_512GB	29
++#define BOOKE_PAGESZ_1TB	30
++#define BOOKE_PAGESZ_2TB	31
+ 
+ #define MAS0_TLBSEL(x)	((x << 28) & 0x30000000)
+ #define MAS0_ESEL(x)	((x << 16) & 0x0FFF0000)
+@@ -29,8 +45,9 @@
+ #define MAS1_VALID 	0x80000000
+ #define MAS1_IPROT	0x40000000
+ #define MAS1_TID(x)	((x << 16) & 0x3FFF0000)
++#define MAS1_IND	0x00002000
+ #define MAS1_TS		0x00001000
+-#define MAS1_TSIZE(x)	((x << 8) & 0x00000F00)
++#define MAS1_TSIZE(x)	((x << 7) & 0x00000F80)
+ 
+ #define MAS2_EPN	0xFFFFF000
+ #define MAS2_X0		0x00000040
+@@ -40,7 +57,7 @@
+ #define MAS2_M		0x00000004
+ #define MAS2_G		0x00000002
+ #define MAS2_E		0x00000001
+-#define MAS2_EPN_MASK(size)		(~0 << (2*(size) + 10))
++#define MAS2_EPN_MASK(size)		(~0 << (size + 10))
+ #define MAS2_VAL(addr, size, flags)	((addr) & MAS2_EPN_MASK(size) | (flags))
+ 
+ #define MAS3_RPN	0xFFFFF000
+@@ -56,7 +73,7 @@
+ #define MAS3_SR		0x00000001
+ 
+ #define MAS4_TLBSELD(x) MAS0_TLBSEL(x)
+-#define MAS4_TIDDSEL	0x000F0000
++#define MAS4_INDD	0x00008000
+ #define MAS4_TSIZED(x)	MAS1_TSIZE(x)
+ #define MAS4_X0D	0x00000040
+ #define MAS4_X1D	0x00000020
+@@ -68,6 +85,7 @@
+ 
+ #define MAS6_SPID0	0x3FFF0000
+ #define MAS6_SPID1	0x00007FFE
++#define MAS6_ISIZE(x)	MAS1_TSIZE(x)
+ #define MAS6_SAS	0x00000001
+ #define MAS6_SPID	MAS6_SPID0
+ 
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 64ecb16..7f49af7 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -173,7 +173,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 
+ 	/* grab and fixup the RPN */
+ 	mfspr	r6,SPRN_MAS1	/* extract MAS1[SIZE] */
+-	rlwinm	r6,r6,25,27,30
++	rlwinm	r6,r6,25,27,31
+ 	li	r8,-1
+ 	addi	r6,r6,10
+ 	slw	r6,r8,r6	/* convert to mask */
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index 0b9ba6b..54f3631 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -111,7 +111,7 @@ void settlbcam(int index, unsigned long virt, phys_addr_t phys,
+ 	unsigned int tsize, lz;
+ 
+ 	asm ("cntlzw %0,%1" : "=r" (lz) : "r" (size));
+-	tsize = (21 - lz) / 2;
++	tsize = 21 - lz;
+ 
+ #ifdef CONFIG_SMP
+ 	if ((flags & _PAGE_NO_CACHE) == 0)
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+1.5.6.6
