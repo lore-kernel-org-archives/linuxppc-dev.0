@@ -1,14 +1,35 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <49935FC7.9010006@am.sony.com>
-Date: Wed, 11 Feb 2009 15:31:19 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <kosaki.motohiro@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+	by ozlabs.org (Postfix) with ESMTP id EDA8CDDDAE
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 10:53:35 +1100 (EST)
+Received: from m1.gw.fujitsu.co.jp ([10.0.50.71])
+	by fgwmail6.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	n1BNrXJb020981 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kosaki.motohiro@jp.fujitsu.com); Thu, 12 Feb 2009 08:53:34 +0900
+Received: from smail (m1 [127.0.0.1])
+	by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id B80B445DD74
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 08:53:33 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
+	by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 9B1D545DD72
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 08:53:33 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 8453D1DB803A
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 08:53:33 +0900 (JST)
+Received: from ml14.s.css.fujitsu.com (ml14.s.css.fujitsu.com [10.249.87.104])
+	by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 466BF1DB803C
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 08:53:33 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vmalloc: Add __get_vm_area_caller()
+In-Reply-To: <20090211144509.d22feeb8.akpm@linux-foundation.org>
+References: <20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20090211144509.d22feeb8.akpm@linux-foundation.org>
+Message-Id: <20090212085156.C8DB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [RFC patch] powerpc/ps3: Add ps3_topology_ready routine
-References: <49935F81.7060203@am.sony.com>
-In-Reply-To: <49935F81.7060203@am.sony.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Date: Thu, 12 Feb 2009 08:53:32 +0900 (JST)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,70 +39,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Switch the PS3 hotplug memory routine ps3_mm_add_memory() from
-being a core_initcall routine to being called via the new
-topology_ready powerpc machdep call.
+> On Wed, 11 Feb 2009 17:22:47 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > > I want to put into powerpc-next patches relying into that, so if the
+> > > patch is ok with you guys, can I stick it in powerpc.git ?
+> > 
+> > hm.
+> > Generally, all MM patch should merge into -mm tree at first.
+> > but I don't think this patch have conflict risk. 
+> > 
+> > Andrew, What do you think?
+> 
+> We can sneak it into mainline later in the week?
 
-core_initcall routines run before the powerpc topology_init()
-startup routine, resulting in failure of ps3_mm_add_memory()
-when CONFIG_NUMA=y.
-
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
- arch/powerpc/platforms/ps3/mm.c       |    4 +---
- arch/powerpc/platforms/ps3/platform.h |    1 +
- arch/powerpc/platforms/ps3/setup.c    |    6 ++++++
- 3 files changed, 8 insertions(+), 3 deletions(-)
-
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -289,7 +289,7 @@ static void ps3_mm_region_destroy(struct
-  * ps3_mm_add_memory - hot add memory
-  */
- 
--static int __init ps3_mm_add_memory(void)
-+int __init ps3_mm_add_memory(void)
- {
- 	int result;
- 	unsigned long start_addr;
-@@ -328,8 +328,6 @@ static int __init ps3_mm_add_memory(void
- 	return result;
- }
- 
--core_initcall(ps3_mm_add_memory);
--
- /*============================================================================*/
- /* dma routines                                                               */
- /*============================================================================*/
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -37,6 +37,7 @@ void __init ps3_mm_init(void);
- void __init ps3_mm_vas_create(unsigned long* htab_size);
- void ps3_mm_vas_destroy(void);
- void ps3_mm_shutdown(void);
-+int __init ps3_mm_add_memory(void);
- 
- /* irq */
- 
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -249,6 +249,11 @@ static int __init ps3_probe(void)
- 	return 1;
- }
- 
-+static void __init ps3_topology_ready(void)
-+{
-+	ps3_mm_add_memory();
-+}
-+
- #if defined(CONFIG_KEXEC)
- static void ps3_kexec_cpu_down(int crash_shutdown, int secondary)
- {
-@@ -267,6 +272,7 @@ define_machine(ps3) {
- 	.name				= "PS3",
- 	.probe				= ps3_probe,
- 	.setup_arch			= ps3_setup_arch,
-+	.topology_ready			= ps3_topology_ready,
- 	.init_IRQ			= ps3_init_IRQ,
- 	.panic				= ps3_panic,
- 	.get_boot_time			= ps3_get_boot_time,
+I think this patch obiously doesn't have any regression risk.
+I obey your judgement.
