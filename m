@@ -1,40 +1,17 @@
-Return-Path: <kosaki.motohiro@jp.fujitsu.com>
-Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
-	by ozlabs.org (Postfix) with ESMTP id 748FEDDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 19:32:02 +1100 (EST)
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
-	by fgwmail8.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	n1B8Mpds020420 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kosaki.motohiro@jp.fujitsu.com); Wed, 11 Feb 2009 17:22:51 +0900
-Received: from mt1.gw.fujitsu.co.jp ([10.0.50.74])
-	by fgwmail6.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	n1B8Mnhn000865 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kosaki.motohiro@jp.fujitsu.com); Wed, 11 Feb 2009 17:22:49 +0900
-Received: from smail (m4 [127.0.0.1])
-	by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id D602745DE52
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 17:22:48 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
-	by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 74DA745DE50
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 17:22:48 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 54D86E38005
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 17:22:48 +0900 (JST)
-Received: from m105.s.css.fujitsu.com (m105.s.css.fujitsu.com [10.249.87.105])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 0ACB7E38002
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 17:22:48 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] vmalloc: Add __get_vm_area_caller()
-In-Reply-To: <20090211044854.969CEDDDA9@ozlabs.org>
-References: <20090211044854.969CEDDDA9@ozlabs.org>
-Message-Id: <20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Date: Wed, 11 Feb 2009 17:22:47 +0900 (JST)
-Cc: Linux Memory Management <linux-mm@kvack.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: request_irq return errno 38
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Vijay Nikam <vijay.t.nikam@gmail.com>
+In-Reply-To: <f234e2140902110043i5a4aefb5yb635bc32b9653943@mail.gmail.com>
+References: <f234e2140902110043i5a4aefb5yb635bc32b9653943@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-BypG+0GMlikjZM1Ue0ew"
+Date: Wed, 11 Feb 2009 20:15:03 +1100
+Message-Id: <1234343703.9778.13.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,24 +21,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> We have get_vm_area_caller() and __get_vm_area() but not __get_vm_area_caller()
-> 
-> On powerpc, I use __get_vm_area() to separate the ranges of addresses given
-> to vmalloc vs. ioremap (various good reasons for that) so in order to be
-> able to implement the new caller tracking in /proc/vmallocinfo, I need
-> a "_caller" variant of it.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-It seems reasonable reason and this patch looks good to me :)
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+--=-BypG+0GMlikjZM1Ue0ew
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2009-02-11 at 14:13 +0530, Vijay Nikam wrote:
+> Hello All,
+>=20
+> I have mpc8313erdb evaluation board and currently I am writing GPIO
+> driver. Actually it is just simple test driver.
+>=20
+> I did the irq_request in the driver init function, as request_irq
+> returns zero (0) if successful, otherwise -1 on error and errno
+> indicates the error. But when I load or insert the module using insmod
+> request_irq return with Return Value -38. I checked in errno.h file in
+> asm-generic and 38 means ENOSYS - Function not implemented.
+> Following is irq_request code:
+> ----------------------
+> ret =3D request_irq(74, interrupt_handler, SA_INTERRUPT | SA_SHIRQ ,
+> "gpio", &mydev);
+> if(ret)
+>     printk(KERN_INFO "Error in request_irq, value return =3D %d \n", ret)=
+;
+> ----------------------
+> NOTE: 74 is the Interrupt ID Number for GPIO Interrupt. this
+> information is from Processor User Manual.
+>=20
+> Following is the handler:
+> ---------------------
+> static int interrupt_handler(int irqn, void *dev_id)
+> {
+>     printk(KERN_INFO "Enter in interrupt handler\n");
+>     return IRQ_HANDLED;
+> }
+> --------------------
+>=20
+> Usually request_irq return EBUSY, EINVAL but in my case it returns
+> ENOSYS (errno 38). I tried to look information for this errno in
+> interrupt context but could not able to find anything useful or
+> understable. Could anyone please let me know why this specific errno
+> 38 generated in request_irq ? ? ? and what are the possiblities for
+> resolving this error ? ?  ?
+
+You don't mention what kernel version you're using. But you might be
+hitting the check in __setup_irq():
+
+        if (desc->chip =3D=3D &no_irq_chip)
+                return -ENOSYS;
 
 
-> I want to put into powerpc-next patches relying into that, so if the
-> patch is ok with you guys, can I stick it in powerpc.git ?
+That would make sense because you're trying to map a raw irq number,
+which doesn't work. You first need to call irq_create_mapping(), like:
 
-hm.
-Generally, all MM patch should merge into -mm tree at first.
-but I don't think this patch have conflict risk. 
+int virq;
+virq =3D irq_create_mapping(NULL, 74);
+rc =3D request_irq(virq, ...);
 
-Andrew, What do you think?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-BypG+0GMlikjZM1Ue0ew
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmSlxYACgkQdSjSd0sB4dIVRwCgsK8iAuAw+5GSxHPlvPOMdF/o
+I9EAoJCrb7H36iZzP2NY3bUREhtCy/tV
+=pGTH
+-----END PGP SIGNATURE-----
+
+--=-BypG+0GMlikjZM1Ue0ew--
