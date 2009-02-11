@@ -1,21 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 392A0DDDAD
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 17:53:40 +1100 (EST)
-Date: Wed, 11 Feb 2009 17:53:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v4] powerpc: Unify opcode definitions and support
-Message-Id: <20090211175330.5d735536.sfr@canb.auug.org.au>
-In-Reply-To: <DECF9965-04E1-4897-8686-147625C5EE93@kernel.crashing.org>
-References: <1234312110-22227-1-git-send-email-galak@kernel.crashing.org>
-	<20090211114011.04f838d6.sfr@canb.auug.org.au>
-	<DECF9965-04E1-4897-8686-147625C5EE93@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__11_Feb_2009_17_53_30_+1100_tXw7ZkvwzLDDuuou"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <vijay.t.nikam@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.235])
+	by ozlabs.org (Postfix) with ESMTP id 61284DDDA3
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 19:43:28 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so57092rvb.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 00:43:26 -0800 (PST)
+MIME-Version: 1.0
+Date: Wed, 11 Feb 2009 14:13:26 +0530
+Message-ID: <f234e2140902110043i5a4aefb5yb635bc32b9653943@mail.gmail.com>
+Subject: request_irq return errno 38
+From: Vijay Nikam <vijay.t.nikam@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__11_Feb_2009_17_53_30_+1100_tXw7ZkvwzLDDuuou
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello All,
 
-Hi Kumar,
+I have mpc8313erdb evaluation board and currently I am writing GPIO
+driver. Actually it is just simple test driver.
 
-On Wed, 11 Feb 2009 00:11:32 -0600 Kumar Gala <galak@kernel.crashing.org> w=
-rote:
->
-> posted a new version that should fix this (added GPL license)
+I did the irq_request in the driver init function, as request_irq
+returns zero (0) if successful, otherwise -1 on error and errno
+indicates the error. But when I load or insert the module using insmod
+request_irq return with Return Value -38. I checked in errno.h file in
+asm-generic and 38 means ENOSYS - Function not implemented.
+Following is irq_request code:
+----------------------
+ret = request_irq(74, interrupt_handler, SA_INTERRUPT | SA_SHIRQ ,
+"gpio", &mydev);
+if(ret)
+    printk(KERN_INFO "Error in request_irq, value return = %d \n", ret);
+----------------------
+NOTE: 74 is the Interrupt ID Number for GPIO Interrupt. this
+information is from Processor User Manual.
 
-Thanks.
+Following is the handler:
+---------------------
+static int interrupt_handler(int irqn, void *dev_id)
+{
+    printk(KERN_INFO "Enter in interrupt handler\n");
+    return IRQ_HANDLED;
+}
+--------------------
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Usually request_irq return EBUSY, EINVAL but in my case it returns
+ENOSYS (errno 38). I tried to look information for this errno in
+interrupt context but could not able to find anything useful or
+understable. Could anyone please let me know why this specific errno
+38 generated in request_irq ? ? ? and what are the possiblities for
+resolving this error ? ?  ?
 
---Signature=_Wed__11_Feb_2009_17_53_30_+1100_tXw7ZkvwzLDDuuou
-Content-Type: application/pgp-signature
+Kindly please acknowledge ... thank you ...
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmSdeoACgkQjjKRsyhoI8x1ywCgrRLLj9UVCJhEtcrNpWkrjitv
-/mMAnim1NtiMeyLMM15PXEiycAxBvd2u
-=GTJ/
------END PGP SIGNATURE-----
-
---Signature=_Wed__11_Feb_2009_17_53_30_+1100_tXw7ZkvwzLDDuuou--
+Kind Regards,
+Vijay Nikam
