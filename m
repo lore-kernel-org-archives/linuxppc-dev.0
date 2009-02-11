@@ -1,20 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 0EA30DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 08:48:14 +1100 (EST)
-Date: Wed, 11 Feb 2009 13:48:07 -0800 (PST)
-Message-Id: <20090211.134807.77169123.davem@davemloft.net>
-To: hannes.hering@linux.vnet.ibm.com
-Subject: Re: [PATCH] ehea: Fix: Remove adapter from adapter list in error path
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200902111329.02954.hannes.hering@linux.vnet.ibm.com>
-References: <200902111329.02954.hannes.hering@linux.vnet.ibm.com>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2D45BDDDA1
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 09:45:46 +1100 (EST)
+Date: Wed, 11 Feb 2009 14:45:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] vmalloc: Add __get_vm_area_caller()
+Message-Id: <20090211144509.d22feeb8.akpm@linux-foundation.org>
+In-Reply-To: <20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20090211044854.969CEDDDA9@ozlabs.org>
+	<20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: jeff@garzik.org, themann@de.ibm.com, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, raisch@de.ibm.com,
-	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	ossthema@de.ibm.com, osstklei@de.ibm.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,11 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-Date: Wed, 11 Feb 2009 13:29:02 +0100
+On Wed, 11 Feb 2009 17:22:47 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> Remove adapter from adapter list before freeing data structure in error path.
+> > I want to put into powerpc-next patches relying into that, so if the
+> > patch is ok with you guys, can I stick it in powerpc.git ?
 > 
-> Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+> hm.
+> Generally, all MM patch should merge into -mm tree at first.
+> but I don't think this patch have conflict risk. 
+> 
+> Andrew, What do you think?
 
-Applied to net-next-2.6, thanks!
+We can sneak it into mainline later in the week?
