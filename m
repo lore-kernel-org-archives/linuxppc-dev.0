@@ -1,23 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E7B21DDDA5
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 15:03:09 +1100 (EST)
-Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as possible
+Return-Path: <benh@ozlabs.org>
+To: Linux Memory Management <linux-mm@kvack.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090204212612.GN22608@elte.hu>
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
-	<20090204150835.GA30027@oksana.dev.rtsoft.ru>
-	<20090204212612.GN22608@elte.hu>
-Content-Type: text/plain
-Date: Wed, 11 Feb 2009 14:51:34 +1100
-Message-Id: <1234324294.29851.0.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>
+Date: Wed, 11 Feb 2009 15:48:26 +1100
+Subject: [PATCH] vmalloc: Add __get_vm_area_caller()
+Message-Id: <20090211044854.969CEDDDA9@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +15,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-02-04 at 22:26 +0100, Ingo Molnar wrote:
-> > +include $(srctree)/arch/$(SRCARCH)/Makefile
-> > +
-> >  # arch Makefile may override CC so keep this after arch Makefile is
-> included
-> >  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC)
-> -print-file-name=include)
-> >  CHECKFLAGS     += $(NOSTDINC_FLAGS)
-> > -- 
-> 
-> this patch is really for Sam to judge - Cc:-ed him.
+We have get_vm_area_caller() and __get_vm_area() but not __get_vm_area_caller()
 
-Sam ? I have a few more powerpc patches depending on that one... so I'd
-like to know if it's totally doomed or not :-)
+On powerpc, I use __get_vm_area() to separate the ranges of addresses given
+to vmalloc vs. ioremap (various good reasons for that) so in order to be
+able to implement the new caller tracking in /proc/vmallocinfo, I need
+a "_caller" variant of it.
 
-Cheers,
-Ben.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+I want to put into powerpc-next patches relying into that, so if the
+patch is ok with you guys, can I stick it in powerpc.git ?
+
+ include/linux/vmalloc.h |    3 +++
+ mm/vmalloc.c            |    8 ++++++++
+ 2 files changed, 11 insertions(+)
+
+--- linux-work.orig/include/linux/vmalloc.h	2009-02-04 15:33:35.000000000 +1100
++++ linux-work/include/linux/vmalloc.h	2009-02-04 15:33:47.000000000 +1100
+@@ -84,6 +84,9 @@ extern struct vm_struct *get_vm_area_cal
+ 					unsigned long flags, void *caller);
+ extern struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
+ 					unsigned long start, unsigned long end);
++extern struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
++					      unsigned long start, unsigned long end,
++					      void *caller);
+ extern struct vm_struct *get_vm_area_node(unsigned long size,
+ 					  unsigned long flags, int node,
+ 					  gfp_t gfp_mask);
+Index: linux-work/mm/vmalloc.c
+===================================================================
+--- linux-work.orig/mm/vmalloc.c	2009-02-04 15:32:47.000000000 +1100
++++ linux-work/mm/vmalloc.c	2009-02-04 15:33:25.000000000 +1100
+@@ -1106,6 +1106,14 @@ struct vm_struct *__get_vm_area(unsigned
+ }
+ EXPORT_SYMBOL_GPL(__get_vm_area);
+ 
++struct vm_struct *__get_vm_area_caller(unsigned long size, unsigned long flags,
++				       unsigned long start, unsigned long end,
++				       void *caller)
++{
++	return __get_vm_area_node(size, flags, start, end, -1, GFP_KERNEL,
++				  caller);
++}
++
+ /**
+  *	get_vm_area  -  reserve a contiguous kernel virtual area
+  *	@size:		size of the area
