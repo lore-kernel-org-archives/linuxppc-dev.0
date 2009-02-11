@@ -1,23 +1,33 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2D45BDDDA1
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 09:45:46 +1100 (EST)
-Date: Wed, 11 Feb 2009 14:45:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] vmalloc: Add __get_vm_area_caller()
-Message-Id: <20090211144509.d22feeb8.akpm@linux-foundation.org>
-In-Reply-To: <20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20090211044854.969CEDDDA9@ozlabs.org>
-	<20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C0214DDD1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 09:48:44 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n1BMmeoL013000
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 15:48:40 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n1BMmdAE020153
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 16:48:40 -0600 (CST)
+Date: Wed, 11 Feb 2009 16:48:39 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Vijay Nikam <vijay.t.nikam@gmail.com>
+Subject: Re: request_irq return errno 38
+Message-ID: <20090211224839.GA13498@ld0162-tx32.am.freescale.net>
+References: <f234e2140902110043i5a4aefb5yb635bc32b9653943@mail.gmail.com>
+	<1234343703.9778.13.camel@localhost>
+	<f234e2140902110141l52550ceem664f57f697bd48e0@mail.gmail.com>
+	<1234346072.9778.20.camel@localhost>
+	<f234e2140902110213g3ae48f2es9fe41087bc8c7b39@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f234e2140902110213g3ae48f2es9fe41087bc8c7b39@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +37,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 11 Feb 2009 17:22:47 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> > I want to put into powerpc-next patches relying into that, so if the
-> > patch is ok with you guys, can I stick it in powerpc.git ?
+On Wed, Feb 11, 2009 at 03:43:26PM +0530, Vijay Nikam wrote:
+> Ok ... so that means if I am writing driver for any device I need to
+> take care of this mapping ? ? ? I mean I should use virq ? ? ?
 > 
-> hm.
-> Generally, all MM patch should merge into -mm tree at first.
-> but I don't think this patch have conflict risk. 
-> 
-> Andrew, What do you think?
+> I read in LDD book,
 
-We can sneak it into mainline later in the week?
+The problem with dead-tree books on a volatile subject is they quickly
+get out of date.
+
+> they give directly irq no. they have given parallel port example, here
+> they have set or said irq no. defaults to 7 and they have not done any
+> irq_mapping so what is the difference ? ? ? I mean how I should know
+> when to use irq_mapping and when not ? ? ?
+
+That's for legacy ISA interrupts.  On powerpc, you generally will want to
+get the interrupt from the device tree using irq_of_parse_and_map().
+
+-Scott
