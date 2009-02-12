@@ -1,17 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 3038BDDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 10:55:37 +1100 (EST)
-To: "Shubhada Pugaonkar" <shubhada@chelsio.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: AMCC ppc440spe 2.6.23.10 kernel boot help
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <8A71B368A89016469F72CD08050AD33402D57544@maui.asicdesigners.com>
-References: <8A71B368A89016469F72CD08050AD33402D57544@maui.asicdesigners.com>
-Date: Thu, 12 Feb 2009 00:55:33 +0100
-Message-Id: <20090211235533.8B319832E893@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 17F9ADDDAD
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 11:11:20 +1100 (EST)
+Subject: Re: [PATCH] vmalloc: Add __get_vm_area_caller()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090211144509.d22feeb8.akpm@linux-foundation.org>
+References: <20090211044854.969CEDDDA9@ozlabs.org>
+	<20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20090211144509.d22feeb8.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 11:11:04 +1100
+Message-Id: <1234397464.29851.20.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,52 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear "Shubhada Pugaonkar",
-
-In message <8A71B368A89016469F72CD08050AD33402D57544@maui.asicdesigners.com> you wrote:
+On Wed, 2009-02-11 at 14:45 -0800, Andrew Morton wrote:
+> On Wed, 11 Feb 2009 17:22:47 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
-> I am trying to bringup AMCC ppc440sPE  board with 2.6.23.10 kernel from
+> > > I want to put into powerpc-next patches relying into that, so if the
+> > > patch is ok with you guys, can I stick it in powerpc.git ?
+> > 
+> > hm.
+> > Generally, all MM patch should merge into -mm tree at first.
+> > but I don't think this patch have conflict risk. 
+> > 
+> > Andrew, What do you think?
+> 
+> We can sneak it into mainline later in the week?
 
-2.6.23.10 is very old. Please use current code. 2.6.23 was long before
-the switch to arch/powerpc, so all the efforts you are spnding now on
-this old stuff are really wasted.
+That would be best.
 
-Use at least 2.6.28 or later.
-
-> kernel.org. My .config file is attached. I used ARCH=ppc and
-
-Why don't you start with a good, known to work kernel config file
-like 44x/katmai_defconfig ?
-
-For example, you mention a 440SPe processor above, but your config
-file seems to be derived from a Luan board, which is 440SP (not SPe)
-so there is not much surprise if it doesn't work.
-
-
-> CROSS_COMPILE=ppc-linux- (also tried ppc_4xx-) and did 'make uImage',
-> but unable to boot into the kernel. My nfs and uboot settings seem to be
-> correct. The kernel gets stuck as shown below. Any help appreciated.
-> Please let me know if any more information is required.
-
-In the first place, please use current code.
-
-Second - which exact board is this? Katmai?
-
-> => run flash_nfs
-
-What exactly are your environment settings? Which exact value of
-"bootargs" do you pass to Linux? Does it include a valid console=
-argument?
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"If you'll excuse me a minute, I'm going to have a cup of coffee."
-- broadcast from Apollo 11's LEM, "Eagle", to Johnson  Space  Center,
-Houston July 20, 1969, 7:27 P.M.
+Cheers,
+Ben.
