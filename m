@@ -1,16 +1,24 @@
-Return-Path: <jhautbois@gmail.com>
-Received: from mail-fx0-f11.google.com (mail-fx0-f11.google.com
-	[209.85.220.11]) by ozlabs.org (Postfix) with ESMTP id A8558DDDDC
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 20:31:56 +1100 (EST)
-Received: by fxm4 with SMTP id 4so2570527fxm.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 01:31:54 -0800 (PST)
+Return-Path: <vijay.t.nikam@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.233])
+	by ozlabs.org (Postfix) with ESMTP id E9C2EDDDAE
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 21:51:59 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id l9so240052rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 02:51:58 -0800 (PST)
 MIME-Version: 1.0
-Date: Thu, 12 Feb 2009 10:23:42 +0100
-Message-ID: <8cad0aa0902120123p27cfe32fg6bf08d458178c937@mail.gmail.com>
-Subject: [MPC8272ADS]Problem adding flash partitions inside the device tree
-From: Jean-Michel Hautbois <jhautbois@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=001636c5c0c1c55c810462b546ff
+In-Reply-To: <20090211223546.GA20129@cynthia.pants.nu>
+References: <f234e2140902110043i5a4aefb5yb635bc32b9653943@mail.gmail.com>
+	<1234343703.9778.13.camel@localhost>
+	<f234e2140902110141l52550ceem664f57f697bd48e0@mail.gmail.com>
+	<1234346072.9778.20.camel@localhost>
+	<f234e2140902110213g3ae48f2es9fe41087bc8c7b39@mail.gmail.com>
+	<20090211223546.GA20129@cynthia.pants.nu>
+Date: Thu, 12 Feb 2009 16:21:58 +0530
+Message-ID: <f234e2140902120251t2bd3aa5dsc950cacdd6b4422a@mail.gmail.com>
+Subject: Re: request_irq return errno 38
+From: Vijay Nikam <vijay.t.nikam@gmail.com>
+To: Brad Boyer <flar@allandria.com>, scottwood@freescale.com,
+	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,147 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---001636c5c0c1c55c810462b546ff
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Thanks for your replies ...
 
-Hi everybody !
-I am currently trying to add the support of partitions for the Flash chip on
-my MPC8272ADS board (the chips are Sharp LH28F016SCT-L90).
+I checked the irq.c and irq.h and found the prototype of
+irq_of_parse_and_map() and found from the comment that it is a wrapper
+function contains a chain of irq_map_one() and irq_create_mapping()
+...
 
-I have added this part:
+It means that I can use irq_create_mapping() to know the virq also the
+same suggessted by michael ... what is the difference between these
+two i.e. irq_create_mapping() and irq_of_parse_and_map() ... I mean in
+usage what could be the difference ? ? ?
 
-flash@0,0 {
-                        compatible = "jedec-flash";
-                        reg = <0x0 0x0 0x2000000>;
-                        bank-width = <4>;
-                        device-width = <1>;
+If used the irq_of_parse_and_map() then the paraments I need to pass
+are device_node *dev and index irq_of_parse_and_map(struct device_node
+*dev, int index) ... then how I can pass the required information i.e.
+dev and index ? ? ?
 
-                        partition@ff800000 {
-                                label = "kernel";
-                                reg = <0xff800000 0x00400000>;
-                                read-only;
-                        };
-                        partition@ffc00000 {
-                                label = "user";
-                                reg = <0xffc00000 0x00300000>;
-                        };
-                        partition@fff00000 {
-                                label = "u-boot";
-                                reg = <0xfff00000 0x00100000>;
-                                read-only;
-                        };
-                };
+Also how I can read the device tree binary file ? ? ?
 
-But when I am compiling, I have these warnings:
-Warning (reg_format): "reg" property in /localbus@f0010100/flash@0
-,0/partition@ff800000 has invalid length (8 bytes) (#address-cells == 2,
-#size-cells == 1)
-Warning (reg_format): "reg" property in /localbus@f0010100/flash@0
-,0/partition@ffc00000 has invalid length (8 bytes) (#address-cells == 2,
-#size-cells == 1)
-Warning (reg_format): "reg" property in /localbus@f0010100/flash@0
-,0/partition@fff00000 has invalid length (8 bytes) (#address-cells == 2,
-#size-cells == 1)
-Warning (avoid_default_addr_size): Relying on default #address-cells value
-for /localbus@f0010100/flash@0,0/partition@ff800000
-Warning (avoid_default_addr_size): Relying on default #size-cells value for
-/localbus@f0010100/flash@0,0/partition@ff800000
-Warning (avoid_default_addr_size): Relying on default #address-cells value
-for /localbus@f0010100/flash@0,0/partition@ffc00000
-Warning (avoid_default_addr_size): Relying on default #size-cells value for
-/localbus@f0010100/flash@0,0/partition@ffc00000
-Warning (avoid_default_addr_size): Relying on default #address-cells value
-for /localbus@f0010100/flash@0,0/partition@fff00000
-Warning (avoid_default_addr_size): Relying on default #size-cells value for
-/localbus@f0010100/flash@0,0/partition@fff00000
+Kindly please acknowledge ... thank you ...
 
+Kind Regards,
+Vijay Nikam
 
-Can anyone help me ?
-I can't understand what the "address-cells" is.
-
-Thanks in advance !
-Best Regards.
-JM
-
---001636c5c0c1c55c810462b546ff
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi everybody !<br>I am currently trying to add the support of partitions fo=
-r the Flash chip on my MPC8272ADS board (the chips are Sharp LH28F016SCT-L9=
-0).<br><br>I have added this part:<br><br>flash@0,0 {<br>&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D &quot;jedec-fl=
-ash&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt=
-;0x0 0x0 0x2000000&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp; bank-width =3D &lt;4&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; device-width =3D &lt;1&gt;;<br><br>&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; partition@ff80000=
-0 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; label =3D &quot;kernel&quot;;<b=
-r>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0xff800000 0x00400000&gt;;=
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read-only;<br>&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br>&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; partition@ffc00000 {<br>&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp; label =3D &quot;user&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0xffc00000 0x00300000&gt;;=
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br>&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; partition@ff=
-f00000 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; label =3D &quot;u-boot&quo=
-t;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;0xfff00000 0x001000=
-00&gt;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; read-only;<br>&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br><br>But=
- when I am compiling, I have these warnings:<br>Warning (reg_format): &quot=
-;reg&quot; property in /localbus@f0010100/flash@0,0/partition@ff800000 has =
-invalid length (8 bytes) (#address-cells =3D=3D 2, #size-cells =3D=3D 1)<br=
+On 2/12/09, Brad Boyer <flar@allandria.com> wrote:
+> On Wed, Feb 11, 2009 at 03:43:26PM +0530, Vijay Nikam wrote:
+> > I read in LDD book, they give directly irq no. they have given
+> > parallel port example, here they have set or said irq no. defaults to
+> > 7 and they have not done any irq_mapping so what is the difference ? ?
+> > ? I mean how I should know when to use irq_mapping and when not ? ? ?
+> >
+> > Also is it some difference between writng drivers on embedded Linux
+> > level and Linux PC (i386) ? ? ?
 >
-Warning (reg_format): &quot;reg&quot; property in /localbus@f0010100/flash@=
-0,0/partition@ffc00000 has invalid length (8 bytes) (#address-cells =3D=3D =
-2, #size-cells =3D=3D 1)<br>Warning (reg_format): &quot;reg&quot; property =
-in /localbus@f0010100/flash@0,0/partition@fff00000 has invalid length (8 by=
-tes) (#address-cells =3D=3D 2, #size-cells =3D=3D 1)<br>
-Warning (avoid_default_addr_size): Relying on default #address-cells value =
-for /localbus@f0010100/flash@0,0/partition@ff800000<br>Warning (avoid_defau=
-lt_addr_size): Relying on default #size-cells value for /localbus@f0010100/=
-flash@0,0/partition@ff800000<br>
-Warning (avoid_default_addr_size): Relying on default #address-cells value =
-for /localbus@f0010100/flash@0,0/partition@ffc00000<br>Warning (avoid_defau=
-lt_addr_size): Relying on default #size-cells value for /localbus@f0010100/=
-flash@0,0/partition@ffc00000<br>
-Warning (avoid_default_addr_size): Relying on default #address-cells value =
-for /localbus@f0010100/flash@0,0/partition@fff00000<br>Warning (avoid_defau=
-lt_addr_size): Relying on default #size-cells value for /localbus@f0010100/=
-flash@0,0/partition@fff00000<br>
-<br><br>Can anyone help me ?<br>I can&#39;t understand what the &quot;addre=
-ss-cells&quot; is.<br><br>Thanks in advance !<br>Best Regards.<br>JM<br>
-
---001636c5c0c1c55c810462b546ff--
+> The basic request_irq() function is generic, but the value of the
+> arguments (especially the number for the IRQ line) is architecture
+> specific in many ways. This is one difference between the i386 code
+> and the powerpc code inside Linux. Most i386 hardware is standard
+> PC hardware with very clearly defined interrupt sources. Because of
+> this, the mapping from the numeric IRQ value to a real hardware
+> interrupt source is defined pretty clearly. The powerpc architecture
+> code has to support almost arbitrarily complex hardware, and the
+> embedded world is the source of most of the complexity. Because of
+> this, the powerpc code has to dynamically allocate those numeric
+> IRQ sources and tie them to a specific hardware interrupt. There
+> is functionality to take the information from your device tree and
+> convert it to a virtual IRQ. That happens automatically for some types
+> of devices like PCI cards, but your driver may have to do that mapping
+> itself in other cases. I believe the appropriate API for this is the
+> function irq_of_parse_and_map(). It takes a device node and index into
+> the interrupt list for that device and gives a virtual IRQ number.
+>
+>        Brad Boyer
+>        flar@allandria.com
+>
+>
