@@ -1,17 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 48998DDDBA
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 19:07:20 +1100 (EST)
-To: "Shubhada Pugaonkar" <shubhada@chelsio.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: AMCC ppc440spe 2.6.23.10 kernel boot help
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <8A71B368A89016469F72CD08050AD33402D57545@maui.asicdesigners.com>
-References: <8A71B368A89016469F72CD08050AD33402D57545@maui.asicdesigners.com>
-Date: Thu, 12 Feb 2009 09:07:16 +0100
-Message-Id: <20090212080716.4DE0D832E893@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sumedhtirodkar@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.172])
+	by ozlabs.org (Postfix) with ESMTP id 972DBDDDBC
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 20:59:51 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 27so626977wfd.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 01:59:49 -0800 (PST)
+MIME-Version: 1.0
+Date: Thu, 12 Feb 2009 15:29:49 +0530
+Message-ID: <d2b9ccd90902120159k4f6024bbl831b43073d4126f3@mail.gmail.com>
+Subject: PowerPC 7447A Paging table Search
+From: sumedh tirodkar <sumedhtirodkar@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +20,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Shubhada,
+How will i confirm if PowerPC 7447A processor has or does not have a
+dedicated hardware for page table search algorithm?
+If it does not have, then which interrupt handler is written for page
+address translation mechanism?
 
-In message <8A71B368A89016469F72CD08050AD33402D57545@maui.asicdesigners.com> you wrote:
-> 
-> I am kind of helpless regarding the kernel version, as our customer is
-> using it and I need to replicate their environment. I just tried 2.6.28
-> with katmai_defconfig file and still face the same problem. 
 
-You probably did not load (and use) the device tree blob which is
-needed with recent (arch/powerpc based) kernel versions.
-
-> The config file that I sent before is provided by the customer. It is a
-> working configuration for them. 
-> 
-> The exact board that I have is Katmai.
-
-It looks broken to me for a Katmai board. Are you sure your customer
-is also using Katmai?
-
-> my printenv output is as follows.
-
-This is obviously  an  old  setup  for  old  (arch/ppc  only)  kernel
-versions,  and  heavily  crippl^H^H^H^H^H  modified  from the default
-environment.  You  might  consider  to  restart  from   the   default
-environment settings (probably even with a recent version of U-Boot -
-your's is too old and does not include full device tree support).
-
-On the other hand, I don;t see a reason why the old (arch/ppc based)
-kernel should not boot - except that it might be misconfigured for
-that board.
-
-Did you try any of the released (and well tested) kernel images on
-our FTP server? See ftp://ftp.denx.de/pub/linux/images/amcc/katmai/
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Just think of a computer as hardware you can program."
-- Nigel de la Tierre
+-Sumedh
