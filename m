@@ -1,24 +1,20 @@
-Return-Path: <vijay.t.nikam@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.233])
-	by ozlabs.org (Postfix) with ESMTP id E9C2EDDDAE
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 21:51:59 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id l9so240052rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 02:51:58 -0800 (PST)
+Return-Path: <phenning@vastech.co.za>
+Received: from www6.jnb1.host-h.net (www6.jnb1.host-h.net [196.22.132.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5CE0EDDDAB
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 22:05:22 +1100 (EST)
+Message-ID: <49940265.1020700@vastech.co.za>
+Date: Thu, 12 Feb 2009 13:05:09 +0200
+From: Pieter <phenning@vastech.co.za>
 MIME-Version: 1.0
-In-Reply-To: <20090211223546.GA20129@cynthia.pants.nu>
-References: <f234e2140902110043i5a4aefb5yb635bc32b9653943@mail.gmail.com>
-	<1234343703.9778.13.camel@localhost>
-	<f234e2140902110141l52550ceem664f57f697bd48e0@mail.gmail.com>
-	<1234346072.9778.20.camel@localhost>
-	<f234e2140902110213g3ae48f2es9fe41087bc8c7b39@mail.gmail.com>
-	<20090211223546.GA20129@cynthia.pants.nu>
-Date: Thu, 12 Feb 2009 16:21:58 +0530
-Message-ID: <f234e2140902120251t2bd3aa5dsc950cacdd6b4422a@mail.gmail.com>
-Subject: Re: request_irq return errno 38
-From: Vijay Nikam <vijay.t.nikam@gmail.com>
-To: Brad Boyer <flar@allandria.com>, scottwood@freescale.com,
-	linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [MPC8272ADS]Problem adding flash partitions inside the device tree
+References: <8cad0aa0902120123p27cfe32fg6bf08d458178c937@mail.gmail.com>
+In-Reply-To: <8cad0aa0902120123p27cfe32fg6bf08d458178c937@mail.gmail.com>
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
+	micalg=sha1; boundary="------------ms050503060500090803010504"
+Cc: Jean-Michel Hautbois <jhautbois@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,59 +24,152 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for your replies ...
+This is a cryptographically signed message in MIME format.
 
-I checked the irq.c and irq.h and found the prototype of
-irq_of_parse_and_map() and found from the comment that it is a wrapper
-function contains a chain of irq_map_one() and irq_create_mapping()
-...
+--------------ms050503060500090803010504
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-It means that I can use irq_create_mapping() to know the virq also the
-same suggessted by michael ... what is the difference between these
-two i.e. irq_create_mapping() and irq_of_parse_and_map() ... I mean in
-usage what could be the difference ? ? ?
-
-If used the irq_of_parse_and_map() then the paraments I need to pass
-are device_node *dev and index irq_of_parse_and_map(struct device_node
-*dev, int index) ... then how I can pass the required information i.e.
-dev and index ? ? ?
-
-Also how I can read the device tree binary file ? ? ?
-
-Kindly please acknowledge ... thank you ...
-
-Kind Regards,
-Vijay Nikam
-
-On 2/12/09, Brad Boyer <flar@allandria.com> wrote:
-> On Wed, Feb 11, 2009 at 03:43:26PM +0530, Vijay Nikam wrote:
-> > I read in LDD book, they give directly irq no. they have given
-> > parallel port example, here they have set or said irq no. defaults to
-> > 7 and they have not done any irq_mapping so what is the difference ? ?
-> > ? I mean how I should know when to use irq_mapping and when not ? ? ?
-> >
-> > Also is it some difference between writng drivers on embedded Linux
-> > level and Linux PC (i386) ? ? ?
+Jean-Michel Hautbois wrote:
+> Hi everybody !
+> I am currently trying to add the support of partitions for the Flash
+> chip on my MPC8272ADS board (the chips are Sharp LH28F016SCT-L90).
 >
-> The basic request_irq() function is generic, but the value of the
-> arguments (especially the number for the IRQ line) is architecture
-> specific in many ways. This is one difference between the i386 code
-> and the powerpc code inside Linux. Most i386 hardware is standard
-> PC hardware with very clearly defined interrupt sources. Because of
-> this, the mapping from the numeric IRQ value to a real hardware
-> interrupt source is defined pretty clearly. The powerpc architecture
-> code has to support almost arbitrarily complex hardware, and the
-> embedded world is the source of most of the complexity. Because of
-> this, the powerpc code has to dynamically allocate those numeric
-> IRQ sources and tie them to a specific hardware interrupt. There
-> is functionality to take the information from your device tree and
-> convert it to a virtual IRQ. That happens automatically for some types
-> of devices like PCI cards, but your driver may have to do that mapping
-> itself in other cases. I believe the appropriate API for this is the
-> function irq_of_parse_and_map(). It takes a device node and index into
-> the interrupt list for that device and gives a virtual IRQ number.
+> I have added this part:
 >
->        Brad Boyer
->        flar@allandria.com
+> flash@0,0 {
+>                         compatible = "jedec-flash";
+>                         reg = <0x0 0x0 0x2000000>;
+>                         bank-width = <4>;
+>                         device-width = <1>;
+>
+>                         partition@ff800000 {
+>                                 label = "kernel";
+>                                 reg = <0xff800000 0x00400000>;
+>                                 read-only;
+>                         };
+>                         partition@ffc00000 {
+>                                 label = "user";
+>                                 reg = <0xffc00000 0x00300000>;
+>                         };
+>                         partition@fff00000 {
+>                                 label = "u-boot";
+>                                 reg = <0xfff00000 0x00100000>;
+>                                 read-only;
+>                         };
+>                 };
+>
+> But when I am compiling, I have these warnings:
+> Warning (reg_format): "reg" property in
+> /localbus@f0010100/flash@0,0/partition@ff800000 has invalid length (8
+> bytes) (#address-cells == 2, #size-cells == 1)
+> Warning (reg_format): "reg" property in
+> /localbus@f0010100/flash@0,0/partition@ffc00000 has invalid length (8
+> bytes) (#address-cells == 2, #size-cells == 1)
+> Warning (reg_format): "reg" property in
+> /localbus@f0010100/flash@0,0/partition@fff00000 has invalid length (8
+> bytes) (#address-cells == 2, #size-cells == 1)
+> Warning (avoid_default_addr_size): Relying on default #address-cells
+> value for /localbus@f0010100/flash@0,0/partition@ff800000
+> Warning (avoid_default_addr_size): Relying on default #size-cells
+> value for /localbus@f0010100/flash@0,0/partition@ff800000
+> Warning (avoid_default_addr_size): Relying on default #address-cells
+> value for /localbus@f0010100/flash@0,0/partition@ffc00000
+> Warning (avoid_default_addr_size): Relying on default #size-cells
+> value for /localbus@f0010100/flash@0,0/partition@ffc00000
+> Warning (avoid_default_addr_size): Relying on default #address-cells
+> value for /localbus@f0010100/flash@0,0/partition@fff00000
+> Warning (avoid_default_addr_size): Relying on default #size-cells
+> value for /localbus@f0010100/flash@0,0/partition@fff00000
 >
 >
+> Can anyone help me ?
+> I can't understand what the "address-cells" is.
+>
+> Thanks in advance !
+> Best Regards.
+> JM
+You are missing some definitions, The #address-cells and #size-cells = <1>;
+tis is a snippet of teh dts i defined for my board.
+
+        flash@0,0 {
+            #address-cells = <1>;
+            #size-cells = <1>;
+            compatible = "cfi-flash";
+            reg = <0x0 0x0 0x08000000>;
+            bank-width = <4>;
+            device-width = <1>;
+           
+            /* set flash partition to correspond tu mtd parts in
+u-boot*/       
+            /*     0xf8000000 */           
+            partition@0x0 {
+                label = "factory-image";
+                reg = <0x00000000 0x01000000>;
+            };
+            /*     0xf9000000 */           
+            partition@0x01000000 {
+                label = "app-image-1";
+                reg = <0x01000000 0x01000000>;
+            };
+cheers pieter
+
+
+--------------ms050503060500090803010504
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIHIDCC
+A4wwggJ0oAMCAQICAVwwCwYJKoZIhvcNAQEFMGcxMDAuBgNVBAMMJ1ZBU1RlY2ggMjAwOC0y
+MDA5IENlcnRpZmljYXRlIEF1dGhvcml0eTELMAkGA1UEBhMCWkExJjAkBgkqhkiG9w0BCQEW
+F3dlYm1hc3RlckB2YXN0ZWNoLmNvLnphMB4XDTA4MDYxMDA4NTcxMloXDTA5MDYxMDA4NTcx
+MlowXzEpMCcGA1UEAwwgUGlldGVyIEhlbm5pbmcgVkFTVGVjaCAyMDA4LTIwMDkxCzAJBgNV
+BAYTAlpBMSUwIwYJKoZIhvcNAQkBFhZwaGVubmluZ0B2YXN0ZWNoLmNvLnphMIIBIjANBgkq
+hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7cW4073b1hOm1G4oSBMM6wPB4m+40qQRMGyfGIk8
+y5bP1hvLpjwlCclhlZKqpyrZ3jTohTLbI8LQBF6OUs9N1ZDzGIczBgpdeTBrhdLLUynfMVK0
+oafeMUZ54XN8boVIkS0aPyNBRDwlBObeB6R4hEyHLrINwRTE8Sjl0EvySSWmv+bAhwLZFqYx
+4ADSVjTTGTKT1OMIYHJE8xytfy0wOT5VWZmC1HhAGwP3y+Uqm+R1DLoO3xjQBXPNbKcvbQkF
+yzruPLCQlLyPq4oYogX7VqNgZRxwQkJM6y9Lgbuecl+72rmMKBEK+czyl2xJDV9g2oOGrzNB
+pD3oeUl5uGVCyQIDAQABo00wSzAOBgNVHQ8BAf8EBAMCBLAwFgYDVR0lAQH/BAwwCgYIKwYB
+BQUHAwQwIQYDVR0RBBowGIEWcGhlbm5pbmdAdmFzdGVjaC5jby56YTANBgkqhkiG9w0BAQUF
+AAOCAQEAvMOPV8cF+dk0sY/29ixNUNsQQj/RISVVWIWRqZdjOpQuH+4jtIbxVY/kTHU8VUXP
+Orq0Xd9+LkVE0Wkz2F/uyht+9UMOjWX9jh2dGqgRMfpk1/DIfcvZ18c+0tR1W2fI1kCzlet2
+HNGvSS2U9HU4uKIYIEbSNnGuWA9eFHcwB51EwBgWjqc3287hjPP6HumFCz8bNqBd5Q6E6jVt
+qrO5xPEBDBEJJ/5f0wthqvDzU6GcfyR+Cp9HJop7oSf1OS8bC6HCGy950cW8pVKb4mfxvPAK
+FxTa1fqnsEie9PAzvw4QBU/dhDK+qnoGRvmnfhhEeiOMdfmg8p1EAUYGef3yZTCCA4wwggJ0
+oAMCAQICAVwwCwYJKoZIhvcNAQEFMGcxMDAuBgNVBAMMJ1ZBU1RlY2ggMjAwOC0yMDA5IENl
+cnRpZmljYXRlIEF1dGhvcml0eTELMAkGA1UEBhMCWkExJjAkBgkqhkiG9w0BCQEWF3dlYm1h
+c3RlckB2YXN0ZWNoLmNvLnphMB4XDTA4MDYxMDA4NTcxMloXDTA5MDYxMDA4NTcxMlowXzEp
+MCcGA1UEAwwgUGlldGVyIEhlbm5pbmcgVkFTVGVjaCAyMDA4LTIwMDkxCzAJBgNVBAYTAlpB
+MSUwIwYJKoZIhvcNAQkBFhZwaGVubmluZ0B2YXN0ZWNoLmNvLnphMIIBIjANBgkqhkiG9w0B
+AQEFAAOCAQ8AMIIBCgKCAQEA7cW4073b1hOm1G4oSBMM6wPB4m+40qQRMGyfGIk8y5bP1hvL
+pjwlCclhlZKqpyrZ3jTohTLbI8LQBF6OUs9N1ZDzGIczBgpdeTBrhdLLUynfMVK0oafeMUZ5
+4XN8boVIkS0aPyNBRDwlBObeB6R4hEyHLrINwRTE8Sjl0EvySSWmv+bAhwLZFqYx4ADSVjTT
+GTKT1OMIYHJE8xytfy0wOT5VWZmC1HhAGwP3y+Uqm+R1DLoO3xjQBXPNbKcvbQkFyzruPLCQ
+lLyPq4oYogX7VqNgZRxwQkJM6y9Lgbuecl+72rmMKBEK+czyl2xJDV9g2oOGrzNBpD3oeUl5
+uGVCyQIDAQABo00wSzAOBgNVHQ8BAf8EBAMCBLAwFgYDVR0lAQH/BAwwCgYIKwYBBQUHAwQw
+IQYDVR0RBBowGIEWcGhlbm5pbmdAdmFzdGVjaC5jby56YTANBgkqhkiG9w0BAQUFAAOCAQEA
+vMOPV8cF+dk0sY/29ixNUNsQQj/RISVVWIWRqZdjOpQuH+4jtIbxVY/kTHU8VUXPOrq0Xd9+
+LkVE0Wkz2F/uyht+9UMOjWX9jh2dGqgRMfpk1/DIfcvZ18c+0tR1W2fI1kCzlet2HNGvSS2U
+9HU4uKIYIEbSNnGuWA9eFHcwB51EwBgWjqc3287hjPP6HumFCz8bNqBd5Q6E6jVtqrO5xPEB
+DBEJJ/5f0wthqvDzU6GcfyR+Cp9HJop7oSf1OS8bC6HCGy950cW8pVKb4mfxvPAKFxTa1fqn
+sEie9PAzvw4QBU/dhDK+qnoGRvmnfhhEeiOMdfmg8p1EAUYGef3yZTGCA0QwggNAAgEBMGww
+ZzEwMC4GA1UEAwwnVkFTVGVjaCAyMDA4LTIwMDkgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MQsw
+CQYDVQQGEwJaQTEmMCQGCSqGSIb3DQEJARYXd2VibWFzdGVyQHZhc3RlY2guY28uemECAVww
+CQYFKw4DAhoFAKCCAa0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUx
+DxcNMDkwMjEyMTEwNTA5WjAjBgkqhkiG9w0BCQQxFgQUxNw3d5yz1GhlHrHOuNGmNeqHFmww
+UgYJKoZIhvcNAQkPMUUwQzAKBggqhkiG9w0DBzAOBggqhkiG9w0DAgICAIAwDQYIKoZIhvcN
+AwICAUAwBwYFKw4DAgcwDQYIKoZIhvcNAwICASgwewYJKwYBBAGCNxAEMW4wbDBnMTAwLgYD
+VQQDDCdWQVNUZWNoIDIwMDgtMjAwOSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkxCzAJBgNVBAYT
+AlpBMSYwJAYJKoZIhvcNAQkBFhd3ZWJtYXN0ZXJAdmFzdGVjaC5jby56YQIBXDB9BgsqhkiG
+9w0BCRACCzFuoGwwZzEwMC4GA1UEAwwnVkFTVGVjaCAyMDA4LTIwMDkgQ2VydGlmaWNhdGUg
+QXV0aG9yaXR5MQswCQYDVQQGEwJaQTEmMCQGCSqGSIb3DQEJARYXd2VibWFzdGVyQHZhc3Rl
+Y2guY28uemECAVwwDQYJKoZIhvcNAQEBBQAEggEATDrKv7/HnSd3XMeBgjfGN9sLNrYnaJ5W
+GyyTJc4rsxag4ibaJSeWkA0yqveYNIzw+b7SoEVCQixEXFSxjF8qsD6/qaMx1UsH1xHPBMfV
+BbW5X380PTev+YoGRP4vE2mfqJSaVfq4+goLKNROnWUBc2KQjYshV3qYDdMOUDCB2plJHNY8
+5NVnCDSt4KwtWz/SxtYtaH4/w7kL6ot1aGuYOZlhFma5V5FrublM/aMPiCXl/8rcbGWO/qIa
+yJGOqcZt9+Pz6BoS8FxSFWsYhXxysoYdLm04YXdgYn09Iig5kF89xC6ziWe6FxQ/2hf9shOO
+DvArfkOp0EzAffTasNGx7wAAAAAAAA==
+--------------ms050503060500090803010504--
