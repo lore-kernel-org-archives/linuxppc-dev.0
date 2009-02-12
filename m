@@ -1,35 +1,11 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp04.au.ibm.com (unknown [202.81.31.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 432FEDDDE4
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 22:28:40 +1100 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id n1CBQrnq009074
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 22:26:53 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n1CBSvi7974868
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 22:28:57 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n1CBSdlo022004
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 22:28:39 +1100
-Message-ID: <499407E5.1070705@in.ibm.com>
-Date: Thu, 12 Feb 2009 16:58:37 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
+Return-Path: <risto.suominen@gmail.com>
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: next Feb 10: mm/slqb build break
-References: <20090210194121.80256b72.sfr@canb.auug.org.au>
-	<49914790.6050008@in.ibm.com> <49914EE7.7030205@in.ibm.com>
-	<84144f020902100353x4074f342ne4d61483074a06b7@mail.gmail.com>
-	<20090212014503.GD30043@wotan.suse.de>
-In-Reply-To: <20090212014503.GD30043@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Pekka Enberg <penberg@cs.helsinki.fi>, linux-next@vger.kernel.org
+Date: Thu, 12 Feb 2009 13:22:05 +0200
+Message-ID: <46e1c7760902120322r11cffbdcgff330a242ca586fb@mail.gmail.com>
+Subject: [PATCH 002/002] de2104x: support for systems lacking cache coherence
+From: Risto Suominen <risto.suominen@gmail.com>
+To: LinuxPPC-dev@ozlabs.org
+Content-Type: multipart/mixed; boundary=0016e6de003328d6540462b6ee8d
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,30 +15,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nick Piggin wrote:
->> Actually, that's not the root cause here. You seem to have CONFIG_SMP
->> disabled but CONFIG_NUMA enabled. That's not possible on x86 which
->> makes me think it's a ppc kconfig bug. Hmm?
->>     
->
-> If it is really a valid config, then we should be able to make
-> slqb build with it...
-I am not sure if this is a valid config. According to arch/powerpc/Kconfig
-NUMA depends on PPC64 and defaults to y if SMP & PPC_PSERIES is set.
+--0016e6de003328d6540462b6ee8d
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-If this is not a valid config then may be the make randconfig rules
-need to be changed accordingly.
+Here is a patch that helped me to get my de2104x NIC working on my
+PowerMac 5500. As an interesting side effect, it also made my mesh
+module crash.
 
-Ben should know. Ben ??
+Background can be found here: http://www.spinics.net/lists/netdev/msg88488.html
 
-Thanks
--Sachin
+Risto
 
--- 
+Allow setting NOT_COHERENT_CACHE explicitly.
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
+---
+The testing is done on kernel version 2.6.24.
+
+--- a/arch/powerpc/platforms/powermac/Kconfig.org	2008-01-25
+00:58:37.000000000 +0200
++++ b/arch/powerpc/platforms/powermac/Kconfig	2009-02-10
+17:44:24.000000000 +0200
+@@ -18,4 +18,10 @@ config PPC_PMAC64
+ 	select PPC_970_NAP
+ 	default y
+
+-
++config NOT_COHERENT_CACHE
++	bool "Incoherent cache"
++	default n
++	help
++	  Setting this option may be necessary for avoiding cache-related
++	  problems with some network cards on some platforms. An example is
++	  2104x and PowerMac 5500.
+
+--0016e6de003328d6540462b6ee8d
+Content-Type: text/x-diff; charset=US-ASCII; name="incoherent_cache.patch"
+Content-Disposition: attachment; filename="incoherent_cache.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fr3bybcj0
+
+QWxsb3cgc2V0dGluZyBOT1RfQ09IRVJFTlRfQ0FDSEUgZXhwbGljaXRseS4KClNpZ25lZC1vZmYt
+Ynk6IFJpc3RvIFN1b21pbmVuIDxSaXN0by5TdW9taW5lbkBnbWFpbC5jb20+Ci0tLQpUaGUgdGVz
+dGluZyBpcyBkb25lIG9uIGtlcm5lbCB2ZXJzaW9uIDIuNi4yNC4KCi0tLSBhL2FyY2gvcG93ZXJw
+Yy9wbGF0Zm9ybXMvcG93ZXJtYWMvS2NvbmZpZy5vcmcJMjAwOC0wMS0yNSAwMDo1ODozNy4wMDAw
+MDAwMDAgKzAyMDAKKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9wb3dlcm1hYy9LY29uZmln
+CTIwMDktMDItMTAgMTc6NDQ6MjQuMDAwMDAwMDAwICswMjAwCkBAIC0xOCw0ICsxOCwxMCBAQCBj
+b25maWcgUFBDX1BNQUM2NAogCXNlbGVjdCBQUENfOTcwX05BUAogCWRlZmF1bHQgeQogCi0KK2Nv
+bmZpZyBOT1RfQ09IRVJFTlRfQ0FDSEUKKwlib29sICJJbmNvaGVyZW50IGNhY2hlIgorCWRlZmF1
+bHQgbgorCWhlbHAKKwkgIFNldHRpbmcgdGhpcyBvcHRpb24gbWF5IGJlIG5lY2Vzc2FyeSBmb3Ig
+YXZvaWRpbmcgY2FjaGUtcmVsYXRlZAorCSAgcHJvYmxlbXMgd2l0aCBzb21lIG5ldHdvcmsgY2Fy
+ZHMgb24gc29tZSBwbGF0Zm9ybXMuIEFuIGV4YW1wbGUgaXMKKwkgIDIxMDR4IGFuZCBQb3dlck1h
+YyA1NTAwLgo=
+--0016e6de003328d6540462b6ee8d--
