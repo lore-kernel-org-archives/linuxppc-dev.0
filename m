@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 87C65DDE31
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 08:58:25 +1100 (EST)
-Message-Id: <54A20554-3C7B-4EE7-B3CF-362AEB27CA64@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20090212203409.GA2385@yoda.jdub.homelinux.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH v2] powerpc/fsl-booke: Add new ISA 2.06 page sizes and MAS
-	defines
-Date: Thu, 12 Feb 2009 15:58:15 -0600
+	by ozlabs.org (Postfix) with ESMTPS id E6119DDED2
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 09:04:45 +1100 (EST)
+Subject: Re: [PATCH v2] powerpc/fsl-booke: Add new ISA 2.06 page sizes and
+	MAS defines
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <54A20554-3C7B-4EE7-B3CF-362AEB27CA64@kernel.crashing.org>
 References: <1234311976-22026-1-git-send-email-galak@kernel.crashing.org>
 	<4B32B56D-9BCC-4ABA-A2AD-BCACFB30D18F@kernel.crashing.org>
 	<20090212203409.GA2385@yoda.jdub.homelinux.org>
+	<54A20554-3C7B-4EE7-B3CF-362AEB27CA64@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 13 Feb 2009 09:04:35 +1100
+Message-Id: <1234476275.29851.68.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,41 +28,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 12, 2009, at 2:34 PM, Josh Boyer wrote:
+> I can call it mmu-book3e.h if you think that might enough different to  
+> convey the ISA 2.06 fact that the FSL style MMU is now part of the 3e  
+> architecture.
 
-> On Thu, Feb 12, 2009 at 01:21:24PM -0600, Kumar Gala wrote:
->>
->> On Feb 10, 2009, at 6:26 PM, Kumar Gala wrote:
->>
->>> The Power ISA 2.06 added power of two page sizes to the embedded MMU
->>> architecture.  Its done it such a way to be code compatiable with  
->>> the
->>> existing HW.  Made the minor code changes to support both power of  
->>> two
->>> and power of four page sizes.  Also added some new MAS bits and  
->>> macros
->>> that are defined as part of the 2.06 ISA.
->>>
->>> Note, its still invalid to try and use a page size that isn't
->>> supported
->>> by cpu.
->>>
->>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>> ---
->>> * Fixed MAS6_ISIZE macro
->>>
->>> arch/powerpc/include/asm/mmu-fsl-booke.h |   54 +++++++++++++++++++
->>> +----------
->>
->> Do you want to rename asm/mmu-fsl-booke.h => mmu-booke.h (per ISA  
->> 2.06
->> changes)?
->
-> Misleading perhaps.  ISA 2.06 is really new and we've been calling 4xx
-> and FSL booke for a while now.
+That's better. book3e is what I've been using internally...
 
-I can call it mmu-book3e.h if you think that might enough different to  
-convey the ISA 2.06 fact that the FSL style MMU is now part of the 3e  
-architecture.
-
-- k
+Cheers,
+Ben.
