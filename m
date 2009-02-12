@@ -5,8 +5,8 @@ To: Geoff Levand <geoffrey.levand@am.sony.com>
 In-Reply-To: <49935F81.7060203@am.sony.com>
 References: <49935F81.7060203@am.sony.com>
 Content-Type: text/plain
-Date: Thu, 12 Feb 2009 15:21:09 +1100
-Message-Id: <1234412469.29851.40.camel@pasglop>
+Date: Thu, 12 Feb 2009 15:21:59 +1100
+Message-Id: <1234412519.29851.41.camel@pasglop>
 Mime-Version: 1.0
 Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,44 +26,9 @@ On Wed, 2009-02-11 at 15:30 -0800, Geoff Levand wrote:
 > been registered via register_one_node() prior to adding memory
 > to the node.  The powerpc arch registers NUMA nodes during
 > startup in its topology_init() routine.
-> 
-> Currently, there is no mechanism for the platform code to know
-> when the nodes have been registered, and hence, when it is safe
-> to add hot plug memory.
 
-No objection other than the confusion with the /* Optional may be NULL
-*/ comment above the line you added that becomes weirdly placed since
-it applies, I think, to show_cpuinfo.
+Just a question.. what's wrong with just using some later kind of
+initcall ? You want to get the memory added as early as possible ?
 
 Cheers,
 Ben.
-
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> ---
->  arch/powerpc/include/asm/machdep.h |    1 +
->  arch/powerpc/kernel/sysfs.c        |    3 +++
->  2 files changed, 4 insertions(+)
-> 
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -106,6 +106,7 @@ struct machdep_calls {
->  	void		(*setup_arch)(void); /* Optional, may be NULL */
->  	void		(*init_early)(void);
->  	/* Optional, may be NULL. */
-> +	void		(*topology_ready)(void); /* Optional, may be NULL */
->  	void		(*show_cpuinfo)(struct seq_file *m);
->  	void		(*show_percpuinfo)(struct seq_file *m, int i);
->  
-> --- a/arch/powerpc/kernel/sysfs.c
-> +++ b/arch/powerpc/kernel/sysfs.c
-> @@ -647,6 +647,9 @@ static int __init topology_init(void)
->  			register_cpu_online(cpu);
->  	}
->  
-> +	if (ppc_md.topology_ready)
-> +		ppc_md.topology_ready();
-> +
->  	return 0;
->  }
->  subsys_initcall(topology_init);
-> 
