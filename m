@@ -1,11 +1,16 @@
-Return-Path: <risto.suominen@gmail.com>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 6306DDDDB9
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 00:03:41 +1100 (EST)
+Date: Thu, 12 Feb 2009 14:00:26 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: spi-devel-general@lists.sourceforge.net
+Subject: SPI-Difference between MX1 and MX31
+Message-ID: <20090212130026.GC3130@pengutronix.de>
 MIME-Version: 1.0
-Date: Thu, 12 Feb 2009 13:22:05 +0200
-Message-ID: <46e1c7760902120322r11cffbdcgff330a242ca586fb@mail.gmail.com>
-Subject: [PATCH 002/002] de2104x: support for systems lacking cache coherence
-From: Risto Suominen <risto.suominen@gmail.com>
-To: LinuxPPC-dev@ozlabs.org
-Content-Type: multipart/mixed; boundary=0016e6de003328d6540462b6ee8d
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ieNMXl1Fr3cevapt"
+Cc: linuxppc-dev@ozlabs.org, a.paterniani@swapp-eng.it
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,57 +20,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0016e6de003328d6540462b6ee8d
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Here is a patch that helped me to get my de2104x NIC working on my
-PowerMac 5500. As an interesting side effect, it also made my mesh
-module crash.
+--ieNMXl1Fr3cevapt
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Background can be found here: http://www.spinics.net/lists/netdev/msg88488.html
+Hello,
 
-Risto
+while working on a generic SPI-driver for the i.MX-platform I stumbled
+over the following:
 
-Allow setting NOT_COHERENT_CACHE explicitly.
+The MX1 can flush its FIFOs using the enable bit. Documentation says:
 
-Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
----
-The testing is done on kernel version 2.6.24.
+"SPI Module Enable - Enables/Disables the serial peripheral interface.
+SPIEN must be asserted before an exchange is initiated. Writing 0 to
+SPIEN flushes the receive and transmit FIFOs."
 
---- a/arch/powerpc/platforms/powermac/Kconfig.org	2008-01-25
-00:58:37.000000000 +0200
-+++ b/arch/powerpc/platforms/powermac/Kconfig	2009-02-10
-17:44:24.000000000 +0200
-@@ -18,4 +18,10 @@ config PPC_PMAC64
- 	select PPC_970_NAP
- 	default y
+Furthermore it has a dedicated reset register:
 
--
-+config NOT_COHERENT_CACHE
-+	bool "Incoherent cache"
-+	default n
-+	help
-+	  Setting this option may be necessary for avoiding cache-related
-+	  problems with some network cards on some platforms. An example is
-+	  2104x and PowerMac 5500.
+"Start - Executes soft reset."
 
---0016e6de003328d6540462b6ee8d
-Content-Type: text/x-diff; charset=US-ASCII; name="incoherent_cache.patch"
-Content-Disposition: attachment; filename="incoherent_cache.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fr3bybcj0
+However, the MX31 does not have a reset register and the documentation
+says this regarding the enable bit:
 
-QWxsb3cgc2V0dGluZyBOT1RfQ09IRVJFTlRfQ0FDSEUgZXhwbGljaXRseS4KClNpZ25lZC1vZmYt
-Ynk6IFJpc3RvIFN1b21pbmVuIDxSaXN0by5TdW9taW5lbkBnbWFpbC5jb20+Ci0tLQpUaGUgdGVz
-dGluZyBpcyBkb25lIG9uIGtlcm5lbCB2ZXJzaW9uIDIuNi4yNC4KCi0tLSBhL2FyY2gvcG93ZXJw
-Yy9wbGF0Zm9ybXMvcG93ZXJtYWMvS2NvbmZpZy5vcmcJMjAwOC0wMS0yNSAwMDo1ODozNy4wMDAw
-MDAwMDAgKzAyMDAKKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9wb3dlcm1hYy9LY29uZmln
-CTIwMDktMDItMTAgMTc6NDQ6MjQuMDAwMDAwMDAwICswMjAwCkBAIC0xOCw0ICsxOCwxMCBAQCBj
-b25maWcgUFBDX1BNQUM2NAogCXNlbGVjdCBQUENfOTcwX05BUAogCWRlZmF1bHQgeQogCi0KK2Nv
-bmZpZyBOT1RfQ09IRVJFTlRfQ0FDSEUKKwlib29sICJJbmNvaGVyZW50IGNhY2hlIgorCWRlZmF1
-bHQgbgorCWhlbHAKKwkgIFNldHRpbmcgdGhpcyBvcHRpb24gbWF5IGJlIG5lY2Vzc2FyeSBmb3Ig
-YXZvaWRpbmcgY2FjaGUtcmVsYXRlZAorCSAgcHJvYmxlbXMgd2l0aCBzb21lIG5ldHdvcmsgY2Fy
-ZHMgb24gc29tZSBwbGF0Zm9ybXMuIEFuIGV4YW1wbGUgaXMKKwkgIDIxMDR4IGFuZCBQb3dlck1h
-YyA1NTAwLgo=
---0016e6de003328d6540462b6ee8d--
+"SPI Module Enable Control - This bit enables the CSPI. This bit must be
+asserted before writing to other registers or initiating an exchange.
+Writing zero to this bit disables the module and resets the internal
+logic with the exception of the CONREG. The module=E2=80=99s internal clock=
+s are
+gated off whenever the module is disabled."
+
+So, as I read all this, disabling the enable bit on the MX31 is more
+like a soft reset on MX1, right? And there does not seem to be a way to
+flush the FIFOs. Can someone imagine what problems might arise if there
+is no way to flush the FIFOs? At least, the check for XCH should have
+ensured that the TXFIFO is empty...
+
+Looking forward to feedback :)
+
+Regards,
+
+   Wolfram Sang
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--ieNMXl1Fr3cevapt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmUHWoACgkQD27XaX1/VRsk3QCfaosmwPRc8boDwJ0ZF3SE1b/8
+BvgAoJbuYSMM0Tqbq/h7hnXEwUAzublA
+=aWZH
+-----END PGP SIGNATURE-----
+
+--ieNMXl1Fr3cevapt--
