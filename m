@@ -1,15 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 13 Feb 2009 00:30:37 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jean-Michel Hautbois <jhautbois@gmail.com>
-Subject: Re: [MPC8272ADS]Problem adding flash partitions inside the device tree
-Message-ID: <20090212133037.GA3651@yookeroo.seuss>
-References: <8cad0aa0902120123p27cfe32fg6bf08d458178c937@mail.gmail.com>
-	<49940265.1020700@vastech.co.za>
-	<8cad0aa0902120310g44a3bf3cla4ffa94ea9bf5dc6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8cad0aa0902120310g44a3bf3cla4ffa94ea9bf5dc6@mail.gmail.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 587E5DDDBC
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 00:58:34 +1100 (EST)
+Message-Id: <00F33F10-8CD0-465F-9545-46009AA85E8E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: sumedh tirodkar <sumedhtirodkar@gmail.com>
+In-Reply-To: <d2b9ccd90902120159k4f6024bbl831b43073d4126f3@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: PowerPC 7447A Paging table Search
+Date: Thu, 12 Feb 2009 07:58:27 -0600
+References: <d2b9ccd90902120159k4f6024bbl831b43073d4126f3@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -20,48 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 12, 2009 at 12:10:58PM +0100, Jean-Michel Hautbois wrote:
-> 2009/2/12 Pieter <phenning@vastech.co.za>
-> 
-> > Jean-Michel Hautbois wrote:
-> > > Warning (reg_format): "reg" property in
-> > > /localbus@f0010100/flash@0,0/partition@ff800000 has invalid length (8
-> > > JM
-> > You are missing some definitions, The #address-cells and #size-cells = <1>;
-> > tis is a snippet of teh dts i defined for my board.
-> >
-> >        flash@0,0 {
-> >            #address-cells = <1>;
-> >            #size-cells = <1>;
-> >            compatible = "cfi-flash";
-> >            reg = <0x0 0x0 0x08000000>;
-> >             bank-width = <4>;
-> >            device-width = <1>;
-> >
-> >             /* set flash partition to correspond tu mtd parts in
-> > u-boot*/
-> >            /*     0xf8000000 */
-> >            partition@0x0 {
-> >                label = "factory-image";
-> >                reg = <0x00000000 0x01000000>;
-> >            };
-> >            /*     0xf9000000 */
-> >            partition@0x01000000 {
-> >                label = "app-image-1";
-> >                reg = <0x01000000 0x01000000>;
-> >            };
-> > cheers pieter
-> >
-> 
-> Hi do have these definitions, at a higher level:
 
-The address-cells and size-cells definitions are not inherited.  They
-cover only the immediate children of the node where they appear.
-Otherwise the default values apply (address-cells == 2, size-cells ==
-1), which are not right for your case.
+On Feb 12, 2009, at 3:59 AM, sumedh tirodkar wrote:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> How will i confirm if PowerPC 7447A processor has or does not have a
+> dedicated hardware for page table search algorithm?
+> If it does not have, then which interrupt handler is written for page
+> address translation mechanism?
+
+It has one and linux uses it.
+
+- k
