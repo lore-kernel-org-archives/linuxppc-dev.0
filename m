@@ -1,22 +1,19 @@
-Return-Path: <yanok@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 965BEDDDB4
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 08:03:41 +1100 (EST)
-Message-ID: <49948EA7.2080301@emcraft.com>
-Date: Fri, 13 Feb 2009 00:03:35 +0300
-From: Ilya Yanok <yanok@emcraft.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 48035DDDAA
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 08:18:43 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so478809yxb.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 13:18:41 -0800 (PST)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: rework dma-noncoherent to use generic vmap/vunmap
-	functions
-References: <1231505915-16082-1-git-send-email-yanok@emcraft.com>	
-	<1233722625.16867.249.camel@pasglop> <49945EFE.8000401@emcraft.com>
-	<1234471294.29851.59.camel@pasglop>
-In-Reply-To: <1234471294.29851.59.camel@pasglop>
-Content-Type: text/plain; charset=KOI8-R
-Cc: linuxppc-dev@ozlabs.org, wd@denx.de, dzu@denx.de
+In-Reply-To: <ccb913ac0902100507x69113827m757f3b8fbd0ac6f4@mail.gmail.com>
+References: <ccb913ac0902100507x69113827m757f3b8fbd0ac6f4@mail.gmail.com>
+Date: Thu, 12 Feb 2009 14:18:41 -0700
+Message-ID: <fa686aa40902121318i65ec44edtf119a6ad2d4d1570@mail.gmail.com>
+Subject: Re: writel hangs system
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Tobias Knutsson <tobias.knutsson@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben,
-
-Benjamin Herrenschmidt wrote:
->> btw, ioremap doesn't provide useful 'caller').
->>     
+On Tue, Feb 10, 2009 at 6:07 AM, Tobias Knutsson
+<tobias.knutsson@gmail.com> wrote:
+> Hello,
 >
-> I fixed that :-) (see patches I posted to the list, though that's
-> waiting for a patch to go upstream first that adds a
-> __get_vm_area_caller() that I need for ppc64).
->   
+> I'm in the process of porting a PCI-driver for a dsp-board from 2.4 to
+> 2.6. The probing of the driver goes well, IRQs are setup, resources
+> are claimed and remapped without any problems. Reading from I/O
+> regions also works well. However, when i try to read or write to a
+> memory region using readl/writel, the system instantly hangs. No
+> stacktrace or anything, it just stops.
 
-Yep, I saw them. Btw, I've posted update consistent memory patch in a
-new thread please take a look.
+Hmmm.  Not good.  Are you able to access the memory regions from the
+U-Boot console?
 
-Regards, Ilya.
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
