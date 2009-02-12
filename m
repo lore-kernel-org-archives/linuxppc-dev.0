@@ -1,12 +1,14 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 9AD57DDDA7
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 12:13:44 +1100 (EST)
-Message-Id: <20090212011051.265346435@goodmis.org>
-Date: Wed, 11 Feb 2009 20:10:51 -0500
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id E2E92DDDB3
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 12:13:47 +1100 (EST)
+Message-Id: <20090212011343.755562859@goodmis.org>
+References: <20090212011051.265346435@goodmis.org>
+Date: Wed, 11 Feb 2009 20:10:57 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/7][RFC] function graph tracer port to PowerPC
+Subject: [PATCH 6/7][RFC] powerpc32,
+	ftrace: port function graph tracer to ppc32, static only
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
 	Andrew Morton <akpm@linux-foundation.org>
@@ -19,152 +21,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Steven Rostedt <rostedt@goodmis.org>
 
-The following set of patches are RFC and not for inclusion
-(unless everyone is fine with them as is).
+This patch ports the function graph tracer for PowerPC, but only
+for static function tracing.
 
-This is the port to PowerPC of the function graph tracer that was written
-by Frederic Weisbecker for the x86 architecture.  It is broken up
-into a series of logical steps.
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ arch/powerpc/Kconfig           |    2 +-
+ arch/powerpc/kernel/entry_32.S |   43 +++++++++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/ftrace.c   |    2 +-
+ 3 files changed, 44 insertions(+), 3 deletions(-)
 
-1) get generic code ready for other archs
-2) get PowerPC 64-bit working with just static function tracing
-3) get PowerPC 64-bit working with dynamic function tracing
-4) get PowerPC 32-bit working with just static function tracing
-5) get PowerPC 32-bit working with dynamic function tracing
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 6e1ee1b..9e4bd20 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -111,7 +111,7 @@ config PPC
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+ 	select HAVE_DYNAMIC_FTRACE
+ 	select HAVE_FUNCTION_TRACER
+-	select HAVE_FUNCTION_GRAPH_TRACER if PPC64
++	select HAVE_FUNCTION_GRAPH_TRACER if PPC64 || !DYNAMIC_FTRACE
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_IDE
+ 	select HAVE_IOREMAP_PROT
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index eb0c13e..9cf7083 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -1199,9 +1199,11 @@ _GLOBAL(_mcount)
+ 
+ 	mtctr	r5
+ 	bctrl
+-
+ 	nop
+ 
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++	b	ftrace_graph_caller
++#endif
+ 	MCOUNT_RESTORE_FRAME
+ 	
+ 	bctr
+@@ -1210,4 +1212,43 @@ _GLOBAL(_mcount)
+ _GLOBAL(ftrace_stub)
+ 	blr
+ 
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++_GLOBAL(ftrace_graph_caller)
++	/* load r4 with local address */
++	lwz	r4, 44(r1)
++	subi	r4, r4, MCOUNT_INSN_SIZE
++
++	/* get the parent address */
++	addi	r3, r1, 52
++
++	bl	prepare_ftrace_return
++	nop
++
++	MCOUNT_RESTORE_FRAME
++	/* old link register ends up in ctr reg */
++	bctr
++
++_GLOBAL(return_to_handler)
++	/* need to save return values */
++	stwu	r1, -32(r1)
++	stw	r3, 20(r1)
++	stw	r4, 16(r1)
++	stw	r31, 12(r1)
++	mr	r31, r1
++
++	bl	ftrace_return_to_handler
++	nop
++
++	/* return value has real return address */
++	mtlr	r3
++
++	lwz	r3, 20(r1)
++	lwz	r4, 16(r1)
++	lwz	r31,12(r1)
++	lwz	r1, 0(r1)
++
++	/* Jump back to real return address */
++	blr
++#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
++
+ #endif /* CONFIG_MCOUNT */
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 5c6dfa9..dddd99b 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -603,7 +603,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 		"1: " PPC_LL "%[old], 0(%[parent])\n"
+ 		"2: " PPC_STL "%[return_hooker], 0(%[parent])\n"
+ 		"   li %[faulted], 0\n"
+-		"3:"
++		"3:\n"
+ 
+ 		".section .fixup, \"ax\"\n"
+ 		"4: li %[faulted], 1\n"
+-- 
+1.5.6.5
 
-(with some clean ups in between)
-
-
-The function graph tracer not only traces the start of a function
-(uses the function tracer part for that) but also uses the kprobes
-trick to replace the return address with a hook to trace the exit
-of the function. These hooks are generic in that other tracers
-can also use them. But the function graph tracer itself is very
-powerful. Simply doing the following:
-
-# echo function_graph > /debug/tracing/current_tracer
-# cat /debug/tracing/trace
-
-# tracer: function_graph
-#
-# CPU OVERHEAD/DURATION            FUNCTION CALLS
-# |   |        |                   |   |   |   |
- ------------------------------------------
- 0)   less-2228    =>    cat-2229   
- ------------------------------------------
-
- 0)               |    .__do_fault() {
- 0)               |      .filemap_fault() {
- 0)               |        .find_lock_page() {
- 0)               |          .find_get_page() {
- 0)   3.168 us    |            .__rcu_read_lock();
- 0)   2.704 us    |            .__rcu_read_unlock();
- 0) + 14.640 us   |          }
- 0) + 20.112 us   |        }
- 0) + 26.464 us   |      }
- 0)   2.912 us    |      ._spin_lock();
- 0)   2.656 us    |      .page_add_file_rmap();
- 0)               |      .update_mmu_cache() {
- 0)               |        .hash_preload() {
- 0)   2.368 us    |          .get_slice_psize();
- 0)   2.752 us    |          .hash_page_do_lazy_icache();
- 0)   3.568 us    |          .native_hpte_insert();
- 0) + 19.680 us   |        }
- 0) + 24.960 us   |      }
- 0)   2.336 us    |      ._spin_unlock();
- 0)               |      .unlock_page() {
- 0)   2.688 us    |        .page_waitqueue();
- 0)   2.608 us    |        .__wake_up_bit();
- 0) + 12.912 us   |      }
- 0) ! 351.776 us  |    }
- 0) ! 357.392 us  |  }
- 0)   3.040 us    |  .up_read();
- 0)               |  .compat_sys_ioctl() {
- 0)   3.024 us    |    .fget_light();
- 0)               |    .tty_compat_ioctl() {
- 0)   2.704 us    |      .tty_paranoia_check();
- 0)               |      .tty_ldisc_ref_wait() {
- 0)               |        .tty_ldisc_try() {
- 0)   2.880 us    |          ._spin_lock_irqsave();
- 0)   2.928 us    |          ._spin_unlock_irqrestore();
- 0) + 13.776 us   |        }
- 0) + 19.424 us   |      }
-
-[...]
-
-As you can see, it gives a nice call trace of the functions being called
-at run time, as well as a time stamp of how much time the function
-took to execute.
-
-Adding dynamic tracing to the mix, we can trace a single function:
-
-# echo .do_fork > /debug/tracing/set_graph_function
-# echo function_graph > /debug/tracing/current_tracer
-# cat /debug/tracing/trace
-
-# tracer: function_graph
-#
-# CPU OVERHEAD/DURATION            FUNCTION CALLS
-# |   |        |                   |   |   |   |
- 1)               |  .do_fork() {
- 1)               |    .copy_process() {
- 1)               |      .prepare_to_copy() {
- 1)   2.944 us    |        .flush_fp_to_thread();
- 1)   2.800 us    |        .flush_altivec_to_thread();
- 1)   2.608 us    |        .flush_vsx_to_thread();
- 1) + 19.184 us   |      }
- 1)               |      .kmem_cache_alloc() {
- 1)   2.464 us    |        .slab_should_failslab();
- 1)   8.304 us    |      }
- 1)               |      .alloc_thread_info() {
- 1)               |        .kmem_cache_alloc() {
- 1)   2.512 us    |          .slab_should_failslab();
- 1)   8.224 us    |        }
- 1) + 13.344 us   |      }
- 1)   7.584 us    |      .arch_dup_task_struct();
- 1)               |      .copy_creds() {
- 1)   2.736 us    |        .__mutex_init();
- 1)               |        .prepare_creds() {
- 1)               |          .kmem_cache_alloc() {
- 1)   2.640 us    |            .slab_should_failslab();
- 1)   8.368 us    |          }
-
-[...]
-
-
-Note, the '.' in the '.do_fork' is a PowerPC64 thing. PowerPC32 and
-other archs just need to do 'do_fork', without the dot.
-
-
-The following patches are in:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-
-    branch: rfc/ppc/ftrace
-
-
-Steven Rostedt (7):
-      tracing/function-graph-tracer: make arch generic push pop functions
-      powerpc64: port of the function graph tracer
-      powerpc64, tracing: add function graph tracer with dynamic tracing
-      powerpc64, ftrace: save toc only on modules for function graph
-      powerpc32, ftrace: save and restore mcount regs with macro
-      powerpc32, ftrace: port function graph tracer to ppc32, static only
-      powerpc32, ftrace: dynamic function graph tracer
-
-----
- arch/powerpc/Kconfig                 |    1 +
- arch/powerpc/include/asm/ftrace.h    |   39 ++++++++++-
- arch/powerpc/kernel/Makefile         |    9 +-
- arch/powerpc/kernel/entry_32.S       |  115 ++++++++++++++---------------
- arch/powerpc/kernel/entry_64.S       |   89 +++++++++++++++++++++-
- arch/powerpc/kernel/ftrace.c         |  135 ++++++++++++++++++++++++++++++++--
- arch/powerpc/kernel/process.c        |   16 ++++
- arch/powerpc/kernel/vmlinux.lds.S    |    1 +
- arch/x86/include/asm/ftrace.h        |   25 ------
- arch/x86/kernel/ftrace.c             |   75 +------------------
- include/linux/ftrace.h               |   24 ++++++
- kernel/trace/trace_functions_graph.c |   75 +++++++++++++++++++
- 12 files changed, 428 insertions(+), 176 deletions(-)
 -- 
