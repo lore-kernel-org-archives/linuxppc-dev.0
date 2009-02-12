@@ -1,22 +1,17 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id 39B91DDEEB
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 03:58:16 +1100 (EST)
-Date: Thu, 12 Feb 2009 11:58:14 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/7][RFC] function graph tracer port to PowerPC
-In-Reply-To: <20090212164720.GA4868@nowhere>
-Message-ID: <alpine.DEB.1.10.0902121157120.15469@gandalf.stny.rr.com>
-References: <20090212011051.265346435@goodmis.org>
-	<20090212015503.GA4697@nowhere>
-	<alpine.DEB.1.10.0902121131150.15469@gandalf.stny.rr.com>
-	<20090212164720.GA4868@nowhere>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <49945B4F.4090204@am.sony.com>
+Date: Thu, 12 Feb 2009 09:24:31 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Subject: Re: [PATCH] PS3 ps3av_set_video_mode() make id signed
+References: <4972456C.1050301@gmail.com>
+	<alpine.LRH.2.00.0901201018440.31271@vixen.sonytel.be>
+	<4975F455.8020004@gmail.com>
+In-Reply-To: <4975F455.8020004@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Thu, 12 Feb 2009, Frederic Weisbecker wrote:
+Roel Kluin wrote:
+> Make id signed so a negative id will get noticed. Error out if
+> ps3av_auto_videomode() fails.
 > 
-> 
-> Yes of course, I knew most of it was architecture independant but I delayed
-> this TODO for future ports, and you've done it.
-> 
-> Thanks.
-> 
-> Just a micro detail: the ftrace_push/pop_return_trace are parts of
-> the core of the entry/return probe, something that could be used
-> by other users than the function graph tracer itself.
-> 
-> Perhaps it would be better to put them in kernel/trace/ftrace.c
-> What do you think?
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  arch/powerpc/include/asm/ps3av.h |    2 +-
+>  drivers/ps3/ps3av.c              |   16 ++++++++++++----
+>  2 files changed, 13 insertions(+), 5 deletions(-)
 
-I'll go with your above method. We'll move it when it comes to that ;-)
+Just FYI, I added this to ps3-linux.git, since it is not a
+critical fix, I will submit for 2.6.30.
 
-> 
-> Anyway, Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-Thanks!
-
-I'll update my repo.
-
--- Steve
+-Geoff
