@@ -1,23 +1,14 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-bw0-f168.google.com (mail-bw0-f168.google.com
-	[209.85.218.168]) by ozlabs.org (Postfix) with ESMTP id 1A3BDDDDB8
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 15:08:36 +1100 (EST)
-Received: by bwz12 with SMTP id 12so1325172bwz.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2009 20:08:33 -0800 (PST)
-Date: Thu, 12 Feb 2009 05:08:30 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/7][RFC] function graph tracer port to PowerPC
-Message-ID: <20090212040829.GB4809@nowhere>
-References: <20090212011051.265346435@goodmis.org>
-	<20090212015503.GA4697@nowhere>
-	<alpine.DEB.1.10.0902112116340.13595@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.1.10.0902112116340.13595@gandalf.stny.rr.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [RFC patch] powerpc: Add topology_ready to machdep calls
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <49935F81.7060203@am.sony.com>
+References: <49935F81.7060203@am.sony.com>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 15:21:09 +1100
+Message-Id: <1234412469.29851.40.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +18,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 11, 2009 at 09:16:57PM -0500, Steven Rostedt wrote:
+On Wed, 2009-02-11 at 15:30 -0800, Geoff Levand wrote:
+> Add a new member topology_ready to the powerpc machdep_calls
+> structure.
 > 
-> On Thu, 12 Feb 2009, Frederic Weisbecker wrote:
+> The NUMA hot plug memory routines require the NUMA node to have
+> been registered via register_one_node() prior to adding memory
+> to the node.  The powerpc arch registers NUMA nodes during
+> startup in its topology_init() routine.
 > 
-> > On Wed, Feb 11, 2009 at 08:10:51PM -0500, Steven Rostedt wrote:
-> > > 
-> > > The following set of patches are RFC and not for inclusion
-> > > (unless everyone is fine with them as is).
-> > > 
-> > > This is the port to PowerPC of the function graph tracer that was written
-> > > by Frederic Weisbecker for the x86 architecture.  It is broken up
-> > > into a series of logical steps.
-> > > 
-> > > 1) get generic code ready for other archs
-> > > 2) get PowerPC 64-bit working with just static function tracing
-> > > 3) get PowerPC 64-bit working with dynamic function tracing
-> > > 4) get PowerPC 32-bit working with just static function tracing
-> > > 5) get PowerPC 32-bit working with dynamic function tracing
-> > > 
-> > > (with some clean ups in between)
-> > > 
-> > 
-> > 
-> > Thanks a lot Steven!
-> > I'm sad to not having a Power Pc to test it...
-> 
-> If you had a PowerPC, I doubt I would have been the one to port it ;-)
+> Currently, there is no mechanism for the platform code to know
+> when the nodes have been registered, and hence, when it is safe
+> to add hot plug memory.
 
+No objection other than the confusion with the /* Optional may be NULL
+*/ comment above the line you added that becomes weirdly placed since
+it applies, I think, to show_cpuinfo.
 
-Especially since you already implemented ftrace on PowerPc :)
-I will acquire an Arm board soon to adapt function graph on Arm...
- 
-> -- Steve
+Cheers,
+Ben.
+
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> ---
+>  arch/powerpc/include/asm/machdep.h |    1 +
+>  arch/powerpc/kernel/sysfs.c        |    3 +++
+>  2 files changed, 4 insertions(+)
+> 
+> --- a/arch/powerpc/include/asm/machdep.h
+> +++ b/arch/powerpc/include/asm/machdep.h
+> @@ -106,6 +106,7 @@ struct machdep_calls {
+>  	void		(*setup_arch)(void); /* Optional, may be NULL */
+>  	void		(*init_early)(void);
+>  	/* Optional, may be NULL. */
+> +	void		(*topology_ready)(void); /* Optional, may be NULL */
+>  	void		(*show_cpuinfo)(struct seq_file *m);
+>  	void		(*show_percpuinfo)(struct seq_file *m, int i);
+>  
+> --- a/arch/powerpc/kernel/sysfs.c
+> +++ b/arch/powerpc/kernel/sysfs.c
+> @@ -647,6 +647,9 @@ static int __init topology_init(void)
+>  			register_cpu_online(cpu);
+>  	}
+>  
+> +	if (ppc_md.topology_ready)
+> +		ppc_md.topology_ready();
+> +
+>  	return 0;
+>  }
+>  subsys_initcall(topology_init);
 > 
