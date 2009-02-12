@@ -1,22 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 13 Feb 2009 09:49:15 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: request_irq return errno 38
-Message-ID: <20090212224915.GA5545@yookeroo.seuss>
-References: <f234e2140902110043i5a4aefb5yb635bc32b9653943@mail.gmail.com>
-	<1234343703.9778.13.camel@localhost>
-	<f234e2140902110141l52550ceem664f57f697bd48e0@mail.gmail.com>
-	<1234346072.9778.20.camel@localhost>
-	<f234e2140902110213g3ae48f2es9fe41087bc8c7b39@mail.gmail.com>
-	<20090211223546.GA20129@cynthia.pants.nu>
-	<f234e2140902120251t2bd3aa5dsc950cacdd6b4422a@mail.gmail.com>
-	<ed82fe3e0902120839q54793762uc9b180a82cad45c7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ed82fe3e0902120839q54793762uc9b180a82cad45c7@mail.gmail.com>
-Cc: scottwood@freescale.com, Vijay Nikam <vijay.t.nikam@gmail.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3674EDDEDD
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 10:15:59 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n1CNFuhq020575
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Feb 2009 17:15:56 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/fsl-booke: Fix compile warning
+Date: Thu, 12 Feb 2009 17:15:56 -0600
+Message-Id: <1234480556-1144-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 12, 2009 at 10:39:36AM -0600, Timur Tabi wrote:
-> On Thu, Feb 12, 2009 at 4:51 AM, Vijay Nikam <vijay.t.nikam@gmail.com> wrote:
-> 
-> > Also how I can read the device tree binary file ? ? ?
-> 
-> It would be a lot simpler if you just read the documentation (see
-> booting-without-of.txt) and looked at other device drivers to see what
-> they do.
+arch/powerpc/mm/fsl_booke_mmu.c: In function 'adjust_total_lowmem':
+arch/powerpc/mm/fsl_booke_mmu.c:221: warning: format '%ld' expects type 'long int', but argument 3 has type 'phys_addr_t'
 
-You don't need to directly read the device tree, the provided helper
-functions (irq_parse_and_map() and the like) will read the device tree
-for you.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/mm/fsl_booke_mmu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index 6d38d77..985b6c3 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -218,7 +218,7 @@ adjust_total_lowmem(void)
+ 		p += sprintf(p, "0/");
+ 	p[-1] = '\0';
+ 
+-	pr_info("Memory CAM mapping: %s Mb, residual: %ldMb\n", buf,
+-	        (total_lowmem - __max_low_memory) >> 20);
++	pr_info("Memory CAM mapping: %s Mb, residual: %dMb\n", buf,
++	        (unsigned int)((total_lowmem - __max_low_memory) >> 20));
+ 	__initial_memory_limit_addr = memstart_addr + __max_low_memory;
+ }
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.6.6
