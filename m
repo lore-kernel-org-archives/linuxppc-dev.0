@@ -1,16 +1,16 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 6306DDDDB9
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 00:03:41 +1100 (EST)
-Date: Thu, 12 Feb 2009 14:00:26 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: spi-devel-general@lists.sourceforge.net
-Subject: SPI-Difference between MX1 and MX31
-Message-ID: <20090212130026.GC3130@pengutronix.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 13 Feb 2009 00:30:37 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jean-Michel Hautbois <jhautbois@gmail.com>
+Subject: Re: [MPC8272ADS]Problem adding flash partitions inside the device tree
+Message-ID: <20090212133037.GA3651@yookeroo.seuss>
+References: <8cad0aa0902120123p27cfe32fg6bf08d458178c937@mail.gmail.com>
+	<49940265.1020700@vastech.co.za>
+	<8cad0aa0902120310g44a3bf3cla4ffa94ea9bf5dc6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ieNMXl1Fr3cevapt"
-Cc: linuxppc-dev@ozlabs.org, a.paterniani@swapp-eng.it
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8cad0aa0902120310g44a3bf3cla4ffa94ea9bf5dc6@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,64 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Feb 12, 2009 at 12:10:58PM +0100, Jean-Michel Hautbois wrote:
+> 2009/2/12 Pieter <phenning@vastech.co.za>
+> 
+> > Jean-Michel Hautbois wrote:
+> > > Warning (reg_format): "reg" property in
+> > > /localbus@f0010100/flash@0,0/partition@ff800000 has invalid length (8
+> > > JM
+> > You are missing some definitions, The #address-cells and #size-cells = <1>;
+> > tis is a snippet of teh dts i defined for my board.
+> >
+> >        flash@0,0 {
+> >            #address-cells = <1>;
+> >            #size-cells = <1>;
+> >            compatible = "cfi-flash";
+> >            reg = <0x0 0x0 0x08000000>;
+> >             bank-width = <4>;
+> >            device-width = <1>;
+> >
+> >             /* set flash partition to correspond tu mtd parts in
+> > u-boot*/
+> >            /*     0xf8000000 */
+> >            partition@0x0 {
+> >                label = "factory-image";
+> >                reg = <0x00000000 0x01000000>;
+> >            };
+> >            /*     0xf9000000 */
+> >            partition@0x01000000 {
+> >                label = "app-image-1";
+> >                reg = <0x01000000 0x01000000>;
+> >            };
+> > cheers pieter
+> >
+> 
+> Hi do have these definitions, at a higher level:
 
---ieNMXl1Fr3cevapt
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The address-cells and size-cells definitions are not inherited.  They
+cover only the immediate children of the node where they appear.
+Otherwise the default values apply (address-cells == 2, size-cells ==
+1), which are not right for your case.
 
-Hello,
-
-while working on a generic SPI-driver for the i.MX-platform I stumbled
-over the following:
-
-The MX1 can flush its FIFOs using the enable bit. Documentation says:
-
-"SPI Module Enable - Enables/Disables the serial peripheral interface.
-SPIEN must be asserted before an exchange is initiated. Writing 0 to
-SPIEN flushes the receive and transmit FIFOs."
-
-Furthermore it has a dedicated reset register:
-
-"Start - Executes soft reset."
-
-However, the MX31 does not have a reset register and the documentation
-says this regarding the enable bit:
-
-"SPI Module Enable Control - This bit enables the CSPI. This bit must be
-asserted before writing to other registers or initiating an exchange.
-Writing zero to this bit disables the module and resets the internal
-logic with the exception of the CONREG. The module=E2=80=99s internal clock=
-s are
-gated off whenever the module is disabled."
-
-So, as I read all this, disabling the enable bit on the MX31 is more
-like a soft reset on MX1, right? And there does not seem to be a way to
-flush the FIFOs. Can someone imagine what problems might arise if there
-is no way to flush the FIFOs? At least, the check for XCH should have
-ensured that the TXFIFO is empty...
-
-Looking forward to feedback :)
-
-Regards,
-
-   Wolfram Sang
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---ieNMXl1Fr3cevapt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmUHWoACgkQD27XaX1/VRsk3QCfaosmwPRc8boDwJ0ZF3SE1b/8
-BvgAoJbuYSMM0Tqbq/h7hnXEwUAzublA
-=aWZH
------END PGP SIGNATURE-----
-
---ieNMXl1Fr3cevapt--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
