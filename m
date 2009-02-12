@@ -1,19 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 587E5DDDBC
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 00:58:34 +1100 (EST)
-Message-Id: <00F33F10-8CD0-465F-9545-46009AA85E8E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: sumedh tirodkar <sumedhtirodkar@gmail.com>
-In-Reply-To: <d2b9ccd90902120159k4f6024bbl831b43073d4126f3@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: PowerPC 7447A Paging table Search
-Date: Thu, 12 Feb 2009 07:58:27 -0600
-References: <d2b9ccd90902120159k4f6024bbl831b43073d4126f3@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 04E22DDDBC
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 01:01:58 +1100 (EST)
+Date: Thu, 12 Feb 2009 14:58:45 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: spi-devel-general@lists.sourceforge.net
+Subject: Re: SPI-Difference between MX1 and MX31
+Message-ID: <20090212135845.GA10043@pengutronix.de>
+References: <20090212130026.GC3130@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
+In-Reply-To: <20090212130026.GC3130@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, a.paterniani@swapp-eng.it
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +23,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 12, 2009, at 3:59 AM, sumedh tirodkar wrote:
+--pf9I7BMVVzbSWLtt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> How will i confirm if PowerPC 7447A processor has or does not have a
-> dedicated hardware for page table search algorithm?
-> If it does not have, then which interrupt handler is written for page
-> address translation mechanism?
 
-It has one and linux uses it.
+Ooops, wrong list. Sorry!
 
-- k
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--pf9I7BMVVzbSWLtt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmUKxUACgkQD27XaX1/VRtQ1ACcDhF0FuwG6ND0LreEXga2+G2O
+kpgAn3FgKMyhx+a9aM2oSllGNXCtlQaU
+=Z5aN
+-----END PGP SIGNATURE-----
+
+--pf9I7BMVVzbSWLtt--
