@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E9D7DDE067
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 01:44:55 +1100 (EST)
-Message-Id: <D929D930-99A7-44B1-82EC-C86187B4B4B5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: willy jacobs <willy.jacobs@nl.thalesgroup.com>
-In-Reply-To: <49954CA9.9040203@nl.thalesgroup.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Gianfar ethernet MPC85xx driver not seen anymore when moving to
-	2.6.29 kernel
-Date: Fri, 13 Feb 2009 08:44:45 -0600
-References: <49954CA9.9040203@nl.thalesgroup.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 08EE3DDEE1
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 01:46:31 +1100 (EST)
+Date: Fri, 13 Feb 2009 17:46:30 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Subject: [PATCH RFC 0/13] FSL eSDHC support
+Message-ID: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-On Feb 13, 2009, at 4:34 AM, willy jacobs wrote:
+Thanks for the comments on the previous version, here comes another
+RFC...
 
-> When I moved (config file and device tree) from 2.6.28 (and earlier  
-> kernel releases) to 2.6.29-rc2 for some reason
-> the Gianfar driver is correctly compiled in, but not probed anymore  
-> during kernel booting.
->
-> I looked into the Changelogs, but did'nt see any change regarding  
-> this.
->
-> Do I need to change the device tree and/ir config file?
-> -- 
-> willy
-> Unclassified
+Changes since the second RFC:
+- Addressed all comments that were raised by Pierre Ossman.
+  There were too many to mention them all, so here is the link:
+  http://lkml.org/lkml/2009/2/6/320
 
-Can you try -rc4.  There are a number of bug fixes that have gone in.   
-Also have you made updates to your .dts per:
+Changes since the first RFC:
+- Use of_iomap() in sdhci-of.c (suggested by Arnd Bergmann). Also added
+  Arnd's Acked-by: line for the sdhci-of patch.
+- Kconfig help text improved (thanks to Matt Sealey and M. Warner Losh).
+- In "sdhci: Add quirk to suppress PIO interrupts during DMA transfers"
+  patch: sdhci_init() now clears SDHCI_PIO_DISABLED flag, otherwise we
+  won't disable PIO interrupts after suspend.
+- New patch: "sdhci: Add type checking for IO memory accessors"
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4
+Thanks,
 
-- k
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
