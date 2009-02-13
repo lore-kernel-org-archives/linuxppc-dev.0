@@ -1,20 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 45F06DDF6F
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 15:15:30 +1100 (EST)
-Subject: Re: [PATCH 3/7][RFC] powerpc64, tracing: add function graph tracer
-	with dynamic tracing
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20090212011343.074329920@goodmis.org>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id B89D8DDEF3
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 15:18:59 +1100 (EST)
+Date: Thu, 12 Feb 2009 23:18:56 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/7][RFC] powerpc64: port of the function graph tracer
+In-Reply-To: <1234498320.26036.33.camel@pasglop>
+Message-ID: <alpine.DEB.1.10.0902122316130.15469@gandalf.stny.rr.com>
 References: <20090212011051.265346435@goodmis.org>
-	<20090212011343.074329920@goodmis.org>
-Content-Type: text/plain
-Date: Fri, 13 Feb 2009 15:15:09 +1100
-Message-Id: <1234498509.26036.35.camel@pasglop>
-Mime-Version: 1.0
+	<20090212011342.880486000@goodmis.org>
+	<1234498320.26036.33.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
 	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
@@ -29,29 +27,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> @@ -55,8 +56,9 @@ static unsigned char *ftrace_call_replace(unsigned
-> long ip, unsigned long addr)
->  	 */
->  	addr = GET_ADDR(addr);
->  
-> -	/* Set to "bl addr" */
-> -	op = 0x48000001 | (ftrace_calc_offset(ip, addr) & 0x03fffffc);
-> +	/* if (link) set op to 'bl' else 'b' */
-> +	op = 0x48000000 | (link ? 1 : 0);
-> +	op |= (ftrace_calc_offset(ip, addr) & 0x03fffffc);
+On Fri, 13 Feb 2009, Benjamin Herrenschmidt wrote:
 
-Any reason why you aren't using the code in
-arch/powerpc/lib/code-patching.c here ?
+> > On Wed, 2009-02-11 at 20:10 -0500, Steven Rostedt wrote:
+> > 
+> > +# timers used by tracing
+> > +CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
+> >  endif
+> 
+> That means no tracing of the timer interrupts etc... maybe we should
+> just move the specific function that we don't want traced out to a
+> separate file ? 
 
-> 	new = ftrace_call_replace(ip, stub, 0);
-> +	memcpy(old, new, MCOUNT_INSN_SIZE);
-> +	new = ftrace_call_replace(ip, addr, 0);
-> +
-> +	return ftrace_modify_code(ip, old, new);
-> +}
+The function graph tracer calls cpu_clock, which calls sched_clock, 
+to get the times. There's no protection against recursion here, since
+we want to let interrupts still be recorded, and we do not need to disable
+interrupts.
 
-Heh, memcpy of 4 bytes :-) I hope gcc is smart enough to turn that into
-a simple load/store ..
+But if the cpu_clock calls something that is traced, it will recurse, and 
+cause a lockup. What ever functions those are, we could annotate with
+notrace. I just used the x86 blind method of 'dont trace this file'.
 
-Cheers,
-Ben.
+
+> 
+> Appart from that, it looks ok, though I might have missed something :-)
+
+Thanks,
+
+-- Steve
