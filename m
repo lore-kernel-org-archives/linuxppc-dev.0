@@ -1,29 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2DCE9DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 03:53:59 +1100 (EST)
-Message-ID: <4995A591.1040105@freescale.com>
-Date: Fri, 13 Feb 2009 10:53:37 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id DCA9FDDDA4
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 03:59:30 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 11/13] sdhci: Add quirk for controllers that need IRQ
+	re-init after reset
+Date: Fri, 13 Feb 2009 16:47:13 +0100
+References: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
+	<20090213144738.GK23889@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090213144738.GK23889@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Jean-Michel Hautbois <jhautbois@gmail.com>
-Subject: Re: [MPC8272ADS]Problem adding flash partitions inside the device tree
-References: <8cad0aa0902120123p27cfe32fg6bf08d458178c937@mail.gmail.com>	
-	<49940265.1020700@vastech.co.za>	
-	<8cad0aa0902120310g44a3bf3cla4ffa94ea9bf5dc6@mail.gmail.com>	
-	<20090212133037.GA3651@yookeroo.seuss>	
-	<8cad0aa0902120536p3303322cvf9a7307391d195b9@mail.gmail.com>	
-	<49942D68.7080706@vastech.co.za>	
-	<8cad0aa0902120626v733011a5u669fc30096565d86@mail.gmail.com>	
-	<20090212222403.GA10344@ld0162-tx32.am.freescale.net>
-	<8cad0aa0902130125h496f712bh809cfb1d45d6ad17@mail.gmail.com>
-In-Reply-To: <8cad0aa0902130125h496f712bh809cfb1d45d6ad17@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; boundary="nextPart3658195.japQ0uH52i";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200902131647.17728.laurentp@cse-semaphore.com>
+Cc: sdhci-devel@list.drzeus.cx, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	Ben Dooks <ben-linux@fluff.org>, Pierre Ossman <drzeus-sdhci@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,24 +26,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jean-Michel Hautbois wrote:
-> 2009/2/12 Scott Wood <scottwood@freescale.com>:
->> On Thu, Feb 12, 2009 at 03:26:58PM +0100, Jean-Michel Hautbois wrote:
->>> I think that the problem is in the reg part, but I can't understand why.
->>> Isn't it the RAM mpping of my MTD that is the first address ?
->> No, it's the offset into the chipselect.
->>
->> -Scott
->>
-> 
-> OK.
-> What means the word #adress-cells BTW ?
+--nextPart3658195.japQ0uH52i
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It's the number of cells that make up an address.  1 cell for 32-bit 
-addresses, 2 for 64-bit.
+Hi Anton,
 
-> When should I have 1, 2 or anything else ?
+On Friday 13 February 2009 15:47:38 Anton Vorontsov wrote:
+> FSL eSDHC controllers losing signal/interrupt enable states after
+> reset, so we should re-enable them.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  drivers/mmc/host/sdhci.c |    7 +++++++
+>  drivers/mmc/host/sdhci.h |    2 ++
+>  2 files changed, 9 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+> index eff615d..b308dbf 100644
+> --- a/drivers/mmc/host/sdhci.c
+> +++ b/drivers/mmc/host/sdhci.c
+> @@ -189,6 +189,7 @@ static void sdhci_disable_card_detection(struct
+> sdhci_host *host) static void sdhci_reset(struct sdhci_host *host, u8 mas=
+k)
+>  {
+>  	unsigned long timeout;
+> +	u32 ier =3D 0; /* shut up gcc */
 
-1 cell is sufficient in this case.
+You should use
 
--Scott
+	u32 uninitialized_var(ier);
+
+instead to avoid generating extra code.
+
+>
+>  	if (host->quirks & SDHCI_QUIRK_NO_CARD_NO_RESET) {
+>  		if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) &
+> @@ -196,6 +197,9 @@ static void sdhci_reset(struct sdhci_host *host, u8
+> mask) return;
+>  	}
+>
+> +	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
+> +		ier =3D sdhci_readl(host, SDHCI_INT_ENABLE);
+> +
+>  	sdhci_writeb(host, mask, SDHCI_SOFTWARE_RESET);
+>
+>  	if (mask & SDHCI_RESET_ALL)
+> @@ -215,6 +219,9 @@ static void sdhci_reset(struct sdhci_host *host, u8
+> mask) timeout--;
+>  		mdelay(1);
+>  	}
+> +
+> +	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
+> +		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
+>  }
+>
+>  static void sdhci_init(struct sdhci_host *host)
+> diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+> index 44c820a..5c5a950 100644
+> --- a/drivers/mmc/host/sdhci.h
+> +++ b/drivers/mmc/host/sdhci.h
+> @@ -229,6 +229,8 @@ struct sdhci_host {
+>  #define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<19)
+>  /* Controller does not like fast PIO transfers */
+>  #define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<20)
+> +/* Controller losing signal/interrupt enable states after reset */
+> +#define SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET		(1<<21)
+>
+>  	int			irq;		/* Device IRQ */
+>  	void __iomem *		ioaddr;		/* Mapped address */
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart3658195.japQ0uH52i
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmVlgEACgkQlyYWY4YEWhVGLgCfe6wTJschboY9UrkTDOErAxEV
+/zQAni13XLvaxbeg6/2uA9IRXK3UKJ/1
+=LI2n
+-----END PGP SIGNATURE-----
+
+--nextPart3658195.japQ0uH52i--
