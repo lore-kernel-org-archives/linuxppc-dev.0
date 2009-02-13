@@ -1,16 +1,38 @@
-Return-Path: <vijay.t.nikam@gmail.com>
-Received: from po-out-1718.google.com (po-out-1718.google.com [72.14.252.156])
-	by ozlabs.org (Postfix) with ESMTP id EE4F6DDF7A
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 21:37:01 +1100 (EST)
-Received: by po-out-1718.google.com with SMTP id b23so3023010poe.4
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 02:37:00 -0800 (PST)
+Return-Path: <willy.jacobs@nl.thalesgroup.com>
+Received: from spvl1106.nl.thalesgroup.com (spvl1106.nl.thalesgroup.com
+	[212.178.200.70]) by ozlabs.org (Postfix) with ESMTP id 02962DDF7C
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 22:04:21 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by spvl1106.nl.thalesgroup.com (Postfix) with ESMTP id C0231F78C4
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 11:35:18 +0100 (CET)
+Received: from spvl1106.nl.thalesgroup.com ([127.0.0.1])
+	by localhost (mailgate4.nl.thalesgroup.com [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP id Ey8rOcGBIluE for <linuxppc-dev@ozlabs.org>;
+	Fri, 13 Feb 2009 11:35:15 +0100 (CET)
+Received: from mta1.nl.thales (mta1.nl.thales [193.67.31.130])
+	by spvl1106.nl.thalesgroup.com (Postfix) with ESMTP id 3A192F78C0
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 11:35:15 +0100 (CET)
+Received: from spvl1179.nl.thalesgroup.com (hglsmtp1 [10.160.62.100])
+	by mta1.nl.thales (4.9.7.3) with ESMTP id Li894AAu
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 11:34:21 +0100 (MET)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by spvl1179.nl.thalesgroup.com (Postfix) with ESMTP id EFE27E7928
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 11:34:20 +0100 (CET)
+Received: from spvl1179.nl.thalesgroup.com ([127.0.0.1])
+	by localhost (hglsmtp1.hengelo.nl.thales [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP id KJZv2hNU6OxH for <linuxppc-dev@ozlabs.org>;
+	Fri, 13 Feb 2009 11:34:17 +0100 (CET)
+Received: from [144.18.5.94] (s203631.hengelo.nl.thales [144.18.5.94])
+	by spvl1179.nl.thalesgroup.com (Postfix) with ESMTP id 1E1B8E7900
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 11:34:17 +0100 (CET)
+Message-ID: <49954CA9.9040203@nl.thalesgroup.com>
+Date: Fri, 13 Feb 2009 11:34:17 +0100
+From: willy jacobs <willy.jacobs@nl.thalesgroup.com>
 MIME-Version: 1.0
-Date: Fri, 13 Feb 2009 16:07:00 +0530
-Message-ID: <f234e2140902130237s36c21c2fga5a2e9ab8d24dcd2@mail.gmail.com>
-Subject: Not able to see any output if kernel module loaded for the first time
-From: Vijay Nikam <vijay.t.nikam@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Gianfar ethernet MPC85xx driver not seen anymore when moving to 2.6.29
+	kernel
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,23 +42,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello All,
+When I moved (config file and device tree) from 2.6.28 (and earlier kernel releases) to 2.6.29-rc2 for some reason
+the Gianfar driver is correctly compiled in, but not probed anymore during kernel booting.
 
-I am facing perhaps some strange kind of problem. I have mpc8313erdb
-eval board and wrote the GPIO driver, the driver is just making the
-assigned GPIO[3] pin high and low.
+I looked into the Changelogs, but did'nt see any change regarding this.
 
-If I load this module first time after bootup or if I make some change
-in the code and compile and load the module, then I am not able to see
-any output on the scope but if I load it again then I will be able to
-see the output on the scopt that GPIO[3] pin has became high and low.
-Later if I removed the kernel module and load it again then also I am
-able to see the output on the scope, till I do the reboot or power-off
-and on.
+Do I need to change the device tree and/ir config file?
+-- 
+willy
+Unclassified
 
-Could anyone let me know why this happening ... thanks ...
+------------------------------------------------------------------------------------------------------------
+Disclaimer:
 
-Kindly please acknowledge ... thank you ...
-
-Kind Regards,
-Vijay Nikam
+If you are not the intended recipient of this email, please notify the sender and delete it. 
+Any unauthorized copying, disclosure or distribution of this email or its attachment(s) is forbidden. 
+Thales Nederland BV will not accept liability for any damage caused by this email or its attachment(s). 
+Thales Nederland BV is seated in Hengelo and is registered at the Chamber of Commerce under number 06061578.
+------------------------------------------------------------------------------------------------------------
