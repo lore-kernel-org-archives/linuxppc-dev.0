@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3DDEBDDEDA
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 15:12:28 +1100 (EST)
-Subject: Re: [PATCH 2/7][RFC] powerpc64: port of the function graph tracer
+	by ozlabs.org (Postfix) with ESMTPS id 45F06DDF6F
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 15:15:30 +1100 (EST)
+Subject: Re: [PATCH 3/7][RFC] powerpc64, tracing: add function graph tracer
+	with dynamic tracing
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20090212011342.880486000@goodmis.org>
+In-Reply-To: <20090212011343.074329920@goodmis.org>
 References: <20090212011051.265346435@goodmis.org>
-	<20090212011342.880486000@goodmis.org>
+	<20090212011343.074329920@goodmis.org>
 Content-Type: text/plain
-Date: Fri, 13 Feb 2009 15:12:00 +1100
-Message-Id: <1234498320.26036.33.camel@pasglop>
+Date: Fri, 13 Feb 2009 15:15:09 +1100
+Message-Id: <1234498509.26036.35.camel@pasglop>
 Mime-Version: 1.0
 Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
@@ -27,17 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Wed, 2009-02-11 at 20:10 -0500, Steven Rostedt wrote:
-> 
-> +# timers used by tracing
-> +CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
->  endif
 
-That means no tracing of the timer interrupts etc... maybe we should
-just move the specific function that we don't want traced out to a
-separate file ? 
+> @@ -55,8 +56,9 @@ static unsigned char *ftrace_call_replace(unsigned
+> long ip, unsigned long addr)
+>  	 */
+>  	addr = GET_ADDR(addr);
+>  
+> -	/* Set to "bl addr" */
+> -	op = 0x48000001 | (ftrace_calc_offset(ip, addr) & 0x03fffffc);
+> +	/* if (link) set op to 'bl' else 'b' */
+> +	op = 0x48000000 | (link ? 1 : 0);
+> +	op |= (ftrace_calc_offset(ip, addr) & 0x03fffffc);
 
-Appart from that, it looks ok, though I might have missed something :-)
+Any reason why you aren't using the code in
+arch/powerpc/lib/code-patching.c here ?
+
+> 	new = ftrace_call_replace(ip, stub, 0);
+> +	memcpy(old, new, MCOUNT_INSN_SIZE);
+> +	new = ftrace_call_replace(ip, addr, 0);
+> +
+> +	return ftrace_modify_code(ip, old, new);
+> +}
+
+Heh, memcpy of 4 bytes :-) I hope gcc is smart enough to turn that into
+a simple load/store ..
 
 Cheers,
 Ben.
