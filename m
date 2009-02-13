@@ -1,14 +1,16 @@
-Return-Path: <gjb@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DEDE2DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 03:13:20 +1100 (EST)
-From: Grzegorz Bernacki <gjb@semihalf.com>
+Return-Path: <jblack547@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.181])
+	by ozlabs.org (Postfix) with ESMTP id 6E641DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 03:44:22 +1100 (EST)
+Received: by el-out-1112.google.com with SMTP id s27so872960ele.3
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 08:44:20 -0800 (PST)
+MIME-Version: 1.0
+Date: Fri, 13 Feb 2009 09:44:20 -0700
+Message-ID: <b77025b40902130844o2e10a2cfk51e48c6f390f5ed9@mail.gmail.com>
+Subject: SCCx in Sync HDLC mode
+From: James Black <jblack547@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] Configure PSC4 and PSC5 as UART.
-Date: Fri, 13 Feb 2009 17:13:13 +0100
-Message-Id: <12345415932889-git-send-email-gjb@semihalf.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,44 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On digsy MTC PSC4 and PSC5 should be configured as UART, not PSC3 and PSC4.
+Is there any work being proposed/done in this area? I'm looking at the
+drivers/serial/cpm_uart files and see no support for sync/HDLC SCCx
+channels. Can anyone offer some history or insight to this area?
 
-Signed-off-by: Grzegorz Bernacki <gjb@semihalf.com>
----
-Version 2:
- - rebased to Ben Herrenschmidt's -next
-
- arch/powerpc/boot/dts/digsy_mtc.dts |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/digsy_mtc.dts b/arch/powerpc/boot/dts/digsy_mtc.dts
-index 0e85ebf..4c36186 100644
---- a/arch/powerpc/boot/dts/digsy_mtc.dts
-+++ b/arch/powerpc/boot/dts/digsy_mtc.dts
-@@ -155,18 +155,18 @@
- 			reg = <0x1f00 0x100>;
- 		};
- 
--		serial@2400 {		// PSC3
--			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
--			reg = <0x2400 0x100>;
--			interrupts = <2 3 0>;
--		};
--
- 		serial@2600 {		// PSC4
- 			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
- 			reg = <0x2600 0x100>;
- 			interrupts = <2 11 0>;
- 		};
- 
-+		serial@2800 {		// PSC5
-+			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
-+			reg = <0x2800 0x100>;
-+			interrupts = <2 12 0>;
-+		};
-+
- 		ethernet@3000 {
- 			compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
- 			reg = <0x3000 0x400>;
 -- 
-1.5.2.2
+Jim Black
+Senior Software Engineer
+Aztek Networks, Inc.
+2477 55th Street, Suite 202
+Boulder, CO 80301
+www.azteknetworks.com
