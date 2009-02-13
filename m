@@ -1,19 +1,11 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-133.bluehost.com (outbound-mail-133.bluehost.com
-	[67.222.39.23]) by ozlabs.org (Postfix) with SMTP id 5B8E7DDD1C
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 08:20:32 +1100 (EST)
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] pci/msi: Use #ifdefs instead of weak functions
-Date: Fri, 13 Feb 2009 13:13:47 -0800
-References: <d1c931db79adf22f3506aa0343aec5361600b37e.1232325038.git.michael@ellerman.id.au>
-In-Reply-To: <d1c931db79adf22f3506aa0343aec5361600b37e.1232325038.git.michael@ellerman.id.au>
+Return-Path: <anton@ozlabs.org>
+Date: Sat, 14 Feb 2009 08:57:30 +1100
+From: Anton Blanchard <anton@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Reduce hashtable size when using 64kB pages
+Message-ID: <20090213215730.GF23273@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200902131313.48615.jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@redhat.com,
-	hpa@zytor.com, linux-pci@atrey.karlin.mff.cuni.cz, tglx@linutronix.de
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +15,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday, January 18, 2009 4:31 pm Michael Ellerman wrote:
-> Weak functions aren't all they're cracked up to be. They lead to
-> incorrect binaries with some toolchains, they require us to have empty
-> functions we otherwise wouldn't, and the unused code is not elided
-> (as of gcc 4.3.2 anyway).
->
-> So replace the weak MSI arch hooks with the #define foo foo idiom. We no
-> longer need empty versions of arch_setup/teardown_msi_irq().
->
-> This is less source (by 1 line!), and results in smaller binaries too:
->
->    text	   data	    bss	    dec	    hex	filename
-> 9354300	1693916	 678424	11726640 b2ef30	build/powerpc/vmlinux-before
-> 9354052	1693852	 678424	11726328 b2edf8	build/powerpc/vmlinux-after
->
-> Also smaller on x86_64 and arm (iop13xx).
->
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Applied to my linux-next branch, thanks Michael.
+At the moment we size the hashtable based on 4kB pages / 2, even on a
+64kB kernel. This results in a hashtable that is much larger than it
+needs to be.
 
+Grab the real page size and size the hashtable based on that. Note: this
+only works on non hypervisor machines.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 8d5b475..f5bc1b2 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -516,7 +516,7 @@ static int __init htab_dt_scan_pftsize(unsigned long node,
+ 
+ static unsigned long __init htab_get_table_size(void)
+ {
+-	unsigned long mem_size, rnd_mem_size, pteg_count;
++	unsigned long mem_size, rnd_mem_size, pteg_count, psize;
+ 
+ 	/* If hash size isn't already provided by the platform, we try to
+ 	 * retrieve it from the device-tree. If it's not there neither, we
+@@ -534,7 +534,8 @@ static unsigned long __init htab_get_table_size(void)
+ 		rnd_mem_size <<= 1;
+ 
+ 	/* # pages / 2 */
+-	pteg_count = max(rnd_mem_size >> (12 + 1), 1UL << 11);
++	psize = mmu_psize_defs[mmu_virtual_psize].shift;
++	pteg_count = max(rnd_mem_size >> (psize + 1), 1UL << 11);
+ 
+ 	return pteg_count << 7;
+ }
