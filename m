@@ -1,11 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: [PATCH] powerpc: fix VSX alignment handler for regs 32-63
-Date: Fri, 13 Feb 2009 16:08:58 +1100
-Message-ID: <1803.1234501738@neuling.org>
-Sender: mikey@neuling.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CE4DADDF07
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 16:10:14 +1100 (EST)
+Message-Id: <10CBF092-BD35-4A99-B4E7-44AA43B731AA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1234493200.29851.79.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc: Add support for using doorbells for SMP IPI
+Date: Thu, 12 Feb 2009 23:10:08 -0600
+References: <1234482893-17712-1-git-send-email-galak@kernel.crashing.org>
+	<1234493200.29851.79.camel@pasglop>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,33 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix the VSX alignment handler for VSX registers > 32.  32-63 are stored
-in the VMX part of the thread_struct not the FPR part.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kernel/align.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+On Feb 12, 2009, at 8:46 PM, Benjamin Herrenschmidt wrote:
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/align.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/align.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/align.c
-@@ -646,11 +646,16 @@ static int emulate_vsx(unsigned char __u
- 		       unsigned int areg, struct pt_regs *regs,
- 		       unsigned int flags, unsigned int length)
- {
--	char *ptr = (char *) &current->thread.TS_FPR(reg);
-+	char *ptr;
- 	int ret = 0;
- 
- 	flush_vsx_to_thread(current);
- 
-+	if (reg < 32)
-+		ptr = (char *) &current->thread.TS_FPR(reg);
-+	else
-+		ptr = (char *) &current->thread.vr[reg - 32];
-+
- 	if (flags & ST)
- 		ret = __copy_to_user(addr, ptr, length);
-         else {
+> On Thu, 2009-02-12 at 17:54 -0600, Kumar Gala wrote:
+>> The e500mc supports the new msgsnd/doorbell mechanisms that were  
+>> added in
+>> the Power ISA 2.05 architecture.  We use the normal level doorbell  
+>> for
+>> doing SMP IPIs at this point.
+>>
+>
+> Cool stuff. Haven't reviewed in details yet tho :-) But I was
+> thinking...
+>
+> We should introduce a special xmon variant of local_irq_save/restore  
+> for
+> use by xmon that masks MSR:CE and use a crit doorbell for xmon IPI,  
+> that
+> would increase significantly the ability of xmon to catch deadlocked
+> CPUs, and we could use external CRITs as a more generic way of doing
+> IPIs, no ?
+
+crit doorbell for xmon IPI sounds interesting.  However, I don't  
+following about use of external CRITs for IPIs.
+
+> In fact, we should expose a local_crit_irq_save/restore (disable/ 
+> enable)
+> too for things like watchdog drivers etc... which may want to use  
+> these.
+
+Yeah, probably a good thing for us to add.
+
+- k
