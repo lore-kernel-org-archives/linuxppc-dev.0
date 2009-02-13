@@ -1,19 +1,16 @@
-Return-Path: <rpm@xenomai.org>
-Received: from smtp4-g21.free.fr (smtp4-g21.free.fr [212.27.42.4])
-	by ozlabs.org (Postfix) with ESMTP id 3ADB1DDEEC
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 21:01:29 +1100 (EST)
-Message-ID: <499544EF.6070200@xenomai.org>
-Date: Fri, 13 Feb 2009 11:01:19 +0100
-From: Philippe Gerum <rpm@xenomai.org>
+Return-Path: <vijay.t.nikam@gmail.com>
+Received: from po-out-1718.google.com (po-out-1718.google.com [72.14.252.156])
+	by ozlabs.org (Postfix) with ESMTP id EE4F6DDF7A
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 21:37:01 +1100 (EST)
+Received: by po-out-1718.google.com with SMTP id b23so3023010poe.4
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 02:37:00 -0800 (PST)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix _PAGE_CHG_MASK
-References: <4994A046.2080806@xenomai.org>	 <1234493350.29851.80.camel@pasglop>
-	<1234504015.26036.43.camel@pasglop>
-In-Reply-To: <1234504015.26036.43.camel@pasglop>
+Date: Fri, 13 Feb 2009 16:07:00 +0530
+Message-ID: <f234e2140902130237s36c21c2fga5a2e9ab8d24dcd2@mail.gmail.com>
+Subject: Not able to see any output if kernel module loaded for the first time
+From: Vijay Nikam <vijay.t.nikam@gmail.com>
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: rpm@xenomai.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Fri, 2009-02-13 at 13:49 +1100, Benjamin Herrenschmidt wrote:
-> 
->>> diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
->>> index 75dded6..8298afc 100644
->>> --- a/arch/powerpc/include/asm/pgtable-ppc32.h
->>> +++ b/arch/powerpc/include/asm/pgtable-ppc32.h
->>> @@ -428,8 +428,8 @@ extern int icache_44x_need_flush;
->>>  #define PMD_PAGE_SIZE(pmd)	bad_call_to_PMD_PAGE_SIZE()
->>>  #endif
->>>
->>> -#define _PAGE_CHG_MASK	(PAGE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_SPECIAL)
->>> -
->>> +#define _PAGE_CHG_MASK	(PAGE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY | \
->>> +			 _PAGE_SPECIAL)
->>>
->>>  #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
->>>  			 _PAGE_WRITETHRU | _PAGE_ENDIAN | \
->>>
-> 
-> BTW. That part of the patch looks bad (ie, the original line isn't what
-> is upstream). I've fixed up locally.
->
+Hello All,
 
-Sorry for this. I forgot to rebase my patch on mainline.
+I am facing perhaps some strange kind of problem. I have mpc8313erdb
+eval board and wrote the GPIO driver, the driver is just making the
+assigned GPIO[3] pin high and low.
 
-> Cheers,
-> Ben.
-> 
-> 
-> 
+If I load this module first time after bootup or if I make some change
+in the code and compile and load the module, then I am not able to see
+any output on the scope but if I load it again then I will be able to
+see the output on the scopt that GPIO[3] pin has became high and low.
+Later if I removed the kernel module and load it again then also I am
+able to see the output on the scope, till I do the reboot or power-off
+and on.
 
+Could anyone let me know why this happening ... thanks ...
 
--- 
-Philippe.
+Kindly please acknowledge ... thank you ...
+
+Kind Regards,
+Vijay Nikam
