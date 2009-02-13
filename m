@@ -1,23 +1,21 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id AF4A2DDF55
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 16:22:53 +1100 (EST)
-Date: Fri, 13 Feb 2009 00:22:51 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/7][RFC] powerpc64, tracing: add function graph tracer
-	with dynamic tracing
-In-Reply-To: <1234498509.26036.35.camel@pasglop>
-Message-ID: <alpine.DEB.1.10.0902130020420.15469@gandalf.stny.rr.com>
-References: <20090212011051.265346435@goodmis.org>
-	<20090212011343.074329920@goodmis.org>
-	<1234498509.26036.35.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 16420DDFC5
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2009 16:25:10 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Add support for using doorbells for SMP IPI
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <10CBF092-BD35-4A99-B4E7-44AA43B731AA@kernel.crashing.org>
+References: <1234482893-17712-1-git-send-email-galak@kernel.crashing.org>
+	<1234493200.29851.79.camel@pasglop>
+	<10CBF092-BD35-4A99-B4E7-44AA43B731AA@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 13 Feb 2009 16:25:04 +1100
+Message-Id: <1234502704.26036.40.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +26,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 13 Feb 2009, Benjamin Herrenschmidt wrote:
+> crit doorbell for xmon IPI sounds interesting.  However, I don't  
+> following about use of external CRITs for IPIs.
 
-> 
-> > @@ -55,8 +56,9 @@ static unsigned char *ftrace_call_replace(unsigned
-> > long ip, unsigned long addr)
-> >  	 */
-> >  	addr = GET_ADDR(addr);
-> >  
-> > -	/* Set to "bl addr" */
-> > -	op = 0x48000001 | (ftrace_calc_offset(ip, addr) & 0x03fffffc);
-> > +	/* if (link) set op to 'bl' else 'b' */
-> > +	op = 0x48000000 | (link ? 1 : 0);
-> > +	op |= (ftrace_calc_offset(ip, addr) & 0x03fffffc);
-> 
-> Any reason why you aren't using the code in
-> arch/powerpc/lib/code-patching.c here ?
+Just a finger not following the brain :-) I meant for NMI's
 
-Yes, because I did not know about it ;-)
-
-I'll write up a patch to change this. But I'll post this series as is for 
-now.
-
-Thanks,
-
--- Steve
+Cheers,
+Ben.
