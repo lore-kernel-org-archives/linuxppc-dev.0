@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C00A6DDDB9
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 01:47:18 +1100 (EST)
-Date: Fri, 13 Feb 2009 17:47:16 +0300
+	by ozlabs.org (Postfix) with ESMTP id 172CADDFA4
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 01:47:20 +1100 (EST)
+Date: Fri, 13 Feb 2009 17:47:18 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 04/13] sdhci: Enable only relevant (DMA/PIO) interrupts
-	during transfers
-Message-ID: <20090213144716.GD23889@oksana.dev.rtsoft.ru>
+Subject: [PATCH 05/13] sdhci: Add support for card-detection polling
+Message-ID: <20090213144718.GE23889@oksana.dev.rtsoft.ru>
 References: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,59 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some hosts (that is, FSL eSDHC) throw PIO interrupts during DMA
-transfers, this causes tons of unneeded interrupts, and thus highly
-degraded speed.
+This patch adds SDHCI_QUIRK_BROKEN_CARD_DETECTION quirk. When specified,
+sdhci driver will set MMC_CAP_NEEDS_POLL MMC host capability, and won't
+enable card insert/remove interrupts.
 
-This patch modifies the driver so that now we only enable relevant
-(DMA or PIO) interrupts during transfers.
+This is needed for hosts with unreliable card detection, such as FSL
+eSDHC. The original eSDHC driver was tring to "debounce" card-detection
+IRQs by reading present state and disabling particular interrupts. But
+with this debouncing scheme I noticed that sometimes we miss card
+insertion/removal events.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
  drivers/mmc/host/sdhci.c |   17 ++++++++++++++---
- 1 files changed, 14 insertions(+), 3 deletions(-)
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 16 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index fadaeb8..2728e90 100644
+index 2728e90..782fb58 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -222,9 +222,7 @@ static void sdhci_init(struct sdhci_host *host)
- 		SDHCI_INT_BUS_POWER | SDHCI_INT_DATA_END_BIT |
- 		SDHCI_INT_DATA_CRC | SDHCI_INT_DATA_TIMEOUT | SDHCI_INT_INDEX |
- 		SDHCI_INT_END_BIT | SDHCI_INT_CRC | SDHCI_INT_TIMEOUT |
--		SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL |
--		SDHCI_INT_DMA_END | SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE |
--		SDHCI_INT_ADMA_ERROR);
-+		SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE);
- }
- 
- static void sdhci_reinit(struct sdhci_host *host)
-@@ -658,6 +656,17 @@ static u8 sdhci_calc_timeout(struct sdhci_host *host, struct mmc_data *data)
- 	return count;
- }
- 
-+static void sdhci_set_transfer_irqs(struct sdhci_host *host)
-+{
-+	u32 pio_irqs = SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL;
-+	u32 dma_irqs = SDHCI_INT_DMA_END | SDHCI_INT_ADMA_ERROR;
-+
-+	if (host->flags & SDHCI_REQ_USE_DMA)
-+		sdhci_clear_set_irqs(host, pio_irqs, dma_irqs);
-+	else
-+		sdhci_clear_set_irqs(host, dma_irqs, pio_irqs);
-+}
-+
- static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+@@ -167,6 +167,9 @@ static void sdhci_set_card_detection(struct sdhci_host *host, bool enable)
  {
- 	u8 count;
-@@ -806,6 +815,8 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- 		host->blocks = data->blocks;
- 	}
+ 	u32 irqs = SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT;
  
-+	sdhci_set_transfer_irqs(host);
++	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
++		return;
 +
- 	/* We do not handle DMA boundaries, so set it to max (512 KiB) */
- 	sdhci_writew(host, SDHCI_MAKE_BLKSZ(7, data->blksz), SDHCI_BLOCK_SIZE);
- 	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
+ 	if (enable)
+ 		sdhci_unmask_irqs(host, irqs);
+ 	else
+@@ -1110,13 +1113,18 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 
+ 	host->mrq = mrq;
+ 
++	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
++		goto send;
++
+ 	if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)
+ 		|| (host->flags & SDHCI_DEVICE_DEAD)) {
+ 		host->mrq->cmd->error = -ENOMEDIUM;
+ 		tasklet_schedule(&host->finish_tasklet);
+-	} else
+-		sdhci_send_command(host, mrq->cmd);
+-
++		goto out;
++	}
++send:
++	sdhci_send_command(host, mrq->cmd);
++out:
+ 	mmiowb();
+ 	spin_unlock_irqrestore(&host->lock, flags);
+ }
+@@ -1742,6 +1750,9 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	mmc->f_max = host->max_clk;
+ 	mmc->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
+ 
++	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
++		mmc->caps |= MMC_CAP_NEEDS_POLL;
++
+ 	if ((caps & SDHCI_CAN_DO_HISPD) ||
+ 		(host->quirks & SDHCI_QUIRK_FORCE_HIGHSPEED))
+ 		mmc->caps |= MMC_CAP_SD_HIGHSPEED;
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 45c8309..b10920d 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -217,6 +217,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_FORCE_HIGHSPEED			(1<<14)
+ /* Controller does not provide transfer-complete interrupt when not busy */
+ #define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<15)
++/* Controller has unreliable card detection */
++#define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
+ 
+ 	int			irq;		/* Device IRQ */
+ 	void __iomem *		ioaddr;		/* Mapped address */
 -- 
 1.5.6.5
