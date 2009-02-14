@@ -1,17 +1,24 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 16364DDDA1
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Feb 2009 06:47:54 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so775053yxb.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 11:47:52 -0800 (PST)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Sat, 14 Feb 2009 14:47:32 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: 4xx tree updates
-Message-ID: <20090214194732.GA30783@zod.rchland.ibm.com>
-MIME-Version: 1.0
+Return-Path: <sam@ravnborg.org>
+Received: from pqueuea.post.tele.dk (pqueuea.post.tele.dk [193.162.153.9])
+	by ozlabs.org (Postfix) with ESMTP id 3D53FDDDAB
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Feb 2009 07:48:57 +1100 (EST)
+Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
+	by pqueuea.post.tele.dk (Postfix) with ESMTP id 7FCCCDBE4A
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 20:55:33 +0100 (CET)
+Date: Sat, 14 Feb 2009 20:57:02 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as possible
+Message-ID: <20090214195702.GB1241@uranus.ravnborg.org>
+References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
+	<20090204150835.GA30027@oksana.dev.rtsoft.ru>
+	<20090204212612.GN22608@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090204212612.GN22608@elte.hu>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+On Wed, Feb 04, 2009 at 10:26:12PM +0100, Ingo Molnar wrote:
+> 
+> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > This patch gives arches more freedom on overwriting CFLAGS, specifically
+> > on PowerPC we want to remove -fno-omit-frame-pointer flag.
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> >  Makefile |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/Makefile b/Makefile
+> > index 7715b2c..d1ba93f 100644
+> > --- a/Makefile
+> > +++ b/Makefile
+> > @@ -525,8 +525,6 @@ else
+> >  KBUILD_CFLAGS	+= -O2
+> >  endif
+> >  
+> > -include $(srctree)/arch/$(SRCARCH)/Makefile
+> > -
+> >  ifneq (CONFIG_FRAME_WARN,0)
+> >  KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
+> >  endif
+> > @@ -555,6 +553,8 @@ ifdef CONFIG_DEBUG_SECTION_MISMATCH
+> >  KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
+> >  endif
+> >  
+> > +include $(srctree)/arch/$(SRCARCH)/Makefile
+> > +
+> >  # arch Makefile may override CC so keep this after arch Makefile is included
+> >  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+> >  CHECKFLAGS     += $(NOSTDINC_FLAGS)
+> > -- 
+> 
+> this patch is really for Sam to judge - Cc:-ed him.
 
-I've been rather busy lately and have unfortunately gotten behind on
-updating the 4xx tree.  I spent some time this weekend looking over
-the patches queued up, and fortunately there were not too many.  I'm
-doing some build testing of these 4 today:
+If we move the include further down then the following:
 
-commit 6c7120902305b3a21460cd2f0f917a39307df566
-Author: Madhulika Madishetty <mmadishetty@amcc.com>
+    # Force gcc to behave correct even for buggy distributions
+    # Arch Makefiles may override this setting
+    KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
 
-    AMCC PPC 460SX redwood SoC platform initial framework
+will most likely fail.
 
-commit 41b6a085e48d0d9e1200946755f49f31dd930137
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+If popwerpc needs to get rid of "-fno-omit-frame-pointer" then
+we need a way to express this at KConfig level and NOT by doing
+some tricks with CFLAGS.
 
-    powerpc/4xx: Enable PCI domains on 4xx
-
-commit 018f76ec516c09a5381e517d0739d377a60ec0d5
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-    powerpc/4xx: Add missing USB and i2c devices to Canyonlands
-
-commit e12401222f749c37277a313d631dc024bbfd3b00
-Author: Yuri Tikhonov <yur@emcraft.com>
-
-    powerpc/44x: Support for 256KB PAGE_SIZE
-
-Barring any unforseen issues with these, I'll push them to my
-next branch tomorrow and ask Ben to pull them shortly thereafter.
-
-If I've missed any patches that should be headed for 2.6.30, please
-let me know!
-
-josh
+	Sam
