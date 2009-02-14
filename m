@@ -1,22 +1,17 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 0D443DDDA2
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Feb 2009 02:20:42 +1100 (EST)
-Date: Sat, 14 Feb 2009 10:20:39 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc, ftrace: use create_branch lib function
-In-Reply-To: <1234619366.10265.3.camel@localhost>
-Message-ID: <alpine.DEB.1.10.0902141019200.27713@gandalf.stny.rr.com>
-References: <20090213150055.947823726@goodmis.org>
-	<20090213150147.180922180@goodmis.org>
-	<1234619366.10265.3.camel@localhost>
+Return-Path: <jwboyer@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 16364DDDA1
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Feb 2009 06:47:54 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so775053yxb.39
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2009 11:47:52 -0800 (PST)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Sat, 14 Feb 2009 14:47:32 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: 4xx tree updates
+Message-ID: <20090214194732.GA30783@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi All,
 
+I've been rather busy lately and have unfortunately gotten behind on
+updating the 4xx tree.  I spent some time this weekend looking over
+the patches queued up, and fortunately there were not too many.  I'm
+doing some build testing of these 4 today:
 
-On Sun, 15 Feb 2009, Michael Ellerman wrote:
-> >  
-> >  	/* if (link) set op to 'bl' else 'b' */
-> > -	op = 0x48000000 | (link ? 1 : 0);
-> > -	op |= (ftrace_calc_offset(ip, addr) & 0x03fffffc);
-> > +	op = create_branch((unsigned int *)ip, addr, link ? 1 : 0);
-> 
-> If I was feeling nit-picky I'd say you should use:
-> 
-> op = create_branch((unsigned int *)ip, addr, link ? BRANCH_SET_LINK : 0);
-> 
-> 
-> But admittedly we're unlikely to ever change the flag handling, so it's
-> probably not worth the effort of a respin (or this email :).
+commit 6c7120902305b3a21460cd2f0f917a39307df566
+Author: Madhulika Madishetty <mmadishetty@amcc.com>
 
-Not worth the effort of a respin, I agree.
+    AMCC PPC 460SX redwood SoC platform initial framework
 
-But it would be worth the effort of a clean up patch ;-)
+commit 41b6a085e48d0d9e1200946755f49f31dd930137
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Not for "oh this flag might change", but for reviewers looking at the
-code and knowing exactly what that '1' means.
+    powerpc/4xx: Enable PCI domains on 4xx
 
--- Steve
+commit 018f76ec516c09a5381e517d0739d377a60ec0d5
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+    powerpc/4xx: Add missing USB and i2c devices to Canyonlands
+
+commit e12401222f749c37277a313d631dc024bbfd3b00
+Author: Yuri Tikhonov <yur@emcraft.com>
+
+    powerpc/44x: Support for 256KB PAGE_SIZE
+
+Barring any unforseen issues with these, I'll push them to my
+next branch tomorrow and ask Ben to pull them shortly thereafter.
+
+If I've missed any patches that should be headed for 2.6.30, please
+let me know!
+
+josh
