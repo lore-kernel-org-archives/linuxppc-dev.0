@@ -1,18 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id D962DDDD1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2009 00:41:21 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LYhFB-00010Z-B4
-	for linuxppc-dev@ozlabs.org; Sun, 15 Feb 2009 05:41:14 -0800
-Message-ID: <22022709.post@talk.nabble.com>
-Date: Sun, 15 Feb 2009 05:41:13 -0800 (PST)
-From: Felix Radensky <felix@embedded-sol.com>
-To: linuxppc-dev@ozlabs.org
-Subject: The state of Serial Rapid IO on MPC8548
+Return-Path: <jwboyer@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id 91DF4DDDA0
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2009 01:59:12 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id d14so867904and.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Feb 2009 06:59:11 -0800 (PST)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Sun, 15 Feb 2009 09:58:54 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Felix Radensky <felix@embedded-sol.com>
+Subject: Re: 4xx tree updates
+Message-ID: <20090215145854.GB30783@zod.rchland.ibm.com>
+References: <20090214194732.GA30783@zod.rchland.ibm.com>
+	<22022614.post@talk.nabble.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <22022614.post@talk.nabble.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, Feb 15, 2009 at 05:31:40AM -0800, Felix Radensky wrote:
+>What about 4xx  SPI driver ? Is it planned for inclusion in 2.6.30 ?
 
-Hi
- 
-I've noticed that in 2.6.29-rc5 Serial Rapid IO is only available
-for 86xx processors. There's also no Freescale BSP for 8548.
-What is the best source of SRIO driver for this CPU ? Can I
-simply enable SRIO support in mainline kernel for 85xx and hope
-it will work ?
+I really hope so.  I've Acked it twice now I think.  However, that needs
+to go in through the SPI tree, which isn't mine.
 
-Thanks.
-
-Felix.
--- 
-View this message in context: http://www.nabble.com/The-state-of-Serial-Rapid-IO-on-MPC8548-tp22022709p22022709.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+josh
