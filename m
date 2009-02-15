@@ -1,25 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8B213DDDA1
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Feb 2009 11:20:17 +1100 (EST)
-Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as possible
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090214220326.GA5200@elte.hu>
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
-	<20090204150835.GA30027@oksana.dev.rtsoft.ru>
-	<20090204212612.GN22608@elte.hu>
-	<20090214195702.GB1241@uranus.ravnborg.org>
-	<20090214220326.GA5200@elte.hu>
-Content-Type: text/plain
-Date: Sun, 15 Feb 2009 11:19:56 +1100
-Message-Id: <1234657196.26036.86.camel@pasglop>
+Return-Path: <gknispel@proformatique.com>
+Date: Sun, 15 Feb 2009 05:50:40 +0100
+From: Guillaume Knispel <gknispel@proformatique.com>
+To: Linuxppc-dev@ozlabs.org
+Subject: OpenPIC / CPM2 PIC and cascading interrupt priorities
+Message-ID: <20090215055040.41672e36@xilun.lan.proformatique.com>
 Mime-Version: 1.0
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,16 +15,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2009-02-14 at 23:03 +0100, Ingo Molnar wrote:
-> 
-> So the question is: even with FRAME_POINTERS disabled on PPC, is 
-> __builtin_return_address(1)/(2) reliable, and is save_stack_trace() fast? (i.e.
-> can it walk down the stack frame efficiently, or does it have to scan the full
-> kernel stack) I.e. does PPC have all the material advantages of frame pointers?
+Hi,
 
-Yes, we do. We effectively have frame pointers in fact, they may only be
-omitted in leaf functions but then gcc __builtin_return_address() knows
-how to handle that afaik.
+I'm programming a board with an MPC8555E on which an external chip can
+raise low priority interrupts through the port C of the CPM2. Under
+nominal conditions it generates few interrupts, but they take a
+relatively long time to be processed.
+
+I also use some CPM2 controllers in such a way that their interrupts
+need to be served with a short latency. At first I thought that this
+would not be a problem if IRQF_DISABLED is not set for the port C ISR,
+because the CPM2 controller interrupt has a higher priority.
+
+But the thing is: the primary interrupt controller of the MPC8555E is
+an OpenPIC and the CPM2 PIC is cascaded behind.
+
+=46rom the behavior I observe and if I understand both Linux code and the
+MPC8555E manual correctly, if the CPM2 PIC is idle and then a port C
+interrupt arrives on it, it will put its code in SIVEC and send a
+signal to the OpenPIC, which will assert the interrupt signal of the
+core, then some assembly language magic happens and eventually do_IRQ()
+is called with external interrupts masked, which calls *handle_irq
+which in this case is cpm2_cascade() which is consistently written in
+every platform where it exists as :
+
+static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
+{
+	int cascade_irq;
+
+	while ((cascade_irq =3D cpm2_get_irq()) >=3D 0)
+		generic_handle_irq(cascade_irq);
+
+	desc->chip->eoi(irq);
+}
+
+cascade_irq will be retrieved thanks to SIVEC and this time the flow
+handler will be handle_edge_irq (set in cpm2_set_irq_type() ) which
+will ack it (to the CPM2 PIC) and call the ISR (IRQF_DISABLED not set).
+
+Now if the CPM2 controller interrupt occurs while the port C ISR is
+running (at a higher CPM2 PIC priority), the CPM2 PIC will tell the
+OpenPIC. But the OpenPIC won't interrupt the core again because for the
+OpenPIC this is just yet another CPM2 interrupt, the same that the one
+being handled, which has not yet been cleared by the ->eio() call at the
+end of cpm2_cascade.
+
+So, IRQF_DISABLED or not IRQF_DISABLED, the port C ISR won't be
+interrupted by the controller ISR.
+
+Now the big question: does anybody think it could be interesting to
+reorganize the Linux irq layers such as the priorities of cascaded
+interrupts are respected (that would need some changes in the
+architecture independent code), or is this a stupid idea and I should
+just use a tasklet?
 
 Cheers,
-Ben.
+Guillaume KNISPEL
