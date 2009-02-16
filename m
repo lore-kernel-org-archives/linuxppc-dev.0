@@ -1,21 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC7D5DDDA1
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 05:50:35 +1100 (EST)
-Message-Id: <8330CA5E-0F3B-49D5-AB55-500CD37739C1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20090216181241.GB18069@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: open-pic device tree node and subnodes for additional
-	functionality?
-Date: Mon, 16 Feb 2009 12:50:27 -0600
-References: <59D5800B-309D-4A4E-AD1F-CEC8E2D1BE5B@kernel.crashing.org>
-	<20090216181241.GB18069@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <sam@ravnborg.org>
+Received: from pqueueb.post.tele.dk (pqueueb.post.tele.dk [193.162.153.10])
+	by ozlabs.org (Postfix) with ESMTP id 6A3EADDE22
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 07:03:54 +1100 (EST)
+Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
+	by pqueueb.post.tele.dk (Postfix) with ESMTP id 928B381AA
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2009 21:03:38 +0100 (CET)
+Date: Mon, 16 Feb 2009 21:04:15 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as possible
+Message-ID: <20090216200415.GA16721@uranus.ravnborg.org>
+References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
+	<20090204150835.GA30027@oksana.dev.rtsoft.ru>
+	<20090204212612.GN22608@elte.hu>
+	<20090214195702.GB1241@uranus.ravnborg.org>
+	<20090216142001.GA27869@oksana.dev.rtsoft.ru>
+	<20090216145317.GA3616@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090216145317.GA3616@oksana.dev.rtsoft.ru>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@ozlabs.org,
+	Steven Rostedt <srostedt@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,45 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> 
+> There are few arches that have "auto detection" of CROSS_COMPILE
+> variable: mips, m68k, parisc, xtensa, h8300 and blackfin.
+> 
+> So `normal' arches don't have any chance to overwrite the flags
+> because of the few offenders above. ;-)
 
-On Feb 16, 2009, at 12:12 PM, Scott Wood wrote:
+We also have archs where we add options to gcc that may
+impact for example -fno-stack-protector.
+We had a bug in x86 in this area for a while.
 
-> On Mon, Feb 16, 2009 at 10:58:42AM -0600, Kumar Gala wrote:
->> On Freescale open-pic controllers we have a number of additional
->> features not spec'd per openpic.  (additional timers, perf mon, PCIe
->> msi, message interrupts, ...).  The problem is how to identify these
->> features in the device tree.
->
-> How about adding compatible = "fsl,CHIP-mpic", "fsl,mpic" (or  
-> something
-> similar) to the mpic node?
->
->> For example we have:
->>
->>                msi@41600 {
->>                        compatible = "fsl,mpc8572-msi", "fsl,mpic- 
->> msi";
->>                        reg = <0x41600 0x80>;
->>                        msi-available-ranges = <0 0x100>;
->>                        interrupts = <
->>                                0xe0 0
->>                                0xe1 0
->>                                0xe2 0
->>                                0xe3 0
->>                                0xe4 0
->>                                0xe5 0
->>                                0xe6 0
->>                                0xe7 0>;
->>                        interrupt-parent = <&mpic>;
->>                };
->
-> How much of that node's content is going to differ from one Freescale
-> MPIC to another?
+So the only sane thing is to only add the most generic options to
+KBUILD_CFLAGS before we include the arch specific part.
+And we can then add the conditional options later - like
+the KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+in this case.
 
-For MSI I doubt any.  I think on some parts we might have two (or  
-more) groups of MSIs.
+We learned a few lessons in this area over time as your
+history digging also showed.
 
-However I want to be able to handle timers and the slightly more  
-generic message interrupts.
-
-- k
+	Sam
