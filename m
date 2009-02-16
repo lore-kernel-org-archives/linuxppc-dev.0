@@ -1,16 +1,20 @@
-Return-Path: <david.jander@protonic.nl>
-From: David Jander <david.jander@protonic.nl>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: MPC5121e, MBX driver, pvr.ko ...
-Date: Mon, 16 Feb 2009 09:40:46 +0100
-References: <200902060824.06851.david.jander@protonic.nl>
-	<20090206191710.C16B78322908@gemini.denx.de>
-In-Reply-To: <20090206191710.C16B78322908@gemini.denx.de>
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 782ABDDE0A
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2009 19:41:11 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 4xx tree updates
+Date: Mon, 16 Feb 2009 09:30:07 +0100
+References: <20090214194732.GA30783@zod.rchland.ibm.com>
+	<22022614.post@talk.nabble.com>
+	<20090215145854.GB30783@zod.rchland.ibm.com>
+In-Reply-To: <20090215145854.GB30783@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200902160940.46783.david.jander@protonic.nl>
-Cc: Linuxppc-dev <Linuxppc-dev@ozlabs.org>, John Rigby <jrigby@freescale.com>
+Message-Id: <200902160930.07203.sr@denx.de>
+Cc: david-b@pacbell.net, Felix Radensky <felix@embedded-sol.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,45 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 06 February 2009 20:17:10 Wolfgang Denk wrote:
-> Dear David,
+On Sunday 15 February 2009, Josh Boyer wrote:
+> On Sun, Feb 15, 2009 at 05:31:40AM -0800, Felix Radensky wrote:
+> >What about 4xx  SPI driver ? Is it planned for inclusion in 2.6.30 ?
 >
-> In message <200902060824.06851.david.jander@protonic.nl> you wrote:
-> > I decided to try out Application Note AN3793 from Freescale (3D Graphics
-> > on the ADS512101 Board Using OpenGL ES).
-> >
-> > I started trying to load the provided (binary!) kernel modules into our
-> > kernel, but I am geeting errors inserting the modules using
->
-> The binary kernel modules are a mess. Not  only  they  are  a  pretty
-> clear  GPL license violation (and I wonder what Freescale is going to
-> do to sort this out), but it effectively always locks you down to the
+> I really hope so.  I've Acked it twice now I think.  However, that needs
+> to go in through the SPI tree, which isn't mine.
 
-Sorry if this starts to get a little off-topic to this list...
-IANAL, so I won't argue about a binary-driver being by definition a 
-GPL-violation or not, or if those "gray areas" that Linus mentioned in the 
-past, apply in this case.
-Besides that, do you have another reason why this is a clear GPL-violation?
+I didn't receive any feedback on my lastest version (v6). So I'm guessing that 
+it's queued in David's patches for 2.6.30.
 
-> specific LTIB kernel version (and probably even to  a  specific  DTS)
-> they were built against. Open source? Forget it.
-
-I never expected this driver to be Open-Source. I always supposed that we'd 
-never be able to use the MBX because of this, and use the AXE instead (One of 
-our applications needs some form of hardware accelerated image-scaling). But 
-since I saw that application note, I couldn't resist trying it out, just to 
-see how hard it is to actually use it. The point is made: Leaving aside the 
-possible legal implications of the driver's existance, it still is an 
-undoable job to get this working in a maintainable fashion.
-What could Freescale possibly do about this?... beats me. I don't know about 
-the legal implications (again, IANAL), but what if there was a driver like 
-NVidia's video drivers (i.e. binary object with a re-compileable shell around 
-it to adapt it to other kernels)? Otherwise, I guess Freescale can just as 
-well stop making the MPC5121e and just make MPC5123's instead (which 
-continues to be an awesome chip nevertheless) :-)
+David, is this correct?
 
 Best regards,
-
--- 
-David Jander
-Protonic Holland.
+Stefan
