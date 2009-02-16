@@ -1,19 +1,18 @@
 Return-Path: <arun.coral@gmail.com>
-Received: from po-out-1718.google.com (po-out-1718.google.com [72.14.252.155])
-	by ozlabs.org (Postfix) with ESMTP id 8E995DDD1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2009 20:13:37 +1100 (EST)
-Received: by po-out-1718.google.com with SMTP id b23so7167550poe.4
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2009 01:13:34 -0800 (PST)
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
+	by ozlabs.org (Postfix) with ESMTP id 6B502DDD01
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2009 20:19:48 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id l9so1380850rvb.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2009 01:19:46 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <bb70857e0902160048h69d534ecq6b54c2710d0c2b70@mail.gmail.com>
+In-Reply-To: <bb70857e0902130327u27fe4a4lcf743e08e66571c6@mail.gmail.com>
 References: <bb70857e0902130327u27fe4a4lcf743e08e66571c6@mail.gmail.com>
-	<bb70857e0902160048h69d534ecq6b54c2710d0c2b70@mail.gmail.com>
-Date: Mon, 16 Feb 2009 14:43:34 +0530
-Message-ID: <bb70857e0902160113k2004fbbag27c0346a08bb2d8c@mail.gmail.com>
+Date: Mon, 16 Feb 2009 14:49:46 +0530
+Message-ID: <bb70857e0902160119m318eaee6l39066c3b63e8a960@mail.gmail.com>
 Subject: registered SORDIMM MT9HTF6472RHY-667F1
 From: arun sharma <arun.coral@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=000e0cd13a16e41277046305996d
+Content-Type: multipart/alternative; boundary=000e0cd1d5060e8702046305b026
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,7 +22,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---000e0cd13a16e41277046305996d
+--000e0cd1d5060e8702046305b026
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
@@ -112,12 +111,12 @@ DRAM test passed.
 
 regards
 
---000e0cd13a16e41277046305996d
+--000e0cd1d5060e8702046305b026
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-<br><br><div class="gmail_quote"><div><div class="Wj3C7c"><div class="gmail_quote"><br><br>i am using mpc8360 emds board.<br>it is working fine with socdimm.<br>
-<br>but with sordimm not working.<br><br>there is minor change i have done it for sordimm as follows for testing only.<br>/* sdram_cfg[3] = RD_EN - registered DIMM enable */<br>
+<br><br><div class="gmail_quote">i am using mpc8360 emds board.<br>it is working fine with socdimm.<br><br>but with sordimm not working.<br><br>there is minor change i have done it for sordimm as follows for testing only.<br>
+/* sdram_cfg[3] = RD_EN - registered DIMM enable */<br>
 // if (spd.mod_attr &amp; 
 0x02) vivek<br>// {<br>printf(&quot;sdramcfg[3] registered DIMM\n&quot;);<br>sdram_cfg |= 
 SDRAM_CFG_RD_EN;<br>// }<br><br><br><br>//#if defined(CONFIG_DDR_2T_TIMING) 
@@ -145,6 +144,5 @@ on, 198 MHz)<br>Testing DRAM from 0x00000000 to 0x00200000<br>DRAM test phase
 1:<br>write done<br>DRAM test phase 2:<br>DRAM test 
 passed.<br><br>regards<br><br>
 </div><br>
-</div></div></div><br>
 
---000e0cd13a16e41277046305996d--
+--000e0cd1d5060e8702046305b026--
