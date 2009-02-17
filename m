@@ -1,27 +1,23 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 63C1ADDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 03:51:43 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n1HGm53S023522
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 09:48:05 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n1HGpa29097268
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 09:51:38 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n1HGpZsd007305
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 09:51:36 -0700
-Message-Id: <200902171651.n1HGpYMs007211@d03av02.boulder.ibm.com>
-Subject: [PATCH 1/1] powerpc: Fix partition migration hang under load
-To: benh@kernel.crashing.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Tue, 17 Feb 2009 10:49:50 -0600
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 18435DDDA5
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 04:15:18 +1100 (EST)
+Message-ID: <499AF08B.6010702@freescale.com>
+Date: Tue, 17 Feb 2009 11:14:51 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Vijay Nikam <vijay.t.nikam@gmail.com>
+Subject: Re: Regarding irq_of_parse_and_map
+References: <f234e2140902160355p148c99d1qc2e5b6f6ae9a716f@mail.gmail.com>	
+	<20090216180857.GA18069@ld0162-tx32.am.freescale.net>
+	<f234e2140902170341y31662e8fla8a8cf87473ed419@mail.gmail.com>
+In-Reply-To: <f234e2140902170341y31662e8fla8a8cf87473ed419@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,71 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Vijay Nikam wrote:
+> I added the gpio node as follows to mpc8313erdb.dts;
+> 
+> gpio@c00 {
+> 	linux,phandle = <c00>;
 
-While testing partition migration with heavy CPU load using
-shared processors, it was observed that sometimes the migration
-would never complete and would appear to hang. Currently, the
-migration code assumes that if H_SUCCESS is returned from the H_JOIN
-then the migration is complete and the processor is waking up on
-the target system. If there was an outstanding PROD to the processor
-when the H_JOIN is called, however, it will return H_SUCCESS on the source
-system, causing the migration to hang, or in some scenarios cause
-the kernel to crash on the complete call waking the caller
-of rtas_percpu_suspend_me. Fix this by calling H_JOIN multiple times
-if necessary during the migration.
+Don't specify this explicitly.  Please base new development off of the 
+device tree that is in upstream Linux, not the very old tree in your BSP.
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+> 	device_type = "gpio";
 
- arch/powerpc/kernel/rtas.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+No device_type.
 
-diff -puN arch/powerpc/kernel/rtas.c~powerpc_migration_hang_fix arch/powerpc/kernel/rtas.c
---- linux-2.6/arch/powerpc/kernel/rtas.c~powerpc_migration_hang_fix	2009-01-29 17:19:58.000000000 -0600
-+++ linux-2.6-bjking1/arch/powerpc/kernel/rtas.c	2009-01-29 17:19:58.000000000 -0600
-@@ -46,6 +46,7 @@ EXPORT_SYMBOL(rtas);
- 
- struct rtas_suspend_me_data {
- 	atomic_t working; /* number of cpus accessing this struct */
-+	atomic_t done;
- 	int token; /* ibm,suspend-me */
- 	int error;
- 	struct completion *complete; /* wait on this until working == 0 */
-@@ -689,7 +690,7 @@ static int ibm_suspend_me_token = RTAS_U
- #ifdef CONFIG_PPC_PSERIES
- static void rtas_percpu_suspend_me(void *info)
- {
--	long rc;
-+	long rc = H_SUCCESS;
- 	unsigned long msr_save;
- 	int cpu;
- 	struct rtas_suspend_me_data *data =
-@@ -701,7 +702,8 @@ static void rtas_percpu_suspend_me(void 
- 	msr_save = mfmsr();
- 	mtmsr(msr_save & ~(MSR_EE));
- 
--	rc = plpar_hcall_norets(H_JOIN);
-+	while (rc == H_SUCCESS && !atomic_read(&data->done))
-+		rc = plpar_hcall_norets(H_JOIN);
- 
- 	mtmsr(msr_save);
- 
-@@ -724,6 +726,9 @@ static void rtas_percpu_suspend_me(void 
- 		       smp_processor_id(), rc);
- 		data->error = rc;
- 	}
-+
-+	atomic_set(&data->done, 1);
-+
- 	/* This cpu did the suspend or got an error; in either case,
- 	 * we need to prod all other other cpus out of join state.
- 	 * Extra prods are harmless.
-@@ -766,6 +771,7 @@ static int rtas_ibm_suspend_me(struct rt
- 	}
- 
- 	atomic_set(&data.working, 0);
-+	atomic_set(&data.done, 0);
- 	data.token = rtas_token("ibm,suspend-me");
- 	data.error = 0;
- 	data.complete = &done;
-_
+> The only thing I need to know what should I write at 'compatible' tag
+> ? ? ? the compatible tag format is "manufacturer,model" the
+> manufacturer is 'fsl' i.e. I think freescale but the model, as it is
+> the model number where I can find this model ? ? ? Please let me know
+> ... thanks ...
+
+compatible = "fsl,mpc8313-gpio", "fsl,mpc8349-gpio";
+
+> Also I would like to ask if the above device node is written according
+> to bindings ... I think it should be right as I referred
+> 'bootingwithout-of.txt' ... but please correct me if I am worng ? ? ?
+
+See also Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt.
+
+Also note that current Linux has a driver in 
+arch/powerpc/sysdev/mpc8xxx_gpio.c.
+
+-Scott
