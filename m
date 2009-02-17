@@ -1,29 +1,14 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6D511DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 05:29:00 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e38.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n1HIR7sx030921
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 11:27:07 -0700
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n1HISRTj210654
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 11:28:57 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n1HI8Wkj032229
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 11:08:32 -0700
-Message-ID: <499AFD1E.9010207@austin.ibm.com>
-Date: Tue, 17 Feb 2009 12:08:30 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
-MIME-Version: 1.0
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 525A8DDD1C
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 05:51:30 +1100 (EST)
+Date: Tue, 17 Feb 2009 12:51:22 -0600
+From: Nathan Lynch <ntl@pobox.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Cleanup hot_add_scn_to_nid
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: dave Hansen <dave@linux.vnet.ibm.com>
+Subject: [RFC/PATCH] powerpc: provide APIs for validating and updating DABR
+Message-ID: <20090217125122.5bbf713b@thinkcentre.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,214 +18,163 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch reworks the hot_add_scn_to_nid and its supporting functions
-to make them easier to understand.  There are no functional changes in
-this patch and has been tested on machine with memory represented in the
-device tree as memory nodes and in the ibm,dynamic-memory property.
+A checkpointed task image may specify a value for the DABR (Data
+Access Breakpoint Register).  The restart code needs to validate this
+value before making any changes to the current task.
 
-My previous patch that introduced support for hotplug memory add on 
-systems whose memory was represented by the ibm,dynamic-memory property
-of the device tree only left the code more unintelligible.  This
-will hopefully makes things easier to understand.
+ptrace_set_debugreg encapsulates the bounds checking and platform
+dependencies of programming the DABR.  Split this into "validate"
+(debugreg_valid) and "update" (debugreg_update) functions, and make
+them available for use outside of the ptrace code.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+Also ptrace_set_debugreg has extern linkage, but no users outside of
+ptrace.c.  Make it static.
+
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
 ---
+ arch/powerpc/include/asm/ptrace.h |    6 +++
+ arch/powerpc/kernel/ptrace.c      |   68 ++++++++++++++++++++----------------
+ 2 files changed, 44 insertions(+), 30 deletions(-)
 
- arch/powerpc/mm/numa.c |  131 +++++++++++++++++++++++++------------------------
- 1 file changed, 69 insertions(+), 62 deletions(-)
+Is something like this okay to carry in the checkpoint/restart patches?
 
-Index: linux-2.6/arch/powerpc/mm/numa.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/mm/numa.c	2009-02-11 10:58:20.000000000 -0600
-+++ linux-2.6/arch/powerpc/mm/numa.c	2009-02-17 10:52:16.000000000 -0600
-@@ -1040,57 +1040,32 @@
+
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index c9c678f..1b3a5f0 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -81,6 +81,8 @@ struct pt_regs {
  
- #ifdef CONFIG_MEMORY_HOTPLUG
- /*
-- * Validate the node associated with the memory section we are
-- * trying to add.
-- */
--int valid_hot_add_scn(int *nid, unsigned long start, u32 lmb_size,
--		      unsigned long scn_addr)
--{
--	nodemask_t nodes;
--
--	if (*nid < 0 || !node_online(*nid))
--		*nid = any_online_node(NODE_MASK_ALL);
--
--	if ((scn_addr >= start) && (scn_addr < (start + lmb_size))) {
--		nodes_setall(nodes);
--		while (NODE_DATA(*nid)->node_spanned_pages == 0) {
--			node_clear(*nid, nodes);
--			*nid = any_online_node(nodes);
--		}
--
--		return 1;
--	}
--
--	return 0;
--}
--
--/*
-- * Find the node associated with a hot added memory section represented
-- * by the ibm,dynamic-reconfiguration-memory node.
-+ * Find the node associated with a hot added memory section for
-+ * memory represented in the device tree by the property
-+ * ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory.
-  */
- static int hot_add_drconf_scn_to_nid(struct device_node *memory,
- 				     unsigned long scn_addr)
+ #ifndef __ASSEMBLY__
+ 
++#include <linux/types.h>
++
+ #define instruction_pointer(regs) ((regs)->nip)
+ #define user_stack_pointer(regs) ((regs)->gpr[1])
+ #define regs_return_value(regs) ((regs)->gpr[3])
+@@ -138,6 +140,10 @@ do {									      \
+ extern void user_enable_single_step(struct task_struct *);
+ extern void user_disable_single_step(struct task_struct *);
+ 
++/* for reprogramming DABR/DAC during restart of a checkpointed task */
++extern bool debugreg_valid(unsigned long val);
++extern void debugreg_update(struct task_struct *task, unsigned long val);
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 3635be6..60259c6 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -735,22 +735,13 @@ void user_disable_single_step(struct task_struct *task)
+ 	clear_tsk_thread_flag(task, TIF_SINGLESTEP);
+ }
+ 
+-int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
+-			       unsigned long data)
++bool debugreg_valid(unsigned long val)
  {
- 	const u32 *dm;
--	unsigned int n, rc;
-+	unsigned int drconf_cell_cnt, rc;
- 	unsigned long lmb_size;
--	int default_nid = any_online_node(NODE_MASK_ALL);
--	int nid;
- 	struct assoc_arrays aa;
-+	int nid = -1;
+-	/* For ppc64 we support one DABR and no IABR's at the moment (ppc64).
+-	 *  For embedded processors we support one DAC and no IAC's at the
+-	 *  moment.
+-	 */
+-	if (addr > 0)
+-		return -EINVAL;
+-
+ 	/* The bottom 3 bits in dabr are flags */
+-	if ((data & ~0x7UL) >= TASK_SIZE)
+-		return -EIO;
++	if ((val & ~0x7UL) >= TASK_SIZE)
++		return false;
  
--	n = of_get_drconf_memory(memory, &dm);
--	if (!n)
--		return default_nid;;
-+	drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
-+	if (!drconf_cell_cnt)
-+		return -1;
+ #ifndef CONFIG_BOOKE
+-
+ 	/* For processors using DABR (i.e. 970), the bottom 3 bits are flags.
+ 	 *  It was assumed, on previous implementations, that 3 bits were
+ 	 *  passed together with the data address, fitting the design of the
+@@ -764,47 +755,64 @@ int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
+ 	 */
  
- 	lmb_size = of_get_lmb_size(memory);
- 	if (!lmb_size)
--		return default_nid;
-+		return -1;
+ 	/* Ensure breakpoint translation bit is set */
+-	if (data && !(data & DABR_TRANSLATION))
+-		return -EIO;
+-
+-	/* Move contents to the DABR register */
+-	task->thread.dabr = data;
+-
+-#endif
+-#if defined(CONFIG_BOOKE)
+-
++	if (val && !(val & DABR_TRANSLATION))
++		return false;
++#else
+ 	/* As described above, it was assumed 3 bits were passed with the data
+ 	 *  address, but we will assume only the mode bits will be passed
+ 	 *  as to not cause alignment restrictions for DAC-based processors.
+ 	 */
  
- 	rc = of_get_assoc_arrays(memory, &aa);
- 	if (rc)
--		return default_nid;
-+		return -1;
- 
--	for (; n != 0; --n) {
-+	for (; drconf_cell_cnt != 0; --drconf_cell_cnt) {
- 		struct of_drconf_cell drmem;
- 
- 		read_drconf_cell(&drmem, &dm);
-@@ -1101,15 +1076,57 @@
- 		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
- 			continue;
- 
-+		if ((scn_addr < drmem.base_addr)
-+		    || (scn_addr >= (drmem.base_addr + lmb_size)))
-+			continue;
-+
- 		nid = of_drconf_to_nid_single(&drmem, &aa);
-+		break;
-+	}
-+
-+	return nid;
++	/* Read or Write bits must be set */
++	if (!(val & 0x3UL))
++		return -EINVAL;
++#endif
++	return true;
 +}
 +
-+/*
-+ * Find the node associated with a hot added memory section for memory
-+ * represented in the device tree as a node (i.e. memory@XXXX) for
-+ * each lmb.
-+ */
-+int hot_add_node_scn_to_nid(unsigned long scn_addr)
++void debugreg_update(struct task_struct *task, unsigned long val)
 +{
-+	struct device_node *memory = NULL;
-+	int nid = -1;
-+
-+	while ((memory = of_find_node_by_type(memory, "memory")) != NULL) {
-+		unsigned long start, size;
-+		int ranges;
-+		const unsigned int *memcell_buf;
-+		unsigned int len;
++#ifndef CONFIG_BOOKE
++	task->thread.dabr = val;
++#else
+ 	/* DAC's hold the whole address without any mode flags */
+-	task->thread.dabr = data & ~0x3UL;
++	task->thread.dabr = val & ~0x3UL;
  
--		if (valid_hot_add_scn(&nid, drmem.base_addr, lmb_size,
--				      scn_addr))
--			return nid;
-+		memcell_buf = of_get_property(memory, "reg", &len);
-+		if (!memcell_buf || len <= 0)
-+			continue;
-+
-+		/* ranges in cell */
-+		ranges = (len >> 2) / (n_mem_addr_cells + n_mem_size_cells);
-+
-+		while (ranges--) {
-+			start = read_n_cells(n_mem_addr_cells, &memcell_buf);
-+			size = read_n_cells(n_mem_size_cells, &memcell_buf);
-+
-+			if ((scn_addr < start) || (scn_addr >= (start + size)))
-+				continue;
-+
-+			nid = of_node_to_nid_single(memory);
-+			break;
-+		}
-+
-+		of_node_put(memory);
-+		if (nid >= 0)
-+			break;
+ 	if (task->thread.dabr == 0) {
+ 		task->thread.dbcr0 &= ~(DBSR_DAC1R | DBSR_DAC1W | DBCR0_IDM);
+ 		task->thread.regs->msr &= ~MSR_DE;
+-		return 0;
  	}
  
--	BUG();	/* section address should be found above */
--	return 0;
-+	return nid;
+-	/* Read or Write bits must be set */
+-
+-	if (!(data & 0x3UL))
+-		return -EINVAL;
+-
+ 	/* Set the Internal Debugging flag (IDM bit 1) for the DBCR0
+ 	   register */
+ 	task->thread.dbcr0 = DBCR0_IDM;
+ 
+ 	/* Check for write and read flags and set DBCR0
+ 	   accordingly */
+-	if (data & 0x1UL)
++	if (val & 0x1UL)
+ 		task->thread.dbcr0 |= DBSR_DAC1R;
+-	if (data & 0x2UL)
++	if (val & 0x2UL)
+ 		task->thread.dbcr0 |= DBSR_DAC1W;
+ 
+ 	task->thread.regs->msr |= MSR_DE;
+ #endif
++}
++
++static int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
++			       unsigned long data)
++{
++	/* For ppc64 we support one DABR and no IABR's at the moment (ppc64).
++	 *  For embedded processors we support one DAC and no IAC's at the
++	 *  moment.
++	 */
++	if (addr > 0)
++		return -EINVAL;
++
++	if (!debugreg_valid(data))
++		return -EIO;
++
++	debugreg_update(task, data);
++
+ 	return 0;
  }
  
- /*
-@@ -1120,7 +1137,7 @@
- int hot_add_scn_to_nid(unsigned long scn_addr)
- {
- 	struct device_node *memory = NULL;
--	int nid;
-+	int nid, found = 0;
- 
- 	if (!numa_enabled || (min_common_depth < 0))
- 		return any_online_node(NODE_MASK_ALL);
-@@ -1129,35 +1146,25 @@
- 	if (memory) {
- 		nid = hot_add_drconf_scn_to_nid(memory, scn_addr);
- 		of_node_put(memory);
--		return nid;
-+	} else {
-+		nid = hot_add_node_scn_to_nid(scn_addr);
- 	}
- 
--	while ((memory = of_find_node_by_type(memory, "memory")) != NULL) {
--		unsigned long start, size;
--		int ranges;
--		const unsigned int *memcell_buf;
--		unsigned int len;
-+	if (nid < 0 || !node_online(nid))
-+		nid = any_online_node(NODE_MASK_ALL);
- 
--		memcell_buf = of_get_property(memory, "reg", &len);
--		if (!memcell_buf || len <= 0)
--			continue;
-+	if (NODE_DATA(nid)->node_spanned_pages)
-+		return nid;
- 
--		/* ranges in cell */
--		ranges = (len >> 2) / (n_mem_addr_cells + n_mem_size_cells);
--ha_new_range:
--		start = read_n_cells(n_mem_addr_cells, &memcell_buf);
--		size = read_n_cells(n_mem_size_cells, &memcell_buf);
--		nid = of_node_to_nid_single(memory);
--
--		if (valid_hot_add_scn(&nid, start, size, scn_addr)) {
--			of_node_put(memory);
--			return nid;
-+	for_each_online_node(nid) {
-+		if (NODE_DATA(nid)->node_spanned_pages) {
-+			found = 1;
-+			break;
- 		}
--
--		if (--ranges)		/* process all ranges in cell */
--			goto ha_new_range;
- 	}
--	BUG();	/* section address should be found above */
--	return 0;
-+
-+	BUG_ON(!found);
-+	return nid;
- }
-+
- #endif /* CONFIG_MEMORY_HOTPLUG */
+-- 
+1.6.0.6
