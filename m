@@ -1,22 +1,22 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id DE8BCDDE07
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 01:55:57 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 27so2860864wfd.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 06:55:56 -0800 (PST)
+Return-Path: <ben@fluff.org.uk>
+Received: from kira.home.fluff.org (aeryn.fluff.org.uk [87.194.8.8])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 548B0DDDB6
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 03:32:32 +1100 (EST)
+Date: Tue, 17 Feb 2009 16:31:21 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH RFC 0/13] FSL eSDHC support
+Message-ID: <20090217163121.GA15020@fluff.org.uk>
+References: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <20090217143251.GA1803@yoda.jdub.homelinux.org>
-References: <D728AD1FA2543948B89DE29C5BF4CD0716AC2DDE@bjmail1.bj.datangmobile.com>
-	<76C7F485-EF75-4B83-B673-564E6243C7C6@kernel.crashing.org>
-	<20090217143251.GA1803@yoda.jdub.homelinux.org>
-Date: Tue, 17 Feb 2009 22:55:55 +0800
-Message-ID: <2a27d3730902170655nea2ae17x7186c4d8325b3778@mail.gmail.com>
-Subject: Re: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.23)
-From: Li Yang <leoli@freescale.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, dayu@datangmobile.cn, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx,
+	Pierre Ossman <drzeus-sdhci@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 17, 2009 at 10:32 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> On Tue, Feb 17, 2009 at 08:12:33AM -0600, Kumar Gala wrote:
->>
->> On Feb 17, 2009, at 6:44 AM, <dayu@datangmobile.cn> <dayu@datangmobile.cn
->> > wrote:
->>
->>> From: Da Yu <dayu@datangmobile.cn>
->>> Date: Tue, 17 Feb 2009 19:58:20 +0800
->>> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC
->>> (2.6.23)
->>>
->>> Signed-off-by: Da Yu <dayu@datangmobile.cn>
->>> ---
->>
->> Please provide a bit more description as to why this fixes the issue.
->
-> Including whether it still applies to mainline, since your topic seems
-> to indicate it's for 2.6.23.  That is pretty old by now.
+On Fri, Feb 13, 2009 at 05:46:30PM +0300, Anton Vorontsov wrote:
+> Hi all,
+> 
+> Thanks for the comments on the previous version, here comes another
+> RFC...
+> 
+> Changes since the second RFC:
+> - Addressed all comments that were raised by Pierre Ossman.
+>   There were too many to mention them all, so here is the link:
+>   http://lkml.org/lkml/2009/2/6/320
+> 
+> Changes since the first RFC:
+> - Use of_iomap() in sdhci-of.c (suggested by Arnd Bergmann). Also added
+>   Arnd's Acked-by: line for the sdhci-of patch.
+> - Kconfig help text improved (thanks to Matt Sealey and M. Warner Losh).
+> - In "sdhci: Add quirk to suppress PIO interrupts during DMA transfers"
+>   patch: sdhci_init() now clears SDHCI_PIO_DISABLED flag, otherwise we
+>   won't disable PIO interrupts after suspend.
+> - New patch: "sdhci: Add type checking for IO memory accessors"
 
-The problem still exists in mainline.  But the patch doesn't seem to apply.
+It would be useful to know what Pierre thinks of these, I would like
+to update the sdhci-s3c binding before the next merge window.
 
-Dayu,
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-Could you re-spin the patch for the latest kernel?  Thanks.
-
-- Leo
+  'a smiley only costs 4 bytes'
