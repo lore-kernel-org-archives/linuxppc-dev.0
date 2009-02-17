@@ -1,24 +1,18 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EE3C0DDE00
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 23:51:16 +1100 (EST)
-Subject: Re: next-20090216: slqb
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <84144f020902170331m765c50d6xd792de14ac220b9d@mail.gmail.com>
-References: <20090216172016.f1d159a7.sfr@canb.auug.org.au>
-	<20090217005539.GA6292@x200.localdomain>
-	<20090217102733.GB26402@wotan.suse.de>
-	<84144f020902170331m765c50d6xd792de14ac220b9d@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 17 Feb 2009 13:48:15 +0100
-Message-Id: <1234874895.4744.98.camel@laptop>
-Mime-Version: 1.0
-Cc: Nick Piggin <npiggin@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 40D41DDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 00:21:17 +1100 (EST)
+Received: from vixen.sonytel.be (piraat.sonytel.be [43.221.60.197])
+	by vervifontaine.sonycom.com (Postfix) with ESMTP id A270D58ABD
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 14:21:15 +0100 (MET)
+Date: Tue, 17 Feb 2009 14:21:15 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: setup_64.c:450: warning: format '%lx' expects type 'long unsigned int'
+Message-ID: <alpine.LRH.2.00.0902171418050.8852@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-02-17 at 13:31 +0200, Pekka Enberg wrote:
-> On Tue, Feb 17, 2009 at 03:55:40AM +0300, Alexey Dobriyan wrote:
-> >> FYI, on powerpc-64-smp-n-debug-n:
-> >>
-> >> mm/slqb.c: In function '__slab_free':
-> >> mm/slqb.c:1648: error: implicit declaration of function 'slab_free_to_remote'
-> >> mm/slqb.c: In function 'kmem_cache_open':
-> >> mm/slqb.c:2174: error: implicit declaration of function 'kmem_cache_dyn_array_free'
-> >> mm/slqb.c:2175: warning: label 'error_cpu_array' defined but not used
-> >> mm/slqb.c: In function 'kmem_cache_destroy':
-> >> mm/slqb.c:2294: error: implicit declaration of function 'claim_remote_free_list'
-> >> mm/slqb.c: In function 'kmem_cache_reap_percpu':
-> >> mm/slqb.c:2547: error: implicit declaration of function 'flush_remote_free_cache'
-> >> mm/slqb.c: In function 'kmem_cache_init':
-> >> mm/slqb.c:2783: error: 'per_cpu__kmem_cpu_nodes' undeclared (first use in this function)
-> >> mm/slqb.c:2783: error: (Each undeclared identifier is reported only once
-> >> mm/slqb.c:2783: error: for each function it appears in.)
-> >> mm/slqb.c:2784: error: 'kmem_cpu_cache' undeclared (first use in this function)
-> 
-> On Tue, Feb 17, 2009 at 12:27 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > Hmm, I guess this (SMP=n && NUMA=y) must be a valid config on ppc if
-> > SLQB is the only one tripping on it, so I'll look at code to fix tihs
-> > up.
-> 
-> It would be nice if one of the ppc devs confirmed this, though. Other
-> architectures don't seem to support the combination.
+With CONFIG_RELOCATABLE=y, I get for PS3:
 
-I get a strong sense of deja-vu
+| arch/powerpc/kernel/setup_64.c:450: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'phys_addr_t'
 
-                           Subject: 
-next Feb 10: mm/slqb build break
+as phys_addr_t is u64 on ppc64, while u64 is now `unsigned long long'.
 
-FWIW, I don't think NUMA without SMP makes any kind of sense and the
-arch Kconfig should be fixed.
+Unfortunately just changing the format string is not sufficient, due to:
+
+| #if defined(CONFIG_RELOCATABLE)
+| #ifndef __ASSEMBLY__
+| 
+| extern phys_addr_t memstart_addr;
+| extern phys_addr_t kernstart_addr;
+| #endif
+| #define PHYSICAL_START  kernstart_addr
+| #else
+| #define PHYSICAL_START  ASM_CONST(CONFIG_PHYSICAL_START)
+| #endif
+
+and ASM_CONST() appends "UL" to the constant.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
