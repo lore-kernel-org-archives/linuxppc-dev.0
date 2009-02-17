@@ -1,18 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 40D41DDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 00:21:17 +1100 (EST)
-Received: from vixen.sonytel.be (piraat.sonytel.be [43.221.60.197])
-	by vervifontaine.sonycom.com (Postfix) with ESMTP id A270D58ABD
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 14:21:15 +0100 (MET)
-Date: Tue, 17 Feb 2009 14:21:15 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: setup_64.c:450: warning: format '%lx' expects type 'long unsigned int'
-Message-ID: <alpine.LRH.2.00.0902171418050.8852@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 48648DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 01:12:51 +1100 (EST)
+Message-Id: <76C7F485-EF75-4B83-B673-564E6243C7C6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: "<dayu@datangmobile.cn>" <dayu@datangmobile.cn>
+In-Reply-To: <D728AD1FA2543948B89DE29C5BF4CD0716AC2DDE@bjmail1.bj.datangmobile.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.23)
+Date: Tue, 17 Feb 2009 08:12:33 -0600
+References: <D728AD1FA2543948B89DE29C5BF4CD0716AC2DDE@bjmail1.bj.datangmobile.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,40 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With CONFIG_RELOCATABLE=y, I get for PS3:
 
-| arch/powerpc/kernel/setup_64.c:450: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'phys_addr_t'
+On Feb 17, 2009, at 6:44 AM, <dayu@datangmobile.cn> <dayu@datangmobile.cn 
+ > wrote:
 
-as phys_addr_t is u64 on ppc64, while u64 is now `unsigned long long'.
+> From: Da Yu <dayu@datangmobile.cn>
+> Date: Tue, 17 Feb 2009 19:58:20 +0800
+> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC  
+> (2.6.23)
+>
+> Signed-off-by: Da Yu <dayu@datangmobile.cn>
+> ---
 
-Unfortunately just changing the format string is not sufficient, due to:
+Please provide a bit more description as to why this fixes the issue.
 
-| #if defined(CONFIG_RELOCATABLE)
-| #ifndef __ASSEMBLY__
-| 
-| extern phys_addr_t memstart_addr;
-| extern phys_addr_t kernstart_addr;
-| #endif
-| #define PHYSICAL_START  kernstart_addr
-| #else
-| #define PHYSICAL_START  ASM_CONST(CONFIG_PHYSICAL_START)
-| #endif
+- k
 
-and ASM_CONST() appends "UL" to the constant.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+>
+>
+> --- a/arch/powerpc/sysdev/ipic.c	2009-02-17 15:10:18.000000000 +0800
+> +++ b/arch/powerpc/sysdev/ipic.c	2009-02-17 20:05:28.000000000 +0800
+> @@ -561,8 +561,7 @@ static void ipic_ack_irq(unsigned int vi
+>
+> 	spin_lock_irqsave(&ipic_lock, flags);
+>
+> -	temp = ipic_read(ipic->regs, ipic_info[src].pend);
+> -	temp |= (1 << (31 - ipic_info[src].bit));
+> +	temp = 1 << (31 - ipic_info[src].bit);
+> 	ipic_write(ipic->regs, ipic_info[src].pend, temp);
+>
+> 	spin_unlock_irqrestore(&ipic_lock, flags);
+> @@ -581,8 +580,7 @@ static void ipic_mask_irq_and_ack(unsign
+> 	temp &= ~(1 << (31 - ipic_info[src].bit));
+> 	ipic_write(ipic->regs, ipic_info[src].mask, temp);
+>
+> -	temp = ipic_read(ipic->regs, ipic_info[src].pend);
+> -	temp |= (1 << (31 - ipic_info[src].bit));
+> +	temp = 1 << (31 - ipic_info[src].bit);
+> 	ipic_write(ipic->regs, ipic_info[src].pend, temp);
+>
+> 	spin_unlock_irqrestore(&ipic_lock, flags);
