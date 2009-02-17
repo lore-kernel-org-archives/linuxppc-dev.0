@@ -1,9 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <fb9f041f3d4a2c238d1bea63a1d8253cfab22120.1234866110.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc/pseries: Implement a quota system for MSIs
-Date: Tue, 17 Feb 2009 21:21:56 +1100 (EST)
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 57479DDDA1
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2009 21:27:44 +1100 (EST)
+Date: Tue, 17 Feb 2009 11:27:33 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: next-20090216: slqb
+Message-ID: <20090217102733.GB26402@wotan.suse.de>
+References: <20090216172016.f1d159a7.sfr@canb.auug.org.au>
+	<20090217005539.GA6292@x200.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090217005539.GA6292@x200.localdomain>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,233 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There are hardware limitations on the number of available MSIs,
-which firmware expresses using a property named "ibm,pe-total-#msi".
-This property tells us how many MSIs are available for devices below
-the point in the PCI tree where we find the property.
+On Tue, Feb 17, 2009 at 03:55:40AM +0300, Alexey Dobriyan wrote:
+> FYI, on powerpc-64-smp-n-debug-n:
+> 
+> mm/slqb.c: In function '__slab_free':
+> mm/slqb.c:1648: error: implicit declaration of function 'slab_free_to_remote'
+> mm/slqb.c: In function 'kmem_cache_open':
+> mm/slqb.c:2174: error: implicit declaration of function 'kmem_cache_dyn_array_free'
+> mm/slqb.c:2175: warning: label 'error_cpu_array' defined but not used
+> mm/slqb.c: In function 'kmem_cache_destroy':
+> mm/slqb.c:2294: error: implicit declaration of function 'claim_remote_free_list'
+> mm/slqb.c: In function 'kmem_cache_reap_percpu':
+> mm/slqb.c:2547: error: implicit declaration of function 'flush_remote_free_cache'
+> mm/slqb.c: In function 'kmem_cache_init':
+> mm/slqb.c:2783: error: 'per_cpu__kmem_cpu_nodes' undeclared (first use in this function)
+> mm/slqb.c:2783: error: (Each undeclared identifier is reported only once
+> mm/slqb.c:2783: error: for each function it appears in.)
+> mm/slqb.c:2784: error: 'kmem_cpu_cache' undeclared (first use in this function)
 
-For old firmwares which don't have the property, we assume there are
-8 MSIs available per "partitionable endpoint" (PE). The PE can be
-found using existing EEH code, which uses the methods described in
-PAPR. For our purposes we want the parent of the node that's
-identified using this method.
+Hmm, I guess this (SMP=n && NUMA=y) must be a valid config on ppc if
+SLQB is the only one tripping on it, so I'll look at code to fix tihs
+up.
 
-When a driver requests n MSIs for a device, we first establish where
-the "ibm,pe-total-#msi" property above that device is, or we find the
-PE if the property is not found. In both cases we call this node
-the "pe_dn".
-
-We then count all non-bridge devices below the pe_dn, to establish
-how many devices in total may need MSIs. The quota is then simply the
-total available divided by the number of devices, if the request is
-less than or equal to the quota, the request is fine and we're done.
-
-If the request is greater than the quota, we try to determine if there
-are any "spare" MSIs which we can give to this device. Spare MSIs are
-found by looking for other devices which can never use their full
-quota, because their "req#msi(-x)" property is less than the quota.
-
-If we find any spare, we divide the spares by the number of devices
-that could request more than their quota. This ensures the spare
-MSIs are spread evenly amongst all over-quota requestors.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/platforms/pseries/msi.c |  178 +++++++++++++++++++++++++++++++++-
- 1 files changed, 176 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-index e56ae42..289f7b3 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -174,12 +174,186 @@ static int check_req_msix(struct pci_dev *pdev, int nvec)
- 	return check_req(pdev, nvec, "ibm,req#msi-x");
- }
- 
-+/* Quota calculation */
-+
-+static struct device_node *find_pe_total_msi(struct pci_dev *dev, int *total)
-+{
-+	struct device_node *dn;
-+	const u32 *p;
-+
-+	dn = of_node_get(pci_device_to_OF_node(dev));
-+	while (dn) {
-+		p = of_get_property(dn, "ibm,pe-total-#msi", NULL);
-+		if (p) {
-+			pr_debug("rtas_msi: found prop on dn %s\n",
-+				dn->full_name);
-+			*total = *p;
-+			return dn;
-+		}
-+
-+		dn = of_get_next_parent(dn);
-+	}
-+
-+	return NULL;
-+}
-+
-+static struct device_node *find_pe_dn(struct pci_dev *dev, int *total)
-+{
-+	struct device_node *dn;
-+
-+	/* Found our PE and assume 8 at that point. */
-+
-+	dn = pci_device_to_OF_node(dev);
-+	if (!dn)
-+		return NULL;
-+
-+	dn = find_device_pe(dn);
-+	if (!dn)
-+		return NULL;
-+
-+	/* We actually want the parent */
-+	dn = of_get_parent(dn);
-+	if (!dn)
-+		return NULL;
-+
-+	/* Hardcode of 8 for old firmwares */
-+	*total = 8;
-+	pr_debug("rtas_msi: using PE dn %s\n", dn->full_name);
-+
-+	return dn;
-+}
-+
-+struct msi_counts {
-+	struct device_node *requestor;
-+	int num_devices;
-+	int request;
-+	int quota;
-+	int spare;
-+	int over_quota;
-+};
-+
-+static void *count_non_bridge_devices(struct device_node *dn, void *data)
-+{
-+	struct msi_counts *counts = data;
-+	const u32 *p;
-+	u32 class;
-+
-+	pr_debug("rtas_msi: counting %s\n", dn->full_name);
-+
-+	p = of_get_property(dn, "class-code", NULL);
-+	class = p ? *p : 0;
-+
-+	if ((class >> 8) != PCI_CLASS_BRIDGE_PCI)
-+		counts->num_devices++;
-+
-+	return NULL;
-+}
-+
-+static void *count_spare_msis(struct device_node *dn, void *data)
-+{
-+	struct msi_counts *counts = data;
-+	const u32 *p;
-+	int req;
-+
-+	if (dn == counts->requestor)
-+		req = counts->request;
-+	else {
-+		/* We don't know if a driver will try to use MSI or MSI-X,
-+		 * so we just have to punt and use the larger of the two. */
-+		req = 0;
-+		p = of_get_property(dn, "ibm,req#msi", NULL);
-+		if (p)
-+			req = *p;
-+
-+		p = of_get_property(dn, "ibm,req#msi-x", NULL);
-+		if (p)
-+			req = max(req, (int)*p);
-+	}
-+
-+	if (req < counts->quota)
-+		counts->spare += counts->quota - req;
-+	else if (req > counts->quota)
-+		counts->over_quota++;
-+
-+	return NULL;
-+}
-+
-+static int msi_quota_for_device(struct pci_dev *dev, int request)
-+{
-+	struct device_node *pe_dn;
-+	struct msi_counts counts;
-+	int total;
-+
-+	pr_debug("rtas_msi: calc quota for %s, request %d\n", pci_name(dev),
-+		  request);
-+
-+	pe_dn = find_pe_total_msi(dev, &total);
-+	if (!pe_dn)
-+		pe_dn = find_pe_dn(dev, &total);
-+
-+	if (!pe_dn) {
-+		pr_err("rtas_msi: couldn't find PE for %s\n", pci_name(dev));
-+		goto out;
-+	}
-+
-+	pr_debug("rtas_msi: found PE %s\n", pe_dn->full_name);
-+
-+	memset(&counts, 0, sizeof(struct msi_counts));
-+
-+	/* Work out how many devices we have below this PE */
-+	traverse_pci_devices(pe_dn, count_non_bridge_devices, &counts);
-+
-+	if (counts.num_devices == 0) {
-+		pr_err("rtas_msi: found 0 devices under PE for %s\n",
-+			pci_name(dev));
-+		goto out;
-+	}
-+
-+	counts.quota = total / counts.num_devices;
-+	if (request <= counts.quota)
-+		goto out;
-+
-+	/* else, we have some more calculating to do */
-+	counts.requestor = pci_device_to_OF_node(dev);
-+	counts.request = request;
-+	traverse_pci_devices(pe_dn, count_spare_msis, &counts);
-+
-+	/* If the quota isn't an integer multiple of the total, we can
-+	 * use the remainder as spare MSIs for anyone that wants them. */
-+	counts.spare += total % counts.num_devices;
-+
-+	/* Divide any spare by the number of over-quota requestors */
-+	if (counts.over_quota)
-+		counts.quota += counts.spare / counts.over_quota;
-+
-+	/* And finally clamp the request to the possibly adjusted quota */
-+	request = min(counts.quota, request);
-+
-+	pr_debug("rtas_msi: request clamped to quota %d\n", request);
-+out:
-+	of_node_put(pe_dn);
-+
-+	return request;
-+}
-+
- static int rtas_msi_check_device(struct pci_dev *pdev, int nvec, int type)
- {
-+	int quota, rc;
-+
- 	if (type == PCI_CAP_ID_MSIX)
--		return check_req_msix(pdev, nvec);
-+		rc = check_req_msix(pdev, nvec);
-+	else
-+		rc = check_req_msi(pdev, nvec);
-+
-+	if (rc)
-+		return rc;
- 
--	return check_req_msi(pdev, nvec);
-+	quota = msi_quota_for_device(pdev, nvec);
-+
-+	if (quota && quota < nvec)
-+		return quota;
-+
-+	return 0;
- }
- 
- static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
--- 
-1.5.6.3
+Thanks,
+Nick
