@@ -1,21 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BA4F8DDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 03:49:15 +1100 (EST)
-Message-Id: <D999D051-E5A2-4915-893D-E3384EC312A4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Ira Snyder <iws@ovro.caltech.edu>
-In-Reply-To: <20090217222425.GA18801@ovro.caltech.edu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
-Date: Wed, 18 Feb 2009 10:47:05 -0600
-References: <20090217222425.GA18801@ovro.caltech.edu>
-Cc: Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-	netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 570ACDDDB6
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 03:57:29 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n1IGvPcw025782
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 09:57:26 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n1IGvPoa005488
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 10:57:25 -0600 (CST)
+Date: Wed, 18 Feb 2009 10:57:24 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Vijay Nikam <vijay.t.nikam@gmail.com>
+Subject: Re: Regarding irq_of_parse_and_map
+Message-ID: <20090218165724.GA26391@ld0162-tx32.am.freescale.net>
+References: <f234e2140902160355p148c99d1qc2e5b6f6ae9a716f@mail.gmail.com>
+	<20090216180857.GA18069@ld0162-tx32.am.freescale.net>
+	<f234e2140902170341y31662e8fla8a8cf87473ed419@mail.gmail.com>
+	<499AF08B.6010702@freescale.com>
+	<f234e2140902180401u40a71642ga4e221f795bc5abd@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f234e2140902180401u40a71642ga4e221f795bc5abd@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +37,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Feb 18, 2009 at 05:31:34PM +0530, Vijay Nikam wrote:
+> > Don't specify this explicitly.  Please base new development off of the
+> > device tree that is in upstream Linux, not the very old tree in your BSP.
+> 
+> May I know the reason why I should not specify it explicitly ? ? ?
 
-On Feb 17, 2009, at 4:24 PM, Ira Snyder wrote:
+Because dtc will generate phandles automatically when you reference the
+node with the & operator.
 
->
-> Documentation/virtio-over-PCI.txt     |   61 ++
-> arch/powerpc/boot/dts/mpc834x_mds.dts |    7 +
+> Also what would be the problem if I do in the same way as it is given
+> in BSP mpc8313erdb.dts ? ? ?
 
-we'll have to review the .dts and expect a documentation update for  
-the node.  But that's pretty minor at this point.
+Do you want your changes to ever make it into the upstream kernel?
 
-> drivers/virtio/Kconfig                |   22 +
-> drivers/virtio/Makefile               |    2 +
-> drivers/virtio/vop.h                  |  119 ++
-> drivers/virtio/vop_fsl.c              | 1911 ++++++++++++++++++++++++ 
-> +++++++++
+> And should I use gpio-controller as a gpio device node ? ? ?
 
-make this vop_fsl_mpc83xx.c or something along those lines.
+Yes, the node should label itself as a gpio controller.
 
->
-> drivers/virtio/vop_host.c             | 1028 ++++++++++++++++++
-> drivers/virtio/vop_hw.h               |   80 ++
-> 8 files changed, 3230 insertions(+), 0 deletions(-)
-> create mode 100644 Documentation/virtio-over-PCI.txt
-> create mode 100644 drivers/virtio/vop.h
-> create mode 100644 drivers/virtio/vop_fsl.c
-> create mode 100644 drivers/virtio/vop_host.c
-> create mode 100644 drivers/virtio/vop_hw.h
-
-- k
+-Scott
