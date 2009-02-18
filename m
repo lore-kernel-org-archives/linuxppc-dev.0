@@ -1,15 +1,18 @@
-Return-Path: <baykelper@yahoo.com>
-Received: from web56204.mail.re3.yahoo.com (web56204.mail.re3.yahoo.com
-	[216.252.110.213]) by ozlabs.org (Postfix) with SMTP id A8299DDDA9
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 10:14:53 +1100 (EST)
-Message-ID: <5708.94078.qm@web56204.mail.re3.yahoo.com>
-Date: Tue, 17 Feb 2009 15:14:51 -0800 (PST)
-From: gt bradley <baykelper@yahoo.com>
-Subject: NFS-boot on PS3, kboot can't mount nfs-dir.s
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <mailman.986.1234909474.26545.linuxppc-dev@ozlabs.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from VA3EHSOBE002.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 88A64DDDA9
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 11:31:19 +1100 (EST)
+Message-ID: <499B56CE.1050505@am.sony.com>
+Date: Tue, 17 Feb 2009 16:31:10 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-278060443-1234912491=:94078"
+To: gt bradley <baykelper@yahoo.com>
+Subject: Re: nfs booting PS3, mount failed.
+References: <719599.32884.qm@web56204.mail.re3.yahoo.com>
+	<499B544D.3020704@am.sony.com>
+In-Reply-To: <499B544D.3020704@am.sony.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,65 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 02/17/2009 04:20 PM, Geoff Levand wrote:
 
---0-278060443-1234912491=:94078
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+> Another thing to try is to use a 'rescue' disk/mode to copy the files.
+> Most distros have them.  Fedora has a rescue mode in their installer:
+> 
+>   http://download.fedora.redhat.com/pub/fedora/linux/releases/10/Fedora/ppc/iso/Fedora-10-ppc-netinst.iso
+> 
+> Just select 'rescue' instead of 'install', or you can add
+> these to the boot options: 'text rescue video=720p'.
 
-I'm trying to set up my PS3 to netboot (with an nfsroot).
+I forgot to mention an important point when using a rescue disk.
+Most will mount all the runtime directories like /sys, /dev, /proc,
+etc. onto the HD file system.  Those directories should not be
+mounted the when you make the HD root FS copy.
 
-I'm using instructions at http://www.kernel.org/pub/linux/kernel/people/geo=
-ff/cell/ps3-howto/ps3-nfs-root-howto.txt
+Either choose the rescue option to not mount the HD file system,
+and mount it yourself later, or unmount all those directories.
+Just use the 'mount' command to see what has been mounted on the
+HD's root FS.
 
-I've
-passed section 3 (using tftp) to verify network /dhcp etc.=A0=A0 (i.e. I'm
-able to tftp-get a file to ps3 from kboot's ash shell (busybox).
-
-i'm trying to mount the nfs server as per section 4. with
- ~# mount -t nfs -o nolock 192.168.99.1:/target /mnt/remote
-
-I get the following error message:
-  mount: mounting 192.168.99.1:/target on /mnt/remote failed
-
-if I boot the PS3 from the HD, then I am able to mount the nfs directory.
-Using wireshark, I can see the initial dhcp traffic, (and when present the =
-tftp traffic).
-the mount command doesn't open a network connection to the server,=20
-So I have pretty much ruled out server
- configuration.
-
-running "strings" on the decompressed kboot image yeilds serveral nfs symbo=
-ls, so it=20
-appears to still support nfs mounting.  (using version kboot-20080609.bld f=
-rom geoff's dir at kernel.org)
-I have tried googling, and searching the various mailing lists, but am stuc=
-k.
-
-any help would be appreciated
-GT
-=0A=0A=0A      
---0-278060443-1234912491=:94078
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<table cellspacing=3D"0" cellpadding=3D"0" border=3D"0" ><tr><td valign=3D"=
-top" style=3D"font: inherit;">I'm trying to set up my PS3 to netboot (with =
-an nfsroot).<br><br>I'm using instructions at http://www.kernel.org/pub/lin=
-ux/kernel/people/geoff/cell/ps3-howto/ps3-nfs-root-howto.txt<br><br>I've
-passed section 3 (using tftp) to verify network /dhcp etc.&nbsp;&nbsp; (i.e=
-. I'm
-able to tftp-get a file to ps3 from kboot's ash shell (busybox).<br><br>i'm=
- trying to mount the nfs server as per section 4. with<br><pre> ~# mount -t=
- nfs -o nolock 192.168.99.1:/target /mnt/remote<br><br>I get the following =
-error message:<br>  mount: mounting 192.168.99.1:/target on /mnt/remote fai=
-led<br><br>if I boot the PS3 from the HD, then I am able to mount the nfs d=
-irectory.<br>Using wireshark, I can see the initial dhcp traffic, (and when=
- present the tftp traffic).<br>the mount command doesn't open a network con=
-nection to the server, <br>So I have pretty much ruled out server<br> confi=
-guration.<br><br>running "strings" on the decompressed kboot image yeilds s=
-erveral nfs symbols, so it <br>appears to still support nfs mounting.  (usi=
-ng version kboot-20080609.bld from geoff's dir at kernel.org)<br></pre>I ha=
-ve tried googling, and searching the various mailing lists, but am stuck.<s=
-pan style=3D"font-family: monospace;"><br><br>any help would be
- appreciated<br>GT<br></span></td></tr></table><br>=0A=0A      
---0-278060443-1234912491=:94078--
+-Geoff
