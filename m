@@ -1,17 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 94AC9DDDA1
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 20:19:43 +1100 (EST)
-Date: Wed, 18 Feb 2009 01:19:24 -0800 (PST)
-Message-Id: <20090218.011924.07030610.davem@davemloft.net>
-To: anton@samba.org
-Subject: Re: [PATCH] Enable hashdist by default on PowerPC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090218051112.GA32195@kryten>
-References: <20090218051112.GA32195@kryten>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <henk.stegeman@gmail.com>
+Received: from mail-bw0-f216.google.com (mail-bw0-f216.google.com
+	[209.85.218.216]) by ozlabs.org (Postfix) with ESMTP id 55496DDE0A
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 21:41:16 +1100 (EST)
+Received: by bwz12 with SMTP id 12so11058680bwz.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 02:41:14 -0800 (PST)
+MIME-Version: 1.0
+Date: Wed, 18 Feb 2009 11:41:14 +0100
+Message-ID: <ae4f76fd0902180241s28458450hd91ebf8da94ceb53@mail.gmail.com>
+Subject: net_device_ops support in bridging and fec_mpc52xx.c
+From: Henk Stegeman <henk.stegeman@gmail.com>
+To: linuxppc-dev@ozlabs.org, bridge@osdl.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +20,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
-Date: Wed, 18 Feb 2009 16:11:12 +1100
+Hello,
 
-> @@ -145,9 +145,10 @@ extern void *alloc_large_system_hash(const char *tablename,
->  #define HASH_EARLY	0x00000001	/* Allocating during early boot? */
->  
->  /* Only NUMA needs hash distribution.
-> - * IA64 and x86_64 have sufficient vmalloc space.
-> + * IA64, x86_64 and PowerPC have sufficient vmalloc space.
->   */
-> -#if defined(CONFIG_NUMA) && (defined(CONFIG_IA64) || defined(CONFIG_X86_64))
-> +#if defined(CONFIG_NUMA) && (defined(CONFIG_IA64) || defined(CONFIG_X86_64) || \
-> +	defined(CONFIG_PPC64))
->  #define HASHDIST_DEFAULT 1
->  #else
->  #define HASHDIST_DEFAULT 0
+I discovered the hard way that because linux bridging uses
+net_device_ops, bridging only works with network drivers that publish
+their device operations trough net_device_ops.
 
-I should probably do this on sparc64 too.
+In my case running:
 
-Why don't we just change this thing to CONFIG_64BIT?
+brctl addif br0 eth0 (where eth0 fec_mpc52xx.c did not yet support
+net_device_ops) gave me a:
+
+Unable to handle kernel paging request...
+
+After changing fec_mpc52xx.c to support net_device_ops the problem was fixed.
+
+If possible some kind of detection in the bridging software is i think
+mostly appreciated for early detection of this problem, as it is
+pretty hard to relate the error message to a not updated driver.
+
+cheers,
+
+Henk
+
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index cd8e98b..a2841eb 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -888,6 +888,22 @@ static int mpc52xx_fec_ioctl(struct net_device
+*dev, struct ifreq *rq, int cmd)
+ /* ======================================================================== */
+ /* OF Driver                                                                */
+ /* ======================================================================== */
++static const struct net_device_ops mpc52xx_fec_netdev_ops = {
++       .ndo_open               = mpc52xx_fec_open,
++       .ndo_stop               = mpc52xx_fec_close,
++       .ndo_start_xmit         = mpc52xx_fec_hard_start_xmit,
++       .ndo_tx_timeout         = mpc52xx_fec_tx_timeout,
++       .ndo_get_stats          = mpc52xx_fec_get_stats,
++       .ndo_set_multicast_list = mpc52xx_fec_set_multicast_list,
++       .ndo_validate_addr      = eth_validate_addr,
++       .ndo_set_mac_address    = mpc52xx_fec_set_mac_address,
++       .ndo_do_ioctl           = mpc52xx_fec_ioctl,
++
++#ifdef CONFIG_NET_POLL_CONTROLLER
++       .ndo_poll_controller     = mpc52xx_fec_poll_controller,
++#endif
++};
++
+
+ static int __devinit
+ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+@@ -929,20 +945,7 @@ mpc52xx_fec_probe(struct of_device *op, const
+struct of_device_id *match)
+ 		return -EBUSY;
+
+ 	/* Init ether ndev with what we have */
+-	ndev->open		= mpc52xx_fec_open;
+-	ndev->stop		= mpc52xx_fec_close;
+-	ndev->hard_start_xmit	= mpc52xx_fec_hard_start_xmit;
+-	ndev->do_ioctl		= mpc52xx_fec_ioctl;
+-	ndev->ethtool_ops	= &mpc52xx_fec_ethtool_ops;
+-	ndev->get_stats		= mpc52xx_fec_get_stats;
+-	ndev->set_mac_address	= mpc52xx_fec_set_mac_address;
+-	ndev->set_multicast_list = mpc52xx_fec_set_multicast_list;
+-	ndev->tx_timeout	= mpc52xx_fec_tx_timeout;
+-	ndev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
+-	ndev->base_addr		= mem.start;
+-#ifdef CONFIG_NET_POLL_CONTROLLER
+-	ndev->poll_controller = mpc52xx_fec_poll_controller;
+-#endif
++	ndev->netdev_ops = &mpc52xx_fec_netdev_ops;
+
+ 	priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are free for now */
