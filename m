@@ -1,20 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4C111DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 04:31:43 +1100 (EST)
-Message-Id: <6BBF4AB4-FFB0-46ED-B591-17DEC3BE547F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Coulter <scott.coulter@cyclone.com>
-In-Reply-To: <43EB80E07C42E1408726E4905FB96B04C076B1@CYBORG3.cyclone.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Gianfar tx-babbling-errors
-Date: Wed, 18 Feb 2009 11:29:03 -0600
-References: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
-	<F122E3A2-3054-4BC9-9C06-0ADE590A8AFC@kernel.crashing.org>
-	<43EB80E07C42E1408726E4905FB96B04C076B1@CYBORG3.cyclone.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from VA3EHSOBE006.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.15]) by ozlabs.org (Postfix) with ESMTP id C7CF7DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 05:20:27 +1100 (EST)
+Message-ID: <499C4DD7.9000007@am.sony.com>
+Date: Wed, 18 Feb 2009 10:05:11 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: gt bradley <baykelper@yahoo.com>
+Subject: Re: NFS-boot on PS3, kboot can't mount nfs-dir.s
+References: <5708.94078.qm@web56204.mail.re3.yahoo.com>
+In-Reply-To: <5708.94078.qm@web56204.mail.re3.yahoo.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,23 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 02/17/2009 03:14 PM, gt bradley wrote:
+> I'm trying to set up my PS3 to netboot (with an nfsroot).
+> 
+> I'm using instructions at
+> http://www.kernel.org/pub/linux/kernel/people/geoff/cell/ps3-howto/ps3-nfs-root-howto.txt
+> 
+> I've passed section 3 (using tftp) to verify network /dhcp etc.   (i.e.
+> I'm able to tftp-get a file to ps3 from kboot's ash shell (busybox).
+> 
+> i'm trying to mount the nfs server as per section 4. with
+> 
+>  ~# mount -t nfs -o nolock 192.168.99.1:/target /mnt/remote
+> 
+> I get the following error message:
+>   mount: mounting 192.168.99.1:/target on /mnt/remote failed
+> 
+> if I boot the PS3 from the HD, then I am able to mount the nfs directory.
+> Using wireshark, I can see the initial dhcp traffic, (and when present the tftp traffic).
+> the mount command doesn't open a network connection to the server, 
+> So I have pretty much ruled out server
+>  configuration.
+> 
+> running "strings" on the decompressed kboot image yeilds serveral nfs symbols, so it 
+> appears to still support nfs mounting.  (using version kboot-20080609.bld from geoff's dir at kernel.org)
+> 
+> I have tried googling, and searching the various mailing lists, but am
+> stuck.
+> 
+> any help would be appreciated
+> GT
 
-On Feb 18, 2009, at 11:22 AM, Scott Coulter wrote:
+Please see my reply to the almost identical post that was sent yesterday (Feb 16).
 
-> Kumar,
->
->> I'm told this will occur when:
->
->> Transmitted frame > MAXFRM and MACCFG2[Huge En] = 0.
->
-> In the driver it looks like the MACCFG2_HUGEFRAME only gets set if the
-> mtu > DEFAULT_RX_BUFFER_SIZE (1536 in my kernel).  It appears as  
-> though
-> the mtu is set to 1500.  Under what conditions would the driver  
-> attempt
-> to send a frame larger than the mtu?
-
-can't think of any.  How about adding a BUG_ON() in the tx path to see  
-if the buffer size > MTU and re-run your tests.
-
-- k
+-Geoff 
