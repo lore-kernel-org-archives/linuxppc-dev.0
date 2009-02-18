@@ -1,17 +1,18 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from WA4EHSOBE002.bigfish.com (wa4ehsobe002.messaging.microsoft.com
-	[216.32.181.12]) by ozlabs.org (Postfix) with ESMTP id 48C8FDDE07
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 11:35:48 +1100 (EST)
-Message-ID: <499B544D.3020704@am.sony.com>
-Date: Tue, 17 Feb 2009 16:20:29 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <dayu@datangmobile.cn>
+Received: from mail.datangmobile.cn (mail.datangmobile.cn [219.142.67.62])
+	by ozlabs.org (Postfix) with ESMTP id 536D1DDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 13:13:01 +1100 (EST)
 MIME-Version: 1.0
-To: gt bradley <baykelper@yahoo.com>
-Subject: Re: nfs booting PS3, mount failed.
-References: <719599.32884.qm@web56204.mail.re3.yahoo.com>
-In-Reply-To: <719599.32884.qm@web56204.mail.re3.yahoo.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="gb2312"
+Subject: =?gb2312?B?tPC4tDogW1BBVENIXSBmaXggdGhlIGludGVycnVwdCBsb3NzIHBybw==?=
+	=?gb2312?B?YmxlbSBvbiBwb3dlcnBjIElQSUMgKDIuNi4yNS0yLjYuMjgp?=
+Date: Wed, 18 Feb 2009 10:12:57 +0800
+Message-ID: <D728AD1FA2543948B89DE29C5BF4CD0716AC37C0@bjmail1.bj.datangmobile.com>
+From: <dayu@datangmobile.cn>
+To: <leoli@freescale.com>,
+	<galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,45 +22,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 02/16/2009 09:22 PM, gt bradley wrote:
-> I'm trying to set up my PS3 to netboot (with an nfsroot).
-> 
-> I'm using instructions at
-> http://www.kernel.org/pub/linux/kernel/people/geoff/cell/ps3-howto/ps3-nfs-root-howto.txt
-> 
-> I've passed section 3 (using tftp) to verify network /dhcp etc.   (i.e.
-> I'm able to tftp-get a file to ps3 from kboot's ash shell (busybox).
-> 
-> i'm trying to mount the nfs server as per section 4. with
-> 
->  ~# mount -t nfs -o nolock 192.168.99.1:/target /mnt/remote
-> 
-> I get the following error message:
->   mount: mounting 192.168.99.1:/target on /mnt/remote failed
-> 
-> if I boot the PS3 from the HD, then I am able to mount the nfs directory.
-> Using wireshark, I can see the initial dhcp traffic, (and when present the tftp traffic).
-> the mount command doesn't open a network connection to the server, 
-> So I have pretty much ruled out server
->  configuration.
-> 
-> running "strings" on the decompressed kboot image yeilds serveral nfs symbols, so it 
-> appears to still support nfs mounting.  (using version kboot-20080609.bld from geoff's dir at kernel.org)
+From: Da Yu <dayu@datangmobile.cn>
+Date: Wed, 18 Feb 2009 19:58:20 +0800
+Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC =
+(2.6.25-2.6.28)
 
-I have sometimes seen nfs problems with kboot.  You could you
-try petitboot.  Get the latest 'experimental' one from here:
+Signed-off-by: Da Yu <dayu@datangmobile.cn>
+---
 
-  http://www.kernel.org/pub/linux/kernel/people/geoff/cell/ps3-petitboot/
+--- a/arch/powerpc/sysdev/ipic.c	2009-02-18 09:47:04.000000000 +0800
++++ b/arch/powerpc/sysdev/ipic.c	2009-02-18 09:46:34.000000000 +0800
+@@ -568,8 +568,7 @@ static void ipic_ack_irq(unsigned int vi
 
-Another thing to try is to use a 'rescue' disk/mode to copy the files.
-Most distros have them.  Fedora has a rescue mode in their installer:
+ 	spin_lock_irqsave(&ipic_lock, flags);
 
-  http://download.fedora.redhat.com/pub/fedora/linux/releases/10/Fedora/ppc/iso/Fedora-10-ppc-netinst.iso
+-	temp =3D ipic_read(ipic->regs, ipic_info[src].ack);
+-	temp |=3D (1 << (31 - ipic_info[src].bit));
++	temp =3D 1 << (31 - ipic_info[src].bit);
+ 	ipic_write(ipic->regs, ipic_info[src].ack, temp);
 
-Just select 'rescue' instead of 'install', or you can add
-these to the boot options: 'text rescue video=720p'.
+ 	/* mb() can't guarantee that ack is finished.  But it does finish
+@@ -592,8 +591,7 @@ static void ipic_mask_irq_and_ack(unsign
+ 	temp &=3D ~(1 << (31 - ipic_info[src].bit));
+ 	ipic_write(ipic->regs, ipic_info[src].mask, temp);
 
-You don't need kboot/petitboot to do nfs.  To load the kernel
-they just need to do tftp.
+-	temp =3D ipic_read(ipic->regs, ipic_info[src].ack);
+-	temp |=3D (1 << (31 - ipic_info[src].bit));
++	temp =3D 1 << (31 - ipic_info[src].bit);
+ 	ipic_write(ipic->regs, ipic_info[src].ack, temp);
 
--Geoff
+ 	/* mb() can't guarantee that ack is finished.  But it does finish
+
+
+
+
+
+=20
+
+-----=D3=CA=BC=FE=D4=AD=BC=FE-----
+=B7=A2=BC=FE=C8=CB: Li Yang [mailto:leoli@freescale.com]=20
+=B7=A2=CB=CD=CA=B1=BC=E4: 2009=C4=EA2=D4=C217=C8=D5 22:38
+=CA=D5=BC=FE=C8=CB: Kumar Gala
+=B3=AD=CB=CD: =F3=CE=D3=ED; linux-kernel@vger.kernel.org; =
+linuxppc-dev@ozlabs.org
+=D6=F7=CC=E2: Re: [PATCH] fix the interrupt loss problem on powerpc IPIC =
+(2.6.23)
+
+On Tue, Feb 17, 2009 at 10:12 PM, Kumar Gala <galak@kernel.crashing.org> =
+wrote:
+>
+> On Feb 17, 2009, at 6:44 AM, <dayu@datangmobile.cn>=20
+> <dayu@datangmobile.cn>
+> wrote:
+>
+>> From: Da Yu <dayu@datangmobile.cn>
+>> Date: Tue, 17 Feb 2009 19:58:20 +0800
+>> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC=20
+>> (2.6.23)
+>>
+>> Signed-off-by: Da Yu <dayu@datangmobile.cn>
+>> ---
+>
+> Please provide a bit more description as to why this fixes the issue.
+
+The pending register is write 1 clear.  If there are more than one =
+external interrupts pending at the same time, acking the first interrupt =
+will also clear other interrupt pending bits.  That will cause loss of =
+interrupt.
+
+- Leo
