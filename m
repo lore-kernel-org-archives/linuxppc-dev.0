@@ -1,16 +1,22 @@
-Return-Path: <henk.stegeman@gmail.com>
-Received: from mail-bw0-f216.google.com (mail-bw0-f216.google.com
-	[209.85.218.216]) by ozlabs.org (Postfix) with ESMTP id 55496DDE0A
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 21:41:16 +1100 (EST)
-Received: by bwz12 with SMTP id 12so11058680bwz.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 02:41:14 -0800 (PST)
+Return-Path: <vijay.t.nikam@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
+	by ozlabs.org (Postfix) with ESMTP id 78F98DDDA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 23:01:36 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g9so5303200rvb.1
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 04:01:34 -0800 (PST)
 MIME-Version: 1.0
-Date: Wed, 18 Feb 2009 11:41:14 +0100
-Message-ID: <ae4f76fd0902180241s28458450hd91ebf8da94ceb53@mail.gmail.com>
-Subject: net_device_ops support in bridging and fec_mpc52xx.c
-From: Henk Stegeman <henk.stegeman@gmail.com>
-To: linuxppc-dev@ozlabs.org, bridge@osdl.org
+In-Reply-To: <499AF08B.6010702@freescale.com>
+References: <f234e2140902160355p148c99d1qc2e5b6f6ae9a716f@mail.gmail.com>
+	<20090216180857.GA18069@ld0162-tx32.am.freescale.net>
+	<f234e2140902170341y31662e8fla8a8cf87473ed419@mail.gmail.com>
+	<499AF08B.6010702@freescale.com>
+Date: Wed, 18 Feb 2009 17:31:34 +0530
+Message-ID: <f234e2140902180401u40a71642ga4e221f795bc5abd@mail.gmail.com>
+Subject: Re: Regarding irq_of_parse_and_map
+From: Vijay Nikam <vijay.t.nikam@gmail.com>
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,76 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+I checked and read the
+Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt and
+booting-without-of.txt. It is different then what I read before from
+booting-without-of.txt ... perhaps as it is old and came with BSP. Am
+I right ? ? ?
 
-I discovered the hard way that because linux bridging uses
-net_device_ops, bridging only works with network drivers that publish
-their device operations trough net_device_ops.
+> Don't specify this explicitly.  Please base new development off of the
+> device tree that is in upstream Linux, not the very old tree in your BSP.
 
-In my case running:
+May I know the reason why I should not specify it explicitly ? ? ?
+Also what would be the problem if I do in the same way as it is given
+in BSP mpc8313erdb.dts ? ? ?
 
-brctl addif br0 eth0 (where eth0 fec_mpc52xx.c did not yet support
-net_device_ops) gave me a:
+And should I use gpio-controller as a gpio device node ? ? ?
 
-Unable to handle kernel paging request...
+Kindly please acknowledge ... thank you ...
 
-After changing fec_mpc52xx.c to support net_device_ops the problem was fixed.
+Kind Regards,
+Vijay Nikam
 
-If possible some kind of detection in the bridging software is i think
-mostly appreciated for early detection of this problem, as it is
-pretty hard to relate the error message to a not updated driver.
-
-cheers,
-
-Henk
-
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index cd8e98b..a2841eb 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -888,6 +888,22 @@ static int mpc52xx_fec_ioctl(struct net_device
-*dev, struct ifreq *rq, int cmd)
- /* ======================================================================== */
- /* OF Driver                                                                */
- /* ======================================================================== */
-+static const struct net_device_ops mpc52xx_fec_netdev_ops = {
-+       .ndo_open               = mpc52xx_fec_open,
-+       .ndo_stop               = mpc52xx_fec_close,
-+       .ndo_start_xmit         = mpc52xx_fec_hard_start_xmit,
-+       .ndo_tx_timeout         = mpc52xx_fec_tx_timeout,
-+       .ndo_get_stats          = mpc52xx_fec_get_stats,
-+       .ndo_set_multicast_list = mpc52xx_fec_set_multicast_list,
-+       .ndo_validate_addr      = eth_validate_addr,
-+       .ndo_set_mac_address    = mpc52xx_fec_set_mac_address,
-+       .ndo_do_ioctl           = mpc52xx_fec_ioctl,
-+
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+       .ndo_poll_controller     = mpc52xx_fec_poll_controller,
-+#endif
-+};
-+
-
- static int __devinit
- mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
-@@ -929,20 +945,7 @@ mpc52xx_fec_probe(struct of_device *op, const
-struct of_device_id *match)
- 		return -EBUSY;
-
- 	/* Init ether ndev with what we have */
--	ndev->open		= mpc52xx_fec_open;
--	ndev->stop		= mpc52xx_fec_close;
--	ndev->hard_start_xmit	= mpc52xx_fec_hard_start_xmit;
--	ndev->do_ioctl		= mpc52xx_fec_ioctl;
--	ndev->ethtool_ops	= &mpc52xx_fec_ethtool_ops;
--	ndev->get_stats		= mpc52xx_fec_get_stats;
--	ndev->set_mac_address	= mpc52xx_fec_set_mac_address;
--	ndev->set_multicast_list = mpc52xx_fec_set_multicast_list;
--	ndev->tx_timeout	= mpc52xx_fec_tx_timeout;
--	ndev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
--	ndev->base_addr		= mem.start;
--#ifdef CONFIG_NET_POLL_CONTROLLER
--	ndev->poll_controller = mpc52xx_fec_poll_controller;
--#endif
-+	ndev->netdev_ops = &mpc52xx_fec_netdev_ops;
-
- 	priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are free for now */
+On 2/17/09, Scott Wood <scottwood@freescale.com> wrote:
+> Vijay Nikam wrote:
+> > I added the gpio node as follows to mpc8313erdb.dts;
+> >
+> > gpio@c00 {
+> >        linux,phandle = <c00>;
+> >
+>
+> Don't specify this explicitly.  Please base new development off of the
+> device tree that is in upstream Linux, not the very old tree in your BSP.
+>
+> >        device_type = "gpio";
+> >
+>
+> No device_type.
+>
+> > The only thing I need to know what should I write at 'compatible' tag
+> > ? ? ? the compatible tag format is "manufacturer,model" the
+> > manufacturer is 'fsl' i.e. I think freescale but the model, as it is
+> > the model number where I can find this model ? ? ? Please let me know
+> > ... thanks ...
+> >
+>
+> compatible = "fsl,mpc8313-gpio", "fsl,mpc8349-gpio";
+>
+> > Also I would like to ask if the above device node is written according
+> > to bindings ... I think it should be right as I referred
+> > 'bootingwithout-of.txt' ... but please correct me if I am worng ? ? ?
+> >
+>
+> See also
+> Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt.
+>
+> Also note that current Linux has a driver in
+> arch/powerpc/sysdev/mpc8xxx_gpio.c.
+>
+> -Scott
+>
