@@ -1,14 +1,13 @@
 Return-Path: <dayu@datangmobile.cn>
 Received: from mail.datangmobile.cn (mail.datangmobile.cn [219.142.67.62])
-	by ozlabs.org (Postfix) with ESMTP id 536D1DDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 13:13:01 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 8BF1BDDE9E
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 13:16:08 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="gb2312"
-Subject: =?gb2312?B?tPC4tDogW1BBVENIXSBmaXggdGhlIGludGVycnVwdCBsb3NzIHBybw==?=
-	=?gb2312?B?YmxlbSBvbiBwb3dlcnBjIElQSUMgKDIuNi4yNS0yLjYuMjgp?=
-Date: Wed, 18 Feb 2009 10:12:57 +0800
-Message-ID: <D728AD1FA2543948B89DE29C5BF4CD0716AC37C0@bjmail1.bj.datangmobile.com>
+Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.25-2.6.28)
+Date: Wed, 18 Feb 2009 10:16:07 +0800
+Message-ID: <D728AD1FA2543948B89DE29C5BF4CD0716AC37FD@bjmail1.bj.datangmobile.com>
 From: <dayu@datangmobile.cn>
 To: <leoli@freescale.com>,
 	<galak@kernel.crashing.org>
@@ -55,9 +54,6 @@ Signed-off-by: Da Yu <dayu@datangmobile.cn>
 
 
 
-
-
-=20
 
 -----=D3=CA=BC=FE=D4=AD=BC=FE-----
 =B7=A2=BC=FE=C8=CB: Li Yang [mailto:leoli@freescale.com]=20
