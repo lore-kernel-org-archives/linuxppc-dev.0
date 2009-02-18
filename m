@@ -1,17 +1,19 @@
-Return-Path: <dayu@datangmobile.cn>
-Received: from mail.datangmobile.cn (mail.datangmobile.cn [219.142.67.62])
-	by ozlabs.org (Postfix) with ESMTP id 8BF1BDDE9E
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 13:16:08 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.25-2.6.28)
-Date: Wed, 18 Feb 2009 10:16:07 +0800
-Message-ID: <D728AD1FA2543948B89DE29C5BF4CD0716AC37FD@bjmail1.bj.datangmobile.com>
-From: <dayu@datangmobile.cn>
-To: <leoli@freescale.com>,
-	<galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D5B46DDDEE
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 13:22:58 +1100 (EST)
+Subject: Re: Please pull from 'next' branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0902171551460.23647@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0902171551460.23647@blarg.am.freescale.net>
+Content-Type: text/plain
+Date: Wed, 18 Feb 2009 13:22:52 +1100
+Message-Id: <1234923772.14060.322.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,69 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Da Yu <dayu@datangmobile.cn>
-Date: Wed, 18 Feb 2009 19:58:20 +0800
-Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC =
-(2.6.25-2.6.28)
 
-Signed-off-by: Da Yu <dayu@datangmobile.cn>
----
+> I'd also like the opcode patch to go in since several patches depend on
+> that (doorbell, tlbilx).  If you want to ack the patch I can put it into
+> my next branch for you.
 
---- a/arch/powerpc/sysdev/ipic.c	2009-02-18 09:47:04.000000000 +0800
-+++ b/arch/powerpc/sysdev/ipic.c	2009-02-18 09:46:34.000000000 +0800
-@@ -568,8 +568,7 @@ static void ipic_ack_irq(unsigned int vi
+It's already in my test branch, which for some reason I forgot to push
+out... Doing some updates now, you'll get it.
 
- 	spin_lock_irqsave(&ipic_lock, flags);
-
--	temp =3D ipic_read(ipic->regs, ipic_info[src].ack);
--	temp |=3D (1 << (31 - ipic_info[src].bit));
-+	temp =3D 1 << (31 - ipic_info[src].bit);
- 	ipic_write(ipic->regs, ipic_info[src].ack, temp);
-
- 	/* mb() can't guarantee that ack is finished.  But it does finish
-@@ -592,8 +591,7 @@ static void ipic_mask_irq_and_ack(unsign
- 	temp &=3D ~(1 << (31 - ipic_info[src].bit));
- 	ipic_write(ipic->regs, ipic_info[src].mask, temp);
-
--	temp =3D ipic_read(ipic->regs, ipic_info[src].ack);
--	temp |=3D (1 << (31 - ipic_info[src].bit));
-+	temp =3D 1 << (31 - ipic_info[src].bit);
- 	ipic_write(ipic->regs, ipic_info[src].ack, temp);
-
- 	/* mb() can't guarantee that ack is finished.  But it does finish
-
-
-
-
------=D3=CA=BC=FE=D4=AD=BC=FE-----
-=B7=A2=BC=FE=C8=CB: Li Yang [mailto:leoli@freescale.com]=20
-=B7=A2=CB=CD=CA=B1=BC=E4: 2009=C4=EA2=D4=C217=C8=D5 22:38
-=CA=D5=BC=FE=C8=CB: Kumar Gala
-=B3=AD=CB=CD: =F3=CE=D3=ED; linux-kernel@vger.kernel.org; =
-linuxppc-dev@ozlabs.org
-=D6=F7=CC=E2: Re: [PATCH] fix the interrupt loss problem on powerpc IPIC =
-(2.6.23)
-
-On Tue, Feb 17, 2009 at 10:12 PM, Kumar Gala <galak@kernel.crashing.org> =
-wrote:
->
-> On Feb 17, 2009, at 6:44 AM, <dayu@datangmobile.cn>=20
-> <dayu@datangmobile.cn>
-> wrote:
->
->> From: Da Yu <dayu@datangmobile.cn>
->> Date: Tue, 17 Feb 2009 19:58:20 +0800
->> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC=20
->> (2.6.23)
->>
->> Signed-off-by: Da Yu <dayu@datangmobile.cn>
->> ---
->
-> Please provide a bit more description as to why this fixes the issue.
-
-The pending register is write 1 clear.  If there are more than one =
-external interrupts pending at the same time, acking the first interrupt =
-will also clear other interrupt pending bits.  That will cause loss of =
-interrupt.
-
-- Leo
+Cheers,
+Ben.
