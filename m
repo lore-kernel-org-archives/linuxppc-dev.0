@@ -1,21 +1,14 @@
-Return-Path: <scott.coulter@cyclone.com>
-Received: from CYBORG3.cyclone.com (cyborg3.cyclone.com [69.37.28.78])
-	by ozlabs.org (Postfix) with ESMTP id 46FB3DDDA1
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 07:45:05 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Gianfar tx-babbling-errors
-Date: Wed, 18 Feb 2009 15:45:04 -0500
-Message-ID: <43EB80E07C42E1408726E4905FB96B04C076CC@CYBORG3.cyclone.com>
-In-Reply-To: <6BBF4AB4-FFB0-46ED-B591-17DEC3BE547F@kernel.crashing.org>
-References: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
-	<F122E3A2-3054-4BC9-9C06-0ADE590A8AFC@kernel.crashing.org>
-	<43EB80E07C42E1408726E4905FB96B04C076B1@CYBORG3.cyclone.com>
-	<6BBF4AB4-FFB0-46ED-B591-17DEC3BE547F@kernel.crashing.org>
-From: "Scott Coulter" <scott.coulter@cyclone.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <pochini@shiny.it>
+Received: from smtp-out113.alice.it (smtp-out113.alice.it [85.37.17.113])
+	by ozlabs.org (Postfix) with ESMTP id F022CDDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 08:25:26 +1100 (EST)
+Date: Wed, 18 Feb 2009 22:18:21 +0100
+From: Giuliano Pochini <pochini@shiny.it>
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: CPU hotplug /sys entries are missing on 2.6.28
+Message-Id: <20090218221821.ca5d29eb.pochini@shiny.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +18,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+/sys/devices/system/cpu/cpu*/online don't exist anymore.
+
+When the kernel is booted with maxcpus=1 /sys/devices/system/cpu/cpu1 is
+also missing:
+
+$ ls -la /sys/devices/system/cpu/
+totale 0
+drwxr-xr-x 3 root root    0  9 feb 23:15 .
+drwxr-xr-x 7 root root    0  9 feb 23:15 ..
+drwxr-xr-x 4 root root    0  9 feb 23:15 cpu0
+-r--r--r-- 1 root root 4096  9 feb 23:15 online
+-r--r--r-- 1 root root 4096  9 feb 23:15 possible
+-r--r--r-- 1 root root 4096  9 feb 23:15 present
+$ cat /sys/devices/system/cpu/online
+0
+$ cat /sys/devices/system/cpu/possible
+0-1
+$ cat /sys/devices/system/cpu/present
+0-1
+$ uname -a
+Linux Jay 2.6.28 #1 SMP Sun Jan 11 22:42:31 CET 2009 ppc 7455, altivec supported PowerMac3,6 GNU/Linux
 
 
-Kumar,
+Looking at the 2.6.28 diff, i noticed there is a patch to
+setup_32.c::ppc_init() that removes the following:
 
->=20
-> can't think of any.  How about adding a BUG_ON() in the tx path to see
-> if the buffer size > MTU and re-run your tests.
->
+	for_each_possible_cpu(cpu) {
+		struct cpu *c = &per_cpu(cpu_devices, cpu);
+		c->hotpluggable = 1;
+		register_cpu(c, cpu);
+	}
 
-With the following in gfar_start_xmit():
+Reverting it makes the kernel hang at boot.
+The only other place where ->hotpluggable is set is in
+sysfs.c::topology_init(), but it only happens if ppc_md.cpu_die!=NULL and I
+couldn't find where that pointer is set. Any clue ?
+TIA,
 
-BUG_ON(skb->len > priv->dev->mtu);
 
-I bug checked during the NFS root boot process with skb->len at 1514 and
-priv->dev->mtu at 1500.  I changed it to:
-
-BUG_ON(skb->len > DEFAULT_RX_BUFFER_SIZE);
-
-Compiling now.  Has not failed yet, I'll let you know.
-
-Scott
-
-___________________________________________________________________
-
-  Scott N. Coulter
-  Senior Software Engineer
- =20
-  Cyclone Microsystems         =20
-  370 James Street              Phone:  203.786.5536 ext. 118
-  New Haven, CT 06513-3051      Email:  scott.coulter@cyclone.com
-  U.S.A.                        Web:    http://www.cyclone.com
-___________________________________________________________________
+--
+Giuliano.
