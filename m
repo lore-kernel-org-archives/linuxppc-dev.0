@@ -1,14 +1,17 @@
-Return-Path: <pochini@shiny.it>
-Received: from smtp-out113.alice.it (smtp-out113.alice.it [85.37.17.113])
-	by ozlabs.org (Postfix) with ESMTP id F022CDDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 08:25:26 +1100 (EST)
-Date: Wed, 18 Feb 2009 22:18:21 +0100
-From: Giuliano Pochini <pochini@shiny.it>
-To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Subject: CPU hotplug /sys entries are missing on 2.6.28
-Message-Id: <20090218221821.ca5d29eb.pochini@shiny.it>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 4D782DDDF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 08:49:09 +1100 (EST)
+Date: Wed, 18 Feb 2009 13:48:52 -0800 (PST)
+Message-Id: <20090218.134852.118040610.davem@davemloft.net>
+To: henk.stegeman@gmail.com
+Subject: Re: net_device_ops support in bridging and fec_mpc52xx.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <ae4f76fd0902180241s28458450hd91ebf8da94ceb53@mail.gmail.com>
+References: <ae4f76fd0902180241s28458450hd91ebf8da94ceb53@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, bridge@osdl.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,44 +21,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-/sys/devices/system/cpu/cpu*/online don't exist anymore.
+From: Henk Stegeman <henk.stegeman@gmail.com>
+Date: Wed, 18 Feb 2009 11:41:14 +0100
 
-When the kernel is booted with maxcpus=1 /sys/devices/system/cpu/cpu1 is
-also missing:
+Please CC: netdev, now added, on all networking reports and patches.
 
-$ ls -la /sys/devices/system/cpu/
-totale 0
-drwxr-xr-x 3 root root    0  9 feb 23:15 .
-drwxr-xr-x 7 root root    0  9 feb 23:15 ..
-drwxr-xr-x 4 root root    0  9 feb 23:15 cpu0
--r--r--r-- 1 root root 4096  9 feb 23:15 online
--r--r--r-- 1 root root 4096  9 feb 23:15 possible
--r--r--r-- 1 root root 4096  9 feb 23:15 present
-$ cat /sys/devices/system/cpu/online
-0
-$ cat /sys/devices/system/cpu/possible
-0-1
-$ cat /sys/devices/system/cpu/present
-0-1
-$ uname -a
-Linux Jay 2.6.28 #1 SMP Sun Jan 11 22:42:31 CET 2009 ppc 7455, altivec supported PowerMac3,6 GNU/Linux
+Thank you.
 
-
-Looking at the 2.6.28 diff, i noticed there is a patch to
-setup_32.c::ppc_init() that removes the following:
-
-	for_each_possible_cpu(cpu) {
-		struct cpu *c = &per_cpu(cpu_devices, cpu);
-		c->hotpluggable = 1;
-		register_cpu(c, cpu);
-	}
-
-Reverting it makes the kernel hang at boot.
-The only other place where ->hotpluggable is set is in
-sysfs.c::topology_init(), but it only happens if ppc_md.cpu_die!=NULL and I
-couldn't find where that pointer is set. Any clue ?
-TIA,
-
-
---
-Giuliano.
+> I discovered the hard way that because linux bridging uses
+> net_device_ops, bridging only works with network drivers that publish
+> their device operations trough net_device_ops.
+> 
+> In my case running:
+> 
+> brctl addif br0 eth0 (where eth0 fec_mpc52xx.c did not yet support
+> net_device_ops) gave me a:
+> 
+> Unable to handle kernel paging request...
+> 
+> After changing fec_mpc52xx.c to support net_device_ops the problem was fixed.
+> 
+> If possible some kind of detection in the bridging software is i think
+> mostly appreciated for early detection of this problem, as it is
+> pretty hard to relate the error message to a not updated driver.
+> 
+> cheers,
+> 
+> Henk
+> 
+> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+> index cd8e98b..a2841eb 100644
+> --- a/drivers/net/fec_mpc52xx.c
+> +++ b/drivers/net/fec_mpc52xx.c
+> @@ -888,6 +888,22 @@ static int mpc52xx_fec_ioctl(struct net_device
+> *dev, struct ifreq *rq, int cmd)
+>  /* ======================================================================== */
+>  /* OF Driver                                                                */
+>  /* ======================================================================== */
+> +static const struct net_device_ops mpc52xx_fec_netdev_ops = {
+> +       .ndo_open               = mpc52xx_fec_open,
+> +       .ndo_stop               = mpc52xx_fec_close,
+> +       .ndo_start_xmit         = mpc52xx_fec_hard_start_xmit,
+> +       .ndo_tx_timeout         = mpc52xx_fec_tx_timeout,
+> +       .ndo_get_stats          = mpc52xx_fec_get_stats,
+> +       .ndo_set_multicast_list = mpc52xx_fec_set_multicast_list,
+> +       .ndo_validate_addr      = eth_validate_addr,
+> +       .ndo_set_mac_address    = mpc52xx_fec_set_mac_address,
+> +       .ndo_do_ioctl           = mpc52xx_fec_ioctl,
+> +
+> +#ifdef CONFIG_NET_POLL_CONTROLLER
+> +       .ndo_poll_controller     = mpc52xx_fec_poll_controller,
+> +#endif
+> +};
+> +
+> 
+>  static int __devinit
+>  mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+> @@ -929,20 +945,7 @@ mpc52xx_fec_probe(struct of_device *op, const
+> struct of_device_id *match)
+>  		return -EBUSY;
+> 
+>  	/* Init ether ndev with what we have */
+> -	ndev->open		= mpc52xx_fec_open;
+> -	ndev->stop		= mpc52xx_fec_close;
+> -	ndev->hard_start_xmit	= mpc52xx_fec_hard_start_xmit;
+> -	ndev->do_ioctl		= mpc52xx_fec_ioctl;
+> -	ndev->ethtool_ops	= &mpc52xx_fec_ethtool_ops;
+> -	ndev->get_stats		= mpc52xx_fec_get_stats;
+> -	ndev->set_mac_address	= mpc52xx_fec_set_mac_address;
+> -	ndev->set_multicast_list = mpc52xx_fec_set_multicast_list;
+> -	ndev->tx_timeout	= mpc52xx_fec_tx_timeout;
+> -	ndev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
+> -	ndev->base_addr		= mem.start;
+> -#ifdef CONFIG_NET_POLL_CONTROLLER
+> -	ndev->poll_controller = mpc52xx_fec_poll_controller;
+> -#endif
+> +	ndev->netdev_ops = &mpc52xx_fec_netdev_ops;
+> 
+>  	priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are free for now */
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
