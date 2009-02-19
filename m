@@ -1,23 +1,21 @@
-Return-Path: <scott.coulter@cyclone.com>
-Received: from CYBORG3.cyclone.com (cyborg3.cyclone.com [69.37.28.78])
-	by ozlabs.org (Postfix) with ESMTP id 09792DDE11
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:38:06 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Gianfar tx-babbling-errors
-Date: Thu, 19 Feb 2009 11:38:04 -0500
-Message-ID: <43EB80E07C42E1408726E4905FB96B04C07702@CYBORG3.cyclone.com>
-In-Reply-To: <A543F487-78F9-4791-ABEB-2D8D017A516B@kernel.crashing.org>
-References: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
-	<F122E3A2-3054-4BC9-9C06-0ADE590A8AFC@kernel.crashing.org>
-	<43EB80E07C42E1408726E4905FB96B04C076B1@CYBORG3.cyclone.com>
-	<6BBF4AB4-FFB0-46ED-B591-17DEC3BE547F@kernel.crashing.org>
-	<43EB80E07C42E1408726E4905FB96B04C07700@CYBORG3.cyclone.com>
-	<A543F487-78F9-4791-ABEB-2D8D017A516B@kernel.crashing.org>
-From: "Scott Coulter" <scott.coulter@cyclone.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F0A55DDDA0
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:41:42 +1100 (EST)
+Message-Id: <BAA283E5-3730-4534-AA9D-446B3135966F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1233928837-3401-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for I2C
+	to complete
+Date: Thu, 19 Feb 2009 10:41:30 -0600
+References: <1233928837-3401-1-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, broonie@opensource.wolfsonmicro.com,
+	linux-i2c@vger.kernel.org, mditto@consentry.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,31 +26,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
->=20
-> What specific processor & rev are you running on?
+On Feb 6, 2009, at 8:00 AM, Timur Tabi wrote:
+
+> The i2c_wait() function is using wait_event_interruptible_timeout()  
+> to wait for
+> the I2C controller to signal that it has completed an I2C bus  
+> operation.  If
+> the process that causes the I2C operation terminated abruptly, the  
+> wait will
+> be interrupted, returning an error.  It is better to let the I2C  
+> operation
+> finished before the process exits.
 >
+> It is safe to use wait_event_timeout() instead, because the timeout  
+> will allow
+> the process to exit if the I2C bus hangs.  It's also better to allow  
+> the
+> I2C operation to finish, because unacknowledged I2C operations can  
+> cause the
+> I2C bus to hang.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>
+> A similar change should probably be done to i2c-cpm.c, and maybe all  
+> other
+> I2C drivers.  Not many use wait_event_interruptible_timeout().
+>
+> drivers/i2c/busses/i2c-mpc.c |    9 +++------
+> 1 files changed, 3 insertions(+), 6 deletions(-)
 
-I've only been running the modified kernel with the added BUG_ON() code
-on the 8568E processor, but I've seen the errors reported on the 8572E
-as well.
+applied to next
 
-According to the u-boot startup:
-
-8568E, Version: 1.1, (0x807d0011)
-Core:  E500, Version: 2.2 (0x80210022)
-
-8572E, Version: 1.1, (0x80e80011)
-Core:  E500, Version: 3.0 (0x80210030)
-
-
-Scott
-___________________________________________________________________
-
-  Scott N. Coulter
-  Senior Software Engineer
- =20
-  Cyclone Microsystems         =20
-  370 James Street              Phone:  203.786.5536 ext. 118
-  New Haven, CT 06513-3051      Email:  scott.coulter@cyclone.com
-  U.S.A.                        Web:    http://www.cyclone.com
-___________________________________________________________________
+- k
