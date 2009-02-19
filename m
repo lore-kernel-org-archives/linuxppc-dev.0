@@ -1,28 +1,21 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CB87EDDED8
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:24:46 +1100 (EST)
-Subject: Re: Regarding irq_of_parse_and_map
-From: Jon Loeliger <jdl@freescale.com>
-To: Vijay Nikam <vijay.t.nikam@gmail.com>
-In-Reply-To: <f234e2140902190351i41f99cbu22c3654eadf03f49@mail.gmail.com>
-References: <f234e2140902160355p148c99d1qc2e5b6f6ae9a716f@mail.gmail.com>
-	<20090216180857.GA18069@ld0162-tx32.am.freescale.net>
-	<f234e2140902170341y31662e8fla8a8cf87473ed419@mail.gmail.com>
-	<499AF08B.6010702@freescale.com>
-	<f234e2140902180401u40a71642ga4e221f795bc5abd@mail.gmail.com>
-	<20090218165724.GA26391@ld0162-tx32.am.freescale.net>
-	<f234e2140902190351i41f99cbu22c3654eadf03f49@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 19 Feb 2009 11:24:36 -0600
-Message-Id: <1235064276.29088.2.camel@ld0161-tx32>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id CBB8EDDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:29:07 +1100 (EST)
+Date: Thu, 19 Feb 2009 20:29:02 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/83xx: Do not configure or probe disabled FSL
+	DR USB controllers
+Message-ID: <20090219172902.GA11227@oksana.dev.rtsoft.ru>
+References: <20090219160223.GA2095@oksana.dev.rtsoft.ru>
+	<8EC0BAAB-7261-406F-BA42-BE6D9EC55AAB@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <8EC0BAAB-7261-406F-BA42-BE6D9EC55AAB@kernel.crashing.org>
+Cc: Liu Dave <DaveLiu@freescale.com>, Andy Fleming <afleming@freescale.com>,
+	linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,17 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-02-19 at 17:21 +0530, Vijay Nikam wrote:
+On Thu, Feb 19, 2009 at 10:19:05AM -0600, Kumar Gala wrote:
+>
+> On Feb 19, 2009, at 10:02 AM, Anton Vorontsov wrote:
+>
+>> On MPC837X CPUs Dual-Role USB isn't always available (for example DR
+>> USB pins can be muxed away to eSDHC).
+>>
+>> U-Boot adds status = "disabled" property into the DR USB nodes to
+>> indicate that we must not try to configure or probe Dual-Role USB,
+>> otherwise we'll break eSDHC support on targets with MPC837X CPUs.
+>>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>> ---
+>> arch/powerpc/platforms/83xx/usb.c |    3 ++-
+>> arch/powerpc/sysdev/fsl_soc.c     |    4 ++++
+>> 2 files changed, 6 insertions(+), 1 deletions(-)
+>
+> Mind looking at possibly killing the fsl_soc.c  usb code and making the 
+> usb a real of-platform driver?
 
-> Also is it possible to compile device tree on Linux host and genreate
-> dtb for powerpc ? ? ? If yes, then how ? ? ? please let me know ...
-> thanks ...
+Sure, but it's a bit complicated because of OTG support (which
+doesn't currently work, btw).
 
-Uh, get a copy of the DTC using:
+Just need to think about whether we want to leave UDC and HOST
+drivers as pure platform drivers, and implement an of platform
+driver as a proxy for Host/UDC/OTG...
 
-    $ git clone git://git.jdl.com/software/dtc.git
-    $ cd dtc
-    $ make
+Thanks,
 
-HTH,
-jdl
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
