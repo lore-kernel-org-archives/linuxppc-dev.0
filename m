@@ -1,17 +1,19 @@
 Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
+Received: from mx1.suse.de (mail.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7D008DDEE8
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:12:36 +1100 (EST)
-Date: Thu, 19 Feb 2009 18:12:29 +0100
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4D63BDDDF3
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:21:40 +1100 (EST)
+Date: Thu, 19 Feb 2009 18:21:33 +0100
 From: Nick Piggin <npiggin@suse.de>
 To: benh@kernel.crashing.org, paulus@samba.org,
 	linuxppc-dev@ozlabs.org
-Subject: [patch 1/2] powerpc: optimise smp_mb
-Message-ID: <20090219171229.GJ1747@wotan.suse.de>
+Subject: [patch 2/2] powerpc: replace isync with lwsync
+Message-ID: <20090219172133.GK1747@wotan.suse.de>
+References: <20090219171229.GJ1747@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090219171229.GJ1747@wotan.suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +23,321 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+OK, here is this patch again. You didn't think I'd let a 2% performance
+improvement be forgotten? :)
 
-Using lwsync, isync sequence in a microbenchmark is 5 times faster on my G5 than
-using sync for smp_mb. Although it takes more instructions.
+Anyway, patch won't work well on architecture without lwsync, but I won't
+bother fixing that kind of thing and making it merge worthy until you
+guys say something positive about it.
 
-Running tbench with 4 clients on my 4 core G5 (20 times) gives the
-following:
+20 runs of tbench on the G5
 
-unpatched AVG=920.33 STD=2.36
-  patched AVG=921.27 STD=2.77
+unpatched AVG=920.37 STD=2.36
+  patched AVG=938.89 STD=3.33
 
-So not a big improvement here, actually it could even be in the noise.
-But other workloads or systems might see a bigger win, and the patch
-maybe is interesting or could be improved, so I'll ask for comments. 
+(throughput in MB/s) This is a 1.9% throughput increase.
 
 ---
+
+Index: linux-2.6/arch/powerpc/include/asm/atomic.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/atomic.h	2009-02-20 01:50:20.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/atomic.h	2009-02-20 02:13:22.000000000 +1100
+@@ -55,7 +55,7 @@
+ 	PPC405_ERR77(0,%2)
+ "	stwcx.	%0,0,%2 \n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (a), "r" (&v->counter)
+ 	: "cc", "memory");
+@@ -91,7 +91,7 @@
+ 	PPC405_ERR77(0,%2)
+ "	stwcx.	%0,0,%2 \n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (a), "r" (&v->counter)
+ 	: "cc", "memory");
+@@ -125,7 +125,7 @@
+ 	PPC405_ERR77(0,%1)
+ "	stwcx.	%0,0,%1 \n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (&v->counter)
+ 	: "cc", "xer", "memory");
+@@ -169,7 +169,7 @@
+ 	PPC405_ERR77(0,%1)
+ "	stwcx.	%0,0,%1\n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (&v->counter)
+ 	: "cc", "xer", "memory");
+@@ -202,7 +202,7 @@
+ 	PPC405_ERR77(0,%2)
+ "	stwcx.	%0,0,%1 \n\
+ 	bne-	1b \n"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ "	subf	%0,%2,%0 \n\
+ 2:"
+ 	: "=&r" (t)
+@@ -235,7 +235,7 @@
+ 	PPC405_ERR77(0,%1)
+ "	stwcx.	%0,0,%1\n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	"\n\
+ 2:"	: "=&b" (t)
+ 	: "r" (&v->counter)
+@@ -291,7 +291,7 @@
+ 	add	%0,%1,%0\n\
+ 	stdcx.	%0,0,%2 \n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (a), "r" (&v->counter)
+ 	: "cc", "memory");
+@@ -325,7 +325,7 @@
+ 	subf	%0,%1,%0\n\
+ 	stdcx.	%0,0,%2 \n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (a), "r" (&v->counter)
+ 	: "cc", "memory");
+@@ -357,7 +357,7 @@
+ 	addic	%0,%0,1\n\
+ 	stdcx.	%0,0,%1 \n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (&v->counter)
+ 	: "cc", "xer", "memory");
+@@ -399,7 +399,7 @@
+ 	addic	%0,%0,-1\n\
+ 	stdcx.	%0,0,%1\n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (&v->counter)
+ 	: "cc", "xer", "memory");
+@@ -425,7 +425,7 @@
+ 	blt-	2f\n\
+ 	stdcx.	%0,0,%1\n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	"\n\
+ 2:"	: "=&r" (t)
+ 	: "r" (&v->counter)
+@@ -458,7 +458,7 @@
+ 	add	%0,%2,%0 \n"
+ "	stdcx.	%0,0,%1 \n\
+ 	bne-	1b \n"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ "	subf	%0,%2,%0 \n\
+ 2:"
+ 	: "=&r" (t)
+Index: linux-2.6/arch/powerpc/include/asm/bitops.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/bitops.h	2009-02-20 01:50:20.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/bitops.h	2009-02-20 02:13:22.000000000 +1100
+@@ -139,7 +139,7 @@
+ 	PPC405_ERR77(0,%3)
+ 	PPC_STLCX "%1,0,%3 \n"
+ 	"bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (old), "=&r" (t)
+ 	: "r" (mask), "r" (p)
+ 	: "cc", "memory");
+@@ -160,7 +160,7 @@
+ 	PPC405_ERR77(0,%3)
+ 	PPC_STLCX "%1,0,%3 \n"
+ 	"bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (old), "=&r" (t)
+ 	: "r" (mask), "r" (p)
+ 	: "cc", "memory");
+@@ -182,7 +182,7 @@
+ 	PPC405_ERR77(0,%3)
+ 	PPC_STLCX "%1,0,%3 \n"
+ 	"bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (old), "=&r" (t)
+ 	: "r" (mask), "r" (p)
+ 	: "cc", "memory");
+@@ -204,7 +204,7 @@
+ 	PPC405_ERR77(0,%3)
+ 	PPC_STLCX "%1,0,%3 \n"
+ 	"bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (old), "=&r" (t)
+ 	: "r" (mask), "r" (p)
+ 	: "cc", "memory");
+Index: linux-2.6/arch/powerpc/include/asm/futex.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/futex.h	2009-02-20 01:50:20.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/futex.h	2009-02-20 02:13:22.000000000 +1100
+@@ -97,7 +97,7 @@
+         PPC405_ERR77(0,%2)
+ "2:     stwcx.  %4,0,%2\n\
+         bne-    1b\n"
+-        ISYNC_ON_SMP
++        LWSYNC_ON_SMP
+ "3:	.section .fixup,\"ax\"\n\
+ 4:	li	%0,%5\n\
+ 	b	3b\n\
+Index: linux-2.6/arch/powerpc/include/asm/spinlock.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/spinlock.h	2009-02-20 01:50:20.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/spinlock.h	2009-02-20 02:13:22.000000000 +1100
+@@ -65,7 +65,7 @@
+ 	bne-		2f\n\
+ 	stwcx.		%1,0,%2\n\
+ 	bne-		1b\n\
+-	isync\n\
++	lwsync\n\
+ 2:"	: "=&r" (tmp)
+ 	: "r" (token), "r" (&lock->slock)
+ 	: "cr0", "memory");
+@@ -193,7 +193,7 @@
+ 	PPC405_ERR77(0,%1)
+ "	stwcx.		%0,0,%1\n\
+ 	bne-		1b\n\
+-	isync\n\
++	lwsync\n\
+ 2:"	: "=&r" (tmp)
+ 	: "r" (&rw->lock)
+ 	: "cr0", "xer", "memory");
+@@ -217,7 +217,7 @@
+ 	PPC405_ERR77(0,%1)
+ "	stwcx.		%1,0,%2\n\
+ 	bne-		1b\n\
+-	isync\n\
++	lwsync\n\
+ 2:"	: "=&r" (tmp)
+ 	: "r" (token), "r" (&rw->lock)
+ 	: "cr0", "memory");
 Index: linux-2.6/arch/powerpc/include/asm/system.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/system.h	2009-02-20 01:51:24.000000000 +1100
-+++ linux-2.6/arch/powerpc/include/asm/system.h	2009-02-20 02:09:41.000000000 +1100
-@@ -52,7 +52,16 @@
- #    define SMPWMB      eieio
- #endif
+--- linux-2.6.orig/arch/powerpc/include/asm/system.h	2009-02-20 02:09:41.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/system.h	2009-02-20 02:13:22.000000000 +1100
+@@ -246,7 +246,7 @@
+ 	PPC405_ERR77(0,%2)
+ "	stwcx.	%3,0,%2 \n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (prev), "+m" (*(volatile unsigned int *)p)
+ 	: "r" (p), "r" (val)
+ 	: "cc", "memory");
+@@ -289,7 +289,7 @@
+ 	PPC405_ERR77(0,%2)
+ "	stdcx.	%3,0,%2 \n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (prev), "+m" (*(volatile unsigned long *)p)
+ 	: "r" (p), "r" (val)
+ 	: "cc", "memory");
+@@ -382,7 +382,7 @@
+ 	PPC405_ERR77(0,%2)
+ "	stwcx.	%4,0,%2\n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	"\n\
+ 2:"
+ 	: "=&r" (prev), "+m" (*p)
+@@ -427,7 +427,7 @@
+ 	bne-	2f\n\
+ 	stdcx.	%4,0,%2\n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	"\n\
+ 2:"
+ 	: "=&r" (prev), "+m" (*p)
+Index: linux-2.6/arch/powerpc/include/asm/synch.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/synch.h	2009-02-20 01:50:20.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/synch.h	2009-02-20 02:13:22.000000000 +1100
+@@ -38,7 +38,7 @@
  
-+#ifdef __powerpc64__
-+#define smp_mb()	__asm__ __volatile__ (				    \
-+					"1:	lwsync			\n" \
-+					"	cmpw	0,%%r0,%%r0	\n" \
-+					"	bne-	1b		\n" \
-+					"	isync			\n" \
-+					: : : "memory")
-+#else
- #define smp_mb()	mb()
-+#endif
- #define smp_rmb()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
- #define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
- #define smp_read_barrier_depends()	read_barrier_depends()
+ #ifdef CONFIG_SMP
+ #define ISYNC_ON_SMP	"\n\tisync\n"
+-#define LWSYNC_ON_SMP	stringify_in_c(LWSYNC) "\n"
++#define LWSYNC_ON_SMP	"\n\t" stringify_in_c(LWSYNC) "\n"
+ #else
+ #define ISYNC_ON_SMP
+ #define LWSYNC_ON_SMP
+Index: linux-2.6/arch/powerpc/include/asm/mutex.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/mutex.h	2009-02-20 01:50:20.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/mutex.h	2009-02-20 02:13:22.000000000 +1100
+@@ -15,7 +15,7 @@
+ 	PPC405_ERR77(0,%1)
+ "	stwcx.	%3,0,%1\n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	"\n\
+ 2:"
+ 	: "=&r" (t)
+@@ -35,7 +35,7 @@
+ 	PPC405_ERR77(0,%1)
+ "	stwcx.	%0,0,%1\n\
+ 	bne-	1b"
+-	ISYNC_ON_SMP
++	LWSYNC_ON_SMP
+ 	: "=&r" (t)
+ 	: "r" (&v->counter)
+ 	: "cc", "memory");
+Index: linux-2.6/arch/powerpc/mm/hash_low_64.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/mm/hash_low_64.S	2009-02-20 01:50:20.000000000 +1100
++++ linux-2.6/arch/powerpc/mm/hash_low_64.S	2009-02-20 02:13:22.000000000 +1100
+@@ -110,7 +110,7 @@
+ 	/* Write the linux PTE atomically (setting busy) */
+ 	stdcx.	r30,0,r6
+ 	bne-	1b
+-	isync
++	lwsync
+ 
+ 	/* Step 2:
+ 	 *
+@@ -393,7 +393,7 @@
+ 	/* Write the linux PTE atomically (setting busy) */
+ 	stdcx.	r30,0,r6
+ 	bne-	1b
+-	isync
++	lwsync
+ 
+ 	/* Step 2:
+ 	 *
+@@ -734,7 +734,7 @@
+ 	/* Write the linux PTE atomically (setting busy) */
+ 	stdcx.	r30,0,r6
+ 	bne-	1b
+-	isync
++	lwsync
+ 
+ 	/* Step 2:
+ 	 *
