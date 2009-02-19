@@ -1,21 +1,19 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D333EDDDF6
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 22:14:24 +1100 (EST)
-Date: Thu, 19 Feb 2009 12:14:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [git pull] for both tip and powerpc
-Message-ID: <20090219111410.GM2354@elte.hu>
-References: <alpine.DEB.1.10.0902181408160.11411@gandalf.stny.rr.com>
+Return-Path: <rusty@rustcorp.com.au>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
+Date: Thu, 19 Feb 2009 21:48:04 +1030
+References: <20090217222425.GA18801@ovro.caltech.edu>
+	<200902181713.03820.rusty@rustcorp.com.au>
+	<20090218163835.GA29728@ovro.caltech.edu>
+In-Reply-To: <20090218163835.GA29728@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.1.10.0902181408160.11411@gandalf.stny.rr.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	=?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200902192148.05651.rusty@rustcorp.com.au>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,45 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 19 February 2009 03:08:35 Ira Snyder wrote:
+> On Wed, Feb 18, 2009 at 05:13:03PM +1030, Rusty Russell wrote:
+> > don't restrict yourself to 32 feature bits (only PCI does this, and they're
+> > going to have to hack when we reach feature 32).
+> 
+> There isn't any problem adding more feature bits. Do you think 128 bits
+> is enough?
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Probably.  We have unlimited bits in lguest and s390, but 128 is reasonable
+for the forseeable future (if not, you end up using bit 128 to mean "look
+somewhere else for the rest of the bits).
 
-> Ingo and Benjamin,
+> > How about prepending a 4 byte length on the host buffers?  Allows host to
+> > specify length (for host->guest), and guest writes it to allow truncated
+> > buffers on guest->host.
+> > 
+> > That won't allow you to transfer *more* than one buffersize to the host, but
+> > you could use a different method (perhaps the 4 bytes indicates the *total*
+> > length?).
 > 
-> As discussed, I made a branch called mainline/function-graph-tracer 
-> based off of Linus's commit:
+> I don't understand how this will help.
 > 
-> commit d2f8d7ee1a9b4650b4e43325b321801264f7c37a
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Fri Feb 13 15:31:30 2009 -0800
-> 
->     Linux 2.6.29-rc5
-> 
-> 
-> and cherry picked the below change. I added Ingo's Acked-by as well. If 
-> both of you pull this change in (assuming both trees are already based 
-> off of Linus's 2.6.29-rc5) then there should be no conflicts when this 
-> gets merged back to Linus's tree.
-> 
-> I will not touch this branch again, until it is officially in mainline.
-> 
-> Please pull the latest mainline/function-graph tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> mainline/function-graph
-> 
-> 
-> Steven Rostedt (1):
->       tracing/function-graph-tracer: make arch generic push pop functions
-> 
-> ----
->  arch/x86/include/asm/ftrace.h        |   25 -----------
->  arch/x86/kernel/dumpstack.c          |    1 +
->  arch/x86/kernel/ftrace.c             |   75 +---------------------------------
->  include/linux/ftrace.h               |   24 +++++++++++
->  kernel/trace/trace_functions_graph.c |   75 ++++++++++++++++++++++++++++++++++
->  5 files changed, 101 insertions(+), 99 deletions(-)
+> I looked at virtio_net's implemention with VIRTIO_NET_F_MRG_RXBUF, which
+> seems like it could really help performance. The problems with that are:
+> 1) virtio_net doesn't write the merged header's num_buffers field
+> 2) virtio_net doesn't actually split packets in xmit
+...
+> I'm using two instances of virtio_net to talk to each other, rather than
+> a special userspace implementation like lguest and kvm use. Is this a
+> good approach?
 
-Pulled into tip:tracing/function-graph-tracer, thanks Steve!
+Well, virtio in general is guest-host asymmetric.  I originally explored
+symmetry, but it didn't seem to offer any concrete advantages, so we didn't
+require it.  You aren't actually directly connecting two guests, are you?
+So this is just a simplification for your implementation?
 
-	Ingo
+You could always add a VIRTIO_NET_F_MRG_TXBUF which did what you want, but
+note that symmetry breaks down for other virtio uses, too: block definitely
+isn't symmetric of course, but I haven't audited the others.
+
+So I'd recommend asymmetry; hack your host to understand chained buffers.
+
+Cheers,
+Rusty.
