@@ -1,32 +1,24 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 57327DDDA5
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 02:07:53 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e7.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n1JExj8S004411
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 09:59:45 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n1JF7nIn103342
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 10:07:49 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n1JF7mVC018177
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 10:07:49 -0500
-Subject: Re: [PATCH] powerpc: New cpu type shows up as "unknown" even when
-	logical PVR is recognized
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: michael@ellerman.id.au
-In-Reply-To: <1234620007.10265.7.camel@localhost>
-References: <1234557928.10378.8.camel@norville.austin.ibm.com>
-	<1234620007.10265.7.camel@localhost>
-Content-Type: text/plain
-Date: Thu, 19 Feb 2009 09:07:46 -0600
-Message-Id: <1235056066.20983.1.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
+	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id DA1C4DDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 02:17:32 +1100 (EST)
+Received: by qyk14 with SMTP id 14so1792761qyk.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 07:17:30 -0800 (PST)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054B@mailsvr>
+References: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40549@mailsvr>
+	<3A45394FD742FA419B760BB8D398F9ED246F06@zch01exm26.fsl.freescale.net>
+	<FD3D453EC8A8D5479E7E063D31E2FA44268653@zin33exm24.fsl.freescale.net>
+	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054B@mailsvr>
+Date: Thu, 19 Feb 2009 09:17:30 -0600
+Message-ID: <ed82fe3e0902190717p5658fc12k7552a9e178e9302@mail.gmail.com>
+Subject: Re: Newby trying to get Ethernet going on MPC83xx series device.
+From: Timur Tabi <timur@freescale.com>
+To: Dushara Jayasinghe <DusharaJ@optiscan.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,51 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2009-02-15 at 01:00 +1100, Michael Ellerman wrote:
-> On Fri, 2009-02-13 at 14:45 -0600, Dave Kleikamp wrote:
-> > When identify_cpu() is called a second time with a logical PVR, it only
-> > copies a subset of the cpu_spec structure to avoid overwriting the
-> > performance monitor fields that were initialized based on the real PVR.
-> > 
-> > If the real PVR is not recognized, the structure is initialized with
-> > default data in which the pvr_mask field is zero.  Overriding the default
-> > definition with the one based on the logical PVR does not update the
-> > pvr_mask field.  Since the pvr_mask field remains zero, show_cpuinfo()
-> > reports the cpu as "unknown".
-> > 
-> > identify_cpu() should update the pvr_mask, so that show_cpuinfo() reports
-> > the logical cpu name, as it would if the kernel recognized the real PVR.
-> > 
-> > For completeness, this patch also updates pvr_value, although its only
-> > use appears to be in booke_wdt_init() setting ident.firmware_version.  I'm
-> > not sure which value (the real or logical) is the most useful here, if it
-> > matters at all.
-> > 
-> > Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> > 
-> > diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-> > index 923f87a..a216fad 100644
-> > --- a/arch/powerpc/kernel/cputable.c
-> > +++ b/arch/powerpc/kernel/cputable.c
-> > @@ -1780,6 +1780,8 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
-> >  			 * performance monitor fields.
-> >  			 */
-> >  			if (t->num_pmcs && !s->num_pmcs) {
-> > +				t->pvr_mask = s->pvr_mask;
-> > +				t->pvr_value = s->pvr_value;
-> >  				t->cpu_name = s->cpu_name;
-> >  				t->cpu_features = s->cpu_features;
-> >  				t->cpu_user_features = s->cpu_user_features;
-> 
-> Seems like we'd be better off copying the whole structure, and then
-> putting back the performance monitor fields. So we don't end up with
-> another bug if something's added to struct cpu_spec.
+On Thu, Feb 19, 2009 at 12:58 AM, Dushara Jayasinghe
+<DusharaJ@optiscan.com> wrote:
+> I based my board specific file on mpc834x_itx.c which had
+>
+> static struct of_device_id __initdata mpc834x_itx_ids[] = {
+>                 { .compatible = "fsl,pq2pro-localbus", },
+>                 { .compatible = "simple-bus", },
+>                 {},
+> };
+>
+> Don't know if this is broken?
 
-I feel that may be a bit of overkill, but I don't feel strongly either
-way.  I'd like the patch to be picked up in one fashion or another.
+Actually, it's your device tree that's broken.  The above is the right
+way to do it.  The other way:
 
-Thanks,
-Shaggy
+static struct of_device_id mpc834x_ids[] = {
+        { .type = "soc", },
+        { .compatible = "soc", },
+        { .compatible = "simple-bus", },
+        {},
+};
+
+is the old way.  You're missing a compatible=simple-bus in your device tree.
+
 -- 
-David Kleikamp
-IBM Linux Technology Center
+Timur Tabi
+Linux kernel developer at Freescale
