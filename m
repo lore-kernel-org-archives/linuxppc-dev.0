@@ -1,24 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2C707DDDA9
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:04:39 +1100 (EST)
-Message-Id: <12B2E46F-9CA4-4950-B58A-D02E5F3AA079@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: sjoyeau@wanadoo.fr
-In-Reply-To: <d194b8ce0902190848hb53166cj32e7d0bd65021d2e@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Gianfar tx-babbling-errors
-Date: Thu, 19 Feb 2009 11:03:50 -0600
-References: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
-	<F122E3A2-3054-4BC9-9C06-0ADE590A8AFC@kernel.crashing.org>
-	<43EB80E07C42E1408726E4905FB96B04C076B1@CYBORG3.cyclone.com>
-	<6BBF4AB4-FFB0-46ED-B591-17DEC3BE547F@kernel.crashing.org>
-	<43EB80E07C42E1408726E4905FB96B04C07700@CYBORG3.cyclone.com>
-	<d194b8ce0902190848hb53166cj32e7d0bd65021d2e@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Scott Coulter <scott.coulter@cyclone.com>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1EC14DDE0F
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:07:51 +1100 (EST)
+Date: Thu, 19 Feb 2009 18:07:41 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: benh@kernel.crashing.org, paulus@samba.org,
+	linuxppc-dev@ozlabs.org
+Subject: [patch] powerpc: estimate G5 cpufreq transition latency
+Message-ID: <20090219170741.GI1747@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +21,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Setting G5's cpu frequency transition latency to CPUFREQ_ETERNAL stops
+ondemand governor from working. I measured the latency using sched_clock
+and haven't seen much higher than 11000ns, so I set this to 12000ns for
+my configuration. Possibly other configurations will be different?
+Ideally the generic code would be able to measure it in case the platform
+does not provide it.
 
-On Feb 19, 2009, at 10:48 AM, sjoyeau@wanadoo.fr wrote:
+But this simple patch at least makes it throttle again.
 
-> Hi Scott,
->
-> Your issue may come from data setup (or corruption) instead of code  
-> path: babbling error may occurs when a TSEC TX descriptor hasn't its  
-> "last frame" bit set or when the data length is greated than max  
-> frame length.
->
-> --
-
-Take a look at TxBD[TR] and see if its getting set ever.
-
-- k
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/arch/powerpc/platforms/powermac/cpufreq_64.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/cpufreq_64.c	2009-02-20 01:42:41.000000000 +1100
++++ linux-2.6/arch/powerpc/platforms/powermac/cpufreq_64.c	2009-02-20 01:50:15.000000000 +1100
+@@ -86,6 +86,7 @@
+ 
+ static DEFINE_MUTEX(g5_switch_mutex);
+ 
++static unsigned long transition_latency;
+ 
+ #ifdef CONFIG_PMAC_SMU
+ 
+@@ -357,7 +358,7 @@
+ 
+ static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
++	policy->cpuinfo.transition_latency = transition_latency;
+ 	policy->cur = g5_cpu_freqs[g5_query_freq()].frequency;
+ 	/* secondary CPUs are tied to the primary one by the
+ 	 * cpufreq core if in the secondary policy we tell it that
+@@ -500,6 +501,7 @@
+ 	g5_cpu_freqs[1].frequency = max_freq/2;
+ 
+ 	/* Set callbacks */
++	transition_latency = 12000;
+ 	g5_switch_freq = g5_scom_switch_freq;
+ 	g5_query_freq = g5_scom_query_freq;
+ 	freq_method = "SCOM";
+@@ -675,6 +677,7 @@
+ 	g5_cpu_freqs[1].frequency = min_freq;
+ 
+ 	/* Set callbacks */
++	transition_latency = CPUFREQ_ETERNAL;
+ 	g5_switch_volt = g5_pfunc_switch_volt;
+ 	g5_switch_freq = g5_pfunc_switch_freq;
+ 	g5_query_freq = g5_pfunc_query_freq;
+Index: linux-2.6/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-2.6.orig/drivers/cpufreq/cpufreq.c	2009-02-20 01:42:43.000000000 +1100
++++ linux-2.6/drivers/cpufreq/cpufreq.c	2009-02-20 01:50:15.000000000 +1100
+@@ -1559,9 +1559,11 @@
+ 		else {
+ 			printk(KERN_WARNING "%s governor failed, too long"
+ 			       " transition latency of HW, fallback"
+-			       " to %s governor\n",
++			       " to %s governor (latency=%lld max=%lld)\n",
+ 			       policy->governor->name,
+-			       gov->name);
++			       gov->name,
++			       policy->cpuinfo.transition_latency,
++			       policy->governor->max_transition_latency);
+ 			policy->governor = gov;
+ 		}
+ 	}
