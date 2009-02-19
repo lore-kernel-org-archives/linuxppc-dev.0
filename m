@@ -1,22 +1,24 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id D1E4FDDE06
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:03:16 +1100 (EST)
-Date: Thu, 19 Feb 2009 09:03:14 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
-Message-ID: <20090219170313.GC12795@ovro.caltech.edu>
-References: <20090217222425.GA18801@ovro.caltech.edu>
-	<D999D051-E5A2-4915-893D-E3384EC312A4@kernel.crashing.org>
-	<7DF0AF56456B8F4081E3C44CCCE311DE1519A3@zch01exm23.fsl.freescale.net>
-	<C04B22C6-BCE8-4D99-A160-22F8846C8209@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C04B22C6-BCE8-4D99-A160-22F8846C8209@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-	netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2C707DDDA9
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:04:39 +1100 (EST)
+Message-Id: <12B2E46F-9CA4-4950-B58A-D02E5F3AA079@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: sjoyeau@wanadoo.fr
+In-Reply-To: <d194b8ce0902190848hb53166cj32e7d0bd65021d2e@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: Gianfar tx-babbling-errors
+Date: Thu, 19 Feb 2009 11:03:50 -0600
+References: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
+	<F122E3A2-3054-4BC9-9C06-0ADE590A8AFC@kernel.crashing.org>
+	<43EB80E07C42E1408726E4905FB96B04C076B1@CYBORG3.cyclone.com>
+	<6BBF4AB4-FFB0-46ED-B591-17DEC3BE547F@kernel.crashing.org>
+	<43EB80E07C42E1408726E4905FB96B04C07700@CYBORG3.cyclone.com>
+	<d194b8ce0902190848hb53166cj32e7d0bd65021d2e@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Scott Coulter <scott.coulter@cyclone.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,58 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 19, 2009 at 10:51:43AM -0600, Kumar Gala wrote:
->
-> On Feb 19, 2009, at 12:13 AM, Zang Roy-R61911 wrote:
->
->>
->>
->>> -----Original Message-----
->>> From:
->>> linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs.org
->>> [mailto:linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs
->>> .org] On Behalf Of Kumar Gala
->>> Sent: Thursday, February 19, 2009 0:47 AM
->>> To: Ira Snyder
->>> Cc: Arnd Bergmann; Jan-Bernd Themann; netdev@vger.kernel.org;
->>> Rusty Russell; linux-kernel@vger.kernel.org; linuxppc-dev@ozlabs.org
->>> Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
->>>
->>>
->>> On Feb 17, 2009, at 4:24 PM, Ira Snyder wrote:
->>>
->>>>
->>>> Documentation/virtio-over-PCI.txt     |   61 ++
->>>> arch/powerpc/boot/dts/mpc834x_mds.dts |    7 +
->>>
->>> we'll have to review the .dts and expect a documentation update for
->>> the node.  But that's pretty minor at this point.
->>>
->>>> drivers/virtio/Kconfig                |   22 +
->>>> drivers/virtio/Makefile               |    2 +
->>>> drivers/virtio/vop.h                  |  119 ++
->>>> drivers/virtio/vop_fsl.c              | 1911
->>> ++++++++++++++++++++++++
->>>> +++++++++
->>>
->>> make this vop_fsl_mpc83xx.c or something along those lines.
->> why?
->
-> so we can deal with 85xx as well.  We just need to isolate the 83xx  
-> specific bits (message usage)
->
 
-In fact, most of the driver has nothing to do with hardware, and
-everything to do with managing memory.
+On Feb 19, 2009, at 10:48 AM, sjoyeau@wanadoo.fr wrote:
 
-Most of the driver could be shared between implementations. The only
-things that would be hardware specific are setting up the descriptor
-memory, and raising/handling interrupts.
+> Hi Scott,
+>
+> Your issue may come from data setup (or corruption) instead of code  
+> path: babbling error may occurs when a TSEC TX descriptor hasn't its  
+> "last frame" bit set or when the data length is greated than max  
+> frame length.
+>
+> --
 
-I just wanted to get something working and out here to discuss. I
-figured that more hardware support, features, etc. could come later.
-Just like everything else in the kernel, I'm sure this will have to
-evolve over time as well.
+Take a look at TxBD[TR] and see if its getting set ever.
 
-Thanks,
-Ira
+- k
