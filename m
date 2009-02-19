@@ -1,23 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 14B61DDED4
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 18:15:05 +1100 (EST)
-Subject: Re: open-pic device tree node and subnodes for additional
-	functionality?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <8330CA5E-0F3B-49D5-AB55-500CD37739C1@kernel.crashing.org>
-References: <59D5800B-309D-4A4E-AD1F-CEC8E2D1BE5B@kernel.crashing.org>
-	<20090216181241.GB18069@ld0162-tx32.am.freescale.net>
-	<8330CA5E-0F3B-49D5-AB55-500CD37739C1@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 19 Feb 2009 18:14:52 +1100
-Message-Id: <1235027692.8805.10.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <pku.leo@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 880C5DDEFD
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 18:19:49 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so99129yxb.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2009 23:19:47 -0800 (PST)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054B@mailsvr>
+References: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40549@mailsvr>
+	<3A45394FD742FA419B760BB8D398F9ED246F06@zch01exm26.fsl.freescale.net>
+	<FD3D453EC8A8D5479E7E063D31E2FA44268653@zin33exm24.fsl.freescale.net>
+	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054B@mailsvr>
+Date: Thu, 19 Feb 2009 15:19:45 +0800
+Message-ID: <2a27d3730902182319i2c59d68dk98e7975714f80549@mail.gmail.com>
+Subject: Re: Newby trying to get Ethernet going on MPC83xx series device.
+From: Li Yang <leoli@freescale.com>
+To: Dushara Jayasinghe <DusharaJ@optiscan.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Feb 19, 2009 at 2:58 PM, Dushara Jayasinghe
+<DusharaJ@optiscan.com> wrote:
+> That did it.
+>
+>
+>
+> I based my board specific file on mpc834x_itx.c which had
+>
+>
+>
+> static struct of_device_id __initdata mpc834x_itx_ids[] = {
+>
+>                 { .compatible = "fsl,pq2pro-localbus", },
+>
+>                 { .compatible = "simple-bus", },
+>
+>                 {},
+>
+> };
+>
+>
+>
+> Don't know if this is broken?
 
-> For MSI I doubt any.  I think on some parts we might have two (or  
-> more) groups of MSIs.
-> 
-> However I want to be able to handle timers and the slightly more  
-> generic message interrupts.
+It's not broken as long as you have compatible = "simple-bus" for your soc node.
 
-You can probably add a reg and a ranges, the reg remains the same
-as today as to not inflict any collateral damage, and the ranges
-represents downstream addresses to child nodes msi, timers, ...
-
-(ie, it's no big deal if the parent "reg" somewhat overlap the
-childs ranges... it's only a problem if the drivers try to request
-the resources in ways that collide)
-
-Ben.
+- Leo
