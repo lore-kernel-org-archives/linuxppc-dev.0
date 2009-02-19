@@ -1,15 +1,15 @@
 Return-Path: <npiggin@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1EC14DDE0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:07:51 +1100 (EST)
-Date: Thu, 19 Feb 2009 18:07:41 +0100
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7D008DDEE8
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 04:12:36 +1100 (EST)
+Date: Thu, 19 Feb 2009 18:12:29 +0100
 From: Nick Piggin <npiggin@suse.de>
 To: benh@kernel.crashing.org, paulus@samba.org,
 	linuxppc-dev@ozlabs.org
-Subject: [patch] powerpc: estimate G5 cpufreq transition latency
-Message-ID: <20090219170741.GI1747@wotan.suse.de>
+Subject: [patch 1/2] powerpc: optimise smp_mb
+Message-ID: <20090219171229.GJ1747@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,69 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Setting G5's cpu frequency transition latency to CPUFREQ_ETERNAL stops
-ondemand governor from working. I measured the latency using sched_clock
-and haven't seen much higher than 11000ns, so I set this to 12000ns for
-my configuration. Possibly other configurations will be different?
-Ideally the generic code would be able to measure it in case the platform
-does not provide it.
 
-But this simple patch at least makes it throttle again.
+Using lwsync, isync sequence in a microbenchmark is 5 times faster on my G5 than
+using sync for smp_mb. Although it takes more instructions.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
+Running tbench with 4 clients on my 4 core G5 (20 times) gives the
+following:
+
+unpatched AVG=920.33 STD=2.36
+  patched AVG=921.27 STD=2.77
+
+So not a big improvement here, actually it could even be in the noise.
+But other workloads or systems might see a bigger win, and the patch
+maybe is interesting or could be improved, so I'll ask for comments. 
+
 ---
-Index: linux-2.6/arch/powerpc/platforms/powermac/cpufreq_64.c
+Index: linux-2.6/arch/powerpc/include/asm/system.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/powermac/cpufreq_64.c	2009-02-20 01:42:41.000000000 +1100
-+++ linux-2.6/arch/powerpc/platforms/powermac/cpufreq_64.c	2009-02-20 01:50:15.000000000 +1100
-@@ -86,6 +86,7 @@
+--- linux-2.6.orig/arch/powerpc/include/asm/system.h	2009-02-20 01:51:24.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/system.h	2009-02-20 02:09:41.000000000 +1100
+@@ -52,7 +52,16 @@
+ #    define SMPWMB      eieio
+ #endif
  
- static DEFINE_MUTEX(g5_switch_mutex);
- 
-+static unsigned long transition_latency;
- 
- #ifdef CONFIG_PMAC_SMU
- 
-@@ -357,7 +358,7 @@
- 
- static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
-+	policy->cpuinfo.transition_latency = transition_latency;
- 	policy->cur = g5_cpu_freqs[g5_query_freq()].frequency;
- 	/* secondary CPUs are tied to the primary one by the
- 	 * cpufreq core if in the secondary policy we tell it that
-@@ -500,6 +501,7 @@
- 	g5_cpu_freqs[1].frequency = max_freq/2;
- 
- 	/* Set callbacks */
-+	transition_latency = 12000;
- 	g5_switch_freq = g5_scom_switch_freq;
- 	g5_query_freq = g5_scom_query_freq;
- 	freq_method = "SCOM";
-@@ -675,6 +677,7 @@
- 	g5_cpu_freqs[1].frequency = min_freq;
- 
- 	/* Set callbacks */
-+	transition_latency = CPUFREQ_ETERNAL;
- 	g5_switch_volt = g5_pfunc_switch_volt;
- 	g5_switch_freq = g5_pfunc_switch_freq;
- 	g5_query_freq = g5_pfunc_query_freq;
-Index: linux-2.6/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6.orig/drivers/cpufreq/cpufreq.c	2009-02-20 01:42:43.000000000 +1100
-+++ linux-2.6/drivers/cpufreq/cpufreq.c	2009-02-20 01:50:15.000000000 +1100
-@@ -1559,9 +1559,11 @@
- 		else {
- 			printk(KERN_WARNING "%s governor failed, too long"
- 			       " transition latency of HW, fallback"
--			       " to %s governor\n",
-+			       " to %s governor (latency=%lld max=%lld)\n",
- 			       policy->governor->name,
--			       gov->name);
-+			       gov->name,
-+			       policy->cpuinfo.transition_latency,
-+			       policy->governor->max_transition_latency);
- 			policy->governor = gov;
- 		}
- 	}
++#ifdef __powerpc64__
++#define smp_mb()	__asm__ __volatile__ (				    \
++					"1:	lwsync			\n" \
++					"	cmpw	0,%%r0,%%r0	\n" \
++					"	bne-	1b		\n" \
++					"	isync			\n" \
++					: : : "memory")
++#else
+ #define smp_mb()	mb()
++#endif
+ #define smp_rmb()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
+ #define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
+ #define smp_read_barrier_depends()	read_barrier_depends()
