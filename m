@@ -2,20 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0572DDDF74
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:41:58 +1100 (EST)
-Message-Id: <D3F7F9FD-94AD-4FA0-9FDF-DFF92487E5DE@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 6396ADE028
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:43:09 +1100 (EST)
+Message-Id: <F557A872-5674-4F24-9781-A46AE855DE72@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: "<dayu@datangmobile.cn>" <dayu@datangmobile.cn>
-In-Reply-To: <D728AD1FA2543948B89DE29C5BF4CD0716AF9623@bjmail1.bj.datangmobile.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090219160223.GA2095@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] fix the interrupt loss problem on powerpc
-	IPIC(2.6.25-2.6.28)
-Date: Thu, 19 Feb 2009 10:41:40 -0600
-References: <D728AD1FA2543948B89DE29C5BF4CD0716AF9623@bjmail1.bj.datangmobile.com>
-Cc: olof@lixom.net, linuxppc-dev@ozlabs.org, leoli@freescale.com,
-	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/83xx: Do not configure or probe disabled FSL DR
+	USB controllers
+Date: Thu, 19 Feb 2009 10:43:03 -0600
+References: <20090219160223.GA2095@oksana.dev.rtsoft.ru>
+Cc: Liu Dave <DaveLiu@freescale.com>, Andy Fleming <afleming@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +26,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 17, 2009, at 11:47 PM, <dayu@datangmobile.cn> <dayu@datangmobile.cn 
- > wrote:
+On Feb 19, 2009, at 10:02 AM, Anton Vorontsov wrote:
 
+> On MPC837X CPUs Dual-Role USB isn't always available (for example DR
+> USB pins can be muxed away to eSDHC).
 >
-> From: Da Yu <dayu@datangmobile.cn>
-> Date: Wed, 18 Feb 2009 19:58:20 +0800
-> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC  
-> (2.6.25-2.6.28)
+> U-Boot adds status = "disabled" property into the DR USB nodes to
+> indicate that we must not try to configure or probe Dual-Role USB,
+> otherwise we'll break eSDHC support on targets with MPC837X CPUs.
 >
-> Description: The interrupt pending register is write 1 clear.  If  
-> there are more than one external interrupts pending at the same  
-> time, acking the first interrupt by reading pending register then OR  
-> the corresponding bit and write back to pending register will also  
-> clear other interrupt pending bits.  That will cause loss of  
-> interrupt.
->
-> Signed-off-by: Da Yu <dayu@datangmobile.cn>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
+> arch/powerpc/platforms/83xx/usb.c |    3 ++-
+> arch/powerpc/sysdev/fsl_soc.c     |    4 ++++
+> 2 files changed, 6 insertions(+), 1 deletions(-)
 
 
 applied to next
