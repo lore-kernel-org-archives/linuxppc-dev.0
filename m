@@ -1,17 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C2A5CDDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:02:26 +1100 (EST)
-Date: Thu, 19 Feb 2009 19:02:23 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/83xx: Do not configure or probe disabled FSL DR
-	USB controllers
-Message-ID: <20090219160223.GA2095@oksana.dev.rtsoft.ru>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 0C6ECDDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:14:41 +1100 (EST)
+Date: Thu, 19 Feb 2009 08:14:38 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Zang Roy-R61911 <tie-fei.zang@freescale.com>
+Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
+Message-ID: <20090219161438.GA12795@ovro.caltech.edu>
+References: <20090217222425.GA18801@ovro.caltech.edu>
+	<7DF0AF56456B8F4081E3C44CCCE311DE15199F@zch01exm23.fsl.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: Liu Dave <DaveLiu@freescale.com>, Andy Fleming <afleming@freescale.com>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7DF0AF56456B8F4081E3C44CCCE311DE15199F@zch01exm23.fsl.freescale.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,61 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On MPC837X CPUs Dual-Role USB isn't always available (for example DR
-USB pins can be muxed away to eSDHC).
+On Thu, Feb 19, 2009 at 02:10:08PM +0800, Zang Roy-R61911 wrote:
+>  
+> 
+> > -----Original Message-----
+> > From: 
+> > linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs.org 
+> > [mailto:linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs
+> > .org] On Behalf Of Ira Snyder
+> > Sent: Wednesday, February 18, 2009 6:24 AM
+> > To: linux-kernel@vger.kernel.org
+> > Cc: linuxppc-dev@ozlabs.org; netdev@vger.kernel.org; Rusty 
+> > Russell; Arnd Bergmann; Jan-Bernd Themann
+> > Subject: [RFC v1] virtio: add virtio-over-PCI driver
+> snip
+> > diff --git a/drivers/virtio/Kconfig b/drivers/virtio/Kconfig
+> > index 3dd6294..efcf56b 100644
+> > --- a/drivers/virtio/Kconfig
+> > +++ b/drivers/virtio/Kconfig
+> > @@ -33,3 +33,25 @@ config VIRTIO_BALLOON
+> >  
+> >  	 If unsure, say M.
+> >  
+> > +config VIRTIO_OVER_PCI_HOST
+> > +	tristate "Virtio-over-PCI Host support (EXPERIMENTAL)"
+> > +	depends on PCI && EXPERIMENTAL
+> > +	select VIRTIO
+> > +	---help---
+> > +	  This driver provides the host support necessary for 
+> > using virtio
+> > +	  over the PCI bus with a Freescale MPC8349EMDS 
+> > evaluation board.
+> > +
+> > +	  If unsure, say N.
+> > +
+> > +config VIRTIO_OVER_PCI_FSL
+> > +	tristate "Virtio-over-PCI Guest support (EXPERIMENTAL)"
+> > +	depends on MPC834x_MDS && EXPERIMENTAL
+> > +	select VIRTIO
+> > +	select DMA_ENGINE
+> > +	select FSL_DMA
+> > +	---help---
+> > +	  This driver provides the guest support necessary for 
+> > using virtio
+> > +	  over the PCI bus.
+> > +
+> > +	  If unsure, say N.
+> > +
+> > diff --git a/drivers/virtio/Makefile b/drivers/virtio/Makefile
+> > index 6738c44..f31afaa 100644
+> > --- a/drivers/virtio/Makefile
+> > +++ b/drivers/virtio/Makefile
+> > @@ -2,3 +2,5 @@ obj-$(CONFIG_VIRTIO) += virtio.o
+> >  obj-$(CONFIG_VIRTIO_RING) += virtio_ring.o
+> >  obj-$(CONFIG_VIRTIO_PCI) += virtio_pci.o
+> >  obj-$(CONFIG_VIRTIO_BALLOON) += virtio_balloon.o
+> > +obj-$(CONFIG_VIRTIO_OVER_PCI_HOST) += vop_host.o
+> > +obj-$(CONFIG_VIRTIO_OVER_PCI_FSL) += vop_fsl.o
+> I suppose we  need to build the kernel twice. one for vop_host  (on host
+> with pci enabled) and the
+> other is for vop_fsl ( on agent with pci disabled). Is it possible to
+> build one image for both host and 
+> agent.  We do not scan the pci bus if the controller is configured to
+> agent.
+> 
 
-U-Boot adds status = "disabled" property into the DR USB nodes to
-indicate that we must not try to configure or probe Dual-Role USB,
-otherwise we'll break eSDHC support on targets with MPC837X CPUs.
+You should be able to build a kernel with support for both host and
+guest operation, and then use the device tree to switch which driver you
+get. The host driver won't be used without a PCI bus, and the guest
+driver won't be used without the message unit.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/platforms/83xx/usb.c |    3 ++-
- arch/powerpc/sysdev/fsl_soc.c     |    4 ++++
- 2 files changed, 6 insertions(+), 1 deletions(-)
+> Also, is it possible to include mpc85xx architecture? They should be
+> same.
+> There is some code for 85xx in Fresscale BSP.
+> http://www.bitshrine.org/gpp/linux-fsl-2.6.23-MPC8568MDS_PCI_Agent_PCIe_
+> EP_Drvier.patch
 
-diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-index cc99c28..11e1fac 100644
---- a/arch/powerpc/platforms/83xx/usb.c
-+++ b/arch/powerpc/platforms/83xx/usb.c
-@@ -14,6 +14,7 @@
- #include <linux/stddef.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-+#include <linux/of.h>
- 
- #include <asm/io.h>
- #include <asm/prom.h>
-@@ -210,7 +211,7 @@ int mpc837x_usb_cfg(void)
- 	int ret = 0;
- 
- 	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-dr");
--	if (!np)
-+	if (!np || !of_device_is_available(np))
- 		return -ENODEV;
- 	prop = of_get_property(np, "phy_type", NULL);
- 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 18e49ef..afe8dbc 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -22,6 +22,7 @@
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/platform_device.h>
-+#include <linux/of.h>
- #include <linux/of_platform.h>
- #include <linux/phy.h>
- #include <linux/phy_fixed.h>
-@@ -328,6 +329,9 @@ static int __init fsl_usb_of_init(void)
- 		struct fsl_usb2_platform_data usb_data;
- 		const unsigned char *prop = NULL;
- 
-+		if (!of_device_is_available(np))
-+			continue;
-+
- 		memset(&r, 0, sizeof(r));
- 		memset(&usb_data, 0, sizeof(usb_data));
- 
--- 
-1.5.6.5
+I looked at the cardnet driver before I implemented my PCINet driver. I
+hunch it would be rejected for the same reasons, but maybe not. Also, it
+makes no use of DMA, which is critical for good transfer speed. Using
+memcpy() in PCINet gives performance around 10 mbit/sec, which is
+terrible.
+
+I'm sure the driver isn't very hard to port to 85xx, I just don't have
+any 85xx boards to test with. The driver only directly interacts with
+the messaging unit, which is a pretty simple piece of hardware.
+
+Thanks,
+Ira
