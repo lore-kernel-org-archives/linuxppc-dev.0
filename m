@@ -2,20 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44173DDF19
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:19:12 +1100 (EST)
-Message-Id: <8EC0BAAB-7261-406F-BA42-BE6D9EC55AAB@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 06613DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:31:08 +1100 (EST)
+Message-Id: <A543F487-78F9-4791-ABEB-2D8D017A516B@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090219160223.GA2095@oksana.dev.rtsoft.ru>
+To: Scott Coulter <scott.coulter@cyclone.com>
+In-Reply-To: <43EB80E07C42E1408726E4905FB96B04C07700@CYBORG3.cyclone.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] powerpc/83xx: Do not configure or probe disabled FSL DR
-	USB controllers
-Date: Thu, 19 Feb 2009 10:19:05 -0600
-References: <20090219160223.GA2095@oksana.dev.rtsoft.ru>
-Cc: Liu Dave <DaveLiu@freescale.com>, Andy Fleming <afleming@freescale.com>,
-	linuxppc-dev@ozlabs.org
+Subject: Re: Gianfar tx-babbling-errors
+Date: Thu, 19 Feb 2009 10:29:52 -0600
+References: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
+	<F122E3A2-3054-4BC9-9C06-0ADE590A8AFC@kernel.crashing.org>
+	<43EB80E07C42E1408726E4905FB96B04C076B1@CYBORG3.cyclone.com>
+	<6BBF4AB4-FFB0-46ED-B591-17DEC3BE547F@kernel.crashing.org>
+	<43EB80E07C42E1408726E4905FB96B04C07700@CYBORG3.cyclone.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +28,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 19, 2009, at 10:02 AM, Anton Vorontsov wrote:
+On Feb 19, 2009, at 10:17 AM, Scott Coulter wrote:
 
-> On MPC837X CPUs Dual-Role USB isn't always available (for example DR
-> USB pins can be muxed away to eSDHC).
 >
-> U-Boot adds status = "disabled" property into the DR USB nodes to
-> indicate that we must not try to configure or probe Dual-Role USB,
-> otherwise we'll break eSDHC support on targets with MPC837X CPUs.
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/platforms/83xx/usb.c |    3 ++-
-> arch/powerpc/sysdev/fsl_soc.c     |    4 ++++
-> 2 files changed, 6 insertions(+), 1 deletions(-)
+> Kumar,
+>
+>>
+>> can't think of any.  How about adding a BUG_ON() in the tx path to  
+>> see
+>> if the buffer size > MTU and re-run your tests.
+>>
+>
+> So, here are the checks I've tried in gfar_start_xmit():
+>
+> BUG_ON(skb->len > DEFAULT_RX_BUFFER_SIZE)
+>
+> BUG_ON(skb->len > priv->regs->maxfrm)
+>
+> Neither produces a bug check yet ethtool reports non-zero
+> tx-babbling-errors.  The last check appears to be the definition of
+> tx-babbling-errors.  Is there a transmit path that I have missed?
 
-Mind looking at possibly killing the fsl_soc.c  usb code and making  
-the usb a real of-platform driver?
+What specific processor & rev are you running on?
 
 - k
