@@ -1,24 +1,16 @@
-Return-Path: <vijay.t.nikam@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.225])
-	by ozlabs.org (Postfix) with ESMTP id B5D3CDDDB6
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 22:51:46 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g9so460668rvb.1
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 03:51:45 -0800 (PST)
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 0E081DDDA5
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 23:37:44 +1100 (EST)
+Date: Thu, 19 Feb 2009 13:37:36 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: BUG: MAX_STACK_TRACE_ENTRIES too low!
+Message-ID: <alpine.LRH.2.00.0902191334550.15109@vixen.sonytel.be>
 MIME-Version: 1.0
-In-Reply-To: <20090218165724.GA26391@ld0162-tx32.am.freescale.net>
-References: <f234e2140902160355p148c99d1qc2e5b6f6ae9a716f@mail.gmail.com>
-	<20090216180857.GA18069@ld0162-tx32.am.freescale.net>
-	<f234e2140902170341y31662e8fla8a8cf87473ed419@mail.gmail.com>
-	<499AF08B.6010702@freescale.com>
-	<f234e2140902180401u40a71642ga4e221f795bc5abd@mail.gmail.com>
-	<20090218165724.GA26391@ld0162-tx32.am.freescale.net>
-Date: Thu, 19 Feb 2009 17:21:45 +0530
-Message-ID: <f234e2140902190351i41f99cbu22c3654eadf03f49@mail.gmail.com>
-Subject: Re: Regarding irq_of_parse_and_map
-From: Vijay Nikam <vijay.t.nikam@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,60 +20,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Because dtc will generate phandles automatically when you reference the
-> node with the & operator.
+When running 2.6.29-rc5+ on PS3 (ppc64), I got the following BUG once during
+bootup:
 
-Yes the same statement I found in dts-bindings for gpio txt, sorry I
-missed it somehow ...
+| Freeing unused kernel memory: 3436k freed
+| BUG: MAX_STACK_TRACE_ENTRIES too low!
+| turning off the locking correctness validator.
+| Call Trace:
+| [c000000006e1b640] [c00000000000f850] .show_stack+0x6c/0x16c (unreliable)
+| [c000000006e1b6f0] [c00000000007cf6c] .save_trace+0xe0/0x108
+| [c000000006e1b780] [c00000000007d058] .add_lock_to_list+0xc4/0x124
+| [c000000006e1b830] [c0000000000816d0] .__lock_acquire+0x13c4/0x17c8
+| [c000000006e1b930] [c000000000081b78] .lock_acquire+0xa4/0xec
+| [c000000006e1b9f0] [c0000000003be034] ._spin_lock+0x34/0x58
+| [c000000006e1ba80] [c0000000000d3e40] .kmem_cache_free+0x84/0x1a8
+| [c000000006e1bb30] [c0000000001f9abc] .idr_remove+0x214/0x248
+| [c000000006e1bbf0] [c00000000002867c] .destroy_context+0x34/0x64
+| [c000000006e1bc80] [c00000000005008c] .__mmdrop+0x4c/0x7c
+| [c000000006e1bd10] [c00000000004de90] .finish_task_switch+0xec/0x14c
+| [c000000006e1bdb0] [c00000000004e6fc] .schedule_tail+0x2c/0xa0
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
 
-> Do you want your changes to ever make it into the upstream kernel?
+(There are 65 call trace lines)
 
-Yes I would like to do that ... but the reason I asked is as it is my
-first try so I am thinking that I will edit the same file and do it in
-the same way ofcourse I will follow for device node gpio-controller
-the new apporach and later if it works then I will create new dts with
-upstream Linux base ...
+After that the system continued.
 
-Now I have created the mpc8313erdb.dts with gpio-controller device
-node. I would like to ask that now I should compile it with dtc and
-generate dtb and I should load this dtb on board/target, Right ? ? ?
-please correct me if I am wrong ...
+With kind regards,
 
-Also is it possible to compile device tree on Linux host and genreate
-dtb for powerpc ? ? ? If yes, then how ? ? ? please let me know ...
-thanks ...
+Geert Uytterhoeven
+Software Architect
 
-Before I tried to generate virtual irq using irq_create_mapping and I
-got the same number as hw_irq_no i.e. 74 as virtual irq. Also the
-entry was made in proc/interrupts and trigger was 8 (Level). But when
-I tried to interrupt and the handler was never called ? ? ? Was it
-because of gpio device node missing in device tree ? ? ? please let me
-know ... thanks ...
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Kindly please acknowledge ... thank you ...
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-Kind Regards,
-Vijay Nikam
-
-
-On 2/18/09, Scott Wood <scottwood@freescale.com> wrote:
-> On Wed, Feb 18, 2009 at 05:31:34PM +0530, Vijay Nikam wrote:
-> > > Don't specify this explicitly.  Please base new development off of the
-> > > device tree that is in upstream Linux, not the very old tree in your BSP.
-> >
-> > May I know the reason why I should not specify it explicitly ? ? ?
->
-> Because dtc will generate phandles automatically when you reference the
-> node with the & operator.
->
-> > Also what would be the problem if I do in the same way as it is given
-> > in BSP mpc8313erdb.dts ? ? ?
->
-> Do you want your changes to ever make it into the upstream kernel?
->
-> > And should I use gpio-controller as a gpio device node ? ? ?
->
-> Yes, the node should label itself as a gpio controller.
->
-> -Scott
->
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
