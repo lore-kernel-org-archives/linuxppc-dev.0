@@ -2,20 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F0A55DDDA0
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:41:42 +1100 (EST)
-Message-Id: <BAA283E5-3730-4534-AA9D-446B3135966F@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 0572DDDF74
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:41:58 +1100 (EST)
+Message-Id: <D3F7F9FD-94AD-4FA0-9FDF-DFF92487E5DE@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <1233928837-3401-1-git-send-email-timur@freescale.com>
+To: "<dayu@datangmobile.cn>" <dayu@datangmobile.cn>
+In-Reply-To: <D728AD1FA2543948B89DE29C5BF4CD0716AF9623@bjmail1.bj.datangmobile.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] i2c-mpc: do not allow interruptions when waiting for I2C
-	to complete
-Date: Thu, 19 Feb 2009 10:41:30 -0600
-References: <1233928837-3401-1-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, broonie@opensource.wolfsonmicro.com,
-	linux-i2c@vger.kernel.org, mditto@consentry.com
+Subject: Re: [PATCH] fix the interrupt loss problem on powerpc
+	IPIC(2.6.25-2.6.28)
+Date: Thu, 19 Feb 2009 10:41:40 -0600
+References: <D728AD1FA2543948B89DE29C5BF4CD0716AF9623@bjmail1.bj.datangmobile.com>
+Cc: olof@lixom.net, linuxppc-dev@ozlabs.org, leoli@freescale.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +26,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 6, 2009, at 8:00 AM, Timur Tabi wrote:
+On Feb 17, 2009, at 11:47 PM, <dayu@datangmobile.cn> <dayu@datangmobile.cn 
+ > wrote:
 
-> The i2c_wait() function is using wait_event_interruptible_timeout()  
-> to wait for
-> the I2C controller to signal that it has completed an I2C bus  
-> operation.  If
-> the process that causes the I2C operation terminated abruptly, the  
-> wait will
-> be interrupted, returning an error.  It is better to let the I2C  
-> operation
-> finished before the process exits.
 >
-> It is safe to use wait_event_timeout() instead, because the timeout  
-> will allow
-> the process to exit if the I2C bus hangs.  It's also better to allow  
-> the
-> I2C operation to finish, because unacknowledged I2C operations can  
-> cause the
-> I2C bus to hang.
+> From: Da Yu <dayu@datangmobile.cn>
+> Date: Wed, 18 Feb 2009 19:58:20 +0800
+> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC  
+> (2.6.25-2.6.28)
 >
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> Description: The interrupt pending register is write 1 clear.  If  
+> there are more than one external interrupts pending at the same  
+> time, acking the first interrupt by reading pending register then OR  
+> the corresponding bit and write back to pending register will also  
+> clear other interrupt pending bits.  That will cause loss of  
+> interrupt.
+>
+> Signed-off-by: Da Yu <dayu@datangmobile.cn>
 > ---
->
-> A similar change should probably be done to i2c-cpm.c, and maybe all  
-> other
-> I2C drivers.  Not many use wait_event_interruptible_timeout().
->
-> drivers/i2c/busses/i2c-mpc.c |    9 +++------
-> 1 files changed, 3 insertions(+), 6 deletions(-)
+
 
 applied to next
 
