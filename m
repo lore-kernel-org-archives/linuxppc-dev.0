@@ -1,12 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 65FE9DDE11
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 04:33:25 +1100 (EST)
-Date: Fri, 20 Feb 2009 20:33:23 +0300
+	by ozlabs.org (Postfix) with ESMTP id 4C33BDDEE9
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 04:33:26 +1100 (EST)
+Date: Fri, 20 Feb 2009 20:33:15 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 08/13] sdhci: Add get_{max,timeout}_clock callbacks
-Message-ID: <20090220173323.GH7583@oksana.dev.rtsoft.ru>
+Subject: [PATCH 04/13] sdhci: Enable only relevant (DMA/PIO) interrupts
+	during transfers
+Message-ID: <20090220173315.GD7583@oksana.dev.rtsoft.ru>
 References: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -23,75 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Ben Dooks <ben-linux@fluff.org>
+Some hosts (that is, FSL eSDHC) throw PIO interrupts during DMA
+transfers, this causes tons of unneeded interrupts, and thus highly
+degraded speed.
 
-Some controllers do not provide clock information in their capabilities
-(in the Samsung case, it is because there are multiple clock sources
-available to the controller). Add hooks to allow the system to supply
-clock information.
+This patch modifies the driver so that now we only enable relevant
+(DMA or PIO) interrupts during transfers.
 
-p.s.
-In the original Ben's patch there was a bug that makes sdhci_add_host()
-return -ENODEV even if callbacks were specified. This is fixed now.
-
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   22 +++++++++++++++-------
- drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 17 insertions(+), 7 deletions(-)
+ drivers/mmc/host/sdhci.c |   17 ++++++++++++++---
+ 1 files changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 1c36a25..96a0482 100644
+index fadaeb8..2728e90 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -1736,19 +1736,27 @@ int sdhci_add_host(struct sdhci_host *host)
+@@ -222,9 +222,7 @@ static void sdhci_init(struct sdhci_host *host)
+ 		SDHCI_INT_BUS_POWER | SDHCI_INT_DATA_END_BIT |
+ 		SDHCI_INT_DATA_CRC | SDHCI_INT_DATA_TIMEOUT | SDHCI_INT_INDEX |
+ 		SDHCI_INT_END_BIT | SDHCI_INT_CRC | SDHCI_INT_TIMEOUT |
+-		SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL |
+-		SDHCI_INT_DMA_END | SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE |
+-		SDHCI_INT_ADMA_ERROR);
++		SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE);
+ }
  
- 	host->max_clk =
- 		(caps & SDHCI_CLOCK_BASE_MASK) >> SDHCI_CLOCK_BASE_SHIFT;
-+	host->max_clk *= 1000000;
- 	if (host->max_clk == 0) {
--		printk(KERN_ERR "%s: Hardware doesn't specify base clock "
--			"frequency.\n", mmc_hostname(mmc));
--		return -ENODEV;
-+		if (!host->ops->get_max_clock) {
-+			printk(KERN_ERR
-+			       "%s: Hardware doesn't specify base clock "
-+			       "frequency.\n", mmc_hostname(mmc));
-+			return -ENODEV;
-+		}
-+		host->max_clk = host->ops->get_max_clock(host);
+ static void sdhci_reinit(struct sdhci_host *host)
+@@ -658,6 +656,17 @@ static u8 sdhci_calc_timeout(struct sdhci_host *host, struct mmc_data *data)
+ 	return count;
+ }
+ 
++static void sdhci_set_transfer_irqs(struct sdhci_host *host)
++{
++	u32 pio_irqs = SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL;
++	u32 dma_irqs = SDHCI_INT_DMA_END | SDHCI_INT_ADMA_ERROR;
++
++	if (host->flags & SDHCI_REQ_USE_DMA)
++		sdhci_clear_set_irqs(host, pio_irqs, dma_irqs);
++	else
++		sdhci_clear_set_irqs(host, dma_irqs, pio_irqs);
++}
++
+ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+ {
+ 	u8 count;
+@@ -806,6 +815,8 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+ 		host->blocks = data->blocks;
  	}
--	host->max_clk *= 1000000;
  
- 	host->timeout_clk =
- 		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
- 	if (host->timeout_clk == 0) {
--		printk(KERN_ERR "%s: Hardware doesn't specify timeout clock "
--			"frequency.\n", mmc_hostname(mmc));
--		return -ENODEV;
-+		if (!host->ops->get_timeout_clock) {
-+			printk(KERN_ERR
-+			       "%s: Hardware doesn't specify timeout clock "
-+			       "frequency.\n", mmc_hostname(mmc));
-+			return -ENODEV;
-+		}
-+		host->timeout_clk = host->ops->get_timeout_clock(host);
- 	}
- 	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
- 		host->timeout_clk *= 1000;
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 7b115d8..ef70900 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -289,6 +289,8 @@ struct sdhci_ops {
- 	void		(*writeb)(struct sdhci_host *host, u8 val, int reg);
- 
- 	int		(*enable_dma)(struct sdhci_host *host);
-+	unsigned int	(*get_max_clock)(struct sdhci_host *host);
-+	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
- };
- 
- extern void sdhci_writel(struct sdhci_host *host, u32 val, int reg);
++	sdhci_set_transfer_irqs(host);
++
+ 	/* We do not handle DMA boundaries, so set it to max (512 KiB) */
+ 	sdhci_writew(host, SDHCI_MAKE_BLKSZ(7, data->blksz), SDHCI_BLOCK_SIZE);
+ 	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
 -- 
 1.5.6.5
