@@ -1,24 +1,19 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id C6E20DDDF3
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 02:46:59 +1100 (EST)
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id E57FDDDDA5
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 02:46:58 +1100 (EST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Alessandro Zummo <a.zummo@towertech.it>
-Subject: [PATCH/RFC 4/5] powerpc: Enable rtc-generic, and kill rtc-ppc
-Date: Fri, 20 Feb 2009 16:46:48 +0100
-Message-Id: <1235144809-32468-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1235144809-32468-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1235144809-32468-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1235144809-32468-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1235144809-32468-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH/RFC 0/5] Generic RTC class driver
+Date: Fri, 20 Feb 2009 16:46:44 +0100
+Message-Id: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
 	linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
 	Kyle McMartin <kyle@mcmartin.ca>, linuxppc-dev@ozlabs.org,
-	linux-m68k@lists.linux-m68k.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	David Woodhouse <dwmw2@infradead.org>
+	linux-m68k@lists.linux-m68k.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,170 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Create the "rtc-generic" platform device if ppc_md.get_rtc_time is set.
-Kill rtc-ppc, as rtc-generic offers the same functionality in a more generic
-way.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- arch/powerpc/Kconfig       |    4 ++
- arch/powerpc/kernel/time.c |   22 ++++++++++++++
- drivers/rtc/Kconfig        |    8 -----
- drivers/rtc/Makefile       |    1 -
- drivers/rtc/rtc-ppc.c      |   69 --------------------------------------------
- 5 files changed, 26 insertions(+), 78 deletions(-)
- delete mode 100644 drivers/rtc/rtc-ppc.c
+I've been looking into problems with auto-loading the RTC driver on PPC (more
+specifically on PS3):
+  - The recent "rtc-ppc" RTC class driver is not autoloaded by udev because
+    it's an old style platform driver that contains its own platform device.
+  - The alternative old "genrtc" driver is autoloaded on non-udev systems only
+    because it contains the module alias char-major-10-135. However, it's not
+    a new-style RTC class driver.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 40b7981..82e47b0 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -85,6 +85,10 @@ config ARCH_HAS_ILOG2_U64
- 	bool
- 	default y if 64BIT
- 
-+config ARCH_HAS_GENERIC_RTC
-+	bool
-+	default y
-+
- config GENERIC_HWEIGHT
- 	bool
- 	default y
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index c956403..616c7d3 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -1127,3 +1127,25 @@ void div128_by_32(u64 dividend_high, u64 dividend_low,
- 	dr->result_low  = ((u64)y << 32) + z;
- 
- }
-+
-+static struct platform_device rtc_generic_dev = {
-+	.name = "rtc-generic",
-+	.id = -1,
-+};
-+
-+static int __init rtc_init(void)
-+{
-+	int ret;
-+
-+	if (!ppc_md.get_rtc_time)
-+		return -ENODEV;
-+
-+	ret = platform_device_register(&rtc_generic_dev);
-+	if (ret < 0)
-+		pr_err("Unable to register rtc device...\n");
-+
-+	/* not necessarily an error */
-+	return 0;
-+}
-+
-+module_init(rtc_init);
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 3e58182..9964a72 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -685,14 +685,6 @@ config RTC_DRV_GENERIC
- 	  RTC abstraction. If you do not know what you are doing, you should
- 	  just say Y.
- 
--config RTC_DRV_PPC
--       tristate "PowerPC machine dependent RTC support"
--       depends on PPC
--       help
--	 The PowerPC kernel has machine-specific functions for accessing
--	 the RTC. This exposes that functionality through the generic RTC
--	 class.
--
- config RTC_DRV_PXA
-        tristate "PXA27x/PXA3xx"
-        depends on ARCH_PXA
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 9c18a01..bd209a5 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -56,7 +56,6 @@ obj-$(CONFIG_RTC_DRV_PCF8583)	+= rtc-pcf8583.o
- obj-$(CONFIG_RTC_DRV_PL030)	+= rtc-pl030.o
- obj-$(CONFIG_RTC_DRV_PL031)	+= rtc-pl031.o
- obj-$(CONFIG_RTC_DRV_GENERIC)	+= rtc-generic.o
--obj-$(CONFIG_RTC_DRV_PPC)	+= rtc-ppc.o
- obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
- obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701.o
- obj-$(CONFIG_RTC_DRV_RS5C313)	+= rtc-rs5c313.o
-diff --git a/drivers/rtc/rtc-ppc.c b/drivers/rtc/rtc-ppc.c
-deleted file mode 100644
-index c8e97e2..0000000
---- a/drivers/rtc/rtc-ppc.c
-+++ /dev/null
-@@ -1,69 +0,0 @@
--/*
-- * RTC driver for ppc_md RTC functions
-- *
-- * © 2007 Red Hat, Inc.
-- *
-- * Author: David Woodhouse <dwmw2@infradead.org>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- */
--
--
--#include <linux/module.h>
--#include <linux/err.h>
--#include <linux/rtc.h>
--#include <linux/platform_device.h>
--#include <asm/machdep.h>
--
--static int ppc_rtc_read_time(struct device *dev, struct rtc_time *tm)
--{
--	ppc_md.get_rtc_time(tm);
--	return 0;
--}
--
--static int ppc_rtc_set_time(struct device *dev, struct rtc_time *tm)
--{
--	return ppc_md.set_rtc_time(tm);
--}
--
--static const struct rtc_class_ops ppc_rtc_ops = {
--	.set_time = ppc_rtc_set_time,
--	.read_time = ppc_rtc_read_time,
--};
--
--static struct rtc_device *rtc;
--static struct platform_device *ppc_rtc_pdev;
--
--static int __init ppc_rtc_init(void)
--{
--	if (!ppc_md.get_rtc_time || !ppc_md.set_rtc_time)
--		return -ENODEV;
--
--	ppc_rtc_pdev = platform_device_register_simple("ppc-rtc", 0, NULL, 0);
--	if (IS_ERR(ppc_rtc_pdev))
--		return PTR_ERR(ppc_rtc_pdev);
--
--	rtc = rtc_device_register("ppc_md", &ppc_rtc_pdev->dev,
--				  &ppc_rtc_ops, THIS_MODULE);
--	if (IS_ERR(rtc)) {
--		platform_device_unregister(ppc_rtc_pdev);
--		return PTR_ERR(rtc);
--	}
--
--	return 0;
--}
--
--static void __exit ppc_rtc_exit(void)
--{
--	rtc_device_unregister(rtc);
--	platform_device_unregister(ppc_rtc_pdev);
--}
--
--module_init(ppc_rtc_init);
--module_exit(ppc_rtc_exit);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("David Woodhouse <dwmw2@infradead.org>");
--MODULE_DESCRIPTION("Generic RTC class driver for PowerPC");
--- 
-1.6.0.4
+Fortunately there already exists a generic RTC class driver: "rtc-parisc".
+Despite it's name, it's platform-independent, as it's build on top of the RTC
+abstraction used by "genrtc".
+
+This patch series
+  - adds a missing module alias to rtc-parisc,
+  - renames rtc-parisc to rtc-generic,
+  - converts the architectures that currently have CONFIG_GEN_RTC enabled in
+    their defconfig (m68k, parisc, powerpc) to rtc-generic,
+  - removes the obsolete rtc-ppc driver,
+  - removes the old genrtc driver.
+  
+Note that genrtc may be used on other archictectures as well: at least alpha
+has the required infrastructure ([gs]et_rtc_time()). The Kconfig rules allow
+genrtc to be enabled on several others (cris, h8300, mn10300, um, x86, xtensa).
+
+Furthermore genrtc and rtc-generic are not 100% userspace compatible:
+  - /dev/rtc provided by genrtc uses a misc character device (10:135),
+  - /dev/rtc provided by rtc-generic uses a dynamic character device.
+  
+So perhaps we don't want to kill gen-rtc yet?
+
+Any comments are welcomed!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
