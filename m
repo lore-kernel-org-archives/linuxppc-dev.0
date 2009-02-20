@@ -1,20 +1,20 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7B53DDDE1A
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 04:37:19 +1100 (EST)
-Date: Fri, 20 Feb 2009 20:37:17 +0300
+	by ozlabs.org (Postfix) with ESMTP id 1DAC8DDE1D
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 05:12:59 +1100 (EST)
+Date: Fri, 20 Feb 2009 20:33:28 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/83xx: Add power management support for MPC837x
-	boards
-Message-ID: <20090220173717.GA7852@oksana.dev.rtsoft.ru>
-References: <20090220171258.GA3050@oksana.dev.rtsoft.ru>
-	<499EE8DD.2030709@freescale.com>
+To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Subject: [PATCH 10/13] sdhci: Add quirk for controllers that need small
+	delays for PIO
+Message-ID: <20090220173328.GJ7583@oksana.dev.rtsoft.ru>
+References: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <499EE8DD.2030709@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+In-Reply-To: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 20, 2009 at 11:31:09AM -0600, Scott Wood wrote:
-> Anton Vorontsov wrote:
->> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
->> index 3e3ec8f..c54b90d 100644
->> --- a/arch/powerpc/boot/dts/mpc8377_mds.dts
->> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
->> @@ -137,6 +137,7 @@
->>  			reg = <0x3000 0x100>;
->>  			interrupts = <14 0x8>;
->>  			interrupt-parent = <&ipic>;
->> +			sleep = <&pmc 0x0c000000>;
->>  			dfsrr;
->
-> [snip]
->
->> @@ -318,6 +325,7 @@
->>  			reg = <0x2e000 0x1000>;
->>  			interrupts = <42 0x8>;
->>  			interrupt-parent = <&ipic>;
->> +			sleep = <&pmc 0x0c000000>;
->
-> You have two different nodes with the same bits referenced.
+Small udelay is needed to make eSDHC work in PIO mode. Without
+the delay reading causes endless interrupt storm, and writing
+corrupts data. The first guess would be that we must wait for
+some bit in some register, but I didn't find any reliable bits
+that change before and after the delay.
 
-Yes, I2C1 and eSDHC are using the same clock source.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/mmc/host/sdhci.c |    3 +++
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-> These nodes
-> cannot be put to sleep independently, and as such need to be under a
-> common sleep-nexus node.
-
-Ah, that's what the sleep-nexus nodes are for... ;-)
-
-Thank you Scott, I'll add the sleep-nexus nodes.
-
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index f63db25..eff615d 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -391,6 +391,9 @@ static void sdhci_transfer_pio(struct sdhci_host *host)
+ 		mask = ~0;
+ 
+ 	while (sdhci_readl(host, SDHCI_PRESENT_STATE) & mask) {
++		if (host->quirks & SDHCI_QUIRK_PIO_NEEDS_DELAY)
++			udelay(100);
++
+ 		if (host->data->flags & MMC_DATA_READ)
+ 			sdhci_read_block_pio(host);
+ 		else
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 63b436a..44c820a 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -227,6 +227,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
+ /* Controller has nonstandard clock management */
+ #define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<19)
++/* Controller does not like fast PIO transfers */
++#define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<20)
+ 
+ 	int			irq;		/* Device IRQ */
+ 	void __iomem *		ioaddr;		/* Mapped address */
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.6.5
