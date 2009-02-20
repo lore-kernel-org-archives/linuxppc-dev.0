@@ -1,25 +1,23 @@
-Return-Path: <sylvain.joyeau@gmail.com>
-Received: from mail-ew0-f21.google.com (mail-ew0-f21.google.com
-	[209.85.219.21]) by ozlabs.org (Postfix) with ESMTP id DC14DDDDB6
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 03:48:05 +1100 (EST)
-Received: by ewy14 with SMTP id 14so765373ewy.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Feb 2009 08:48:03 -0800 (PST)
+Return-Path: <DusharaJ@optiscan.com>
+Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
+	by ozlabs.org (Postfix) with ESMTP id CAA80DDDFA
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 11:37:01 +1100 (EST)
+From: Dushara Jayasinghe <DusharaJ@optiscan.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Fri, 20 Feb 2009 11:36:59 +1100
+Subject: RE: Newby trying to get Ethernet going on MPC83xx series device.
+Message-ID: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054D@mailsvr>
+References: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40549@mailsvr>
+	<3A45394FD742FA419B760BB8D398F9ED246F06@zch01exm26.fsl.freescale.net>
+	<FD3D453EC8A8D5479E7E063D31E2FA44268653@zin33exm24.fsl.freescale.net>
+	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054B@mailsvr>
+	<2a27d3730902182319i2c59d68dk98e7975714f80549@mail.gmail.com>
+	<FD3D453EC8A8D5479E7E063D31E2FA4426866A@zin33exm24.fsl.freescale.net>
+In-Reply-To: <FD3D453EC8A8D5479E7E063D31E2FA4426866A@zin33exm24.fsl.freescale.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Sender: sylvain.joyeau@gmail.com
-In-Reply-To: <43EB80E07C42E1408726E4905FB96B04C07700@CYBORG3.cyclone.com>
-References: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
-	<F122E3A2-3054-4BC9-9C06-0ADE590A8AFC@kernel.crashing.org>
-	<43EB80E07C42E1408726E4905FB96B04C076B1@CYBORG3.cyclone.com>
-	<6BBF4AB4-FFB0-46ED-B591-17DEC3BE547F@kernel.crashing.org>
-	<43EB80E07C42E1408726E4905FB96B04C07700@CYBORG3.cyclone.com>
-Date: Thu, 19 Feb 2009 17:48:03 +0100
-Message-ID: <d194b8ce0902190848hb53166cj32e7d0bd65021d2e@mail.gmail.com>
-Subject: Re: Gianfar tx-babbling-errors
-From: "sjoyeau@wanadoo.fr" <sjoyeau@wanadoo.fr>
-To: Scott Coulter <scott.coulter@cyclone.com>
-Content-Type: multipart/alternative; boundary=0015174c0f86bc79570463484c73
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: sjoyeau@wanadoo.fr
+Cc: 'Aggrwal Poonam-B10812' <Poonam.Aggrwal@freescale.com>,
+	'Timur Tabi' <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,136 +27,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0015174c0f86bc79570463484c73
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Yes I now base it on mpc834x_mds.c and it works (almost) :-(
 
-Hi Scott,
+The devices are successfully probed, but I'm getting this error on the debu=
+g console:
 
-Your issue may come from data setup (or corruption) instead of code path:
-babbling error may occurs when a TSEC TX descriptor hasn't its "last frame"
-bit set or when the data length is greated than max frame length.
+[    7.119389] mdio@24520:00 not found
+[    7.161370] eth0: Could not attach to PHY
+[    7.209600] IP-Config: Failed to open eth0
+[    7.258879] IP-Config: Device `eth0' not found.
 
---
-sj
+My mdio & Ethernet nodes are as follows (commenting out device_type below i=
+s an experiment)
 
-2009/2/19 Scott Coulter <scott.coulter@cyclone.com>
+		mdio@24520 {
+			/*device_type =3D "mdio";*/
+			compatible =3D "fsl,gianfar-mdio";
+			#address-cells =3D <1>;
+			#size-cells =3D <0>;
+			reg =3D <24520 20>;
 
->
->
-> Kumar,
->
+			phy0: ethernet-phy@0 {
+				interrupt-parent =3D <&ipic>;
+				interrupts =3D <3 8>;
+				reg =3D <0>;
+				device_type =3D "ethernet-phy";
+			};
+			phy1: ethernet-phy@1 {
+				interrupt-parent =3D <&ipic>;
+				interrupts =3D <3 8>;
+				reg =3D <1>;
+				device_type =3D "ethernet-phy";
+			};
+		};
+
+		enet0: ethernet@24000 {
+			cell-index =3D <0>;
+			device_type =3D "network";
+			model =3D "TSEC";
+			compatible =3D "gianfar";
+			reg =3D <24000 1000>;
+			local-mac-address =3D [ 00 00 00 00 00 00 ];
+			interrupts =3D <20 8 21 8 22 8>;
+			interrupt-parent =3D <&ipic>;
+			phy-handle =3D <&phy0>;
+			linux,network-index =3D <0>;
+		};
+
+		enet1: ethernet@25000 {
+			cell-index =3D <1>;
+			device_type =3D "network";
+			model =3D "TSEC";
+			compatible =3D "gianfar";
+			reg =3D <25000 1000>;
+			local-mac-address =3D [ 00 00 00 00 00 00 ];
+			interrupts =3D <23 8 24 8 25 8>;
+			interrupt-parent =3D <&ipic>;
+			phy-handle =3D <&phy1>;
+			linux,network-index =3D <1>;
+			phy-connection-type =3D "gmii";
+		};
+
+Any clues as to where I should start looking?
+
+BTW, I assume CCing all those who replied to me is accepted/expected conduc=
+t or should I avoid this and just write to the list?
+
+Also is top posting ok? I haven't figured out how to enable '>' on bloody M=
+icrosoft Outlook, for incoming plain text messages.
+
+Thanks again for all your help.
+D
+
+-----Original Message-----
+From: Aggrwal Poonam-B10812 [mailto:Poonam.Aggrwal@freescale.com]=20
+Sent: Thursday, 19 February 2009 6:25 PM
+To: Li Yang-R58472; Dushara Jayasinghe
+Cc: linuxppc-dev@ozlabs.org
+Subject: RE: Newby trying to get Ethernet going on MPC83xx series device.
+
+Probably better would be to check the board file for  mpc834x_mds.c
+
+I mean just cross that you probe all the buses which are on the device.
+What is fsl,pq2pro-localbus? Do u have such node in dts as the
+mpc8349_itx has.
+
+> -----Original Message-----
+> From: pku.leo@gmail.com [mailto:pku.leo@gmail.com] On Behalf=20
+> Of Li Yang-R58472
+> Sent: Thursday, February 19, 2009 12:50 PM
+> To: Dushara Jayasinghe
+> Cc: linuxppc-dev@ozlabs.org; Aggrwal Poonam-B10812
+> Subject: Re: Newby trying to get Ethernet going on MPC83xx=20
+> series device.
+>=20
+> On Thu, Feb 19, 2009 at 2:58 PM, Dushara Jayasinghe=20
+> <DusharaJ@optiscan.com> wrote:
+> > That did it.
 > >
-> > can't think of any.  How about adding a BUG_ON() in the tx path to see
-> > if the buffer size > MTU and re-run your tests.
 > >
->
-> So, here are the checks I've tried in gfar_start_xmit():
->
-> BUG_ON(skb->len > DEFAULT_RX_BUFFER_SIZE)
->
-> BUG_ON(skb->len > priv->regs->maxfrm)
->
-> Neither produces a bug check yet ethtool reports non-zero
-> tx-babbling-errors.  The last check appears to be the definition of
-> tx-babbling-errors.  Is there a transmit path that I have missed?
->
-> Scott
->
-> ___________________________________________________________________
->
->  Scott N. Coulter
->  Senior Software Engineer
->
->  Cyclone Microsystems
->  370 James Street              Phone:  203.786.5536 ext. 118
->  New Haven, CT 06513-3051      Email:  scott.coulter@cyclone.com
->  U.S.A.                        Web:    http://www.cyclone.com
-> ___________________________________________________________________
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
-
---=20
-------------------
-Sylvain JOYEAU
-Freelance Engineer
-Software RT-OS R&D
-sylvain.joyeau@gmail.com
-T=E9l: +33-(0)667 477 052
-"A good idea is one side of the coin. The other side is the practical
-usefulness". J. Liedke.
-
---0015174c0f86bc79570463484c73
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi Scott,<br><br>Your issue may come from data setup (or corruption) instea=
-d of code path: babbling error may occurs when a TSEC TX descriptor hasn&#3=
-9;t its &quot;last frame&quot; bit set or when the data length is greated t=
-han max frame length.<br>
-<br>--<br>sj <br><br><div class=3D"gmail_quote">2009/2/19 Scott Coulter <sp=
-an dir=3D"ltr">&lt;<a href=3D"mailto:scott.coulter@cyclone.com" target=3D"_=
-blank">scott.coulter@cyclone.com</a>&gt;</span><br>
-
-<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
-204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>
-<br>
-Kumar,<br>
-<div><br>
-&gt;<br>
-&gt; can&#39;t think of any. &nbsp;How about adding a BUG_ON() in the tx pa=
-th to see<br>
-&gt; if the buffer size &gt; MTU and re-run your tests.<br>
-&gt;<br>
-<br>
-</div>So, here are the checks I&#39;ve tried in gfar_start_xmit():<br>
-<br>
-BUG_ON(skb-&gt;len &gt; DEFAULT_RX_BUFFER_SIZE)<br>
-<br>
-BUG_ON(skb-&gt;len &gt; priv-&gt;regs-&gt;maxfrm)<br>
-<br>
-Neither produces a bug check yet ethtool reports non-zero<br>
-tx-babbling-errors. &nbsp;The last check appears to be the definition of<br=
->
-tx-babbling-errors. &nbsp;Is there a transmit path that I have missed?<br>
-<div><br>
-Scott<br>
-<br>
-___________________________________________________________________<br>
-<br>
- &nbsp;Scott N. Coulter<br>
- &nbsp;Senior Software Engineer<br>
-<br>
- &nbsp;Cyclone Microsystems<br>
- &nbsp;370 James Street &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Pho=
-ne: &nbsp;203.786.5536 ext. 118<br>
- &nbsp;New Haven, CT 06513-3051 &nbsp; &nbsp; &nbsp;Email: &nbsp;<a href=3D=
-"mailto:scott.coulter@cyclone.com" target=3D"_blank">scott.coulter@cyclone.=
-com</a><br>
- &nbsp;U.S.A. &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
-; &nbsp; &nbsp; &nbsp;Web: &nbsp; &nbsp;<a href=3D"http://www.cyclone.com" =
-target=3D"_blank">http://www.cyclone.com</a><br>
-___________________________________________________________________<br>
-<br>
-_______________________________________________<br>
-</div><div><div></div><div>Linuxppc-dev mailing list<br>
-<a href=3D"mailto:Linuxppc-dev@ozlabs.org" target=3D"_blank">Linuxppc-dev@o=
-zlabs.org</a><br>
-<a href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-dev" target=3D"_bla=
-nk">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br>
-</div></div></blockquote></div><br><br clear=3D"all"><br>-- <br>-----------=
--------<br>Sylvain JOYEAU<br>Freelance Engineer<br>Software RT-OS R&amp;D<b=
-r><a href=3D"mailto:sylvain.joyeau@gmail.com" target=3D"_blank">sylvain.joy=
-eau@gmail.com</a><br>
-
-
-T=E9l: +33-(0)667 477 052<br>&quot;A good idea is one side of the coin. The=
- other side is the practical usefulness&quot;. J. Liedke.<br>
-
---0015174c0f86bc79570463484c73--
+> >
+> > I based my board specific file on mpc834x_itx.c which had
+> >
+> >
+> >
+> > static struct of_device_id __initdata mpc834x_itx_ids[] =3D {
+> >
+> >                 { .compatible =3D "fsl,pq2pro-localbus", },
+> >
+> >                 { .compatible =3D "simple-bus", },
+> >
+> >                 {},
+> >
+> > };
+> >
+> >
+> >
+> > Don't know if this is broken?
+>=20
+> It's not broken as long as you have compatible =3D "simple-bus"=20
+> for your soc node.
+>=20
+> - Leo
+>=20
+>=20
