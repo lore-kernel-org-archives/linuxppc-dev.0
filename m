@@ -1,19 +1,17 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 13F5BDDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 19:43:44 +1100 (EST)
-Date: Fri, 20 Feb 2009 00:43:26 -0800 (PST)
-Message-Id: <20090220.004326.246398596.davem@davemloft.net>
-To: tklein@de.ibm.com
-Subject: Re: [PATCH] ehea: Fix memory hotplug handling
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200902191232.12152.tklein@de.ibm.com>
-References: <200902191232.12152.tklein@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: jeff@garzik.org, themann@de.ibm.com, netdev@vger.kernel.org,
-	hering2@de.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
+Return-Path: <henk.stegeman@gmail.com>
+Received: from mail-bw0-f168.google.com (mail-bw0-f168.google.com
+	[209.85.218.168]) by ozlabs.org (Postfix) with ESMTP id 42C68DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 20:51:51 +1100 (EST)
+Received: by bwz12 with SMTP id 12so5142069bwz.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 01:51:48 -0800 (PST)
+MIME-Version: 1.0
+Date: Fri, 20 Feb 2009 10:51:48 +0100
+Message-ID: <ae4f76fd0902200151m461f9336x1e2bbec61f815fde@mail.gmail.com>
+Subject: Davicom DM9000A on MPC5200B (powerpc) works using a dirty offsetting
+	and byte trick
+From: Henk Stegeman <henk.stegeman@gmail.com>
+To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +21,243 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Thomas Klein <tklein@de.ibm.com>
-Date: Thu, 19 Feb 2009 12:32:11 +0100
+Hello,
 
-> Added missing set_bit() to disable data transfer when a memchange
-> notification is handled
->
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+My board has a Davicom DM9000A ethernet controller on the MPC5200B's
+Local Plus bus.
+With the following setup and code the controller *works fine* with the
+MPC5200B, but I think the code + setup to make it happen could be a
+lot cleaner.
 
-Applied to net-next-2.6
+The DM9000A is setup for 16 bit mode, and wired as such to the
+MPC5200B, A1 is wired to the DM9000 CMD pin.
+The DM9000 is accessed trough two registers, address and data register.
+The chip-select used is CS1 and it is setup in U-boot as follows:
+/*	Start addres: FB000000
+	Data Bus Size: 2 bytes
+	Address Bus Size: 16 bit
+	Mux off.
+*/
+#define CFG_CS1_CFG = 0x04041500
 
-But this was a real pain because you never tell me what
-tree your changes are destined for.
+The resulting physical DM9000 register map is:
+FB000000 : address register
+FB000002 : data register
 
-I assumed since you said "bug fix" you want this in
-net-2.6, but of course this patch doesn't apply there
-since the driver version is different in that tree.
+I have the following definition for this network device in my dts:
 
-You can save me all of that trial-and-error wasted time
-if you simply say "net-next-2.6" or "net-2.6" either
-in the "[PATCH ...]" part of your subject or in the
-message body itself.
+	enet1:ethernet@fb000000 {
+		#size-cells = <1>;
+		#address-cells = <1>;
+		device_type = "network";
+		compatible = "davicom,dm9000";
+		reg = <0xfb000000 0x00000002 		// DM9000 Address register
+			0xfb000002 0x00000002>;		// DM9000 Data register
+		mac-address = [ 00 00 00 00 00 00 ]; // Filled in by u-boot
+		interrupts = <1 1 0>;			// External interrupt 1
+		interrupt-parent = <&mpc5200_pic>;
+	};
 
-Thanks.
+To pass this information to the unmodified DM9000 driver I put
+together a wrapper arch/powerpc/sysdev/dm9000_dev.c (see below) for
+the of_ part (I reused most of the work from
+arch/powerpc/sysdev/tsi108_dev.c):
+
+Because the dm9000 driver uses the data address both as pointer to u16
+and pointer to u8, this works for a little-endian cpu to the
+little-endian dm9000, but not for the big endian MPC5200 to little
+endian dm9000.
+So I add an offset of 1 to this pointer when it is passed to the
+dm9000 driver. This offset of 1 is wrong for the u16 accesses of the
+DM9000 driver, besides that the data needs to be byteswapped for the
+dm9000 driver.
+For these two reasons I wrote the functions dm9000_outblk_16bit
+dm9000_intblk_16bit dm9000_dumpblk_16bit which are passed via the
+platform_data.
+
+Apart from comments on my assumptions I have the following questions
+about this situation and my code:
+- Is it the right way to make a separate arch/powerpc/sysdev/*_dev.c
+for reading the device-tree and passing it to a driver, in stead of
+adding it to the driver itself?
+- I think the best solution to handle the separate address and data
+register is the 2 entry register array in the device tree as above,
+this accounts for an odd connection to the DM9000's CMD pin. Agree?
+- The MPC5200's chip-select can be configured to do byte-swapping on
+read and write, however when I configured it as such and I removed my
+offsetting by 1 and byte-swapping code It didn't work.
+- Any suggestions to what could be wrong here? Or does the MPC5200 in
+this case only byte swap u16 reads, but a u8 read is unchanged?
+- What about how the DM9000 driver deals with this u8 read and u16
+read, is this correct?
+
+Thanks,
+
+Henk
+
+----
+
+/*
+ * dm9000 device setup code
+ *
+ * Maintained by Henk Stegeman < henk.stegeman@gmail.com >
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under  the terms of  the GNU General  Public License as published by the
+ * Free Software Foundation;  either version 2 of the  License, or (at your
+ * option) any later version.
+ */
+
+#include <linux/stddef.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/errno.h>
+#include <linux/major.h>
+#include <linux/delay.h>
+#include <linux/irq.h>
+#include <linux/module.h>
+#include <linux/device.h>
+#include <linux/platform_device.h>
+#include <linux/dm9000.h>
+
+#include <asm/system.h>
+#include <asm/atomic.h>
+#include <asm/io.h>
+#include <asm/irq.h>
+#include <asm/prom.h>
+#include <mm/mmu_decl.h>
+
+#ifdef DEBUG
+#define DBG(fmt...) do { printk(fmt); } while(0)
+#else
+#define DBG(fmt...) do { } while(0)
+#endif
+
+#define U16_SWAP_BYTES(v) (((v << 8) & 0xff00) | ((v >> 8) & 0x00ff))
+static void dm9000_outblk_16bit(void __iomem *reg, void *data, int count)
+{
+	u16 * pU16 = data;
+	count = ( count + 1 ) >> 1;
+	while (count > 0) {
+		/* subtract 1 from reg to get back at the 16bit reg addr */
+		out_be16(reg - 1, U16_SWAP_BYTES(* pU16));
+		pU16 ++;
+		count --;
+	}
+}
+
+static void dm9000_inblk_16bit(void __iomem *reg, void *data, int count)
+{
+	u16 * pU16 = data;
+	count = ( count + 1 ) >> 1;
+	while (count > 0) {	
+		/* subtract 1 from reg to get back at the 16bit reg addr */
+		* pU16 = in_be16(reg - 1);		
+		* pU16 = U16_SWAP_BYTES(* pU16);
+		pU16 ++;
+		count --;
+	}
+}
+
+static void dm9000_dumpblk_16bit(void __iomem *reg, int count)
+{
+	volatile u16 tmp;
+	count = ( count + 1 ) >> 1;
+	while (count > 0) {	
+		/* subtract 1 from reg to get back at the 16bit reg addr */
+		tmp = in_be16(reg - 1);		
+		count --;
+	}
+}
+
+#define NUM_DM9000_RESOURCES 3
+static int __init dm9000_eth_of_init(void)
+{
+	struct device_node *np;
+	unsigned int i = 0;
+	struct platform_device *dm9000_eth_dev;
+	int ret;
+
+	for_each_compatible_node(np, "network", "davicom,dm9000") {
+		struct resource r[NUM_DM9000_RESOURCES];
+		struct dm9000_plat_data dm9000_eth_data;
+		const void *dev_addr;
+
+		memset(r, 0, sizeof(r));
+		memset(&dm9000_eth_data, 0, sizeof(dm9000_eth_data));
+
+		/* Address register. */
+		ret = of_address_to_resource(np, 0, &r[0]);
+		++ r[0].start; /* dm9000 driver uses this as an address to a u8,
+						  our address is to a big endian u16, add an
+						  offset of 1 byte so dm9000 driver reads the expected
+						  least-significant byte */
+		DBG("%s: name:start->end = %s:0x%lx-> 0x%lx\n",
+			__func__,r[0].name, r[0].start, r[0].end);
+		if (ret)
+			goto err;
+
+		/* Data register. */
+		ret = of_address_to_resource(np, 1, &r[1]);
+		++ r[1].start; /* dm9000 driver uses this as an address to a u8,
+						  our address is to a big endian u16, add an
+						  offset of 1 byte so dm9000 driver reads the expected
+						  least-significant byte */
+		DBG("%s: name:start->end = %s:0x%lx-> 0x%lx\n",
+			__func__,r[1].name, r[1].start, r[1].end);
+		if (ret)
+			goto err;
+
+		/* IRQ. */
+		r[2].name = "irq";
+		r[2].start = irq_of_parse_and_map(np, 0);
+		r[2].flags = IORESOURCE_IRQ_HIGHLEVEL;
+		if (r[2].start == NO_IRQ) {
+			DBG("%s: irq_of_parse_and_map failed\n", __func__);
+		}
+
+		r[2].end = irq_of_parse_and_map(np, 0);
+		if (r[2].end == NO_IRQ) {
+			DBG("%s: irq_of_parse_and_map failed\n", __func__);
+		}
+		r[2].flags = IORESOURCE_IRQ;
+		DBG("%s: name:start->end = %s:0x%lx-> 0x%lx\n",
+			__func__,r[2].name, r[2].start, r[2].end);
+
+		dm9000_eth_dev =
+		    platform_device_register_simple("dm9000", i++, &r[0],
+						    NUM_DM9000_RESOURCES);
+
+		if (IS_ERR(dm9000_eth_dev)) {
+			ret = PTR_ERR(dm9000_eth_dev);
+			goto err;
+		}
+
+		dev_addr = of_get_mac_address(np);
+		if (dev_addr) {
+			memcpy(dm9000_eth_data.dev_addr, dev_addr, 6);
+			dm9000_eth_data.flags |= DM9000_PLATF_NO_EEPROM;
+		}		
+		dm9000_eth_data.flags |= DM9000_PLATF_16BITONLY;
+		dm9000_eth_data.inblk = dm9000_inblk_16bit;
+		dm9000_eth_data.outblk = dm9000_outblk_16bit;
+		dm9000_eth_data.dumpblk = dm9000_dumpblk_16bit;
+
+		ret =
+		    platform_device_add_data(dm9000_eth_dev, &dm9000_eth_data,
+					     sizeof(struct dm9000_plat_data));
+		if (ret)
+			goto unreg;
+	}
+	return 0;
+unreg:
+	platform_device_unregister(dm9000_eth_dev);
+err:
+	of_node_put(np);
+	return ret;
+}
+
+arch_initcall(dm9000_eth_of_init);
+
+
+----
