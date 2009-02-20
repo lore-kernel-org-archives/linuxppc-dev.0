@@ -2,18 +2,20 @@ Return-Path: <beckyb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D98D4DDE20
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 07:44:49 +1100 (EST)
-Message-Id: <92CC5F5B-948A-43E6-BED9-9C62BCB7238E@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id CCDEFDE13E
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 07:45:13 +1100 (EST)
+Message-Id: <6F644D32-0FEF-4D42-9735-4ECF5371009F@kernel.crashing.org>
 From: Becky Bruce <beckyb@kernel.crashing.org>
 To: Benjamin Krill <ben@codiert.org>
-In-Reply-To: <20090219220800.GG12204@codiert.org>
+In-Reply-To: <20090219220820.GH12204@codiert.org>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 1/3] powerpc/pci: Default to dma_direct_ops for pci dma_ops
-Date: Fri, 20 Feb 2009 14:44:17 -0600
+Subject: Re: [PATCH 2/3] powerpc: setup archdata for {of_}platform via a
+	single platform_notify
+Date: Fri, 20 Feb 2009 14:44:51 -0600
 References: <1235076557-24464-1-git-send-email-galak@kernel.crashing.org>
-	<20090219220800.GG12204@codiert.org>
+	<1235076557-24464-2-git-send-email-galak@kernel.crashing.org>
+	<20090219220820.GH12204@codiert.org>
 Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,12 +29,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Feb 19, 2009, at 4:08 PM, Benjamin Krill wrote:
 
-> * Kumar Gala | 2009-02-19 14:49:15 [-0600]:
+> * Kumar Gala | 2009-02-19 14:49:16 [-0600]:
 >
->> This will allow us to remove the ppc32 specific checks in  
->> get_dma_ops()
->> that defaults to dma_direct_ops if the archdata is NULL.  We really
->> should always have archdata set to something going forward.
+>> Since a number of powerpc chips are SoCs we end up having dma-able
+>> devices that are registered as platform or of_platform devices.  We  
+>> need
+>> to hook the archdata to setup proper dma_ops for these devices.
+>>
+>> In the short term the majority of these devices only need the
+>> direct_dma_ops as the platforms don't have any IOMMUs.
+>>
+>> In the future to enable >4G DMA support on ppc32 we can hook  
+>> swiotlb ops.
 >>
 >> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 >
