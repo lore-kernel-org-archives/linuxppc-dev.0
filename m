@@ -2,9 +2,9 @@ Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: benh@kernel.crashing.org
 MIME-Version: 1.0
-Subject: [PATCH] powerpc: Add alignment handler for new lfiwzx instruction
-Date: Fri, 20 Feb 2009 15:51:37 +1100
-Message-ID: <29888.1235105497@neuling.org>
+Subject: [PATCH] powerpc: Fix load/store float double alignment handler
+Date: Fri, 20 Feb 2009 15:52:20 +1100
+Message-ID: <29990.1235105540@neuling.org>
 Sender: mikey@neuling.org
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,29 +16,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-lfiwzx is a new floating point load instruction in 2.06 that needs an
-alignment handler for Linux.  
+When we introduced VSX, we changed the way FPRs are stored in the
+thread_struct.  Unfortunately we missed the load/store float double
+alignment handler code when updating how we access FPRs in the
+thread_struct. 
 
-Turns out to be the worlds easiest handler to add.
+Below fixes this and merges the little/big endian case.  
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
-Benh: this is for 2.6.30, but would be nice to be back in 2.6.27/28/29
-too.
+benh: this needs to go into 27,28 and 29.  Sorry :-)
 
- arch/powerpc/kernel/align.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/align.c |   29 +++++++++++++----------------
+ 1 file changed, 13 insertions(+), 16 deletions(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/align.c
+Index: linux-bml/arch/powerpc/kernel/align.c
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/align.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/align.c
-@@ -187,7 +187,7 @@ static struct aligninfo aligninfo[128] =
- 	{ 4, ST+F+S+U },	/* 11 1 1010: stfsux */
- 	{ 8, ST+F+U },		/* 11 1 1011: stfdux */
- 	INVALID,		/* 11 1 1100 */
--	INVALID,		/* 11 1 1101 */
-+	{ 4, LD+F },		/* 11 1 1101: lfiwzx */
- 	INVALID,		/* 11 1 1110 */
- 	INVALID,		/* 11 1 1111 */
- };
+--- linux-bml.orig/arch/powerpc/kernel/align.c
++++ linux-bml/arch/powerpc/kernel/align.c
+@@ -367,27 +367,24 @@ static int emulate_multiple(struct pt_re
+ static int emulate_fp_pair(unsigned char __user *addr, unsigned int reg,
+ 			   unsigned int flags)
+ {
+-	char *ptr = (char *) &current->thread.TS_FPR(reg);
+-	int i, ret;
++	char *ptr0 = (char *) &current->thread.TS_FPR(reg);
++	char *ptr1 = (char *) &current->thread.TS_FPR(reg+1);
++	int i, ret, sw = 0;
+ 
+ 	if (!(flags & F))
+ 		return 0;
+ 	if (reg & 1)
+ 		return 0;	/* invalid form: FRS/FRT must be even */
+-	if (!(flags & SW)) {
+-		/* not byte-swapped - easy */
+-		if (!(flags & ST))
+-			ret = __copy_from_user(ptr, addr, 16);
+-		else
+-			ret = __copy_to_user(addr, ptr, 16);
+-	} else {
+-		/* each FPR value is byte-swapped separately */
+-		ret = 0;
+-		for (i = 0; i < 16; ++i) {
+-			if (!(flags & ST))
+-				ret |= __get_user(ptr[i^7], addr + i);
+-			else
+-				ret |= __put_user(ptr[i^7], addr + i);
++	if (flags & SW)
++		sw = 7;
++	ret = 0;
++	for (i = 0; i < 8; ++i) {
++		if (!(flags & ST)) {
++			ret |= __get_user(ptr0[i^sw], addr + i);
++			ret |= __get_user(ptr1[i^sw], addr + i + 8);
++		} else {
++			ret |= __put_user(ptr0[i^sw], addr + i);
++			ret |= __put_user(ptr1[i^sw], addr + i + 8);
+ 		}
+ 	}
+ 	if (ret)
