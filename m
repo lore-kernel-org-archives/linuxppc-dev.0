@@ -1,17 +1,30 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id D0679DDEF7
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 06:11:12 +1100 (EST)
-Date: Fri, 20 Feb 2009 11:11:09 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: PCI reading without endian conversion
-Message-ID: <20090220191108.GA21163@ovro.caltech.edu>
-References: <b5e2fc790902201057of113946yea9ccc7405e31926@mail.gmail.com>
+Return-Path: <Dai.Haruki@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D9A14DDE0A
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 06:16:41 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n1KJGOHE017573
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 12:16:30 -0700 (MST)
+Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
+	[10.64.32.14])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n1KJGOmc008624
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Feb 2009 13:16:24 -0600 (CST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b5e2fc790902201057of113946yea9ccc7405e31926@mail.gmail.com>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: Gianfar tx-babbling-errors
+Date: Fri, 20 Feb 2009 12:16:12 -0700
+Message-ID: <18AEF66AFDF06F4CAAA1D419D000FD3302B1EAB1@az33exm24.fsl.freescale.net>
+In-Reply-To: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
+References: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
+From: "Haruki Dai-R35557" <Dai.Haruki@freescale.com>
+To: "Scott Coulter" <scott.coulter@cyclone.com>, <linuxppc-dev@ozlabs.org>
+Cc: Gala Kumar-B11780 <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +34,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 20, 2009 at 12:57:36PM -0600, Matt Sealey wrote:
-> Hi guys,
-> 
-> What's the correct way to read from PCI address space (basically it's
-> guaranteed to be non-coherent memory bar) without flipping bits like
-> ioread32() does?
-> 
-> I need to be able to copy a bank of registers from PCI address space
-> into a temporary buffer so I can compare them in userspace through
-> UIO. Because of the flipping and the difference between the original
-> kernel driver (which used ioread32() and therefore "saw" big endian)
-> and the userspace app (which has a direct view of the PCI space, and
-> therefore "sees" little endian) I decided to give userspace an
-> absolutely consistent little-endian view seeing as this may get ported
-> to ARM in the coming months.
-> 
-> I want to put as little code in there as possible and not laboriously
-> manually flip from my ioread32() big endian values to little endian
-> again (waste of time and code) if I can help it. Being able to read
-> the raw value would help a lot, and if I need to do calculations on a
-> small portion of the data then I can do the flips manually then (using
-> le32_to_cpu and cpu_to_le32 which will be a noop on ARM), reducing the
-> amount of porting I need to do in both kernel and userspace alike.
-> 
-> So, is there something like a direct ioread32le() or so, which will
-> not change behaviour across architectures, is present on ARM and PPC,
-> and will handle both PCI address space, and "normal" "ioremapped"
-> memory?
-> 
+Hi Scott,
 
-I'm pretty sure memcpy_fromio() and memcpy_toio() will get you what you
-want. They don't change byte ordering.
+ Is this your own board? If so, what PHY chip are you using? Are you
+using the PHY driver?
+ If the generic PHY driver is used and polling the MDIO periodically for
+the link check, you may truncate the packet. I hope this is not the
+case.=20
 
-Ira
+Regards
+Dai
+
+> -----Original Message-----
+> From: linuxppc-dev-bounces+dai.haruki=3Dfreescale.com@ozlabs.org
+> [mailto:linuxppc-dev-bounces+dai.haruki=3Dfreescale.com@ozlabs.org] On
+Behalf Of
+> Scott Coulter
+> Sent: Wednesday, February 18, 2009 10:16 AM
+> To: linuxppc-dev@ozlabs.org
+> Subject: Gianfar tx-babbling-errors
+>=20
+>=20
+> Hi all,
+>=20
+> As a simple stress test for my board with an MPC8572E and an MPC8568E
+on
+> it, I setup both processors to boot linux 2.6.27.6 with an NFS root
+and
+> then perform repeated native compiles of a linux kernel over NFS.
+After
+> running for 4 days straight or so with between 250-300 build cycles
+per
+> processor, I stopped the builds and ran ethtool to look for any odd
+> statistics.  Both processors reported non-zero values for
+> tx-babbling-errors.  Both processors reported around 1300
+> tx-babbling-errors out of about 80,000,000 Tx packets.  Should I be
+> concerned about the tx-babbling-errors?  What conditions would cause
+> these errors to be reported?
+>=20
+> Thanks,
+> Scott
+>=20
+>=20
+>=20
+>=20
+>=20
+> ___________________________________________________________________
+>=20
+>   Scott N. Coulter
+>   Senior Software Engineer
+>=20
+>   Cyclone Microsystems
+>   370 James Street              Phone:  203.786.5536 ext. 118
+>   New Haven, CT 06513-3051      Email:  scott.coulter@cyclone.com
+>   U.S.A.                        Web:    http://www.cyclone.com
+> ___________________________________________________________________
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
