@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7030ADDEF1
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 04:33:26 +1100 (EST)
-Date: Fri, 20 Feb 2009 20:33:20 +0300
+	by ozlabs.org (Postfix) with ESMTP id 49907DDDF0
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 04:33:31 +1100 (EST)
+Date: Fri, 20 Feb 2009 20:33:29 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 07/13] sdhci: Add support for hosts with strict 32 bit
-	addressing
-Message-ID: <20090220173320.GG7583@oksana.dev.rtsoft.ru>
+Subject: [PATCH 11/13] sdhci: Add quirk for controllers that need IRQ
+	re-init after reset
+Message-ID: <20090220173329.GK7583@oksana.dev.rtsoft.ru>
 References: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -24,107 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-SDHCI driver must take special care when working with "triggering"
-registers on hosts with strict 32 bit addressing.
-
-In FSL eSDHC hosts all registers are 32 bit width, writing to the
-first half of any register will cause [undefined?] write the second
-half of the register. That is, 16 bit write to the TRANSFER_MODE
-register, makes hardware see a bogus write to the COMMAND register
-(these two registers are adjacent).
-
-This patch adds SDHCI_QUIRK_32BIT_REGISTERS quirk. When specified,
-the sdhci driver will try to "pack" all dangerous writes into single
-32 bit write transaction.
+FSL eSDHC controllers losing signal/interrupt enable states after
+reset, so we should re-enable them.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   19 ++++++++++++++-----
- drivers/mmc/host/sdhci.h |    4 ++++
- 2 files changed, 18 insertions(+), 5 deletions(-)
+ drivers/mmc/host/sdhci.c |    7 +++++++
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index d668625..1c36a25 100644
+index eff615d..91f021d 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -825,13 +825,13 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- 	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
- }
- 
--static void sdhci_set_transfer_mode(struct sdhci_host *host,
-+static u16 sdhci_get_transfer_mode(struct sdhci_host *host,
- 	struct mmc_data *data)
+@@ -189,6 +189,7 @@ static void sdhci_disable_card_detection(struct sdhci_host *host)
+ static void sdhci_reset(struct sdhci_host *host, u8 mask)
  {
- 	u16 mode;
- 
- 	if (data == NULL)
--		return;
-+		return 0;
- 
- 	WARN_ON(!host->data);
- 
-@@ -843,7 +843,7 @@ static void sdhci_set_transfer_mode(struct sdhci_host *host,
- 	if (host->flags & SDHCI_REQ_USE_DMA)
- 		mode |= SDHCI_TRNS_DMA;
- 
--	sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
-+	return mode;
- }
- 
- static void sdhci_finish_data(struct sdhci_host *host)
-@@ -895,6 +895,7 @@ static void sdhci_finish_data(struct sdhci_host *host)
- static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- {
- 	int flags;
-+	u16 xfer_mode;
- 	u32 mask;
  	unsigned long timeout;
++	u32 uninitialized_var(ier);
  
-@@ -933,7 +934,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ 	if (host->quirks & SDHCI_QUIRK_NO_CARD_NO_RESET) {
+ 		if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) &
+@@ -196,6 +197,9 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 			return;
+ 	}
  
- 	sdhci_writel(host, cmd->arg, SDHCI_ARGUMENT);
++	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
++		ier = sdhci_readl(host, SDHCI_INT_ENABLE);
++
+ 	sdhci_writeb(host, mask, SDHCI_SOFTWARE_RESET);
  
--	sdhci_set_transfer_mode(host, cmd->data);
-+	xfer_mode = sdhci_get_transfer_mode(host, cmd->data);
- 
- 	if ((cmd->flags & MMC_RSP_136) && (cmd->flags & MMC_RSP_BUSY)) {
- 		printk(KERN_ERR "%s: Unsupported response type!\n",
-@@ -959,7 +960,15 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 	if (cmd->data)
- 		flags |= SDHCI_CMD_DATA;
- 
--	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags), SDHCI_COMMAND);
-+	if (host->quirks & SDHCI_QUIRK_32BIT_REGISTERS) {
-+		sdhci_writel(host,
-+			SDHCI_MAKE_CMD_32BIT(cmd->opcode, flags, xfer_mode),
-+			SDHCI_TRANSFER_MODE);
-+	} else {
-+		sdhci_writew(host, xfer_mode, SDHCI_TRANSFER_MODE);
-+		sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags),
-+			SDHCI_COMMAND);
-+	}
+ 	if (mask & SDHCI_RESET_ALL)
+@@ -215,6 +219,9 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 		timeout--;
+ 		mdelay(1);
+ 	}
++
++	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
++		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
  }
  
- static void sdhci_finish_command(struct sdhci_host *host)
+ static void sdhci_init(struct sdhci_host *host)
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 051fef5..7b115d8 100644
+index 44c820a..5c5a950 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -44,6 +44,8 @@
- #define  SDHCI_CMD_RESP_SHORT_BUSY 0x03
- 
- #define SDHCI_MAKE_CMD(c, f) (((c & 0xff) << 8) | (f & 0xff))
-+#define SDHCI_MAKE_CMD_32BIT(c, f, m) \
-+	((((c) & 0xff) << 24) | (((f) & 0xff) << 16) | ((m) & 0x37))
- 
- #define SDHCI_RESPONSE		0x10
- 
-@@ -221,6 +223,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
- /* Controller reports inverted write-protect state */
- #define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<17)
-+/* Controller has all registers of 32 bit width */
-+#define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
+@@ -229,6 +229,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<19)
+ /* Controller does not like fast PIO transfers */
+ #define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<20)
++/* Controller losing signal/interrupt enable states after reset */
++#define SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET		(1<<21)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
