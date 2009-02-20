@@ -1,22 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D49F7DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 04:32:01 +1100 (EST)
-Message-ID: <499EE8DD.2030709@freescale.com>
-Date: Fri, 20 Feb 2009 11:31:09 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 62603DDED4
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 04:32:31 +1100 (EST)
+Date: Fri, 20 Feb 2009 20:32:28 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Subject: [PATCH 0/13] FSL eSDHC support
+Message-ID: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] powerpc/83xx: Add power management support for MPC837x
-	boards
-References: <20090220171258.GA3050@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090220171258.GA3050@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=windows-1251
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-> index 3e3ec8f..c54b90d 100644
-> --- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-> @@ -137,6 +137,7 @@
->  			reg = <0x3000 0x100>;
->  			interrupts = <14 0x8>;
->  			interrupt-parent = <&ipic>;
-> +			sleep = <&pmc 0x0c000000>;
->  			dfsrr;
+Hi all,
 
-[snip]
+Some updates for the eSDHC support:
 
-> @@ -318,6 +325,7 @@
->  			reg = <0x2e000 0x1000>;
->  			interrupts = <42 0x8>;
->  			interrupt-parent = <&ipic>;
-> +			sleep = <&pmc 0x0c000000>;
+Changes since the third RFC:
+- Use uninitialized_var() (suggested by Laurent Pinchart);
+- Fixed a bug in eSDHC SDCLK prescaler calculations because of which
+  we were over-clocking the SDCLK, and that caused CRC errors using some
+  SD cards;
+- Not a change, but some status: SDHS (50 MHz) cards were tested to
+  NOT work (at least on MPC837x boards) -- this is to be investigated
+  further. SDHC (> 4 GB) cards were not tested, yet.
 
-You have two different nodes with the same bits referenced.  These nodes 
-cannot be put to sleep independently, and as such need to be under a 
-common sleep-nexus node.
+Changes since the second RFC:
+- Addressed all comments that were raised by Pierre Ossman.
+  There were too many to mention them all, so here is the link:
+  http://lkml.org/lkml/2009/2/6/320
 
--Scott
+Changes since the first RFC:
+- Use of_iomap() in sdhci-of.c (suggested by Arnd Bergmann). Also added
+  Arnd's Acked-by: line for the sdhci-of patch.
+- Kconfig help text improved (thanks to Matt Sealey and M. Warner Losh).
+- In "sdhci: Add quirk to suppress PIO interrupts during DMA transfers"
+  patch: sdhci_init() now clears SDHCI_PIO_DISABLED flag, otherwise we
+  won't disable PIO interrupts after suspend.
+- New patch: "sdhci: Add type checking for IO memory accessors"
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
