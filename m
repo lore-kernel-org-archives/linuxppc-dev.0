@@ -2,23 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 62813DDEFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 15:33:33 +1100 (EST)
-Subject: Re: PCI reading without endian conversion
+	by ozlabs.org (Postfix) with ESMTPS id 79D7FDDF11
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 15:38:20 +1100 (EST)
+Subject: Re: ioremap fails for a device in PCI-E slot on AMCC katmai board
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ira Snyder <iws@ovro.caltech.edu>
-In-Reply-To: <20090220235054.GA27349@ovro.caltech.edu>
-References: <b5e2fc790902201057of113946yea9ccc7405e31926@mail.gmail.com>
-	<20090220191108.GA21163@ovro.caltech.edu>
-	<b5e2fc790902201205t4bd03373w7e7624fce60f5eb0@mail.gmail.com>
-	<20090220210744.GB21163@ovro.caltech.edu>
-	<b5e2fc790902201356v7e01b17al3ecd7e06ac59af3d@mail.gmail.com>
-	<20090220235054.GA27349@ovro.caltech.edu>
+To: Shubhada Pugaonkar <shubhada@chelsio.com>
+In-Reply-To: <8A71B368A89016469F72CD08050AD33402D57562@maui.asicdesigners.com>
+References: <8A71B368A89016469F72CD08050AD33402D57562@maui.asicdesigners.com>
 Content-Type: text/plain
-Date: Sat, 21 Feb 2009 15:33:17 +1100
-Message-Id: <1235190797.8805.202.camel@pasglop>
+Date: Sat, 21 Feb 2009 15:38:03 +1100
+Message-Id: <1235191083.8805.207.camel@pasglop>
 Mime-Version: 1.0
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2009-02-20 at 17:35 -0800, Shubhada Pugaonkar wrote:
 
-> > Am I correct in saying that cpu_to_le32 and le32_to_cpu are the
-> > functions/macros I need to use to do byte swapping to make everything
-> > go little endian (and back again when I read them back in the kernel)?
-> > 
-> > Or is there some cleverer way already implemented in the kernel?
-> > 
+> ****************************************************
 > 
-> I would say that the __raw_readl() reads in cpu order. If you wanted to
-> convert that to le32, you'd use cpu_to_le32().
+> cxgb3_main.c:
+> 
+>         mmio_start = pci_resource_start(pdev, 0);
+> 
+>         mmio_len = pci_resource_len(pdev, 0);
+> 
+>         ai = t3_get_adapter_info(ent->driver_data);
+> 
 
-Beware that __raw_* forms also don't have memory barriers.
+My bet is that mmio_start is an unsigned long instead of a
+resource_size_t and thus gets cropped (ie, driver bug).
 
-In general, you know what byte order your device uses (which is often
-little endian) and you use the appropriate ioread32{be}. Now, for
-userspace, you simply need to mimmic those accessors.
+ (/me goes read the source)
 
+Yes, indeed, that's the problem. Change the definition
+of mmio_start and mmio_len to resource_size_t, that should
+fix it. I suspect the other driver has the same problem.
+
+Note: They will still get cropped, I suspect, when copied
+to netdev->mem_start, nothing much to do here, but fortunately
+those fields aren't used.
+
+BTW. If you do patches to fix those drivers, please send them
+to the netdev@vger.kernel.org mailing list too.
+
+Cheers,
 Ben.
