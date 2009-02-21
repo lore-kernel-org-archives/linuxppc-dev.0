@@ -1,19 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 79D7FDDF11
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 15:38:20 +1100 (EST)
-Subject: Re: ioremap fails for a device in PCI-E slot on AMCC katmai board
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Shubhada Pugaonkar <shubhada@chelsio.com>
-In-Reply-To: <8A71B368A89016469F72CD08050AD33402D57562@maui.asicdesigners.com>
-References: <8A71B368A89016469F72CD08050AD33402D57562@maui.asicdesigners.com>
-Content-Type: text/plain
-Date: Sat, 21 Feb 2009 15:38:03 +1100
-Message-Id: <1235191083.8805.207.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <leowang1998@yahoo.com.cn>
+Received: from web15305.mail.cnb.yahoo.com (web15305.mail.cnb.yahoo.com
+	[203.209.230.35]) by ozlabs.org (Postfix) with SMTP id 00414DDEEB
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2009 14:30:24 +1100 (EST)
+Message-ID: <814615.7180.qm@web15305.mail.cnb.yahoo.com>
+Date: Sat, 21 Feb 2009 11:30:21 +0800 (CST)
+From: zhong wang <leowang1998@yahoo.com.cn>
+Subject: how to fix 405ex SDR0_MFR_ECS
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1653510492-1235187021=:7180"
+Reply-To: leowang1998@yahoo.com.cn
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2009-02-20 at 17:35 -0800, Shubhada Pugaonkar wrote:
 
-> ****************************************************
-> 
-> cxgb3_main.c:
-> 
->         mmio_start = pci_resource_start(pdev, 0);
-> 
->         mmio_len = pci_resource_len(pdev, 0);
-> 
->         ai = t3_get_adapter_info(ent->driver_data);
-> 
+--0-1653510492-1235187021=:7180
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-My bet is that mmio_start is an unsigned long instead of a
-resource_size_t and thus gets cropped (ie, driver bug).
+hello all
+=C2=A0=C2=A0=C2=A0 SDR0_MFR_ECS is defined for 440xx,now want to change it =
+for 405ex ,but i donnot known what means in /drivers/net/ibm_newemac/core.c=
+ line 2374 to 2385 ? plese help me=20
+=C2=A0
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 leo
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 2009:02:21=0A=0A=0A =
+     ___________________________________________________________ =0A  =E5=
+=A5=BD=E7=8E=A9=E8=B4=BA=E5=8D=A1=E7=AD=89=E4=BD=A0=E5=8F=91=EF=BC=8C=E9=82=
+=AE=E7=AE=B1=E8=B4=BA=E5=8D=A1=E5=85=A8=E6=96=B0=E4=B8=8A=E7=BA=BF=EF=BC=81=
+ =0Ahttp://card.mail.cn.yahoo.com/
+--0-1653510492-1235187021=:7180
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
- (/me goes read the source)
-
-Yes, indeed, that's the problem. Change the definition
-of mmio_start and mmio_len to resource_size_t, that should
-fix it. I suspect the other driver has the same problem.
-
-Note: They will still get cropped, I suspect, when copied
-to netdev->mem_start, nothing much to do here, but fortunately
-those fields aren't used.
-
-BTW. If you do patches to fix those drivers, please send them
-to the netdev@vger.kernel.org mailing list too.
-
-Cheers,
-Ben.
+<table cellspacing=3D"0" cellpadding=3D"0" border=3D"0" ><tr><td valign=3D"=
+top" style=3D"font: inherit;"><DIV>hello all</DIV>
+<DIV>&nbsp;&nbsp;&nbsp; SDR0_MFR_ECS is defined for 440xx,now want to chang=
+e it for 405ex ,but i donnot known what means in /drivers/net/ibm_newemac/c=
+ore.c line 2374 to 2385 ? plese help me </DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; leo</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2009:02:21</DIV=
+></td></tr></table><br>=0A=0A=0A      <hr size=3D1><a href=3D"http://cn.rd.=
+yahoo.com/mail_cn/tagline/card/*http://card.mail.cn.yahoo.com/">  =E5=A5=BD=
+=E7=8E=A9=E8=B4=BA=E5=8D=A1=E7=AD=89=E4=BD=A0=E5=8F=91=EF=BC=8C=E9=82=AE=E7=
+=AE=B1=E8=B4=BA=E5=8D=A1=E5=85=A8=E6=96=B0=E4=B8=8A=E7=BA=BF=EF=BC=81</a>
+--0-1653510492-1235187021=:7180--
