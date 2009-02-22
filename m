@@ -1,11 +1,11 @@
 Return-Path: <anton@ozlabs.org>
-Resent-Message-ID: <20090222115855.GJ12006@kryten>
-Message-Id: <20090222115332.790376340@samba.org>
+Resent-Message-ID: <20090222115855.GK12006@kryten>
+Message-Id: <20090222115332.932267488@samba.org>
 References: <20090222114957.213647384@samba.org>
-Date: Sun, 22 Feb 2009 22:50:06 +1100
+Date: Sun, 22 Feb 2009 22:50:07 +1100
 From: Anton Blanchard <anton@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 09/10] powerpc: Increase stack gap on 64bit binaries
+Subject: [patch 10/10] powerpc: Randomise PIEs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,39 +15,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 64bit there is a possibility our stack and mmap randomisation will put
-the two close enough such that we can't expand our stack to match the ulimit
-specified.
-
-To avoid this, start the upper mmap address at 1GB + 128MB below the top of our
-address space, so in the worst case we end up with the same ~128MB hole as in
-32bit. This works because we randomise the stack over a 1GB range.
+Randomise ELF_ET_DYN_BASE, which is used when loading position independent
+executables.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-2.6/arch/powerpc/mm/mmap.c
+Index: linux-2.6/arch/powerpc/include/asm/elf.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/mm/mmap.c	2009-02-21 09:52:23.000000000 +1100
-+++ linux-2.6/arch/powerpc/mm/mmap.c	2009-02-21 10:36:36.000000000 +1100
-@@ -30,9 +30,16 @@
- /*
-  * Top of mmap area (just below the process stack).
-  *
-- * Leave an at least ~128 MB hole.
-+ * Leave at least a ~128 MB hole on 32bit applications.
-+ *
-+ * On 64bit applications we randomise the stack by 1GB so we need to
-+ * space our mmap start address by a further 1GB, otherwise there is a
-+ * chance the mmap area will end up closer to the stack than our ulimit
-+ * requires.
-  */
--#define MIN_GAP (128*1024*1024)
-+#define MIN_GAP32 (128*1024*1024)
-+#define MIN_GAP64 ((128 + 1024)*1024*1024UL)
-+#define MIN_GAP ((is_32bit_task()) ? MIN_GAP32 : MIN_GAP64)
- #define MAX_GAP (TASK_SIZE/6*5)
+--- linux-2.6.orig/arch/powerpc/include/asm/elf.h	2009-02-22 21:18:04.000000000 +1100
++++ linux-2.6/arch/powerpc/include/asm/elf.h	2009-02-22 21:34:49.000000000 +1100
+@@ -178,7 +178,8 @@
+    the loader.  We need to make sure that it is out of the way of the program
+    that it will "exec", and that there is sufficient room for the brk.  */
  
- static inline int mmap_is_legacy(void)
+-#define ELF_ET_DYN_BASE         (0x20000000)
++extern unsigned long randomize_et_dyn(unsigned long base);
++#define ELF_ET_DYN_BASE		(randomize_et_dyn(0x20000000))
+ 
+ /*
+  * Our registers are always unsigned longs, whether we're a 32 bit
+Index: linux-2.6/arch/powerpc/kernel/process.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/process.c	2009-02-22 21:21:14.000000000 +1100
++++ linux-2.6/arch/powerpc/kernel/process.c	2009-02-22 21:36:02.000000000 +1100
+@@ -1154,3 +1154,13 @@
+ 
+ 	return ret;
+ }
++
++unsigned long randomize_et_dyn(unsigned long base)
++{
++	unsigned long ret = PAGE_ALIGN(base + brk_rnd());
++
++	if (ret < base)
++		return base;
++
++	return ret;
++}
 
 -- 
