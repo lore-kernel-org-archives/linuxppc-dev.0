@@ -1,13 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <30c3ca265326d7aaa86cc75367d23739398a7b23.1235355941.git.michael@ellerman.id.au>
-In-Reply-To: <689159d7e17a2227e6000b51911750503eed1778.1235355941.git.michael@ellerman.id.au>
-References: <689159d7e17a2227e6000b51911750503eed1778.1235355941.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 2/2] Make sure we copy all cpu_spec features except PMC
-	related ones
-Date: Mon, 23 Feb 2009 13:25:45 +1100 (EST)
-Cc: Paul Mackerras <paulus@samba.org>, shaggy@linux.vnet.ibm.com
+Return-Path: <ben@trinity.fluff.org>
+Received: from trinity.fluff.org (trinity.dh.bytemark.co.uk [89.16.178.74])
+	by ozlabs.org (Postfix) with ESMTP id DE072474C1
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 13:43:05 +1100 (EST)
+Date: Mon, 23 Feb 2009 01:56:00 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [PATCH 01/13] sdhci: Add quirk for controllers with no
+	end-of-busy IRQ
+Message-ID: <20090223015559.GB30710@trinity.fluff.org>
+References: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
+	<20090220173308.GA7583@oksana.dev.rtsoft.ru>
+	<20090221170504.657ff791@mjolnir.ossman.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090221170504.657ff791@mjolnir.ossman.eu>
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,84 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When identify_cpu() is called a second time with a logical PVR, it
-only copies a subset of the cpu_spec fields so as to avoid overwriting
-the performance monitor fields that were initialized based on the
-real PVR.
+On Sat, Feb 21, 2009 at 05:05:04PM +0100, Pierre Ossman wrote:
+> On Fri, 20 Feb 2009 20:33:08 +0300
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > From: Ben Dooks <ben-linux@fluff.org>
+> > 
+> > The Samsung SDHCI (and FSL eSDHC) controller block seems to fail
+> > to generate an INT_DATA_END after the transfer has completed and
+> > the bus busy state finished.
+> > 
+> > Changes in e809517f6fa5803a5a1cd56026f0e2190fc13d5c to use the
+> > new busy method are the cause of the behaviour change.
+> > 
+> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> 
+> Any objections to me merging this right away? It is needed for another
+> controller.
 
-However some of the other, non performance monitor related fields are
-also not copied:
- * pvr_mask
- * pvr_value
- * mmu_features
- * machine_check
+none from me.
 
-The fact that pvr_mask is not copied can result in show_cpuinfo()
-showing the cpu as "unknown", if we override an unknown PVR with a
-logical one - as reported by Shaggy.
+sorry about the delay, moving servers.
 
-So change the logic to copy all fields, and then put back the PMC
-related ones in the case that we're overwriting a real PVR with a
-logical one.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/cputable.c |   28 ++++++++++++++++------------
- 1 files changed, 16 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 944bd01..77febd3 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1765,22 +1765,27 @@ static struct cpu_spec the_cpu_spec;
- static void __init setup_cpu_spec(unsigned long offset, struct cpu_spec *s)
- {
- 	struct cpu_spec *t = &the_cpu_spec;
-+	struct cpu_spec old;
-+
- 	t = PTRRELOC(t);
-+	old = *t;
-+
-+	/* Copy everything, then do fixups */
-+	*t = *s;
- 
- 	/*
- 	 * If we are overriding a previous value derived from the real
- 	 * PVR with a new value obtained using a logical PVR value,
- 	 * don't modify the performance monitor fields.
- 	 */
--	if (t->num_pmcs && !s->num_pmcs) {
--		t->cpu_name = s->cpu_name;
--		t->cpu_features = s->cpu_features;
--		t->cpu_user_features = s->cpu_user_features;
--		t->icache_bsize = s->icache_bsize;
--		t->dcache_bsize = s->dcache_bsize;
--		t->cpu_setup = s->cpu_setup;
--		t->cpu_restore = s->cpu_restore;
--		t->platform = s->platform;
-+	if (old.num_pmcs && !s->num_pmcs) {
-+		t->num_pmcs = old.num_pmcs;
-+		t->pmc_type = old.pmc_type;
-+		t->oprofile_type = old.oprofile_type;
-+		t->oprofile_mmcra_sihv = old.oprofile_mmcra_sihv;
-+		t->oprofile_mmcra_sipr = old.oprofile_mmcra_sipr;
-+		t->oprofile_mmcra_clear = old.oprofile_mmcra_clear;
-+
- 		/*
- 		 * If we have passed through this logic once before and
- 		 * have pulled the default case because the real PVR was
-@@ -1794,10 +1799,9 @@ static void __init setup_cpu_spec(unsigned long offset, struct cpu_spec *s)
- 		 * and, in that case, keep the current value for
- 		 * oprofile_cpu_type.
- 		 */
--		if (t->oprofile_cpu_type == NULL)
-+		if (old.oprofile_cpu_type == NULL)
- 			t->oprofile_cpu_type = s->oprofile_cpu_type;
--	} else
--		*t = *s;
-+	}
- 
- 	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
- 
 -- 
-1.5.5
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
