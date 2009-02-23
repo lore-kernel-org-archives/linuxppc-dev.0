@@ -1,9 +1,10 @@
-Return-Path: <benh@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 23 Feb 2009 13:19:14 +1100
-Subject: [PATCH] powerpc: Wire up /proc/vmallocinfo to our ioremap()
-Message-Id: <20090223022008.D75F8DDE11@ozlabs.org>
+Message-Id: <689159d7e17a2227e6000b51911750503eed1778.1235355941.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/2] Deindentify identify_cpu()
+Date: Mon, 23 Feb 2009 13:25:43 +1100 (EST)
+Cc: Paul Mackerras <paulus@samba.org>, shaggy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,197 +14,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds the necessary bits and pieces to powerpc implementation of
-ioremap to benefit from caller tracking in /proc/vmallocinfo, at least
-for ioremap's done after mem init as the older ones aren't tracked.
+The for-loop body of identify_cpu() has gotten a little big, so move the
+loop body logic into a separate function. No other changes.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
+ arch/powerpc/kernel/cputable.c |  122 +++++++++++++++++++++-------------------
+ 1 files changed, 64 insertions(+), 58 deletions(-)
 
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 923f87a..944bd01 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1762,74 +1762,80 @@ static struct cpu_spec __initdata cpu_specs[] = {
  
- arch/powerpc/include/asm/io.h                |    6 ++++++
- arch/powerpc/include/asm/machdep.h           |    2 +-
- arch/powerpc/mm/pgtable_32.c                 |   14 +++++++++++---
- arch/powerpc/mm/pgtable_64.c                 |   25 +++++++++++++++++--------
- arch/powerpc/platforms/cell/io-workarounds.c |    4 ++--
- arch/powerpc/platforms/iseries/setup.c       |    2 +-
- 6 files changed, 38 insertions(+), 15 deletions(-)
-
---- linux-work.orig/arch/powerpc/include/asm/io.h	2009-02-04 15:37:43.000000000 +1100
-+++ linux-work/arch/powerpc/include/asm/io.h	2009-02-04 15:38:30.000000000 +1100
-@@ -632,6 +632,9 @@ static inline void iosync(void)
-  *   ioremap_flags and cannot be hooked (but can be used by a hook on one
-  *   of the previous ones)
-  *
-+ * * __ioremap_caller is the same as above but takes an explicit caller
-+ *   reference rather than using __builtin_return_address(0)
-+ *
-  * * __iounmap, is the low level implementation used by iounmap and cannot
-  *   be hooked (but can be used by a hook on iounmap)
-  *
-@@ -646,6 +649,9 @@ extern void iounmap(volatile void __iome
+ static struct cpu_spec the_cpu_spec;
  
- extern void __iomem *__ioremap(phys_addr_t, unsigned long size,
- 			       unsigned long flags);
-+extern void __iomem *__ioremap_caller(phys_addr_t, unsigned long size,
-+				      unsigned long flags, void *caller);
+-struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
++static void __init setup_cpu_spec(unsigned long offset, struct cpu_spec *s)
+ {
+-	struct cpu_spec *s = cpu_specs;
+ 	struct cpu_spec *t = &the_cpu_spec;
+-	int i;
+-
+-	s = PTRRELOC(s);
+ 	t = PTRRELOC(t);
+ 
+-	for (i = 0; i < ARRAY_SIZE(cpu_specs); i++,s++)
+-		if ((pvr & s->pvr_mask) == s->pvr_value) {
+-			/*
+-			 * If we are overriding a previous value derived
+-			 * from the real PVR with a new value obtained
+-			 * using a logical PVR value, don't modify the
+-			 * performance monitor fields.
+-			 */
+-			if (t->num_pmcs && !s->num_pmcs) {
+-				t->cpu_name = s->cpu_name;
+-				t->cpu_features = s->cpu_features;
+-				t->cpu_user_features = s->cpu_user_features;
+-				t->icache_bsize = s->icache_bsize;
+-				t->dcache_bsize = s->dcache_bsize;
+-				t->cpu_setup = s->cpu_setup;
+-				t->cpu_restore = s->cpu_restore;
+-				t->platform = s->platform;
+-				/*
+-				 * If we have passed through this logic once
+-				 * before and have pulled the default case
+-				 * because the real PVR was not found inside
+-				 * cpu_specs[], then we are possibly running in
+-				 * compatibility mode. In that case, let the
+-				 * oprofiler know which set of compatibility
+-				 * counters to pull from by making sure the
+-				 * oprofile_cpu_type string is set to that of
+-				 * compatibility mode. If the oprofile_cpu_type
+-				 * already has a value, then we are possibly
+-				 * overriding a real PVR with a logical one, and,
+-				 * in that case, keep the current value for
+-				 * oprofile_cpu_type.
+-				 */
+-				if (t->oprofile_cpu_type == NULL)
+-					t->oprofile_cpu_type = s->oprofile_cpu_type;
+-			} else
+-				*t = *s;
+-			*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
++	/*
++	 * If we are overriding a previous value derived from the real
++	 * PVR with a new value obtained using a logical PVR value,
++	 * don't modify the performance monitor fields.
++	 */
++	if (t->num_pmcs && !s->num_pmcs) {
++		t->cpu_name = s->cpu_name;
++		t->cpu_features = s->cpu_features;
++		t->cpu_user_features = s->cpu_user_features;
++		t->icache_bsize = s->icache_bsize;
++		t->dcache_bsize = s->dcache_bsize;
++		t->cpu_setup = s->cpu_setup;
++		t->cpu_restore = s->cpu_restore;
++		t->platform = s->platform;
++		/*
++		 * If we have passed through this logic once before and
++		 * have pulled the default case because the real PVR was
++		 * not found inside cpu_specs[], then we are possibly
++		 * running in compatibility mode. In that case, let the
++		 * oprofiler know which set of compatibility counters to
++		 * pull from by making sure the oprofile_cpu_type string
++		 * is set to that of compatibility mode. If the
++		 * oprofile_cpu_type already has a value, then we are
++		 * possibly overriding a real PVR with a logical one,
++		 * and, in that case, keep the current value for
++		 * oprofile_cpu_type.
++		 */
++		if (t->oprofile_cpu_type == NULL)
++			t->oprofile_cpu_type = s->oprofile_cpu_type;
++	} else
++		*t = *s;
 +
- extern void __iounmap(volatile void __iomem *addr);
++	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
  
- extern void __iomem * __ioremap_at(phys_addr_t pa, void *ea,
-Index: linux-work/arch/powerpc/include/asm/machdep.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/machdep.h	2009-02-04 15:35:20.000000000 +1100
-+++ linux-work/arch/powerpc/include/asm/machdep.h	2009-02-04 15:35:25.000000000 +1100
-@@ -90,7 +90,7 @@ struct machdep_calls {
- 	void		(*tce_flush)(struct iommu_table *tbl);
+-			/*
+-			 * Set the base platform string once; assumes
+-			 * we're called with real pvr first.
+-			 */
+-			if (*PTRRELOC(&powerpc_base_platform) == NULL)
+-				*PTRRELOC(&powerpc_base_platform) = t->platform;
++	/*
++	 * Set the base platform string once; assumes
++	 * we're called with real pvr first.
++	 */
++	if (*PTRRELOC(&powerpc_base_platform) == NULL)
++		*PTRRELOC(&powerpc_base_platform) = t->platform;
  
- 	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
--				   unsigned long flags);
-+				   unsigned long flags, void *caller);
- 	void		(*iounmap)(volatile void __iomem *token);
- 
- #ifdef CONFIG_PM
-Index: linux-work/arch/powerpc/mm/pgtable_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/pgtable_32.c	2009-02-04 15:40:22.000000000 +1100
-+++ linux-work/arch/powerpc/mm/pgtable_32.c	2009-02-04 15:41:43.000000000 +1100
-@@ -129,7 +129,8 @@ pgtable_t pte_alloc_one(struct mm_struct
- void __iomem *
- ioremap(phys_addr_t addr, unsigned long size)
- {
--	return __ioremap(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED);
-+	return __ioremap_caller(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED,
-+				__builtin_return_address(0));
- }
- EXPORT_SYMBOL(ioremap);
- 
-@@ -143,13 +144,20 @@ ioremap_flags(phys_addr_t addr, unsigned
- 	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
- 	flags &= ~(_PAGE_USER | _PAGE_EXEC | _PAGE_HWEXEC);
- 
--	return __ioremap(addr, size, flags);
-+	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
- }
- EXPORT_SYMBOL(ioremap_flags);
- 
- void __iomem *
- __ioremap(phys_addr_t addr, unsigned long size, unsigned long flags)
- {
-+	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
+ #if defined(CONFIG_PPC64) || defined(CONFIG_BOOKE)
+-			/* ppc64 and booke expect identify_cpu to also call
+-			 * setup_cpu for that processor. I will consolidate
+-			 * that at a later time, for now, just use #ifdef.
+-			 * we also don't need to PTRRELOC the function pointer
+-			 * on ppc64 and booke as we are running at 0 in real
+-			 * mode on ppc64 and reloc_offset is always 0 on booke.
+-			 */
+-			if (s->cpu_setup) {
+-				s->cpu_setup(offset, s);
+-			}
++	/* ppc64 and booke expect identify_cpu to also call setup_cpu for
++	 * that processor. I will consolidate that at a later time, for now,
++	 * just use #ifdef. We also don't need to PTRRELOC the function
++	 * pointer on ppc64 and booke as we are running at 0 in real mode
++	 * on ppc64 and reloc_offset is always 0 on booke.
++	 */
++	if (s->cpu_setup) {
++		s->cpu_setup(offset, s);
++	}
+ #endif /* CONFIG_PPC64 || CONFIG_BOOKE */
 +}
 +
-+void __iomem *
-+__ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
-+		 void *caller)
++struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
 +{
- 	unsigned long v, i;
- 	phys_addr_t p;
- 	int err;
-@@ -212,7 +220,7 @@ __ioremap(phys_addr_t addr, unsigned lon
- 
- 	if (mem_init_done) {
- 		struct vm_struct *area;
--		area = get_vm_area(size, VM_IOREMAP);
-+		area = get_vm_area_caller(size, VM_IOREMAP, caller);
- 		if (area == 0)
- 			return NULL;
- 		v = (unsigned long) area->addr;
-Index: linux-work/arch/powerpc/mm/pgtable_64.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/pgtable_64.c	2009-02-04 15:31:20.000000000 +1100
-+++ linux-work/arch/powerpc/mm/pgtable_64.c	2009-02-04 15:50:54.000000000 +1100
-@@ -144,8 +144,8 @@ void __iounmap_at(void *ea, unsigned lon
- 	unmap_kernel_range((unsigned long)ea, size);
- }
- 
--void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
--			 unsigned long flags)
-+void __iomem * __ioremap_caller(phys_addr_t addr, unsigned long size,
-+				unsigned long flags, void *caller)
- {
- 	phys_addr_t paligned;
- 	void __iomem *ret;
-@@ -168,8 +168,9 @@ void __iomem * __ioremap(phys_addr_t add
- 	if (mem_init_done) {
- 		struct vm_struct *area;
- 
--		area = __get_vm_area(size, VM_IOREMAP,
--				     ioremap_bot, IOREMAP_END);
-+		area = __get_vm_area_caller(size, VM_IOREMAP,
-+					    ioremap_bot, IOREMAP_END,
-+					    caller);
- 		if (area == NULL)
- 			return NULL;
- 		ret = __ioremap_at(paligned, area->addr, size, flags);
-@@ -186,19 +187,27 @@ void __iomem * __ioremap(phys_addr_t add
- 	return ret;
- }
- 
-+void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
-+			 unsigned long flags)
-+{
-+	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
-+}
- 
- void __iomem * ioremap(phys_addr_t addr, unsigned long size)
- {
- 	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
-+	void *caller = __builtin_return_address(0);
- 
- 	if (ppc_md.ioremap)
--		return ppc_md.ioremap(addr, size, flags);
--	return __ioremap(addr, size, flags);
-+		return ppc_md.ioremap(addr, size, flags, caller);
-+	return __ioremap_caller(addr, size, flags, caller);
- }
- 
- void __iomem * ioremap_flags(phys_addr_t addr, unsigned long size,
- 			     unsigned long flags)
- {
-+	void *caller = __builtin_return_address(0);
++	struct cpu_spec *s = cpu_specs;
++	int i;
 +
- 	/* writeable implies dirty for kernel addresses */
- 	if (flags & _PAGE_RW)
- 		flags |= _PAGE_DIRTY;
-@@ -207,8 +216,8 @@ void __iomem * ioremap_flags(phys_addr_t
- 	flags &= ~(_PAGE_USER | _PAGE_EXEC);
- 
- 	if (ppc_md.ioremap)
--		return ppc_md.ioremap(addr, size, flags);
--	return __ioremap(addr, size, flags);
-+		return ppc_md.ioremap(addr, size, flags, caller);
-+	return __ioremap_caller(addr, size, flags, caller);
++	s = PTRRELOC(s);
++
++	for (i = 0; i < ARRAY_SIZE(cpu_specs); i++,s++) {
++		if ((pvr & s->pvr_mask) == s->pvr_value) {
++			setup_cpu_spec(offset, s);
+ 			return s;
+ 		}
++	}
++
+ 	BUG();
++
+ 	return NULL;
  }
- 
- 
-Index: linux-work/arch/powerpc/platforms/cell/io-workarounds.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/cell/io-workarounds.c	2009-02-04 15:36:48.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/cell/io-workarounds.c	2009-02-04 15:51:27.000000000 +1100
-@@ -131,10 +131,10 @@ static const struct ppc_pci_io __devinit
- };
- 
- static void __iomem *iowa_ioremap(phys_addr_t addr, unsigned long size,
--						unsigned long flags)
-+				  unsigned long flags, void *caller)
- {
- 	struct iowa_bus *bus;
--	void __iomem *res = __ioremap(addr, size, flags);
-+	void __iomem *res = __ioremap_caller(addr, size, flags, caller);
- 	int busno;
- 
- 	bus = iowa_pci_find(0, (unsigned long)addr);
-Index: linux-work/arch/powerpc/platforms/iseries/setup.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/iseries/setup.c	2009-02-04 15:39:22.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/iseries/setup.c	2009-02-04 15:39:28.000000000 +1100
-@@ -617,7 +617,7 @@ static void iseries_dedicated_idle(void)
- }
- 
- static void __iomem *iseries_ioremap(phys_addr_t address, unsigned long size,
--				     unsigned long flags)
-+				     unsigned long flags, void *caller)
- {
- 	return (void __iomem *)address;
- }
+-- 
+1.5.5
