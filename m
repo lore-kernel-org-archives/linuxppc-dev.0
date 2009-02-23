@@ -1,21 +1,23 @@
-Return-Path: <phenning@vastech.co.za>
-Received: from www6.jnb1.host-h.net (www6b.your-server.co.za [196.22.132.6])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9C81CDDD0C
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 20:23:25 +1100 (EST)
-Received: from [196.213.226.33] (helo=[172.16.63.116])
-	by www6.jnb1.host-h.net with esmtpa (Exim 4.66)
-	(envelope-from <phenning@vastech.co.za>) id 1LbX1w-0001lx-3J
-	for linuxppc-dev@ozlabs.org; Mon, 23 Feb 2009 11:23:16 +0200
-Message-ID: <49A26B03.4080300@vastech.co.za>
-Date: Mon, 23 Feb 2009 11:23:15 +0200
-From: Pieter <phenning@vastech.co.za>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Custom kernel driver for MPC8548
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
-	micalg=sha1; boundary="------------ms010509030004080901090902"
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4A7AFDDE9E
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 21:13:43 +1100 (EST)
+Date: Mon, 23 Feb 2009 02:13:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
+Message-Id: <20090223021320.11019d64.akpm@linux-foundation.org>
+In-Reply-To: <49A2705D.9030008@in.ibm.com>
+References: <49A2705D.9030008@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
+	linux-ext4@vger.kernel.org, Jan Kara <jack@ucw.cz>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,85 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a cryptographically signed message in MIME format.
+On Mon, 23 Feb 2009 15:16:05 +0530 "Sachin P. Sant" <sachinp@in.ibm.com> wrote:
 
---------------ms010509030004080901090902
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+> 2.6.29-rc6 bootup on a powerpc box failed with
+> 
+> Unable to handle kernel paging request for data at address 0xc00000003f380000
+> Faulting instruction address: 0xc000000000039574
+> cpu 0x1: Vector: 300 (Data Access) at [c00000003baf3020]
+>     pc: c000000000039574: .memcpy+0x74/0x244
+>     lr: d00000000244916c: .ext3_xattr_get+0x288/0x2f4 [ext3]
+>     sp: c00000003baf32a0
+>    msr: 8000000000009032
+>    dar: c00000003f380000
+>  dsisr: 40000000
+>   current = 0xc00000003e54b010
+>   paca    = 0xc000000000a53680
+>     pid   = 1840, comm = readahead
+> enter ? for help
+> [link register   ] d00000000244916c .ext3_xattr_get+0x288/0x2f4 [ext3]
+> [c00000003baf32a0] d000000002449104 .ext3_xattr_get+0x220/0x2f4 [ext3]
+> (unreliab
+> le)
+> [c00000003baf3390] d00000000244a6e8 .ext3_xattr_security_get+0x40/0x5c [ext3]
+> [c00000003baf3400] c000000000148154 .generic_getxattr+0x74/0x9c
+> [c00000003baf34a0] c000000000333400 .inode_doinit_with_dentry+0x1c4/0x678
+> [c00000003baf3560] c00000000032c6b0 .security_d_instantiate+0x50/0x68
+> [c00000003baf35e0] c00000000013c818 .d_instantiate+0x78/0x9c
+> [c00000003baf3680] c00000000013ced0 .d_splice_alias+0xf0/0x120
+> [c00000003baf3720] d00000000243e05c .ext3_lookup+0xec/0x134 [ext3]
+> [c00000003baf37c0] c000000000131e74 .do_lookup+0x110/0x260
+> [c00000003baf3880] c000000000134ed0 .__link_path_walk+0xa98/0x1010
+> [c00000003baf3970] c0000000001354a0 .path_walk+0x58/0xc4
+> [c00000003baf3a20] c000000000135720 .do_path_lookup+0x138/0x1e4
+> [c00000003baf3ad0] c00000000013645c .path_lookup_open+0x6c/0xc8
+> [c00000003baf3b70] c000000000136780 .do_filp_open+0xcc/0x874
+> [c00000003baf3d10] c0000000001251e0 .do_sys_open+0x80/0x140
+> [c00000003baf3dc0] c00000000016aaec .compat_sys_open+0x24/0x38
+> [c00000003baf3e30] c00000000000855c syscall_exit+0x0/0x40
+> --- Exception: c01 (System Call) at 000000000ff0ef18
+> SP (ffc6f4b0) is in userspace
+> 1:mon>
+> 
+> Following EXT3 related options were enabled in the config.
+> 
+> CONFIG_EXT3_FS=m
+> CONFIG_EXT3_FS_XATTR=y
+> CONFIG_EXT3_FS_POSIX_ACL=y
+> CONFIG_EXT3_FS_SECURITY=y
+> 
 
-Hi all
+hm, I wonder what could have caused that - we haven't altered
+fs/ext3/xattr.c in ages.
 
-I recently ported my board to use the new U-boot 2009 and boot Linux
-2.6.27. ( the previous Linux version was 2.6.19 which supported the ppc
-architecture)
+What is the most recent kernel version you know of which didn't do
+this?  Bear in mind that this crash might be triggered by the
+current contents of the filesystem, so if possible, please test
+some other kernel versions on that disk.
 
-I am now at the stage where I need to port a custom platform driver. The
-driver used files that resided in /include/asm-ppc/. which are no longer
-available using the powerpc architecture. Can someone please guide me as
-to where to look for the appropriate contents?
+It looks like we died in ext3_xattr_block_get():
 
-In particular:
-asm-ppc/io.h
-asm-ppc/mpc85xx.h
-asm-ppc/immap_85xx.h
+		memcpy(buffer, bh->b_data + le16_to_cpu(entry->e_value_offs),
+		       size);
 
-thanks Pieter
+Perhaps entry->e_value_offs is no good.  I wonder if the filesystem is
+corrupted and this snuck through the defenses.
 
---------------ms010509030004080901090902
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
-
-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
-i/9p39yr0xJVGta/xOf1xgAAAAAAAA==
---------------ms010509030004080901090902--
+I also wonder if there is enough info in that trace for a ppc person to
+be able to determine whether the faulting address is in the source or
+destination of the memcpy() (please)?
