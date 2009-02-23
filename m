@@ -1,19 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 30B45DDF33
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 06:14:16 +1100 (EST)
-Message-Id: <1DF998D6-4C89-4F3E-92B8-49390AB5AE88@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: =?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
-In-Reply-To: <49A2D364.8090305@kontron.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: 86xx: e600 and cputable.c
-Date: Mon, 23 Feb 2009 13:13:48 -0600
-References: <49A2D364.8090305@kontron.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mbergandi@gmail.com>
+Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
+	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id CED23DDF59
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 05:14:54 +1100 (EST)
+Received: by qyk14 with SMTP id 14so9421411qyk.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 10:14:52 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40557@mailsvr>
+References: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40549@mailsvr>
+	<3A45394FD742FA419B760BB8D398F9ED246F06@zch01exm26.fsl.freescale.net>
+	<FD3D453EC8A8D5479E7E063D31E2FA44268653@zin33exm24.fsl.freescale.net>
+	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054B@mailsvr>
+	<2a27d3730902182319i2c59d68dk98e7975714f80549@mail.gmail.com>
+	<FD3D453EC8A8D5479E7E063D31E2FA4426866A@zin33exm24.fsl.freescale.net>
+	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054D@mailsvr>
+	<1c641bc80902192100w2c46a447ued43a6b98b877676@mail.gmail.com>
+	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B40550@mailsvr>
+	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B40557@mailsvr>
+Date: Mon, 23 Feb 2009 13:14:52 -0500
+Message-ID: <1c641bc80902231014v3d75ed3do96bf3cae47e85af8@mail.gmail.com>
+Subject: Re: Newby trying to get Ethernet going on MPC83xx series device.
+From: Michael Bergandi <mbergandi@gmail.com>
+To: Dushara Jayasinghe <DusharaJ@optiscan.com>
+Content-Type: multipart/alternative; boundary=0015175cd5f899ebf4046399facb
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +34,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--0015175cd5f899ebf4046399facb
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Feb 23, 2009, at 10:48 AM, R=E9gis Odey=E9 wrote:
+Great. Glad you have it working.
 
-> Hi,
+I actually did the very same thing not too long ago.  Amazing how well
+things work, when
+you pass the right information :)
+
+
+On Mon, Feb 23, 2009 at 12:28 AM, Dushara Jayasinghe
+<DusharaJ@optiscan.com>wrote:
+
+> > -----Original Message-----
+> > From: linuxppc-dev-bounces+dusharaj=optiscan.com@ozlabs.org
+> > [mailto:linuxppc-dev-bounces+dusharaj <linuxppc-dev-bounces%2Bdusharaj>=
+> optiscan.com@ozlabs.org] On
+> > Behalf Of Dushara Jayasinghe
+> > Sent: Friday, 20 February 2009 6:18 PM
+> > To: 'Michael Bergandi'
+> > Cc: linuxppc-dev@ozlabs.org; Aggrwal Poonam-B10812; Timur Tabi
+> > Subject: RE: Newby trying to get Ethernet going on MPC83xx series
+> > device.
 >
-> On our board based on 8641D, cat /proc/cpuinfo gives:
-> -bash-3.2# cat /proc/cpuinfo
-> processor       : 0
-> cpu             : 7448, altivec supported
-> clock           : 1000.000000MHz
-> revision        : 0.2 (pvr 8004 0202)
-> bogomips        : 199.68
+> Hi all, I've solved this issue. I was passing the wrong .dtb file to the
+> kernel. Sorry for adding noise the list.
 >
-> processor       : 1
-> cpu             : 7448, altivec supported
-> clock           : 1000.000000MHz
-> revision        : 0.2 (pvr 8004 0202)
-> bogomips        : 199.68
+> Thanks again for all you help.
+> D
 >
-> total bogomips  : 399.36
-> timebase        : 100000000
-> platform        : VM6250
-> Vendor          : Kontron Modular Computers
-> Machine         : VM6250
-> SVR             : 0x80900121
-> Memory          : 1024 MB
->
-> Is there a plan to deal with e600 core as it is done for e500 in =20
-> cputable.c to be able to discriminate "classic" ppc against =20
-> freescale cores ?
-> Already a patch ?
 >
 
-what kernel version.  I believe this is fixed:
 
-commit a501d8f30e4fcca563e4ee462be00f96e51181d5
-Author: Martin Langer <martin-langer@gmx.de>
-Date:   Sun Sep 7 17:51:32 2008 +1000
+-- 
+Michael Bergandi
 
-     powerpc: Fix major revision number for Freescale cores
+--0015175cd5f899ebf4046399facb
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-     Some 74xx cores by Freescale are using the configuration field =20
-instead
-     of the major revision field for their revision number.  This =20
-corrects
-     the wrong behaviour for those ppc cores including my one.
-...
+Great. Glad you have it working.<br><br>I actually did the very same thing =
+not too long ago.&nbsp; Amazing how well things work, when<br>you pass the =
+right information :)<br><br><br><div class=3D"gmail_quote">On Mon, Feb 23, =
+2009 at 12:28 AM, Dushara Jayasinghe <span dir=3D"ltr">&lt;<a href=3D"mailt=
+o:DusharaJ@optiscan.com">DusharaJ@optiscan.com</a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
+204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class=3D"Ih2=
+E3d">&gt; -----Original Message-----<br>
+&gt; From: linuxppc-dev-bounces+dusharaj=3D<a href=3D"http://optiscan.com" =
+target=3D"_blank">optiscan.com</a>@<a href=3D"http://ozlabs.org" target=3D"=
+_blank">ozlabs.org</a><br>
+&gt; [mailto:<a href=3D"mailto:linuxppc-dev-bounces%2Bdusharaj">linuxppc-de=
+v-bounces+dusharaj</a>=3D<a href=3D"http://optiscan.com" target=3D"_blank">=
+optiscan.com</a>@<a href=3D"http://ozlabs.org" target=3D"_blank">ozlabs.org=
+</a>] On<br>
 
-- k=
+&gt; Behalf Of Dushara Jayasinghe<br>
+&gt; Sent: Friday, 20 February 2009 6:18 PM<br>
+&gt; To: &#39;Michael Bergandi&#39;<br>
+&gt; Cc: <a href=3D"mailto:linuxppc-dev@ozlabs.org">linuxppc-dev@ozlabs.org=
+</a>; Aggrwal Poonam-B10812; Timur Tabi<br>
+&gt; Subject: RE: Newby trying to get Ethernet going on MPC83xx series<br>
+&gt; device.<br>
+<br>
+</div>Hi all, I&#39;ve solved this issue. I was passing the wrong .dtb file=
+ to the kernel. Sorry for adding noise the list.<br>
+<br>
+Thanks again for all you help.<br>
+<font color=3D"#888888">D<br>
+<br>
+</font></blockquote></div><br><br clear=3D"all"><br>-- <br>Michael Bergandi=
+<br>
+
+--0015175cd5f899ebf4046399facb--
