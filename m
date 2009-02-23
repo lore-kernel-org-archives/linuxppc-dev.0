@@ -1,30 +1,17 @@
-Return-Path: <mbergandi@gmail.com>
-Received: from mail-qy0-f21.google.com (mail-qy0-f21.google.com
-	[209.85.221.21]) by ozlabs.org (Postfix) with ESMTP id CED23DDF59
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 05:14:54 +1100 (EST)
-Received: by qyk14 with SMTP id 14so9421411qyk.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 10:14:52 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40557@mailsvr>
-References: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40549@mailsvr>
-	<3A45394FD742FA419B760BB8D398F9ED246F06@zch01exm26.fsl.freescale.net>
-	<FD3D453EC8A8D5479E7E063D31E2FA44268653@zin33exm24.fsl.freescale.net>
-	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054B@mailsvr>
-	<2a27d3730902182319i2c59d68dk98e7975714f80549@mail.gmail.com>
-	<FD3D453EC8A8D5479E7E063D31E2FA4426866A@zin33exm24.fsl.freescale.net>
-	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B4054D@mailsvr>
-	<1c641bc80902192100w2c46a447ued43a6b98b877676@mail.gmail.com>
-	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B40550@mailsvr>
-	<DE0CCFFBFF707949BEABD4537A14ACBA0C04B40557@mailsvr>
-Date: Mon, 23 Feb 2009 13:14:52 -0500
-Message-ID: <1c641bc80902231014v3d75ed3do96bf3cae47e85af8@mail.gmail.com>
-Subject: Re: Newby trying to get Ethernet going on MPC83xx series device.
-From: Michael Bergandi <mbergandi@gmail.com>
-To: Dushara Jayasinghe <DusharaJ@optiscan.com>
-Content-Type: multipart/alternative; boundary=0015175cd5f899ebf4046399facb
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 251F0DDF1F
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 08:53:33 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n1NLrTgU012420
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 15:53:30 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/fsl-booke: Add support for tlbilx instructions
+Date: Mon, 23 Feb 2009 15:53:29 -0600
+Message-Id: <1235426009-16937-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,78 +21,130 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0015175cd5f899ebf4046399facb
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+The e500mc core supports the new tlbilx instructions that do core
+local invalidates and also provide us the ability to take down
+all TLB entries matching a given PID.
 
-Great. Glad you have it working.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+* Fixed BOOKE_PAGESZ_4K build error, we renamed to BOOK3E_PAGESZ_4K
 
-I actually did the very same thing not too long ago.  Amazing how well
-things work, when
-you pass the right information :)
+ arch/powerpc/include/asm/mmu.h   |    4 +-
+ arch/powerpc/kernel/cputable.c   |    3 +-
+ arch/powerpc/mm/tlb_nohash_low.S |   44 +++++++++++++++++++++++++++++++------
+ 3 files changed, 41 insertions(+), 10 deletions(-)
 
-
-On Mon, Feb 23, 2009 at 12:28 AM, Dushara Jayasinghe
-<DusharaJ@optiscan.com>wrote:
-
-> > -----Original Message-----
-> > From: linuxppc-dev-bounces+dusharaj=optiscan.com@ozlabs.org
-> > [mailto:linuxppc-dev-bounces+dusharaj <linuxppc-dev-bounces%2Bdusharaj>=
-> optiscan.com@ozlabs.org] On
-> > Behalf Of Dushara Jayasinghe
-> > Sent: Friday, 20 February 2009 6:18 PM
-> > To: 'Michael Bergandi'
-> > Cc: linuxppc-dev@ozlabs.org; Aggrwal Poonam-B10812; Timur Tabi
-> > Subject: RE: Newby trying to get Ethernet going on MPC83xx series
-> > device.
->
-> Hi all, I've solved this issue. I was passing the wrong .dtb file to the
-> kernel. Sorry for adding noise the list.
->
-> Thanks again for all you help.
-> D
->
->
-
-
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 5c78079..dc82dcd 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -36,9 +36,9 @@
+  */
+ #define MMU_FTR_USE_TLBIVAX_BCAST	ASM_CONST(0x00040000)
+ 
+-/* Enable use of tlbilx invalidate-by-PID variant.
++/* Enable use of tlbilx invalidate instructions.
+  */
+-#define MMU_FTR_USE_TLBILX_PID		ASM_CONST(0x00080000)
++#define MMU_FTR_USE_TLBILX		ASM_CONST(0x00080000)
+ 
+ /* This indicates that the processor cannot handle multiple outstanding
+  * broadcast tlbivax or tlbsync. This makes the code use a spinlock
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 9fdf1b8..d68f343 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1740,7 +1740,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_name		= "e500mc",
+ 		.cpu_features		= CPU_FTRS_E500MC,
+ 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+-		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS,
++		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS |
++			MMU_FTR_USE_TLBILX,
+ 		.icache_bsize		= 64,
+ 		.dcache_bsize		= 64,
+ 		.num_pmcs		= 4,
+diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
+index f900a39..788b87c 100644
+--- a/arch/powerpc/mm/tlb_nohash_low.S
++++ b/arch/powerpc/mm/tlb_nohash_low.S
+@@ -118,25 +118,50 @@ _GLOBAL(_tlbil_pid)
+ 
+ #elif defined(CONFIG_FSL_BOOKE)
+ /*
+- * FSL BookE implementations. Currently _pid and _all are the
+- * same. This will change when tlbilx is actually supported and
+- * performs invalidate-by-PID. This change will be driven by
+- * mmu_features conditional
++ * FSL BookE implementations.
++ *
++ * Since feature sections are using _SECTION_ELSE we need
++ * to have the larger code path before the _SECTION_ELSE
+  */
+ 
++#define MMUCSR0_TLBFI	(MMUCSR0_TLB0FI | MMUCSR0_TLB1FI | \
++			 MMUCSR0_TLB2FI | MMUCSR0_TLB3FI)
+ /*
+  * Flush MMU TLB on the local processor
+  */
+-_GLOBAL(_tlbil_pid)
+ _GLOBAL(_tlbil_all)
+-#define MMUCSR0_TLBFI	(MMUCSR0_TLB0FI | MMUCSR0_TLB1FI | \
+-			 MMUCSR0_TLB2FI | MMUCSR0_TLB3FI)
++BEGIN_MMU_FTR_SECTION
++	li	r3,(MMUCSR0_TLBFI)@l
++	mtspr	SPRN_MMUCSR0, r3
++1:
++	mfspr	r3,SPRN_MMUCSR0
++	andi.	r3,r3,MMUCSR0_TLBFI@l
++	bne	1b
++MMU_FTR_SECTION_ELSE
++	PPC_TLBILX_ALL(0,0)
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
++	msync
++	isync
++	blr
++
++_GLOBAL(_tlbil_pid)
++BEGIN_MMU_FTR_SECTION
++	slwi	r3,r3,16
++	mfmsr	r10
++	wrteei	0
++	mfspr	r4,SPRN_MAS6	/* save MAS6 */
++	mtspr	SPRN_MAS6,r3
++	PPC_TLBILX_PID(0,0)
++	mtspr	SPRN_MAS6,r4	/* restore MAS6 */
++	wrtee	r10
++MMU_FTR_SECTION_ELSE
+ 	li	r3,(MMUCSR0_TLBFI)@l
+ 	mtspr	SPRN_MMUCSR0, r3
+ 1:
+ 	mfspr	r3,SPRN_MMUCSR0
+ 	andi.	r3,r3,MMUCSR0_TLBFI@l
+ 	bne	1b
++ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBILX)
+ 	msync
+ 	isync
+ 	blr
+@@ -149,7 +174,9 @@ _GLOBAL(_tlbil_va)
+ 	mfmsr	r10
+ 	wrteei	0
+ 	slwi	r4,r4,16
++	ori	r4,r4,(MAS6_ISIZE(BOOK3E_PAGESZ_4K))@l
+ 	mtspr	SPRN_MAS6,r4		/* assume AS=0 for now */
++BEGIN_MMU_FTR_SECTION
+ 	tlbsx	0,r3
+ 	mfspr	r4,SPRN_MAS1		/* check valid */
+ 	andis.	r3,r4,MAS1_VALID@h
+@@ -157,6 +184,9 @@ _GLOBAL(_tlbil_va)
+ 	rlwinm	r4,r4,0,1,31
+ 	mtspr	SPRN_MAS1,r4
+ 	tlbwe
++MMU_FTR_SECTION_ELSE
++	PPC_TLBILX_VA(0,r3)
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
+ 	msync
+ 	isync
+ 1:	wrtee	r10
 -- 
-Michael Bergandi
-
---0015175cd5f899ebf4046399facb
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Great. Glad you have it working.<br><br>I actually did the very same thing =
-not too long ago.&nbsp; Amazing how well things work, when<br>you pass the =
-right information :)<br><br><br><div class=3D"gmail_quote">On Mon, Feb 23, =
-2009 at 12:28 AM, Dushara Jayasinghe <span dir=3D"ltr">&lt;<a href=3D"mailt=
-o:DusharaJ@optiscan.com">DusharaJ@optiscan.com</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
-204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class=3D"Ih2=
-E3d">&gt; -----Original Message-----<br>
-&gt; From: linuxppc-dev-bounces+dusharaj=3D<a href=3D"http://optiscan.com" =
-target=3D"_blank">optiscan.com</a>@<a href=3D"http://ozlabs.org" target=3D"=
-_blank">ozlabs.org</a><br>
-&gt; [mailto:<a href=3D"mailto:linuxppc-dev-bounces%2Bdusharaj">linuxppc-de=
-v-bounces+dusharaj</a>=3D<a href=3D"http://optiscan.com" target=3D"_blank">=
-optiscan.com</a>@<a href=3D"http://ozlabs.org" target=3D"_blank">ozlabs.org=
-</a>] On<br>
-
-&gt; Behalf Of Dushara Jayasinghe<br>
-&gt; Sent: Friday, 20 February 2009 6:18 PM<br>
-&gt; To: &#39;Michael Bergandi&#39;<br>
-&gt; Cc: <a href=3D"mailto:linuxppc-dev@ozlabs.org">linuxppc-dev@ozlabs.org=
-</a>; Aggrwal Poonam-B10812; Timur Tabi<br>
-&gt; Subject: RE: Newby trying to get Ethernet going on MPC83xx series<br>
-&gt; device.<br>
-<br>
-</div>Hi all, I&#39;ve solved this issue. I was passing the wrong .dtb file=
- to the kernel. Sorry for adding noise the list.<br>
-<br>
-Thanks again for all you help.<br>
-<font color=3D"#888888">D<br>
-<br>
-</font></blockquote></div><br><br clear=3D"all"><br>-- <br>Michael Bergandi=
-<br>
-
---0015175cd5f899ebf4046399facb--
+1.5.6.6
