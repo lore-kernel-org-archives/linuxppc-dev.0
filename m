@@ -1,21 +1,21 @@
-Return-Path: <mgessner@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id 58EE1DDEE2
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 01:48:09 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id d14so732082and.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 06:48:06 -0800 (PST)
+Return-Path: <jack+f-230209@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+	[195.113.26.193]) by ozlabs.org (Postfix) with ESMTP id 40CB7DDEFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 03:18:54 +1100 (EST)
+Date: Mon, 23 Feb 2009 16:51:16 +0100
+From: Jan Kara <jack@suse.cz>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
+Message-ID: <20090223155116.GB5764@atrey.karlin.mff.cuni.cz>
+References: <49A2705D.9030008@in.ibm.com>
+	<20090223021320.11019d64.akpm@linux-foundation.org>
+	<18850.31567.212454.514549@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <d2b9ccd90902230503i4c2535d5lbd05b7ddeddf3192@mail.gmail.com>
-References: <d2b9ccd90902222354o2e42db77h2f86fda45b5483b6@mail.gmail.com>
-	<85a5c2010902230439n1096196dr519462513bc3910d@mail.gmail.com>
-	<d2b9ccd90902230503i4c2535d5lbd05b7ddeddf3192@mail.gmail.com>
-Date: Mon, 23 Feb 2009 09:48:06 -0500
-Message-ID: <85a5c2010902230648m72b63eeds70b4e7a5ec4d8c51@mail.gmail.com>
-Subject: Re: Problem with decrementer interrupt
-From: Matt Gessner <mgessner@gmail.com>
-To: sumedh tirodkar <sumedhtirodkar@gmail.com>
-Content-Type: multipart/alternative; boundary=0016e6470b0829b22d04639717d4
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18850.31567.212454.514549@cargo.ozlabs.ibm.com>
+Cc: Jan Kara <jack@ucw.cz>, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,57 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0016e6470b0829b22d04639717d4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+> Andrew Morton writes:
+> 
+> > It looks like we died in ext3_xattr_block_get():
+> > 
+> > 		memcpy(buffer, bh->b_data + le16_to_cpu(entry->e_value_offs),
+> > 		       size);
+> > 
+> > Perhaps entry->e_value_offs is no good.  I wonder if the filesystem is
+> > corrupted and this snuck through the defenses.
+> > 
+> > I also wonder if there is enough info in that trace for a ppc person to
+> > be able to determine whether the faulting address is in the source or
+> > destination of the memcpy() (please)?
+> 
+> It appears to have faulted on a load, implicating the source.  The
+> address being referenced (0xc00000003f380000) doesn't look
+> outlandish.  I wonder if this kernel has CONFIG_DEBUG_PAGEALLOC turned
+> on, and what page size is selected?
+  Hmm, OK. But then I'm not sure how that can happen. Obviously, memcpy
+somehow got beyond end of the page referenced by bh->b_data. So it means
+that le16_to_cpu(entry->e_value_offs) + size > page_size. But
+ext3_xattr_find_entry() calls ext3_xattr_check_entry() which in
+particular checks whether e_value_offs + e_value_size isn't greater than
+bh->b_size. So I see no way how memcpy can get beyond end of the page.
+  Sachin, is the problem reproducible? If yes, can you send us contents
+of the page just before the faulting address (i.e., for current fault it
+would be 0xc00000003f370000-0xc00000003f37ffff). As far as I can
+remember powerpc monitor could dump it.
+  BTW, I suppose you use 4KB blocksize on the filesystem, right?
 
-On Mon, Feb 23, 2009 at 8:03 AM, sumedh tirodkar
-<sumedhtirodkar@gmail.com>wrote:
-
-> I am using PowerPC 7447A...I am trying to port SA-RTL on PowerPC...
-
-
-What I said earlier was: You need to tell people what cpu you're using, what
-linux kernel, etc etc etc.
-
-Fine, we know the CPU.  What kernel are you using?  Is it ancient?
-
-I doubt the information below is going to be useful...
-
-
->
-> I am using
->
-> bla <function_name>
->
-> from the assembly code to call the function in C file...This i am
-> doing from interrupt handler of the decrementer...
-> If any more details are required, please let me know...
->
-
---0016e6470b0829b22d04639717d4
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<br><br><div class=3D"gmail_quote">On Mon, Feb 23, 2009 at 8:03 AM, sumedh =
-tirodkar <span dir=3D"ltr">&lt;<a href=3D"mailto:sumedhtirodkar@gmail.com">=
-sumedhtirodkar@gmail.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmai=
-l_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0p=
-t 0pt 0.8ex; padding-left: 1ex;">
-I am using PowerPC 7447A...I am trying to port SA-RTL on PowerPC...</blockq=
-uote><div><br>What I said earlier was: You need to tell people what cpu you=
-&#39;re using, what linux kernel, etc etc etc.<br><br>Fine, we know the CPU=
-.&nbsp; What kernel are you using?&nbsp; Is it ancient?<br>
-<br>I doubt the information below is going to be useful...<br>&nbsp;<br></d=
-iv><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(20=
-4, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>
-I am using<br>
-<br>
-bla &lt;function_name&gt;<br>
-<br>
-from the assembly code to call the function in C file...This i am<br>
-doing from interrupt handler of the decrementer...<br>
-If any more details are required, please let me know...<br>
-</blockquote></div><br>
-
---0016e6470b0829b22d04639717d4--
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
