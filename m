@@ -1,22 +1,9 @@
-Return-Path: <wb1hbu@runbox.com>
-Received: from aibo.runbox.com (aibo.runbox.com [87.238.52.70])
-	by ozlabs.org (Postfix) with ESMTP id 1CB16DDDF9
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 10:44:11 +1100 (EST)
-Received: from [10.9.9.131] (helo=garm.runbox.com)
-	by greyhound.runbox.com with esmtp (Exim 4.50) id 1LbNft-0003wI-Qs
-	for linuxppc-dev@ozlabs.org; Mon, 23 Feb 2009 00:23:53 +0100
-Received: from mail by garm.runbox.com with local  (Exim 4.50)
-	id 1LbNft-0007z6-Pf
-	for linuxppc-dev@ozlabs.org; Mon, 23 Feb 2009 00:23:53 +0100
-Content-Type: text/plain; charset="iso-8859-15"
-MIME-Version: 1.0
-Received: from [216.181.87.99] by www.runbox.com with http (uid:608409)
-	(RMM 4.0); for <linuxppc-dev@ozlabs.org>; Sun, 22 Feb 2009 23:23:53 GMT
-From: "Eric Cottrell" <wb1hbu@runbox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Can not get "new" MPC8313e-RDB to boot "as-shipped" flash image
-Date: Sun, 22 Feb 2009 18:23:53 -0500 (EST)
-Message-Id: <E1LbNft-0007z6-Pf@garm.runbox.com>
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 23 Feb 2009 13:19:14 +1100
+Subject: [PATCH] powerpc: Wire up /proc/vmallocinfo to our ioremap()
+Message-Id: <20090223022008.D75F8DDE11@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,80 +13,197 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+This adds the necessary bits and pieces to powerpc implementation of
+ioremap to benefit from caller tracking in /proc/vmallocinfo, at least
+for ioremap's done after mem init as the older ones aren't tracked.
 
-This is getting frustrating and I am beginning to think someone messed this=
- board up and returned it.  I would think it would boot up the default flas=
-h image out of the box with very little trouble.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Board is a MPC8313e-RDB Rev A4.  I set the dip switches per the instruction=
-s, S4 all off and S3 all on.
-Uboot comes up but I can not boot either the default images in the flash or=
- images I built with ltib and tftped.  I did not touch the flash.  I get WA=
-RNING: could not set linux,stdout-path FDT_ERR_NOTFOUND and ERROR: /chosen =
-node create failed - must RESET the board to recover.  The board resets.
+ 
+ arch/powerpc/include/asm/io.h                |    6 ++++++
+ arch/powerpc/include/asm/machdep.h           |    2 +-
+ arch/powerpc/mm/pgtable_32.c                 |   14 +++++++++++---
+ arch/powerpc/mm/pgtable_64.c                 |   25 +++++++++++++++++--------
+ arch/powerpc/platforms/cell/io-workarounds.c |    4 ++--
+ arch/powerpc/platforms/iseries/setup.c       |    2 +-
+ 6 files changed, 38 insertions(+), 15 deletions(-)
 
-A friend has the same board but his U-Boot is Version 1.3.0 (Jun 19 2008 - =
-13:41:53) MPC83XX and some environment variables are different.  I do not h=
-ave the BOOTCMD variable but entered it manually.
-
-I tried searching for on a solution but it is confusing because if aliases =
-are needed why does the default dtb in the flash omit them?
-
-This is what happens:
-
-U-Boot 1.3.3 (Dec  8 2008 - 09:51:15) MPC83XX
-
-Reset Status:
-
-CPU:   e300c3, MPC8313E, Rev: 1.0 at 333.333 MHz, CSB: 166.666 MHz
-Board: Freescale MPC8313ERDB
-I2C:   ready
-DRAM:  128 MB
-FLASH:  8 MB
-In:    serial
-Out:   serial
-Err:   serial
-Net:   TSEC0, TSEC1 [PRIME]
-=3D> bootm fe100000 fe300000 fe700000
-## Booting kernel from Legacy Image at fe100000 ...
-   Image Name:   Linux-2.6.20
-   Created:      2007-08-24  14:59:01 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1722821 Bytes =3D  1.6 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Flattened Device Tree blob at fe700000
-   Booting using the fdt blob at 0xfe700000
-## Loading init Ramdisk from Legacy Image at fe300000 ...
-   Image Name:   uboot ext2 ramdisk rootfs
-   Created:      2007-08-24  15:01:41 UTC
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    2831355 Bytes =3D  2.7 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Loading Device Tree to 007fd000, end 007fffff ... OK
-WARNING: could not set linux,stdout-path FDT_ERR_NOTFOUND.
-ERROR: /chosen node create failed - must RESET the board to recover.
-Resetting the board.
-
-
-U-Boot 1.3.3 (Dec  8 2008 - 09:51:15) MPC83XX
-
-Reset Status: Software Hard, External/Internal Soft, External/Internal Hard
-
-CPU:   e300c3, MPC8313E, Rev: 1.0 at 333.333 MHz, CSB: 166.666 MHz
-Board: Freescale MPC8313ERDB
-I2C:   ready
-DRAM:  128 MB
-FLASH:  8 MB
-In:    serial
-Out:   serial
-Err:   serial
-Net:   TSEC0, TSEC1 [PRIME]
-=3D>=20
-
-73 Eric
+--- linux-work.orig/arch/powerpc/include/asm/io.h	2009-02-04 15:37:43.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/io.h	2009-02-04 15:38:30.000000000 +1100
+@@ -632,6 +632,9 @@ static inline void iosync(void)
+  *   ioremap_flags and cannot be hooked (but can be used by a hook on one
+  *   of the previous ones)
+  *
++ * * __ioremap_caller is the same as above but takes an explicit caller
++ *   reference rather than using __builtin_return_address(0)
++ *
+  * * __iounmap, is the low level implementation used by iounmap and cannot
+  *   be hooked (but can be used by a hook on iounmap)
+  *
+@@ -646,6 +649,9 @@ extern void iounmap(volatile void __iome
+ 
+ extern void __iomem *__ioremap(phys_addr_t, unsigned long size,
+ 			       unsigned long flags);
++extern void __iomem *__ioremap_caller(phys_addr_t, unsigned long size,
++				      unsigned long flags, void *caller);
++
+ extern void __iounmap(volatile void __iomem *addr);
+ 
+ extern void __iomem * __ioremap_at(phys_addr_t pa, void *ea,
+Index: linux-work/arch/powerpc/include/asm/machdep.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/machdep.h	2009-02-04 15:35:20.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/machdep.h	2009-02-04 15:35:25.000000000 +1100
+@@ -90,7 +90,7 @@ struct machdep_calls {
+ 	void		(*tce_flush)(struct iommu_table *tbl);
+ 
+ 	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
+-				   unsigned long flags);
++				   unsigned long flags, void *caller);
+ 	void		(*iounmap)(volatile void __iomem *token);
+ 
+ #ifdef CONFIG_PM
+Index: linux-work/arch/powerpc/mm/pgtable_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/pgtable_32.c	2009-02-04 15:40:22.000000000 +1100
++++ linux-work/arch/powerpc/mm/pgtable_32.c	2009-02-04 15:41:43.000000000 +1100
+@@ -129,7 +129,8 @@ pgtable_t pte_alloc_one(struct mm_struct
+ void __iomem *
+ ioremap(phys_addr_t addr, unsigned long size)
+ {
+-	return __ioremap(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED);
++	return __ioremap_caller(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED,
++				__builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(ioremap);
+ 
+@@ -143,13 +144,20 @@ ioremap_flags(phys_addr_t addr, unsigned
+ 	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+ 	flags &= ~(_PAGE_USER | _PAGE_EXEC | _PAGE_HWEXEC);
+ 
+-	return __ioremap(addr, size, flags);
++	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(ioremap_flags);
+ 
+ void __iomem *
+ __ioremap(phys_addr_t addr, unsigned long size, unsigned long flags)
+ {
++	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
++}
++
++void __iomem *
++__ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
++		 void *caller)
++{
+ 	unsigned long v, i;
+ 	phys_addr_t p;
+ 	int err;
+@@ -212,7 +220,7 @@ __ioremap(phys_addr_t addr, unsigned lon
+ 
+ 	if (mem_init_done) {
+ 		struct vm_struct *area;
+-		area = get_vm_area(size, VM_IOREMAP);
++		area = get_vm_area_caller(size, VM_IOREMAP, caller);
+ 		if (area == 0)
+ 			return NULL;
+ 		v = (unsigned long) area->addr;
+Index: linux-work/arch/powerpc/mm/pgtable_64.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/pgtable_64.c	2009-02-04 15:31:20.000000000 +1100
++++ linux-work/arch/powerpc/mm/pgtable_64.c	2009-02-04 15:50:54.000000000 +1100
+@@ -144,8 +144,8 @@ void __iounmap_at(void *ea, unsigned lon
+ 	unmap_kernel_range((unsigned long)ea, size);
+ }
+ 
+-void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
+-			 unsigned long flags)
++void __iomem * __ioremap_caller(phys_addr_t addr, unsigned long size,
++				unsigned long flags, void *caller)
+ {
+ 	phys_addr_t paligned;
+ 	void __iomem *ret;
+@@ -168,8 +168,9 @@ void __iomem * __ioremap(phys_addr_t add
+ 	if (mem_init_done) {
+ 		struct vm_struct *area;
+ 
+-		area = __get_vm_area(size, VM_IOREMAP,
+-				     ioremap_bot, IOREMAP_END);
++		area = __get_vm_area_caller(size, VM_IOREMAP,
++					    ioremap_bot, IOREMAP_END,
++					    caller);
+ 		if (area == NULL)
+ 			return NULL;
+ 		ret = __ioremap_at(paligned, area->addr, size, flags);
+@@ -186,19 +187,27 @@ void __iomem * __ioremap(phys_addr_t add
+ 	return ret;
+ }
+ 
++void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
++			 unsigned long flags)
++{
++	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
++}
+ 
+ void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+ {
+ 	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
++	void *caller = __builtin_return_address(0);
+ 
+ 	if (ppc_md.ioremap)
+-		return ppc_md.ioremap(addr, size, flags);
+-	return __ioremap(addr, size, flags);
++		return ppc_md.ioremap(addr, size, flags, caller);
++	return __ioremap_caller(addr, size, flags, caller);
+ }
+ 
+ void __iomem * ioremap_flags(phys_addr_t addr, unsigned long size,
+ 			     unsigned long flags)
+ {
++	void *caller = __builtin_return_address(0);
++
+ 	/* writeable implies dirty for kernel addresses */
+ 	if (flags & _PAGE_RW)
+ 		flags |= _PAGE_DIRTY;
+@@ -207,8 +216,8 @@ void __iomem * ioremap_flags(phys_addr_t
+ 	flags &= ~(_PAGE_USER | _PAGE_EXEC);
+ 
+ 	if (ppc_md.ioremap)
+-		return ppc_md.ioremap(addr, size, flags);
+-	return __ioremap(addr, size, flags);
++		return ppc_md.ioremap(addr, size, flags, caller);
++	return __ioremap_caller(addr, size, flags, caller);
+ }
+ 
+ 
+Index: linux-work/arch/powerpc/platforms/cell/io-workarounds.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/cell/io-workarounds.c	2009-02-04 15:36:48.000000000 +1100
++++ linux-work/arch/powerpc/platforms/cell/io-workarounds.c	2009-02-04 15:51:27.000000000 +1100
+@@ -131,10 +131,10 @@ static const struct ppc_pci_io __devinit
+ };
+ 
+ static void __iomem *iowa_ioremap(phys_addr_t addr, unsigned long size,
+-						unsigned long flags)
++				  unsigned long flags, void *caller)
+ {
+ 	struct iowa_bus *bus;
+-	void __iomem *res = __ioremap(addr, size, flags);
++	void __iomem *res = __ioremap_caller(addr, size, flags, caller);
+ 	int busno;
+ 
+ 	bus = iowa_pci_find(0, (unsigned long)addr);
+Index: linux-work/arch/powerpc/platforms/iseries/setup.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/iseries/setup.c	2009-02-04 15:39:22.000000000 +1100
++++ linux-work/arch/powerpc/platforms/iseries/setup.c	2009-02-04 15:39:28.000000000 +1100
+@@ -617,7 +617,7 @@ static void iseries_dedicated_idle(void)
+ }
+ 
+ static void __iomem *iseries_ioremap(phys_addr_t address, unsigned long size,
+-				     unsigned long flags)
++				     unsigned long flags, void *caller)
+ {
+ 	return (void __iomem *)address;
+ }
