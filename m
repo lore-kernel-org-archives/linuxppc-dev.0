@@ -1,17 +1,18 @@
-Return-Path: <shubhada@chelsio.com>
-Received: from stargate.chelsio.com (stargate.chelsio.com [12.22.49.110])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9A8F9DDF34
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 05:17:28 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: ioremap fails for a device in PCI-E slot on AMCC katmai board
-Date: Mon, 23 Feb 2009 10:17:58 -0800
-Message-ID: <8A71B368A89016469F72CD08050AD33402D57563@maui.asicdesigners.com>
-From: "Shubhada Pugaonkar" <shubhada@chelsio.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 30B45DDF33
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 06:14:16 +1100 (EST)
+Message-Id: <1DF998D6-4C89-4F3E-92B8-49390AB5AE88@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: =?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
+In-Reply-To: <49A2D364.8090305@kontron.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: 86xx: e600 and cputable.c
+Date: Mon, 23 Feb 2009 13:13:48 -0600
+References: <49A2D364.8090305@kontron.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,47 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Great...That works!!!
 
-Thank you so much.
-Shubhada
+On Feb 23, 2009, at 10:48 AM, R=E9gis Odey=E9 wrote:
 
------Original Message-----
-From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]=20
-Sent: Friday, February 20, 2009 8:38 PM
-To: Shubhada Pugaonkar
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: ioremap fails for a device in PCI-E slot on AMCC katmai
-board
+> Hi,
+>
+> On our board based on 8641D, cat /proc/cpuinfo gives:
+> -bash-3.2# cat /proc/cpuinfo
+> processor       : 0
+> cpu             : 7448, altivec supported
+> clock           : 1000.000000MHz
+> revision        : 0.2 (pvr 8004 0202)
+> bogomips        : 199.68
+>
+> processor       : 1
+> cpu             : 7448, altivec supported
+> clock           : 1000.000000MHz
+> revision        : 0.2 (pvr 8004 0202)
+> bogomips        : 199.68
+>
+> total bogomips  : 399.36
+> timebase        : 100000000
+> platform        : VM6250
+> Vendor          : Kontron Modular Computers
+> Machine         : VM6250
+> SVR             : 0x80900121
+> Memory          : 1024 MB
+>
+> Is there a plan to deal with e600 core as it is done for e500 in =20
+> cputable.c to be able to discriminate "classic" ppc against =20
+> freescale cores ?
+> Already a patch ?
+>
 
-On Fri, 2009-02-20 at 17:35 -0800, Shubhada Pugaonkar wrote:
+what kernel version.  I believe this is fixed:
 
-> ****************************************************
->=20
-> cxgb3_main.c:
->=20
->         mmio_start =3D pci_resource_start(pdev, 0);
->=20
->         mmio_len =3D pci_resource_len(pdev, 0);
->=20
->         ai =3D t3_get_adapter_info(ent->driver_data);
->=20
+commit a501d8f30e4fcca563e4ee462be00f96e51181d5
+Author: Martin Langer <martin-langer@gmx.de>
+Date:   Sun Sep 7 17:51:32 2008 +1000
 
-My bet is that mmio_start is an unsigned long instead of a
-resource_size_t and thus gets cropped (ie, driver bug).
+     powerpc: Fix major revision number for Freescale cores
 
- (/me goes read the source)
+     Some 74xx cores by Freescale are using the configuration field =20
+instead
+     of the major revision field for their revision number.  This =20
+corrects
+     the wrong behaviour for those ppc cores including my one.
+...
 
-Yes, indeed, that's the problem. Change the definition
-of mmio_start and mmio_len to resource_size_t, that should
-fix it. I suspect the other driver has the same problem.
-
-Note: They will still get cropped, I suspect, when copied
-to netdev->mem_start, nothing much to do here, but fortunately
-those fields aren't used.
-
-BTW. If you do patches to fix those drivers, please send them
-to the netdev@vger.kernel.org mailing list too.
-
-Cheers,
-Ben.
+- k=
