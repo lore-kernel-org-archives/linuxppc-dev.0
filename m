@@ -1,19 +1,30 @@
-Return-Path: <sumedhtirodkar@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id 5205FDDD1C
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 00:03:49 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 27so2126545wfd.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 05:03:47 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <85a5c2010902230439n1096196dr519462513bc3910d@mail.gmail.com>
-References: <d2b9ccd90902222354o2e42db77h2f86fda45b5483b6@mail.gmail.com>
-	<85a5c2010902230439n1096196dr519462513bc3910d@mail.gmail.com>
-Date: Mon, 23 Feb 2009 18:33:47 +0530
-Message-ID: <d2b9ccd90902230503i4c2535d5lbd05b7ddeddf3192@mail.gmail.com>
-Subject: Re: Problem with decrementer interrupt
-From: sumedh tirodkar <sumedhtirodkar@gmail.com>
-To: Matt Gessner <mgessner@gmail.com>, linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7A0EDDDED5
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 00:27:48 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n1NDPYsB004652
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 08:25:34 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	n1NDRi2V173566
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 08:27:44 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n1NDRhMI007528
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 08:27:44 -0500
+Subject: Re: [PATCH 1/2] Deindentify identify_cpu()
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <689159d7e17a2227e6000b51911750503eed1778.1235355941.git.michael@ellerman.id.au>
+References: <689159d7e17a2227e6000b51911750503eed1778.1235355941.git.michael@ellerman.id.au>
+Content-Type: text/plain
+Date: Mon, 23 Feb 2009 07:27:40 -0600
+Message-Id: <1235395660.11996.0.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am using PowerPC 7447A...I am trying to port SA-RTL on PowerPC...
-I am using
+On Mon, 2009-02-23 at 13:25 +1100, Michael Ellerman wrote:
+> The for-loop body of identify_cpu() has gotten a little big, so move the
+> loop body logic into a separate function. No other changes.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-bla <function_name>
+Looks good to me.
 
-from the assembly code to call the function in C file...This i am
-doing from interrupt handler of the decrementer...
-If any more details are required, please let me know...
+Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-Regards,
-Sumedh
-
-On Mon, Feb 23, 2009 at 6:09 PM, Matt Gessner <mgessner@gmail.com> wrote:
-> You need to tell people what cpu you're using, what linux kernel, etc etc
-> etc.
->
-> Your email is otherwise completely useless.
->
-> On Mon, Feb 23, 2009 at 2:54 AM, sumedh tirodkar <sumedhtirodkar@gmail.com>
-> wrote:
->>
->> In the handler for decrementer interrupt...there is a call to a C
->> function...
->> Now if the call is removed...the decrementer interrupt works perfectly
->> fine...
->> But if the C function is present, then the decrementer interrupt stops
->> coming after say 5-6 times...
->> Not able to find any reasoning for the same...
->> Has anyone come across this kind of problem?If yes, am i missing
->> something?
->>
->> Regards,
->> Sumedh
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
->
+-- 
+David Kleikamp
+IBM Linux Technology Center
