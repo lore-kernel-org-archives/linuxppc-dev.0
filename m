@@ -1,24 +1,21 @@
-Return-Path: <alessandro.zummo@towertech.it>
-Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
-	by ozlabs.org (Postfix) with SMTP id B156FDDEF1
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 02:05:17 +1100 (EST)
-Date: Mon, 23 Feb 2009 16:05:06 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
-Message-ID: <20090223160506.04e347c7@i1501.lan.towertech.it>
-In-Reply-To: <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<20090220170454.04382e9e@i1501.lan.towertech.it>
-	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Richard Zidlicky <rz@linux-m68k.org>, linux-parisc@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-	Geert.Uytterhoeven@sonycom.com, Woodhouse <dwmw2@infradead.org>
+Return-Path: <mgessner@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id 58EE1DDEE2
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 01:48:09 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id d14so732082and.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 06:48:06 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <d2b9ccd90902230503i4c2535d5lbd05b7ddeddf3192@mail.gmail.com>
+References: <d2b9ccd90902222354o2e42db77h2f86fda45b5483b6@mail.gmail.com>
+	<85a5c2010902230439n1096196dr519462513bc3910d@mail.gmail.com>
+	<d2b9ccd90902230503i4c2535d5lbd05b7ddeddf3192@mail.gmail.com>
+Date: Mon, 23 Feb 2009 09:48:06 -0500
+Message-ID: <85a5c2010902230648m72b63eeds70b4e7a5ec4d8c51@mail.gmail.com>
+Subject: Re: Problem with decrementer interrupt
+From: Matt Gessner <mgessner@gmail.com>
+To: sumedh tirodkar <sumedhtirodkar@gmail.com>
+Content-Type: multipart/alternative; boundary=0016e6470b0829b22d04639717d4
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,49 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 23 Feb 2009 13:34:49 +0100 (CET)
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+--0016e6470b0829b22d04639717d4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> >  Hello,
-> > 
-> >    my opinion on this kind of stuff is that I want to avoid the layering
-> >  of implementations under the rtc subsystem. I'd rather prefer that each
-> >  rtc device had its own driver. 
-> >  
-> >   I've made error in the past, by accepting such kind of drivers, and
-> >  would like to avoid that it happens again.
-> 
-> So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
-> mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
-> RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
+On Mon, Feb 23, 2009 at 8:03 AM, sumedh tirodkar
+<sumedhtirodkar@gmail.com>wrote:
 
- not all at once :) 
-
- I'd start writing a working driver and then see how we should eventually
- adapt the rtc subsystem to cope with your needs.
- 
-> What about ppc_md.get_boot_time() [ppc]?
-> Please note that the functions above may also be used for very early clock
-> setting (e.g. time_init()) and in read_persistent_clock().
-> How should we handle these?
-
- read_persistent_clock is something that should be reconsidered
- as well along with all the ntp stuff.
-
-> Even on x86 there seems to be way too much RTC logic in arch/x86/kernel/rtc.c
-
-> (e.g. mach_get_cmos_time()), which is duplicated in drivers/rtc/rtc-cmos.c
-> through the inline function __get_rtc_time() in include/asm-generic/rtc.h
-> (clever, hardware-specific stuff in asm-generic ;-)
-
- yep, I know :( that hardcoded rtc stuff seems to be everywhere!
+> I am using PowerPC 7447A...I am trying to port SA-RTL on PowerPC...
 
 
--- 
+What I said earlier was: You need to tell people what cpu you're using, what
+linux kernel, etc etc etc.
 
- Best regards,
+Fine, we know the CPU.  What kernel are you using?  Is it ancient?
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
+I doubt the information below is going to be useful...
 
-  http://www.towertech.it
+
+>
+> I am using
+>
+> bla <function_name>
+>
+> from the assembly code to call the function in C file...This i am
+> doing from interrupt handler of the decrementer...
+> If any more details are required, please let me know...
+>
+
+--0016e6470b0829b22d04639717d4
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<br><br><div class=3D"gmail_quote">On Mon, Feb 23, 2009 at 8:03 AM, sumedh =
+tirodkar <span dir=3D"ltr">&lt;<a href=3D"mailto:sumedhtirodkar@gmail.com">=
+sumedhtirodkar@gmail.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmai=
+l_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0p=
+t 0pt 0.8ex; padding-left: 1ex;">
+I am using PowerPC 7447A...I am trying to port SA-RTL on PowerPC...</blockq=
+uote><div><br>What I said earlier was: You need to tell people what cpu you=
+&#39;re using, what linux kernel, etc etc etc.<br><br>Fine, we know the CPU=
+.&nbsp; What kernel are you using?&nbsp; Is it ancient?<br>
+<br>I doubt the information below is going to be useful...<br>&nbsp;<br></d=
+iv><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(20=
+4, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>
+I am using<br>
+<br>
+bla &lt;function_name&gt;<br>
+<br>
+from the assembly code to call the function in C file...This i am<br>
+doing from interrupt handler of the decrementer...<br>
+If any more details are required, please let me know...<br>
+</blockquote></div><br>
+
+--0016e6470b0829b22d04639717d4--
