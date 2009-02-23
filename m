@@ -1,17 +1,25 @@
-Return-Path: <vijay.t.nikam@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.229])
-	by ozlabs.org (Postfix) with ESMTP id DCE21DDED5
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 22:57:54 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g9so4735822rvb.1
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 03:57:53 -0800 (PST)
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id EE59ADDE2A
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 23:34:51 +1100 (EST)
+Date: Mon, 23 Feb 2009 13:34:49 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
+In-Reply-To: <20090220170454.04382e9e@i1501.lan.towertech.it>
+Message-ID: <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090220170454.04382e9e@i1501.lan.towertech.it>
 MIME-Version: 1.0
-Date: Mon, 23 Feb 2009 17:27:53 +0530
-Message-ID: <f234e2140902230357r16bc5083uebe1d1d28deb3ac5@mail.gmail.com>
-Subject: Regarding Level/Edge of Interrupt sense values
-From: Vijay Nikam <vijay.t.nikam@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
+	linux-parisc@vger.kernel.org, David@ozlabs.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+	Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,56 +29,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Fri, 20 Feb 2009, Alessandro Zummo wrote:
+> On Fri, 20 Feb 2009 16:46:44 +0100
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > Fortunately there already exists a generic RTC class driver: "rtc-parisc".
+> > Despite it's name, it's platform-independent, as it's build on top of the RTC
+> > abstraction used by "genrtc".
+> > 
+> > This patch series
+> >   - adds a missing module alias to rtc-parisc,
+> >   - renames rtc-parisc to rtc-generic,
+> >   - converts the architectures that currently have CONFIG_GEN_RTC enabled in
+> >     their defconfig (m68k, parisc, powerpc) to rtc-generic,
+> >   - removes the obsolete rtc-ppc driver,
+> >   - removes the old genrtc driver.
+> >   
+> > Note that genrtc may be used on other archictectures as well: at least alpha
+> > has the required infrastructure ([gs]et_rtc_time()). The Kconfig rules allow
+> > genrtc to be enabled on several others (cris, h8300, mn10300, um, x86, xtensa).
+> > 
+> > Furthermore genrtc and rtc-generic are not 100% userspace compatible:
+> >   - /dev/rtc provided by genrtc uses a misc character device (10:135),
+> >   - /dev/rtc provided by rtc-generic uses a dynamic character device.
+> 
+>  Hello,
+> 
+>    my opinion on this kind of stuff is that I want to avoid the layering
+>  of implementations under the rtc subsystem. I'd rather prefer that each
+>  rtc device had its own driver. 
+>  
+>   I've made error in the past, by accepting such kind of drivers, and
+>  would like to avoid that it happens again.
 
-I created a device node for gpio-controller for evaluation board
-mpc83313erdb. I created the dtb and loaded on target and the interrupt
-is generated successfully.
+So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
+mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
+RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
 
-But in dts at interrupts = <74 0x2> I set sense as Edge (sense== 2:
-Edge, high-to-low change),  when I load the driver module and checked
-the entry in /proc/interrupts it shows the sense as Level i.e. 8
-(sense == 8: Level, low assertion) as follows;
+What about ppc_md.get_boot_time() [ppc]?
+Please note that the functions above may also be used for very early clock
+setting (e.g. time_init()) and in read_persistent_clock().
+How should we handle these?
 
-74:          1   IPIC   Level     gpio
+Even on x86 there seems to be way too much RTC logic in arch/x86/kernel/rtc.c
+(e.g. mach_get_cmos_time()), which is duplicated in drivers/rtc/rtc-cmos.c
+through the inline function __get_rtc_time() in include/asm-generic/rtc.h
+(clever, hardware-specific stuff in asm-generic ;-)
 
-Following is gpio-controller device tree node;
+>   Regarding the user space, the assumption that a device has
+>  a fixed major:minor number should be dropped as well.
 
-gpio-controller@c00 {
-		#gpio-cells = <2>;
-		compatible = "fsl,mpc8313-gpio", "fsl,mpc8349-gpio";
-		reg = <0xc00 0x100>;
-		interrupts = <74 0x2>;
-		interrupt-parent = <&ipic>;
-		gpio-controller;
-                              };
+I know. But it's a userland-visible change, so I wanted to explicit point to
+it.
 
-Could anyone please tell what could be the reason ? ? ? Am I missing
-something ? ? ?
+With kind regards,
 
-Kindly please acknowledge ... thank you ...
+Geert Uytterhoeven
+Software Architect
 
-Kind Regards,
-Vijay Nikam
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-##################### Start ############################
-cat /proc/interrupts
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-          CPU0
- 16:        162   IPIC   Level     serial
- 19:         43   IPIC   Level     i2c-mpc
- 20:          1   IPIC   Level     i2c-mpc
- 22:          2   IPIC   Edge      phy_interrupt
- 32:          0   IPIC   Level     enet_error
- 33:        765   IPIC   Level     enet_rx
- 34:          3   IPIC   Level     enet_tx
- 35:          0   IPIC   Level     enet_error
- 36:          0   IPIC   Level     enet_rx
- 37:         15   IPIC   Level     enet_tx
- 38:          0   IPIC   Edge      ehci_hcd:usb1
- 72:          0   IPIC   Level     gtm timer
- 74:          1   IPIC   Level     gpio
- 77:      51451   IPIC   Level     fsl-elbc
- 80:          0   IPIC   Level     pmc
-BAD:          0
-###################### END ############################
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
