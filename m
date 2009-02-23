@@ -1,29 +1,21 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
+Return-Path: <phenning@vastech.co.za>
+Received: from www6.jnb1.host-h.net (www6b.your-server.co.za [196.22.132.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EE238DDE20
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 19:48:14 +1100 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28smtp02.in.ibm.com (8.13.1/8.13.1) with ESMTP id n1N8lEmq022160
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 14:17:14 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n1N8lL4a4227306
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 14:17:21 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.13.1/8.13.3) with ESMTP id n1N8lDoc018867
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 19:47:13 +1100
-Message-ID: <49A26290.60607@in.ibm.com>
-Date: Mon, 23 Feb 2009 14:17:12 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9C81CDDD0C
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 20:23:25 +1100 (EST)
+Received: from [196.213.226.33] (helo=[172.16.63.116])
+	by www6.jnb1.host-h.net with esmtpa (Exim 4.66)
+	(envelope-from <phenning@vastech.co.za>) id 1LbX1w-0001lx-3J
+	for linuxppc-dev@ozlabs.org; Mon, 23 Feb 2009 11:23:16 +0200
+Message-ID: <49A26B03.4080300@vastech.co.za>
+Date: Mon, 23 Feb 2009 11:23:15 +0200
+From: Pieter <phenning@vastech.co.za>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, netdev <netdev@vger.kernel.org>
-Subject: [Powerpc / eHEA] Circular dependency with 2.6.29-rc6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: TKLEIN@de.ibm.com, Mel Gorman <mel@csn.ul.ie>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	Jan-Bernd Themann <THEMANN@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Custom kernel driver for MPC8548
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
+	micalg=sha1; boundary="------------ms010509030004080901090902"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,120 +25,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-While booting 2.6.29-rc6 on a powerpc box came across this
-circular dependency with eHEA driver.
+This is a cryptographically signed message in MIME format.
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.29-rc6 #2
--------------------------------------------------------
-ip/2174 is trying to acquire lock:
- (&ehea_fw_handles.lock){--..}, at: [<d000000002a13e30>] .ehea_up+0x64/0x6e0
-[ehea]
+--------------ms010509030004080901090902
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-but task is already holding lock:
- (&port->port_lock){--..}, at: [<d000000002a1533c>] .ehea_open+0x3c/0xc4 [ehea]
+Hi all
 
-which lock already depends on the new lock.
+I recently ported my board to use the new U-boot 2009 and boot Linux
+2.6.27. ( the previous Linux version was 2.6.19 which supported the ppc
+architecture)
 
+I am now at the stage where I need to port a custom platform driver. The
+driver used files that resided in /include/asm-ppc/. which are no longer
+available using the powerpc architecture. Can someone please guide me as
+to where to look for the appropriate contents?
 
-the existing dependency chain (in reverse order) is:
+In particular:
+asm-ppc/io.h
+asm-ppc/mpc85xx.h
+asm-ppc/immap_85xx.h
 
--> #2 (&port->port_lock){--..}:
- [<c0000000000a8590>] .__lock_acquire+0x7e0/0x8a8
-       [<c0000000000a86ac>] .lock_acquire+0x54/0x80
-       [<c0000000005d7564>] .mutex_lock_nested+0x190/0x46c
-       [<d000000002a1533c>] .ehea_open+0x3c/0xc4 [ehea]
-       [<c000000000537834>] .dev_open+0xf4/0x168
-       [<c000000000535780>] .dev_change_flags+0xe4/0x1e8
-       [<c000000000597bfc>] .devinet_ioctl+0x2c4/0x750
-       [<c0000000005997a8>] .inet_ioctl+0xcc/0x11c
-       [<c000000000523400>] .sock_ioctl+0x2f0/0x34c
-       [<c0000000001380ec>] .vfs_ioctl+0x5c/0xf0
-       [<c000000000138810>] .do_vfs_ioctl+0x690/0x70c
-       [<c000000000138900>] .SyS_ioctl+0x74/0xb8
-       [<c00000000016fb08>] .dev_ifsioc+0x210/0x4b8
-       [<c00000000016ef18>] .compat_sys_ioctl+0x3f4/0x488
-       [<c00000000000855c>] syscall_exit+0x0/0x40
+thanks Pieter
 
--> #1 (rtnl_mutex){--..}:
-       [<c0000000000a8590>] .__lock_acquire+0x7e0/0x8a8
-       [<c0000000000a86ac>] .lock_acquire+0x54/0x80
-       [<c0000000005d7564>] .mutex_lock_nested+0x190/0x46c
-       [<c0000000005430a8>] .rtnl_lock+0x20/0x38
-       [<c00000000053677c>] .register_netdev+0x1c/0x80
-       [<d000000002a12714>] .ehea_setup_single_port+0x2c8/0x3d0 [ehea]
-       [<d000000002a19da8>] .ehea_probe_adapter+0x288/0x394 [ehea]
-       [<c00000000051f034>] .of_platform_device_probe+0x78/0x86c
-       [<c00000000047faec>] .driver_probe_device+0x13c/0x200
-       [<c00000000047fc44>] .__driver_attach+0x94/0xd8
-       [<c00000000047eab4>] .bus_for_each_dev+0x80/0xd8
-       [<c00000000047f850>] .driver_attach+0x28/0x40
-       [<c00000000047f23c>] .bus_add_driver+0xd4/0x284
-       [<c00000000047ff7c>] .driver_register+0xc4/0x198
-       [<c00000000051eeec>] .of_register_driver+0x4c/0x60
-       [<c000000000024da4>] .ibmebus_register_driver+0x30/0x4c
-       [<d000000002a1a090>] .ehea_module_init+0x1dc/0x234c [ehea]
-       [<c000000000009368>] .do_one_initcall+0x90/0x1b0
-       [<c0000000000b2f24>] .SyS_init_module+0xc8/0x220
-       [<c00000000000855c>] syscall_exit+0x0/0x40
+--------------ms010509030004080901090902
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
 
--> #0 (&ehea_fw_handles.lock){--..}:
-       [<c0000000000a8590>] .__lock_acquire+0x7e0/0x8a8
-       [<c0000000000a86ac>] .lock_acquire+0x54/0x80
-       [<c0000000005d7564>] .mutex_lock_nested+0x190/0x46c
-       [<d000000002a13e30>] .ehea_up+0x64/0x6e0 [ehea]
-       [<d000000002a15364>] .ehea_open+0x64/0xc4 [ehea]
-       [<c000000000537834>] .dev_open+0xf4/0x168
-       [<c000000000535780>] .dev_change_flags+0xe4/0x1e8
-       [<c000000000597bfc>] .devinet_ioctl+0x2c4/0x750
-       [<c0000000005997a8>] .inet_ioctl+0xcc/0x11c
-       [<c000000000523400>] .sock_ioctl+0x2f0/0x34c
-       [<c0000000001380ec>] .vfs_ioctl+0x5c/0xf0
-       [<c000000000138810>] .do_vfs_ioctl+0x690/0x70c
-       [<c000000000138900>] .SyS_ioctl+0x74/0xb8
-       [<c00000000016fb08>] .dev_ifsioc+0x210/0x4b8
-       [<c00000000016ef18>] .compat_sys_ioctl+0x3f4/0x488
-       [<c00000000000855c>] syscall_exit+0x0/0x40
-
-other info that might help us debug this:
-
-2 locks held by ip/2174:
- #0:  (rtnl_mutex){--..}, at: [<c0000000005430a8>] .rtnl_lock+0x20/0x38
- #1:  (&port->port_lock){--..}, at: [<d000000002a1533c>] .ehea_open+0x3c/0xc4
-[ehea]
-
-stack backtrace:
-Call Trace:
-[c00000004246b070] [c00000000001154c] .show_stack+0x70/0x184 (unreliable)
-[c00000004246b120] [c0000000000a6ee4] .print_circular_bug_tail+0xd8/0xfc
-[c00000004246b1f0] [c0000000000a76ec] .validate_chain+0x7e4/0xea8
-[c00000004246b2b0] [c0000000000a8590] .__lock_acquire+0x7e0/0x8a8
-[c00000004246b3a0] [c0000000000a86ac] .lock_acquire+0x54/0x80
-[c00000004246b430] [c0000000005d7564] .mutex_lock_nested+0x190/0x46c
-[c00000004246b510] [d000000002a13e30] .ehea_up+0x64/0x6e0 [ehea]
-[c00000004246b610] [d000000002a15364] .ehea_open+0x64/0xc4 [ehea]
-[c00000004246b6b0] [c000000000537834] .dev_open+0xf4/0x168
-[c00000004246b740] [c000000000535780] .dev_change_flags+0xe4/0x1e8
-[c00000004246b7f0] [c000000000597bfc] .devinet_ioctl+0x2c4/0x750
-[c00000004246b8f0] [c0000000005997a8] .inet_ioctl+0xcc/0x11c
-[c00000004246b960] [c000000000523400] .sock_ioctl+0x2f0/0x34c
-[c00000004246ba00] [c0000000001380ec] .vfs_ioctl+0x5c/0xf0
-[c00000004246baa0] [c000000000138810] .do_vfs_ioctl+0x690/0x70c
-[c00000004246bb80] [c000000000138900] .SyS_ioctl+0x74/0xb8
-[c00000004246bc30] [c00000000016fb08] .dev_ifsioc+0x210/0x4b8
-[c00000004246bd40] [c00000000016ef18] .compat_sys_ioctl+0x3f4/0x488
-[c00000004246be30] [c00000000000855c] syscall_exit+0x0/0x40
-ehea: eth2: Physical port up
-
-Thanks
--Sachin
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+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
+i/9p39yr0xJVGta/xOf1xgAAAAAAAA==
+--------------ms010509030004080901090902--
