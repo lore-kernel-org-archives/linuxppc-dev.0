@@ -1,19 +1,14 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.15]) by ozlabs.org (Postfix) with ESMTP id 3ECA6DDF05
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 03:37:37 +1100 (EST)
-Message-ID: <49A2D0A3.4020108@am.sony.com>
-Date: Mon, 23 Feb 2009 08:36:51 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <Regis.Odeye@kontron.com>
+Received: from mail.kontron-modular.com (mail.kontron-modular.com
+	[213.179.130.140]) by ozlabs.org (Postfix) with ESMTP id 04C92DDF0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 03:48:40 +1100 (EST)
+Message-ID: <49A2D364.8090305@kontron.com>
+Date: Mon, 23 Feb 2009 17:48:36 +0100
+From: =?ISO-8859-1?Q?R=E9gis_Odey=E9?= <regis.odeye@kontron.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Lock-up on PPC64
-References: <Pine.LNX.4.64.0812212058550.2164@linmac.oyster.ru>	<1230165163.7292.32.camel@pasglop>	<Pine.LNX.4.64.0812280335070.2526@linmac.oyster.ru>
-	<200901051646.03654.arnd@arndb.de>
-In-Reply-To: <200901051646.03654.arnd@arndb.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, malc <av1474@comtv.ru>,
-	linux-kernel@vger.kernel.org
+To: linuxppc-dev@ozlabs.org
+Subject: 86xx: e600 and cputable.c
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 01/05/2009 07:46 AM, Arnd Bergmann wrote:
-> On Sunday 28 December 2008, malc wrote:
->> Now to the Christmas cheer, i've tried v2.6.28 and couldn't help but
->> notice that the problem is gone, bisecting v2.6.27 (which funnily i
->> had to mark good) to v2.6.28 (which has to be marked bad) wasn't fun
->> but eventually converged at ab598b6680f1e74c267d1547ee352f3e1e530f89
->> 
->> commit ab598b6680f1e74c267d1547ee352f3e1e530f89
->> Author: Paul Mackerras <paulus@samba.org>
->> Date:   Sun Nov 30 11:49:45 2008 +0000
->> 
->>      powerpc: Fix system calls on Cell entered with XER.SO=1
->> 
->> Now the lock-up is gone, however the code never exercises the path
->> taken during the lock-up so i guess it, at least, deserves a better
->> look by PPC64 care takers.
-> 
-> 
-> Yes, this change was suspected to help with Mono as well, not just
-> Java, because both of them use their own syscall path rather than
-> going through glibc. The reason why you see the lock-up in a different
-> place is because the bug manifested in getting incorrect syscall
-> return codes, which probably made mono go into a normally unused
-> error handling case.
+Hi,
 
-Just FYI, I looked into a problem of Mono that was reported during
-its build.  During the build Mono itself is used, and it failed due
-to lack of memory.  Mono kept using more and more memory until all
-was consumed.  I didn't look at why, I just saw it with the Gnome
-system monitor.
+On our board based on 8641D, cat /proc/cpuinfo gives:
+-bash-3.2# cat /proc/cpuinfo
+processor       : 0
+cpu             : 7448, altivec supported
+clock           : 1000.000000MHz
+revision        : 0.2 (pvr 8004 0202)
+bogomips        : 199.68
 
--Geoff
+processor       : 1
+cpu             : 7448, altivec supported
+clock           : 1000.000000MHz
+revision        : 0.2 (pvr 8004 0202)
+bogomips        : 199.68
+
+total bogomips  : 399.36
+timebase        : 100000000
+platform        : VM6250
+Vendor          : Kontron Modular Computers
+Machine         : VM6250
+SVR             : 0x80900121
+Memory          : 1024 MB
+
+Is there a plan to deal with e600 core as it is done for e500 in 
+cputable.c to be able to discriminate "classic" ppc against freescale 
+cores ?
+Already a patch ?
+
+Regards.
+
+-- 
+Régis ODEYE
+
+Kontron Modular Computers SA
+150, rue M. Berthelot / ZI Toulon Est / BP 244 / Fr 83078 TOULON Cedex 9
+Phone: (33) 4 98 16 34 86           Fax: (33) 4 98 16 34 01
+E-mail: regis.odeye@kontron.com  Web : www.kontron.com
