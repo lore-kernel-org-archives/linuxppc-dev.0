@@ -1,33 +1,17 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [59.145.155.6])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E2C8EDDDF9
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 21:58:18 +1100 (EST)
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28smtp06.in.ibm.com (8.13.1/8.13.1) with ESMTP id n1NAvKme006725
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 16:27:20 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	n1NAsXGJ3678436
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 16:24:33 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.13.1/8.13.3) with ESMTP id n1NAvKt6014870
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 21:57:20 +1100
-Message-ID: <49A28110.1000802@in.ibm.com>
-Date: Mon, 23 Feb 2009 16:27:20 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
+Return-Path: <vijay.t.nikam@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.229])
+	by ozlabs.org (Postfix) with ESMTP id DCE21DDED5
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 22:57:54 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g9so4735822rvb.1
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2009 03:57:53 -0800 (PST)
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-References: <49A2705D.9030008@in.ibm.com>
-	<20090223021320.11019d64.akpm@linux-foundation.org>
-	<18850.31567.212454.514549@cargo.ozlabs.ibm.com>
-In-Reply-To: <18850.31567.212454.514549@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Jan Kara <jack@ucw.cz>, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+Date: Mon, 23 Feb 2009 17:27:53 +0530
+Message-ID: <f234e2140902230357r16bc5083uebe1d1d28deb3ac5@mail.gmail.com>
+Subject: Regarding Level/Edge of Interrupt sense values
+From: Vijay Nikam <vijay.t.nikam@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,25 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> It appears to have faulted on a load, implicating the source.  The
-> address being referenced (0xc00000003f380000) doesn't look
-> outlandish.  I wonder if this kernel has CONFIG_DEBUG_PAGEALLOC turned
-> on, and what page size is selected?
-Yes CONFIG_DEBUG_PAGEALLOC is enabled and the page size is 64K.
+Hello,
 
-CONFIG_DEBUG_PAGEALLOC=y
-CONFIG_PPC_64K_PAGES=y
+I created a device node for gpio-controller for evaluation board
+mpc83313erdb. I created the dtb and loaded on target and the interrupt
+is generated successfully.
 
-Thanks
--Sachin
+But in dts at interrupts = <74 0x2> I set sense as Edge (sense== 2:
+Edge, high-to-low change),  when I load the driver module and checked
+the entry in /proc/interrupts it shows the sense as Level i.e. 8
+(sense == 8: Level, low assertion) as follows;
 
+74:          1   IPIC   Level     gpio
 
--- 
+Following is gpio-controller device tree node;
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+gpio-controller@c00 {
+		#gpio-cells = <2>;
+		compatible = "fsl,mpc8313-gpio", "fsl,mpc8349-gpio";
+		reg = <0xc00 0x100>;
+		interrupts = <74 0x2>;
+		interrupt-parent = <&ipic>;
+		gpio-controller;
+                              };
+
+Could anyone please tell what could be the reason ? ? ? Am I missing
+something ? ? ?
+
+Kindly please acknowledge ... thank you ...
+
+Kind Regards,
+Vijay Nikam
+
+##################### Start ############################
+cat /proc/interrupts
+
+          CPU0
+ 16:        162   IPIC   Level     serial
+ 19:         43   IPIC   Level     i2c-mpc
+ 20:          1   IPIC   Level     i2c-mpc
+ 22:          2   IPIC   Edge      phy_interrupt
+ 32:          0   IPIC   Level     enet_error
+ 33:        765   IPIC   Level     enet_rx
+ 34:          3   IPIC   Level     enet_tx
+ 35:          0   IPIC   Level     enet_error
+ 36:          0   IPIC   Level     enet_rx
+ 37:         15   IPIC   Level     enet_tx
+ 38:          0   IPIC   Edge      ehci_hcd:usb1
+ 72:          0   IPIC   Level     gtm timer
+ 74:          1   IPIC   Level     gpio
+ 77:      51451   IPIC   Level     fsl-elbc
+ 80:          0   IPIC   Level     pmc
+BAD:          0
+###################### END ############################
