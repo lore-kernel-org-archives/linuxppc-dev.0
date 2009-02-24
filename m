@@ -1,9 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <f956d1f05ce70c71705d1e04d98e2c549d79dd14.1235446849.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Remove unused asm-offsets entries for cpu_spec
-Date: Tue, 24 Feb 2009 14:40:56 +1100 (EST)
+Return-Path: <DusharaJ@optiscan.com>
+Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
+	by ozlabs.org (Postfix) with ESMTP id 06D6ADDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 14:47:13 +1100 (EST)
+From: Dushara Jayasinghe <DusharaJ@optiscan.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Tue, 24 Feb 2009 14:47:12 +1100
+Subject: RE: soc vs localbus for flash in device tree
+Message-ID: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B4055B@mailsvr>
+References: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40559@mailsvr>
+	<20090224000641.GB578@ovro.caltech.edu>
+In-Reply-To: <20090224000641.GB578@ovro.caltech.edu>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: 'Michael Bergandi' <mbergandi@gmail.com>,
+	'Ira Snyder' <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,24 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/asm-offsets.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+> > Does the flash node HAVE to be within a localbus node or can it
+> reside within the soc node? I've been basing my work on mpc834x_mds.dts
+> > And hence haven't defined a localbus node.
+> >
+>=20
+> I'm also working on a custom board based on MPC8349EMDS, and have based
+> my dts off of mpc834x_mds.dts. I've added the localbus node with my
+> chipselects and flash. It works, but there are no guarantees of
+> correctness.
+>=20
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 9937fe4..addac07 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -280,9 +280,6 @@ int main(void)
- #endif /* ! CONFIG_PPC64 */
- 
- 	/* About the CPU features table */
--	DEFINE(CPU_SPEC_ENTRY_SIZE, sizeof(struct cpu_spec));
--	DEFINE(CPU_SPEC_PVR_MASK, offsetof(struct cpu_spec, pvr_mask));
--	DEFINE(CPU_SPEC_PVR_VALUE, offsetof(struct cpu_spec, pvr_value));
- 	DEFINE(CPU_SPEC_FEATURES, offsetof(struct cpu_spec, cpu_features));
- 	DEFINE(CPU_SPEC_SETUP, offsetof(struct cpu_spec, cpu_setup));
- 	DEFINE(CPU_SPEC_RESTORE, offsetof(struct cpu_spec, cpu_restore));
--- 
-1.5.5
+This worked for me. Thanks.
+
+D
