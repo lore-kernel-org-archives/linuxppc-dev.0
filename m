@@ -1,36 +1,19 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <kyle@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B8014DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 17:38:45 +1100 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id n1O6cc1N019090
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 17:38:38 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n1O6d143459120
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 17:39:01 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n1O6chqa026972
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 17:38:43 +1100
-Message-ID: <49A395ED.5030607@in.ibm.com>
-Date: Tue, 24 Feb 2009 12:08:37 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C2775DDE2A
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 17:51:15 +1100 (EST)
+Date: Tue, 24 Feb 2009 01:51:12 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH/RFC] powerpc: avoid generating .eh_frame sections with gcc-4.4
+Message-ID: <20090224065112.GA6690@bombadil.infradead.org>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-References: <49A2705D.9030008@in.ibm.com>
-	<20090223021320.11019d64.akpm@linux-foundation.org>
-	<18850.31567.212454.514549@cargo.ozlabs.ibm.com>
-	<20090223155116.GB5764@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20090223155116.GB5764@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Jan Kara <jack@ucw.cz>, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: kyle@redhat.com, aoliva@redhat.com, linux-kernel@vger.kernel.org,
+	roland@redhat.com
+Reply-To: kyle@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,103 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan Kara wrote:
->   Hmm, OK. But then I'm not sure how that can happen. Obviously, memcpy
-> somehow got beyond end of the page referenced by bh->b_data. So it means
-> that le16_to_cpu(entry->e_value_offs) + size > page_size. But
-> ext3_xattr_find_entry() calls ext3_xattr_check_entry() which in
-> particular checks whether e_value_offs + e_value_size isn't greater than
-> bh->b_size. So I see no way how memcpy can get beyond end of the page.
->   Sachin, is the problem reproducible? If yes, can you send us contents
->   
-Yes, i am able to recreate this problem easily. As i had mentioned if the
-earlier kernel is booted with selinux enabled and then 2.6.29-rc6 is booted
-i get this crash. But if i specify selinux=0 at command line, 2.6.29-rc6 boots
-without any problem.
+From: Kyle McMartin <kyle@redhat.com>
 
-> of the page just before the faulting address (i.e., for current fault it
-> would be 0xc00000003f370000-0xc00000003f37ffff). As far as I can
-> remember powerpc monitor could dump it.
->   
-Here is the page dump. This time it crashed while accessing address
-0xc00000002d670000.
+On ppc64 (at least) gcc-4.4 is defaulting to generating .eh_frame
+sections, which are, for the kernel, fairly pointless. Additionally, on
+ppc64 this generates a relocation format which the kernel module loader
+does not currently support (R_PPC64_REL32.)
 
- Unable to handle kernel paging request for data at address 0xc0000
-0002d670000
-Faulting instruction address: 0xc000000000039574
-cpu 0x1: Vector: 300 (Data Access) at [c00000004288b0b0]
-    pc: c000000000039574: .memcpy+0x74/0x244
-    lr: c0000000001b497c: .ext3_xattr_get+0x288/0x2f4
-    sp: c00000004288b330
-   msr: 8000000000009032
+Alexandre Oliva verifies that -fno-dwarf2-cfi-asm prevents this
+.eh_frame section from being generated.
 
-1:mon> d 0xc00000002d660000
-............................... <SNIP> ...............................
+These seem to be used for unwinding, but it doesn't look like we
+currently use them anywhere. (In fact, we explicitly dump them in the
+x86_64 linker script.)
 
-c00000002d66efd0 0000000000000000 0000000000000000  |................|
-c00000002d66efe0 0000000000000000 0000000000000000  |................|
-c00000002d66eff0 0000000000000000 0000000000000000  |................|
-c00000002d66f000 000002ea00040000 01000000e200d20a  |................|
-c00000002d66f010 0000000000000000 0000000000000000  |................|
-c00000002d66f020 0706e40f00000000 1b000000e200d20a  |................|
-c00000002d66f030 73656c696e757800 0000000000000000  |selinux.........|
-c00000002d66f040 0000000000000000 0000000000000000  |................|
-c00000002d66f050 0000000000000000 0000000000000000  |................|
-c00000002d66f060 0000000000000000 0000000000000000  |................|
+If these .eh_frame sections are eventually used, adding a per-arch
+CONFIG_WANT_UNWIND check would be trivial.
 
-............................... <SNIP> ...............................
+(This was reported against Fedora, which appears to be the only distro
+doing any building against gcc-4.4 at present: RH bz#486545.)
 
-c00000002d66ff60 0000000000000000 0000000000000000  |................|
-c00000002d66ff70 0000000000000000 0000000000000000  |................|
-c00000002d66ff80 0000000000000000 0000000000000000  |................|
-c00000002d66ff90 0000000000000000 0000000000000000  |................|
-c00000002d66ffa0 0000000000000000 0000000000000000  |................|
-c00000002d66ffb0 0000000000000000 0000000000000000  |................|
-c00000002d66ffc0 0000000000000000 0000000000000000  |................|
-c00000002d66ffd0 0000000000000000 0000000000000000  |................|
-c00000002d66ffe0 0000000073797374 656d5f753a6f626a  |....system_u:obj|
-c00000002d66fff0 6563745f723a7573 725f743a73300000  |ect_r:usr_t:s0..|
-c00000002d670000 **************** ****************  |                |
-1:mon> r
-R00 = 000000000000e40f   R16 = 000000000000005d
-R01 = c00000004288b330   R17 = 0000000000000000
-R02 = c0000000009f59b8   R18 = 00000000fffbfe9e
-R03 = c000000044aa34a0   R19 = 0000000010042638
-R04 = c00000002d66fff4   R20 = 0000000010041610
-R05 = 0000000000000003   R21 = 00000000000000ff
-R06 = 0000000000000000   R22 = 0000000000000006
-R07 = 0000000000000001   R23 = c0000000007d27c1
-R08 = 723a7573725f743a   R24 = c00000002c0cd758
-R09 = 3a6f626a6563745f   R25 = c000000044aa3488
-R10 = c00000000017b43c   R26 = c00000002c0cd6f0
-R11 = c00000002d66f020   R27 = c00000002c0cd860
-R12 = d0000000023c14b0   R28 = c00000002c0b0840
-R13 = c000000000a93680   R29 = 000000000000001b
-R14 = 00000000000041ed   R30 = c0000000009880b0
-R15 = 0000000010040000   R31 = ffffffffffffffde
-pc  = c000000000039574 .memcpy+0x74/0x244
-lr  = c0000000001b497c .ext3_xattr_get+0x288/0x2f4
-msr = 8000000000009032   cr  = 4400044b
-ctr = 0000000000000000   xer = 0000000020000001   trap =  300
-dar = c00000002d670000   dsisr = 40000000
-1:mon> zr
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
+Cc: roland@redhat.com
+Cc: aoliva@redhat.com
 
->   BTW, I suppose you use 4KB blocksize on the filesystem, right?
->   
-Yes.
-
-dumpe2fs /dev/sda3 | grep -i "block size" 
-dumpe2fs 1.39 (29-May-2006)
-Block size:               4096
-
-Thanks
--Sachin
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+---
+diff --git a/Makefile b/Makefile
+index df6ce3e..d66a512 100644
+--- a/Makefile
++++ b/Makefile
+@@ -566,6 +566,11 @@ KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
+ # disable pointer signed / unsigned warnings in gcc 4.0
+ KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
+ 
++# gcc-4.4 defaults to generating .eh_frame sections, but we aren't
++# interested in those currently. additionally, it causes issues on some
++# architectures.
++KBUILD_CFLAGS += $(call cc-option,-fno-dwarf2-cfi-asm)
++
+ # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
+ # But warn user when we do so
+ warn-assign = \
