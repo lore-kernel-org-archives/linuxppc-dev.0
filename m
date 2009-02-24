@@ -1,23 +1,27 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 09C094F385
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 08:12:06 +1100 (EST)
-Date: Tue, 24 Feb 2009 15:11:52 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
-	implementation
-Message-ID: <20090224151152.29e98b5f@thinkcentre.lan>
-In-Reply-To: <20090224195826.GA25909@us.ibm.com>
-References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
-	<1233182478-27113-2-git-send-email-ntl@pobox.com>
-	<49814FA2.9060108@cs.columbia.edu> <20090129214035.GB6913@localdomain>
-	<20090217010355.58afd5cf@thinkcentre.lan>
-	<20090224195826.GA25909@us.ibm.com>
+Return-Path: <SRS0+2987a99b877e5b3de0fb+2011+infradead.org+dwmw2@casper.srs.infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 135D3DE0AA
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 08:35:51 +1100 (EST)
+Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
+From: David Woodhouse <dwmw2@infradead.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090220170454.04382e9e@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+Content-Type: text/plain
+Date: Wed, 25 Feb 2009 06:35:27 +0900
+Message-Id: <1235511327.18632.73.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: containers@lists.osdl.org, Oren Laadan <orenl@cs.columbia.edu>,
-	linuxppc-dev@ozlabs.org
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+	Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
+	linux-parisc@vger.kernel.org, David@ozlabs.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,61 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 24 Feb 2009 13:58:26 -0600
-"Serge E. Hallyn" <serue@us.ibm.com> wrote:
-
-> Quoting Nathan Lynch (ntl@pobox.com):
-> > Nathan Lynch <ntl@pobox.com> wrote:
-> > >
-> > > Oren Laadan wrote:
-> > > > 
-> > > > Nathan Lynch wrote:
-> > > > > 
-> > > > > What doesn't work:
-> > > > > * restarting a 32-bit task from a 64-bit task and vice versa
-> > > > 
-> > > > Is there a test to bail if we attempt to checkpoint such tasks ?
-> > > 
-> > > No, but I'll add one if it looks too hard to fix for the next round.
-> > 
-> > Unfortunately, adding a check for this is hard.
-> > 
-> > The "point of no return" in the restart path is cr_read_mm, which tears
-> > down current's address space.  cr_read_mm runs way before cr_read_cpu,
-> > which is the only restart method I've implemented for powerpc so far.
-> > So, checking for this condition in cr_read_cpu is too late if I want
-> > restart(2) to return an error and leave the caller's memory map
-> > intact.  (And I do want this: restart should be as robust as execve.)
-> > 
-> > Well okay then, cr_read_head_arch seems to be the right place in the
-> > restart sequence for the architecture code to handle this.  However,
-> > cr_write_head_arch (which produces the buffer that cr_read_head_arch
-> > consumes) is not provided a reference to the task to be checkpointed,
-> > nor can it assume that it's operating on current.  I need a reference
-> > to a task before I can determine whether it's running in 32- or 64-bit
-> > mode, or using the FPU, Altivec, SPE, whatever.
-> > 
-> > In any case, mixing 32- and 64-bit tasks across restart is something I
-> > eventually want to support, not reject.  But the problem I've outlined
-> > applies to FPU state and vector extensions (VMX, SPE), as well as
-> > sanity-checking debug register (DABR) contents.  We'll need to be able
-> > to error out gracefully from restart when a checkpoint image specifies a
-> > feature unsupported by the current kernel or hardware.  But I don't see
-> > how to do it with the current architecture.  Am I missing something?
+On Mon, 2009-02-23 at 13:34 +0100, Geert Uytterhoeven wrote:
+> >    my opinion on this kind of stuff is that I want to avoid the layering
+> >  of implementations under the rtc subsystem. I'd rather prefer that each
+> >  rtc device had its own driver. 
+> >  
+> >   I've made error in the past, by accepting such kind of drivers, and
+> >  would like to avoid that it happens again.
 > 
-> I suspect I can guess the response to this suggestion, but how about we
-> accept that if sys_restart() fails due to something like this, the
-> task is lost and can't exit gracefully?
+> So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
+> mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
+> RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
 
-In the short term it might be necessary.  But the restart code should
-forcibly kill the task instead of returning an error back up to
-userspace in this case.  Once the memory map of the process has been
-altered, there is no point in allowing it to continue (and likely dump
-a useless core).  Btw, this failure mode seems to apply when
-cr_read_files() fails, too...
+That's the ideal... although did we get NTP sync working again yet?
 
-But in the long term, things need to be more robust (e.g. restart(2)
-returns ENOEXEC without messing with current->mm).  I think it's worth
-looking at how execve operates... if I understand correctly, it sets up
-a new mm_struct disconnected from the current task and activates it at
-the last moment.
+The rtc-ppc driver was intended as a short-term workaround so that we
+can enable the generic RTC class (which was required for PA Semi
+Electra, iirc), and still have stuff work on other platforms.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
