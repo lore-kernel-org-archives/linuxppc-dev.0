@@ -1,22 +1,26 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 4DF60DDE98
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 05:02:01 +1100 (EST)
-Date: Tue, 24 Feb 2009 19:01:59 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-In-Reply-To: <18850.31567.212454.514549@cargo.ozlabs.ibm.com>
-Message-ID: <alpine.LRH.2.00.0902241857170.544@vixen.sonytel.be>
-References: <49A2705D.9030008@in.ibm.com>
-	<20090223021320.11019d64.akpm@linux-foundation.org>
-	<18850.31567.212454.514549@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Jan Kara <jack@ucw.cz>, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+Return-Path: <alessandro.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id 767ABDDDA1
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 05:37:14 +1100 (EST)
+Date: Tue, 24 Feb 2009 19:37:08 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
+Message-ID: <20090224193708.5f8be86c@i1501.lan.towertech.it>
+In-Reply-To: <alpine.LRH.2.00.0902241848500.544@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090220170454.04382e9e@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+	<20090223160506.04e347c7@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902241848500.544@vixen.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Richard Zidlicky <rz@linux-m68k.org>, linux-parisc@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+	Geert.Uytterhoeven@sonycom.com, Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 23 Feb 2009, Paul Mackerras wrote:
-> Andrew Morton writes:
-> > It looks like we died in ext3_xattr_block_get():
-> > 
-> > 		memcpy(buffer, bh->b_data + le16_to_cpu(entry->e_value_offs),
-> > 		       size);
-> > 
-> > Perhaps entry->e_value_offs is no good.  I wonder if the filesystem is
-> > corrupted and this snuck through the defenses.
-> > 
-> > I also wonder if there is enough info in that trace for a ppc person to
-> > be able to determine whether the faulting address is in the source or
-> > destination of the memcpy() (please)?
+On Tue, 24 Feb 2009 18:56:03 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+
 > 
-> It appears to have faulted on a load, implicating the source.  The
-> address being referenced (0xc00000003f380000) doesn't look
-> outlandish.  I wonder if this kernel has CONFIG_DEBUG_PAGEALLOC turned
-> on, and what page size is selected?
+> On Mon, 23
+> > 
+> >  I'd start writing a working driver and then see how we should eventually
+> >  adapt the rtc subsystem to cope with your needs.
+> 
+> OK, so here's a first example: rtc-ps3.
+> 
+> Note that this single patch adds 100+ lines of code, while my previous patch
+> series removed 500+ lines of code, while solving the autoloading problem for
+> several ppc and m68k platforms.
 
-I'm seeing a similar thing on PS3, but not in ext3. During early userspace
-setup (udevd), it crashes accessing a 0xc00* address in:
+ This patch has a much cleaner approach, imho.
 
-| NIP setup+0x20/0x130
-| LR copy_user_page+0x18/0x6c
-| Call trace:
-| do_wp_page+0x5b4/0x89c
-| do_page_fault+0x3a8/0x58c
-| handle_page_fault+0x20/0x5c
+> Converting all (ca. 20?) ppc and m68k RTC support code into individual RTC
+> class drivers would add ca. 100+ lines of code for each individual driver.
 
-I have CONFIG_DEBUG_PAGEALLOC=y. If I disable it, the system boots fine.
 
-If needed, I can probably bisect this tomorrow. It definitely didn't happen in
-2.6.29-rc5.
 
-With kind regards,
+ How different are all of those boards? It's simply a matter
+ of parameters and offsets? can we group them somehow?
 
-Geert Uytterhoeven
-Software Architect
+ 
+-- 
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ Best regards,
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+  http://www.towertech.it
