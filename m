@@ -1,19 +1,23 @@
-Return-Path: <mbergandi@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id B0222DDE00
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 05:55:56 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so969900qwe.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 10:55:53 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <49A3EBFF.4030906@aimvalley.nl>
-References: <E1LbNft-0007z6-Pf@garm.runbox.com> <49A3EBFF.4030906@aimvalley.nl>
-Date: Tue, 24 Feb 2009 13:55:53 -0500
-Message-ID: <1c641bc80902241055j33984de6re0f9a887494fa93a@mail.gmail.com>
-Subject: Re: Can not get "new" MPC8313e-RDB to boot "as-shipped" flash image
-From: Michael Bergandi <mbergandi@gmail.com>
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-Content-Type: multipart/alternative; boundary=0015175ce1be27363d0463aeab22
-Cc: linuxppc-dev@ozlabs.org, Eric Cottrell <wb1hbu@runbox.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 09C094F385
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 08:12:06 +1100 (EST)
+Date: Tue, 24 Feb 2009 15:11:52 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
+	implementation
+Message-ID: <20090224151152.29e98b5f@thinkcentre.lan>
+In-Reply-To: <20090224195826.GA25909@us.ibm.com>
+References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
+	<1233182478-27113-2-git-send-email-ntl@pobox.com>
+	<49814FA2.9060108@cs.columbia.edu> <20090129214035.GB6913@localdomain>
+	<20090217010355.58afd5cf@thinkcentre.lan>
+	<20090224195826.GA25909@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: containers@lists.osdl.org, Oren Laadan <orenl@cs.columbia.edu>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,84 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0015175ce1be27363d0463aeab22
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Tue, 24 Feb 2009 13:58:26 -0600
+"Serge E. Hallyn" <serue@us.ibm.com> wrote:
 
-Hi guys,
+> Quoting Nathan Lynch (ntl@pobox.com):
+> > Nathan Lynch <ntl@pobox.com> wrote:
+> > >
+> > > Oren Laadan wrote:
+> > > > 
+> > > > Nathan Lynch wrote:
+> > > > > 
+> > > > > What doesn't work:
+> > > > > * restarting a 32-bit task from a 64-bit task and vice versa
+> > > > 
+> > > > Is there a test to bail if we attempt to checkpoint such tasks ?
+> > > 
+> > > No, but I'll add one if it looks too hard to fix for the next round.
+> > 
+> > Unfortunately, adding a check for this is hard.
+> > 
+> > The "point of no return" in the restart path is cr_read_mm, which tears
+> > down current's address space.  cr_read_mm runs way before cr_read_cpu,
+> > which is the only restart method I've implemented for powerpc so far.
+> > So, checking for this condition in cr_read_cpu is too late if I want
+> > restart(2) to return an error and leave the caller's memory map
+> > intact.  (And I do want this: restart should be as robust as execve.)
+> > 
+> > Well okay then, cr_read_head_arch seems to be the right place in the
+> > restart sequence for the architecture code to handle this.  However,
+> > cr_write_head_arch (which produces the buffer that cr_read_head_arch
+> > consumes) is not provided a reference to the task to be checkpointed,
+> > nor can it assume that it's operating on current.  I need a reference
+> > to a task before I can determine whether it's running in 32- or 64-bit
+> > mode, or using the FPU, Altivec, SPE, whatever.
+> > 
+> > In any case, mixing 32- and 64-bit tasks across restart is something I
+> > eventually want to support, not reject.  But the problem I've outlined
+> > applies to FPU state and vector extensions (VMX, SPE), as well as
+> > sanity-checking debug register (DABR) contents.  We'll need to be able
+> > to error out gracefully from restart when a checkpoint image specifies a
+> > feature unsupported by the current kernel or hardware.  But I don't see
+> > how to do it with the current architecture.  Am I missing something?
+> 
+> I suspect I can guess the response to this suggestion, but how about we
+> accept that if sys_restart() fails due to something like this, the
+> task is lost and can't exit gracefully?
 
-I have the Rev B board and I have it working quite well. I'll share what I
-have
-discovered so far.
+In the short term it might be necessary.  But the restart code should
+forcibly kill the task instead of returning an error back up to
+userspace in this case.  Once the memory map of the process has been
+altered, there is no point in allowing it to continue (and likely dump
+a useless core).  Btw, this failure mode seems to apply when
+cr_read_files() fails, too...
 
-In Eric's case, the board seems suspect. There is already a Rev C of this
-board, but
-I am not sure if it is actually available yet. You may want to check on
-that.
-
-Regarding U-Boot, mine shipped with v. 1.3.0. The LTIB provided dts files
-follow
-the original dts format. There is a new dts spec and if you ever intend to
-use
-a mainline kernel, you will need to use the newer dts provided in the kernel
-source. Did I mention this board has at least basic support in 2.6.28 :). I
-have
-not determined the extent of the support though.
-
-I have successfully used the provided U-Boot v1.3.0 to boot a 2.6.28 kernel
-with
-the dts-v1 device tree. Hence, I hope that will clear your speculation about
-the
-device tree being the problem.
-
-I have seen the same problem that you guys have seen where U-Boot gets to
-the "Uncompressing kernel ..." then reboots. This happened to me when I
-passed the wrong device tree .dtb. I have also had this happen if I made
-a change to the kernel config. I haven't been able to determine what exactly
-
-that I changed that caused the problem though.
-
-Also, if you are feeling adventurous, you can also get the latest U-Boot.
-There
-is a specifc branch for this board:
-
-$ git clone git://git.denx.de/u-boot-mpc83xx.git
-
-I haven't attempted this since I don't currently have a probe to recovery a
-bad boot loader flash.
-
-Hope this helps,
-
-Mike
-
---0015175ce1be27363d0463aeab22
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi guys,<br><br>I have the Rev B board and I have it working quite well. I&=
-#39;ll share what I have<br>discovered so far.=A0 <br><br>In Eric&#39;s cas=
-e, the board seems suspect. There is already a Rev C of this board, but<br>
-I am not sure if it is actually available yet. You may want to check on tha=
-t.<br><br>Regarding U-Boot, mine shipped with v. 1.3.0. The LTIB provided d=
-ts files follow<br>the original dts format. There is a new dts spec and if =
-you ever intend to use<br>
-a mainline kernel, you will need to use the newer dts provided in the kerne=
-l<br>source. Did I mention this board has at least basic support in 2.6.28 =
-:). I have<br>not determined the extent of the support though.<br><br>I hav=
-e successfully used the provided U-Boot v1.3.0 to boot a 2.6.28 kernel with=
-<br>
-the dts-v1 device tree. Hence, I hope that will clear your speculation abou=
-t the <br>device tree being the problem. <br><br>I have seen the same probl=
-em that you guys have seen where U-Boot gets to <br>the &quot;Uncompressing=
- kernel ...&quot; then reboots. This happened to me when I <br>
-passed the wrong device tree .dtb. I have also had this happen if I made<br=
->a change to the kernel config. I haven&#39;t been able to determine what e=
-xactly <br>that I changed that caused the problem though. <br><br>Also, if =
-you are feeling adventurous, you can also get the latest U-Boot. There<br>
-is a specifc branch for this board:<br><br>$ git clone git://<a href=3D"htt=
-p://git.denx.de/u-boot-mpc83xx.git">git.denx.de/u-boot-mpc83xx.git</a><br><=
-br>I haven&#39;t attempted this since I don&#39;t currently have a probe to=
- recovery a <br>
-bad boot loader flash.<br><br>Hope this helps,<br><br>Mike<br>
-
---0015175ce1be27363d0463aeab22--
+But in the long term, things need to be more robust (e.g. restart(2)
+returns ENOEXEC without messing with current->mm).  I think it's worth
+looking at how execve operates... if I understand correctly, it sets up
+a new mm_struct disconnected from the current task and activates it at
+the last moment.
