@@ -1,23 +1,27 @@
-Return-Path: <kyle@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1F685DDDA9
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 04:48:46 +1100 (EST)
-Date: Tue, 24 Feb 2009 12:48:38 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH/RFC] powerpc: avoid generating .eh_frame sections with
-	gcc-4.4
-Message-ID: <20090224174838.GB6690@bombadil.infradead.org>
-References: <20090224065112.GA6690@bombadil.infradead.org>
-	<20090224084034.GA11847@uranus.ravnborg.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id ECDACDDE1A
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 04:56:05 +1100 (EST)
+Date: Tue, 24 Feb 2009 18:56:03 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
+In-Reply-To: <20090223160506.04e347c7@i1501.lan.towertech.it>
+Message-ID: <alpine.LRH.2.00.0902241848500.544@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090220170454.04382e9e@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+	<20090223160506.04e347c7@i1501.lan.towertech.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090224084034.GA11847@uranus.ravnborg.org>
-Cc: kyle@redhat.com, Kyle McMartin <kyle@infradead.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	aoliva@redhat.com, roland@redhat.com
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
+	linux-parisc@vger.kernel.org, David@ozlabs.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+	Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +31,314 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 24, 2009 at 09:40:34AM +0100, Sam Ravnborg wrote:
-> x86 has a specific ".section .eh_frame,"a",@progbits" in vdso32/int80.S as one example.
+On Mon, 23 Feb 2009, Alessandro Zummo wrote:
+> On Mon, 23 Feb 2009 13:34:49 +0100 (CET)
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > >    my opinion on this kind of stuff is that I want to avoid the layering
+> > >  of implementations under the rtc subsystem. I'd rather prefer that each
+> > >  rtc device had its own driver. 
+> > >  
+> > >   I've made error in the past, by accepting such kind of drivers, and
+> > >  would like to avoid that it happens again.
+> > 
+> > So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
+> > mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
+> > RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
 > 
-> Have you analyzed all these hits?
+>  not all at once :) 
 > 
+>  I'd start writing a working driver and then see how we should eventually
+>  adapt the rtc subsystem to cope with your needs.
 
-These aren't effected by the patch. All the occurances of it inside the
-kernel are explicitly written for the vdso/vsyscall functionality (which
-needs it, since it's mapped into a userspace task, and you obviously
-might be running a debugger on it.) The other hit in x86_64 is just a
-discard section of the linker script.
+OK, so here's a first example: rtc-ps3.
 
-regards, Kyle
+Note that this single patch adds 100+ lines of code, while my previous patch
+series removed 500+ lines of code, while solving the autoloading problem for
+several ppc and m68k platforms.
+
+Converting all (ca. 20?) ppc and m68k RTC support code into individual RTC
+class drivers would add ca. 100+ lines of code for each individual driver.
+
+>From 641412e4e638d00c8821c2d9b38e02727821a203 Mon Sep 17 00:00:00 2001
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Date: Tue, 24 Feb 2009 14:04:20 +0100
+Subject: [PATCH] Create a real RTC driver for PS3, called "rtc-ps3"
+
+---
+ arch/powerpc/include/asm/ps3.h        |    4 +
+ arch/powerpc/platforms/ps3/os-area.c  |    2 +
+ arch/powerpc/platforms/ps3/platform.h |    2 -
+ arch/powerpc/platforms/ps3/setup.c    |    2 -
+ arch/powerpc/platforms/ps3/time.c     |   25 ++++----
+ drivers/rtc/Kconfig                   |    9 +++
+ drivers/rtc/Makefile                  |    1 +
+ drivers/rtc/rtc-ps3.c                 |  106 +++++++++++++++++++++++++++++++++
+ 8 files changed, 133 insertions(+), 18 deletions(-)
+ create mode 100644 drivers/rtc/rtc-ps3.c
+
+diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
+index b65446a..dee0480 100644
+--- a/arch/powerpc/include/asm/ps3.h
++++ b/arch/powerpc/include/asm/ps3.h
+@@ -500,6 +500,10 @@ u64 ps3_get_spe_id(void *arg);
+ /* mutex synchronizing GPU accesses and video mode changes */
+ extern struct mutex ps3_gpu_mutex;
+ 
++/* os area */
++u64 ps3_os_area_get_rtc_diff(void);
++void ps3_os_area_set_rtc_diff(u64 rtc_diff);
++
+ /* kernel debug routines */
+ 
+ int ps3_debug_setup_dabr(u64 address, unsigned int dabr_flags);
+diff --git a/arch/powerpc/platforms/ps3/os-area.c b/arch/powerpc/platforms/ps3/os-area.c
+index ccf0157..f1f2d47 100644
+--- a/arch/powerpc/platforms/ps3/os-area.c
++++ b/arch/powerpc/platforms/ps3/os-area.c
+@@ -823,6 +823,7 @@ u64 ps3_os_area_get_rtc_diff(void)
+ {
+ 	return saved_params.rtc_diff;
+ }
++EXPORT_SYMBOL(ps3_os_area_get_rtc_diff);
+ 
+ /**
+  * ps3_os_area_set_rtc_diff - Set the rtc diff value.
+@@ -838,6 +839,7 @@ void ps3_os_area_set_rtc_diff(u64 rtc_diff)
+ 		os_area_queue_work();
+ 	}
+ }
++EXPORT_SYMBOL(ps3_os_area_set_rtc_diff);
+ 
+ /**
+  * ps3_os_area_get_av_multi_out - Returns the default video mode.
+diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
+index 235c13e..136aa06 100644
+--- a/arch/powerpc/platforms/ps3/platform.h
++++ b/arch/powerpc/platforms/ps3/platform.h
+@@ -64,8 +64,6 @@ int ps3_set_rtc_time(struct rtc_time *time);
+ 
+ void __init ps3_os_area_save_params(void);
+ void __init ps3_os_area_init(void);
+-u64 ps3_os_area_get_rtc_diff(void);
+-void ps3_os_area_set_rtc_diff(u64 rtc_diff);
+ 
+ /* spu */
+ 
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index e2032c6..020ba1d 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -300,8 +300,6 @@ define_machine(ps3) {
+ 	.init_IRQ			= ps3_init_IRQ,
+ 	.panic				= ps3_panic,
+ 	.get_boot_time			= ps3_get_boot_time,
+-	.set_rtc_time			= ps3_set_rtc_time,
+-	.get_rtc_time			= ps3_get_rtc_time,
+ 	.set_dabr			= ps3_set_dabr,
+ 	.calibrate_decr			= ps3_calibrate_decr,
+ 	.progress			= ps3_progress,
+diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
+index d0daf7d..112397d 100644
+--- a/arch/powerpc/platforms/ps3/time.c
++++ b/arch/powerpc/platforms/ps3/time.c
+@@ -19,6 +19,7 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/rtc.h>
+ #include <asm/lv1call.h>
+@@ -74,23 +75,19 @@ static u64 read_rtc(void)
+ 	return rtc_val;
+ }
+ 
+-int ps3_set_rtc_time(struct rtc_time *tm)
++unsigned long __init ps3_get_boot_time(void)
+ {
+-	u64 now = mktime(tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+-		tm->tm_hour, tm->tm_min, tm->tm_sec);
+-
+-	ps3_os_area_set_rtc_diff(now - read_rtc());
+-	return 0;
++	return read_rtc() + ps3_os_area_get_rtc_diff();
+ }
+ 
+-void ps3_get_rtc_time(struct rtc_time *tm)
+-{
+-	to_tm(read_rtc() + ps3_os_area_get_rtc_diff(), tm);
+-	tm->tm_year -= 1900;
+-	tm->tm_mon -= 1;
+-}
++static struct platform_device rtc_ps3_dev = {
++	.name = "rtc-ps3",
++	.id = -1,
++};
+ 
+-unsigned long __init ps3_get_boot_time(void)
++static int __init rtc_init(void)
+ {
+-	return read_rtc() + ps3_os_area_get_rtc_diff();
++	return platform_device_register(&rtc_ps3_dev);
+ }
++
++module_init(rtc_init);
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 81450fb..4b61288 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -736,4 +736,13 @@ config RTC_DRV_MV
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called rtc-mv.
+ 
++config RTC_DRV_PS3
++	tristate "PS3 RTC"
++	depends on PPC_PS3
++	help
++	  If you say yes here you will get support for the RTC on PS3.
++
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-ps3.
++
+ endif # RTC_CLASS
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 0e697aa..7fe627c 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -76,3 +76,4 @@ obj-$(CONFIG_RTC_DRV_VR41XX)	+= rtc-vr41xx.o
+ obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
+ obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
+ obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
++obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
+diff --git a/drivers/rtc/rtc-ps3.c b/drivers/rtc/rtc-ps3.c
+new file mode 100644
+index 0000000..84ae08c
+--- /dev/null
++++ b/drivers/rtc/rtc-ps3.c
+@@ -0,0 +1,106 @@
++/*
++ * PS3 RTC Driver
++ *
++ * Copyright 2009 Sony Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.
++ * If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/rtc.h>
++
++#include <asm/lv1call.h>
++#include <asm/ps3.h>
++
++
++static u64 read_rtc(void)
++{
++	int result;
++	u64 rtc_val;
++	u64 tb_val;
++
++	result = lv1_get_rtc(&rtc_val, &tb_val);
++	BUG_ON(result);
++
++	return rtc_val;
++}
++
++static int ps3_get_time(struct device *dev, struct rtc_time *tm)
++{
++	to_tm(read_rtc() + ps3_os_area_get_rtc_diff(), tm);
++	tm->tm_year -= 1900;
++	tm->tm_mon -= 1;
++	return 0;
++}
++
++static int ps3_set_time(struct device *dev, struct rtc_time *tm)
++{
++	u64 now = mktime(tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
++			 tm->tm_hour, tm->tm_min, tm->tm_sec);
++	ps3_os_area_set_rtc_diff(now - read_rtc());
++	return 0;
++}
++
++static const struct rtc_class_ops ps3_rtc_ops = {
++	.read_time = ps3_get_time,
++	.set_time = ps3_set_time,
++};
++
++static int __devinit ps3_rtc_probe(struct platform_device *dev)
++{
++	struct rtc_device *rtc;
++
++	rtc = rtc_device_register("rtc-ps3", &dev->dev, &ps3_rtc_ops,
++				     THIS_MODULE);
++	if (IS_ERR(rtc))
++		return PTR_ERR(rtc);
++
++	platform_set_drvdata(dev, rtc);
++	return 0;
++}
++
++static int __devexit ps3_rtc_remove(struct platform_device *dev)
++{
++	rtc_device_unregister(platform_get_drvdata(dev));
++	return 0;
++}
++
++static struct platform_driver ps3_rtc_driver = {
++	.driver = {
++		.name = "rtc-ps3",
++		.owner = THIS_MODULE,
++	},
++	.probe = ps3_rtc_probe,
++	.remove = __devexit_p(ps3_rtc_remove),
++};
++
++static int __init ps3_rtc_init(void)
++{
++	return platform_driver_register(&ps3_rtc_driver);
++}
++
++static void __exit ps3_rtc_fini(void)
++{
++	platform_driver_unregister(&ps3_rtc_driver);
++}
++
++module_init(ps3_rtc_init);
++module_exit(ps3_rtc_fini);
++
++MODULE_AUTHOR("Sony Corporation");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("ps3 RTC driver");
++MODULE_ALIAS("platform:rtc-ps3");
+-- 
+1.6.0.4
+
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village � Da Vincilaan 7-D1 � B-1935 Zaventem � Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 � RPR Brussels
+Fortis � BIC GEBABEBB � IBAN BE41293037680010
