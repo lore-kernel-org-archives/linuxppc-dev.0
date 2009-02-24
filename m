@@ -1,19 +1,22 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 8D2D9DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 01:39:57 +1100 (EST)
-Date: Tue, 24 Feb 2009 15:39:55 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: Please pull 'next' branch
-In-Reply-To: <alpine.LRH.2.00.0902241531500.544@vixen.sonytel.be>
-Message-ID: <alpine.LRH.2.00.0902241539260.544@vixen.sonytel.be>
-References: <20090224140800.GA2323@yoda.jdub.homelinux.org>
-	<alpine.LRH.2.00.0902241531500.544@vixen.sonytel.be>
+Return-Path: <aoliva@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 666DCDDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 22:25:55 +1100 (EST)
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH/RFC] powerpc: avoid generating .eh_frame sections with
+	gcc-4.4
+References: <20090224065112.GA6690@bombadil.infradead.org>
+	<20090224084034.GA11847@uranus.ravnborg.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Errors-To: aoliva@oliva.athome.lsd.ic.unicamp.br
+Date: Tue, 24 Feb 2009 08:25:35 -0300
+In-Reply-To: <20090224084034.GA11847@uranus.ravnborg.org> (Sam Ravnborg's
+	message of "Tue\, 24 Feb 2009 09\:40\:34 +0100")
+Message-ID: <orprh8oz4g.fsf@livre.oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Kyle McMartin <kyle@infradead.org>,
+	linux-kernel@vger.kernel.org, roland@redhat.com, kyle@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 24 Feb 2009, Geert Uytterhoeven wrote:
-> On Tue, 24 Feb 2009, Josh Boyer wrote:
-> > Please pull the next branch of the 4xx tree.  It has a few small commits
-> 
-> Any chance we can get the fix for PCI on e.g. Sequoia in?
-> This is a regression from 2.6.28.
+On Feb 24, 2009, Sam Ravnborg <sam@ravnborg.org> wrote:
 
-BTW, I don't see the patch on
-http://patchwork.ozlabs.org/project/linuxppc-dev/list/?
+> On Tue, Feb 24, 2009 at 01:51:12AM -0500, Kyle McMartin wrote:
+>> From: Kyle McMartin <kyle@redhat.com>
+>> 
+>> On ppc64 (at least) gcc-4.4 is defaulting to generating .eh_frame
+>> sections, which are, for the kernel, fairly pointless. Additionally, on
+>> ppc64 this generates a relocation format which the kernel module loader
+>> does not currently support (R_PPC64_REL32.)
+>> 
+>> Alexandre Oliva verifies that -fno-dwarf2-cfi-asm prevents this
+>> .eh_frame section from being generated.
+>> 
+>> These seem to be used for unwinding, but it doesn't look like we
+>> currently use them anywhere. (In fact, we explicitly dump them in the
+>> x86_64 linker script.)
 
-With kind regards,
+> A grep for "eh_frame" shows too many hits in the kernel to convince
+> me this is true.
 
-Geert Uytterhoeven
-Software Architect
+I don't know whether .eh_frame is used for anything in the kernel.  It
+doesn't matter, as far as the patch is concerned.
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+What the flag above does is to restore the .eh_frame behavior from GCC
+4.3, in which, when compiling with -g, rather than using .cfi assembler
+directives, GCC emitted .debug_frame and (when needed) .eh_frame itself.
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+The "when needed" is key.  The assembler doesn't know which of these to
+emit, so it emits both in response to .cfi directives.  It's also
+possible that the assembler selects more efficient relocations than GCC.
+Regardless, it's precisely the presence of new relocations in .eh_frame
+that caused the reported problem.
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+This flag will just restore the .eh_frame that you had with earlier
+versions of GCC, so that you don't have to cope with the enlarged and
+possibly modified one that the combination of new GCC and new binutils
+generates when compiling with -g.  It will thus still serve whatever
+purpose it did before.
+
+I hope this helps,
+
+-- 
+Alexandre Oliva           http://www.lsd.ic.unicamp.br/~oliva/
+You must be the change you wish to see in the world. -- Gandhi
+Be Free! -- http://FSFLA.org/   FSF Latin America board member
+Free Software Evangelist      Red Hat Brazil Compiler Engineer
