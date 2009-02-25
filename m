@@ -1,24 +1,27 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id DB328DDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 20:50:48 +1100 (EST)
-Date: Wed, 25 Feb 2009 10:50:46 +0100 (CET)
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id DDCBCDDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 20:54:35 +1100 (EST)
+Date: Wed, 25 Feb 2009 10:54:33 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Mark Nelson <markn@au1.ibm.com>
-Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
-In-Reply-To: <200902251752.56514.markn@au1.ibm.com>
-Message-ID: <alpine.LRH.2.00.0902251018060.4063@vixen.sonytel.be>
-References: <49A2705D.9030008@in.ibm.com>
-	<20090223155116.GB5764@atrey.karlin.mff.cuni.cz>
-	<49A395ED.5030607@in.ibm.com>
-	<200902251752.56514.markn@au1.ibm.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
+In-Reply-To: <1235511327.18632.73.camel@macbook.infradead.org>
+Message-ID: <alpine.LRH.2.00.0902251051370.4063@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090220170454.04382e9e@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+	<1235511327.18632.73.camel@macbook.infradead.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Jan Kara <jack@ucw.cz>, Jan Kara <jack@suse.cz>, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+	Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
+	linux-parisc@vger.kernel.org, David@ozlabs.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,45 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 25 Feb 2009, Mark Nelson wrote:
-> On Tue, 24 Feb 2009 05:38:37 pm Sachin P. Sant wrote:
-> > Jan Kara wrote:
-> > >   Hmm, OK. But then I'm not sure how that can happen. Obviously, memcpy
-> > > somehow got beyond end of the page referenced by bh->b_data. So it means
-> > > that le16_to_cpu(entry->e_value_offs) + size > page_size. But
-> > > ext3_xattr_find_entry() calls ext3_xattr_check_entry() which in
-> > > particular checks whether e_value_offs + e_value_size isn't greater than
-> > > bh->b_size. So I see no way how memcpy can get beyond end of the page.
-> > >   Sachin, is the problem reproducible? If yes, can you send us contents
-> > >   
-> > Yes, i am able to recreate this problem easily. As i had mentioned if the
-> > earlier kernel is booted with selinux enabled and then 2.6.29-rc6 is booted
-> > i get this crash. But if i specify selinux=0 at command line, 2.6.29-rc6 boots
-> > without any problem.
+On Wed, 25 Feb 2009, David Woodhouse wrote:
+> On Mon, 2009-02-23 at 13:34 +0100, Geert Uytterhoeven wrote:
+> > >    my opinion on this kind of stuff is that I want to avoid the layering
+> > >  of implementations under the rtc subsystem. I'd rather prefer that each
+> > >  rtc device had its own driver. 
+> > >  
+> > >   I've made error in the past, by accepting such kind of drivers, and
+> > >  would like to avoid that it happens again.
+> > 
+> > So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
+> > mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
+> > RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
 > 
-> Hi Sanchin and Geert,
+> That's the ideal... although did we get NTP sync working again yet?
 > 
-> Does the patch below fix the problems you're seeing? If it does I'll send
-> a properly written up and formatted patch to linuxppc-dev (as well as
-> another one to fix the same problem in copy_tofrom_user()).
+> The rtc-ppc driver was intended as a short-term workaround so that we
+> can enable the generic RTC class (which was required for PA Semi
+> Electra, iirc), and still have stuff work on other platforms.
 
-Unfortunately not, now it crashes while accessing the memory pointed to by
-GPR16, in
-
-NIP: copy_page_range+x0608/0x628
-LR:  dup_mm+0x2e4/0x428
-Trace: debug_table+0xcc70/0x1afe0 (unreliable)
-dup_mm+0x2e4/0x428
-copy_process+0x86c/0xf9c
-do_fork+0x188/0x39c
-sys_clone+0x58/0x70
-ppc_clone+0x8/0xc
-
-However, after reverting 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556, I still see
-similar problems as above (crash in copy_page_range()).
-Which makes me think that
-  1. Your new patch fixes the problem introduced by 25d6e2d7,
-  2. There's still another issue than the one introduced by 25d6e2d7.
+Sure. The only differences between your rtc-ppc driver and rtc-parisc were:
+  - rtc-ppc uses the PPC RTC abstraction (ppc_md.[gs]et_rtc_time()),
+    while rtc-parisc uses the genrtc abstraction layer ([gs]et_rtc_time()),
+    which is shared by several architectures,
+  - rtc-ppc has the platform device built-in in the driver, while rtc-parisc
+    relies on the creation of the platform device in platform code.
 
 With kind regards,
 
