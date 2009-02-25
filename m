@@ -1,28 +1,21 @@
-Return-Path: <SRS0+09f1b7510091849ec925+2012+infradead.org+dwmw2@casper.srs.infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+Return-Path: <phenning@vastech.co.za>
+Received: from www6.jnb1.host-h.net (www6b.your-server.co.za [196.22.132.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 28313DDD1C
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 19:11:18 +1100 (EST)
-Subject: Re: [PATCH 0/10] DMA-API debugging facility
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Roedel <joerg.roedel@amd.com>, linuxppc-dev@ozlabs.org
-In-Reply-To: <1233873842.8135.6.camel@macbook.infradead.org>
-References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
-	<1227286492.4901.208.camel@macbook.infradead.org>
-	<20081121165722.GD1386@amd.com>
-	<1227287215.4901.213.camel@macbook.infradead.org>
-	<20081121171802.GK733@elte.hu> <20081121172046.GF1386@amd.com>
-	<1227288269.4901.222.camel@macbook.infradead.org>
-	<20081121172722.GG1386@amd.com>
-	<1233873842.8135.6.camel@macbook.infradead.org>
-Content-Type: text/plain
-Date: Wed, 25 Feb 2009 17:11:02 +0900
-Message-Id: <1235549462.519.38.camel@macbook.infradead.org>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	iommu@lists.linux-foundation.org, Ingo Molnar <mingo@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+	by ozlabs.org (Postfix) with ESMTPS id 802DBDDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 20:21:05 +1100 (EST)
+Received: from [196.213.226.33] (helo=[172.16.63.116])
+	by www6.jnb1.host-h.net with esmtpa (Exim 4.66)
+	(envelope-from <phenning@vastech.co.za>) id 1LcFwm-000269-Ml
+	for linuxppc-dev@ozlabs.org; Wed, 25 Feb 2009 11:20:56 +0200
+Message-ID: <49A50D74.50409@vastech.co.za>
+Date: Wed, 25 Feb 2009 11:20:52 +0200
+From: Pieter <phenning@vastech.co.za>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: defining platform_devices in DTS
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
+	micalg=sha1; boundary="------------ms090405000404060600090407"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,277 +25,132 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-02-05 at 22:44 +0000, David Woodhouse wrote:
-> On Fri, 2008-11-21 at 18:27 +0100, Joerg Roedel wrote:
-> > On Fri, Nov 21, 2008 at 05:24:29PM +0000, David Woodhouse wrote:
-> > > On Fri, 2008-11-21 at 18:20 +0100, Joerg Roedel wrote:
-> > > > Ok, I will move the generic bits to lib/ and include/linux and let
-> > > > architectures decide if they want to use it.
-> > > 
-> > > Once you've done that, I'll try to hook it up on PowerPC to make sure it
-> > > works there.
-> > 
-> > Ok, cool. Thanks
-> 
-> This builds; I haven't actually tried booting it yet. Will do that in
-> the morning.
+This is a cryptographically signed message in MIME format.
 
-So I lied about that. Did anyone else manage...?
+--------------ms090405000404060600090407
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-(Applies on top of the dma-api/debug branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu)
+Hi all
 
-> I'm not so fond of the way each architecture gets to define
-> PREALLOC_DMA_DEBUG_ENTRIES for itself... and also call dma_debug_init(),
-> for that matter. Couldn't we do that in lib/dma-debug.c directly?
-> 
-> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 74cc312..11db356 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -124,6 +124,7 @@ config PPC
->  	select USE_GENERIC_SMP_HELPERS if SMP
->  	select HAVE_OPROFILE
->  	select HAVE_SYSCALL_WRAPPERS if PPC64
-> +	select HAVE_DMA_API_DEBUG
->  
->  config EARLY_PRINTK
->  	bool
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index 86cef7d..b49107a 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -13,6 +13,7 @@
->  /* need struct page definitions */
->  #include <linux/mm.h>
->  #include <linux/scatterlist.h>
-> +#include <linux/dma-debug.h>
->  #include <linux/dma-attrs.h>
->  #include <asm/io.h>
->  
-> @@ -170,12 +171,17 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev,
->  					      struct dma_attrs *attrs)
->  {
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
-> +	dma_addr_t addr;
->  
->  	BUG_ON(!dma_ops);
->  
-> -	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
-> +	addr = dma_ops->map_page(dev, virt_to_page(cpu_addr),
->  				 (unsigned long)cpu_addr % PAGE_SIZE, size,
->  				 direction, attrs);
-> +	debug_dma_map_page(dev, virt_to_page(cpu_addr),
-> +			   (unsigned long)cpu_addr & PAGE_SIZE, size,
-> +			   direction, addr, true);
-> +	return addr;
->  }
->  
->  static inline void dma_unmap_single_attrs(struct device *dev,
-> @@ -189,6 +195,7 @@ static inline void dma_unmap_single_attrs(struct device *dev,
->  	BUG_ON(!dma_ops);
->  
->  	dma_ops->unmap_page(dev, dma_addr, size, direction, attrs);
-> +	debug_dma_unmap_page(dev, dma_addr, size, direction, true);
->  }
->  
->  static inline dma_addr_t dma_map_page_attrs(struct device *dev,
-> @@ -198,10 +205,13 @@ static inline dma_addr_t dma_map_page_attrs(struct device *dev,
->  					    struct dma_attrs *attrs)
->  {
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
-> +	dma_addr_t addr;
->  
->  	BUG_ON(!dma_ops);
->  
-> -	return dma_ops->map_page(dev, page, offset, size, direction, attrs);
-> +	addr = dma_ops->map_page(dev, page, offset, size, direction, attrs);
-> +	debug_dma_map_page(dev, page, offset, size, direction, addr, false);
-> +	return addr;
->  }
->  
->  static inline void dma_unmap_page_attrs(struct device *dev,
-> @@ -215,6 +225,7 @@ static inline void dma_unmap_page_attrs(struct device *dev,
->  	BUG_ON(!dma_ops);
->  
->  	dma_ops->unmap_page(dev, dma_address, size, direction, attrs);
-> +	debug_dma_unmap_page(dev, dma_address, size, direction, false);
->  }
->  
->  static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
-> @@ -222,9 +233,12 @@ static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
->  				   struct dma_attrs *attrs)
->  {
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
-> +	int ents;
->  
->  	BUG_ON(!dma_ops);
-> -	return dma_ops->map_sg(dev, sg, nents, direction, attrs);
-> +	ents = dma_ops->map_sg(dev, sg, nents, direction, attrs);
-> +	debug_dma_map_sg(dev, sg, ents, direction);
-> +	return ents;
->  }
->  
->  static inline void dma_unmap_sg_attrs(struct device *dev,
-> @@ -237,15 +251,19 @@ static inline void dma_unmap_sg_attrs(struct device *dev,
->  
->  	BUG_ON(!dma_ops);
->  	dma_ops->unmap_sg(dev, sg, nhwentries, direction, attrs);
-> +	debug_dma_unmap_sg(dev, sg, nhwentries, direction);
->  }
->  
->  static inline void *dma_alloc_coherent(struct device *dev, size_t size,
->  				       dma_addr_t *dma_handle, gfp_t flag)
->  {
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
-> +	void *mem;
->  
->  	BUG_ON(!dma_ops);
-> -	return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
-> +	mem = dma_ops->alloc_coherent(dev, size, dma_handle, flag);
-> +	debug_dma_alloc_coherent(dev, size, *dma_handle, mem);
-> +	return mem;
->  }
->  
->  static inline void dma_free_coherent(struct device *dev, size_t size,
-> @@ -254,6 +272,7 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
->  
->  	BUG_ON(!dma_ops);
-> +	debug_dma_free_coherent(dev, size, cpu_addr, dma_handle);
->  	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
->  }
->  
-> @@ -306,6 +325,8 @@ static inline void dma_sync_single_for_cpu(struct device *dev,
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
->  
->  	BUG_ON(!dma_ops);
-> +	debug_dma_sync_single_range_for_cpu(dev, dma_handle, 0,
-> +					    size, direction);
->  	dma_ops->sync_single_range_for_cpu(dev, dma_handle, 0,
->  					   size, direction);
->  }
-> @@ -317,6 +338,8 @@ static inline void dma_sync_single_for_device(struct device *dev,
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
->  
->  	BUG_ON(!dma_ops);
-> +	debug_dma_sync_single_range_for_device(dev, dma_handle,
-> +					       0, size, direction);
->  	dma_ops->sync_single_range_for_device(dev, dma_handle,
->  					      0, size, direction);
->  }
-> @@ -328,6 +351,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
->  
->  	BUG_ON(!dma_ops);
-> +	debug_dma_sync_sg_for_cpu(dev, sgl, nents, direction);
->  	dma_ops->sync_sg_for_cpu(dev, sgl, nents, direction);
->  }
->  
-> @@ -338,6 +362,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
->  
->  	BUG_ON(!dma_ops);
-> +	debug_dma_sync_sg_for_device(dev, sgl, nents, direction);
->  	dma_ops->sync_sg_for_device(dev, sgl, nents, direction);
->  }
->  
-> @@ -348,6 +373,8 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
->  
->  	BUG_ON(!dma_ops);
-> +	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
-> +					    offset, size, direction);
->  	dma_ops->sync_single_range_for_cpu(dev, dma_handle,
->  					   offset, size, direction);
->  }
-> @@ -359,6 +386,8 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
->  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
->  
->  	BUG_ON(!dma_ops);
-> +	debug_dma_sync_single_range_for_device(dev, dma_handle, offset,
-> +					       size, direction);
->  	dma_ops->sync_single_range_for_device(dev, dma_handle, offset,
->  					      size, direction);
->  }
-> @@ -367,36 +396,46 @@ static inline void dma_sync_single_for_cpu(struct device *dev,
->  		dma_addr_t dma_handle, size_t size,
->  		enum dma_data_direction direction)
->  {
-> +	debug_dma_sync_single_range_for_cpu(dev, dma_handle, 0,
-> +					    size, direction);
->  }
->  
->  static inline void dma_sync_single_for_device(struct device *dev,
->  		dma_addr_t dma_handle, size_t size,
->  		enum dma_data_direction direction)
->  {
-> +	debug_dma_sync_single_range_for_device(dev, dma_handle,
-> +					       0, size, direction);
->  }
->  
->  static inline void dma_sync_sg_for_cpu(struct device *dev,
->  		struct scatterlist *sgl, int nents,
->  		enum dma_data_direction direction)
->  {
-> +	debug_dma_sync_sg_for_cpu(dev, sgl, nents, direction);
->  }
->  
->  static inline void dma_sync_sg_for_device(struct device *dev,
->  		struct scatterlist *sgl, int nents,
->  		enum dma_data_direction direction)
->  {
-> +	debug_dma_sync_sg_for_device(dev, sgl, nents, direction);
->  }
->  
->  static inline void dma_sync_single_range_for_cpu(struct device *dev,
->  		dma_addr_t dma_handle, unsigned long offset, size_t size,
->  		enum dma_data_direction direction)
->  {
-> +	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
-> +					    offset, size, direction);
->  }
->  
->  static inline void dma_sync_single_range_for_device(struct device *dev,
->  		dma_addr_t dma_handle, unsigned long offset, size_t size,
->  		enum dma_data_direction direction)
->  {
-> +	debug_dma_sync_single_range_for_device(dev, dma_handle, offset,
-> +					       size, direction);
->  }
->  #endif
->  
-> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> index 1c5c8a6..90bb016 100644
-> --- a/arch/powerpc/kernel/dma.c
-> +++ b/arch/powerpc/kernel/dma.c
-> @@ -6,7 +6,9 @@
->   */
->  
->  #include <linux/device.h>
-> +#include <linux/dma-debug.h>
->  #include <linux/dma-mapping.h>
-> +#include <linux/init.h>
->  #include <asm/bug.h>
->  #include <asm/abs_addr.h>
->  
-> @@ -156,3 +158,12 @@ struct dma_mapping_ops dma_direct_ops = {
->  #endif
->  };
->  EXPORT_SYMBOL(dma_direct_ops);
-> +
-> +#define PREALLOC_DMA_DEBUG_ENTRIES		8192
-> +
-> +static int __init dma_debug_init_ppc(void)
-> +{
-> +	dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
-> +	return 0;
-> +}
-> +fs_initcall(dma_debug_init_ppc);
-> 
+I am busy porting my board to Linux 2.6.27 from 2.6.19. The old Linux
+was compiled using the ppc architecture, and had a "platform_device"
+struct ure containing the custom devices on my board. (
+/arch/ppc/platform/sdh8548.c and /arch/ppc/platform/sdh8548.h )
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+I assume these devices should now be declared in the device tree source.
+Building the new Linux using the powerpc architecture, but I am
+strugeling translating teh information defined in the "platform_device"
+to a device tree node. In particular what happens to the resource.flags
+could anyone help please?
+
+Below is the "platform_device" definition and my interpretation of how
+it should look in the device tree. Am I on the right track?
+thanks pieter
+
+platform_device definition:
+  {
+        .name = "bio",
+        .id = 0,
+        .dev.platform_data = NULL,
+        .num_resources = 2,
+        .resource = (struct resource[]) {
+            {
+                .start  = 0xe0100000,
+                .end    = 0xe0100000 + 0x10000 -1,
+                .flags  = IORESOURCE_MEM,    /* 0x00000200 */
+            },
+            {
+                .name   = "int",
+                .start  = MPC85xx_IRQ_EXT0,    /* 48 +
+MPC85xx_OPENPIC_IRQ_OFFSET */
+                .end    = MPC85xx_IRQ_EXT0,
+                .flags  = IORESOURCE_IRQ,    /*0x00000400 */
+            },
+        },
+
+FDT source:
+    localbus@e0000000 {
+        #address-cells = <2>;
+        #size-cells = <1>;
+        compatible = "simple-bus";
+        reg = <0xe0000000 0x5000>;
+        interrupt-parent = <&mpic>;
+
+        ranges = <
+            0x0 0x0 0xf8000000 0x07ffffff        /*128MB Flash*/
+            0x1 0x0 0xe0200000 0x00200000        /*2MB FPGA*/
+            0x2 0x0 0xe0100000 0x00100000         /*1MB BIO CPLD*/
+        >;
+
+        bio@2,0 {
+            compatible = "wrs,epld-localbus";
+            #address-cells = <2>;
+            #size-cells = <1>;
+            //interrupt-parent = <&mpic>;
+            //interrupts = <48>;
+            reg = <0x2 0x0 0x0010000>;
+            ranges = <0x0 0x0 0x2 0x0 0x00100000>;
+        };
+
+
+
+
+--------------ms090405000404060600090407
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
+
+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
+BzQJkntc6Sc4uzfJZ8MRLwAAAAAAAA==
+--------------ms090405000404060600090407--
