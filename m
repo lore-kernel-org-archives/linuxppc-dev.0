@@ -1,16 +1,36 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (unknown [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id 748DFDDEEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 03:10:23 +1100 (EST)
-Message-ID: <49A56D68.5040406@mlbassoc.com>
-Date: Wed, 25 Feb 2009 09:10:16 -0700
-From: Gary Thomas <gary@mlbassoc.com>
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AF99FDDEF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 04:10:01 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.14.3/8.13.8) with ESMTP id n1PH77Zw557788
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 17:07:07 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.2) with
+	ESMTP id n1PH77711859768
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 18:07:07 +0100
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id n1PH76kg025699
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 18:07:07 +0100
+Message-ID: <49A57AB9.3000502@de.ibm.com>
+Date: Wed, 25 Feb 2009 18:07:05 +0100
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
 MIME-Version: 1.0
-To: Linux PPC Development <linuxppc-dev@ozlabs.org>
-Subject: Re: MPC834x PCI problem
-References: <49A56163.5060400@mlbassoc.com>
-In-Reply-To: <49A56163.5060400@mlbassoc.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Powerpc / eHEA] Circular dependency with 2.6.29-rc6
+References: <49A26290.60607@in.ibm.com> <49A55E54.4080304@de.ibm.com>
+	<1235577013.4645.3548.camel@laptop>
+In-Reply-To: <1235577013.4645.3548.camel@laptop>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: TKLEIN@de.ibm.com, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	Mel Gorman <mel@csn.ul.ie>, netdev <netdev@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,163 +40,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gary Thomas wrote:
-> I have two [internal] boards with MPC8347.  Both have a PCI
-> bus, slightly different set of "wired" peripherals.
-> 
-> On one board, the PCI seems to be working fine.  I can talk
-> to all of my wired devices, plus one in a plugin slot.  The
-> [PCI portion] DTS for this board looks like this:
-> 	pci0: pci@ff008500 {
-> 		cell-index = <1>;
-> 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-> 		interrupt-map = <
-> 				/* IDSEL 0x0A (External slot) */
-> 				 0x5000 0x0 0x0 0x1 &fpga_ic 0
-> 				 0x5000 0x0 0x0 0x2 &fpga_ic 1
-> 				 0x5000 0x0 0x0 0x3 &fpga_ic 2
-> 				 0x5000 0x0 0x0 0x4 &fpga_ic 3
-> 
-> 				/* IDSEL 0x0B (Promise SATA) */
-> 				 0x5800 0x0 0x0 0x1 &fpga_ic 5
-> 				 0x5800 0x0 0x0 0x2 &fpga_ic 5
-> 				 0x5800 0x0 0x0 0x3 &fpga_ic 5
-> 				 0x5800 0x0 0x0 0x4 &fpga_ic 5
-> 
-> 				/* IDSEL 0x0C (Fujitsu Coral-P) */
-> 				 0x6000 0x0 0x0 0x1 &fpga_ic 4
-> 				 0x6000 0x0 0x0 0x2 &fpga_ic 4
-> 				 0x6000 0x0 0x0 0x3 &fpga_ic 4
-> 				 0x6000 0x0 0x0 0x4 &fpga_ic 4
-> 
-> 				/* IDSEL 0x0D (Philips USB) */
-> 				 0x6800 0x0 0x0 0x1 &fpga_ic 12
-> 				 0x6800 0x0 0x0 0x2 &fpga_ic 12
-> 				 0x6800 0x0 0x0 0x3 &fpga_ic 12
-> 				 0x6800 0x0 0x0 0x4 &fpga_ic 12
-> 
-> 				/* IDSEL 0x1F (External slot) */
-> 				 0xF800 0x0 0x0 0x1 &fpga_ic 0
-> 				 0xF800 0x0 0x0 0x2 &fpga_ic 1
-> 				 0xF800 0x0 0x0 0x3 &fpga_ic 2
-> 				 0xF800 0x0 0x0 0x4 &fpga_ic 3
->                                 >;
-> 		interrupt-parent = <&ipic>;
-> 		interrupts = <0x13 0x8
->                               0x14 0x8>;
-> 		bus-range = <0 0>;
-> 		ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x10000000
-> 			  0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
-> 		clock-frequency = <33333333>;
-> 		#interrupt-cells = <1>;
-> 		#size-cells = <2>;
-> 		#address-cells = <3>;
-> 		reg = <0xff008500 0x100		/* Internal registers */
-> 		       0xff008300 0x8>;         /* Config Space registers */
-> 		compatible = "fsl,mpc8349-pci";
-> 		device_type = "pci";
-> 	};
-> This board has a Promise SATA controller in slot 11 (drivers/ata/sata_promise.c)
-> 
-> The second board uses a DTS derived from the first.  In fact, the
-> *only* difference is in the PCI layout:
-> 	pci0: pci@ff008500 {
-> 		cell-index = <1>;
-> 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-> 		interrupt-map = <
-> 				/* IDSEL 0x0B (Promise SATA) */
-> 				 0x5800 0x0 0x0 0x1 &ipic 0x13 8
-> 				 0x5800 0x0 0x0 0x2 &ipic 0x13 8
-> 				 0x5800 0x0 0x0 0x3 &ipic 0x13 8
-> 				 0x5800 0x0 0x0 0x4 &ipic 0x13 8
->                                 >;
-> 		interrupt-parent = <&ipic>;
-> 		interrupts = <0x13 0x8>;
-> 		bus-range = <0 0>;
-> 		ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x10000000
-> 			  0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
-> 		clock-frequency = <33333333>;
-> 		#interrupt-cells = <1>;
-> 		#size-cells = <2>;
-> 		#address-cells = <3>;
-> 		reg = <0xff008500 0x100		/* Internal registers */
-> 		       0xff008300 0x8>;         /* Config Space registers */
-> 		compatible = "fsl,mpc8349-pci";
-> 		device_type = "pci";
-> 	};
-> This board has a slightly different Promise controller (drivers/ata/pata_pdc2027x.c)
-> The basic PCI access code in both drivers is the same.
-> 
-> As mentioned, the first board works fine.  The second board
-> falls apart on PCI access.  It's obvious that the PDC2027x
-> driver is having access problems.  Here are some clues from
-> the boot log (PCI related items only):
-> 
->   Found FSL PCI host bridge at 0x00000000ff008500. Firmware bus number: 0->0
->   PCI host bridge /pci@ff008500 (primary) ranges:
->    MEM 0x00000000c0000000..0x00000000cfffffff -> 0x00000000c0000000
->     IO 0x00000000b8000000..0x00000000b80fffff -> 0x0000000000000000
->   PCI: Probing PCI hardware
->   PCI: Cannot allocate resource region 5 of device 0000:00:0b.0, will remap
->   bus: 00 index 0 io port: [0x00-0xfffff]
->   bus: 00 index 1 mmio: [0xc0000000-0xcfffffff]
->   pdc_detect_pll_input_clock: scr[FFFFFFFF]
->   pdc_read_counter: bccrh [7FFF] bccrl [7FFF]
->   pdc_read_counter: bccrhv[7FFF] bccrlv[7FFF]
->   pdc_read_counter: bccrh [7FFF] bccrl [7FFF]
->   pdc_read_counter: bccrhv[7FFF] bccrlv[7FFF]
->   pdc_detect_pll_input_clock: scr[FFFFFFFF]
->   pdc_detect_pll_input_clock: start[1073741823] end[1073741823]
->   pdc_detect_pll_input_clock: PLL input clock[0]Hz
-> 
-> It's pretty obvious that the PDC driver is having troubles.
-> The system seems happy otherwise:
-> 
->   root@ppc_target:~ lspci -v
->   00:00.0 Bridge: Unknown device 1957:0085 (rev 11)
->         Flags: bus master, 66MHz, fast devsel, latency 248
->         Memory at <unassigned> (64-bit, prefetchable)
->         Memory at <unassigned> (64-bit, non-prefetchable)
->         Capabilities: [48] #06 [0000]
-> 
->   00:0b.0 Mass storage controller: Promise Technology, Inc. 20275 (rev 01) (prog-if 85)
->         Subsystem: Promise Technology, Inc. 20275
->         Flags: bus master, 66MHz, slow devsel, latency 0, IRQ 19
->         I/O ports at 1000 [size=8]
->         I/O ports at 1008 [size=4]
->         I/O ports at 1010 [size=8]
->         I/O ports at 1018 [size=4]
->         I/O ports at 1020 [size=16]
->         [virtual] Memory at c0000000 (32-bit, non-prefetchable) [size=16K]
->         Capabilities: [60] Power Management version 1
-> 
-> 
-> Any ideas what might be going [wrong] here?  I did notice that
-> both RedBoot [my boot environment] and an older kernel (2.6.20)
-> on this board assigned a non-zero offset in the PCI space for
-> this device:
->   Bus: 0, PCI Device: 11, PCI Func: 0
->     Vendor Id: 0x105A, Device Id: 0x1275, Command: 0x0007, IRQ: 1
->     BAR[0]    0x00001001 / probed size 0x00000000 / CPU addr 0xb8001000
->     BAR[1]    0x00001009 / probed size 0x00000000 / CPU addr 0xb8001008
->     BAR[2]    0x00001011 / probed size 0x00000000 / CPU addr 0xb8001010
->     BAR[3]    0x00001019 / probed size 0x00000000 / CPU addr 0xb8001018
->     BAR[4]    0x00001021 / probed size 0x00000000 / CPU addr 0xb8001020
->     BAR[5]    0x00100000 / probed size 0x00000000 / CPU addr 0xc0100000
-> 
-> Could this be a possible problem (maybe the device doesn't like it)?
+Hi,
 
-Answering my own question; I changed the PCI range to not start
-at offset zero:
-		ranges = <0x02000000 0x0 0xC0100000 0xC0100000 0x0 0x10000000
-			  0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+yes, sorry for the funny wrapping... and thanks for your quick answer!
 
-The PDC driver now talks to the device :-)
+Peter Zijlstra wrote:
+> On Wed, 2009-02-25 at 16:05 +0100, Jan-Bernd Themann wrote:
+>
+>   
+>> - When "open" is called for a registered network device, port->port_lock
+>> is taken first,
+>>   then ehea_fw_handles.lock
+>> - When "open" is left these locks are released in a proper way (inverse
+>> order)
+>>     
+>
+> So this has:
+>
+>   port->port_lock
+>     ehea_fw_handles.lock
+>
+> This would be the case that is generating the warning.
+>
+>   
+>> - In addition: ehea_fw_handles.lock is held by the function
+>> "driver_probe_device"
+>>   that registers all available network devices (register_netdev)
+>> - When multiple network devices are registered, it is possible that
+>> "open" is
+>>   called on an already registered network device while further
+>> netdevices are still registered
+>>   in "driver_probe_device". ---> "open" will take port->port_lock, but
+>> won't get ehea_fw_handles.lock
+>>     
+>
+> Right, so here you have 
+>
+>   ehea_fw_handles.lock
+>     port->port_lock
+>
+> Overlay these two cases and you have AB-BA deadlocks.
+>
+>   
+The thing here is that I did not see that "open" is called from this
+"probe" function,
+this happens probably indirectly as each new device causes a notifier chain
+to be called --> If I got it right then a userspace tool triggers the
+"open".
+In that case the open would run in an other task/thread and thus when
+the kernel
+preemts the task/thread the probe function would continue and free the lock.
 
-I'm still having troubles with the PCI interrupt, but progress nonetheless.
+Lets assume that it is actually possible that "open" is called in the
+same context as
+"probe", wound't that mean that we actually need to hit a deadlock?
+(probe helds
+the lock all the time). We have never observed a deadlock so far.
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+Is there a way to find out if all these locks are actually taken in the
+same context
+(kthread, tasklet...)?
+
+>> - However, ehea_fw_handles.lock is freed once all netdevices are registered.
+>> - When the second netdevice is registered in "driver_probe_device", it
+>> will also try to get
+>>   the port->port_lock (which in fact is a different one, as there is one
+>> per netdevice).
+>> - Does the mutex debug mechanism distinguish between the different
+>> port->port_lock instances?
+>>     
+>
+> Not unless you tell it to.
+>   
+> Are you really sure the port->port_lock in this AB-BA scenario are never
+> the same? The above explanation didn't convince me (also very hard to
+> read due to funny wrapping).
+>   
+I'm not sure, especially as I just ran the same test with just one port
+and we still
+get the warning. But having two instances of port accessing the locks
+does not
+look like a problem to me as they allocate and free the locks properly
+(right order).
+
+> Suppose you do an open concurrently with a re-probe, which apparently
+> takes port->port_lock's of existing devices, in the above scenario that
+> deadlocks.
+>
+>   
