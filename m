@@ -1,18 +1,22 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 7D844DDEEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 02:40:05 +1100 (EST)
-Date: Wed, 25 Feb 2009 16:40:01 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/mpc52xx: add Phytec phyCORE-MPC5200B-IO board
-	(pcm032)
-Message-ID: <20090225154001.GB3043@pengutronix.de>
-References: <1235575933-29691-1-git-send-email-w.sang@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="eAbsdosE1cNLO4uF"
-In-Reply-To: <1235575933-29691-1-git-send-email-w.sang@pengutronix.de>
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8F3BDDDEE9
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 02:50:38 +1100 (EST)
+Subject: Re: [Powerpc / eHEA] Circular dependency with 2.6.29-rc6
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+In-Reply-To: <49A55E54.4080304@de.ibm.com>
+References: <49A26290.60607@in.ibm.com>  <49A55E54.4080304@de.ibm.com>
+Content-Type: text/plain
+Date: Wed, 25 Feb 2009 16:50:13 +0100
+Message-Id: <1235577013.4645.3548.camel@laptop>
+Mime-Version: 1.0
+Cc: TKLEIN@de.ibm.com, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	Mel Gorman <mel@csn.ul.ie>, netdev <netdev@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2009-02-25 at 16:05 +0100, Jan-Bernd Themann wrote:
 
---eAbsdosE1cNLO4uF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> - When "open" is called for a registered network device, port->port_lock
+> is taken first,
+>   then ehea_fw_handles.lock
+> - When "open" is left these locks are released in a proper way (inverse
+> order)
 
+So this has:
 
-Forgot to mention that this goes on top of Grant's 'next'-branch.
+  port->port_lock
+    ehea_fw_handles.lock
 
-Regards,
+This would be the case that is generating the warning.
 
-   Wolfram
+> - In addition: ehea_fw_handles.lock is held by the function
+> "driver_probe_device"
+>   that registers all available network devices (register_netdev)
+> - When multiple network devices are registered, it is possible that
+> "open" is
+>   called on an already registered network device while further
+> netdevices are still registered
+>   in "driver_probe_device". ---> "open" will take port->port_lock, but
+> won't get ehea_fw_handles.lock
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Right, so here you have 
 
---eAbsdosE1cNLO4uF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+  ehea_fw_handles.lock
+    port->port_lock
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Overlay these two cases and you have AB-BA deadlocks.
 
-iEYEARECAAYFAkmlZlEACgkQD27XaX1/VRu2KACeLiWWmL9uP6FlD/CekfBZDZu5
-PikAoKIok9D1lCEr7o2fu911F6cYJlVF
-=/9xy
------END PGP SIGNATURE-----
+> - However, ehea_fw_handles.lock is freed once all netdevices are registered.
+> - When the second netdevice is registered in "driver_probe_device", it
+> will also try to get
+>   the port->port_lock (which in fact is a different one, as there is one
+> per netdevice).
+> - Does the mutex debug mechanism distinguish between the different
+> port->port_lock instances?
 
---eAbsdosE1cNLO4uF--
+Not unless you tell it to.
+
+Are you really sure the port->port_lock in this AB-BA scenario are never
+the same? The above explanation didn't convince me (also very hard to
+read due to funny wrapping).
+
+Suppose you do an open concurrently with a re-probe, which apparently
+takes port->port_lock's of existing devices, in the above scenario that
+deadlocks.
