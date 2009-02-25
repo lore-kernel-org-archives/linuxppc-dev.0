@@ -1,23 +1,28 @@
-Return-Path: <daniel.ng1234@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.236])
-	by ozlabs.org (Postfix) with ESMTP id 87590DDDA2
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 18:09:34 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g9so6587487rvb.1
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2009 23:09:32 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <547eba1b0902192101n323f51ceuf39b9d954b696225@mail.gmail.com>
-References: <mailman.5.1233190802.9523.linuxppc-dev@ozlabs.org>
-	<49810367.5000904@consentry.com>
-	<547eba1b0902182247g66c8b83se0855ff048413c01@mail.gmail.com>
-	<20090219184410.GB4180@ld0162-tx32.am.freescale.net>
-	<547eba1b0902192101n323f51ceuf39b9d954b696225@mail.gmail.com>
-Date: Wed, 25 Feb 2009 18:09:32 +1100
-Message-ID: <547eba1b0902242309o2086dce2p49c59a9ea1b85b53@mail.gmail.com>
-Subject: Re: How to bring up fs_enet on 2.6.27?
-From: Daniel Ng <daniel.ng1234@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Mike Ditto <mditto@consentry.com>
+Return-Path: <SRS0+09f1b7510091849ec925+2012+infradead.org+dwmw2@casper.srs.infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 28313DDD1C
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 19:11:18 +1100 (EST)
+Subject: Re: [PATCH 0/10] DMA-API debugging facility
+From: David Woodhouse <dwmw2@infradead.org>
+To: Joerg Roedel <joerg.roedel@amd.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1233873842.8135.6.camel@macbook.infradead.org>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
+	<1227286492.4901.208.camel@macbook.infradead.org>
+	<20081121165722.GD1386@amd.com>
+	<1227287215.4901.213.camel@macbook.infradead.org>
+	<20081121171802.GK733@elte.hu> <20081121172046.GF1386@amd.com>
+	<1227288269.4901.222.camel@macbook.infradead.org>
+	<20081121172722.GG1386@amd.com>
+	<1233873842.8135.6.camel@macbook.infradead.org>
+Content-Type: text/plain
+Date: Wed, 25 Feb 2009 17:11:02 +0900
+Message-Id: <1235549462.519.38.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	iommu@lists.linux-foundation.org, Ingo Molnar <mingo@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,80 +32,277 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi guys,
+On Thu, 2009-02-05 at 22:44 +0000, David Woodhouse wrote:
+> On Fri, 2008-11-21 at 18:27 +0100, Joerg Roedel wrote:
+> > On Fri, Nov 21, 2008 at 05:24:29PM +0000, David Woodhouse wrote:
+> > > On Fri, 2008-11-21 at 18:20 +0100, Joerg Roedel wrote:
+> > > > Ok, I will move the generic bits to lib/ and include/linux and let
+> > > > architectures decide if they want to use it.
+> > > 
+> > > Once you've done that, I'll try to hook it up on PowerPC to make sure it
+> > > works there.
+> > 
+> > Ok, cool. Thanks
+> 
+> This builds; I haven't actually tried booting it yet. Will do that in
+> the morning.
 
-I was hoping to have gotten some form of comment by now...
+So I lied about that. Did anyone else manage...?
 
-Can anyone help out here, please?
+(Applies on top of the dma-api/debug branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu)
 
-Daniel
+> I'm not so fond of the way each architecture gets to define
+> PREALLOC_DMA_DEBUG_ENTRIES for itself... and also call dma_debug_init(),
+> for that matter. Couldn't we do that in lib/dma-debug.c directly?
+> 
+> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 74cc312..11db356 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -124,6 +124,7 @@ config PPC
+>  	select USE_GENERIC_SMP_HELPERS if SMP
+>  	select HAVE_OPROFILE
+>  	select HAVE_SYSCALL_WRAPPERS if PPC64
+> +	select HAVE_DMA_API_DEBUG
+>  
+>  config EARLY_PRINTK
+>  	bool
+> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> index 86cef7d..b49107a 100644
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -13,6 +13,7 @@
+>  /* need struct page definitions */
+>  #include <linux/mm.h>
+>  #include <linux/scatterlist.h>
+> +#include <linux/dma-debug.h>
+>  #include <linux/dma-attrs.h>
+>  #include <asm/io.h>
+>  
+> @@ -170,12 +171,17 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev,
+>  					      struct dma_attrs *attrs)
+>  {
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+> +	dma_addr_t addr;
+>  
+>  	BUG_ON(!dma_ops);
+>  
+> -	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
+> +	addr = dma_ops->map_page(dev, virt_to_page(cpu_addr),
+>  				 (unsigned long)cpu_addr % PAGE_SIZE, size,
+>  				 direction, attrs);
+> +	debug_dma_map_page(dev, virt_to_page(cpu_addr),
+> +			   (unsigned long)cpu_addr & PAGE_SIZE, size,
+> +			   direction, addr, true);
+> +	return addr;
+>  }
+>  
+>  static inline void dma_unmap_single_attrs(struct device *dev,
+> @@ -189,6 +195,7 @@ static inline void dma_unmap_single_attrs(struct device *dev,
+>  	BUG_ON(!dma_ops);
+>  
+>  	dma_ops->unmap_page(dev, dma_addr, size, direction, attrs);
+> +	debug_dma_unmap_page(dev, dma_addr, size, direction, true);
+>  }
+>  
+>  static inline dma_addr_t dma_map_page_attrs(struct device *dev,
+> @@ -198,10 +205,13 @@ static inline dma_addr_t dma_map_page_attrs(struct device *dev,
+>  					    struct dma_attrs *attrs)
+>  {
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+> +	dma_addr_t addr;
+>  
+>  	BUG_ON(!dma_ops);
+>  
+> -	return dma_ops->map_page(dev, page, offset, size, direction, attrs);
+> +	addr = dma_ops->map_page(dev, page, offset, size, direction, attrs);
+> +	debug_dma_map_page(dev, page, offset, size, direction, addr, false);
+> +	return addr;
+>  }
+>  
+>  static inline void dma_unmap_page_attrs(struct device *dev,
+> @@ -215,6 +225,7 @@ static inline void dma_unmap_page_attrs(struct device *dev,
+>  	BUG_ON(!dma_ops);
+>  
+>  	dma_ops->unmap_page(dev, dma_address, size, direction, attrs);
+> +	debug_dma_unmap_page(dev, dma_address, size, direction, false);
+>  }
+>  
+>  static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
+> @@ -222,9 +233,12 @@ static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
+>  				   struct dma_attrs *attrs)
+>  {
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+> +	int ents;
+>  
+>  	BUG_ON(!dma_ops);
+> -	return dma_ops->map_sg(dev, sg, nents, direction, attrs);
+> +	ents = dma_ops->map_sg(dev, sg, nents, direction, attrs);
+> +	debug_dma_map_sg(dev, sg, ents, direction);
+> +	return ents;
+>  }
+>  
+>  static inline void dma_unmap_sg_attrs(struct device *dev,
+> @@ -237,15 +251,19 @@ static inline void dma_unmap_sg_attrs(struct device *dev,
+>  
+>  	BUG_ON(!dma_ops);
+>  	dma_ops->unmap_sg(dev, sg, nhwentries, direction, attrs);
+> +	debug_dma_unmap_sg(dev, sg, nhwentries, direction);
+>  }
+>  
+>  static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+>  				       dma_addr_t *dma_handle, gfp_t flag)
+>  {
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+> +	void *mem;
+>  
+>  	BUG_ON(!dma_ops);
+> -	return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
+> +	mem = dma_ops->alloc_coherent(dev, size, dma_handle, flag);
+> +	debug_dma_alloc_coherent(dev, size, *dma_handle, mem);
+> +	return mem;
+>  }
+>  
+>  static inline void dma_free_coherent(struct device *dev, size_t size,
+> @@ -254,6 +272,7 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+>  
+>  	BUG_ON(!dma_ops);
+> +	debug_dma_free_coherent(dev, size, cpu_addr, dma_handle);
+>  	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
+>  }
+>  
+> @@ -306,6 +325,8 @@ static inline void dma_sync_single_for_cpu(struct device *dev,
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+>  
+>  	BUG_ON(!dma_ops);
+> +	debug_dma_sync_single_range_for_cpu(dev, dma_handle, 0,
+> +					    size, direction);
+>  	dma_ops->sync_single_range_for_cpu(dev, dma_handle, 0,
+>  					   size, direction);
+>  }
+> @@ -317,6 +338,8 @@ static inline void dma_sync_single_for_device(struct device *dev,
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+>  
+>  	BUG_ON(!dma_ops);
+> +	debug_dma_sync_single_range_for_device(dev, dma_handle,
+> +					       0, size, direction);
+>  	dma_ops->sync_single_range_for_device(dev, dma_handle,
+>  					      0, size, direction);
+>  }
+> @@ -328,6 +351,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+>  
+>  	BUG_ON(!dma_ops);
+> +	debug_dma_sync_sg_for_cpu(dev, sgl, nents, direction);
+>  	dma_ops->sync_sg_for_cpu(dev, sgl, nents, direction);
+>  }
+>  
+> @@ -338,6 +362,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+>  
+>  	BUG_ON(!dma_ops);
+> +	debug_dma_sync_sg_for_device(dev, sgl, nents, direction);
+>  	dma_ops->sync_sg_for_device(dev, sgl, nents, direction);
+>  }
+>  
+> @@ -348,6 +373,8 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+>  
+>  	BUG_ON(!dma_ops);
+> +	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
+> +					    offset, size, direction);
+>  	dma_ops->sync_single_range_for_cpu(dev, dma_handle,
+>  					   offset, size, direction);
+>  }
+> @@ -359,6 +386,8 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
+>  	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+>  
+>  	BUG_ON(!dma_ops);
+> +	debug_dma_sync_single_range_for_device(dev, dma_handle, offset,
+> +					       size, direction);
+>  	dma_ops->sync_single_range_for_device(dev, dma_handle, offset,
+>  					      size, direction);
+>  }
+> @@ -367,36 +396,46 @@ static inline void dma_sync_single_for_cpu(struct device *dev,
+>  		dma_addr_t dma_handle, size_t size,
+>  		enum dma_data_direction direction)
+>  {
+> +	debug_dma_sync_single_range_for_cpu(dev, dma_handle, 0,
+> +					    size, direction);
+>  }
+>  
+>  static inline void dma_sync_single_for_device(struct device *dev,
+>  		dma_addr_t dma_handle, size_t size,
+>  		enum dma_data_direction direction)
+>  {
+> +	debug_dma_sync_single_range_for_device(dev, dma_handle,
+> +					       0, size, direction);
+>  }
+>  
+>  static inline void dma_sync_sg_for_cpu(struct device *dev,
+>  		struct scatterlist *sgl, int nents,
+>  		enum dma_data_direction direction)
+>  {
+> +	debug_dma_sync_sg_for_cpu(dev, sgl, nents, direction);
+>  }
+>  
+>  static inline void dma_sync_sg_for_device(struct device *dev,
+>  		struct scatterlist *sgl, int nents,
+>  		enum dma_data_direction direction)
+>  {
+> +	debug_dma_sync_sg_for_device(dev, sgl, nents, direction);
+>  }
+>  
+>  static inline void dma_sync_single_range_for_cpu(struct device *dev,
+>  		dma_addr_t dma_handle, unsigned long offset, size_t size,
+>  		enum dma_data_direction direction)
+>  {
+> +	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
+> +					    offset, size, direction);
+>  }
+>  
+>  static inline void dma_sync_single_range_for_device(struct device *dev,
+>  		dma_addr_t dma_handle, unsigned long offset, size_t size,
+>  		enum dma_data_direction direction)
+>  {
+> +	debug_dma_sync_single_range_for_device(dev, dma_handle, offset,
+> +					       size, direction);
+>  }
+>  #endif
+>  
+> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+> index 1c5c8a6..90bb016 100644
+> --- a/arch/powerpc/kernel/dma.c
+> +++ b/arch/powerpc/kernel/dma.c
+> @@ -6,7 +6,9 @@
+>   */
+>  
+>  #include <linux/device.h>
+> +#include <linux/dma-debug.h>
+>  #include <linux/dma-mapping.h>
+> +#include <linux/init.h>
+>  #include <asm/bug.h>
+>  #include <asm/abs_addr.h>
+>  
+> @@ -156,3 +158,12 @@ struct dma_mapping_ops dma_direct_ops = {
+>  #endif
+>  };
+>  EXPORT_SYMBOL(dma_direct_ops);
+> +
+> +#define PREALLOC_DMA_DEBUG_ENTRIES		8192
+> +
+> +static int __init dma_debug_init_ppc(void)
+> +{
+> +	dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
+> +	return 0;
+> +}
+> +fs_initcall(dma_debug_init_ppc);
+> 
 
-On Fri, Feb 20, 2009 at 4:01 PM, Daniel Ng <daniel.ng1234@gmail.com> wrote:
->
-> Now, I'm seeing these boot messages:
->
-> f0010d40:00 not found
-> eth0: Could not attach to PHY
-> IP-Config: Failed to open eth0
-> IP-Config: Device `eth0' not found.
->
-> Previous mailing list discussions suggest that I use the correct PHY,
-> which I am sure about because my 8272-based board only has the one PHY
-> ie. PHY0 with reg =3D <0x0>.
->
-> Note the relevant parts of my Device Tree below. Currently, our PHY
-> attributes eg. 'auto-negotiate' are not changeable, so we aren't
-> actually using MDC+MDIO even the MDC+MDIO lines exist. Also, the PHY
-> interrupt line is not wired up. Hence the PHY0 interrupts field is <0
-> 8> (or should it be removed altogether?).
->
-> I am usig FCC2.
->
-> What might I need to change to get the ethernet driver working?
->
->
-> =A0 =A0 =A0ethernet@11320 {
-> =A0 =A0 =A0 =A0device_type =3D "network";
-> =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8272-fcc-enet",
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "fsl,cpm2-fcc-enet";
-> =A0 =A0 =A0 =A0// FCC2-
-> =A0 =A0 =A0 =A0reg =3D <0x11320 0x20 0x8500 0x100 0x113b0 0x1>;
-> =A0 =A0 =A0 =A0local-mac-address =3D [ 00 00 00 00 00 00 ];
-> =A0 =A0 =A0 =A0interrupts =3D <33 8>;
-> =A0 =A0 =A0 =A0interrupt-parent =3D <&PIC>;
-> =A0 =A0 =A0 =A0phy-handle =3D <&PHY0>;
-> =A0 =A0 =A0 =A0linux,network-index =3D <0>;
-> =A0 =A0 =A0 =A0fsl,cpm-command =3D <0x16200300>;
-> =A0 =A0 =A0};
->
-> =A0 =A0 =A0mdio@10d40 {
-> =A0 =A0 =A0 =A0device_type =3D "mdio";
-> =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8272ads-mdio-bitbang",
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "fsl,mpc8272-mdio-bitbang",
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "fsl,cpm2-mdio-bitbang";
-> =A0 =A0 =A0 =A0reg =3D <0x10d40 0x14>;
-> =A0 =A0 =A0 =A0#address-cells =3D <1>;
-> =A0 =A0 =A0 =A0#size-cells =3D <0>;
-> =A0 =A0 =A0 =A0fsl,mdio-pin =3D <5>;
-> =A0 =A0 =A0 =A0fsl,mdc-pin =3D <19>;
->
-> =A0 =A0 =A0 =A0PHY0: ethernet-phy@0 {
-> =A0 =A0 =A0 =A0 =A0interrupt-parenn =3D <&PIC>;
-> =A0 =A0 =A0 =A0 =A0interrupts =3D <0 8>;
-> =A0 =A0 =A0 =A0 =A0reg =3D <0x0>;
-> =A0 =A0 =A0 =A0 =A0device_type =3D "ethernet-phy";
-> =A0 =A0 =A0 =A0};
-> .
-> .
-> .
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0PIC: interrupt-controller@10c00 {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-controller;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0x10c00 0x80>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc827=
-2-pic", "fsl,cpm2-pic";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->
-> Cheers,
-> Daniel
->
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
