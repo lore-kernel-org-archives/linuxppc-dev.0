@@ -1,19 +1,24 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
-	by ozlabs.org (Postfix) with ESMTP id 23A7DDDE41
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 23:45:57 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: PPC 405 EX USB Development
-Date: Wed, 25 Feb 2009 13:45:51 +0100
-References: <d9c5f2890902250115s3867904fj22e8f5af2d469581@mail.gmail.com>
-	<200902251327.02082.sr@denx.de>
-In-Reply-To: <200902251327.02082.sr@denx.de>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id C7912DDE0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 00:31:22 +1100 (EST)
+Date: Wed, 25 Feb 2009 14:31:20 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Mark Nelson <markn@au1.ibm.com>
+Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
+In-Reply-To: <200902252310.05792.markn@au1.ibm.com>
+Message-ID: <alpine.LRH.2.00.0902251430410.4063@vixen.sonytel.be>
+References: <49A2705D.9030008@in.ibm.com>
+	<200902251752.56514.markn@au1.ibm.com>
+	<alpine.LRH.2.00.0902251018060.4063@vixen.sonytel.be>
+	<200902252310.05792.markn@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200902251345.51880.sr@denx.de>
-Cc: Adish Kuvelker <adish.kuvelker@gmail.com>
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Cc: Jan Kara <jack@ucw.cz>, Jan Kara <jack@suse.cz>, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +28,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 25 February 2009, Stefan Roese wrote:
-> On Wednesday 25 February 2009, Adish Kuvelker wrote:
-> > I am developing a Host Controller Driver for the PPC405EX based board. I
-> > have a OTG controller on it, which I have to configure as Host Controller
-> > and thus I am witting a HCD for the same. I am stuck at the Control stage
-> > wherein although my SETUP stage seems to be going through I get a STALL.
-> >
-> > Can anyone help me in this regard as to where would I get a reference
-> > code for this?
->
-> Are you talking about the 405EX internal USB OTG controller (Synopsys DWC)
-> or some other OTG controller?
+On Wed, 25 Feb 2009, Mark Nelson wrote:
+> On Wed, 25 Feb 2009 08:50:46 pm Geert Uytterhoeven wrote:
+> > On Wed, 25 Feb 2009, Mark Nelson wrote:
+> > > On Tue, 24 Feb 2009 05:38:37 pm Sachin P. Sant wrote:
+> > > > Jan Kara wrote:
+> > > > >   Hmm, OK. But then I'm not sure how that can happen. Obviously, memcpy
+> > > > > somehow got beyond end of the page referenced by bh->b_data. So it means
+> > > > > that le16_to_cpu(entry->e_value_offs) + size > page_size. But
+> > > > > ext3_xattr_find_entry() calls ext3_xattr_check_entry() which in
+> > > > > particular checks whether e_value_offs + e_value_size isn't greater than
+> > > > > bh->b_size. So I see no way how memcpy can get beyond end of the page.
+> > > > >   Sachin, is the problem reproducible? If yes, can you send us contents
+> > > > >   
+> > > > Yes, i am able to recreate this problem easily. As i had mentioned if the
+> > > > earlier kernel is booted with selinux enabled and then 2.6.29-rc6 is booted
+> > > > i get this crash. But if i specify selinux=0 at command line, 2.6.29-rc6 boots
+> > > > without any problem.
+> > > 
+> > > Hi Sanchin and Geert,
+> > > 
+> > > Does the patch below fix the problems you're seeing? If it does I'll send
+> > > a properly written up and formatted patch to linuxppc-dev (as well as
+> > > another one to fix the same problem in copy_tofrom_user()).
+> > 
+> > Unfortunately not, now it crashes while accessing the memory pointed to by
+> > GPR16, in
+> > 
+> > NIP: copy_page_range+x0608/0x628
+> > LR:  dup_mm+0x2e4/0x428
+> > Trace: debug_table+0xcc70/0x1afe0 (unreliable)
+> > dup_mm+0x2e4/0x428
+> > copy_process+0x86c/0xf9c
+> > do_fork+0x188/0x39c
+> > sys_clone+0x58/0x70
+> > ppc_clone+0x8/0xc
+> > 
+> > However, after reverting 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556, I still see
+> > similar problems as above (crash in copy_page_range()).
+> > Which makes me think that
+> >   1. Your new patch fixes the problem introduced by 25d6e2d7,
+> >   2. There's still another issue than the one introduced by 25d6e2d7.
+> 
+> Does the following patch fix the errors you're seeing? (it applies the
+> same fix as the previous patch but this time to copy_tofrom_user, which
+> I updated in a4e22f02f5b6518c1484faea1f88d81802b9feac)
 
-You can find a driver for this Synopsys DWC OTG controller in our 
-linux-2.6-denx repository:
+Thanks, but I still get crashes in copy_page_range().
 
-http://git.denx.de/?p=linux-2.6-denx.git;a=tree;f=drivers/usb/gadget/dwc_otg;h=526d515e4764a0c92cebbf909c245d6aec7e198c;hb=HEAD
+With kind regards,
 
-But please note that this driver is currently not in shape for mainline 
-inclusion. It's working though, so it should help you while writing a new, 
-clean driver.
+Geert Uytterhoeven
+Software Architect
 
-Best regards,
-Stefan
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
