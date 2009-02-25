@@ -1,31 +1,29 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 7A3D6DDF34
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 20:58:59 +1100 (EST)
-Date: Wed, 25 Feb 2009 10:58:57 +0100 (CET)
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 0136DDDFAD
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 21:00:14 +1100 (EST)
+Date: Wed, 25 Feb 2009 11:00:13 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Brad Boyer <flar@allandria.com>
-Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
-In-Reply-To: <20090225011426.GB9362@cynthia.pants.nu>
-Message-ID: <alpine.LRH.2.00.0902251055260.4063@vixen.sonytel.be>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
+In-Reply-To: <1235514727.18632.93.camel@macbook.infradead.org>
+Message-ID: <alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
 References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<20090220170454.04382e9e@i1501.lan.towertech.it>
 	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
-	<20090223160506.04e347c7@i1501.lan.towertech.it>
-	<alpine.LRH.2.00.0902241848500.544@vixen.sonytel.be>
-	<20090224193708.5f8be86c@i1501.lan.towertech.it>
-	<20090225011426.GB9362@cynthia.pants.nu>
+	<1235511327.18632.73.camel@macbook.infradead.org>
+	<20090224231154.60ba18d6@i1501.lan.towertech.it>
+	<1235514727.18632.93.camel@macbook.infradead.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=ISO-8859-15
 Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
 	Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
-	linux-parisc@vger.kernel.org,
+	linux-parisc@vger.kernel.org, David@ozlabs.org,
 	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	David@ozlabs.org, Kyle McMartin <kyle@mcmartin.ca>,
+	Kyle McMartin <kyle@mcmartin.ca>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-	Woodhouse <dwmw2@infradead.org>
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,45 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 24 Feb 2009, Brad Boyer wrote:
-> On Tue, Feb 24, 2009 at 07:37:08PM +0100, Alessandro Zummo wrote:
-> > On Tue, 24 Feb 2009 18:56:03 +0100 (CET)
-> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > > Converting all (ca. 20?) ppc and m68k RTC support code into individual RTC
-> > > class drivers would add ca. 100+ lines of code for each individual driver.
+On Wed, 25 Feb 2009, David Woodhouse wrote:
+> On Tue, 2009-02-24 at 23:11 +0100, Alessandro Zummo wrote:
+> > On Wed, 25 Feb 2009 06:35:27 +0900
+> > David Woodhouse <dwmw2@infradead.org> wrote:
 > > 
-> >  How different are all of those boards? It's simply a matter
-> >  of parameters and offsets? can we group them somehow?
+> > > > So you want us to kill the ppc_md.[gs]et_rtc_time() [ppc], mach_hwclk() [m68k],
+> > > > mach_gettod() [m68knommu] (and probably a few other) abstractions, and move all
+> > > > RTC code out of arch/ into seperate drivers under drivers/rtc/ instead?
+> > > 
+> > > That's the ideal... although did we get NTP sync working again yet?
+> > 
+> >  not yet. we're close but I've been very busy :(
 > 
-> I imagine we could cut down the numbers somewhat with clever code sharing,
-> but it's still going to be a fairly large number. I don't know all the
-> embedded boards, but just with all the Macintosh models there are at
-> least three and maybe four drastically different methods of RTC access,
-> and all of them are directly tied to some chip that does something else
-> completely unrelated. For one of them we don't even have a driver at the
+> I know the feeling.
+> 
+> Once that's working, we can convert individual PPC platforms over,
+> removing the routines from the ppc_md and creating a generic RTC driver
+> instead. PA Electra is already like that -- because it wasn't a
+> regression there to have broken NTP sync. But the others need to wait.
 
-Yeah, on Mac/m68k the RTC is usually handled by a chip that does lots of other
-things, so you need to keep the bulk of the code in arch/m68k/ anyway.
+I didn't know NTP was broken with RTC class drivers?
 
-> moment.  They also are all custom chips that wouldn't be used anywhere
-> else. The other thing we need to keep in mind is that if we do it right
-> we can share drivers across m68k and powerpc in some cases.  I imagine
-> some of the embedded powerpc boards are using chips that are common in
-> other architectures as well.
-
-Many embedded powerpc boards already have RTC class drivers under drivers/rtc/,
-as their RTC chips are sufficiently common.
-
-The ones that don't are mostly "workstation" or "server" type hardware. The
-full list is:
-  - rtas_set_rtc_time
-  - mpc8xx_set_rtc_time
-  - beat_get_rtc_time
-  - chrp_set_rtc_time
-  - iSeries_set_rtc_time
-  - maple_set_rtc_time
-  - pmac_set_rtc_time
-  - ps3_set_rtc_time
+So we should actually keep on using genrtc instead of rtc-ppc/rtc-generic for
+now? ;-)
 
 With kind regards,
 
