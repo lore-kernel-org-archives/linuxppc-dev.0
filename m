@@ -1,22 +1,24 @@
-Return-Path: <mditto@consentry.com>
-Received: from tidalnetworks.net (mail.consentry.com [75.35.230.10])
-	by ozlabs.org (Postfix) with ESMTP id 2E3E8DDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 20:26:04 +1100 (EST)
-Message-ID: <49A50EA7.8040008@consentry.com>
-Date: Wed, 25 Feb 2009 01:25:59 -0800
-From: Mike Ditto <mditto@consentry.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id DB328DDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 20:50:48 +1100 (EST)
+Date: Wed, 25 Feb 2009 10:50:46 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Mark Nelson <markn@au1.ibm.com>
+Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
+In-Reply-To: <200902251752.56514.markn@au1.ibm.com>
+Message-ID: <alpine.LRH.2.00.0902251018060.4063@vixen.sonytel.be>
+References: <49A2705D.9030008@in.ibm.com>
+	<20090223155116.GB5764@atrey.karlin.mff.cuni.cz>
+	<49A395ED.5030607@in.ibm.com>
+	<200902251752.56514.markn@au1.ibm.com>
 MIME-Version: 1.0
-To: Daniel Ng <daniel.ng1234@gmail.com>
-Subject: Re: How to bring up fs_enet on 2.6.27?
-References: <mailman.5.1233190802.9523.linuxppc-dev@ozlabs.org>	
-	<49810367.5000904@consentry.com>	
-	<547eba1b0902182247g66c8b83se0855ff048413c01@mail.gmail.com>	
-	<20090219184410.GB4180@ld0162-tx32.am.freescale.net>	
-	<547eba1b0902192101n323f51ceuf39b9d954b696225@mail.gmail.com>
-	<547eba1b0902242309o2086dce2p49c59a9ea1b85b53@mail.gmail.com>
-In-Reply-To: <547eba1b0902242309o2086dce2p49c59a9ea1b85b53@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: Jan Kara <jack@ucw.cz>, Jan Kara <jack@suse.cz>, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Daniel Ng wrote:
->> Now, I'm seeing these boot messages:
->>
->> f0010d40:00 not found
->> eth0: Could not attach to PHY
+On Wed, 25 Feb 2009, Mark Nelson wrote:
+> On Tue, 24 Feb 2009 05:38:37 pm Sachin P. Sant wrote:
+> > Jan Kara wrote:
+> > >   Hmm, OK. But then I'm not sure how that can happen. Obviously, memcpy
+> > > somehow got beyond end of the page referenced by bh->b_data. So it means
+> > > that le16_to_cpu(entry->e_value_offs) + size > page_size. But
+> > > ext3_xattr_find_entry() calls ext3_xattr_check_entry() which in
+> > > particular checks whether e_value_offs + e_value_size isn't greater than
+> > > bh->b_size. So I see no way how memcpy can get beyond end of the page.
+> > >   Sachin, is the problem reproducible? If yes, can you send us contents
+> > >   
+> > Yes, i am able to recreate this problem easily. As i had mentioned if the
+> > earlier kernel is booted with selinux enabled and then 2.6.29-rc6 is booted
+> > i get this crash. But if i specify selinux=0 at command line, 2.6.29-rc6 boots
+> > without any problem.
+> 
+> Hi Sanchin and Geert,
+> 
+> Does the patch below fix the problems you're seeing? If it does I'll send
+> a properly written up and formatted patch to linuxppc-dev (as well as
+> another one to fix the same problem in copy_tofrom_user()).
 
-Daniel,
+Unfortunately not, now it crashes while accessing the memory pointed to by
+GPR16, in
 
-These messages are typical of having the wrong GPIO pins in the mdio
-node or the wrong MDIO address (reg property) in the ethernet-phy node.
+NIP: copy_page_range+x0608/0x628
+LR:  dup_mm+0x2e4/0x428
+Trace: debug_table+0xcc70/0x1afe0 (unreliable)
+dup_mm+0x2e4/0x428
+copy_process+0x86c/0xf9c
+do_fork+0x188/0x39c
+sys_clone+0x58/0x70
+ppc_clone+0x8/0xc
 
->> Currently, our PHY
->> attributes eg. 'auto-negotiate' are not changeable, so we aren't
->> actually using MDC+MDIO even the MDC+MDIO lines exist.
+However, after reverting 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556, I still see
+similar problems as above (crash in copy_page_range()).
+Which makes me think that
+  1. Your new patch fixes the problem introduced by 25d6e2d7,
+  2. There's still another issue than the one introduced by 25d6e2d7.
 
-The driver definitely tries to talk to the PHY using the GPIO pins
-and address specified and if it doesn't respond, it won't attach.
+With kind regards,
 
->> Also, the PHY
->> interrupt line is not wired up. Hence the PHY0 interrupts field is <0
->> 8> (or should it be removed altogether?).
+Geert Uytterhoeven
+Software Architect
 
-The mdio driver works without interrupts.  I have no interrupt-parent
-or interrupts properties on my ethernet-phy node.
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-					-=] Mike [=-
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
