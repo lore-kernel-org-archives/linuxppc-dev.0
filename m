@@ -1,15 +1,14 @@
-Return-Path: <rini@arvoo.nl>
-Received: from smtp0.euronet.nl (smtp0.euronet.nl [194.134.35.141])
-	by ozlabs.org (Postfix) with ESMTP id E5C12DDED9
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 02:13:58 +1100 (EST)
-Message-ID: <49A55D8F.20509@arvoo.nl>
-Date: Wed, 25 Feb 2009 16:02:39 +0100
-From: Rini van Zetten <rini@arvoo.nl>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (unknown [76.76.67.137])
+	by ozlabs.org (Postfix) with ESMTP id 395D8DDEE8
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 02:19:07 +1100 (EST)
+Message-ID: <49A56163.5060400@mlbassoc.com>
+Date: Wed, 25 Feb 2009 08:18:59 -0700
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-To: afleming@freescale.com, Linuxppc-dev@ozlabs.org,
- netdev@vger.kernel.org
-Subject: gianfar device hangs when transmitting tcp frames
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Subject: MPC834x PCI problem
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,55 +18,155 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+I have two [internal] boards with MPC8347.  Both have a PCI
+bus, slightly different set of "wired" peripherals.
 
-We have a home made board with the mpc8377E.
-We use the latest linux kernel 2.6.29-rc6.
+On one board, the PCI seems to be working fine.  I can talk
+to all of my wired devices, plus one in a plugin slot.  The
+[PCI portion] DTS for this board looks like this:
+	pci0: pci@ff008500 {
+		cell-index = <1>;
+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+		interrupt-map = <
+				/* IDSEL 0x0A (External slot) */
+				 0x5000 0x0 0x0 0x1 &fpga_ic 0
+				 0x5000 0x0 0x0 0x2 &fpga_ic 1
+				 0x5000 0x0 0x0 0x3 &fpga_ic 2
+				 0x5000 0x0 0x0 0x4 &fpga_ic 3
 
-The problem occurs when send a lot of tcp packet (eg by iperf as client)
-sometimes we get an watchdog timeout : see below.
+				/* IDSEL 0x0B (Promise SATA) */
+				 0x5800 0x0 0x0 0x1 &fpga_ic 5
+				 0x5800 0x0 0x0 0x2 &fpga_ic 5
+				 0x5800 0x0 0x0 0x3 &fpga_ic 5
+				 0x5800 0x0 0x0 0x4 &fpga_ic 5
 
-If we undo the commit  :
+				/* IDSEL 0x0C (Fujitsu Coral-P) */
+				 0x6000 0x0 0x0 0x1 &fpga_ic 4
+				 0x6000 0x0 0x0 0x2 &fpga_ic 4
+				 0x6000 0x0 0x0 0x3 &fpga_ic 4
+				 0x6000 0x0 0x0 0x4 &fpga_ic 4
 
--#define BD_LENGTH_MASK         0x00ff
-+#define BD_LENGTH_MASK         0x0000ffff
+				/* IDSEL 0x0D (Philips USB) */
+				 0x6800 0x0 0x0 0x1 &fpga_ic 12
+				 0x6800 0x0 0x0 0x2 &fpga_ic 12
+				 0x6800 0x0 0x0 0x3 &fpga_ic 12
+				 0x6800 0x0 0x0 0x4 &fpga_ic 12
 
-the device works fine.
+				/* IDSEL 0x1F (External slot) */
+				 0xF800 0x0 0x0 0x1 &fpga_ic 0
+				 0xF800 0x0 0x0 0x2 &fpga_ic 1
+				 0xF800 0x0 0x0 0x3 &fpga_ic 2
+				 0xF800 0x0 0x0 0x4 &fpga_ic 3
+                                >;
+		interrupt-parent = <&ipic>;
+		interrupts = <0x13 0x8
+                              0x14 0x8>;
+		bus-range = <0 0>;
+		ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x10000000
+			  0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+		clock-frequency = <33333333>;
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		reg = <0xff008500 0x100		/* Internal registers */
+		       0xff008300 0x8>;         /* Config Space registers */
+		compatible = "fsl,mpc8349-pci";
+		device_type = "pci";
+	};
+This board has a Promise SATA controller in slot 11 (drivers/ata/sata_promise.c)
 
-Is this commit introducing a bug or is it another problem ?
+The second board uses a DTS derived from the first.  In fact, the
+*only* difference is in the PCI layout:
+	pci0: pci@ff008500 {
+		cell-index = <1>;
+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+		interrupt-map = <
+				/* IDSEL 0x0B (Promise SATA) */
+				 0x5800 0x0 0x0 0x1 &ipic 0x13 8
+				 0x5800 0x0 0x0 0x2 &ipic 0x13 8
+				 0x5800 0x0 0x0 0x3 &ipic 0x13 8
+				 0x5800 0x0 0x0 0x4 &ipic 0x13 8
+                                >;
+		interrupt-parent = <&ipic>;
+		interrupts = <0x13 0x8>;
+		bus-range = <0 0>;
+		ranges = <0x02000000 0x0 0xC0000000 0xC0000000 0x0 0x10000000
+			  0x01000000 0x0 0x00000000 0xB8000000 0x0 0x00100000>;
+		clock-frequency = <33333333>;
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		reg = <0xff008500 0x100		/* Internal registers */
+		       0xff008300 0x8>;         /* Config Space registers */
+		compatible = "fsl,mpc8349-pci";
+		device_type = "pci";
+	};
+This board has a slightly different Promise controller (drivers/ata/pata_pdc2027x.c)
+The basic PCI access code in both drivers is the same.
 
-Regards,
-Rini
+As mentioned, the first board works fine.  The second board
+falls apart on PCI access.  It's obvious that the PDC2027x
+driver is having access problems.  Here are some clues from
+the boot log (PCI related items only):
+
+  Found FSL PCI host bridge at 0x00000000ff008500. Firmware bus number: 0->0
+  PCI host bridge /pci@ff008500 (primary) ranges:
+   MEM 0x00000000c0000000..0x00000000cfffffff -> 0x00000000c0000000
+    IO 0x00000000b8000000..0x00000000b80fffff -> 0x0000000000000000
+  PCI: Probing PCI hardware
+  PCI: Cannot allocate resource region 5 of device 0000:00:0b.0, will remap
+  bus: 00 index 0 io port: [0x00-0xfffff]
+  bus: 00 index 1 mmio: [0xc0000000-0xcfffffff]
+  pdc_detect_pll_input_clock: scr[FFFFFFFF]
+  pdc_read_counter: bccrh [7FFF] bccrl [7FFF]
+  pdc_read_counter: bccrhv[7FFF] bccrlv[7FFF]
+  pdc_read_counter: bccrh [7FFF] bccrl [7FFF]
+  pdc_read_counter: bccrhv[7FFF] bccrlv[7FFF]
+  pdc_detect_pll_input_clock: scr[FFFFFFFF]
+  pdc_detect_pll_input_clock: start[1073741823] end[1073741823]
+  pdc_detect_pll_input_clock: PLL input clock[0]Hz
+
+It's pretty obvious that the PDC driver is having troubles.
+The system seems happy otherwise:
+
+  root@ppc_target:~ lspci -v
+  00:00.0 Bridge: Unknown device 1957:0085 (rev 11)
+        Flags: bus master, 66MHz, fast devsel, latency 248
+        Memory at <unassigned> (64-bit, prefetchable)
+        Memory at <unassigned> (64-bit, non-prefetchable)
+        Capabilities: [48] #06 [0000]
+
+  00:0b.0 Mass storage controller: Promise Technology, Inc. 20275 (rev 01) (prog-if 85)
+        Subsystem: Promise Technology, Inc. 20275
+        Flags: bus master, 66MHz, slow devsel, latency 0, IRQ 19
+        I/O ports at 1000 [size=8]
+        I/O ports at 1008 [size=4]
+        I/O ports at 1010 [size=8]
+        I/O ports at 1018 [size=4]
+        I/O ports at 1020 [size=16]
+        [virtual] Memory at c0000000 (32-bit, non-prefetchable) [size=16K]
+        Capabilities: [60] Power Management version 1
 
 
+Any ideas what might be going [wrong] here?  I did notice that
+both RedBoot [my boot environment] and an older kernel (2.6.20)
+on this board assigned a non-zero offset in the PCI space for
+this device:
+  Bus: 0, PCI Device: 11, PCI Func: 0
+    Vendor Id: 0x105A, Device Id: 0x1275, Command: 0x0007, IRQ: 1
+    BAR[0]    0x00001001 / probed size 0x00000000 / CPU addr 0xb8001000
+    BAR[1]    0x00001009 / probed size 0x00000000 / CPU addr 0xb8001008
+    BAR[2]    0x00001011 / probed size 0x00000000 / CPU addr 0xb8001010
+    BAR[3]    0x00001019 / probed size 0x00000000 / CPU addr 0xb8001018
+    BAR[4]    0x00001021 / probed size 0x00000000 / CPU addr 0xb8001020
+    BAR[5]    0x00100000 / probed size 0x00000000 / CPU addr 0xc0100000
 
-kernel: NETDEV WATCHDOG: eth0 (fsl-gianfar): transmit timed out
-kernel: ------------[ cut here ]------------
-kernel: Badness at /arv-002/rini/Projects/ax601/linux-galak/net/sched/sch_generic.c:226
-kernel: NIP: c02f6920 LR: c02f6920 CTR: 00000001
-kernel: REGS: c04cbd00 TRAP: 0700   Not tainted  (2.6.29-rc5-arvoo-0.2)
-kernel: MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24002024  XER: 20000000
-kernel: TASK = c04a0588[0] 'swapper' THREAD: c04ca000
-kernel: GPR00: c02f6920 c04cbdb0 c04a0588 0000003b 000027aa ffffffff c04d0000 00020000
-kernel: GPR08: 00000036 00000000 000027aa c04a2414 44002082 00000000 07ffc000 06fb1000
-kernel: GPR16: 01000100 00000000 00000000 00000000 03000130 07daf863 00000001 c04f0000
-kernel: GPR24: c0410000 00000000 c78431c0 c04ca000 c7843000 00000001 c04d0000 c04a0000
-kernel: NIP [c02f6920] dev_watchdog+0x2e8/0x2f8
-kernel: LR [c02f6920] dev_watchdog+0x2e8/0x2f8
-kernel: Call Trace:
-kernel: [c04cbdb0] [c02f6920] dev_watchdog+0x2e8/0x2f8 (unreliable)
-kernel: [c04cbe20] [c002b314] run_timer_softirq+0x180/0x224
-kernel: [c04cbe50] [c0025b0c] __do_softirq+0x84/0x128
-kernel: [c04cbe80] [c00060f8] do_softirq+0x58/0x5c
-kernel: [c04cbe90] [c0025730] irq_exit+0x60/0x80
-kernel: [c04cbea0] [c000e94c] timer_interrupt+0x12c/0x188
-kernel: [c04cbec0] [c0012130] ret_from_except+0x0/0x14
-kernel: --- Exception: 901 at cpu_idle+0xa0/0x100
-kernel:     LR = cpu_idle+0xa0/0x100
-kernel: [c04cbf80] [c00094dc] cpu_idle+0xe4/0x100 (unreliable)
-kernel: [c04cbfa0] [c036af70] __got2_end+0x7c/0x90
-kernel: [c04cbfc0] [c04747e0] start_kernel+0x224/0x2a8
-kernel: [c04cbff0] [00003438] 0x3438
-kernel: Instruction dump:
-kernel: 38000001 7c0903a6 4bfffe28 38810008 7f83e378 38a00040 4bfeb539 7f84e378
-kernel: 7c651b78 3c60c045 38638c24 4bd29cc1 <0fe00000> 38000001 901e1b24 4bffff94
+Could this be a possible problem (maybe the device doesn't like it)?
+
+Thanks
+
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
