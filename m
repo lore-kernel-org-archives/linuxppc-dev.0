@@ -1,29 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DD4BADDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 22:28:39 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n1QBTXwR031826
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 06:29:33 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n1QBSZ1l194544
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 06:28:35 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n1QBRLYC003980
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 06:27:21 -0500
-Date: Thu, 26 Feb 2009 06:28:18 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-ID: <20090226112818.GF19612@zod.rchland.ibm.com>
-References: <1235621244.8805.340.camel@pasglop>
+Return-Path: <anton@ozlabs.org>
+Date: Thu, 26 Feb 2009 22:24:32 +1100
+From: Anton Blanchard <anton@samba.org>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH] Enable hashdist by default on 64bit NUMA
+Message-ID: <20090226112431.GA25330@kryten>
+References: <20090218051112.GA32195@kryten>
+	<20090218.011924.07030610.davem@davemloft.net>
+	<20090220051956.GE32195@kryten>
+	<20090220.000354.198880712.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1235621244.8805.340.camel@pasglop>
+In-Reply-To: <20090220.000354.198880712.davem@davemloft.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -34,32 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 26, 2009 at 03:07:24PM +1100, Benjamin Herrenschmidt wrote:
->Hi Linus !
->
->Please pull a few regression fixes for powerpc.
->
->Cheers,
->Ben.
->
->The following changes since commit 169d418b127b98a3e464e9c4b807ad083760f98c:
->  Linus Torvalds (1):
->        Merge branch 'for-linus' of git://git.kernel.org/.../tiwai/sound-2.6
->
->are available in the git repository at:
->
->  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
->
->Mark Nelson (2):
->      powerpc: Fix 64bit memcpy() regression
->      powerpc: Fix 64bit __copy_tofrom_user() regression
->
->Michael Neuling (1):
->      powerpc: Fix load/store float double alignment handler
 
-You don't seem to have your fix for PCI 2.x stuff on 4xx here.  Patchwork
-has it in accepted state and Geert has been asking if it would go in 2.6.29.
+Hi David,
+ 
+> Hmmm... my bad, I think you need to keep the CONFIG_NUMA
+> there too as there is a TLB usage penalty for non-NUMA
+> systems if you only use CONFIG_64BIT there.
 
-Any idea what is up with that one?
+Sorry that was my screwup, here's a fixed version.
 
-josh
+Anton
+
+--
+
+On PowerPC we allocate large boot time hashes on node 0. This leads to
+an imbalance in the free memory, for example on a 64GB box (4 x 16GB
+nodes):
+
+Free memory:
+Node 0: 97.03%
+Node 1: 98.54%
+Node 2: 98.42%
+Node 3: 98.53%
+
+If we switch to using vmalloc (like ia64 and x86-64) things are more
+balanced:
+
+Free memory:
+Node 0: 97.53%
+Node 1: 98.35%
+Node 2: 98.33%
+Node 3: 98.33%
+
+For many HPC applications we are limited by the free available memory on
+the smallest node, so even though the same amount of memory is used the
+better balancing helps.
+
+Since all 64bit NUMA capable architectures should have sufficient
+vmalloc space, it makes sense to enable it via CONFIG_64BIT.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+index 95837bf..0c4d4b7 100644
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -144,10 +144,10 @@ extern void *alloc_large_system_hash(const char *tablename,
+ 
+ #define HASH_EARLY	0x00000001	/* Allocating during early boot? */
+ 
+-/* Only NUMA needs hash distribution.
+- * IA64 and x86_64 have sufficient vmalloc space.
++/* Only NUMA needs hash distribution. 64bit NUMA architectures have
++ * sufficient vmalloc space.
+  */
+-#if defined(CONFIG_NUMA) && (defined(CONFIG_IA64) || defined(CONFIG_X86_64))
++#if defined(CONFIG_NUMA) && defined(CONFIG_64BIT)
+ #define HASHDIST_DEFAULT 1
+ #else
+ #define HASHDIST_DEFAULT 0
