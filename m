@@ -1,22 +1,24 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 18233DDDA0
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 03:53:58 +1100 (EST)
-Date: Thu, 26 Feb 2009 17:53:56 +0100 (CET)
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 73D63DDDA0
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 04:40:33 +1100 (EST)
+Date: Thu, 26 Feb 2009 18:40:31 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-In-Reply-To: <200902261715.28440.arnd@arndb.de>
-Message-ID: <alpine.LRH.2.00.0902261752310.29190@vixen.sonytel.be>
-References: <20090224000002.GA578@ovro.caltech.edu>
-	<200902261715.28440.arnd@arndb.de>
+To: Mark Nelson <markn@au1.ibm.com>
+Subject: Re: Crash (ext3 ) during 2.6.29-rc6 boot
+In-Reply-To: <200902261020.34325.markn@au1.ibm.com>
+Message-ID: <alpine.LRH.2.00.0902261805510.29190@vixen.sonytel.be>
+References: <49A2705D.9030008@in.ibm.com>
+	<alpine.LRH.2.00.0902251430410.4063@vixen.sonytel.be>
+	<200902260945.41990.markn@au1.ibm.com>
+	<200902261020.34325.markn@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Ira Snyder <iws@ovro.caltech.edu>
+Cc: Jan Kara <jack@ucw.cz>, Jan Kara <jack@suse.cz>, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 26 Feb 2009, Arnd Bergmann wrote:
-> On Tuesday 24 February 2009, Ira Snyder wrote:
-> > +/* Virtio-over-PCI descriptors: 12 bytes. These can chain together via "next" */
-> > +struct vop_desc {
-> > +	/* Address (host physical) */
-> > +	__le32 addr;
-               ^^^^
-Only 32-bit? Is this future-proof?
+On Thu, 26 Feb 2009, Mark Nelson wrote:
+> On Thu, 26 Feb 2009 09:45:41 am Mark Nelson wrote:
+> > On Thu, 26 Feb 2009 12:31:20 am Geert Uytterhoeven wrote:
+> > > On Wed, 25 Feb 2009, Mark Nelson wrote:
+> > > > Does the following patch fix the errors you're seeing? (it applies the
+> > > > same fix as the previous patch but this time to copy_tofrom_user, which
+> > > > I updated in a4e22f02f5b6518c1484faea1f88d81802b9feac)
+> > > 
+> > > Thanks, but I still get crashes in copy_page_range().
+> > 
+> > Hmmm... I'm out of ideas for the moment, but thanks for testing anyway!
+> 
+> If you revert both 25d6e2d7c58ddc4a3b614fc5381591c0cfe66556 and
+> a4e22f02f5b6518c1484faea1f88d81802b9feac, does it help? You could also
+> try to revert 57dda6ef5bd5b9e60410477ad29e654097e2cca1 just in case I
+> need to keep wearing the brown paper bag for a bit longer :)
 
-> > +	/* Length (bytes) */
-> > +	__le32 len;
-> > +	/* Flags */
-> > +	__le16 flags;
-> > +	/* Chaining for descriptors */
-> > +	__le16 next;
-> > +} __attribute__((packed));
-> 
-> I would drop the "packed" attribute in the structure definitions.
-> It would imply that only byte accesses are allowed on these
-> data structures, because the attribute invalidates any assumptions
-> about alignment. None of your structures require padding, so
-> the attribute does not have any positive effect either.
-> 
-> > +/* MPC8349EMDS specific get_immrbase() */
-> > +#include <sysdev/fsl_soc.h>
-> 
-> Do you really need get_immrbase? I would expect that you can find
-> all the registers you need in the device tree, or exported from
-> other low-level drivers per subsystem.
-> 
-> immrbase is a concept from the time before our device trees.
-> 
-> > +/*
-> > + * These are internal use only versions of the structures that
-> > + * are exported over PCI by this driver
-> > + *
-> > + * They are used internally to keep track of the PowerPC queues so that
-> > + * we don't have to keep flipping endianness all the time
-> > + */
-> > +struct vop_loc_desc {
-> > +	u32 addr;
-        ^^^
-Same here.
+Still doesn't help.
+
+However, I noticed I never enabled CONFIG_DEBUG_PAGEALLOC before 2.6.29-rc5.
+So far I tried 2.6.2[5-8], and they all crash with CONFIG_DEBUG_PAGEALLOC.
+I guess it never actually worked on PS3.
 
 With kind regards,
 
