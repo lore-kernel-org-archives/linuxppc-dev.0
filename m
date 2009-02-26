@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 57E1BDDDF0
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 09:33:57 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 27 Feb 2009 09:33:46 +1100
-Message-Id: <1235687626.7388.26.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id ACC17DDE0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 09:34:57 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
+Date: Thu, 26 Feb 2009 23:34:33 +0100
+References: <20090224000002.GA578@ovro.caltech.edu>
+	<200902262137.15169.arnd@arndb.de>
+	<20090226214919.GA19959@ovro.caltech.edu>
+In-Reply-To: <20090226214919.GA19959@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200902262334.33778.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linus
+On Thursday 26 February 2009, Ira Snyder wrote:
+> On Thu, Feb 26, 2009 at 09:37:14PM +0100, Arnd Bergmann wrote:
+> 
+> The registers are part of the board control registers. They don't fit at
+> all in the message unit. Doing this in the bootloader seems like a
+> logical place, but that would require any testers to flash a new U-Boot
+> image into their mpc8349emds boards.
+> 
+> The first set of access is used to set up a 1GB region in the memory map
+> that accesses the host's memory. Any reads/writes to addresses
+> 0x80000000-0xc0000000 actually hit the host's memory.
+> 
+> The last access sets up PCI BAR1 to hit the memory from
+> dma_alloc_coherent(). The bootloader already sets up the window as 16K,
+> it just doesn't point it anywhere. Maybe this /should/ go into the
+> bootloader. Like above, it would require testers to flash a new U-Boot
+> image into their mpc8349emds boards.
 
-And here's another little regression fix. For some reason, that one was
-done and acked ages ago, marked "accepted" in patchwork and never
-actually merged anywhere ... go figure.
+Ok, I see.
 
-The following changes since commit 64e71303e44f3697e4568147caa966de74bdb4fb:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../mason/btrfs-unstable
+I guess the best option for doing it in Linux then would be to have
+a board control driver (not sure if this already exists) that exports
+high-level functions to set up the inbound and outbound windows.
 
-are available in the git repository at:
+> Yeah, virtio doesn't work that way.
+> 
+> The virtio drivers just call find_vq() with a different index for each
+> queue they want to use. You have no way of knowing how many queues each
+> virtio driver will want, unless you go read their source code.
+> 
+> virtio-net currently uses 3 queues, but we only support the first two.
+> The third is optional (for now...), and non-symmetric.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+I mean the part of your driver that calls register_virtio_device()
+could make the decision, this is the one I was referring to
+as virtio_net glue because it is the only part that actually needs
+to know about the features etc.
 
-Benjamin Herrenschmidt (1):
-      powerpc/44x: Fix address decoding setup of PCI 2.x cells
+Right now, you just call register_virtio_net from vop_probe(), which
+is absolutely appropriate for the specific use case. In the most
+general case though, you would have a user interface on one or
+both sides that allows a (root) user to trigger the creation of
+a virtio_net (or other virtio) device with specific characteristics
+such as MAC address or number of virtqueues.
 
- arch/powerpc/sysdev/ppc4xx_pci.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+One idea I had earlier was that there could be a special device
+with just one virtqueue that is always present and that allows you
+do communicate configuration changes regarding the available devices
+to the remote VOP driver.
+
+	Arnd <><
