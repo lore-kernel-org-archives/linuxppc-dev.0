@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4D809DDDA5
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 15:07:39 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 26 Feb 2009 15:07:24 +1100
-Message-Id: <1235621244.8805.340.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <pku.leo@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.238])
+	by ozlabs.org (Postfix) with ESMTP id 995F0DDD1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 17:49:09 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id l9so399931rvb.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2009 22:49:07 -0800 (PST)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <1c641bc80902251151v5a4a5e15g13f6711510acb7ee@mail.gmail.com>
+References: <1c641bc80902251151v5a4a5e15g13f6711510acb7ee@mail.gmail.com>
+Date: Thu, 26 Feb 2009 14:43:06 +0800
+Message-ID: <2a27d3730902252243i6e0e65f6te78831cfcbae823b@mail.gmail.com>
+Subject: Re: MPC8313E-RDB and USB OTG
+From: Li Yang <leoli@freescale.com>
+To: Michael Bergandi <mbergandi@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Thu, Feb 26, 2009 at 3:51 AM, Michael Bergandi <mbergandi@gmail.com> wrote:
+> Hi all,
+>
+> I am hoping someone can shed some light on the state of the USB support in
+> the
+> 2.6.28 kernel for USB OTG on the MPC8313E RDB. The configuration options are
+> a bit different than the ones from the provided LTIB kernel--- for obvious
+> reasons---
+> and I am trying to figure out how to get OTG working in this version of the
+> kernel
+> on my board.
 
-Please pull a few regression fixes for powerpc.
+USB OTG support for Freescale USB has not been included in mainline.
+So you need to bring the OTG code up-to-date, or stay with the LTIB
+kernel.
 
-Cheers,
-Ben.
-
-The following changes since commit 169d418b127b98a3e464e9c4b807ad083760f98c:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../tiwai/sound-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Mark Nelson (2):
-      powerpc: Fix 64bit memcpy() regression
-      powerpc: Fix 64bit __copy_tofrom_user() regression
-
-Michael Neuling (1):
-      powerpc: Fix load/store float double alignment handler
-
- arch/powerpc/kernel/align.c    |   29 +++++++++++++----------------
- arch/powerpc/lib/copyuser_64.S |   38 +++++++++++++++++++++++++++++++-------
- arch/powerpc/lib/memcpy_64.S   |   26 ++++++++++++++++++++------
- 3 files changed, 64 insertions(+), 29 deletions(-)
+- Leo
