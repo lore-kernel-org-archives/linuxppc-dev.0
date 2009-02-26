@@ -1,19 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 74FD3DDED1
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 22:34:24 +1100 (EST)
-Date: Thu, 26 Feb 2009 03:34:06 -0800 (PST)
-Message-Id: <20090226.033406.60071032.davem@davemloft.net>
-To: anton@samba.org
-Subject: Re: [PATCH] Enable hashdist by default on 64bit NUMA
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090226112431.GA25330@kryten>
-References: <20090220051956.GE32195@kryten>
-	<20090220.000354.198880712.davem@davemloft.net>
-	<20090226112431.GA25330@kryten>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <henk.stegeman@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id ABF24DDDA1
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 23:13:36 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id d14so377411and.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 04:13:34 -0800 (PST)
+MIME-Version: 1.0
+Date: Thu, 26 Feb 2009 13:13:34 +0100
+Message-ID: <ae4f76fd0902260413t2220d311v3dbd4e0254a27c66@mail.gmail.com>
+Subject: Two thoughts about SPI chip-selects in the DTS
+From: Henk Stegeman <henk.stegeman@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
-Date: Thu, 26 Feb 2009 22:24:32 +1100
+As far as I understand the DTS bindings now support an SPI master controller to
+- use the chip-selects controlled directly by the SPI master controller hardware
+or
+- to use GPIO's trough gpiolib as chip selects
+but not a combination of both, am I right?
 
-> On PowerPC we allocate large boot time hashes on node 0. This leads to
-> an imbalance in the free memory, for example on a 64GB box (4 x 16GB
-> nodes):
-> 
-> Free memory:
-> Node 0: 97.03%
-> Node 1: 98.54%
-> Node 2: 98.42%
-> Node 3: 98.53%
-> 
-> If we switch to using vmalloc (like ia64 and x86-64) things are more
-> balanced:
-> 
-> Free memory:
-> Node 0: 97.53%
-> Node 1: 98.35%
-> Node 2: 98.33%
-> Node 3: 98.33%
-> 
-> For many HPC applications we are limited by the free available memory on
-> the smallest node, so even though the same amount of memory is used the
-> better balancing helps.
-> 
-> Since all 64bit NUMA capable architectures should have sufficient
-> vmalloc space, it makes sense to enable it via CONFIG_64BIT.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-
-Acked-by: David S. Miller <davem@davemloft.net>
+Now every SPI driver needs to be adapted to provide support for using
+gpios as chip-selects, Wouldn't it be possible to let the
+divers/of/of_spi take care of all the work required to use gpios as
+chip-selects?
