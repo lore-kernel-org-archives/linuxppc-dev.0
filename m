@@ -1,20 +1,22 @@
-Return-Path: <mike@it-loops.com>
-Received: from lvps87-230-0-242.dedicated.hosteurope.de
-	(lvps87-230-0-242.dedicated.hosteurope.de [87.230.0.242])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "plesk", Issuer "plesk" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EF9AFDDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 10:38:30 +1100 (EST)
-Message-Id: <F79A1F44-A17D-483B-9FC9-D5C4D6AEBE6C@it-loops.com>
-From: Michael Guntsche <mike@it-loops.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: PHY not found after migration of gianfar driver to an
-	of_platform_driver
-Date: Fri, 27 Feb 2009 00:38:24 +0100
-References: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
+	by ozlabs.org (Postfix) with ESMTP id C2179DDDA2
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 10:45:27 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
+Date: Fri, 27 Feb 2009 00:44:52 +0100
+References: <20090224000002.GA578@ovro.caltech.edu>
+	<200902262334.33778.arnd@arndb.de>
+	<20090226231742.GB19959@ovro.caltech.edu>
+In-Reply-To: <20090226231742.GB19959@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200902270044.53683.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,108 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Friday 27 February 2009, Ira Snyder wrote:
+> On Thu, Feb 26, 2009 at 11:34:33PM +0100, Arnd Bergmann wrote:
+> > I guess the best option for doing it in Linux then would be to have
+> > a board control driver (not sure if this already exists) that exports
+> > high-level functions to set up the inbound and outbound windows.
+> > 
+> 
+> Nothing like it exists. The OF device tree doesn't even describe these
+> registers. The code in arch/powerpc/sysdev/fsl_pci.c uses some registers
+> near these, but it gets their address by masking the low bits off the
+> addresses from the device tree and adding the offsets of the new
+> registers. Nasty.
+> 
+> I'll do this for now:
+> 1) Get the message unit registers from my device tree
+> 2) Encapsulate all use of get_immrbase() to a single function
+> 
+> That way it could be easily replaced in the future when something more
+> suitable comes along.
 
-Some more information regarding this board. This is the output of
+Ok. However, I don't expect this to get fixed magically. Ideally,
+you would start a new file for the board control in arch/powerpc/sysdev
+and export the function from there, otherwise you do it the way you
+suggested.
+Then we can tell the fsl_pci and other people to use the same
+method and source file to access the board control.
+> 
+> I didn't think about this at all. This driver could be used to boot a
+> (guest) system over NFS, so in that case there isn't a userspace running
+> yet, to allow configuration. This is essentially my use case, though I
+> haven't implemented it yet.
+> 
+> Also, I hate designing user interfaces :) Any concrete suggestions on
+> design would be most welcome.
 
-dtc /proc/device/ree:
+Don't worry about it for now, just put all the hardcoded virtio_net
+specific stuff into a file separate from the hardware specific
+files so that we have a nice kernel level abstraction to build a
+user abstraction on top of.
 
-I removed all information not relevant to networking
-
-/dts-v1/;
-
-/ {
-	linux,phandle = <0x100>;
-	#size-cells = <0x1>;
-	#address-cells = <0x1>;
-	compatible = "MPC83xx";
-	model = "RB600";
-
-	
-	soc8343@e0000000 {
-		bus-frequency = <0x1>;
-		reg = <0xe0000000 0x200>;
-		ranges = <0x0 0xe0000000 0x100000>;
-		device_type = "soc";
-		#interrupt-cells = <0x2>;
-		#size-cells = <0x1>;
-		#address-cells = <0x1>;
-
-	
-		gpio@0 {
-			reg = <0xc08 0x4>;
-			device-id = <0x0>;
-			compatible = "gpio";
-			device_type = "gpio";
-			linux,phandle = <0x400>;
-		};
-
-		ethernet@24000 {
-			phy-handle = <0x80001>;
-			interrupt-parent = <0x700>;
-			interrupts = <0x20 0x8 0x21 0x8 0x22 0x8>;
-			mac-address = [00 0c 42 28 de 4f];
-			reg = <0x24000 0x1000>;
-			compatible = "gianfar";
-			model = "TSEC";
-			device_type = "network";
-		};
-
-		ethernet@25000 {
-			phy-handle = <0x80000>;
-			interrupt-parent = <0x700>;
-			interrupts = <0x23 0x8 0x24 0x8 0x25 0x8>;
-			mac-address = [00 0c 42 28 de 4e];
-			reg = <0x25000 0x1000>;
-			compatible = "gianfar";
-			model = "TSEC";
-			device_type = "network";
-		};
-
-		mdio@24520 {
-			#size-cells = <0x1>;
-			#address-cells = <0x1>;
-			linux,phandle = <0x800>;
-			reg = <0x24520 0x20>;
-			compatible = "gianfar";
-			device_type = "mdio";
-
-			ethernet-phy@1 {
-				device_type = "ethernet-phy";
-				reg = <0x1>;
-				linux,phandle = <0x80001>;
-			};
-
-			ethernet-phy@0 {
-				device_type = "ethernet-phy";
-				reg = <0x0>;
-				linux,phandle = <0x80000>;
-			};
-		};
-
-	cpus {
-		linux,phandle = <0x200>;
-		#size-cells = <0x0>;
-		#address-cells = <0x1>;
-		#cpus = <0x1>;
-
-		PowerPC,8343E@0 {
-			linux,boot-cpu;
-			linux,phandle = <0x201>;
-			32-bit;
-			clock-frequency = <0x17d77460>;
-			timebase-frequency = <0x3f93e10>;
-			i-cache-size = <0x8000>;
-			d-cache-size = <0x8000>;
-			i-cache-line-size = <0x20>;
-			d-cache-line-size = <0x20>;
-			reg = <0x0>;
-			device_type = "cpu";
-		};
-	};
-
-
-I still do not understand why phy_attach fails. Does someone have an  
-idea or can tell me how to debug this further?
-
-Kind regards,
-Michael
+	Arnd <><
