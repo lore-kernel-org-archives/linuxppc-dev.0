@@ -1,14 +1,18 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (unknown [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id 78369DDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 05:28:52 +1100 (EST)
-Message-ID: <49A6DF58.1050202@mlbassoc.com>
-Date: Thu, 26 Feb 2009 11:28:40 -0700
-From: Gary Thomas <gary@mlbassoc.com>
-MIME-Version: 1.0
-To: Linux PPC Development <linuxppc-dev@ozlabs.org>
-Subject: OF -> platform_device
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <mike@it-loops.com>
+Received: from lvps87-230-0-242.dedicated.hosteurope.de
+	(lvps87-230-0-242.dedicated.hosteurope.de [87.230.0.242])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "plesk", Issuer "plesk" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 2A1D9DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 06:22:38 +1100 (EST)
+Message-Id: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
+From: Michael Guntsche <mike@it-loops.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: PHY not found after migration of gianfar driver to an
+	of_platform_driver
+Date: Thu, 26 Feb 2009 20:15:51 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,62 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm trying to use some drivers which are not yet OF aware
-(in particular net/dsa).  In order to use these drivers, I
-need platform_device pointers for my network any MII bus (PHY).
+Hello everyone,
 
-In the OF world, how do I get to these?  I have a MPC834x
-based board and somehow I need access to these devices (from
-my DTS file):
+I recently obtained a Mikrotik RB600 and applied the patch from http://cynigram.com/~nfontes/rb600/ 
+  to get it up and running with 2.6.28.3
+With this patch applied everything was detected on the board and  
+worked. For testing purposes I tried a recent git snapshot and noticed  
+that the gianfar driver had problems.
+While the the Gianfar was detected
 
-		mdio@24520 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			compatible = "fsl,gianfar-mdio";
-			reg = <0x24520 0x20>;
+[    0.549115] Gianfar MII Bus: probed
+[    0.553316] eth0 (fsl-gianfar): not using net_device_ops yet
+[    0.560861] eth0: Gianfar Ethernet Controller Version 1.2, 00:0c: 
+42:28:de:4e
+[    0.568024] eth0: Running with NAPI enabled
+[    0.572234] eth0: 256/256 RX/TX BD ring size
+[    0.576802] eth1 (fsl-gianfar): not using net_device_ops yet
+[    0.584200] eth1: Gianfar Ethernet Controller Version 1.2, 00:0c: 
+42:28:de:4f
+[    0.591345] eth1: Running with NAPI enabled
+[    0.595575] eth1: 256/256 RX/TX BD ring size
 
-			phy0: ethernet-phy@0 {
-				interrupt-parent = <&ipic>;
-				interrupts = <17 0x8>;
-				reg = <0x1>;
-				device_type = "ethernet-phy";
-			};
-			phy1: ethernet-phy@1 {
-				interrupt-parent = <&ipic>;
-				interrupts = <18 0x8>;
-				reg = <0x2>;
-				device_type = "ethernet-phy";
-			};
-		};
+trying to up either of the devices gave me
 
-		enet0: ethernet@24000 {
-			cell-index = <0>;
-			device_type = "network";
-			model = "TSEC";
-			compatible = "gianfar";
-			reg = <0x24000 0x1000>;
-			local-mac-address = [ 00 08 e5 11 32 33 ];
-			interrupts = <32 0x8 33 0x8 34 0x8>;
-			interrupt-parent = <&ipic>;
-			phy-handle = <&phy0>;
-			linux,network-index = <0>;
-		};
+[    8.724818] mdio@24520:01 not found
+[    8.728330] eth1: Could not attach to PHY
+[    8.732945] mdio@24520:01 not found
+[    8.737720] eth1: Could not attach to PHY
 
-		enet1: ethernet@25000 {
-			cell-index = <1>;
-			device_type = "network";
-			model = "TSEC";
-			compatible = "gianfar";
-			reg = <0x25000 0x1000>;
-			local-mac-address = [ 00 08 e5 11 32 34 ];
-			interrupts = <35 0x8 36 0x8 37 0x8>;
-			interrupt-parent = <&ipic>;
-			phy-handle = <&phy1>;
-			linux,network-index = <1>;
-		};
+I tracked this back to commit  
+"b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4 gianfar: Convert gianfar to  
+an of_platform_driver". Reverting this one and applying for fsc_soc.c  
+made the two nics work again.
+I tried to figure out what was causing the problem in the first place,  
+but failed miserably. I am pretty sure it is just a minor probing  
+issue somewhere in the code but I am not able to spot that.
+Maybe someone more knowledgeable than me can take a look at it and  
+help me out a little bit.
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+According to lspci the board is a
+
+00:00.0 Power PC: Freescale Semiconductor Inc MPC8343 (rev 30)
+
+Please CC me in any replies since I am not subscribed to the ML .. yet.
+
+Thanks in advance,
+Michael
