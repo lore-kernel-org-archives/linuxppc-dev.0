@@ -1,18 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id A8BA5DDD1C
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 00:17:30 +1100 (EST)
-Date: Fri, 27 Feb 2009 15:54:56 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Dushara Jayasinghe <DusharaJ@optiscan.com>
-Subject: Re: Can't load module spi_mpc83xx : No such device
-Message-ID: <20090227125456.GA21435@oksana.dev.rtsoft.ru>
-References: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40564@mailsvr>
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from exprod5og107.obsmtp.com (exprod5og107.obsmtp.com [64.18.0.184])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4419BDDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 02:58:00 +1100 (EST)
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH] powerpc/86xx: Correct local bus registers in GE Fanuc SBC610
+	dts file
+To: linuxppc-dev@ozlabs.org
+Date: Fri, 27 Feb 2009 15:53:10 +0000
+Message-ID: <20090227155310.7771.96519.stgit@ubuntu8041.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40564@mailsvr>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 27, 2009 at 03:56:41PM +1100, Dushara Jayasinghe wrote:
-> Hi all,
-> 
-> I'm using linux version 2.6.29-rc5.
+The registers for the local bus are incorrectly set to 0xf8005000 rather
+than there actual location of 0xfef05000.
 
-Linus' tree is still lacking few patches for spi_mpc83xx driver, the
-patches makes spi_mpc83xx work with the device tree directly.
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
 
-You should use -mm kernels.
+ arch/powerpc/boot/dts/gef_sbc610.dts |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-[...]
-> Part of my device tree is as follows:
-> 
-> 	soc8349@e0000000 {
-> 		...
-> 		spi@7000 {
-> 			#address-cells = <1>;
-> 			#size-cells = <0>;
-> 			compatible = "fsl,spi";
-> 			reg = <0x7000 0x1000>;
-> 			interrupts = <0x10 0x8>;
-> 			interrupt-parent = < &ipic >;
-
-You don't seem to have any chip-selects (i.e. gpios = <>) specified.
-
-If the chip-select is always asserted (i.e. there is only one
-device on the SPI bus), then..
-
-> 
-> 			m25p40@2 {
-> 				compatible = "m25p80";
-> 				spi-max-frequency = <25000000>;
-> 				reg = <2>;
-
-..there is no point in specifying reg = <> for the device.
-
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/gef_sbc610.dts
+index c3978b5..34570bd 100644
+--- a/arch/powerpc/boot/dts/gef_sbc610.dts
++++ b/arch/powerpc/boot/dts/gef_sbc610.dts
+@@ -71,7 +71,7 @@
+ 		#address-cells = <2>;
+ 		#size-cells = <1>;
+ 		compatible = "fsl,mpc8641-localbus", "simple-bus";
+-		reg = <0xf8005000 0x1000>;
++		reg = <0xfef05000 0x1000>;
+ 		interrupts = <19 2>;
+ 		interrupt-parent = <&mpic>;
+ 
