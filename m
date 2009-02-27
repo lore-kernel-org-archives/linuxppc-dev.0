@@ -1,14 +1,19 @@
-Return-Path: <DusharaJ@optiscan.com>
-Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
-	by ozlabs.org (Postfix) with ESMTP id 0B02CDDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 15:56:44 +1100 (EST)
-From: Dushara Jayasinghe <DusharaJ@optiscan.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Date: Fri, 27 Feb 2009 15:56:41 +1100
-Subject: Can't load module spi_mpc83xx : No such device
-Message-ID: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40564@mailsvr>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id 46CECDDDA1
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 16:07:02 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so622419ywb.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 21:06:59 -0800 (PST)
 MIME-Version: 1.0
+In-Reply-To: <200902261524.51750.roman.fietze@telemotive.de>
+References: <200902261524.51750.roman.fietze@telemotive.de>
+Date: Thu, 26 Feb 2009 22:06:59 -0700
+Message-ID: <fa686aa40902262106i2176f06ew7ab0f870119a8e04@mail.gmail.com>
+Subject: Re: [PATCH] Add MPC52xx simple interrupt GPIO support
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Roman Fietze <roman.fietze@telemotive.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,39 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi Roman,
 
-I'm using linux version 2.6.29-rc5.
+Thanks for this work.  Comments below.
 
-I've compiled the SPI diver (spi_mpc83xx.c) as a module, but it fails the l=
-oad with a "No such device" error.
+On Thu, Feb 26, 2009 at 7:24 AM, Roman Fietze
+<roman.fietze@telemotive.de> wrote:
+> Hello,
+>
+> I've got a target derived from the Lite5200 that needs to use simple
+> interrupt GPIO pins. I created a patch to support this kind of GPIO.
+>
+> I would need your opinion and like to hear any criticism. Esp. the
+> facts that I ad to split up struct mpc52xx_gpio and that the GPIO
+> numbering might get mixed up concern me.
 
-I've managed to track it down to platform_driver_probe() in drivers/base/pl=
-atform.c=20
-which returns -ENODEV because a device list is empty.
+While I understand why this patch is written the way it is, I don't
+think it is the right approach.
 
-Not sure what I'm doing wrong.=20
+This patch changes the mpc5200 gpio binding to adapt to a Linux
+internal implementation detail.  Specifically, the of_mm
+infrastructure only allows a 1:1 relationship between a 'struct
+of_gpio_chip' and a 'struct gpio_chip'.  When working with device
+trees, this is the wrong way around.  The device tree describes the
+hardware, not the Linux implementation details.
 
-Part of my device tree is as follows:
+An argument could be made that the current binding isn't ideal and
+that it would be better to split the simple, interrupt and output-only
+gpio pins into separate nodes, but that pretty much comes down to a
+matter of opinion as the existing binding describes the hardware just
+fine.  I'm actually of the opinion that it would be better to fewer
+gpio nodes, not more, by merging the simple and wakeup pins into a
+single node, but what's done is done and there is no technical reason
+for changing the current binding.
 
-	soc8349@e0000000 {
-		...
-		spi@7000 {
-			#address-cells =3D <1>;
-			#size-cells =3D <0>;
-			compatible =3D "fsl,spi";
-			reg =3D <0x7000 0x1000>;
-			interrupts =3D <0x10 0x8>;
-			interrupt-parent =3D < &ipic >;
+So, that leaves the problem working with the of_mm infrastructure.  I
+think the correct solution is to modify of_gpio_chip to hold an array
+of struct gpio_chip and to change of_gpio_simple_xlate() to handle it.
+ Maybe something like:
 
-			m25p40@2 {
-				compatible =3D "m25p80";
-				spi-max-frequency =3D <25000000>;
-				reg =3D <2>;
-			};
-		};
-		...
-	};
+struct of_gpio_chip {
+        int gpio_cells;
+        int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
+                     const void *gpio_spec, enum of_gpio_flags *flags);
+        struct gpio_chip gc[1];
+};
 
-Thanks
-D
+and add an allocator function that takes care of allocating the
+required size of the gc array.  There are details to work out of
+course, but I thing this would be the more robust solution.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
