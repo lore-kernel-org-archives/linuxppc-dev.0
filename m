@@ -1,32 +1,17 @@
-Return-Path: <rdzidlic@googlemail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
-	by ozlabs.org (Postfix) with ESMTP id 65596DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 08:58:53 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id l26so720234fgb.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 13:58:50 -0800 (PST)
-Sender: Richard Zidlicky <rdzidlic@googlemail.com>
-Date: Fri, 27 Feb 2009 19:55:14 +0100
-From: Richard Zidlicky <rz@linux-m68k.org>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
-Message-ID: <20090227185514.GA1071@linux-m68k.org>
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<20090220170454.04382e9e@i1501.lan.towertech.it>
-	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
-	<1235511327.18632.73.camel@macbook.infradead.org>
-	<20090224231154.60ba18d6@i1501.lan.towertech.it>
-	<1235514727.18632.93.camel@macbook.infradead.org>
-	<alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
-	<20090225111836.621412c1@i1501.lan.towertech.it>
+Return-Path: <John.Linn@xilinx.com>
+Received: from WA4EHSOBE002.bigfish.com (wa4ehsobe002.messaging.microsoft.com
+	[216.32.181.12]) by ozlabs.org (Postfix) with ESMTP id 764E6DDD01
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 11:10:06 +1100 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+	jwboyer@linux.vnet.ibm.com, akonovalov@ru.mvista.com,
+	dbrownell@users.sourceforge.net
+Subject: [PATCH] Xilinx: SPI: driver not releasing memory
+Date: Fri, 27 Feb 2009 16:54:45 -0700
+Message-ID: <20090227235456.4DED2448057@mail135-wa4.bigfish.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090225111836.621412c1@i1501.lan.towertech.it>
-Cc: Linux/m68k <linux-m68k@vger.kernel.org>, rtc-linux@googlegroups.com,
-	linux-parisc@vger.kernel.org, David@ozlabs.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Kyle McMartin <kyle@mcmartin.ca>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Geert.Uytterhoeven@sonycom.com, David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain
+Cc: John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,40 +21,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 25, 2009 at 11:18:36AM +0100, Alessandro Zummo wrote:
-> On Wed, 25 Feb 2009 11:00:13 +0100 (CET)
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> 
-> > I didn't know NTP was broken with RTC class drivers?
-> > 
-> > So we should actually keep on using genrtc instead of rtc-ppc/rtc-generic for
-> > now? ;-)
-> 
->  broken here means that the kernel won't save the time to the hardware
->  rtc every 11 minutes as it used to do. normal NTP operations are unaffected.
+The driver was not releasing memory when it was removed or
+when there was a failure during probe. This fixes it.
 
-seems like so far ppc is the only architecture attempting to implement it
-correctly, all others either have it unimplemented or use the broken
-by design set_rtc_mmss method. 
-Also note that in most cases hwclock has much better possibilities
-to do a good job.
+Signed-off-by: John Linn <john.linn@xilinx.com>
 
-Regarding genrtc vs rtc-ppc/rtc-generic it is worth noting that genrtc
-provides RTC_UIE emulation which is of some use for exotic programs like 
-"chrony".
-Afaics this is also the only situation without a good userspace workaround 
-and chrony never worked well for me so I have nothing against junking the 
-code.
+---
+This is an incremental patch to the patch (updated driver
+for device tree) that is in the next branch.
+---
+ drivers/spi/xilinx_spi.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-Regarding a possible reorganisation from the generic to all separate drivers
-I agree that the habit of putting rtc-chip specific code in asm-generic is 
-confusing at best. 
-In many cases such code might be better placed in drivers/rtc or 
-include/linux/rtc/chipname.
+diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
+index fe7e5f3..494d3f7 100644
+--- a/drivers/spi/xilinx_spi.c
++++ b/drivers/spi/xilinx_spi.c
+@@ -354,7 +354,7 @@ static int __init xilinx_spi_of_probe(struct of_device *ofdev,
+ 	if (xspi->regs == NULL) {
+ 		rc = -ENOMEM;
+ 		dev_warn(&ofdev->dev, "ioremap failure\n");
+-		goto put_master;
++		goto release_mem;
+ 	}
+ 	xspi->irq = r_irq->start;
+ 
+@@ -365,7 +365,7 @@ static int __init xilinx_spi_of_probe(struct of_device *ofdev,
+ 	prop = of_get_property(ofdev->node, "xlnx,num-ss-bits", &len);
+ 	if (!prop || len < sizeof(*prop)) {
+ 		dev_warn(&ofdev->dev, "no 'xlnx,num-ss-bits' property\n");
+-		goto put_master;
++		goto unmap_io;
+ 	}
+ 	master->num_chipselect = *prop;
+ 
+@@ -397,6 +397,8 @@ free_irq:
+ 	free_irq(xspi->irq, xspi);
+ unmap_io:
+ 	iounmap(xspi->regs);
++release_mem:
++	release_mem_region(r_mem->start, resource_size(r_mem));
+ put_master:
+ 	spi_master_put(master);
+ 	return rc;
+@@ -406,6 +408,7 @@ static int __devexit xilinx_spi_remove(struct of_device *ofdev)
+ {
+ 	struct xilinx_spi *xspi;
+ 	struct spi_master *master;
++	struct resource r_mem;
+ 
+ 	master = platform_get_drvdata(ofdev);
+ 	xspi = spi_master_get_devdata(master);
+@@ -413,6 +416,8 @@ static int __devexit xilinx_spi_remove(struct of_device *ofdev)
+ 	spi_bitbang_stop(&xspi->bitbang);
+ 	free_irq(xspi->irq, xspi);
+ 	iounmap(xspi->regs);
++	if (!of_address_to_resource(ofdev->node, 0, &r_mem))
++		release_mem_region(r_mem.start, resource_size(&r_mem));
+ 	dev_set_drvdata(&ofdev->dev, 0);
+ 	spi_master_put(xspi->bitbang.master);
+ 
+-- 
+1.5.3.4
 
-Imho this does not preclude the possibility to use a generic framework. While
-there certainly are valid reasons to have separate drivers in some cases 
-I do not see much value in rewriting everything as separate drivers where 
-the generic framework works well.
 
-Richard
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
