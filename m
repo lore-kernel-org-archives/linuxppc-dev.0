@@ -1,26 +1,15 @@
-Return-Path: <roland@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 41C92DDDF9
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 18:36:40 +1100 (EST)
+Return-Path: <noname1.c@hotmail.com>
+Received: from blu0-omc4-s12.blu0.hotmail.com (blu0-omc4-s12.blu0.hotmail.com
+	[65.55.111.151]) by ozlabs.org (Postfix) with ESMTP id C3BC0DDDA0
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 01:46:18 +1100 (EST)
+Message-ID: <BLU127-W16625432C3103A605192F9B5AA0@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_f09916dd-c62f-46b2-877c-f8c299d3507a_"
+From: =?gb2312?B?z/LT7g==?= <noname1.c@hotmail.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Confusing of using SPIE register in MPC8377E
+Date: Fri, 27 Feb 2009 22:41:12 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-In-Reply-To: Ingo Molnar's message of  Saturday,
-	28 February 2009 08:31:54 +0100 <20090228073154.GG9351@elte.hu>
-References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
-	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
-	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
-	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
-	<20090228073154.GG9351@elte.hu>
-Message-Id: <20090228073604.84F3EFC3DA@magilla.sf.frob.com>
-Date: Fri, 27 Feb 2009 23:36:04 -0800 (PST)
-Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,14 +19,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> btw., shouldnt is_compat_task() expand to 0 in the 
-> !CONFIG_COMPAT case? That way we could remove this #ifdef too. 
-> (and move the first #ifdef inside the array initialization so 
-> that we always have a mode1_syscalls_32[] array.)
-
-I guess you mean define it in linux/compat.h then?
-Go right ahead.  Whatever you want is fine by me.
+--_f09916dd-c62f-46b2-877c-f8c299d3507a_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
 
-Thanks,
-Roland
+I'm writing a spi driver for MPC8377E.
+
+I use a GPIO as the chip select signal.
+
+I'm tring to use the NE or NF bits to decide when to read or when the transmit is over.
+
+But I found that I have just write the command,the NE is set.Also I found that the transmit is not over the GPIO has been pulled up.
+
+ 
+
+So I don't know what the real meaning of these two bits.Or it just indicates that the register can be write but not the operation has been over.
+
+ 
+
+Can anyone give me a help?
+
+Or anyone who has ever written the spi driver can give a source code for reference.
+
+ 
+
+Thank you!
+
+_________________________________________________________________
+MSN新版在线社交网络，与您的MSN好友更全面互动！
+http://im.live.cn/msn9/ 
+--_f09916dd-c62f-46b2-877c-f8c299d3507a_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt;
+font-family:Verdana
+}
+</style>
+</head>
+<body class='hmmessage'>
+I'm writing a spi driver for&nbsp;MPC8377E.<BR>
+I use a GPIO as the chip select signal.<BR>
+I'm&nbsp;tring to&nbsp;use&nbsp;the&nbsp;NE or NF bits to decide when to read or when&nbsp;the transmit is over.<BR>
+But&nbsp;I&nbsp;found that I have just write the command,the NE is set.Also I&nbsp;found that the transmit is not over the GPIO has been pulled up.<BR>
+&nbsp;<BR>
+So I&nbsp;don't know what&nbsp;the real&nbsp;meaning of these two bits.Or it just&nbsp;indicates that&nbsp;the register can be&nbsp;write but not the operation has been over.<BR>
+&nbsp;<BR>
+Can anyone give me a help?<BR>
+Or anyone who has ever written the spi driver can give a source code for reference.<BR>
+&nbsp;<BR>
+Thank you!<BR><br /><hr />MSN 9.0 正式版上线，捆绑免费25G网络硬盘！ <a href='http://im.live.cn/msn9/' target='_new'>立刻下载！</a></body>
+</html>
+--_f09916dd-c62f-46b2-877c-f8c299d3507a_--
