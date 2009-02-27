@@ -1,20 +1,17 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
-	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id 6A530DDDA0
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 16:31:26 +1100 (EST)
-Received: by gxk1 with SMTP id 1so3356841gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 21:31:24 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1235575933-29691-1-git-send-email-w.sang@pengutronix.de>
-References: <1235575933-29691-1-git-send-email-w.sang@pengutronix.de>
-Date: Thu, 26 Feb 2009 22:31:24 -0700
-Message-ID: <fa686aa40902262131i6c75687foaf42daeb4fc7a3b7@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/mpc52xx: add Phytec phyCORE-MPC5200B-IO board
-	(pcm032)
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id 40052DDDA0
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 17:20:23 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id d14so689914and.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 22:20:21 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/5200: Add 'simple-bus' to the of_platform probe list.
+To: linuxppc-dev@ozlabs.org
+Date: Thu, 26 Feb 2009 23:20:16 -0700
+Message-ID: <20090227062016.12483.57969.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,98 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for the patch Wolfram.  Comments below.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-On Wed, Feb 25, 2009 at 8:32 AM, Wolfram Sang <w.sang@pengutronix.de> wrote=
-:
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> ---
-> =A0arch/powerpc/boot/dts/pcm032.dts =A0 =A0 =A0 =A0 =A0 =A0 | =A0391 ++++=
-+++
-> =A0arch/powerpc/configs/52xx/pcm032_defconfig =A0 | 1394 ++++++++++++++++=
-++++++++++
+To better match the ePAPR specification, device nodes which claim
+"simple-bus" compatibility should be probed by default.
 
-Do you really need a separate defconfig for this board?  Can it be
-merged with an existing defconfig?
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-> =A0arch/powerpc/platforms/52xx/Kconfig =A0 =A0 =A0 =A0 =A0| =A0 =A01 +
-> =A0arch/powerpc/platforms/52xx/mpc5200_simple.c | =A0 =A03 +-
-> =A04 files changed, 1788 insertions(+), 1 deletions(-)
-> =A0create mode 100644 arch/powerpc/boot/dts/pcm032.dts
-> =A0create mode 100644 arch/powerpc/configs/52xx/pcm032_defconfig
->
-> diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm=
-032.dts
-> new file mode 100644
-> index 0000000..ebaf660
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/pcm032.dts
-> @@ -0,0 +1,391 @@
-> [...]
-> + =A0 =A0 =A0 lpb@e4000000 {
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-As per generic names recommended practice, this node name should
-really be something like "localbus {", and you should drop the node
-address since the local bus doesn't really have an address.
 
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,lpb";
-
-Ideally should be: compatible =3D
-"fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus";
-I know that 'fsl,lpb' has been used in the past, but it is far to
-generic and isn't good practice.  The 'simple-bus' property ensures
-that the bus will get probed.
-
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ranges =3D <0x0 0xe4000000 0x08000000>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <1>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
-
-Should be #address-cells =3D <2>;.  First cell is CS#, second cell is
-offset from base of CS.  This is particularly important if the LPB
-FIFO is ever used with any of this hardware.
-
-motionpro.dts is a good example of what it should look like.
-
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* free chipselect */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 cs4@00000000 {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "free";
-
-Very bad!  If you want to show available chip selects, then add some
-commented out sections as examples.  Creating nodes with the extremely
-generic compatible value of "free" is just asking for trouble
-(especially when someone new sees the example and decides to use the
-same thing in their driver).
-
-> + =A0 =A0 =A0 lpb@f7000000 {
-
-Another localbus node?  Why can't a single localbus node hold all the
-child nodes?
-
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,lpb";
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ranges =3D <0x0 0xf7000000 0x09000000>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <1>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fpga1@00e00000 {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fpga1";
-
-Too generic.  Be board specific.
-
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x00e00000 0x02000=
-000>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 bank-width =3D <4>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fpga2@02e00000 {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fpga2";
-
-Ditto
-
-Otherwise, the rest of the patch looks good to me.
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+index 98367a0..e9d2cf6 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+@@ -28,9 +28,10 @@ static struct of_device_id mpc52xx_xlb_ids[] __initdata = {
+ static struct of_device_id mpc52xx_bus_ids[] __initdata = {
+ 	{ .compatible = "fsl,mpc5200-immr", },
+ 	{ .compatible = "fsl,mpc5200b-immr", },
+-	{ .compatible = "fsl,lpb", },
++	{ .compatible = "simple-bus", },
+ 
+ 	/* depreciated matches; shouldn't be used in new device trees */
++	{ .compatible = "fsl,lpb", },
+ 	{ .type = "builtin", .compatible = "mpc5200", }, /* efika */
+ 	{ .type = "soc", .compatible = "mpc5200", }, /* lite5200 */
+ 	{}
