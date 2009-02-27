@@ -1,17 +1,18 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
-	by ozlabs.org (Postfix) with ESMTP id 46CECDDDA1
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 16:07:02 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so622419ywb.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 21:06:59 -0800 (PST)
+Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
+	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id 6A530DDDA0
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Feb 2009 16:31:26 +1100 (EST)
+Received: by gxk1 with SMTP id 1so3356841gxk.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2009 21:31:24 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <200902261524.51750.roman.fietze@telemotive.de>
-References: <200902261524.51750.roman.fietze@telemotive.de>
-Date: Thu, 26 Feb 2009 22:06:59 -0700
-Message-ID: <fa686aa40902262106i2176f06ew7ab0f870119a8e04@mail.gmail.com>
-Subject: Re: [PATCH] Add MPC52xx simple interrupt GPIO support
+In-Reply-To: <1235575933-29691-1-git-send-email-w.sang@pengutronix.de>
+References: <1235575933-29691-1-git-send-email-w.sang@pengutronix.de>
+Date: Thu, 26 Feb 2009 22:31:24 -0700
+Message-ID: <fa686aa40902262131i6c75687foaf42daeb4fc7a3b7@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/mpc52xx: add Phytec phyCORE-MPC5200B-IO board
+	(pcm032)
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Roman Fietze <roman.fietze@telemotive.de>
+To: Wolfram Sang <w.sang@pengutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,59 +24,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Roman,
+Thanks for the patch Wolfram.  Comments below.
 
-Thanks for this work.  Comments below.
+On Wed, Feb 25, 2009 at 8:32 AM, Wolfram Sang <w.sang@pengutronix.de> wrote=
+:
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> ---
+> =A0arch/powerpc/boot/dts/pcm032.dts =A0 =A0 =A0 =A0 =A0 =A0 | =A0391 ++++=
++++
+> =A0arch/powerpc/configs/52xx/pcm032_defconfig =A0 | 1394 ++++++++++++++++=
+++++++++++
 
-On Thu, Feb 26, 2009 at 7:24 AM, Roman Fietze
-<roman.fietze@telemotive.de> wrote:
-> Hello,
+Do you really need a separate defconfig for this board?  Can it be
+merged with an existing defconfig?
+
+> =A0arch/powerpc/platforms/52xx/Kconfig =A0 =A0 =A0 =A0 =A0| =A0 =A01 +
+> =A0arch/powerpc/platforms/52xx/mpc5200_simple.c | =A0 =A03 +-
+> =A04 files changed, 1788 insertions(+), 1 deletions(-)
+> =A0create mode 100644 arch/powerpc/boot/dts/pcm032.dts
+> =A0create mode 100644 arch/powerpc/configs/52xx/pcm032_defconfig
 >
-> I've got a target derived from the Lite5200 that needs to use simple
-> interrupt GPIO pins. I created a patch to support this kind of GPIO.
->
-> I would need your opinion and like to hear any criticism. Esp. the
-> facts that I ad to split up struct mpc52xx_gpio and that the GPIO
-> numbering might get mixed up concern me.
+> diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm=
+032.dts
+> new file mode 100644
+> index 0000000..ebaf660
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/pcm032.dts
+> @@ -0,0 +1,391 @@
+> [...]
+> + =A0 =A0 =A0 lpb@e4000000 {
 
-While I understand why this patch is written the way it is, I don't
-think it is the right approach.
+As per generic names recommended practice, this node name should
+really be something like "localbus {", and you should drop the node
+address since the local bus doesn't really have an address.
 
-This patch changes the mpc5200 gpio binding to adapt to a Linux
-internal implementation detail.  Specifically, the of_mm
-infrastructure only allows a 1:1 relationship between a 'struct
-of_gpio_chip' and a 'struct gpio_chip'.  When working with device
-trees, this is the wrong way around.  The device tree describes the
-hardware, not the Linux implementation details.
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,lpb";
 
-An argument could be made that the current binding isn't ideal and
-that it would be better to split the simple, interrupt and output-only
-gpio pins into separate nodes, but that pretty much comes down to a
-matter of opinion as the existing binding describes the hardware just
-fine.  I'm actually of the opinion that it would be better to fewer
-gpio nodes, not more, by merging the simple and wakeup pins into a
-single node, but what's done is done and there is no technical reason
-for changing the current binding.
+Ideally should be: compatible =3D
+"fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus";
+I know that 'fsl,lpb' has been used in the past, but it is far to
+generic and isn't good practice.  The 'simple-bus' property ensures
+that the bus will get probed.
 
-So, that leaves the problem working with the of_mm infrastructure.  I
-think the correct solution is to modify of_gpio_chip to hold an array
-of struct gpio_chip and to change of_gpio_simple_xlate() to handle it.
- Maybe something like:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ranges =3D <0x0 0xe4000000 0x08000000>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <1>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
 
-struct of_gpio_chip {
-        int gpio_cells;
-        int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
-                     const void *gpio_spec, enum of_gpio_flags *flags);
-        struct gpio_chip gc[1];
-};
+Should be #address-cells =3D <2>;.  First cell is CS#, second cell is
+offset from base of CS.  This is particularly important if the LPB
+FIFO is ever used with any of this hardware.
 
-and add an allocator function that takes care of allocating the
-required size of the gc array.  There are details to work out of
-course, but I thing this would be the more robust solution.
+motionpro.dts is a good example of what it should look like.
 
-Cheers,
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* free chipselect */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 cs4@00000000 {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "free";
+
+Very bad!  If you want to show available chip selects, then add some
+commented out sections as examples.  Creating nodes with the extremely
+generic compatible value of "free" is just asking for trouble
+(especially when someone new sees the example and decides to use the
+same thing in their driver).
+
+> + =A0 =A0 =A0 lpb@f7000000 {
+
+Another localbus node?  Why can't a single localbus node hold all the
+child nodes?
+
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,lpb";
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ranges =3D <0x0 0xf7000000 0x09000000>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <1>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fpga1@00e00000 {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fpga1";
+
+Too generic.  Be board specific.
+
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x00e00000 0x02000=
+000>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 bank-width =3D <4>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fpga2@02e00000 {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fpga2";
+
+Ditto
+
+Otherwise, the rest of the patch looks good to me.
+
 g.
 
--- 
+--=20
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
