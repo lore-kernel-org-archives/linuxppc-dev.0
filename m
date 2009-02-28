@@ -1,31 +1,18 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0CFAEDDE11
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Mar 2009 07:29:49 +1100 (EST)
-Date: Sat, 28 Feb 2009 12:27:17 -0800
-From: Greg KH <greg@kroah.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [stable] [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-Message-ID: <20090228202717.GA29139@kroah.com>
-References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
-	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
-	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
-	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
-	<20090228174601.GB27607@kroah.com>
-	<20090228095433.6af07a89@infradead.org>
-	<20090228182313.GA28421@kroah.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id BF606DDDF6
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Mar 2009 07:46:28 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so1039791ywb.39
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 12:46:27 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] Fix Xilinx SystemACE driver to handle empty CF slot
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, John.Linn@xilinx.com,
+	sr@denx.de
+Date: Sat, 28 Feb 2009 13:46:22 -0700
+Message-ID: <20090228204622.29719.55082.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090228182313.GA28421@kroah.com>
-Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	stable@kernel.org, Roland McGrath <roland@redhat.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,36 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Feb 28, 2009 at 10:23:13AM -0800, Greg KH wrote:
-> On Sat, Feb 28, 2009 at 09:54:33AM -0800, Arjan van de Ven wrote:
-> > On Sat, 28 Feb 2009 09:46:01 -0800
-> > Greg KH <greg@kroah.com> wrote:
-> > 
-> > > On Sat, Feb 28, 2009 at 09:23:36AM -0800, Linus Torvalds wrote:
-> > > > On Fri, 27 Feb 2009, Roland McGrath wrote:
-> > > > > But here is the patch you asked for.
-> > > > 
-> > > > Yes, this looks much more straightforward. 
-> > > > 
-> > > > And I guess the seccomp interaction means that this is potentially
-> > > > a 2.6.29 thing. Not that I know whether anybody actually _uses_
-> > > > seccomp. It does seem to be enabled in at least Fedora kernels, but
-> > > > it might not be used anywhere.
-> > > 
-> > > It's enabled in SuSE kernels.
-> > > 
-> > 
-> > but are there users of it?
-> > I thought Andrea stopped the cpushare thing that was the only user of
-> > this....
-> 
-> I do not really know, but as it is enabled, we need to at least fix it.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Sorry, I ment "we" as in SuSE, not as the "community".  As the patch can
-easily be backported to the SuSE kernels and resolved there, I don't
-think it's something that probably needs to be backported for the
--stable tree either.
+The SystemACE driver does not handle an empty CF slot gracefully.  An
+empty CF slot ends up hanging the system.  This patch adds a check for
+the CF state and stops trying to process requests if the slot is empty.
 
-thanks,
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-greg k-h
+ drivers/block/xsysace.c |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
+index 381d686..ec5b8ca 100644
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -489,6 +489,28 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 		ace->fsm_state, ace->id_req_count);
+ #endif
+ 
++	/* Verify that there is actually a CF in the slot.  If not, then
++	 * bail out back to the idle state and wake up all the waiters */
++	status = ace_in32(ace, ACE_STATUS);
++	if ((status & ACE_STATUS_CFDETECT) == 0) {
++		ace->fsm_state = ACE_FSM_STATE_IDLE;
++		ace->media_change = 1;
++		set_capacity(ace->gd, 0);
++		dev_info(ace->dev, "No CF in slot\n");
++ 
++		/* Drop all pending requests */
++		while ((req = elv_next_request(ace->queue)) != NULL)
++			end_request(req, 0);
++
++		/* Drop back to IDLE state and notify waiters */
++		ace->fsm_state = ACE_FSM_STATE_IDLE;
++		ace->id_result = -EIO;
++		while (ace->id_req_count) {
++			complete(&ace->id_completion);
++			ace->id_req_count--;
++		}
++	}
++
+ 	switch (ace->fsm_state) {
+ 	case ACE_FSM_STATE_IDLE:
+ 		/* See if there is anything to do */
