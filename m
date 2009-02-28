@@ -1,17 +1,27 @@
-Return-Path: <onramp123@yahoo.com>
-Received: from n22a.bullet.mail.mud.yahoo.com (n22a.bullet.mail.mud.yahoo.com
-	[68.142.207.188]) by ozlabs.org (Postfix) with SMTP id 64E0DDDDA1
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Mar 2009 03:15:50 +1100 (EST)
-From: "Steve DeLaney" <onramp123@yahoo.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: mpc8349e-mitx 2.6.25 serial IRQ assigned wrong
-Date: Sat, 28 Feb 2009 08:07:33 -0800
-Message-ID: <015401c999be$aac03910$6b03a8c0@sdelaney2>
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A9936DDDA0
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Mar 2009 04:24:29 +1100 (EST)
+Date: Sat, 28 Feb 2009 09:23:36 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+In-Reply-To: <20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
+Message-ID: <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
+	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
+	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20090227125456.GA21435@oksana.dev.rtsoft.ru>
-Reply-To: onramp123@yahoo.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
-Hello all,
 
-We completed a 2.6.25 build for MPC8349E-mITX platform, and u-booting using
-the
-device tree under ...boot/dts/mpc8349emitx.dts
 
-But the standard platform device IRQs are assigned wrong under
-/proc/interrupts:
-16 i2c-mpc
-17 i2c-mpc
-20 serial
+On Fri, 27 Feb 2009, Roland McGrath wrote:
+> 
+> I don't know any other arch well enough to be sure that TIF_32BIT isn't the
+> wrong test there too.  I'd like to leave that worry to the arch maintainers.
 
-According to the device tree, and the processor data sheet, it should be
-like this:
-9 serial
-14 i2c-mpc
-15 i2c-mpc
+Agreed - it may be that others will want to not use TIF_32BIT too. It 
+really does make much more sense to have it as a thread-local status flag 
+than as an atomic (and thus expensive to modify) thread-flag, not just on 
+x86.
 
-earlier builds (pre-dating device tree) of 2.6.13 and 2.6.16 are OK.
-The IRQs are assigned correctly, with serial on 9.
+But I think other architectures will find it easier to see what's going on 
+if the code is straightforward and they can just fix their 
+'is_compat_task()' function. And:
 
-Oddly enough the serial port works OK even though it is assigned to IRQ 20.
-We could probably live with it, but this interferes with our application
-that uses PCI.
-On MPC8349E-mITX, PIC IRQ 20 is intended for PCI INTA that is input
-to the MPC8349E processor on IRQ4* signal.
+> But here is the patch you asked for.
 
-We turned on debug output in irq.c and prom_parse.c 
-Any idea what might be going wrong?  We would appreciate any 
-suggestions on what to look for.
+Yes, this looks much more straightforward. 
 
-/steverino2
+And I guess the seccomp interaction means that this is potentially a 
+2.6.29 thing. Not that I know whether anybody actually _uses_ seccomp. It 
+does seem to be enabled in at least Fedora kernels, but it might not be 
+used anywhere.
+
+		Linus
