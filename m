@@ -1,27 +1,14 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A9936DDDA0
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Mar 2009 04:24:29 +1100 (EST)
-Date: Sat, 28 Feb 2009 09:23:36 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-In-Reply-To: <20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
-Message-ID: <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
-References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
-	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
-	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
-	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (unknown [76.76.67.137])
+	by ozlabs.org (Postfix) with ESMTP id 76B97DDDA2
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Mar 2009 04:46:51 +1100 (EST)
+Message-ID: <49A97878.6060308@mlbassoc.com>
+Date: Sat, 28 Feb 2009 10:46:32 -0700
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
+To: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Subject: OF device mappings
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,29 +18,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Still looking for some help...  I need to be able to locate
+the kernel platform_device which corresponds to an instance
+from my OF tree.  Basically, I have a [somewhat] unrelated
+driver which needs to know these things, so the drivers in
+question should not have to be affected.
 
+In particular, I'm working with the net/dsa drivers (Distributed
+Switch Architecture) which need access to the network driver as
+well as the MII/MDIO bus driver.  It doesn't make sense to tie
+those drivers back to DSA, but rather let the DSA driver find
+its way to them.
 
-On Fri, 27 Feb 2009, Roland McGrath wrote:
-> 
-> I don't know any other arch well enough to be sure that TIF_32BIT isn't the
-> wrong test there too.  I'd like to leave that worry to the arch maintainers.
+I've defined this in by DTS tree:
+	lan1 {
+		cell-index = <0x01>;
+		compatible = "marvell,m88e609x";
+		net_dev = "fsl-gianfar.0";
+		mii_bus = "fsl-gianfar_mdio.14";
+		net_devX = <&eth0>;
+		mii_busX = <&mii_bus>;
+	};
+... two ways to find the same node.
 
-Agreed - it may be that others will want to not use TIF_32BIT too. It 
-really does make much more sense to have it as a thread-local status flag 
-than as an atomic (and thus expensive to modify) thread-flag, not just on 
-x86.
+Using 'net_dev' (which I admit is pretty hokey), I can look
+up the corresponding platform device, which does work for
+the DSA layer.  What I want is to be able to get to this
+from the 'net_devX' pointer, but I don't seem to be able
+to get out of the OF tree and into the actual platform
+device tree to find the appropriate instance.
 
-But I think other architectures will find it easier to see what's going on 
-if the code is straightforward and they can just fix their 
-'is_compat_task()' function. And:
+Any pointers?
 
-> But here is the patch you asked for.
+Thanks
 
-Yes, this looks much more straightforward. 
-
-And I guess the seccomp interaction means that this is potentially a 
-2.6.29 thing. Not that I know whether anybody actually _uses_ seccomp. It 
-does seem to be enabled in at least Fedora kernels, but it might not be 
-used anywhere.
-
-		Linus
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
