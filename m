@@ -1,30 +1,21 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 9703FDDDFA
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Mar 2009 05:23:43 +1100 (EST)
-Date: Sat, 28 Feb 2009 10:23:13 -0800
-From: Greg KH <greg@kroah.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [stable] [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-Message-ID: <20090228182313.GA28421@kroah.com>
-References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
-	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
-	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
-	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
-	<20090228174601.GB27607@kroah.com>
-	<20090228095433.6af07a89@infradead.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
+	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id 2FC89DDDF6
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Mar 2009 05:44:39 +1100 (EST)
+Received: by gxk1 with SMTP id 1so5760220gxk.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 10:44:37 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090228095433.6af07a89@infradead.org>
-Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	stable@kernel.org, Roland McGrath <roland@redhat.com>
+In-Reply-To: <49A9809D.9000307@mlbassoc.com>
+References: <49A97878.6060308@mlbassoc.com>
+	<fa686aa40902281004r5fcb67f4md328d79dd1d5d82c@mail.gmail.com>
+	<49A9809D.9000307@mlbassoc.com>
+Date: Sat, 28 Feb 2009 11:44:37 -0700
+Message-ID: <fa686aa40902281044l3b910866g7467131db80c87e7@mail.gmail.com>
+Subject: Re: OF device mappings
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Gary Thomas <gary@mlbassoc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,30 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Feb 28, 2009 at 09:54:33AM -0800, Arjan van de Ven wrote:
-> On Sat, 28 Feb 2009 09:46:01 -0800
-> Greg KH <greg@kroah.com> wrote:
-> 
-> > On Sat, Feb 28, 2009 at 09:23:36AM -0800, Linus Torvalds wrote:
-> > > On Fri, 27 Feb 2009, Roland McGrath wrote:
-> > > > But here is the patch you asked for.
-> > > 
-> > > Yes, this looks much more straightforward. 
-> > > 
-> > > And I guess the seccomp interaction means that this is potentially
-> > > a 2.6.29 thing. Not that I know whether anybody actually _uses_
-> > > seccomp. It does seem to be enabled in at least Fedora kernels, but
-> > > it might not be used anywhere.
-> > 
-> > It's enabled in SuSE kernels.
-> > 
-> 
-> but are there users of it?
-> I thought Andrea stopped the cpushare thing that was the only user of
-> this....
+On Sat, Feb 28, 2009 at 11:21 AM, Gary Thomas <gary@mlbassoc.com> wrote:
+> Grant Likely wrote:
+>> Once you have a handle to the node, you can iterate through the
+>> of_platform bus devices and look for a node which has a matching node
+>> pointer stored in archdata. =A0That will give you a struct device which
+>> is contained by a struct of_device (note well: this will give you an
+>> of_device, not a platform_device.)
+>
+> I have code which does this already, but I could not figure out
+> how to get from the of_device node to the actual platform_device.
 
-I do not really know, but as it is enabled, we need to at least fix it.
+You can't.  There is no platform_device.  There is only the of_device.
 
-thanks,
+The bit that you're missing is that the 'platform bus' isn't being
+used at all for these devices.  The 'of_platform bus' is used instead.
+ platform bus and of_platform bus perform essentially the same job,
+but the of_platform bus differs in the way it probes drivers.
+Specifically, an of_platform_driver can be handed a list of values
+that it will match against, and it has a 1:1 relationship with a node
+in the device tree.
 
-greg k-h
+> How do I find the platform_device which was created when this
+> particular of_device was instantiated? =A0I made sure that this code
+> is run late - after all the of_devices have been handled.
+
+Again, there is no platform_device.  of_device *is* the device that was cre=
+ated.
+
+g.
