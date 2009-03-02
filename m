@@ -1,27 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id 7F63FDDD0B
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Mar 2009 12:07:34 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1176942yxb.39
-	for <linuxppc-dev@ozlabs.org>; Sun, 01 Mar 2009 17:07:33 -0800 (PST)
+Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
+	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id D523FDDED8
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Mar 2009 12:15:34 +1100 (EST)
+Received: by gxk1 with SMTP id 1so7084009gxk.9
+	for <linuxppc-dev@ozlabs.org>; Sun, 01 Mar 2009 17:15:32 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <9e4733910903011646g43b151c2m7c6dfe80ac07e80a@mail.gmail.com>
-References: <1235575933-29691-1-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40902262131i6c75687foaf42daeb4fc7a3b7@mail.gmail.com>
-	<20090301101815.GC23093@pengutronix.de>
-	<fa686aa40903010648q238380acy34b58e04226d8014@mail.gmail.com>
-	<9e4733910903010754q1b4d9fafy87668049653d5e21@mail.gmail.com>
-	<fa686aa40903011447x1810f252m367d6c05cc567133@mail.gmail.com>
-	<9e4733910903011637q246eb82al140e87242f695413@mail.gmail.com>
-	<9e4733910903011646g43b151c2m7c6dfe80ac07e80a@mail.gmail.com>
-Date: Sun, 1 Mar 2009 18:07:33 -0700
-Message-ID: <fa686aa40903011707q3c142942w962c52abaf915629@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/mpc52xx: add Phytec phyCORE-MPC5200B-IO board
-	(pcm032)
+In-Reply-To: <CD026D29-687D-4078-960E-108CC94C30E4@it-loops.com>
+References: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
+	<fa686aa40902280703p5ad8ee73y116d7e2252df21a5@mail.gmail.com>
+	<3B1D47A2-329E-491E-B3AC-E76C1CE1762D@it-loops.com>
+	<fa686aa40903011353t464b1df3obd553132e5bc2570@mail.gmail.com>
+	<CD026D29-687D-4078-960E-108CC94C30E4@it-loops.com>
+Date: Sun, 1 Mar 2009 18:15:32 -0700
+Message-ID: <fa686aa40903011715u2aed4c23tb8182634fa1220f6@mail.gmail.com>
+Subject: Re: PHY not found after migration of gianfar driver to an
+	of_platform_driver
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Jon Smirl <jonsmirl@gmail.com>
+To: Michael Guntsche <mike@it-loops.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,66 +28,103 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Mar 1, 2009 at 5:46 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On Sun, Mar 1, 2009 at 7:37 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->> Just tried it on pcm030. If I uncomment the reg line the kernel won't
->> boot at all. I don't get any output.
->
-> I hooked up a serial console instead of netcat.
->
-> PCI: Probing PCI hardware
-> PCI: Scanning bus 0000:00
-> Machine check in kernel mode.
-> Caused by (from SRR1=3D41030): Transfer error ack signal
-> Oops: Machine check, sig: 7 [#1]
-> dspeak01
+[moving this conversation back to the mailing list.  Don't forget to
+use 'reply-all' on mailing list conversations.]
 
-Yeah, there current PCI driver in mainline expects the bootloader to
-set stuff up for PCI to work.  I've fixed some of it, and the fix is
-queued up in Ben's -next tree.  Can you try Ben's -next tree?
+On Sun, Mar 1, 2009 at 4:49 PM, Michael Guntsche <mike@it-loops.com> wrote:
+>
+> On Mar 1, 2009, at 22:53, Grant Likely wrote:
+>
+>> On Sun, Mar 1, 2009 at 1:04 PM, Michael Guntsche <mike@it-loops.com>
+>> wrote:
+>>>
+>>> On Feb 28, 2009, at 16:03, Grant Likely wrote:
+>>>
+>>>> Hey Michael,
+>>>>
+>>>> I just wanted to let you know that I'm reading your questions, and I'm
+>>>> crafting a reply, but it's not trivial and I'm also swamped under at
+>>>> the moment. =A0I should have something for you in the next few days. =
+=A0I
+>>>> just didn't want you to think you were being ignored.
+>>>>
+>>>> g.
+>>>>
+>>>
+>>> Hi Grant,
+>>>
+>>> thanks for the help. As you might have already read, I can now boot wit=
+h
+>>> a
+>>> self-written DTS file based of the device-tree.
+>>> My three questions still remain.
+>>>
+>>> * Why not more than 4MB during boot
+>>
+>> First, are you building a cuImage, or a uImage? =A0It sounds like you're
+>> building a cuImage to work with an older version of U-Boot. =A0With a
+>> newer version of u-boot you can pass u-boot a kernel image and a
+>> device tree blob (.dtb) which doesn't have this limitation.
+>>
+>
+> Ok, I am building a simpleImage right now, since the routerboard (RB600A)
+> does not seem to have uboot in the nand.
+> Reading through the documentation again it clearly states that the
+> simpleimage just uses the provided DTS file and nothing else.
 
-Thanks,
+Ah, okay.  Yeah, simpleImage gets you going, but ultimately it isn't
+what you need.  I wrote simpleimage when I was working with Xilinx
+Virtex platforms when booting a kernel with absolutely no firmware
+support.
+
+> The bootloader is called RouterBoot.
+> So what the Board does (according to the docs).
+>
+> * During start it searches for a partition of type 0x27 in one CF slot. I=
+f
+> it finds the partition it expects a kernel in there and just boots it add=
+ing
+> a few parameters.
+
+So, what you need is a new adapter which parses the data passed in by
+routerboot (maybe call it routerImage?) and modifies the .dtb blob to
+match.  You can use simpleImage as a starting point.
+
+>> There is no reason for the 4MB limit in a cuImage other than that is
+>> what is specified by default in arch/powerpc/boot/wrapper. =A0You can
+>> change it. =A0It is not ideal, and the wrapper could be made more
+>> robust, but it is what we have for the moment.
+>>
+>
+> If you are talking about link_address=3D'0x400000'.
+> I can increase this somewhat, if I Increase this too much I get a "Kernel
+> region out of range" error from the boards bootloader apparently.
+>
+> To cut this short. I do need uboot on the board for either cuImage or uIm=
+age
+> support, right?
+
+Yes, uImage and cuImage.* are u-boot specific.  You need a routerboard
+specific image.
+
+> Since the routerboard does have its own bootloader and I have not tried i=
+f
+> it is able to use a cuImage right now, is there another way to add the TB=
+I
+> entries?
+
+TBI?
+
+> Can't I just add them in the rbppc.c specific init stuff programmatically
+> withouth a DTS file?
+
+You need a device tree.  You could theoretically generate the entire
+tree programmatically, but that is the long way around.  What you want
+is a base .dts file and a new bootwrapper to fill in the missing bits
+at boot time.
+
+Cheers,
 g.
-
-> Modules linked in:
-> NIP: c001be94 LR: c0158cb4 CTR: c001be04
-> REGS: c3823de0 TRAP: 0200 =A0 Not tainted =A0(2.6.29-rc6-efika)
-> MSR: 00041030 <ME,IR,DR> =A0CR: 28000022 =A0XER: 20000000
-> TASK =3D c3824000[1] 'swapper' THREAD: c3822000
-> GPR00: 80000000 c3823e90 c3824000 c3856000 00000000 00000000 00000004 c38=
-23eb8
-> GPR08: c03a9848 fcffc000 000008bc 0020213c 82000022 ffefffff 03ffe000 fff=
-fffff
-> GPR16: 00000001 00000000 007ffc00 00000000 00000000 03ff8838 00000000 000=
-00004
-> GPR24: 00000000 00000000 c3823eb8 00000000 00000004 00000000 c03c0000 c38=
-56000
-> NIP [c001be94] mpc52xx_pci_read_config+0x90/0xec
-> LR [c0158cb4] pci_bus_read_config_dword+0x4c/0x74
-> Call Trace:
-> [c3823e90] [c0091238] ifind+0x18/0x6c (unreliable)
-> [c3823eb0] [c0158cb4] pci_bus_read_config_dword+0x4c/0x74
-> [c3823ee0] [c0278a90] pci_scan_single_device+0x24/0x4b0
-> [c3823f10] [c0159d50] pci_scan_slot+0x2c/0x84
-> [c3823f30] [c027b2d4] pci_scan_child_bus+0x40/0x108
-> [c3823f50] [c0351c34] pcibios_init+0xdc/0x190
-> [c3823f70] [c00038f4] do_one_initcall+0x58/0x19c
-> [c3823fe0] [c034614c] kernel_init+0x74/0xe0
-> [c3823ff0] [c00133d4] kernel_thread+0x4c/0x68
-> Instruction dump:
-> 817e0040 5400801e 7c004b78 5769063a 64008000 7d290378 7c0004ac 912b0000
-> 7c0004ac 813e0044 7c0004ac 7d604c2c <0c0b0000> 4c00012c 2f9c0004 57601ef8
-> ---[ end trace 31fd0ba7d8756001 ]---
-> Kernel panic - not syncing: Attempted to kill init!
-> Rebooting in 180 seconds..
->
->
-> --
-> Jon Smirl
-> jonsmirl@gmail.com
->
-
-
 
 --=20
 Grant Likely, B.Sc., P.Eng.
