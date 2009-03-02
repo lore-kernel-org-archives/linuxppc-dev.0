@@ -1,21 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E4BC9DDF2A
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Mar 2009 18:58:02 +1100 (EST)
-Subject: Re: [PATCH] powerpc/mm: Merge various PTE bits and accessors
-	definitions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1235979481.8526.31.camel@localhost>
-References: <20090302062351.26F84DDFBE@ozlabs.org>
-	<1235979481.8526.31.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 02 Mar 2009 18:57:52 +1100
-Message-Id: <1235980672.7248.4.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <leowang1998@yahoo.com.cn>
+Received: from web15306.mail.cnb.yahoo.com (web15306.mail.cnb.yahoo.com
+	[203.209.230.36]) by ozlabs.org (Postfix) with SMTP id A6479DDF05
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Mar 2009 19:29:54 +1100 (EST)
+Message-ID: <275793.59062.qm@web15306.mail.cnb.yahoo.com>
+Date: Mon, 2 Mar 2009 16:29:50 +0800 (CST)
+From: zhong wang <leowang1998@yahoo.com.cn>
+Subject: How to using TSEC in u-boot ?
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-2017624311-1235982590=:59062"
+Reply-To: leowang1998@yahoo.com.cn
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +19,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2009-03-02 at 18:38 +1100, Michael Ellerman wrote:
-> On Mon, 2009-03-02 at 17:22 +1100, Benjamin Herrenschmidt wrote:
-> > Now that they are almost identical, we can merge some of the definitions
-> > related to the PTE format into common files.
-> 
-> <snip>
-> 
-> > +/* Protection used for kernel text. We want the debuggers to be able to
-> > + * set breakpoints anywhere, so don't write protect the kernel text
-> > + * on platforms where such control is possible.
-> > + */
-> > +#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
-> > +	defined(CONFIG_KPROBES)
-> > +#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
-> > +#else
-> > +#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
-> > +#endif
-> 
-> What about FTRACE? ∞TRACE etc.
 
-Well, I'm just moving those bits around from pgtable-ppc32.h (ie, only
-ppc32 uses PAGE_KERNEL_TEXT for now anyway).
+--0-2017624311-1235982590=:59062
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Note also that as it is, with ppc32 hash, we don't honor the read-only
-restriction on the BAT mapping anyway.
+hello all
+=C2=A0=C2=A0=C2=A0 now we are using Rtl821Xb Giga PHY , i am finding driver=
+/net/tsec.c in u-boot ,there is most phy testing function ,but i donot know=
+n how to using tsec ?
+=C2=A0=C2=A0=C2=A0=20
+=C2=A0
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0 Qiaofeng=C2=A0 Tech Co;
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0 leowang
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0 2009:03:02
+=C2=A0=0A=0A=0A      ______________________________________________________=
+_____ =0A  =E5=A5=BD=E7=8E=A9=E8=B4=BA=E5=8D=A1=E7=AD=89=E4=BD=A0=E5=8F=91=
+=EF=BC=8C=E9=82=AE=E7=AE=B1=E8=B4=BA=E5=8D=A1=E5=85=A8=E6=96=B0=E4=B8=8A=E7=
+=BA=BF=EF=BC=81 =0Ahttp://card.mail.cn.yahoo.com/
+--0-2017624311-1235982590=:59062
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-So yes, there's room for fixing things but that isn't what this patch
-does.
-
-Cheers,
-Ben.
+<table cellspacing=3D"0" cellpadding=3D"0" border=3D"0" ><tr><td valign=3D"=
+top" style=3D"font: inherit;"><DIV>hello all</DIV>
+<DIV>&nbsp;&nbsp;&nbsp; now we are using Rtl821Xb Giga PHY , i am finding d=
+river/net/tsec.c in u-boot ,there is most phy testing function ,but i donot=
+ known how to using tsec ?</DIV>
+<DIV>&nbsp;&nbsp;&nbsp; </DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Qiaofeng&nbsp; Tech Co;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; leowang</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2009:03:02</DIV>
+<DIV>&nbsp;</DIV></td></tr></table><br>=0A=0A=0A      <hr size=3D1><a href=
+=3D"http://cn.rd.yahoo.com/mail_cn/tagline/card/*http://card.mail.cn.yahoo.=
+com/">  =E5=A5=BD=E7=8E=A9=E8=B4=BA=E5=8D=A1=E7=AD=89=E4=BD=A0=E5=8F=91=EF=
+=BC=8C=E9=82=AE=E7=AE=B1=E8=B4=BA=E5=8D=A1=E5=85=A8=E6=96=B0=E4=B8=8A=E7=BA=
+=BF=EF=BC=81</a>
+--0-2017624311-1235982590=:59062--
