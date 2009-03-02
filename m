@@ -1,18 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E4BC9DDF2A
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Mar 2009 18:58:02 +1100 (EST)
 Subject: Re: [PATCH] powerpc/mm: Merge various PTE bits and accessors
 	definitions
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090302062351.26F84DDFBE@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1235979481.8526.31.camel@localhost>
 References: <20090302062351.26F84DDFBE@ozlabs.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-z6qSgShYyNbe3nqCFQf1"
-Date: Mon, 02 Mar 2009 18:38:01 +1100
-Message-Id: <1235979481.8526.31.camel@localhost>
+	<1235979481.8526.31.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 02 Mar 2009 18:57:52 +1100
+Message-Id: <1235980672.7248.4.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2009-03-02 at 18:38 +1100, Michael Ellerman wrote:
+> On Mon, 2009-03-02 at 17:22 +1100, Benjamin Herrenschmidt wrote:
+> > Now that they are almost identical, we can merge some of the definitions
+> > related to the PTE format into common files.
+> 
+> <snip>
+> 
+> > +/* Protection used for kernel text. We want the debuggers to be able to
+> > + * set breakpoints anywhere, so don't write protect the kernel text
+> > + * on platforms where such control is possible.
+> > + */
+> > +#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
+> > +	defined(CONFIG_KPROBES)
+> > +#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+> > +#else
+> > +#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+> > +#endif
+> 
+> What about FTRACE? ∞TRACE etc.
 
---=-z6qSgShYyNbe3nqCFQf1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Well, I'm just moving those bits around from pgtable-ppc32.h (ie, only
+ppc32 uses PAGE_KERNEL_TEXT for now anyway).
 
-On Mon, 2009-03-02 at 17:22 +1100, Benjamin Herrenschmidt wrote:
-> Now that they are almost identical, we can merge some of the definitions
-> related to the PTE format into common files.
+Note also that as it is, with ppc32 hash, we don't honor the read-only
+restriction on the BAT mapping anyway.
 
-<snip>
+So yes, there's room for fixing things but that isn't what this patch
+does.
 
-> +/* Protection used for kernel text. We want the debuggers to be able to
-> + * set breakpoints anywhere, so don't write protect the kernel text
-> + * on platforms where such control is possible.
-> + */
-> +#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_S=
-WITCH) ||\
-> +	defined(CONFIG_KPROBES)
-> +#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
-> +#else
-> +#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
-> +#endif
-
-What about FTRACE? =E2=88=9ETRACE etc.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-z6qSgShYyNbe3nqCFQf1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmrjNkACgkQdSjSd0sB4dLhHwCgrvNYVurYDdykj0mSEyaQ6/c0
-eoUAoLjp82yzDc8eiJbpgaxSLRVDrSgl
-=7Dp1
------END PGP SIGNATURE-----
-
---=-z6qSgShYyNbe3nqCFQf1--
+Cheers,
+Ben.
