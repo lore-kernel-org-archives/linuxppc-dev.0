@@ -1,26 +1,18 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 55CB2DDEFA
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 15:08:41 +1100 (EST)
-Date: Mon, 2 Mar 2009 20:08:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: powerpc allnoconfig
-Message-Id: <20090302200809.26b5d5bb.akpm@linux-foundation.org>
-In-Reply-To: <20090303141905.52dbf9b1.sfr@canb.auug.org.au>
-References: <20090302171948.d1e2aa00.akpm@linux-foundation.org>
-	<12051.1236047470@neuling.org>
-	<20090302184049.27a73395.akpm@linux-foundation.org>
-	<20090303135203.b36312a0.sfr@canb.auug.org.au>
-	<20090302185514.2cc73512.akpm@linux-foundation.org>
-	<20090303141905.52dbf9b1.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
+Return-Path: <DusharaJ@optiscan.com>
+Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
+	by ozlabs.org (Postfix) with ESMTP id 9A8B6DDF02
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 15:11:25 +1100 (EST)
+From: Dushara Jayasinghe <DusharaJ@optiscan.com>
+To: "'avorontsov@ru.mvista.com'" <avorontsov@ru.mvista.com>
+Date: Tue, 3 Mar 2009 15:11:23 +1100
+Subject: RE: Can't load module spi_mpc83xx : No such device
+Message-ID: <DE0CCFFBFF707949BEABD4537A14ACBA0C083C19F8@mailsvr>
+References: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40564@mailsvr>
+	<20090227125456.GA21435@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090227125456.GA21435@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,41 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 3 Mar 2009 14:19:05 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Hi All,
 
-> Hi Andrew,
-> 
-> On Mon, 2 Mar 2009 18:55:14 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> Linus' tree is still lacking few patches for spi_mpc83xx driver, the
+> patches makes spi_mpc83xx work with the device tree directly.
+
+I modified the spi_mpc83xx to work with the device tree using mpc52xx_psc_s=
+pi.c as a guide.=20
+However, the device->dev->platform_data member is NULL (I thought the child=
+ node would provide that).=20
+What am I missing?
+
+I'm trying to create the SPI driver as a loadable module which will be used=
+ by the m25p80 chip driver (drivers/mtd/devices) which also will be a loada=
+ble module. Am I on the right track?
+
+> [...]
+> > Part of my device tree is as follows:
 > >
-> > Using built-in specs.
-> > Target: powerpc64-unknown-linux-gnu
-> > Configured with: /home/axboe/crosstool-0.43/build/powerpc64-unknown-linux-gnu/gcc-4.1.0-glibc-2.3.6/gcc-4.1.0/configure --target=powerpc64-unknown-linux-gnu --host=x86_64-host_unknown-linux-gnu --prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu --disable-multilib --with-sysroot=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/powerpc64-unknown-linux-gnu/sys-root --with-local-prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/powerpc64-unknown-linux-gnu/sys-root --disable-nls --enable-threads=posix --enable-symvers=gnu --enable-__cxa_atexit --enable-languages=c --enable-shared --enable-c99 --enable-long-long
-> > Thread model: posix
-> > gcc version 4.1.0
-> > 
-> > > I suspect you have a 64 bit only compiler and allnoconfig produces a 32
-> > > bit kernel.  Is this a new error?
-> > 
-> > 2.6.28 does the same thing.  I don't recall having tested allnoconfig
-> > for ages if at all, so I don't know if it's a regression.
-> 
-> Right, you have a 64 bit only compiler. Also it is version 4.1.0 which we now black ban (I think).
+> > 	soc8349@e0000000 {
+> > 		...
+> > 		spi@7000 {
+> > 			#address-cells =3D <1>;
+> > 			#size-cells =3D <0>;
+> > 			compatible =3D "fsl,spi";
+> > 			reg =3D <0x7000 0x1000>;
+> > 			interrupts =3D <0x10 0x8>;
+> > 			interrupt-parent =3D < &ipic >;
+>=20
+> You don't seem to have any chip-selects (i.e. gpios =3D <>) specified.
 
-Probably.  But I only use it for compilation testing, so the `Your
-version of gcc miscompiles the __weak directive' thing is a pointless
-PITA, so I patch it out.
+Could you elaborate on this point please? I couldn't find any examples of g=
+pios defined within SPI nodes.
 
->  You need to either build a biarch cross compiler (--enable-targets=all) or try:
-> 
-> $ cat >xxx <<EOF
-> CONFIG_PPC64=y
-> EOF
-> $ KCONFIG_ALLCONFIG=xxx make allnoconfig
-> $ make vmlinux
-> 
-> let us know if that works :-)
+[...]
 
-didn't.  Oh well.
+> >
+> > 			m25p40@2 {
+> > 				compatible =3D "m25p80";
+> > 				spi-max-frequency =3D <25000000>;
+> > 				reg =3D <2>;
 
-It seems odd that it breaks an allnoconfig build, whereas defconfig and
-allmodconfig are OK.
+Thanks again.
+D
