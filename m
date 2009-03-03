@@ -1,18 +1,20 @@
-Return-Path: <DusharaJ@optiscan.com>
-Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
-	by ozlabs.org (Postfix) with ESMTP id 9A8B6DDF02
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 15:11:25 +1100 (EST)
-From: Dushara Jayasinghe <DusharaJ@optiscan.com>
-To: "'avorontsov@ru.mvista.com'" <avorontsov@ru.mvista.com>
-Date: Tue, 3 Mar 2009 15:11:23 +1100
-Subject: RE: Can't load module spi_mpc83xx : No such device
-Message-ID: <DE0CCFFBFF707949BEABD4537A14ACBA0C083C19F8@mailsvr>
-References: <DE0CCFFBFF707949BEABD4537A14ACBA0C04B40564@mailsvr>
-	<20090227125456.GA21435@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090227125456.GA21435@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D9F57DDF04
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 15:28:51 +1100 (EST)
+Subject: Re: Please pull 'next' branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090302132518.GA2447@yoda.jdub.homelinux.org>
+References: <20090224140800.GA2323@yoda.jdub.homelinux.org>
+	<20090302132518.GA2447@yoda.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Tue, 03 Mar 2009 15:28:42 +1100
+Message-Id: <1236054522.20465.2.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All,
-
-> Linus' tree is still lacking few patches for spi_mpc83xx driver, the
-> patches makes spi_mpc83xx work with the device tree directly.
-
-I modified the spi_mpc83xx to work with the device tree using mpc52xx_psc_s=
-pi.c as a guide.=20
-However, the device->dev->platform_data member is NULL (I thought the child=
- node would provide that).=20
-What am I missing?
-
-I'm trying to create the SPI driver as a loadable module which will be used=
- by the m25p80 chip driver (drivers/mtd/devices) which also will be a loada=
-ble module. Am I on the right track?
-
-> [...]
-> > Part of my device tree is as follows:
+On Mon, 2009-03-02 at 08:25 -0500, Josh Boyer wrote:
+> On Tue, Feb 24, 2009 at 09:08:00AM -0500, Josh Boyer wrote:
+> >Hi Ben,
 > >
-> > 	soc8349@e0000000 {
-> > 		...
-> > 		spi@7000 {
-> > 			#address-cells =3D <1>;
-> > 			#size-cells =3D <0>;
-> > 			compatible =3D "fsl,spi";
-> > 			reg =3D <0x7000 0x1000>;
-> > 			interrupts =3D <0x10 0x8>;
-> > 			interrupt-parent =3D < &ipic >;
->=20
-> You don't seem to have any chip-selects (i.e. gpios =3D <>) specified.
+> >Please pull the next branch of the 4xx tree.  It has a few small commits
+> >for 2.6.30, as well as the 256K page size patch for 44x.
+> 
+> Ben, ping?
 
-Could you elaborate on this point please? I couldn't find any examples of g=
-pios defined within SPI nodes.
+It's up now.
 
-[...]
-
-> >
-> > 			m25p40@2 {
-> > 				compatible =3D "m25p80";
-> > 				spi-max-frequency =3D <25000000>;
-> > 				reg =3D <2>;
-
-Thanks again.
-D
+Cheers,
+Ben.
