@@ -1,29 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 56728DDEF3
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 12:20:16 +1100 (EST)
-Received: from imap1.linux-foundation.org (imap1.linux-foundation.org
-	[140.211.169.55])
-	by smtp1.linux-foundation.org (8.14.2/8.13.5/Debian-3ubuntu1.1) with
-	ESMTP id n231Jm0h002134
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Mar 2009 17:19:49 -0800
-Received: from akpm.corp.google.com (localhost [127.0.0.1])
-	by imap1.linux-foundation.org
-	(8.13.5.20060308/8.13.5/Debian-3ubuntu1.1) with SMTP id
-	n231Jmqh010837
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Mar 2009 17:19:48 -0800
-Date: Mon, 2 Mar 2009 17:19:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linuxppc-dev@ozlabs.org
-Subject: powerpc allnoconfig
-Message-Id: <20090302171948.d1e2aa00.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0182DDDEF1
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 13:16:31 +1100 (EST)
+Message-ID: <49AC92E0.3060106@freescale.com>
+Date: Mon, 02 Mar 2009 20:16:00 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc: add defintion for MSR[GS] to list of MSR bits
+References: <1236018001-3206-1-git-send-email-timur@freescale.com>
+	<3431.1236042121@neuling.org>
+In-Reply-To: <3431.1236042121@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,27 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Michael Neuling wrote:
 
-make mrproper
-make allnoconfig
-make vmlinux
+>> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+>
+> Shouldn't this be in reg_booke.h?
 
-gives:
+Yes, you're right.
 
-scripts/kconfig/conf -s arch/powerpc/Kconfig
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-powerpc
-  HOSTCC  scripts/ihex2fw
-  HOSTCC  scripts/kallsyms
-  HOSTCC  scripts/conmakehash
-  CC      scripts/mod/empty.o
-  HOSTCC  scripts/mod/mk_elfconfig
-scripts/mod/empty.c:1: error: -m64 requires a PowerPC64 cpu
-make[2]: *** [scripts/mod/empty.o] Error 1
-make[2]: *** Waiting for unfinished jobs....
-make[1]: *** [scripts/mod] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [scripts] Error 2
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
