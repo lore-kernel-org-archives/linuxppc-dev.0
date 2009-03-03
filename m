@@ -1,40 +1,36 @@
-Return-Path: <bergner@vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <lethal@linux-sh.org>
+Received: from master.linux-sh.org (124x34x33x190.ap124.ftth.ucom.ne.jp
+	[124.34.33.190])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8C49ADDFC7
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 06:05:45 +1100 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e9.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n23IvSvY027285
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Mar 2009 13:57:28 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n23J5GA02301996
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Mar 2009 14:05:16 -0500
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n23J5FFo019276
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Mar 2009 12:05:15 -0700
-Subject: Re: powerpc allnoconfig
-From: Peter Bergner <bergner@vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090303085614.07f8aa27.akpm@linux-foundation.org>
-References: <20090302171948.d1e2aa00.akpm@linux-foundation.org>
-	<12051.1236047470@neuling.org>
-	<20090302184049.27a73395.akpm@linux-foundation.org>
-	<20090303135203.b36312a0.sfr@canb.auug.org.au>
-	<20090302185514.2cc73512.akpm@linux-foundation.org>
-	<20090303141905.52dbf9b1.sfr@canb.auug.org.au>
-	<20090302200809.26b5d5bb.akpm@linux-foundation.org>
-	<alpine.LRH.2.00.0903031109190.31985@vixen.sonytel.be>
-	<20090303085614.07f8aa27.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 13:05:31 -0600
-Message-Id: <1236107131.6800.55.camel@otta>
-Mime-Version: 1.0
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Michael Neuling <mikey@neuling.org>, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BFDF1DE010
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 06:27:19 +1100 (EST)
+Date: Wed, 4 Mar 2009 04:06:10 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
+Message-ID: <20090303190609.GB6907@linux-sh.org>
+References: <20090224231154.60ba18d6@i1501.lan.towertech.it>
+	<1235514727.18632.93.camel@macbook.infradead.org>
+	<alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
+	<20090225111836.621412c1@i1501.lan.towertech.it>
+	<20090227185514.GA1071@linux-m68k.org>
+	<alpine.LRH.2.00.0903021051040.25117@vixen.sonytel.be>
+	<20090302110310.35af50ea@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0903021116450.25117@vixen.sonytel.be>
+	<20090302120950.0d35e06c@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0903031121280.31985@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LRH.2.00.0903031121280.31985@vixen.sonytel.be>
+Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+	Alessandro Zummo <alessandro.zummo@towertech.it>,
+	Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
+	linux-parisc@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,24 +40,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-03-03 at 08:56 -0800, Andrew Morton wrote:
-> On Tue, 3 Mar 2009 11:14:04 +0100 (CET) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On Tue, Mar 03, 2009 at 11:41:23AM +0100, Geert Uytterhoeven wrote:
+> So would you accept a patch series that:
+>   1. Adds the missing module aliases to rtc-parisc (which is a bugfix),
+>   2. Moves the platform device creation out of rtc-ppc and into arch-specific
+>      code (which is also a bugfix),
+>   3. Consolidates rtc-parisc and rtc-ppc into rtc-generic (which is a cleanup),
+>   4. Makes rtc-generic dependent on PARISC, PPC, and M68K (the existing
+>      [sg]et_rtc_time() users):
+>        a. without introducing ARCH_HAS_GENERIC_RTC,
+>        b. with a big fat warning in the Kconfig comment not relaxing the
+>           dependencies, as it's supposed to go away.
+>   4. Converts the PS3 RTC support into a separate driver, called rtc-ps3
+>      (as a bonus ;-)
 > 
-> > > > let us know if that works :-)
-> > > 
-> > > didn't.  Oh well.
-> > 
-> > Does allnoconfig work if you force the compiler to be 32-bit, like
-> > 
-> >     make CC="powerpc64-unknown-linux-gnu-gcc -m32"
+> ? If yes, I'll cook it up.
 > 
-> Nope:
+> Other RTC platform support can be converted into separate drivers later.
 > 
-> scripts/mod/empty.c:1: error: -m64 requires a PowerPC64 cpu
+Did you miss the rtc-firmware thread?
 
-To build a biarch compiler that defaults to 32-bit, try adding the
-option --with-cpu=default32 to your GCC configure options.  You also
-shouldn't need --enable-targets=all.  We haven't used that option
-for ages when building powerpc64-linux enabled GCCs.
-
-Peter
+http://groups.google.com/group/rtc-linux/browse_thread/thread/53e8d98966048f66/1d730cb4aa2f85f0?lnk=gst&q=rtc-firmware#1d730cb4aa2f85f0
+http://groups.google.com/group/rtc-linux/browse_thread/thread/b3d10115c7e147f2/cb9c1530d9c3a433?lnk=gst&q=rtc-firmware#cb9c1530d9c3a433
