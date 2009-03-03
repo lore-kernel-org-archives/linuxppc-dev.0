@@ -1,13 +1,29 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: add defintion for MSR[GS] to list of MSR bits 
-In-reply-to: <1236018001-3206-1-git-send-email-timur@freescale.com> 
-References: <1236018001-3206-1-git-send-email-timur@freescale.com>
-Date: Tue, 03 Mar 2009 12:02:01 +1100
-Message-ID: <3431.1236042121@neuling.org>
-Sender: mikey@neuling.org
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 56728DDEF3
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 12:20:16 +1100 (EST)
+Received: from imap1.linux-foundation.org (imap1.linux-foundation.org
+	[140.211.169.55])
+	by smtp1.linux-foundation.org (8.14.2/8.13.5/Debian-3ubuntu1.1) with
+	ESMTP id n231Jm0h002134
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Mar 2009 17:19:49 -0800
+Received: from akpm.corp.google.com (localhost [127.0.0.1])
+	by imap1.linux-foundation.org
+	(8.13.5.20060308/8.13.5/Debian-3ubuntu1.1) with SMTP id
+	n231Jmqh010837
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Mar 2009 17:19:48 -0800
+Date: Mon, 2 Mar 2009 17:19:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linuxppc-dev@ozlabs.org
+Subject: powerpc allnoconfig
+Message-Id: <20090302171948.d1e2aa00.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,48 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Add macros for the GS (guest state) bit to the list of MSR bit definitions.
-> On PowerPC cores that support embedded hypervisor mode, GS is cleared if
-> the system is running in hypervisor state (and MSR[PR] is cleared), and set
-> if it's running in guest state.  See the Power ISA 2.06 specification for
-> more information.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
->  arch/powerpc/include/asm/reg.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
 
-Shouldn't this be in reg_booke.h?
+make mrproper
+make allnoconfig
+make vmlinux
 
-Mikey
+gives:
 
-> index c6d1ab6..ca5c7f8 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -29,6 +29,7 @@
->  #define MSR_SF_LG	63              /* Enable 64 bit mode */
->  #define MSR_ISF_LG	61              /* Interrupt 64b mode valid on 630 */
->  #define MSR_HV_LG 	60              /* Hypervisor state */
-> +#define MSR_GS_LG	28		/* Guest state */
->  #define MSR_VEC_LG	25	        /* Enable AltiVec */
->  #define MSR_VSX_LG	23		/* Enable VSX */
->  #define MSR_POW_LG	18		/* Enable Power Management */
-> @@ -71,6 +72,7 @@
->  #define MSR_HV		0
->  #endif
->  
-> +#define MSR_GS		__MASK(MSR_GS_LG)	/* Guest state */
->  #define MSR_VEC		__MASK(MSR_VEC_LG)	/* Enable AltiVec */
->  #define MSR_VSX		__MASK(MSR_VSX_LG)	/* Enable VSX */
->  #define MSR_POW		__MASK(MSR_POW_LG)	/* Enable Power Managem
-ent */
-> -- 
-> 1.5.5
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+scripts/kconfig/conf -s arch/powerpc/Kconfig
+  CHK     include/linux/version.h
+  UPD     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  UPD     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-powerpc
+  HOSTCC  scripts/ihex2fw
+  HOSTCC  scripts/kallsyms
+  HOSTCC  scripts/conmakehash
+  CC      scripts/mod/empty.o
+  HOSTCC  scripts/mod/mk_elfconfig
+scripts/mod/empty.c:1: error: -m64 requires a PowerPC64 cpu
+make[2]: *** [scripts/mod/empty.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [scripts/mod] Error 2
+make[1]: *** Waiting for unfinished jobs....
+make: *** [scripts] Error 2
