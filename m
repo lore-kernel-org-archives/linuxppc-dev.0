@@ -1,25 +1,36 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 68B56DDF81
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 21:14:16 +1100 (EST)
-Date: Tue, 3 Mar 2009 11:14:04 +0100 (CET)
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 3A68BDDF81
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 21:41:25 +1100 (EST)
+Date: Tue, 3 Mar 2009 11:41:23 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: powerpc allnoconfig
-In-Reply-To: <20090302200809.26b5d5bb.akpm@linux-foundation.org>
-Message-ID: <alpine.LRH.2.00.0903031109190.31985@vixen.sonytel.be>
-References: <20090302171948.d1e2aa00.akpm@linux-foundation.org>
-	<12051.1236047470@neuling.org>
-	<20090302184049.27a73395.akpm@linux-foundation.org>
-	<20090303135203.b36312a0.sfr@canb.auug.org.au>
-	<20090302185514.2cc73512.akpm@linux-foundation.org>
-	<20090303141905.52dbf9b1.sfr@canb.auug.org.au>
-	<20090302200809.26b5d5bb.akpm@linux-foundation.org>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
+In-Reply-To: <20090302120950.0d35e06c@i1501.lan.towertech.it>
+Message-ID: <alpine.LRH.2.00.0903031121280.31985@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090220170454.04382e9e@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+	<1235511327.18632.73.camel@macbook.infradead.org>
+	<20090224231154.60ba18d6@i1501.lan.towertech.it>
+	<1235514727.18632.93.camel@macbook.infradead.org>
+	<alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
+	<20090225111836.621412c1@i1501.lan.towertech.it>
+	<20090227185514.GA1071@linux-m68k.org>
+	<alpine.LRH.2.00.0903021051040.25117@vixen.sonytel.be>
+	<20090302110310.35af50ea@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0903021116450.25117@vixen.sonytel.be>
+	<20090302120950.0d35e06c@i1501.lan.towertech.it>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Michael Neuling <mikey@neuling.org>, linuxppc-dev@ozlabs.org
+Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+	Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
+	linux-parisc@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,46 +40,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2 Mar 2009, Andrew Morton wrote:
-> On Tue, 3 Mar 2009 14:19:05 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > On Mon, 2 Mar 2009 18:55:14 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > Using built-in specs.
-> > > Target: powerpc64-unknown-linux-gnu
-> > > Configured with: /home/axboe/crosstool-0.43/build/powerpc64-unknown-linux-gnu/gcc-4.1.0-glibc-2.3.6/gcc-4.1.0/configure --target=powerpc64-unknown-linux-gnu --host=x86_64-host_unknown-linux-gnu --prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu --disable-multilib --with-sysroot=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/powerpc64-unknown-linux-gnu/sys-root --with-local-prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/powerpc64-unknown-linux-gnu/sys-root --disable-nls --enable-threads=posix --enable-symvers=gnu --enable-__cxa_atexit --enable-languages=c --enable-shared --enable-c99 --enable-long-long
-> > > Thread model: posix
-> > > gcc version 4.1.0
-> > > 
-> > > > I suspect you have a 64 bit only compiler and allnoconfig produces a 32
-> > > > bit kernel.  Is this a new error?
-> > > 
-> > > 2.6.28 does the same thing.  I don't recall having tested allnoconfig
-> > > for ages if at all, so I don't know if it's a regression.
-> > 
-> > Right, you have a 64 bit only compiler. Also it is version 4.1.0 which we now black ban (I think).
+On Mon, 2 Mar 2009, Alessandro Zummo wrote:
+> On Mon, 2 Mar 2009 11:28:01 +0100 (CET)
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > So I can solve my problem (autoloading the RTC driver on PS3 by udev) by
+> > converting the old genrtc driver into a platform device driver and creating
+> > platform devices where appropriate.
 > 
-> Probably.  But I only use it for compilation testing, so the `Your
-> version of gcc miscompiles the __weak directive' thing is a pointless
-> PITA, so I patch it out.
+>  yes. btw, if you are building a kernel specific for the PS3, I would
+>  compile the rtc driver statically, otherwise it won't be available
+>  early on boot.
+>  
+> > However, this doesn't solve the distro's problem: as the old RTC framework
+> > depends on RTC_LIB=n, you cannot have both old and new RTC drivers in your
+> > (single) distro kernel. That's why dmwm2 created drivers/rtc/rtc-ppc.c: Fedora
+> > had to support machines with both old and new RTC drivers. As all of the old
+> > drivers are actually behind the ppc_md.[sg]et_rtc_time() abstraction, this was
+> > very easy.
 > 
-> >  You need to either build a biarch cross compiler (--enable-targets=all) or try:
-> > 
-> > $ cat >xxx <<EOF
-> > CONFIG_PPC64=y
-> > EOF
-> > $ KCONFIG_ALLCONFIG=xxx make allnoconfig
-> > $ make vmlinux
-> > 
-> > let us know if that works :-)
+>  ok, generic kernel. you will have to load the modules on initrd. no, sadly you
+>  can't have both of them. you might stick with the old interface or
+>  convert them all. 
 > 
-> didn't.  Oh well.
+> > Hence it's all or nothing, and we have to convert all of them.
+> > 
+> > drivers/rtc/rtc-generic.c would allow to have a working system without old
+> > RTC drivers, until all low-level code has been converted to individual RTC
+> > drivers.
+> 
+>  I know but I have enough experience to foresee that once a generic over generic
+>  framework is in place it's very hard to get rid of it because people
+>  will have no incentives.
 
-Does allnoconfig work if you force the compiler to be 32-bit, like
+I know.
 
-    make CC="powerpc64-unknown-linux-gnu-gcc -m32"
+>  If you really need rtc-generic you can keep using it even if it's 
+>  not in the kernel, distributions often have their specific
+>  set of kernel patches.
 
-? This is what I'm using to compile ppc32 kernels with the Cell SDK ppu-gcc43,
-which defaults to -m64 (BTW, I also had to add "-mcpu=440" for gcc 4.3.2, which
-I didn't need for the banned 4.1.1).
+rtc-generic is already in the kernel, it's just called rtc-parisc ;-)
+
+>  But I'd strongly suggest to plan and execute a conversion process.
+
+So would you accept a patch series that:
+  1. Adds the missing module aliases to rtc-parisc (which is a bugfix),
+  2. Moves the platform device creation out of rtc-ppc and into arch-specific
+     code (which is also a bugfix),
+  3. Consolidates rtc-parisc and rtc-ppc into rtc-generic (which is a cleanup),
+  4. Makes rtc-generic dependent on PARISC, PPC, and M68K (the existing
+     [sg]et_rtc_time() users):
+       a. without introducing ARCH_HAS_GENERIC_RTC,
+       b. with a big fat warning in the Kconfig comment not relaxing the
+          dependencies, as it's supposed to go away.
+  4. Converts the PS3 RTC support into a separate driver, called rtc-ps3
+     (as a bonus ;-)
+
+? If yes, I'll cook it up.
+
+Other RTC platform support can be converted into separate drivers later.
+
+Thanks!
 
 With kind regards,
 
