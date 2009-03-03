@@ -1,16 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B5022DDF92
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 03:23:56 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Subject: [PATCH v2] powerpc: add defintion for MSR[GS] to list of MSR bits
-Date: Tue,  3 Mar 2009 10:23:47 -0600
-Message-Id: <1236097427-17977-1-git-send-email-timur@freescale.com>
+Return-Path: <scott.coulter@cyclone.com>
+Received: from CYBORG3.cyclone.com (cyborg3.cyclone.com [69.37.28.78])
+	by ozlabs.org (Postfix) with ESMTP id 93B99DDE31
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 03:34:02 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Gianfar tx-babbling-errors
+Date: Tue, 3 Mar 2009 11:33:59 -0500
+Message-ID: <43EB80E07C42E1408726E4905FB96B04C07957@CYBORG3.cyclone.com>
+In-Reply-To: <18AEF66AFDF06F4CAAA1D419D000FD3302B1EB2E@az33exm24.fsl.freescale.net>
+References: <43EB80E07C42E1408726E4905FB96B04C0769D@CYBORG3.cyclone.com>
+	<18AEF66AFDF06F4CAAA1D419D000FD3302B1EAB1@az33exm24.fsl.freescale.net>
+	<43EB80E07C42E1408726E4905FB96B04C0774E@CYBORG3.cyclone.com>
+	<18AEF66AFDF06F4CAAA1D419D000FD3302B1EB2E@az33exm24.fsl.freescale.net>
+From: "Scott Coulter" <scott.coulter@cyclone.com>
+To: "Haruki Dai-R35557" <Dai.Haruki@freescale.com>, <linuxppc-dev@ozlabs.org>
+Cc: Gala Kumar-B11780 <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add macros for the GS (guest state) bit to the list of MSR bit definitions.
-On PowerPC cores that support embedded hypervisor mode, GS is cleared if
-the system is running in hypervisor state (and MSR[PR] is cleared), and set
-if it's running in guest state.  See the Power ISA 2.06 specification for
-more information.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+Hi all,
 
-v2: moved the definition from reg.h to reg_booke.h, where it belongs
+In my continued search to stop tx-babbling-errors, I grabbed the latest
+blobs for gianfar.c and gianfar.h from http://git.kernel.org.  The
+history says that the following changes were made since the driver
+version I was using (Freescale December 2008 LTIB release for 8572):
 
- arch/powerpc/include/asm/reg_booke.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+2009-02-09 Jarek Poplawski gianfar: Fix boot hangs while bringing up
+gianfar ethernet
+2009-02-05 Andy Fleming gianfar: Fix potential soft reset race=20
+2009-01-26 Anton Vorontsov gianfar: Revive VLAN support blob=20
+2009-01-13 Anton Vorontsov gianfar: Fix soft lockup with multi-interrupt
+TSECs=20
+2009-01-11 Clifford Wolf netdev: gianfar: add MII ioctl handler=20
+2009-01-08 Kumar Gala gianfar: Fixup use of BUS_ID_SIZE
+2009-01-06 Li Yang gianfar: ensure ECNTRL[R100] is cleared on link state
+change
+2008-12-18 Andy Fleming gianfar: Continue polling until both tx and rx
+are empty
 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index c030741..cf1c41f 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -10,6 +10,7 @@
- #define __ASM_POWERPC_REG_BOOKE_H__
- 
- /* Machine State Register (MSR) Fields */
-+#define MSR_GS		(1<<28) /* Guest state */
- #define MSR_UCLE	(1<<26)	/* User-mode cache lock enable */
- #define MSR_SPE		(1<<25)	/* Enable SPE */
- #define MSR_DWE		(1<<10)	/* Debug Wait Enable */
--- 
-1.5.5
+I backed out the following change due to compile errors:
+
+2008-12-23 Neil Horman net: Remove unused netdev arg from some NAPI
+interfaces
+
+I also added the following change which wasn't in the kernel.org git:
+
+2009-02-26 Rini van Zetten: fix to prevent num_txbdfree from going
+negative
+
+I also left my BUG_ON() check in gfar_clean_tx_ring() in to look for
+truncated packets.  So far I've done 3 complete kernel builds over NFS
+with no tx-babbling-errors reported by ethtool and no bug checks.
+
+Scott
+
+
+
+
+___________________________________________________________________
+
+  Scott N. Coulter
+  Senior Software Engineer
+ =20
+  Cyclone Microsystems         =20
+  370 James Street              Phone:  203.786.5536 ext. 118
+  New Haven, CT 06513-3051      Email:  scott.coulter@cyclone.com
+  U.S.A.                        Web:    http://www.cyclone.com
+___________________________________________________________________
