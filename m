@@ -1,29 +1,27 @@
-Return-Path: <mike@it-loops.com>
-Received: from lvps87-230-0-242.dedicated.hosteurope.de
-	(lvps87-230-0-242.dedicated.hosteurope.de [87.230.0.242])
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "plesk", Issuer "plesk" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 1A7D3DDF77
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 20:49:46 +1100 (EST)
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 09E2BDDF8F
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 20:50:09 +1100 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id n239mrGU004539
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Mar 2009 20:48:53 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n239oP0m332072
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Mar 2009 20:50:25 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n239o7Dr002849
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Mar 2009 20:50:07 +1100
+Message-ID: <49ACFD4E.8060506@in.ibm.com>
+Date: Tue, 03 Mar 2009 15:20:06 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Date: Tue, 03 Mar 2009 10:49:35 +0100
-From: Michael Guntsche <mike@it-loops.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: PHY not found after migration of gianfar driver to an
-	=?UTF-8?Q?of=5Fplatform=5Fdriver?=
-In-Reply-To: <9d38520266f15d80352d1554e63c1ce6@localhost>
-References: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
-	<fa686aa40902280703p5ad8ee73y116d7e2252df21a5@mail.gmail.com>
-	<3B1D47A2-329E-491E-B3AC-E76C1CE1762D@it-loops.com>
-	<fa686aa40903011353t464b1df3obd553132e5bc2570@mail.gmail.com>
-	<CD026D29-687D-4078-960E-108CC94C30E4@it-loops.com>
-	<fa686aa40903011715u2aed4c23tb8182634fa1220f6@mail.gmail.com>
-	<c19541729a7d99548faadbabe5c7646c@localhost>
-	<fa686aa40903020708y1f9f8ceeueb13f9146534df8d@mail.gmail.com>
-	<9d38520266f15d80352d1554e63c1ce6@localhost>
-Message-ID: <a57485706bfc7aae2295acd743445312@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: 2.6.29-rc6-git6 defconfig build failure
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,17 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 03 Mar 2009 08:35:02 +0100, Michael Guntsche <mike@it-loops.com>
-wrote:
-> As for adding additional information to the tree, can I also use libfdt
-> functions in platform/83xx/rbppc.c or is it better to do this via a
-> dedicated platform_init that simpleboot then uses?
+2.6.29-rc6-git6 ppc64_defconfig build fails with 
 
-Sorry, please forget this quesiton. Of course simpleboot only reads the
-embedded tree 
-so if I change the tree there it is the same as changing the initial DTS
-file.
-I will try to boot with a standard vmlinux image and then add the values in
-rbppc.c.
+arch/powerpc/kernel/built-in.o: In function `.of_pci_phb_probe':
+of_platform.c:(.devinit.text+0xe0): undefined reference to `.pcibios_claim_one_bus'
+arch/powerpc/platforms/built-in.o: In function `.remove_phb_dynamic':
+(.text+0x120fc): undefined reference to `.pcibios_unmap_io_space'
+arch/powerpc/platforms/built-in.o: In function `.pcibios_add_pci_devices':
+(.text+0x12338): undefined reference to `.pcibios_finish_adding_to_bus'
+arch/powerpc/platforms/built-in.o: In function `.init_phb_dynamic':
+(.devinit.text+0x6ec): undefined reference to `.pcibios_finish_adding_to_bus'
+make: *** [.tmp_vmlinux1] Error 1
 
-Michael
+git5 did not have this problem as CONFIG_HOTPLUG was set with ppc64_defconfig.
+With git6 defconfig there is no CONFIG_HOTPLUG
+
+# grep CONFIG_HOTPLUG linux-2.6.29-rc6-git6/.config
+# 
+
+# grep CONFIG_HOTPLUG linux-2.6.29-rc6-git5/.config
+CONFIG_HOTPLUG=y
+CONFIG_HOTPLUG_CPU=y
+CONFIG_HOTPLUG_PCI=m
+# CONFIG_HOTPLUG_PCI_FAKE is not set
+# CONFIG_HOTPLUG_PCI_CPCI is not set
+# CONFIG_HOTPLUG_PCI_SHPC is not set
+CONFIG_HOTPLUG_PCI_RPA=m
+CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
+
+Thanks
+-Sachin
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
