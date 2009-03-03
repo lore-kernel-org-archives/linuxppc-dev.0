@@ -1,19 +1,9 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D28CDDDF00
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 15:55:40 +1100 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n234tZlH007892
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Mar 2009 22:55:36 -0600
-Subject: next branch status
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 03 Mar 2009 15:55:34 +1100
-Message-Id: <1236056134.20465.18.camel@pasglop>
-Mime-Version: 1.0
+Date: Tue, 03 Mar 2009 16:22:42 +1100
+Subject: [PATCH 1/2] powerpc/mm: Tweak PTE bit combination definitions (v2)
+Message-Id: <20090303052343.D25D1DDF07@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,350 +13,409 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hoy hoy !
+This patch tweaks the way some PTE bit combinations are defined, in such a
+way that the 32 and 64-bit variant become almost identical and that will
+make it easier to bring in a new common pte-* file for the new variant
+of the Book3-E support.
 
-So I somewhat lost track of what I announced and what not already so
-here's a full shortlog of what's in today vs. Linus, followed by a
-diffstat.
+The combination of bits defining access to kernel pages are now clearly
+separated from the combination used by userspace and the core VM. The
+resulting generated code should remain identical unless I made a mistake.
 
-Heads up as the merge window is opening soon.
+Note: While at it, I removed a non-sensical statement related to CONFIG_KGDB
+in ppc_mmu_32.c which could cause kernel mappings to be user accessible when
+that option is enabled. Probably something that bitrot.
 
-I still have to scrub patchwork for new stuff that got posted since the
-last "test" update last week, don't go bonkers if you don't see your
-patch in if you posted it last week, only if it's older than that.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Note: Test is empty right now (ie. == next)
+v2: Fix mixup with next patch
 
-Note: Kumar and Grant, pls be a bit more careful with files outside of
-arch/powerpc ... like the 5200 fec driver change, even if it's really
-powerpc only stuff and quite clearly so, it's in drivers/net, it
-wouldn't have hurt to seek davem ack for it... No big deal, it's only 2
-or 3 files that I might need to give Linus an explanation about tho :-)
+ arch/powerpc/include/asm/fixmap.h        |    2 -
+ arch/powerpc/include/asm/pgtable-ppc32.h |   39 ++++++++++++-------------
+ arch/powerpc/include/asm/pgtable-ppc64.h |   44 +++++++++++++++++------------
+ arch/powerpc/include/asm/pgtable.h       |    4 ++
+ arch/powerpc/include/asm/pte-8xx.h       |    3 +
+ arch/powerpc/include/asm/pte-hash32.h    |    1 
+ arch/powerpc/include/asm/pte-hash64-4k.h |    3 -
+ arch/powerpc/include/asm/pte-hash64.h    |   47 +++++++++++++++++--------------
+ arch/powerpc/mm/fsl_booke_mmu.c          |    2 -
+ arch/powerpc/mm/pgtable_32.c             |    4 +-
+ arch/powerpc/mm/ppc_mmu_32.c             |   10 +-----
+ arch/powerpc/sysdev/cpm_common.c         |    2 -
+ 12 files changed, 86 insertions(+), 75 deletions(-)
 
-Cheers,
-Ben.
-
-Anton Blanchard (11):
-      powerpc/mm: Move 64-bit unmapped_area to top of address space
-      powerpc/mm: Reduce hashtable size when using 64kB pages
-      powerpc: Move is_32bit_task
-      powerpc: Rearrange mmap.c
-      powerpc: Randomise mmap start address
-      powerpc: More stack randomisation for 64bit binaries
-      powerpc: Randomise lower bits of stack address
-      powerpc: Randomise the brk region
-      powerpc: Ensure random space between stack and mmaps
-      powerpc: Increase stack gap on 64bit binaries
-      powerpc: Randomise PIEs
-
-Anton Vorontsov (5):
-      powerpc/fsl_pci: Add MPC83xx PCI-E controller RC mode support
-      powerpc/83xx: Add PCI-E support for all MPC83xx boards with PCI-E
-      powerpc: Document FSL eSDHC bindings
-      powerpc/83xx: Convert existing sdhc nodes to new bindings
-      powerpc/83xx: Add FSL eSDHC support for MPC837x-RDB boards
-
-Arnd Bergmann (1):
-      powerpc/cell: Fix dependency in cpufreq
-
-Benjamin Herrenschmidt (3):
-      powerpc/mm: Rework I$/D$ coherency (v3)
-      powerpc/4xx: Add missing USB and i2c devices to Canyonlands
-      powerpc/4xx: Enable PCI domains on 4xx
-
-Benjamin Krill (1):
-      powerpc/cell: Add rtas rtc calls for the QPACE platform
-
-Brian King (1):
-      powerpc/pseries: Fix partition migration hang under load
-
-Gabriel Paubert (1):
-      powerpc: Disable mv643xx Ethernet port 0 on Pegasos
-
-Gerhard Pircher (4):
-      powerpc/amigaone: Add platform support for AmigaOne
-      powerpc/amigaone: Generic device tree for all AmigaOne boards
-      powerpc/amigaone: Bootwrapper and serial console support for AmigaOne
-      powerpc/amigaone: Default config for AmigaOne boards
-
-Giuliano Pochini (1):
-      powerpc/powermac: Hotplug /sys entries are missing
-
-Grant Likely (7):
-      powerpc/5200: Stop using device_type and port-number properties
-      powerpc/5200: Trim cruft from device trees
-      powerpc/5200: Don't specify IRQF_SHARED in PSC UART driver
-      powerpc/5200: Remove pr_debug() from hot paths in irq driver
-      powerpc/5200: Refactor mpc5200 interrupt controller driver
-      powerpc/5200: Rework GPT driver to also be an IRQ controller
-      powerpc/5200: Add support for the Media5200 board from Freescale
-
-Grzegorz Bernacki (1):
-      powerpc/5200: Add support for the digsy MTC board.
-
-Ilya Yanok (1):
-      powerpc: Rework dma-noncoherent to use generic vmalloc layer
-
-Jeremy Kerr (3):
-      powerpc/spufs: Use correct return value for spu_handle_mm_fault
-      powerpc/spufs: Clear purge status before setting up isolated mode
-      powerpc/spufs: Constify context contents and coredump callback constants
-
-Kumar Gala (10):
-      powerpc/fsl-booke: Cleanup init/exception setup to be runtime
-      powerpc/fsl: Ensure PCI_QUIRKS are enabled for FSL_PCI
-      powerpc/85xx: Fixed PCI IO region sizes in mpc8572ds*.dts
-      powerpc/85xx: Added 36-bit physical device tree for mpc8572ds board
-      powerpc/fsl-booke: Add new ISA 2.06 page sizes and MAS defines
-      powerpc/book-3e: Introduce concept of Book-3e MMU
-      powerpc/fsl-booke: Fix compile warning
-      powerpc: Unify opcode definitions and support
-      powerpc: Fix warnings from make headers_check
-      powerpc: Add support for using doorbells for SMP IPI
-
-Laurent Pinchart (1):
-      cpm2: Round the baud-rate clock divider to the nearest integer.
-
-Madhulika Madishetty (1):
-      AMCC PPC 460SX redwood SoC platform initial framework
-
-Martyn Welch (3):
-      powerpc/86xx: Board support for GE Fanuc SBC310
-      powerpc/86xx: Default configutation for GE Fanuc's SBC310
-      powerpc/86xx: Extend GE Fanuc GPIO driver for the SBC310
-
-Michael Ellerman (9):
-      powerpc: Remove unused ppc64_terminate_msg()
-      powerpc: Allow debugging of LMBs with lmb=debug
-      lmb: Rework lmb_dump_all() output
-      powerpc/pseries: Fix MSI-X interrupt querying
-      powerpc/pseries: Add support for ibm,req#msi-x
-      powerpc/pseries: Check for MSI-X also in rtas_msi_pci_irq_fixup()
-      powerpc/pseries: Return the number of MSIs we could allocate
-      powerpc/pseries: Return req#msi(-x) if request is larger
-      powerpc/pseries: Implement a quota system for MSIs
-
-Michael Neuling (2):
-      powerpc: Add alignment handler for new lfiwzx instruction
-      powerpc: Fix load/store float double alignment handler
-
-Mike Mason (1):
-      powerpc/eeh: Only disable/enable LSI interrupts in EEH
-
-Milton Miller (4):
-      powerpc/numa: Avoid possible reference beyond prop. length in find_min_common_depth()
-      powerpc/numa: Remove redundant find_cpu_node()
-      powerpc/pseries: Remove write only variable in PCI DLPAR
-      powerpc/pci: Move hose_list and pci_address_to_pio to pci-common
-
-Nathan Fontenot (1):
-      powerpc/numa: Cleanup hot_add_scn_to_nid
-
-Peter Korsgaard (1):
-      powerpc: convert dts-bindings/fsl/dma.txt to dts-v1 syntax
-
-Reynes Philippe (3):
-      powerpc/83xx: Add i2c eeprom to dts for MPC837x RDB
-      powerpc/83xx: Add gpio to MPC837x RDB
-      powerpc/83xx: Add lm75 to MPC837x RDB dts
-
-Steven Rostedt (11):
-      tracing/function-graph-tracer: make arch generic push pop functions
-      ftrace, powerpc: replace debug macro with proper pr_deug
-      powerpc, ftrace: fix compile error when modules not configured
-      powerpc64: port of the function graph tracer
-      powerpc64, tracing: add function graph tracer with dynamic tracing
-      powerpc64, ftrace: save toc only on modules for function graph
-      powerpc32, ftrace: save and restore mcount regs with macro
-      powerpc32, ftrace: port function graph tracer to ppc32, static only
-      powerpc32, ftrace: dynamic function graph tracer
-      powerpc, ftrace: use unsigned int for instruction manipulation
-      powerpc, ftrace: use create_branch lib function
-
-Tom Arbuckle (1):
-      powerpc/pci: Fix PCI<->OF matching of old style multifunc devices
-
-Trent Piepho (3):
-      powerpc/fsl-booke: Remove code duplication in lowmem mapping
-      powerpc/fsl-booke: Allow larger CAM sizes than 256 MB
-      powerpc/fsl-booke: Make CAM entries used for lowmem configurable
-
-Wolfgang Grandegger (2):
-      powerpc/85xx: TQM85xx - fix sensitivity of CAN interrupts
-      powerpc/85xx: TQM85xx - add i2c device nodes for LM75
-
-Yuri Tikhonov (1):
-      powerpc/44x: Support for 256KB PAGE_SIZE
-
-roel kluin (1):
-      therm_adt746x: Fix signed/unsigned confusion
-
-
- Documentation/powerpc/dts-bindings/fsl/dma.txt   |   34 
- Documentation/powerpc/dts-bindings/fsl/esdhc.txt |   24 
- arch/powerpc/Kconfig                             |   72 +
- arch/powerpc/boot/Makefile                       |    9 
- arch/powerpc/boot/cuboot-amigaone.c              |   35 
- arch/powerpc/boot/dts/amigaone.dts               |  173 ++
- arch/powerpc/boot/dts/canyonlands.dts            |   28 
- arch/powerpc/boot/dts/cm5200.dts                 |   49 -
- arch/powerpc/boot/dts/digsy_mtc.dts              |  254 +++
- arch/powerpc/boot/dts/gef_sbc310.dts             |  364 +++++
- arch/powerpc/boot/dts/lite5200.dts               |   52 -
- arch/powerpc/boot/dts/lite5200b.dts              |   63 -
- arch/powerpc/boot/dts/media5200.dts              |  318 ++++
- arch/powerpc/boot/dts/motionpro.dts              |   42 -
- arch/powerpc/boot/dts/mpc8315erdb.dts            |   64 +
- arch/powerpc/boot/dts/mpc8377_mds.dts            |   71 +
- arch/powerpc/boot/dts/mpc8377_rdb.dts            |  102 +
- arch/powerpc/boot/dts/mpc8378_mds.dts            |   71 +
- arch/powerpc/boot/dts/mpc8378_rdb.dts            |  102 +
- arch/powerpc/boot/dts/mpc8379_mds.dts            |    7 
- arch/powerpc/boot/dts/mpc8379_rdb.dts            |   38 +
- arch/powerpc/boot/dts/mpc8572ds.dts              |   10 
- arch/powerpc/boot/dts/mpc8572ds_36b.dts          |  787 +++++++++++
- arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts   |    8 
- arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts   |    4 
- arch/powerpc/boot/dts/pcm030.dts                 |  182 +-
- arch/powerpc/boot/dts/redwood.dts                |  244 +++
- arch/powerpc/boot/dts/tqm5200.dts                |   32 
- arch/powerpc/boot/dts/tqm8540.dts                |    5 
- arch/powerpc/boot/dts/tqm8541.dts                |    5 
- arch/powerpc/boot/dts/tqm8548-bigflash.dts       |    9 
- arch/powerpc/boot/dts/tqm8548.dts                |    9 
- arch/powerpc/boot/dts/tqm8555.dts                |    5 
- arch/powerpc/boot/dts/tqm8560.dts                |    9 
- arch/powerpc/boot/serial.c                       |    3 
- arch/powerpc/boot/wrapper                        |    3 
- arch/powerpc/configs/44x/canyonlands_defconfig   |  266 +++-
- arch/powerpc/configs/44x/redwood_defconfig       | 1176 ++++++++++++++++
- arch/powerpc/configs/86xx/gef_sbc310_defconfig   | 1613 ++++++++++++++++++++++
- arch/powerpc/configs/amigaone_defconfig          | 1636 ++++++++++++++++++++++
- arch/powerpc/include/asm/bootx.h                 |    2 
- arch/powerpc/include/asm/code-patching.h         |    4 
- arch/powerpc/include/asm/cputable.h              |    4 
- arch/powerpc/include/asm/dbell.h                 |   43 +
- arch/powerpc/include/asm/elf.h                   |   14 
- arch/powerpc/include/asm/ftrace.h                |   39 +
- arch/powerpc/include/asm/highmem.h               |   12 
- arch/powerpc/include/asm/kvm.h                   |    2 
- arch/powerpc/include/asm/machdep.h               |    2 
- arch/powerpc/include/asm/mmu-44x.h               |    2 
- arch/powerpc/include/asm/mmu-book3e.h            |   66 +
- arch/powerpc/include/asm/mmu.h                   |    6 
- arch/powerpc/include/asm/page.h                  |    6 
- arch/powerpc/include/asm/page_32.h               |    4 
- arch/powerpc/include/asm/pgtable-ppc32.h         |   57 -
- arch/powerpc/include/asm/pgtable-ppc64.h         |   29 
- arch/powerpc/include/asm/pgtable.h               |   84 +
- arch/powerpc/include/asm/ppc-opcode.h            |   73 +
- arch/powerpc/include/asm/ppc_asm.h               |    6 
- arch/powerpc/include/asm/ps3fb.h                 |    1 
- arch/powerpc/include/asm/reg_booke.h             |    1 
- arch/powerpc/include/asm/spu_info.h              |    3 
- arch/powerpc/include/asm/swab.h                  |    2 
- arch/powerpc/include/asm/system.h                |    2 
- arch/powerpc/include/asm/thread_info.h           |   11 
- arch/powerpc/kernel/Makefile                     |   10 
- arch/powerpc/kernel/align.c                      |    2 
- arch/powerpc/kernel/cpu_setup_44x.S              |    1 
- arch/powerpc/kernel/cpu_setup_fsl_booke.S        |   31 
- arch/powerpc/kernel/cputable.c                   |   22 
- arch/powerpc/kernel/crash_dump.c                 |    2 
- arch/powerpc/kernel/dbell.c                      |   44 +
- arch/powerpc/kernel/entry_32.S                   |  129 +-
- arch/powerpc/kernel/entry_64.S                   |   89 +
- arch/powerpc/kernel/ftrace.c                     |  222 ++-
- arch/powerpc/kernel/head_booke.h                 |   19 
- arch/powerpc/kernel/head_fsl_booke.S             |  101 +
- arch/powerpc/kernel/module_64.c                  |    2 
- arch/powerpc/kernel/pci-common.c                 |   41 -
- arch/powerpc/kernel/pci_32.c                     |   36 
- arch/powerpc/kernel/pci_64.c                     |   19 
- arch/powerpc/kernel/process.c                    |   58 +
- arch/powerpc/kernel/prom.c                       |    6 
- arch/powerpc/kernel/rtas.c                       |   10 
- arch/powerpc/kernel/setup_64.c                   |    7 
- arch/powerpc/kernel/signal.h                     |   10 
- arch/powerpc/kernel/traps.c                      |   79 +
- arch/powerpc/kernel/vmlinux.lds.S                |    1 
- arch/powerpc/lib/dma-noncoherent.c               |  303 +---
- arch/powerpc/lib/feature-fixups.c                |    4 
- arch/powerpc/mm/fault.c                          |   46 -
- arch/powerpc/mm/fsl_booke_mmu.c                  |   95 +
- arch/powerpc/mm/hash_utils_64.c                  |    5 
- arch/powerpc/mm/mem.c                            |   33 
- arch/powerpc/mm/mmap.c                           |   64 +
- arch/powerpc/mm/numa.c                           |  174 +-
- arch/powerpc/mm/pgtable.c                        |  131 ++
- arch/powerpc/platforms/44x/Kconfig               |   19 
- arch/powerpc/platforms/44x/ppc44x_simple.c       |    1 
- arch/powerpc/platforms/52xx/Kconfig              |   12 
- arch/powerpc/platforms/52xx/Makefile             |    3 
- arch/powerpc/platforms/52xx/media5200.c          |  273 ++++
- arch/powerpc/platforms/52xx/mpc5200_simple.c     |    1 
- arch/powerpc/platforms/52xx/mpc52xx_gpio.c       |   85 -
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c        |  435 ++++++
- arch/powerpc/platforms/52xx/mpc52xx_pic.c        |  170 +-
- arch/powerpc/platforms/83xx/mpc831x_rdb.c        |    2 
- arch/powerpc/platforms/83xx/mpc837x_mds.c        |   10 
- arch/powerpc/platforms/83xx/mpc837x_rdb.c        |    2 
- arch/powerpc/platforms/86xx/Kconfig              |   10 
- arch/powerpc/platforms/86xx/Makefile             |    1 
- arch/powerpc/platforms/86xx/gef_gpio.c           |   36 
- arch/powerpc/platforms/86xx/gef_sbc310.c         |  230 +++
- arch/powerpc/platforms/Kconfig                   |   10 
- arch/powerpc/platforms/Kconfig.cputype           |    4 
- arch/powerpc/platforms/Makefile                  |    1 
- arch/powerpc/platforms/amigaone/Kconfig          |   18 
- arch/powerpc/platforms/amigaone/Makefile         |    1 
- arch/powerpc/platforms/amigaone/setup.c          |  170 ++
- arch/powerpc/platforms/cell/Kconfig              |   22 
- arch/powerpc/platforms/cell/qpace_setup.c        |    2 
- arch/powerpc/platforms/cell/spu_fault.c          |   48 -
- arch/powerpc/platforms/cell/spufs/file.c         |    8 
- arch/powerpc/platforms/cell/spufs/inode.c        |    5 
- arch/powerpc/platforms/cell/spufs/run.c          |    3 
- arch/powerpc/platforms/cell/spufs/spufs.h        |    8 
- arch/powerpc/platforms/chrp/pegasos_eth.c        |   72 -
- arch/powerpc/platforms/powermac/setup.c          |    3 
- arch/powerpc/platforms/pseries/eeh_driver.c      |   68 +
- arch/powerpc/platforms/pseries/msi.c             |  224 +++
- arch/powerpc/platforms/pseries/pci_dlpar.c       |    2 
- arch/powerpc/sysdev/cpm2.c                       |    3 
- arch/powerpc/sysdev/fsl_pci.c                    |  244 +++
- arch/powerpc/sysdev/ppc4xx_pci.c                 |    2 
- arch/x86/include/asm/ftrace.h                    |   25 
- arch/x86/kernel/dumpstack.c                      |    1 
- arch/x86/kernel/ftrace.c                         |   75 -
- drivers/macintosh/therm_adt746x.c                |    4 
- drivers/net/fec_mpc52xx.c                        |    6 
- drivers/serial/mpc52xx_uart.c                    |   40 -
- drivers/watchdog/Kconfig                         |    2 
- include/linux/ftrace.h                           |   24 
- include/linux/pci_ids.h                          |    8 
- kernel/trace/trace_functions_graph.c             |   75 +
- lib/lmb.c                                        |   42 -
- 145 files changed, 10930 insertions(+), 1829 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/fsl/esdhc.txt
- create mode 100644 arch/powerpc/boot/cuboot-amigaone.c
- create mode 100644 arch/powerpc/boot/dts/amigaone.dts
- create mode 100644 arch/powerpc/boot/dts/digsy_mtc.dts
- create mode 100644 arch/powerpc/boot/dts/gef_sbc310.dts
- create mode 100644 arch/powerpc/boot/dts/media5200.dts
- create mode 100644 arch/powerpc/boot/dts/mpc8572ds_36b.dts
- create mode 100644 arch/powerpc/boot/dts/redwood.dts
- create mode 100644 arch/powerpc/configs/44x/redwood_defconfig
- create mode 100644 arch/powerpc/configs/86xx/gef_sbc310_defconfig
- create mode 100644 arch/powerpc/configs/amigaone_defconfig
- create mode 100644 arch/powerpc/include/asm/dbell.h
- rename arch/powerpc/include/asm/{mmu-fsl-booke.h => mmu-book3e.h} (52%)
- create mode 100644 arch/powerpc/include/asm/ppc-opcode.h
- create mode 100644 arch/powerpc/kernel/cpu_setup_fsl_booke.S
- create mode 100644 arch/powerpc/kernel/dbell.c
- create mode 100644 arch/powerpc/platforms/52xx/media5200.c
- create mode 100644 arch/powerpc/platforms/52xx/mpc52xx_gpt.c
- create mode 100644 arch/powerpc/platforms/86xx/gef_sbc310.c
- create mode 100644 arch/powerpc/platforms/amigaone/Kconfig
- create mode 100644 arch/powerpc/platforms/amigaone/Makefile
- create mode 100644 arch/powerpc/platforms/amigaone/setup.c
+--- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc64.h	2009-03-03 16:09:33.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pgtable-ppc64.h	2009-03-03 16:17:29.000000000 +1100
+@@ -81,11 +81,6 @@
+  */
+ #include <asm/pte-hash64.h>
+ 
+-/* To make some generic powerpc code happy */
+-#ifndef _PAGE_HWEXEC
+-#define _PAGE_HWEXEC		0
+-#endif
+-
+ /* Some other useful definitions */
+ #define PTE_RPN_MAX	(1UL << (64 - PTE_RPN_SHIFT))
+ #define PTE_RPN_MASK	(~((1UL<<PTE_RPN_SHIFT)-1))
+@@ -96,24 +91,38 @@
+ #define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
+                          _PAGE_ACCESSED | _PAGE_SPECIAL)
+ 
++#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE)
++#define _PAGE_BASE	(_PAGE_BASE_NC | _PAGE_COHERENT)
+ 
+ 
+-/* __pgprot defined in arch/powerpc/include/asm/page.h */
+-#define PAGE_NONE	__pgprot(_PAGE_PRESENT | _PAGE_ACCESSED)
+-
+-#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_USER)
+-#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_USER | _PAGE_EXEC)
++/* Permission masks used to generate the __P and __S table,
++ *
++ * Note:__pgprot is defined in arch/powerpc/include/asm/page.h
++ */
++#define PAGE_NONE	__pgprot(_PAGE_BASE)
++#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
++#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAGE_EXEC)
+ #define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
+ #define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+ #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
+ #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+-#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_WRENABLE)
+-#define PAGE_KERNEL_CI	__pgprot(_PAGE_PRESENT | _PAGE_ACCESSED | \
+-			       _PAGE_WRENABLE | _PAGE_NO_CACHE | _PAGE_GUARDED)
+-#define PAGE_KERNEL_EXEC __pgprot(_PAGE_BASE | _PAGE_WRENABLE | _PAGE_EXEC)
+ 
+-#define PAGE_AGP	__pgprot(_PAGE_BASE | _PAGE_WRENABLE | _PAGE_NO_CACHE)
+-#define HAVE_PAGE_AGP
++/* Permission masks used for kernel mappings */
++#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
++#define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
++				 _PAGE_NO_CACHE)
++#define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
++				 _PAGE_NO_CACHE | _PAGE_GUARDED)
++#define PAGE_KERNEL_X __pgprot(_PAGE_BASE | _PAGE_KERNEL_RW | _PAGE_EXEC)
++#define PAGE_KERNEL_RO __pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
++#define PAGE_KERNEL_ROX __pgprot(_PAGE_BASE | _PAGE_KERNEL_RO | _PAGE_EXEC)
++
++/* Protection bits for use by pte_pgprot() */
++#define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | \
++			 _PAGE_NO_CACHE | _PAGE_WRITETHRU |		\
++			 _PAGE_4K_PFN | _PAGE_USER | _PAGE_RW |		\
++			 _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_EXEC)
++
+ 
+ /* We always have _PAGE_SPECIAL on 64 bit */
+ #define __HAVE_ARCH_PTE_SPECIAL
+@@ -395,7 +404,8 @@ static inline void pte_clear(struct mm_s
+ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
+ {
+ 	unsigned long bits = pte_val(entry) &
+-		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
++		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW |
++		 _PAGE_EXEC | _PAGE_HWEXEC);
+ 	unsigned long old, tmp;
+ 
+ 	__asm__ __volatile__(
+Index: linux-work/arch/powerpc/include/asm/pte-hash64-4k.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pte-hash64-4k.h	2009-03-03 16:09:33.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pte-hash64-4k.h	2009-03-03 16:11:28.000000000 +1100
+@@ -8,9 +8,6 @@
+ #define _PAGE_F_GIX     _PAGE_GROUP_IX
+ #define _PAGE_SPECIAL	0x10000 /* software: special page */
+ 
+-/* There is no 4K PFN hack on 4K pages */
+-#define _PAGE_4K_PFN	0
+-
+ /* PTE flags to conserve for HPTE identification */
+ #define _PAGE_HPTEFLAGS (_PAGE_BUSY | _PAGE_HASHPTE | \
+ 			 _PAGE_SECONDARY | _PAGE_GROUP_IX)
+Index: linux-work/arch/powerpc/include/asm/pte-hash64.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pte-hash64.h	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pte-hash64.h	2009-03-03 16:11:28.000000000 +1100
+@@ -6,36 +6,41 @@
+  * Common bits between 4K and 64K pages in a linux-style PTE.
+  * These match the bits in the (hardware-defined) PowerPC PTE as closely
+  * as possible. Additional bits may be defined in pgtable-hash64-*.h
++ *
++ * Note: We only support user read/write permissions. Supervisor always
++ * have full read/write to pages above PAGE_OFFSET (pages below that
++ * always use the user access permissions).
++ *
++ * We could create separate kernel read-only if we used the 3 PP bits
++ * combinations that newer processors provide but we currently don't.
+  */
+-#define _PAGE_PRESENT	0x0001 /* software: pte contains a translation */
+-#define _PAGE_USER	0x0002 /* matches one of the PP bits */
+-#define _PAGE_FILE	0x0002 /* (!present only) software: pte holds file offset */
+-#define _PAGE_EXEC	0x0004 /* No execute on POWER4 and newer (we invert) */
+-#define _PAGE_GUARDED	0x0008
+-#define _PAGE_COHERENT	0x0010 /* M: enforce memory coherence (SMP systems) */
+-#define _PAGE_NO_CACHE	0x0020 /* I: cache inhibit */
+-#define _PAGE_WRITETHRU	0x0040 /* W: cache write-through */
+-#define _PAGE_DIRTY	0x0080 /* C: page changed */
+-#define _PAGE_ACCESSED	0x0100 /* R: page referenced */
+-#define _PAGE_RW	0x0200 /* software: user write access allowed */
+-#define _PAGE_BUSY	0x0800 /* software: PTE & hash are busy */
++#define _PAGE_PRESENT		0x0001 /* software: pte contains a translation */
++#define _PAGE_USER		0x0002 /* matches one of the PP bits */
++#define _PAGE_FILE		0x0002 /* (!present only) software: pte holds file offset */
++#define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert) */
++#define _PAGE_GUARDED		0x0008
++#define _PAGE_COHERENT		0x0010 /* M: enforce memory coherence (SMP systems) */
++#define _PAGE_NO_CACHE		0x0020 /* I: cache inhibit */
++#define _PAGE_WRITETHRU		0x0040 /* W: cache write-through */
++#define _PAGE_DIRTY		0x0080 /* C: page changed */
++#define _PAGE_ACCESSED		0x0100 /* R: page referenced */
++#define _PAGE_RW		0x0200 /* software: user write access allowed */
++#define _PAGE_BUSY		0x0800 /* software: PTE & hash are busy */
++
++/* No separate kernel read-only */
++#define _PAGE_KERNEL_RW		(_PAGE_RW | _PAGE_DIRTY) /* user access blocked by key */
++#define _PAGE_KERNEL_RO		 _PAGE_KERNEL_RW
+ 
+ /* Strong Access Ordering */
+-#define _PAGE_SAO	(_PAGE_WRITETHRU | _PAGE_NO_CACHE | _PAGE_COHERENT)
++#define _PAGE_SAO		(_PAGE_WRITETHRU | _PAGE_NO_CACHE | _PAGE_COHERENT)
+ 
+-#define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT)
+-
+-#define _PAGE_WRENABLE	(_PAGE_RW | _PAGE_DIRTY)
++/* No page size encoding in the linux PTE */
++#define _PAGE_PSIZE		0
+ 
+ /* PTEIDX nibble */
+ #define _PTEIDX_SECONDARY	0x8
+ #define _PTEIDX_GROUP_IX	0x7
+ 
+-#define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | \
+-			 _PAGE_NO_CACHE | _PAGE_WRITETHRU |		\
+-			 _PAGE_4K_PFN | _PAGE_RW | _PAGE_USER |		\
+-			 _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_EXEC)
+-
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+ #include <asm/pte-hash64-64k.h>
+Index: linux-work/arch/powerpc/include/asm/pgtable-ppc32.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc32.h	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pgtable-ppc32.h	2009-03-03 16:18:34.000000000 +1100
+@@ -144,6 +144,13 @@ extern int icache_44x_need_flush;
+ #define PMD_PAGE_SIZE(pmd)	bad_call_to_PMD_PAGE_SIZE()
+ #endif
+ 
++#ifndef _PAGE_KERNEL_RO
++#define _PAGE_KERNEL_RO	0
++#endif
++#ifndef _PAGE_KERNEL_RW
++#define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
++#endif
++
+ #define _PAGE_HPTEFLAGS _PAGE_HASHPTE
+ 
+ /* Location of the PFN in the PTE. Most platforms use the same as _PAGE_SHIFT
+@@ -186,30 +193,25 @@ extern int icache_44x_need_flush;
+ #else
+ #define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED)
+ #endif
+-#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_NO_CACHE)
++#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
+ 
+-#define _PAGE_WRENABLE	(_PAGE_RW | _PAGE_DIRTY | _PAGE_HWWRITE)
+-#define _PAGE_KERNEL	(_PAGE_BASE | _PAGE_SHARED | _PAGE_WRENABLE)
+-#define _PAGE_KERNEL_NC	(_PAGE_BASE_NC | _PAGE_SHARED | _PAGE_WRENABLE)
+-
+-#ifdef CONFIG_PPC_STD_MMU
+-/* On standard PPC MMU, no user access implies kernel read/write access,
+- * so to write-protect kernel memory we must turn on user access */
+-#define _PAGE_KERNEL_RO	(_PAGE_BASE | _PAGE_SHARED | _PAGE_USER)
+-#else
+-#define _PAGE_KERNEL_RO	(_PAGE_BASE | _PAGE_SHARED)
+-#endif
+-
+-#define _PAGE_IO	(_PAGE_KERNEL_NC | _PAGE_GUARDED)
+-#define _PAGE_RAM	(_PAGE_KERNEL | _PAGE_HWEXEC)
++/* Permission masks used for kernel mappings */
++#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
++#define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
++				 _PAGE_NO_CACHE)
++#define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
++				 _PAGE_NO_CACHE | _PAGE_GUARDED)
++#define PAGE_KERNEL_X __pgprot(_PAGE_BASE | _PAGE_KERNEL_RW | _PAGE_EXEC)
++#define PAGE_KERNEL_RO __pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
++#define PAGE_KERNEL_ROX __pgprot(_PAGE_BASE | _PAGE_KERNEL_RO | _PAGE_EXEC)
+ 
+ #if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
+ 	defined(CONFIG_KPROBES)
+ /* We want the debuggers to be able to set breakpoints anywhere, so
+  * don't write protect the kernel text */
+-#define _PAGE_RAM_TEXT	_PAGE_RAM
++#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+ #else
+-#define _PAGE_RAM_TEXT	(_PAGE_KERNEL_RO | _PAGE_HWEXEC)
++#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+ #endif
+ 
+ #define PAGE_NONE	__pgprot(_PAGE_BASE)
+@@ -220,9 +222,6 @@ extern int icache_44x_need_flush;
+ #define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
+ #define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+ 
+-#define PAGE_KERNEL		__pgprot(_PAGE_RAM)
+-#define PAGE_KERNEL_NOCACHE	__pgprot(_PAGE_IO)
+-
+ /*
+  * The PowerPC can only do execute protection on a segment (256MB) basis,
+  * not on a page basis.  So we consider execute permission the same as read.
+Index: linux-work/arch/powerpc/include/asm/pte-8xx.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pte-8xx.h	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pte-8xx.h	2009-03-03 16:11:28.000000000 +1100
+@@ -59,6 +59,9 @@
+ /* Until my rework is finished, 8xx still needs atomic PTE updates */
+ #define PTE_ATOMIC_UPDATES	1
+ 
++/* We need to add _PAGE_SHARED to kernel pages */
++#define _PAGE_KERNEL_RO	(_PAGE_SHARED)
++#define _PAGE_KERNEL_RW	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
+ 
+ #endif /* __KERNEL__ */
+ #endif /*  _ASM_POWERPC_PGTABLE_8xx_H */
+Index: linux-work/arch/powerpc/include/asm/pte-hash32.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pte-hash32.h	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pte-hash32.h	2009-03-03 16:11:28.000000000 +1100
+@@ -44,6 +44,5 @@
+ /* Hash table based platforms need atomic updates of the linux PTE */
+ #define PTE_ATOMIC_UPDATES	1
+ 
+-
+ #endif /* __KERNEL__ */
+ #endif /*  _ASM_POWERPC_PGTABLE_HASH32_H */
+Index: linux-work/arch/powerpc/mm/pgtable_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/pgtable_32.c	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/mm/pgtable_32.c	2009-03-03 16:11:28.000000000 +1100
+@@ -164,7 +164,7 @@ __ioremap_caller(phys_addr_t addr, unsig
+ 
+ 	/* Make sure we have the base flags */
+ 	if ((flags & _PAGE_PRESENT) == 0)
+-		flags |= _PAGE_KERNEL;
++		flags |= PAGE_KERNEL;
+ 
+ 	/* Non-cacheable page cannot be coherent */
+ 	if (flags & _PAGE_NO_CACHE)
+@@ -296,7 +296,7 @@ void __init mapin_ram(void)
+ 	p = memstart_addr + s;
+ 	for (; s < total_lowmem; s += PAGE_SIZE) {
+ 		ktext = ((char *) v >= _stext && (char *) v < etext);
+-		f = ktext ?_PAGE_RAM_TEXT : _PAGE_RAM;
++		f = ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL;
+ 		map_page(v, p, f);
+ #ifdef CONFIG_PPC_STD_MMU_32
+ 		if (ktext)
+Index: linux-work/arch/powerpc/mm/ppc_mmu_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/ppc_mmu_32.c	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/mm/ppc_mmu_32.c	2009-03-03 16:11:28.000000000 +1100
+@@ -74,9 +74,6 @@ unsigned long p_mapped_by_bats(phys_addr
+ 
+ unsigned long __init mmu_mapin_ram(void)
+ {
+-#ifdef CONFIG_POWER4
+-	return 0;
+-#else
+ 	unsigned long tot, bl, done;
+ 	unsigned long max_size = (256<<20);
+ 
+@@ -95,7 +92,7 @@ unsigned long __init mmu_mapin_ram(void)
+ 			break;
+ 	}
+ 
+-	setbat(2, PAGE_OFFSET, 0, bl, _PAGE_RAM);
++	setbat(2, PAGE_OFFSET, 0, bl, PAGE_KERNEL_X);
+ 	done = (unsigned long)bat_addrs[2].limit - PAGE_OFFSET + 1;
+ 	if ((done < tot) && !bat_addrs[3].limit) {
+ 		/* use BAT3 to cover a bit more */
+@@ -103,12 +100,11 @@ unsigned long __init mmu_mapin_ram(void)
+ 		for (bl = 128<<10; bl < max_size; bl <<= 1)
+ 			if (bl * 2 > tot)
+ 				break;
+-		setbat(3, PAGE_OFFSET+done, done, bl, _PAGE_RAM);
++		setbat(3, PAGE_OFFSET+done, done, bl, PAGE_KERNEL_X);
+ 		done = (unsigned long)bat_addrs[3].limit - PAGE_OFFSET + 1;
+ 	}
+ 
+ 	return done;
+-#endif
+ }
+ 
+ /*
+@@ -136,9 +132,7 @@ void __init setbat(int index, unsigned l
+ 		wimgxpp |= (flags & _PAGE_RW)? BPP_RW: BPP_RX;
+ 		bat[1].batu = virt | (bl << 2) | 2; /* Vs=1, Vp=0 */
+ 		bat[1].batl = BAT_PHYS_ADDR(phys) | wimgxpp;
+-#ifndef CONFIG_KGDB /* want user access for breakpoints */
+ 		if (flags & _PAGE_USER)
+-#endif
+ 			bat[1].batu |= 1; 	/* Vp = 1 */
+ 		if (flags & _PAGE_GUARDED) {
+ 			/* G bit must be zero in IBATs */
+Index: linux-work/arch/powerpc/sysdev/cpm_common.c
+===================================================================
+--- linux-work.orig/arch/powerpc/sysdev/cpm_common.c	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/sysdev/cpm_common.c	2009-03-03 16:11:28.000000000 +1100
+@@ -56,7 +56,7 @@ void __init udbg_init_cpm(void)
+ {
+ 	if (cpm_udbg_txdesc) {
+ #ifdef CONFIG_CPM2
+-		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, _PAGE_IO);
++		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
+ #endif
+ 		udbg_putc = udbg_putc_cpm;
+ 	}
+Index: linux-work/arch/powerpc/include/asm/fixmap.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/fixmap.h	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/fixmap.h	2009-03-03 16:11:28.000000000 +1100
+@@ -61,7 +61,7 @@ extern void __set_fixmap (enum fixed_add
+  * Some hardware wants to get fixmapped without caching.
+  */
+ #define set_fixmap_nocache(idx, phys) \
+-		__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
++		__set_fixmap(idx, phys, PAGE_KERNEL_NCG)
+ 
+ #define clear_fixmap(idx) \
+ 		__set_fixmap(idx, 0, __pgprot(0))
+Index: linux-work/arch/powerpc/include/asm/pgtable.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pgtable.h	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pgtable.h	2009-03-03 16:17:29.000000000 +1100
+@@ -25,6 +25,10 @@ static inline void assert_pte_locked(str
+ #  include <asm/pgtable-ppc32.h>
+ #endif
+ 
++/* Special mapping for AGP */
++#define PAGE_AGP	(PAGE_KERNEL_NC)
++#define HAVE_PAGE_AGP
++
+ #ifndef __ASSEMBLY__
+ 
+ /* Insert a PTE, top-level function is out of line. It uses an inline
+Index: linux-work/arch/powerpc/mm/fsl_booke_mmu.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/fsl_booke_mmu.c	2009-03-03 16:09:34.000000000 +1100
++++ linux-work/arch/powerpc/mm/fsl_booke_mmu.c	2009-03-03 16:11:28.000000000 +1100
+@@ -162,7 +162,7 @@ unsigned long __init mmu_mapin_ram(void)
+ 	phys_addr_t phys = memstart_addr;
+ 
+ 	while (cam[tlbcam_index] && tlbcam_index < ARRAY_SIZE(cam)) {
+-		settlbcam(tlbcam_index, virt, phys, cam[tlbcam_index], _PAGE_KERNEL, 0);
++		settlbcam(tlbcam_index, virt, phys, cam[tlbcam_index], PAGE_KERNEL_X, 0);
+ 		virt += cam[tlbcam_index];
+ 		phys += cam[tlbcam_index];
+ 		tlbcam_index++;
