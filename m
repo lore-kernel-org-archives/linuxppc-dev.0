@@ -1,15 +1,35 @@
-Return-Path: <Guenter.Leonhardt@men.de>
-Received: from mail193.messagelabs.com (mail193.messagelabs.com
-	[85.158.140.195]) by ozlabs.org (Postfix) with SMTP id 56755DDF95
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 00:11:39 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: U-Boot image
-Date: Tue, 3 Mar 2009 14:11:36 +0100
-Message-ID: <D0B748CCD5DF144CA5C56A9D860A31341DE5C9@men-exch1.intra.men.de>
-From: =?iso-8859-1?Q?G=FCnter_Leonhardt?= <Guenter.Leonhardt@men.de>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <alessandro.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id E3CE4DDF8A
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 00:53:53 +1100 (EST)
+Date: Tue, 3 Mar 2009 14:53:45 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
+Message-ID: <20090303145345.3751a471@i1501.lan.towertech.it>
+In-Reply-To: <alpine.LRH.2.00.0903031121280.31985@vixen.sonytel.be>
+References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090220170454.04382e9e@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0902231319170.22762@vixen.sonytel.be>
+	<1235511327.18632.73.camel@macbook.infradead.org>
+	<20090224231154.60ba18d6@i1501.lan.towertech.it>
+	<1235514727.18632.93.camel@macbook.infradead.org>
+	<alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
+	<20090225111836.621412c1@i1501.lan.towertech.it>
+	<20090227185514.GA1071@linux-m68k.org>
+	<alpine.LRH.2.00.0903021051040.25117@vixen.sonytel.be>
+	<20090302110310.35af50ea@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0903021116450.25117@vixen.sonytel.be>
+	<20090302120950.0d35e06c@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0903031121280.31985@vixen.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+	Richard Zidlicky <rz@linux-m68k.org>, linux-parisc@vger.kernel.org,
+	Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux,
+	Geert.Uytterhoeven@sonycom.com, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,30 +39,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
-I'am looking for an image to boot a embedded device with a single image.
+On Tue, 3 Mar 2009 11:41:23 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-I though the generated uImage in arch/powerpc/boot should work, but =
-u-boot cannot but this,
-because the addresses of initrd and dtb not found.
+> rtc-generic is already in the kernel, it's just called rtc-parisc ;-)
 
-Now I'am creating the image by hand with mkimage:
-mkimage -A ppc -n F302 -O linux \
-		-T multi -C gzip -a 0x0 -e 0x0 \
-            -d vmlinux.bin.gz:initramfs_data.cpio.gz:f302.dtb \
-            uImage
+ Really? I never saw it :)
 
-This file is bootable, but I don't understand how a standard file has to =
-be booted.
+> >  But I'd strongly suggest to plan and execute a conversion process.
+> 
+> So would you accept a patch series that:
+>   1. Adds the missing module aliases to rtc-parisc (which is a bugfix),
+>   2. Moves the platform device creation out of rtc-ppc and into arch-specific
+>      code (which is also a bugfix),
+>   3. Consolidates rtc-parisc and rtc-ppc into rtc-generic (which is a cleanup),
+>   4. Makes rtc-generic dependent on PARISC, PPC, and M68K (the existing
+>      [sg]et_rtc_time() users):
+>        a. without introducing ARCH_HAS_GENERIC_RTC,
+>        b. with a big fat warning in the Kconfig comment not relaxing the
+>           dependencies, as it's supposed to go away.
+>   4. Converts the PS3 RTC support into a separate driver, called rtc-ps3
+>      (as a bonus ;-)
+> 
+> ? If yes, I'll cook it up.
+> 
+> Other RTC platform support can be converted into separate drivers later.
 
-I read in th u-boot documentation about a new fileformat which is build =
-with the dtc.
+ Seems reasonable. But please add a list of users of rtc-generic and information
+ about their respective rtc hardware along with some general planning about
+ which future driver would cover which users.
 
-Can someone explain me the different fileforamts for booting a powerpc =
-with u-boot?
-Which is the simplest to use?
+ And let's hope this is a beginning :)
 
-Shold I reconfigure u-boot?
+-- 
 
-Thanks for help
-G=FCnter
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
