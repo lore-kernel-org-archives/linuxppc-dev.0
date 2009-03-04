@@ -1,21 +1,19 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2AA3ADDF05
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 14:59:31 +1100 (EST)
-Date: Wed, 4 Mar 2009 14:59:30 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Kyle McMartin <kyle@infradead.org>, Kumar Gala <galak@kernel.crashing.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] ppc: detect sbc610 boards and only fixup nec usb on them
-Message-ID: <20090304035930.GD24834@bilbo.ozlabs.org>
-References: <20090304012229.GN28503@bombadil.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090304012229.GN28503@bombadil.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C8598DDF80
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 15:03:22 +1100 (EST)
+Subject: Re: [patch 1/2] powerpc: optimise smp_mb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20090219171229.GJ1747@wotan.suse.de>
+References: <20090219171229.GJ1747@wotan.suse.de>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 15:03:15 +1100
+Message-Id: <1236139395.6696.9.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,63 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 03, 2009 at 08:22:29PM -0500, Kyle McMartin wrote:
-> From: Kyle McMartin <kyle@redhat.com>
+Allright, sorry for the delay, I had those stored into my "need more
+than half a brain cell for review" list and only got to them today :-)
+
+On Thu, 2009-02-19 at 18:12 +0100, Nick Piggin wrote:
+> Using lwsync, isync sequence in a microbenchmark is 5 times faster on my G5 than
+> using sync for smp_mb. Although it takes more instructions.
 > 
-> Bug #486511 in Fedora, this is getting applied to any machine with a NEC
-> USB pci device if this CONFIG_GEF_SBC610 is on (as it was in Fedora.)
-> Obviously this isn't appropriate to do in any more than the SBC610
-> case..., so flag that we're a sbc610 board, and skip the fixup if we're
-> not.
+> Running tbench with 4 clients on my 4 core G5 (20 times) gives the
+> following:
 > 
-> (Fedora: Should fix USB on Mac G4/G5...)
+> unpatched AVG=920.33 STD=2.36
+>   patched AVG=921.27 STD=2.77
 > 
-> Signed-off-by: Kyle McMartin <kyle@redhat.com>
-> 
+> So not a big improvement here, actually it could even be in the noise.
+> But other workloads or systems might see a bigger win, and the patch
+> maybe is interesting or could be improved, so I'll ask for comments. 
+
+So not a huge objection here, however I have some doubts as to whether
+this will be worthwhile on power5,6,7 since those optimized somewhat the
+behaviour of the full sync. Since anything older than power4 doesn't
+have lwsync, that potentially makes it not worth the pain.
+
+But I need to measure to be sure... it might be that newer embedded
+processors that support lwsync and SMP (and that are using a different
+pipeline structure) might benefit from this. I'll try to run some tests
+later this week or next week, but ping me in case I forget.
+
+Now what would be worth doing is to also try using a twi;isync sequence
+like we do to order MMIO reads, see if it's any better than cmp/branch
+
+Cheers,
+Ben.
+
 > ---
-> diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
-> index fb371f5..54afda2 100644
-> --- a/arch/powerpc/platforms/86xx/gef_sbc610.c
-> +++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
-> @@ -51,6 +51,8 @@
+> Index: linux-2.6/arch/powerpc/include/asm/system.h
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/include/asm/system.h	2009-02-20 01:51:24.000000000 +1100
+> +++ linux-2.6/arch/powerpc/include/asm/system.h	2009-02-20 02:09:41.000000000 +1100
+> @@ -52,7 +52,16 @@
+>  #    define SMPWMB      eieio
+>  #endif
 >  
->  void __iomem *sbc610_regs;
->  
-> +static int is_sbc610;
-
-I came up with this as well, but used the machine_is() infrasturcture.
-
-Subject: [PATCH] Run fixup code only on the appropriate platform.
-
-commit a969e76a7101bf5f3d369563df1ca1253dd6131b (powerpc: Correct USB
-support for GE Fanuc SBC610) introduced a fixup for NEC usb controllers.
-This fixup should only run on GEF SBC610 boards.
-
-Fixes Fedora bug #486511.
-(https://bugzilla.redhat.com/show_bug.cgi?id=486511)
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/platforms/86xx/gef_sbc610.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
-index fb371f5..d6b772b 100644
---- a/arch/powerpc/platforms/86xx/gef_sbc610.c
-+++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
-@@ -142,6 +142,10 @@ static void __init gef_sbc610_nec_fixup(struct pci_dev *pdev)
- {
- 	unsigned int val;
- 
-+	/* Do not do the fixup on other platforms! */
-+	if (!machine_is(gef_sbc610))
-+		return;
-+
- 	printk(KERN_INFO "Running NEC uPD720101 Fixup\n");
- 
- 	/* Ensure ports 1, 2, 3, 4 & 5 are enabled */
--- 
-1.6.0.6
-
-
-Yours Tony
+> +#ifdef __powerpc64__
+> +#define smp_mb()	__asm__ __volatile__ (				    \
+> +					"1:	lwsync			\n" \
+> +					"	cmpw	0,%%r0,%%r0	\n" \
+> +					"	bne-	1b		\n" \
+> +					"	isync			\n" \
+> +					: : : "memory")
+> +#else
+>  #define smp_mb()	mb()
+> +#endif
+>  #define smp_rmb()	__asm__ __volatile__ (stringify_in_c(LWSYNC) : : :"memory")
+>  #define smp_wmb()	__asm__ __volatile__ (stringify_in_c(SMPWMB) : : :"memory")
+>  #define smp_read_barrier_depends()	read_barrier_depends()
