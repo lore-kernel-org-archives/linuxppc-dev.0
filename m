@@ -1,36 +1,17 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id B8EE7DE042
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 23:51:48 +1100 (EST)
-Date: Wed, 4 Mar 2009 13:51:32 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
-In-Reply-To: <20090304134705.7d9bbe5c@i1501.lan.towertech.it>
-Message-ID: <alpine.LRH.2.00.0903041350540.4953@vixen.sonytel.be>
-References: <20090224231154.60ba18d6@i1501.lan.towertech.it>
-	<1235514727.18632.93.camel@macbook.infradead.org>
-	<alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
-	<20090225111836.621412c1@i1501.lan.towertech.it>
-	<20090227185514.GA1071@linux-m68k.org>
-	<alpine.LRH.2.00.0903021051040.25117@vixen.sonytel.be>
-	<20090302110310.35af50ea@i1501.lan.towertech.it>
-	<alpine.LRH.2.00.0903021116450.25117@vixen.sonytel.be>
-	<20090302120950.0d35e06c@i1501.lan.towertech.it>
-	<alpine.LRH.2.00.0903031121280.31985@vixen.sonytel.be>
-	<20090303190609.GB6907@linux-sh.org>
-	<alpine.LRH.2.00.0903040920240.2416@vixen.sonytel.be>
-	<20090304134705.7d9bbe5c@i1501.lan.towertech.it>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
-	Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
-	linux-parisc@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Kyle McMartin <kyle@mcmartin.ca>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mundt <lethal@linux-sh.org>, David Woodhouse <dwmw2@infradead.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: RE: mpc8349e-mitx 2.6.25 serial IRQ assigned wrong
+From: Michael Ellerman <michael@ellerman.id.au>
+To: onramp123@yahoo.com
+In-Reply-To: <025a01c99c8b$90afb030$6b03a8c0@sdelaney2>
+References: <025a01c99c8b$90afb030$6b03a8c0@sdelaney2>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-CupVurozoqetgYjd+l/p"
+Date: Thu, 05 Mar 2009 00:00:20 +1100
+Message-Id: <1236171620.8267.20.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,41 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 4 Mar 2009, Alessandro Zummo wrote:
-> On Wed, 4 Mar 2009 09:26:29 +0100 (CET)
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> 
-> > Thanks Paul, I wasn't aware of that thread!
-> > 
-> > Yes, this is almost the same. The only part I don't agree with is the move of
-> > the creation of the platform device from arch-specific code to rtc-firmware.c,
-> > as this makes autoloading the driver more difficult.
-> 
->  and it's also against a proper implementation of the device/driver model.
-> 
-> > Seems like everybody but the RTC maintainer has an interest in having an RTC
-> > class driver on top of [gs]et_rtc_time()... ;-)
-> 
->  That's because everyone is lazy :) 
-> 
->  Seriously, if you want to handle it in the way we wrote
->  in the previous emails, it's ok for me.
 
-OK, I will do so. Thanks!
+--=-CupVurozoqetgYjd+l/p
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-With kind regards,
+On Tue, 2009-03-03 at 21:39 -0800, Steve DeLaney wrote:
+>=20
+> Here's an update on this issue. =20
+>=20
+> After verifying the device tree was OK, the OF traces led us to the root
+> cause.
+>=20
+> powerpc irq.c irq_alloc_virt() assigns a virtual IRQ as a function of the
+> input hardware IRQ hint, AND NUM_ISA_INTERRUPTS.  it turns out that
+> asm-ppc/irq.h defines NUM_ISA_INTERRUPTS 16, so that the allocated virq
+> is offset by this amount.  this accounts for the remap shown below for=20
+> i2c and serial device vectors.
+>=20
+> I didn't realize before that /proc/interrupts=20
+> serviced by irq.c show_interrupts() displays virtual vector numbers.
+>=20
+> For the mpc8349e-mitx this must be incorrect since there is no ISA?
+> Essentially all that is needed is a 1:1 mapping hirq:virq since
+> each interrupt source in the system appears to have a unique vector
+> in the SOC IPIC.  It seems this scheme is needlessly complex, at least fo=
+r
+> mpc8349e.
+>=20
+> For now we simply define irq.h NUM_ISA_INTERRUPTS 0
+> but this isn't a complete solution since our PCI device
+> interrupt on hirq 20, ends up allocated on virq 1.  To force
+> this to work, the driver does an irq_create_mapping(NULL, 20),
+> then assigns its own dev->irq=3D20 before calling request_irq()
+>=20
+> I'm sure someone has a more elegant solution but that's what
+> we've been able to come up with so far.
 
-Geert Uytterhoeven
-Software Architect
+I'm not clear on what the problem is.
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+The interrupt numbers in /proc/interrupts will no longer match what the
+old kernel had, because as you mention the values in /proc/interrupts
+are virtual irqs.
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+If you want to see the mapping turn on CONFIG_VIRQ_DEBUG and you'll get
+a file in debugfs called virq_mapping that shows the details.
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-CupVurozoqetgYjd+l/p
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmue2QACgkQdSjSd0sB4dKjiACgwDk39/WvX521LAdDHacZI9sN
+16sAniy3yTYfZNnqncGi+dQf5lbb2K2S
+=pS5t
+-----END PGP SIGNATURE-----
+
+--=-CupVurozoqetgYjd+l/p--
