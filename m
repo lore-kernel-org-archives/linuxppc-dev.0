@@ -1,21 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 00403DE010
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 08:18:28 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Lec0P-00085G-0B
-	for linuxppc-dev@ozlabs.org; Tue, 03 Mar 2009 13:18:25 -0800
-Message-ID: <22318178.post@talk.nabble.com>
-Date: Tue, 3 Mar 2009 13:18:25 -0800 (PST)
-From: Felix Radensky <felix@embedded-sol.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: PPC 405 EX USB Development
-In-Reply-To: <200902251345.51880.sr@denx.de>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 38583DDE9E
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 11:07:55 +1100 (EST)
+Date: Wed, 4 Mar 2009 01:07:55 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+Subject: Re: Linux 2.6.29-rc6 bombs while compiling a kernel for a
+	linkstation/kurobox
+In-Reply-To: <20090302094303.GA29819@ime.usp.br>
+Message-ID: <Pine.LNX.4.64.0903040103440.5059@axis700.grange>
+References: <20090302094303.GA29819@ime.usp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <d9c5f2890902250115s3867904fj22e8f5af2d469581@mail.gmail.com>
-	<200902251327.02082.sr@denx.de> <200902251345.51880.sr@denx.de>
+Content-Type: TEXT/PLAIN; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2 Mar 2009, Rog=C3=A9rio Brito wrote:
 
+> Hi there.
+>=20
+> I tried to compile a new kernel for my (powerpc) Kurobox HD (an embedded
+> system that has a Freescale processor), but it seems that the
+> compilation fails, with both my usual config file and with the shipped
+> linkstation_defconfig file.
+>=20
+> I get the following error during compilation (actually a
+> cross-compilation):
+>=20
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> arch/powerpc/platforms/built-in.o: In function `linkstation_setup_arch':
+> linkstation.c:(.init.text+0x218): undefined reference to `physmap_set_par=
+titions'
+> drivers/built-in.o:(__ksymtab+0x9f8): undefined reference to `physmap_set=
+_partitions'
+> make: *** [.tmp_vmlinux1] Error 1
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+Yes, linkstation and storcenter have to migrate to the "physmap-flash"=20
+platform driver. For now you can define in your .config
 
-Stefan Roese wrote:
-> 
-> On Wednesday 25 February 2009, Stefan Roese wrote:
-> 
-> 
-> You can find a driver for this Synopsys DWC OTG controller in our 
-> linux-2.6-denx repository:
-> 
-> http://git.denx.de/?p=linux-2.6-denx.git;a=tree;f=drivers/usb/gadget/dwc_otg;h=526d515e4764a0c92cebbf909c245d6aec7e198c;hb=HEAD
-> 
-> But please note that this driver is currently not in shape for mainline 
-> inclusion. It's working though, so it should help you while writing a new, 
-> clean driver.
-> 
-> 
+CONFIG_MTD_PHYSMAP=3Dy
+CONFIG_MTD_PHYSMAP_COMPAT=3Dy
+CONFIG_MTD_PHYSMAP_START=3D0xffc00000
+CONFIG_MTD_PHYSMAP_LEN=3D0x400000
+CONFIG_MTD_PHYSMAP_BANKWIDTH=3D1
 
-Hi, Stefan
+(I hope the numbers are correct, just found them in my local tree, don't=20
+remember any more what exactly they configure, please, double-check.) And=
+=20
+yes, it must be fixed in the mainline. I'll see if I find time for this,=20
+maybe tomorrow (actually, already today.)
 
-Was this driver tested in host-only mode ?
-Also, would this be a correct combination of flags for host-only mode 
-on 405EX:
-KBUILD_CPPFLAGS	+= -Dlinux -DOTG_PLB_DMA -DOTG_PLB_DMA_TASKLET
--DDWC_HOST_ONLY
-
-Thanks a lot.
-
-Felix.
--- 
-View this message in context: http://www.nabble.com/PPC-405-EX-USB-Development-tp22201577p22318178.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
