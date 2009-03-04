@@ -1,15 +1,20 @@
-Return-Path: <liming.wang@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 2B828DE05D
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 19:39:27 +1100 (EST)
-From: Liming Wang <liming.wang@windriver.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] Add unwind information for SPE registers of E500 core
-Date: Wed,  4 Mar 2009 12:51:18 +0800
-Message-Id: <1236142278-9276-1-git-send-email-liming.wang@windriver.com>
-Cc: linuxppc-dev@ozlabs.org, Liming Wang <liming.wang@windriver.com>,
-	Alan Modra <amodra@au.ibm.com>
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8FCDDDDF83
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 20:39:05 +1100 (EST)
+Date: Wed, 4 Mar 2009 10:38:59 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 1/2] powerpc: optimise smp_mb
+Message-ID: <20090304093858.GC27043@wotan.suse.de>
+References: <20090219171229.GJ1747@wotan.suse.de>
+	<1236139395.6696.9.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1236139395.6696.9.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,70 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-SPE registers use the high part bit0~bit31 of E500 GPR0~GPR31.
-The unwind information in "eh_frame" section is used during exception
-handling and describes register information in the signal frame. But
-current unwind information doesn't cover SPE registers, which have
-been saved in the signal frame. This patch adds this unwind information
-to "eh_frame" section.
+On Wed, Mar 04, 2009 at 03:03:15PM +1100, Benjamin Herrenschmidt wrote:
+> Allright, sorry for the delay, I had those stored into my "need more
+> than half a brain cell for review" list and only got to them today :-)
 
-SPE registers use register number 1200+N to identify register 'N', but
-they start from 113 in unwind column, which is computed from gcc
-source code, macro DWARF_REG_TO_UNWIND_COLUMN:
+No problem :)
 
-	#define FIRST_PSEUDO_REGISTER 114
-	#define DWARF_REG_TO_UNWIND_COLUMN(r) \
-  	  ((r) > 1200 ? ((r) - 1200 + FIRST_PSEUDO_REGISTER - 1) : (r))
+ 
+> On Thu, 2009-02-19 at 18:12 +0100, Nick Piggin wrote:
+> > Using lwsync, isync sequence in a microbenchmark is 5 times faster on my G5 than
+> > using sync for smp_mb. Although it takes more instructions.
+> > 
+> > Running tbench with 4 clients on my 4 core G5 (20 times) gives the
+> > following:
+> > 
+> > unpatched AVG=920.33 STD=2.36
+> >   patched AVG=921.27 STD=2.77
+> > 
+> > So not a big improvement here, actually it could even be in the noise.
+> > But other workloads or systems might see a bigger win, and the patch
+> > maybe is interesting or could be improved, so I'll ask for comments. 
+> 
+> So not a huge objection here, however I have some doubts as to whether
+> this will be worthwhile on power5,6,7 since those optimized somewhat the
+> behaviour of the full sync. Since anything older than power4 doesn't
+> have lwsync, that potentially makes it not worth the pain.
 
-Signed-off-by: Liming Wang <liming.wang@windriver.com>
----
- arch/powerpc/kernel/vdso32/sigtramp.S |   34 +++++++++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
+I would be interested to know. Avoiding sync when there *is* outstanding
+IO operations happening should be a win? (My test of tbench on localhost
+obviously wouldn't generate much MMIO).
 
-diff --git a/arch/powerpc/kernel/vdso32/sigtramp.S b/arch/powerpc/kernel/vdso32/sigtramp.S
-index 68d49dd..789a343 100644
---- a/arch/powerpc/kernel/vdso32/sigtramp.S
-+++ b/arch/powerpc/kernel/vdso32/sigtramp.S
-@@ -251,6 +251,40 @@ V_FUNCTION_END(__kernel_sigtramp_rt32)
-   vsave_msr1 (31);							\
-   vsave_msr2 (33, 32*16+12);						\
-   vsave      (32, 32*16)
-+#elif defined(CONFIG_SPE)
-+#define EH_FRAME_VMX \
-+  rsave (113, VREGS);							\
-+  rsave (114, VREGS + 1*4);						\
-+  rsave (115, VREGS + 2*4);						\
-+  rsave (116, VREGS + 3*4);						\
-+  rsave (117, VREGS + 4*4);						\
-+  rsave (118, VREGS + 5*4);						\
-+  rsave (119, VREGS + 6*4);						\
-+  rsave (120, VREGS + 7*4);						\
-+  rsave (121, VREGS + 8*4);						\
-+  rsave (122, VREGS + 9*4);						\
-+  rsave (123, VREGS + 10*4);						\
-+  rsave (124, VREGS + 11*4);						\
-+  rsave (125, VREGS + 12*4);						\
-+  rsave (126, VREGS + 13*4);						\
-+  rsave (127, VREGS + 14*4);						\
-+  rsave (128, VREGS + 15*4);						\
-+  rsave (129, VREGS + 16*4);						\
-+  rsave (130, VREGS + 17*4);						\
-+  rsave (131, VREGS + 18*4);						\
-+  rsave (132, VREGS + 19*4);						\
-+  rsave (133, VREGS + 20*4);						\
-+  rsave (134, VREGS + 21*4);						\
-+  rsave (135, VREGS + 22*4);						\
-+  rsave (136, VREGS + 23*4);						\
-+  rsave (137, VREGS + 24*4);						\
-+  rsave (138, VREGS + 25*4);						\
-+  rsave (139, VREGS + 26*4);						\
-+  rsave (140, VREGS + 27*4);						\
-+  rsave (141, VREGS + 28*4);						\
-+  rsave (142, VREGS + 29*4);						\
-+  rsave (143, VREGS + 30*4);						\
-+  rsave (144, VREGS + 31*4);
- #else
- #define EH_FRAME_VMX
- #endif
--- 
-1.6.0.2.GIT
+I mean, even in the most optimised implementation possible, this sequence
+is less constraining than sync.
+
+ 
+> But I need to measure to be sure... it might be that newer embedded
+> processors that support lwsync and SMP (and that are using a different
+> pipeline structure) might benefit from this. I'll try to run some tests
+> later this week or next week, but ping me in case I forget.
+
+OK I'll ping you next week.
+
+ 
+> Now what would be worth doing is to also try using a twi;isync sequence
+> like we do to order MMIO reads, see if it's any better than cmp/branch
+
+Probably makes sense to use the same pattern.
