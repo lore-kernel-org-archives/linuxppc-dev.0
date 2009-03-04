@@ -1,22 +1,25 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mail-fx0-f161.google.com (mail-fx0-f161.google.com
-	[209.85.220.161]) by ozlabs.org (Postfix) with ESMTP id B1F5DDE0B4
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 04:16:39 +1100 (EST)
-Received: by fxm5 with SMTP id 5so2893192fxm.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Mar 2009 09:16:36 -0800 (PST)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-To: =?utf-8?Q?G=C3=BCnter?= Leonhardt <Guenter.Leonhardt@men.de>
-Subject: Re: U-Boot image
-References: <D0B748CCD5DF144CA5C56A9D860A31341DE5C9@men-exch1.intra.men.de>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 04 Mar 2009 17:52:15 +0100
-In-Reply-To: <D0B748CCD5DF144CA5C56A9D860A31341DE5C9@men-exch1.intra.men.de>
-	(=?utf-8?Q?=22G=C3=BCnter?= Leonhardt"'s message of "Tue\, 3 Mar 2009
-	14\:11\:36 +0100")
-Message-ID: <87fxhtgri8.fsf@macbook.be.48ers.dk>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 00404DDFB3
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 04:47:00 +1100 (EST)
+Date: Wed, 4 Mar 2009 20:46:58 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [PATCH 02/11] sdhci: Add support for bus-specific IO memory
+	accessors
+Message-ID: <20090304174658.GA7477@oksana.dev.rtsoft.ru>
+References: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
+	<20090206180645.GB11548@oksana.dev.rtsoft.ru>
+	<20090208215020.46ca5724@mjolnir.drzeus.cx>
+	<20090213144039.GA19572@oksana.dev.rtsoft.ru>
+	<20090221165757.22747648@mjolnir.ossman.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20090221165757.22747648@mjolnir.ossman.eu>
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +29,276 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "G=C3=BCnter" =3D=3D G=C3=BCnter Leonhardt <Guenter.Leonhardt@men.de>=
- writes:
+On Sat, Feb 21, 2009 at 04:57:57PM +0100, Pierre Ossman wrote:
+> On Fri, 13 Feb 2009 17:40:39 +0300
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > 
+> > No, on eSDHC the registers are big-endian, 32-bit width, with, for
+> > example, two 16-bit "logical" registers packed into it.
+> > 
+> > That is,
+> > 
+> >  0x4  0x5 0x6  0x7
+> > |~~~~~~~~:~~~~~~~~|
+> > | BLKCNT : BLKSZ  |
+> > |________:________|
+> >  31              0
+> > 
+> > ( The register looks wrong, right? BLKSZ should be at 0x4. But imagine
+> >   that you swapped bytes in this 32 bit register... then the registers
+> >   and their byte addresses will look normal. )
+> > 
+> > So if we try to issue readw(SDHCI_BLOCK_SIZE), i.e. readw(0x4):
+> > 
+> > - We'll read BLKCNT, while we wanted BLKSZ. This is because the
+> >   address bits should be translated before we try word or byte
+> >   reads/writes.
+> > - On powerpc read{l,w}() convert the read value from little-endian
+> >   to big-endian byte order, which is wrong for our case (the
+> >   register is big-endian already).
+> > 
+> > That means that we have to convert address, but we don't want to
+> > convert the result of read/write ops.
+> > 
+> 
+> *cries*
 
- G=C3=BCnter> Hello,
+:-)
 
- G=C3=BCnter> I'am looking for an image to boot a embedded device with a
- G=C3=BCnter> single image.
+[...]
+> > > as far as I'm
+> > > concerned, so I'd prefer something like:
+> > > 
+> > > if (!host->ops->writel)
+> > > 	writel(host->ioaddr + reg, val);
+> > > else
+> > > 	host->ops->writel(host, val, reg);
+> > 
+> > Surely the overhead isn't measurable... but why we purposely make
+> > things worse?
+> > 
+> 
+> We can most likely do some micro-optimisation do make the compare part
+> cheaper, but the point was to avoid a function call for all the
+> properly implemented controllers out there. We could have a flag so
+> that it only has to check host->flags, which will most likely be in the
+> cache anyway.
+> 
+> Overhead for eSDHC is not a concern in my book, what is interesting is
+> how much this change slows things down for other controllers.
 
- G=C3=BCnter> I though the generated uImage in arch/powerpc/boot should
- G=C3=BCnter> work, but u-boot cannot but this, because the addresses of
- G=C3=BCnter> initrd and dtb not found.
+OK, I see. Will the patch down below make you a little bit more happy
+wrt normal controllers? Two #ifdefs, but then there is absolutely
+zero overhead for the fully compliant SDHCI controllers.
 
- G=C3=BCnter> Now I'am creating the image by hand with mkimage:
- G=C3=BCnter> mkimage -A ppc -n F302 -O linux \
- G=C3=BCnter> 		-T multi -C gzip -a 0x0 -e 0x0 \
- G=C3=BCnter>             -d vmlinux.bin.gz:initramfs_data.cpio.gz:f302.dtb=
- \
- G=C3=BCnter>             uImage
+(So far it's just on top of this series, but I can incorporate it
+into the "sdhci: Add support for bus-specific IO memory accessors"
+patch, if you like).
 
-I posted a patch to add support for multi image uImages to the kernel
-makefiles, E.G. uImage.<platform> some time ago. It got nack'ed by
-wdenx though as he wants people to use the new fitimage stuff in
-u-boot instead. Anyway, it might be useful to you:
-
-http://peter.korsgaard.com/patches/linux/bootwrapper-uboot-multi-2.patch
-
-To use it, add:
-
-image-$(CONFIG_<your-platform>) + uImage.<your-platform>
-
-to arch/powerpc/boot/Makefile.
-
- G=C3=BCnter> This file is bootable, but I don't understand how a standard
- G=C3=BCnter> file has to be booted.
-
-With an external dtb / initrd.
-
- G=C3=BCnter> Can someone explain me the different fileforamts for booting
- G=C3=BCnter> a powerpc with u-boot?  Which is the simplest to use?
-
-Have a look at Documentation/powerpc/bootwrapper.txt
-
---=20
-Bye, Peter Korsgaard
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index 73b79e1..69bd124 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -37,6 +37,13 @@ config MMC_SDHCI
+ 
+ 	  If unsure, say N.
+ 
++config MMC_SDHCI_IO_ACCESSORS
++	bool
++	depends on MMC_SDHCI
++	help
++	  This is silent Kconfig symbol that is selected by the drivers that
++	  need to overwrite SDHCI IO memory accessors.
++
+ config MMC_SDHCI_PCI
+ 	tristate "SDHCI support on PCI bus"
+ 	depends on MMC_SDHCI && PCI
+@@ -68,6 +75,7 @@ config MMC_RICOH_MMC
+ config MMC_SDHCI_OF
+ 	tristate "SDHCI support on OpenFirmware platforms"
+ 	depends on MMC_SDHCI && PPC_OF
++	select MMC_SDHCI_IO_ACCESSORS
+ 	help
+ 	  This selects the OF support for Secure Digital Host Controller
+ 	  Interfaces. So far, only the Freescale eSDHC controller is known
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 284bc5d..fb08d3b 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -88,60 +88,6 @@ static void sdhci_dumpregs(struct sdhci_host *host)
+  *                                                                           *
+ \*****************************************************************************/
+ 
+-void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
+-{
+-	if (unlikely(host->ops->writel))
+-		host->ops->writel(host, val, reg);
+-	else
+-		writel(val, host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_writel);
+-
+-void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
+-{
+-	if (unlikely(host->ops->writew))
+-		host->ops->writew(host, val, reg);
+-	else
+-		writew(val, host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_writew);
+-
+-void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
+-{
+-	if (unlikely(host->ops->writeb))
+-		host->ops->writeb(host, val, reg);
+-	else
+-		writeb(val, host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_writeb);
+-
+-u32 sdhci_readl(struct sdhci_host *host, int reg)
+-{
+-	if (unlikely(host->ops->readl))
+-		return host->ops->readl(host, reg);
+-	else
+-		return readl(host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_readl);
+-
+-u16 sdhci_readw(struct sdhci_host *host, int reg)
+-{
+-	if (unlikely(host->ops->readw))
+-		return host->ops->readw(host, reg);
+-	else
+-		return readw(host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_readw);
+-
+-u8 sdhci_readb(struct sdhci_host *host, int reg)
+-{
+-	if (unlikely(host->ops->readb))
+-		return host->ops->readb(host, reg);
+-	else
+-		return readb(host->ioaddr + reg);
+-}
+-EXPORT_SYMBOL_GPL(sdhci_readb);
+-
+ static void sdhci_clear_set_irqs(struct sdhci_host *host, u32 clear, u32 set)
+ {
+ 	u32 ier;
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 1697e01..b6675df 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -281,12 +281,14 @@ struct sdhci_host {
+ 
+ 
+ struct sdhci_ops {
++#ifdef CONFIG_MMC_SDHCI_IO_ACCESSORS
+ 	u32		(*readl)(struct sdhci_host *host, int reg);
+ 	u16		(*readw)(struct sdhci_host *host, int reg);
+ 	u8		(*readb)(struct sdhci_host *host, int reg);
+ 	void		(*writel)(struct sdhci_host *host, u32 val, int reg);
+ 	void		(*writew)(struct sdhci_host *host, u16 val, int reg);
+ 	void		(*writeb)(struct sdhci_host *host, u8 val, int reg);
++#endif
+ 
+ 	void	(*set_clock)(struct sdhci_host *host, unsigned int clock);
+ 
+@@ -295,12 +297,89 @@ struct sdhci_ops {
+ 	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
+ };
+ 
+-extern void sdhci_writel(struct sdhci_host *host, u32 val, int reg);
+-extern void sdhci_writew(struct sdhci_host *host, u16 val, int reg);
+-extern void sdhci_writeb(struct sdhci_host *host, u8 val, int reg);
+-extern u32 sdhci_readl(struct sdhci_host *host, int reg);
+-extern u16 sdhci_readw(struct sdhci_host *host, int reg);
+-extern u8 sdhci_readb(struct sdhci_host *host, int reg);
++#ifdef CONFIG_MMC_SDHCI_IO_ACCESSORS
++
++static inline void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
++{
++	if (unlikely(host->ops->writel))
++		host->ops->writel(host, val, reg);
++	else
++		writel(val, host->ioaddr + reg);
++}
++
++static inline void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
++{
++	if (unlikely(host->ops->writew))
++		host->ops->writew(host, val, reg);
++	else
++		writew(val, host->ioaddr + reg);
++}
++
++static inline void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
++{
++	if (unlikely(host->ops->writeb))
++		host->ops->writeb(host, val, reg);
++	else
++		writeb(val, host->ioaddr + reg);
++}
++
++static inline u32 sdhci_readl(struct sdhci_host *host, int reg)
++{
++	if (unlikely(host->ops->readl))
++		return host->ops->readl(host, reg);
++	else
++		return readl(host->ioaddr + reg);
++}
++
++static inline u16 sdhci_readw(struct sdhci_host *host, int reg)
++{
++	if (unlikely(host->ops->readw))
++		return host->ops->readw(host, reg);
++	else
++		return readw(host->ioaddr + reg);
++}
++
++static inline u8 sdhci_readb(struct sdhci_host *host, int reg)
++{
++	if (unlikely(host->ops->readb))
++		return host->ops->readb(host, reg);
++	else
++		return readb(host->ioaddr + reg);
++}
++
++#else
++
++static inline void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
++{
++	writel(val, host->ioaddr + reg);
++}
++
++static inline void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
++{
++	writew(val, host->ioaddr + reg);
++}
++
++static inline void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
++{
++	writeb(val, host->ioaddr + reg);
++}
++
++static inline u32 sdhci_readl(struct sdhci_host *host, int reg)
++{
++	return readl(host->ioaddr + reg);
++}
++
++static inline u16 sdhci_readw(struct sdhci_host *host, int reg)
++{
++	return readw(host->ioaddr + reg);
++}
++
++static inline u8 sdhci_readb(struct sdhci_host *host, int reg)
++{
++	return readb(host->ioaddr + reg);
++}
++
++#endif /* CONFIG_MMC_SDHCI_IO_ACCESSORS */
+ 
+ extern struct sdhci_host *sdhci_alloc_host(struct device *dev,
+ 	size_t priv_size);
