@@ -1,22 +1,36 @@
-Return-Path: <julian.calaby@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.224])
-	by ozlabs.org (Postfix) with ESMTP id 06506DDF11
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 11:40:52 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id l9so2917367rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 03 Mar 2009 16:40:50 -0800 (PST)
+Return-Path: <rbrito@ime.usp.br>
+Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CD5F2DDF77
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 12:13:35 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 1D3071E66D1
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 22:04:59 -0300 (BRT)
+Received: from smtp.gru.flash.tv.br ([127.0.0.1])
+	by localhost (smtp.gru.flash.tv.br [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP id ZElcM+ctt9LF for <linuxppc-dev@ozlabs.org>;
+	Tue,  3 Mar 2009 22:04:55 -0300 (BRT)
+Received: from chagas.nectar.ath.cx (189-39-150-98.gru.flash.tv.br
+	[189.39.150.98])
+	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id 7AF5A1E6759
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 22:04:53 -0300 (BRT)
+Date: Tue, 3 Mar 2009 22:04:53 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Tony Breeds <tony@bakeyournoodle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Kumar Gala <galak@kernel.crashing.org>, paulus@samba.org
+Subject: Re: Linux 2.6.29-rc6 bombs while compiling a kernel for a
+	linkstation/kurobox
+Message-ID: <20090304010453.GA18621@ime.usp.br>
+References: <20090302094303.GA29819@ime.usp.br>
+	<Pine.LNX.4.64.0903040103440.5059@axis700.grange>
 MIME-Version: 1.0
-In-Reply-To: <20090303192932.31705cf7@lappy.seanm.ca>
-References: <20090303160906.9b30b376.akpm@linux-foundation.org>
-	<20090303192932.31705cf7@lappy.seanm.ca>
-Date: Wed, 4 Mar 2009 11:40:50 +1100
-Message-ID: <646765f40903031640x39b3361fic8833a4bf15b1381@mail.gmail.com>
-Subject: Re: "leds: Add openfirmware platform device support" breaks sparc
-From: Julian Calaby <julian.calaby@gmail.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@linux.intel.com>,
-	sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-	Trent Piepho <tpiepho@freescale.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <Pine.LNX.4.64.0903040103440.5059@axis700.grange>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +40,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 4, 2009 at 11:29, Sean MacLennan <smaclennan@pikatech.com> wrote:
-> On Tue, 3 Mar 2009 16:09:06 -0800
-> "Andrew Morton" <akpm@linux-foundation.org> wrote:
->
->> afacit that interface is powerpc-only.
->
-> Yes it is. You might want a CONFIG_PPC with that.
->
-> It has been..... uhhhh carry the two... longer than I want to admit
-> since I worked on a sparc. Would GPIO based LEDS make sense on a sparc
-> platform? Is sparc used much in the embedded world?
->
-> If yes, the of_register_platform_driver is just a nice wrapper. It
-> would be trivial to either change it to work on sparc, or add the
-> wrapper to the sparc includes.
+On Mar 04 2009, Guennadi Liakhovetski wrote:
+> Yes, linkstation and storcenter have to migrate to the "physmap-flash" 
+> platform driver. For now you can define in your .config
+> 
+> CONFIG_MTD_PHYSMAP=y
+> CONFIG_MTD_PHYSMAP_COMPAT=y
+> CONFIG_MTD_PHYSMAP_START=0xffc00000
+> CONFIG_MTD_PHYSMAP_LEN=0x400000
+> CONFIG_MTD_PHYSMAP_BANKWIDTH=1
 
-These inconsistencies are causing more problems with PPC drivers
-depending on the generic infrastructure.
+I did that already yesterday. Please, see my patch at
+http://marc.info/?l=linux-kernel&m=123606933628020&w=4
 
-See: http://lkml.org/lkml/2009/1/11/376 for a similar issue.
+And the entry at bugzilla:
+http://bugzilla.kernel.org/show_bug.cgi?id=12811
 
-Thanks,
+> (I hope the numbers are correct, just found them in my local tree, don't 
+> remember any more what exactly they configure, please, double-check.)
+
+Yes, I had them in my tree also. And it is tested already, up and
+running and in production for 17 hours.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+rbrito@lutz:~$ uptime
+ 22:03:16 up 17:06,  1 user,  load average: 0.16, 0.03, 0.01
+rbrito@lutz:~$ 
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+> And yes, it must be fixed in the mainline. I'll see if I find time for
+> this, maybe tomorrow (actually, already today.)
+
+Please, Cc me any relevant patches, as I'm not subscribed to all those
+lists.
+
+
+Regards, Rogério Brito.
 
 -- 
-Julian Calaby
-
-Email: julian.calaby@gmail.com
-.Plan: http://sites.google.com/site/juliancalaby/
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
