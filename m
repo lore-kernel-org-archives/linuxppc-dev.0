@@ -1,36 +1,17 @@
-Return-Path: <rbrito@ime.usp.br>
-Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
+Return-Path: <kyle@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD5F2DDF77
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 12:13:35 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 1D3071E66D1
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 22:04:59 -0300 (BRT)
-Received: from smtp.gru.flash.tv.br ([127.0.0.1])
-	by localhost (smtp.gru.flash.tv.br [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id ZElcM+ctt9LF for <linuxppc-dev@ozlabs.org>;
-	Tue,  3 Mar 2009 22:04:55 -0300 (BRT)
-Received: from chagas.nectar.ath.cx (189-39-150-98.gru.flash.tv.br
-	[189.39.150.98])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id 7AF5A1E6759
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Mar 2009 22:04:53 -0300 (BRT)
-Date: Tue, 3 Mar 2009 22:04:53 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	Tony Breeds <tony@bakeyournoodle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Kumar Gala <galak@kernel.crashing.org>, paulus@samba.org
-Subject: Re: Linux 2.6.29-rc6 bombs while compiling a kernel for a
-	linkstation/kurobox
-Message-ID: <20090304010453.GA18621@ime.usp.br>
-References: <20090302094303.GA29819@ime.usp.br>
-	<Pine.LNX.4.64.0903040103440.5059@axis700.grange>
+	by ozlabs.org (Postfix) with ESMTPS id DA91FDDF7F
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 12:22:33 +1100 (EST)
+Date: Tue, 3 Mar 2009 20:22:29 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc: detect sbc610 boards and only fixup nec usb on them
+Message-ID: <20090304012229.GN28503@bombadil.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <Pine.LNX.4.64.0903040103440.5059@axis700.grange>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,44 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mar 04 2009, Guennadi Liakhovetski wrote:
-> Yes, linkstation and storcenter have to migrate to the "physmap-flash" 
-> platform driver. For now you can define in your .config
-> 
-> CONFIG_MTD_PHYSMAP=y
-> CONFIG_MTD_PHYSMAP_COMPAT=y
-> CONFIG_MTD_PHYSMAP_START=0xffc00000
-> CONFIG_MTD_PHYSMAP_LEN=0x400000
-> CONFIG_MTD_PHYSMAP_BANKWIDTH=1
+From: Kyle McMartin <kyle@redhat.com>
 
-I did that already yesterday. Please, see my patch at
-http://marc.info/?l=linux-kernel&m=123606933628020&w=4
+Bug #486511 in Fedora, this is getting applied to any machine with a NEC
+USB pci device if this CONFIG_GEF_SBC610 is on (as it was in Fedora.)
+Obviously this isn't appropriate to do in any more than the SBC610
+case..., so flag that we're a sbc610 board, and skip the fixup if we're
+not.
 
-And the entry at bugzilla:
-http://bugzilla.kernel.org/show_bug.cgi?id=12811
+(Fedora: Should fix USB on Mac G4/G5...)
 
-> (I hope the numbers are correct, just found them in my local tree, don't 
-> remember any more what exactly they configure, please, double-check.)
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
 
-Yes, I had them in my tree also. And it is tested already, up and
-running and in production for 17 hours.
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-rbrito@lutz:~$ uptime
- 22:03:16 up 17:06,  1 user,  load average: 0.16, 0.03, 0.01
-rbrito@lutz:~$ 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-> And yes, it must be fixed in the mainline. I'll see if I find time for
-> this, maybe tomorrow (actually, already today.)
-
-Please, Cc me any relevant patches, as I'm not subscribed to all those
-lists.
-
-
-Regards, Rogério Brito.
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+---
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index fb371f5..54afda2 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -51,6 +51,8 @@
+ 
+ void __iomem *sbc610_regs;
+ 
++static int is_sbc610;
++
+ static void __init gef_sbc610_init_irq(void)
+ {
+ 	struct device_node *cascade_node = NULL;
+@@ -142,6 +144,9 @@ static void __init gef_sbc610_nec_fixup(struct pci_dev *pdev)
+ {
+ 	unsigned int val;
+ 
++	if (!is_sbc610)
++		return;
++
+ 	printk(KERN_INFO "Running NEC uPD720101 Fixup\n");
+ 
+ 	/* Ensure ports 1, 2, 3, 4 & 5 are enabled */
+@@ -166,8 +171,10 @@ static int __init gef_sbc610_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "gef,sbc610"))
++	if (of_flat_dt_is_compatible(root, "gef,sbc610")) {
++		is_sbc610 = 1;
+ 		return 1;
++	}
+ 
+ 	return 0;
+ }
