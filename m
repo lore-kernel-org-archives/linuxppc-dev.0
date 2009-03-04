@@ -1,23 +1,19 @@
-Return-Path: <andy.grover@oracle.com>
-Received: from rgminet14.oracle.com (rcsinet14.oracle.com [148.87.113.126])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rgminet14.oracle.com",
-	Issuer "VeriSign Class 3 Secure Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EDA2FDDFC9
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 17:28:07 +1100 (EST)
-Received: from rgminet13.oracle.com (rcsinet13.oracle.com [148.87.113.125])
-	by rgminet14.oracle.com (Switch-3.3.1/Switch-3.3.1) with ESMTP id
-	n245VeO1007014
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Mar 2009 05:31:41 GMT
-Message-ID: <49AE114C.6070903@oracle.com>
-Date: Tue, 03 Mar 2009 21:27:40 -0800
-From: Andy Grover <andy.grover@oracle.com>
-MIME-Version: 1.0
-To: david@gibson.dropbear.id.au
-Subject: ext2_* in bitops.h
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 93421DDFEC
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 17:40:54 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 17:40:42 +1100
+Message-Id: <1236148843.6696.38.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Linus !
 
-Can the ext2_* definitions in arch/powerpc/include/asm/bitops.h be 
-replaced with:
+Here's a fix for a USB related regression on some PowerPC machines.
 
-#include <include/asm-generic/bitops/ext2-non-atomic.h>
-#include <include/asm-generic/bitops/ext2-atomic.h>
+The following changes since commit fec6c6fec3e20637bee5d276fb61dd8b49a3f9cc:
+  Linus Torvalds (1):
+        Linux 2.6.29-rc7
 
-?
+are available in the git repository at:
 
-Also, can the bitop swizzling (starting at line 351) be removed by 
-including include/asm-generic/bitops/le.h? It looks very similar if not 
-identical.
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-I'm afraid I don't have a ppc to test on so I wanted to see what you all 
-thought.
+Tony Breeds (1):
+      powerpc: Run sbc610 USB fixup code only on the appropriate platform.
 
-Regards -- Andy
+ arch/powerpc/platforms/86xx/gef_sbc610.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
