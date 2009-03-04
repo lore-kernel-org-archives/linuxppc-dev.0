@@ -1,16 +1,15 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Wed, 4 Mar 2009 09:36:53 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] powerpc/spufs: Fix incorrect buffer offset
-	in regs write
-In-Reply-To: <1236145172.189228.314429009881.1.gpush@pingu>
-Message-ID: <alpine.LRH.2.00.0903040935560.2416@vixen.sonytel.be>
-References: <1236145172.189228.314429009881.1.gpush@pingu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <liming.wang@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 2B828DE05D
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 19:39:27 +1100 (EST)
+From: Liming Wang <liming.wang@windriver.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] Add unwind information for SPE registers of E500 core
+Date: Wed,  4 Mar 2009 12:51:18 +0800
+Message-Id: <1236142278-9276-1-git-send-email-liming.wang@windriver.com>
+Cc: linuxppc-dev@ozlabs.org, Liming Wang <liming.wang@windriver.com>,
+	Alan Modra <amodra@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,47 +19,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 4 Mar 2009, Jeremy Kerr wrote:
-> We need to offset by *pos bytes, not *pos words.
-> 
-> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-> 
-> ---
->  arch/powerpc/platforms/cell/spufs/file.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
-> index 83ef889..6b10877 100644
-> --- a/arch/powerpc/platforms/cell/spufs/file.c
-> +++ b/arch/powerpc/platforms/cell/spufs/file.c
-> @@ -578,7 +578,7 @@ spufs_regs_write(struct file *file, const char __user *buffer,
->  	if (ret)
->  		return ret;
->  
-> -	ret = copy_from_user(lscsa->gprs + *pos - size,
-> +	ret = copy_from_user((char *)lscsa->gprs + *pos - size,
->  			     buffer, size) ? -EFAULT : size;
->  
->  	spu_release_saved(ctx);
+SPE registers use the high part bit0~bit31 of E500 GPR0~GPR31.
+The unwind information in "eh_frame" section is used during exception
+handling and describes register information in the signal frame. But
+current unwind information doesn't cover SPE registers, which have
+been saved in the signal frame. This patch adds this unwind information
+to "eh_frame" section.
 
-Could this be abused by an attacker to write registers or local store he's not
-allowed to do?
+SPE registers use register number 1200+N to identify register 'N', but
+they start from 113 in unwind column, which is computed from gcc
+source code, macro DWARF_REG_TO_UNWIND_COLUMN:
 
-Should it be backported to stable?
+	#define FIRST_PSEUDO_REGISTER 114
+	#define DWARF_REG_TO_UNWIND_COLUMN(r) \
+  	  ((r) > 1200 ? ((r) - 1200 + FIRST_PSEUDO_REGISTER - 1) : (r))
 
-With kind regards,
+Signed-off-by: Liming Wang <liming.wang@windriver.com>
+---
+ arch/powerpc/kernel/vdso32/sigtramp.S |   34 +++++++++++++++++++++++++++++++++
+ 1 files changed, 34 insertions(+), 0 deletions(-)
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+diff --git a/arch/powerpc/kernel/vdso32/sigtramp.S b/arch/powerpc/kernel/vdso32/sigtramp.S
+index 68d49dd..789a343 100644
+--- a/arch/powerpc/kernel/vdso32/sigtramp.S
++++ b/arch/powerpc/kernel/vdso32/sigtramp.S
+@@ -251,6 +251,40 @@ V_FUNCTION_END(__kernel_sigtramp_rt32)
+   vsave_msr1 (31);							\
+   vsave_msr2 (33, 32*16+12);						\
+   vsave      (32, 32*16)
++#elif defined(CONFIG_SPE)
++#define EH_FRAME_VMX \
++  rsave (113, VREGS);							\
++  rsave (114, VREGS + 1*4);						\
++  rsave (115, VREGS + 2*4);						\
++  rsave (116, VREGS + 3*4);						\
++  rsave (117, VREGS + 4*4);						\
++  rsave (118, VREGS + 5*4);						\
++  rsave (119, VREGS + 6*4);						\
++  rsave (120, VREGS + 7*4);						\
++  rsave (121, VREGS + 8*4);						\
++  rsave (122, VREGS + 9*4);						\
++  rsave (123, VREGS + 10*4);						\
++  rsave (124, VREGS + 11*4);						\
++  rsave (125, VREGS + 12*4);						\
++  rsave (126, VREGS + 13*4);						\
++  rsave (127, VREGS + 14*4);						\
++  rsave (128, VREGS + 15*4);						\
++  rsave (129, VREGS + 16*4);						\
++  rsave (130, VREGS + 17*4);						\
++  rsave (131, VREGS + 18*4);						\
++  rsave (132, VREGS + 19*4);						\
++  rsave (133, VREGS + 20*4);						\
++  rsave (134, VREGS + 21*4);						\
++  rsave (135, VREGS + 22*4);						\
++  rsave (136, VREGS + 23*4);						\
++  rsave (137, VREGS + 24*4);						\
++  rsave (138, VREGS + 25*4);						\
++  rsave (139, VREGS + 26*4);						\
++  rsave (140, VREGS + 27*4);						\
++  rsave (141, VREGS + 28*4);						\
++  rsave (142, VREGS + 29*4);						\
++  rsave (143, VREGS + 30*4);						\
++  rsave (144, VREGS + 31*4);
+ #else
+ #define EH_FRAME_VMX
+ #endif
+-- 
+1.6.0.2.GIT
