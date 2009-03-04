@@ -1,9 +1,15 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 04 Mar 2009 16:15:00 +1100
-Subject: [PATCH] powerpc/mm: Unify PTE_RPN_SHIFT and _PAGE_CHG_MASK definitions
-Message-Id: <20090304051604.3C30ADDF9E@ozlabs.org>
+Return-Path: <jk@bilbo.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Subject: [PATCH] powerpc/spufs: Check file offset before calculating write
+	size in fixed-sized files
+Message-Id: <1236145087.222046.948861432711.1.gpush@pingu>
+In-Reply-To: <<49AD7A06.2090401@gmail.com>>
+To: Roel Kluin <roel.kluin@gmail.com>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Wed, 04 Mar 2009 16:38:07 +1100
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,88 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This updates the 32-bit headers to use the same definitions for the RPN
-shift inside the PTE as 64-bit, and thus updates _PAGE_CHG_MASK to
-become identical.
+Based on an original patch from Roel Kluin <roel.kluin@gmail.com>.
 
-This does introduce a runtime visible difference, which is that now,
-_PAGE_HASHPTE will be part of _PAGE_CHG_MASK and thus preserved. However
-this should have no practical effect as it should have been preserved in
-the first place and we got away with not having it there due to our
-PTE access functions preserving it anyway.
+The write size calculated during regs and fpcr writes may currently
+go negative. Because size is unsigned, this will wrap, and our
+check for EFBIG will fail.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Instead, do the check for EFBIG before subtracting from size.
+
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+
 ---
+Roel - How about this? clear up the logic a little rather than casting
 
- arch/powerpc/include/asm/pgtable-ppc32.h |   36 ++++++++++++++++++++-----------
- arch/powerpc/include/asm/pte-fsl-booke.h |    2 +
- 2 files changed, 26 insertions(+), 12 deletions(-)
+---
+ arch/powerpc/platforms/cell/spufs/file.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
---- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc32.h	2009-03-02 13:41:49.000000000 +1100
-+++ linux-work/arch/powerpc/include/asm/pgtable-ppc32.h	2009-03-02 13:41:50.000000000 +1100
-@@ -146,9 +146,29 @@ extern int icache_44x_need_flush;
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index 0da7f2b..83ef889 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -568,9 +568,10 @@ spufs_regs_write(struct file *file, const char __user *buffer,
+ 	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+ 	int ret;
  
- #define _PAGE_HPTEFLAGS _PAGE_HASHPTE
- 
--#define _PAGE_CHG_MASK	(PAGE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY | \
--			 _PAGE_SPECIAL)
-+/* Location of the PFN in the PTE. Most platforms use the same as _PAGE_SHIFT
-+ * here (ie, naturally aligned). Platform who don't just pre-define the
-+ * value so we don't override it here
-+ */
-+#ifndef PTE_RPN_SHIFT
-+#define PTE_RPN_SHIFT	(PAGE_SHIFT)
-+#endif
+-	size = min_t(ssize_t, sizeof lscsa->gprs - *pos, size);
+-	if (size <= 0)
++	if (*pos >= sizeof(lscsa->gprs))
+ 		return -EFBIG;
 +
-+#ifdef CONFIG_PTE_64BIT
-+#define PTE_RPN_MAX	(1ULL << (64 - PTE_RPN_SHIFT))
-+#define PTE_RPN_MASK	(~((1ULL<<PTE_RPN_SHIFT)-1))
-+#else
-+#define PTE_RPN_MAX	(1UL << (32 - PTE_RPN_SHIFT))
-+#define PTE_RPN_MASK	(~((1UL<<PTE_RPN_SHIFT)-1))
-+#endif
++	size = min_t(ssize_t, sizeof(lscsa->gprs) - *pos, size);
+ 	*pos += size;
  
-+/* _PAGE_CHG_MASK masks of bits that are to be preserved accross
-+ * pgprot changes
-+ */
-+#define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
-+                         _PAGE_ACCESSED | _PAGE_SPECIAL)
+ 	ret = spu_acquire_saved(ctx);
+@@ -623,10 +624,11 @@ spufs_fpcr_write(struct file *file, const char __user * buffer,
+ 	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+ 	int ret;
+ 
+-	size = min_t(ssize_t, sizeof(lscsa->fpcr) - *pos, size);
+-	if (size <= 0)
++	if (*pos >= sizeof(lscsa->fpcr))
+ 		return -EFBIG;
+ 
++	size = min_t(ssize_t, sizeof(lscsa->fpcr) - *pos, size);
 +
-+/* Mask of bits returned by pte_pgprot() */
- #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
- 			 _PAGE_WRITETHRU | _PAGE_ENDIAN | \
- 			 _PAGE_USER | _PAGE_ACCESSED | \
-@@ -236,18 +256,10 @@ extern unsigned long bad_call_to_PMD_PAG
-  * Conversions between PTE values and page frame numbers.
-  */
- 
--/* in some case we want to additionaly adjust where the pfn is in the pte to
-- * allow room for more flags */
--#if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_PTE_64BIT)
--#define PFN_SHIFT_OFFSET	(PAGE_SHIFT + 8)
--#else
--#define PFN_SHIFT_OFFSET	(PAGE_SHIFT)
--#endif
--
--#define pte_pfn(x)		(pte_val(x) >> PFN_SHIFT_OFFSET)
-+#define pte_pfn(x)		(pte_val(x) >> PTE_RPN_SHIFT)
- #define pte_page(x)		pfn_to_page(pte_pfn(x))
- 
--#define pfn_pte(pfn, prot)	__pte(((pte_basic_t)(pfn) << PFN_SHIFT_OFFSET) |\
-+#define pfn_pte(pfn, prot)	__pte(((pte_basic_t)(pfn) << PTE_RPN_SHIFT) |\
- 					pgprot_val(prot))
- #define mk_pte(page, prot)	pfn_pte(page_to_pfn(page), prot)
- #endif /* __ASSEMBLY__ */
-Index: linux-work/arch/powerpc/include/asm/pte-fsl-booke.h
-===================================================================
---- linux-work.orig/arch/powerpc/include/asm/pte-fsl-booke.h	2009-03-02 13:41:49.000000000 +1100
-+++ linux-work/arch/powerpc/include/asm/pte-fsl-booke.h	2009-03-02 13:41:50.000000000 +1100
-@@ -36,6 +36,8 @@
- #ifdef CONFIG_PTE_64BIT
- /* ERPN in a PTE never gets cleared, ignore it */
- #define _PTE_NONE_MASK	0xffffffffffff0000ULL
-+/* We extend the size of the PTE flags area when using 64-bit PTEs */
-+#define PTE_RPN_SHIFT	(PAGE_SHIFT + 8)
- #endif
- 
- #define _PMD_PRESENT	0
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
