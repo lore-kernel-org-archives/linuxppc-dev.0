@@ -1,11 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f174.google.com (mail-gx0-f174.google.com
-	[209.85.217.174]) by ozlabs.org (Postfix) with ESMTP id 5D083DE06B
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 02:58:02 +1100 (EST)
-Received: by gxk22 with SMTP id 22so367471gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Mar 2009 07:58:00 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <68DDAAA9-42AF-4E9C-907C-7D3269816184@it-loops.com>
+Return-Path: <mike@it-loops.com>
+Received: from lvps87-230-0-242.dedicated.hosteurope.de
+	(lvps87-230-0-242.dedicated.hosteurope.de [87.230.0.242])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "plesk", Issuer "plesk" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C299FDDFC8
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 03:47:45 +1100 (EST)
+Message-Id: <2F7D2CFB-ABFA-425E-A349-3CB0970C110A@it-loops.com>
+From: Michael Guntsche <mike@it-loops.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40903040757n3992fec4jb6f3b75396af2958@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: PHY not found after migration of gianfar driver to an
+	of_platform_driver
+Date: Wed, 4 Mar 2009 17:47:39 +0100
 References: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
 	<fa686aa40903011715u2aed4c23tb8182634fa1220f6@mail.gmail.com>
 	<c19541729a7d99548faadbabe5c7646c@localhost>
@@ -16,14 +24,8 @@ References: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
 	<7AC161D8-83A8-4330-A2CF-3120F15D9038@it-loops.com>
 	<fa686aa40903031310o4e0c0b2bnba0544012b0fb8bc@mail.gmail.com>
 	<68DDAAA9-42AF-4E9C-907C-7D3269816184@it-loops.com>
-Date: Wed, 4 Mar 2009 08:57:59 -0700
-Message-ID: <fa686aa40903040757n3992fec4jb6f3b75396af2958@mail.gmail.com>
-Subject: Re: PHY not found after migration of gianfar driver to an
-	of_platform_driver
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Michael Guntsche <mike@it-loops.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	<fa686aa40903040757n3992fec4jb6f3b75396af2958@mail.gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,68 +35,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm posting this back on the mailing list.  You're not being dense and
-there are good questions here which others might elaborate more on.
 
-On Tue, Mar 3, 2009 at 2:56 PM, Michael Guntsche <mike@it-loops.com> wrote:
-> The routeboard is already providing a device-tree albeit not a very good
-> one, otherwise the board would not boot in the first please if I just use=
- a
-> plain kernel
+On Mar 4, 2009, at 16:57, Grant Likely wrote:
 
-I need more information here.  What do you mean when you say "plain
-kernel".  What file from the build process do you use, and how do you
-boot it?
-
-> without an embedded tree. I need to fix this device tree since the new
-> gianfar network code is expecting
+> I need more information here.  What do you mean when you say "plain
+> kernel".  What file from the build process do you use, and how do you
+> boot it?
 >
-> tbi-handle =3D <&tbi1>;
+I build the kernel with
+
+  make ARCH="powerpc" CROSS_COMPILE="powerpc-linux-gnu-" vmlinux
+
+I take the kernel file and add a kernparm segment to it, where I  
+specify my root directory.
+Then I dd the file to the first partition of my CF card on the board.
+As I said before, the bootloader looks at the first partition of the  
+CF-card with a partition type of 0x27.
+It expects a standard elf kernel to be in there and boots that.
+That's all there is to it.
+
 >
-> Entries in the ethernet nodes to find the PHY devices. I do not know if y=
-ou
-> looked at the source of rbppc.c in detail. There is already code in there=
- to
-> init the PCI bus
-> since the tree is missing data for this.
+> I don't see a file named rbppc.c in the current kernel tree.
+>
+Sorry, this patch is not in mainline yet. You can find it at
 
-I don't see a file named rbppc.c in the current kernel tree.
+http://cynigram.com/~nfontes/rb600/
 
-> * Why can't I just add those missing values in the setup-arch section of =
-the
-> code?
+It adds the pata driver, and the board specific stuff to the stock  
+kernel.
+The patch applies cleanly to 2.6.28.x but fails due to the gianfar  
+related changes in the 2.6.29 release cycle.
 
-You might be able to use of_attach_node() & prom_add_property() to
-modify the tree, but I've never done it myself.  Give it a try and
-tell me if it works.  :-)
 
-> =A0They are needed to init the NICs correctly so I can fix this here befo=
-re
-> the driver is loaded
+>> You might be able to use of_attach_node() & prom_add_property() to
+> modify the tree, but I've never done it myself.  Give it a try and
+> tell me if it works.  :-)
 
-Another option is to add a workaround to the driver.  This isn't
-ideal, but driver authors aren't supposed to break device tree
-bindings either.  Drivers are supposed to remain backwards compatible
-with older device trees (either by patching the device tree or with
-explicit workarounds).  Downside is that this type of change may be
-harder to get merged.  And it's just plain not very pretty.
+I am trying to do it this way right now, when I was looking at them I  
+was just wondering if those two functions were the correct ones to use.
 
-> * How could I add those information?
-> =A0Can't I just do something similar to platforms/iseries/vio.c
-> =A0(add_string_property and do_device_node)?
+As for backwards compatibility. All in-tree drivers were fixed as well  
+to work with the new code so you cannot call this change breakage IMHO.
+Off-tree code that is affected by it (like the one I am struggling  
+with right now) just has to follow those changes. I do not think that  
+the changes broke any
+defined interface standards.
 
-Maybe.  I don't know why those functions are tucked away in vio.c
-instead of being common code.  If you go that approach, refactor the
-functions you use to be shared.
+It would be a lot easier if the board would use uboot or cuboot in the  
+first place, but there is no way I can change that, other thanflashing  
+the boot-loader
+itself NS I am neither brave nor knowledgeable enough to try that  
+anyway.
 
-> This wold have the benefit of getting the rest of the data from the board
-> and just patch it with the needed values.
-
-This is definitely preferred to wholesale replacement of the available tree=
-.
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Kind regards,
+Michael
