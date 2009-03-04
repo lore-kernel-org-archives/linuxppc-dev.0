@@ -1,15 +1,15 @@
-Return-Path: <jk@bilbo.ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <Xiaotian.Feng@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id E9C2CDDEFD
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 15:16:37 +1100 (EST)
+Message-ID: <49ADE738.2080108@windriver.com>
+Date: Wed, 04 Mar 2009 10:28:08 +0800
+From: Danny Feng <Xiaotian.Feng@windriver.com>
 MIME-Version: 1.0
-Subject: [PATCH] powerpc/spufs: Check file offset before calculating write
-	size in fixed-sized files
-Message-Id: <1236145087.222046.948861432711.1.gpush@pingu>
-In-Reply-To: <<49AD7A06.2090401@gmail.com>>
-To: Roel Kluin <roel.kluin@gmail.com>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 04 Mar 2009 16:38:07 +1100
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	cbe-oss-dev@ozlabs.org
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] cpm_uart: fix non-console port startup bug
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,51 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Based on an original patch from Roel Kluin <roel.kluin@gmail.com>.
+after UART interrupt handler is installed and rx is enabled, if an rx
+interrupt comes before hardware init, rx->cur will be updated. Then the
+hardware init will reset BD and make rx->cur out of sync, move the hardware
+init code before request_irq.
 
-The write size calculated during regs and fpcr writes may currently
-go negative. Because size is unsigned, this will wrap, and our
-check for EFBIG will fail.
-
-Instead, do the check for EFBIG before subtracting from size.
-
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
+Signed-off-by: Xiaotian Feng <xiaotian.feng@windriver.com>
 ---
-Roel - How about this? clear up the logic a little rather than casting
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c
+b/drivers/serial/cpm_uart/cpm_uart_core.c
+index bde4b4b..5c6ef51 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -406,6 +406,18 @@ static int cpm_uart_startup(struct uart_port *port)
 
----
- arch/powerpc/platforms/cell/spufs/file.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+        pr_debug("CPM uart[%d]:startup\n", port->line);
 
-diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
-index 0da7f2b..83ef889 100644
---- a/arch/powerpc/platforms/cell/spufs/file.c
-+++ b/arch/powerpc/platforms/cell/spufs/file.c
-@@ -568,9 +568,10 @@ spufs_regs_write(struct file *file, const char __user *buffer,
- 	struct spu_lscsa *lscsa = ctx->csa.lscsa;
- 	int ret;
- 
--	size = min_t(ssize_t, sizeof lscsa->gprs - *pos, size);
--	if (size <= 0)
-+	if (*pos >= sizeof(lscsa->gprs))
- 		return -EFBIG;
-+
-+	size = min_t(ssize_t, sizeof(lscsa->gprs) - *pos, size);
- 	*pos += size;
- 
- 	ret = spu_acquire_saved(ctx);
-@@ -623,10 +624,11 @@ spufs_fpcr_write(struct file *file, const char __user * buffer,
- 	struct spu_lscsa *lscsa = ctx->csa.lscsa;
- 	int ret;
- 
--	size = min_t(ssize_t, sizeof(lscsa->fpcr) - *pos, size);
--	if (size <= 0)
-+	if (*pos >= sizeof(lscsa->fpcr))
- 		return -EFBIG;
- 
-+	size = min_t(ssize_t, sizeof(lscsa->fpcr) - *pos, size);
-+
- 	ret = spu_acquire_saved(ctx);
- 	if (ret)
- 		return ret;
++       /* If the port is not the console, make sure rx is disabled. */
++       if (!(pinfo->flags & FLAG_CONSOLE)) {
++               /* Disable UART rx */
++               if (IS_SMC(pinfo)) {
++                       clrbits16(&pinfo->smcp->smc_smcmr, SMCMR_REN);
++                       clrbits8(&pinfo->smcp->smc_smcm, SMCM_RX);
++               } else {
++                       clrbits32(&pinfo->sccp->scc_gsmrl, SCC_GSMRL_ENR);
++                       clrbits16(&pinfo->sccp->scc_sccm, UART_SCCM_RX);
++               }
++               cpm_line_cr_cmd(pinfo, CPM_CR_INIT_TRX);
++       }
+        /* Install interrupt handler. */
+        retval = request_irq(port->irq, cpm_uart_int, 0, "cpm_uart", port);
+        if (retval)
+@@ -420,8 +432,6 @@ static int cpm_uart_startup(struct uart_port *port)
+                setbits32(&pinfo->sccp->scc_gsmrl, (SCC_GSMRL_ENR |
+SCC_GSMRL_ENT));
+        }
+
+-       if (!(pinfo->flags & FLAG_CONSOLE))
+-               cpm_line_cr_cmd(pinfo, CPM_CR_INIT_TRX);
+        return 0;
+ }
