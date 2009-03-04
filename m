@@ -1,15 +1,12 @@
-Return-Path: <Xiaotian.Feng@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id E9C2CDDEFD
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 15:16:37 +1100 (EST)
-Message-ID: <49ADE738.2080108@windriver.com>
-Date: Wed, 04 Mar 2009 10:28:08 +0800
-From: Danny Feng <Xiaotian.Feng@windriver.com>
+Return-Path: <jk@bilbo.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] cpm_uart: fix non-console port startup bug
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/spufs: Fix incorrect buffer offset in regs write
+Message-Id: <1236145172.189228.314429009881.1.gpush@pingu>
+To: <cbe-oss-dev@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Wed, 04 Mar 2009 16:39:32 +1100
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,43 +16,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-after UART interrupt handler is installed and rx is enabled, if an rx
-interrupt comes before hardware init, rx->cur will be updated. Then the
-hardware init will reset BD and make rx->cur out of sync, move the hardware
-init code before request_irq.
+We need to offset by *pos bytes, not *pos words.
 
-Signed-off-by: Xiaotian Feng <xiaotian.feng@windriver.com>
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+
 ---
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c
-b/drivers/serial/cpm_uart/cpm_uart_core.c
-index bde4b4b..5c6ef51 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -406,6 +406,18 @@ static int cpm_uart_startup(struct uart_port *port)
+ arch/powerpc/platforms/cell/spufs/file.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-        pr_debug("CPM uart[%d]:startup\n", port->line);
-
-+       /* If the port is not the console, make sure rx is disabled. */
-+       if (!(pinfo->flags & FLAG_CONSOLE)) {
-+               /* Disable UART rx */
-+               if (IS_SMC(pinfo)) {
-+                       clrbits16(&pinfo->smcp->smc_smcmr, SMCMR_REN);
-+                       clrbits8(&pinfo->smcp->smc_smcm, SMCM_RX);
-+               } else {
-+                       clrbits32(&pinfo->sccp->scc_gsmrl, SCC_GSMRL_ENR);
-+                       clrbits16(&pinfo->sccp->scc_sccm, UART_SCCM_RX);
-+               }
-+               cpm_line_cr_cmd(pinfo, CPM_CR_INIT_TRX);
-+       }
-        /* Install interrupt handler. */
-        retval = request_irq(port->irq, cpm_uart_int, 0, "cpm_uart", port);
-        if (retval)
-@@ -420,8 +432,6 @@ static int cpm_uart_startup(struct uart_port *port)
-                setbits32(&pinfo->sccp->scc_gsmrl, (SCC_GSMRL_ENR |
-SCC_GSMRL_ENT));
-        }
-
--       if (!(pinfo->flags & FLAG_CONSOLE))
--               cpm_line_cr_cmd(pinfo, CPM_CR_INIT_TRX);
-        return 0;
- }
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index 83ef889..6b10877 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -578,7 +578,7 @@ spufs_regs_write(struct file *file, const char __user *buffer,
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = copy_from_user(lscsa->gprs + *pos - size,
++	ret = copy_from_user((char *)lscsa->gprs + *pos - size,
+ 			     buffer, size) ? -EFAULT : size;
+ 
+ 	spu_release_saved(ctx);
