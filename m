@@ -1,25 +1,21 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id BF61FDDF71
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 14:10:32 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1703096yxb.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 03 Mar 2009 19:10:30 -0800 (PST)
+Return-Path: <tony@bakeyournoodle.com>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2AA3ADDF05
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 14:59:31 +1100 (EST)
+Date: Wed, 4 Mar 2009 14:59:30 +1100
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Kyle McMartin <kyle@infradead.org>, Kumar Gala <galak@kernel.crashing.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: detect sbc610 boards and only fixup nec usb on them
+Message-ID: <20090304035930.GD24834@bilbo.ozlabs.org>
+References: <20090304012229.GN28503@bombadil.infradead.org>
 MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <20090303193833.GA8941@oksana.dev.rtsoft.ru>
-References: <20090303160201.GA3242@oksana.dev.rtsoft.ru>
-	<20090303175746.GC8692@ld0162-tx32.am.freescale.net>
-	<20090303183407.GA27678@oksana.dev.rtsoft.ru>
-	<49AD796A.90601@freescale.com>
-	<20090303193833.GA8941@oksana.dev.rtsoft.ru>
-Date: Wed, 4 Mar 2009 11:10:30 +0800
-Message-ID: <2a27d3730903031910r14de8b2ek7930ccbe8a6a92a2@mail.gmail.com>
-Subject: Re: [PATCH RFC] powerpc/83xx: Move gianfar mdio nodes under the
-	ethernet nodes
-From: Li Yang <leoli@freescale.com>
-To: avorontsov@ru.mvista.com
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090304012229.GN28503@bombadil.infradead.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,61 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 4, 2009 at 3:38 AM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> Currently it doesn't matter where the mdio nodes are placed, but with
-> power management support (i.e. when sleep =3D <> properties will take
-> effect), mdio nodes placement will become important: mdio controller
-> is a part of the ethernet block, so the mdio nodes should be placed
-> correctly. Otherwise we may wrongly assume that MDIO controllers are
-> available during sleep.
->
-> Suggested-by: Scott Wood <scottwood@freescale.com>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+On Tue, Mar 03, 2009 at 08:22:29PM -0500, Kyle McMartin wrote:
+> From: Kyle McMartin <kyle@redhat.com>
+> 
+> Bug #486511 in Fedora, this is getting applied to any machine with a NEC
+> USB pci device if this CONFIG_GEF_SBC610 is on (as it was in Fedora.)
+> Obviously this isn't appropriate to do in any more than the SBC610
+> case..., so flag that we're a sbc610 board, and skip the fixup if we're
+> not.
+> 
+> (Fedora: Should fix USB on Mac G4/G5...)
+> 
+> Signed-off-by: Kyle McMartin <kyle@redhat.com>
+> 
 > ---
->
-> On Tue, Mar 03, 2009 at 12:39:38PM -0600, Scott Wood wrote:
->> Anton Vorontsov wrote:
->>> On Tue, Mar 03, 2009 at 11:57:46AM -0600, Scott Wood wrote:
->>>> On Tue, Mar 03, 2009 at 07:02:01PM +0300, Anton Vorontsov wrote:
->>>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0mdio@24520 {
->>>>> @@ -226,6 +244,8 @@
->>>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
-interrupt-parent =3D <&ipic>;
->>>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
-tbi-handle =3D <&tbi0>;
->>>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
-phy-handle =3D <&phy2>;
->>>>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0sleep=
- =3D <&pmc 0xc0000000>;
->>>>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0fsl,m=
-agic-packet;
->>>>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0};
->>>> Note that this makes it look to the kernel like enet0 can be put to sl=
-eep
->>>> without putting the mdio (which is shared with enet1) to sleep. =C2=A0=
-This is
->>>> why I moved mdio under the ethernet node on 8313erdb.
->>>
->>> And that isn't absolutely correct either, since enet1 depends on
->>> net0... If enet0's mdio goes into sleep mode before enet1, then
->>> enet1 will fail to send power-down command to its PHY...
->>
->> But the kernel knows that enet1 depends on mdio0. =C2=A0Getting the kern=
-el to
->> act on that knowledge isn't the device tree's problem.
->
-> Well, that makes sense. I'd like to move mdio nodes in a separate
-> patch though, since the original patch becomes difficult to review
-> because of too many changes...
->
-> A question though... do we want real addr translation via ranges, or
-> the dummy "ranges;" are OK?
->
-> Here is the RFC. It's tested to work on MPC8377-RDB.
+> diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+> index fb371f5..54afda2 100644
+> --- a/arch/powerpc/platforms/86xx/gef_sbc610.c
+> +++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+> @@ -51,6 +51,8 @@
+>  
+>  void __iomem *sbc610_regs;
+>  
+> +static int is_sbc610;
 
-Last time I brought up a similar issue with a MPC8313 patch.  Looks
-like the consensus is that we shouldn't use compatible =3D "simple-bus"
-for gianfar nodes.
+I came up with this as well, but used the machine_is() infrasturcture.
 
-- Leo
+Subject: [PATCH] Run fixup code only on the appropriate platform.
+
+commit a969e76a7101bf5f3d369563df1ca1253dd6131b (powerpc: Correct USB
+support for GE Fanuc SBC610) introduced a fixup for NEC usb controllers.
+This fixup should only run on GEF SBC610 boards.
+
+Fixes Fedora bug #486511.
+(https://bugzilla.redhat.com/show_bug.cgi?id=486511)
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ arch/powerpc/platforms/86xx/gef_sbc610.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index fb371f5..d6b772b 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -142,6 +142,10 @@ static void __init gef_sbc610_nec_fixup(struct pci_dev *pdev)
+ {
+ 	unsigned int val;
+ 
++	/* Do not do the fixup on other platforms! */
++	if (!machine_is(gef_sbc610))
++		return;
++
+ 	printk(KERN_INFO "Running NEC uPD720101 Fixup\n");
+ 
+ 	/* Ensure ports 1, 2, 3, 4 & 5 are enabled */
+-- 
+1.6.0.6
+
+
+Yours Tony
