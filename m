@@ -2,20 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A22FDDF83
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 15:48:06 +1100 (EST)
-Subject: Re: [PATCH 2/2] powerpc: oprofile: enable support for ppc750
-	processors
+	by ozlabs.org (Postfix) with ESMTPS id 6701EDDF8E
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 15:56:35 +1100 (EST)
+Subject: Re: [PATCH 2/3] powerpc: setup archdata for {of_}platform via a
+	single platform_notify
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Octavian Purdila <opurdila@ixiacom.com>
-In-Reply-To: <1231246535-13151-3-git-send-email-opurdila@ixiacom.com>
-References: <1231246535-13151-1-git-send-email-opurdila@ixiacom.com>
-	<1231246535-13151-3-git-send-email-opurdila@ixiacom.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1235076557-24464-2-git-send-email-galak@kernel.crashing.org>
+References: <1235076557-24464-1-git-send-email-galak@kernel.crashing.org>
+	<1235076557-24464-2-git-send-email-galak@kernel.crashing.org>
 Content-Type: text/plain
-Date: Wed, 04 Mar 2009 15:47:58 +1100
-Message-Id: <1236142078.6696.11.camel@pasglop>
+Date: Wed, 04 Mar 2009 15:56:11 +1100
+Message-Id: <1236142571.6696.13.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-01-06 at 14:55 +0200, Octavian Purdila wrote:
-> Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
+On Thu, 2009-02-19 at 14:49 -0600, Kumar Gala wrote:
+> Since a number of powerpc chips are SoCs we end up having dma-able
+> devices that are registered as platform or of_platform devices.  We need
+> to hook the archdata to setup proper dma_ops for these devices.
+> 
+> In the short term the majority of these devices only need the
+> direct_dma_ops as the platforms don't have any IOMMUs.
+> 
+> In the future to enable >4G DMA support on ppc32 we can hook swiotlb ops.
 
+I'm trying to figure out why I didn't use platform_notify back when I
+did cell blades support and instead added the per-bus type notifier
+support. I think I wanted to avoid the compare with bus types thingy
+which somewhat suck.
 
-So I'm going to merge 1/2 but this one should really be changed to
-advertise ppc/750 in oprofile_cpu_type (ie. to userspace).
+Can't we do something akin to what the Cell IOMMU code does and just
+have the platform code register a notifier for those bus types that
+fill things up ?
+
+IE. With this patch, if I'm not mistaken, on Cell blades, things will
+start with a dma_direct_ops (which is bogus) and then end up being
+hopefully "fixed up" by the iommu code. A bit weird.
 
 Cheers,
 Ben.
-
->  arch/powerpc/kernel/cputable.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-> index 923f87a..4e20cfb 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -726,6 +726,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
->  		.cpu_setup		= __setup_cpu_750,
->  		.machine_check		= machine_check_generic,
->  		.platform		= "ppc750",
-> +		.oprofile_cpu_type      = "ppc/7450",
-> +		.oprofile_type		= PPC_OPROFILE_G4,
->  	},
->  	{	/* 750FX rev 2.0 must disable HID0[DPM] */
->  		.pvr_mask		= 0xffffffff,
-> @@ -741,6 +743,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
->  		.cpu_setup		= __setup_cpu_750,
->  		.machine_check		= machine_check_generic,
->  		.platform		= "ppc750",
-> +		.oprofile_cpu_type      = "ppc/7450",
-> +		.oprofile_type		= PPC_OPROFILE_G4,
->  	},
->  	{	/* 750FX (All revs except 2.0) */
->  		.pvr_mask		= 0xffff0000,
-> @@ -756,6 +760,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
->  		.cpu_setup		= __setup_cpu_750fx,
->  		.machine_check		= machine_check_generic,
->  		.platform		= "ppc750",
-> +		.oprofile_cpu_type      = "ppc/7450",
-> +		.oprofile_type		= PPC_OPROFILE_G4,
->  	},
->  	{	/* 750GX */
->  		.pvr_mask		= 0xffff0000,
