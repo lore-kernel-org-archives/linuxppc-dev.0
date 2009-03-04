@@ -1,21 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 88CB6DDFF7
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 17:42:40 +1100 (EST)
-Subject: Re: [PATCH] ppc: detect sbc610 boards and only fixup nec usb on them
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tony Breeds <tony@bakeyournoodle.com>
-In-Reply-To: <20090304035930.GD24834@bilbo.ozlabs.org>
-References: <20090304012229.GN28503@bombadil.infradead.org>
-	<20090304035930.GD24834@bilbo.ozlabs.org>
-Content-Type: text/plain
-Date: Wed, 04 Mar 2009 17:42:20 +1100
-Message-Id: <1236148940.6696.39.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Kyle McMartin <kyle@infradead.org>,
-	linux-kernel@vger.kernel.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 2B3F2DDF9F
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 19:26:32 +1100 (EST)
+Date: Wed, 4 Mar 2009 09:26:29 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [rtc-linux] Re: [PATCH/RFC 0/5] Generic RTC class driver
+In-Reply-To: <20090303190609.GB6907@linux-sh.org>
+Message-ID: <alpine.LRH.2.00.0903040920240.2416@vixen.sonytel.be>
+References: <20090224231154.60ba18d6@i1501.lan.towertech.it>
+	<1235514727.18632.93.camel@macbook.infradead.org>
+	<alpine.LRH.2.00.0902251059110.4063@vixen.sonytel.be>
+	<20090225111836.621412c1@i1501.lan.towertech.it>
+	<20090227185514.GA1071@linux-m68k.org>
+	<alpine.LRH.2.00.0903021051040.25117@vixen.sonytel.be>
+	<20090302110310.35af50ea@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0903021116450.25117@vixen.sonytel.be>
+	<20090302120950.0d35e06c@i1501.lan.towertech.it>
+	<alpine.LRH.2.00.0903031121280.31985@vixen.sonytel.be>
+	<20090303190609.GB6907@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+	Alessandro Zummo <alessandro.zummo@towertech.it>,
+	Richard Zidlicky <rz@linux-m68k.org>, rtc-linux@googlegroups.com,
+	linux-parisc@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,64 +39,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks, I applied Tony's patch and sent a pull request to Linus.
+On Wed, 4 Mar 2009, Paul Mundt wrote:
+> On Tue, Mar 03, 2009 at 11:41:23AM +0100, Geert Uytterhoeven wrote:
+> > So would you accept a patch series that:
+> >   1. Adds the missing module aliases to rtc-parisc (which is a bugfix),
+> >   2. Moves the platform device creation out of rtc-ppc and into arch-specific
+> >      code (which is also a bugfix),
+> >   3. Consolidates rtc-parisc and rtc-ppc into rtc-generic (which is a cleanup),
+> >   4. Makes rtc-generic dependent on PARISC, PPC, and M68K (the existing
+> >      [sg]et_rtc_time() users):
+> >        a. without introducing ARCH_HAS_GENERIC_RTC,
+> >        b. with a big fat warning in the Kconfig comment not relaxing the
+> >           dependencies, as it's supposed to go away.
+> >   4. Converts the PS3 RTC support into a separate driver, called rtc-ps3
+> >      (as a bonus ;-)
+> > 
+> > ? If yes, I'll cook it up.
+> > 
+> > Other RTC platform support can be converted into separate drivers later.
+> > 
+> Did you miss the rtc-firmware thread?
+> 
+> http://groups.google.com/group/rtc-linux/browse_thread/thread/53e8d98966048f66/1d730cb4aa2f85f0?lnk=gst&q=rtc-firmware#1d730cb4aa2f85f0
+> http://groups.google.com/group/rtc-linux/browse_thread/thread/b3d10115c7e147f2/cb9c1530d9c3a433?lnk=gst&q=rtc-firmware#cb9c1530d9c3a433
 
-Cheers,
-Ben.
+Thanks Paul, I wasn't aware of that thread!
 
-On Wed, 2009-03-04 at 14:59 +1100, Tony Breeds wrote:
-> On Tue, Mar 03, 2009 at 08:22:29PM -0500, Kyle McMartin wrote:
-> > From: Kyle McMartin <kyle@redhat.com>
-> > 
-> > Bug #486511 in Fedora, this is getting applied to any machine with a NEC
-> > USB pci device if this CONFIG_GEF_SBC610 is on (as it was in Fedora.)
-> > Obviously this isn't appropriate to do in any more than the SBC610
-> > case..., so flag that we're a sbc610 board, and skip the fixup if we're
-> > not.
-> > 
-> > (Fedora: Should fix USB on Mac G4/G5...)
-> > 
-> > Signed-off-by: Kyle McMartin <kyle@redhat.com>
-> > 
-> > ---
-> > diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
-> > index fb371f5..54afda2 100644
-> > --- a/arch/powerpc/platforms/86xx/gef_sbc610.c
-> > +++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
-> > @@ -51,6 +51,8 @@
-> >  
-> >  void __iomem *sbc610_regs;
-> >  
-> > +static int is_sbc610;
-> 
-> I came up with this as well, but used the machine_is() infrasturcture.
-> 
-> Subject: [PATCH] Run fixup code only on the appropriate platform.
-> 
-> commit a969e76a7101bf5f3d369563df1ca1253dd6131b (powerpc: Correct USB
-> support for GE Fanuc SBC610) introduced a fixup for NEC usb controllers.
-> This fixup should only run on GEF SBC610 boards.
-> 
-> Fixes Fedora bug #486511.
-> (https://bugzilla.redhat.com/show_bug.cgi?id=486511)
-> 
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-> ---
->  arch/powerpc/platforms/86xx/gef_sbc610.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
-> index fb371f5..d6b772b 100644
-> --- a/arch/powerpc/platforms/86xx/gef_sbc610.c
-> +++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
-> @@ -142,6 +142,10 @@ static void __init gef_sbc610_nec_fixup(struct pci_dev *pdev)
->  {
->  	unsigned int val;
->  
-> +	/* Do not do the fixup on other platforms! */
-> +	if (!machine_is(gef_sbc610))
-> +		return;
-> +
->  	printk(KERN_INFO "Running NEC uPD720101 Fixup\n");
->  
->  	/* Ensure ports 1, 2, 3, 4 & 5 are enabled */
+Yes, this is almost the same. The only part I don't agree with is the move of
+the creation of the platform device from arch-specific code to rtc-firmware.c,
+as this makes autoloading the driver more difficult.
+
+Seems like everybody but the RTC maintainer has an interest in having an RTC
+class driver on top of [gs]et_rtc_time()... ;-)
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
