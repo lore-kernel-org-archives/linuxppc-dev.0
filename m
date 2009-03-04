@@ -1,23 +1,19 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AF782DDF26
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 11:28:10 +1100 (EST)
-Date: Tue, 3 Mar 2009 16:28:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 6AAF9DDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 11:29:35 +1100 (EST)
+Date: Tue, 3 Mar 2009 19:29:32 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: "leds: Add openfirmware platform device support" breaks sparc
-Message-Id: <20090303162802.abadba4a.akpm@linux-foundation.org>
-In-Reply-To: <fa686aa40903031615wa3e9c3bt226636f5b51d293c@mail.gmail.com>
+Message-ID: <20090303192932.31705cf7@lappy.seanm.ca>
+In-Reply-To: <20090303160906.9b30b376.akpm@linux-foundation.org>
 References: <20090303160906.9b30b376.akpm@linux-foundation.org>
-	<fa686aa40903031615wa3e9c3bt226636f5b51d293c@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	rpurdie@linux.intel.com, tpiepho@freescale.com, smaclennan@pikatech.com
+Cc: linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Trent Piepho <tpiepho@freescale.com>,
+	Richard Purdie <rpurdie@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 3 Mar 2009 17:15:58 -0700
-Grant Likely <grant.likely@secretlab.ca> wrote:
+On Tue, 3 Mar 2009 16:09:06 -0800
+"Andrew Morton" <akpm@linux-foundation.org> wrote:
 
-> On Tue, Mar 3, 2009 at 5:09 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > linux-next's dc0f6e94d7f487c624254597a0b86ef41c525673 (which I don't
-> > seem to be able to find on any mailing lists to which I subscribe)
-> > breaks the sparc64 allmodconfig build:
-> 
-> Hmm, I don't see that one either.  Which tree did it go in via?
-> 
+> afacit that interface is powerpc-only.
 
-leds            git     git://git.o-hand.com/linux-rpurdie-leds#for-mm
+Yes it is. You might want a CONFIG_PPC with that.
+
+It has been..... uhhhh carry the two... longer than I want to admit
+since I worked on a sparc. Would GPIO based LEDS make sense on a sparc
+platform? Is sparc used much in the embedded world?
+
+If yes, the of_register_platform_driver is just a nice wrapper. It
+would be trivial to either change it to work on sparc, or add the
+wrapper to the sparc includes.
+
+Cheers,
+   Sean
