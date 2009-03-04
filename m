@@ -1,19 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id B678BDE11E
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 04:48:46 +1100 (EST)
-Date: Wed, 4 Mar 2009 20:48:45 +0300
+	by ozlabs.org (Postfix) with ESMTP id AF90DDE0CD
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 04:49:19 +1100 (EST)
+Date: Wed, 4 Mar 2009 20:49:17 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: [PATCH 07/13] sdhci: Add support for hosts with strict 32 bit
-	addressing
-Message-ID: <20090304174845.GC7477@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 05/13] sdhci: Add support for card-detection polling
+Message-ID: <20090304174917.GD7477@oksana.dev.rtsoft.ru>
 References: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
-	<20090213144722.GG23889@oksana.dev.rtsoft.ru>
-	<20090221165833.6dec220a@mjolnir.ossman.eu>
+	<20090213144718.GE23889@oksana.dev.rtsoft.ru>
+	<20090221165821.1239aa5a@mjolnir.ossman.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090221165833.6dec220a@mjolnir.ossman.eu>
+In-Reply-To: <20090221165821.1239aa5a@mjolnir.ossman.eu>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
 	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx,
@@ -28,115 +27,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Feb 21, 2009 at 04:58:33PM +0100, Pierre Ossman wrote:
-> On Fri, 13 Feb 2009 17:47:22 +0300
+On Sat, Feb 21, 2009 at 04:58:21PM +0100, Pierre Ossman wrote:
+> On Fri, 13 Feb 2009 17:47:18 +0300
 > Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> > SDHCI driver must take special care when working with "triggering"
-> > registers on hosts with strict 32 bit addressing.
-> > 
-> > In FSL eSDHC hosts all registers are 32 bit width, writing to the
-> > first half of any register will cause [undefined?] write the second
-> > half of the register. That is, 16 bit write to the TRANSFER_MODE
-> > register, makes hardware see a bogus write to the COMMAND register
-> > (these two registers are adjacent).
-> > 
-> > This patch adds SDHCI_QUIRK_32BIT_REGISTERS quirk. When specified,
-> > the sdhci driver will try to "pack" all dangerous writes into single
-> > 32 bit write transaction.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
+> > @@ -1110,13 +1113,18 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+> >  
+> >  	host->mrq = mrq;
+> >  
+> > +	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
+> > +		goto send;
+> > +
+> >  	if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)
+> >  		|| (host->flags & SDHCI_DEVICE_DEAD)) {
+> >  		host->mrq->cmd->error = -ENOMEDIUM;
+> >  		tasklet_schedule(&host->finish_tasklet);
+> > -	} else
+> > -		sdhci_send_command(host, mrq->cmd);
+> > -
+> > +		goto out;
+> > +	}
+> > +send:
+> > +	sdhci_send_command(host, mrq->cmd);
+> > +out:
+> >  	mmiowb();
+> >  	spin_unlock_irqrestore(&host->lock, flags);
+> >  }
 > 
-> What about the other places where we have 16 and 8 bit registers?
+> goto:s seem unnecessary here, and your patch is even incorrect as it
+> ignores the SDHCI_DEVICE_DEAD flag.
 
-These are handled by the accessors:
+Oops.
 
-+static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
-+{
-+       int base = reg & ~0x3;
-+       int shift = (reg & 0x3) * 8;
-+
-+       clrsetbits_be32(host->ioaddr + base , 0xff << shift, val << shift);
+> Just modify the if-clause and
+> things will work.
 
-^^ See, we're always issuing 32bit ops.
+That would look horrid...
 
-The point of this patch is to take care of "triggering" registers,
-i.e. those registers that are used trigger "send some data" command.
+        if ((!(host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION) &&
+                        !(sdhci_readl(host, SDHCI_PRESENT_STATE) &
+                                SDHCI_CARD_PRESENT)) ||
+                        (host->flags & SDHCI_DEVICE_DEAD)) {
 
-There is just one (from the eSDHC point of view) such register:
-TRANSFER_MODE+COMMAND (which is a single 32 bit register in eSDHC,
-but two independant word-sized registers in standard SDHCI).
+> Might want to add a comment also to make it more obvious what the
+> if-clause does.
 
-That register must be accessed with 32bit ops just _once_ per
-data transfer, not two 32bit writes (half of a register one time,
-and half of a register next time -- this won't work).
+Let's try to avoid the if-clause above? How about this:
 
-But I see the point of confusion... Instead of teaching
-"SDHCI core" to work with 32 bits hosts, we'd better handle this
-in the eSDHC part, in the accessors.
-
-This is relatively trivial and should not cause much overhead
-(at least when using DMA), just a small state machine with
-the xfer mode register shadowed in software (plus, notice that
-this also handles BLOCK_SIZE, as I promised in another email):
-
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index 22bf006..5100d1d 100644
---- a/drivers/mmc/host/sdhci-of.c
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -30,6 +30,7 @@ struct sdhci_of_data {
- 
- struct sdhci_of_host {
- 	unsigned int clock;
-+	u16 xfer_mode_shadow;
- };
- 
- /*
-@@ -69,9 +70,31 @@ static void esdhc_writel(struct sdhci_host *host, u32 val, int reg)
- 
- static void esdhc_writew(struct sdhci_host *host, u16 val, int reg)
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 0cbde8e..d71c877 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -167,6 +167,9 @@ static void sdhci_set_card_detection(struct sdhci_host *host, bool enable)
  {
-+	struct sdhci_of_host *of_host = sdhci_priv(host);
- 	int base = reg & ~0x3;
- 	int shift = (reg & 0x2) * 8;
+ 	u32 irqs = SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT;
  
-+	switch (reg) {
-+	case SDHCI_TRANSFER_MODE:
-+		/*
-+		 * Postpone this write, we must do it together with a
-+		 * command write that is down below.
-+		 */
-+		of_host->xfer_mode_shadow = val;
++	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
 +		return;
-+	case SDHCI_COMMAND:
-+		esdhc_writel(host, val << 16 | of_host->xfer_mode_shadow,
-+			     SDHCI_TRANSFER_MODE);
-+		return;
-+	case SDHCI_BLOCK_SIZE:
-+		/*
-+		 * Two last DMA bits are reserved, and first one is used for
-+		 * non-standard blksz of 4096 bytes that we don't support
-+		 * yet. So clear the DMA boundary bits.
-+		 */
-+		val &= ~SDHCI_MAKE_BLKSZ(0x7, 0);
-+		/* fall through */
-+	}
- 	clrsetbits_be32(host->ioaddr + base, 0xffff << shift, val << shift);
- }
++
+ 	if (enable)
+ 		sdhci_unmask_irqs(host, irqs);
+ 	else
+@@ -1096,6 +1099,7 @@ out:
+ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ {
+ 	struct sdhci_host *host;
++	bool present;
+ 	unsigned long flags;
  
-@@ -137,13 +160,11 @@ static unsigned int esdhc_get_timeout_clock(struct sdhci_host *host)
- }
+ 	host = mmc_priv(mmc);
+@@ -1110,8 +1114,14 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
  
- static struct sdhci_of_data sdhci_esdhc = {
--	.quirks = SDHCI_QUIRK_32BIT_REGISTERS |
--		  SDHCI_QUIRK_BROKEN_CARD_DETECTION |
-+	.quirks = SDHCI_QUIRK_BROKEN_CARD_DETECTION |
- 		  SDHCI_QUIRK_INVERTED_WRITE_PROTECT |
- 		  SDHCI_QUIRK_NO_BUSY_IRQ |
- 		  SDHCI_QUIRK_NONSTANDARD_CLOCK |
- 		  SDHCI_QUIRK_PIO_NEEDS_DELAY |
--		  SDHCI_QUIRK_MAX_BLK_SZ_4096 |
- 		  SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET |
- 		  SDHCI_QUIRK_NO_CARD_NO_RESET,
- 	.ops = {
+ 	host->mrq = mrq;
+ 
+-	if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)
+-		|| (host->flags & SDHCI_DEVICE_DEAD)) {
++	/* If polling, assume that the card is always present. */
++	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
++		present = true;
++	else
++		present = sdhci_readl(host, SDHCI_PRESENT_STATE) &
++				SDHCI_CARD_PRESENT;
++
++	if (!present || host->flags & SDHCI_DEVICE_DEAD) {
+ 		host->mrq->cmd->error = -ENOMEDIUM;
+ 		tasklet_schedule(&host->finish_tasklet);
+ 	} else
+@@ -1745,6 +1755,9 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	if (caps & SDHCI_CAN_DO_HISPD)
+ 		mmc->caps |= MMC_CAP_SD_HIGHSPEED;
+ 
++	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
++		mmc->caps |= MMC_CAP_NEEDS_POLL;
++
+ 	mmc->ocr_avail = 0;
+ 	if (caps & SDHCI_CAN_VDD_330)
+ 		mmc->ocr_avail |= MMC_VDD_32_33|MMC_VDD_33_34;
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 1c29895..09a4363 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -212,6 +212,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_BROKEN_SMALL_PIO			(1<<13)
+ /* Controller does not provide transfer-complete interrupt when not busy */
+ #define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<14)
++/* Controller has unreliable card detection */
++#define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<15)
+ 
+ 	int			irq;		/* Device IRQ */
+ 	void __iomem *		ioaddr;		/* Mapped address */
