@@ -1,17 +1,19 @@
-Return-Path: <onramp123@yahoo.com>
-Received: from n10.bullet.mail.mud.yahoo.com (n10.bullet.mail.mud.yahoo.com
-	[209.191.125.208]) by ozlabs.org (Postfix) with SMTP id 2283EDDFB9
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 16:47:07 +1100 (EST)
-From: "Steve DeLaney" <onramp123@yahoo.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: RE: mpc8349e-mitx 2.6.25 serial IRQ assigned wrong
-Date: Tue, 3 Mar 2009 21:39:19 -0800
-Message-ID: <025a01c99c8b$90afb030$6b03a8c0@sdelaney2>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: 
-Reply-To: onramp123@yahoo.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CB85EDDFD6
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2009 16:58:22 +1100 (EST)
+Subject: Re: ext2_* in bitops.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andy Grover <andy.grover@oracle.com>
+In-Reply-To: <49AE114C.6070903@oracle.com>
+References: <49AE114C.6070903@oracle.com>
+Content-Type: text/plain
+Date: Wed, 04 Mar 2009 16:58:03 +1100
+Message-Id: <1236146283.6696.36.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,73 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
+On Tue, 2009-03-03 at 21:27 -0800, Andy Grover wrote:
+> Hi,
+> 
+> Can the ext2_* definitions in arch/powerpc/include/asm/bitops.h be 
+> replaced with:
+> 
+> #include <include/asm-generic/bitops/ext2-non-atomic.h>
+> #include <include/asm-generic/bitops/ext2-atomic.h>
+>
+> ?
+> 
+> Also, can the bitop swizzling (starting at line 351) be removed by 
+> including include/asm-generic/bitops/le.h? It looks very similar if not 
+> identical.
+> 
+> I'm afraid I don't have a ppc to test on so I wanted to see what you all 
+> thought.
 
-Here's an update on this issue.  
+I suppose you are right, I'll have a closer look.
 
-After verifying the device tree was OK, the OF traces led us to the root
-cause.
-
-powerpc irq.c irq_alloc_virt() assigns a virtual IRQ as a function of the
-input hardware IRQ hint, AND NUM_ISA_INTERRUPTS.  it turns out that
-asm-ppc/irq.h defines NUM_ISA_INTERRUPTS 16, so that the allocated virq
-is offset by this amount.  this accounts for the remap shown below for 
-i2c and serial device vectors.
-
-I didn't realize before that /proc/interrupts 
-serviced by irq.c show_interrupts() displays virtual vector numbers.
-
-For the mpc8349e-mitx this must be incorrect since there is no ISA?
-Essentially all that is needed is a 1:1 mapping hirq:virq since
-each interrupt source in the system appears to have a unique vector
-in the SOC IPIC.  It seems this scheme is needlessly complex, at least for
-mpc8349e.
-
-For now we simply define irq.h NUM_ISA_INTERRUPTS 0
-but this isn't a complete solution since our PCI device
-interrupt on hirq 20, ends up allocated on virq 1.  To force
-this to work, the driver does an irq_create_mapping(NULL, 20),
-then assigns its own dev->irq=20 before calling request_irq()
-
-I'm sure someone has a more elegant solution but that's what
-we've been able to come up with so far.
-
-/steverino2
-
------Original Message-----
-From: Steve DeLaney [mailto:onramp123@yahoo.com] 
-Sent: Saturday, February 28, 2009 8:08 AM
-To: 'linuxppc-dev@ozlabs.org'
-Subject: mpc8349e-mitx 2.6.25 serial IRQ assigned wrong
-
- 
-Hello all,
-
-We completed a 2.6.25 build for MPC8349E-mITX platform, and u-booting using
-the device tree under ...boot/dts/mpc8349emitx.dts
-
-But the standard platform device IRQs are assigned wrong under
-/proc/interrupts:
-16 i2c-mpc
-17 i2c-mpc
-20 serial
-
-According to the device tree, and the processor data sheet, it should be
-like this:
-9 serial
-14 i2c-mpc
-15 i2c-mpc
-
-earlier builds (pre-dating device tree) of 2.6.13 and 2.6.16 are OK.
-The IRQs are assigned correctly, with serial on 9.
-
-Oddly enough the serial port works OK even though it is assigned to IRQ 20.
-We could probably live with it, but this interferes with our application
-that uses PCI.
-On MPC8349E-mITX, PIC IRQ 20 is intended for PCI INTA that is input to the
-MPC8349E processor on IRQ4* signal.
-
-We turned on debug output in irq.c and prom_parse.c Any idea what might be
-going wrong?  We would appreciate any suggestions on what to look for.
-
-/steverino2
+Cheers,
+Ben.
