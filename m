@@ -1,12 +1,16 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: grant.likely@secretlab.ca, Wolfram Sang <w.sang@pengutronix.de>
+Return-Path: <daniel.ng1234@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id 3BCBDDDDA0
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 17:53:36 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j5so2111292wah.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 04 Mar 2009 22:53:35 -0800 (PST)
 MIME-Version: 1.0
-Subject: [PATCH] powerpc: Fix mpc52xx_gpt when sysfs is not configured
-Date: Thu, 05 Mar 2009 17:03:59 +1100
-Message-ID: <25409.1236233039@neuling.org>
-Sender: mikey@neuling.org
-Cc: linuxppc-dev@ozlabs.org
+Date: Thu, 5 Mar 2009 17:53:34 +1100
+Message-ID: <547eba1b0903042253i3a245eaw306fbddbf47b150b@mail.gmail.com>
+Subject: GPIO and SPI on CPM2 (8260)?
+From: Daniel Ng <daniel.ng1234@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,26 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-mpc52xx_gpt_create_attribs is missing a parameter name and shouldn't
-return anything since it's void.  
+Hi,
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-This is against benh's testing tree
+I'm trying to get GPIO and SPI working on my 8272-based board.
 
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Would anyone know if the following exists?-
 
-Index: clone1/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-===================================================================
---- clone1.orig/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ clone1/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -370,7 +370,7 @@ static void mpc52xx_gpt_create_attribs(s
- }
- 
- #else /* defined(CONFIG_SYSFS) */
--static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *) { return 0; }
-+static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *gpt) {}
- #endif /* defined(CONFIG_SYSFS) */
- 
- /* ---------------------------------------------------------------------
+1) SPI driver for CPM2-based platforms?
+2) GPIO driver for CPM2-based platforms?
+
+Also, has anyone used the gpiolib functionality on the CPM2-based platforms?
+
+Cheers,
+Daniel
