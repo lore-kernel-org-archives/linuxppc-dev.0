@@ -1,16 +1,9 @@
-Return-Path: <daviddwcn@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
-	by ozlabs.org (Postfix) with ESMTP id 7871FDDD1C
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 11:45:39 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id l9so3412969rvb.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Mar 2009 16:45:37 -0800 (PST)
-MIME-Version: 1.0
-Date: Thu, 5 Mar 2009 08:45:37 +0800
-Message-ID: <6563ec230903041645n7abb2b78x2354881a67746dd7@mail.gmail.com>
-Subject: 
-From: deng david <daviddwcn@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <e9c405aaec255c2a3d34209fc35ae093fcae8efc.1236228043.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc/cell: Only build Axon MSI driver for IBM Cell Blades
+Date: Thu,  5 Mar 2009 15:41:41 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,8 +13,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Everyone:
+The hardware is only present on those machines, and the driver
+depends on infrastructure which is selected by the Kconfig for
+cell blades.
 
-   I have read in this list that someone asked for the document of
-IBM eBony board with PPC440GP.  I don't know if he get it . But could
-anyone send me the document or tell me how to get it ? thanks a lot.
+Reported-by: Mikey "Randconfig Monkey" Neuling
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/cell/Makefile |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
+index 43eccb2..9330cf8 100644
+--- a/arch/powerpc/platforms/cell/Makefile
++++ b/arch/powerpc/platforms/cell/Makefile
+@@ -28,7 +28,9 @@ obj-$(CONFIG_SPU_BASE)			+= spu_callbacks.o spu_base.o \
+ 					   $(spu-manage-y) \
+ 					   spufs/
+ 
++ifeq ($(CONFIG_PPC_IBM_CELL_BLADE),y)
+ obj-$(CONFIG_PCI_MSI)			+= axon_msi.o
++endif
+ 
+ # qpace setup
+ obj-$(CONFIG_PPC_CELL_QPACE)		+= qpace_setup.o
+-- 
+1.5.6.3
