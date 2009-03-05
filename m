@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 200BEDDF82
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 07:28:37 +1100 (EST)
-Date: Thu, 5 Mar 2009 23:28:35 +0300
+	by ozlabs.org (Postfix) with ESMTP id 9AAA0DE0E2
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 07:28:41 +1100 (EST)
+Date: Thu, 5 Mar 2009 23:28:40 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 05/11] sdhci: Add support for hosts reporting inverted
-	write-protect state
-Message-ID: <20090305202835.GE28709@oksana.dev.rtsoft.ru>
+Subject: [PATCH 06/11] sdhci: Add get_{max,timeout}_clock callbacks
+Message-ID: <20090305202840.GF28709@oksana.dev.rtsoft.ru>
 References: <20090305202737.GA24166@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,43 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds SDHCI_QUIRK_INVERTED_WRITE_PROTECT quirk. When
-specified, the sdhci driver will invert WP state.
+From: Ben Dooks <ben-linux@fluff.org>
 
-p.s. Actually, the quirk is more board-specific than
-     controller-specific.
+Some controllers do not provide clock information in their capabilities
+(in the Samsung case, it is because there are multiple clock sources
+available to the controller). Add hooks to allow the system to supply
+clock information.
 
+p.s.
+In the original Ben's patch there was a bug that makes sdhci_add_host()
+return -ENODEV even if callbacks were specified. This is fixed now.
+
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |    2 ++
+ drivers/mmc/host/sdhci.c |   22 +++++++++++++++-------
  drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+ 2 files changed, 17 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index d71c877..8aaf3a5 100644
+index 8aaf3a5..cca80d3 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -1204,6 +1204,8 @@ static int sdhci_get_ro(struct mmc_host *mmc)
+@@ -1729,19 +1729,27 @@ int sdhci_add_host(struct sdhci_host *host)
  
- 	spin_unlock_irqrestore(&host->lock, flags);
+ 	host->max_clk =
+ 		(caps & SDHCI_CLOCK_BASE_MASK) >> SDHCI_CLOCK_BASE_SHIFT;
++	host->max_clk *= 1000000;
+ 	if (host->max_clk == 0) {
+-		printk(KERN_ERR "%s: Hardware doesn't specify base clock "
+-			"frequency.\n", mmc_hostname(mmc));
+-		return -ENODEV;
++		if (!host->ops->get_max_clock) {
++			printk(KERN_ERR
++			       "%s: Hardware doesn't specify base clock "
++			       "frequency.\n", mmc_hostname(mmc));
++			return -ENODEV;
++		}
++		host->max_clk = host->ops->get_max_clock(host);
+ 	}
+-	host->max_clk *= 1000000;
  
-+	if (host->quirks & SDHCI_QUIRK_INVERTED_WRITE_PROTECT)
-+		return !!(present & SDHCI_WRITE_PROTECT);
- 	return !(present & SDHCI_WRITE_PROTECT);
- }
- 
+ 	host->timeout_clk =
+ 		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
+ 	if (host->timeout_clk == 0) {
+-		printk(KERN_ERR "%s: Hardware doesn't specify timeout clock "
+-			"frequency.\n", mmc_hostname(mmc));
+-		return -ENODEV;
++		if (!host->ops->get_timeout_clock) {
++			printk(KERN_ERR
++			       "%s: Hardware doesn't specify timeout clock "
++			       "frequency.\n", mmc_hostname(mmc));
++			return -ENODEV;
++		}
++		host->timeout_clk = host->ops->get_timeout_clock(host);
+ 	}
+ 	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
+ 		host->timeout_clk *= 1000;
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 09a4363..d0d812e 100644
+index d0d812e..34f1849 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -214,6 +214,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<14)
- /* Controller has unreliable card detection */
- #define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<15)
-+/* Controller reports inverted write-protect state */
-+#define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<16)
+@@ -281,6 +281,8 @@ struct sdhci_ops {
+ 	void		(*writeb)(struct sdhci_host *host, u8 val, int reg);
  
- 	int			irq;		/* Device IRQ */
- 	void __iomem *		ioaddr;		/* Mapped address */
+ 	int		(*enable_dma)(struct sdhci_host *host);
++	unsigned int	(*get_max_clock)(struct sdhci_host *host);
++	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
+ };
+ 
+ extern void sdhci_writel(struct sdhci_host *host, u32 val, int reg);
 -- 
 1.5.6.5
