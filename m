@@ -1,16 +1,24 @@
-Return-Path: <daniel.ng1234@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 3BCBDDDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 17:53:36 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id j5so2111292wah.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Mar 2009 22:53:35 -0800 (PST)
+Return-Path: <axboe@kernel.dk>
+Date: Thu, 5 Mar 2009 07:54:23 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing
+	video RAM as block device
+Message-ID: <20090305065423.GK11787@kernel.dk>
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
+	<1236209255.6696.75.camel@pasglop>
 MIME-Version: 1.0
-Date: Thu, 5 Mar 2009 17:53:34 +1100
-Message-ID: <547eba1b0903042253i3a245eaw306fbddbf47b150b@mail.gmail.com>
-Subject: GPIO and SPI on CPM2 (8260)?
-From: Daniel Ng <daniel.ng1234@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1236209255.6696.75.camel@pasglop>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Jim Paris <jim@jtan.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	linux-mtd@lists.infradead.org,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Vivien Chappelier <vivien.chappelier@free.fr>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,16 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Mar 05 2009, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-03-04 at 14:57 +0100, Geert Uytterhoeven wrote:
+> > 	Hi,
+> > 
+> > Below is the rewrite of the PS3 Video RAM Storage Driver as a plain block
+> > device, as requested by Arnd Bergmann.
+> > 
+> > The MTD-based PS3 Video RAM Storage Driver was integrated into the mainline
+> > kernel in 2.6.29-rc1.
+> > 
+> > Ideally, we think it would be best if the existing MTD-based ps3vram driver
+> > would be replaced by the new block-based ps3vram driver before 2.6.29 is
+> > released. This would relieve the burden of supporting two different swap space
+> > schemes on PS3 (swap on /dev/mtdblock0 vs. /dev/ps3vram) from the distro
+> > maintainer's shoulders, as in that case there would never have been a stable
+> > kernel version containing the MTD-based ps3vram driver.
+> 
+> This is very very very late ... we are at rc7, probably one rc before
+> final... as much as I like integrating drivers later, I'll ask Linus
+> opinion on this one.
+> 
+> Linus ? What do you reckon ? Maybe a better option is just to remove
+> ps3nvram from .29 and merge the new one in .30 ?
 
-I'm trying to get GPIO and SPI working on my 8272-based board.
+It's an isolated driver for a special purpose platform, I would have
+zero problems merging it :-)
 
-Would anyone know if the following exists?-
-
-1) SPI driver for CPM2-based platforms?
-2) GPIO driver for CPM2-based platforms?
-
-Also, has anyone used the gpiolib functionality on the CPM2-based platforms?
-
-Cheers,
-Daniel
+-- 
+Jens Axboe
