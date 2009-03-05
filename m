@@ -1,9 +1,12 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <82074b2f0caa3852b64dd953a725304a072ea85a.1236229307.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [RFC/PATCH] Print linux_banner in prom_init
-Date: Thu,  5 Mar 2009 16:02:01 +1100 (EST)
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: grant.likely@secretlab.ca, Wolfram Sang <w.sang@pengutronix.de>
+MIME-Version: 1.0
+Subject: [PATCH] powerpc: Fix mpc52xx_gpt when sysfs is not configured
+Date: Thu, 05 Mar 2009 17:03:59 +1100
+Message-ID: <25409.1236233039@neuling.org>
+Sender: mikey@neuling.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,40 +16,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So at least you can see what kernel you're booting if you die
-before the kernel prints it mid-way through start_kernel().
+mpc52xx_gpt_create_attribs is missing a parameter name and shouldn't
+return anything since it's void.  
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/kernel/prom_init.c        |    2 ++
- arch/powerpc/kernel/prom_init_check.sh |    2 +-
- 2 files changed, 3 insertions(+), 1 deletions(-)
+This is against benh's testing tree
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 7f1b33d..4d5ebb4 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -2283,6 +2283,8 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 	 */
- 	prom_init_stdout();
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: clone1/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+===================================================================
+--- clone1.orig/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
++++ clone1/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+@@ -370,7 +370,7 @@ static void mpc52xx_gpt_create_attribs(s
+ }
  
-+	prom_printf("Preparing to boot %s", PTRRELOC((char *)linux_banner));
-+
- 	/*
- 	 * Get default machine type. At this point, we do not differentiate
- 	 * between pSeries SMP and pSeries LPAR
-diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-index ea3a2ec..1ac136b 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -20,7 +20,7 @@ WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
- _end enter_prom memcpy memset reloc_offset __secondary_hold
- __secondary_hold_acknowledge __secondary_hold_spinloop __start
- strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
--reloc_got2 kernstart_addr memstart_addr"
-+reloc_got2 kernstart_addr memstart_addr linux_banner"
+ #else /* defined(CONFIG_SYSFS) */
+-static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *) { return 0; }
++static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *gpt) {}
+ #endif /* defined(CONFIG_SYSFS) */
  
- NM="$1"
- OBJ="$2"
--- 
-1.5.6.3
+ /* ---------------------------------------------------------------------
