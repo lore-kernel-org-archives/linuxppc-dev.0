@@ -1,25 +1,31 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Thu, 5 Mar 2009 17:45:39 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
-	RAM as block device
-In-Reply-To: <20090305110940.GY11787@kernel.dk>
-Message-ID: <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
-	<20090305083701.GQ11787@kernel.dk>
-	<alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be>
-	<20090305110940.GY11787@kernel.dk>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [59.145.155.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 00C2FDDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 03:53:36 +1100 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28smtp08.in.ibm.com (8.13.1/8.13.1) with ESMTP id n25GR1ee024641
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Mar 2009 21:57:01 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n25GrcOr3301428
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Mar 2009 22:23:38 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id n25GrUvD032443
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Mar 2009 22:23:31 +0530
+Message-ID: <49B00389.7050407@in.ibm.com>
+Date: Thu, 05 Mar 2009 22:23:29 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Arnd Bergmann <arnd@arndb.de>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Jim Paris <jim@jtan.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-mtd@lists.infradead.org,
-	Vivien Chappelier <vivien.chappelier@free.fr>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
+To: michael@ellerman.id.au
+Subject: Re: [Powerpc] Next March 5 build failure: platform/pseries/msi.o
+References: <20090305195008.f4fd4ce0.sfr@canb.auug.org.au>
+	<49AFB92B.8060606@in.ibm.com> <1236262014.8325.10.camel@localhost>
+In-Reply-To: <1236262014.8325.10.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,102 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 5 Mar 2009, Jens Axboe wrote:
-> On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
-> > On Thu, 5 Mar 2009, Jens Axboe wrote:
-> > > On Wed, Mar 04 2009, Geert Uytterhoeven wrote:
-> > > > Below is the rewrite of the PS3 Video RAM Storage Driver as a plain block
-> > > > device, as requested by Arnd Bergmann.
+Michael Ellerman wrote:
+> Dang it, that's my fault. Thanks for catching it Sachin.
+>
+> I assumed pseries always enabled EEH, but I see now you can disable it
+> if you have EMBEDDED set (which your config does).
+>
+> It's a bit yucky making the MSI code depend on EEH, but the only other
+> option would be to pull half the EEH code out - so I guess that's what
+> I'll do.
+>
+> Does this patch fix it?
+Thanks for the patch Michael. It fixes the build break.
 
-> > > I'd rewrite this as a ->make_request_fn handler instead. Then you can
-> > > get rid of the kernel thread. IOW, change
-> > >
-> > > queue = blk_init_queue(ps3vram_request, &priv->lock);
-> > >
-> > > to
-> > >
-> > > queue = blk_alloc_queue(GFP_KERNEL);
-> > > blk_queue_make_request(queue, ps3vram_make_request);
-> > 
-> > Thanks, I didn't know that part...
-> > 
-> > > Add error handling of course, and call blk_queue_max_*() to set your
-> > > limits for this device.
-> > 
-> > I took out the blk_queue_max_*() calls (compared to ps3disk.c), as
-> > none of the limits apply, and the defaults are fine.
-> > 
-> > Is that OK, or is it better to make it explicit?
-> 
-> I think it's always good to make it explicit. Plus for this case you
-> definitely need it, as blk_init_queue() wont do it for you anymore.
+Regards
+-Sachin
 
-blk_queue_make_request() does it for me, too:
+-- 
 
-void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
-{
-	...
-	blk_queue_max_phys_segments(q, MAX_PHYS_SEGMENTS);
-	blk_queue_max_hw_segments(q, MAX_HW_SEGMENTS);
-	...
-	blk_queue_max_segment_size(q, MAX_SEGMENT_SIZE);
-	...
-	blk_queue_max_sectors(q, SAFE_MAX_SECTORS);
-	...
-}
-
-struct request_queue *
-blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
-{
-	...
-	blk_queue_max_segment_size(q, MAX_SEGMENT_SIZE);
-
-	blk_queue_max_hw_segments(q, MAX_HW_SEGMENTS);
-	blk_queue_max_phys_segments(q, MAX_PHYS_SEGMENTS);
-	...
-}
-
-> > > Then add a ps3vram_make_request() ala:
-> > 
-> > > static void ps3vram_do_request(struct request_queue *q, struct bio *bio)
-> > > {
-
-> > > }
-> > >
-> > > I just typed it here, so if it doesn't compile you get to keep the
-> > > pieces :-)
-> > 
-> > OK, I'll give it a try...
-> > 
-> > BTW, does this mean the `simple' way, which I used based on LDD3, is
-> > deprecated?
-> 
-> Depends.. It's obviously not a very effective approach, since you punt
-> to a thread for each request. But if you need the IO scheduler helping
-> you with merging and sorting (for a rotational device), it still has
-> some merit. For this particular case, the ->make_request_fn approach is
-> much better.
-
-Without the thread, performance indeed increased.
-
-But then I noticed ps3vram_make_request() may be called concurrently, so I had
-to add a mutex to avoid data corruption. This slows the driver down, and in the
-end, the version with a thread turns out to be ca. 1% faster. The version
-without a thread is about 50 lines less code, though.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
