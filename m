@@ -1,18 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 11C4DDDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Mar 2009 18:11:47 +1100 (EST)
-Date: Thu, 5 Mar 2009 01:13:56 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/cell: Only build Axon MSI driver for IBM Cell
-	Blades
-Message-ID: <20090305071356.GA9412@lixom.net>
-References: <e9c405aaec255c2a3d34209fc35ae093fcae8efc.1236228043.git.michael@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e9c405aaec255c2a3d34209fc35ae093fcae8efc.1236228043.git.michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Message-Id: <AA44F8E7-5FBC-4378-A86D-C094ECABD625@aepfle.de>
+From: Olaf Hering <olaf@aepfle.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
+	RAM as block device
+Date: Thu, 5 Mar 2009 08:17:24 +0100
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
+Cc: Jens Axboe <axboe@kernel.dk>, Arnd Bergmann <arnd@arndb.de>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Jim Paris <jim@jtan.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	linux-mtd@lists.infradead.org,
+	Vivien Chappelier <vivien.chappelier@free.fr>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 05, 2009 at 03:41:41PM +1100, Michael Ellerman wrote:
-> The hardware is only present on those machines, and the driver
-> depends on infrastructure which is selected by the Kconfig for
-> cell blades.
+Am 04.03.2009 um 14:57 schrieb Geert Uytterhoeven:
 
-Wouldn't it make more sense to make a separate (AXON_MSI) config option
-depend on PPC_IBM_CELL_BLADE?
+> Ideally, we think it would be best if the existing MTD-based ps3vram  
+> driver
+> would be replaced by the new block-based ps3vram driver before  
+> 2.6.29 is
+> released. This would relieve the burden of supporting two different  
+> swap space
+> schemes on PS3 (swap on /dev/mtdblock0 vs. /dev/ps3vram) from the  
+> distro
+> maintainer's shoulders, as in that case there would never have been  
+> a stable
+> kernel version containing the MTD-based ps3vram driver.
 
+openSuSE already ships with the ps3vram driver since a two releases.
+A simple name based udev rule could symlink ps3vram to mtdblock0, so  
+an upgrade
+will not break existing setups.
 
--Olof
+> +obj-$(CONFIG_PS3_VRAM)		+= ps3vram_ng.o
 
-> --- a/arch/powerpc/platforms/cell/Makefile
-> +++ b/arch/powerpc/platforms/cell/Makefile
-> @@ -28,7 +28,9 @@ obj-$(CONFIG_SPU_BASE)			+= spu_callbacks.o spu_base.o \
->  					   $(spu-manage-y) \
->  					   spufs/
->  
-> +ifeq ($(CONFIG_PPC_IBM_CELL_BLADE),y)
->  obj-$(CONFIG_PCI_MSI)			+= axon_msi.o
-> +endif
->  
->  # qpace setup
->  obj-$(CONFIG_PPC_CELL_QPACE)		+= qpace_setup.o
+Please give the driver the obvious name "ps3vram", that way upgrading  
+will be smooth.
+
+I see our old mtddriver does not have modalias support for autoloading.
+Hopefully the new driver has this feature.
+
+Olaf
