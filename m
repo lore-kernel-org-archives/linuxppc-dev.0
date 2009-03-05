@@ -1,19 +1,29 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/cell: Only build Axon MSI driver for IBM Cell
-	Blades
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20090305071356.GA9412@lixom.net>
-References: <e9c405aaec255c2a3d34209fc35ae093fcae8efc.1236228043.git.michael@ellerman.id.au>
-	<20090305071356.GA9412@lixom.net>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-K/SEB0cSmGAKwEQJJJjy"
-Date: Fri, 06 Mar 2009 01:07:05 +1100
-Message-Id: <1236262025.8325.12.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 03B2CDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 02:08:28 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so2059509ywb.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Mar 2009 07:08:25 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20e286be3bc61f03018fc94366e6fd01@localhost>
+References: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
+	<fa686aa40903020708y1f9f8ceeueb13f9146534df8d@mail.gmail.com>
+	<9d38520266f15d80352d1554e63c1ce6@localhost>
+	<a57485706bfc7aae2295acd743445312@localhost>
+	<fa686aa40903030723p7d82edbfg5928adf9fe108b01@mail.gmail.com>
+	<7AC161D8-83A8-4330-A2CF-3120F15D9038@it-loops.com>
+	<fa686aa40903031310o4e0c0b2bnba0544012b0fb8bc@mail.gmail.com>
+	<68DDAAA9-42AF-4E9C-907C-7D3269816184@it-loops.com>
+	<fa686aa40903040757n3992fec4jb6f3b75396af2958@mail.gmail.com>
+	<20e286be3bc61f03018fc94366e6fd01@localhost>
+Date: Thu, 5 Mar 2009 08:08:25 -0700
+Message-ID: <fa686aa40903050708j3fa4f25ey2c5e940c70df094f@mail.gmail.com>
+Subject: Re: PHY not found after migration of gianfar driver to an
+	of_platform_driver
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Michael Guntsche <mike@it-loops.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Mar 5, 2009 at 12:41 AM, Michael Guntsche <mike@it-loops.com> wrote=
+:
+> On Wed, 4 Mar 2009 08:57:59 -0700, Grant Likely <grant.likely@secretlab.c=
+a>
+> wrote:
+>> You might be able to use of_attach_node() & prom_add_property() to
+>> modify the tree, but I've never done it myself. =A0Give it a try and
+>> tell me if it works. =A0:-)
+>>
+>
+> Hello Grant,
+>
+> I made some progress in this area, but I have now hit a problem I do not
+> know how to solve.
+> Taking code from the iseries/vio.c files I am able to add properties with
+> add_string_property and add_raw_property.
+> The problem I have is adding properties like
+>
+> =A0 =A0reg =3D <0x2520 0x20>
+>
+> I know how to add a property
+>
+> =A0 reg =3D <0x2520>
+>
+> but I do not know what data structure to pass to add_raw_property to add
+> two numbers there.
 
---=-K/SEB0cSmGAKwEQJJJjy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Device tree properties are just "bags of bytes".  'cells' in device
+tree nomenclature are big endian u32 values.  So, for specifying a
+property with one cell (ie: reg =3D <0x2520>;), the data length is 4
+bytes and the data is an array of 4 bytes: 0x00 0x00 0x25 0x20.  To
+add a property with two cells (ie: reg =3D <0x2520 0x20>;), the data
+length is 8 bytes and the data is and array of 8 bytes: 0x00 0x00 0x25
+0x20 0x00 0x00 0x00 0x20.
 
-On Thu, 2009-03-05 at 01:13 -0600, Olof Johansson wrote:
-> On Thu, Mar 05, 2009 at 03:41:41PM +1100, Michael Ellerman wrote:
-> > The hardware is only present on those machines, and the driver
-> > depends on infrastructure which is selected by the Kconfig for
-> > cell blades.
->=20
-> Wouldn't it make more sense to make a separate (AXON_MSI) config option
-> depend on PPC_IBM_CELL_BLADE?
-
-Maybe, it would make the makefile cleaner, at the expense of a bit more
-Kconfig. I'm not sure what people prefer, I guess I'm neutral and you're
-voting for the latter, so I'll respin it that way :)
-
-cheers
+g.
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-K/SEB0cSmGAKwEQJJJjy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmv3IkACgkQdSjSd0sB4dKWggCguzOXhXwI5F/awr6XvMNEv/xD
-mRoAnAzTFFCFpY3C3P6oR6Eq3znMqV58
-=swXN
------END PGP SIGNATURE-----
-
---=-K/SEB0cSmGAKwEQJJJjy--
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
