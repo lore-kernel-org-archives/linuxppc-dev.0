@@ -1,29 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 03B2CDDD04
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 02:08:28 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so2059509ywb.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 05 Mar 2009 07:08:25 -0800 (PST)
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Thu, 5 Mar 2009 17:45:39 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
+	RAM as block device
+In-Reply-To: <20090305110940.GY11787@kernel.dk>
+Message-ID: <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
+	<20090305083701.GQ11787@kernel.dk>
+	<alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be>
+	<20090305110940.GY11787@kernel.dk>
 MIME-Version: 1.0
-In-Reply-To: <20e286be3bc61f03018fc94366e6fd01@localhost>
-References: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
-	<fa686aa40903020708y1f9f8ceeueb13f9146534df8d@mail.gmail.com>
-	<9d38520266f15d80352d1554e63c1ce6@localhost>
-	<a57485706bfc7aae2295acd743445312@localhost>
-	<fa686aa40903030723p7d82edbfg5928adf9fe108b01@mail.gmail.com>
-	<7AC161D8-83A8-4330-A2CF-3120F15D9038@it-loops.com>
-	<fa686aa40903031310o4e0c0b2bnba0544012b0fb8bc@mail.gmail.com>
-	<68DDAAA9-42AF-4E9C-907C-7D3269816184@it-loops.com>
-	<fa686aa40903040757n3992fec4jb6f3b75396af2958@mail.gmail.com>
-	<20e286be3bc61f03018fc94366e6fd01@localhost>
-Date: Thu, 5 Mar 2009 08:08:25 -0700
-Message-ID: <fa686aa40903050708j3fa4f25ey2c5e940c70df094f@mail.gmail.com>
-Subject: Re: PHY not found after migration of gianfar driver to an
-	of_platform_driver
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Michael Guntsche <mike@it-loops.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: Arnd Bergmann <arnd@arndb.de>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Jim Paris <jim@jtan.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	linux-mtd@lists.infradead.org,
+	Vivien Chappelier <vivien.chappelier@free.fr>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,43 +29,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 5, 2009 at 12:41 AM, Michael Guntsche <mike@it-loops.com> wrote=
-:
-> On Wed, 4 Mar 2009 08:57:59 -0700, Grant Likely <grant.likely@secretlab.c=
-a>
-> wrote:
->> You might be able to use of_attach_node() & prom_add_property() to
->> modify the tree, but I've never done it myself. =A0Give it a try and
->> tell me if it works. =A0:-)
->>
->
-> Hello Grant,
->
-> I made some progress in this area, but I have now hit a problem I do not
-> know how to solve.
-> Taking code from the iseries/vio.c files I am able to add properties with
-> add_string_property and add_raw_property.
-> The problem I have is adding properties like
->
-> =A0 =A0reg =3D <0x2520 0x20>
->
-> I know how to add a property
->
-> =A0 reg =3D <0x2520>
->
-> but I do not know what data structure to pass to add_raw_property to add
-> two numbers there.
+On Thu, 5 Mar 2009, Jens Axboe wrote:
+> On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
+> > On Thu, 5 Mar 2009, Jens Axboe wrote:
+> > > On Wed, Mar 04 2009, Geert Uytterhoeven wrote:
+> > > > Below is the rewrite of the PS3 Video RAM Storage Driver as a plain block
+> > > > device, as requested by Arnd Bergmann.
 
-Device tree properties are just "bags of bytes".  'cells' in device
-tree nomenclature are big endian u32 values.  So, for specifying a
-property with one cell (ie: reg =3D <0x2520>;), the data length is 4
-bytes and the data is an array of 4 bytes: 0x00 0x00 0x25 0x20.  To
-add a property with two cells (ie: reg =3D <0x2520 0x20>;), the data
-length is 8 bytes and the data is and array of 8 bytes: 0x00 0x00 0x25
-0x20 0x00 0x00 0x00 0x20.
+> > > I'd rewrite this as a ->make_request_fn handler instead. Then you can
+> > > get rid of the kernel thread. IOW, change
+> > >
+> > > queue = blk_init_queue(ps3vram_request, &priv->lock);
+> > >
+> > > to
+> > >
+> > > queue = blk_alloc_queue(GFP_KERNEL);
+> > > blk_queue_make_request(queue, ps3vram_make_request);
+> > 
+> > Thanks, I didn't know that part...
+> > 
+> > > Add error handling of course, and call blk_queue_max_*() to set your
+> > > limits for this device.
+> > 
+> > I took out the blk_queue_max_*() calls (compared to ps3disk.c), as
+> > none of the limits apply, and the defaults are fine.
+> > 
+> > Is that OK, or is it better to make it explicit?
+> 
+> I think it's always good to make it explicit. Plus for this case you
+> definitely need it, as blk_init_queue() wont do it for you anymore.
 
-g.
+blk_queue_make_request() does it for me, too:
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
+{
+	...
+	blk_queue_max_phys_segments(q, MAX_PHYS_SEGMENTS);
+	blk_queue_max_hw_segments(q, MAX_HW_SEGMENTS);
+	...
+	blk_queue_max_segment_size(q, MAX_SEGMENT_SIZE);
+	...
+	blk_queue_max_sectors(q, SAFE_MAX_SECTORS);
+	...
+}
+
+struct request_queue *
+blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
+{
+	...
+	blk_queue_max_segment_size(q, MAX_SEGMENT_SIZE);
+
+	blk_queue_max_hw_segments(q, MAX_HW_SEGMENTS);
+	blk_queue_max_phys_segments(q, MAX_PHYS_SEGMENTS);
+	...
+}
+
+> > > Then add a ps3vram_make_request() ala:
+> > 
+> > > static void ps3vram_do_request(struct request_queue *q, struct bio *bio)
+> > > {
+
+> > > }
+> > >
+> > > I just typed it here, so if it doesn't compile you get to keep the
+> > > pieces :-)
+> > 
+> > OK, I'll give it a try...
+> > 
+> > BTW, does this mean the `simple' way, which I used based on LDD3, is
+> > deprecated?
+> 
+> Depends.. It's obviously not a very effective approach, since you punt
+> to a thread for each request. But if you need the IO scheduler helping
+> you with merging and sorting (for a rotational device), it still has
+> some merit. For this particular case, the ->make_request_fn approach is
+> much better.
+
+Without the thread, performance indeed increased.
+
+But then I noticed ps3vram_make_request() may be called concurrently, so I had
+to add a mutex to avoid data corruption. This slows the driver down, and in the
+end, the version with a thread turns out to be ca. 1% faster. The version
+without a thread is about 50 lines less code, though.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
