@@ -1,17 +1,22 @@
-Return-Path: <timur@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2B77BDDEEB
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 10:23:54 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Subject: [PATCH] powerpc: clean up ssi.txt, add definition for fsl,
+	by ozlabs.org (Postfix) with ESMTPS id 5AF87DDDF6
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 10:34:52 +1100 (EST)
+Message-ID: <49B06197.8010007@freescale.com>
+Date: Thu, 05 Mar 2009 17:34:47 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: clean up ssi.txt, add definition for fsl,
 	ssi-asynchronous
-Date: Thu,  5 Mar 2009 17:23:23 -0600
-Message-Id: <1236295403-11954-1-git-send-email-timur@freescale.com>
+References: <1236295403-11954-1-git-send-email-timur@freescale.com>
+In-Reply-To: <1236295403-11954-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,100 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the definition of the fsl,ssi-asynchronous property to ssi.txt (documentation
-of the device tree bindings for the Freescale SSI device).
+Timur Tabi wrote:
+> +- fsl,ssi-asynchronous:
+> +                    If specific, the SSI is to be programmed in asynchronous
+> +                    mode.  In this mode, SRCK and STCK must be connected to the
+> +                    same clock, and SRFS and STFS must also be connected to the
+> +                    same clock.  This allows playback and capture to use
+> +                    different sample sizes.
 
-Also tidy up the layout of ssi.txt.
+s/specific/specified/
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- Documentation/powerpc/dts-bindings/fsl/ssi.txt |   64 +++++++++++++----------
- 1 files changed, 36 insertions(+), 28 deletions(-)
+Does the above mean "SRCK, STCK, SRFS, and STFS must all be connected to 
+the same clock", or does it mean "SRCK must be connected to the same 
+clock as STCK, and SRFS must be connected to the same clock as STFS"?
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/ssi.txt b/Documentation/powerpc/dts-bindings/fsl/ssi.txt
-index a2d9639..b8a5e12 100644
---- a/Documentation/powerpc/dts-bindings/fsl/ssi.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/ssi.txt
-@@ -4,44 +4,52 @@ The SSI is a serial device that communicates with audio codecs.  It can
- be programmed in AC97, I2S, left-justified, or right-justified modes.
- 
- Required properties:
--- compatible	  : compatible list, containing "fsl,ssi"
--- cell-index	  : the SSI, <0> = SSI1, <1> = SSI2, and so on
--- reg		  : offset and length of the register set for the device
--- interrupts	  : <a b> where a is the interrupt number and b is a
--                     field that represents an encoding of the sense and
--		    level information for the interrupt.  This should be
--		    encoded based on the information in section 2)
--		    depending on the type of interrupt controller you
--		    have.
--- interrupt-parent : the phandle for the interrupt controller that
--                     services interrupts for this device.
--- fsl,mode	  : the operating mode for the SSI interface
--		    "i2s-slave" - I2S mode, SSI is clock slave
--		    "i2s-master" - I2S mode, SSI is clock master
--		    "lj-slave" - left-justified mode, SSI is clock slave
--		    "lj-master" - l.j. mode, SSI is clock master
--		    "rj-slave" - right-justified mode, SSI is clock slave
--		    "rj-master" - r.j., SSI is clock master
--		    "ac97-slave" - AC97 mode, SSI is clock slave
--		    "ac97-master" - AC97 mode, SSI is clock master
--- fsl,playback-dma: phandle to a node for the DMA channel to use for
-+- compatible:       Compatible list, contains "fsl,ssi".
-+- cell-index:       The SSI, <0> = SSI1, <1> = SSI2, and so on.
-+- reg:              Offset and length of the register set for the device.
-+- interrupts:       <a b> where a is the interrupt number and b is a
-+                    field that represents an encoding of the sense and
-+                    level information for the interrupt.  This should be
-+                    encoded based on the information in section 2)
-+                    depending on the type of interrupt controller you
-+                    have.
-+- interrupt-parent: The phandle for the interrupt controller that
-+                    services interrupts for this device.
-+- fsl,mode:         The operating mode for the SSI interface.
-+                    "i2s-slave" - I2S mode, SSI is clock slave
-+                    "i2s-master" - I2S mode, SSI is clock master
-+                    "lj-slave" - left-justified mode, SSI is clock slave
-+                    "lj-master" - l.j. mode, SSI is clock master
-+                    "rj-slave" - right-justified mode, SSI is clock slave
-+                    "rj-master" - r.j., SSI is clock master
-+                    "ac97-slave" - AC97 mode, SSI is clock slave
-+                    "ac97-master" - AC97 mode, SSI is clock master
-+- fsl,playback-dma: Phandle to a node for the DMA channel to use for
-                     playback of audio.  This is typically dictated by SOC
-                     design.  See the notes below.
--- fsl,capture-dma:  phandle to a node for the DMA channel to use for
-+- fsl,capture-dma:  Phandle to a node for the DMA channel to use for
-                     capture (recording) of audio.  This is typically dictated
-                     by SOC design.  See the notes below.
-+- fsl,fifo-depth:   The number of elements in the transmit and receive FIFOs.
-+                    This number is the maximum allowed value for SFCSR[TFWM0].
-+- fsl,ssi-asynchronous:
-+                    If specific, the SSI is to be programmed in asynchronous
-+                    mode.  In this mode, SRCK and STCK must be connected to the
-+                    same clock, and SRFS and STFS must also be connected to the
-+                    same clock.  This allows playback and capture to use
-+                    different sample sizes.
- 
- Optional properties:
--- codec-handle	  : phandle to a 'codec' node that defines an audio
--		    codec connected to this SSI.  This node is typically
--		    a child of an I2C or other control node.
-+- codec-handle:     Phandle to a 'codec' node that defines an audio
-+                    codec connected to this SSI.  This node is typically
-+                    a child of an I2C or other control node.
- 
- Child 'codec' node required properties:
--- compatible	  : compatible list, contains the name of the codec
-+- compatible:       Compatible list, contains the name of the codec
- 
- Child 'codec' node optional properties:
--- clock-frequency  : The frequency of the input clock, which typically
--                     comes from an on-board dedicated oscillator.
-+- clock-frequency:  The frequency of the input clock, which typically comes
-+                    from an on-board dedicated oscillator.
- 
- Notes on fsl,playback-dma and fsl,capture-dma:
- 
--- 
-1.6.1.3
+-Scott
