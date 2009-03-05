@@ -1,17 +1,15 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Thu, 5 Mar 2009 08:59:40 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
-	RAM as block device
-In-Reply-To: <AA44F8E7-5FBC-4378-A86D-C094ECABD625@aepfle.de>
-Message-ID: <alpine.LRH.2.00.0903050856490.26681@vixen.sonytel.be>
+Return-Path: <axboe@kernel.dk>
+Date: Thu, 5 Mar 2009 09:37:01 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing
+	video  RAM as block device
+Message-ID: <20090305083701.GQ11787@kernel.dk>
 References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
-	<AA44F8E7-5FBC-4378-A86D-C094ECABD625@aepfle.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Jens Axboe <axboe@kernel.dk>, Arnd Bergmann <arnd@arndb.de>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
+Cc: Arnd Bergmann <arnd@arndb.de>,
 	Linux Kernel Development <linux-kernel@vger.kernel.org>,
 	Jim Paris <jim@jtan.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
 	linux-mtd@lists.infradead.org,
@@ -27,56 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 5 Mar 2009, Olaf Hering wrote:
-> Am 04.03.2009 um 14:57 schrieb Geert Uytterhoeven:
-> >Ideally, we think it would be best if the existing MTD-based ps3vram driver
-> >would be replaced by the new block-based ps3vram driver before 2.6.29 is
-> >released. This would relieve the burden of supporting two different swap
-> >space
-> >schemes on PS3 (swap on /dev/mtdblock0 vs. /dev/ps3vram) from the distro
-> >maintainer's shoulders, as in that case there would never have been a stable
-> >kernel version containing the MTD-based ps3vram driver.
+On Wed, Mar 04 2009, Geert Uytterhoeven wrote:
+> 	Hi,
 > 
-> openSuSE already ships with the ps3vram driver since a two releases.
-> A simple name based udev rule could symlink ps3vram to mtdblock0, so an
-> upgrade
-> will not break existing setups.
-
-OK.
-
-> >+obj-$(CONFIG_PS3_VRAM)		+= ps3vram_ng.o
+> Below is the rewrite of the PS3 Video RAM Storage Driver as a plain block
+> device, as requested by Arnd Bergmann.
 > 
-> Please give the driver the obvious name "ps3vram", that way upgrading will be
-> smooth.
+> The MTD-based PS3 Video RAM Storage Driver was integrated into the mainline
+> kernel in 2.6.29-rc1.
+> 
+> Ideally, we think it would be best if the existing MTD-based ps3vram driver
+> would be replaced by the new block-based ps3vram driver before 2.6.29 is
+> released. This would relieve the burden of supporting two different swap space
+> schemes on PS3 (swap on /dev/mtdblock0 vs. /dev/ps3vram) from the distro
+> maintainer's shoulders, as in that case there would never have been a stable
+> kernel version containing the MTD-based ps3vram driver.
+> 
+> What do you think? If this is accepted, I'll submit a patch to remove the MTD
+> ps3vram and add the new driver as ps3vram (instead of ps3vram-ng).
+> 
+> Thanks for your (review and other) comments!
 
-Sure, as I said:
+I'd rewrite this as a ->make_request_fn handler instead. Then you can
+get rid of the kernel thread. IOW, change
 
-| I'll submit a patch to remove the MTD
-| ps3vram and add the new driver as ps3vram (instead of ps3vram-ng).
+queue = blk_init_queue(ps3vram_request, &priv->lock);
 
-> I see our old mtddriver does not have modalias support for autoloading.
+to
 
-You forgot to backport commit 0a2d15b928e0b1673d4ed5f48d95af211b6fcc06
-("mtd/ps3vram: Add modalias support to the ps3vram driver") to the openSuSE
-tree?
+queue = blk_alloc_queue(GFP_KERNEL);
+blk_queue_make_request(queue, ps3vram_make_request);
 
-> Hopefully the new driver has this feature.
+Add error handling of course, and call blk_queue_max_*() to set your
+limits for this device. Then add a ps3vram_make_request() ala:
 
-Yes, it has.
+static void ps3vram_do_request(struct request_queue *q, struct bio *bio)
+{
+	struct ps3_system_bus_device *dev = q->queuedata;
+	struct ps3vram_priv *priv = dev->core.driver_data;
+	int write, res, err = -EIO;
+        struct bio_vec *bv;
+	sector_t sector;
+	loff_t offset;
+	size_t len, retlen;
+        int i;
 
-With kind regards,
+	write = bio_data_dir(bio) == WRITE;
 
-Geert Uytterhoeven
-Software Architect
+	sector = bio->bi_sector;
+        bio_for_each_segment(bv, bio, i) {
+                char *ptr = page_address(bv->bv_page) + bv->bv_offset;
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+                len = bv->bv_len;
+	        offset = sector << 9;
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+        	if (write)
+	        	res = ps3vram_write(dev, offset, len, &retlen, ptr);
+        	else
+	        	res = ps3vram_read(dev, offset, len, &retlen, ptr);
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+	        if (res) {
+        		dev_err(&dev->core, "%s failed\n", op);
+	        	goto out;
+        	}
+
+        	if (retlen != len) {
+	        	dev_err(&dev->core, "Short %s\n", op);
+		        goto out;
+        	}
+                sector += (len >> 9);
+        }
+
+	dev_dbg(&dev->core, "%s completed\n", op);
+        err = 0;
+out:
+        bio_endio(bio, err);
+}
+
+I just typed it here, so if it doesn't compile you get to keep the
+pieces :-)
+
+Since ps3 is very RAM limited, I didn't bother with any highmem mapping
+for the bio, since I gather that isn't an issue on that platform. You
+may want to detail that in a comment above the page_addres() thing at
+the top of the loop, though.
+
+-- 
+Jens Axboe
