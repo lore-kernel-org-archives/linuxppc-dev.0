@@ -1,19 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 0B26EDE234
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 07:28:52 +1100 (EST)
-Date: Thu, 5 Mar 2009 23:28:50 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
-Message-ID: <20090305202850.GK28709@oksana.dev.rtsoft.ru>
-References: <20090305202737.GA24166@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090305202737.GA24166@oksana.dev.rtsoft.ru>
-Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
-	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2B77BDDEEB
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 10:23:54 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
+Subject: [PATCH] powerpc: clean up ssi.txt, add definition for fsl,
+	ssi-asynchronous
+Date: Thu,  5 Mar 2009 17:23:23 -0600
+Message-Id: <1236295403-11954-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,368 +21,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a new driver: sdhci-of. The driver is similar to
-the sdhci-pci, it contains common probe code, and controller-specific
-ops and quirks.
+Add the definition of the fsl,ssi-asynchronous property to ssi.txt (documentation
+of the device tree bindings for the Freescale SSI device).
 
-So far there are only Freescale eSDHC ops and quirks.
+Also tidy up the layout of ssi.txt.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- drivers/mmc/host/Kconfig    |   10 ++
- drivers/mmc/host/Makefile   |    1 +
- drivers/mmc/host/sdhci-of.c |  309 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 320 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mmc/host/sdhci-of.c
+ Documentation/powerpc/dts-bindings/fsl/ssi.txt |   64 +++++++++++++----------
+ 1 files changed, 36 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 99d4b28..73b79e1 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -65,6 +65,16 @@ config MMC_RICOH_MMC
+diff --git a/Documentation/powerpc/dts-bindings/fsl/ssi.txt b/Documentation/powerpc/dts-bindings/fsl/ssi.txt
+index a2d9639..b8a5e12 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/ssi.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/ssi.txt
+@@ -4,44 +4,52 @@ The SSI is a serial device that communicates with audio codecs.  It can
+ be programmed in AC97, I2S, left-justified, or right-justified modes.
  
- 	  If unsure, say Y.
+ Required properties:
+-- compatible	  : compatible list, containing "fsl,ssi"
+-- cell-index	  : the SSI, <0> = SSI1, <1> = SSI2, and so on
+-- reg		  : offset and length of the register set for the device
+-- interrupts	  : <a b> where a is the interrupt number and b is a
+-                     field that represents an encoding of the sense and
+-		    level information for the interrupt.  This should be
+-		    encoded based on the information in section 2)
+-		    depending on the type of interrupt controller you
+-		    have.
+-- interrupt-parent : the phandle for the interrupt controller that
+-                     services interrupts for this device.
+-- fsl,mode	  : the operating mode for the SSI interface
+-		    "i2s-slave" - I2S mode, SSI is clock slave
+-		    "i2s-master" - I2S mode, SSI is clock master
+-		    "lj-slave" - left-justified mode, SSI is clock slave
+-		    "lj-master" - l.j. mode, SSI is clock master
+-		    "rj-slave" - right-justified mode, SSI is clock slave
+-		    "rj-master" - r.j., SSI is clock master
+-		    "ac97-slave" - AC97 mode, SSI is clock slave
+-		    "ac97-master" - AC97 mode, SSI is clock master
+-- fsl,playback-dma: phandle to a node for the DMA channel to use for
++- compatible:       Compatible list, contains "fsl,ssi".
++- cell-index:       The SSI, <0> = SSI1, <1> = SSI2, and so on.
++- reg:              Offset and length of the register set for the device.
++- interrupts:       <a b> where a is the interrupt number and b is a
++                    field that represents an encoding of the sense and
++                    level information for the interrupt.  This should be
++                    encoded based on the information in section 2)
++                    depending on the type of interrupt controller you
++                    have.
++- interrupt-parent: The phandle for the interrupt controller that
++                    services interrupts for this device.
++- fsl,mode:         The operating mode for the SSI interface.
++                    "i2s-slave" - I2S mode, SSI is clock slave
++                    "i2s-master" - I2S mode, SSI is clock master
++                    "lj-slave" - left-justified mode, SSI is clock slave
++                    "lj-master" - l.j. mode, SSI is clock master
++                    "rj-slave" - right-justified mode, SSI is clock slave
++                    "rj-master" - r.j., SSI is clock master
++                    "ac97-slave" - AC97 mode, SSI is clock slave
++                    "ac97-master" - AC97 mode, SSI is clock master
++- fsl,playback-dma: Phandle to a node for the DMA channel to use for
+                     playback of audio.  This is typically dictated by SOC
+                     design.  See the notes below.
+-- fsl,capture-dma:  phandle to a node for the DMA channel to use for
++- fsl,capture-dma:  Phandle to a node for the DMA channel to use for
+                     capture (recording) of audio.  This is typically dictated
+                     by SOC design.  See the notes below.
++- fsl,fifo-depth:   The number of elements in the transmit and receive FIFOs.
++                    This number is the maximum allowed value for SFCSR[TFWM0].
++- fsl,ssi-asynchronous:
++                    If specific, the SSI is to be programmed in asynchronous
++                    mode.  In this mode, SRCK and STCK must be connected to the
++                    same clock, and SRFS and STFS must also be connected to the
++                    same clock.  This allows playback and capture to use
++                    different sample sizes.
  
-+config MMC_SDHCI_OF
-+	tristate "SDHCI support on OpenFirmware platforms"
-+	depends on MMC_SDHCI && PPC_OF
-+	help
-+	  This selects the OF support for Secure Digital Host Controller
-+	  Interfaces. So far, only the Freescale eSDHC controller is known
-+	  to exist on OF platforms.
-+
-+	  If unsure, say N.
-+
- config MMC_OMAP
- 	tristate "TI OMAP Multimedia Card Interface support"
- 	depends on ARCH_OMAP
-diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-index dedec55..dd512d9 100644
---- a/drivers/mmc/host/Makefile
-+++ b/drivers/mmc/host/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_MMC_MXC)		+= mxcmmc.o
- obj-$(CONFIG_MMC_SDHCI)		+= sdhci.o
- obj-$(CONFIG_MMC_SDHCI_PCI)	+= sdhci-pci.o
- obj-$(CONFIG_MMC_RICOH_MMC)	+= ricoh_mmc.o
-+obj-$(CONFIG_MMC_SDHCI_OF)	+= sdhci-of.o
- obj-$(CONFIG_MMC_WBSD)		+= wbsd.o
- obj-$(CONFIG_MMC_AU1X)		+= au1xmmc.o
- obj-$(CONFIG_MMC_OMAP)		+= omap.o
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-new file mode 100644
-index 0000000..3ff4ac3
---- /dev/null
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -0,0 +1,309 @@
-+/*
-+ * OpenFirmware bindings for Secure Digital Host Controller Interface.
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ * Copyright (c) 2009 MontaVista Software, Inc.
-+ *
-+ * Authors: Xiaobo Xie <X.Xie@freescale.com>
-+ *	    Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or (at
-+ * your option) any later version.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/mmc/host.h>
-+#include "sdhci.h"
-+
-+struct sdhci_of_data {
-+	unsigned int quirks;
-+	struct sdhci_ops ops;
-+};
-+
-+struct sdhci_of_host {
-+	unsigned int clock;
-+	u16 xfer_mode_shadow;
-+};
-+
-+/*
-+ * Ops and quirks for the Freescale eSDHC controller.
-+ */
-+
-+#define ESDHC_DMA_SYSCTL	0x40c
-+#define ESDHC_DMA_SNOOP		0x00000040
-+
-+#define ESDHC_SYSTEM_CONTROL	0x2c
-+#define ESDHC_CLOCK_MASK	0x0000fff0
-+#define ESDHC_PREDIV_SHIFT	8
-+#define ESDHC_DIVIDER_SHIFT	4
-+#define ESDHC_CLOCK_PEREN	0x00000004
-+#define ESDHC_CLOCK_HCKEN	0x00000002
-+#define ESDHC_CLOCK_IPGEN	0x00000001
-+
-+static u32 esdhc_readl(struct sdhci_host *host, int reg)
-+{
-+	return in_be32(host->ioaddr + reg);
-+}
-+
-+static u16 esdhc_readw(struct sdhci_host *host, int reg)
-+{
-+	return in_be16(host->ioaddr + (reg ^ 0x2));
-+}
-+
-+static u8 esdhc_readb(struct sdhci_host *host, int reg)
-+{
-+	return in_8(host->ioaddr + (reg ^ 0x3));
-+}
-+
-+static void esdhc_writel(struct sdhci_host *host, u32 val, int reg)
-+{
-+	out_be32(host->ioaddr + reg, val);
-+}
-+
-+static void esdhc_writew(struct sdhci_host *host, u16 val, int reg)
-+{
-+	struct sdhci_of_host *of_host = sdhci_priv(host);
-+	int base = reg & ~0x3;
-+	int shift = (reg & 0x2) * 8;
-+
-+	switch (reg) {
-+	case SDHCI_TRANSFER_MODE:
-+		/*
-+		 * Postpone this write, we must do it together with a
-+		 * command write that is down below.
-+		 */
-+		of_host->xfer_mode_shadow = val;
-+		return;
-+	case SDHCI_COMMAND:
-+		esdhc_writel(host, val << 16 | of_host->xfer_mode_shadow,
-+			     SDHCI_TRANSFER_MODE);
-+		return;
-+	case SDHCI_BLOCK_SIZE:
-+		/*
-+		 * Two last DMA bits are reserved, and first one is used for
-+		 * non-standard blksz of 4096 bytes that we don't support
-+		 * yet. So clear the DMA boundary bits.
-+		 */
-+		val &= ~SDHCI_MAKE_BLKSZ(0x7, 0);
-+		/* fall through */
-+	}
-+	clrsetbits_be32(host->ioaddr + base, 0xffff << shift, val << shift);
-+}
-+
-+static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
-+{
-+	int base = reg & ~0x3;
-+	int shift = (reg & 0x3) * 8;
-+
-+	clrsetbits_be32(host->ioaddr + base , 0xff << shift, val << shift);
-+}
-+
-+static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
-+{
-+	int div;
-+	int pre_div = 2;
-+
-+	clrbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
-+		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN | ESDHC_CLOCK_MASK);
-+
-+	if (clock == 0)
-+		goto out;
-+
-+	if (host->max_clk / 16 > clock) {
-+		for (; pre_div < 256; pre_div *= 2) {
-+			if (host->max_clk / pre_div < clock * 16)
-+				break;
-+		}
-+	}
-+
-+	for (div = 1; div <= 16; div++) {
-+		if (host->max_clk / (div * pre_div) <= clock)
-+			break;
-+	}
-+
-+	pre_div >>= 1;
-+
-+	setbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
-+		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN |
-+		  div << ESDHC_DIVIDER_SHIFT | pre_div << ESDHC_PREDIV_SHIFT);
-+	mdelay(100);
-+out:
-+	host->clock = clock;
-+}
-+
-+static int esdhc_enable_dma(struct sdhci_host *host)
-+{
-+	setbits32(host->ioaddr + ESDHC_DMA_SYSCTL, ESDHC_DMA_SNOOP);
-+	return 0;
-+}
-+
-+static unsigned int esdhc_get_max_clock(struct sdhci_host *host)
-+{
-+	struct sdhci_of_host *of_host = sdhci_priv(host);
-+
-+	return of_host->clock;
-+}
-+
-+static unsigned int esdhc_get_timeout_clock(struct sdhci_host *host)
-+{
-+	struct sdhci_of_host *of_host = sdhci_priv(host);
-+
-+	return of_host->clock / 1000;
-+}
-+
-+static struct sdhci_of_data sdhci_esdhc = {
-+	.quirks = SDHCI_QUIRK_FORCE_BLK_SZ_2048 |
-+		  SDHCI_QUIRK_BROKEN_CARD_DETECTION |
-+		  SDHCI_QUIRK_INVERTED_WRITE_PROTECT |
-+		  SDHCI_QUIRK_NO_BUSY_IRQ |
-+		  SDHCI_QUIRK_NONSTANDARD_CLOCK |
-+		  SDHCI_QUIRK_PIO_NEEDS_DELAY |
-+		  SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET |
-+		  SDHCI_QUIRK_NO_CARD_NO_RESET,
-+	.ops = {
-+		.readl = esdhc_readl,
-+		.readw = esdhc_readw,
-+		.readb = esdhc_readb,
-+		.writel = esdhc_writel,
-+		.writew = esdhc_writew,
-+		.writeb = esdhc_writeb,
-+		.set_clock = esdhc_set_clock,
-+		.enable_dma = esdhc_enable_dma,
-+		.get_max_clock = esdhc_get_max_clock,
-+		.get_timeout_clock = esdhc_get_timeout_clock,
-+	},
-+};
-+
-+#ifdef CONFIG_PM
-+
-+static int sdhci_of_suspend(struct of_device *ofdev, pm_message_t state)
-+{
-+	struct sdhci_host *host = dev_get_drvdata(&ofdev->dev);
-+
-+	return mmc_suspend_host(host->mmc, state);
-+}
-+
-+static int sdhci_of_resume(struct of_device *ofdev)
-+{
-+	struct sdhci_host *host = dev_get_drvdata(&ofdev->dev);
-+
-+	return mmc_resume_host(host->mmc);
-+}
-+
-+#else
-+
-+#define sdhci_of_suspend NULL
-+#define sdhci_of_resume NULL
-+
-+#endif
-+
-+static int __devinit sdhci_of_probe(struct of_device *ofdev,
-+				 const struct of_device_id *match)
-+{
-+	struct device_node *np = ofdev->node;
-+	struct sdhci_of_data *sdhci_of_data = match->data;
-+	struct sdhci_host *host;
-+	struct sdhci_of_host *of_host;
-+	const u32 *clk;
-+	int size;
-+	int ret;
-+
-+	if (!of_device_is_available(np))
-+		return -ENODEV;
-+
-+	host = sdhci_alloc_host(&ofdev->dev, sizeof(*of_host));
-+	if (!host)
-+		return -ENOMEM;
-+
-+	of_host = sdhci_priv(host);
-+	dev_set_drvdata(&ofdev->dev, host);
-+
-+	host->ioaddr = of_iomap(np, 0);
-+	if (!host->ioaddr) {
-+		ret = -ENOMEM;
-+		goto err_addr_map;
-+	}
-+
-+	host->irq = irq_of_parse_and_map(np, 0);
-+	if (!host->irq) {
-+		ret = -EINVAL;
-+		goto err_no_irq;
-+	}
-+
-+	host->hw_name = dev_name(&ofdev->dev);
-+	if (sdhci_of_data) {
-+		host->quirks = sdhci_of_data->quirks;
-+		host->ops = &sdhci_of_data->ops;
-+	}
-+
-+	clk = of_get_property(np, "clock-frequency", &size);
-+	if (clk && size == sizeof(*clk) && *clk)
-+		of_host->clock = *clk;
-+
-+	ret = sdhci_add_host(host);
-+	if (ret)
-+		goto err_add_host;
-+
-+	return 0;
-+
-+err_add_host:
-+	irq_dispose_mapping(host->irq);
-+err_no_irq:
-+	iounmap(host->ioaddr);
-+err_addr_map:
-+	sdhci_free_host(host);
-+	return ret;
-+}
-+
-+static int __devexit sdhci_of_remove(struct of_device *ofdev)
-+{
-+	struct sdhci_host *host = dev_get_drvdata(&ofdev->dev);
-+
-+	sdhci_remove_host(host, 0);
-+	sdhci_free_host(host);
-+	irq_dispose_mapping(host->irq);
-+	iounmap(host->ioaddr);
-+	return 0;
-+}
-+
-+static const struct of_device_id sdhci_of_match[] = {
-+	{ .compatible = "fsl,mpc8379-esdhc", .data = &sdhci_esdhc, },
-+	{ .compatible = "fsl,mpc8536-esdhc", .data = &sdhci_esdhc, },
-+	{ .compatible = "generic-sdhci", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, sdhci_of_match);
-+
-+static struct of_platform_driver sdhci_of_driver = {
-+	.driver.name = "sdhci-of",
-+	.match_table = sdhci_of_match,
-+	.probe = sdhci_of_probe,
-+	.remove = __devexit_p(sdhci_of_remove),
-+	.suspend = sdhci_of_suspend,
-+	.resume	= sdhci_of_resume,
-+};
-+
-+static int __init sdhci_of_init(void)
-+{
-+	return of_register_platform_driver(&sdhci_of_driver);
-+}
-+module_init(sdhci_of_init);
-+
-+static void __exit sdhci_of_exit(void)
-+{
-+	of_unregister_platform_driver(&sdhci_of_driver);
-+}
-+module_exit(sdhci_of_exit);
-+
-+MODULE_DESCRIPTION("Secure Digital Host Controller Interface OF driver");
-+MODULE_AUTHOR("Xiaobo Xie <X.Xie@freescale.com>, "
-+	      "Anton Vorontsov <avorontsov@ru.mvista.com>");
-+MODULE_LICENSE("GPL");
+ Optional properties:
+-- codec-handle	  : phandle to a 'codec' node that defines an audio
+-		    codec connected to this SSI.  This node is typically
+-		    a child of an I2C or other control node.
++- codec-handle:     Phandle to a 'codec' node that defines an audio
++                    codec connected to this SSI.  This node is typically
++                    a child of an I2C or other control node.
+ 
+ Child 'codec' node required properties:
+-- compatible	  : compatible list, contains the name of the codec
++- compatible:       Compatible list, contains the name of the codec
+ 
+ Child 'codec' node optional properties:
+-- clock-frequency  : The frequency of the input clock, which typically
+-                     comes from an on-board dedicated oscillator.
++- clock-frequency:  The frequency of the input clock, which typically comes
++                    from an on-board dedicated oscillator.
+ 
+ Notes on fsl,playback-dma and fsl,capture-dma:
+ 
 -- 
-1.5.6.5
+1.6.1.3
