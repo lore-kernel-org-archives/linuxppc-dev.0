@@ -1,20 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 6FC57DDDF9
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 07:06:15 +1100 (EST)
-Date: Thu, 5 Mar 2009 14:08:29 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/cell: Only build Axon MSI driver for IBM Cell
-	Blades
-Message-ID: <20090305200829.GA22801@lixom.net>
-References: <e9c405aaec255c2a3d34209fc35ae093fcae8efc.1236228043.git.michael@ellerman.id.au>
-	<20090305071356.GA9412@lixom.net>
-	<1236262025.8325.12.camel@localhost>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 65EB6DDDB2
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 07:27:39 +1100 (EST)
+Date: Thu, 5 Mar 2009 23:27:37 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Subject: [PATCH v2 0/11] FSL eSDHC support
+Message-ID: <20090305202737.GA24166@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1236262025.8325.12.camel@localhost>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 06, 2009 at 01:07:05AM +1100, Michael Ellerman wrote:
-> On Thu, 2009-03-05 at 01:13 -0600, Olof Johansson wrote:
-> > On Thu, Mar 05, 2009 at 03:41:41PM +1100, Michael Ellerman wrote:
-> > > The hardware is only present on those machines, and the driver
-> > > depends on infrastructure which is selected by the Kconfig for
-> > > cell blades.
-> > 
-> > Wouldn't it make more sense to make a separate (AXON_MSI) config option
-> > depend on PPC_IBM_CELL_BLADE?
-> 
-> Maybe, it would make the makefile cleaner, at the expense of a bit more
-> Kconfig. I'm not sure what people prefer, I guess I'm neutral and you're
-> voting for the latter, so I'll respin it that way :)
+Hi all,
 
-Yeah, I'm not really that picky either, it just set off a red flag
-w.r.t. setting a bad precedence on ifdef:ing in the makefile instead of
-Kconfig engineering. Slippery slope and all that.
+Much thanks for the previous comments. Here comes v2.
 
+Changes since v1:
+- "Add support for bus-specific IO memory accessors" patch no longer
+  touches sdhci-pci. The changes were no longer needed since I dropped
+  "Add type checking ..." patch back in RFCv2;
+- Patch "Add support for hosts with strict 32 bit addressing" dropped.
+  Now we handle the 32 bit magic in eSDHC's writew() accessor;
+- Patch "Add quirk for controllers with max. block size up to 4096 bytes"
+  replaced by "Add quirk for forcing maximum block size to 2048 bytes";
+- SDHCI_INT_ALL_MASK changed to (unsigned int)-1;
+- Addressed Pierre's comments in "Add support for card-detection polling"
+  patch.
 
--Olof
+Changes since the third RFC:
+- Use uninitialized_var() (suggested by Laurent Pinchart);
+- Fixed a bug in eSDHC SDCLK prescaler calculations because of which
+  we were over-clocking the SDCLK, and that caused CRC errors using some
+  SD cards;
+- Not a change, but some status: SDHS (50 MHz) cards were tested to
+  NOT work (at least on MPC837x boards) -- this is to be investigated
+  further. SDHC (> 4 GB) cards were not tested, yet.
+
+Changes since the second RFC:
+- Addressed all comments that were raised by Pierre Ossman.
+  There were too many to mention them all, so here is the link:
+  http://lkml.org/lkml/2009/2/6/320
+
+Changes since the first RFC:
+- Use of_iomap() in sdhci-of.c (suggested by Arnd Bergmann). Also added
+  Arnd's Acked-by: line for the sdhci-of patch.
+- Kconfig help text improved (thanks to Matt Sealey and M. Warner Losh).
+- In "sdhci: Add quirk to suppress PIO interrupts during DMA transfers"
+  patch: sdhci_init() now clears SDHCI_PIO_DISABLED flag, otherwise we
+  won't disable PIO interrupts after suspend.
+- New patch: "sdhci: Add type checking for IO memory accessors"
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
