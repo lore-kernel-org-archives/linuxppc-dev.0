@@ -1,24 +1,32 @@
-Return-Path: <olaf@aepfle.de>
-Date: Thu, 5 Mar 2009 19:12:37 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing
-	video RAM as block device
-Message-ID: <20090305181237.GA7355@aepfle.de>
-References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
-	<AA44F8E7-5FBC-4378-A86D-C094ECABD625@aepfle.de>
-	<alpine.LRH.2.00.0903050856490.26681@vixen.sonytel.be>
-	<alpine.LRH.2.00.0903051123240.2618@vixen.sonytel.be>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69222DDDB2
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 06:53:24 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e9.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n25Jj1IH010112
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Mar 2009 14:45:01 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n25JrI9J170938
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Mar 2009 14:53:20 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n25JrIaI014001
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Mar 2009 14:53:18 -0500
+Received: from [9.53.40.180] (mudbug-009053040180.austin.ibm.com [9.53.40.180])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	n25JrG9w013801
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Mar 2009 14:53:18 -0500
+Message-ID: <49B02DB5.7020301@austin.ibm.com>
+Date: Thu, 05 Mar 2009 13:53:25 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <alpine.LRH.2.00.0903051123240.2618@vixen.sonytel.be>
-Cc: Jens Axboe <axboe@kernel.dk>, Arnd Bergmann <arnd@arndb.de>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Jim Paris <jim@jtan.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-mtd@lists.infradead.org,
-	Vivien Chappelier <vivien.chappelier@free.fr>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/pseries failed reconfig notifier chain call cleanup
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 05, Geert Uytterhoeven wrote:
+The return code from invoking the notifier chain when updating the
+ibm,dynamic-memory property is not handled properly. In failure
+cases (rc == NOTIFY_BAD) we should be restoring the original value
+of the property.  In success (rc == NOTIFY_OK) we should be returning
+zero from the calling routine.
+ 
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
+ arch/powerpc/platforms/pseries/reconfig.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-> On Thu, 5 Mar 2009, Geert Uytterhoeven wrote:
-> > On Thu, 5 Mar 2009, Olaf Hering wrote:
-> > > I see our old mtddriver does not have modalias support for autoloading.
-> > 
-> > You forgot to backport commit 0a2d15b928e0b1673d4ed5f48d95af211b6fcc06
-> > ("mtd/ps3vram: Add modalias support to the ps3vram driver") to the openSuSE
-> > tree?
-> 
-> Or do you mean that udev doesn't load mtdblock automatically?
-
-I have not tried current kernels.
-Our older versions of mtd based ps3vram do not have the autoloading feature.
-
-So, please merge the block based ps3vram.ko.
-
-Thanks for pushing it into mainline.
-
-Olaf
+Index: linux-2.6/arch/powerpc/platforms/pseries/reconfig.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/pseries/reconfig.c	2008-10-23 22:29:24.000000000 -0500
++++ linux-2.6/arch/powerpc/platforms/pseries/reconfig.c	2009-03-05 13:20:00.000000000 -0600
+@@ -468,9 +468,13 @@
+ 
+ 		rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
+ 						  action, value);
++		if (rc == NOTIFY_BAD) {
++			rc = prom_update_property(np, oldprop, newprop);
++			return -ENOMEM;
++		}
+ 	}
+ 
+-	return rc;
++	return 0;
+ }
+ 
+ /**
