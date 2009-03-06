@@ -1,21 +1,17 @@
-Return-Path: <urlaub@prerow-treibholz.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.162])
-	by ozlabs.org (Postfix) with ESMTP id 4DA07DDFB3
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 07:53:24 +1100 (EST)
-Received: from HANSA02Mobil (BAA2482.baa.pppool.de [77.128.36.130])
-	by post.strato.de (mrclete mo62) (RZmta 18.25)
-	with ESMTP id v02a44l26Ji8sP for <linuxppc-dev@ozlabs.org>;
-	Fri, 6 Mar 2009 21:41:26 +0100 (MET)
-Message-ID: <72552408803A44428CEC72A881F52567@HANSA02Mobil>
-From: "Steffen" <urlaub@prerow-treibholz.de>
-To: <linuxppc-dev@ozlabs.org>
-In-Reply-To: <4549F141.5050905@transmode.se>
-Subject: MC Technology GMBH - Re: mpc83xx SPI driver never calls its probe
-	function
-Date: Fri, 6 Mar 2009 21:41:25 +0100
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_000D_01C99EA4.4CDA7460"
+Return-Path: <mls.JOFT@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 19A09DDF33
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 09:45:50 +1100 (EST)
+Subject: Re: USB Host in 2.6.24-r3 Arch=PPC
+From: Joachim Foerster <mls.JOFT@gmx.de>
+To: "A. Nolson" <alohanono@gmail.com>
+In-Reply-To: <49B1469B.9030609@gmail.com>
+References: <49B1469B.9030609@gmail.com>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 23:45:42 +0100
+Message-Id: <1236379543.13132.10.camel@md40100b.ft>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi,
 
-------=_NextPart_000_000D_01C99EA4.4CDA7460
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2009-03-06 at 16:51 +0100, A. Nolson wrote:
+>  just a little question. I am using 2.6.24-rc3 (secretlab) and I would
+> like to use c67x00 driver from Peter Kosgaard for USB-Host in my Xilinx
+> ML403 board. Is there support to use USB Host in Arch=ppc  Apparently I
+> cannot select  CONFIG_USB_ARCH_HAS_HCD=y option. What should I do to get
+> the USB working?
 
-Hello Joakim,=20
-I found your question - but it seems you got never an answer?
-I have the same problem too with AT91RM9200 - etwarm_board - Kernel =
-2.6.18.
-Please send me an answer or some informations - what ever had you found =
-out.
+The problem of not being able to select the c67x00 driver, may be solved
+by simply pretending that ARCH=ppc "has a HCD" ... e.g.:
 
-Steffen Kutsche
-MC Technology GmbH, Berlin 
-------=_NextPart_000_000D_01C99EA4.4CDA7460
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+index 755823c..eea0277 100644
+--- a/drivers/usb/Kconfig
++++ b/drivers/usb/Kconfig
+@@ -22,6 +22,7 @@ config USB_ARCH_HAS_HCD
+        default y if PCMCIA && !M32R                    # sl811_cs
+        default y if ARM                                # SL-811
+        default y if SUPERH                             # r8a66597-hcd
++       default y if PPC
+        default PCI
+ 
+ # many non-PCI SOC chips embed OHCI
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.6001.18203" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>Hello Joakim, </FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>I found your question - but it seems =
-you got never=20
-an answer?</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>I have the same problem too with =
-AT91RM9200 -=20
-etwarm_board - Kernel 2.6.18.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>Please send me an answer or some =
-informations -=20
-what ever had&nbsp;you found out.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Steffen Kutsche</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>MC Technology GmbH, Berlin=20
-</FONT></DIV></BODY></HTML>
+BTW: For a long time I'm wondering about what is the reason for making
+it not selectable by default ...
 
-------=_NextPart_000_000D_01C99EA4.4CDA7460--
+ Joachim
