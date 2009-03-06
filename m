@@ -1,28 +1,22 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 9D8B6DDDA5
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 07:51:19 +1100 (EST)
-Received: from lyakh (helo=localhost)
-	by axis700.grange with local-esmtp (Exim 4.63)
-	(envelope-from <g.liakhovetski@gmx.de>) id 1Lfh0n-0002rp-56
-	for linuxppc-dev@ozlabs.org; Fri, 06 Mar 2009 21:51:17 +0100
-Date: Fri, 6 Mar 2009 00:25:06 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-Subject: [PATCH] powerpc: fix linkstation and storcenter compilation breakage
-In-Reply-To: <20090304214541.GA2917@ime.usp.br>
-Message-ID: <Pine.LNX.4.64.0903060016500.4980@axis700.grange>
-References: <20090302094303.GA29819@ime.usp.br>
-	<20090303024837.GC24834@bilbo.ozlabs.org>
-	<20090303083455.GA22397@ime.usp.br>
-	<Pine.LNX.4.64.0903040828150.4864@axis700.grange>
-	<20090304214541.GA2917@ime.usp.br>
+Return-Path: <glikely@secretlab.ca>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.179])
+	by ozlabs.org (Postfix) with ESMTP id AEC11DDF1F
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 07:56:03 +1100 (EST)
+Received: by el-out-1112.google.com with SMTP id s27so471974ele.3
+	for <linuxppc-dev@ozlabs.org>; Fri, 06 Mar 2009 12:56:01 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-ReSent-Message-ID: <Pine.LNX.4.64.0903062151140.5665@axis700.grange>
-Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-	dwmw2@infradead.org, torvalds@linux-foundation.org,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+In-Reply-To: <20090306204623.GJ11787@kernel.dk>
+References: <20090228204622.29719.55082.stgit@localhost.localdomain>
+	<fa686aa40903060805i489d8676waad08e8263c02fe@mail.gmail.com>
+	<20090306204623.GJ11787@kernel.dk>
+Date: Fri, 6 Mar 2009 13:56:01 -0700
+Message-ID: <fa686aa40903061256n35a2f8eck1a6592964daa949b@mail.gmail.com>
+Subject: Re: [PATCH] Fix Xilinx SystemACE driver to handle empty CF slot
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, linux-kernel@vger.kernel.org,
+	John.Linn@xilinx.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,359 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Defining flash partition table in platform code is deprecated, and due to 
-recent changes linkstation and storcenter do not compile any more with 
-their default configurations because of undefined references to 
-physmap_set_partitions(). Instead of fixing them by using the correct 
-kernel configuration macro in preprocessor conditional, remove partition 
-table definitions altogether. Instead add support for partition definition 
-on the command-line and in device tree to the default configurations.
+On Fri, Mar 6, 2009 at 1:46 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Fri, Mar 06 2009, Grant Likely wrote:
+>> > The SystemACE driver does not handle an empty CF slot gracefully. =A0A=
+n
+>> > empty CF slot ends up hanging the system. =A0This patch adds a check f=
+or
+>> > the CF state and stops trying to process requests if the slot is empty=
+.
+>
+> So with patches like this, it's always nice to know what your target is.
+> Do you want this in .29, or just queued up for .30? It's not always easy
+> to judge the urgency of such patches :-)
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
----
-Kumar, could you push this up ASAP, please? This fixes
+The driver completely falls down and hangs the system if the CF slot
+is empty, so I would like to get it into .29.  On the other hand, it
+has been a long standing issue, so if merging it will raise any
+eyebrows then I'm okay to wait for .30.
 
-[Bug #12811] undefined reference to `physmap_set_partitions' on powerpc
+> Also, I note that you are using end_request() throughout the driver. We
+> really want to get away from that, you should be using blk_end_request()
+> as that will handle full requests and not just segment-by-segment. No
+> worries for this patch, but you may want to consider that for a future
+> patch.
 
-diff --git a/arch/powerpc/configs/linkstation_defconfig b/arch/powerpc/configs/linkstation_defconfig
-index aa5855a..15900dc 100644
---- a/arch/powerpc/configs/linkstation_defconfig
-+++ b/arch/powerpc/configs/linkstation_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.29-rc2
--# Mon Jan 26 15:35:29 2009
-+# Linux kernel version: 2.6.29-rc6
-+# Fri Mar  6 00:07:38 2009
- #
- # CONFIG_PPC64 is not set
- 
-@@ -71,6 +71,15 @@ CONFIG_POSIX_MQUEUE=y
- # CONFIG_BSD_PROCESS_ACCT is not set
- # CONFIG_TASKSTATS is not set
- # CONFIG_AUDIT is not set
-+
-+#
-+# RCU Subsystem
-+#
-+CONFIG_CLASSIC_RCU=y
-+# CONFIG_TREE_RCU is not set
-+# CONFIG_PREEMPT_RCU is not set
-+# CONFIG_TREE_RCU_TRACE is not set
-+# CONFIG_PREEMPT_RCU_TRACE is not set
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_LOG_BUF_SHIFT=14
-@@ -88,6 +97,7 @@ CONFIG_NAMESPACES=y
- # CONFIG_IPC_NS is not set
- # CONFIG_USER_NS is not set
- # CONFIG_PID_NS is not set
-+# CONFIG_NET_NS is not set
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_INITRAMFS_SOURCE=""
- CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-@@ -153,11 +163,6 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
--CONFIG_CLASSIC_RCU=y
--# CONFIG_TREE_RCU is not set
--# CONFIG_PREEMPT_RCU is not set
--# CONFIG_TREE_RCU_TRACE is not set
--# CONFIG_PREEMPT_RCU_TRACE is not set
- # CONFIG_FREEZER is not set
- 
- #
-@@ -294,7 +299,6 @@ CONFIG_NET=y
- #
- # Networking options
- #
--# CONFIG_NET_NS is not set
- CONFIG_COMPAT_NET_DEV_OPS=y
- CONFIG_PACKET=y
- CONFIG_PACKET_MMAP=y
-@@ -508,8 +512,8 @@ CONFIG_MTD_CONCAT=y
- CONFIG_MTD_PARTITIONS=y
- # CONFIG_MTD_TESTS is not set
- # CONFIG_MTD_REDBOOT_PARTS is not set
--# CONFIG_MTD_CMDLINE_PARTS is not set
--# CONFIG_MTD_OF_PARTS is not set
-+CONFIG_MTD_CMDLINE_PARTS=y
-+CONFIG_MTD_OF_PARTS=y
- # CONFIG_MTD_AR7_PARTS is not set
- 
- #
-@@ -587,7 +591,6 @@ CONFIG_MTD_PHYSMAP=y
- # LPDDR flash memory drivers
- #
- # CONFIG_MTD_LPDDR is not set
--# CONFIG_MTD_QINFO_PROBE is not set
- 
- #
- # UBI - Unsorted block images
-@@ -617,13 +620,19 @@ CONFIG_BLK_DEV_RAM_SIZE=8192
- # CONFIG_BLK_DEV_HD is not set
- CONFIG_MISC_DEVICES=y
- # CONFIG_PHANTOM is not set
--# CONFIG_EEPROM_93CX6 is not set
- # CONFIG_SGI_IOC4 is not set
- # CONFIG_TIFM_CORE is not set
- # CONFIG_ICS932S401 is not set
- # CONFIG_ENCLOSURE_SERVICES is not set
- # CONFIG_HP_ILO is not set
- # CONFIG_C2PORT is not set
-+
-+#
-+# EEPROM support
-+#
-+# CONFIG_EEPROM_AT24 is not set
-+CONFIG_EEPROM_LEGACY=m
-+# CONFIG_EEPROM_93CX6 is not set
- CONFIG_HAVE_IDE=y
- # CONFIG_IDE is not set
- 
-@@ -839,6 +848,7 @@ CONFIG_R8169=y
- # CONFIG_QLA3XXX is not set
- # CONFIG_ATL1 is not set
- # CONFIG_ATL1E is not set
-+# CONFIG_ATL1C is not set
- # CONFIG_JME is not set
- CONFIG_NETDEV_10000=y
- # CONFIG_CHELSIO_T1 is not set
-@@ -1037,8 +1047,6 @@ CONFIG_I2C_MPC=y
- # Miscellaneous I2C Chip support
- #
- # CONFIG_DS1682 is not set
--# CONFIG_EEPROM_AT24 is not set
--CONFIG_EEPROM_LEGACY=m
- # CONFIG_SENSORS_PCF8574 is not set
- # CONFIG_PCF8575 is not set
- # CONFIG_SENSORS_PCA9539 is not set
-diff --git a/arch/powerpc/configs/storcenter_defconfig b/arch/powerpc/configs/storcenter_defconfig
-index 86512c8..9490346 100644
---- a/arch/powerpc/configs/storcenter_defconfig
-+++ b/arch/powerpc/configs/storcenter_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.29-rc2
--# Mon Jan 26 15:35:46 2009
-+# Linux kernel version: 2.6.29-rc6
-+# Fri Mar  6 00:09:08 2009
- #
- # CONFIG_PPC64 is not set
- 
-@@ -71,6 +71,15 @@ CONFIG_SYSVIPC_SYSCTL=y
- # CONFIG_BSD_PROCESS_ACCT is not set
- # CONFIG_TASKSTATS is not set
- # CONFIG_AUDIT is not set
-+
-+#
-+# RCU Subsystem
-+#
-+CONFIG_CLASSIC_RCU=y
-+# CONFIG_TREE_RCU is not set
-+# CONFIG_PREEMPT_RCU is not set
-+# CONFIG_TREE_RCU_TRACE is not set
-+# CONFIG_PREEMPT_RCU_TRACE is not set
- # CONFIG_IKCONFIG is not set
- CONFIG_LOG_BUF_SHIFT=14
- CONFIG_GROUP_SCHED=y
-@@ -144,11 +153,6 @@ CONFIG_IOSCHED_CFQ=y
- CONFIG_DEFAULT_CFQ=y
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="cfq"
--CONFIG_CLASSIC_RCU=y
--# CONFIG_TREE_RCU is not set
--# CONFIG_PREEMPT_RCU is not set
--# CONFIG_TREE_RCU_TRACE is not set
--# CONFIG_PREEMPT_RCU_TRACE is not set
- # CONFIG_FREEZER is not set
- 
- #
-@@ -377,8 +381,8 @@ CONFIG_MTD=y
- CONFIG_MTD_PARTITIONS=y
- # CONFIG_MTD_TESTS is not set
- # CONFIG_MTD_REDBOOT_PARTS is not set
--# CONFIG_MTD_CMDLINE_PARTS is not set
--# CONFIG_MTD_OF_PARTS is not set
-+CONFIG_MTD_CMDLINE_PARTS=y
-+CONFIG_MTD_OF_PARTS=y
- # CONFIG_MTD_AR7_PARTS is not set
- 
- #
-@@ -452,7 +456,6 @@ CONFIG_MTD_PHYSMAP=y
- # LPDDR flash memory drivers
- #
- # CONFIG_MTD_LPDDR is not set
--# CONFIG_MTD_QINFO_PROBE is not set
- 
- #
- # UBI - Unsorted block images
-@@ -478,13 +481,19 @@ CONFIG_BLK_DEV=y
- # CONFIG_BLK_DEV_HD is not set
- CONFIG_MISC_DEVICES=y
- # CONFIG_PHANTOM is not set
--# CONFIG_EEPROM_93CX6 is not set
- # CONFIG_SGI_IOC4 is not set
- # CONFIG_TIFM_CORE is not set
- # CONFIG_ICS932S401 is not set
- # CONFIG_ENCLOSURE_SERVICES is not set
- # CONFIG_HP_ILO is not set
- # CONFIG_C2PORT is not set
-+
-+#
-+# EEPROM support
-+#
-+# CONFIG_EEPROM_AT24 is not set
-+# CONFIG_EEPROM_LEGACY is not set
-+# CONFIG_EEPROM_93CX6 is not set
- CONFIG_HAVE_IDE=y
- CONFIG_IDE=y
- 
-@@ -677,6 +686,7 @@ CONFIG_R8169=y
- # CONFIG_QLA3XXX is not set
- # CONFIG_ATL1 is not set
- # CONFIG_ATL1E is not set
-+# CONFIG_ATL1C is not set
- # CONFIG_JME is not set
- # CONFIG_NETDEV_10000 is not set
- # CONFIG_TR is not set
-@@ -818,8 +828,6 @@ CONFIG_I2C_MPC=y
- # Miscellaneous I2C Chip support
- #
- # CONFIG_DS1682 is not set
--# CONFIG_EEPROM_AT24 is not set
--# CONFIG_EEPROM_LEGACY is not set
- # CONFIG_SENSORS_PCF8574 is not set
- # CONFIG_PCF8575 is not set
- # CONFIG_SENSORS_PCA9539 is not set
-@@ -1159,6 +1167,7 @@ CONFIG_JFFS2_RTIME=y
- # CONFIG_SYSV_FS is not set
- # CONFIG_UFS_FS is not set
- # CONFIG_NETWORK_FILESYSTEMS is not set
-+CONFIG_EXPORTFS=m
- 
- #
- # Partition Types
-diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
-index 2ca7be6..244f997 100644
---- a/arch/powerpc/platforms/embedded6xx/linkstation.c
-+++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-@@ -12,7 +12,6 @@
- 
- #include <linux/kernel.h>
- #include <linux/initrd.h>
--#include <linux/mtd/physmap.h>
- #include <linux/of_platform.h>
- 
- #include <asm/time.h>
-@@ -22,39 +21,6 @@
- 
- #include "mpc10x.h"
- 
--static struct mtd_partition linkstation_physmap_partitions[] = {
--	{
--		.name   = "mtd_firmimg",
--		.offset = 0x000000,
--		.size   = 0x300000,
--	},
--	{
--		.name   = "mtd_bootcode",
--		.offset = 0x300000,
--		.size   = 0x070000,
--	},
--	{
--		.name   = "mtd_status",
--		.offset = 0x370000,
--		.size   = 0x010000,
--	},
--	{
--		.name   = "mtd_conf",
--		.offset = 0x380000,
--		.size   = 0x080000,
--	},
--	{
--		.name   = "mtd_allflash",
--		.offset = 0x000000,
--		.size   = 0x400000,
--	},
--	{
--		.name   = "mtd_data",
--		.offset = 0x310000,
--		.size   = 0x0f0000,
--	},
--};
--
- static __initdata struct of_device_id of_bus_ids[] = {
- 	{ .type = "soc", },
- 	{ .compatible = "simple-bus", },
-@@ -99,10 +65,6 @@ static int __init linkstation_add_bridge(struct device_node *dev)
- static void __init linkstation_setup_arch(void)
- {
- 	struct device_node *np;
--#ifdef CONFIG_MTD_PHYSMAP
--	physmap_set_partitions(linkstation_physmap_partitions,
--			       ARRAY_SIZE(linkstation_physmap_partitions));
--#endif
- 
- 	/* Lookup PCI host bridges */
- 	for_each_compatible_node(np, "pci", "mpc10x-pci")
-diff --git a/arch/powerpc/platforms/embedded6xx/storcenter.c b/arch/powerpc/platforms/embedded6xx/storcenter.c
-index 8864e48..613070e 100644
---- a/arch/powerpc/platforms/embedded6xx/storcenter.c
-+++ b/arch/powerpc/platforms/embedded6xx/storcenter.c
-@@ -14,7 +14,6 @@
- #include <linux/kernel.h>
- #include <linux/pci.h>
- #include <linux/initrd.h>
--#include <linux/mtd/physmap.h>
- #include <linux/of_platform.h>
- 
- #include <asm/system.h>
-@@ -26,32 +25,6 @@
- #include "mpc10x.h"
- 
- 
--#ifdef CONFIG_MTD_PHYSMAP
--static struct mtd_partition storcenter_physmap_partitions[] = {
--	{
--		.name   = "kernel",
--		.offset = 0x000000,
--		.size   = 0x170000,
--	},
--	{
--		.name   = "rootfs",
--		.offset = 0x170000,
--		.size   = 0x590000,
--	},
--	{
--		.name   = "uboot",
--		.offset = 0x700000,
--		.size   = 0x040000,
--	},
--	{
--		.name   = "config",
--		.offset = 0x740000,
--		.size   = 0x0c0000,
--	},
--};
--#endif
--
--
- static __initdata struct of_device_id storcenter_of_bus[] = {
- 	{ .name = "soc", },
- 	{},
-@@ -96,11 +69,6 @@ static void __init storcenter_setup_arch(void)
- {
- 	struct device_node *np;
- 
--#ifdef CONFIG_MTD_PHYSMAP
--	physmap_set_partitions(storcenter_physmap_partitions,
--			       ARRAY_SIZE(storcenter_physmap_partitions));
--#endif
--
- 	/* Lookup PCI host bridges */
- 	for_each_compatible_node(np, "pci", "mpc10x-pci")
- 		storcenter_add_bridge(np);
+Okay, will do.
+
+Thanks,
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
