@@ -1,22 +1,10 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5AF87DDDF6
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Mar 2009 10:34:52 +1100 (EST)
-Message-ID: <49B06197.8010007@freescale.com>
-Date: Thu, 05 Mar 2009 17:34:47 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: clean up ssi.txt, add definition for fsl,
-	ssi-asynchronous
-References: <1236295403-11954-1-git-send-email-timur@freescale.com>
-In-Reply-To: <1236295403-11954-1-git-send-email-timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <f15ac3f60d5b983c81dfc2e17039bddf2db63bad.1236300218.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc/pseries: Reject discontiguous/non-zero based MSI-X
+	requests
+Date: Fri,  6 Mar 2009 11:44:26 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +14,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> +- fsl,ssi-asynchronous:
-> +                    If specific, the SSI is to be programmed in asynchronous
-> +                    mode.  In this mode, SRCK and STCK must be connected to the
-> +                    same clock, and SRFS and STFS must also be connected to the
-> +                    same clock.  This allows playback and capture to use
-> +                    different sample sizes.
+There's no way for us to express to firmware that we want a
+discontiguous, or non-zero based, range of MSI-X entries. So we
+must reject such requests.
 
-s/specific/specified/
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/pseries/msi.c |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+), 0 deletions(-)
 
-Does the above mean "SRCK, STCK, SRFS, and STFS must all be connected to 
-the same clock", or does it mean "SRCK must be connected to the same 
-clock as STCK, and SRFS must be connected to the same clock as STFS"?
-
--Scott
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 3e0d6ef..bf2e1ac 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -356,6 +356,27 @@ static int rtas_msi_check_device(struct pci_dev *pdev, int nvec, int type)
+ 	return 0;
+ }
+ 
++static int check_msix_entries(struct pci_dev *pdev)
++{
++	struct msi_desc *entry;
++	int expected;
++
++	/* There's no way for us to express to firmware that we want
++	 * a discontiguous, or non-zero based, range of MSI-X entries.
++	 * So we must reject such requests. */
++
++	expected = 0;
++	list_for_each_entry(entry, &pdev->msi_list, list) {
++		if (entry->msi_attrib.entry_nr != expected) {
++			pr_debug("rtas_msi: bad MSI-X entries.\n");
++			return -EINVAL;
++		}
++		expected++;
++	}
++
++	return 0;
++}
++
+ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ {
+ 	struct pci_dn *pdn;
+@@ -367,6 +388,9 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 	if (!pdn)
+ 		return -ENODEV;
+ 
++	if (type == PCI_CAP_ID_MSIX && check_msix_entries(pdev))
++		return -EINVAL;
++
+ 	/*
+ 	 * Try the new more explicit firmware interface, if that fails fall
+ 	 * back to the old interface. The old interface is known to never
+-- 
+1.6.1.2
