@@ -1,19 +1,21 @@
-Return-Path: <eddie@embeddedarm.com>
-Received: from oz.embeddedARM.com (oz.embeddedarm.com [67.40.67.44])
-	by ozlabs.org (Postfix) with ESMTP id 99CA6DDEFA
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 09:30:29 +1100 (EST)
-Message-ID: <49B1A47F.8040005@embeddedarm.com>
-Date: Fri, 06 Mar 2009 15:32:31 -0700
-From: Eddie Dawydiuk <eddie@embeddedarm.com>
+Return-Path: <urlaub@prerow-treibholz.de>
+Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.162])
+	by ozlabs.org (Postfix) with ESMTP id 4DA07DDFB3
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 07:53:24 +1100 (EST)
+Received: from HANSA02Mobil (BAA2482.baa.pppool.de [77.128.36.130])
+	by post.strato.de (mrclete mo62) (RZmta 18.25)
+	with ESMTP id v02a44l26Ji8sP for <linuxppc-dev@ozlabs.org>;
+	Fri, 6 Mar 2009 21:41:26 +0100 (MET)
+Message-ID: <72552408803A44428CEC72A881F52567@HANSA02Mobil>
+From: "Steffen" <urlaub@prerow-treibholz.de>
+To: <linuxppc-dev@ozlabs.org>
+In-Reply-To: <4549F141.5050905@transmode.se>
+Subject: MC Technology GMBH - Re: mpc83xx SPI driver never calls its probe
+	function
+Date: Fri, 6 Mar 2009 21:41:25 +0100
 MIME-Version: 1.0
-To: Eddie Dawydiuk <eddie@embeddedarm.com>
-Subject: Re: [PATCH, RFC]
-References: <49B1605C.7090709@embeddedarm.com>
-	<20090306184038.GA20537@zod.rchland.ibm.com>
-	<49B19AE0.3080609@embeddedarm.com>
-In-Reply-To: <49B19AE0.3080609@embeddedarm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_000D_01C99EA4.4CDA7460"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,81 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+This is a multi-part message in MIME format.
 
-Let's try this one more time. The last patch was using the clocks for a custom 
-board based on the Yosemite board and was referencing a non-existent ethNadr( I 
-forgot to pull out this code out).
+------=_NextPart_000_000D_01C99EA4.4CDA7460
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Eddie Dawydiuk <eddie@embeddedarm.com>
+Hello Joakim,=20
+I found your question - but it seems you got never an answer?
+I have the same problem too with AT91RM9200 - etwarm_board - Kernel =
+2.6.18.
+Please send me an answer or some informations - what ever had you found =
+out.
 
-diff -urN linux-2.6.28.orig/arch/powerpc/boot/simpleboot-yosemite.c 
-linux-2.6.28/arch/powerpc/boot/simpleboot-yosemite.c
---- linux-2.6.28.orig/arch/powerpc/boot/simpleboot-yosemite.c   1969-12-31 
-17:00:00.000000000 -0700
-+++ linux-2.6.28/arch/powerpc/boot/simpleboot-yosemite.c        2009-03-06 
-15:33:24.000000000 -0700
-@@ -0,0 +1,23 @@
-+#include "ops.h"
-+#include "stdio.h"
-+#include "4xx.h"
-+#include "44x.h"
-+
-+#define TARGET_4xx
-+#define TARGET_44x
-+#include "ppcboot.h"
-+
-+static void yosemite_fixups(void)
-+{
-+       unsigned long sysclk = 66666666;
-+
-+       ibm440ep_fixup_clocks(sysclk, 11059200, 50000000);
-+       ibm4xx_sdram_fixup_memsize();
-+}
-+
-+void platform_specific_init(void)
-+{
-+       platform_ops.fixups = yosemite_fixups;
-+       platform_ops.exit = ibm44x_dbcr_reset;
-+}
+Steffen Kutsche
+MC Technology GmbH, Berlin 
+------=_NextPart_000_000D_01C99EA4.4CDA7460
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> diff -urN linux-2.6.28.orig/arch/powerpc/boot/simpleboot-yosemite.c 
-> linux-2.6.28/arch/powerpc/boot/simpleboot-yosemite.c
-> --- linux-2.6.28.orig/arch/powerpc/boot/simpleboot-yosemite.c   
-> 1969-12-31 17:00:00.000000000 -0700
-> +++ linux-2.6.28/arch/powerpc/boot/simpleboot-yosemite.c        
-> 2009-03-06 14:55:46.000000000 -0700
-> @@ -0,0 +1,24 @@
-> +#include "ops.h"
-> +#include "stdio.h"
-> +#include "4xx.h"
-> +#include "44x.h"
-> +
-> +#define TARGET_4xx
-> +#define TARGET_44x
-> +#include "ppcboot.h"
-> +
-> +static void yosemite_fixups(void)
-> +{
-> +       unsigned long sysclk = 50000000;
-> +
-> +       ibm440ep_fixup_clocks(sysclk, 11059200, 400000000);
-> +       ibm4xx_sdram_fixup_memsize();
-> +       dt_fixup_mac_address_by_alias("ethernet0", eth0adr);
-> +       dt_fixup_mac_address_by_alias("ethernet1", eth1adr);
-> +}
-> +
-> +void platform_specific_init(void)
-> +{
-> +       platform_ops.fixups = yosemite_fixups;
-> +       platform_ops.exit = ibm44x_dbcr_reset;
-> +}
-> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.6001.18203" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hello Joakim, </FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>I found your question - but it seems =
+you got never=20
+an answer?</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>I have the same problem too with =
+AT91RM9200 -=20
+etwarm_board - Kernel 2.6.18.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Please send me an answer or some =
+informations -=20
+what ever had&nbsp;you found out.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Steffen Kutsche</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>MC Technology GmbH, Berlin=20
+</FONT></DIV></BODY></HTML>
 
-
--- 
-Best Regards,
-________________________________________________________________
-  Eddie Dawydiuk, Technologic Systems | voice:  (480) 837-5200
-  16525 East Laser Drive 	     | fax:    (480) 837-5300
-  Fountain Hills, AZ 85268            | web: www.embeddedARM.com
+------=_NextPart_000_000D_01C99EA4.4CDA7460--
