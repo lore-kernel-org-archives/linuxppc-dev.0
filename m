@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <bcf5077b7f9cca219a8c420858c9696631aab73b.1236310624.git.michael@ellerman.id.au>
+Message-Id: <1e297c2bc75a03f17da24c568249c8e9925a9034.1236310746.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc/cell: Fix Axon MSI driver dependencies
-Date: Fri,  6 Mar 2009 14:37:11 +1100 (EST)
-Cc: Olof Johannsson <olof@lixom.net>
+Subject: [PATCH] powerpc/pseries: The RPA PCI hotplug driver depends on EEH
+Date: Fri,  6 Mar 2009 14:39:14 +1100 (EST)
+Cc: linux-pci@vger.kernel.org, kristen.c.accardi@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,43 +14,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Axon MSI driver depends on more than just PCI_MSI, so add a
-Kconfig fragment for it. Fixes randconfig build failures.
+The RPA PCI hotplug driver calls EEH routines, so should depend on
+EEH. Also PPC_PSERIES implies PPC64, so remove that.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/Kconfig  |    5 +++++
- arch/powerpc/platforms/cell/Makefile |    2 +-
- 2 files changed, 6 insertions(+), 1 deletions(-)
+ drivers/pci/hotplug/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index 037f59a..17b9b19 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -43,6 +43,11 @@ config PPC_CELL_QPACE
- 	depends on PPC_MULTIPLATFORM && PPC64
- 	select PPC_CELL_COMMON
+diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
+index eacfb13..9aa4fe1 100644
+--- a/drivers/pci/hotplug/Kconfig
++++ b/drivers/pci/hotplug/Kconfig
+@@ -143,7 +143,7 @@ config HOTPLUG_PCI_SHPC
  
-+config AXON_MSI
-+	bool
-+	depends on PPC_IBM_CELL_BLADE && PCI_MSI
-+	default y
-+
- menu "Cell Broadband Engine options"
- 	depends on PPC_CELL
+ config HOTPLUG_PCI_RPA
+ 	tristate "RPA PCI Hotplug driver"
+-	depends on PPC_PSERIES && PPC64 && !HOTPLUG_PCI_FAKE
++	depends on PPC_PSERIES && EEH && !HOTPLUG_PCI_FAKE
+ 	help
+ 	  Say Y here if you have a RPA system that supports PCI Hotplug.
  
-diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
-index 43eccb2..83fafe9 100644
---- a/arch/powerpc/platforms/cell/Makefile
-+++ b/arch/powerpc/platforms/cell/Makefile
-@@ -28,7 +28,7 @@ obj-$(CONFIG_SPU_BASE)			+= spu_callbacks.o spu_base.o \
- 					   $(spu-manage-y) \
- 					   spufs/
- 
--obj-$(CONFIG_PCI_MSI)			+= axon_msi.o
-+obj-$(CONFIG_AXON_MSI)			+= axon_msi.o
- 
- # qpace setup
- obj-$(CONFIG_PPC_CELL_QPACE)		+= qpace_setup.o
 -- 
 1.6.1.2
