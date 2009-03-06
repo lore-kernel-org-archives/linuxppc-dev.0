@@ -1,19 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f175.google.com (mail-gx0-f175.google.com
-	[209.85.217.175]) by ozlabs.org (Postfix) with ESMTP id A8B94DDF80
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 08:13:05 +1100 (EST)
-Received: by mail-gx0-f175.google.com with SMTP id 23so644598gxk.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 06 Mar 2009 13:13:05 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC 2/2] powerpc/5200: add LocalPlus bus FIFO device driver
-To: linuxppc-dev@ozlabs.org
-Date: Fri, 06 Mar 2009 14:13:01 -0700
-Message-ID: <20090306211237.24316.86323.stgit@localhost.localdomain>
+Return-Path: <jonsmirl@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 7293EDDF31
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 08:29:57 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so330565yxb.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 06 Mar 2009 13:29:55 -0800 (PST)
+MIME-Version: 1.0
 In-Reply-To: <20090306211123.24316.80764.stgit@localhost.localdomain>
 References: <20090306211123.24316.80764.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Date: Fri, 6 Mar 2009 16:29:55 -0500
+Message-ID: <9e4733910903061329n202725edibb8af1b979920d5b@mail.gmail.com>
+Subject: Re: [RFC 1/2] powerpc/5200: add general purpose timer API for the
+	MPC5200
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
+	w.sang@pengutronix.de
+Content-Type: multipart/mixed; boundary=0016e646983c6cfb03046479fca1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,354 +24,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+--0016e646983c6cfb03046479fca1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-This is a driver for the LocalPlus bus FIFO device
+I'm using a GPT pin in input capture mode to implement IR. I attached
+my GPT driver code. I can convert to your API. That's a really cheap
+way to do IR, just IR sensor, resistor and a cap.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+I also have an in-kernel IR system but Christoph (lirc maintainer)
+won't consider it. He is a microkernel type - he wants everything in
+user space. My in-kernel version is tiny, less than 10K. It turns IR
+events into keystrokes on a virtual keyboard device.
 
-This also isn't complete, but I wanted to get it out there and reviewed
-before I commit to the design.  Comments appreciated.
+This is my old device tree, what should the new one look like?
 
-g.
+		ir0@670 { /* General Purpose Timer 6 in Input mode */
+			compatible = "gpt-ir";
+			cell-index = <7>;
+			reg = <0x670 0x10>;
+			interrupts = <0x1 0x10 0x0>;
+			interrupt-parent = <&mpc5200_pic>;
+		};
 
- arch/powerpc/include/asm/mpc52xx.h            |   11 +
- arch/powerpc/platforms/52xx/Kconfig           |    4 
- arch/powerpc/platforms/52xx/Makefile          |    1 
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |  282 +++++++++++++++++++++++++
- 4 files changed, 298 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
+--0016e646983c6cfb03046479fca1
+Content-Type: application/octet-stream; name=jds-lirc-gpt
+Content-Disposition: attachment; filename=jds-lirc-gpt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_frzdcyyz0
 
-diff --git a/arch/powerpc/include/asm/mpc52xx.h b/arch/powerpc/include/asm/mpc52xx.h
-index 8273357..7ec34ea 100644
---- a/arch/powerpc/include/asm/mpc52xx.h
-+++ b/arch/powerpc/include/asm/mpc52xx.h
-@@ -282,6 +282,17 @@ extern int mpc52xx_gpt_start_timer(struct mpc52xx_gpt_priv *gpt, int period,
-                             int continuous);
- extern void mpc52xx_gpt_stop_timer(struct mpc52xx_gpt_priv *gpt);
- 
-+/* mpc52xx_lpbfifo.c */
-+extern int mpc52xx_lpbfifo_write(void *src, unsigned int cs,
-+				 size_t offset, size_t size, int flags,
-+				 void (*callback)(void *, size_t, int),
-+				 void *callback_data);
-+extern int mpc52xx_lpbfifo_read(void *dest, unsigned int cs,
-+				size_t offset, size_t size, int flags,
-+				void (*callback)(void *, size_t, int),
-+				void *callback_data);
-+extern void mpc52xx_lpbfifo_abort(void *callback_data);
-+
- /* mpc52xx_pic.c */
- extern void mpc52xx_init_irq(void);
- extern unsigned int mpc52xx_get_irq(void);
-diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
-index 0465e5b..f117e23 100644
---- a/arch/powerpc/platforms/52xx/Kconfig
-+++ b/arch/powerpc/platforms/52xx/Kconfig
-@@ -61,3 +61,7 @@ config PPC_MPC5200_GPIO
- 	select GENERIC_GPIO
- 	help
- 	  Enable gpiolib support for mpc5200 based boards
-+
-+config PPC_MPC5200_LPBFIFO
-+	tristate "MPC5200 LocalPlus bus FIFO driver"
-+	depends on PPC_MPC52xx
-diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
-index bfd4f52..2bc8cd0 100644
---- a/arch/powerpc/platforms/52xx/Makefile
-+++ b/arch/powerpc/platforms/52xx/Makefile
-@@ -15,3 +15,4 @@ ifeq ($(CONFIG_PPC_LITE5200),y)
- endif
- 
- obj-$(CONFIG_PPC_MPC5200_GPIO)	+= mpc52xx_gpio.o
-+obj-$(CONFIG_PPC_MPC5200_LPBFIFO)	+= mpc52xx_lpbfifo.o
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-new file mode 100644
-index 0000000..b00d763
---- /dev/null
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-@@ -0,0 +1,282 @@
-+/*
-+ * LocalPlus Bus FIFO driver for the Freescale MPC52xx.
-+ *
-+ * Copyright (C) 2009 Secret Lab Technologies Ltd.
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ *
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/spinlock.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/mpc52xx.h>
-+
-+MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
-+MODULE_DESCRIPTION("MPC5200 LocalPlus FIFO device driver");
-+MODULE_LICENSE("GPL");
-+
-+#define LPBFIFO_REG_PACKET_SIZE		(0x00)
-+#define LPBFIFO_REG_START_ADDRESS	(0x04)
-+#define LPBFIFO_REG_CONTROL		(0x08)
-+#define LPBFIFO_REG_ENABLE		(0x0C)
-+#define LPBFIFO_REG_BYTES_DONE_STATUS	(0x14)
-+#define LPBFIFO_REG_FIFO_DATA		(0x40)
-+#define LPBFIFO_REG_FIFO_STATUS		(0x44)
-+#define LPBFIFO_REG_FIFO_CONTROL	(0x48)
-+#define LPBFIFO_REG_FIFO_ALARM		(0x4C)
-+
-+struct mpc52xx_lpbfifo {
-+	struct device *dev;
-+	void __iomem *regs;
-+	int irq;
-+	spinlock_t lock;
-+
-+	/* Current transfer data */
-+	void *data;
-+	int cs;
-+	size_t offset;
-+	size_t size;
-+	size_t remaining;
-+	void (*callback)(void *, size_t, int);
-+	void *callback_data;
-+};
-+
-+/* The MPC5200 has only one fifo, so only need one instance structure */
-+static struct mpc52xx_lpbfifo lpbfifo;
-+
-+/**
-+ * mpc52xx_lpbfifo_kick - Trigger the next block of data to be transfered
-+ */
-+static void mpc52xx_lpbfifo_kick(void)
-+{
-+	size_t transfer_size = lpbfifo.remaining;
-+
-+	/* While the FIFO can be setup for transfer sizes as large as 16M-1,
-+	 * the FIFO itself is only 512 bytes deep and it does not generate
-+	 * interrupts for FIFO full events (only transfer complete will
-+	 * raise an IRQ).  Therefore when not using Bestcomm to drive the
-+	 * FIFO it needs to either be polled, or transfers need to constrained
-+	 * to the size of the fifo.
-+	 *
-+	 * Here we choose to restrict the size of the transfer
-+	 */
-+	if (transfer_size > 512)
-+		transfer_size = 512;
-+
-+	/* Set and clear the reset bits; is good practice in User Manual */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x00000301);
-+
-+	/* Set transfer size, width, chip select and READ mode */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_PACKET_SIZE, transfer_size);
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_CONTROL,
-+		 lpbfifo.cs << 24 | 0x00010008);
-+
-+	/* Kick it off */
-+	out_8(lpbfifo.regs + LPBFIFO_REG_PACKET_SIZE, 0x01);
-+}
-+
-+/**
-+ * mpc52xx_lpbfifo_irq - IRQ handler for LPB FIFO
-+ */
-+static irqreturn_t mpc52xx_lpbfifo_irq(int irq, void *dev_id)
-+{
-+	u8 status = in_8(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS);
-+	u32 *data;
-+	int count, i;
-+	void (*callback)(void *, size_t, int);
-+	void *callback_data;
-+
-+	spin_lock(&lpbfifo.lock);
-+
-+	if (status & 0x10) { /* check abort bit */
-+		out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
-+	} else if (status & 0x01) { /* check transaction done bit */
-+		/* Read result from hardware */
-+		count = in_be32(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS);
-+		count &= 0x00ffffff;
-+
-+		data = lpbfifo.data;
-+		for (i = 0; i < count; i += 4)
-+			*data++ = in_be32(lpbfifo.regs + LPBFIFO_REG_FIFO_DATA);
-+
-+		/* Update transfer position and count */
-+		lpbfifo.remaining -= count;
-+		lpbfifo.offset += count;
-+		lpbfifo.data += count;
-+
-+		/* Clear the IRQ */
-+		out_8(lpbfifo.regs + LPBFIFO_REG_BYTES_DONE_STATUS, 0x01);
-+
-+		if (lpbfifo.remaining) {
-+			/* More work to do.  Kick of the next block and exit */
-+			mpc52xx_lpbfifo_kick();
-+			spin_unlock(&lpbfifo.lock);
-+			return IRQ_HANDLED;
-+		}
-+	}
-+
-+	/* Mark the FIFO as idle */
-+	lpbfifo.data = NULL;
-+	callback = lpbfifo.callback;
-+	callback_data = lpbfifo.callback_data;
-+	count = lpbfifo.size - lpbfifo.remaining;
-+
-+	/* Release the lock before calling out to the callback. */
-+	spin_unlock(&lpbfifo.lock);
-+
-+	/* If control reaches this point then the transfer is finished,
-+	 * either normal completion or due to abort */
-+	callback(callback_data, count, (status & 0x10) != 0);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/**
-+ * mpc52xx_lpbfifo_read - Initiate an LPB fifo READ transaction
-+ * @data: location to copy data into
-+ * @cs: LocalPlus bus chip select number for transfer
-+ * @offset: Location of data to read as an offset from the CS base address
-+ * @size: Size of transfer in bytes
-+ * @callback: Callback function for FIFO events.  Will be called when the
-+ *            FIFO high watermark is reached, when the transfer finishes,
-+ *            and if a FIFO error occurs.
-+ * @data: Private data pointer to be passed to callback function.
-+ */
-+int mpc52xx_lpbfifo_read(void *dest, unsigned int cs,
-+			 size_t offset, size_t size, int mode_flags,
-+			 void (*callback)(void *, size_t, int),
-+			 void *callback_data)
-+{
-+	int rc = -EBUSY;
-+	unsigned long flags;
-+
-+	if (!lpbfifo.regs)
-+		return -ENODEV;
-+
-+	spin_lock_irqsave(&lpbfifo.lock, flags);
-+	/* If the data pointer is already set then a transfer is in progress */
-+	if (lpbfifo.data)
-+		goto out;
-+
-+	/* Setup the transfer */
-+	lpbfifo.data = dest;
-+	lpbfifo.cs = cs;
-+	lpbfifo.offset = offset;
-+	lpbfifo.remaining = lpbfifo.size = size;
-+	lpbfifo.callback = callback;
-+	lpbfifo.callback_data = callback_data;
-+
-+	mpc52xx_lpbfifo_kick();
-+	rc = 0;
-+
-+ out:
-+	spin_unlock_irqrestore(&lpbfifo.lock, flags);
-+	return rc;
-+}
-+EXPORT_SYMBOL(mpc52xx_lpbfifo_read);
-+
-+void mpc52xx_lpbfifo_abort(void *callback_data)
-+{
-+	unsigned long flags;
-+
-+	if (lpbfifo.callback_data != callback_data)
-+		return;
-+
-+	spin_lock_irqsave(&lpbfifo.lock, flags);
-+	/* Put it into reset and clear the state */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
-+	lpbfifo.data = NULL;
-+	spin_unlock_irqrestore(&lpbfifo.lock, flags);
-+}
-+EXPORT_SYMBOL(mpc52xx_lpbfifo_abort);
-+
-+static int __devinit
-+mpc52xx_lpbfifo_probe(struct of_device *op, const struct of_device_id *match)
-+{
-+	int rc;
-+
-+	if (lpbfifo.dev != NULL)
-+		return -ENOSPC;
-+
-+	lpbfifo.regs = of_iomap(op->node, 0);
-+	if (!lpbfifo.regs)
-+		return -ENOMEM;
-+
-+	lpbfifo.irq = irq_of_parse_and_map(op->node, 0);
-+	if (!lpbfifo.irq) {
-+		lpbfifo.regs = NULL;
-+		iounmap(lpbfifo.regs);
-+		return -ENOMEM;
-+	}
-+
-+	spin_lock_init(&lpbfifo.lock);
-+
-+	/* Put FIFO into reset */
-+	out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
-+
-+	/* Register the interrupt handler */
-+	rc = request_irq(lpbfifo.irq, mpc52xx_lpbfifo_irq, 0,
-+			 "mpc52xx-lpbfifo", &lpbfifo);
-+	if (rc) {
-+		pr_err("request_irq() failed.  rc=%i\n", rc);
-+		lpbfifo.regs = NULL;
-+		free_irq(lpbfifo.irq, &lpbfifo);
-+		iounmap(lpbfifo.regs);
-+	}
-+
-+	lpbfifo.dev = &op->dev;
-+	pr_info("LPB FIFO ready; regs=%p irq=%i\n", lpbfifo.regs, lpbfifo.irq);
-+	return 0;
-+}
-+
-+
-+static int __devexit mpc52xx_lpbfifo_remove(struct of_device *op)
-+{
-+	if (lpbfifo.dev == &op->dev) {
-+		/* Put FIFO in reset */
-+		out_be32(lpbfifo.regs + LPBFIFO_REG_ENABLE, 0x01010000);
-+		lpbfifo.regs = NULL;
-+		free_irq(lpbfifo.irq, &lpbfifo);
-+		iounmap(lpbfifo.regs);
-+		lpbfifo.dev = NULL;
-+	}
-+	return 0;
-+}
-+
-+static struct of_device_id mpc52xx_lpbfifo_match[] __devinitdata = {
-+	{ .compatible = "fsl,mpc5200-lpbfifo", },
-+	{},
-+};
-+
-+static struct of_platform_driver mpc52xx_lpbfifo_driver = {
-+	.owner = THIS_MODULE,
-+	.name = "mpc52xx-lpbfifo",
-+	.match_table = mpc52xx_lpbfifo_match,
-+	.probe = mpc52xx_lpbfifo_probe,
-+	.remove = __devexit_p(mpc52xx_lpbfifo_remove),
-+};
-+
-+/***********************************************************************
-+ * Module init/exit
-+ */
-+static int __init mpc52xx_lpbfifo_init(void)
-+{
-+	pr_debug("Registering LocalPlus bus FIFO driver\n");
-+	return of_register_platform_driver(&mpc52xx_lpbfifo_driver);
-+}
-+module_init(mpc52xx_lpbfifo_init);
-+
-+static void __exit mpc52xx_lpbfifo_exit(void)
-+{
-+	pr_debug("Unregistering LocalPlus bus FIFO driver\n");
-+	of_unregister_platform_driver(&mpc52xx_lpbfifo_driver);
-+}
-+module_exit(mpc52xx_lpbfifo_exit);
+R1BUIGRyaXZlciBmb3IgaW4ta2VybmVsIElSIHN1cHBvcnQuCgpGcm9tOiBKb24gU21pcmwgPGpv
+bnNtaXJsQGdtYWlsLmNvbT4KCkdQVCBpcyBhIEdQSU8gcGluIHRoYXQgaXMgY2FibGUgYWJsZSBv
+ZiBtZWFzdXJpbmcgdGhlIGxlbmdodCBvZiBwdWxzZXMuCkdQVHMgYXJlIGNvbW1vbiBvbiBlbWJl
+ZGRlZCBzeXN0ZW1zCi0tLQogZHJpdmVycy9pbnB1dC9pci9LY29uZmlnICB8ICAgIDYgKwogZHJp
+dmVycy9pbnB1dC9pci9NYWtlZmlsZSB8ICAgIDMgKwogZHJpdmVycy9pbnB1dC9pci9pci1ncHQu
+YyB8ICAxODQgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCiAz
+IGZpbGVzIGNoYW5nZWQsIDE5MyBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQogY3JlYXRl
+IG1vZGUgMTAwNjQ0IGRyaXZlcnMvaW5wdXQvaXIvaXItZ3B0LmMKCmRpZmYgLS1naXQgYS9kcml2
+ZXJzL2lucHV0L2lyL0tjb25maWcgYi9kcml2ZXJzL2lucHV0L2lyL0tjb25maWcKaW5kZXggYTZm
+M2YyNS4uMTcyYzBjNiAxMDA2NDQKLS0tIGEvZHJpdmVycy9pbnB1dC9pci9LY29uZmlnCisrKyBi
+L2RyaXZlcnMvaW5wdXQvaXIvS2NvbmZpZwpAQCAtMTIsNCArMTIsMTAgQEAgbWVudWNvbmZpZyBJ
+TlBVVF9JUgogCiBpZiBJTlBVVF9JUgogCitjb25maWcgSVJfR1BUCisJdHJpc3RhdGUgIkdQVCBC
+YXNlZCBJUiBSZWNlaXZlciIKKwlkZWZhdWx0IG0KKwloZWxwCisJICBEcml2ZXIgZm9yIEdQVC1i
+YXNlZCBJUiByZWNlaXZlciBmb3VuZCBvbiBEaWdpc3BlYWtlcgorCiBlbmRpZgpkaWZmIC0tZ2l0
+IGEvZHJpdmVycy9pbnB1dC9pci9NYWtlZmlsZSBiL2RyaXZlcnMvaW5wdXQvaXIvTWFrZWZpbGUK
+aW5kZXggMmNjZGRhMy4uYWIwZGEzZiAxMDA2NDQKLS0tIGEvZHJpdmVycy9pbnB1dC9pci9NYWtl
+ZmlsZQorKysgYi9kcml2ZXJzL2lucHV0L2lyL01ha2VmaWxlCkBAIC02LDMgKzYsNiBAQAogb2Jq
+LSQoQ09ORklHX0lOUFVUX0lSKQkJKz0gaXIubwogaXItb2JqcyA6PSBpci1jb3JlLm8gaXItY29u
+ZmlnZnMubwogCisKK29iai0kKENPTkZJR19JUl9HUFQpCQkrPSBpci1ncHQubworCmRpZmYgLS1n
+aXQgYS9kcml2ZXJzL2lucHV0L2lyL2lyLWdwdC5jIGIvZHJpdmVycy9pbnB1dC9pci9pci1ncHQu
+YwpuZXcgZmlsZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAwLi40MWQyZmE2Ci0tLSAvZGV2L251
+bGwKKysrIGIvZHJpdmVycy9pbnB1dC9pci9pci1ncHQuYwpAQCAtMCwwICsxLDE4NCBAQAorLyoK
+KyAqIEdQVCB0aW1lciBiYXNlZCBJUiBkZXZpY2UKKyAqCisgKiBDb3B5cmlnaHQgKEMpIDIwMDgg
+Sm9uIFNtaXJsIDxqb25zbWlybEBnbWFpbC5jb20+CisgKi8KKworI2RlZmluZSBERUJVRworCisj
+aW5jbHVkZSA8bGludXgvaW5pdC5oPgorI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgorI2luY2x1
+ZGUgPGxpbnV4L2ludGVycnVwdC5oPgorI2luY2x1ZGUgPGxpbnV4L2RldmljZS5oPgorI2luY2x1
+ZGUgPGxpbnV4L29mX2RldmljZS5oPgorI2luY2x1ZGUgPGxpbnV4L29mX3BsYXRmb3JtLmg+Cisj
+aW5jbHVkZSA8bGludXgvaW5wdXQuaD4KKyNpbmNsdWRlIDxhc20vaW8uaD4KKyNpbmNsdWRlIDxh
+c20vbXBjNTJ4eC5oPgorCitzdHJ1Y3QgaXJfZ3B0IHsKKwlzdHJ1Y3QgaW5wdXRfZGV2ICppbnB1
+dDsKKwlpbnQgaXJxLCBwcmV2aW91czsKKwlzdHJ1Y3QgbXBjNTJ4eF9ncHQgX19pb21lbSAqcmVn
+czsKK307CisKKy8qCisgKiBJbnRlcnJ1cHQgaGFuZGxlcnMKKyAqLworc3RhdGljIGlycXJldHVy
+bl90IGRwZWFrX2lyX2lycShpbnQgaXJxLCB2b2lkICpfaXIpCit7CisJc3RydWN0IGlyX2dwdCAq
+aXJfZ3B0ID0gX2lyOworCWludCBzYW1wbGUsIGNvdW50LCBkZWx0YSwgYml0LCB3cmFwOworCisJ
+c2FtcGxlID0gaW5fYmUzMigmaXJfZ3B0LT5yZWdzLT5zdGF0dXMpOworCW91dF9iZTMyKCZpcl9n
+cHQtPnJlZ3MtPnN0YXR1cywgMHhGKTsKKworCWNvdW50ID0gc2FtcGxlID4+IDE2OworCXdyYXAg
+PSAoc2FtcGxlID4+IDEyKSAmIDc7CisJYml0ID0gKHNhbXBsZSA+PiA4KSAmIDE7CisKKwlkZWx0
+YSA9IGNvdW50IC0gaXJfZ3B0LT5wcmV2aW91czsKKwlkZWx0YSArPSB3cmFwICogMHgxMDAwMDsK
+KworCWlyX2dwdC0+cHJldmlvdXMgPSBjb3VudDsKKworCWlmIChiaXQpCisJCWRlbHRhID0gLWRl
+bHRhOworCisJaW5wdXRfaXJfcXVldWUoaXJfZ3B0LT5pbnB1dCwgZGVsdGEpOworCisJcmV0dXJu
+IElSUV9IQU5ETEVEOworfQorCisKKy8qIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQorICogT0YgcGxhdGZvcm0gYnVz
+IGJpbmRpbmcgY29kZToKKyAqIC0gUHJvYmUvcmVtb3ZlIG9wZXJhdGlvbnMKKyAqIC0gT0YgZGV2
+aWNlIG1hdGNoIHRhYmxlCisgKi8KK3N0YXRpYyBpbnQgX19kZXZpbml0IGlyX2dwdF9vZl9wcm9i
+ZShzdHJ1Y3Qgb2ZfZGV2aWNlICpvcCwKKwkJCQkgICAgICBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNl
+X2lkICptYXRjaCkKK3sKKwlzdHJ1Y3QgaXJfZ3B0ICppcl9ncHQ7CisJc3RydWN0IHJlc291cmNl
+IHJlczsKKwlpbnQgcmV0LCByYzsKKworCWRldl9kYmcoJm9wLT5kZXYsICJpcl9ncHRfb2ZfcHJv
+YmVcbiIpOworCisJLyogQWxsb2NhdGUgYW5kIGluaXRpYWxpemUgdGhlIGRyaXZlciBwcml2YXRl
+IGRhdGEgKi8KKwlpcl9ncHQgPSBremFsbG9jKHNpemVvZiAqaXJfZ3B0LCBHRlBfS0VSTkVMKTsK
+KwlpZiAoIWlyX2dwdCkKKwkJcmV0dXJuIC1FTk9NRU07CisKKwlpcl9ncHQtPmlucHV0ID0gaW5w
+dXRfYWxsb2NhdGVfZGV2aWNlKCk7CisJaWYgKCFpcl9ncHQtPmlucHV0KSB7CisJCXJldCA9IC1F
+Tk9NRU07CisJCWdvdG8gZnJlZV9tZW07CisJfQorCXJldCA9IGlucHV0X2lyX2NyZWF0ZShpcl9n
+cHQtPmlucHV0LCBpcl9ncHQsIE5VTEwpOworCWlmIChyZXQpCisJCWdvdG8gZnJlZV9pbnB1dDsK
+KworCWlyX2dwdC0+aW5wdXQtPmlkLmJ1c3R5cGUgPSBCVVNfSE9TVDsKKwlpcl9ncHQtPmlucHV0
+LT5uYW1lID0gIkdQVCBJUiBSZWNlaXZlciI7CisKKwlpcl9ncHQtPmlucHV0LT5pcmJpdFswXSB8
+PSBCSVRfTUFTSyhJUl9DQVBfUkVDRUlWRV8zNkspOworCWlyX2dwdC0+aW5wdXQtPmlyYml0WzBd
+IHw9IEJJVF9NQVNLKElSX0NBUF9SRUNFSVZFXzM4Syk7CisJaXJfZ3B0LT5pbnB1dC0+aXJiaXRb
+MF0gfD0gQklUX01BU0soSVJfQ0FQX1JFQ0VJVkVfNDBLKTsKKwlpcl9ncHQtPmlucHV0LT5pcmJp
+dFswXSB8PSBCSVRfTUFTSyhJUl9DQVBfUkVDRUlWRV9SQVcpOworCisJcmV0ID0gaW5wdXRfcmVn
+aXN0ZXJfZGV2aWNlKGlyX2dwdC0+aW5wdXQpOworCWlmIChyZXQpCisJCWdvdG8gZnJlZV9pbnB1
+dDsKKwlyZXQgPSBpbnB1dF9pcl9yZWdpc3Rlcihpcl9ncHQtPmlucHV0KTsKKwlpZiAocmV0KQor
+CQlnb3RvIGZyZWVfaW5wdXQ7CisKKwkvKiBGZXRjaCB0aGUgcmVnaXN0ZXJzIGFuZCBJUlEgb2Yg
+dGhlIEdQVCAqLworCWlmIChvZl9hZGRyZXNzX3RvX3Jlc291cmNlKG9wLT5ub2RlLCAwLCAmcmVz
+KSkgeworCQlkZXZfZXJyKCZvcC0+ZGV2LCAiTWlzc2luZyByZWcgcHJvcGVydHlcbiIpOworCQly
+ZXQgPSAtRU5PREVWOworCQlnb3RvIGZyZWVfaW5wdXQ7CisJfQorCWlyX2dwdC0+cmVncyA9IGlv
+cmVtYXAocmVzLnN0YXJ0LCAxICsgcmVzLmVuZCAtIHJlcy5zdGFydCk7CisJaWYgKCFpcl9ncHQt
+PnJlZ3MpIHsKKwkJZGV2X2Vycigmb3AtPmRldiwgIkNvdWxkIG5vdCBtYXAgcmVnaXN0ZXJzXG4i
+KTsKKwkJcmV0ID0gLUVOT0RFVjsKKwkJZ290byBmcmVlX2lucHV0OworCX0KKwlpcl9ncHQtPmly
+cSA9IGlycV9vZl9wYXJzZV9hbmRfbWFwKG9wLT5ub2RlLCAwKTsKKwlpZiAoaXJfZ3B0LT5pcnEg
+PT0gTk9fSVJRKSB7CisJCXJldCA9IC1FTk9ERVY7CisJCWdvdG8gZnJlZV9pbnB1dDsKKwl9CisJ
+ZGV2X2RiZygmb3AtPmRldiwgImlyX2dwdF9vZl9wcm9iZSBpcnE9JWRcbiIsIGlyX2dwdC0+aXJx
+KTsKKworCXJjID0gcmVxdWVzdF9pcnEoaXJfZ3B0LT5pcnEsICZkcGVha19pcl9pcnEsIElSUUZf
+U0hBUkVELAorCQkJICJncHQtaXIiLCBpcl9ncHQpOworCWRldl9kYmcoJm9wLT5kZXYsICJpcl9n
+cHRfb2ZfcHJvYmUgcmVxdWVzdCBpcnEgcmM9JWRcbiIsIHJjKTsKKworCS8qIHNldCBwcmVzY2Fs
+ZSB0byA/ICovCisJb3V0X2JlMzIoJmlyX2dwdC0+cmVncy0+Y291bnQsIDB4MDA4NzAwMDApOwor
+CisJLyogU2VsZWN0IGlucHV0IGNhcHR1cmUsIGVuYWJsZSB0aGUgY291bnRlciwgYW5kIGludGVy
+cnVwdCAqLworCW91dF9iZTMyKCZpcl9ncHQtPnJlZ3MtPm1vZGUsIDB4MCk7CisJb3V0X2JlMzIo
+JmlyX2dwdC0+cmVncy0+bW9kZSwgMHgwMDAwMDUwMSk7CisKKwkvKiBTYXZlIHdoYXQgd2UndmUg
+ZG9uZSBzbyBpdCBjYW4gYmUgZm91bmQgYWdhaW4gbGF0ZXIgKi8KKwlkZXZfc2V0X2RydmRhdGEo
+Jm9wLT5kZXYsIGlyX2dwdCk7CisKKwlwcmludGsoIkdQVCBJUiBSZWNlaXZlciBkcml2ZXJcbiIp
+OworCisJcmV0dXJuIDA7CisKK2ZyZWVfaW5wdXQ6CisJaW5wdXRfZnJlZV9kZXZpY2UoaXJfZ3B0
+LT5pbnB1dCk7CitmcmVlX21lbToKKwlrZnJlZShpcl9ncHQpOworCXJldHVybiByZXQ7Cit9CisK
+K3N0YXRpYyBpbnQgX19kZXZleGl0IGlyX2dwdF9vZl9yZW1vdmUoc3RydWN0IG9mX2RldmljZSAq
+b3ApCit7CisJc3RydWN0IGlyX2dwdCAqaXJfZ3B0ID0gZGV2X2dldF9kcnZkYXRhKCZvcC0+ZGV2
+KTsKKworCWRldl9kYmcoJm9wLT5kZXYsICJpcl9ncHRfcmVtb3ZlKClcbiIpOworCisJaW5wdXRf
+dW5yZWdpc3Rlcl9kZXZpY2UoaXJfZ3B0LT5pbnB1dCk7CisJa2ZyZWUoaXJfZ3B0KTsKKwlkZXZf
+c2V0X2RydmRhdGEoJm9wLT5kZXYsIE5VTEwpOworCisJcmV0dXJuIDA7Cit9CisKKy8qIE1hdGNo
+IHRhYmxlIGZvciBvZl9wbGF0Zm9ybSBiaW5kaW5nICovCitzdGF0aWMgc3RydWN0IG9mX2Rldmlj
+ZV9pZCBpcl9ncHRfbWF0Y2hbXSBfX2RldmluaXRkYXRhID0geworCXsgLmNvbXBhdGlibGUgPSAi
+Z3B0LWlyIiwgfSwKKwl7fQorfTsKK01PRFVMRV9ERVZJQ0VfVEFCTEUob2YsIGlyX2dwdF9tYXRj
+aCk7CisKK3N0YXRpYyBzdHJ1Y3Qgb2ZfcGxhdGZvcm1fZHJpdmVyIGlyX2dwdF9kcml2ZXIgPSB7
+CisJLm1hdGNoX3RhYmxlID0gaXJfZ3B0X21hdGNoLAorCS5wcm9iZSA9IGlyX2dwdF9vZl9wcm9i
+ZSwKKwkucmVtb3ZlID0gX19kZXZleGl0X3AoaXJfZ3B0X29mX3JlbW92ZSksCisJLmRyaXZlciA9
+IHsKKwkJLm5hbWUgPSAiaXItZ3B0IiwKKwkJLm93bmVyID0gVEhJU19NT0RVTEUsCisJfSwKK307
+CisKKy8qIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLQorICogTW9kdWxlIHNldHVwIGFuZCB0ZWFyZG93bjsgc2ltcGx5
+IHJlZ2lzdGVyIHRoZSBvZl9wbGF0Zm9ybSBkcml2ZXIKKyAqLworc3RhdGljIGludCBfX2luaXQg
+aXJfZ3B0X2luaXQodm9pZCkKK3sKKwlyZXR1cm4gb2ZfcmVnaXN0ZXJfcGxhdGZvcm1fZHJpdmVy
+KCZpcl9ncHRfZHJpdmVyKTsKK30KK21vZHVsZV9pbml0KGlyX2dwdF9pbml0KTsKKworc3RhdGlj
+IHZvaWQgX19leGl0IGlyX2dwdF9leGl0KHZvaWQpCit7CisJb2ZfdW5yZWdpc3Rlcl9wbGF0Zm9y
+bV9kcml2ZXIoJmlyX2dwdF9kcml2ZXIpOworfQorbW9kdWxlX2V4aXQoaXJfZ3B0X2V4aXQpOwo=
+--0016e646983c6cfb03046479fca1--
