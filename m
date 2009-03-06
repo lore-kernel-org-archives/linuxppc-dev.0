@@ -1,18 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f175.google.com (mail-gx0-f175.google.com
-	[209.85.217.175]) by ozlabs.org (Postfix) with ESMTP id E23D5DE005
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 07:31:42 +1100 (EST)
-Received: by gxk23 with SMTP id 23so627135gxk.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 06 Mar 2009 12:31:41 -0800 (PST)
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [93.163.65.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 12F7BDDDA5
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 07:46:28 +1100 (EST)
+Date: Fri, 6 Mar 2009 21:46:23 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] Fix Xilinx SystemACE driver to handle empty CF slot
+Message-ID: <20090306204623.GJ11787@kernel.dk>
+References: <20090228204622.29719.55082.stgit@localhost.localdomain>
+	<fa686aa40903060805i489d8676waad08e8263c02fe@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090306203044.22371.75222.stgit@localhost.localdomain>
-References: <20090306203044.22371.75222.stgit@localhost.localdomain>
-Date: Fri, 6 Mar 2009 13:31:41 -0700
-Message-ID: <fa686aa40903061231h5d9ef9f4i3d080bf00b6e99fb@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/5200: remove sysfs debug file from GPT driver
-From: Grant Likely <grant.likely@secretlab.ca>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <fa686aa40903060805i489d8676waad08e8263c02fe@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, linux-kernel@vger.kernel.org,
+	John.Linn@xilinx.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,97 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfram, you were right.  This was a bad idea.  I just took me a bit
-longer to clue into it.
+On Fri, Mar 06 2009, Grant Likely wrote:
+> Oops, sorry Jens.  I forgot to CC: you on this patch.
+> 
+> g.
+> 
+> On Sat, Feb 28, 2009 at 1:46 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > From: Grant Likely <grant.likely@secretlab.ca>
+> >
+> > The SystemACE driver does not handle an empty CF slot gracefully.  An
+> > empty CF slot ends up hanging the system.  This patch adds a check for
+> > the CF state and stops trying to process requests if the slot is empty.
 
-g.
+So with patches like this, it's always nice to know what your target is.
+Do you want this in .29, or just queued up for .30? It's not always easy
+to judge the urgency of such patches :-)
 
-On Fri, Mar 6, 2009 at 1:30 PM, Grant Likely <grant.likely@secretlab.ca> wr=
-ote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> Remove poorly designed debug sysfs attribute entry from the GPT driver.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->
-> =A0arch/powerpc/platforms/52xx/mpc52xx_gpt.c | =A0 39 -------------------=
-----------
-> =A01 files changed, 0 insertions(+), 39 deletions(-)
->
->
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/pla=
-tforms/52xx/mpc52xx_gpt.c
-> index cb038dc..bfbcd41 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> @@ -335,44 +335,6 @@ static void
-> =A0mpc52xx_gpt_gpio_setup(struct mpc52xx_gpt_priv *p, struct device_node =
-*np) { }
-> =A0#endif /* defined(CONFIG_GPIOLIB) */
->
-> -/***********************************************************************
-> - * SYSFS attributes
-> - */
-> -#if defined(CONFIG_SYSFS)
-> -static ssize_t mpc52xx_gpt_show_regs(struct device *dev,
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-struct device_attribute *attr, char *buf)
-> -{
-> - =A0 =A0 =A0 struct mpc52xx_gpt_priv *gpt =3D dev_get_drvdata(dev);
-> - =A0 =A0 =A0 int i, len =3D 0;
-> - =A0 =A0 =A0 u32 __iomem *regs =3D (void __iomem *) gpt->regs;
-> -
-> - =A0 =A0 =A0 for (i =3D 0; i < 4; i++)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 len +=3D sprintf(buf + len, "%.8x ", in_be3=
-2(regs + i));
-> - =A0 =A0 =A0 len +=3D sprintf(buf + len, "\n");
-> -
-> - =A0 =A0 =A0 return len;
-> -}
-> -
-> -static struct device_attribute mpc52xx_gpt_attrib[] =3D {
-> - =A0 =A0 =A0 __ATTR(regs, S_IRUGO | S_IWUSR, mpc52xx_gpt_show_regs, NULL=
-),
-> -};
-> -
-> -static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *gpt)
-> -{
-> - =A0 =A0 =A0 int i, err =3D 0;
-> -
-> - =A0 =A0 =A0 for (i =3D 0; i < ARRAY_SIZE(mpc52xx_gpt_attrib); i++) {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D device_create_file(gpt->dev, &mpc52=
-xx_gpt_attrib[i]);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (err)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(gpt->dev, "error cr=
-eating attribute %i\n", i);
-> - =A0 =A0 =A0 }
-> -
-> -}
-> -
-> -#else /* defined(CONFIG_SYSFS) */
-> -static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *) { retu=
-rn 0; }
-> -#endif /* defined(CONFIG_SYSFS) */
-> -
-> =A0/* -------------------------------------------------------------------=
---
-> =A0* of_platform bus binding code
-> =A0*/
-> @@ -395,7 +357,6 @@ static int __devinit mpc52xx_gpt_probe(struct of_devi=
-ce *ofdev,
->
-> =A0 =A0 =A0 =A0dev_set_drvdata(&ofdev->dev, gpt);
->
-> - =A0 =A0 =A0 mpc52xx_gpt_create_attribs(gpt);
-> =A0 =A0 =A0 =A0mpc52xx_gpt_gpio_setup(gpt, ofdev->node);
-> =A0 =A0 =A0 =A0mpc52xx_gpt_irq_setup(gpt, ofdev->node);
->
->
->
+Also, I note that you are using end_request() throughout the driver. We
+really want to get away from that, you should be using blk_end_request()
+as that will handle full requests and not just segment-by-segment. No
+worries for this patch, but you may want to consider that for a future
+patch.
 
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-- 
+Jens Axboe
