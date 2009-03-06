@@ -1,21 +1,17 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp127.sbc.mail.sp1.yahoo.com (smtp127.sbc.mail.sp1.yahoo.com
-	[69.147.65.186]) by ozlabs.org (Postfix) with SMTP id 0FFBADDEDA
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 07:07:23 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] Xilinx: SPI: driver not releasing memory
-Date: Fri, 6 Mar 2009 12:00:41 -0800
-References: <20090227235456.4DED2448057@mail135-wa4.bigfish.com>
-	<fa686aa40903060749l422386f0p5a720cbabc07ff74@mail.gmail.com>
-In-Reply-To: <fa686aa40903060749l422386f0p5a720cbabc07ff74@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id 5E073DDEF1
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 07:30:52 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j5so354177wah.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 06 Mar 2009 12:30:50 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/5200: remove sysfs debug file from GPT driver
+To: linuxppc-dev@ozlabs.org
+Date: Fri, 06 Mar 2009 13:30:45 -0700
+Message-ID: <20090306203044.22371.75222.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200903061200.41676.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, akonovalov@ru.mvista.com,
-	John Linn <John.Linn@xilinx.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,105 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 06 March 2009, Grant Likely wrote:
-> David,
-> 
-> Are you okay with this patch and okay with it going in via Ben's
-> powerpc tree?  Ben wants to ensure that changes outside arch/powerpc/
-> are properly acked before going into his tree.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Sure, no problem.
+Remove poorly designed debug sysfs attribute entry from the GPT driver.
 
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-> Thanks,
-> g.
-> 
-> On Sat, Feb 28, 2009 at 9:09 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > On Fri, Feb 27, 2009 at 4:54 PM, John Linn <john.linn@xilinx.com> wrote:
-> >> The driver was not releasing memory when it was removed or
-> >> when there was a failure during probe. This fixes it.
-> >>
-> >> Signed-off-by: John Linn <john.linn@xilinx.com>
-> >
-> > Looks good.
-> >
-> > Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c |   39 -----------------------------
+ 1 files changed, 0 insertions(+), 39 deletions(-)
 
 
-> > I'll pick this up into my -next branch and ask Ben to pull it in the
-> > next week or so.
-> 
-> > ---
-> > This is an incremental patch to the patch (updated driver
-> > for device tree) that is in the next branch.
-> > ---
-> >  drivers/spi/xilinx_spi.c |    9 +++++++--
-> >  1 files changed, 7 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
-> > index fe7e5f3..494d3f7 100644
-> > --- a/drivers/spi/xilinx_spi.c
-> > +++ b/drivers/spi/xilinx_spi.c
-> > @@ -354,7 +354,7 @@ static int __init xilinx_spi_of_probe(struct of_device *ofdev,
-> >        if (xspi->regs == NULL) {
-> >                rc = -ENOMEM;
-> >                dev_warn(&ofdev->dev, "ioremap failure\n");
-> > -               goto put_master;
-> > +               goto release_mem;
-> >        }
-> >        xspi->irq = r_irq->start;
-> >
-> > @@ -365,7 +365,7 @@ static int __init xilinx_spi_of_probe(struct of_device *ofdev,
-> >        prop = of_get_property(ofdev->node, "xlnx,num-ss-bits", &len);
-> >        if (!prop || len < sizeof(*prop)) {
-> >                dev_warn(&ofdev->dev, "no 'xlnx,num-ss-bits' property\n");
-> > -               goto put_master;
-> > +               goto unmap_io;
-> >        }
-> >        master->num_chipselect = *prop;
-> >
-> > @@ -397,6 +397,8 @@ free_irq:
-> >        free_irq(xspi->irq, xspi);
-> >  unmap_io:
-> >        iounmap(xspi->regs);
-> > +release_mem:
-> > +       release_mem_region(r_mem->start, resource_size(r_mem));
-> >  put_master:
-> >        spi_master_put(master);
-> >        return rc;
-> > @@ -406,6 +408,7 @@ static int __devexit xilinx_spi_remove(struct of_device *ofdev)
-> >  {
-> >        struct xilinx_spi *xspi;
-> >        struct spi_master *master;
-> > +       struct resource r_mem;
-> >
-> >        master = platform_get_drvdata(ofdev);
-> >        xspi = spi_master_get_devdata(master);
-> > @@ -413,6 +416,8 @@ static int __devexit xilinx_spi_remove(struct of_device *ofdev)
-> >        spi_bitbang_stop(&xspi->bitbang);
-> >        free_irq(xspi->irq, xspi);
-> >        iounmap(xspi->regs);
-> > +       if (!of_address_to_resource(ofdev->node, 0, &r_mem))
-> > +               release_mem_region(r_mem.start, resource_size(&r_mem));
-> >        dev_set_drvdata(&ofdev->dev, 0);
-> >        spi_master_put(xspi->bitbang.master);
-> >
-> > --
-> > 1.5.3.4
-> >
-> >
-> >
-> > This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-> >
-> >
-> >
-> 
-> 
-> 
-> -- 
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> 
-> 
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+index cb038dc..bfbcd41 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+@@ -335,44 +335,6 @@ static void
+ mpc52xx_gpt_gpio_setup(struct mpc52xx_gpt_priv *p, struct device_node *np) { }
+ #endif /* defined(CONFIG_GPIOLIB) */
+ 
+-/***********************************************************************
+- * SYSFS attributes
+- */
+-#if defined(CONFIG_SYSFS)
+-static ssize_t mpc52xx_gpt_show_regs(struct device *dev,
+-				     struct device_attribute *attr, char *buf)
+-{
+-	struct mpc52xx_gpt_priv *gpt = dev_get_drvdata(dev);
+-	int i, len = 0;
+-	u32 __iomem *regs = (void __iomem *) gpt->regs;
+-
+-	for (i = 0; i < 4; i++)
+-		len += sprintf(buf + len, "%.8x ", in_be32(regs + i));
+-	len += sprintf(buf + len, "\n");
+-
+-	return len;
+-}
+-
+-static struct device_attribute mpc52xx_gpt_attrib[] = {
+-	__ATTR(regs, S_IRUGO | S_IWUSR, mpc52xx_gpt_show_regs, NULL),
+-};
+-
+-static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *gpt)
+-{
+-	int i, err = 0;
+-
+-	for (i = 0; i < ARRAY_SIZE(mpc52xx_gpt_attrib); i++) {
+-		err = device_create_file(gpt->dev, &mpc52xx_gpt_attrib[i]);
+-		if (err)
+-			dev_err(gpt->dev, "error creating attribute %i\n", i);
+-	}
+-
+-}
+-
+-#else /* defined(CONFIG_SYSFS) */
+-static void mpc52xx_gpt_create_attribs(struct mpc52xx_gpt_priv *) { return 0; }
+-#endif /* defined(CONFIG_SYSFS) */
+-
+ /* ---------------------------------------------------------------------
+  * of_platform bus binding code
+  */
+@@ -395,7 +357,6 @@ static int __devinit mpc52xx_gpt_probe(struct of_device *ofdev,
+ 
+ 	dev_set_drvdata(&ofdev->dev, gpt);
+ 
+-	mpc52xx_gpt_create_attribs(gpt);
+ 	mpc52xx_gpt_gpio_setup(gpt, ofdev->node);
+ 	mpc52xx_gpt_irq_setup(gpt, ofdev->node);
+ 
