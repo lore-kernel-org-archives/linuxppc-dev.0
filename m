@@ -1,18 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
-	by ozlabs.org (Postfix) with ESMTP id 3A25ADDE98
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 03:10:24 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g9so833885rvb.1
-	for <linuxppc-dev@ozlabs.org>; Fri, 06 Mar 2009 08:10:22 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC] drivers/base: Add bus_register_notifier_alldev() variant
-Date: Fri, 06 Mar 2009 09:10:19 -0700
-Message-ID: <20090306160818.404.92700.stgit@localhost.localdomain>
+Return-Path: <ben.menchaca@gmail.com>
+Received: from mail-gx0-f174.google.com (mail-gx0-f174.google.com
+	[209.85.217.174]) by ozlabs.org (Postfix) with ESMTP id 50991DDF9B
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 03:12:14 +1100 (EST)
+Received: by gxk22 with SMTP id 22so1300629gxk.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 06 Mar 2009 08:12:13 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208916CF98@zch01exm21.fsl.freescale.net>
+References: <64ac01180903052032i75792fa6x864f91c511b3f228@mail.gmail.com>
+	<D7CCA83BB0796C49BC0BB53B6AB1208916CF73@zch01exm21.fsl.freescale.net>
+	<D7CCA83BB0796C49BC0BB53B6AB1208916CF75@zch01exm21.fsl.freescale.net>
+	<64ac01180903052138k4226022cq840d497dccecd939@mail.gmail.com>
+	<D7CCA83BB0796C49BC0BB53B6AB1208916CF81@zch01exm21.fsl.freescale.net>
+	<64ac01180903052210r2aee7246g50fd0656c491a40b@mail.gmail.com>
+	<D7CCA83BB0796C49BC0BB53B6AB1208916CF98@zch01exm21.fsl.freescale.net>
+Date: Fri, 6 Mar 2009 10:12:12 -0600
+Message-ID: <64ac01180903060812n1f355207lb3fa6de3ed17ae41@mail.gmail.com>
+Subject: Re: 83xx: Marking or Allocating Pages as Cache-Inhibited
+From: Ben Menchaca <ben.menchaca@gmail.com>
+To: Liu Dave-R63238 <DaveLiu@freescale.com>
+Content-Type: multipart/alternative; boundary=00221532cba03342fc0464758ca0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,105 +29,315 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+--00221532cba03342fc0464758ca0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-bus_register_notifier_alldev() is a variation on bus_register_notifier()
-which also triggers the notifier callback for devices already on the bus
-and already bound to drivers.
+Testing now...it looks like it (almost) works, though!  Why does setting
+no-snoop cause snooping to work?  More on the effect on setting that bit in
+a few minutes...need more testing.
 
-This function is useful for the case where a driver needs to get a
-reference to a struct device other than the one it is bound to and
-it is not known if the device will be bound before or after this
-function is called.  For example, an Ethernet device connected to
-a PHY that is probed separately.
+ACR is 0x00030300.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-CC: linux-kernel@vger.kernel.org
-CC: linuxppc-dev@ozlabs.org
-CC: Greg Kroah-Hartman <gregkh@suse.de>
----
+- Ben
 
-I'm using this as part of some changes to phylib to make it easier for
-Ethernet drivers to find their PHY device.  Before I'm completely committed
-to this approach I'd like some feedback on this change to drivers core.
+On Fri, Mar 6, 2009 at 12:30 AM, Liu Dave-R63238 <DaveLiu@freescale.com>wrote:
 
-Thanks,
-g.
+>  Did you enable the descriptor bit 3 to have a try?
+>
+>  ------------------------------
+> *From:* Ben Menchaca [mailto:ben.menchaca@gmail.com]
+> *Sent:* Friday, March 06, 2009 2:10 PM
+>
+> *To:* Liu Dave-R63238
+> *Cc:* linuxppc-dev@ozlabs.org
+> *Subject:* Re: 83xx: Marking or Allocating Pages as Cache-Inhibited
+>
+> I can look at ACR morning...although I can say with a fair amount of
+> certainty that I have not changed it from the POR value.
+>
+> I will try enabling No Snoop for CSB in the descriptor (bit 3, yes?)...this
+> seems a bit counterintuitive to me.
+>
+> What is the hope regarding these two?  Some combination I am not seeing?
+>
+>
+> On Thu, Mar 5, 2009 at 11:40 PM, Liu Dave-R63238 <DaveLiu@freescale.com>wrote:
+>
+>>  what is the value of ACR register?
+>>
+>>  ------------------------------
+>> *From:* Ben Menchaca [mailto:ben.menchaca@gmail.com]
+>> *Sent:* Friday, March 06, 2009 1:38 PM
+>> *To:* Liu Dave-R63238
+>> *Cc:* linuxppc-dev@ozlabs.org
+>> *Subject:* Re: 83xx: Marking or Allocating Pages as Cache-Inhibited
+>>
+>>   1.  BAT2 in linux is set to WIMG=0010, and covers all 64M
+>> 2.  PEX_DEVICE_CONTROL in PCI-E Config Space (0x54): 0x1020
+>> 3.  PEX_xDMA_CTRL is set to 0x00000401 at the initiation of the DMA.
+>> 4.  OWAR0 is set to 0xFFFFF005, so NSNP is 0.
+>> 5.  The DMA descriptor (randomly chosen when I hit a trigger...just ignore
+>> the size...) contains 0002AFF3 at offset 0, so nosnoops are cleared.
+>>
+>> Core is 400MHz, and CSB is 133MHz.
+>>
+>> - Ben
+>>
+>> On Thu, Mar 5, 2009 at 11:27 PM, Liu Dave-R63238 <DaveLiu@freescale.com>wrote:
+>>
+>>> and what settings  is DMA description bit 3?
+>>>
+>>> > -----Original Message-----
+>>> > From: linuxppc-dev-bounces+daveliu=freescale.com@ozlabs.org
+>>> > [mailto:linuxppc-dev-bounces+daveliu <linuxppc-dev-bounces%2Bdaveliu>=
+>>> freescale.com@ozlabs.org]
+>>>  >  On Behalf Of Liu Dave-R63238
+>>> > Sent: Friday, March 06, 2009 1:22 PM
+>>> > To: Ben Menchaca; linuxppc-dev@ozlabs.org
+>>> > Subject: RE: 83xx: Marking or Allocating Pages as Cache-Inhibited
+>>> >
+>>> > Did you enable the snoop bit at PEX_WDMA_CTRL[SNOOP] and
+>>> > PEX_RDMA_CTRL[SNOOP]?
+>>> >
+>>> > What is the freq settings? CORE/CSB bus.
+>>> >
+>>> > Thanks, Dave
+>>> >
+>>> > ________________________________
+>>> >
+>>> >       From: linuxppc-dev-bounces+daveliu=freescale.com@ozlabs.org
+>>> > [mailto:linuxppc-dev-bounces+daveliu <linuxppc-dev-bounces%2Bdaveliu>=
+>>> freescale.com@ozlabs.org]
+>>> >  On Behalf Of Ben Menchaca
+>>> >       Sent: Friday, March 06, 2009 12:33 PM
+>>> >       To: linuxppc-dev@ozlabs.org
+>>> >       Subject: 83xx: Marking or Allocating Pages as Cache-Inhibited
+>>> >
+>>> >
+>>> >       I am working on a Freescale 8314e design, and the
+>>> > embedded device is configured as a PCI-e endpoint running a
+>>> > 2.6.27-5 kernel.  For context, we have written a kernel
+>>> > module which, among other things, uses the RDMA/WDMA engine
+>>> > in the PCI-e IP block.  On the host side, these DMAs are
+>>> > coherent.  However, on the embedded side, things are quite a
+>>> > bit less rosy; we must manually flush/invalidate cache lines
+>>> > for WDMA/RDMAs to occur successfully.  After speaking with
+>>> > (several) FAEs at Freescale, we believe there is a
+>>> > configuration issue that is the cause, but we have yet to
+>>> > have anyone successfully point to it.
+>>> >
+>>> >       Disabling the data cache altogether resolves the issue
+>>> > entirely, but of course, also completely tanks performance.
+>>> > As a temporary workaround, I would like to simply mark the
+>>> > pages (obtained currently via dma_alloc_coherent) involved as
+>>> > cache-inhibited.  I have attempted to do this via some
+>>> > snippets remaining in fec.c (va_to_pte, uncache_pte to set
+>>> > _PAGE_NO_CACHE, flush_tlb_page, then unmap_pte), but this is
+>>> > almost certainly braindead; va_to_pte is not a part of the
+>>> > 83xx source, as far as I can tell; 8xx only.
+>>> >
+>>> >       A quick pointer in the correct direction for marking
+>>> > pages as cache-inhibited on a 2.6.27-5 kernel would be
+>>> > appreciated, or if my approach to a workaround is flawed, a
+>>> > pointer to the correct way would be great.
+>>> >
+>>> >       Ben Menchaca
+>>> >
+>>> >
+>>> > _______________________________________________
+>>> > Linuxppc-dev mailing list
+>>> > Linuxppc-dev@ozlabs.org
+>>> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>> >
+>>> >
+>>>
+>>
+>>
+>
+
+--00221532cba03342fc0464758ca0
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Testing now...it looks like it (almost) works, though!=A0 Why does setting =
+no-snoop cause snooping to work?=A0 More on the effect on setting that bit =
+in a few minutes...need more testing.<br>=A0<br>ACR is 0x00030300.<br><br>-=
+ Ben<br>
+<br><div class=3D"gmail_quote">On Fri, Mar 6, 2009 at 12:30 AM, Liu Dave-R6=
+3238 <span dir=3D"ltr">&lt;<a href=3D"mailto:DaveLiu@freescale.com">DaveLiu=
+@freescale.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" s=
+tyle=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8e=
+x; padding-left: 1ex;">
 
 
- drivers/base/bus.c     |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/device.h |    2 ++
- 2 files changed, 49 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 83f32b8..6edde85 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -962,6 +962,53 @@ int bus_register_notifier(struct bus_type *bus, struct notifier_block *nb)
- }
- EXPORT_SYMBOL_GPL(bus_register_notifier);
- 
-+/**
-+ * bus_register_notifier_alldev_helper - internal support function
-+ * Used by bus_register_notifier_alldev() to create ADD and BOUND events
-+ * for devices.
-+ */
-+static int bus_register_notifier_alldev_helper(struct device *dev, void *data)
-+{
-+	struct notifier_block *nb = data;
-+	nb->notifier_call(nb, BUS_NOTIFY_ADD_DEVICE, dev);
-+	if (dev->driver)
-+		nb->notifier_call(nb, BUS_NOTIFY_BOUND_DRIVER, dev);
-+	return 0;
-+}
-+
-+/**
-+ * bus_register_notifier_alldev - Register for bus events; include existing devs
-+ * @bus: pointer to bus_type
-+ * @nb: pointer to notifier block to register with the bus
-+ *
-+ * Similar to bus_register_notifier() except it also generates events for
-+ * devices already on the bus when the notifier is registered.  When this
-+ * function is called the notifier is called once for each device with
-+ * the BUS_NOTIFY_ADD_DEVICE event, and once for each device registered to
-+ * a driver * with the BUS_NOTIFY_BOUND_DRIVER event.
-+ *
-+ * There is a small chance that the notifier could be called more than once
-+ * for a device.  This would happen if a new device was registered on the bus
-+ * or bound to a driver between the call to bus_register_notifier() and the
-+ * call to bus_for_each_dev().  The only way I can see to protect against
-+ * this would be to take the klist_devices spinlock while calling the
-+ * notifier; but that would be a Very Bad Thing (tm).  Caller needs to be
-+ * aware that a notifier called before this function returns might get
-+ * called a second time on the same device.
-+ */
-+int bus_register_notifier_alldev(struct bus_type *b, struct notifier_block *nb)
-+{
-+	int ret;
-+
-+	ret = bus_register_notifier(b, nb);
-+	if (ret == 0) {
-+		bus_for_each_dev(b, NULL, nb,
-+				 bus_register_notifier_alldev_helper);
-+	}
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(bus_register_notifier_alldev);
-+
- int bus_unregister_notifier(struct bus_type *bus, struct notifier_block *nb)
- {
- 	return blocking_notifier_chain_unregister(&bus->p->bus_notifier, nb);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 45e5b19..05c7d5b 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -103,6 +103,8 @@ struct notifier_block;
- 
- extern int bus_register_notifier(struct bus_type *bus,
- 				 struct notifier_block *nb);
-+extern int bus_register_notifier_alldev(struct bus_type *b,
-+					struct notifier_block *nb);
- extern int bus_unregister_notifier(struct bus_type *bus,
- 				   struct notifier_block *nb);
- 
+<div>
+<div dir=3D"ltr" align=3D"left"><span><font size=3D"2" color=3D"#0000ff" fa=
+ce=3D"Arial">Did you enable the descriptor bit 3 to have a=20
+try?</font></span></div><br>
+<blockquote style=3D"border-left: 2px solid rgb(0, 0, 255); padding-left: 5=
+px; margin-left: 5px; margin-right: 0px;">
+  <div dir=3D"ltr" align=3D"left" lang=3D"en-us">
+  <hr>
+  <font size=3D"2" face=3D"Tahoma"><div class=3D"im"><b>From:</b> Ben Mench=
+aca=20
+  [mailto:<a href=3D"mailto:ben.menchaca@gmail.com" target=3D"_blank">ben.m=
+enchaca@gmail.com</a>] <br></div><b>Sent:</b> Friday, March 06, 2009 2:10=
+=20
+  PM<div><div></div><div class=3D"h5"><br><b>To:</b> Liu Dave-R63238<br><b>=
+Cc:</b>=20
+  <a href=3D"mailto:linuxppc-dev@ozlabs.org" target=3D"_blank">linuxppc-dev=
+@ozlabs.org</a><br><b>Subject:</b> Re: 83xx: Marking or Allocating=20
+  Pages as Cache-Inhibited<br></div></div></font><br></div><div><div></div>=
+<div class=3D"h5">
+  <div></div>I can look at ACR morning...although I can say with a fair amo=
+unt=20
+  of certainty that I have not changed it from the POR value.<br><br>I will=
+ try=20
+  enabling No Snoop for CSB in the descriptor (bit 3, yes?)...this seems a =
+bit=20
+  counterintuitive to me.<br><br>What is the hope regarding these two?=A0=
+=20
+  Some combination I am not seeing?<br><br><br>
+  <div class=3D"gmail_quote">On Thu, Mar 5, 2009 at 11:40 PM, Liu Dave-R632=
+38 <span dir=3D"ltr">&lt;<a href=3D"mailto:DaveLiu@freescale.com" target=3D=
+"_blank">DaveLiu@freescale.com</a>&gt;</span> wrote:<br>
+  <blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204=
+, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+    <div>
+    <div dir=3D"ltr" align=3D"left"><span><font size=3D"2" color=3D"#0000ff=
+" face=3D"Arial">what is=20
+    the value of ACR register?</font></span></div><br>
+    <blockquote style=3D"border-left: 2px solid rgb(0, 0, 255); padding-lef=
+t: 5px; margin-left: 5px; margin-right: 0px;">
+      <div dir=3D"ltr" align=3D"left" lang=3D"en-us">
+      <hr>
+      <font size=3D"2" face=3D"Tahoma"><b>From:</b> Ben Menchaca [mailto:<a=
+ href=3D"mailto:ben.menchaca@gmail.com" target=3D"_blank">ben.menchaca@gmai=
+l.com</a>] <br><b>Sent:</b> Friday, March=20
+      06, 2009 1:38 PM<br><b>To:</b> Liu Dave-R63238<br><b>Cc:</b> <a href=
+=3D"mailto:linuxppc-dev@ozlabs.org" target=3D"_blank">linuxppc-dev@ozlabs.o=
+rg</a><br><b>Subject:</b> Re: 83xx:=20
+      Marking or Allocating Pages as Cache-Inhibited<br></font><br></div>
+      <div>
+      <div></div>
+      <div>
+      <div></div><font style=3D"font-size: 10pt; font-family: Tahoma;"><fon=
+t style=3D"font-size: 10pt; font-family: Tahoma;"><font style=3D"font-size:=
+ 10pt; font-family: Tahoma;"><font style=3D"font-size: 10pt; font-family: T=
+ahoma;"><font style=3D"font-size: 10pt; font-family: Tahoma;">1.=A0 BAT2 in=
+ linux is set=20
+      to WIMG=3D0010, and covers all 64M<br>2.=A0 PEX_DEVICE_CONTROL in PCI=
+-E=20
+      Config Space (0x54): 0x1020<br>3.=A0 PEX_xDMA_CTRL is set to=20
+      <span></span>0x00000401 at the initiation of the DMA.<br>4.=A0 OWAR0 =
+is=20
+      set to 0xFFFFF005, so NSNP is 0.<br>5.=A0 The DMA descriptor (randoml=
+y=20
+      chosen when I hit a trigger...just ignore the size...) contains 0002A=
+FF3=20
+      at offset 0, so nosnoops are=20
+      cleared.</font></font></font></font></font><font style=3D"font-size: =
+10pt; font-family: Tahoma;"><font style=3D"font-size: 10pt; font-family: Ta=
+homa;"><font style=3D"font-size: 10pt; font-family: Tahoma;"><font style=3D=
+"font-size: 10pt; font-family: Tahoma;">=A0 <br>
+<br>Core is=20
+      400MHz, and CSB is 133MHz.</font></font></font></font><br><font color=
+=3D"#888888"><br>- Ben<br></font><br>
+      <div class=3D"gmail_quote">On Thu, Mar 5, 2009 at 11:27 PM, Liu Dave-=
+R63238=20
+      <span dir=3D"ltr">&lt;<a href=3D"mailto:DaveLiu@freescale.com" target=
+=3D"_blank">DaveLiu@freescale.com</a>&gt;</span> wrote:<br>
+      <blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb=
+(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">and=20
+        what settings =A0is DMA description bit 3?<br>
+        <div><br>&gt; -----Original Message-----<br>&gt; From:=20
+        linuxppc-dev-bounces+daveliu=3D<a href=3D"http://freescale.com" tar=
+get=3D"_blank">freescale.com</a>@<a href=3D"http://ozlabs.org" target=3D"_b=
+lank">ozlabs.org</a><br>&gt; [mailto:<a href=3D"mailto:linuxppc-dev-bounces=
+%2Bdaveliu" target=3D"_blank">linuxppc-dev-bounces+daveliu</a>=3D<a href=3D=
+"http://freescale.com" target=3D"_blank">freescale.com</a>@<a href=3D"http:=
+//ozlabs.org" target=3D"_blank">ozlabs.org</a>]<br>
+</div>
+        <div>
+        <div></div>
+        <div>&gt; =A0On Behalf Of Liu Dave-R63238<br>&gt; Sent: Friday, Mar=
+ch=20
+        06, 2009 1:22 PM<br>&gt; To: Ben Menchaca; <a href=3D"mailto:linuxp=
+pc-dev@ozlabs.org" target=3D"_blank">linuxppc-dev@ozlabs.org</a><br>&gt; Su=
+bject: RE: 83xx:=20
+        Marking or Allocating Pages as Cache-Inhibited<br>&gt;<br>&gt; Did =
+you=20
+        enable the snoop bit at PEX_WDMA_CTRL[SNOOP] and<br>&gt;=20
+        PEX_RDMA_CTRL[SNOOP]?<br>&gt;<br>&gt; What is the freq settings?=20
+        CORE/CSB bus.<br>&gt;<br>&gt; Thanks, Dave<br>&gt;<br>&gt;=20
+        ________________________________<br>&gt;<br>&gt; =A0 =A0 =A0=20
+        From: linuxppc-dev-bounces+daveliu=3D<a href=3D"http://freescale.co=
+m" target=3D"_blank">freescale.com</a>@<a href=3D"http://ozlabs.org" target=
+=3D"_blank">ozlabs.org</a><br>&gt; [mailto:<a href=3D"mailto:linuxppc-dev-b=
+ounces%2Bdaveliu" target=3D"_blank">linuxppc-dev-bounces+daveliu</a>=3D<a h=
+ref=3D"http://freescale.com" target=3D"_blank">freescale.com</a>@<a href=3D=
+"http://ozlabs.org" target=3D"_blank">ozlabs.org</a>]<br>
+&gt; =A0On=20
+        Behalf Of Ben Menchaca<br>&gt; =A0 =A0 =A0 Sent: Friday, March=20
+        06, 2009 12:33 PM<br>&gt; =A0 =A0 =A0 To: <a href=3D"mailto:linuxpp=
+c-dev@ozlabs.org" target=3D"_blank">linuxppc-dev@ozlabs.org</a><br>&gt; =A0=
+ =A0 =A0=20
+        Subject: 83xx: Marking or Allocating Pages as=20
+        Cache-Inhibited<br>&gt;<br>&gt;<br>&gt; =A0 =A0 =A0 I am=20
+        working on a Freescale 8314e design, and the<br>&gt; embedded devic=
+e is=20
+        configured as a PCI-e endpoint running a<br>&gt; 2.6.27-5 kernel.=
+=20
+        =A0For context, we have written a kernel<br>&gt; module which, amon=
+g=20
+        other things, uses the RDMA/WDMA engine<br>&gt; in the PCI-e IP blo=
+ck.=20
+        =A0On the host side, these DMAs are<br>&gt; coherent. =A0However,=
+=20
+        on the embedded side, things are quite a<br>&gt; bit less rosy; we =
+must=20
+        manually flush/invalidate cache lines<br>&gt; for WDMA/RDMAs to occ=
+ur=20
+        successfully. =A0After speaking with<br>&gt; (several) FAEs at=20
+        Freescale, we believe there is a<br>&gt; configuration issue that i=
+s the=20
+        cause, but we have yet to<br>&gt; have anyone successfully point to=
+=20
+        it.<br>&gt;<br>&gt; =A0 =A0 =A0 Disabling the data cache=20
+        altogether resolves the issue<br>&gt; entirely, but of course, also=
+=20
+        completely tanks performance.<br>&gt; As a temporary workaround, I =
+would=20
+        like to simply mark the<br>&gt; pages (obtained currently via=20
+        dma_alloc_coherent) involved as<br>&gt; cache-inhibited. =A0I have=
+=20
+        attempted to do this via some<br>&gt; snippets remaining in fec.c=
+=20
+        (va_to_pte, uncache_pte to set<br>&gt; _PAGE_NO_CACHE, flush_tlb_pa=
+ge,=20
+        then unmap_pte), but this is<br>&gt; almost certainly braindead;=20
+        va_to_pte is not a part of the<br>&gt; 83xx source, as far as I can=
+=20
+        tell; 8xx only.<br>&gt;<br>&gt; =A0 =A0 =A0 A quick pointer in=20
+        the correct direction for marking<br>&gt; pages as cache-inhibited =
+on a=20
+        2.6.27-5 kernel would be<br>&gt; appreciated, or if my approach to =
+a=20
+        workaround is flawed, a<br>&gt; pointer to the correct way would be=
+=20
+        great.<br>&gt;<br>&gt; =A0 =A0 =A0 Ben=20
+        Menchaca<br>&gt;<br>&gt;<br></div></div>&gt;=20
+        _______________________________________________<br>&gt; Linuxppc-de=
+v=20
+        mailing list<br>&gt; <a href=3D"mailto:Linuxppc-dev@ozlabs.org" tar=
+get=3D"_blank">Linuxppc-dev@ozlabs.org</a><br>&gt; <a href=3D"https://ozlab=
+s.org/mailman/listinfo/linuxppc-dev" target=3D"_blank">https://ozlabs.org/m=
+ailman/listinfo/linuxppc-dev</a><br>
+&gt;<br>&gt;<br></blockquote></div><br></div></div></blockquote></div></blo=
+ckquote></div><br></div></div></blockquote></div>
+</blockquote></div><br>
+
+--00221532cba03342fc0464758ca0--
