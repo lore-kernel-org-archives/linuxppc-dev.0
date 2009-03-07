@@ -1,19 +1,19 @@
-Return-Path: <jbe@pengutronix.de>
+Return-Path: <w.sang@pengutronix.de>
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 02472DDEE9
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 21:10:09 +1100 (EST)
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Sat, 7 Mar 2009 11:09:48 +0100
-References: <ae4f76fd0902200151m461f9336x1e2bbec61f815fde@mail.gmail.com>
-In-Reply-To: <ae4f76fd0902200151m461f9336x1e2bbec61f815fde@mail.gmail.com>
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 63AA3DDE28
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 21:13:51 +1100 (EST)
+Date: Sat, 7 Mar 2009 11:13:46 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/5200: remove sysfs debug file from GPT driver
+Message-ID: <20090307101346.GA3461@pengutronix.de>
+References: <20090306203044.22371.75222.stgit@localhost.localdomain>
+	<fa686aa40903061231h5d9ef9f4i3d080bf00b6e99fb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200903071109.49726.jbe@pengutronix.de>
-Subject: Re: Davicom DM9000A on MPC5200B (powerpc) works using a dirty
-	offsetting and byte trick
-Cc: Henk Stegeman <henk.stegeman@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
+In-Reply-To: <fa686aa40903061231h5d9ef9f4i3d080bf00b6e99fb@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Henk,
 
-On Freitag, 20. Februar 2009, Henk Stegeman wrote:
-> - Any suggestions to what could be wrong here? Or does the MPC5200 in
-> this case only byte swap u16 reads, but a u8 read is unchanged?
+--zYM0uCDKw75PZbzx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You should not follow the Freescale bus signal names when you connect your 
-external little endian device. Otherwise the offsets are always wrong.
+On Fri, Mar 06, 2009 at 01:31:41PM -0700, Grant Likely wrote:
+> Wolfram, you were right.  This was a bad idea.  I just took me a bit
+> longer to clue into it.
 
-Do it in this way instead:
+Instant ACK :D Thanks!
 
-    MPC          LE Device
-  D[0..7]   <->  D[24..31]
-  D[8..15]  <->  D[16..23]
-  D[16..23] <->  D[8..15]
-  D[24..31] <->  D[0..7]
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
 
-If you connect your device in such a way, just enable CS's byte swap feature 
-depending on your bus size and you are done (no additional software 
-manipulation required). Now you can write bytes, words or longs and you will 
-always write the correct data into the corresponding device register.
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-Hope it helps
-Juergen
+--zYM0uCDKw75PZbzx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
--- 
-Pengutronix e.K.                              | Juergen Beisert             |
-Linux Solutions for Science and Industry      | Phone: +49-8766-939 228     |
-Vertretung Sued/Muenchen, Germany             | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686              | http://www.pengutronix.de/  |
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmySNoACgkQD27XaX1/VRs5XQCcCqZiFcGJ/DVtWxxzBrjEi1sQ
+qz8AoMU/9hzZycG7r+fOM8GX0tox5jLr
+=7hvj
+-----END PGP SIGNATURE-----
+
+--zYM0uCDKw75PZbzx--
