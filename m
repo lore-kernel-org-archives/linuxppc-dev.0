@@ -1,29 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id C509EDDF19
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 13:01:28 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so370683yxb.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 06 Mar 2009 18:01:26 -0800 (PST)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f174.google.com (mail-gx0-f174.google.com
+	[209.85.217.174]) by ozlabs.org (Postfix) with ESMTP id 2173ADDEF7
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Mar 2009 15:22:38 +1100 (EST)
+Received: by gxk22 with SMTP id 22so1987537gxk.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 06 Mar 2009 20:22:36 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20090303081212.GL5367@pengutronix.de>
-References: <20090301101815.GC23093@pengutronix.de>
-	<9e4733910903010754q1b4d9fafy87668049653d5e21@mail.gmail.com>
-	<fa686aa40903011447x1810f252m367d6c05cc567133@mail.gmail.com>
-	<9e4733910903011637q246eb82al140e87242f695413@mail.gmail.com>
-	<9e4733910903011646g43b151c2m7c6dfe80ac07e80a@mail.gmail.com>
-	<fa686aa40903011707q3c142942w962c52abaf915629@mail.gmail.com>
-	<9e4733910903011815q1a956be0x137bac80f2e21e72@mail.gmail.com>
-	<9e4733910903011819q105a856n163ccd8fee37d980@mail.gmail.com>
-	<fa686aa40903012033x6b6a76d6j7218d076f2c6ad3d@mail.gmail.com>
-	<20090303081212.GL5367@pengutronix.de>
-Date: Fri, 6 Mar 2009 21:01:25 -0500
-Message-ID: <9e4733910903061801w3a9661acm3e8855abb743d3e0@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/mpc52xx: add Phytec phyCORE-MPC5200B-IO board
-	(pcm032)
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
+In-Reply-To: <49B1A47F.8040005@embeddedarm.com>
+References: <49B1605C.7090709@embeddedarm.com>
+	<20090306184038.GA20537@zod.rchland.ibm.com>
+	<49B19AE0.3080609@embeddedarm.com> <49B1A47F.8040005@embeddedarm.com>
+Date: Fri, 6 Mar 2009 21:22:36 -0700
+Message-ID: <fa686aa40903062022i2211ccdfu1bffab54749615d8@mail.gmail.com>
+Subject: Re: [PATCH, RFC]
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Eddie Dawydiuk <eddie@embeddedarm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Wolfram Sang <wsa@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,57 +25,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 3, 2009 at 3:12 AM, Robert Schwebel
-<r.schwebel@pengutronix.de> wrote:
-> On Sun, Mar 01, 2009 at 09:33:16PM -0700, Grant Likely wrote:
->> On Sun, Mar 1, 2009 at 7:19 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->> > Would it be easier to get Pengutronix to release a new u-boot for
->> > the pcm030? I'm using U-Boot 1.2.0-mpc5200b-tiny-2 (Apr 17 2007 -
->> > 11:49:20).
+On Fri, Mar 6, 2009 at 3:32 PM, Eddie Dawydiuk <eddie@embeddedarm.com> wrot=
+e:
+> Hello,
+>
+> Let's try this one more time. The last patch was using the clocks for a
+> custom board based on the Yosemite board and was referencing a non-existe=
+nt
+> ethNadr( I forgot to pull out this code out).
+
+But the question remains: Why do you need simpleboot support for
+Yosemite when you can use a uImage or cuImage with u-boot?
+
+g.
+
+>
+> Signed-off-by: Eddie Dawydiuk <eddie@embeddedarm.com>
+>
+> diff -urN linux-2.6.28.orig/arch/powerpc/boot/simpleboot-yosemite.c
+> linux-2.6.28/arch/powerpc/boot/simpleboot-yosemite.c
+> --- linux-2.6.28.orig/arch/powerpc/boot/simpleboot-yosemite.c =A0 1969-12=
+-31
+> 17:00:00.000000000 -0700
+> +++ linux-2.6.28/arch/powerpc/boot/simpleboot-yosemite.c =A0 =A0 =A0 =A02=
+009-03-06
+> 15:33:24.000000000 -0700
+> @@ -0,0 +1,23 @@
+> +#include "ops.h"
+> +#include "stdio.h"
+> +#include "4xx.h"
+> +#include "44x.h"
+> +
+> +#define TARGET_4xx
+> +#define TARGET_44x
+> +#include "ppcboot.h"
+> +
+> +static void yosemite_fixups(void)
+> +{
+> + =A0 =A0 =A0 unsigned long sysclk =3D 66666666;
+> +
+> + =A0 =A0 =A0 ibm440ep_fixup_clocks(sysclk, 11059200, 50000000);
+> + =A0 =A0 =A0 ibm4xx_sdram_fixup_memsize();
+> +}
+> +
+> +void platform_specific_init(void)
+> +{
+> + =A0 =A0 =A0 platform_ops.fixups =3D yosemite_fixups;
+> + =A0 =A0 =A0 platform_ops.exit =3D ibm44x_dbcr_reset;
+> +}
+>
+>> diff -urN linux-2.6.28.orig/arch/powerpc/boot/simpleboot-yosemite.c
+>> linux-2.6.28/arch/powerpc/boot/simpleboot-yosemite.c
+>> --- linux-2.6.28.orig/arch/powerpc/boot/simpleboot-yosemite.c =A0 1969-1=
+2-31
+>> 17:00:00.000000000 -0700
+>> +++ linux-2.6.28/arch/powerpc/boot/simpleboot-yosemite.c =A0 =A0 =A0 =A0=
+2009-03-06
+>> 14:55:46.000000000 -0700
+>> @@ -0,0 +1,24 @@
+>> +#include "ops.h"
+>> +#include "stdio.h"
+>> +#include "4xx.h"
+>> +#include "44x.h"
+>> +
+>> +#define TARGET_4xx
+>> +#define TARGET_44x
+>> +#include "ppcboot.h"
+>> +
+>> +static void yosemite_fixups(void)
+>> +{
+>> + =A0 =A0 =A0 unsigned long sysclk =3D 50000000;
+>> +
+>> + =A0 =A0 =A0 ibm440ep_fixup_clocks(sysclk, 11059200, 400000000);
+>> + =A0 =A0 =A0 ibm4xx_sdram_fixup_memsize();
+>> + =A0 =A0 =A0 dt_fixup_mac_address_by_alias("ethernet0", eth0adr);
+>> + =A0 =A0 =A0 dt_fixup_mac_address_by_alias("ethernet1", eth1adr);
+>> +}
+>> +
+>> +void platform_specific_init(void)
+>> +{
+>> + =A0 =A0 =A0 platform_ops.fixups =3D yosemite_fixups;
+>> + =A0 =A0 =A0 platform_ops.exit =3D ibm44x_dbcr_reset;
+>> +}
 >>
->> Only if it is a chip IO setup problem (like port_config or clock
->> setup). Otherwise the kernel should be setting up the PCI controller
->> correctly. Regardless, I don't think the kernel should be crashing
->> when PCI is in a funny state.
 >
-> Ack; I didn't follow the thread in detail, but if possible I'd like to
-> avoid bootloader updates; it's quite a lot of effort because there are
-> thousends of devices in the field, not to mention the whole
-> qualification mechanics at Phytec.
-
-On a pcm030 1245-1
-u-boot-1.2.0-mpc5200b-tiny-3,  boots ok and PCI is initialized correctly.
-
-The readme is not clear that tiny-3 should be used on 1245.1 hardware.
-http://www.pengutronix.de/oselas/bsp/phytec/download/phyCORE-MPC5200B-tiny/=
-Readme
-
-This phrase implies the tiny-3 should only be used on 1245.2 hardware.
-"U-Boot binary to be used with
-OSELAS.BSP-Phytec-phyCORE-MPC5200B-tiny-6 (board revision 1245.2)"
-
-Where is the difference between the 1245.0, 1245.1 and 1245.2 hardware
-documented?
-
-
-
 >
-> Wolfram can check the issue when being back in the office.
->
-> rsc
 > --
-> Pengutronix e.K. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 |
-> Industrial Linux Solutions =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | http://www.p=
-engutronix.de/ =A0|
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0 =A0=
- =A0|
-> Amtsgericht Hildesheim, HRA 2686 =A0 =A0 =A0 =A0 =A0 | Fax: =A0 +49-5121-=
-206917-5555 |
+> Best Regards,
+> ________________________________________________________________
+> =A0Eddie Dawydiuk, Technologic Systems | voice: =A0(480) 837-5200
+> =A016525 East Laser Drive =A0 =A0 =A0 =A0 =A0 =A0 =A0| fax: =A0 =A0(480) =
+837-5300
+> =A0Fountain Hills, AZ 85268 =A0 =A0 =A0 =A0 =A0 =A0| web: www.embeddedARM=
+.com
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 >
 
 
 
 --=20
-Jon Smirl
-jonsmirl@gmail.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
