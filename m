@@ -1,19 +1,18 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f174.google.com (mail-gx0-f174.google.com
-	[209.85.217.174]) by ozlabs.org (Postfix) with ESMTP id 13D1ADDF0C
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Mar 2009 03:04:12 +1100 (EST)
-Received: by gxk22 with SMTP id 22so2371148gxk.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 07 Mar 2009 08:04:10 -0800 (PST)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id D8D2FDDF1E
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Mar 2009 03:06:36 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so431023ywb.39
+	for <linuxppc-dev@ozlabs.org>; Sat, 07 Mar 2009 08:06:35 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <60135.70.162.219.205.1236439301.squirrel@oz.embeddedx86.com>
+In-Reply-To: <60088.70.162.219.205.1236438881.squirrel@oz.embeddedx86.com>
 References: <49B1605C.7090709@embeddedarm.com>
 	<20090306184038.GA20537@zod.rchland.ibm.com>
 	<49B19AE0.3080609@embeddedarm.com> <49B1A47F.8040005@embeddedarm.com>
 	<fa686aa40903062022i2211ccdfu1bffab54749615d8@mail.gmail.com>
-	<fa686aa40903062141n210f81d7g9f11154f3c78cadc@mail.gmail.com>
-	<60135.70.162.219.205.1236439301.squirrel@oz.embeddedx86.com>
-Date: Sat, 7 Mar 2009 09:04:10 -0700
-Message-ID: <fa686aa40903070804id8f84atecb63c39747c2041@mail.gmail.com>
+	<60088.70.162.219.205.1236438881.squirrel@oz.embeddedx86.com>
+Date: Sat, 7 Mar 2009 09:06:34 -0700
+Message-ID: <fa686aa40903070806t3ca9749cmf9df10818f1ed2f9@mail.gmail.com>
 Subject: Re: [PATCH, RFC]
 From: Grant Likely <grant.likely@secretlab.ca>
 To: eddie@embeddedarm.com
@@ -28,32 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Mar 7, 2009 at 8:21 AM, Eddie Dawydiuk <eddie@embeddedarm.com> wrot=
-e:
+On Sat, Mar 7, 2009 at 8:14 AM, Eddie Dawydiuk <eddie@embeddedarm.com> wrote:
 > Hello,
 >
->> On a more general note; this patch also diverges from the original
->> model for simple image. =A0The idea behind simpleimage was that it would
->> contain a fully formed device tree, with no fixups necessary. =A0I want
->> to think carefully before diverging from that.
+>> But the question remains: Why do you need simpleboot support for
+>> Yosemite when you can use a uImage or cuImage with u-boot?
 >
-> I wasn't aware of these design goals... I believe one can also modify the
-> default dts file such that the RAM size is not dynamically detected so th=
-e
-> fixups aren't required(although keep in mind I haven't tested this).
+> We are developing a new board based upon the Yosemite board. Seeing as
+> though the Yosemite board was supported in the mainline kernel I decided
+> to start with that code base. After looking at what different
+> options/images were available for device trees vs open firmware I decided
+> the simpleImage would be the ideal format for our new board. I then read
+> how to build a simpleImage for the Yosemite board, which build without any
+> compiler errors. Although I found the image didn't work, so I figured it
+> might be helpful for others if the image just worked without
+> modifications. Although shortly I will be submitting support for our
+> custom board using this same approach. So if you have any suggestions on
+> this approach using the simpleImage please let me know.
 
-Just to be clear, I'm not saying 'no'.  I'm just not saying 'yes' yet
-either.  However, if you can fully form the dts file then that is
-definitely my preference.
+Before I answer this, what bootloader are you using?
 
-> Although it is quite convenient to add the fixed-head.o so one can jump
-> into the simpleImage at offset 0 rather than having to check what the
-> offset should be each time a change is made.
+> On another note, can you tell me/point me to some documentation on how to
+> get a unique machine ID for a new board?
 
-The missing fixed-head thing is a bug.  I have no issue with that change.
+What do you mean?  Are you referring to the top level compatible and
+model properties?
 
 g.
 
---=20
+-- 
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
