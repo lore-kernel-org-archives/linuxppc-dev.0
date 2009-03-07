@@ -2,25 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9454FDDF33
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Mar 2009 08:51:41 +1100 (EST)
-Subject: Re: 83xx: Marking or Allocating Pages as Cache-Inhibited
+	by ozlabs.org (Postfix) with ESMTPS id 20971DDF55
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Mar 2009 09:00:54 +1100 (EST)
+Subject: Re: [PATCH] powerpc/usb: Fix 440EPx USBH_3 & USBH_5 EHCI errata
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ben Menchaca <ben.menchaca@gmail.com>
-In-Reply-To: <64ac01180903060812n1f355207lb3fa6de3ed17ae41@mail.gmail.com>
-References: <64ac01180903052032i75792fa6x864f91c511b3f228@mail.gmail.com>
-	<D7CCA83BB0796C49BC0BB53B6AB1208916CF73@zch01exm21.fsl.freescale.net>
-	<D7CCA83BB0796C49BC0BB53B6AB1208916CF75@zch01exm21.fsl.freescale.net>
-	<64ac01180903052138k4226022cq840d497dccecd939@mail.gmail.com>
-	<D7CCA83BB0796C49BC0BB53B6AB1208916CF81@zch01exm21.fsl.freescale.net>
-	<64ac01180903052210r2aee7246g50fd0656c491a40b@mail.gmail.com>
-	<D7CCA83BB0796C49BC0BB53B6AB1208916CF98@zch01exm21.fsl.freescale.net>
-	<64ac01180903060812n1f355207lb3fa6de3ed17ae41@mail.gmail.com>
+To: - Reyneke <reynekejunk@hotmail.com>
+In-Reply-To: <BAY101-W12966ECAF38C4FD6F26513BEA50@phx.gbl>
+References: <BAY101-W12966ECAF38C4FD6F26513BEA50@phx.gbl>
 Content-Type: text/plain
-Date: Sun, 08 Mar 2009 08:51:26 +1100
-Message-Id: <1236462686.7260.161.camel@pasglop>
+Date: Sun, 08 Mar 2009 09:00:45 +1100
+Message-Id: <1236463245.7260.170.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Liu Dave-R63238 <DaveLiu@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	Alan Stern <stern@rowland.harvard.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,218 +24,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2009-03-06 at 10:12 -0600, Ben Menchaca wrote:
-> Testing now...it looks like it (almost) works, though!  Why does
-> setting no-snoop cause snooping to work?  More on the effect on
-> setting that bit in a few minutes...need more testing.
+On Fri, 2009-03-06 at 11:30 +0000, - Reyneke wrote:
+> Patch applies to 440EPx devices in USB EHCI host mode (USB 2.0).
+> 
+> >From the 440EPx errata:
+> 
+> USBH_3: Host hangs after underrun or overrun occurs
+> USBH_5: EHCI0_INSNREGxx registers are reset by a Soft or Light Host Controller Reset
+> 
+> Workround for USBH_3 is to enable Break Memory Transfer (BMT) in INSNREG3. But the controller is reset after this fix is applied, and thus the current workround is lost. The following short patch ensures INSNREG3 is correctly set after reset.
 
-Maybe they got the documentation for that bit backward ? :-)
+> Signed-off-by: Jan Reyneke 
 
+Please provide a valid email address here.
+
+> ---
+>  ehci-hcd.c    |    7 +++++++
+>  ehci-ppc-of.c |   30 +++++++++++++++++++-----------
+>  ehci.h        |    5 +++++
+>  3 files changed, 31 insertions(+), 11 deletions(-)
+> 
+> diff -uprN a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
+> --- a/drivers/usb/host/ehci.h    2009-03-04 01:05:22.000000000 +0000
+> +++ b/drivers/usb/host/ehci.h    2009-03-06 10:52:53.000000000 +0000
+> @@ -137,6 +137,11 @@ struct ehci_hcd {            /* one per controlle
+>  
+>      u8            sbrn;        /* packed release number */
+>  
+> +#if defined(CONFIG_440EPX)
+> +    #define     PPC440EPX_EHCI0_INSREG_BMT    (0x1 << 0)
+> +    __iomem u32 *insn_regs;        /* INSNREGx device memory/io */
+> +#endif
+
+I don't think you need the above based on what you do later on...
+(see comments below)
+
+>      /* irq statistics */
+>  #ifdef EHCI_STATS
+>      struct ehci_stats    stats;
+> diff -uprN a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+> --- a/drivers/usb/host/ehci-hcd.c    2009-03-04 01:05:22.000000000 +0000
+> +++ b/drivers/usb/host/ehci-hcd.c    2009-03-06 10:54:36.000000000 +0000
+> @@ -217,6 +217,13 @@ static int ehci_reset (struct ehci_hcd *
+>      if (ehci_is_TDI(ehci))
+>          tdi_reset (ehci);
+>  
+> +#if defined(CONFIG_440EPX)
+> +    /* USBH_5: INSN values are lost on reset -> redo USBH_3.
+> +       See also ppc44x_enable_bmt.*/
+> +    if (ehci->insn_regs)
+> +        out_be32(ehci->insn_regs + 3, PPC440EPX_EHCI0_INSREG_BMT);
+> +#endif
+
+A few issues here. First, it would be preferable to have this in the
+ehci-ppc-of.c file. If you can't stick that in such a place that it will
+be called after ehci_reset, then maybe you can add a reset "hook" so
+that ehci-ppc-of.c gets to wrap the real ehci_reset().
+
+Also, while the ifdef CONFIG_440EPX is good to prevent building the code
+on machines that don't need it, it's also not enough. We allow building
+kernels that support multiple boards and SoC's within the same major CPU
+family and thus you -also- need runtime detection. Either using a quirk
+(I think the USB drivers have quirk flags) or just always doing the
+of_device_is_compatible() thingy which is yet another reason for finding
+a way to move that up into ehci-ppc-of.c
+
+That would also avoid some duplication...
+
+>  /*
+> - * 440EPx Errata USBH_3
+> - * Fix: Enable Break Memory Transfer (BMT) in INSNREG3
+> - */
+> -#define PPC440EPX_EHCI0_INSREG_BMT    (0x1 << 0)
+> + * 440EPx Errata USBH_3 & USBH_5
+> + * Fix: Enable Break Memory Transfer (BMT) in INSNREG3. Also cache
+> + * the registers so we can redo the USBH_3 fix on future resets */
+>  static int __devinit
+> -ppc44x_enable_bmt(struct device_node *dn)
+> +ppc44x_enable_bmt(struct device_node *dn, struct ehci_hcd* ehci)
+>  {
+> -    __iomem u32 *insreg_virt;
+>  
+> -    insreg_virt = of_iomap(dn, 1);
+> -    if (!insreg_virt)
+> +#if defined(CONFIG_440EPX)
+> +
+> +    ehci->insn_regs = of_iomap(dn, 1);
+> +    if (!ehci->insn_regs)
+>          return  -EINVAL;
+>  
+> -    out_be32(insreg_virt + 3, PPC440EPX_EHCI0_INSREG_BMT);
+> +    out_be32(ehci->insn_regs + 3, PPC440EPX_EHCI0_INSREG_BMT);
+>  
+> -    iounmap(insreg_virt);
+> +#endif
+>      return 0;
+> +
+>  }
+
+So if you manage to move the quirk here, you can thus re-use the
+existing code, or is the reset always called in a context where you
+can't iomap ? (ie with a spinlock held).
+
+In any case, I don't like adding a specific field to the generic ehci
+structure like that. If that's what it takes, add a void
+*platform_private to it, and use -that- to stick a host specific data
+structure, but for something not performance sensitive such as a reset,
+if you can get away with always mapping/unmapping, it's probably better.
+ 
 Cheers,
 Ben.
-
-> ACR is 0x00030300.
-> 
-> - Ben
-> 
-> On Fri, Mar 6, 2009 at 12:30 AM, Liu Dave-R63238
-> <DaveLiu@freescale.com> wrote:
->         Did you enable the descriptor bit 3 to have a try?
->         
->                 
->                 ______________________________________________________
->                 From: Ben Menchaca [mailto:ben.menchaca@gmail.com] 
->                 
->                 Sent: Friday, March 06, 2009 2:10 PM
->                 
->                 
->                 To: Liu Dave-R63238
->                 Cc: linuxppc-dev@ozlabs.org
->                 Subject: Re: 83xx: Marking or Allocating Pages as
->                 Cache-Inhibited
->                 
->                 
->                 
->                 
->                 
->                 I can look at ACR morning...although I can say with a
->                 fair amount of certainty that I have not changed it
->                 from the POR value.
->                 
->                 I will try enabling No Snoop for CSB in the descriptor
->                 (bit 3, yes?)...this seems a bit counterintuitive to
->                 me.
->                 
->                 What is the hope regarding these two?  Some
->                 combination I am not seeing?
->                 
->                 
->                 On Thu, Mar 5, 2009 at 11:40 PM, Liu Dave-R63238
->                 <DaveLiu@freescale.com> wrote:
->                         what is the value of ACR register?
->                         
->                                 
->                                 ______________________________________
->                                 From: Ben Menchaca
->                                 [mailto:ben.menchaca@gmail.com] 
->                                 Sent: Friday, March 06, 2009 1:38 PM
->                                 To: Liu Dave-R63238
->                                 Cc: linuxppc-dev@ozlabs.org
->                                 Subject: Re: 83xx: Marking or
->                                 Allocating Pages as Cache-Inhibited
->                                 
->                                 
->                                 
->                                 
->                                 1.  BAT2 in linux is set to WIMG=0010,
->                                 and covers all 64M
->                                 2.  PEX_DEVICE_CONTROL in PCI-E Config
->                                 Space (0x54): 0x1020
->                                 3.  PEX_xDMA_CTRL is set to 0x00000401
->                                 at the initiation of the DMA.
->                                 4.  OWAR0 is set to 0xFFFFF005, so
->                                 NSNP is 0.
->                                 5.  The DMA descriptor (randomly
->                                 chosen when I hit a trigger...just
->                                 ignore the size...) contains 0002AFF3
->                                 at offset 0, so nosnoops are
->                                 cleared.  
->                                 
->                                 Core is 400MHz, and CSB is 133MHz.
->                                 
->                                 - Ben
->                                 
->                                 On Thu, Mar 5, 2009 at 11:27 PM, Liu
->                                 Dave-R63238 <DaveLiu@freescale.com>
->                                 wrote:
->                                         and what settings  is DMA
->                                         description bit 3?
->                                         
->                                         > -----Original Message-----
->                                         > From: linuxppc-dev-bounces
->                                         +daveliu=freescale.com@ozlabs.org
->                                         > [mailto:linuxppc-dev-bounces
->                                         +daveliu=freescale.com@ozlabs.org]
->                                         
->                                         
->                                         >  On Behalf Of Liu
->                                         Dave-R63238
->                                         > Sent: Friday, March 06, 2009
->                                         1:22 PM
->                                         > To: Ben Menchaca;
->                                         linuxppc-dev@ozlabs.org
->                                         > Subject: RE: 83xx: Marking
->                                         or Allocating Pages as
->                                         Cache-Inhibited
->                                         >
->                                         > Did you enable the snoop bit
->                                         at PEX_WDMA_CTRL[SNOOP] and
->                                         > PEX_RDMA_CTRL[SNOOP]?
->                                         >
->                                         > What is the freq settings?
->                                         CORE/CSB bus.
->                                         >
->                                         > Thanks, Dave
->                                         >
->                                         >
->                                         ________________________________
->                                         >
->                                         >       From:
->                                         linuxppc-dev-bounces
->                                         +daveliu=freescale.com@ozlabs.org
->                                         > [mailto:linuxppc-dev-bounces
->                                         +daveliu=freescale.com@ozlabs.org]
->                                         >  On Behalf Of Ben Menchaca
->                                         >       Sent: Friday, March
->                                         06, 2009 12:33 PM
->                                         >       To:
->                                         linuxppc-dev@ozlabs.org
->                                         >       Subject: 83xx: Marking
->                                         or Allocating Pages as
->                                         Cache-Inhibited
->                                         >
->                                         >
->                                         >       I am working on a
->                                         Freescale 8314e design, and
->                                         the
->                                         > embedded device is
->                                         configured as a PCI-e endpoint
->                                         running a
->                                         > 2.6.27-5 kernel.  For
->                                         context, we have written a
->                                         kernel
->                                         > module which, among other
->                                         things, uses the RDMA/WDMA
->                                         engine
->                                         > in the PCI-e IP block.  On
->                                         the host side, these DMAs are
->                                         > coherent.  However, on the
->                                         embedded side, things are
->                                         quite a
->                                         > bit less rosy; we must
->                                         manually flush/invalidate
->                                         cache lines
->                                         > for WDMA/RDMAs to occur
->                                         successfully.  After speaking
->                                         with
->                                         > (several) FAEs at Freescale,
->                                         we believe there is a
->                                         > configuration issue that is
->                                         the cause, but we have yet to
->                                         > have anyone successfully
->                                         point to it.
->                                         >
->                                         >       Disabling the data
->                                         cache altogether resolves the
->                                         issue
->                                         > entirely, but of course,
->                                         also completely tanks
->                                         performance.
->                                         > As a temporary workaround, I
->                                         would like to simply mark the
->                                         > pages (obtained currently
->                                         via dma_alloc_coherent)
->                                         involved as
->                                         > cache-inhibited.  I have
->                                         attempted to do this via some
->                                         > snippets remaining in fec.c
->                                         (va_to_pte, uncache_pte to set
->                                         > _PAGE_NO_CACHE,
->                                         flush_tlb_page, then
->                                         unmap_pte), but this is
->                                         > almost certainly braindead;
->                                         va_to_pte is not a part of the
->                                         > 83xx source, as far as I can
->                                         tell; 8xx only.
->                                         >
->                                         >       A quick pointer in the
->                                         correct direction for marking
->                                         > pages as cache-inhibited on
->                                         a 2.6.27-5 kernel would be
->                                         > appreciated, or if my
->                                         approach to a workaround is
->                                         flawed, a
->                                         > pointer to the correct way
->                                         would be great.
->                                         >
->                                         >       Ben Menchaca
->                                         >
->                                         >
->                                         
->                                         >
->                                         _______________________________________________
->                                         > Linuxppc-dev mailing list
->                                         > Linuxppc-dev@ozlabs.org
->                                         >
->                                         https://ozlabs.org/mailman/listinfo/linuxppc-dev
->                                         >
->                                         >
->                                 
->                                 
->                 
->                 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
