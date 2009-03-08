@@ -1,22 +1,18 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 0A050DDF6B
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Mar 2009 06:20:29 +1100 (EST)
-Date: Sun, 8 Mar 2009 15:20:26 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 08208DDFB0
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Mar 2009 07:29:30 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LgPcl-0002J8-0x
+	for linuxppc-dev@ozlabs.org; Sun, 08 Mar 2009 13:29:27 -0700
+Message-ID: <22402565.post@talk.nabble.com>
+Date: Sun, 8 Mar 2009 13:29:27 -0700 (PDT)
+From: Felix Radensky <felix@embedded-sol.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH, RFC]
-Message-ID: <20090308152026.012558b5@lappy.seanm.ca>
-In-Reply-To: <60088.70.162.219.205.1236438881.squirrel@oz.embeddedx86.com>
-References: <49B1605C.7090709@embeddedarm.com>
-	<20090306184038.GA20537@zod.rchland.ibm.com>
-	<49B19AE0.3080609@embeddedarm.com>
-	<49B1A47F.8040005@embeddedarm.com>
-	<fa686aa40903062022i2211ccdfu1bffab54749615d8@mail.gmail.com>
-	<60088.70.162.219.205.1236438881.squirrel@oz.embeddedx86.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: eddie@embeddedarm.com
+Subject: Ethernet problem on 405EXr
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 7 Mar 2009 08:14:41 -0700 (MST)
-"Eddie Dawydiuk" <eddie@embeddedarm.com> wrote:
 
-> On another note, can you tell me/point me to some documentation on
-> how to get a unique machine ID for a new board?
+Hi,
 
-Do you mean the model in the dts, like "amcc,yosemite"? You just pick
-one.
+I'm experiencing a strange problem with ethernet on custom
+405EXr based board with 10/100 Micrel PHY in MII mode. I ran
+u-boot 2009.01 and linux-2.6.27. In u-boot ethernet works flawlessly.
+I didn't have to add any u-boot code to initialize the PHY. In linux
+ethernet works only if there was some network activity in u-boot.
+In this case NFS root works fine. Otherwise only TX side works
+in Linux, ethtool does not report any errors, and resetting the PHY
+via mii-tool doesn't help. Autonegotiation seems to work properly.
+The only modification I did in linux is to change phy-mode to "mii"
+in device tree.
 
-It is just company name, board name. We based the Pika Warp on the
-yosemite board but our model name is pika,warp since it is too far
-removed to use the stock yosemite to use the same DTS.
+Any help in debugging this is very much appreciated.
 
-Cheers,
-   Sean
+Felix.  
+-- 
+View this message in context: http://www.nabble.com/Ethernet-problem-on-405EXr-tp22402565p22402565.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
