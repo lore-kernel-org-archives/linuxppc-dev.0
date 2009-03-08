@@ -1,27 +1,19 @@
-Return-Path: <ben.menchaca@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id 5BD17DDF3D
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Mar 2009 14:15:15 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so490142ywb.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 07 Mar 2009 19:15:13 -0800 (PST)
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 086A9DDF6B
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Mar 2009 18:35:10 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so505054ywb.39
+	for <linuxppc-dev@ozlabs.org>; Sat, 07 Mar 2009 23:35:08 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1236462686.7260.161.camel@pasglop>
-References: <64ac01180903052032i75792fa6x864f91c511b3f228@mail.gmail.com>
-	<D7CCA83BB0796C49BC0BB53B6AB1208916CF73@zch01exm21.fsl.freescale.net>
-	<D7CCA83BB0796C49BC0BB53B6AB1208916CF75@zch01exm21.fsl.freescale.net>
-	<64ac01180903052138k4226022cq840d497dccecd939@mail.gmail.com>
-	<D7CCA83BB0796C49BC0BB53B6AB1208916CF81@zch01exm21.fsl.freescale.net>
-	<64ac01180903052210r2aee7246g50fd0656c491a40b@mail.gmail.com>
-	<D7CCA83BB0796C49BC0BB53B6AB1208916CF98@zch01exm21.fsl.freescale.net>
-	<64ac01180903060812n1f355207lb3fa6de3ed17ae41@mail.gmail.com>
-	<1236462686.7260.161.camel@pasglop>
-Date: Sat, 7 Mar 2009 21:15:13 -0600
-Message-ID: <64ac01180903071915lf27669fq813a5e3842c0c2a1@mail.gmail.com>
-Subject: Re: 83xx: Marking or Allocating Pages as Cache-Inhibited
-From: Ben Menchaca <ben.menchaca@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: multipart/alternative; boundary=00221532c5b41fd9ba046492edd7
-Cc: linuxppc-dev@ozlabs.org, Liu Dave-R63238 <DaveLiu@freescale.com>
+In-Reply-To: <62692.70.162.219.205.1236443872.squirrel@oz.embeddedx86.com>
+References: <62692.70.162.219.205.1236443872.squirrel@oz.embeddedx86.com>
+Date: Sun, 8 Mar 2009 00:35:08 -0700
+Message-ID: <fa686aa40903072335o5874369by279aa3526fb8621d@mail.gmail.com>
+Subject: Re: [PATCH, RFC]
+From: Grant Likely <grant.likely@secretlab.ca>
+To: eddie@embeddedarm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,50 +23,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---00221532c5b41fd9ba046492edd7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-On Sat, Mar 7, 2009 at 3:51 PM, Benjamin Herrenschmidt <
-benh@kernel.crashing.org> wrote:
-
-> On Fri, 2009-03-06 at 10:12 -0600, Ben Menchaca wrote:
-> > Testing now...it looks like it (almost) works, though!  Why does
-> > setting no-snoop cause snooping to work?  More on the effect on
-> > setting that bit in a few minutes...need more testing.
+On Sat, Mar 7, 2009 at 9:37 AM, Eddie Dawydiuk <eddie@embeddedarm.com> wrot=
+e:
+> Hello,
 >
-> Maybe they got the documentation for that bit backward ? :-)
-
-
-For posterity...it does appear that this is the case.  I don't have a bus
-analyzer to watch the transaction, but a JTAG trigger caught the update
-happening if and only if bit 3 was set in the (R|W)DMA descriptor.  My FAE
-at FS said he is watching this thread, so hopefully some doc errata can be
-generated so others can avoid my confusion :-).
-
-- Ben
-
---00221532c5b41fd9ba046492edd7
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div class=3D"gmail_quote">On Sat, Mar 7, 2009 at 3:51 PM, Benjamin Herrens=
-chmidt <span dir=3D"ltr">&lt;<a href=3D"mailto:benh@kernel.crashing.org">be=
-nh@kernel.crashing.org</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_=
-quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt =
-0pt 0.8ex; padding-left: 1ex;">
-<div class=3D"im">On Fri, 2009-03-06 at 10:12 -0600, Ben Menchaca wrote:<br=
+>>> So if you have any suggestions on
+>>> this approach using the simpleImage please let me know.
+>>
+>> Before I answer this, what bootloader are you using?
 >
-&gt; Testing now...it looks like it (almost) works, though! =A0Why does<br>
-&gt; setting no-snoop cause snooping to work? =A0More on the effect on<br>
-&gt; setting that bit in a few minutes...need more testing.<br>
-<br>
-</div>Maybe they got the documentation for that bit backward ? :-)</blockqu=
-ote><div><br>For posterity...it does appear that this is the case.=A0 I don=
-&#39;t have a bus analyzer to watch the transaction, but a JTAG trigger cau=
-ght the update happening if and only if bit 3 was set in the (R|W)DMA descr=
-iptor.=A0 My FAE at FS said he is watching this thread, so hopefully some d=
-oc errata can be generated so others can avoid my confusion :-).<br>
-<br>- Ben<br></div></div><br>
+> We are using a custom bootloader we developed ourselves. The bootloader i=
+s
+> very minimal as one of our primary design goals is a fast boot time. We d=
+o
+> some basic initialization of the AMCC 440EP, then load the simpleImage
+> into RAM at address 0 and jump into it. In my mind I had considered our
+> code as more of a bootrom and the simpleboot.c as a bootloader ;)
+>
+>>> On another note, can you tell me/point me to some documentation on how
+>>> to get a unique machine ID for a new board?
+>>
+>> What do you mean? =A0Are you referring to the top level compatible and
+>> model properties?
+>
+> I think I might be getting ahead of myself, as I'm not yet up to speed on
+> how the powerpc code base identifies unique machines. For instance the AR=
+M
+> codebase required that each new machine have a unique machine ID. When
+> bringing up a new platform one had to request a new unique machine ID. Th=
+e
+> bootloader was required to pass this unique machine id to the kernel.
+> We're still using quite a bit of the Yosemite code base and so I had
+> assumed we are probably using the Yosemite boards "unique machine id" for
+> our custom hardware. Although based on your response it sounds like
+> powerpc =A0uses a different approach.
 
---00221532c5b41fd9ba046492edd7--
+The powerpc kernel completely trusts the device tree blob that is
+passed to it at boot time.  Most of the platform support code simply
+reads the top level 'compatible' property to decide whether or not it
+can support the board.  For example,
+arch/powerpc/platforms/44x/ppc4xx_simple.c supports a bunch of boards,
+including yosemite, and arch/powerpc/platforms/44x/ebony.c only
+supports the ebony board.  ppc4xx_simple.c, ebony.c, and other
+platform support files can selected at the same time to build a kernel
+which supports multiple boards (multi-platform).
+
+Since there is no common boot mechanism shared between all powerpc
+platforms, the bootwrapper is the adapter layer from whatever data is
+provided by firmware to the form required by the kernel.  As long as
+the kernel-proper (vmlinux) receives a fully formed device tree at the
+end, it is happy.  Both firmware and the boot wrapper have the option
+of modifying the device tree before passing it on to the next step.
+One of the boot methods (uImage) even bypasses the bootwrapper step
+entirely since U-Boot is able to pass a fully formed device tree
+directly to the kernel.
+
+One of the advantages of the device tree scheme is that the kernel
+image format no longer needs to be board dependent.  There is no need
+to encode a board specific format anymore.  Sure, you *can* use
+simpleImage or dtbImage to build an image with an embedded dtb, but
+those images are really just compatibility layers for existing
+firmware, and using them throws away the advantage of splitting the
+hardware description from the kernel image.  Not to mention that the
+building of board specific images is a maze of special cases and
+barely documented heuristics in arch/powerpc/boot/wrapper.
+
+If you've got control over your boot firmware, and you don't want to
+use U-Boot, then I strongly recommend that at the very least you keep
+the .dtb separate from the kernel image and don't write any board
+specific code in the boot wrapper.  Keep your board specific code in
+arch/powerpc/platforms/44x/* where it is easy for mere mortals to
+comprehend.  Get the firmware to copy both the dtb and kernel into RAM
+and pass the dtb pointer to the kernel.  Ideally, you should use the
+existing uImage format so you don't need to define something new (and
+incompatible with anything else).  However, parsing uImage requires
+your firmware to include gunzip code.
+
+Failing that, create a new zImage target (perhaps 'zImage.fdt') that
+accepts a pointer to the .dtb blob in memory.  Use the calling
+convention described in Documentation/powerpc/booting-without-of.txt
+for direct flattened device tree booting.  At least that way your code
+has a fighting chance of being useful to someone else.  Code to do
+this should be pretty trivial.  In fact the simpleImage platform_init
+could be refactored to provide a large chunk of common code.  Only
+difference really being the source pointer to the dtb.
+
+Heck, you could even eliminate the boot wrapper entirely and use the
+vmlinux image directly; but the kernel image can be quite large and
+then you'd probably want it gzipped (which means our firmware must be
+able to gunzip it).
+
+One last think.  It's not a good idea to link the .dtb image into the
+firmware either.  Many people have learned the hard way that device
+trees often need to be tweaked after the firmware is deployed.  Make
+the dtb a separate image that can be updated in the same way that the
+kernel image can be updated.
+
+Have fun,
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
