@@ -1,20 +1,29 @@
-Return-Path: <weo@reccoware.de>
-Received: from bes.recconet.de (bes.recconet.de [87.106.167.58])
+Return-Path: <drzeus@drzeus.cx>
+Received: from smtp.drzeus.cx (82-117-125-11.tcdsl.calypso.net [82.117.125.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5CB0EDDEE9
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Mar 2009 23:29:19 +1100 (EST)
-Subject: Re: PHY not found after migration of gianfar driver to an
-	of_platform_driver
-From: Wolfgang Ocker <weo@reccoware.de>
-To: Michael Guntsche <mike@it-loops.com>
-In-Reply-To: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
-References: <D5EBE54F-FD6D-4973-8835-33541ADCBABD@it-loops.com>
-Content-Type: text/plain
-Date: Sun, 08 Mar 2009 13:18:44 +0100
-Message-Id: <1236514724.3710.20.camel@goedel.recco.de>
+	by ozlabs.org (Postfix) with ESMTPS id EC468DDF77
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Mar 2009 01:08:31 +1100 (EST)
+Date: Sun, 8 Mar 2009 15:08:20 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 02/11] sdhci: Add support for bus-specific IO memory
+	accessors
+Message-ID: <20090308150820.5c7a92f6@mjolnir.ossman.eu>
+In-Reply-To: <20090304174658.GA7477@oksana.dev.rtsoft.ru>
+References: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
+	<20090206180645.GB11548@oksana.dev.rtsoft.ru>
+	<20090208215020.46ca5724@mjolnir.drzeus.cx>
+	<20090213144039.GA19572@oksana.dev.rtsoft.ru>
+	<20090221165757.22747648@mjolnir.ossman.eu>
+	<20090304174658.GA7477@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature";
+	boundary="=_freyr.drzeus.cx-21404-1236521303-0001-2"
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +33,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-02-26 at 20:15 +0100, Michael Guntsche wrote:
-> For testing purposes I tried a recent git snapshot and noticed  
-> that the gianfar driver had problems.
-> While the the Gianfar was detected
-> [...]
-> trying to up either of the devices gave me
-> 
-> [    8.724818] mdio@24520:01 not found
-> [    8.728330] eth1: Could not attach to PHY
-> [    8.732945] mdio@24520:01 not found
-> [    8.737720] eth1: Could not attach to PHY
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-I saw exactly the same symptoms on an 8560 board, and the patch below
-helped. But I have no idea what's going on there ...
+--=_freyr.drzeus.cx-21404-1236521303-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Wolfgang
+On Wed, 4 Mar 2009 20:46:58 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-From: Wolfgang Ocker <weo@reccoware.de>
-Date: Sat, 7 Mar 2009 14:27:50 +0100
-Subject: [PATCH] fsl-gianfar: improved detection of unoccupied PHY address
+> On Sat, Feb 21, 2009 at 04:57:57PM +0100, Pierre Ossman wrote:
+> >=20
+> > We can most likely do some micro-optimisation do make the compare part
+> > cheaper, but the point was to avoid a function call for all the
+> > properly implemented controllers out there. We could have a flag so
+> > that it only has to check host->flags, which will most likely be in the
+> > cache anyway.
+> >=20
+> > Overhead for eSDHC is not a concern in my book, what is interesting is
+> > how much this change slows things down for other controllers.
+>=20
+> OK, I see. Will the patch down below make you a little bit more happy
+> wrt normal controllers? Two #ifdefs, but then there is absolutely
+> zero overhead for the fully compliant SDHCI controllers.
+>=20
 
-At least on one 8560 board the id 0x000ffff is returned at an
-unoccupied PHY address.
+I can't say this makes me happy either, but I think it's acceptable for
+now so that we can move forward. I'd like a common code path for this
+thing, but I think I'm going to have to put a bit more time into it
+myself than I currently have available.
 
-Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
----
- drivers/net/gianfar_mii.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> (So far it's just on top of this series, but I can incorporate it
+> into the "sdhci: Add support for bus-specific IO memory accessors"
+> patch, if you like).
+>=20
 
-diff --git a/drivers/net/gianfar_mii.c b/drivers/net/gianfar_mii.c
-index f49a426..9c5e0c1 100644
---- a/drivers/net/gianfar_mii.c
-+++ b/drivers/net/gianfar_mii.c
-@@ -211,7 +211,7 @@ static int gfar_mdio_find_free(struct mii_bus *new_bus)
- 		if (get_phy_id(new_bus, i, &phy_id))
- 			return -1;
- 
--		if (phy_id == 0xffffffff)
-+		if (phy_id == 0xffffffff || phy_id == 0x0000ffff)
- 			break;
- 	}
- 
--- 
-1.6.0.6
+Please do. Have one patch add some code and another remove it in the
+same set is just silly. :)
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-21404-1236521303-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkmz0VcACgkQ7b8eESbyJLhzWQCgm6/eBm19gagfuAHCWNlxRMq3
+R+AAoKdtmFOoCq2R50cOEQac+/6nIjss
+=EwpS
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-21404-1236521303-0001-2--
