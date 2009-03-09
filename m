@@ -1,24 +1,20 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from master.linux-sh.org (124x34x33x190.ap124.ftth.ucom.ne.jp
-	[124.34.33.190])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 17235DDEF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 02:50:17 +1100 (EST)
-Date: Tue, 10 Mar 2009 00:46:17 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 0/7] Generic RTC class driver
-Message-ID: <20090309154617.GA31103@linux-sh.org>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Cc: linux-m68k@vger.kernel.org,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linux-parisc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-	linuxppc-dev@ozlabs.org, Dann Frazier <dannf@dannf.org>
+	by ozlabs.org (Postfix) with ESMTPS id E29B6DE0C9
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 02:52:07 +1100 (EST)
+Message-Id: <B611A44E-1CB9-48AE-9CB8-979361EC203C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1236368634-20317-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH v2] powerpc: clean up ssi.txt, add definition for fsl,
+	ssi-asynchronous
+Date: Mon, 9 Mar 2009 10:51:57 -0500
+References: <1236368634-20317-1-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,12 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 09, 2009 at 02:26:16PM +0100, Geert Uytterhoeven wrote:
-> Paul: Feel free to add your SuperH support.
-> 
-> I suppose the easiest way for this to go in is through Kyle's PA-RISC tree, as
-> he already has the preceding patches? Can I have your acks, please?
-> 
-I'll add the SH support once the patch set is merged, it's not a very
-pressing matter, so no need to make the patch juggling any more
-complicated :-)
+
+On Mar 6, 2009, at 1:43 PM, Timur Tabi wrote:
+
+> Add the definition of the fsl,ssi-asynchronous property to ssi.txt  
+> (documentation
+> of the device tree bindings for the Freescale SSI device).
+>
+> Also tidy up the layout of ssi.txt.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>
+> v2: fixed typo, improved wording.
+>
+> Documentation/powerpc/dts-bindings/fsl/ssi.txt |   68 +++++++++++++ 
+> +----------
+> 1 files changed, 40 insertions(+), 28 deletions(-)
+
+does not apply cleanly if/after I apply:
+
+powerpc: add fsl, fifo-depth property to Freescale SSI device nodes
+
+
+- k
