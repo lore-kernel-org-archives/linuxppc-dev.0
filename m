@@ -1,23 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 582DFDE050
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 02:00:53 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LggyI-00034r-3V
-	for linuxppc-dev@ozlabs.org; Mon, 09 Mar 2009 08:00:50 -0700
-Message-ID: <22413434.post@talk.nabble.com>
-Date: Mon, 9 Mar 2009 08:00:50 -0700 (PDT)
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.230])
+	by ozlabs.org (Postfix) with ESMTP id A6132DE034
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 02:23:14 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id l9so1546033rvb.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 09 Mar 2009 08:23:13 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/bootwrapper: add fixed-head.o to simpleimage wrappers
 To: linuxppc-dev@ozlabs.org
-Subject: Re: Machine check in 4xx ethernet driver
-In-Reply-To: <20090309111436.GA2256@yoda.jdub.homelinux.org>
+Date: Mon, 09 Mar 2009 09:23:09 -0600
+Message-ID: <20090309152047.25290.29963.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <22408005.post@talk.nabble.com>
-	<20090309103820.GA17943@zod.rchland.ibm.com>
-	<22410889.post@talk.nabble.com>
-	<20090309111436.GA2256@yoda.jdub.homelinux.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: eddie@embeddedarm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,48 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Grant Likely <grant.likely@secretlab.ca>
+
+fixed-head.o must be linked into the bootwrapper for raw-binary images to
+work.  This patch adds it into the bootwrapper.
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Reported-by: Eddie Dawydiuk <eddie@embeddedarm.com>
+---
+
+I pulled this chunk out of Eddie's bigger patch and also modified the other
+case where it applies.  This is a definite bug on the simpleimage generation.
+Once I get an ack, I'll add it to my -next tree and ask Ben to pull.
+
+Cheers,
+g.
+
+ arch/powerpc/boot/wrapper |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 
-
-Josh Boyer-4 wrote:
-> 
-> On Mon, Mar 09, 2009 at 03:53:25AM -0700, Felix Radensky wrote:
->>
->>
->>
->>Josh Boyer-4 wrote:
->>> 
->>> On Mon, Mar 09, 2009 at 12:47:02AM -0700, Felix Radensky wrote:
->>>>
->>>>Hi,
->>>>
->>>>I'm getting machine check exception when trying to dump
->>>>emac registers on 405EX Kilauea board. The kernel is 2.6.29-rc7
->>>>The problem seems not new, I can reproduce it on 2.6.25 Denx kernel
->>> 
->>> I've not looked at what that code path does, but the EMAC regs are
->>> in DCR space, not MMIO.  Using memcpy_fromio there seems odd.
->>> 
->>> 
->>
->>At least on 405EX MAL registers are in DCR space, but EMAC and RGMII
->>ones are in MMIO space.
-> 
-> Ah, quite right.  No coffee yet this morning.
-> 
-> You'll need to look at the code path ethtool is forcing.  Perhaps it's
-> doing
-> something stupid.
-> 
-> 
-
-Bad quoting in previous message, sorry.
-
-The problem goes away if I replace memcpy_fromio() by memcpy().,
-but register values seem wrong. Why would memcpy() work when
-memcpy_fromio()  doesn't ?
-
-
--- 
-View this message in context: http://www.nabble.com/Machine-check-in-4xx-ethernet-driver-tp22408005p22413434.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 965c237..c5bd9cf 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -211,11 +211,11 @@ simpleboot-virtex405-*)
+     binary=y
+     ;;
+ simpleboot-virtex440-*)
+-    platformo="$object/simpleboot.o $object/virtex.o"
++    platformo="$object/fixed-head.o $object/simpleboot.o $object/virtex.o"
+     binary=y
+     ;;
+ simpleboot-*)
+-    platformo="$object/simpleboot.o"
++    platformo="$object/fixed-head.o $object/simpleboot.o"
+     binary=y
+     ;;
+ asp834x-redboot)
