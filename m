@@ -4,22 +4,22 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9A401DDFB0
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Mar 2009 13:31:18 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by ozlabs.org (Postfix) with ESMTPS id C83C6DDFAD
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Mar 2009 13:56:19 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n292Uw2L022686
-	for <linuxppc-dev@ozlabs.org>; Sun, 8 Mar 2009 19:31:03 -0700 (MST)
+	n292uEpd028156
+	for <linuxppc-dev@ozlabs.org>; Sun, 8 Mar 2009 19:56:14 -0700 (MST)
 Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
 	[10.192.129.205])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n292Uupc005591
-	for <linuxppc-dev@ozlabs.org>; Sun, 8 Mar 2009 21:30:56 -0500 (CDT)
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n292uAGh004786
+	for <linuxppc-dev@ozlabs.org>; Sun, 8 Mar 2009 21:56:11 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C9A05F.12CAD3AA"
+	boundary="----_=_NextPart_001_01C9A062.99868786"
 Subject: RE: 83xx: Marking or Allocating Pages as Cache-Inhibited
-Date: Mon, 9 Mar 2009 10:30:52 +0800
-Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208916D06A@zch01exm21.fsl.freescale.net>
+Date: Mon, 9 Mar 2009 10:56:07 +0800
+Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208916D077@zch01exm21.fsl.freescale.net>
 In-Reply-To: <64ac01180903060830m1e5927c6y76b8302b0fb68eb6@mail.gmail.com>
 References: <64ac01180903052032i75792fa6x864f91c511b3f228@mail.gmail.com>
 	<D7CCA83BB0796C49BC0BB53B6AB1208916CF73@zch01exm21.fsl.freescale.net>
@@ -44,7 +44,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C9A05F.12CAD3AA
+------_=_NextPart_001_01C9A062.99868786
 Content-Type: text/plain;
 	charset="US-ASCII"
 Content-Transfer-Encoding: quoted-printable
@@ -285,7 +285,7 @@ https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
 
 
-------_=_NextPart_001_01C9A05F.12CAD3AA
+------_=_NextPart_001_01C9A062.99868786
 Content-Type: text/html;
 	charset="US-ASCII"
 Content-Transfer-Encoding: quoted-printable
@@ -296,6 +296,7 @@ Content-Transfer-Encoding: quoted-printable
 charset=3Dus-ascii">
 <META content=3D"MSHTML 6.00.2900.3492" name=3DGENERATOR></HEAD>
 <BODY>
+<DIV dir=3Dltr align=3Dleft>
 <DIV dir=3Dltr align=3Dleft><SPAN class=3D456321902-09032009><FONT =
 face=3DArial=20
 color=3D#0000ff size=3D2>Hi Ben,</FONT></SPAN></DIV>
@@ -348,7 +349,7 @@ face=3DArial=20
 color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
 <DIV dir=3Dltr align=3Dleft><SPAN class=3D456321902-09032009><FONT =
 face=3DArial=20
-color=3D#0000ff size=3D2>Thanks, Dave</FONT></SPAN></DIV><BR>
+color=3D#0000ff size=3D2>Thanks, Dave</FONT></SPAN></DIV></DIV><BR>
 <BLOCKQUOTE=20
 style=3D"PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #0000ff 2px =
 solid; MARGIN-RIGHT: 0px">
@@ -632,4 +633,4 @@ gt;<BR>&gt;<BR></BLOCKQUOTE></DIV><BR></DIV></DIV></BLOCKQUOTE></DIV></BL=
 OCKQUOTE></DIV><BR></DIV></DIV></BLOCKQUOTE></DIV></BLOCKQUOTE></DIV><BR>=
 </DIV></DIV></BLOCKQUOTE></DIV><BR></BLOCKQUOTE></BODY></HTML>
 
-------_=_NextPart_001_01C9A05F.12CAD3AA--
+------_=_NextPart_001_01C9A062.99868786--
