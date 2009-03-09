@@ -1,30 +1,21 @@
-Return-Path: <axboe@kernel.dk>
-Date: Mon, 9 Mar 2009 11:58:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing
-	video        RAM as block device
-Message-ID: <20090309105828.GO11787@kernel.dk>
-References: <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
-	<20090306074639.GN11787@kernel.dk>
-	<alpine.LRH.2.00.0903061347360.16809@vixen.sonytel.be>
-	<20090306125832.GX11787@kernel.dk>
-	<alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be>
-	<20090306190350.GD11787@kernel.dk>
-	<alpine.LRH.2.00.0903091142500.19484@vixen.sonytel.be>
-	<20090309104833.GM11787@kernel.dk>
-	<20090309105022.GN11787@kernel.dk>
-	<alpine.LRH.2.00.0903091151480.19484@vixen.sonytel.be>
+Return-Path: <jbe@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 26E70DDE0A
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Mar 2009 22:09:51 +1100 (EST)
+From: Juergen Beisert <jbe@pengutronix.de>
+To: Henk Stegeman <henk.stegeman@gmail.com>
+Date: Mon, 9 Mar 2009 12:09:34 +0100
+References: <ae4f76fd0902200151m461f9336x1e2bbec61f815fde@mail.gmail.com>
+	<200903071109.49726.jbe@pengutronix.de>
+	<ae4f76fd0903090232n21152b02of5ebcac86c60e53a@mail.gmail.com>
+In-Reply-To: <ae4f76fd0903090232n21152b02of5ebcac86c60e53a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LRH.2.00.0903091151480.19484@vixen.sonytel.be>
-Cc: Arnd Bergmann <arnd@arndb.de>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Jim Paris <jim@jtan.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-mtd@lists.infradead.org,
-	Vivien Chappelier <vivien.chappelier@free.fr>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200903091209.35544.jbe@pengutronix.de>
+Subject: Re: Davicom DM9000A on MPC5200B (powerpc) works using a dirty
+	offsetting and byte trick
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,64 +25,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 09 2009, Geert Uytterhoeven wrote:
-> On Mon, 9 Mar 2009, Jens Axboe wrote:
-> > On Mon, Mar 09 2009, Jens Axboe wrote:
-> > > On Mon, Mar 09 2009, Geert Uytterhoeven wrote:
-> > > > On Fri, 6 Mar 2009, Jens Axboe wrote:
-> > > > > On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
-> > > > > > On Fri, 6 Mar 2009, Jens Axboe wrote:
-> > > > > > > On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
-> > > > > > > > On Fri, 6 Mar 2009, Jens Axboe wrote:
-> > > > > > > > > On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
-> > > > > > > > > > But then I noticed ps3vram_make_request() may be called concurrently,
-> > > > > > > > > > so I had to add a mutex to avoid data corruption. This slows the
-> > > > > > > > > > driver down, and in the end, the version with a thread turns out to be
-> > > > > > > > > > ca. 1% faster. The version without a thread is about 50 lines less
-> > > > > > > > > > code, though.
-> > > > > > > > >
-> > > > > > > > > That is correct, ->make_request_fn may get reentered. I'm not surprised
-> > > > > > > > > that performance dropped if you just shoved everything under a mutex.
-> > > > > > > > > You could be a little more smart and queue concurrent bio's for
-> > > > > > > > > processing when the current one is complete though, there are several
-> > > > > > > > > approaches there that be a lot faster than going all the way through the
-> > > > > > > > > IO stack and scheduler just to avoid concurrency.
-> > > > > > > >
-> > > > > > > > Yes, using a spinlock and queueing requests on a list if the driver is
-> > > > > > > > busy can be done after 2.6.29...
-> > > > > > >
-> > > > > > > Certainly. Even just replacing your current mutex with a spinlock during
-> > > > > > > the memcpy() would surely be a lot faster. Or even just grabbing the
-> > > > > > > mutex before calling into the write for the duration of the bio. The way
-> > > > > > > you do it is certain context switch death :-)
-> > > > > >
-> > > > > > It's not just the memcpy(). ps3vram_{up,down}load() call msleep(), so
-> > > > > > I cannot use a spinlock.
-> > > > >
-> > > > > Ah right, I hadn't looked close enough. But putting the mutex_lock()
-> > > > > outside of the bio_for_each_segment() is going to be much faster than
-> > > > > getting/releasing it for each segment.
-> > > >
-> > > > It doesn't seem to make any measurable difference, so I'm gonna leave it for
-> > > > now.
-> > >
-> > > It will depend on where the bio's are coming from. If they are all
-> > > single segment, then there will be no difference. If they contain
-> > > multiple segments, you reduce the lock/release by that amount.
-> > >
-> > > But yeah, just leave it as-is for now. You can send a final patch for
-> > > inclusion though. Unless I'm mistaken, I only saw the original and then
-> > > an incremental patch for changing it to ->make_request_fn?
-> >
-> > There was a full version, my mistake. I got confused by the removal of
-> 
-> Indeed.
-> 
-> > the old driver in another directory :-)
-> 
-> Can you please ack it? Thx!
+Henk,
 
-Sure, I thought we had agreed to queue it up for 2.6.29?
+On Montag, 9. M=E4rz 2009, Henk Stegeman wrote:
+> I don't understand how this would work,
+>
+> Now I do one byte-swap, which works.
+>  -I byteswap in software, for 16-bit cycles by byte swapping and for 8
+> bit cycles by adding an offset of 1.
+>  (The byte swapping on the chipselect is off)
+>
+> Your advice includes two byteswaps, one by re-routing the data bus and
+> one by enabling the byte swap on the chip-select.
 
--- 
-Jens Axboe
+My experience is the chip select byte swap feature only works correctly if =
+you=20
+connect a little endian device like I showed you.
+
+> Or does one of them not really swap bytes?
+
+Let me show you how it works. You must ensure you can write/read data in an=
+y=20
+data width, but at the side of the little endian device it always must be i=
+n=20
+the correct endianess. This example uses a 32 bit data width, but it works=
+=20
+for 16 bit, too.
+=2D LE shows how a real litte endian CPU would write data
+=2D MPC1 shows how MPC5200 will do it, without any byte swap and DO at the
+  MPC5200 side is also D0 at the little endian device
+=2D MPC2 shows how MPC5200 will do it, with D0 at the MPC5200 side is D24 a=
+t the
+  little endian device
+=2D MPC3 shows how MPC5200 will do it, connected like MPC2 but also the chip
+  select byte swap feature enabled
+=2D LE DEV shows how the little endian device expects the data
+
+You want to write this data at the given offset into the little endian devi=
+ce:
+
+ Bytes: 0:0x34, 1:0x12, 2:0x78, 3:0x56
+ Worte:     0:0x1234       2:0x5678
+ LONG:            0:0x56781234
+
+Writing as bytes:
+
+ Bytes: 0:0x34, 1:0x12, 2:0x78, 3:0x56
+
+Offset  LE    MPC1  MPC2  MPC3  LE DEV
+ 0      0x34  0x56  0x34  0x34  0x34
+ 1      0x12  0x78  0x12  0x12  0x12
+ 2      0x78  0x12  0x78  0x78  0x78
+ 3      0x56  0x34  0x56  0x56  0x56
+        ^^^^--------^^^^--^^^^--^^^^--> these are correct
+              ^^^^--------------------> this is wrong
+
+Writing as words:
+
+ Words:     0:0x1234       2:0x5678
+
+Offset   LE     MPC1  MPC2  MPC3  LE DEV
+  0      0x34   0x78  0x12  0x34  0x34
+ (1)     0x12   0x56  0x34  0x12  0x12
+  2      0x78   0x34  0x56  0x78  0x78
+ (3)     0x56   0x12  0x78  0x56  0x56
+         ^^^^---------------^^^^--^^^^--> these are correct
+                ^^^^--^^^^--------------> these are wrong
+
+Writing as longs:
+
+ LONG:         0:0x56781234
+
+Offset   LE     MPC1  MPC2  MPC3  LE DEV
+  0      0x34   0x34  0x56  0x34  0x34
+ (1)     0x12   0x12  0x78  0x12  0x12
+ (2)     0x78   0x78  0x12  0x78  0x78
+ (3)     0x56   0x56  0x34  0x56  0x56
+         ^^^^---^^^^ -------^^^^--^^^^--> these are correct
+                      ^^^^--------------> this is wrong
+
+So, the MPC3 example always writes correct data.
+
+Hope it helps,
+Juergen
+
+=2D-=20
+Pengutronix e.K.                              | Juergen Beisert            =
+ |
+Linux Solutions for Science and Industry      | Phone: +49-8766-939 228    =
+ |
+Vertretung Sued/Muenchen, Germany             | Fax:   +49-5121-206917-5555=
+ |
+Amtsgericht Hildesheim, HRA 2686              | http://www.pengutronix.de/ =
+ |
