@@ -1,21 +1,19 @@
-Return-Path: <henk.stegeman@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 30EA3DE034
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Mar 2009 20:32:21 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so627882ywb.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 09 Mar 2009 02:32:19 -0700 (PDT)
+Return-Path: <reynekejunk@hotmail.com>
+Received: from bay0-omc3-s12.bay0.hotmail.com (bay0-omc3-s12.bay0.hotmail.com
+	[65.54.246.212]) by ozlabs.org (Postfix) with ESMTP id 524B1DE034
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Mar 2009 21:01:30 +1100 (EST)
+Message-ID: <BAY101-W1380284517DD6CE929E7DDBEA00@phx.gbl>
+From: - Reyneke <reynekejunk@hotmail.com>
+To: <benh@kernel.crashing.org>
+Subject: RE: [PATCH] powerpc/usb: Fix 440EPx USBH_3 & USBH_5 EHCI errata
+Date: Mon, 9 Mar 2009 10:01:29 +0000
+In-Reply-To: <1236463245.7260.170.camel@pasglop>
+References: <BAY101-W12966ECAF38C4FD6F26513BEA50@phx.gbl>
+	<1236463245.7260.170.camel@pasglop>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-In-Reply-To: <200903071109.49726.jbe@pengutronix.de>
-References: <ae4f76fd0902200151m461f9336x1e2bbec61f815fde@mail.gmail.com>
-	<200903071109.49726.jbe@pengutronix.de>
-Date: Mon, 9 Mar 2009 10:32:19 +0100
-Message-ID: <ae4f76fd0903090232n21152b02of5ebcac86c60e53a@mail.gmail.com>
-Subject: Re: Davicom DM9000A on MPC5200B (powerpc) works using a dirty
-	offsetting and byte trick
-From: Henk Stegeman <henk.stegeman@gmail.com>
-To: Juergen Beisert <jbe@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	stern@rowland.harvard.edu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,60 +23,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Juergen,
+
+> Please provide a valid email address here.
+
+New email client helpfully stripped out the address...
+
+>> called in a context where you can't iomap ? (ie with a spinlock held).
+
+That is indeed the case. Keeping ehci generic is a valid point=2C but becau=
+se of the above I don't think adding a "hook" is going to work. I'll take a=
+ look at the *platform_private option and re-post - this would also allow f=
+or better runtime checking=2C as you suggested.
+
+ Cheers
+  Jan
 
 
-I don't understand how this would work,
-
-Now I do one byte-swap, which works.
- -I byteswap in software, for 16-bit cycles by byte swapping and for 8
-bit cycles by adding an offset of 1.
- (The byte swapping on the chipselect is off)
-
-Your advice includes two byteswaps, one by re-routing the data bus and
-one by enabling the byte swap on the chip-select.
-Or does one of them not really swap bytes?
 
 
-Henk
+----------------------------------
+> On Fri=2C 2009-03-06 at 11:30 +0000=2C - Reyneke wrote:
+>> Patch applies to 440EPx devices in USB EHCI host mode (USB 2.0).
+>>
+>>>From the 440EPx errata:
+>>
+>> USBH_3: Host hangs after underrun or overrun occurs
+>> USBH_5: EHCI0_INSNREGxx registers are reset by a Soft or Light Host Cont=
+roller Reset
+>>
+>> Workround for USBH_3 is to enable Break Memory Transfer (BMT) in INSNREG=
+3. But the controller is reset after this fix is applied=2C and thus the cu=
+rrent workround is lost. The following short patch ensures INSNREG3 is corr=
+ectly set after reset.
+>
+>> Signed-off-by: Jan Reyneke
+>
+> Please provide a valid email address here.
+>
+>> ---
 
-On Sat, Mar 7, 2009 at 11:09 AM, Juergen Beisert <jbe@pengutronix.de> wrote=
-:
-> Henk,
 >
-> On Freitag, 20. Februar 2009, Henk Stegeman wrote:
->> - Any suggestions to what could be wrong here? Or does the MPC5200 in
->> this case only byte swap u16 reads, but a u8 read is unchanged?
+> A few issues here. First=2C it would be preferable to have this in the
+> ehci-ppc-of.c file. If you can't stick that in such a place that it will
+> be called after ehci_reset=2C then maybe you can add a reset "hook" so
+> that ehci-ppc-of.c gets to wrap the real ehci_reset().
 >
-> You should not follow the Freescale bus signal names when you connect you=
-r
-> external little endian device. Otherwise the offsets are always wrong.
+> Also=2C while the ifdef CONFIG_440EPX is good to prevent building the cod=
+e
+> on machines that don't need it=2C it's also not enough. We allow building
+> kernels that support multiple boards and SoC's within the same major CPU
+> family and thus you -also- need runtime detection. Either using a quirk
+> (I think the USB drivers have quirk flags) or just always doing the
+> of_device_is_compatible() thingy which is yet another reason for finding
+> a way to move that up into ehci-ppc-of.c
 >
-> Do it in this way instead:
+> That would also avoid some duplication...
 >
-> =A0 =A0MPC =A0 =A0 =A0 =A0 =A0LE Device
-> =A0D[0..7] =A0 <-> =A0D[24..31]
-> =A0D[8..15] =A0<-> =A0D[16..23]
-> =A0D[16..23] <-> =A0D[8..15]
-> =A0D[24..31] <-> =A0D[0..7]
+
 >
-> If you connect your device in such a way, just enable CS's byte swap feat=
-ure
-> depending on your bus size and you are done (no additional software
-> manipulation required). Now you can write bytes, words or longs and you w=
-ill
-> always write the correct data into the corresponding device register.
+> So if you manage to move the quirk here=2C you can thus re-use the
+> existing code=2C or is the reset always called in a context where you
+> can't iomap ? (ie with a spinlock held).
 >
-> Hope it helps
-> Juergen
+> In any case=2C I don't like adding a specific field to the generic ehci
+> structure like that. If that's what it takes=2C add a void
+> *platform_private to it=2C and use -that- to stick a host specific data
+> structure=2C but for something not performance sensitive such as a reset=
+=2C
+> if you can get away with always mapping/unmapping=2C it's probably better=
+.
 >
-> --
-> Pengutronix e.K. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0| Juergen Beisert =A0 =A0 =A0 =A0 =A0 =A0 |
-> Linux Solutions for Science and Industry =A0 =A0 =A0| Phone: +49-8766-939=
- 228 =A0 =A0 |
-> Vertretung Sued/Muenchen, Germany =A0 =A0 =A0 =A0 =A0 =A0 | Fax: =A0 +49-=
-5121-206917-5555 |
-> Amtsgericht Hildesheim, HRA 2686 =A0 =A0 =A0 =A0 =A0 =A0 =A0| http://www.=
-pengutronix.de/ =A0|
+> Cheers=2C
+> Ben.
 >
+>
+
+_________________________________________________________________
+View your Twitter and Flickr updates from one place =96 Learn more!
+http://clk.atdmt.com/UKM/go/137984870/direct/01/=
