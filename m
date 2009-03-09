@@ -1,19 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 39168DDED7
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 03:46:49 +1100 (EST)
-Message-Id: <18D6DC29-CCBB-4221-A0B2-64D0555EB8E2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Xiaotian Feng <Xiaotian.Feng@windriver.com>
-In-Reply-To: <1236308483-20495-1-git-send-email-Xiaotian.Feng@windriver.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] cpm_uart: fix non-console port startup bug
-Date: Mon, 9 Mar 2009 11:46:41 -0500
-References: <1236308483-20495-1-git-send-email-Xiaotian.Feng@windriver.com>
-Cc: linuxppc-dev@ozlabs.org, panto@intracom.gr, linux-kernel@vger.kernel.org
+Return-Path: <lebon@lebon.org.ua>
+Received: from b-mail.com.ua (b-mail.com.ua [195.68.202.242])
+	by ozlabs.org (Postfix) with ESMTP id B727BDE125
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 03:36:29 +1100 (EST)
+Message-ID: <49B54210.5040709@lebon.org.ua>
+Date: Mon, 09 Mar 2009 18:21:36 +0200
+From: Mikhail Zolotaryov <lebon@lebon.org.ua>
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc 4xx: DDR0_14[REDUC] decoded incorrectly
+Content-Type: multipart/mixed; boundary="------------020603000204070401090307"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------020603000204070401090307
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Mar 5, 2009, at 9:01 PM, Xiaotian Feng wrote:
+Hi,
 
->  After UART interrupt handler is installed and rx is enabled, if an rx
-> interrupt comes before hardware init, rx->cur will be updated. Then  
-> the
-> hardware init will reset BD and make rx->cur out of sync, move the  
-> hardware
-> init code before request_irq.
->
->  Signed-off-by: Xiaotian Feng <xiaotian.feng@windriver.com>
-> ---
-> drivers/serial/cpm_uart/cpm_uart_core.c |   14 ++++++++++++--
-> 1 files changed, 12 insertions(+), 2 deletions(-)
+according to the PPC440EPx Embedded Processor User Manual (rev 1.14) 
+DDR0_14[REDUC] bit has the following meaning:
 
-applied to next
+REDUC - Enable the half data path feature of the controller
+0 = Standard operation using full 64/72-bit memory bus
+1 = Memory data path width is 32/40 bits
 
-- k
+However, "1" is decoded as 64 bit (8 byte), "0" - as 32 bit (4 byte) bus 
+by the kernel code. My understanding is this is not correct - patch 
+attached.
+
+
+
+--------------020603000204070401090307
+Content-Type: text/plain;
+ name="patch-ibm4xx_denali_fixup_memsize.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="patch-ibm4xx_denali_fixup_memsize.patch"
+
+LS0tIGxpbnV4Lm9yaWcvYXJjaC9wb3dlcnBjL2Jvb3QvNHh4LmMJMjAwOS0wMy0wOSAxNzo1
+NTowMS4wMDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4L2FyY2gvcG93ZXJwYy9ib290LzR4eC5j
+CTIwMDktMDMtMDkgMTc6NTg6MDcuMDAwMDAwMDAwICswMjAwCkBAIC0xOTMsOSArMTkzLDkg
+QEAKIAl2YWwgPSBTRFJBTTBfUkVBRChERFIwXzE0KTsKIAogCWlmIChERFJfR0VUX1ZBTCh2
+YWwsIEREUl9SRURVQywgRERSX1JFRFVDX1NISUZUKSkKLQkJZHBhdGggPSA4OyAvKiA2NCBi
+aXRzICovCi0JZWxzZQogCQlkcGF0aCA9IDQ7IC8qIDMyIGJpdHMgKi8KKwllbHNlCisJCWRw
+YXRoID0gODsgLyogNjQgYml0cyAqLwogCiAJLyogZ2V0IGFkZHJlc3MgcGlucyAocm93cykg
+Ki8KICAJdmFsID0gU0RSQU0wX1JFQUQoRERSMF80Mik7Cg==
+--------------020603000204070401090307--
