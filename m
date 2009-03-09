@@ -1,30 +1,31 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BA356DDEDF
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Mar 2009 21:38:48 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n29AZwTU005524
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 06:35:58 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n29Acgme174064
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 06:38:42 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n29AcgB8020484
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 06:38:42 -0400
-Date: Mon, 9 Mar 2009 06:38:20 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Felix Radensky <felix@embedded-sol.com>
-Subject: Re: Machine check in 4xx ethernet driver
-Message-ID: <20090309103820.GA17943@zod.rchland.ibm.com>
-References: <22408005.post@talk.nabble.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Mon, 9 Mar 2009 11:43:14 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
+	RAM as block device
+In-Reply-To: <20090306190350.GD11787@kernel.dk>
+Message-ID: <alpine.LRH.2.00.0903091142500.19484@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
+	<20090305083701.GQ11787@kernel.dk>
+	<alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be>
+	<20090305110940.GY11787@kernel.dk>
+	<alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
+	<20090306074639.GN11787@kernel.dk>
+	<alpine.LRH.2.00.0903061347360.16809@vixen.sonytel.be>
+	<20090306125832.GX11787@kernel.dk>
+	<alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be>
+	<20090306190350.GD11787@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <22408005.post@talk.nabble.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: Arnd Bergmann <arnd@arndb.de>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Jim Paris <jim@jtan.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	linux-mtd@lists.infradead.org,
+	Vivien Chappelier <vivien.chappelier@free.fr>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,15 +35,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 09, 2009 at 12:47:02AM -0700, Felix Radensky wrote:
->
->Hi,
->
->I'm getting machine check exception when trying to dump
->emac registers on 405EX Kilauea board. The kernel is 2.6.29-rc7
->The problem seems not new, I can reproduce it on 2.6.25 Denx kernel
+On Fri, 6 Mar 2009, Jens Axboe wrote:
+> On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
+> > On Fri, 6 Mar 2009, Jens Axboe wrote:
+> > > On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
+> > > > On Fri, 6 Mar 2009, Jens Axboe wrote:
+> > > > > On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
+> > > > > > But then I noticed ps3vram_make_request() may be called concurrently,
+> > > > > > so I had to add a mutex to avoid data corruption. This slows the
+> > > > > > driver down, and in the end, the version with a thread turns out to be
+> > > > > > ca. 1% faster. The version without a thread is about 50 lines less
+> > > > > > code, though.
+> > > > >
+> > > > > That is correct, ->make_request_fn may get reentered. I'm not surprised
+> > > > > that performance dropped if you just shoved everything under a mutex.
+> > > > > You could be a little more smart and queue concurrent bio's for
+> > > > > processing when the current one is complete though, there are several
+> > > > > approaches there that be a lot faster than going all the way through the
+> > > > > IO stack and scheduler just to avoid concurrency.
+> > > >
+> > > > Yes, using a spinlock and queueing requests on a list if the driver is
+> > > > busy can be done after 2.6.29...
+> > >
+> > > Certainly. Even just replacing your current mutex with a spinlock during
+> > > the memcpy() would surely be a lot faster. Or even just grabbing the
+> > > mutex before calling into the write for the duration of the bio. The way
+> > > you do it is certain context switch death :-)
+> > 
+> > It's not just the memcpy(). ps3vram_{up,down}load() call msleep(), so
+> > I cannot use a spinlock.
+> 
+> Ah right, I hadn't looked close enough. But putting the mutex_lock()
+> outside of the bio_for_each_segment() is going to be much faster than
+> getting/releasing it for each segment.
 
-I've not looked at what that code path does, but the EMAC regs are
-in DCR space, not MMIO.  Using memcpy_fromio there seems odd.
+It doesn't seem to make any measurable difference, so I'm gonna leave it for
+now.
 
-josh
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
