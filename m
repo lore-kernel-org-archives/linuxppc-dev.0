@@ -1,19 +1,36 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+Return-Path: <andrew@cesa.opbu.xerox.com>
+Received: from wbmler5.mail.xerox.com (wbmler5.mail.xerox.com [13.13.138.230])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4FC7CDE034
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 04:55:56 +1100 (EST)
-Date: Mon, 9 Mar 2009 17:46:22 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: "Sachin P. Sant" <sachinp@in.ibm.com>
-Subject: Re: 2.6.29-rc7-git2 : crash in kmem_list3_init()
-Message-ID: <20090309174622.GB31585@csn.ul.ie>
-References: <49B5448B.6030205@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <49B5448B.6030205@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, cl@linux-foundation.org
+	(Client CN "wbmler5.mail.xerox.com",
+	Issuer "AAA Certificate Services" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7A780DDDFF
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 05:04:04 +1100 (EST)
+Received: from wbmlir1.mail.xerox.com (wbmlir1.mail.xerox.com [13.131.8.221])
+	by wbmler5.mail.xerox.com (8.14.2/8.13.8) with ESMTP id
+	n29Hqtx2019743
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 13:52:55 -0400
+Received: from wbmlir1.mail.xerox.com (localhost [127.0.0.1])
+	by wbmlir1.mail.xerox.com (8.14.2/8.13.6) with ESMTP id n29HqhGl011282
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 13:52:43 -0400
+Received: from hermes.opbu.xerox.com (hermes.opbu.xerox.com [13.62.6.81])
+	by wbmlir1.mail.xerox.com (8.14.2/8.13.6) with ESMTP id n29Hqg6L011252
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 13:52:43 -0400
+Received: from pogo.cesa.opbu.xerox.com (ns158-4.cesa.opbu.xerox.com
+	[13.253.158.23])
+	by hermes.opbu.xerox.com (8.13.8+Sun/8.13.8) with ESMTP id
+	n29HqgOj027321
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 10:52:42 -0700 (PDT)
+Received: from cesa.opbu.xerox.com (gto.cesa.opbu.xerox.com [13.62.136.98])
+	by pogo.cesa.opbu.xerox.com (8.13.6+Sun/8.13.6) with ESMTP id
+	n29HqfrT005075
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 10:52:42 -0700 (PDT)
+Message-Id: <200903091752.n29HqfrT005075@pogo.cesa.opbu.xerox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc udbg: fix lost byte during console handover;
+	change LFCR to CRLF
+Date: Mon, 09 Mar 2009 10:52:41 -0700
+From: Andrew Klossner <andrew@cesa.opbu.xerox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,201 +40,237 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 09, 2009 at 10:02:11PM +0530, Sachin P. Sant wrote:
-> While trying to boot 2.6.29-rc7-git2 on a power5 box ran into
-> following crash.
->
-> Unable to handle kernel paging request for data at address 0xc000000070001008
-> Faulting instruction address: 0xc000000000119070
-> cpu 0x0: Vector: 300 (Data Access) at [c000000000ac3980]
->    pc: c000000000119070: .kmem_list3_init+0x68/0x8c
->    lr: c00000000011906c: .kmem_list3_init+0x64/0x8c
->    sp: c000000000ac3c00
->   msr: 8000000000009032
->   dar: c000000070001008
-> dsisr: 42000000
->  current = 0xc0000000009ea610
->  paca    = 0xc000000000b43480
->    pid   = 0, comm = swapper
-> enter ? for help
-> [c000000000ac3c90] c00000000068b788 .setup_cpu_cache+0xf8/0x1e8
-> [c000000000ac3d20] c00000000011c8a0 .kmem_cache_create+0x43c/0x500
-> [c000000000ac3e20] c000000000948c54 .kmem_cache_init+0x284/0x640
-> [c000000000ac3ee0] c000000000920a5c .start_kernel+0x360/0x480
-> [c000000000ac3f90] c0000000000083d8 .start_here_common+0x1c/0x44
->
-> Attached here is the dmesg log with loglevel=8 mminit_loglevel=4
-> as well as .config used.
->
-> Tried to boot a kernel.org kernel on this box for first time so not
-> sure if this is a new problem or a recurring one. Will try booting
-> some older kernels on this box and will report the results.
->
-> Node 0 Memory: 0x8000000-0x3a000000
-> Node 1 Memory: 0x0-0x8000000 0x3a000000-0x72000000
-> PCI host bridge /pci@800000020000003  ranges:
->   IO 0x000003fe00700000..0x000003fe007fffff -> 0x0000000000000000
->  MEM 0x00000401c0000000..0x00000401ffffffff -> 0x00000000c0000000 
-> EEH: PCI Enhanced I/O Error Handling Enabled
-> PPC64 nvram contains 7168 bytes
-> Using shared processor idle loop
-> Zone PFN ranges:
->   DMA      0x00000000 -> 0x00007200
->   Normal   0x00007200 -> 0x00007200
-> Movable zone start PFN for each node
-> early_node_map[3] active PFN ranges
->     1: 0x00000000 -> 0x00000800
->     0: 0x00000800 -> 0x00003a00
->     1: 0x00003a00 -> 0x00007200
+When the console is on a serial port to be driven by serial8250, a
+character can be lost from the end of the first line in the two-line
+sequence
 
-What's interesting about this machine is that the nodes are interleaving. It's
-possible someone is double initialising incorrectly.
+	serial8250.0: ttyS0 at MMIO 0xe0004500 (irq = 42) is a 16550A
+	console handover: boot [udbg0] -> real [ttyS0]
 
-> mminit::pageflags_layout_widths Section 0 Node 4 Zone 2 Flags 22
-> mminit::pageflags_layout_shifts Section 20 Node 4 Zone 2
-> mminit::pageflags_layout_offsets Section 0 Node 60 Zone 58
-> mminit::pageflags_layout_zoneid Zone ID: 58 -> 64
-> mminit::pageflags_layout_usage location: 64 -> 58 unused 58 -> 22 flags 22 -> 0
-> On node 0 totalpages: 12800
->   DMA zone: 18 pages used for memmap
->   DMA zone: 0 pages reserved
->   DMA zone: 12782 pages, LIFO batch:1
-> mminit::memmap_init Initialising map node 0 zone 0 pfns 2048 -> 14848
-> On node 1 totalpages: 16384
->   DMA zone: 40 pages used for memmap
->   DMA zone: 0 pages reserved
->   DMA zone: 16344 pages, LIFO batch:1
-> mminit::memmap_init Initialising map node 1 zone 0 pfns 0 -> 29184
+This happens because udbg_puts or udbg_write stuff the last byte of
+the line into the Tx FIFO and return, whereupon the serial8250
+initialization code immediately empties that FIFO.  The fix: udbg_puts
+and udbg_write now wait for the Tx FIFO to clear before returning.
+This delays the system by one additional serial frame time for each
+line written by udbg, but the effect is not noticeable, a cumulative
+17 milliseconds for 200 lines of early printk output at 115200 baud.
 
-See, the core initialising at least goes over both nodes when
-initialising node 1. The page mappings should be ok because this
-situation is checked for but it's possible the SLAB allocator is missing
-something.
+Also, the routines in udbg_16550.c now emit CRLF instead of LFCR.
+Linux makes a point of emitting CRLF because, when serial output is
+captured to a file, LFCR sequences can confuse text editors.  See
+http://lkml.org/lkml/2006/2/4/50 for some history.
 
-> [boot]0015 Setup Done
-> mminit::zonelist general 0:DMA = 0:DMA 1:DMA 
-> mminit::zonelist thisnode 0:DMA = 0:DMA 
-> mminit::zonelist general 1:DMA = 1:DMA 0:DMA 
-> mminit::zonelist thisnode 1:DMA = 1:DMA 
-> Built 2 zonelists in Node order, mobility grouping on.  Total pages: 29126
-> Policy zone: DMA
-> Kernel command line: root=/dev/sda5 quiet sysrq=1 loglevel=8 mminit_loglevel=4 
-> [boot]0020 XICS Init
-> [boot]0021 XICS Done
-> pic: no ISA interrupt controller
-> PID hash table entries: 4096 (order: 12, 32768 bytes)
-> time_init: decrementer frequency = 207.050000 MHz
-> time_init: processor frequency   = 1656.400000 MHz
-> clocksource: timebase mult[1351aa5] shift[22] registered
-> clockevent: decrementer mult[3501] shift[16] cpu[0]
-> Console: colour dummy device 80x25
-> console handover: boot [udbg0] -> real [hvc0]
-> Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-> ... MAX_LOCKDEP_SUBCLASSES:  8
-> ... MAX_LOCK_DEPTH:          48
-> ... MAX_LOCKDEP_KEYS:        8191
-> ... CLASSHASH_SIZE:          4096
-> ... MAX_LOCKDEP_ENTRIES:     8192
-> ... MAX_LOCKDEP_CHAINS:      16384
-> ... CHAINHASH_SIZE:          8192
->  memory used by lock dependency info: 3839 kB
->  per task-struct memory footprint: 1920 bytes
-> Dentry cache hash table entries: 262144 (order: 5, 2097152 bytes)
-> Inode-cache hash table entries: 131072 (order: 4, 1048576 bytes)
-> freeing bootmem node 0
-> freeing bootmem node 1
-> Memory: 1812096k/1867776k available (9792k kernel code, 57856k reserved, 1216k data, 8025k bss, 448k init)
-> Unable to handle kernel paging request for data at address 0xc000000070001008
+Signed-off-by: Andrew Klossner <andrew@cesa.opbu.xerox.com>
+---
+ arch/powerpc/include/asm/udbg.h  |    1 +
+ arch/powerpc/kernel/udbg.c       |    7 ++++
+ arch/powerpc/kernel/udbg_16550.c |   60 +++++++++++++++++++++++++++++++------
+ 3 files changed, 58 insertions(+), 10 deletions(-)
 
-What is meant to be stored at this address 0xc000000070001008? Because the
-error occurs aftre freeing bootmem memory, I wonder with the interleaving
-node if memory is getting inappropriately freed.
-
-> Faulting instruction address: 0xc000000000119070
-> cpu 0x0: Vector: 300 (Data Access) at [c000000000ac3980]
->     pc: c000000000119070: .kmem_list3_init+0x68/0x8c
->     lr: c00000000011906c: .kmem_list3_init+0x64/0x8c
->     sp: c000000000ac3c00
->    msr: 8000000000009032
->    dar: c000000070001008
->  dsisr: 42000000
->   current = 0xc0000000009ea610
->   paca    = 0xc000000000b43480
->     pid   = 0, comm = swapper
-> enter ? for help
-> [c000000000ac3c90] c00000000068b788 .setup_cpu_cache+0xf8/0x1e8
-> [c000000000ac3d20] c00000000011c8a0 .kmem_cache_create+0x43c/0x500
-> [c000000000ac3e20] c000000000948c54 .kmem_cache_init+0x284/0x640
-> [c000000000ac3ee0] c000000000920a5c .start_kernel+0x360/0x480
-> [c000000000ac3f90] c0000000000083d8 .start_here_common+0x1c/0x44
-> 0:mon>
-> 0:mon> ls .kmem_list3_init
-> .kmem_list3_init: c000000000119008
-> 0:mon> di c000000000119008
-> c000000000119008  7c0802a6      mflr    r0
-> c00000000011900c  fb81ffe0      std     r28,-32(r1)
-> c000000000119010  fba1ffe8      std     r29,-24(r1)
-> c000000000119014  fbc1fff0      std     r30,-16(r1)
-> c000000000119018  ebc2b2a0      ld      r30,-19808(r2)
-> c00000000011901c  7c7d1b78      mr      r29,r3
-> c000000000119020  f8010010      std     r0,16(r1)
-> c000000000119024  3b800000      li      r28,0
-> c000000000119028  38030010      addi    r0,r3,16
-> c00000000011902c  39230020      addi    r9,r3,32
-> c000000000119030  f821ff71      stdu    r1,-144(r1)
-> c000000000119034  f87d0000      std     r3,0(r29)
-> c000000000119038  f8030018      std     r0,24(r3)
-> c00000000011903c  e8be8000      ld      r5,-32768(r30)
-> c000000000119040  f8030010      std     r0,16(r3)
-> c000000000119044  f87d0008      std     r3,8(r29)
-> 0:mon> 
-> c000000000119048  fb830070      std     r28,112(r3)
-> c00000000011904c  fb830078      std     r28,120(r3)
-> c000000000119050  9383003c      stw     r28,60(r3)
-> c000000000119054  f9230028      std     r9,40(r3)
-> c000000000119058  f9230020      std     r9,32(r3)
-> c00000000011905c  e89e8100      ld      r4,-32512(r30)
-> c000000000119060  38630040      addi    r3,r3,64
-> c000000000119064  38a50020      addi    r5,r5,32
-> c000000000119068  482b7b3d      bl      c0000000003d0ba4        # .__spin_lock_init+0x0/0x84
-> c00000000011906c  60000000      nop
-> c000000000119070  939d0088      stw     r28,136(r29) 
-> 
-> ^^^^^^ fails here
-> This probably corresponds to the following line from kmem_list3_init()
-> 
-> 	parent->free_objects = 0;
-> 
-
-If parent is NULL, it would have crashed before this but no worries
-about that, it's NULL
-
-> c000000000119074  fb9d0030      std     r28,48(r29)
-> c000000000119078  38210090      addi    r1,r1,144
-> c00000000011907c  e8010010      ld      r0,16(r1)
-> c000000000119080  eb81ffe0      ld      r28,-32(r1)
-> c000000000119084  eba1ffe8      ld      r29,-24(r1)
-> 0:mon> r
-> R00 = c00000000011906c   R16 = 0000000000000000
-> R01 = c000000000ac3c00   R17 = c000000000ac3d98
-> R02 = c000000000abb3e0   R18 = c000000000ac3d90
-> R03 = 0000000000000001   R19 = 0000000000010000
-> R04 = c000000000862718   R20 = 0000000000046000
-> R05 = c0000000011b99a8   R21 = c000000000862a08
-> R06 = 0000000000000000   R22 = 00000000000003f4
-> R07 = c000000070000000   R23 = ffffffffffffff80
-> R08 = c0000000009ea638   R24 = 0000000000001000
-> R09 = ffffffffffffffff   R25 = 0000000000000000
-> R10 = 0000000000000002   R26 = 0000000000000f80
-> R11 = c0000000009ea638   R27 = 0000000000000080
-> R12 = 0000000044022044   R28 = 0000000000000000
-> R13 = c000000000b43480   R29 = c000000070000f80
-> R14 = c000000000962338   R30 = c000000000a224a8
-> R15 = c000000000845d68   R31 = c000000038004200
-> pc  = c000000000119070 .kmem_list3_init+0x68/0x8c
-> lr  = c00000000011906c .kmem_list3_init+0x64/0x8c
-> msr = 8000000000009032   cr  = 44022042
-> ctr = 0000000000000000   xer = 000000000000000c   trap =  300
-> dar = c000000070001008   dsisr = 42000000
-> 0:mon>
-> 
+diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
+index 6418cee..cd21e5e 100644
+--- a/arch/powerpc/include/asm/udbg.h
++++ b/arch/powerpc/include/asm/udbg.h
+@@ -15,6 +15,7 @@
+ #include <linux/init.h>
+ 
+ extern void (*udbg_putc)(char c);
++extern void (*udbg_flush)(void);
+ extern int (*udbg_getc)(void);
+ extern int (*udbg_getc_poll)(void);
+ 
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index 7d6c9bb..fc9af47 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -18,6 +18,7 @@
+ #include <asm/udbg.h>
+ 
+ void (*udbg_putc)(char c);
++void (*udbg_flush)(void);
+ int (*udbg_getc)(void);
+ int (*udbg_getc_poll)(void);
+ 
+@@ -76,6 +77,9 @@ void udbg_puts(const char *s)
+ 			while ((c = *s++) != '\0')
+ 				udbg_putc(c);
+ 		}
++
++		if (udbg_flush)
++			udbg_flush();
+ 	}
+ #if 0
+ 	else {
+@@ -98,6 +102,9 @@ int udbg_write(const char *s, int n)
+ 		}
+ 	}
+ 
++	if (udbg_flush)
++		udbg_flush();
++
+ 	return n - remain;
+ }
+ 
+diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
+index 7b7da8c..0362a89 100644
+--- a/arch/powerpc/kernel/udbg_16550.c
++++ b/arch/powerpc/kernel/udbg_16550.c
+@@ -48,14 +48,21 @@ struct NS16550 {
+ 
+ static struct NS16550 __iomem *udbg_comport;
+ 
+-static void udbg_550_putc(char c)
++static void udbg_550_flush(void)
+ {
+ 	if (udbg_comport) {
+ 		while ((in_8(&udbg_comport->lsr) & LSR_THRE) == 0)
+ 			/* wait for idle */;
+-		out_8(&udbg_comport->thr, c);
++	}
++}
++
++static void udbg_550_putc(char c)
++{
++	if (udbg_comport) {
+ 		if (c == '\n')
+ 			udbg_550_putc('\r');
++		udbg_550_flush();
++		out_8(&udbg_comport->thr, c);
+ 	}
+ }
+ 
+@@ -108,6 +115,7 @@ void udbg_init_uart(void __iomem *comport, unsigned int speed,
+ 		/* Clear & enable FIFOs */
+ 		out_8(&udbg_comport->fcr ,0x07);
+ 		udbg_putc = udbg_550_putc;
++		udbg_flush = udbg_550_flush;
+ 		udbg_getc = udbg_550_getc;
+ 		udbg_getc_poll = udbg_550_getc_poll;
+ 	}
+@@ -149,14 +157,21 @@ unsigned int udbg_probe_uart_speed(void __iomem *comport, unsigned int clock)
+ }
+ 
+ #ifdef CONFIG_PPC_MAPLE
+-void udbg_maple_real_putc(char c)
++void udbg_maple_real_flush(void)
+ {
+ 	if (udbg_comport) {
+ 		while ((real_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+ 			/* wait for idle */;
+-		real_writeb(c, &udbg_comport->thr); eieio();
++	}
++}
++
++void udbg_maple_real_putc(char c)
++{
++	if (udbg_comport) {
+ 		if (c == '\n')
+ 			udbg_maple_real_putc('\r');
++		udbg_maple_real_flush();
++		real_writeb(c, &udbg_comport->thr); eieio();
+ 	}
+ }
+ 
+@@ -165,20 +180,28 @@ void __init udbg_init_maple_realmode(void)
+ 	udbg_comport = (struct NS16550 __iomem *)0xf40003f8;
+ 
+ 	udbg_putc = udbg_maple_real_putc;
++	udbg_flush = udbg_maple_real_flush;
+ 	udbg_getc = NULL;
+ 	udbg_getc_poll = NULL;
+ }
+ #endif /* CONFIG_PPC_MAPLE */
+ 
+ #ifdef CONFIG_PPC_PASEMI
+-void udbg_pas_real_putc(char c)
++void udbg_pas_real_flush(void)
+ {
+ 	if (udbg_comport) {
+ 		while ((real_205_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+ 			/* wait for idle */;
+-		real_205_writeb(c, &udbg_comport->thr); eieio();
++	}
++}
++
++void udbg_pas_real_putc(char c)
++{
++	if (udbg_comport) {
+ 		if (c == '\n')
+ 			udbg_pas_real_putc('\r');
++		udbg_pas_real_flush();
++		real_205_writeb(c, &udbg_comport->thr); eieio();
+ 	}
+ }
+ 
+@@ -187,6 +210,7 @@ void udbg_init_pas_realmode(void)
+ 	udbg_comport = (struct NS16550 __iomem *)0xfcff03f8UL;
+ 
+ 	udbg_putc = udbg_pas_real_putc;
++	udbg_flush = udbg_pas_real_flush;
+ 	udbg_getc = NULL;
+ 	udbg_getc_poll = NULL;
+ }
+@@ -195,14 +219,21 @@ void udbg_init_pas_realmode(void)
+ #ifdef CONFIG_PPC_EARLY_DEBUG_44x
+ #include <platforms/44x/44x.h>
+ 
+-static void udbg_44x_as1_putc(char c)
++static int udbg_44x_as1_flush(void)
+ {
+ 	if (udbg_comport) {
+ 		while ((as1_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+ 			/* wait for idle */;
+-		as1_writeb(c, &udbg_comport->thr); eieio();
++	}
++}
++
++static void udbg_44x_as1_putc(char c)
++{
++	if (udbg_comport) {
+ 		if (c == '\n')
+ 			udbg_44x_as1_putc('\r');
++		udbg_44x_as1_flush();
++		as1_writeb(c, &udbg_comport->thr); eieio();
+ 	}
+ }
+ 
+@@ -222,19 +253,27 @@ void __init udbg_init_44x_as1(void)
+ 		(struct NS16550 __iomem *)PPC44x_EARLY_DEBUG_VIRTADDR;
+ 
+ 	udbg_putc = udbg_44x_as1_putc;
++	udbg_flush = udbg_44x_as1_flush;
+ 	udbg_getc = udbg_44x_as1_getc;
+ }
+ #endif /* CONFIG_PPC_EARLY_DEBUG_44x */
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG_40x
+-static void udbg_40x_real_putc(char c)
++static void udbg_40x_real_flush(void)
+ {
+ 	if (udbg_comport) {
+ 		while ((real_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+ 			/* wait for idle */;
+-		real_writeb(c, &udbg_comport->thr); eieio();
++	}
++}
++
++static void udbg_40x_real_putc(char c)
++{
++	if (udbg_comport) {
+ 		if (c == '\n')
+ 			udbg_40x_real_putc('\r');
++		udbg_40x_real_flush();
++		real_writeb(c, &udbg_comport->thr); eieio();
+ 	}
+ }
+ 
+@@ -254,6 +293,7 @@ void __init udbg_init_40x_realmode(void)
+ 		CONFIG_PPC_EARLY_DEBUG_40x_PHYSADDR;
+ 
+ 	udbg_putc = udbg_40x_real_putc;
++	udbg_flush = udbg_40x_real_flush;
+ 	udbg_getc = udbg_40x_real_getc;
+ 	udbg_getc_poll = NULL;
+ }
+-- 
+1.6.1.3
