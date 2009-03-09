@@ -1,31 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E5644DDF7F
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 04:13:19 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e37.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n29HCnTD009864
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 11:12:49 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n29HDB7j223052
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 11:13:12 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n29HDACp007257
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 11:13:11 -0600
-Date: Mon, 9 Mar 2009 13:12:43 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Mikhail Zolotaryov <lebon@lebon.org.ua>
-Subject: Re: [PATCH] powerpc 4xx: DDR0_14[REDUC] decoded incorrectly
-Message-ID: <20090309171243.GA26415@zod.rchland.ibm.com>
-References: <49B54210.5040709@lebon.org.ua>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <49B5572F.4010007@am.sony.com>
+Date: Mon, 9 Mar 2009 10:51:43 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49B54210.5040709@lebon.org.ua>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ps3/block: Replace mtd/ps3vram by block/ps3vram
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be>
+	<1236209255.6696.75.camel@pasglop>
+	<20090305065423.GK11787@kernel.dk>
+	<alpine.LRH.2.00.0903061349010.16809@vixen.sonytel.be>
+In-Reply-To: <alpine.LRH.2.00.0903061349010.16809@vixen.sonytel.be>
+Content-Type: text/plain; charset="ISO-8859-15"
+Cc: Arnd Bergmann <arnd@arndb.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Jim Paris <jim@jtan.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	linux-mtd@lists.infradead.org, Jens Axboe <jens.axboe@oracle.com>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Vivien Chappelier <vivien.chappelier@free.fr>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,24 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 09, 2009 at 06:21:36PM +0200, Mikhail Zolotaryov wrote:
-> Hi,
->
-> according to the PPC440EPx Embedded Processor User Manual (rev 1.14)  
-> DDR0_14[REDUC] bit has the following meaning:
->
-> REDUC - Enable the half data path feature of the controller
-> 0 = Standard operation using full 64/72-bit memory bus
-> 1 = Memory data path width is 32/40 bits
->
-> However, "1" is decoded as 64 bit (8 byte), "0" - as 32 bit (4 byte) bus  
-> by the kernel code. My understanding is this is not correct - patch  
-> attached.
+On 03/06/2009 04:54 AM, Geert Uytterhoeven wrote:
+> Convert the PS3 Video RAM Storage Driver from an MTD driver to a plain block
+> device driver.
+> 
+> The ps3vram driver exposes unused video RAM on the PS3 as a block device
+> suitable for storage or swap.  Fast data transfer is achieved using a local
+> cache in system RAM and DMA transfers via the GPU.
+> 
+> The new driver is ca. 50% faster for reading, and ca. 10% for writing.
+> 
+>  arch/powerpc/platforms/ps3/Kconfig |    7 +
+>  drivers/block/Makefile             |    1 +
+>  drivers/block/ps3vram.c            |  865 ++++++++++++++++++++++++++++++++++++
+>  drivers/mtd/devices/Kconfig        |    7 -
+>  drivers/mtd/devices/Makefile       |    1 -
+>  drivers/mtd/devices/ps3vram.c      |  768 --------------------------------
+>  6 files changed, 873 insertions(+), 776 deletions(-)
+>  create mode 100644 drivers/block/ps3vram.c
+>  delete mode 100644 drivers/mtd/devices/ps3vram.c
 
-You are missing the Signed-off-by tag that is needed.
+Looks good, certainly an improvement.
 
-Aside from that, I'm curious if you found this just through inspection, or
-if you actually had a problem because of it.  Your fix seems correct, yet
-I've had no problems with my boards at all.
-
-josh
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
