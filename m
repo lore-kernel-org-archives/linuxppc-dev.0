@@ -1,15 +1,20 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id E6174DE147
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 03:36:44 +1100 (EST)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] eHEA: Don't do memory allocation under lock if not necessary
-To: raisch@de.ibm.com, themann@de.ibm.com, tklein@de.ibm.com
-Date: Mon, 09 Mar 2009 16:36:28 +0000
-Message-ID: <20090309163628.2570.8408.stgit@warthog.procyon.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A2725DE140
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 03:37:29 +1100 (EST)
+Message-Id: <E2DCB3CA-0547-494B-B94A-F38BA0899479@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Liming Wang <liming.wang@windriver.com>
+In-Reply-To: <1236142278-9276-1-git-send-email-liming.wang@windriver.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] Add unwind information for SPE registers of E500 core
+Date: Mon, 9 Mar 2009 11:37:15 -0500
+References: <1236142278-9276-1-git-send-email-liming.wang@windriver.com>
+Cc: Paul Mackerras <paulus@samba.org>, Alan Modra <amodra@au.ibm.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,52 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In ehea_probe_adapter() the initial memory allocation and initialisation does
-not need to be done with the ehea_fw_handles.lock semaphore held.  Doing so
-extends the amount of time the lock is held unnecessarily.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+On Mar 3, 2009, at 10:51 PM, Liming Wang wrote:
 
- drivers/net/ehea/ehea_main.c |   13 ++++++-------
- 1 files changed, 6 insertions(+), 7 deletions(-)
+> SPE registers use the high part bit0~bit31 of E500 GPR0~GPR31.
+> The unwind information in "eh_frame" section is used during exception
+> handling and describes register information in the signal frame. But
+> current unwind information doesn't cover SPE registers, which have
+> been saved in the signal frame. This patch adds this unwind  
+> information
+> to "eh_frame" section.
+>
+> SPE registers use register number 1200+N to identify register 'N', but
+> they start from 113 in unwind column, which is computed from gcc
+> source code, macro DWARF_REG_TO_UNWIND_COLUMN:
+>
+> 	#define FIRST_PSEUDO_REGISTER 114
+> 	#define DWARF_REG_TO_UNWIND_COLUMN(r) \
+>  	  ((r) > 1200 ? ((r) - 1200 + FIRST_PSEUDO_REGISTER - 1) : (r))
+>
+> Signed-off-by: Liming Wang <liming.wang@windriver.com>
+> ---
+> arch/powerpc/kernel/vdso32/sigtramp.S |   34 ++++++++++++++++++++++++ 
+> +++++++++
+> 1 files changed, 34 insertions(+), 0 deletions(-)
 
+What about SPEFSCR & the accumulator?  Are they not part of the  
+frame?  They probably should be.
 
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index dfe9226..34480ae 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -3370,18 +3370,19 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
- 		ehea_error("Invalid ibmebus device probed");
- 		return -EINVAL;
- 	}
--	mutex_lock(&ehea_fw_handles.lock);
- 
- 	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
- 	if (!adapter) {
--		ret = -ENOMEM;
- 		dev_err(&dev->dev, "no mem for ehea_adapter\n");
--		goto out;
-+		return -ENOMEM;
- 	}
- 
--	list_add(&adapter->list, &adapter_list);
--
- 	adapter->ofdev = dev;
-+	adapter->pd = EHEA_PD_ID;
-+
-+	mutex_lock(&ehea_fw_handles.lock);
-+
-+	list_add(&adapter->list, &adapter_list);
- 
- 	adapter_handle = of_get_property(dev->node, "ibm,hea-handle",
- 					 NULL);
-@@ -3395,8 +3396,6 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
- 		goto out_free_ad;
- 	}
- 
--	adapter->pd = EHEA_PD_ID;
--
- 	dev->dev.driver_data = adapter;
- 
- 
+> diff --git a/arch/powerpc/kernel/vdso32/sigtramp.S b/arch/powerpc/ 
+> kernel/vdso32/sigtramp.S
+> index 68d49dd..789a343 100644
+> --- a/arch/powerpc/kernel/vdso32/sigtramp.S
+> +++ b/arch/powerpc/kernel/vdso32/sigtramp.S
+> @@ -251,6 +251,40 @@ V_FUNCTION_END(__kernel_sigtramp_rt32)
+>   vsave_msr1 (31);							\
+>   vsave_msr2 (33, 32*16+12);						\
+>   vsave      (32, 32*16)
+> +#elif defined(CONFIG_SPE)
+> +#define EH_FRAME_VMX \
+
+introduce EH_FRAME_SPE.
+
+> +  rsave (113, VREGS);							\
+
+we should probably be doing the same thing as vsave_msr1()
+
+- k
