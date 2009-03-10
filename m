@@ -1,16 +1,14 @@
-Return-Path: <lebon@lebon.org.ua>
-Received: from b-mail.com.ua (b-mail.com.ua [195.68.202.242])
-	by ozlabs.org (Postfix) with ESMTP id C74A2DDDA5
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 05:31:42 +1100 (EST)
-Message-ID: <49B6B240.8030701@lebon.org.ua>
-Date: Tue, 10 Mar 2009 20:32:32 +0200
-From: Mikhail Zolotaryov <lebon@lebon.org.ua>
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc 4xx EMAC driver: device name reported on timeout
-	is not correct
-Content-Type: multipart/mixed; boundary="------------050304050205060400050305"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6DC16DE108
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 05:44:19 +1100 (EST)
+Message-Id: <20090310184154.535895939@linutronix.de>
+Date: Tue, 10 Mar 2009 18:43:58 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Subject: [patch 1/1] powerpc: remove setup_irq(NULL action) in ksi8560
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,51 +18,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------050304050205060400050305
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+setup_irq(0, NULL) is broken as setup_irq() dereferences action
+unconditionally.
 
-Hi,
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+CC: Kumar Gala <galak@kernel.crashing.org>
+CC: Linux PPC Development <linuxppc-dev@ozlabs.org>
+---
+ arch/powerpc/platforms/85xx/ksi8560.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-not critical problem here.
-
-IBM EMAC driver performs device reset (drivers/net/ibm_newemac/core.c: 
-emac_probe() -> emac_init_phy() -> emac_reset()) before registering 
-appropriate net_device (emac_probe() -> register_netdev()), so 
-net_device name contains raw format string during EMAC reset ("eth%d").
-
-If the case of reset timeout, emac_report_timeout_error() function is 
-called to report an error. The problem is this function uses net_device 
-name to report device related, which is not correct, as a result in the 
-kernel log buffer we see:
-
-eth%d: reset timeout
-
-The solution is to print device_node full_name instead. After applying 
-the patch proposed, error string is like the following:
-
-/plb/opb/ethernet@ef600e00: reset timeout
-
-
-Signed-off-by: Mikhail Zolotaryov <lebon@lebon.org.ua>
-
-
-
---------------050304050205060400050305
-Content-Type: text/plain;
- name="emac_report_timeout_error.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="emac_report_timeout_error.patch"
-
-LS0tIGxpbnV4LTIuNi9kcml2ZXJzL25ldC9pYm1fbmV3ZW1hYy9jb3JlLmMub3JpZwkyMDA5
-LTAzLTEwIDIwOjI0OjEyLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42L2RyaXZlcnMv
-bmV0L2libV9uZXdlbWFjL2NvcmUuYwkJMjAwOS0wMy0xMCAyMDoyOToxMi4wMDAwMDAwMDAg
-KzAyMDAKQEAgLTEzNCw3ICsxMzQsNyBAQAogCQkJCSAgRU1BQ19GVFJfNDQwRVBfUEhZX0NM
-S19GSVgpKQogCQlEQkcoZGV2LCAiJXMiIE5MLCBlcnJvcik7CiAJZWxzZSBpZiAobmV0X3Jh
-dGVsaW1pdCgpKQotCQlwcmludGsoS0VSTl9FUlIgIiVzOiAlc1xuIiwgZGV2LT5uZGV2LT5u
-YW1lLCBlcnJvcik7CisJCXByaW50ayhLRVJOX0VSUiAiJXM6ICVzXG4iLCBkZXYtPm9mZGV2
-LT5ub2RlLT5mdWxsX25hbWUsIGVycm9yKTsKIH0KIAogLyogRU1BQyBQSFkgY2xvY2sgd29y
-a2Fyb3VuZDoK
---------------050304050205060400050305--
+Index: linux-2.6-tip/arch/powerpc/platforms/85xx/ksi8560.c
+===================================================================
+--- linux-2.6-tip.orig/arch/powerpc/platforms/85xx/ksi8560.c
++++ linux-2.6-tip/arch/powerpc/platforms/85xx/ksi8560.c
+@@ -106,8 +106,6 @@ static void __init ksi8560_pic_init(void
+ 	cpm2_pic_init(np);
+ 	of_node_put(np);
+ 	set_irq_chained_handler(irq, cpm2_cascade);
+-
+-	setup_irq(0, NULL);
+ #endif
+ }
+ 
