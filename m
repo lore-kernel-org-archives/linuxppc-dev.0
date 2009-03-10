@@ -1,23 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id A7AEADE0A2
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 04:36:24 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so987979yxb.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 10:36:23 -0700 (PDT)
+Return-Path: <lebon@lebon.org.ua>
+Received: from b-mail.com.ua (b-mail.com.ua [195.68.202.242])
+	by ozlabs.org (Postfix) with ESMTP id C74A2DDDA5
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 05:31:42 +1100 (EST)
+Message-ID: <49B6B240.8030701@lebon.org.ua>
+Date: Tue, 10 Mar 2009 20:32:32 +0200
+From: Mikhail Zolotaryov <lebon@lebon.org.ua>
 MIME-Version: 1.0
-In-Reply-To: <20090310.101959.142777275.davem@davemloft.net>
-References: <20090218.134852.118040610.davem@davemloft.net>
-	<ae4f76fd0902190145r7ed5fadbwfca18c97dbfc9ed1@mail.gmail.com>
-	<fa686aa40903101013j2324e8acw18830c930e12ae46@mail.gmail.com>
-	<20090310.101959.142777275.davem@davemloft.net>
-Date: Tue, 10 Mar 2009 11:36:22 -0600
-Message-ID: <fa686aa40903101036v430d968cs436902698be53c95@mail.gmail.com>
-Subject: Re: net_device_ops support in bridging and fec_mpc52xx.c
-From: Grant Likely <grant.likely@secretlab.ca>
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, henk.stegeman@gmail.com,
-	bridge@osdl.org, jgarzik@pobox.com
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc 4xx EMAC driver: device name reported on timeout
+	is not correct
+Content-Type: multipart/mixed; boundary="------------050304050205060400050305"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +20,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 10, 2009 at 11:19 AM, David Miller <davem@davemloft.net> wrote:
-> Send it to netdev, CC:'d to me, Jeff hasn't been handling networking
-> driver changes for a while now.
+This is a multi-part message in MIME format.
+--------------050304050205060400050305
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Ah, okay.  I didn't know.  I looked in MAINTAINERS today, and Jeff is
-listed there for NETWORK DEVICE DRIVERS.
+Hi,
 
-g.
+not critical problem here.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+IBM EMAC driver performs device reset (drivers/net/ibm_newemac/core.c: 
+emac_probe() -> emac_init_phy() -> emac_reset()) before registering 
+appropriate net_device (emac_probe() -> register_netdev()), so 
+net_device name contains raw format string during EMAC reset ("eth%d").
+
+If the case of reset timeout, emac_report_timeout_error() function is 
+called to report an error. The problem is this function uses net_device 
+name to report device related, which is not correct, as a result in the 
+kernel log buffer we see:
+
+eth%d: reset timeout
+
+The solution is to print device_node full_name instead. After applying 
+the patch proposed, error string is like the following:
+
+/plb/opb/ethernet@ef600e00: reset timeout
+
+
+Signed-off-by: Mikhail Zolotaryov <lebon@lebon.org.ua>
+
+
+
+--------------050304050205060400050305
+Content-Type: text/plain;
+ name="emac_report_timeout_error.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="emac_report_timeout_error.patch"
+
+LS0tIGxpbnV4LTIuNi9kcml2ZXJzL25ldC9pYm1fbmV3ZW1hYy9jb3JlLmMub3JpZwkyMDA5
+LTAzLTEwIDIwOjI0OjEyLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42L2RyaXZlcnMv
+bmV0L2libV9uZXdlbWFjL2NvcmUuYwkJMjAwOS0wMy0xMCAyMDoyOToxMi4wMDAwMDAwMDAg
+KzAyMDAKQEAgLTEzNCw3ICsxMzQsNyBAQAogCQkJCSAgRU1BQ19GVFJfNDQwRVBfUEhZX0NM
+S19GSVgpKQogCQlEQkcoZGV2LCAiJXMiIE5MLCBlcnJvcik7CiAJZWxzZSBpZiAobmV0X3Jh
+dGVsaW1pdCgpKQotCQlwcmludGsoS0VSTl9FUlIgIiVzOiAlc1xuIiwgZGV2LT5uZGV2LT5u
+YW1lLCBlcnJvcik7CisJCXByaW50ayhLRVJOX0VSUiAiJXM6ICVzXG4iLCBkZXYtPm9mZGV2
+LT5ub2RlLT5mdWxsX25hbWUsIGVycm9yKTsKIH0KIAogLyogRU1BQyBQSFkgY2xvY2sgd29y
+a2Fyb3VuZDoK
+--------------050304050205060400050305--
