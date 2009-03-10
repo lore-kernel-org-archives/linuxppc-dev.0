@@ -1,16 +1,20 @@
-Return-Path: <lebon@lebon.org.ua>
-Received: from b-mail.com.ua (b-mail.com.ua [195.68.202.242])
-	by ozlabs.org (Postfix) with ESMTP id A5D58DE050
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 07:56:20 +1100 (EST)
-Message-ID: <49B6D427.5050600@lebon.org.ua>
-Date: Tue, 10 Mar 2009 22:57:11 +0200
-From: Mikhail Zolotaryov <lebon@lebon.org.ua>
-MIME-Version: 1.0
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AB75BDE06E
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:12:04 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n2AMC0kb002937
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 15:12:01 -0700 (MST)
+From: Timur Tabi <timur@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] PowerPC 440EPx/GRx fix memory size calculation
-References: <20090310195013.GA27835@ru.mvista.com>
-In-Reply-To: <20090310195013.GA27835@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: [PATCH v5] introduce macro spin_event_timeout()
+Date: Tue, 10 Mar 2009 17:11:58 -0500
+Message-Id: <1236723118-3577-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,22 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Valentine Barshak wrote:
-> According to the AMCC 440EPX/GRX user manual,
-> the Chip Select width is always fixed at 1 bit no matter
-> what is actually read from register DDR_10.
+The macro spin_event_timeout() takes a condition and timeout value
+(in microseconds) as parameters.  It spins until either the condition is true
+or the timeout expires.  It returns zero if the timeout expires first, non-zero
+otherwise.
 
-Well, from my point of view original kernel code is correct in this part.
+This primary purpose of this macro is to poll on a hardware register until a
+status bit changes.  The timeout ensures that the loop still terminates if the
+bit doesn't change as expected.  This macro makes it easier for driver
+developers to perform this kind of operation properly.
 
-Adding one bit into memory address means multiplying memory size by 2 
-i.e. cs=2. The question is: is Chip Select bit used in memory address. 
-ChipSelect input of memory chip enables or disabled it, so if we have 
-only one BankSel installed/connected (DDR0_10[22:23] is 01 or 10) 
-there's no need to use Chip Select bit in an address. On the contrary, 
-if both BankSel lines are connected (DDR0_10[22:23] is 11), to let 
-memory controller know which memory rank to use, Chip Select bit is 
-added into memory address. (and yes, if DDR0_10[22:23] is 00 - no ranks 
-installed, memory size is 0, cs=0)
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-Original kernel code use exactly the same logic as I described above. 
-Please suggest if it's wrong.
+v5: ported to arch/powerpc, made it powerpc-specific, eliminated udelay
+
+v4: removed cpu_relax (redundant), changed timeout to unsigned long
+
+v3: eliminated secondary evaluation of condition, replaced jiffies with udelay
+
+v2: added cpu_relax and time_before
+
+ arch/powerpc/include/asm/delay.h |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
+index f9200a6..aadec70 100644
+--- a/arch/powerpc/include/asm/delay.h
++++ b/arch/powerpc/include/asm/delay.h
+@@ -2,6 +2,8 @@
+ #define _ASM_POWERPC_DELAY_H
+ #ifdef __KERNEL__
+ 
++#include <asm/time.h>
++
+ /*
+  * Copyright 1996, Paul Mackerras.
+  *
+@@ -30,5 +32,35 @@ extern void udelay(unsigned long usecs);
+ #define mdelay(n)	udelay((n) * 1000)
+ #endif
+ 
++/**
++ * spin_event_timeout - spin until a condition gets true or a timeout elapses
++ * @condition: a C expression to evalate
++ * @timeout: timeout, in microseconds
++ *
++ * The process spins until the @condition evaluates to true (non-zero) or
++ * the @timeout elapses.
++ *
++ * This primary purpose of this macro is to poll on a hardware register
++ * until a status bit changes.  The timeout ensures that the loop still
++ * terminates if the bit never changes.
++ *
++ * The return value is non-zero if the condition evaluates to true first, or
++ * zero if the timeout elapses first.
++ */
++#define spin_event_timeout(condition, timeout)			\
++({								\
++	unsigned long __start = get_tbl();			\
++	unsigned long __loops = tb_ticks_per_usec * timeout;	\
++	int __ret = 1;						\
++	while (!(condition)) {					\
++		if (tb_ticks_since(__start) > __loops) {	\
++			__ret = 0;				\
++			break;					\
++		}						\
++		cpu_relax();					\
++	}							\
++	__ret;							\
++})
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_DELAY_H */
+-- 
+1.6.1.3
