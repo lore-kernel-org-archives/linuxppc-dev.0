@@ -1,23 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 86832DDE1D
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:59:06 +1100 (EST)
-Message-ID: <49B6F0B2.70102@freescale.com>
-Date: Tue, 10 Mar 2009 17:58:58 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <johns.daniel@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id DFF41DDE41
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 10:02:48 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id d14so1149092and.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 16:02:47 -0700 (PDT)
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5] introduce macro spin_event_timeout()
-References: <1236723118-3577-1-git-send-email-timur@freescale.com>
-	<49B6EAA4.9000803@freescale.com>
-	<20090310223753.GB26415@zod.rchland.ibm.com>
-In-Reply-To: <20090310223753.GB26415@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+In-Reply-To: <ba5d9360903101553h3cf7c33ex639999803655c440@mail.gmail.com>
+References: <ba5d9360903101553h3cf7c33ex639999803655c440@mail.gmail.com>
+Date: Tue, 10 Mar 2009 17:55:49 -0500
+Message-ID: <ba5d9360903101555o3d6f5932k9292a006328c7161@mail.gmail.com>
+Subject: Re: TSEC/MDIO bug in recent kernels
+From: Johns Daniel <johns.daniel@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,45 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Tue, Mar 10, 2009 at 05:33:08PM -0500, Scott Wood wrote:
->> Timur Tabi wrote:
->>> The macro spin_event_timeout() takes a condition and timeout value
->>> (in microseconds) as parameters.  It spins until either the condition is true
->>> or the timeout expires.  It returns zero if the timeout expires first, non-zero
->>> otherwise.
->>>
->>> This primary purpose of this macro is to poll on a hardware register until a
->>> status bit changes.  The timeout ensures that the loop still terminates if the
->>> bit doesn't change as expected.  This macro makes it easier for driver
->>> developers to perform this kind of operation properly.
->>>
->>> Signed-off-by: Timur Tabi <timur@freescale.com>
->>> ---
->>>
->>> v5: ported to arch/powerpc, made it powerpc-specific, eliminated udelay
->> Why make it powerpc-specific?  This would be nice to have in  
->> arch-independent code.
-> 
-> That's just mean.  He already posted it to lkml and was told to make it
-> powerpc specific by Alan.
+(I did not get to complete the message!)
 
-Well, that's what happens when a discussion hops mailing lists with no 
-backreference. :-P
+For those of you who are running into this error:
+        24520:01 not found
+        eth0: Could not attach to PHY
+        IP-Config: Failed to open eth0
+        IP-Config: Device `eth0' not found.
 
-I don't see anywhere where he says it should be architecture dependent, 
-but rather a general "I don't like this, get off my lawn!" response.
+There is a bug in recent kernels. I found it in 2.6.28.7:
+        linux/arch/powerpc/sysdev/fsl_soc.c:
+for_each_compatible_node(np, "mdio", "gianfar");
+should be:
+        linux/arch/powerpc/sysdev/fsl_soc.c:
+for_each_compatible_node(np, "mdio", "gianfar")
 
-I cannot agree with the "we shouldn't be encouraging this" sentiment; 
-people don't generally do spin loops because they're lazy[1], but rather 
-because the hardware demands it -- and it's hardly only on powerpc (much 
-less just "some Freescale drivers") that I've encountered hardware that 
-demands it, typiclally during reset/initialization or similarly non-hot 
-paths.  Why not provide something less likely to have bugs (the timeout 
-case is unlikely to be well tested), more easily seen when reviewing a 
-patch, and more likely to result in spin loops *with* a timeout rather 
-than without?
+Note that the semicolon should not be there!
 
--Scott
-
-[1] Or rather, those that do should be smacked down during patch review.
+-- Johns
