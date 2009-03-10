@@ -1,29 +1,20 @@
-Return-Path: <alessandro.zummo@towertech.it>
-Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
-	by ozlabs.org (Postfix) with SMTP id C74D5DE0DC
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 20:39:51 +1100 (EST)
-Date: Tue, 10 Mar 2009 10:39:48 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Subject: Re: [rtc-linux] Re: [PATCH 7/7] powerpc/ps3: Add rtc-ps3
-Message-ID: <20090310103948.6e180eea@i1501.lan.towertech.it>
-In-Reply-To: <alpine.LRH.2.00.0903101015470.24318@vixen.sonytel.be>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<49B5618E.9050501@am.sony.com>
-	<alpine.LRH.2.00.0903101015470.24318@vixen.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-m68k@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-	linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>,
-	Geert.Uytterhoeven@sonycom.com, Dann Frazier <dannf@dannf.org>
+Return-Path: <jwboyer@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id C6925DE08A
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 22:43:59 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 27so2365265wfd.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 04:43:58 -0700 (PDT)
+Date: Tue, 10 Mar 2009 07:43:39 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Oops with 2.6.29-rc7 on POWER5
+Message-ID: <20090310114339.GB12220@yoda.jdub.homelinux.org>
+References: <20090310000559.GD2256@yoda.jdub.homelinux.org>
+	<1236645375.7260.200.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1236645375.7260.200.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,23 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 10 Mar 2009 10:21:14 +0100 (CET)
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On Tue, Mar 10, 2009 at 11:36:15AM +1100, Benjamin Herrenschmidt wrote:
+>On Mon, 2009-03-09 at 20:05 -0400, Josh Boyer wrote:
+>> [c00000000fffb830] [c0000000005fe504] .mutex_lock_nested+0x78/0x4b0
+>> (unreliable)
+>> [c00000000fffb950] [c00000000039d520] .echo_char_raw+0x40/0x98
+>> [c00000000fffb9f0] [c00000000039fd68] .n_tty_receive_buf+0xb48/0x1104
+>> [c00000000fffbbb0] [c0000000003a3a08] .flush_to_ldisc+0x160/0x244
+>> [c00000000fffbc80] [c0000000003a3b5c] .tty_flip_buffer_push+0x70/0x9c
+>> [c00000000fffbd10] [c0000000003b9e94] .hvsi_interrupt+0x464/0x590
+>> [c00000000fffbe50] [c000000000119168] .handle_IRQ_event+0x60/0xdc
+>> [c00000000fffbef0] [c00000000011baf0] .handle_fasteoi_irq+0x108/0x1a8
+>> 
+>Do that patch help ?
 
-> Alessandro prefers not to have generic RTC drivers on top of some other
-> abstraction, but wants platform/chip-specific drivers under drivers/rtc/
-> instead. The goal is to convert all RTC drivers buried in platform code
-> to separate RTC drivers.
-> 
-> (Alessandro, please correct me if I'm wrong)
+Yes.  No more oopses on the hvc console when I hit 'enter'.
 
- yes, that's my dream :)
+>Alan, any comment about the races talked about in those comments ? Are
+>they still something I should worry about ?
 
--- 
+If not, we should look at getting this into 2.6.29.  I know it's getting
+very late, but having kernels oops whenever someone hits enter on the
+console probably isn't very good either.
 
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
+josh
