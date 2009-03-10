@@ -1,25 +1,14 @@
-Return-Path: <Yu.Liu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5744CDE0CB
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 14:23:29 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n2A3NO25014466
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 20:23:24 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n2A3NMoK008826
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 22:23:23 -0500 (CDT)
-From: Liu Yu <yu.liu@freescale.com>
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
-Subject: [PATCH] efp: Fix efp dependence
-Date: Tue, 10 Mar 2009 11:09:49 +0800
-Message-Id: <1236654589-6624-1-git-send-email-yu.liu@freescale.com>
-Cc: Liu Yu <yu.liu@freescale.com>
+Return-Path: <leowang1998@yahoo.com.cn>
+Received: from web15305.mail.cnb.yahoo.com (web15305.mail.cnb.yahoo.com
+	[203.209.230.35]) by ozlabs.org (Postfix) with SMTP id EF999DE0D1
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 16:36:54 +1100 (EST)
+Message-ID: <316187.21827.qm@web15305.mail.cnb.yahoo.com>
+Date: Tue, 10 Mar 2009 13:36:51 +0800 (CST)
+From: zhong wang <leowang1998@yahoo.com.cn>
+Subject: powerpc 405ex emac1 problem connect to single Giga phy
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="0-788370109-1236663411=:21827"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,53 +18,620 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is no dependece between efp and math-emu.
-But when disalbe math-emu, the efp code cannot be built.
-This patch fixes it.
 
-Signed-off-by: Liu Yu <yu.liu@freescale.com>
----
-It would be nice to see this patch go along with 2.6.29
+--0-788370109-1236663411=:21827
+Content-Type: multipart/alternative; boundary="0-60129362-1236663411=:21827"
 
- arch/powerpc/Makefile          |    4 ++--
- arch/powerpc/math-emu/Makefile |    5 ++---
- 2 files changed, 4 insertions(+), 5 deletions(-)
+--0-60129362-1236663411=:21827
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 72d17f5..551fc58 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -147,8 +147,8 @@ core-y				+= arch/powerpc/kernel/ \
- 				   arch/powerpc/mm/ \
- 				   arch/powerpc/lib/ \
- 				   arch/powerpc/sysdev/ \
--				   arch/powerpc/platforms/
--core-$(CONFIG_MATH_EMULATION)	+= arch/powerpc/math-emu/
-+				   arch/powerpc/platforms/ \
-+				   arch/powerpc/math-emu/
- core-$(CONFIG_XMON)		+= arch/powerpc/xmon/
- core-$(CONFIG_KVM) 		+= arch/powerpc/kvm/
- 
-diff --git a/arch/powerpc/math-emu/Makefile b/arch/powerpc/math-emu/Makefile
-index f9e506a..0c16ab9 100644
---- a/arch/powerpc/math-emu/Makefile
-+++ b/arch/powerpc/math-emu/Makefile
-@@ -1,6 +1,4 @@
- 
--obj-y				:= math.o fmr.o lfd.o stfd.o
--
- obj-$(CONFIG_MATH_EMULATION)	+= fabs.o fadd.o fadds.o fcmpo.o fcmpu.o \
- 					fctiw.o fctiwz.o fdiv.o fdivs.o \
- 					fmadd.o fmadds.o fmsub.o fmsubs.o \
-@@ -9,7 +7,8 @@ obj-$(CONFIG_MATH_EMULATION)	+= fabs.o fadd.o fadds.o fcmpo.o fcmpu.o \
- 					fres.o frsp.o frsqrte.o fsel.o lfs.o \
- 					fsqrt.o	fsqrts.o fsub.o fsubs.o \
- 					mcrfs.o mffs.o mtfsb0.o mtfsb1.o \
--					mtfsf.o mtfsfi.o stfiwx.o stfs.o
-+					mtfsf.o mtfsfi.o stfiwx.o stfs.o \
-+					math.o fmr.o lfd.o stfd.o
- 
- obj-$(CONFIG_SPE)		+= math_efp.o
- 
--- 
-1.5.4
+Hello all=EF=BC=9A
+=C2=A0=20
+
+We use the AMCC PowerPC 405ex through emac1 way RGMII with realtek RTL8211 =
+Giga phy linked to, At present the PHY Address is: 00110
+add delay=C2=A0 2ns for RGMII
+CONFIG[8:5]:AUTO_Negotiation
+1111=3DNWay,advertise =EF=BC=8Call capabilities,prefer Slave
+mode;1=3DRGMII mode
+Clk on the hardware no problem, Mdio, mdc even on, but at Llinux / driver /=
+ net / ibm-newemac / core.c discovered phy address, phy ID at=C2=A0 .Config=
+ file has joined
+NETDEVICE =3D Y
+PHYLIB=3DY
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 REALTEK-PHY=3DY
+But will be compiled under the best Uimage to board, the feeling of the PHY=
+ the driver has not been mounted use. The following is a kernel information
+=C2=A0 PPC 4xx OCP EMAC driver, version 3.54
+MAL v2 /plb/mcmal, 2 TX channels, 2 RX channels
+RGMII /plb/opb/emac-rgmii@ef600b00 initialized with MDIO support
+/plb/opb/emac-rgmii@ef600b00: input 0 in RGMII mode
+eth0: EMAC-0 /plb/opb/ethernet@ef600900, MAC 00:47:41:52:52:59
+/plb/opb/emac-rgmii@ef600b00: input 1 in RGMII mode
+/plb/opb/ethernet@ef600a00: find TRL 821X Giga PHY=EF=BC=880x4=EF=BC=89
+=C2=A0
+But also in Llinux / driver / net / ibm-newemac / phy.c also add the operat=
+ion of RTL8211bg as follows:
+#define RTL821x_PHYSR=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0 0x11
+#define RTL821x_PHYSR_DUPLEX=C2=A0=C2=A0=C2=A0 0x2000
+#define RTL821x_PHYSR_SPEED=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 0xc000
+#define RTL821x_INER=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 0x12
+#define RTL821x_INER_INIT=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 0x6400
+#define RTL821x_INSR=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 0x13
+static int rtl821x_init(struct mii_phy *phy)
+{
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 phy_write(phy, RTL821x_INER, 0x6400); =
+//enable interrupt
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 r=
+eturn=C2=A0 0;
+}
+=C2=A0
+static struct mii_phy_ops rtl821x_phy_ops =3D {
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .init=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0 =3D rtl821x_init,
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .setup_aneg=C2=A0=C2=A0=C2=A0 =3D genm=
+ii_setup_aneg,
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .setup_forced=C2=A0 =3D genmii_setup_f=
+orced,
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .poll_link =3D genmii_poll_link,
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .read_link=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 =3D genmii_read_link
+};
+=C2=A0
+static struct mii_phy_def rtl821x_phy_def =3D {
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .phy_id=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D 0x001cc912,=C2=A0 // for rtl8211 single =
+phy=20
+=C2=A0=C2=A0 // .phy_id=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D=
+ 0x001cc960,=C2=A0=C2=A0 for 8366sr inside phy 4
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .phy_id_mask =3D 0x001fffff,
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .name=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D "RTL 821X Giga Phy",
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .features=C2=A0 =3D PHY_GBIT_FEATURES,
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 //.flags=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D PHY_HAS_INTERRUPT,
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .ops=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 =3D &rtl821x_phy_ops
+=C2=A0
+But will be compiled under the best Uimage to board, the feeling of the PHY=
+ the driver has not been mounted use. The following is a kernel information
+=C2=A0=C2=A0=C2=A0=C2=A0 After IP with a good PC PING board, Return Request=
+ Time Out! Troublesome players you look at what questions are
+=C2=A0
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Connection diagram, see attachment
+=C2=A0
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 leowang
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 2009:03:10=0A=0A=0A      _____________=
+______________________________________________ =0A  =E5=A5=BD=E7=8E=A9=E8=
+=B4=BA=E5=8D=A1=E7=AD=89=E4=BD=A0=E5=8F=91=EF=BC=8C=E9=82=AE=E7=AE=B1=E8=B4=
+=BA=E5=8D=A1=E5=85=A8=E6=96=B0=E4=B8=8A=E7=BA=BF=EF=BC=81 =0Ahttp://card.ma=
+il.cn.yahoo.com/
+--0-60129362-1236663411=:21827
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<table cellspacing=3D"0" cellpadding=3D"0" border=3D"0" ><tr><td valign=3D"=
+top" style=3D"font: inherit;"><P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm=
+ 0pt"><FONT size=3D3><SPAN lang=3DEN-US><FONT face=3D"Times New Roman">Hell=
+o all</FONT></SPAN><SPAN style=3D"FONT-FAMILY: =E5=AE=8B=E4=BD=93; mso-asci=
+i-font-family: 'Times New Roman'; mso-hansi-font-family: 'Times New Roman'"=
+>=EF=BC=9A</SPAN></FONT></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><FONT size=3D3><SPAN sty=
+le=3D"FONT-FAMILY: =E5=AE=8B=E4=BD=93; mso-ascii-font-family: 'Times New Ro=
+man'; mso-hansi-font-family: 'Times New Roman'">&nbsp; </SPAN></FONT></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US></SPA=
+N></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US style=
+=3D"COLOR: blue; mso-bidi-font-size: 10.5pt"><FONT face=3D"Times New Roman"=
+ size=3D3>We use the AMCC PowerPC 405ex through emac1 way RGMII with realte=
+k RTL8211 Giga phy linked to, At present the PHY Address is: 00110</FONT></=
+SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt; TEXT-INDENT: 31.5pt; mso=
+-char-indent-count: 3.0"><SPAN lang=3DEN-US><FONT face=3D"Times New Roman" =
+size=3D3>add delay<SPAN style=3D"mso-spacerun: yes">&nbsp; </SPAN>2ns for R=
+GMII</FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt; TEXT-INDENT: 31.5pt; mso=
+-char-indent-count: 3.0"><SPAN lang=3DEN-US><FONT face=3D"Times New Roman" =
+size=3D3>CONFIG[8:5]:AUTO_Negotiation</FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt; TEXT-INDENT: 31.5pt; mso=
+-char-indent-count: 3.0"><FONT size=3D3><SPAN lang=3DEN-US><FONT face=3D"Ti=
+mes New Roman">1111=3DNWay,advertise </FONT></SPAN><SPAN style=3D"FONT-FAMI=
+LY: =E5=AE=8B=E4=BD=93; mso-ascii-font-family: 'Times New Roman'; mso-hansi=
+-font-family: 'Times New Roman'">=EF=BC=8C</SPAN><SPAN lang=3DEN-US><FONT f=
+ace=3D"Times New Roman">all capabilities,prefer Slave</FONT></SPAN></FONT><=
+/DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt; TEXT-INDENT: 31.5pt; mso=
+-char-indent-count: 3.0"><SPAN lang=3DEN-US><FONT face=3D"Times New Roman" =
+size=3D3>mode;1=3DRGMII mode</FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US style=
+=3D"COLOR: blue; mso-bidi-font-size: 10.5pt"><FONT size=3D3><FONT face=3D"T=
+imes New Roman">Clk on the hardware no problem, Mdio, mdc even on, but at L=
+linux / driver / net / ibm-newemac / core.c discovered phy address, phy ID =
+at&nbsp; .Config file has joined<?xml:namespace prefix =3D o ns =3D "urn:sc=
+hemas-microsoft-com:office:office" /><o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt; TEXT-INDENT: 136.5pt; ms=
+o-char-indent-count: 13.0"><FONT size=3D3><FONT face=3D"Times New Roman"><S=
+PAN lang=3DEN-US style=3D"COLOR: black; mso-bidi-font-size: 10.5pt">NETDEVI=
+CE =3D Y</SPAN><SPAN lang=3DEN-US style=3D"COLOR: black"><o:p></o:p></SPAN>=
+</FONT></FONT></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt; TEXT-INDENT: 136.5pt; ms=
+o-char-indent-count: 13.0"><SPAN lang=3DEN-US><FONT face=3D"Times New Roman=
+" size=3D3>PHYLIB=3DY</FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-spacerun: yes">=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPA=
+N><SPAN style=3D"mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+ </SPAN>REALTEK-PHY=3DY</FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt; TEXT-INDENT: 21pt; mso-c=
+har-indent-count: 2.0"><SPAN lang=3DEN-US style=3D"COLOR: blue; mso-bidi-fo=
+nt-size: 10.5pt"><FONT size=3D3><FONT face=3D"Times New Roman">But will be =
+compiled under the best Uimage to board, the feeling of the PHY the driver =
+has not been mounted use. The following is a kernel information<o:p></o:p><=
+/FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><FONT size=3D3><FONT fac=
+e=3D"Times New Roman"><SPAN lang=3DEN-US style=3D"COLOR: blue; mso-bidi-fon=
+t-size: 10.5pt"><SPAN style=3D"mso-spacerun: yes">&nbsp; </SPAN></SPAN><SPA=
+N lang=3DEN-US>PPC 4xx OCP EMAC driver, version 3.54</SPAN></FONT></FONT></=
+DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ face=3D"Times New Roman" size=3D3>MAL v2 /plb/mcmal, 2 TX channels, 2 RX c=
+hannels</FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ face=3D"Times New Roman" size=3D3>RGMII /plb/opb/emac-rgmii@ef600b00 initi=
+alized with MDIO support</FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ face=3D"Times New Roman" size=3D3>/plb/opb/emac-rgmii@ef600b00: input 0 in=
+ RGMII mode</FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ face=3D"Times New Roman" size=3D3>eth0: EMAC-0 /plb/opb/ethernet@ef600900,=
+ MAC 00:47:41:52:52:59</FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ face=3D"Times New Roman" size=3D3>/plb/opb/emac-rgmii@ef600b00: input 1 in=
+ RGMII mode</FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><FONT size=3D3><SPAN lan=
+g=3DEN-US><FONT face=3D"Times New Roman">/plb/opb/ethernet@ef600a00: find T=
+RL 821X Giga PHY</FONT></SPAN><SPAN style=3D"FONT-FAMILY: =E5=AE=8B=E4=BD=
+=93; mso-ascii-font-family: 'Times New Roman'; mso-hansi-font-family: 'Time=
+s New Roman'">=EF=BC=88</SPAN><SPAN lang=3DEN-US><FONT face=3D"Times New Ro=
+man">0x4</FONT></SPAN><SPAN style=3D"FONT-FAMILY: =E5=AE=8B=E4=BD=93; mso-a=
+scii-font-family: 'Times New Roman'; mso-hansi-font-family: 'Times New Roma=
+n'">=EF=BC=89</SPAN></FONT></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US style=
+=3D"COLOR: blue; mso-bidi-font-size: 10.5pt"><o:p><FONT face=3D"Times New R=
+oman" size=3D3>&nbsp;</FONT></o:p></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt; TEXT-INDENT: 21pt; mso-c=
+har-indent-count: 2.0"><FONT size=3D3><FONT face=3D"Times New Roman"><SPAN =
+lang=3DEN-US style=3D"COLOR: blue; mso-bidi-font-size: 10.5pt">But also in =
+Llinux / driver / net / ibm-newemac / phy.c also add the operation of RTL82=
+11bg as follows:</SPAN><SPAN lang=3DEN-US><o:p></o:p></SPAN></FONT></FONT><=
+/DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">#define RTL821x_PHYSR<SPAN style=
+=3D"mso-tab-count: 2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; </SPAN>0x11<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">#define RTL821x_PHYSR_DUPLEX<SPAN =
+style=3D"mso-tab-count: 1">&nbsp;&nbsp;&nbsp; </SPAN>0x2000<o:p></o:p></FON=
+T></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">#define RTL821x_PHYSR_SPEED<SPAN s=
+tyle=3D"mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>0xc00=
+0<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">#define RTL821x_INER<SPAN style=3D=
+"mso-tab-count: 2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>0x12<o=
+:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">#define RTL821x_INER_INIT<SPAN sty=
+le=3D"mso-tab-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>0x6400<o:p></=
+o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">#define RTL821x_INSR<SPAN style=3D=
+"mso-tab-count: 2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>0x13<o=
+:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">static int rtl821x_init(struct mii=
+_phy *phy)<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">{<o:p></o:p></FONT></FONT></SPAN><=
+/DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>phy_write(phy, RTL821x_INER, 0x6=
+400); //enable interrupt<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN><SPAN style=3D"mso-tab-count: 1"=
+>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>return<SPAN style=3D"mso-space=
+run: yes">&nbsp; </SPAN>0;<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">}<o:p></o:p></FONT></FONT></SPAN><=
+/DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><o:p>=
+<FONT face=3D"Times New Roman" size=3D3>&nbsp;</FONT></o:p></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">static struct mii_phy_ops rtl821x_=
+phy_ops =3D {<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.init<SPAN style=3D"mso-tab-coun=
+t: 2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>=3D rtl821x_i=
+nit,<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.setup_aneg<SPAN style=3D"mso-ta=
+b-count: 1">&nbsp;&nbsp;&nbsp; </SPAN>=3D genmii_setup_aneg,<o:p></o:p></FO=
+NT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.setup_forced<SPAN style=3D"mso-=
+tab-count: 1">&nbsp; </SPAN>=3D genmii_setup_forced,<o:p></o:p></FONT></FON=
+T></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.poll_link<SPAN style=3D"mso-tab=
+-count: 1"> </SPAN>=3D genmii_poll_link,<o:p></o:p></FONT></FONT></SPAN></D=
+IV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.read_link<SPAN style=3D"mso-tab=
+-count: 1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>=3D genmii_read_link=
+<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">};<o:p></o:p></FONT></FONT></SPAN>=
+</DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><o:p>=
+<FONT face=3D"Times New Roman" size=3D3>&nbsp;</FONT></o:p></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman">static struct mii_phy_def rtl821x_=
+phy_def =3D {<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.phy_id<SPAN style=3D"mso-tab-co=
+unt: 2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN=
+>=3D 0x001cc912,<SPAN style=3D"mso-spacerun: yes">&nbsp; </SPAN>// for rtl8=
+211 single phy <o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-spacerun: yes">=
+&nbsp;&nbsp; </SPAN>// .phy_id<SPAN style=3D"mso-tab-count: 2">&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>=3D 0x001cc960,<SPAN style=3D"m=
+so-spacerun: yes">&nbsp;&nbsp; </SPAN>for 8366sr inside phy 4<o:p></o:p></F=
+ONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.phy_id_mask<SPAN style=3D"mso-t=
+ab-count: 1"> </SPAN>=3D 0x001fffff,<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.name<SPAN style=3D"mso-tab-coun=
+t: 2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp; </SPAN>=3D "RTL 821X Giga Phy",<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.features<SPAN style=3D"mso-tab-=
+count: 1">&nbsp; </SPAN>=3D PHY_GBIT_FEATURES,<o:p></o:p></FONT></FONT></SP=
+AN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>//.flags<SPAN style=3D"mso-tab-c=
+ount: 2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPA=
+N>=3D PHY_HAS_INTERRUPT,<o:p></o:p></FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US><FONT=
+ size=3D3><FONT face=3D"Times New Roman"><SPAN style=3D"mso-tab-count: 1">&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>.ops<SPAN style=3D"mso-tab-count=
+: 2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </SPAN>=3D &amp;rtl821x_phy=
+_ops</FONT></FONT></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US style=
+=3D"COLOR: blue; mso-bidi-font-size: 10.5pt"><o:p><FONT face=3D"Times New R=
+oman" size=3D3>&nbsp;</FONT></o:p></SPAN></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt; TEXT-INDENT: 31.5pt; mso=
+-char-indent-count: 3.0"><SPAN lang=3DEN-US style=3D"COLOR: blue; mso-bidi-=
+font-size: 10.5pt"><FONT face=3D"Times New Roman" size=3D3>But will be comp=
+iled under the best Uimage to board, the feeling of the PHY the driver has =
+not been mounted use. The following is a kernel information</FONT></SPAN></=
+DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><FONT size=3D3><FONT fac=
+e=3D"Times New Roman"><SPAN lang=3DEN-US><SPAN style=3D"mso-spacerun: yes">=
+&nbsp;</SPAN><SPAN style=3D"mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </SPAN></=
+SPAN><SPAN lang=3DEN-US style=3D"COLOR: blue; mso-bidi-font-size: 10.5pt">A=
+fter IP with a good PC PING board, Return Request Time Out! Troublesome pla=
+yers you look at what questions are</SPAN></FONT></FONT></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><FONT size=3D3><FONT fac=
+e=3D"Times New Roman"><SPAN lang=3DEN-US style=3D"COLOR: blue; mso-bidi-fon=
+t-size: 10.5pt"></SPAN></FONT></FONT>&nbsp;</DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><FONT size=3D3><FONT fac=
+e=3D"Times New Roman"><SPAN lang=3DEN-US style=3D"COLOR: blue; mso-bidi-fon=
+t-size: 10.5pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT face=3D=E5=AE=8B=E4=BD=
+=93 color=3D#000000>Connection diagram, see attachment</FONT></SPAN></FONT>=
+</FONT></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><FONT size=3D3><FONT fac=
+e=3D=E5=AE=8B=E4=BD=93 color=3D#000000><SPAN lang=3DEN-US style=3D"COLOR: b=
+lue; mso-bidi-font-size: 10.5pt"></SPAN></FONT></FONT>&nbsp;</DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><FONT size=3D3><FONT fac=
+e=3D=E5=AE=8B=E4=BD=93 color=3D#000000><SPAN lang=3DEN-US style=3D"COLOR: b=
+lue; mso-bidi-font-size: 10.5pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; leowa=
+ng</SPAN></FONT></FONT></DIV>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><FONT size=3D3><FONT fac=
+e=3D=E5=AE=8B=E4=BD=93 color=3D#000000><SPAN lang=3DEN-US style=3D"COLOR: b=
+lue; mso-bidi-font-size: 10.5pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2009:=
+03:10</SPAN></FONT></FONT></DIV></td></tr></table><br>=0A=0A=0A      <hr si=
+ze=3D1><a href=3D"http://cn.rd.yahoo.com/mail_cn/tagline/card/*http://card.=
+mail.cn.yahoo.com/">  =E5=A5=BD=E7=8E=A9=E8=B4=BA=E5=8D=A1=E7=AD=89=E4=BD=
+=A0=E5=8F=91=EF=BC=8C=E9=82=AE=E7=AE=B1=E8=B4=BA=E5=8D=A1=E5=85=A8=E6=96=B0=
+=E4=B8=8A=E7=BA=BF=EF=BC=81</a>
+--0-60129362-1236663411=:21827--
+
+--0-788370109-1236663411=:21827
+Content-Type: application/pdf; name="Connection diagram.pdf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="Connection diagram.pdf"
+
+JVBERi0xLjQNJeLjz9MNCjIxIDAgb2JqPDwvSFs5NzQgMTY0XS9MaW5lYXJp
+emVkIDEvRSA1ODYwL0wgMTEyOTgvTiAxL08gMjQvVCAxMDgzMT4+DWVuZG9i
+ag0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgDQp4cmVmDQoyMSAxMg0KMDAwMDAwMDAxNiAwMDAw
+MCBuDQowMDAwMDAxMzA0IDAwMDAwIG4NCjAwMDAwMDA5NzQgMDAwMDAgbg0K
+MDAwMDAwMTU0OCAwMDAwMCBuDQowMDAwMDAxNzc5IDAwMDAwIG4NCjAwMDAw
+MDIxNjIgMDAwMDAgbg0KMDAwMDAwMjE5NiAwMDAwMCBuDQowMDAwMDAyODU2
+IDAwMDAwIG4NCjAwMDAwMDI4NzYgMDAwMDAgbg0KMDAwMDAwNTU0NSAwMDAw
+MCBuDQowMDAwMDA1Nzg0IDAwMDAwIG4NCjAwMDAwMDExMzggMDAwMDAgbg0K
+dHJhaWxlcg0KPDwvU2l6ZSAzMy9QcmV2IDEwODIwL1hSZWZTdG0gMTEzOC9S
+b290IDIyIDAgUi9JbmZvIDYgMCBSL0lEWzw4NDIyMWVhOWY4MjIzMWNjY2Jj
+N2QyMzk1OWQ2ODQ1Nz48NDI2NjNhYWUzMDQwMDA0NWEzNzBiZTQyMmRhZGFm
+Yzc+XT4+DQpzdGFydHhyZWYNCjANCiUlRU9GDQogICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgDQoyMyAwIG9iajw8L0xlbmd0
+aCA3NS9GaWx0ZXIvRmxhdGVEZWNvZGUvQyA5MS9MIDc1L1AgMTEzL1MgMzg+
+PnN0cmVhbQ0KeNpiYGDgYGBgzWAAAoEbDKiACYhZGDgakMU4oJiBQYSBh9cw
+m+FRAwNXJO8GC6gGiQVQjSABRgYGMQcIzZQANYD1AECAAQCUKQfyDSBlbmRz
+dHJlYW0NZW5kb2JqDTMyIDAgb2JqPDwvU2l6ZSAyMS9MZW5ndGggMjAvRmls
+dGVyL0ZsYXRlRGVjb2RlL0RlY29kZVBhcm1zPDwvQ29sdW1ucyAzL1ByZWRp
+Y3RvciAxMj4+L1dbMSAxIDFdL1R5cGUvWFJlZi9JbmRleFs3IDE0XT4+c3Ry
+ZWFtDQp42mJiYmRgYmBgJBUDBBgABWkALQ0gZW5kc3RyZWFtDWVuZG9iag0y
+MiAwIG9iajw8L1BhZ2VzIDQgMCBSL1R5cGUvQ2F0YWxvZy9MYW5nKEVOLVVT
+KS9QYWdlTGFiZWxzIDIgMCBSL1N0cnVjdFRyZWVSb290IDcgMCBSL01ldGFk
+YXRhIDUgMCBSL1BpZWNlSW5mbzw8L01hcmtlZFBERjw8L0xhc3RNb2RpZmll
+ZChEOjIwMDkwMzEwMTMzMzExKT4+Pj4vTGFzdE1vZGlmaWVkKEQ6MjAwOTAz
+MTAxMzMzMTEpL01hcmtJbmZvPDwvTWFya2VkIHRydWUvTGV0dGVyc3BhY2VG
+bGFncyAwPj4+Pg1lbmRvYmoNMjQgMCBvYmo8PC9Db250ZW50cyAyNyAwIFIv
+VHlwZS9QYWdlL1BhcmVudCA0IDAgUi9Sb3RhdGUgMC9NZWRpYUJveFswIDAg
+NTk1IDg0Ml0vQ3JvcEJveFswIDAgNTk1IDg0Ml0vUmVzb3VyY2VzPDwvQ29s
+b3JTcGFjZTw8L0NTMCAyNiAwIFI+Pi9Gb250PDwvVFQwIDI1IDAgUj4+L1By
+b2NTZXRbL1BERi9UZXh0XS9FeHRHU3RhdGU8PC9HUzAgMzEgMCBSPj4+Pi9T
+dHJ1Y3RQYXJlbnRzIDA+Pg1lbmRvYmoNMjUgMCBvYmo8PC9UeXBlL0ZvbnQv
+RW5jb2RpbmcvV2luQW5zaUVuY29kaW5nL0Jhc2VGb250L1RpbWVzTmV3Um9t
+YW5QU01UL0ZpcnN0Q2hhciAzMi9MYXN0Q2hhciAxMjAvU3VidHlwZS9UcnVl
+VHlwZS9Gb250RGVzY3JpcHRvciAzMCAwIFIvV2lkdGhzWzI1MCAwIDAgMCAw
+IDAgMCAwIDAgMCAwIDAgMCAwIDAgMCA1MDAgNTAwIDUwMCAwIDUwMCA1MDAg
+MCAwIDUwMCAwIDAgMCAwIDAgMCAwIDAgNzIyIDAgNjY3IDAgNjExIDAgMCAw
+IDAgMCAwIDYxMSA4ODkgMCAwIDU1NiAwIDY2NyAwIDYxMSAwIDAgMCAwIDAg
+MCAwIDAgMCAwIDAgMCA0NDQgNTAwIDQ0NCAwIDQ0NCAwIDUwMCAwIDAgMCAw
+IDAgNzc4IDAgNTAwIDAgMCAzMzMgMCAwIDAgMCA3MjIgNTAwXT4+DWVuZG9i
+ag0yNiAwIG9ialsvSUNDQmFzZWQgMjkgMCBSXQ1lbmRvYmoNMjcgMCBvYmo8
+PC9MZW5ndGggMjggMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+c3RyZWFtDQpI
+idxVTY/TQAy9z6/wEZAytT2fkVYrsdkKgSiqaG6Iw1LaXVZbQO1hEb8eT9qQ
+TJLucqY9dOy++Nl+9mS2urv5uYGLi9miensNBJeXV9cVqFm1QlgfxJG+cFh/
+VwTfxP9G/LcHRezBR9Rcygd2jR0caufhQXGMudEhH9T2GLtaATZfWFUfFOrg
+4BEiLMRzL4zv4NNnhK/Qj1WQZyiChPKIBPtNn3Wn7tRKzRcp9+XferitR5JW
+V7Wa1TVK9HorjChB5LiGdCQD9WPKppaaMf3+Fqvei6Fdk2dzIGO0JBGM0xhR
+2OudegEv63s1xEVdItr4D1BrNTFiGEBfL6oKlj8eN/tlBRbd5lfz8Lw+FTkh
+kLW5JmIHNDqkSqXzVMaRnSuTIwpnoWCjTfN/ancW8NhxRq/LnPfk6lOxp5Gd
+U+cIodboc/ZR2GMCPbXNk2qb8qh2EnoggaOkqo9Rk0eOTf/nuwmtvNdE0ZkB
+9maNuThdTrbNKcsnD8tk0wg/z89canRT/PTccLBMbpl6mUtlufWGoCkc1WCZ
+XvuU1wcd+aRkF6Hv7di87VRn28xKHygV2WlXn/r0YM+1fSW9keuC5Lr474pL
+c91spzC5tMnp3OcKOLYbbFql9hYdwIogt6chzc0qZxFHm+TOblKRVonL9t60
+ZrxOjK5ZJ1tq5nZEP05MM5EuQxn9AFpPQUUelPUbQN9P7YjVVpoxTAAi0wRa
+FLaebTlA05cJrJNp8OxogL09t/s4uft45hYyRtaaQnpvcOjeFm3cPwIMAA18
+jisNIGVuZHN0cmVhbQ1lbmRvYmoNMjggMCBvYmogNTg4DWVuZG9iag0yOSAw
+IG9iajw8L0xlbmd0aCAyNTc1L0ZpbHRlci9GbGF0ZURlY29kZS9OIDMvQWx0
+ZXJuYXRlL0RldmljZVJHQj4+c3RyZWFtDQpIiZyWeVRTdxbHf2/JnpCVsMNj
+DVuAsAaQNWxhkR0EUQhJCAESQkjYBUFEBRRFRISqlTLWbXRGT0WdLq5jrQ7W
+ferSA/Uw6ug4tBbXjp0XOEedTmem0+8f7/c593fv793fvfed8wCgJ6WqtdUw
+CwCN1qDPSozFFhUUYqQJAAMKIAIRADJ5rS4tOyEH4JLGS7Ba3An8i55eB5Bp
+vSJMysAw8P+JLdfpDQBAGTgHKJS1cpw7ca6qN+hM9hmceaWVJoZRE+vxBHG2
+NLFqnr3nfOY52sQKjVaBsylnnUKjMPFpnFfXGZU4I6k4d9WplfU4X8XZpcqo
+UeP83BSrUcpqAUDpJrtBKS/H2Q9nuj4nS4LzAgDIdNU7XPoOG5QNBtOlJNW6
+Rr1aVW7A3OUemCg0VIwlKeurlAaDMEMmr5TpFZikWqOTaRsBmL/znDim2mJ4
+kYNFocHBQn8f0TuF+q+bv1Cm3s7Tk8y5nkH8C29tP+dXPQqAeBavzfq3ttIt
+AIyvBMDy5luby/sAMPG+Hb74zn34pnkpNxh0Yb6+9fX1Pmql3MdU0Df6nw6/
+QO+8z8d03JvyYHHKMpmxyoCZ6iavrqo26rFanUyuxIQ/HeJfHfjzeXhnKcuU
+eqUWj8jDp0ytVeHt1irUBnW1FlNr/1MTf2XYTzQ/17i4Y68Br9gHsC7yAPK3
+CwDl0gBStA3fgd70LZWSBzLwNd/h3vzczwn691PhPtOjVq2ai5Nk5WByo75u
+fs/0WQICoAIm4AErYA+cgTsQAn8QAsJBNIgHySAd5IACsBTIQTnQAD2oBy2g
+HXSBHrAebALDYDsYA7vBfnAQjIOPwQnwR3AefAmugVtgEkyDh2AGPAWvIAgi
+QQyIC1lBDpAr5AX5Q2IoEoqHUqEsqAAqgVSQFjJCLdAKqAfqh4ahHdBu6PfQ
+UegEdA66BH0FTUEPoO+glzAC02EebAe7wb6wGI6BU+AceAmsgmvgJrgTXgcP
+waPwPvgwfAI+D1+DJ+GH8CwCEBrCRxwRISJGJEg6UoiUIXqkFelGBpFRZD9y
+DDmLXEEmkUfIC5SIclEMFaLhaBKai8rRGrQV7UWH0V3oYfQ0egWdQmfQ1wQG
+wZbgRQgjSAmLCCpCPaGLMEjYSfiIcIZwjTBNeEokEvlEATGEmEQsIFYQm4m9
+xK3EA8TjxEvEu8RZEolkRfIiRZDSSTKSgdRF2kLaR/qMdJk0TXpOppEdyP7k
+BHIhWUvuIA+S95A/JV8m3yO/orAorpQwSjpFQWmk9FHGKMcoFynTlFdUNlVA
+jaDmUCuo7dQh6n7qGept6hMajeZEC6Vl0tS05bQh2u9on9OmaC/oHLonXUIv
+ohvp6+gf0o/Tv6I/YTAYboxoRiHDwFjH2M04xfia8dyMa+ZjJjVTmLWZjZgd
+Nrts9phJYboyY5hLmU3MQeYh5kXmIxaF5caSsGSsVtYI6yjrBmuWzWWL2Ols
+DbuXvYd9jn2fQ+K4ceI5Ck4n5wPOKc5dLsJ15kq4cu4K7hj3DHeaR+QJeFJe
+Ba+H91veBG/GnGMeaJ5n3mA+Yv6J+SQf4bvxpfwqfh//IP86/6WFnUWMhdJi
+jcV+i8sWzyxtLKMtlZbdlgcsr1m+tMKs4q0qrTZYjVvdsUatPa0zreutt1mf
+sX5kw7MJt5HbdNsctLlpC9t62mbZNtt+YHvBdtbO3i7RTme3xe6U3SN7vn20
+fYX9gP2n9g8cuA6RDmqHAYfPHP6KmWMxWBU2hJ3GZhxtHZMcjY47HCccXzkJ
+nHKdOpwOON1xpjqLncucB5xPOs+4OLikubS47HW56UpxFbuWu252Pev6zE3g
+lu+2ym3c7b7AUiAVNAn2Cm67M9yj3GvcR92vehA9xB6VHls9vvSEPYM8yz1H
+PC96wV7BXmqvrV6XvAneod5a71HvG0K6MEZYJ9wrnPLh+6T6dPiM+zz2dfEt
+9N3ge9b3tV+QX5XfmN8tEUeULOoQHRN95+/pL/cf8b8awAhICGgLOBLwbaBX
+oDJwW+Cfg7hBaUGrgk4G/SM4JFgfvD/4QYhLSEnIeyE3xDxxhrhX/HkoITQ2
+tC3049AXYcFhhrCDYX8PF4ZXhu8Jv79AsEC5YGzB3QinCFnEjojJSCyyJPL9
+yMkoxyhZ1GjUN9HO0YrondH3YjxiKmL2xTyO9YvVx34U+0wSJlkmOR6HxCXG
+dcdNxHPic+OH479OcEpQJexNmEkMSmxOPJ5ESEpJ2pB0Q2onlUt3S2eSQ5KX
+JZ9OoadkpwynfJPqmapPPZYGpyWnbUy7vdB1oXbheDpIl6ZvTL+TIcioyfhD
+JjEzI3Mk8y9ZoqyWrLPZ3Ozi7D3ZT3Nic/pybuW65xpzT+Yx84ryduc9y4/L
+78+fXOS7aNmi8wXWBeqCI4WkwrzCnYWzi+MXb1o8XRRU1FV0fYlgScOSc0ut
+l1Yt/aSYWSwrPlRCKMkv2VPygyxdNiqbLZWWvlc6I5fIN8sfKqIVA4oHyghl
+v/JeWURZf9l9VYRqo+pBeVT5YPkjtUQ9rP62Iqlie8WzyvTKDyt/rMqvOqAh
+a0o0R7UcbaX2dLV9dUP1JZ2Xrks3WRNWs6lmRp+i31kL1S6pPWLg4T9TF4zu
+xpXGqbrIupG65/V59Yca2A3ahguNno1rGu81JTT9phltljefbHFsaW+ZWhaz
+bEcr1FraerLNua2zbXp54vJd7dT2yvY/dfh19Hd8vyJ/xbFOu87lnXdXJq7c
+22XWpe+6sSp81fbV6Gr16ok1AWu2rHndrej+osevZ7Dnh1557xdrRWuH1v64
+rmzdRF9w37b1xPXa9dc3RG3Y1c/ub+q/uzFt4+EBbKB74PtNxZvODQYObt9M
+3WzcPDmU+k8ApAFb/pi4mSSZkJn8mmia1ZtCm6+cHJyJnPedZJ3SnkCerp8d
+n4uf+qBpoNihR6G2oiailqMGo3aj5qRWpMelOKWpphqmi6b9p26n4KhSqMSp
+N6mpqhyqj6sCq3Wr6axcrNCtRK24ri2uoa8Wr4uwALB1sOqxYLHWskuywrM4
+s660JbSctRO1irYBtnm28Ldot+C4WbjRuUq5wro7urW7LrunvCG8m70VvY++
+Cr6Evv+/er/1wHDA7MFnwePCX8Lbw1jD1MRRxM7FS8XIxkbGw8dBx7/IPci8
+yTrJuco4yrfLNsu2zDXMtc01zbXONs62zzfPuNA50LrRPNG+0j/SwdNE08bU
+SdTL1U7V0dZV1tjXXNfg2GTY6Nls2fHadtr724DcBdyK3RDdlt4c3qLfKd+v
+4DbgveFE4cziU+Lb42Pj6+Rz5PzlhOYN5pbnH+ep6DLovOlG6dDqW+rl63Dr
+++yG7RHtnO4o7rTvQO/M8Fjw5fFy8f/yjPMZ86f0NPTC9VD13vZt9vv3ivgZ
++Kj5OPnH+lf65/t3/Af8mP0p/br+S/7c/23//wIMAPeE8/sKDSBlbmRzdHJl
+YW0NZW5kb2JqDTMwIDAgb2JqPDwvVHlwZS9Gb250RGVzY3JpcHRvci9Gb250
+QkJveFstNTY4IC0zMDcgMjAwMCAxMDA3XS9Gb250TmFtZS9UaW1lc05ld1Jv
+bWFuUFNNVC9GbGFncyAzNC9TdGVtViA4Mi9DYXBIZWlnaHQgNjU2L1hIZWln
+aHQgMC9Bc2NlbnQgODkxL0Rlc2NlbnQgLTIxNi9JdGFsaWNBbmdsZSAwL0Zv
+bnRGYW1pbHkoVGltZXMgTmV3IFJvbWFuKS9Gb250U3RyZXRjaC9Ob3JtYWwv
+Rm9udFdlaWdodCA0MDA+Pg1lbmRvYmoNMzEgMCBvYmo8PC9UeXBlL0V4dEdT
+dGF0ZS9TQSBmYWxzZS9PUCBmYWxzZS9TTSAwLjAyL29wIGZhbHNlL09QTSAx
+Pj4NZW5kb2JqDTEgMCBvYmo8PC9MZW5ndGggNTE0L0ZpbHRlci9GbGF0ZURl
+Y29kZS9UeXBlL09ialN0bS9GaXJzdCA5My9OIDE0Pj5zdHJlYW0NCnjarFNN
+b6MwEP0rI+XSHrbGTgAjVUjka5VNm0SBag9RDpQ4LCoxyDGr5t93DCRZtr01
+Bzx+w8yb8fPYBQs4UMsCD6jr4A6YhYYCYzZQBgPbBdoHGyPoAGwHg21wKDod
+cDiGuODafaAcOKNAPeDcQwrwOIXHRxKdSkFCrapER0qIdVFoMseKFqzJKI+P
+x+e4xNIGrmIlZB1luuh6FuJdz8UJKFkXuTA52CGG+D7WeIplejdZ/Pg5vCfz
+DTaLP0yzteGNcRvjNMY2ZktWULtJSEKR6JqrN3F6wbgX9M3Gc3rcNYc5V1pU
+h+PGMrKY/Nq1rHSeSTxjGUvyIndCXWGEXQ+LdzLO/pKpig+i2aEGstCCLMwy
+kbsrCP/EKNc0SyslyEwapo4rWgb4jYydmY1Zpq1n2nrCqhTqmKis1E0XYfXa
+gVplb6KoWjhWRTmKy3OFz+cnK9//X1S7o6b7j9JblGQOFhl9ydRefPjlzxTY
+4KL0HK86MONUz8Elr1EjyPXd/acEdoOi/RtwDG7AYX+bY4iDt6Fs8GCB43Jc
+GfdwdW32YG3JEh/NqZ4BHSs9w7GVGvoYbOaxhYw6iFd5nIgDYjLMi+Stmflz
+9m+V6Uymz8VOkCcVvXborA6bQeY9BHmWSvKrOupsfzIjmIih2BdK1BE1DvZa
+qEvCNd/3PwQYAAOnOSQNIGVuZHN0cmVhbQ1lbmRvYmoNMiAwIG9iajw8L051
+bXNbMCAzIDAgUl0+Pg1lbmRvYmoNMyAwIG9iajw8L1MvRD4+DWVuZG9iag00
+IDAgb2JqPDwvQ291bnQgMS9LaWRzWzI0IDAgUl0vVHlwZS9QYWdlcz4+DWVu
+ZG9iag01IDAgb2JqPDwvTGVuZ3RoIDM5MTIvVHlwZS9NZXRhZGF0YS9TdWJ0
+eXBlL1hNTD4+c3RyZWFtDQo8P3hwYWNrZXQgYmVnaW49J++7vycgaWQ9J1c1
+TTBNcENlaGlIenJlU3pOVGN6a2M5ZCc/Pgo8P2Fkb2JlLXhhcC1maWx0ZXJz
+IGVzYz0iQ1JMRiI/Pg0KPHg6eG1wbWV0YSB4bWxuczp4PSdhZG9iZTpuczpt
+ZXRhLycgeDp4bXB0az0nWE1QIHRvb2xraXQgMi45LjEtMTMsIGZyYW1ld29y
+ayAxLjYnPg0KPHJkZjpSREYgeG1sbnM6cmRmPSdodHRwOi8vd3d3LnczLm9y
+Zy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjJyB4bWxuczppWD0naHR0cDov
+L25zLmFkb2JlLmNvbS9pWC8xLjAvJz4NCjxyZGY6RGVzY3JpcHRpb24gcmRm
+OmFib3V0PSd1dWlkOmJkNWNmY2FjLTY4OTEtNDVkNy1iZjI3LTBiMGU3MzZk
+OTUzMycgeG1sbnM6cGRmPSdodHRwOi8vbnMuYWRvYmUuY29tL3BkZi8xLjMv
+JyBwZGY6UHJvZHVjZXI9J0Fjcm9iYXQgRGlzdGlsbGVyIDYuMCAoV2luZG93
+cyknPjwvcmRmOkRlc2NyaXB0aW9uPg0KPHJkZjpEZXNjcmlwdGlvbiByZGY6
+YWJvdXQ9J3V1aWQ6YmQ1Y2ZjYWMtNjg5MS00NWQ3LWJmMjctMGIwZTczNmQ5
+NTMzJyB4bWxuczpwZGZ4PSdodHRwOi8vbnMuYWRvYmUuY29tL3BkZngvMS4z
+LycgcGRmeDpDb21wYW55PSdXd1cuWWxtRi5Db00nIHBkZng6U291cmNlTW9k
+aWZpZWQ9J0Q6MjAwOTAzMTAwNTMyNTQnLz4NCjxyZGY6RGVzY3JpcHRpb24g
+cmRmOmFib3V0PSd1dWlkOmJkNWNmY2FjLTY4OTEtNDVkNy1iZjI3LTBiMGU3
+MzZkOTUzMycgeG1sbnM6cGhvdG9zaG9wPSdodHRwOi8vbnMuYWRvYmUuY29t
+L3Bob3Rvc2hvcC8xLjAvJz48cGhvdG9zaG9wOmhlYWRsaW5lPjxyZGY6U2Vx
+PjxyZGY6bGk+PC9yZGY6bGk+PC9yZGY6U2VxPjwvcGhvdG9zaG9wOmhlYWRs
+aW5lPjwvcmRmOkRlc2NyaXB0aW9uPg0KPHJkZjpEZXNjcmlwdGlvbiByZGY6
+YWJvdXQ9J3V1aWQ6YmQ1Y2ZjYWMtNjg5MS00NWQ3LWJmMjctMGIwZTczNmQ5
+NTMzJyB4bWxuczp4YXA9J2h0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8n
+IHhhcDpDcmVhdGVEYXRlPScyMDA5LTAzLTEwVDEzOjMzOjAxKzA4OjAwJyB4
+YXA6Q3JlYXRvclRvb2w9J0Fjcm9iYXQgUERGTWFrZXIgNi4wIGZvciBXb3Jk
+JyB4YXA6TW9kaWZ5RGF0ZT0nMjAwOS0wMy0xMFQxMzozMzoxMSswODowMCcg
+eGFwOk1ldGFkYXRhRGF0ZT0nMjAwOS0wMy0xMFQxMzozMzoxMSswODowMCc+
+PC9yZGY6RGVzY3JpcHRpb24+DQo8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91
+dD0ndXVpZDpiZDVjZmNhYy02ODkxLTQ1ZDctYmYyNy0wYjBlNzM2ZDk1MzMn
+IHhtbG5zOnhhcE1NPSdodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0v
+JyB4YXBNTTpEb2N1bWVudElEPSd1dWlkOmFkMjU1NzExLTlhOTItNGRkYS1i
+MmVjLTNlNGViM2Q4OTZhMSc+PHhhcE1NOlZlcnNpb25JRD48cmRmOlNlcT48
+cmRmOmxpPjE8L3JkZjpsaT48L3JkZjpTZXE+PC94YXBNTTpWZXJzaW9uSUQ+
+PC9yZGY6RGVzY3JpcHRpb24+DQo8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91
+dD0ndXVpZDpiZDVjZmNhYy02ODkxLTQ1ZDctYmYyNy0wYjBlNzM2ZDk1MzMn
+IHhtbG5zOmRjPSdodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLycg
+ZGM6Zm9ybWF0PSdhcHBsaWNhdGlvbi9wZGYnPjxkYzp0aXRsZT48cmRmOkFs
+dD48cmRmOmxpIHhtbDpsYW5nPSd4LWRlZmF1bHQnPiA8L3JkZjpsaT48L3Jk
+ZjpBbHQ+PC9kYzp0aXRsZT48ZGM6Y3JlYXRvcj48cmRmOlNlcT48cmRmOmxp
+PumbqOael+acqOmjjjwvcmRmOmxpPjwvcmRmOlNlcT48L2RjOmNyZWF0b3I+
+PGRjOnN1YmplY3Q+PHJkZjpTZXE+PHJkZjpsaT48L3JkZjpsaT48L3JkZjpT
+ZXE+PC9kYzpzdWJqZWN0PjwvcmRmOkRlc2NyaXB0aW9uPg0KPC9yZGY6UkRG
+Pg0KPC94OnhtcG1ldGE+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgCjw/eHBh
+Y2tldCBlbmQ9J3cnPz4NIGVuZHN0cmVhbQ1lbmRvYmoNNiAwIG9iajw8L01v
+ZERhdGUoRDoyMDA5MDMxMDEzMzMxMSswOCcwMCcpL0NyZWF0aW9uRGF0ZShE
+OjIwMDkwMzEwMTMzMzAxKzA4JzAwJykvVGl0bGUoICkvQ3JlYXRvcihBY3Jv
+YmF0IFBERk1ha2VyIDYuMCBmb3IgV29yZCkvUHJvZHVjZXIoQWNyb2JhdCBE
+aXN0aWxsZXIgNi4wIFwoV2luZG93c1wpKS9BdXRob3Io/v+W6GeXZ1womM4p
+L0NvbXBhbnkoV3dXLllsbUYuQ29NKS9Tb3VyY2VNb2RpZmllZChEOjIwMDkw
+MzEwMDUzMjU0KT4+DWVuZG9iag14cmVmDQowIDIxDQowMDAwMDAwMDAwIDY1
+NTM1IGYNCjAwMDAwMDU4NjAgMDAwMDAgbg0KMDAwMDAwNjQ2OCAwMDAwMCBu
+DQowMDAwMDA2NTAxIDAwMDAwIG4NCjAwMDAwMDY1MjQgMDAwMDAgbg0KMDAw
+MDAwNjU3NSAwMDAwMCBuDQowMDAwMDEwNTYzIDAwMDAwIG4NCjAwMDAwMDAw
+MDAgNjU1MzUgZg0KMDAwMDAwMDAwMCA2NTUzNSBmDQowMDAwMDAwMDAwIDY1
+NTM1IGYNCjAwMDAwMDAwMDAgNjU1MzUgZg0KMDAwMDAwMDAwMCA2NTUzNSBm
+DQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAwMDAgNjU1MzUgZg0KMDAw
+MDAwMDAwMCA2NTUzNSBmDQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAw
+MDAgNjU1MzUgZg0KMDAwMDAwMDAwMCA2NTUzNSBmDQowMDAwMDAwMDAwIDY1
+NTM1IGYNCjAwMDAwMDAwMDAgNjU1MzUgZg0KMDAwMDAwMDAwMCA2NTUzNSBm
+DQp0cmFpbGVyDQo8PC9TaXplIDIxPj4NCnN0YXJ0eHJlZg0KMzMyDQolJUVP
+Rg0K
+
+--0-788370109-1236663411=:21827--
