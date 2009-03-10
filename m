@@ -1,17 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 21F08DE050
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 06:00:57 +1100 (EST)
-Date: Tue, 10 Mar 2009 14:00:47 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull from 'next' branch
-Message-ID: <Pine.LNX.4.64.0903101359130.25312@blarg.am.freescale.net>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 108F6DE14E
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 06:16:40 +1100 (EST)
+Date: Tue, 10 Mar 2009 22:16:38 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 5/5] net: make mpc5200 fec driver use of_mdio
+	infrastructure
+Message-ID: <20090310191638.GA8539@oksana.dev.rtsoft.ru>
+References: <20090310150751.12455.70598.stgit@localhost.localdomain>
+	<20090310152224.12455.99348.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20090310152224.12455.99348.stgit@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, afleming@freescale.com,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,43 +25,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'next' branch of
+On Tue, Mar 10, 2009 at 09:22:24AM -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+[...]
+> +static int mpc52xx_fec_notifier_phy_add(struct notifier_block *nb,
+> +					unsigned long event, void *_dev)
+> +{
+[...]
+> +	rc = phy_connect_direct(priv->ndev, priv->phydev,
+> +				mpc52xx_fec_adjust_link, 0, 0);
+> +	if (rc) {
+> +		dev_err(dev, "phy_connect_direct() failed\n");
+> +		return 0;
+> +	}
+> +
+> +	rc = register_netdev(priv->ndev);
+> +	if (rc) {
+> +		phy_disconnect(priv->phydev);
+> +		dev_err(dev, "register_netdev() failed\n");
+> +	}
+> +
+> +	return 0;
+> +}
+[...]
+>  static int __devinit
+>  mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+> @@ -896,7 +874,6 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+[...]
+> +	/* Register the new network device immediately if we don't need
+> +	 * to wait for a phy_device first. */
+> +	if (!priv->phy_node) {
+> +		if (priv->seven_wire_mode)
+> +			dev_info(&ndev->dev, "using 7-wire PHY mode\n");
+> +		else
+> +			dev_info(&ndev->dev, "Fixed speed MII link: %i%cD\n",
+> +				 priv->speed, priv->duplex ? 'F' : 'H');
+> +		rv = register_netdev(ndev);
+> +		if (rv < 0)
+> +			goto probe_error;
+>  	}
+[...]
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
+Two registration points for the netdev... That's ugly. :-/
 
-to receive the following updates:
+What problem are you trying to solve w/ these patches, btw?
 
-(The i2c patch was ack'd by Ben Dooks & cpm_uart has historically gone via
-powerpc tree as a PPC specific driver).
+`ifconfig ethX up` is safe even w/o PHY attached.
 
- Documentation/powerpc/dts-bindings/fsl/ssi.txt |    2 +
- arch/powerpc/boot/dts/gef_sbc610.dts           |    2 -
- arch/powerpc/boot/dts/mpc8610_hpcd.dts         |    2 +
- arch/powerpc/include/asm/mmu.h                 |    4 +-
- arch/powerpc/kernel/cputable.c                 |    3 +
- arch/powerpc/mm/tlb_nohash_low.S               |   44 +++++++++++++++++++++----
- arch/powerpc/platforms/83xx/usb.c              |    3 +
- arch/powerpc/sysdev/fsl_soc.c                  |    4 ++
- arch/powerpc/sysdev/ipic.c                     |    6 +--
- drivers/i2c/busses/i2c-mpc.c                   |    9 +----
- drivers/serial/cpm_uart/cpm_uart_core.c        |   14 ++++++-
- 11 files changed, 69 insertions(+), 24 deletions(-)
+All the (user-visible) changes is that we no longer have "ethX"
+until PHY is registered, and I can't say that this is good either.
 
-Anton Vorontsov (1):
-      powerpc/83xx: Do not configure or probe disabled FSL DR USB controllers
+Previously you'd have ethX all the time, and `ifconfig ethX up`
+would report user-friendly "PHY not attached" error. Now we have
+to guess why ethX isn't there.
 
-Da Yu (1):
-      powerpc/83xx: Fix the interrupt loss problem on ipic
+I can't say that the probing code is much prettier or easier to
+understand... But maybe there are some other problems that you're
+solving, which I don't see so far?
 
-Kumar Gala (1):
-      powerpc/fsl-booke: Add support for tlbilx instructions
+That is, can you explain why the changes are needed? Did you
+consider other solutions?
 
-Martyn Welch (1):
-      powerpc/86xx: Correct local bus registers in GE Fanuc SBC610 dts file
 
-Timur Tabi (2):
-      i2c-mpc: do not allow interruptions when waiting for I2C to complete
-      powerpc: add fsl,fifo-depth property to Freescale SSI device nodes
+Thanks!
 
-Xiaotian Feng (1):
-      cpm_uart: fix non-console port startup bug
+p.s.
+> eliminates the assumption that the PHY for the FEC is always
+> attached to the FEC's own MDIO bus. With this patch, the FEC can
+> use a PHY attached to any MDIO bus if it is described in the device
+> tree.
+
+AFAIK, Gianfar and UCC Geth drivers can do this too, so I'm assuming
+that this isn't the cause for these major changes.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
