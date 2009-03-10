@@ -1,20 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.173])
-	by ozlabs.org (Postfix) with ESMTP id 4AC0ADE12F
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 02:22:27 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 27so2457804wfd.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 08:22:27 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 5/5] net: make mpc5200 fec driver use of_mdio infrastructure
-To: afleming@freescale.com, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com
-Date: Tue, 10 Mar 2009 09:22:24 -0600
-Message-ID: <20090310152224.12455.99348.stgit@localhost.localdomain>
-In-Reply-To: <20090310150751.12455.70598.stgit@localhost.localdomain>
-References: <20090310150751.12455.70598.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 34E9EDE153
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 03:03:54 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: grant.likely@secretlab.ca
+Subject: [PATCH v2] powerpc/mpc52xx: add Phytec phyCORE-MPC5200B-IO board
+	(pcm032)
+Date: Tue, 10 Mar 2009 17:03:47 +0100
+Message-Id: <1236701027-26572-1-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <fa686aa40903010648q238380acy34b58e04226d8014@mail.gmail.com>
+References: <fa686aa40903010648q238380acy34b58e04226d8014@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,486 +20,442 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-
-The patch reworks the MPC5200 Fast Ethernet Controller (FEC) driver to
-use the of_mdio infrastructure for registering PHY devices from data out
-openfirmware device tree, and eliminates the assumption that the PHY
-for the FEC is always attached to the FEC's own MDIO bus.  With this
-patch, the FEC can use a PHY attached to any MDIO bus if it is described
-in the device tree.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 ---
+Changes since V1:
+* removed defconfig
+* reworked localbus node
 
- drivers/net/Kconfig           |    2 
- drivers/net/fec_mpc52xx.c     |  220 ++++++++++++++++++-----------------------
- drivers/net/fec_mpc52xx_phy.c |   30 ++----
- 3 files changed, 109 insertions(+), 143 deletions(-)
+ arch/powerpc/boot/dts/pcm032.dts             |  392 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/52xx/Kconfig          |    1 +
+ arch/powerpc/platforms/52xx/mpc5200_simple.c |    3 +-
+ 3 files changed, 395 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/pcm032.dts
 
-
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 6bdfd47..5b74a9a 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -1854,7 +1854,7 @@ config FEC_MPC52xx
- 
- config FEC_MPC52xx_MDIO
- 	bool "MPC52xx FEC MDIO bus driver"
--	depends on FEC_MPC52xx
-+	depends on FEC_MPC52xx && OF_MDIO
- 	default y
- 	---help---
- 	  The MPC5200's FEC can connect to the Ethernet either with
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index 049b0a7..4efcd47 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -43,11 +43,9 @@
- 
- #define DRIVER_NAME "mpc52xx-fec"
- 
--#define FEC5200_PHYADDR_NONE	(-1)
--#define FEC5200_PHYADDR_7WIRE	(-2)
--
- /* Private driver data structure */
- struct mpc52xx_fec_priv {
-+	struct net_device *ndev;
- 	int duplex;
- 	int speed;
- 	int r_irq;
-@@ -59,10 +57,12 @@ struct mpc52xx_fec_priv {
- 	int msg_enable;
- 
- 	/* MDIO link details */
--	int phy_addr;
--	unsigned int phy_speed;
-+	struct notifier_block notifier;
-+	unsigned int mdio_speed;
-+	struct device_node *phy_node;
- 	struct phy_device *phydev;
- 	enum phy_state link;
-+	int seven_wire_mode;
- };
- 
- 
-@@ -210,66 +210,6 @@ static void mpc52xx_fec_adjust_link(struct net_device *dev)
- 		phy_print_status(phydev);
- }
- 
--static int mpc52xx_fec_init_phy(struct net_device *dev)
--{
--	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
--	struct phy_device *phydev;
--	char phy_id[BUS_ID_SIZE];
--
--	snprintf(phy_id, sizeof(phy_id), "%x:%02x",
--			(unsigned int)dev->base_addr, priv->phy_addr);
--
--	priv->link = PHY_DOWN;
--	priv->speed = 0;
--	priv->duplex = -1;
--
--	phydev = phy_connect(dev, phy_id, &mpc52xx_fec_adjust_link, 0, PHY_INTERFACE_MODE_MII);
--	if (IS_ERR(phydev)) {
--		dev_err(&dev->dev, "phy_connect failed\n");
--		return PTR_ERR(phydev);
--	}
--	dev_info(&dev->dev, "attached phy %i to driver %s\n",
--			phydev->addr, phydev->drv->name);
--
--	priv->phydev = phydev;
--
--	return 0;
--}
--
--static int mpc52xx_fec_phy_start(struct net_device *dev)
--{
--	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
--	int err;
--
--	if (priv->phy_addr < 0)
--		return 0;
--
--	err = mpc52xx_fec_init_phy(dev);
--	if (err) {
--		dev_err(&dev->dev, "mpc52xx_fec_init_phy failed\n");
--		return err;
--	}
--
--	/* reset phy - this also wakes it from PDOWN */
--	phy_write(priv->phydev, MII_BMCR, BMCR_RESET);
--	phy_start(priv->phydev);
--
--	return 0;
--}
--
--static void mpc52xx_fec_phy_stop(struct net_device *dev)
--{
--	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
--
--	if (!priv->phydev)
--		return;
--
--	phy_disconnect(priv->phydev);
--	/* power down phy */
--	phy_stop(priv->phydev);
--	phy_write(priv->phydev, MII_BMCR, BMCR_PDOWN);
--}
--
- static int mpc52xx_fec_phy_mii_ioctl(struct mpc52xx_fec_priv *priv,
- 		struct mii_ioctl_data *mii_data, int cmd)
- {
-@@ -279,16 +219,6 @@ static int mpc52xx_fec_phy_mii_ioctl(struct mpc52xx_fec_priv *priv,
- 	return phy_mii_ioctl(priv->phydev, mii_data, cmd);
- }
- 
--static void mpc52xx_fec_phy_hw_init(struct mpc52xx_fec_priv *priv)
--{
--	struct mpc52xx_fec __iomem *fec = priv->fec;
--
--	if (priv->phydev)
--		return;
--
--	out_be32(&fec->mii_speed, priv->phy_speed);
--}
--
- static int mpc52xx_fec_open(struct net_device *dev)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-@@ -319,9 +249,14 @@ static int mpc52xx_fec_open(struct net_device *dev)
- 		goto free_irqs;
- 	}
- 
--	err = mpc52xx_fec_phy_start(dev);
--	if (err)
--		goto free_skbs;
-+	if (priv->phydev) {
-+		/* reset phy - this also wakes it from PDOWN */
-+		priv->link = PHY_DOWN;
-+		priv->speed = 0;
-+		priv->duplex = -1;
-+		phy_write(priv->phydev, MII_BMCR, BMCR_RESET);
-+		phy_start(priv->phydev);
-+	}
- 
- 	bcom_enable(priv->rx_dmatsk);
- 	bcom_enable(priv->tx_dmatsk);
-@@ -332,9 +267,6 @@ static int mpc52xx_fec_open(struct net_device *dev)
- 
- 	return 0;
- 
-- free_skbs:
--	mpc52xx_fec_free_rx_buffers(dev, priv->rx_dmatsk);
--
-  free_irqs:
- 	free_irq(priv->t_irq, dev);
-  free_2irqs:
-@@ -360,7 +292,11 @@ static int mpc52xx_fec_close(struct net_device *dev)
- 	free_irq(priv->r_irq, dev);
- 	free_irq(priv->t_irq, dev);
- 
--	mpc52xx_fec_phy_stop(dev);
-+	if (priv->phydev) {
-+		/* power down phy */
-+		phy_stop(priv->phydev);
-+		phy_write(priv->phydev, MII_BMCR, BMCR_PDOWN);
-+	}
- 
- 	return 0;
- }
-@@ -700,7 +636,7 @@ static void mpc52xx_fec_hw_init(struct net_device *dev)
- 	/* set phy speed.
- 	 * this can't be done in phy driver, since it needs to be called
- 	 * before fec stuff (even on resume) */
--	mpc52xx_fec_phy_hw_init(priv);
-+	out_be32(&fec->mii_speed, priv->mdio_speed);
- }
- 
- /**
-@@ -736,7 +672,7 @@ static void mpc52xx_fec_start(struct net_device *dev)
- 	rcntrl = FEC_RX_BUFFER_SIZE << 16;	/* max frame length */
- 	rcntrl |= FEC_RCNTRL_FCE;
- 
--	if (priv->phy_addr != FEC5200_PHYADDR_7WIRE)
-+	if (!priv->seven_wire_mode)
- 		rcntrl |= FEC_RCNTRL_MII_MODE;
- 
- 	if (priv->duplex == DUPLEX_FULL)
-@@ -802,8 +738,6 @@ static void mpc52xx_fec_stop(struct net_device *dev)
- 
- 	/* Stop FEC */
- 	out_be32(&fec->ecntrl, in_be32(&fec->ecntrl) & ~FEC_ECNTRL_ETHER_EN);
--
--	return;
- }
- 
- /* reset fec and bestcomm tasks */
-@@ -821,9 +755,11 @@ static void mpc52xx_fec_reset(struct net_device *dev)
- 
- 	mpc52xx_fec_hw_init(dev);
- 
--	phy_stop(priv->phydev);
--	phy_write(priv->phydev, MII_BMCR, BMCR_RESET);
--	phy_start(priv->phydev);
-+	if (priv->phydev) {
-+		phy_stop(priv->phydev);
-+		phy_write(priv->phydev, MII_BMCR, BMCR_RESET);
-+		phy_start(priv->phydev);
-+	}
- 
- 	bcom_fec_rx_reset(priv->rx_dmatsk);
- 	bcom_fec_tx_reset(priv->tx_dmatsk);
-@@ -888,6 +824,48 @@ static int mpc52xx_fec_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- /* ======================================================================== */
- /* OF Driver                                                                */
- /* ======================================================================== */
-+static int mpc52xx_fec_notifier_phy_add(struct notifier_block *nb,
-+					unsigned long event, void *_dev)
-+{
-+	struct device *dev = _dev;
-+	struct mpc52xx_fec_priv *priv;
-+	unsigned long flags;
-+	int rc;
+diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm032.dts
+new file mode 100644
+index 0000000..0300426
+--- /dev/null
++++ b/arch/powerpc/boot/dts/pcm032.dts
+@@ -0,0 +1,392 @@
++/*
++ * phyCORE-MPC5200B-IO (pcm032) board Device Tree Source
++ *
++ * Copyright (C) 2006-2009 Pengutronix
++ * Sascha Hauer <s.hauer@pengutronix.de>
++ * Juergen Beisert <j.beisert@pengutronix.de>
++ * Wolfram Sang <w.sang@pengutronix.de>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+	priv = container_of(nb, struct mpc52xx_fec_priv, notifier);
++/dts-v1/;
 +
-+	/* Check if this is the phy that we're interested in */
-+	if ((event != BUS_NOTIFY_ADD_DEVICE) ||
-+	    (dev_archdata_get_node(&dev->archdata) != priv->phy_node))
-+		return 0;
++/ {
++	model = "phytec,pcm032";
++	compatible = "phytec,pcm032";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	interrupt-parent = <&mpc5200_pic>;
 +
-+	spin_lock_irqsave(&priv->lock, flags);
-+	if (priv->phydev) {
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+		return 0;
-+	}
-+	priv->phydev = container_of(dev, struct phy_device, dev);
-+	spin_unlock_irqrestore(&priv->lock, flags);
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+	rc = bus_unregister_notifier(&mdio_bus_type, &priv->notifier);
-+	if (rc)
-+		dev_warn(dev, "bus_unregister_notifier() failed\n");
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <0x4000>;	// L1, 16K
++			i-cache-size = <0x4000>;	// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
 +
-+	rc = phy_connect_direct(priv->ndev, priv->phydev,
-+				mpc52xx_fec_adjust_link, 0, 0);
-+	if (rc) {
-+		dev_err(dev, "phy_connect_direct() failed\n");
-+		return 0;
-+	}
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x08000000>;	// 128MB
++	};
 +
-+	rc = register_netdev(priv->ndev);
-+	if (rc) {
-+		phy_disconnect(priv->phydev);
-+		dev_err(dev, "register_netdev() failed\n");
-+	}
++	soc5200@f0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc5200b-immr";
++		ranges = <0 0xf0000000 0x0000c000>;
++		bus-frequency = <0>;		// from bootloader
++		system-frequency = <0>;		// from bootloader
 +
-+	return 0;
-+}
- 
- static int __devinit
- mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
-@@ -896,7 +874,6 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 	struct net_device *ndev;
- 	struct mpc52xx_fec_priv *priv = NULL;
- 	struct resource mem;
--	struct device_node *phy_node;
- 	const phandle *phy_handle;
- 	const u32 *prop;
- 	int prop_size;
-@@ -910,6 +887,7 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 		return -ENOMEM;
- 
- 	priv = netdev_priv(ndev);
-+	priv->ndev = ndev;
- 
- 	/* Reserve FEC control zone */
- 	rv = of_address_to_resource(op->node, 0, &mem);
-@@ -943,6 +921,8 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- #ifdef CONFIG_NET_POLL_CONTROLLER
- 	ndev->poll_controller = mpc52xx_fec_poll_controller;
- #endif
-+	SET_NETDEV_DEV(ndev, &op->dev);
++		cdm@200 {
++			compatible = "fsl,mpc5200b-cdm","fsl,mpc5200-cdm";
++			reg = <0x200 0x38>;
++		};
 +
- 
- 	priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are free for now */
- 
-@@ -992,14 +972,9 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 	 */
- 
- 	/* Start with safe defaults for link connection */
--	priv->phy_addr = FEC5200_PHYADDR_NONE;
- 	priv->speed = 100;
- 	priv->duplex = DUPLEX_HALF;
--	priv->phy_speed = ((mpc52xx_find_ipb_freq(op->node) >> 20) / 5) << 1;
--
--	/* the 7-wire property means don't use MII mode */
--	if (of_find_property(op->node, "fsl,7-wire-mode", NULL))
--		priv->phy_addr = FEC5200_PHYADDR_7WIRE;
-+	priv->mdio_speed = ((mpc52xx_find_ipb_freq(op->node) >> 20) / 5) << 1;
- 
- 	/* The current speed preconfigures the speed of the MII link */
- 	prop = of_get_property(op->node, "current-speed", &prop_size);
-@@ -1009,40 +984,37 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 	}
- 
- 	/* If there is a phy handle, setup link to that phy */
-+	priv->notifier.notifier_call = mpc52xx_fec_notifier_phy_add;
- 	phy_handle = of_get_property(op->node, "phy-handle", &prop_size);
--	if (phy_handle && (prop_size >= sizeof(phandle))) {
--		phy_node = of_find_node_by_phandle(*phy_handle);
--		prop = of_get_property(phy_node, "reg", &prop_size);
--		if (prop && (prop_size >= sizeof(u32)))
--			if ((*prop >= 0) && (*prop < PHY_MAX_ADDR))
--				priv->phy_addr = *prop;
--		of_node_put(phy_node);
-+	if (phy_handle && (prop_size >= sizeof(phandle)))
-+		priv->phy_node = of_find_node_by_phandle(*phy_handle);
-+	if (priv->phy_node)
-+		bus_register_notifier_alldev(&mdio_bus_type, &priv->notifier);
++		mpc5200_pic: interrupt-controller@500 {
++			// 5200 interrupts are encoded into two levels;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
++			reg = <0x500 0x80>;
++		};
 +
-+	/* the 7-wire property means don't use MII mode */
-+	if (of_find_property(op->node, "fsl,7-wire-mode", NULL)) {
-+		if (priv->phy_node)
-+			dev_err(&op->dev, "warning: 'fsl,7-wire-mode' is"
-+				" illegal when 'phy-handle' is present\n");
-+		else
-+			priv->seven_wire_mode = 1;
- 	}
- 
- 	/* Hardware init */
- 	mpc52xx_fec_hw_init(ndev);
--
- 	mpc52xx_fec_reset_stats(ndev);
- 
--	SET_NETDEV_DEV(ndev, &op->dev);
--
--	/* Register the new network device */
--	rv = register_netdev(ndev);
--	if (rv < 0)
--		goto probe_error;
--
--	/* Now report the link setup */
--	switch (priv->phy_addr) {
--	 case FEC5200_PHYADDR_NONE:
--		dev_info(&ndev->dev, "Fixed speed MII link: %i%cD\n",
--			 priv->speed, priv->duplex ? 'F' : 'H');
--		break;
--	 case FEC5200_PHYADDR_7WIRE:
--		dev_info(&ndev->dev, "using 7-wire PHY mode\n");
--		break;
--	 default:
--		dev_info(&ndev->dev, "Using PHY at MDIO address %i\n",
--			 priv->phy_addr);
-+	/* Register the new network device immediately if we don't need
-+	 * to wait for a phy_device first. */
-+	if (!priv->phy_node) {
-+		if (priv->seven_wire_mode)
-+			dev_info(&ndev->dev, "using 7-wire PHY mode\n");
-+		else
-+			dev_info(&ndev->dev, "Fixed speed MII link: %i%cD\n",
-+				 priv->speed, priv->duplex ? 'F' : 'H');
-+		rv = register_netdev(ndev);
-+		if (rv < 0)
-+			goto probe_error;
- 	}
- 
- 	/* We're done ! */
-@@ -1050,10 +1022,8 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 
- 	return 0;
- 
--
- 	/* Error handling - free everything that might be allocated */
- probe_error:
--
- 	irq_dispose_mapping(ndev->irq);
- 
- 	if (priv->rx_dmatsk)
-diff --git a/drivers/net/fec_mpc52xx_phy.c b/drivers/net/fec_mpc52xx_phy.c
-index dd9bfa4..261a5e7 100644
---- a/drivers/net/fec_mpc52xx_phy.c
-+++ b/drivers/net/fec_mpc52xx_phy.c
-@@ -14,12 +14,14 @@
- #include <linux/netdevice.h>
- #include <linux/phy.h>
- #include <linux/of_platform.h>
-+#include <linux/of_mdio.h>
- #include <asm/io.h>
- #include <asm/mpc52xx.h>
- #include "fec_mpc52xx.h"
- 
- struct mpc52xx_fec_mdio_priv {
- 	struct mpc52xx_fec __iomem *regs;
-+	int mdio_irqs[PHY_MAX_ADDR];
- };
- 
- static int mpc52xx_fec_mdio_transfer(struct mii_bus *bus, int phy_id,
-@@ -27,7 +29,7 @@ static int mpc52xx_fec_mdio_transfer(struct mii_bus *bus, int phy_id,
- {
- 	struct mpc52xx_fec_mdio_priv *priv = bus->priv;
- 	struct mpc52xx_fec __iomem *fec;
--	int tries = 100;
-+	int tries = 3;
- 
- 	value |= (phy_id << FEC_MII_DATA_PA_SHIFT) & FEC_MII_DATA_PA_MSK;
- 	value |= (reg << FEC_MII_DATA_RA_SHIFT) & FEC_MII_DATA_RA_MSK;
-@@ -38,7 +40,7 @@ static int mpc52xx_fec_mdio_transfer(struct mii_bus *bus, int phy_id,
- 
- 	/* wait for it to finish, this takes about 23 us on lite5200b */
- 	while (!(in_be32(&fec->ievent) & FEC_IEVENT_MII) && --tries)
--		udelay(5);
-+		msleep(1);
- 
- 	if (!tries)
- 		return -ETIMEDOUT;
-@@ -64,7 +66,6 @@ static int mpc52xx_fec_mdio_probe(struct of_device *of,
- {
- 	struct device *dev = &of->dev;
- 	struct device_node *np = of->node;
--	struct device_node *child = NULL;
- 	struct mii_bus *bus;
- 	struct mpc52xx_fec_mdio_priv *priv;
- 	struct resource res = {};
-@@ -85,23 +86,10 @@ static int mpc52xx_fec_mdio_probe(struct of_device *of,
- 	bus->write = mpc52xx_fec_mdio_write;
- 
- 	/* setup irqs */
--	bus->irq = kmalloc(sizeof(bus->irq[0]) * PHY_MAX_ADDR, GFP_KERNEL);
--	if (bus->irq == NULL) {
--		err = -ENOMEM;
--		goto out_free;
--	}
-+	bus->irq = priv->mdio_irqs;
- 	for (i=0; i<PHY_MAX_ADDR; i++)
- 		bus->irq[i] = PHY_POLL;
- 
--	while ((child = of_get_next_child(np, child)) != NULL) {
--		int irq = irq_of_parse_and_map(child, 0);
--		if (irq != NO_IRQ) {
--			const u32 *id = of_get_property(child, "reg", NULL);
--			if (id)
--				bus->irq[*id] = irq;
--		}
--	}
--
- 	/* setup registers */
- 	err = of_address_to_resource(np, 0, &res);
- 	if (err)
-@@ -122,10 +110,18 @@ static int mpc52xx_fec_mdio_probe(struct of_device *of,
- 	out_be32(&priv->regs->mii_speed,
- 		((mpc52xx_find_ipb_freq(of->node) >> 20) / 5) << 1);
- 
-+	/* Mask out all from auto probing.  Instead the PHYs listed in
-+	 * device tree are populated after the bus has been registered
-+	 */
-+	bus->phy_mask = -1;
++		timer@600 {	// General Purpose Timer
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			reg = <0x600 0x10>;
++			interrupts = <1 9 0>;
++			fsl,has-wdt;
++		};
 +
- 	err = mdiobus_register(bus);
- 	if (err)
- 		goto out_unmap;
- 
-+	/* Populate the PHY devices from the device tree */
-+	of_register_phy_devices(bus, np);
++		timer@610 {	// General Purpose Timer
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			reg = <0x610 0x10>;
++			interrupts = <1 10 0>;
++		};
 +
- 	return 0;
- 
-  out_unmap:
++		gpt2: timer@620 {	// General Purpose Timer in GPIO mode
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			reg = <0x620 0x10>;
++			interrupts = <1 11 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpt3: timer@630 {	// General Purpose Timer in GPIO mode
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			reg = <0x630 0x10>;
++			interrupts = <1 12 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpt4: timer@640 {	// General Purpose Timer in GPIO mode
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			reg = <0x640 0x10>;
++			interrupts = <1 13 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpt5: timer@650 {	// General Purpose Timer in GPIO mode
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			reg = <0x650 0x10>;
++			interrupts = <1 14 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpt6: timer@660 {	// General Purpose Timer in GPIO mode
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			reg = <0x660 0x10>;
++			interrupts = <1 15 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpt7: timer@670 {	// General Purpose Timer in GPIO mode
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			reg = <0x670 0x10>;
++			interrupts = <1 16 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		rtc@800 {	// Real time clock
++			compatible = "fsl,mpc5200b-rtc","fsl,mpc5200-rtc";
++			reg = <0x800 0x100>;
++			interrupts = <1 5 0 1 6 0>;
++		};
++
++		can@900 {
++			compatible = "fsl,mpc5200b-mscan","fsl,mpc5200-mscan";
++			interrupts = <2 17 0>;
++			reg = <0x900 0x80>;
++		};
++
++		can@980 {
++			compatible = "fsl,mpc5200b-mscan","fsl,mpc5200-mscan";
++			interrupts = <2 18 0>;
++			reg = <0x980 0x80>;
++		};
++
++		gpio_simple: gpio@b00 {
++			compatible = "fsl,mpc5200b-gpio","fsl,mpc5200-gpio";
++			reg = <0xb00 0x40>;
++			interrupts = <1 7 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		gpio_wkup: gpio@c00 {
++			compatible = "fsl,mpc5200b-gpio-wkup","fsl,mpc5200-gpio-wkup";
++			reg = <0xc00 0x40>;
++			interrupts = <1 8 0 0 3 0>;
++			gpio-controller;
++			#gpio-cells = <2>;
++		};
++
++		spi@f00 {
++			compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
++			reg = <0xf00 0x20>;
++			interrupts = <2 13 0 2 14 0>;
++		};
++
++		usb@1000 {
++			compatible = "fsl,mpc5200b-ohci","fsl,mpc5200-ohci","ohci-be";
++			reg = <0x1000 0xff>;
++			interrupts = <2 6 0>;
++		};
++
++		dma-controller@1200 {
++			compatible = "fsl,mpc5200b-bestcomm","fsl,mpc5200-bestcomm";
++			reg = <0x1200 0x80>;
++			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
++			              3 4 0  3 5 0  3 6 0  3 7 0
++			              3 8 0  3 9 0  3 10 0  3 11 0
++			              3 12 0  3 13 0  3 14 0  3 15 0>;
++		};
++
++		xlb@1f00 {
++			compatible = "fsl,mpc5200b-xlb","fsl,mpc5200-xlb";
++			reg = <0x1f00 0x100>;
++		};
++
++		ac97@2000 {	/* PSC1 is ac97 */
++			compatible = "fsl,mpc5200b-psc-ac97","fsl,mpc5200-psc-ac97";
++			cell-index = <0>;
++			reg = <0x2000 0x100>;
++			interrupts = <2 1 0>;
++		};
++
++		/* PSC2 port is used by CAN1/2 */
++
++		serial@2400 { /* PSC3 in UART mode */
++			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
++			cell-index = <2>;
++			reg = <0x2400 0x100>;
++			interrupts = <2 3 0>;
++		};
++
++		/* PSC4 is ??? */
++
++		/* PSC5 is ??? */
++
++		serial@2c00 { /* PSC6 in UART mode */
++			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
++			cell-index = <5>;
++			reg = <0x2c00 0x100>;
++			interrupts = <2 4 0>;
++		};
++
++		ethernet@3000 {
++			compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
++			reg = <0x3000 0x400>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <2 5 0>;
++			phy-handle = <&phy0>;
++		};
++
++		mdio@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200b-mdio","fsl,mpc5200-mdio";
++			reg = <0x3000 0x400>;	// fec range, since we need to setup fec interrupts
++			interrupts = <2 5 0>;	// these are for "mii command finished", not link changes & co.
++
++			phy0: ethernet-phy@0 {
++				reg = <0>;
++			};
++		};
++
++		ata@3a00 {
++			compatible = "fsl,mpc5200b-ata","fsl,mpc5200-ata";
++			reg = <0x3a00 0x100>;
++			interrupts = <2 7 0>;
++		};
++
++		i2c@3d00 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
++			reg = <0x3d00 0x40>;
++			interrupts = <2 15 0>;
++			fsl5200-clocking;
++		};
++
++		i2c@3d40 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
++			reg = <0x3d40 0x40>;
++			interrupts = <2 16 0>;
++			fsl5200-clocking;
++			rtc@51 {
++				compatible = "nxp,pcf8563";
++				reg = <0x51>;
++			};
++			eeprom@52 {
++				compatible = "at24,24c32";
++				reg = <0x52>;
++			};
++		};
++
++		sram@8000 {
++			compatible = "fsl,mpc5200b-sram","fsl,mpc5200-sram";
++			reg = <0x8000 0x4000>;
++		};
++	};
++
++	pci@f0000d00 {
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		compatible = "fsl,mpc5200b-pci","fsl,mpc5200-pci";
++		reg = <0xf0000d00 0x100>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3 // 1st slot
++				 0xc000 0 0 2 &mpc5200_pic 1 1 3
++				 0xc000 0 0 3 &mpc5200_pic 1 2 3
++				 0xc000 0 0 4 &mpc5200_pic 1 3 3
++
++				 0xc800 0 0 1 &mpc5200_pic 1 1 3 // 2nd slot
++				 0xc800 0 0 2 &mpc5200_pic 1 2 3
++				 0xc800 0 0 3 &mpc5200_pic 1 3 3
++				 0xc800 0 0 4 &mpc5200_pic 0 0 3>;
++		clock-frequency = <0>; // From boot loader
++		interrupts = <2 8 0 2 9 0 2 10 0>;
++		bus-range = <0 0>;
++		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
++			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
++	};
++
++	localbus {
++		compatible = "fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus";
++
++		#address-cells = <2>;
++		#size-cells = <1>;
++
++		ranges = <0 0 0xfe000000 0x02000000
++			  1 0 0xfc000000 0x02000000
++			  2 0 0xfbe00000 0x00200000
++			  3 0 0xf9e00000 0x02000000
++			  4 0 0xf7e00000 0x02000000
++			  5 0 0xe6000000 0x02000000
++			  6 0 0xe8000000 0x02000000
++			  7 0 0xea000000 0x02000000>;
++
++		flash@0,0 {
++			compatible = "cfi-flash";
++			reg = <0 0 0x02000000>;
++			bank-width = <4>;
++			#size-cells = <1>;
++			#address-cells = <1>;
++
++			partition@0 {
++				label = "ubootl";
++				reg = <0x00000000 0x00040000>;
++			};
++			partition@40000 {
++				label = "kernel";
++				reg = <0x00040000 0x001c0000>;
++			};
++			partition@200000 {
++				label = "jffs2";
++				reg = <0x00200000 0x01d00000>;
++			};
++			partition@1f00000 {
++				label = "uboot";
++				reg = <0x01f00000 0x00040000>;
++			};
++			partition@1f40000 {
++				label = "env";
++				reg = <0x01f40000 0x00040000>;
++			};
++			partition@1f80000 {
++				label = "oftree";
++				reg = <0x01f80000 0x00040000>;
++			};
++			partition@1fc0000 {
++				label = "space";
++				reg = <0x01fc0000 0x00040000>;
++			};
++		};
++
++		sram@2,0 {
++			compatible = "mtd-ram";
++			reg = <2 0 0x00200000>;
++			bank-width = <2>;
++		};
++
++                /*
++		 * example snippets for FPGA
++		 *
++		 * fpga@3,0 {
++		 *         compatible = "fpga_driver";
++		 *         reg = <3 0 0x02000000>;
++		 *         bank-width = <4>;
++		 * };
++		 *
++		 * fpga@4,0 {
++		 *         compatible = "fpga_driver";
++		 *         reg = <4 0 0x02000000>;
++		 *         bank-width = <4>;
++		 * };
++                 */
++
++                /*
++		 * example snippets for free chipselects
++                 *
++		 * device@5,0 {
++		 *         compatible = "custom_driver";
++		 *         reg = <5 0 0x02000000>;
++		 * };
++                 *
++		 * device@6,0 {
++		 *         compatible = "custom_driver";
++		 *         reg = <6 0 0x02000000>;
++		 * };
++                 *
++		 * device@7,0 {
++		 *         compatible = "custom_driver";
++		 *         reg = <7 0 0x02000000>;
++		 * };
++                 */
++	};
++};
++
+diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
+index 0465e5b..75f82ab 100644
+--- a/arch/powerpc/platforms/52xx/Kconfig
++++ b/arch/powerpc/platforms/52xx/Kconfig
+@@ -24,6 +24,7 @@ config PPC_MPC5200_SIMPLE
+ 	  are:
+ 	     intercontrol,digsy-mtc
+ 	     phytec,pcm030
++	     phytec,pcm032
+ 	     promess,motionpro
+ 	     schindler,cm5200
+ 	     tqc,tqm5200
+diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+index d5e1471..c31e5b5 100644
+--- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
++++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+@@ -51,8 +51,9 @@ static void __init mpc5200_simple_setup_arch(void)
+ /* list of the supported boards */
+ static char *board[] __initdata = {
+ 	"intercontrol,digsy-mtc",
+-	"promess,motionpro",
+ 	"phytec,pcm030",
++	"phytec,pcm032",
++	"promess,motionpro",
+ 	"schindler,cm5200",
+ 	"tqc,tqm5200",
+ 	NULL
+-- 
+1.5.6.5
