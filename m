@@ -1,30 +1,15 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [59.145.155.1])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1CCEFDDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:22:41 +1100 (EST)
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28smtp01.in.ibm.com (8.13.1/8.13.1) with ESMTP id n2AEMauN030835
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 19:52:37 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n2AEJRU63510334
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 19:49:27 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id n2AEMaPD006548
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 19:52:36 +0530
-Message-ID: <49B677AB.1010006@in.ibm.com>
-Date: Tue, 10 Mar 2009 19:52:35 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
-MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: 2.6.29-rc7-git2 : crash in kmem_list3_init()
-References: <49B5448B.6030205@in.ibm.com> <49B60371.7050508@in.ibm.com>
-	<20090310134610.GB13020@csn.ul.ie>
-In-Reply-To: <20090310134610.GB13020@csn.ul.ie>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-dev@ozlabs.org, cl@linux-foundation.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EF1F4DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:38:49 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Fix MPC8572DS PCI protected interrupt sources
+Date: Tue, 10 Mar 2009 09:38:43 -0500
+Message-Id: <1236695923-20119-1-git-send-email-galak@kernel.crashing.org>
+Cc: Ted Peters <ted.peters@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,30 +19,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mel Gorman wrote:
->
-> Well, the machine must have started with some kernel. What mainline
-> version does that correspond to and can you bisect it?
->   
-The last booted kernel was a 2.6.25 based kernel. I am trying to find out
-the last good kernel.org kernel. I should have that information by tomorrow.
+From: Ted Peters <ted.peters@freescale.com>
 
+The PCI irqs for the protected sources where not correct for PCI PHBs
 
-> What is the base page size of the test kernel - 4K or 64K? Depending on
-> which one it is, the start of node 1 may not be MAX_ORDER-aligned, gets
-> overlapped with node-0 and goes downhill from there.
->   
-The kernel is configured with 64K pages.
+Signed-off-by: Ted Peters <ted.peters@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |    2 +-
+ arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks
--Sachin
-
-
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+index 15d9e35..32178bf 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+@@ -227,7 +227,7 @@
+ 			device_type = "open-pic";
+ 			protected-sources = <
+ 			31 32 33 37 38 39       /* enet2 enet3 */
+-			76 77 78 79 27 42	/* dma2 pci2 serial*/
++			76 77 78 79 26 42	/* dma2 pci2 serial*/
+ 			0xe0 0xe1 0xe2 0xe3     /* msi */
+ 			0xe4 0xe5 0xe6 0xe7
+ 			>;
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+index eace811..159cb3a 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+@@ -186,7 +186,7 @@
+ 			protected-sources = <
+ 			18 16 10 42 45 58	/* MEM L2 mdio serial crypto */
+ 			29 30 34 35 36 40	/* enet0 enet1 */
+-			24 26 20 21 22 23	/* pcie0 pcie1 dma1 */
++			24 25 20 21 22 23	/* pci0 pci1 dma1 */
+ 			43			/* i2c */
+ 			0x1 0x2 0x3 0x4         /* pci slot */
+ 			0x9 0xa 0xb 0xc         /* usb */
 -- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+1.5.6.6
