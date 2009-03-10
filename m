@@ -1,19 +1,25 @@
-Return-Path: <daniel.ng1234@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.238])
-	by ozlabs.org (Postfix) with ESMTP id 35388DE03F
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 12:15:15 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id l9so1778665rvb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 09 Mar 2009 18:15:14 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <4206182445660643B9AEB8D4E55BBD0A02B57F6F18@HERMES2>
-References: <547eba1b0903042253i3a245eaw306fbddbf47b150b@mail.gmail.com>
-	<4206182445660643B9AEB8D4E55BBD0A02B57F6F18@HERMES2>
-Date: Tue, 10 Mar 2009 12:15:13 +1100
-Message-ID: <547eba1b0903091815w5368012u2cf81954f6e20e2e@mail.gmail.com>
-Subject: Re: GPIO and SPI on CPM2 (8260)?
-From: Daniel Ng <daniel.ng1234@gmail.com>
-To: "Stepanov, Sergej" <Sergej.Stepanov@ids.de>, linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <Yu.Liu@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5744CDE0CB
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 14:23:29 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n2A3NO25014466
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 20:23:24 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n2A3NMoK008826
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Mar 2009 22:23:23 -0500 (CDT)
+From: Liu Yu <yu.liu@freescale.com>
+To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
+Subject: [PATCH] efp: Fix efp dependence
+Date: Tue, 10 Mar 2009 11:09:49 +0800
+Message-Id: <1236654589-6624-1-git-send-email-yu.liu@freescale.com>
+Cc: Liu Yu <yu.liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Sergej,
+There is no dependece between efp and math-emu.
+But when disalbe math-emu, the efp code cannot be built.
+This patch fixes it.
 
-On Fri, Mar 6, 2009 at 9:07 PM, Stepanov, Sergej <Sergej.Stepanov@ids.de> wrote:
-> gpio - driver functions pretty well for a pin-setup, but uninitialized/unexported pins have undefined states
+Signed-off-by: Liu Yu <yu.liu@freescale.com>
+---
+It would be nice to see this patch go along with 2.6.29
 
--did you achieve this using gpiolib.c? If not, then what files and
-what kernel are you using? We are trying to get it working for 2.6.27.
+ arch/powerpc/Makefile          |    4 ++--
+ arch/powerpc/math-emu/Makefile |    5 ++---
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-> I found no spi-support for 8260-based boards with CPM2/1.
-
-This is unfortunate. I guess this means SPI on these boards is not
-used by many engineers...
-
-> P.s. Have you seen cpm2-spi-support in u-boot?
-
-No, sorry- not in u-boot.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 72d17f5..551fc58 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -147,8 +147,8 @@ core-y				+= arch/powerpc/kernel/ \
+ 				   arch/powerpc/mm/ \
+ 				   arch/powerpc/lib/ \
+ 				   arch/powerpc/sysdev/ \
+-				   arch/powerpc/platforms/
+-core-$(CONFIG_MATH_EMULATION)	+= arch/powerpc/math-emu/
++				   arch/powerpc/platforms/ \
++				   arch/powerpc/math-emu/
+ core-$(CONFIG_XMON)		+= arch/powerpc/xmon/
+ core-$(CONFIG_KVM) 		+= arch/powerpc/kvm/
+ 
+diff --git a/arch/powerpc/math-emu/Makefile b/arch/powerpc/math-emu/Makefile
+index f9e506a..0c16ab9 100644
+--- a/arch/powerpc/math-emu/Makefile
++++ b/arch/powerpc/math-emu/Makefile
+@@ -1,6 +1,4 @@
+ 
+-obj-y				:= math.o fmr.o lfd.o stfd.o
+-
+ obj-$(CONFIG_MATH_EMULATION)	+= fabs.o fadd.o fadds.o fcmpo.o fcmpu.o \
+ 					fctiw.o fctiwz.o fdiv.o fdivs.o \
+ 					fmadd.o fmadds.o fmsub.o fmsubs.o \
+@@ -9,7 +7,8 @@ obj-$(CONFIG_MATH_EMULATION)	+= fabs.o fadd.o fadds.o fcmpo.o fcmpu.o \
+ 					fres.o frsp.o frsqrte.o fsel.o lfs.o \
+ 					fsqrt.o	fsqrts.o fsub.o fsubs.o \
+ 					mcrfs.o mffs.o mtfsb0.o mtfsb1.o \
+-					mtfsf.o mtfsfi.o stfiwx.o stfs.o
++					mtfsf.o mtfsfi.o stfiwx.o stfs.o \
++					math.o fmr.o lfd.o stfd.o
+ 
+ obj-$(CONFIG_SPE)		+= math_efp.o
+ 
+-- 
+1.5.4
