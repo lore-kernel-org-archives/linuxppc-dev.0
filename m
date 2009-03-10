@@ -1,29 +1,22 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from SG2EHSOBE003.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id D7A5FDE052
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 03:20:44 +1100 (EST)
-Message-ID: <49B692EC.1020505@am.sony.com>
-Date: Tue, 10 Mar 2009 09:18:52 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f174.google.com (mail-gx0-f174.google.com
+	[209.85.217.174]) by ozlabs.org (Postfix) with ESMTP id 042ECDDFB5
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 04:13:03 +1100 (EST)
+Received: by gxk22 with SMTP id 22so5599523gxk.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 10:13:02 -0700 (PDT)
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 7/7] powerpc/ps3: Add rtc-ps3
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linux-m68k@vger.kernel.org,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linux-parisc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-	linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>,
-	Dann Frazier <dannf@dannf.org>
+In-Reply-To: <ae4f76fd0902190145r7ed5fadbwfca18c97dbfc9ed1@mail.gmail.com>
+References: <ae4f76fd0902180241s28458450hd91ebf8da94ceb53@mail.gmail.com>
+	<20090218.134852.118040610.davem@davemloft.net>
+	<ae4f76fd0902190145r7ed5fadbwfca18c97dbfc9ed1@mail.gmail.com>
+Date: Tue, 10 Mar 2009 11:13:02 -0600
+Message-ID: <fa686aa40903101013j2324e8acw18830c930e12ae46@mail.gmail.com>
+Subject: Re: net_device_ops support in bridging and fec_mpc52xx.c
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Henk Stegeman <henk.stegeman@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, bridge@osdl.org, Jeff Garzik <jgarzik@pobox.com>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,22 +26,291 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 03/09/2009 06:26 AM, Geert Uytterhoeven wrote:
-> Create a real RTC driver for PS3, and unhook the deprecated
-> ppc_md.[gs]et_rtc_time.
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-> ---
->  arch/powerpc/include/asm/ps3.h        |    3 +
->  arch/powerpc/platforms/ps3/os-area.c  |    2 +
->  arch/powerpc/platforms/ps3/platform.h |    2 -
->  arch/powerpc/platforms/ps3/setup.c    |    2 -
->  arch/powerpc/platforms/ps3/time.c     |   26 ++++-----
->  drivers/rtc/Kconfig                   |    9 +++
->  drivers/rtc/Makefile                  |    1 +
->  drivers/rtc/rtc-ps3.c                 |  105 +++++++++++++++++++++++++++++++++
->  8 files changed, 132 insertions(+), 18 deletions(-)
->  create mode 100644 drivers/rtc/rtc-ps3.c
+Hi Henk,
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+Can you please repost with a blurb for the commit description and your
+signed-off-by line?  The blub below makes sense in the context of this
+mailing list thread, but it won't be very useful for someone looking
+at the commit message in git.  Also, your patch is line-wrap damaged
+(cut and paste into your mail client doesn't usually work) and has
+inconsistent whitespace (run it through scripts/checkpatch.pl).
+
+Jeff, after Henk provides his s-o-b line, do you want to pick it up,
+or should I merge it through my mpc52xx powerpc tree (via benh).
+
+Thanks,
+g.
+
+On Thu, Feb 19, 2009 at 3:45 AM, Henk Stegeman <henk.stegeman@gmail.com> wr=
+ote:
+> I must have made a mistake when I tested the previous patch, I
+> discovered later it still had errors:
+> - I had accidentally removed the base address in the fec_mpc52xx driver.
+> - The priv->phydev pointer was sometimes not initialized (NULL) but
+> still passed by the fec_mpc52xx driver, this pointer is then used
+> unchecked by the eth_tool_* functions (used by bridging to determine
+> port priority). As far as I see this depends on whether
+> mpc52xx_fec_open (or mpc52xx_fec_close) is called which in turn call
+> mpc52xx_init_phy to initialize priv->phydev. My work around checks the
+> priv->phydev pointer in the fec_mpc52xx driver and returns -ENODEV to
+> indicate there's no physical device. Big chance this is not the right
+> way to handle the problem, but it works, hopefully someone with some
+> more fundamental Linux network driver experience can pick this up or
+> give me some hints on this.
+>
+> At least bridging now works on my board in combination with the
+> fec_mpc52xx driver.
+>
+> ifconfig eth0 0.0.0.0 down
+> ifconfig eth1 0.0.0.0 down
+> brctl addbr br0
+> brctl setfd br0 0
+> brctl stp br0 off
+> ifconfig br0 192.168.1.30 down
+> ifconfig br0 up
+> brctl addif br0 eth0
+> ifconfig eth0 up
+> brctl addif br0 eth1
+> ifconfig eth1 up
+>
+>
+> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+> index cd8e98b..e228973 100644
+> --- a/drivers/net/fec_mpc52xx.c
+> +++ b/drivers/net/fec_mpc52xx.c
+> @@ -847,24 +847,40 @@ static void mpc52xx_fec_get_drvinfo(struct
+> net_device *dev,
+> =A0static int mpc52xx_fec_get_settings(struct net_device *dev, struct
+> ethtool_cmd *cmd)
+> =A0{
+> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+> +
+> + =A0 =A0 =A0 if (!priv->phydev)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> +
+> =A0 =A0 =A0 =A0return phy_ethtool_gset(priv->phydev, cmd);
+> =A0}
+>
+> =A0static int mpc52xx_fec_set_settings(struct net_device *dev, struct
+> ethtool_cmd *cmd)
+> =A0{
+> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+> +
+> + =A0 =A0 =A0 if (!priv->phydev)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> +
+> =A0 =A0 =A0 =A0return phy_ethtool_sset(priv->phydev, cmd);
+> =A0}
+>
+> =A0static u32 mpc52xx_fec_get_msglevel(struct net_device *dev)
+> =A0{
+> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+> +
+> + =A0 =A0 =A0 if (!priv->phydev)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> =A0 =A0 =A0 =A0return priv->msg_enable;
+> =A0}
+>
+> =A0static void mpc52xx_fec_set_msglevel(struct net_device *dev, u32 level=
+)
+> =A0{
+> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+> +
+> + =A0 =A0 =A0 if (!priv->phydev)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> +
+> =A0 =A0 =A0 =A0priv->msg_enable =3D level;
+> =A0}
+>
+> @@ -882,12 +898,31 @@ static int mpc52xx_fec_ioctl(struct net_device
+> *dev, struct ifreq *rq, int cmd)
+> =A0{
+> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
+>
+> + =A0 =A0 =A0 if (!priv->phydev)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> +
+> =A0 =A0 =A0 =A0return mpc52xx_fec_phy_mii_ioctl(priv, if_mii(rq), cmd);
+> =A0}
+>
+> =A0/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+ */
+> =A0/* OF Driver =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
+> =A0/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+ */
+> +static const struct net_device_ops mpc52xx_fec_netdev_ops =3D {
+> + =A0 =A0 =A0 .ndo_open =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_open,
+> + =A0 =A0 =A0 .ndo_stop =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_close=
+,
+> + =A0 =A0 =A0 .ndo_start_xmit =A0 =A0 =A0 =A0 =3D mpc52xx_fec_hard_start_=
+xmit,
+> + =A0 =A0 =A0 .ndo_tx_timeout =A0 =A0 =A0 =A0 =3D mpc52xx_fec_tx_timeout,
+> + =A0 =A0 =A0 .ndo_get_stats =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_get_stats=
+,
+> + =A0 =A0 =A0 .ndo_set_multicast_list =3D mpc52xx_fec_set_multicast_list,
+> + =A0 =A0 =A0 .ndo_validate_addr =A0 =A0 =A0=3D eth_validate_addr,
+> + =A0 =A0 =A0 .ndo_set_mac_address =A0 =A0=3D mpc52xx_fec_set_mac_address=
+,
+> + =A0 =A0 =A0 .ndo_do_ioctl =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_ioctl,
+> +
+> +#ifdef CONFIG_NET_POLL_CONTROLLER
+> + =A0 =A0 =A0 .ndo_poll_controller =A0 =A0 =3D mpc52xx_fec_poll_controlle=
+r,
+> +#endif
+> +};
+> +
+>
+> =A0static int __devinit
+> =A0mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *mat=
+ch)
+> @@ -929,20 +964,10 @@ mpc52xx_fec_probe(struct of_device *op, const
+> struct of_device_id *match)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EBUSY;
+>
+> =A0 =A0 =A0 =A0/* Init ether ndev with what we have */
+> - =A0 =A0 =A0 ndev->open =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_open;
+> - =A0 =A0 =A0 ndev->stop =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_close=
+;
+> - =A0 =A0 =A0 ndev->hard_start_xmit =A0 =3D mpc52xx_fec_hard_start_xmit;
+> - =A0 =A0 =A0 ndev->do_ioctl =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_ioctl;
+> =A0 =A0 =A0 =A0ndev->ethtool_ops =A0 =A0 =A0 =3D &mpc52xx_fec_ethtool_ops=
+;
+> - =A0 =A0 =A0 ndev->get_stats =A0 =A0 =A0 =A0 =3D mpc52xx_fec_get_stats;
+> - =A0 =A0 =A0 ndev->set_mac_address =A0 =3D mpc52xx_fec_set_mac_address;
+> - =A0 =A0 =A0 ndev->set_multicast_list =3D mpc52xx_fec_set_multicast_list=
+;
+> - =A0 =A0 =A0 ndev->tx_timeout =A0 =A0 =A0 =A0=3D mpc52xx_fec_tx_timeout;
+> =A0 =A0 =A0 =A0ndev->watchdog_timeo =A0 =A0=3D FEC_WATCHDOG_TIMEOUT;
+> =A0 =A0 =A0 =A0ndev->base_addr =A0 =A0 =A0 =A0 =3D mem.start;
+> -#ifdef CONFIG_NET_POLL_CONTROLLER
+> - =A0 =A0 =A0 ndev->poll_controller =3D mpc52xx_fec_poll_controller;
+> -#endif
+> + =A0 =A0 =A0 ndev->netdev_ops =3D &mpc52xx_fec_netdev_ops;
+>
+> =A0 =A0 =A0 =A0priv->t_irq =3D priv->r_irq =3D ndev->irq =3D NO_IRQ; /* I=
+RQ are free for now */
+>
+>
+>
+> On Wed, Feb 18, 2009 at 10:48 PM, David Miller <davem@davemloft.net> wrot=
+e:
+>> From: Henk Stegeman <henk.stegeman@gmail.com>
+>> Date: Wed, 18 Feb 2009 11:41:14 +0100
+>>
+>> Please CC: netdev, now added, on all networking reports and patches.
+>>
+>> Thank you.
+>>
+>>> I discovered the hard way that because linux bridging uses
+>>> net_device_ops, bridging only works with network drivers that publish
+>>> their device operations trough net_device_ops.
+>>>
+>>> In my case running:
+>>>
+>>> brctl addif br0 eth0 (where eth0 fec_mpc52xx.c did not yet support
+>>> net_device_ops) gave me a:
+>>>
+>>> Unable to handle kernel paging request...
+>>>
+>>> After changing fec_mpc52xx.c to support net_device_ops the problem was =
+fixed.
+>>>
+>>> If possible some kind of detection in the bridging software is i think
+>>> mostly appreciated for early detection of this problem, as it is
+>>> pretty hard to relate the error message to a not updated driver.
+>>>
+>>> cheers,
+>>>
+>>> Henk
+>>>
+>>> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+>>> index cd8e98b..a2841eb 100644
+>>> --- a/drivers/net/fec_mpc52xx.c
+>>> +++ b/drivers/net/fec_mpc52xx.c
+>>> @@ -888,6 +888,22 @@ static int mpc52xx_fec_ioctl(struct net_device
+>>> *dev, struct ifreq *rq, int cmd)
+>>> =A0/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D */
+>>> =A0/* OF Driver =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
+>>> =A0/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D */
+>>> +static const struct net_device_ops mpc52xx_fec_netdev_ops =3D {
+>>> + =A0 =A0 =A0 .ndo_open =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_ope=
+n,
+>>> + =A0 =A0 =A0 .ndo_stop =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_clo=
+se,
+>>> + =A0 =A0 =A0 .ndo_start_xmit =A0 =A0 =A0 =A0 =3D mpc52xx_fec_hard_star=
+t_xmit,
+>>> + =A0 =A0 =A0 .ndo_tx_timeout =A0 =A0 =A0 =A0 =3D mpc52xx_fec_tx_timeou=
+t,
+>>> + =A0 =A0 =A0 .ndo_get_stats =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_get_sta=
+ts,
+>>> + =A0 =A0 =A0 .ndo_set_multicast_list =3D mpc52xx_fec_set_multicast_lis=
+t,
+>>> + =A0 =A0 =A0 .ndo_validate_addr =A0 =A0 =A0=3D eth_validate_addr,
+>>> + =A0 =A0 =A0 .ndo_set_mac_address =A0 =A0=3D mpc52xx_fec_set_mac_addre=
+ss,
+>>> + =A0 =A0 =A0 .ndo_do_ioctl =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_ioctl,
+>>> +
+>>> +#ifdef CONFIG_NET_POLL_CONTROLLER
+>>> + =A0 =A0 =A0 .ndo_poll_controller =A0 =A0 =3D mpc52xx_fec_poll_control=
+ler,
+>>> +#endif
+>>> +};
+>>> +
+>>>
+>>> =A0static int __devinit
+>>> =A0mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *m=
+atch)
+>>> @@ -929,20 +945,7 @@ mpc52xx_fec_probe(struct of_device *op, const
+>>> struct of_device_id *match)
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EBUSY;
+>>>
+>>> =A0 =A0 =A0 /* Init ether ndev with what we have */
+>>> - =A0 =A0 ndev->open =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_open;
+>>> - =A0 =A0 ndev->stop =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_close;
+>>> - =A0 =A0 ndev->hard_start_xmit =A0 =3D mpc52xx_fec_hard_start_xmit;
+>>> - =A0 =A0 ndev->do_ioctl =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_ioctl;
+>>> - =A0 =A0 ndev->ethtool_ops =A0 =A0 =A0 =3D &mpc52xx_fec_ethtool_ops;
+>>> - =A0 =A0 ndev->get_stats =A0 =A0 =A0 =A0 =3D mpc52xx_fec_get_stats;
+>>> - =A0 =A0 ndev->set_mac_address =A0 =3D mpc52xx_fec_set_mac_address;
+>>> - =A0 =A0 ndev->set_multicast_list =3D mpc52xx_fec_set_multicast_list;
+>>> - =A0 =A0 ndev->tx_timeout =A0 =A0 =A0 =A0=3D mpc52xx_fec_tx_timeout;
+>>> - =A0 =A0 ndev->watchdog_timeo =A0 =A0=3D FEC_WATCHDOG_TIMEOUT;
+>>> - =A0 =A0 ndev->base_addr =A0 =A0 =A0 =A0 =3D mem.start;
+>>> -#ifdef CONFIG_NET_POLL_CONTROLLER
+>>> - =A0 =A0 ndev->poll_controller =3D mpc52xx_fec_poll_controller;
+>>> -#endif
+>>> + =A0 =A0 ndev->netdev_ops =3D &mpc52xx_fec_netdev_ops;
+>>>
+>>> =A0 =A0 =A0 priv->t_irq =3D priv->r_irq =3D ndev->irq =3D NO_IRQ; /* IR=
+Q are free for now */
+>>> _______________________________________________
+>>> Linuxppc-dev mailing list
+>>> Linuxppc-dev@ozlabs.org
+>>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
