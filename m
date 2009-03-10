@@ -1,31 +1,15 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 33903DE0EE
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:12:42 +1100 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id n2AEBOkv030978
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:11:24 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n2AECxfr1110244
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:12:59 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n2AECf6u002058
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:12:41 +1100
-Message-ID: <49B67552.5070307@in.ibm.com>
-Date: Tue, 10 Mar 2009 19:42:34 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
+Return-Path: <leowang1998@yahoo.com.cn>
+Received: from web15308.mail.cnb.yahoo.com (web15308.mail.cnb.yahoo.com
+	[203.209.230.38]) by ozlabs.org (Postfix) with SMTP id 18BCADDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:17:41 +1100 (EST)
+Message-ID: <56041.16244.qm@web15308.mail.cnb.yahoo.com>
+Date: Tue, 10 Mar 2009 22:17:38 +0800 (CST)
+From: zhong wang <leowang1998@yahoo.com.cn>
+Subject: =?utf-8?B?6L2s5Y+ROiBwb3dlcnBjIDQwNWV4IGVtYWMxIHByb2JsZW0gY29ubmVjdCB0?=
+	=?utf-8?B?byBzaW5nbGUgR2lnYSBwaHk=?=
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Next 10: Badness at mm/allocpercpu.c:123
-References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
-In-Reply-To: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
-Content-Type: multipart/mixed; boundary="------------070400040505070306040302"
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="0-2145101033-1236694658=:16244"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,281 +19,365 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070400040505070306040302
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-While booting Next 20090310 on a powerpc box (Power6 9117-MMA)
-i observed the following badness :
-
-[    0.339662] ------------[ cut here ]------------
-[    0.339666] Badness at mm/allocpercpu.c:123
-[    0.339670] NIP: c0000000001129dc LR: c0000000001129b8 CTR: 0000000000000000
-[    0.339676] REGS: c0000000fe1efa10 TRAP: 0700   Not tainted  (2.6.29-rc7-next-20090310)
-[    0.339681] MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24000024  XER: 20000002
-[    0.339695] TASK = c0000000fe1dd3d0[1] 'swapper' THREAD: c0000000fe1ec000 CPU: 0
-[    0.339701] GPR00: 0000000000000001 c0000000fe1efc90 c000000000948660 c0000000fe019000
-[    0.339711] GPR04: 0000000000000000 0000000000000000 c0000000fe019080 c00000000122e980
-[    0.339721] GPR08: 0000000000000000 c000000001467dec c0000000fe0e2610 c0000000fe1dd3d0
-[    0.339732] GPR12: 0000000044000022 c000000000a22300 c000000000733ad0 c00000000065e0c5
-[    0.339742] GPR16: 0000000003c33a08 0000000000000000 c000000000733a08 0000000002f1fc90
-[    0.339752] GPR20: c000000000733a20 c000000000679b30 0000000000000000 0000000002f1fc90
-[    0.339763] GPR24: 0000000000000000 0000000000000000 c000000000670ccd 0000000000000001
-[    0.339773] GPR28: c0000000fe019000 0000000000000080 c0000000008cb908 0000000000000100
-[    0.339788] NIP [c0000000001129dc] .__alloc_percpu+0x7c/0x244
-[    0.339793] LR [c0000000001129b8] .__alloc_percpu+0x58/0x244
-[    0.339798] Call Trace:
-[    0.339801] [c0000000fe1efc90] [c0000000001129b8] .__alloc_percpu+0x58/0x244 (unreliable)
-[    0.339810] [c0000000fe1efdc0] [c00000000007ce84] .__create_workqueue_key+0x74/0x2a0
-[    0.339819] [c0000000fe1efe70] [c000000000716990] .cpuset_init_smp+0x78/0xa4
-[    0.339827] [c0000000fe1eff00] [c000000000700334] .kernel_init+0x16c/0x224
-[    0.339834] [c0000000fe1eff90] [c00000000002adc8] .kernel_thread+0x54/0x70
-[    0.339839] Instruction dump:
-[    0.339843] 3863007f 78630624 4bffb94d 60000000 2bbd0008 7c7c1b78 40fd0030 e93e8010
-[    0.339856] 80090000 7c000034 5400d97e 78000020 <0b000000> 2fa00000 41fe0010 e93e8010
-
-I have attached the dmesg log here.
-
-Next 20090306 had the same problem, while 20090305 did not.
-
-Thanks
--Sachin
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+--0-2145101033-1236694658=:16244
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
 
---------------070400040505070306040302
-Content-Type: text/plain;
- name="dmesg_next_20090310"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dmesg_next_20090310"
-
-Using 006299d6 bytes for initrd buffer
-Please wait, loading kernel...
-Allocated 01600000 bytes for kernel @ 03500000
-   Elf64 kernel loaded...
-Loading ramdisk...
-ramdisk loaded 006299d6 @ 01600000
-OF stdout device is: /vdevice/vty@30000000
-Hypertas detected, assuming LPAR !
-command line: root=/dev/sda5 sysrq=1 insmod=sym53c8xx insmod=ipr crashkernel=512M-:256M  
-memory layout at init:
-  alloc_bottom : 00000000049c0000
-  alloc_top    : 0000000008000000
-  alloc_top_hi : 0000000008000000
-  rmo_top      : 0000000008000000
-  ram_top      : 0000000008000000
-Looking for displays
-instantiating rtas at 0x00000000074e0000 ... done
-boot cpu hw idx 0000000000000000
-starting cpu hw idx 0000000000000002... done
-copying OF device tree ...
-Building dt strings...
-Building dt structure...
-Device tree strings 0x0000000004bd0000 -> 0x0000000004bd15d3
-Device tree struct  0x0000000004be0000 -> 0x0000000004c00000
-Calling quiesce ...
-returning from prom_init
-[    0.000000] Crash kernel location must be 0x2000000
-[    0.000000] Reserving 256MB of memory at 32MB for crashkernel (System RAM: 4096MB)
-[    0.000000] Phyp-dump disabled at boot time
-[    0.000000] Using pSeries machine description
-[    0.000000] Using 1TB segments
-[    0.000000] Found initrd at 0xc000000001600000:0xc000000001c299d6
-[    0.000000] console [udbg0] enabled
-[    0.000000] Partition configured for 4 cpus.
-[    0.000000] CPU maps initialized for 2 threads per core
-[    0.000000] Starting Linux PPC64 #1 SMP Tue Mar 10 17:25:05 IST 2009
-[    0.000000] -----------------------------------------------------
-[    0.000000] ppc64_pft_size                = 0x1a
-[    0.000000] physicalMemorySize            = 0x100000000
-[    0.000000] htab_hash_mask                = 0x7ffff
-[    0.000000] -----------------------------------------------------
-[    0.000000] Initializing cgroup subsys cpuset
-[    0.000000] Initializing cgroup subsys cpu
-[    0.000000] Linux version 2.6.29-rc7-next-20090310 (root@llm62) (gcc version 4.3.2 [gcc-4_3-branch revision 141291] (SUSE Linux) ) #1 SMP Tue Mar 10 17:25:05 IST 2009
-[    0.000000] [boot]0012 Setup Arch
-[    0.000000] EEH: No capable adapters found
-[    0.000000] PPC64 nvram contains 15360 bytes
-[    0.000000] Zone PFN ranges:
-[    0.000000]   DMA      0x00000000 -> 0x00010000
-[    0.000000]   Normal   0x00010000 -> 0x00010000
-[    0.000000] Movable zone start PFN for each node
-[    0.000000] early_node_map[1] active PFN ranges
-[    0.000000]     0: 0x00000000 -> 0x00010000
-[    0.000000] [boot]0015 Setup Done
-[    0.000000] Built 1 zonelists in Node order, mobility grouping on.  Total pages: 65448
-[    0.000000] Policy zone: DMA
-[    0.000000] Kernel command line: root=/dev/sda5 sysrq=1 insmod=sym53c8xx insmod=ipr crashkernel=512M-:256M  
-[    0.000000] NR_IRQS:512
-[    0.000000] [boot]0020 XICS Init
-[    0.000000] [boot]0021 XICS Done
-[    0.000000] PID hash table entries: 4096 (order: 12, 32768 bytes)
-[    0.000000] clocksource: timebase mult[7d0000] shift[22] registered
-[    0.000054] Console: colour dummy device 80x25
-[    0.000086] console handover: boot [udbg0] -> real [hvc0]
-[    0.000113] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-[    0.000118] ... MAX_LOCKDEP_SUBCLASSES:  8
-[    0.000121] ... MAX_LOCK_DEPTH:          48
-[    0.000124] ... MAX_LOCKDEP_KEYS:        8191
-[    0.000128] ... CLASSHASH_SIZE:          4096
-[    0.000132] ... MAX_LOCKDEP_ENTRIES:     8192
-[    0.000135] ... MAX_LOCKDEP_CHAINS:      16384
-[    0.000139] ... CHAINHASH_SIZE:          8192
-[    0.000142]  memory used by lock dependency info: 4607 kB
-[    0.000146]  per task-struct memory footprint: 1920 bytes
-[    0.000476] Dentry cache hash table entries: 524288 (order: 6, 4194304 bytes)
-[    0.001534] Inode-cache hash table entries: 262144 (order: 5, 2097152 bytes)
-[    0.002663] allocated 2621440 bytes of page_cgroup
-[    0.002667] please try cgroup_disable=memory option if you don't want
-[    0.002672] freeing bootmem node 0
-[    0.079853] Memory: 3864320k/4194304k available (7552k kernel code, 329984k reserved, 1984k data, 10855k bss, 384k init)
-[    0.080373] Calibrating delay loop... 1022.36 BogoMIPS (lpj=5111808)
-[    0.330475] Security Framework initialized
-[    0.330481] SELinux:  Disabled at boot.
-[    0.330541] Mount-cache hash table entries: 4096
-[    0.333232] Initializing cgroup subsys ns
-[    0.333237] Initializing cgroup subsys cpuacct
-[    0.333242] Initializing cgroup subsys memory
-[    0.333251] Initializing cgroup subsys devices
-[    0.333257] Initializing cgroup subsys freezer
-[    0.334039] Processor 1 found.
-[    0.338524] Processor 2 found.
-[    0.339010] Processor 3 found.
-[    0.339021] Brought up 4 CPUs
-[    0.339662] ------------[ cut here ]------------
-[    0.339666] Badness at mm/allocpercpu.c:123
-[    0.339670] NIP: c0000000001129dc LR: c0000000001129b8 CTR: 0000000000000000
-[    0.339676] REGS: c0000000fe1efa10 TRAP: 0700   Not tainted  (2.6.29-rc7-next-20090310)
-[    0.339681] MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24000024  XER: 20000002
-[    0.339695] TASK = c0000000fe1dd3d0[1] 'swapper' THREAD: c0000000fe1ec000 CPU: 0
-[    0.339701] GPR00: 0000000000000001 c0000000fe1efc90 c000000000948660 c0000000fe019000 
-[    0.339711] GPR04: 0000000000000000 0000000000000000 c0000000fe019080 c00000000122e980 
-[    0.339721] GPR08: 0000000000000000 c000000001467dec c0000000fe0e2610 c0000000fe1dd3d0 
-[    0.339732] GPR12: 0000000044000022 c000000000a22300 c000000000733ad0 c00000000065e0c5 
-[    0.339742] GPR16: 0000000003c33a08 0000000000000000 c000000000733a08 0000000002f1fc90 
-[    0.339752] GPR20: c000000000733a20 c000000000679b30 0000000000000000 0000000002f1fc90 
-[    0.339763] GPR24: 0000000000000000 0000000000000000 c000000000670ccd 0000000000000001 
-[    0.339773] GPR28: c0000000fe019000 0000000000000080 c0000000008cb908 0000000000000100 
-[    0.339788] NIP [c0000000001129dc] .__alloc_percpu+0x7c/0x244
-[    0.339793] LR [c0000000001129b8] .__alloc_percpu+0x58/0x244
-[    0.339798] Call Trace:
-[    0.339801] [c0000000fe1efc90] [c0000000001129b8] .__alloc_percpu+0x58/0x244 (unreliable)
-[    0.339810] [c0000000fe1efdc0] [c00000000007ce84] .__create_workqueue_key+0x74/0x2a0
-[    0.339819] [c0000000fe1efe70] [c000000000716990] .cpuset_init_smp+0x78/0xa4
-[    0.339827] [c0000000fe1eff00] [c000000000700334] .kernel_init+0x16c/0x224
-[    0.339834] [c0000000fe1eff90] [c00000000002adc8] .kernel_thread+0x54/0x70
-[    0.339839] Instruction dump:
-[    0.339843] 3863007f 78630624 4bffb94d 60000000 2bbd0008 7c7c1b78 40fd0030 e93e8010 
-[    0.339856] 80090000 7c000034 5400d97e 78000020 <0b000000> 2fa00000 41fe0010 e93e8010 
-[    0.348162] net_namespace: 2160 bytes
-[    0.348476] NET: Registered protocol family 16
-[    0.348532] IBM eBus Device Driver
-[    0.352290] PCI: Probing PCI hardware
-[    0.354439] bio: create slab <bio-0> at 0
-[    0.355321] SCSI subsystem initialized
-[    0.355468] usbcore: registered new interface driver usbfs
-[    0.355500] usbcore: registered new interface driver hub
-[    0.355577] usbcore: registered new device driver usb
-[    0.380869] NET: Registered protocol family 2
-[    0.470537] IP route cache hash table entries: 32768 (order: 2, 262144 bytes)
-[    0.471080] TCP established hash table entries: 131072 (order: 5, 2097152 bytes)
-[    0.471514] TCP bind hash table entries: 65536 (order: 5, 3670016 bytes)
-[    0.473611] TCP: Hash tables configured (established 131072 bind 65536)
-[    0.473618] TCP reno registered
-[    0.500558] NET: Registered protocol family 1
-[    0.500632] Unpacking initramfs... done
-[    0.645207] Freeing initrd memory: 6310k freed
-[    0.658465] IOMMU table initialized, virtual merging enabled
-[    0.659595] ====[ backtrace testing ]===========
-[    0.659599] Testing a backtrace from process context.
-[    0.659603] The following trace is a kernel self test and not a bug!
-[    0.659607] Call Trace:
-[    0.659613] [c0000000fe1efc70] [c000000000011608] .show_stack+0x6c/0x16c (unreliable)
-[    0.659622] [c0000000fe1efd20] [c0000000000a6758] .backtrace_regression_test+0x44/0x134
-[    0.659630] [c0000000fe1efe10] [c000000000009254] .do_one_initcall+0x80/0x1a4
-[    0.659638] [c0000000fe1eff00] [c000000000700370] .kernel_init+0x1a8/0x224
-[    0.659645] [c0000000fe1eff90] [c00000000002adc8] .kernel_thread+0x54/0x70
-[    0.659650] Testing a backtrace from irq context.
-[    0.659654] The following trace is a kernel self test and not a bug!
-[    0.659664] Call Trace:
-[    0.659668] [c000000001f9fcf0] [c000000000011608] .show_stack+0x6c/0x16c (unreliable)
-[    0.659676] [c000000001f9fda0] [c0000000000a66f0] .backtrace_test_irq_callback+0x18/0x3c
-[    0.659684] [c000000001f9fe20] [c00000000006bfa0] .tasklet_action+0x100/0x1d0
-[    0.659691] [c000000001f9fec0] [c00000000006ce20] .__do_softirq+0xe8/0x1f8
-[    0.659698] [c000000001f9ff90] [c00000000002ac04] .call_do_softirq+0x14/0x24
-[    0.659704] [c0000000fe257db0] [c00000000000d4fc] .do_softirq+0x90/0x110
-[    0.659711] [c0000000fe257e50] [c00000000006c49c] .ksoftirqd+0xbc/0x18c
-[    0.659718] [c0000000fe257f00] [c000000000081cec] .kthread+0x80/0xcc
-[    0.659725] [c0000000fe257f90] [c00000000002adc8] .kernel_thread+0x54/0x70
-[    0.659733] Testing a saved backtrace.
-[    0.659736] The following trace is a kernel self test and not a bug!
-[    0.659741]  [<c0000000000a680c>] .backtrace_regression_test+0xf8/0x134
-[    0.659747]  [<c000000000009254>] .do_one_initcall+0x80/0x1a4
-[    0.659753]  [<c000000000700370>] .kernel_init+0x1a8/0x224
-[    0.659759]  [<c00000000002adc8>] .kernel_thread+0x54/0x70
-[    0.659764] ====[ end of backtrace testing ]====
-[    0.659795] audit: initializing netlink socket (disabled)
-[    0.659810] type=2000 audit(1236686641.658:1): initialized
-[    0.679339] Kprobe smoke test started
-[    0.890631] Kprobe smoke test passed successfully
-[    0.890700] rcu-torture:--- Start of test: nreaders=8 nfakewriters=4 stat_interval=0 verbose=0 test_no_idle_hz=0 shuffle_interval=3 stutter=5 irqreader=1
-[    0.891677] HugeTLB registered 16 MB page size, pre-allocated 0 pages
-[    0.891682] HugeTLB registered 16 GB page size, pre-allocated 0 pages
-[    0.892086] VFS: Disk quotas dquot_6.5.2
-[    0.892203] Dquot-cache hash table entries: 8192 (order 0, 65536 bytes)
-[    0.892884] msgmni has been set to 7556
-[    0.893258] alg: No test for stdrng (krng)
-[    0.893329] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
-[    0.893335] io scheduler noop registered
-[    0.893339] io scheduler anticipatory registered
-[    0.893343] io scheduler deadline registered
-[    0.893396] io scheduler cfq registered (default)
-[    0.893490] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-[    0.893495] rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
-[    0.895965] Generic RTC Driver v1.07
-[    0.895999] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-[    0.896309] input: Macintosh mouse button emulation as /devices/virtual/input/input0
-[    0.896362] Uniform Multi-Platform E-IDE driver
-[    0.896423] ide-gd driver 1.18
-[    0.896625] ibmvscsi 30000002: SRP_VERSION: 16.a
-[    0.896717] scsi0 : IBM POWER Virtual SCSI Adapter 1.5.8
-[    0.896983] ibmvscsi 30000002: partner initialization complete
-[    0.896991] ibmvscsi 30000002: sent SRP login
-[    0.897062] ibmvscsi 30000002: SRP_LOGIN succeeded
-[    0.897104] ibmvscsi 30000002: host srp version: 16.a, host partition VIO (1), OS 3, max io 1048576
-[    0.910829] scsi 0:0:1:0: Direct-Access     AIX      VDASD            0001 PQ: 0 ANSI: 3
-[    0.911151] scsi 0:0:2:0: CD-ROM            AIX      VOPTA                 PQ: 0 ANSI: 4
-[    0.966517] ibmvfc: IBM Virtual Fibre Channel Driver version: 1.0.4 (November 14, 2008)
-[    0.966616] scsi 0:0:1:0: Attached scsi generic sg0 type 0
-[    0.966661] scsi 0:0:2:0: Attached scsi generic sg1 type 5
-[    0.966739] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
-[    0.966793] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
-[    0.966835] uhci_hcd: USB Universal Host Controller Interface driver
-[    1.000469] mice: PS/2 mouse device common for all mice
-[    1.040547] EDAC MC: Ver: 2.1.0 Mar 10 2009
-[    1.041711] usbcore: registered new interface driver hiddev
-[    1.041743] usbcore: registered new interface driver usbhid
-[    1.041749] usbhid: v2.6:USB HID core driver
-[    1.042399] TCP cubic registered
-[    1.042405] NET: Registered protocol family 15
-[    1.042574] registered taskstats version 1
-[    1.042745] Freeing unused kernel memory: 384k freed
-doing fast boot
-[    1.074740] SysRq : Changing Loglevel
-[    1.074747] Loglevel set to 1
-FATAL: Module ibmvscsic not found.
-Creating device nodes with udev
-Boot logging started on /dev/hvc0(/dev/console) at Tue Mar 10 12:04:02 2009
 
 
---------------070400040505070306040302--
+
+
+
+Hello all=EF=BC=9A=20
+=C2=A0 We use the AMCC PowerPC 405ex through emac1 way RGMII with realtek R=
+TL8211 Giga phy linked to, At present the PHY Address is: 00110=20
+add delay=C2=A0 2ns for RGMII=20
+CONFIG[8:5]:AUTO_Negotiation=20
+1111=3DNWay,advertise =EF=BC=8Call capabilities,prefer Slave=20
+mode;1=3DRGMII mode=20
+Clk on the hardware no problem, Mdio, mdc even on, but at Llinux / driver /=
+ net / ibm-newemac / core.c discovered phy address, phy ID at=C2=A0 .Config=
+ file has joined=20
+     NETDEVICE =3D Y=20
+     PHYLIB=3DY=20
+     REALTEK-PHY=3DY=20
+   But will be compiled under the best Uimage to board, the feeling of the =
+PHY the driver has not been mounted use. The following is a kernel informat=
+ion :
+
+PPC 4xx OCP EMAC driver, version 3.54=20
+MAL v2 /plb/mcmal, 2 TX channels, 2 RX channels=20
+RGMII /plb/opb/emac-rgmii@ef600b00 initialized with MDIO support=20
+/plb/opb/emac-rgmii@ef600b00: input 0 in RGMII mode=20
+eth0: EMAC-0 /plb/opb/ethernet@ef600900, MAC 00:47:41:52:52:59=20
+/plb/opb/emac-rgmii@ef600b00: input 1 in RGMII mode=20
+/plb/opb/ethernet@ef600a00: find TRL 821X Giga PHY=EF=BC=880x4=EF=BC=89=20
+=C2=A0=20
+  But also in Llinux / driver / net / ibm-newemac / phy.c also add the oper=
+ation of RTL8211bg as follows:=20
+#define RTL821x_PHYSR=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0 0x11=20
+#define RTL821x_PHYSR_DUPLEX=C2=A0=C2=A0=C2=A0 0x2000=20
+#define RTL821x_PHYSR_SPEED=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 0xc000=20
+#define RTL821x_INER=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 0x12=20
+#define RTL821x_INER_INIT=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 0x6400=20
+#define RTL821x_INSR=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 0x13=20
+static int rtl821x_init(struct mii_phy *phy)=20
+{=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 phy_write(phy, RTL821x_INER, 0x6400); =
+//enable interrupt=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 r=
+eturn=C2=A0 0;=20
+}=20
+=C2=A0=20
+static struct mii_phy_ops rtl821x_phy_ops =3D {=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .init=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0 =3D rtl821x_init,=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .setup_aneg=C2=A0=C2=A0=C2=A0 =3D genm=
+ii_setup_aneg,=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .setup_forced=C2=A0 =3D genmii_setup_f=
+orced,=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .poll_link =3D genmii_poll_link,=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .read_link=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 =3D genmii_read_link=20
+};=20
+=C2=A0=20
+static struct mii_phy_def rtl821x_phy_def =3D {=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .phy_id=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D 0x001cc912,=C2=A0 // for rtl8211 single =
+phy=20
+=C2=A0=C2=A0 // .phy_id=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D=
+ 0x001cc960,=C2=A0=C2=A0 for 8366sr inside phy 4=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .phy_id_mask =3D 0x001fffff,=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .name=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D "RTL 821X Giga Phy",=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .features=C2=A0 =3D PHY_GBIT_FEATURES,=
+=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 //.flags=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D PHY_HAS_INTERRUPT,=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 .ops=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 =3D &rtl821x_phy_ops=20
+=C2=A0=20
+  But will be compiled under the best Uimage to board, the feeling of the P=
+HY the driver has not been mounted use. The following is a kernel informati=
+on=20
+=C2=A0=C2=A0=C2=A0=C2=A0 After IP with a good PC PING board, Return Request=
+ Time Out! Troublesome players you look at what questions are=20
+=C2=A0=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Connection diagram, see attachment=20
+=C2=A0=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 leowang=20
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 2009:03:10
+
+
+=E5=A5=BD=E7=8E=A9=E8=B4=BA=E5=8D=A1=E7=AD=89=E4=BD=A0=E5=8F=91=EF=BC=8C=E9=
+=82=AE=E7=AE=B1=E8=B4=BA=E5=8D=A1=E5=85=A8=E6=96=B0=E4=B8=8A=E7=BA=BF=EF=BC=
+=81=0A=0A=0A      _________________________________________________________=
+__ =0A  =E5=A5=BD=E7=8E=A9=E8=B4=BA=E5=8D=A1=E7=AD=89=E4=BD=A0=E5=8F=91=EF=
+=BC=8C=E9=82=AE=E7=AE=B1=E8=B4=BA=E5=8D=A1=E5=85=A8=E6=96=B0=E4=B8=8A=E7=BA=
+=BF=EF=BC=81 =0Ahttp://card.mail.cn.yahoo.com/
+--0-2145101033-1236694658=:16244
+Content-Type: application/pdf; name=Connection
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="Connection diagram.pdf"
+
+JVBERi0xLjQNJeLjz9MNCjIxIDAgb2JqPDwvSFs5NzQgMTY0XS9MaW5lYXJp
+emVkIDEvRSA1ODYwL0wgMTEyOTgvTiAxL08gMjQvVCAxMDgzMT4+DWVuZG9i
+ag0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgDQp4cmVmDQoyMSAxMg0KMDAwMDAwMDAxNiAwMDAw
+MCBuDQowMDAwMDAxMzA0IDAwMDAwIG4NCjAwMDAwMDA5NzQgMDAwMDAgbg0K
+MDAwMDAwMTU0OCAwMDAwMCBuDQowMDAwMDAxNzc5IDAwMDAwIG4NCjAwMDAw
+MDIxNjIgMDAwMDAgbg0KMDAwMDAwMjE5NiAwMDAwMCBuDQowMDAwMDAyODU2
+IDAwMDAwIG4NCjAwMDAwMDI4NzYgMDAwMDAgbg0KMDAwMDAwNTU0NSAwMDAw
+MCBuDQowMDAwMDA1Nzg0IDAwMDAwIG4NCjAwMDAwMDExMzggMDAwMDAgbg0K
+dHJhaWxlcg0KPDwvU2l6ZSAzMy9QcmV2IDEwODIwL1hSZWZTdG0gMTEzOC9S
+b290IDIyIDAgUi9JbmZvIDYgMCBSL0lEWzw4NDIyMWVhOWY4MjIzMWNjY2Jj
+N2QyMzk1OWQ2ODQ1Nz48NDI2NjNhYWUzMDQwMDA0NWEzNzBiZTQyMmRhZGFm
+Yzc+XT4+DQpzdGFydHhyZWYNCjANCiUlRU9GDQogICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgDQoyMyAwIG9iajw8L0xlbmd0
+aCA3NS9GaWx0ZXIvRmxhdGVEZWNvZGUvQyA5MS9MIDc1L1AgMTEzL1MgMzg+
+PnN0cmVhbQ0KeNpiYGDgYGBgzWAAAoEbDKiACYhZGDgakMU4oJiBQYSBh9cw
+m+FRAwNXJO8GC6gGiQVQjSABRgYGMQcIzZQANYD1AECAAQCUKQfyDSBlbmRz
+dHJlYW0NZW5kb2JqDTMyIDAgb2JqPDwvU2l6ZSAyMS9MZW5ndGggMjAvRmls
+dGVyL0ZsYXRlRGVjb2RlL0RlY29kZVBhcm1zPDwvQ29sdW1ucyAzL1ByZWRp
+Y3RvciAxMj4+L1dbMSAxIDFdL1R5cGUvWFJlZi9JbmRleFs3IDE0XT4+c3Ry
+ZWFtDQp42mJiYmRgYmBgJBUDBBgABWkALQ0gZW5kc3RyZWFtDWVuZG9iag0y
+MiAwIG9iajw8L1BhZ2VzIDQgMCBSL1R5cGUvQ2F0YWxvZy9MYW5nKEVOLVVT
+KS9QYWdlTGFiZWxzIDIgMCBSL1N0cnVjdFRyZWVSb290IDcgMCBSL01ldGFk
+YXRhIDUgMCBSL1BpZWNlSW5mbzw8L01hcmtlZFBERjw8L0xhc3RNb2RpZmll
+ZChEOjIwMDkwMzEwMTMzMzExKT4+Pj4vTGFzdE1vZGlmaWVkKEQ6MjAwOTAz
+MTAxMzMzMTEpL01hcmtJbmZvPDwvTWFya2VkIHRydWUvTGV0dGVyc3BhY2VG
+bGFncyAwPj4+Pg1lbmRvYmoNMjQgMCBvYmo8PC9Db250ZW50cyAyNyAwIFIv
+VHlwZS9QYWdlL1BhcmVudCA0IDAgUi9Sb3RhdGUgMC9NZWRpYUJveFswIDAg
+NTk1IDg0Ml0vQ3JvcEJveFswIDAgNTk1IDg0Ml0vUmVzb3VyY2VzPDwvQ29s
+b3JTcGFjZTw8L0NTMCAyNiAwIFI+Pi9Gb250PDwvVFQwIDI1IDAgUj4+L1By
+b2NTZXRbL1BERi9UZXh0XS9FeHRHU3RhdGU8PC9HUzAgMzEgMCBSPj4+Pi9T
+dHJ1Y3RQYXJlbnRzIDA+Pg1lbmRvYmoNMjUgMCBvYmo8PC9UeXBlL0ZvbnQv
+RW5jb2RpbmcvV2luQW5zaUVuY29kaW5nL0Jhc2VGb250L1RpbWVzTmV3Um9t
+YW5QU01UL0ZpcnN0Q2hhciAzMi9MYXN0Q2hhciAxMjAvU3VidHlwZS9UcnVl
+VHlwZS9Gb250RGVzY3JpcHRvciAzMCAwIFIvV2lkdGhzWzI1MCAwIDAgMCAw
+IDAgMCAwIDAgMCAwIDAgMCAwIDAgMCA1MDAgNTAwIDUwMCAwIDUwMCA1MDAg
+MCAwIDUwMCAwIDAgMCAwIDAgMCAwIDAgNzIyIDAgNjY3IDAgNjExIDAgMCAw
+IDAgMCAwIDYxMSA4ODkgMCAwIDU1NiAwIDY2NyAwIDYxMSAwIDAgMCAwIDAg
+MCAwIDAgMCAwIDAgMCA0NDQgNTAwIDQ0NCAwIDQ0NCAwIDUwMCAwIDAgMCAw
+IDAgNzc4IDAgNTAwIDAgMCAzMzMgMCAwIDAgMCA3MjIgNTAwXT4+DWVuZG9i
+ag0yNiAwIG9ialsvSUNDQmFzZWQgMjkgMCBSXQ1lbmRvYmoNMjcgMCBvYmo8
+PC9MZW5ndGggMjggMCBSL0ZpbHRlci9GbGF0ZURlY29kZT4+c3RyZWFtDQpI
+idxVTY/TQAy9z6/wEZAytT2fkVYrsdkKgSiqaG6Iw1LaXVZbQO1hEb8eT9qQ
+TJLucqY9dOy++Nl+9mS2urv5uYGLi9miensNBJeXV9cVqFm1QlgfxJG+cFh/
+VwTfxP9G/LcHRezBR9Rcygd2jR0caufhQXGMudEhH9T2GLtaATZfWFUfFOrg
+4BEiLMRzL4zv4NNnhK/Qj1WQZyiChPKIBPtNn3Wn7tRKzRcp9+XferitR5JW
+V7Wa1TVK9HorjChB5LiGdCQD9WPKppaaMf3+Fqvei6Fdk2dzIGO0JBGM0xhR
+2OudegEv63s1xEVdItr4D1BrNTFiGEBfL6oKlj8eN/tlBRbd5lfz8Lw+FTkh
+kLW5JmIHNDqkSqXzVMaRnSuTIwpnoWCjTfN/ancW8NhxRq/LnPfk6lOxp5Gd
+U+cIodboc/ZR2GMCPbXNk2qb8qh2EnoggaOkqo9Rk0eOTf/nuwmtvNdE0ZkB
+9maNuThdTrbNKcsnD8tk0wg/z89canRT/PTccLBMbpl6mUtlufWGoCkc1WCZ
+XvuU1wcd+aRkF6Hv7di87VRn28xKHygV2WlXn/r0YM+1fSW9keuC5Lr474pL
+c91spzC5tMnp3OcKOLYbbFql9hYdwIogt6chzc0qZxFHm+TOblKRVonL9t60
+ZrxOjK5ZJ1tq5nZEP05MM5EuQxn9AFpPQUUelPUbQN9P7YjVVpoxTAAi0wRa
+FLaebTlA05cJrJNp8OxogL09t/s4uft45hYyRtaaQnpvcOjeFm3cPwIMAA18
+jisNIGVuZHN0cmVhbQ1lbmRvYmoNMjggMCBvYmogNTg4DWVuZG9iag0yOSAw
+IG9iajw8L0xlbmd0aCAyNTc1L0ZpbHRlci9GbGF0ZURlY29kZS9OIDMvQWx0
+ZXJuYXRlL0RldmljZVJHQj4+c3RyZWFtDQpIiZyWeVRTdxbHf2/JnpCVsMNj
+DVuAsAaQNWxhkR0EUQhJCAESQkjYBUFEBRRFRISqlTLWbXRGT0WdLq5jrQ7W
+ferSA/Uw6ug4tBbXjp0XOEedTmem0+8f7/c593fv793fvfed8wCgJ6WqtdUw
+CwCN1qDPSozFFhUUYqQJAAMKIAIRADJ5rS4tOyEH4JLGS7Ba3An8i55eB5Bp
+vSJMysAw8P+JLdfpDQBAGTgHKJS1cpw7ca6qN+hM9hmceaWVJoZRE+vxBHG2
+NLFqnr3nfOY52sQKjVaBsylnnUKjMPFpnFfXGZU4I6k4d9WplfU4X8XZpcqo
+UeP83BSrUcpqAUDpJrtBKS/H2Q9nuj4nS4LzAgDIdNU7XPoOG5QNBtOlJNW6
+Rr1aVW7A3OUemCg0VIwlKeurlAaDMEMmr5TpFZikWqOTaRsBmL/znDim2mJ4
+kYNFocHBQn8f0TuF+q+bv1Cm3s7Tk8y5nkH8C29tP+dXPQqAeBavzfq3ttIt
+AIyvBMDy5luby/sAMPG+Hb74zn34pnkpNxh0Yb6+9fX1Pmql3MdU0Df6nw6/
+QO+8z8d03JvyYHHKMpmxyoCZ6iavrqo26rFanUyuxIQ/HeJfHfjzeXhnKcuU
+eqUWj8jDp0ytVeHt1irUBnW1FlNr/1MTf2XYTzQ/17i4Y68Br9gHsC7yAPK3
+CwDl0gBStA3fgd70LZWSBzLwNd/h3vzczwn691PhPtOjVq2ai5Nk5WByo75u
+fs/0WQICoAIm4AErYA+cgTsQAn8QAsJBNIgHySAd5IACsBTIQTnQAD2oBy2g
+HXSBHrAebALDYDsYA7vBfnAQjIOPwQnwR3AefAmugVtgEkyDh2AGPAWvIAgi
+QQyIC1lBDpAr5AX5Q2IoEoqHUqEsqAAqgVSQFjJCLdAKqAfqh4ahHdBu6PfQ
+UegEdA66BH0FTUEPoO+glzAC02EebAe7wb6wGI6BU+AceAmsgmvgJrgTXgcP
+waPwPvgwfAI+D1+DJ+GH8CwCEBrCRxwRISJGJEg6UoiUIXqkFelGBpFRZD9y
+DDmLXEEmkUfIC5SIclEMFaLhaBKai8rRGrQV7UWH0V3oYfQ0egWdQmfQ1wQG
+wZbgRQgjSAmLCCpCPaGLMEjYSfiIcIZwjTBNeEokEvlEATGEmEQsIFYQm4m9
+xK3EA8TjxEvEu8RZEolkRfIiRZDSSTKSgdRF2kLaR/qMdJk0TXpOppEdyP7k
+BHIhWUvuIA+S95A/JV8m3yO/orAorpQwSjpFQWmk9FHGKMcoFynTlFdUNlVA
+jaDmUCuo7dQh6n7qGept6hMajeZEC6Vl0tS05bQh2u9on9OmaC/oHLonXUIv
+ohvp6+gf0o/Tv6I/YTAYboxoRiHDwFjH2M04xfia8dyMa+ZjJjVTmLWZjZgd
+Nrts9phJYboyY5hLmU3MQeYh5kXmIxaF5caSsGSsVtYI6yjrBmuWzWWL2Ols
+DbuXvYd9jn2fQ+K4ceI5Ck4n5wPOKc5dLsJ15kq4cu4K7hj3DHeaR+QJeFJe
+Ba+H91veBG/GnGMeaJ5n3mA+Yv6J+SQf4bvxpfwqfh//IP86/6WFnUWMhdJi
+jcV+i8sWzyxtLKMtlZbdlgcsr1m+tMKs4q0qrTZYjVvdsUatPa0zreutt1mf
+sX5kw7MJt5HbdNsctLlpC9t62mbZNtt+YHvBdtbO3i7RTme3xe6U3SN7vn20
+fYX9gP2n9g8cuA6RDmqHAYfPHP6KmWMxWBU2hJ3GZhxtHZMcjY47HCccXzkJ
+nHKdOpwOON1xpjqLncucB5xPOs+4OLikubS47HW56UpxFbuWu252Pev6zE3g
+lu+2ym3c7b7AUiAVNAn2Cm67M9yj3GvcR92vehA9xB6VHls9vvSEPYM8yz1H
+PC96wV7BXmqvrV6XvAneod5a71HvG0K6MEZYJ9wrnPLh+6T6dPiM+zz2dfEt
+9N3ge9b3tV+QX5XfmN8tEUeULOoQHRN95+/pL/cf8b8awAhICGgLOBLwbaBX
+oDJwW+Cfg7hBaUGrgk4G/SM4JFgfvD/4QYhLSEnIeyE3xDxxhrhX/HkoITQ2
+tC3049AXYcFhhrCDYX8PF4ZXhu8Jv79AsEC5YGzB3QinCFnEjojJSCyyJPL9
+yMkoxyhZ1GjUN9HO0YrondH3YjxiKmL2xTyO9YvVx34U+0wSJlkmOR6HxCXG
+dcdNxHPic+OH479OcEpQJexNmEkMSmxOPJ5ESEpJ2pB0Q2onlUt3S2eSQ5KX
+JZ9OoadkpwynfJPqmapPPZYGpyWnbUy7vdB1oXbheDpIl6ZvTL+TIcioyfhD
+JjEzI3Mk8y9ZoqyWrLPZ3Ozi7D3ZT3Nic/pybuW65xpzT+Yx84ryduc9y4/L
+78+fXOS7aNmi8wXWBeqCI4WkwrzCnYWzi+MXb1o8XRRU1FV0fYlgScOSc0ut
+l1Yt/aSYWSwrPlRCKMkv2VPygyxdNiqbLZWWvlc6I5fIN8sfKqIVA4oHyghl
+v/JeWURZf9l9VYRqo+pBeVT5YPkjtUQ9rP62Iqlie8WzyvTKDyt/rMqvOqAh
+a0o0R7UcbaX2dLV9dUP1JZ2Xrks3WRNWs6lmRp+i31kL1S6pPWLg4T9TF4zu
+xpXGqbrIupG65/V59Yca2A3ahguNno1rGu81JTT9phltljefbHFsaW+ZWhaz
+bEcr1FraerLNua2zbXp54vJd7dT2yvY/dfh19Hd8vyJ/xbFOu87lnXdXJq7c
+22XWpe+6sSp81fbV6Gr16ok1AWu2rHndrej+osevZ7Dnh1557xdrRWuH1v64
+rmzdRF9w37b1xPXa9dc3RG3Y1c/ub+q/uzFt4+EBbKB74PtNxZvODQYObt9M
+3WzcPDmU+k8ApAFb/pi4mSSZkJn8mmia1ZtCm6+cHJyJnPedZJ3SnkCerp8d
+n4uf+qBpoNihR6G2oiailqMGo3aj5qRWpMelOKWpphqmi6b9p26n4KhSqMSp
+N6mpqhyqj6sCq3Wr6axcrNCtRK24ri2uoa8Wr4uwALB1sOqxYLHWskuywrM4
+s660JbSctRO1irYBtnm28Ldot+C4WbjRuUq5wro7urW7LrunvCG8m70VvY++
+Cr6Evv+/er/1wHDA7MFnwePCX8Lbw1jD1MRRxM7FS8XIxkbGw8dBx7/IPci8
+yTrJuco4yrfLNsu2zDXMtc01zbXONs62zzfPuNA50LrRPNG+0j/SwdNE08bU
+SdTL1U7V0dZV1tjXXNfg2GTY6Nls2fHadtr724DcBdyK3RDdlt4c3qLfKd+v
+4DbgveFE4cziU+Lb42Pj6+Rz5PzlhOYN5pbnH+ep6DLovOlG6dDqW+rl63Dr
+++yG7RHtnO4o7rTvQO/M8Fjw5fFy8f/yjPMZ86f0NPTC9VD13vZt9vv3ivgZ
++Kj5OPnH+lf65/t3/Af8mP0p/br+S/7c/23//wIMAPeE8/sKDSBlbmRzdHJl
+YW0NZW5kb2JqDTMwIDAgb2JqPDwvVHlwZS9Gb250RGVzY3JpcHRvci9Gb250
+QkJveFstNTY4IC0zMDcgMjAwMCAxMDA3XS9Gb250TmFtZS9UaW1lc05ld1Jv
+bWFuUFNNVC9GbGFncyAzNC9TdGVtViA4Mi9DYXBIZWlnaHQgNjU2L1hIZWln
+aHQgMC9Bc2NlbnQgODkxL0Rlc2NlbnQgLTIxNi9JdGFsaWNBbmdsZSAwL0Zv
+bnRGYW1pbHkoVGltZXMgTmV3IFJvbWFuKS9Gb250U3RyZXRjaC9Ob3JtYWwv
+Rm9udFdlaWdodCA0MDA+Pg1lbmRvYmoNMzEgMCBvYmo8PC9UeXBlL0V4dEdT
+dGF0ZS9TQSBmYWxzZS9PUCBmYWxzZS9TTSAwLjAyL29wIGZhbHNlL09QTSAx
+Pj4NZW5kb2JqDTEgMCBvYmo8PC9MZW5ndGggNTE0L0ZpbHRlci9GbGF0ZURl
+Y29kZS9UeXBlL09ialN0bS9GaXJzdCA5My9OIDE0Pj5zdHJlYW0NCnjarFNN
+b6MwEP0rI+XSHrbGTgAjVUjka5VNm0SBag9RDpQ4LCoxyDGr5t93DCRZtr01
+Bzx+w8yb8fPYBQs4UMsCD6jr4A6YhYYCYzZQBgPbBdoHGyPoAGwHg21wKDod
+cDiGuODafaAcOKNAPeDcQwrwOIXHRxKdSkFCrapER0qIdVFoMseKFqzJKI+P
+x+e4xNIGrmIlZB1luuh6FuJdz8UJKFkXuTA52CGG+D7WeIplejdZ/Pg5vCfz
+DTaLP0yzteGNcRvjNMY2ZktWULtJSEKR6JqrN3F6wbgX9M3Gc3rcNYc5V1pU
+h+PGMrKY/Nq1rHSeSTxjGUvyIndCXWGEXQ+LdzLO/pKpig+i2aEGstCCLMwy
+kbsrCP/EKNc0SyslyEwapo4rWgb4jYydmY1Zpq1n2nrCqhTqmKis1E0XYfXa
+gVplb6KoWjhWRTmKy3OFz+cnK9//X1S7o6b7j9JblGQOFhl9ydRefPjlzxTY
+4KL0HK86MONUz8Elr1EjyPXd/acEdoOi/RtwDG7AYX+bY4iDt6Fs8GCB43Jc
+GfdwdW32YG3JEh/NqZ4BHSs9w7GVGvoYbOaxhYw6iFd5nIgDYjLMi+Stmflz
+9m+V6Uymz8VOkCcVvXborA6bQeY9BHmWSvKrOupsfzIjmIih2BdK1BE1DvZa
+qEvCNd/3PwQYAAOnOSQNIGVuZHN0cmVhbQ1lbmRvYmoNMiAwIG9iajw8L051
+bXNbMCAzIDAgUl0+Pg1lbmRvYmoNMyAwIG9iajw8L1MvRD4+DWVuZG9iag00
+IDAgb2JqPDwvQ291bnQgMS9LaWRzWzI0IDAgUl0vVHlwZS9QYWdlcz4+DWVu
+ZG9iag01IDAgb2JqPDwvTGVuZ3RoIDM5MTIvVHlwZS9NZXRhZGF0YS9TdWJ0
+eXBlL1hNTD4+c3RyZWFtDQo8P3hwYWNrZXQgYmVnaW49J++7vycgaWQ9J1c1
+TTBNcENlaGlIenJlU3pOVGN6a2M5ZCc/Pgo8P2Fkb2JlLXhhcC1maWx0ZXJz
+IGVzYz0iQ1JMRiI/Pg0KPHg6eG1wbWV0YSB4bWxuczp4PSdhZG9iZTpuczpt
+ZXRhLycgeDp4bXB0az0nWE1QIHRvb2xraXQgMi45LjEtMTMsIGZyYW1ld29y
+ayAxLjYnPg0KPHJkZjpSREYgeG1sbnM6cmRmPSdodHRwOi8vd3d3LnczLm9y
+Zy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjJyB4bWxuczppWD0naHR0cDov
+L25zLmFkb2JlLmNvbS9pWC8xLjAvJz4NCjxyZGY6RGVzY3JpcHRpb24gcmRm
+OmFib3V0PSd1dWlkOmJkNWNmY2FjLTY4OTEtNDVkNy1iZjI3LTBiMGU3MzZk
+OTUzMycgeG1sbnM6cGRmPSdodHRwOi8vbnMuYWRvYmUuY29tL3BkZi8xLjMv
+JyBwZGY6UHJvZHVjZXI9J0Fjcm9iYXQgRGlzdGlsbGVyIDYuMCAoV2luZG93
+cyknPjwvcmRmOkRlc2NyaXB0aW9uPg0KPHJkZjpEZXNjcmlwdGlvbiByZGY6
+YWJvdXQ9J3V1aWQ6YmQ1Y2ZjYWMtNjg5MS00NWQ3LWJmMjctMGIwZTczNmQ5
+NTMzJyB4bWxuczpwZGZ4PSdodHRwOi8vbnMuYWRvYmUuY29tL3BkZngvMS4z
+LycgcGRmeDpDb21wYW55PSdXd1cuWWxtRi5Db00nIHBkZng6U291cmNlTW9k
+aWZpZWQ9J0Q6MjAwOTAzMTAwNTMyNTQnLz4NCjxyZGY6RGVzY3JpcHRpb24g
+cmRmOmFib3V0PSd1dWlkOmJkNWNmY2FjLTY4OTEtNDVkNy1iZjI3LTBiMGU3
+MzZkOTUzMycgeG1sbnM6cGhvdG9zaG9wPSdodHRwOi8vbnMuYWRvYmUuY29t
+L3Bob3Rvc2hvcC8xLjAvJz48cGhvdG9zaG9wOmhlYWRsaW5lPjxyZGY6U2Vx
+PjxyZGY6bGk+PC9yZGY6bGk+PC9yZGY6U2VxPjwvcGhvdG9zaG9wOmhlYWRs
+aW5lPjwvcmRmOkRlc2NyaXB0aW9uPg0KPHJkZjpEZXNjcmlwdGlvbiByZGY6
+YWJvdXQ9J3V1aWQ6YmQ1Y2ZjYWMtNjg5MS00NWQ3LWJmMjctMGIwZTczNmQ5
+NTMzJyB4bWxuczp4YXA9J2h0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8n
+IHhhcDpDcmVhdGVEYXRlPScyMDA5LTAzLTEwVDEzOjMzOjAxKzA4OjAwJyB4
+YXA6Q3JlYXRvclRvb2w9J0Fjcm9iYXQgUERGTWFrZXIgNi4wIGZvciBXb3Jk
+JyB4YXA6TW9kaWZ5RGF0ZT0nMjAwOS0wMy0xMFQxMzozMzoxMSswODowMCcg
+eGFwOk1ldGFkYXRhRGF0ZT0nMjAwOS0wMy0xMFQxMzozMzoxMSswODowMCc+
+PC9yZGY6RGVzY3JpcHRpb24+DQo8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91
+dD0ndXVpZDpiZDVjZmNhYy02ODkxLTQ1ZDctYmYyNy0wYjBlNzM2ZDk1MzMn
+IHhtbG5zOnhhcE1NPSdodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0v
+JyB4YXBNTTpEb2N1bWVudElEPSd1dWlkOmFkMjU1NzExLTlhOTItNGRkYS1i
+MmVjLTNlNGViM2Q4OTZhMSc+PHhhcE1NOlZlcnNpb25JRD48cmRmOlNlcT48
+cmRmOmxpPjE8L3JkZjpsaT48L3JkZjpTZXE+PC94YXBNTTpWZXJzaW9uSUQ+
+PC9yZGY6RGVzY3JpcHRpb24+DQo8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91
+dD0ndXVpZDpiZDVjZmNhYy02ODkxLTQ1ZDctYmYyNy0wYjBlNzM2ZDk1MzMn
+IHhtbG5zOmRjPSdodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLycg
+ZGM6Zm9ybWF0PSdhcHBsaWNhdGlvbi9wZGYnPjxkYzp0aXRsZT48cmRmOkFs
+dD48cmRmOmxpIHhtbDpsYW5nPSd4LWRlZmF1bHQnPiA8L3JkZjpsaT48L3Jk
+ZjpBbHQ+PC9kYzp0aXRsZT48ZGM6Y3JlYXRvcj48cmRmOlNlcT48cmRmOmxp
+PumbqOael+acqOmjjjwvcmRmOmxpPjwvcmRmOlNlcT48L2RjOmNyZWF0b3I+
+PGRjOnN1YmplY3Q+PHJkZjpTZXE+PHJkZjpsaT48L3JkZjpsaT48L3JkZjpT
+ZXE+PC9kYzpzdWJqZWN0PjwvcmRmOkRlc2NyaXB0aW9uPg0KPC9yZGY6UkRG
+Pg0KPC94OnhtcG1ldGE+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgCjw/eHBh
+Y2tldCBlbmQ9J3cnPz4NIGVuZHN0cmVhbQ1lbmRvYmoNNiAwIG9iajw8L01v
+ZERhdGUoRDoyMDA5MDMxMDEzMzMxMSswOCcwMCcpL0NyZWF0aW9uRGF0ZShE
+OjIwMDkwMzEwMTMzMzAxKzA4JzAwJykvVGl0bGUoICkvQ3JlYXRvcihBY3Jv
+YmF0IFBERk1ha2VyIDYuMCBmb3IgV29yZCkvUHJvZHVjZXIoQWNyb2JhdCBE
+aXN0aWxsZXIgNi4wIFwoV2luZG93c1wpKS9BdXRob3Io/v+W6GeXZ1womM4p
+L0NvbXBhbnkoV3dXLllsbUYuQ29NKS9Tb3VyY2VNb2RpZmllZChEOjIwMDkw
+MzEwMDUzMjU0KT4+DWVuZG9iag14cmVmDQowIDIxDQowMDAwMDAwMDAwIDY1
+NTM1IGYNCjAwMDAwMDU4NjAgMDAwMDAgbg0KMDAwMDAwNjQ2OCAwMDAwMCBu
+DQowMDAwMDA2NTAxIDAwMDAwIG4NCjAwMDAwMDY1MjQgMDAwMDAgbg0KMDAw
+MDAwNjU3NSAwMDAwMCBuDQowMDAwMDEwNTYzIDAwMDAwIG4NCjAwMDAwMDAw
+MDAgNjU1MzUgZg0KMDAwMDAwMDAwMCA2NTUzNSBmDQowMDAwMDAwMDAwIDY1
+NTM1IGYNCjAwMDAwMDAwMDAgNjU1MzUgZg0KMDAwMDAwMDAwMCA2NTUzNSBm
+DQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAwMDAgNjU1MzUgZg0KMDAw
+MDAwMDAwMCA2NTUzNSBmDQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAw
+MDAgNjU1MzUgZg0KMDAwMDAwMDAwMCA2NTUzNSBmDQowMDAwMDAwMDAwIDY1
+NTM1IGYNCjAwMDAwMDAwMDAgNjU1MzUgZg0KMDAwMDAwMDAwMCA2NTUzNSBm
+DQp0cmFpbGVyDQo8PC9TaXplIDIxPj4NCnN0YXJ0eHJlZg0KMzMyDQolJUVP
+Rg0K
+
+--0-2145101033-1236694658=:16244--
