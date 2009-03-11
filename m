@@ -1,26 +1,23 @@
-Return-Path: <kyle@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7BFBFDE1F7
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:45:17 +1100 (EST)
-Date: Wed, 11 Mar 2009 11:45:05 -0400
-From: Kyle McMartin <kyle@infradead.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 0/7] Generic RTC class driver
-Message-ID: <20090311154505.GB5448@bombadil.infradead.org>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be>
+Return-Path: <mark@bish.net>
+Received: from vincent.bish.net (bish.net [209.241.232.100])
+	by ozlabs.org (Postfix) with ESMTP id 814EADE219
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:47:51 +1100 (EST)
+Received: from www-data by vincent.bish.net with local (Exim 4.63)
+	(envelope-from <mark@bish.net>) id 1LhQtY-0001Um-20
+	for linuxppc-dev@ozlabs.org; Wed, 11 Mar 2009 12:03:02 -0400
+Message-ID: <20090311120300.atgtikpneo0gos0w@www.bish.net>
+Date: Wed, 11 Mar 2009 12:03:00 -0400
+From: Mark Bishop <mark@bish.net>
+To: linuxppc-dev@ozlabs.org
+References: <20090311115234.7hmj4jj79csgk4wo@www.bish.net>
+	<A0ED6D80-FD02-4BED-B50B-7F3028E47888@kernel.crashing.org>
+In-Reply-To: <A0ED6D80-FD02-4BED-B50B-7F3028E47888@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be>
-Cc: linux-m68k@vger.kernel.org,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linux-parisc@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Kyle McMartin <kyle@mcmartin.ca>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Subject: Re: Freescale MPC8313ERDB-RevA and newer BSP/kernel
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,12 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 11, 2009 at 11:36:02AM +0100, Geert Uytterhoeven wrote:
-> Is it OK for you to take it through your PA-RISC tree?
-> If yes, I can resend the patch series with the collected acks.
-> 
 
-That's fine with me, just hit me up with a git tree address and I'll
-suck it all into the rtc-parisc tree?
+Yes I have actually.  I have booted a 2.6.28.6.  Same problem.
 
-regards, Kyle
+Also, is it me but at some point from 2.6.23 to 2.6.28 did they =20
+started using hex numbers in the .dts file for "interrupts =3D " without =20
+the 0x preamble?
+
+I've been looking at 2.6.20, 2.6.23, and 2.6.28 .dts files for this =20
+board and .28 looked way different in the interrupt section for the =20
+eTSEC.
+
+Quoting Kumar Gala <galak@kernel.crashing.org>:
+
+>
+> On Mar 11, 2009, at 10:52 AM, Mark Bishop wrote:
+>
+>> Has anyone been able to get a newer Freescale BSP to work with a =20
+>> RevA (processor version 1.0) RDB?
+>>
+>> The boards we received didn't have SPI compiled into the kernel and =20
+>> when we went to go re-compile the kernel using the 20081222 and =20
+>> 20080711 BSPs.  I realize that the interrupts were reversed for =20
+>> eTEC1 and eTEC2 and I've made the changes in the .dtb file and I no =20
+>> longer hang when I ping, etc.   But I still can't get the board on =20
+>> the network.  I've verified it isn't the network settings.
+>>
+>> I've pinged Freescale for support (didn't help much) and I am now =20
+>> looking for someone who has actually done it (if ever).
+>
+> Have you tried a kernel.org kernel?  The group here would be more =20
+> than happy to help with any issues you might find with the =20
+> kernel.org kernel.
+>
+> - k
+>
+>
