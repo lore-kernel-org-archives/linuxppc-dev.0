@@ -1,35 +1,25 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [194.196.100.161])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AF830DE189
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 20:38:30 +1100 (EST)
-Received: from d06nrmr1806.portsmouth.uk.ibm.com
-	(d06nrmr1806.portsmouth.uk.ibm.com [9.149.39.193])
-	by mtagate1.uk.ibm.com (8.13.1/8.13.1) with ESMTP id n2B9cPZc000390
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:38:25 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
-	by d06nrmr1806.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.2) with
-	ESMTP id n2B9cP6k3485884
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:38:25 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id n2B9cPca003476
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:38:25 GMT
-From: "Jan-Bernd Themann" <ossthema@de.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] eHEA: Don't do memory allocation under lock if not
-	necessary
-Date: Wed, 11 Mar 2009 10:37:42 +0100
-References: <20090311084456.9190.52805.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090311084456.9190.52805.stgit@warthog.procyon.org.uk>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1FB7EDE16F
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 21:09:05 +1100 (EST)
+Message-ID: <49B77CBF.6070005@embedded-sol.com>
+Date: Wed, 11 Mar 2009 10:56:31 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200903111037.42736.ossthema@de.ibm.com>
-Cc: tklein@de.ibm.com, linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	netdev@vger.kernel.org, themann@de.ibm.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: RX problem in ibm_newemac driver
+References: <49B6C4A2.8060302@embedded-sol.com>	
+	<1236718202.7086.10.camel@pasglop>
+	<49B6E658.4010900@embedded-sol.com>	
+	<1236725832.7086.21.camel@pasglop>
+	<49B6FA3B.8030509@embedded-sol.com>
+	<1236730894.7086.29.camel@pasglop>
+In-Reply-To: <1236730894.7086.29.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev <netdev@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,71 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi David,
-
-thanks for your patch. Coincidentally we have been working on a patch that 
-does some locking rework and also touches this particular lock. 
-So your patch finnally won't be required anymore. Thanks anyway for trying
-to improve the eHEA driver!
-
-I'm going to post our patch later today. 
-
-Regards,
-Jan-Bernd
-
-On Wednesday 11 March 2009 09:44:57 David Howells wrote:
-> In ehea_probe_adapter() the initial memory allocation and initialisation does
-> not need to be done with the ehea_fw_handles.lock semaphore held.  Doing so
-> extends the amount of time the lock is held unnecessarily.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+Benjamin Herrenschmidt wrote:
+> On Wed, 2009-03-11 at 01:39 +0200, Felix Radensky wrote:
+>   
+>> Benjamin Herrenschmidt wrote:
+>>     
+>>> On Wed, 2009-03-11 at 00:14 +0200, Felix Radensky wrote:
+>>>   
+>>>       
+>>>> Yes, seems logical. U-boot has code to enable and disable loopback clock
+>>>> for 440SPE, 440EPX,440GRX,405EX, 460EX and 460GT.
+>>>>
+>>>> I can test patches on my board. Alternatively, I can try something myself
+>>>> if you can provide some guidance. I guess you are referring to the code 
+>>>> using
+>>>> EMAC_FTR_440GX_PHY_CLK_FIX and EMAC_FTR_440EP_PHY_CLK_FIX.
+>>>>     
+>>>>         
+>>> It would be nice if you could try something as I don't have anything to
+>>> test here.
+>>>
+>>> And yes, it's probably one of those 2 fixes that need to be extended.
+>>>
+>>> I'll have a look later today if I can find the 405EXr user manual and
+>>> give you more precise guidance.
+>>>       
+>
+> >From the doc, it looks like it needs the 440 type workaround (and the
+> 405EX as well). Can you try this patch:
+>
+> emac: Fix clock control for 405EX and 405EXr chips
+>
+> The EMAC variant in the 405EX and 405EXr chips needs the "440EP" type clock
+> control workaround to avoid lockups of the Rx side during reset.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
-> 
->  drivers/net/ehea/ehea_main.c |   13 ++++++-------
->  1 files changed, 6 insertions(+), 7 deletions(-)
-> 
-> 
-> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-> index dfe9226..34480ae 100644
-> --- a/drivers/net/ehea/ehea_main.c
-> +++ b/drivers/net/ehea/ehea_main.c
-> @@ -3370,18 +3370,19 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
->  		ehea_error("Invalid ibmebus device probed");
->  		return -EINVAL;
->  	}
-> -	mutex_lock(&ehea_fw_handles.lock);
-> 
->  	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
->  	if (!adapter) {
-> -		ret = -ENOMEM;
->  		dev_err(&dev->dev, "no mem for ehea_adapter\n");
-> -		goto out;
-> +		return -ENOMEM;
->  	}
-> 
-> -	list_add(&adapter->list, &adapter_list);
-> -
->  	adapter->ofdev = dev;
-> +	adapter->pd = EHEA_PD_ID;
-> +
-> +	mutex_lock(&ehea_fw_handles.lock);
-> +
-> +	list_add(&adapter->list, &adapter_list);
-> 
->  	adapter_handle = of_get_property(dev->node, "ibm,hea-handle",
->  					 NULL);
-> @@ -3395,8 +3396,6 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
->  		goto out_free_ad;
->  	}
-> 
-> -	adapter->pd = EHEA_PD_ID;
-> -
->  	dev->dev.driver_data = adapter;
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+>
+> Index: linux-work/drivers/net/ibm_newemac/core.c
+> ===================================================================
+> --- linux-work.orig/drivers/net/ibm_newemac/core.c	2009-03-11 11:13:37.000000000 +1100
+> +++ linux-work/drivers/net/ibm_newemac/core.c	2009-03-11 11:14:00.000000000 +1100
+> @@ -2594,6 +2594,9 @@ static int __devinit emac_init_config(st
+>  		if (of_device_is_compatible(np, "ibm,emac-460ex") ||
+>  		    of_device_is_compatible(np, "ibm,emac-460gt"))
+>  			dev->features |= EMAC_FTR_460EX_PHY_CLK_FIX;
+> +		if (of_device_is_compatible(np, "ibm,emac-405ex") ||
+> +		    of_device_is_compatible(np, "ibm,emac-405exr"))
+> +			dev->features |= EMAC_FTR_440EP_PHY_CLK_FIX;
+>  	} else if (of_device_is_compatible(np, "ibm,emac4")) {
+>  		dev->features |= EMAC_FTR_EMAC4;
+>  		if (of_device_is_compatible(np, "ibm,emac-440gx"))
+>
+>
+>   
+Hi, Ben
+
+This patch fixes a problem for me. Thank you very much for a quick fix.
+
+Felix.
