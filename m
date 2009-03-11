@@ -2,21 +2,22 @@ Return-Path: <tj@kernel.org>
 Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 209C0DE188
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 16:53:25 +1100 (EST)
-Message-ID: <49B751E5.1060305@kernel.org>
-Date: Wed, 11 Mar 2009 14:53:41 +0900
+	by ozlabs.org (Postfix) with ESMTPS id 37D3BDE1DD
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 16:54:18 +1100 (EST)
+Message-ID: <49B75215.5010707@kernel.org>
+Date: Wed, 11 Mar 2009 14:54:29 +0900
 From: Tejun Heo <tj@kernel.org>
 MIME-Version: 1.0
 To: "Sachin P. Sant" <sachinp@in.ibm.com>
-Subject: [GIT PATCH tj-percpu] percpu: fix spurious alignment WARN in legacy
-	SMP percpu allocator
+Subject: [RESEND GIT PATCH tj-percpu] percpu: fix spurious alignment WARN
+	in legacy SMP percpu allocator
 References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
 	<49B67552.5070307@in.ibm.com> <49B73B15.3040101@in.ibm.com>
 In-Reply-To: <49B73B15.3040101@in.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,6 +37,7 @@ for UP but legacy SMP allocator was forgotten.  Fix it.
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Reported-by: Sachin P. Sant <sachinp@in.ibm.com>
 ---
+(RESEND: cc'ing Ingo. :-)
 
 Oops, that was a stupid omission.  This patch should fix it.  Ingo,
 please pull from the following git vector to receive the first first
