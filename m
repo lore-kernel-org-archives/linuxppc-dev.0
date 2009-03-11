@@ -1,19 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sachinp@in.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [59.145.155.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 53329DE1A5
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 17:26:00 +1100 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2B6PtKQ001800
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:25:56 -0500
-Subject: test branch update
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 17:25:55 +1100
-Message-Id: <1236752755.7086.45.camel@pasglop>
-Mime-Version: 1.0
+	(Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DA480DE154
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 17:48:22 +1100 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28smtp09.in.ibm.com (8.13.1/8.13.1) with ESMTP id n2B6NW5J032287
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 11:53:32 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n2B6mOab4210914
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 12:18:24 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id n2B6mFEb029384
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 12:18:15 +0530
+Message-ID: <49B75EAE.4080708@in.ibm.com>
+Date: Wed, 11 Mar 2009 12:18:14 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [RESEND GIT PATCH tj-percpu] percpu: fix spurious alignment WARN
+	in legacy SMP percpu allocator
+References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
+	<49B67552.5070307@in.ibm.com> <49B73B15.3040101@in.ibm.com>
+	<49B75215.5010707@kernel.org>
+In-Reply-To: <49B75215.5010707@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following commits have been added to powerpc test:
+Tejun Heo wrote:
+> Impact: remove spurious WARN on legacy SMP percpu allocator
+>
+> Commit f2a8205c4ef1af917d175c36a4097ae5587791c8 incorrectly added too
+> tight WARN_ON_ONCE() on alignments for UP and legacy SMP percpu
+> allocator.  Commit e317603694bfd17b28a40de9d65e1a4ec12f816e fixed it
+> for UP but legacy SMP allocator was forgotten.  Fix it.
+>
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Reported-by: Sachin P. Sant <sachinp@in.ibm.com>
+> ---
+Thanks. The patch fixes the warning.
 
-Andrew Klossner (1):
-      powerpc/udbg: Fix lost byte during console handover; change LFCR
-to CRLF
+Tested-by : Sachin Sant <sachinp@in.ibm.com>
 
-Benjamin Herrenschmidt (10):
-      powerpc/mm: Properly wire up get_user_pages_fast() on 32-bit
-      powerpc/kconfig: Kill PPC_MULTIPLATFORM
-      powerpc/mm: Split the various pgtable-* headers based on MMU type
-      powerpc/mm: Unify PTE_RPN_SHIFT and _PAGE_CHG_MASK definitions
-      powerpc/mm: Tweak PTE bit combination definitions
-      powerpc/mm: Merge various PTE bits and accessors definitions
-      powerpc/mm: Rename arch/powerpc/kernel/mmap.c to mmap_64.c
-      powerpc/mm: Fix printk type warning in mmu_context_nohash
-      powerpc/mm: Add option for non-atomic PTE updates to ppc64
-      powerpc/mm: Introduce early_init_mmu() on 64-bit
 
-Jeremy Kerr (2):
-      powerpc/spufs: Check file offset before calculating write size in
-fixed-sized files
-      powerpc/spufs: Fix incorrect buffer offset in regs write
+-- 
 
-Michael Ellerman (5):
-      powerpc: Print linux_banner in prom_init
-      powerpc/pseries: Reject discontiguous/non-zero based MSI-X
-requests
-      powerpc/pseries: The pseries MSI code depends on EEH
-      powerpc/cell: Fix Axon MSI driver dependencies
-      powerpc/pseries: The RPA PCI hotplug driver depends on EEH
-
-Octavian Purdila (1):
-      powerpc/oprofile: Enable support for ppc750 processors
-
-Thomas Gleixner (2):
-      powerpc/irq: Convert obsolete irq_desc_t to struct irq_desc
-      powerpc/irq: Convert obsolete hw_interrupt_type to struct irq_chip
-
-Wolfram Sang (1):
-      powerpc/pci: Fix typo: s/resouces/resources/ in a pr_debug
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
