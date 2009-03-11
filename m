@@ -1,18 +1,20 @@
-Return-Path: <Malcolm.Crossley2@gefanuc.com>
-Received: from exprod5og114.obsmtp.com (exprod5og114.obsmtp.com [64.18.0.28])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B716CDE24D
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:58:37 +1100 (EST)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f175.google.com (mail-gx0-f175.google.com
+	[209.85.217.175]) by ozlabs.org (Postfix) with ESMTP id 15A8CDE259
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 03:03:23 +1100 (EST)
+Received: by gxk23 with SMTP id 23so45339gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:03:22 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: fsldma driver questions
-Date: Wed, 11 Mar 2009 15:52:41 -0000
-Message-ID: <FF6D174B07759740B0259F914CE6D7D305B1A61D@LONMLVEM04.e2k.ad.ge.com>
-From: "Crossley, Malcolm (GE EntSol,
-	Intelligent Platforms)" <Malcolm.Crossley2@gefanuc.com>
-To: <linuxppc-dev@ozlabs.org>
+In-Reply-To: <ba5d9360903110850gbcb0d2y25f8756a19d46cda@mail.gmail.com>
+References: <ba5d9360903110850gbcb0d2y25f8756a19d46cda@mail.gmail.com>
+Date: Wed, 11 Mar 2009 10:03:22 -0600
+Message-ID: <fa686aa40903110903h1077860dt45c1a5aecd2ef42f@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Remove extra semicolon in fsl_soc.c
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Johns Daniel <johns.daniel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Greg KH <gregkh@suse.de>, afleming@freescale.com,
+	stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi there,
+On Wed, Mar 11, 2009 at 9:50 AM, Johns Daniel <johns.daniel@gmail.com> wrot=
+e:
+> A semicolon at the end of the macro means that the for loop has an
+> empty body, and so TSEC/MDIO will not work with older device trees.
+>
+> This fix only applies to 2.6.28; apparently, this code is gone for
+> 2.6.29, according to Grant Likely!
+>
+> Signed-off-by: Johns Daniel <johns.daniel@gmail.com>
 
-I've been examining the fsl dma driver (drivers/dma/fsldma.c) to work
-out how a typical dma engine driver works so I can port an Intel dma
-engine driver to the new dmaengine interface.=20
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-I have noticed that append_ld_queue() changes the next link descriptor
-address field in the last link descriptor of the chain. The
-append_ld_queue function is called from the fsl_dma_tx_submit() which
-can called at any time by a kernel module using that channel. This could
-result in the link descriptor being changed whilst the DMA engine is
-running. Could this issue cause unexpected behavior of the DMA engine or
-the driver?
+Greg:  Andy Flemming should probably confirm this, but I think this
+one should be backported to the stable series.
 
-A second question I have is to do with the dma_halt() routine setting
-the channel abort flag. The dma_halt() routine is called from
-fsl_chan_xfer_ld_queue() after the dma engine has been detected as idle.
-The dma_halt() routine sets the channel stop flag and the channel abort
-flag. Whilst the dma engine could be idle, it may not have completed a
-transfer AFAICT. Or if the engine is has no more transactions then a
-channel abort does not need to be issued anyway?
+g.
 
-I have access to a GE Fanuc SBC310 which has an 8641D containing a dma
-engine this driver was written for. So I can test any patches.=20
+> ---
+> --- linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c.orig =A0 2009-02-20
+> 16:41:27.000000000 -0600
+> +++ linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c =A0 =A0 =A0 =A02009-03-1=
+0
+> 15:56:47.000000000 -0500
+> @@ -257,7 +257,7 @@
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gfar_mdio_of_init_one(np);
+>
+> =A0 =A0 =A0 =A0/* try the deprecated version */
+> - =A0 =A0 =A0 for_each_compatible_node(np, "mdio", "gianfar");
+> + =A0 =A0 =A0 for_each_compatible_node(np, "mdio", "gianfar")
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gfar_mdio_of_init_one(np);
+>
+> =A0 =A0 =A0 =A0return 0;
+> ---
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-Thanks for your time. Malcolm
+
 
 --=20
-
-Malcolm Crossley, Software Engineer,=20
-GE Fanuc Intelligent Platforms
-GE Fanuc Intelligent Platforms Ltd, registered in England and Wales
-(3828642) at 100 Barbirolli Square, Manchester, M2 3AB, VAT GB729849476
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
