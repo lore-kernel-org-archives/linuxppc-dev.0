@@ -1,23 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 671ECDDEE7
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 21:58:32 +1100 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <alpine.LRH.2.00.0903111028480.1040@vixen.sonytel.be>
-References: <1236729444.7086.24.camel@pasglop>
-	<alpine.LRH.2.00.0903111028480.1040@vixen.sonytel.be>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 11 Mar 2009 21:57:05 +1100
-Message-Id: <1236769025.7086.46.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTPS id 1E573DE0E0
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 22:08:15 +1100 (EST)
+Date: Wed, 11 Mar 2009 06:08:09 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull from 'next' branch (missed a few patches)
+Message-ID: <Pine.LNX.4.64.0903110607160.8788@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-03-11 at 10:37 +0100, Geert Uytterhoeven wrote:
-> On Wed, 11 Mar 2009, Benjamin Herrenschmidt wrote:
-> > Here are some late fixes for 2.6.29. I've included a radeonfb/aty128fb commit
-> 
-> Will you also take care of the new ps3vram driver, which has been ack'ed by
-> Jens for 2.6.29?
-> Or do you prefer it to go in by email through Geoff (as PS3 maintainer), or
-> from me directly?
+Please pull from 'next' branch of
 
-I'd like to have Andrew or Linus opinion on doing this driver swap that
-late in the process.
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
 
-Ben.
+to receive the following updates:
 
-> Thanks!
-> 
-> With kind regards,
-> 
-> Geert Uytterhoeven
-> Software Architect
-> 
-> Sony Techsoft Centre Europe
-> The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-> 
-> Phone:    +32 (0)2 700 8453
-> Fax:      +32 (0)2 700 8622
-> E-mail:   Geert.Uytterhoeven@sonycom.com
-> Internet: http://www.sony-europe.com/
-> 
-> A division of Sony Europe (Belgium) N.V.
-> VAT BE 0413.825.160 · RPR Brussels
-> Fortis · BIC GEBABEBB · IBAN BE41293037680010
+In the last pull I think you might have had a tree of mine before these
+few minor commits.
+
+ arch/powerpc/Makefile                          |    4 ++--
+ arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |    2 +-
+ arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |    2 +-
+ arch/powerpc/math-emu/Makefile                 |    5 ++---
+ arch/powerpc/platforms/85xx/ksi8560.c          |    2 --
+ 5 files changed, 6 insertions(+), 9 deletions(-)
+
+Liu Yu (1):
+      powerpc/math-emu: Fix efp dependence
+
+Ted Peters (1):
+      powerpc/85xx: Fix MPC8572DS PCI protected interrupt sources
+
+Thomas Gleixner (1):
+      powerpc/85xx: remove setup_irq(NULL action) in ksi8560
