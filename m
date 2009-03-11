@@ -1,22 +1,17 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 3F9B7DE12F
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 03:10:27 +1100 (EST)
-Date: Wed, 11 Mar 2009 09:05:47 -0700
-From: Greg KH <greg@kroah.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [stable] [PATCH] powerpc: Remove extra semicolon in fsl_soc.c
-Message-ID: <20090311160547.GA21668@kroah.com>
-References: <ba5d9360903110850gbcb0d2y25f8756a19d46cda@mail.gmail.com>
-	<fa686aa40903110903h1077860dt45c1a5aecd2ef42f@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f174.google.com (mail-gx0-f174.google.com
+	[209.85.217.174]) by ozlabs.org (Postfix) with ESMTP id 15EB9DE27E
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 03:12:30 +1100 (EST)
+Received: by gxk22 with SMTP id 22so252815gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:12:29 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40903110903h1077860dt45c1a5aecd2ef42f@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Greg KH <gregkh@suse.de>,
-	Johns Daniel <johns.daniel@gmail.com>, afleming@freescale.com,
-	stable@kernel.org
+Date: Wed, 11 Mar 2009 10:12:29 -0600
+Message-ID: <fa686aa40903110912n6b4bca2w7834de69e519679d@mail.gmail.com>
+Subject: Please pull mpc52xx-next
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 11, 2009 at 10:03:22AM -0600, Grant Likely wrote:
-> On Wed, Mar 11, 2009 at 9:50 AM, Johns Daniel <johns.daniel@gmail.com> wrote:
-> > A semicolon at the end of the macro means that the for loop has an
-> > empty body, and so TSEC/MDIO will not work with older device trees.
-> >
-> > This fix only applies to 2.6.28; apparently, this code is gone for
-> > 2.6.29, according to Grant Likely!
-> >
-> > Signed-off-by: Johns Daniel <johns.daniel@gmail.com>
-> 
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> 
-> Greg:  Andy Flemming should probably confirm this, but I think this
-> one should be backported to the stable series.
+Hey Ben, here's another -next pull request.  I think this exhausts
+everything in my queue.  I'm sure someone will tell me if I've missed
+anything.  I'll update patchwork later today.
 
-That's what he is asking for as he sent it to stable@kernel.org and
-asked that it go into the 2.6.28 tree only :)
+One commit is outside of arch/powerpc, but it is a xilinx-only change
+to an SPI driver, and David has acked it.
 
-thanks,
+Cheers,
+g.
 
-greg k-h
+The following changes since commit e7eec2fc27d7dbefd5852c36b3fe6229e6302c99:
+  roel kluin (1):
+        powerpc/ps3: Make ps3av_set_video_mode mode ID signed
+
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
+
+Grant Likely (2):
+      powerpc/5200: remove sysfs debug file from GPT driver
+      powerpc/bootwrapper: add fixed-head.o to simpleimage wrappers
+
+John Linn (1):
+      powerpc/virtex/spi: Xilinx SPI driver not releasing memory
+
+Wolfgang Grandegger (1):
+      powerpc/5200: add function to return external clock frequency
+
+Wolfram Sang (1):
+      powerpc/5200: add Phytec phyCORE-MPC5200B-IO board (pcm032)
+
+ arch/powerpc/boot/dts/pcm032.dts             |  392 ++++++++++++++++++++++++++
+ arch/powerpc/boot/wrapper                    |    4 +-
+ arch/powerpc/include/asm/mpc52xx.h           |    1 +
+ arch/powerpc/platforms/52xx/Kconfig          |    1 +
+ arch/powerpc/platforms/52xx/mpc5200_simple.c |    3 +-
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |   37 +++
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c    |   39 ---
+ drivers/spi/xilinx_spi.c                     |    9 +-
+ 8 files changed, 442 insertions(+), 44 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/pcm032.dts
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
