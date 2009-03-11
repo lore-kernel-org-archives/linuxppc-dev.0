@@ -1,25 +1,19 @@
-Return-Path: <mark@bish.net>
-Received: from vincent.bish.net (bish.net [209.241.232.100])
-	by ozlabs.org (Postfix) with ESMTP id 755A0DE111
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 05:11:58 +1100 (EST)
-Received: from www-data by vincent.bish.net with local (Exim 4.63)
-	(envelope-from <mark@bish.net>) id 1LhT92-0001xt-A7
-	for linuxppc-dev@ozlabs.org; Wed, 11 Mar 2009 14:27:11 -0400
-Message-ID: <20090311142708.olkbrtn5hws0cg8w@www.bish.net>
-Date: Wed, 11 Mar 2009 14:27:08 -0400
-From: Mark Bishop <mark@bish.net>
-To: linuxppc-dev@ozlabs.org
-References: <20090311115234.7hmj4jj79csgk4wo@www.bish.net>
-	<A0ED6D80-FD02-4BED-B50B-7F3028E47888@kernel.crashing.org>
-	<20090311120300.atgtikpneo0gos0w@www.bish.net>
-	<20090311165320.GB11120@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20090311165320.GB11120@ld0162-tx32.am.freescale.net>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id D7F75DDFF7
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 06:06:18 +1100 (EST)
+Message-ID: <49B80BA3.1090301@ru.mvista.com>
+Date: Wed, 11 Mar 2009 22:06:11 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Subject: Re: Freescale MPC8313ERDB-RevA and newer BSP/kernel
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] PowerPC 440EPx/GRx fix memory size calculation
+References: <49B58779.9040905@lebon.org.ua>
+	<20090310195013.GA27835@ru.mvista.com>
+	<20090311103716.GE26415@zod.rchland.ibm.com>
+In-Reply-To: <20090311103716.GE26415@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>, lebon@lebon.org.ua
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,57 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Quoting Scott Wood <scottwood@freescale.com>:
-
-> On Wed, Mar 11, 2009 at 12:03:00PM -0400, Mark Bishop wrote:
->> Yes I have actually.  I have booted a 2.6.28.6.  Same problem.
->
-> I've booted many recent kernels on revA 8313ERDB; networking works fine.
-> I'll try 2.6.28.6 specifically, though u-boot is acting up at the moment
-> so I have to address that first. :-(
->
-> Are you using the stock config and device tree from 2.6.28.6, or have you
-> made any changes?
->
->> Also, is it me but at some point from 2.6.23 to 2.6.28 did they
->> started using hex numbers in the .dts file for "interrupts =3D " without
->> the 0x preamble?
->
-> Yes.  dts version 0 had hex by default (with OF-like radix =20
-> prefixes), and version 1 (indicated by
-> /dts-v1/; at the top of the file) has decimal by default (with C-like
-> radix prefixes).
->
->> I've been looking at 2.6.20, 2.6.23, and 2.6.28 .dts files for this
->> board and .28 looked way different in the interrupt section for the
->> eTSEC.
+Josh Boyer wrote:
+> On Tue, Mar 10, 2009 at 10:50:13PM +0300, Valentine Barshak wrote:
+>> I was just going to submit a patch for that too.
+>> Indeed, the denali_fixup_memsize() miscalculated a couple of address
+>> field widths. We were lucky to eventually get the right result,
+>> because the effect of the first error was killed by the other one.
+>> According to the AMCC 440EPX/GRX user manual,
+>> the Chip Select width is always fixed at 1 bit no matter
+>> what is actually read from register DDR_10.
+>> The workaround is to use a predefined chipselect value for 440EPx/GRx.
+>> Also, setting the REDUC bit (REDUC = 1) enables 32-bit data path.
+>> If REDUC = 0, full data path of 64 bits is used.
 >>
->> Quoting Kumar Gala <galak@kernel.crashing.org>:
->
-> Please don't top-post.
->
->> >>The boards we received didn't have SPI compiled into the kernel and
->> >>when we went to go re-compile the kernel using the 20081222 and
->> >>20080711 BSPs.  I realize that the interrupts were reversed for
->> >>eTEC1 and eTEC2 and I've made the changes in the .dtb file and I no
->> >>longer hang when I ping, etc.   But I still can't get the board on
->> >>the network.  I've verified it isn't the network settings.
->
-> You're sure you're not trying to talk to the switch (which will claim
-> link-up regardless of what's plugged into it)?  The non-switch ethernet
-> port is eTSEC2.
->
-> What *does* it do when you ping, if neither hang nor work?
->
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
->
+>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+>> Signed-off-by: Mikhail Zolotaryov <lebon@lebon.org.ua>
+> 
+> I've been looking over this one a bit more.  At the moment, I'm inclined
+> to queue this up in my -next branch.  I would like to see if Mikhail
+> could test it though, and have Valentine answer the question in the hard
+> wired part.
 
-After remapping the IRQs, it is working now.
+I've been looking at the docs once again and actually I couldn't find an 
+   explanation there. And I don't have that e-mail from AMCC support 
+that I got a while back regarding the issue anymore.
+There might have been some misunderstanding.
+The docs (PPC440EPX UM 19.2 Device Address Mapping) say that the chip 
+select field width is always fixed at one bit, but this doesn't actually 
+  mean that there's always one chip select used.
+The patch works fine on Sequoia and another Sequoia-like board with 1GB 
+RAM installed, but it might not work with 2GB RAM. I've tried to play 
+with DDR0_10 settings and Sequoia works fine regardless of what's 
+actually written to DDR0_10.
+So, probably the best way would be to fix that in u-boot
+amcc/sequoia/sdram.c by doing mtsdram(DDR0_10, 0x00000100); instead of 
+mtsdram(DDR0_10, 0x00000300);
+Sorry, for confusion, but after reviewing the docs, I think that
+only REDUC interpretation has to be fixed. The chips select part should 
+be fixed in u-boot sdram code for Sequoia as was originally proposed by 
+Mikhail.
 
-Any idea on what I need to do to get SPI working?  I've compiled it =20
-into the kernel but don't see anything in /proc/bus
+Stefan, could you please take a look?
+
+Thanks,
+Valentine.
+
+> 
+> josh
