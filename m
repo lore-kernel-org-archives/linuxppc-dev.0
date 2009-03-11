@@ -1,17 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f174.google.com (mail-gx0-f174.google.com
-	[209.85.217.174]) by ozlabs.org (Postfix) with ESMTP id 15EB9DE27E
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 03:12:30 +1100 (EST)
-Received: by gxk22 with SMTP id 22so252815gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:12:29 -0700 (PDT)
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4B19EDE12F
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 03:29:15 +1100 (EST)
+Date: Wed, 11 Mar 2009 09:26:23 -0700
+From: Greg KH <gregkh@suse.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] drivers/base: Add bus_register_notifier_alldev() variant
+Message-ID: <20090311162623.GE21831@suse.de>
+References: <20090306160818.404.92700.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Date: Wed, 11 Mar 2009 10:12:29 -0600
-Message-ID: <fa686aa40903110912n6b4bca2w7834de69e519679d@mail.gmail.com>
-Subject: Please pull mpc52xx-next
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090306160818.404.92700.stgit@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,49 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hey Ben, here's another -next pull request.  I think this exhausts
-everything in my queue.  I'm sure someone will tell me if I've missed
-anything.  I'll update patchwork later today.
+On Fri, Mar 06, 2009 at 09:10:19AM -0700, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> bus_register_notifier_alldev() is a variation on bus_register_notifier()
+> which also triggers the notifier callback for devices already on the bus
+> and already bound to drivers.
+> 
+> This function is useful for the case where a driver needs to get a
+> reference to a struct device other than the one it is bound to and
+> it is not known if the device will be bound before or after this
+> function is called.  For example, an Ethernet device connected to
+> a PHY that is probed separately.
 
-One commit is outside of arch/powerpc, but it is a xilinx-only change
-to an SPI driver, and David has acked it.
+Can't you just walk the list of all devices already on the bus to get
+"notified" of them, and then register your notifier handler as well (or
+register it first, and then walk the list, which is pretty much what
+your patch does)?
 
-Cheers,
-g.
+I see this api addition as just confusing people as to which one they
+should register for :)
 
-The following changes since commit e7eec2fc27d7dbefd5852c36b3fe6229e6302c99:
-  roel kluin (1):
-        powerpc/ps3: Make ps3av_set_video_mode mode ID signed
+thanks,
 
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
-
-Grant Likely (2):
-      powerpc/5200: remove sysfs debug file from GPT driver
-      powerpc/bootwrapper: add fixed-head.o to simpleimage wrappers
-
-John Linn (1):
-      powerpc/virtex/spi: Xilinx SPI driver not releasing memory
-
-Wolfgang Grandegger (1):
-      powerpc/5200: add function to return external clock frequency
-
-Wolfram Sang (1):
-      powerpc/5200: add Phytec phyCORE-MPC5200B-IO board (pcm032)
-
- arch/powerpc/boot/dts/pcm032.dts             |  392 ++++++++++++++++++++++++++
- arch/powerpc/boot/wrapper                    |    4 +-
- arch/powerpc/include/asm/mpc52xx.h           |    1 +
- arch/powerpc/platforms/52xx/Kconfig          |    1 +
- arch/powerpc/platforms/52xx/mpc5200_simple.c |    3 +-
- arch/powerpc/platforms/52xx/mpc52xx_common.c |   37 +++
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c    |   39 ---
- drivers/spi/xilinx_spi.c                     |    9 +-
- 8 files changed, 442 insertions(+), 44 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/pcm032.dts
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+greg k-h
