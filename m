@@ -1,20 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tj@kernel.org>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 94665DE08B
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 16:49:55 +1100 (EST)
-Subject: Re: [PATCH] powerpc/pseries failed reconfig notifier chain call
-	cleanup
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <49B02DB5.7020301@austin.ibm.com>
-References: <49B02DB5.7020301@austin.ibm.com>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 16:47:47 +1100
-Message-Id: <1236750467.7086.42.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 209C0DE188
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 16:53:25 +1100 (EST)
+Message-ID: <49B751E5.1060305@kernel.org>
+Date: Wed, 11 Mar 2009 14:53:41 +0900
+From: Tejun Heo <tj@kernel.org>
+MIME-Version: 1.0
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Subject: [GIT PATCH tj-percpu] percpu: fix spurious alignment WARN in legacy
+	SMP percpu allocator
+References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
+	<49B67552.5070307@in.ibm.com> <49B73B15.3040101@in.ibm.com>
+In-Reply-To: <49B73B15.3040101@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-03-05 at 13:53 -0600, Nathan Fontenot wrote:
-> The return code from invoking the notifier chain when updating the
-> ibm,dynamic-memory property is not handled properly. In failure
-> cases (rc == NOTIFY_BAD) we should be restoring the original value
-> of the property.  In success (rc == NOTIFY_OK) we should be returning
-> zero from the calling routine.
+Impact: remove spurious WARN on legacy SMP percpu allocator
 
-This is actually not clear to me ... if the memory has been added or
-removed, we must make sure the device-tree is up to date... ie, we can't
-tell the firmware that we failed can we ?
+Commit f2a8205c4ef1af917d175c36a4097ae5587791c8 incorrectly added too
+tight WARN_ON_ONCE() on alignments for UP and legacy SMP percpu
+allocator.  Commit e317603694bfd17b28a40de9d65e1a4ec12f816e fixed it
+for UP but legacy SMP allocator was forgotten.  Fix it.
 
-Ben.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Sachin P. Sant <sachinp@in.ibm.com>
+---
 
-> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/reconfig.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/arch/powerpc/platforms/pseries/reconfig.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/pseries/reconfig.c	2008-10-23 22:29:24.000000000 -0500
-> +++ linux-2.6/arch/powerpc/platforms/pseries/reconfig.c	2009-03-05 13:20:00.000000000 -0600
-> @@ -468,9 +468,13 @@
->  
->  		rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
->  						  action, value);
-> +		if (rc == NOTIFY_BAD) {
-> +			rc = prom_update_property(np, oldprop, newprop);
-> +			return -ENOMEM;
-> +		}
->  	}
->  
-> -	return rc;
-> +	return 0;
->  }
->  
->  /**
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Oops, that was a stupid omission.  This patch should fix it.  Ingo,
+please pull from the following git vector to receive the first first
+four patches from the use-dynamic-percpu-allocator-by-default patchset
+(without the actual conversion which can disrupt archs) + this patch.
+I moved the actual conversion patch into #tj-percpu-exp branch, so the
+pull should be safe.
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+
+Thanks.
+
+ mm/allocpercpu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
+index 3653c57..1882923 100644
+--- a/mm/allocpercpu.c
++++ b/mm/allocpercpu.c
+@@ -120,7 +120,7 @@ void *__alloc_percpu(size_t size, size_t align)
+ 	 * on it.  Larger alignment should only be used for module
+ 	 * percpu sections on SMP for which this path isn't used.
+ 	 */
+-	WARN_ON_ONCE(align > __alignof__(unsigned long long));
++	WARN_ON_ONCE(align > SMP_CACHE_BYTES);
+ 
+ 	if (unlikely(!pdata))
+ 		return NULL;
+-- 
+1.6.0.2
