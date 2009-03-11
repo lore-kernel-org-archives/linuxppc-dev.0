@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44D6ADDDA0
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 17:25:35 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 53329DE1A5
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 17:26:00 +1100 (EST)
 Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2B6PTuj001788
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:25:30 -0500
-Subject: nest branch update
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2B6PtKQ001800
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:25:56 -0500
+Subject: test branch update
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Wed, 11 Mar 2009 17:25:28 +1100
-Message-Id: <1236752728.7086.44.camel@pasglop>
+Date: Wed, 11 Mar 2009 17:25:55 +1100
+Message-Id: <1236752755.7086.45.camel@pasglop>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,56 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following commits have been added to powerpc next:
+The following commits have been added to powerpc test:
 
-Anton Vorontsov (1):
-      powerpc/83xx: Do not configure or probe disabled FSL DR USB controllers
+Andrew Klossner (1):
+      powerpc/udbg: Fix lost byte during console handover; change LFCR
+to CRLF
 
-Arnd Bergmann (1):
-      powerpc/spufs: Initialize ctx->stats.tstamp correctly
+Benjamin Herrenschmidt (10):
+      powerpc/mm: Properly wire up get_user_pages_fast() on 32-bit
+      powerpc/kconfig: Kill PPC_MULTIPLATFORM
+      powerpc/mm: Split the various pgtable-* headers based on MMU type
+      powerpc/mm: Unify PTE_RPN_SHIFT and _PAGE_CHG_MASK definitions
+      powerpc/mm: Tweak PTE bit combination definitions
+      powerpc/mm: Merge various PTE bits and accessors definitions
+      powerpc/mm: Rename arch/powerpc/kernel/mmap.c to mmap_64.c
+      powerpc/mm: Fix printk type warning in mmu_context_nohash
+      powerpc/mm: Add option for non-atomic PTE updates to ppc64
+      powerpc/mm: Introduce early_init_mmu() on 64-bit
 
-Benjamin Herrenschmidt (1):
-      powerpc: Wire up /proc/vmallocinfo to our ioremap()
+Jeremy Kerr (2):
+      powerpc/spufs: Check file offset before calculating write size in
+fixed-sized files
+      powerpc/spufs: Fix incorrect buffer offset in regs write
 
-Geoff Levand (2):
-      powerpc: Add missing DABR flags
-      powerpc/ps3: Print memory hotplug errors
-
-Grant Likely (2):
-      powerpc/5200: Add 'simple-bus' to the of_platform probe list.
-      powerpc/4xx: update ml507 .dts file to release reference design
-
-Grzegorz Bernacki (2):
-      powerpc/5200: Add digsy-mtc support to mpc5200_defconfig
-      powerpc/5200: On the digsy-mtc, configure PSC4 and PSC5 as UARTs
-
-Kumar Gala (1):
-      powerpc/fsl-booke: Add support for tlbilx instructions
-
-Martyn Welch (1):
-      powerpc/86xx: Correct local bus registers in GE Fanuc SBC610 dts file
-
-Michael Ellerman (3):
-      powerpc: Deindentify identify_cpu()
-      powerpc: Make sure we copy all cpu_spec features except PMC related ones
-      powerpc: Remove unused asm-offsets entries for cpu_spec
-
-Nick Piggin (1):
-      powerpc: Estimate G5 cpufreq transition latency
+Michael Ellerman (5):
+      powerpc: Print linux_banner in prom_init
+      powerpc/pseries: Reject discontiguous/non-zero based MSI-X
+requests
+      powerpc/pseries: The pseries MSI code depends on EEH
+      powerpc/cell: Fix Axon MSI driver dependencies
+      powerpc/pseries: The RPA PCI hotplug driver depends on EEH
 
 Octavian Purdila (1):
-      powerpc/oprofile: G4 oprofile has variable number of counters
+      powerpc/oprofile: Enable support for ppc750 processors
 
-Timur Tabi (3):
-      i2c-mpc: do not allow interruptions when waiting for I2C to complete
-      powerpc: add fsl,fifo-depth property to Freescale SSI device nodes
-      powerpc: Add defintion for MSR[GS] to list of MSR bits
+Thomas Gleixner (2):
+      powerpc/irq: Convert obsolete irq_desc_t to struct irq_desc
+      powerpc/irq: Convert obsolete hw_interrupt_type to struct irq_chip
 
-Xiaotian Feng (1):
-      cpm_uart: fix non-console port startup bug
-
-dayu@datangmobile.cn (1):
-      powerpc/83xx: Fix the interrupt loss problem on ipic
-
-roel kluin (1):
-      powerpc/ps3: Make ps3av_set_video_mode mode ID signed
+Wolfram Sang (1):
+      powerpc/pci: Fix typo: s/resouces/resources/ in a pr_debug
