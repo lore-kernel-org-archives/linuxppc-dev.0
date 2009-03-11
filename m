@@ -1,23 +1,19 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ECB06DDED8
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 19:00:43 +1100 (EST)
-Date: Wed, 11 Mar 2009 08:59:46 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 08/18] powerpc: convert obsolete irq_desc_t to struct
-	irq_desc
-In-Reply-To: <1236737962.7086.35.camel@pasglop>
-Message-ID: <alpine.LFD.2.00.0903110859150.29264@localhost.localdomain>
-References: <20090311003204.592133594@linutronix.de>
-	<20090311003236.263019667@linutronix.de>
-	<1236737962.7086.35.camel@pasglop>
+Return-Path: <lebon@lebon.org.ua>
+Received: from b-mail.com.ua (b-mail.com.ua [195.68.202.242])
+	by ozlabs.org (Postfix) with ESMTP id 02DA1DE18B
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 19:23:41 +1100 (EST)
+Message-ID: <49B77545.6030707@lebon.org.ua>
+Date: Wed, 11 Mar 2009 10:24:37 +0200
+From: Mikhail Zolotaryov <lebon@lebon.org.ua>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] PowerPC 440EPx/GRx fix memory size calculation
+References: <20090310195013.GA27835@ru.mvista.com>	
+	<49B6D427.5050600@lebon.org.ua> <49B7167C.9000004@ru.mvista.com>
+	<1236738411.7086.38.camel@pasglop>
+In-Reply-To: <1236738411.7086.38.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 11 Mar 2009, Benjamin Herrenschmidt wrote:
+Benjamin Herrenschmidt wrote:
+>> The problem is that the controller is hardwired to use only one 
+>> chipselect, even if both are enabled in the DDR0_10 on PPC440EPx/GRx 
+>> processors
+>
+> Mikhail, can you verify that Valentine's patch works for you ?
 
-> On Wed, 2009-03-11 at 00:45 +0000, Thomas Gleixner wrote:
-> > plain text document attachment
-> > (powerpc-convert-obsolete-irq-desc-t-typedef.patch)
-> > Impact: cleanup
-> > 
-> > Convert the last remaining users.
-> 
-> Ack. This would be more easily carried in my -next tree if that's ok
-> with you.
-
-Sure. Thanks,
-
-		tglx
+Ben, unfortunately on my board(s) I don't have both bits enabled in 
+DDR0_10 i.e. I'll have cs=1 calculated even by original Linux code.
