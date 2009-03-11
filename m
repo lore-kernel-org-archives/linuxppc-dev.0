@@ -1,16 +1,30 @@
-Return-Path: <johns.daniel@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id 933FBDE12D
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:50:59 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id d14so42064and.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 08:50:56 -0700 (PDT)
-MIME-Version: 1.0
-Date: Wed, 11 Mar 2009 10:50:56 -0500
-Message-ID: <ba5d9360903110850gbcb0d2y25f8756a19d46cda@mail.gmail.com>
-Subject: [PATCH] powerpc: Remove extra semicolon in fsl_soc.c
-From: Johns Daniel <johns.daniel@gmail.com>
-To: afleming@freescale.com, linuxppc-dev@ozlabs.org, stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F3C39DDF6B
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:52:46 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n2BFqhml009866
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 08:52:43 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n2BFqgj8007462
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 10:52:43 -0500 (CDT)
+Date: Wed, 11 Mar 2009 10:52:42 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/85xx: Update smp support to handle doorbells and
+	non-mpic init
+Message-ID: <20090311155242.GA11120@ld0162-tx32.am.freescale.net>
+References: <1236771963-28181-1-git-send-email-galak@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1236771963-28181-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,25 +34,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A semicolon at the end of the macro means that the for loop has an
-empty body, and so TSEC/MDIO will not work with older device trees.
+On Wed, Mar 11, 2009 at 06:46:03AM -0500, Kumar Gala wrote:
+> +void __init mpc85xx_smp_init(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	smp_85xx_ops.message_pass = NULL;
+> +
+> +	np = of_find_node_by_type(NULL, "open-pic");
 
-This fix only applies to 2.6.28; apparently, this code is gone for
-2.6.29, according to Grant Likely!
+We should probably look by compatible rather than device_type.  I see
+only one device tree that has the latter but not the former (ksi8560),
+and it's not SMP (but should still be fixed, of course).
 
-Signed-off-by: Johns Daniel <johns.daniel@gmail.com>
----
---- linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c.orig   2009-02-20
-16:41:27.000000000 -0600
-+++ linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c        2009-03-10
-15:56:47.000000000 -0500
-@@ -257,7 +257,7 @@
-                gfar_mdio_of_init_one(np);
-
-        /* try the deprecated version */
--       for_each_compatible_node(np, "mdio", "gianfar");
-+       for_each_compatible_node(np, "mdio", "gianfar")
-                gfar_mdio_of_init_one(np);
-
-        return 0;
----
+-Scott
