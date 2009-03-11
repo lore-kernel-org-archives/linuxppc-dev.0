@@ -1,21 +1,17 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id D345DDDFA9
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 09:13:43 +1100 (EST)
-Message-ID: <49B8367B.5060402@ru.mvista.com>
-Date: Thu, 12 Mar 2009 01:08:59 +0300
-From: Valentine <vbarshak@ru.mvista.com>
+Return-Path: <rusty@rustcorp.com.au>
+Received: from vivaldi.localnet (unknown [150.101.102.135])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPSA id CF4BCDDF7F
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 09:20:11 +1100 (EST)
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: make sysfs code use smp_call_function_single
+Date: Thu, 12 Mar 2009 08:50:05 +1030
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] PowerPC 440EPx/GRx fix memory size calculation
-References: <49B58779.9040905@lebon.org.ua>
-	<20090310195013.GA27835@ru.mvista.com>
-	<20090311103716.GE26415@zod.rchland.ibm.com>
-	<49B80BA3.1090301@ru.mvista.com>
-	<20090311215728.GA12676@zod.rchland.ibm.com>
-In-Reply-To: <20090311215728.GA12676@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>, lebon@lebon.org.ua
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200903120850.05522.rusty@rustcorp.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,50 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Wed, Mar 11, 2009 at 10:06:11PM +0300, Valentine Barshak wrote:
->> Josh Boyer wrote:
->>> On Tue, Mar 10, 2009 at 10:50:13PM +0300, Valentine Barshak wrote:
->>>> I was just going to submit a patch for that too.
->>>> Indeed, the denali_fixup_memsize() miscalculated a couple of address
->>>> field widths. We were lucky to eventually get the right result,
->>>> because the effect of the first error was killed by the other one.
->>>> According to the AMCC 440EPX/GRX user manual,
->>>> the Chip Select width is always fixed at 1 bit no matter
->>>> what is actually read from register DDR_10.
->>>> The workaround is to use a predefined chipselect value for 440EPx/GRx.
->>>> Also, setting the REDUC bit (REDUC = 1) enables 32-bit data path.
->>>> If REDUC = 0, full data path of 64 bits is used.
->>>>
->>>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->>>> Signed-off-by: Mikhail Zolotaryov <lebon@lebon.org.ua>
->>> I've been looking over this one a bit more.  At the moment, I'm inclined
->>> to queue this up in my -next branch.  I would like to see if Mikhail
->>> could test it though, and have Valentine answer the question in the hard
->>> wired part.
->> I've been looking at the docs once again and actually I couldn't find an  
->>   explanation there. And I don't have that e-mail from AMCC support that 
->> I got a while back regarding the issue anymore.
->> There might have been some misunderstanding.
->> The docs (PPC440EPX UM 19.2 Device Address Mapping) say that the chip  
->> select field width is always fixed at one bit, but this doesn't actually  
->>  mean that there's always one chip select used.
->> The patch works fine on Sequoia and another Sequoia-like board with 1GB  
->> RAM installed, but it might not work with 2GB RAM. I've tried to play  
->> with DDR0_10 settings and Sequoia works fine regardless of what's  
->> actually written to DDR0_10.
->> So, probably the best way would be to fix that in u-boot
->> amcc/sequoia/sdram.c by doing mtsdram(DDR0_10, 0x00000100); instead of  
->> mtsdram(DDR0_10, 0x00000300);
->> Sorry, for confusion, but after reviewing the docs, I think that
->> only REDUC interpretation has to be fixed. The chips select part should  
->> be fixed in u-boot sdram code for Sequoia as was originally proposed by  
->> Mikhail.
-> 
-> Ok, so we're back to using Mikhail's original patch then?
-> 
-> josh
+Impact: performance improvement
 
-Yes, but until u-boot is fixed this will break Sequoia/Rainier support.
-Thanks,
-Valentine.
+This fixes 'powerpc: avoid cpumask games in arch/powerpc/kernel/sysfs.c'
+which talked about using smp_call_function_single, but actually used
+work_on_cpu (an older version of the patch).
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/powerpc/kernel/sysfs.c |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -135,14 +135,14 @@ EXPORT_SYMBOL(ppc_enable_pmcs);
+ EXPORT_SYMBOL(ppc_enable_pmcs);
+ 
+ #define SYSFS_PMCSETUP(NAME, ADDRESS) \
+-static long read_##NAME(void *junk) \
++static void read_##NAME(void *val) \
+ { \
+-	return mfspr(ADDRESS); \
++	*(unsigned long *)val = mfspr(ADDRESS);	\
+ } \
+ static long write_##NAME(void *val) \
+ { \
+ 	ppc_enable_pmcs(); \
+-	mtspr(ADDRESS, (unsigned long)val);	\
++	mtspr(ADDRESS, *(unsigned long *)val);	\
+ 	return 0; \
+ } \
+ static ssize_t show_##NAME(struct sys_device *dev, \
+@@ -150,7 +150,8 @@ static ssize_t show_##NAME(struct sys_de
+ 			char *buf) \
+ { \
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev); \
+-	unsigned long val = work_on_cpu(cpu->sysdev.id, read_##NAME, NULL); \
++	unsigned long val; \
++	smp_call_function_single(cpu->sysdev.id, read_##NAME, &val, 1);	\
+ 	return sprintf(buf, "%lx\n", val); \
+ } \
+ static ssize_t __used \
+@@ -162,7 +163,7 @@ static ssize_t __used \
+ 	int ret = sscanf(buf, "%lx", &val); \
+ 	if (ret != 1) \
+ 		return -EINVAL; \
+-	work_on_cpu(cpu->sysdev.id, write_##NAME, (void *)val);	\
++	smp_call_function_single(cpu->sysdev.id, write_##NAME, &val, 1); \
+ 	return count; \
+ }
+ 
