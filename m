@@ -1,17 +1,18 @@
-Return-Path: <rusty@rustcorp.com.au>
-Received: from vivaldi.localnet (unknown [150.101.102.135])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPSA id CF4BCDDF7F
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 09:20:11 +1100 (EST)
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: make sysfs code use smp_call_function_single
-Date: Thu, 12 Mar 2009 08:50:05 +1030
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 37018DDED8
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 09:26:18 +1100 (EST)
+Content-Type: text/plain; charset="utf-8"
+Date: Wed, 11 Mar 2009 23:26:15 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1236807566.7086.51.camel@pasglop>
+Message-ID: <20090311222615.63410@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200903120850.05522.rusty@rustcorp.com.au>
+References: <4C4E1899-9086-4DF5-A5BF-832AEBEAA8E9@semihalf.com>
+	<1236807566.7086.51.camel@pasglop>
+Subject: Re: NFS problems on a MPC5200-based board
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, tur@semihalf.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,54 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Impact: performance improvement
 
-This fixes 'powerpc: avoid cpumask games in arch/powerpc/kernel/sysfs.c'
-which talked about using smp_call_function_single, but actually used
-work_on_cpu (an older version of the patch).
+-------- Original-Nachricht --------
+> Datum: Thu, 12 Mar 2009 08:39:26 +1100
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: "Bartłomiej Sięka" <tur@semihalf.com>
+> CC: linuxppc-dev@ozlabs.org, gerhard_pircher@gmx.net, Grant Likely <grant.likely@secretlab.ca>
+> Betreff: Re: NFS problems on a MPC5200-based board
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/powerpc/kernel/sysfs.c |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+> On Wed, 2009-03-11 at 16:08 +0100, Bartłomiej Sięka wrote:
+> > Hi,
+> > 
+> > This is a follow-up on NFS problems on an MPC5200-based board reported  
+> > here a while back:
+> > 
+> >
+> http://www.nabble.com/-PATCH--Add-support-for-the-digsy-MTC-board.-to21750004.html#a21792612
+> > 
+> > To recap: while using NFS, especially while mounting the root  
+> > filesystem over NFS, the system is really slow and displays a bunch of  
+> > "nfs: server 192.168.1.1 not responding, still trying" messages.  
+> > Sometimes it is able to get to the login prompt, sometimes not. In  
+> > cases where the login is successful, the system is still extremely  
+> > sluggish (console hangs for tens of seconds and longer).
+> > 
+> > git bisect narrows down the troublesome commit as:
+> 
+> Maybe you need to set CPU_FTR_NEED_COHERENT for the 5200 ?
+I would say the same, as the patch just replicates the
+CPU_FTR_NEED_COHERENT handling of the hash page table code.
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -135,14 +135,14 @@ EXPORT_SYMBOL(ppc_enable_pmcs);
- EXPORT_SYMBOL(ppc_enable_pmcs);
- 
- #define SYSFS_PMCSETUP(NAME, ADDRESS) \
--static long read_##NAME(void *junk) \
-+static void read_##NAME(void *val) \
- { \
--	return mfspr(ADDRESS); \
-+	*(unsigned long *)val = mfspr(ADDRESS);	\
- } \
- static long write_##NAME(void *val) \
- { \
- 	ppc_enable_pmcs(); \
--	mtspr(ADDRESS, (unsigned long)val);	\
-+	mtspr(ADDRESS, *(unsigned long *)val);	\
- 	return 0; \
- } \
- static ssize_t show_##NAME(struct sys_device *dev, \
-@@ -150,7 +150,8 @@ static ssize_t show_##NAME(struct sys_de
- 			char *buf) \
- { \
- 	struct cpu *cpu = container_of(dev, struct cpu, sysdev); \
--	unsigned long val = work_on_cpu(cpu->sysdev.id, read_##NAME, NULL); \
-+	unsigned long val; \
-+	smp_call_function_single(cpu->sysdev.id, read_##NAME, &val, 1);	\
- 	return sprintf(buf, "%lx\n", val); \
- } \
- static ssize_t __used \
-@@ -162,7 +163,7 @@ static ssize_t __used \
- 	int ret = sscanf(buf, "%lx", &val); \
- 	if (ret != 1) \
- 		return -EINVAL; \
--	work_on_cpu(cpu->sysdev.id, write_##NAME, (void *)val);	\
-+	smp_call_function_single(cpu->sysdev.id, write_##NAME, &val, 1); \
- 	return count; \
- }
- 
+regards,
+
+Gerhard
+
+> > commit 4c456a67f501b8b15542c7c21c28812bf88f484b
+> > Author: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > Date:   Fri Jan 23 06:51:28 2009 +0000
+> > 
+> >     powerpc/mm: Fix handling of _PAGE_COHERENT in BAT setup code
+> > 
+> >     _PAGE_COHERENT is now always set in _PAGE_RAM resp. PAGE_KERNEL.
+> >     Thus it has to be masked out, if the BAT mapping should be non
+> >     cacheable or CPU_FTR_NEED_COHERENT is not set.
+> > 
+> >     This will work on normal SMP setups because we force-set
+> >     CPU_FTR_NEED_COHERENT as part of CPU_FTR_COMMON on SMP.
+> > 
+> >     Signed-off-by: Gerhard Pircher <gerhard_pircher@gmx.net>
+> >     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > 
+> > We have tested recent mainline kernel (past 2.6.29-rc7) with the  
+> > 4c456a6...
+> > commit reverted and NFS problems went away.
+> > 
+> > Other people have also reported similar problems (original posters on  
+> > Cc):
+> >
+> http://www.nabble.com/-PATCH--Add-support-for-the-digsy-MTC-board.-tp21750004p21792825.html
+> >
+> http://www.nabble.com/-PATCH--Add-support-for-the-digsy-MTC-board.-tp21750004p21792612.html
+> > 
+> > The commit in question does not look directly related to NFS/ 
+> > networking; moreover it is a fix for some other problem, so just  
+> > reverting it is not an option, it seems (?). So how do we go about  
+> > having NFS operational again? Any comments?
+> > 
+> > Regards,
+> > Bartlomiej Sieka
+
+-- 
+Psssst! Schon vom neuen GMX MultiMessenger gehört? Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger01
