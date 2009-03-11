@@ -1,20 +1,26 @@
-Return-Path: <mark@bish.net>
-Received: from vincent.bish.net (bish.net [209.241.232.100])
-	by ozlabs.org (Postfix) with ESMTP id B6162DDF1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:37:30 +1100 (EST)
-Received: from www-data by vincent.bish.net with local (Exim 4.63)
-	(envelope-from <mark@bish.net>) id 1LhQjS-0001SO-KA
-	for linuxppc-dev@ozlabs.org; Wed, 11 Mar 2009 11:52:37 -0400
-Message-ID: <20090311115234.7hmj4jj79csgk4wo@www.bish.net>
-Date: Wed, 11 Mar 2009 11:52:34 -0400
-From: Mark Bishop <mark@bish.net>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6648ADDF1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:37:48 +1100 (EST)
+Date: Wed, 11 Mar 2009 08:36:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+In-Reply-To: <1236769025.7086.46.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0903110835020.32478@localhost.localdomain>
+References: <1236729444.7086.24.camel@pasglop>
+	<alpine.LRH.2.00.0903111028480.1040@vixen.sonytel.be>
+	<1236769025.7086.46.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Subject: Freescale MPC8313ERDB-RevA and newer BSP/kernel
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Has anyone been able to get a newer Freescale BSP to work with a RevA  
-(processor version 1.0) RDB?
 
-The boards we received didn't have SPI compiled into the kernel and  
-when we went to go re-compile the kernel using the 20081222 and  
-20080711 BSPs.  I realize that the interrupts were reversed for eTEC1  
-and eTEC2 and I've made the changes in the .dtb file and I no longer  
-hang when I ping, etc.   But I still can't get the board on the  
-network.  I've verified it isn't the network settings.
 
-I've pinged Freescale for support (didn't help much) and I am now  
-looking for someone who has actually done it (if ever).
+On Wed, 11 Mar 2009, Benjamin Herrenschmidt wrote:
+> 
+> I'd like to have Andrew or Linus opinion on doing this driver swap that
+> late in the process.
+
+Quite franklly, no. 
+
+If it was a totally _new_ driver, there's no chance of regression, which 
+is why we allow those drivers.
+
+But switching an old one for a new one does not match that pattern. We can 
+clearly get regressions. As such, we don't do it late in the -rc series.
+
+		Linus
