@@ -1,16 +1,16 @@
-Return-Path: <timur@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 09033DE03F
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 08:02:32 +1100 (EST)
-Message-ID: <49B826E3.6020007@freescale.com>
-Date: Wed, 11 Mar 2009 16:02:27 -0500
-From: Timur Tabi <timur@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 2C252DE03F
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 08:03:49 +1100 (EST)
+Message-ID: <49B8272A.1040306@freescale.com>
+Date: Wed, 11 Mar 2009 16:03:38 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
+To: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH v5] introduce macro spin_event_timeout()
 References: <1236723118-3577-1-git-send-email-timur@freescale.com>	
 	<49B6EAA4.9000803@freescale.com>	
@@ -23,8 +23,8 @@ References: <1236723118-3577-1-git-send-email-timur@freescale.com>
 	<ed82fe3e0903111214j2072319pe985e6bbecdd1665@mail.gmail.com>	
 	<49B80F7F.30705@freescale.com>
 	<ed82fe3e0903111345m2962f5b5wdfc9e2efae1c33ae@mail.gmail.com>
-	<49B82657.9050709@freescale.com>
-In-Reply-To: <49B82657.9050709@freescale.com>
+	<49B82657.9050709@freescale.com> <49B826E3.6020007@freescale.com>
+In-Reply-To: <49B826E3.6020007@freescale.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -36,13 +36,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
+Timur Tabi wrote:
+> Scott Wood wrote:
+> 
+>  > Or you can say that atomic context is outside the scope of this macro.
+> 
+> No, I don't want to say that.  We have wait_event_timeout() for 
+> larger-scale operations.  I'm just looking for something that can 
+> replace "while (!condition);"
 
- > Or you can say that atomic context is outside the scope of this macro.
+wait_event_timeout() requires a wait queue.
 
-No, I don't want to say that.  We have wait_event_timeout() for larger-scale 
-operations.  I'm just looking for something that can replace "while (!condition);"
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+-Scott
