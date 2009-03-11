@@ -1,25 +1,20 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1FB7EDE16F
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 21:09:05 +1100 (EST)
-Message-ID: <49B77CBF.6070005@embedded-sol.com>
-Date: Wed, 11 Mar 2009 10:56:31 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <hgang.m@hotmail.com>
+Received: from col0-omc4-s2.col0.hotmail.com (col0-omc4-s2.col0.hotmail.com
+	[65.55.34.204]) by ozlabs.org (Postfix) with ESMTP id E23AFDE194
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 19:55:15 +1100 (EST)
+Message-ID: <COL104-W4161BE11903ACD5CE8A80EB9E0@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_680f8886-808d-4f1e-b988-bbae60fcb5cf_"
+From: AA <hgang.m@hotmail.com>
+To: <sachinp@in.ibm.com>, <sfr@canb.auug.org.au>, <linux-kernel@zh-kernel.org>
+Subject: RE: Next 10: Badness at mm/allocpercpu.c:123
+Date: Wed, 11 Mar 2009 16:50:10 +0800
+In-Reply-To: <49B67552.5070307@in.ibm.com>
+References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
+	<49B67552.5070307@in.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: RX problem in ibm_newemac driver
-References: <49B6C4A2.8060302@embedded-sol.com>	
-	<1236718202.7086.10.camel@pasglop>
-	<49B6E658.4010900@embedded-sol.com>	
-	<1236725832.7086.21.camel@pasglop>
-	<49B6FA3B.8030509@embedded-sol.com>
-	<1236730894.7086.29.camel@pasglop>
-In-Reply-To: <1236730894.7086.29.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev <netdev@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,62 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2009-03-11 at 01:39 +0200, Felix Radensky wrote:
->   
->> Benjamin Herrenschmidt wrote:
->>     
->>> On Wed, 2009-03-11 at 00:14 +0200, Felix Radensky wrote:
->>>   
->>>       
->>>> Yes, seems logical. U-boot has code to enable and disable loopback clock
->>>> for 440SPE, 440EPX,440GRX,405EX, 460EX and 460GT.
->>>>
->>>> I can test patches on my board. Alternatively, I can try something myself
->>>> if you can provide some guidance. I guess you are referring to the code 
->>>> using
->>>> EMAC_FTR_440GX_PHY_CLK_FIX and EMAC_FTR_440EP_PHY_CLK_FIX.
->>>>     
->>>>         
->>> It would be nice if you could try something as I don't have anything to
->>> test here.
->>>
->>> And yes, it's probably one of those 2 fixes that need to be extended.
->>>
->>> I'll have a look later today if I can find the 405EXr user manual and
->>> give you more precise guidance.
->>>       
->
-> >From the doc, it looks like it needs the 440 type workaround (and the
-> 405EX as well). Can you try this patch:
->
-> emac: Fix clock control for 405EX and 405EXr chips
->
-> The EMAC variant in the 405EX and 405EXr chips needs the "440EP" type clock
-> control workaround to avoid lockups of the Rx side during reset.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->
-> Index: linux-work/drivers/net/ibm_newemac/core.c
-> ===================================================================
-> --- linux-work.orig/drivers/net/ibm_newemac/core.c	2009-03-11 11:13:37.000000000 +1100
-> +++ linux-work/drivers/net/ibm_newemac/core.c	2009-03-11 11:14:00.000000000 +1100
-> @@ -2594,6 +2594,9 @@ static int __devinit emac_init_config(st
->  		if (of_device_is_compatible(np, "ibm,emac-460ex") ||
->  		    of_device_is_compatible(np, "ibm,emac-460gt"))
->  			dev->features |= EMAC_FTR_460EX_PHY_CLK_FIX;
-> +		if (of_device_is_compatible(np, "ibm,emac-405ex") ||
-> +		    of_device_is_compatible(np, "ibm,emac-405exr"))
-> +			dev->features |= EMAC_FTR_440EP_PHY_CLK_FIX;
->  	} else if (of_device_is_compatible(np, "ibm,emac4")) {
->  		dev->features |= EMAC_FTR_EMAC4;
->  		if (of_device_is_compatible(np, "ibm,emac-440gx"))
->
->
->   
-Hi, Ben
+--_680f8886-808d-4f1e-b988-bbae60fcb5cf_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-This patch fixes a problem for me. Thank you very much for a quick fix.
 
-Felix.
+Hi all
+
+ 
+
+I am newer to linux.
+
+My board is MPC750+MPC106, and  I use MAPB for MPC106.
+
+ 
+
+Due to 106 datasheet, 
+
+0x8000,0000 -- 0xFC00,0000   for PCI memory space.
+
+ 
+
+As you know, user space is 0~0xbfff,ffff (3G). 
+
+0xc000,0000 ~ 0xffff,ffff(1G) is for kernel.
+
+ 
+
+And my question is:
+
+1) where should I map this address space to ?
+
+2) user application can access this address space directly?
+
+ 
+
+ 
+
+ 
+
+_________________________________________________________________
+梦幻K图，百变造型，让你的照片与众不同，快来MClub试试吧！
+http://club.msn.cn/?form=3
+--_680f8886-808d-4f1e-b988-bbae60fcb5cf_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt;
+font-family:Verdana
+}
+</style>
+</head>
+<body class='hmmessage'>
+Hi all<BR>
+&nbsp;<BR>
+I am newer to linux.<BR>
+My board is MPC750+MPC106, and&nbsp; I use MAPB for MPC106.<BR>
+&nbsp;<BR>
+Due to 106 datasheet,&nbsp;<BR>
+0x8000,0000 -- 0xFC00,0000&nbsp;&nbsp; for PCI memory space.<BR>
+&nbsp;<BR>
+As you know, user space is 0~0xbfff,ffff (3G). <BR>
+0xc000,0000 ~ 0xffff,ffff(1G)&nbsp;is for kernel.<BR>
+&nbsp;<BR>
+And my question is:<BR>
+1) where should I map this address space to ?<BR>
+2) user application can access this address space directly?<BR>
+&nbsp;<BR>
+&nbsp;<BR>
+&nbsp;<BR><br /><hr />把MSN装进手机，更多聊天乐趣等你挖掘！ <a href='http://mobile.msn.com.cn/' target='_new'>立刻下载！</a></body>
+</html>
+--_680f8886-808d-4f1e-b988-bbae60fcb5cf_--
