@@ -2,21 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CA93BDE118
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 11:21:46 +1100 (EST)
-Subject: Re: RX problem in ibm_newemac driver
+	by ozlabs.org (Postfix) with ESMTPS id 00457DE055
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 11:25:06 +1100 (EST)
+Subject: Re: [PATCH v5] introduce macro spin_event_timeout()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Felix Radensky <felix@embedded-sol.com>
-In-Reply-To: <49B6FA3B.8030509@embedded-sol.com>
-References: <49B6C4A2.8060302@embedded-sol.com>
-	<1236718202.7086.10.camel@pasglop> <49B6E658.4010900@embedded-sol.com>
-	<1236725832.7086.21.camel@pasglop> <49B6FA3B.8030509@embedded-sol.com>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <ed82fe3e0903101722i610638e8le1f2e925095c8ba6@mail.gmail.com>
+References: <1236723118-3577-1-git-send-email-timur@freescale.com>
+	<49B6EAA4.9000803@freescale.com>
+	<20090310223753.GB26415@zod.rchland.ibm.com>
+	<1236729551.7086.26.camel@pasglop>
+	<ed82fe3e0903101722i610638e8le1f2e925095c8ba6@mail.gmail.com>
 Content-Type: text/plain
-Date: Wed, 11 Mar 2009 11:21:34 +1100
-Message-Id: <1236730894.7086.29.camel@pasglop>
+Date: Wed, 11 Mar 2009 11:24:57 +1100
+Message-Id: <1236731097.7086.32.camel@pasglop>
 Mime-Version: 1.0
-Cc: netdev <netdev@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-03-11 at 01:39 +0200, Felix Radensky wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Wed, 2009-03-11 at 00:14 +0200, Felix Radensky wrote:
-> >   
-> >> Yes, seems logical. U-boot has code to enable and disable loopback clock
-> >> for 440SPE, 440EPX,440GRX,405EX, 460EX and 460GT.
-> >>
-> >> I can test patches on my board. Alternatively, I can try something myself
-> >> if you can provide some guidance. I guess you are referring to the code 
-> >> using
-> >> EMAC_FTR_440GX_PHY_CLK_FIX and EMAC_FTR_440EP_PHY_CLK_FIX.
-> >>     
-> >
-> > It would be nice if you could try something as I don't have anything to
-> > test here.
-> >
-> > And yes, it's probably one of those 2 fixes that need to be extended.
-> >
-> > I'll have a look later today if I can find the 405EXr user manual and
-> > give you more precise guidance.
+On Tue, 2009-03-10 at 19:22 -0500, Timur Tabi wrote:
+> 
+> Alan did have one valid point though.  Determining how long to loop
+> for is architecture-specific.  Using jiffies is bad, because even one
+> jiffy is too long.  Adding a udelay() inside the loop means that it
+> only checks he condition every microsecond.  So the real solution is
+> to use keep looping until a certain amount of time has passed.  This
+> means using an architecture-specific timebase register.
 
->From the doc, it looks like it needs the 440 type workaround (and the
-405EX as well). Can you try this patch:
+> Now we can create a generic version of the function that uses jiffies,
+> and then arch-specific versions where possible.  But Alan still needs
+> to be convinced.  I already posted a length rebuttal to his email, but
+> I haven't gotten a reply yet.
+> 
+There are several aspects here:
 
-emac: Fix clock control for 405EX and 405EXr chips
+ - The amount of time to wait should be specified by the caller since
+it's generally going to come from HW specs
 
-The EMAC variant in the 405EX and 405EXr chips needs the "440EP" type clock
-control workaround to avoid lockups of the Rx side during reset.
+ - The amount of time between the polls ... that could also be an
+argument to the macro, not sure there
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+ - The precision of the actual wait calls... I vote for microseconds for
+everything and udelay. The arch will do its best.
 
-Index: linux-work/drivers/net/ibm_newemac/core.c
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.c	2009-03-11 11:13:37.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/core.c	2009-03-11 11:14:00.000000000 +1100
-@@ -2594,6 +2594,9 @@ static int __devinit emac_init_config(st
- 		if (of_device_is_compatible(np, "ibm,emac-460ex") ||
- 		    of_device_is_compatible(np, "ibm,emac-460gt"))
- 			dev->features |= EMAC_FTR_460EX_PHY_CLK_FIX;
-+		if (of_device_is_compatible(np, "ibm,emac-405ex") ||
-+		    of_device_is_compatible(np, "ibm,emac-405exr"))
-+			dev->features |= EMAC_FTR_440EP_PHY_CLK_FIX;
- 	} else if (of_device_is_compatible(np, "ibm,emac4")) {
- 		dev->features |= EMAC_FTR_EMAC4;
- 		if (of_device_is_compatible(np, "ibm,emac-440gx"))
+Cheers,
+Ben.
