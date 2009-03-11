@@ -1,19 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tur@semihalf.com>
+Received: from semihalf.com (semihalf.com [206.130.101.55])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CBD50DE18B
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:18:54 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2BFIob7007428
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 10:18:51 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: 
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc: Add support for CoreInt delivery of interrupts on
-	MPIC
-Date: Wed, 11 Mar 2009 10:18:50 -0500
-Message-Id: <1236784730-616-1-git-send-email-galak@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 798B6DDFAA
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:30:13 +1100 (EST)
+Message-Id: <4C4E1899-9086-4DF5-A5BF-832AEBEAA8E9@semihalf.com>
+From: =?ISO-8859-2?Q?Bart=B3omiej_Si=EAka?= <tur@semihalf.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: NFS problems on a MPC5200-based board
+Date: Wed, 11 Mar 2009 16:08:02 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,96 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-CoreInt provides a mechansim to deliver the IRQ vector directly
-into the core on an interrupt (via the SPR EPR) rather than having
-to go IACK on the PIC.  This is suppose to provide an improvment
-in interrupt latency by reducing the time to get the IRQ vector.
+Hi,
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-* Fixed MPIC_GREG_GCONF_COREINT flag to be 0x60000000 as per spec and pointed about by Dave
+This is a follow-up on NFS problems on an MPC5200-based board reported  
+here a while back:
 
- arch/powerpc/include/asm/mpic.h |    5 +++++
- arch/powerpc/sysdev/mpic.c      |   30 ++++++++++++++++++++++++++++++
- 2 files changed, 35 insertions(+), 0 deletions(-)
+http://www.nabble.com/-PATCH--Add-support-for-the-digsy-MTC-board.-to21750004.html#a21792612
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index c2ccca5..475b06e 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -22,6 +22,7 @@
- #define MPIC_GREG_FEATURE_1		0x00010
- #define MPIC_GREG_GLOBAL_CONF_0		0x00020
- #define		MPIC_GREG_GCONF_RESET			0x80000000
-+#define		MPIC_GREG_GCONF_COREINT			0x60000000
- #define		MPIC_GREG_GCONF_8259_PTHROU_DIS		0x20000000
- #define		MPIC_GREG_GCONF_NO_BIAS			0x10000000
- #define		MPIC_GREG_GCONF_BASE_MASK		0x000fffff
-@@ -357,6 +358,8 @@ struct mpic
- #define MPIC_BROKEN_FRR_NIRQS		0x00000800
- /* Destination only supports a single CPU at a time */
- #define MPIC_SINGLE_DEST_CPU		0x00001000
-+/* Enable CoreInt delivery of interrupts */
-+#define MPIC_ENABLE_COREINT		0x00002000
- 
- /* MPIC HW modification ID */
- #define MPIC_REGSET_MASK		0xf0000000
-@@ -470,6 +473,8 @@ extern void mpic_end_irq(unsigned int irq);
- extern unsigned int mpic_get_one_irq(struct mpic *mpic);
- /* This one gets from the primary mpic */
- extern unsigned int mpic_get_irq(void);
-+/* This one gets from the primary mpic via CoreInt*/
-+extern unsigned int mpic_get_coreint_irq(void);
- /* Fetch Machine Check interrupt from primary mpic */
- extern unsigned int mpic_get_mcirq(void);
- 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index a35297d..6fca4f1 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1169,6 +1169,12 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 			mb();
- 	}
- 
-+	/* CoreInt */
-+	if (flags & MPIC_ENABLE_COREINT)
-+		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
-+			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
-+			   | MPIC_GREG_GCONF_COREINT);
-+
- 	if (flags & MPIC_ENABLE_MCK)
- 		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
- 			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
-@@ -1524,6 +1530,30 @@ unsigned int mpic_get_irq(void)
- 	return mpic_get_one_irq(mpic);
- }
- 
-+unsigned int mpic_get_coreint_irq(void)
-+{
-+	struct mpic *mpic = mpic_primary;
-+	u32 src;
-+
-+	BUG_ON(mpic == NULL);
-+
-+	src = mfspr(SPRN_EPR);
-+
-+	if (unlikely(src == mpic->spurious_vec)) {
-+		if (mpic->flags & MPIC_SPV_EOI)
-+			mpic_eoi(mpic);
-+		return NO_IRQ;
-+	}
-+	if (unlikely(mpic->protected && test_bit(src, mpic->protected))) {
-+		if (printk_ratelimit())
-+			printk(KERN_WARNING "%s: Got protected source %d !\n",
-+			       mpic->name, (int)src);
-+		return NO_IRQ;
-+	}
-+
-+	return irq_linear_revmap(mpic->irqhost, src);
-+}
-+
- unsigned int mpic_get_mcirq(void)
- {
- 	struct mpic *mpic = mpic_primary;
--- 
-1.5.6.6
+To recap: while using NFS, especially while mounting the root  
+filesystem over NFS, the system is really slow and displays a bunch of  
+"nfs: server 192.168.1.1 not responding, still trying" messages.  
+Sometimes it is able to get to the login prompt, sometimes not. In  
+cases where the login is successful, the system is still extremely  
+sluggish (console hangs for tens of seconds and longer).
+
+git bisect narrows down the troublesome commit as:
+
+commit 4c456a67f501b8b15542c7c21c28812bf88f484b
+Author: Gerhard Pircher <gerhard_pircher@gmx.net>
+Date:   Fri Jan 23 06:51:28 2009 +0000
+
+    powerpc/mm: Fix handling of _PAGE_COHERENT in BAT setup code
+
+    _PAGE_COHERENT is now always set in _PAGE_RAM resp. PAGE_KERNEL.
+    Thus it has to be masked out, if the BAT mapping should be non
+    cacheable or CPU_FTR_NEED_COHERENT is not set.
+
+    This will work on normal SMP setups because we force-set
+    CPU_FTR_NEED_COHERENT as part of CPU_FTR_COMMON on SMP.
+
+    Signed-off-by: Gerhard Pircher <gerhard_pircher@gmx.net>
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+
+We have tested recent mainline kernel (past 2.6.29-rc7) with the  
+4c456a6...
+commit reverted and NFS problems went away.
+
+Other people have also reported similar problems (original posters on  
+Cc):
+http://www.nabble.com/-PATCH--Add-support-for-the-digsy-MTC-board.-tp21750004p21792825.html
+http://www.nabble.com/-PATCH--Add-support-for-the-digsy-MTC-board.-tp21750004p21792612.html
+
+The commit in question does not look directly related to NFS/ 
+networking; moreover it is a fix for some other problem, so just  
+reverting it is not an option, it seems (?). So how do we go about  
+having NFS operational again? Any comments?
+
+Regards,
+Bartlomiej Sieka
