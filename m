@@ -1,30 +1,25 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0BCCFDE1BD
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 01:22:21 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n2BEMI87025184
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 07:22:19 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n2BEMGod022181
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:22:17 -0500 (CDT)
+Return-Path: <mark@bish.net>
+Received: from vincent.bish.net (bish.net [209.241.232.100])
+	by ozlabs.org (Postfix) with ESMTP id 755A0DE111
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 05:11:58 +1100 (EST)
+Received: from www-data by vincent.bish.net with local (Exim 4.63)
+	(envelope-from <mark@bish.net>) id 1LhT92-0001xt-A7
+	for linuxppc-dev@ozlabs.org; Wed, 11 Mar 2009 14:27:11 -0400
+Message-ID: <20090311142708.olkbrtn5hws0cg8w@www.bish.net>
+Date: Wed, 11 Mar 2009 14:27:08 -0400
+From: Mark Bishop <mark@bish.net>
+To: linuxppc-dev@ozlabs.org
+References: <20090311115234.7hmj4jj79csgk4wo@www.bish.net>
+	<A0ED6D80-FD02-4BED-B50B-7F3028E47888@kernel.crashing.org>
+	<20090311120300.atgtikpneo0gos0w@www.bish.net>
+	<20090311165320.GB11120@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20090311165320.GB11120@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C9A254.C793533A"
-Subject: Re: [PATCH] powerpc: Add support for CoreInt delivery of interrupts
-	onMPIC
-Date: Wed, 11 Mar 2009 22:20:13 +0800
-Message-ID: <D7CCA83BB0796C49BC0BB53B6AB12089136E4B@zch01exm21.fsl.freescale.net>
-References: <1236772127-28543-1-git-send-email-galak@kernel.crashing.org>
-From: "Liu Dave-R63238" <DaveLiu@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Subject: Re: Freescale MPC8313ERDB-RevA and newer BSP/kernel
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,82 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Quoting Scott Wood <scottwood@freescale.com>:
 
-------_=_NextPart_001_01C9A254.C793533A
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+> On Wed, Mar 11, 2009 at 12:03:00PM -0400, Mark Bishop wrote:
+>> Yes I have actually.  I have booted a 2.6.28.6.  Same problem.
+>
+> I've booted many recent kernels on revA 8313ERDB; networking works fine.
+> I'll try 2.6.28.6 specifically, though u-boot is acting up at the moment
+> so I have to address that first. :-(
+>
+> Are you using the stock config and device tree from 2.6.28.6, or have you
+> made any changes?
+>
+>> Also, is it me but at some point from 2.6.23 to 2.6.28 did they
+>> started using hex numbers in the .dts file for "interrupts =3D " without
+>> the 0x preamble?
+>
+> Yes.  dts version 0 had hex by default (with OF-like radix =20
+> prefixes), and version 1 (indicated by
+> /dts-v1/; at the top of the file) has decimal by default (with C-like
+> radix prefixes).
+>
+>> I've been looking at 2.6.20, 2.6.23, and 2.6.28 .dts files for this
+>> board and .28 looked way different in the interrupt section for the
+>> eTSEC.
+>>
+>> Quoting Kumar Gala <galak@kernel.crashing.org>:
+>
+> Please don't top-post.
+>
+>> >>The boards we received didn't have SPI compiled into the kernel and
+>> >>when we went to go re-compile the kernel using the 20081222 and
+>> >>20080711 BSPs.  I realize that the interrupts were reversed for
+>> >>eTEC1 and eTEC2 and I've made the changes in the .dtb file and I no
+>> >>longer hang when I ping, etc.   But I still can't get the board on
+>> >>the network.  I've verified it isn't the network settings.
+>
+> You're sure you're not trying to talk to the switch (which will claim
+> link-up regardless of what's plugged into it)?  The non-switch ethernet
+> port is eTSEC2.
+>
+> What *does* it do when you ping, if neither hang nor work?
+>
+> -Scott
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+>
 
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -22,6 +22,7 @@
- #define MPIC_GREG_FEATURE_1		0x00010
- #define MPIC_GREG_GLOBAL_CONF_0		0x00020
- #define		MPIC_GREG_GCONF_RESET			0x80000000
-+#define		MPIC_GREG_GCONF_COREINT			0x40000000
- #define		MPIC_GREG_GCONF_8259_PTHROU_DIS		0x20000000
- #define		MPIC_GREG_GCONF_NO_BIAS			0x10000000
- #define		MPIC_GREG_GCONF_BASE_MASK		0x000fffff
+After remapping the IRQs, it is working now.
 
-
-according to the latest UM, the MPIC_GREG_GCONF_COREINT should be
-0x60000000.
-
-------_=_NextPart_001_01C9A254.C793533A
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dgb2312">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7653.38">
-<TITLE>Re: [PATCH] powerpc: Add support for CoreInt delivery of =
-interrupts onMPIC</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>--- a/arch/powerpc/include/asm/mpic.h<BR>
-+++ b/arch/powerpc/include/asm/mpic.h<BR>
-@@ -22,6 +22,7 @@<BR>
-&nbsp;#define MPIC_GREG_FEATURE_1&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0x00010<BR>
-&nbsp;#define =
-MPIC_GREG_GLOBAL_CONF_0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0x00020<BR>
-&nbsp;#define&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-MPIC_GREG_GCONF_RESET&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0x80000000<BR>
-+#define&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MPIC_GREG_GCONF_COREINT =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0x40000000<BR>
-&nbsp;#define&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-MPIC_GREG_GCONF_8259_PTHROU_DIS =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0x20000000<BR>
-&nbsp;#define&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MPIC_GREG_GCONF_NO_BIAS =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0x10000000<BR>
-&nbsp;#define&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-MPIC_GREG_GCONF_BASE_MASK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0x000fffff<BR>
-<BR>
-<BR>
-according to the latest UM, the MPIC_GREG_GCONF_COREINT should be<BR>
-0x60000000.<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C9A254.C793533A--
+Any idea on what I need to do to get SPI working?  I've compiled it =20
+into the kernel but don't see anything in /proc/bus
