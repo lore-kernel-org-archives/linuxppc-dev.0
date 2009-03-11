@@ -1,23 +1,19 @@
-Return-Path: <tj@kernel.org>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 37D3BDE1DD
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 16:54:18 +1100 (EST)
-Message-ID: <49B75215.5010707@kernel.org>
-Date: Wed, 11 Mar 2009 14:54:29 +0900
-From: Tejun Heo <tj@kernel.org>
-MIME-Version: 1.0
-To: "Sachin P. Sant" <sachinp@in.ibm.com>
-Subject: [RESEND GIT PATCH tj-percpu] percpu: fix spurious alignment WARN
-	in legacy SMP percpu allocator
-References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
-	<49B67552.5070307@in.ibm.com> <49B73B15.3040101@in.ibm.com>
-In-Reply-To: <49B73B15.3040101@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 44D6ADDDA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 17:25:35 +1100 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2B6PTuj001788
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 01:25:30 -0500
+Subject: nest branch update
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 11 Mar 2009 17:25:28 +1100
+Message-Id: <1236752728.7086.44.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,44 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Impact: remove spurious WARN on legacy SMP percpu allocator
+The following commits have been added to powerpc next:
 
-Commit f2a8205c4ef1af917d175c36a4097ae5587791c8 incorrectly added too
-tight WARN_ON_ONCE() on alignments for UP and legacy SMP percpu
-allocator.  Commit e317603694bfd17b28a40de9d65e1a4ec12f816e fixed it
-for UP but legacy SMP allocator was forgotten.  Fix it.
+Anton Vorontsov (1):
+      powerpc/83xx: Do not configure or probe disabled FSL DR USB controllers
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Sachin P. Sant <sachinp@in.ibm.com>
----
-(RESEND: cc'ing Ingo. :-)
+Arnd Bergmann (1):
+      powerpc/spufs: Initialize ctx->stats.tstamp correctly
 
-Oops, that was a stupid omission.  This patch should fix it.  Ingo,
-please pull from the following git vector to receive the first first
-four patches from the use-dynamic-percpu-allocator-by-default patchset
-(without the actual conversion which can disrupt archs) + this patch.
-I moved the actual conversion patch into #tj-percpu-exp branch, so the
-pull should be safe.
+Benjamin Herrenschmidt (1):
+      powerpc: Wire up /proc/vmallocinfo to our ioremap()
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+Geoff Levand (2):
+      powerpc: Add missing DABR flags
+      powerpc/ps3: Print memory hotplug errors
 
-Thanks.
+Grant Likely (2):
+      powerpc/5200: Add 'simple-bus' to the of_platform probe list.
+      powerpc/4xx: update ml507 .dts file to release reference design
 
- mm/allocpercpu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Grzegorz Bernacki (2):
+      powerpc/5200: Add digsy-mtc support to mpc5200_defconfig
+      powerpc/5200: On the digsy-mtc, configure PSC4 and PSC5 as UARTs
 
-diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
-index 3653c57..1882923 100644
---- a/mm/allocpercpu.c
-+++ b/mm/allocpercpu.c
-@@ -120,7 +120,7 @@ void *__alloc_percpu(size_t size, size_t align)
- 	 * on it.  Larger alignment should only be used for module
- 	 * percpu sections on SMP for which this path isn't used.
- 	 */
--	WARN_ON_ONCE(align > __alignof__(unsigned long long));
-+	WARN_ON_ONCE(align > SMP_CACHE_BYTES);
- 
- 	if (unlikely(!pdata))
- 		return NULL;
--- 
-1.6.0.2
+Kumar Gala (1):
+      powerpc/fsl-booke: Add support for tlbilx instructions
+
+Martyn Welch (1):
+      powerpc/86xx: Correct local bus registers in GE Fanuc SBC610 dts file
+
+Michael Ellerman (3):
+      powerpc: Deindentify identify_cpu()
+      powerpc: Make sure we copy all cpu_spec features except PMC related ones
+      powerpc: Remove unused asm-offsets entries for cpu_spec
+
+Nick Piggin (1):
+      powerpc: Estimate G5 cpufreq transition latency
+
+Octavian Purdila (1):
+      powerpc/oprofile: G4 oprofile has variable number of counters
+
+Timur Tabi (3):
+      i2c-mpc: do not allow interruptions when waiting for I2C to complete
+      powerpc: add fsl,fifo-depth property to Freescale SSI device nodes
+      powerpc: Add defintion for MSR[GS] to list of MSR bits
+
+Xiaotian Feng (1):
+      cpm_uart: fix non-console port startup bug
+
+dayu@datangmobile.cn (1):
+      powerpc/83xx: Fix the interrupt loss problem on ipic
+
+roel kluin (1):
+      powerpc/ps3: Make ps3av_set_video_mode mode ID signed
