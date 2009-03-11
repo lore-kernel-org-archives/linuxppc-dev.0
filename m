@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Matteo.Fortini@mta.it>
+Received: from cluster-d.mailcontrol.com (cluster-d.mailcontrol.com
+	[85.115.60.190])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0CDFFDE176
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 23:04:58 +1100 (EST)
-Message-Id: <7FB04997-33E8-479C-B5EF-A1ECA8059A99@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090311035330.DDF1FDE153@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 1/9] powerpc/kconfig: Kill PPC_MULTIPLATFORM
-Date: Wed, 11 Mar 2009 07:04:51 -0500
-References: <20090311035330.DDF1FDE153@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "*.mailcontrol.com",
+	Issuer "DigiCert Global CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 620CADDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 23:43:53 +1100 (EST)
+Received: from mailserver.mta.int (mail.mta.it [89.96.171.250])
+	by rly22d.srv.mailcontrol.com (MailControl) with ESMTP id
+	n2BCBlXT020360
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 12:11:47 GMT
+Message-ID: <49B7AA80.2030501@mta.it>
+Date: Wed, 11 Mar 2009 13:11:44 +0100
+From: Matteo Fortini <matteo.fortini@mta.it>
+MIME-Version: 1.0
+To: linux-ppc list <linuxppc-dev@ozlabs.org>
+Subject: MPC512x DMA to PCI dev
+Content-Type: text/plain; charset="ISO-8859-15"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi all,
+I'm trying to send some data through DMA from a memory buffer to a PCI 
+video card VRAM.
 
-On Mar 10, 2009, at 10:53 PM, Benjamin Herrenschmidt wrote:
+While I got that I need to alloc the src buffer through 
+dma_alloc_coherent, I don't understand which address I should give as 
+the dst address.
 
->
-> config PPC_NATIVE
-> 	bool
-> -	depends on PPC_MULTIPLATFORM
-> +	depends on 6xx || PPC64
-> 	help
-> 	  Support for running natively on the hardware, i.e. without
-> 	  a hypervisor. This option is not user-selectable but should
-> 	  be selected by all platforms that need it.
+I tried both the mapped hw address and an address received from 
+pci_map_single, but even if the DMA transfer completes "correctly", I 
+have the wrong data in the VRAM in the end.
 
-Should this really just be PPC64 && BOOK3S ?  It doesnt look to be  
-used for anything beyond using hash_native_64.S
+I read about all the PCI DMA manuals, but it seems they are for letting 
+some external DMA device on the PCI bus read/write from/to the main memory.
 
-- k
+How do you do that?
+
+Thanks,
+Matteo
