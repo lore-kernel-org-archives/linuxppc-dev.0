@@ -1,23 +1,31 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 79789DE1D4
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 21:36:37 +1100 (EST)
-Date: Wed, 11 Mar 2009 11:36:02 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Kyle McMartin <kyle@mcmartin.ca>
-Subject: Re: [PATCH 0/7] Generic RTC class driver
-In-Reply-To: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Message-ID: <alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6E5DFDDF61
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 21:37:49 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n2BAZ7iX010752
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 06:35:07 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n2BAbbrf192828
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 06:37:37 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n2BAbajn007740
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 06:37:37 -0400
+Date: Wed, 11 Mar 2009 06:37:16 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH] PowerPC 440EPx/GRx fix memory size calculation
+Message-ID: <20090311103716.GE26415@zod.rchland.ibm.com>
+References: <49B58779.9040905@lebon.org.ua>
+	<20090310195013.GA27835@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=utf-8
-Cc: linux-m68k@vger.kernel.org,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linux-parisc@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090310195013.GA27835@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, lebon@lebon.org.ua
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-	Hi Kyle,
+On Tue, Mar 10, 2009 at 10:50:13PM +0300, Valentine Barshak wrote:
+>I was just going to submit a patch for that too.
+>Indeed, the denali_fixup_memsize() miscalculated a couple of address
+>field widths. We were lucky to eventually get the right result,
+>because the effect of the first error was killed by the other one.
+>According to the AMCC 440EPX/GRX user manual,
+>the Chip Select width is always fixed at 1 bit no matter
+>what is actually read from register DDR_10.
+>The workaround is to use a predefined chipselect value for 440EPx/GRx.
+>Also, setting the REDUC bit (REDUC = 1) enables 32-bit data path.
+>If REDUC = 0, full data path of 64 bits is used.
+>
+>Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+>Signed-off-by: Mikhail Zolotaryov <lebon@lebon.org.ua>
 
-On Mon, 9 Mar 2009, Geert Uytterhoeven wrote:
-> These patches are relative to the "rtc-parisc" branch of Kyle's PA-RISC git
-> repository, which already contains some cleanups for the rtc-parisc driver by
-> Dann, which already have been ack'ed by Alessandro:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/kyle/parisc-2.6.git;a=shortlog;h=rtc-parisc
-> 
-> Paul: Feel free to add your SuperH support.
-> 
-> I suppose the easiest way for this to go in is through Kyle's PA-RISC tree, as
-> he already has the preceding patches? Can I have your acks, please?
+I've been looking over this one a bit more.  At the moment, I'm inclined
+to queue this up in my -next branch.  I would like to see if Mikhail
+could test it though, and have Valentine answer the question in the hard
+wired part.
 
-Is it OK for you to take it through your PA-RISC tree?
-If yes, I can resend the patch series with the collected acks.
-
-Thanks!
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+josh
