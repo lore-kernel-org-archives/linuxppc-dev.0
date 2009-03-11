@@ -2,20 +2,31 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D8BCCDE1E6
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 15:10:51 +1100 (EST)
-Subject: Re: [PATCH] eHEA: Don't do memory allocation under lock if not
-	necessary
+	by ozlabs.org (Postfix) with ESMTPS id F33C0DE1D7
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 15:16:27 +1100 (EST)
+Subject: Re: [PATCH 6/7] powerpc: Hook up rtc-generic, and kill rtc-ppc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090309163628.2570.8408.stgit@warthog.procyon.org.uk>
-References: <20090309163628.2570.8408.stgit@warthog.procyon.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1236607181.572.180.camel@macbook.infradead.org>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236607181.572.180.camel@macbook.infradead.org>
 Content-Type: text/plain
-Date: Wed, 11 Mar 2009 15:10:41 +1100
-Message-Id: <1236744641.7086.40.camel@pasglop>
+Date: Wed, 11 Mar 2009 15:15:23 +1100
+Message-Id: <1236744923.7086.41.camel@pasglop>
 Mime-Version: 1.0
-Cc: tklein@de.ibm.com, linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	themann@de.ibm.com
+Cc: linux-m68k@vger.kernel.org,
+	Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com, linux-parisc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
+	linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Dann Frazier <dannf@dannf.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,63 +36,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2009-03-09 at 16:36 +0000, David Howells wrote:
-> In ehea_probe_adapter() the initial memory allocation and initialisation does
-> not need to be done with the ehea_fw_handles.lock semaphore held.  Doing so
-> extends the amount of time the lock is held unnecessarily.
+On Mon, 2009-03-09 at 13:59 +0000, David Woodhouse wrote:
+> On Mon, 2009-03-09 at 14:26 +0100, Geert Uytterhoeven wrote:
+> > PowerPC has been a long time user of the generic RTC abstraction, so hook up
+> > rtc-generic:
+> >   - Create the "rtc-generic" platform device if ppc_md.get_rtc_time is set,
+> >   - Kill rtc-ppc, as rtc-generic offers the same functionality in a more
+> >     generic way, and supports autoloading through udev.
+> > 
+> > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> 
+> Acked-By: David Woodhouse <David.Woodhouse@intel.com>
 
-Can you resend with netdev on CC ?
-
-Cheers,
-Ben.
-
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
-> 
->  drivers/net/ehea/ehea_main.c |   13 ++++++-------
->  1 files changed, 6 insertions(+), 7 deletions(-)
-> 
-> 
-> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-> index dfe9226..34480ae 100644
-> --- a/drivers/net/ehea/ehea_main.c
-> +++ b/drivers/net/ehea/ehea_main.c
-> @@ -3370,18 +3370,19 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
->  		ehea_error("Invalid ibmebus device probed");
->  		return -EINVAL;
->  	}
-> -	mutex_lock(&ehea_fw_handles.lock);
->  
->  	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
->  	if (!adapter) {
-> -		ret = -ENOMEM;
->  		dev_err(&dev->dev, "no mem for ehea_adapter\n");
-> -		goto out;
-> +		return -ENOMEM;
->  	}
->  
-> -	list_add(&adapter->list, &adapter_list);
-> -
->  	adapter->ofdev = dev;
-> +	adapter->pd = EHEA_PD_ID;
-> +
-> +	mutex_lock(&ehea_fw_handles.lock);
-> +
-> +	list_add(&adapter->list, &adapter_list);
->  
->  	adapter_handle = of_get_property(dev->node, "ibm,hea-handle",
->  					 NULL);
-> @@ -3395,8 +3396,6 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
->  		goto out_free_ad;
->  	}
->  
-> -	adapter->pd = EHEA_PD_ID;
-> -
->  	dev->dev.driver_data = adapter;
->  
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
