@@ -1,24 +1,20 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-6.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 26865DE163
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 16:10:03 +1100 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH v5] introduce macro spin_event_timeout()
-References: <1236723118-3577-1-git-send-email-timur@freescale.com>
-	<49B6EAA4.9000803@freescale.com>
-	<20090310223753.GB26415@zod.rchland.ibm.com>
-	<1236729551.7086.26.camel@pasglop>
-	<ed82fe3e0903101722i610638e8le1f2e925095c8ba6@mail.gmail.com>
-Date: Tue, 10 Mar 2009 22:09:59 -0700
-In-Reply-To: <ed82fe3e0903101722i610638e8le1f2e925095c8ba6@mail.gmail.com>
-	(Timur Tabi's message of "Tue, 10 Mar 2009 19:22:28 -0500")
-Message-ID: <adaiqmgbq6w.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C5C6BDE08B
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 16:49:40 +1100 (EST)
+Subject: Re: [PATCH] powerpc/bootwrapper: add fixed-head.o to simpleimage
+	wrappers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20090309152047.25290.29963.stgit@localhost.localdomain>
+References: <20090309152047.25290.29963.stgit@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 11 Mar 2009 16:49:28 +1100
+Message-Id: <1236750568.7086.43.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, eddie@embeddedarm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > Alan did have one valid point though.  Determining how long to loop
- > for is architecture-specific.  Using jiffies is bad, because even one
- > jiffy is too long.  Adding a udelay() inside the loop means that it
- > only checks he condition every microsecond.  So the real solution is
- > to use keep looping until a certain amount of time has passed.  This
- > means using an architecture-specific timebase register.
+On Mon, 2009-03-09 at 09:23 -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> fixed-head.o must be linked into the bootwrapper for raw-binary images to
+> work.  This patch adds it into the bootwrapper.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> Reported-by: Eddie Dawydiuk <eddie@embeddedarm.com>
+> ---
 
-Are there really cases where spinning for 1 jiffy is too long of a
-timeout?  It might make sense for the parameter passed in to be in terms
-of microseconds but I have a hard time coming up with a case where
-having the real timeout be 40 msecs or whatever 1 jiffy ends up being is
-a real problem -- after all, this helper is intended for the case where
-we expect the condition to become true much sooner than the worst case.
+Ack :-)
 
- - R.
+> I pulled this chunk out of Eddie's bigger patch and also modified the other
+> case where it applies.  This is a definite bug on the simpleimage generation.
+> Once I get an ack, I'll add it to my -next tree and ask Ben to pull.
+> 
+> Cheers,
+> g.
+> 
+>  arch/powerpc/boot/wrapper |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> 
+> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+> index 965c237..c5bd9cf 100755
+> --- a/arch/powerpc/boot/wrapper
+> +++ b/arch/powerpc/boot/wrapper
+> @@ -211,11 +211,11 @@ simpleboot-virtex405-*)
+>      binary=y
+>      ;;
+>  simpleboot-virtex440-*)
+> -    platformo="$object/simpleboot.o $object/virtex.o"
+> +    platformo="$object/fixed-head.o $object/simpleboot.o $object/virtex.o"
+>      binary=y
+>      ;;
+>  simpleboot-*)
+> -    platformo="$object/simpleboot.o"
+> +    platformo="$object/fixed-head.o $object/simpleboot.o"
+>      binary=y
+>      ;;
+>  asp834x-redboot)
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
