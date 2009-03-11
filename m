@@ -1,35 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E4EE5DE0C9
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 11:45:25 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n2B0gmRE032638
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 18:42:48 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n2B0jMfG196148
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 18:45:22 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n2B0jLOS020048
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Mar 2009 18:45:22 -0600
-Date: Tue, 10 Mar 2009 20:44:58 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v5] introduce macro spin_event_timeout()
-Message-ID: <20090311004458.GD26415@zod.rchland.ibm.com>
-References: <1236723118-3577-1-git-send-email-timur@freescale.com>
-	<49B6EAA4.9000803@freescale.com>
-	<20090310223753.GB26415@zod.rchland.ibm.com>
-	<1236729551.7086.26.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1236729551.7086.26.camel@pasglop>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E77CADE17A
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 11:47:05 +1100 (EST)
+Message-Id: <20090311003236.263019667@linutronix.de>
+Date: Wed, 11 Mar 2009 00:45:54 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [patch 08/18] powerpc: convert obsolete irq_desc_t to struct irq_desc
+References: <20090311003204.592133594@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,34 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 11, 2009 at 10:59:11AM +1100, Benjamin Herrenschmidt wrote:
->On Tue, 2009-03-10 at 18:37 -0400, Josh Boyer wrote:
->> On Tue, Mar 10, 2009 at 05:33:08PM -0500, Scott Wood wrote:
->> > Timur Tabi wrote:
->> >> The macro spin_event_timeout() takes a condition and timeout value
->> >> (in microseconds) as parameters.  It spins until either the condition is true
->> >> or the timeout expires.  It returns zero if the timeout expires first, non-zero
->> >> otherwise.
->> >>
->> >> This primary purpose of this macro is to poll on a hardware register until a
->> >> status bit changes.  The timeout ensures that the loop still terminates if the
->> >> bit doesn't change as expected.  This macro makes it easier for driver
->> >> developers to perform this kind of operation properly.
->> >>
->> >> Signed-off-by: Timur Tabi <timur@freescale.com>
->> >> ---
->> >>
->> >> v5: ported to arch/powerpc, made it powerpc-specific, eliminated udelay
->> >
->> > Why make it powerpc-specific?  This would be nice to have in  
->> > arch-independent code.
->> 
->> That's just mean.  He already posted it to lkml and was told to make it
->> powerpc specific by Alan.
->
->And ? We can disagree with Alan...
+Impact: cleanup
 
-Did I say Alan was right?  I'm just explaining why Timur probably posted it
-as arch-specific.
+Convert the last remaining users.
 
-josh
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@ozlabs.org
+---
+ arch/powerpc/kernel/irq.c            |    4 ++--
+ arch/powerpc/platforms/iseries/irq.c |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/arch/powerpc/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/irq.c
++++ linux-2.6/arch/powerpc/kernel/irq.c
+@@ -171,7 +171,7 @@ int show_interrupts(struct seq_file *p, 
+ {
+ 	int i = *(loff_t *)v, j;
+ 	struct irqaction *action;
+-	irq_desc_t *desc;
++	struct irq_desc *desc;
+ 	unsigned long flags;
+ 
+ 	if (i == 0) {
+@@ -1038,7 +1038,7 @@ arch_initcall(irq_late_init);
+ static int virq_debug_show(struct seq_file *m, void *private)
+ {
+ 	unsigned long flags;
+-	irq_desc_t *desc;
++	struct irq_desc *desc;
+ 	const char *p;
+ 	char none[] = "none";
+ 	int i;
+Index: linux-2.6/arch/powerpc/platforms/iseries/irq.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/iseries/irq.c
++++ linux-2.6/arch/powerpc/platforms/iseries/irq.c
+@@ -214,7 +214,7 @@ void __init iSeries_activate_IRQs()
+ 	unsigned long flags;
+ 
+ 	for_each_irq (irq) {
+-		irq_desc_t *desc = get_irq_desc(irq);
++		struct irq_desc *desc = get_irq_desc(irq);
+ 
+ 		if (desc && desc->chip && desc->chip->startup) {
+ 			spin_lock_irqsave(&desc->lock, flags);
