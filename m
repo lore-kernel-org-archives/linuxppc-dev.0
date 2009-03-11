@@ -1,19 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f175.google.com (mail-gx0-f175.google.com
-	[209.85.217.175]) by ozlabs.org (Postfix) with ESMTP id 15A8CDE259
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 03:03:23 +1100 (EST)
-Received: by gxk23 with SMTP id 23so45339gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 09:03:22 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <ba5d9360903110850gbcb0d2y25f8756a19d46cda@mail.gmail.com>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 3F9B7DE12F
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 03:10:27 +1100 (EST)
+Date: Wed, 11 Mar 2009 09:05:47 -0700
+From: Greg KH <greg@kroah.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [stable] [PATCH] powerpc: Remove extra semicolon in fsl_soc.c
+Message-ID: <20090311160547.GA21668@kroah.com>
 References: <ba5d9360903110850gbcb0d2y25f8756a19d46cda@mail.gmail.com>
-Date: Wed, 11 Mar 2009 10:03:22 -0600
-Message-ID: <fa686aa40903110903h1077860dt45c1a5aecd2ef42f@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Remove extra semicolon in fsl_soc.c
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Johns Daniel <johns.daniel@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Greg KH <gregkh@suse.de>, afleming@freescale.com,
+	<fa686aa40903110903h1077860dt45c1a5aecd2ef42f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40903110903h1077860dt45c1a5aecd2ef42f@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Greg KH <gregkh@suse.de>,
+	Johns Daniel <johns.daniel@gmail.com>, afleming@freescale.com,
 	stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,47 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 11, 2009 at 9:50 AM, Johns Daniel <johns.daniel@gmail.com> wrot=
-e:
-> A semicolon at the end of the macro means that the for loop has an
-> empty body, and so TSEC/MDIO will not work with older device trees.
->
-> This fix only applies to 2.6.28; apparently, this code is gone for
-> 2.6.29, according to Grant Likely!
->
-> Signed-off-by: Johns Daniel <johns.daniel@gmail.com>
+On Wed, Mar 11, 2009 at 10:03:22AM -0600, Grant Likely wrote:
+> On Wed, Mar 11, 2009 at 9:50 AM, Johns Daniel <johns.daniel@gmail.com> wrote:
+> > A semicolon at the end of the macro means that the for loop has an
+> > empty body, and so TSEC/MDIO will not work with older device trees.
+> >
+> > This fix only applies to 2.6.28; apparently, this code is gone for
+> > 2.6.29, according to Grant Likely!
+> >
+> > Signed-off-by: Johns Daniel <johns.daniel@gmail.com>
+> 
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Greg:  Andy Flemming should probably confirm this, but I think this
+> one should be backported to the stable series.
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+That's what he is asking for as he sent it to stable@kernel.org and
+asked that it go into the 2.6.28 tree only :)
 
-Greg:  Andy Flemming should probably confirm this, but I think this
-one should be backported to the stable series.
+thanks,
 
-g.
-
-> ---
-> --- linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c.orig =A0 2009-02-20
-> 16:41:27.000000000 -0600
-> +++ linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c =A0 =A0 =A0 =A02009-03-1=
-0
-> 15:56:47.000000000 -0500
-> @@ -257,7 +257,7 @@
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gfar_mdio_of_init_one(np);
->
-> =A0 =A0 =A0 =A0/* try the deprecated version */
-> - =A0 =A0 =A0 for_each_compatible_node(np, "mdio", "gianfar");
-> + =A0 =A0 =A0 for_each_compatible_node(np, "mdio", "gianfar")
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gfar_mdio_of_init_one(np);
->
-> =A0 =A0 =A0 =A0return 0;
-> ---
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+greg k-h
