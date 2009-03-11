@@ -1,32 +1,19 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4C237DDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:14:58 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n2BFCDe4004348
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 11:12:13 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n2BFEsGC169428
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 11:14:54 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n2BFErsM027500
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 11:14:53 -0400
-Message-ID: <49B7D569.7010602@austin.ibm.com>
-Date: Wed, 11 Mar 2009 10:14:49 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/pseries failed reconfig notifier chain call
-	cleanup
-References: <49B02DB5.7020301@austin.ibm.com>
-	<1236750467.7086.42.camel@pasglop>
-In-Reply-To: <1236750467.7086.42.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CBD50DE18B
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 02:18:54 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2BFIob7007428
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 10:18:51 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: 
 Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc: Add support for CoreInt delivery of interrupts on
+	MPIC
+Date: Wed, 11 Mar 2009 10:18:50 -0500
+Message-Id: <1236784730-616-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,68 +23,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2009-03-05 at 13:53 -0600, Nathan Fontenot wrote:
->> The return code from invoking the notifier chain when updating the
->> ibm,dynamic-memory property is not handled properly. In failure
->> cases (rc == NOTIFY_BAD) we should be restoring the original value
->> of the property.  In success (rc == NOTIFY_OK) we should be returning
->> zero from the calling routine.
-> 
-> This is actually not clear to me ... if the memory has been added or
-> removed, we must make sure the device-tree is up to date... ie, we can't
-> tell the firmware that we failed can we ?
-> 
+CoreInt provides a mechansim to deliver the IRQ vector directly
+into the core on an interrupt (via the SPR EPR) rather than having
+to go IACK on the PIC.  This is suppose to provide an improvment
+in interrupt latency by reducing the time to get the IRQ vector.
 
-Once the memory is added or removed the device tree is updated to reflect
-the change.  The case for systems where the memory in the device tree is
-specified in the ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
-property is slightly different.  Because it is a property that is being
-updated (as opposed to addition or removal of a device tree node for
-memory specified as memory@XXXX nodes) The kernel updates the property
-in the device tree then invokes the notifier chain.  If anyone on the
-notifier chain returns a failure we should restore the property to its
-previous value.  I think that part is understood.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+* Fixed MPIC_GREG_GCONF_COREINT flag to be 0x60000000 as per spec and pointed about by Dave
 
-The main user (and probably only user) of this interface is the drmgr
-tool that handles DLPAR of memory and other conmponents.  The drmgr
-tool tries to update the property after acquiring it from firmware. If
-the property update fails, drmgr cleans up and returns the memory to
-firmware.  This update ensures that the device tree property is not left
-in a state that implies that the system owns the memory.
+ arch/powerpc/include/asm/mpic.h |    5 +++++
+ arch/powerpc/sysdev/mpic.c      |   30 ++++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 0 deletions(-)
 
-Hope that helps.
-
--Nathan
-
-> Ben.
-> 
->> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
->> ---
->>  arch/powerpc/platforms/pseries/reconfig.c |    6 +++++-
->>  1 file changed, 5 insertions(+), 1 deletion(-)
->>
->> Index: linux-2.6/arch/powerpc/platforms/pseries/reconfig.c
->> ===================================================================
->> --- linux-2.6.orig/arch/powerpc/platforms/pseries/reconfig.c	2008-10-23 22:29:24.000000000 -0500
->> +++ linux-2.6/arch/powerpc/platforms/pseries/reconfig.c	2009-03-05 13:20:00.000000000 -0600
->> @@ -468,9 +468,13 @@
->>  
->>  		rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
->>  						  action, value);
->> +		if (rc == NOTIFY_BAD) {
->> +			rc = prom_update_property(np, oldprop, newprop);
->> +			return -ENOMEM;
->> +		}
->>  	}
->>  
->> -	return rc;
->> +	return 0;
->>  }
->>  
->>  /**
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index c2ccca5..475b06e 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -22,6 +22,7 @@
+ #define MPIC_GREG_FEATURE_1		0x00010
+ #define MPIC_GREG_GLOBAL_CONF_0		0x00020
+ #define		MPIC_GREG_GCONF_RESET			0x80000000
++#define		MPIC_GREG_GCONF_COREINT			0x60000000
+ #define		MPIC_GREG_GCONF_8259_PTHROU_DIS		0x20000000
+ #define		MPIC_GREG_GCONF_NO_BIAS			0x10000000
+ #define		MPIC_GREG_GCONF_BASE_MASK		0x000fffff
+@@ -357,6 +358,8 @@ struct mpic
+ #define MPIC_BROKEN_FRR_NIRQS		0x00000800
+ /* Destination only supports a single CPU at a time */
+ #define MPIC_SINGLE_DEST_CPU		0x00001000
++/* Enable CoreInt delivery of interrupts */
++#define MPIC_ENABLE_COREINT		0x00002000
+ 
+ /* MPIC HW modification ID */
+ #define MPIC_REGSET_MASK		0xf0000000
+@@ -470,6 +473,8 @@ extern void mpic_end_irq(unsigned int irq);
+ extern unsigned int mpic_get_one_irq(struct mpic *mpic);
+ /* This one gets from the primary mpic */
+ extern unsigned int mpic_get_irq(void);
++/* This one gets from the primary mpic via CoreInt*/
++extern unsigned int mpic_get_coreint_irq(void);
+ /* Fetch Machine Check interrupt from primary mpic */
+ extern unsigned int mpic_get_mcirq(void);
+ 
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index a35297d..6fca4f1 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1169,6 +1169,12 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 			mb();
+ 	}
+ 
++	/* CoreInt */
++	if (flags & MPIC_ENABLE_COREINT)
++		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
++			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
++			   | MPIC_GREG_GCONF_COREINT);
++
+ 	if (flags & MPIC_ENABLE_MCK)
+ 		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
+ 			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
+@@ -1524,6 +1530,30 @@ unsigned int mpic_get_irq(void)
+ 	return mpic_get_one_irq(mpic);
+ }
+ 
++unsigned int mpic_get_coreint_irq(void)
++{
++	struct mpic *mpic = mpic_primary;
++	u32 src;
++
++	BUG_ON(mpic == NULL);
++
++	src = mfspr(SPRN_EPR);
++
++	if (unlikely(src == mpic->spurious_vec)) {
++		if (mpic->flags & MPIC_SPV_EOI)
++			mpic_eoi(mpic);
++		return NO_IRQ;
++	}
++	if (unlikely(mpic->protected && test_bit(src, mpic->protected))) {
++		if (printk_ratelimit())
++			printk(KERN_WARNING "%s: Got protected source %d !\n",
++			       mpic->name, (int)src);
++		return NO_IRQ;
++	}
++
++	return irq_linear_revmap(mpic->irqhost, src);
++}
++
+ unsigned int mpic_get_mcirq(void)
+ {
+ 	struct mpic *mpic = mpic_primary;
+-- 
+1.5.6.6
