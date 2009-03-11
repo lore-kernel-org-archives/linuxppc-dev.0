@@ -1,27 +1,27 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-ew0-f165.google.com (mail-ew0-f165.google.com
-	[209.85.219.165]) by ozlabs.org (Postfix) with ESMTP id 3FDEFDDF00
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 06:15:03 +1100 (EST)
-Received: by ewy9 with SMTP id 9so122952ewy.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 12:14:59 -0700 (PDT)
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 97699DE0E9
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 06:20:32 +1100 (EST)
+Date: Wed, 11 Mar 2009 12:18:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+In-Reply-To: <alpine.LRH.2.00.0903111652070.1040@vixen.sonytel.be>
+Message-ID: <alpine.LFD.2.00.0903111217320.32478@localhost.localdomain>
+References: <1236729444.7086.24.camel@pasglop>
+	<alpine.LRH.2.00.0903111028480.1040@vixen.sonytel.be>
+	<1236769025.7086.46.camel@pasglop>
+	<alpine.LFD.2.00.0903110835020.32478@localhost.localdomain>
+	<alpine.LRH.2.00.0903111652070.1040@vixen.sonytel.be>
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <49B7EC27.3030305@freescale.com>
-References: <1236723118-3577-1-git-send-email-timur@freescale.com>
-	<49B6EAA4.9000803@freescale.com>
-	<20090310223753.GB26415@zod.rchland.ibm.com>
-	<1236729551.7086.26.camel@pasglop>
-	<ed82fe3e0903101722i610638e8le1f2e925095c8ba6@mail.gmail.com>
-	<adaiqmgbq6w.fsf@cisco.com>
-	<ed82fe3e0903110931y62e23a02yf2a9719e5a69bd2@mail.gmail.com>
-	<49B7EC27.3030305@freescale.com>
-Date: Wed, 11 Mar 2009 14:14:59 -0500
-Message-ID: <ed82fe3e0903111214j2072319pe985e6bbecdd1665@mail.gmail.com>
-Subject: Re: [PATCH v5] introduce macro spin_event_timeout()
-From: Timur Tabi <timur@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,29 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 11, 2009 at 11:51 AM, Scott Wood <scottwood@freescale.com> wrote:
 
-> One jiffy is fine, but two is just too long?
 
-Any number of jiffies is *not* too long if a timeout occurs.  However,
-I think even one jiffy is too long if that's the normal condition.
-Unfortunately, the driver may not have any choice in some
-circumstances.  If the hardware is just too slow to respond, and it
-doesn't provide interrupts, but the code is running in atomic context,
-and the function what else can it do?
+On Wed, 11 Mar 2009, Geert Uytterhoeven wrote:
+> 
+> Are you aware the old one was introduced in 2.6.29-rc1? So there cannot be a
+> regression from 2.6.28 or older.
 
-> Disallow that, enforced with a call to might_sleep().
+Ahh, no, that part hadn't registered.
 
-I think we need to be able to allow this function to work in atomic
-context.  Is jiffies updated in atomic context?
+In that case, I guess I don't really care, as long as everybody involved 
+feels it's clearly better than the one merged into -rc1.
 
-> Alternatively, do something with get_cycles(), and have some sort of #define
-> by which arches can say if get_cycles actually works.  In the absence of a
-> working get_cycles() or equivalent, timeouts with interrupts disabled aren't
-> going to happen whether we abstract it with a macro or not.
-
-I think I can live with that.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+		Linus
