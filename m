@@ -1,32 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2C252DE03F
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 08:03:49 +1100 (EST)
-Message-ID: <49B8272A.1040306@freescale.com>
-Date: Wed, 11 Mar 2009 16:03:38 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-ew0-f165.google.com (mail-ew0-f165.google.com
+	[209.85.219.165]) by ozlabs.org (Postfix) with ESMTP id CCB1EDDE9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 08:34:26 +1100 (EST)
+Received: by ewy9 with SMTP id 9so160473ewy.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 14:34:24 -0700 (PDT)
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH v5] introduce macro spin_event_timeout()
-References: <1236723118-3577-1-git-send-email-timur@freescale.com>	
-	<49B6EAA4.9000803@freescale.com>	
-	<20090310223753.GB26415@zod.rchland.ibm.com>	
-	<1236729551.7086.26.camel@pasglop>	
-	<ed82fe3e0903101722i610638e8le1f2e925095c8ba6@mail.gmail.com>	
-	<adaiqmgbq6w.fsf@cisco.com>	
-	<ed82fe3e0903110931y62e23a02yf2a9719e5a69bd2@mail.gmail.com>	
-	<49B7EC27.3030305@freescale.com>	
-	<ed82fe3e0903111214j2072319pe985e6bbecdd1665@mail.gmail.com>	
-	<49B80F7F.30705@freescale.com>
-	<ed82fe3e0903111345m2962f5b5wdfc9e2efae1c33ae@mail.gmail.com>
-	<49B82657.9050709@freescale.com> <49B826E3.6020007@freescale.com>
-In-Reply-To: <49B826E3.6020007@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <FF6D174B07759740B0259F914CE6D7D305B1A61D@LONMLVEM04.e2k.ad.ge.com>
+References: <FF6D174B07759740B0259F914CE6D7D305B1A61D@LONMLVEM04.e2k.ad.ge.com>
+Date: Wed, 11 Mar 2009 16:34:24 -0500
+Message-ID: <ed82fe3e0903111434u264217b5o1f8a0e6811d55308@mail.gmail.com>
+Subject: Re: fsldma driver questions
+From: Timur Tabi <timur@freescale.com>
+To: "Crossley, Malcolm (GE EntSol,
+	Intelligent Platforms)" <Malcolm.Crossley2@gefanuc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,15 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Scott Wood wrote:
-> 
->  > Or you can say that atomic context is outside the scope of this macro.
-> 
-> No, I don't want to say that.  We have wait_event_timeout() for 
-> larger-scale operations.  I'm just looking for something that can 
-> replace "while (!condition);"
+On Wed, Mar 11, 2009 at 10:52 AM, Crossley, Malcolm (GE EntSol,
+Intelligent Platforms) <Malcolm.Crossley2@gefanuc.com> wrote:
+> I have noticed that append_ld_queue() changes the next link descriptor
+> address field in the last link descriptor of the chain. The
+> append_ld_queue function is called from the fsl_dma_tx_submit() which
+> can called at any time by a kernel module using that channel. This could
+> result in the link descriptor being changed whilst the DMA engine is
+> running. Could this issue cause unexpected behavior of the DMA engine or
+> the driver?
 
-wait_event_timeout() requires a wait queue.
+I would need to study the code more thoroughly, but keep in mind that
+a DMA descriptor is read by the DMA controller only when it is about
+to be processed.  It's okay to change the descriptor contents while
+the DMA buffer it references is being transferred.  The new values in
+the descriptor won't be used until the DMA engine tries to use it the
+next time.
 
--Scott
+> A second question I have is to do with the dma_halt() routine setting
+> the channel abort flag. The dma_halt() routine is called from
+> fsl_chan_xfer_ld_queue() after the dma engine has been detected as idle.
+> The dma_halt() routine sets the channel stop flag and the channel abort
+> flag. Whilst the dma engine could be idle, it may not have completed a
+> transfer AFAICT. Or if the engine is has no more transactions then a
+> channel abort does not need to be issued anyway?
+
+I would need to study the code to answer this question.  I wrote a
+different driver that uses this DMA controller, so I'm familiar with
+the controller but not the code.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
