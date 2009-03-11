@@ -1,18 +1,22 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 8336BDE105
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 13:15:33 +1100 (EST)
-Message-ID: <49B7167C.9000004@ru.mvista.com>
-Date: Wed, 11 Mar 2009 04:40:12 +0300
-From: Valentine <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: Mikhail Zolotaryov <lebon@lebon.org.ua>
-Subject: Re: [PATCH] PowerPC 440EPx/GRx fix memory size calculation
-References: <20090310195013.GA27835@ru.mvista.com>
-	<49B6D427.5050600@lebon.org.ua>
-In-Reply-To: <49B6D427.5050600@lebon.org.ua>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C688ADE145
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 13:22:00 +1100 (EST)
+Subject: Re: [patch 08/18] powerpc: convert obsolete irq_desc_t to struct
+	irq_desc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20090311003236.263019667@linutronix.de>
+References: <20090311003204.592133594@linutronix.de>
+	<20090311003236.263019667@linutronix.de>
+Content-Type: text/plain
+Date: Wed, 11 Mar 2009 13:19:22 +1100
+Message-Id: <1236737962.7086.35.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mikhail Zolotaryov wrote:
-> Valentine Barshak wrote:
->> According to the AMCC 440EPX/GRX user manual,
->> the Chip Select width is always fixed at 1 bit no matter
->> what is actually read from register DDR_10.
->
-> Well, from my point of view original kernel code is correct in this part.
->
-> Adding one bit into memory address means multiplying memory size by 2 
-> i.e. cs=2. The question is: is Chip Select bit used in memory address. 
-> ChipSelect input of memory chip enables or disabled it, so if we have 
-> only one BankSel installed/connected (DDR0_10[22:23] is 01 or 10) 
-> there's no need to use Chip Select bit in an address. On the contrary, 
-> if both BankSel lines are connected (DDR0_10[22:23] is 11), to let 
-> memory controller know which memory rank to use, Chip Select bit is 
-> added into memory address. (and yes, if DDR0_10[22:23] is 00 - no 
-> ranks installed, memory size is 0, cs=0)
-Yes, you could phrase it that way. According to the PPC440EPx manual, 
-the total memory size is calculated based on the following formula:
-memsize = cs * (1 << (col+row)) * bank * dpath;
-So, if both chipselects are used, we add an extra bit to the memory 
-address to distinguish between these chipselects.
-There's nothing wrong with this part of the code.
-The problem is that the controller is hardwired to use only one 
-chipselect, even if both are enabled in the DDR0_10 on PPC440EPx/GRx 
-processors.
-So, the patch provides a workaround to always use single cs for 
-440EPx/GRx (use predefined value instead of reading DDR0_10).
->
-> Original kernel code use exactly the same logic as I described above. 
-> Please suggest if it's wrong.
-Thanks,
-Valentine.
+On Wed, 2009-03-11 at 00:45 +0000, Thomas Gleixner wrote:
+> plain text document attachment
+> (powerpc-convert-obsolete-irq-desc-t-typedef.patch)
+> Impact: cleanup
+> 
+> Convert the last remaining users.
+
+Ack. This would be more easily carried in my -next tree if that's ok
+with you.
+
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: linuxppc-dev@ozlabs.org
+> ---
+>  arch/powerpc/kernel/irq.c            |    4 ++--
+>  arch/powerpc/platforms/iseries/irq.c |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/arch/powerpc/kernel/irq.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/irq.c
+> +++ linux-2.6/arch/powerpc/kernel/irq.c
+> @@ -171,7 +171,7 @@ int show_interrupts(struct seq_file *p, 
+>  {
+>  	int i = *(loff_t *)v, j;
+>  	struct irqaction *action;
+> -	irq_desc_t *desc;
+> +	struct irq_desc *desc;
+>  	unsigned long flags;
+>  
+>  	if (i == 0) {
+> @@ -1038,7 +1038,7 @@ arch_initcall(irq_late_init);
+>  static int virq_debug_show(struct seq_file *m, void *private)
+>  {
+>  	unsigned long flags;
+> -	irq_desc_t *desc;
+> +	struct irq_desc *desc;
+>  	const char *p;
+>  	char none[] = "none";
+>  	int i;
+> Index: linux-2.6/arch/powerpc/platforms/iseries/irq.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/platforms/iseries/irq.c
+> +++ linux-2.6/arch/powerpc/platforms/iseries/irq.c
+> @@ -214,7 +214,7 @@ void __init iSeries_activate_IRQs()
+>  	unsigned long flags;
+>  
+>  	for_each_irq (irq) {
+> -		irq_desc_t *desc = get_irq_desc(irq);
+> +		struct irq_desc *desc = get_irq_desc(irq);
+>  
+>  		if (desc && desc->chip && desc->chip->startup) {
+>  			spin_lock_irqsave(&desc->lock, flags);
+> 
