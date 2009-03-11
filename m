@@ -1,19 +1,27 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id D7F75DDFF7
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 06:06:18 +1100 (EST)
-Message-ID: <49B80BA3.1090301@ru.mvista.com>
-Date: Wed, 11 Mar 2009 22:06:11 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-ew0-f165.google.com (mail-ew0-f165.google.com
+	[209.85.219.165]) by ozlabs.org (Postfix) with ESMTP id 3FDEFDDF00
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 06:15:03 +1100 (EST)
+Received: by ewy9 with SMTP id 9so122952ewy.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 12:14:59 -0700 (PDT)
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] PowerPC 440EPx/GRx fix memory size calculation
-References: <49B58779.9040905@lebon.org.ua>
-	<20090310195013.GA27835@ru.mvista.com>
-	<20090311103716.GE26415@zod.rchland.ibm.com>
-In-Reply-To: <20090311103716.GE26415@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>, lebon@lebon.org.ua
+Sender: timur.tabi@gmail.com
+In-Reply-To: <49B7EC27.3030305@freescale.com>
+References: <1236723118-3577-1-git-send-email-timur@freescale.com>
+	<49B6EAA4.9000803@freescale.com>
+	<20090310223753.GB26415@zod.rchland.ibm.com>
+	<1236729551.7086.26.camel@pasglop>
+	<ed82fe3e0903101722i610638e8le1f2e925095c8ba6@mail.gmail.com>
+	<adaiqmgbq6w.fsf@cisco.com>
+	<ed82fe3e0903110931y62e23a02yf2a9719e5a69bd2@mail.gmail.com>
+	<49B7EC27.3030305@freescale.com>
+Date: Wed, 11 Mar 2009 14:14:59 -0500
+Message-ID: <ed82fe3e0903111214j2072319pe985e6bbecdd1665@mail.gmail.com>
+Subject: Re: [PATCH v5] introduce macro spin_event_timeout()
+From: Timur Tabi <timur@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,50 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Tue, Mar 10, 2009 at 10:50:13PM +0300, Valentine Barshak wrote:
->> I was just going to submit a patch for that too.
->> Indeed, the denali_fixup_memsize() miscalculated a couple of address
->> field widths. We were lucky to eventually get the right result,
->> because the effect of the first error was killed by the other one.
->> According to the AMCC 440EPX/GRX user manual,
->> the Chip Select width is always fixed at 1 bit no matter
->> what is actually read from register DDR_10.
->> The workaround is to use a predefined chipselect value for 440EPx/GRx.
->> Also, setting the REDUC bit (REDUC = 1) enables 32-bit data path.
->> If REDUC = 0, full data path of 64 bits is used.
->>
->> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->> Signed-off-by: Mikhail Zolotaryov <lebon@lebon.org.ua>
-> 
-> I've been looking over this one a bit more.  At the moment, I'm inclined
-> to queue this up in my -next branch.  I would like to see if Mikhail
-> could test it though, and have Valentine answer the question in the hard
-> wired part.
+On Wed, Mar 11, 2009 at 11:51 AM, Scott Wood <scottwood@freescale.com> wrote:
 
-I've been looking at the docs once again and actually I couldn't find an 
-   explanation there. And I don't have that e-mail from AMCC support 
-that I got a while back regarding the issue anymore.
-There might have been some misunderstanding.
-The docs (PPC440EPX UM 19.2 Device Address Mapping) say that the chip 
-select field width is always fixed at one bit, but this doesn't actually 
-  mean that there's always one chip select used.
-The patch works fine on Sequoia and another Sequoia-like board with 1GB 
-RAM installed, but it might not work with 2GB RAM. I've tried to play 
-with DDR0_10 settings and Sequoia works fine regardless of what's 
-actually written to DDR0_10.
-So, probably the best way would be to fix that in u-boot
-amcc/sequoia/sdram.c by doing mtsdram(DDR0_10, 0x00000100); instead of 
-mtsdram(DDR0_10, 0x00000300);
-Sorry, for confusion, but after reviewing the docs, I think that
-only REDUC interpretation has to be fixed. The chips select part should 
-be fixed in u-boot sdram code for Sequoia as was originally proposed by 
-Mikhail.
+> One jiffy is fine, but two is just too long?
 
-Stefan, could you please take a look?
+Any number of jiffies is *not* too long if a timeout occurs.  However,
+I think even one jiffy is too long if that's the normal condition.
+Unfortunately, the driver may not have any choice in some
+circumstances.  If the hardware is just too slow to respond, and it
+doesn't provide interrupts, but the code is running in atomic context,
+and the function what else can it do?
 
-Thanks,
-Valentine.
+> Disallow that, enforced with a call to might_sleep().
 
-> 
-> josh
+I think we need to be able to allow this function to work in atomic
+context.  Is jiffies updated in atomic context?
+
+> Alternatively, do something with get_cycles(), and have some sort of #define
+> by which arches can say if get_cycles actually works.  In the absence of a
+> working get_cycles() or equivalent, timeouts with interrupts disabled aren't
+> going to happen whether we abstract it with a macro or not.
+
+I think I can live with that.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
