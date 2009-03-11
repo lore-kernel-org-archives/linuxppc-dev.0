@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 11 Mar 2009 14:53:35 +1100
-Subject: [PATCH 7/9] powerpc/mm: Fix printk type warning in mmu_context_nohash
+Date: Wed, 11 Mar 2009 14:53:37 +1100
+Subject: [PATCH 8/9] powerpc/mm: Add option for non-atomic PTE updates to ppc64
 In-Reply-To: <1236743604.932194.842849421348.qpush@grosgo>
-Message-Id: <20090311035339.8DA96DDD04@ozlabs.org>
+Message-Id: <20090311035341.E280EDE153@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,22 +14,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We need to use %zu instead of %d when printing a sizeof()
+ppc32 has it already, add it to ppc64 as a preliminary for adding
+support for Book3E 64-bit support
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/mm/mmu_context_nohash.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h |   12 +++++++++++-
+ arch/powerpc/include/asm/pte-hash64.h    |    2 ++
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
---- linux-work.orig/arch/powerpc/mm/mmu_context_nohash.c	2009-03-11 11:51:05.000000000 +1100
-+++ linux-work/arch/powerpc/mm/mmu_context_nohash.c	2009-03-11 11:52:55.000000000 +1100
-@@ -380,7 +380,7 @@ void __init mmu_context_init(void)
- #endif
+--- linux-work.orig/arch/powerpc/include/asm/pgtable-ppc64.h	2009-03-10 15:43:26.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pgtable-ppc64.h	2009-03-10 16:08:30.000000000 +1100
+@@ -178,6 +178,7 @@ static inline unsigned long pte_update(s
+ 				       pte_t *ptep, unsigned long clr,
+ 				       int huge)
+ {
++#ifdef PTE_ATOMIC_UPDATES
+ 	unsigned long old, tmp;
  
- 	printk(KERN_INFO
--	       "MMU: Allocated %d bytes of context maps for %d contexts\n",
-+	       "MMU: Allocated %zu bytes of context maps for %d contexts\n",
- 	       2 * CTX_MAP_SIZE + (sizeof(void *) * (last_context + 1)),
- 	       last_context - first_context + 1);
+ 	__asm__ __volatile__(
+@@ -190,7 +191,10 @@ static inline unsigned long pte_update(s
+ 	: "=&r" (old), "=&r" (tmp), "=m" (*ptep)
+ 	: "r" (ptep), "r" (clr), "m" (*ptep), "i" (_PAGE_BUSY)
+ 	: "cc" );
+-
++#else
++	unsigned long old = pte_val(*ptep);
++	*ptep = __pte(old & ~clr);
++#endif
+ 	/* huge pages use the old page table lock */
+ 	if (!huge)
+ 		assert_pte_locked(mm, addr);
+@@ -278,6 +282,8 @@ static inline void __ptep_set_access_fla
+ 	unsigned long bits = pte_val(entry) &
+ 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW |
+ 		 _PAGE_EXEC | _PAGE_HWEXEC);
++
++#ifdef PTE_ATOMIC_UPDATES
+ 	unsigned long old, tmp;
  
+ 	__asm__ __volatile__(
+@@ -290,6 +296,10 @@ static inline void __ptep_set_access_fla
+ 	:"=&r" (old), "=&r" (tmp), "=m" (*ptep)
+ 	:"r" (bits), "r" (ptep), "m" (*ptep), "i" (_PAGE_BUSY)
+ 	:"cc");
++#else
++	unsigned long old = pte_val(*ptep);
++	*ptep = __pte(old | bits);
++#endif
+ }
+ 
+ #define __HAVE_ARCH_PTE_SAME
+Index: linux-work/arch/powerpc/include/asm/pte-hash64.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pte-hash64.h	2009-03-10 15:49:50.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pte-hash64.h	2009-03-10 15:49:55.000000000 +1100
+@@ -41,6 +41,8 @@
+ #define _PTEIDX_SECONDARY	0x8
+ #define _PTEIDX_GROUP_IX	0x7
+ 
++/* Hash table based platforms need atomic updates of the linux PTE */
++#define PTE_ATOMIC_UPDATES	1
+ 
+ #ifdef CONFIG_PPC_64K_PAGES
+ #include <asm/pte-hash64-64k.h>
