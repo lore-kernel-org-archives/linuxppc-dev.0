@@ -1,23 +1,17 @@
-Return-Path: <Matthias.Lange@beissbarth.com>
-Received: from imta1.fe.bosch.de (imta1.fe.bosch.de [139.15.238.164])
-	by ozlabs.org (Postfix) with ESMTP id BAFE3DE0E4
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 22:32:30 +1100 (EST)
-Received: from smtp2-v.fe.bosch.de (smtp2-v.fe.bosch.de [139.15.237.6])
-	by imta1.fe.bosch.de (Postfix) with ESMTP id 0452F3C72B
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 12:24:33 +0100 (CET)
-Received: from vsmta3.fe.internet.bosch.com (unknown [10.4.98.30])
-	by imta5.fe.bosch.de (Postfix) with ESMTP id 78845140085
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 12:24:29 +0100 (CET)
-Received: from fe-imc01.de.bosch.com (vsgw2.fe.internet.bosch.com [10.4.98.13])
-	by vsmta3.fe.internet.bosch.com (Postfix) with ESMTP id 0FF2B7B8064
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 12:24:29 +0100 (CET)
-From: "EXTERNAL Lange Matthias (AA-DGW/ENG1)" <Matthias.Lange@beissbarth.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Date: Thu, 12 Mar 2009 12:24:26 +0100
-Subject: DTS device tree node for dual port RAM
-Message-ID: <44C5CFA72BC0E242A53B64DC1E67DEB80A695E6FE2@SI-MBX10.de.bosch.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: Next 12 : arch/powerpc/sysdev/axonram build failure
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <49B8C7FA.8090805@in.ibm.com>
+References: <20090312171154.11c6ec31.sfr@canb.auug.org.au>
+	<49B8C7FA.8090805@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 12 Mar 2009 23:16:27 +1100
+Message-Id: <1236860187.12893.5.camel@localhost>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 2009-03-12 at 13:59 +0530, Sachin Sant wrote:
+> Hi Stephen,
+> 
+> Today's next randconfig build on powerpc fails with
+> 
+>   CC [M]  arch/powerpc/sysdev/axonram.o
+> arch/powerpc/sysdev/axonram.c:108: warning: ‘struct request_queue’ declared inside parameter list
+> arch/powerpc/sysdev/axonram.c:108: warning: its scope is only this definition or declaration, which is probably not what you want
+> arch/powerpc/sysdev/axonram.c: In function ‘axon_ram_make_request’:
+<snip>
+> arch/powerpc/sysdev/axonram.c:289: error: implicit declaration of function ‘unregister_blkdev’
+> arch/powerpc/sysdev/axonram.c:289: error: dereferencing pointer to incomplete type
+> arch/powerpc/sysdev/axonram.c:290: error: dereferencing pointer to incomplete type
+> arch/powerpc/sysdev/axonram.c:291: error: implicit declaration of function ‘del_gendisk’
+> arch/powerpc/sysdev/axonram.c: In function ‘axon_ram_init’:
+> arch/powerpc/sysdev/axonram.c:345: error: implicit declaration of function ‘register_blkdev’
+> make[1]: *** [arch/powerpc/sysdev/axonram.o] Error 1
+> make: *** [arch/powerpc/sysdev] Error 2
+> 
+> CONFIG_BLOCK is not set.
 
-I am working on a MPC5200-based board. There is a dual port RAM connected t=
-o the MPC5200 via the localbus. In my setup one can raise an interrupt at t=
-he MPC5200 to signal new that new data has arrived in the dual port RAM. I =
-have already found out that the interrupt delivery actually works (do_IRQ g=
-ets called when raising the interrupt).
+So how about this:
 
-My problem is that my driver (kernel 2.6.24) can not register for the inter=
-rupt. Each time I call request_irq I get -ENOSYS. I am suspecting that I ha=
-ve done something wrong in my dts defining the dual port RAM. I have define=
-d the device as follows
+>From 7325aea8244ac83d98cde7a509ec8ab5994cdb0e Mon Sep 17 00:00:00 2001
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 12 Mar 2009 23:14:58 +1100
+Subject: [PATCH] powerpc/cell: axonram depends on BLOCK
 
-localbus {
-        compatible =3D "fsl,orion-localbus",
-                     "fsl,mpc5200-localbus",
-                     "fsl,pq2-localbus";
-        #address-cells =3D <2>;
-        #size-cells =3D <1>;
-        reg =3D <f0010100 40>;
-        ranges =3D <0 0 fe000000 00400000>;
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-        dpram@40000000 {
-                device_type =3D "dpram";
-                interrupts =3D <0 0 0>;
-                interrupt-parent =3D <&mpc5200_pic>;
-        };
-};
-
-What am I doing wrong? What am I missing?
-
-Thanks,
-Matthias Lange.
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index b4ab372..3fb0851 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -266,7 +266,7 @@ config CPM2
+ 
+ config AXON_RAM
+ 	tristate "Axon DDR2 memory device driver"
+-	depends on PPC_IBM_CELL_BLADE
++	depends on PPC_IBM_CELL_BLADE && BLOCK
+ 	default m
+ 	help
+ 	  It registers one block device per Axon's DDR2 memory bank found
+-- 
+1.6.1.2
