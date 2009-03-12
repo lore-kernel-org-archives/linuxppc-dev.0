@@ -1,32 +1,15 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0E37CDE148
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 00:01:32 +1100 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id n2CD1Ifu014108
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 00:01:18 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n2CD1jp5970960
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 00:01:45 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n2CD1Rk1016371
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 00:01:27 +1100
-Message-ID: <49B907A3.1030506@in.ibm.com>
-Date: Thu, 12 Mar 2009 18:31:23 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id CBBF3DDF6F
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 00:28:02 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Proposal: [PATCH] Workaround for MPC5121 DTLB errata
+Date: Thu, 12 Mar 2009 14:30:48 +0100
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: Next 12 : arch/powerpc/sysdev/axonram build failure
-References: <20090312171154.11c6ec31.sfr@canb.auug.org.au>
-	<49B8C7FA.8090805@in.ibm.com> <1236860187.12893.5.camel@localhost>
-In-Reply-To: <1236860187.12893.5.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200903121430.49077.david.jander@protonic.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,27 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> So how about this:
->
-> >From 7325aea8244ac83d98cde7a509ec8ab5994cdb0e Mon Sep 17 00:00:00 2001
-> From: Michael Ellerman <michael@ellerman.id.au>
-> Date: Thu, 12 Mar 2009 23:14:58 +1100
-> Subject: [PATCH] powerpc/cell: axonram depends on BLOCK
->
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  
-Yup that works. Thanks.
+Partial workaround for DTLB errata in MPC5121e processors of die M36P and 
+older (all currently existing versions).
 
-Regards
--Sachin
+Due to the bug, the hardware-implemented LRU algorythm always goes to way 1 of 
+the TLB. This fix forces writes to go to way 0, which would speed up 
+memory-copy operations where bits 15...19 of source and destination address 
+are the same.
 
--- 
+Signed-off-by: David Jander <david@protonic.nl>
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+---
+ arch/powerpc/kernel/head_32.S |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -614,6 +614,14 @@ DataStoreTLBMiss:
+  */
+        mfctr   r0
+        /* Get PTE (linux-style) and check access */
++#ifdef CONFIG_PPC_MPC512x
++/* MPC512x: (partial) workaround for errata in die M36P and earlier:
++ * Force writes to Way 0 (reads are always way 1)
++ */
++       mfspr   r3,SPRN_SRR1
++       rlwinm  r3,r3,0,15,13  /* Mask out SRR1[WAY] */
++       mtspr   SPRN_SRR1,r3
++#endif
+        mfspr   r3,SPRN_DMISS
+        lis     r1,PAGE_OFFSET@h                /* check if kernel address */
+        cmplw   0,r1,r3
