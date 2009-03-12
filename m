@@ -1,19 +1,24 @@
-Return-Path: <jk@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 81068DE224
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 15:00:52 +1100 (EST)
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <praveen@spacomp.com>
+Received: from fbr02.csee.onr.siteprotect.com (fbr02.csee.onr.siteprotect.com
+	[64.26.60.146]) by ozlabs.org (Postfix) with ESMTP id 88487DE1DF
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 14:55:21 +1100 (EST)
+Received: from smtpauth01.csee.onr.siteprotect.com
+	(smtpauth01.csee.onr.siteprotect.com [64.26.60.145])
+	by fbr02.csee.onr.siteprotect.com (Postfix) with ESMTP id 1002E327920
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 22:38:15 -0500 (CDT)
+Received: from praveenvs (unknown [124.30.115.150])
+	(Authenticated sender: praveen@spacomp.com)
+	by smtpauth01.csee.onr.siteprotect.com (Postfix) with ESMTP id
+	CF91F1C802D
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2009 22:38:12 -0500 (CDT)
+Message-ID: <001901c9a2c4$165070b0$1301a8c0@spappm.com>
+From: "Praveen VS" <praveen@spacomp.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Interrupt mapping for MPC8323 board
+Date: Thu, 12 Mar 2009 09:08:59 +0530
 MIME-Version: 1.0
-Subject: [PATCH 3/3] powerpc: Add virtual processor dispatch trace log
-Message-Id: <1236830152.729279.468331899806.3.gpush@pingu>
-In-Reply-To: <1236830152.728754.855135891014.1.gpush@pingu>
-To: Ben Herrenschmidt <benh@kernel.crashing.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Thu, 12 Mar 2009 14:55:52 +1100
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0016_01C9A2F2.2E271B70"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,349 +28,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pseries SPLPAR machines are able to retrieve a log of dispatch and
-preempt events from the hypervisor. With this information, we can
-see when and why each dispatch & preempt is occuring.
+This is a multi-part message in MIME format.
 
-This change adds a set of debugfs files allowing userspace to read this
-dispatch log.
+------=_NextPart_000_0016_01C9A2F2.2E271B70
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Based on initial patches from Nishanth Aravamudan <nacc@us.ibm.com>.
+We have a board similar to the MPC8323 rdb. In the board we have
+connected the IDSEL to AD18 & we have only one minipci connector for it. =
+We
+have interfaced a Wlan Card . When we do=20
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+# lspci -x  we get following
 
----
- arch/powerpc/platforms/pseries/Kconfig          |   10 
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/dtl.c            |  274 ++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/plpar_wrappers.h |   10 
- 4 files changed, 295 insertions(+)
+00:12.0 Network controller: RaLink RT2561/RT61 802.11g PCI
+00: 14 18 01 03 07 00 10 04 00 00 80 02 08 80 00 00
+10: 00 80 00 90 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 01 06 00 00 14 18 61 25
+30: 00 00 00 00 40 00 00 00 00 00 00 00 13 01 00 00
 
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index ddc2a30..730a5cd 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -63,3 +63,13 @@ config CMM
- 	  makes sense for a system running in an LPAR where the unused pages
- 	  will be reused for other LPARs. The interface allows firmware to
- 	  balance memory across many LPARs.
-+
-+config DTL
-+	bool "Dispatch Trace Log"
-+	depends on PPC_SPLPAR && DEBUG_FS
-+	help
-+	  SPLPAR machines can log hypervisor preempt & dispatch events to a
-+	  kernel buffer. Saying Y here will enable logging these events,
-+	  which are accessible through a debugfs file.
-+
-+	  Say N if you are unsure.
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index dfe574a..1b388b3 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -25,3 +25,4 @@ obj-$(CONFIG_HVCS)		+= hvcserver.o
- obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst.o
- obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
- obj-$(CONFIG_CMM)		+= cmm.o
-+obj-$(CONFIG_DTL)		+= dtl.o
-diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
-new file mode 100644
-index 0000000..dc9b0f8
---- /dev/null
-+++ b/arch/powerpc/platforms/pseries/dtl.c
-@@ -0,0 +1,274 @@
-+/*
-+ * Virtual Processor Dispatch Trace Log
-+ *
-+ * (C) Copyright IBM Corporation 2009
-+ *
-+ * Author: Jeremy Kerr <jk@ozlabs.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/debugfs.h>
-+#include <asm/smp.h>
-+#include <asm/system.h>
-+#include <asm/uaccess.h>
-+
-+#include "plpar_wrappers.h"
-+
-+/*
-+ * Layout of entries in the hypervisor's DTL buffer. Although we don't
-+ * actually access the internals of an entry (we only need to know the size),
-+ * we might as well define it here for reference.
-+ */
-+struct dtl_entry {
-+	u8	dispatch_reason;
-+	u8	preempt_reason;
-+	u16	processor_id;
-+	u32	enqueue_to_dispatch_time;
-+	u32	ready_to_enqueue_time;
-+	u32	waiting_to_ready_time;
-+	u64	timebase;
-+	u64	fault_addr;
-+	u64	srr0;
-+	u64	srr1;
-+};
-+
-+struct dtl {
-+	struct dtl_entry	*buf;
-+	struct dentry		*file;
-+	int			cpu;
-+	int			buf_entries;
-+	u64			last_idx;
-+};
-+static DEFINE_PER_CPU(struct dtl, dtl);
-+
-+/*
-+ * Dispatch trace log event mask:
-+ * 0x7: 0x1: voluntary virtual processor waits
-+ *      0x2: time-slice preempts
-+ *      0x4: virtual partition memory page faults
-+ */
-+static u8 dtl_event_mask = 0x7;
-+
-+
-+/*
-+ * Size of per-cpu log buffers. Default is just under 16 pages worth.
-+ */
-+static int dtl_buf_entries = (16 * 85);
-+
-+
-+static int dtl_enable(struct dtl *dtl)
-+{
-+	unsigned long addr;
-+	int ret, hwcpu;
-+
-+	/* only allow one reader */
-+	if (dtl->buf)
-+		return -EBUSY;
-+
-+	/* we need to store the original allocation size for use during read */
-+	dtl->buf_entries = dtl_buf_entries;
-+
-+	dtl->buf = kmalloc_node(dtl->buf_entries * sizeof(struct dtl_entry),
-+			GFP_KERNEL, cpu_to_node(dtl->cpu));
-+	if (!dtl->buf) {
-+		printk(KERN_WARNING "%s: buffer alloc failed for cpu %d\n",
-+				__func__, dtl->cpu);
-+		return -ENOMEM;
-+	}
-+
-+	/* Register our dtl buffer with the hypervisor. The HV expects the
-+	 * buffer size to be passed in the second word of the buffer */
-+	((u32 *)dtl->buf)[1] = dtl->buf_entries * sizeof(struct dtl_entry);
-+
-+	hwcpu = get_hard_smp_processor_id(dtl->cpu);
-+	addr = __pa(dtl->buf);
-+	ret = register_dtl(hwcpu, addr);
-+	if (ret) {
-+		printk(KERN_WARNING "%s: DTL registration for cpu %d (hw %d) "
-+		       "failed with %d\n", __func__, dtl->cpu, hwcpu, ret);
-+		kfree(dtl->buf);
-+		return -EIO;
-+	}
-+
-+	/* set our initial buffer indices */
-+	dtl->last_idx = lppaca[dtl->cpu].dtl_idx = 0;
-+
-+	/* enable event logging */
-+	lppaca[dtl->cpu].dtl_enable_mask = dtl_event_mask;
-+
-+	return 0;
-+}
-+
-+static void dtl_disable(struct dtl *dtl)
-+{
-+	int hwcpu = get_hard_smp_processor_id(dtl->cpu);
-+
-+	lppaca[dtl->cpu].dtl_enable_mask = 0x0;
-+
-+	unregister_dtl(hwcpu, __pa(dtl->buf));
-+
-+	kfree(dtl->buf);
-+	dtl->buf = NULL;
-+	dtl->buf_entries = 0;
-+}
-+
-+/* file interface */
-+
-+static int dtl_file_open(struct inode *inode, struct file *filp)
-+{
-+	struct dtl *dtl = inode->i_private;
-+	int rc;
-+
-+	rc = dtl_enable(dtl);
-+	if (rc)
-+		return rc;
-+
-+	filp->private_data = dtl;
-+	return 0;
-+}
-+
-+static int dtl_file_release(struct inode *inode, struct file *filp)
-+{
-+	struct dtl *dtl = inode->i_private;
-+	dtl_disable(dtl);
-+	return 0;
-+}
-+
-+static ssize_t dtl_file_read(struct file *filp, char __user *buf, size_t len,
-+		loff_t *pos)
-+{
-+	int rc, cur_idx, last_idx, n_read, n_req, read_size;
-+	struct dtl *dtl;
-+
-+	if ((len % sizeof(struct dtl_entry)) != 0)
-+		return -EINVAL;
-+
-+	dtl = filp->private_data;
-+
-+	/* requested number of entries to read */
-+	n_req = len / sizeof(struct dtl_entry);
-+
-+	/* actual number of entries read */
-+	n_read = 0;
-+
-+	cur_idx = lppaca[dtl->cpu].dtl_idx;
-+	last_idx = dtl->last_idx;
-+
-+	if (cur_idx - last_idx > dtl->buf_entries) {
-+		pr_debug("%s: hv buffer overflow for cpu %d, samples lost\n",
-+				__func__, dtl->cpu);
-+	}
-+
-+	cur_idx  %= dtl->buf_entries;
-+	last_idx %= dtl->buf_entries;
-+
-+	/* read the tail of the buffer if we've wrapped */
-+	if (last_idx > cur_idx) {
-+		read_size = min(n_req, dtl->buf_entries - last_idx);
-+
-+		rc = copy_to_user(buf, &dtl->buf[last_idx],
-+				read_size * sizeof(struct dtl_entry));
-+		if (rc)
-+			return -EFAULT;
-+
-+		last_idx = 0;
-+		n_req -= read_size;
-+		n_read += read_size;
-+		buf += read_size * sizeof(struct dtl_entry);
-+	}
-+
-+	/* .. and now the head */
-+	read_size = min(n_req, cur_idx - last_idx);
-+	rc = copy_to_user(buf, &dtl->buf[last_idx],
-+			read_size * sizeof(struct dtl_entry));
-+	if (rc)
-+		return -EFAULT;
-+
-+	n_read += read_size;
-+	dtl->last_idx += n_read;
-+
-+	return n_read * sizeof(struct dtl_entry);
-+}
-+
-+static struct file_operations dtl_fops = {
-+	.open		= dtl_file_open,
-+	.release	= dtl_file_release,
-+	.read		= dtl_file_read,
-+	.llseek		= no_llseek,
-+};
-+
-+static struct dentry *dtl_dir;
-+
-+static int dtl_setup_file(struct dtl *dtl)
-+{
-+	char name[10];
-+
-+	sprintf(name, "cpu-%d", dtl->cpu);
-+
-+	dtl->file = debugfs_create_file(name, 0400, dtl_dir, dtl, &dtl_fops);
-+	if (!dtl->file)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+static int dtl_init(void)
-+{
-+	struct dentry *event_mask_file, *buf_entries_file;
-+	int rc, i;
-+
-+	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
-+		return -ENODEV;
-+
-+	/* set up common debugfs structure */
-+
-+	rc = -ENOMEM;
-+	dtl_dir = debugfs_create_dir("dtl", powerpc_debugfs_root);
-+	if (!dtl_dir) {
-+		printk(KERN_WARNING "%s: can't create dtl root dir\n",
-+				__func__);
-+		goto err;
-+	}
-+
-+	event_mask_file = debugfs_create_x8("dtl_event_mask", 0600,
-+				dtl_dir, &dtl_event_mask);
-+	buf_entries_file = debugfs_create_u32("dtl_buf_entries", 0600,
-+				dtl_dir, &dtl_buf_entries);
-+
-+	if (!event_mask_file || !buf_entries_file) {
-+		printk(KERN_WARNING "%s: can't create dtl files\n", __func__);
-+		goto err_remove_dir;
-+	}
-+
-+	/* set up the per-cpu log structures */
-+	for_each_possible_cpu(i) {
-+		struct dtl *dtl = &per_cpu(dtl, i);
-+		dtl->cpu = i;
-+
-+		rc = dtl_setup_file(dtl);
-+		if (rc)
-+			goto err_remove_dir;
-+	}
-+
-+	return 0;
-+
-+err_remove_dir:
-+	debugfs_remove_recursive(dtl_dir);
-+err:
-+	return rc;
-+}
-+arch_initcall(dtl_init);
-diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-index d967c18..a24a6b2 100644
---- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
-+++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-@@ -43,6 +43,16 @@ static inline long register_slb_shadow(unsigned long cpu, unsigned long vpa)
- 	return vpa_call(0x3, cpu, vpa);
- }
- 
-+static inline long unregister_dtl(unsigned long cpu, unsigned long vpa)
-+{
-+	return vpa_call(0x6, cpu, vpa);
-+}
-+
-+static inline long register_dtl(unsigned long cpu, unsigned long vpa)
-+{
-+	return vpa_call(0x2, cpu, vpa);
-+}
-+
- static inline long plpar_page_set_loaned(unsigned long vpa)
- {
- 	unsigned long cmo_page_sz = cmo_get_page_size();
+In our circuit INTA is connected to IRQ4 . We are unable
+to transmit thro this card. We are not getting any interrupts.We want to
+make sure where to give the mapping of interrupts ?=20
+how to give that for IDsel AD 18, INTA should be mapped to IRQ4 .
+
+Is it that we need to change the dts file & create a new dtb? if so  =
+where to get exact meaning of how to configure "interrupt mapping" in =
+the dts file
+
+
+Regards
+Praveen 
+------=_NextPart_000_0016_01C9A2F2.2E271B70
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.3492" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV>We have a board similar to the MPC8323 rdb. In the board we=20
+have<BR>connected the IDSEL to AD18 &amp; we have only&nbsp;one minipci=20
+connector for it. We<BR>have interfaced a Wlan Card . When we do =
+<BR><FONT=20
+face=3DArial size=3D2></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2># lspci -x&nbsp; we get =
+following</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV>00:12.0 Network controller: RaLink RT2561/RT61 802.11g PCI<BR>00: =
+14 18 01=20
+03 07 00 10 04 00 00 80 02 08 80 00 00<BR>10: 00 80 00 90 00 00 00 00 00 =
+00 00=20
+00 00 00 00 00<BR>20: 00 00 00 00 00 00 00 00 01 06 00 00 14 18 61 =
+25<BR>30: 00=20
+00 00 00 40 00 00 00 00 00 00 00 13 01 00 00<BR><BR>In our circuit INTA =
+is=20
+connected to IRQ4 . We are unable<BR>to transmit thro this card. We are =
+not=20
+getting any interrupts.We want to<BR>make sure where to give the mapping =
+of=20
+interrupts ? </DIV>
+<DIV>how to give that for IDsel AD 18, INTA should be mapped to IRQ4 =
+.</DIV>
+<DIV>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Is it that we need to change the dts =
+file &amp;=20
+create a new dtb? if so&nbsp; where to get exact meaning of how to=20
+configure&nbsp;"interrupt mapping" in the dts file</FONT></DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Regards</FONT></DIV>
+<DIV><FONT face=3DArial =
+size=3D2>Praveen</FONT>&nbsp;</DIV></BODY></HTML>
+
+------=_NextPart_000_0016_01C9A2F2.2E271B70--
