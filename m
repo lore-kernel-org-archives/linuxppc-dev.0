@@ -1,19 +1,17 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 26D7FDE13C
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 21:23:34 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E9B50DE0AA
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 22:34:52 +1100 (EST)
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH] powerpc/86xx: Run sbc310 USB fixup code only on the
+	appropriate platform.
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC] [PATCH v2] MPC5121 TLB errata workaround
-Date: Fri, 13 Mar 2009 11:26:28 +0100
-References: <200903131121.00077.david.jander@protonic.nl>
-In-Reply-To: <200903131121.00077.david.jander@protonic.nl>
+Date: Fri, 13 Mar 2009 11:35:08 +0000
+Message-ID: <20090313113258.6583.64155.stgit@ubuntu8041.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200903131126.28662.david.jander@protonic.nl>
-Cc: Paul Mackerras <paulus@samba.org>, Wolfgang Denk <wd@denx.de>,
-	Gunnar Von Boehn <gunnar@genesi-usa.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Patch to limit NEC fixup to SBC310, following similar patch to SBC610 by Tony Breeds: 368a12117dd8abf6eaefa37c21ac313b517128b9
 
-Forgot to mention: The patch is based on denx git tree head 'ads5121', but 
-it should apply without problem (some offset at most) to mainline.
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
 
-Best regards,
+Hi Kumar, 
 
--- 
-David Jander
-Protonic Holland.
+The sbc310 patches have been added to your next tree. This patch is
+needed to stop the same problem occuring as occured with the sbc610.
+
+ arch/powerpc/platforms/86xx/gef_sbc310.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
+index 0f20172..ba3ce43 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc310.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
+@@ -153,6 +153,10 @@ static void __init gef_sbc310_nec_fixup(struct pci_dev *pdev)
+ {
+ 	unsigned int val;
+ 
++	/* Do not do the fixup on other platforms! */
++	if (!machine_is(gef_sbc310))
++		return;
++
+ 	printk(KERN_INFO "Running NEC uPD720101 Fixup\n");
+ 
+ 	/* Ensure only ports 1 & 2 are enabled */
