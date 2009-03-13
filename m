@@ -1,17 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 4/9] powerpc/mm: Tweak PTE bit combination definitions (v2)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090311035335.5899BDE1A6@ozlabs.org>
-References: <20090311035335.5899BDE1A6@ozlabs.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-s73eQT8NWoephu0xP7YD"
-Date: Fri, 13 Mar 2009 14:44:27 +1100
-Message-Id: <1236915867.10992.6.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <orenl@cs.columbia.edu>
+Received: from serrano.cc.columbia.edu (serrano.cc.columbia.edu [128.59.29.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 09AD6DE115
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 15:00:47 +1100 (EST)
+Message-ID: <49B9D37A.1070503@cs.columbia.edu>
+Date: Thu, 12 Mar 2009 23:31:06 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+MIME-Version: 1.0
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
+	implementation
+References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
+	<1233182478-27113-2-git-send-email-ntl@pobox.com>
+	<49814FA2.9060108@cs.columbia.edu>
+	<20090129214035.GB6913@localdomain>
+	<20090217010355.58afd5cf@thinkcentre.lan>
+In-Reply-To: <20090217010355.58afd5cf@thinkcentre.lan>
+Content-Type: text/plain; charset=US-ASCII
+Cc: containers@lists.osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,69 +29,68 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-s73eQT8NWoephu0xP7YD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2009-03-11 at 14:53 +1100, Benjamin Herrenschmidt wrote:
-> This patch tweaks the way some PTE bit combinations are defined, in such =
-a
-> way that the 32 and 64-bit variant become almost identical and that will
-> make it easier to bring in a new common pte-* file for the new variant
-> of the Book3-E support.
->=20
-<snip>
-> +/* Permission masks used to generate the __P and __S table,
-> + *
-> + * Note:__pgprot is defined in arch/powerpc/include/asm/page.h
-> + */
-> +#define PAGE_NONE	__pgprot(_PAGE_BASE)
-> +#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
-> +#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAG=
-E_EXEC)
->  #define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
->  #define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
->  #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
->  #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
-> -#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_WRENABLE)
-> -#define PAGE_KERNEL_CI	__pgprot(_PAGE_PRESENT | _PAGE_ACCESSED | \
-> -			       _PAGE_WRENABLE | _PAGE_NO_CACHE | _PAGE_GUARDED)
-> -#define PAGE_KERNEL_EXEC __pgprot(_PAGE_BASE | _PAGE_WRENABLE | _PAGE_EX=
-EC)
+Nathan Lynch wrote:
+> Nathan Lynch <ntl@pobox.com> wrote:
+>> Oren Laadan wrote:
+>>> Nathan Lynch wrote:
+>>>> What doesn't work:
+>>>> * restarting a 32-bit task from a 64-bit task and vice versa
+>>> Is there a test to bail if we attempt to checkpoint such tasks ?
+>> No, but I'll add one if it looks too hard to fix for the next round.
+> 
+> Unfortunately, adding a check for this is hard.
+> 
+> The "point of no return" in the restart path is cr_read_mm, which tears
+> down current's address space.  cr_read_mm runs way before cr_read_cpu,
+> which is the only restart method I've implemented for powerpc so far.
+> So, checking for this condition in cr_read_cpu is too late if I want
+> restart(2) to return an error and leave the caller's memory map
+> intact.  (And I do want this: restart should be as robust as execve.)
 
-Generic code needs PAGE_KERNEL_EXEC:
+In the case of restarting a container, I think it's ok if a restarting
+tasks dies in an "ugly" way -- this will be observed and handled by the
+initiating task outside the container, which will gracefully report to
+the caller/user.
 
-mm/vmalloc.c:
+Even if you close this hole, then any other failure later on during
+restart - even a failure to allocate kernel memory due to memory pressure,
+will give that undesired effect that you are trying to avoid.
 
-#ifndef PAGE_KERNEL_EXEC
-# define PAGE_KERNEL_EXEC PAGE_KERNEL
-#endif
+That said, any difference in the architecture that may cause restart to
+fail is probably best placed in cr_write_head_arch.
 
+> 
+> Well okay then, cr_read_head_arch seems to be the right place in the
+> restart sequence for the architecture code to handle this.  However,
+> cr_write_head_arch (which produces the buffer that cr_read_head_arch
+> consumes) is not provided a reference to the task to be checkpointed,
+> nor can it assume that it's operating on current.  I need a reference
+> to a task before I can determine whether it's running in 32- or 64-bit
+> mode, or using the FPU, Altivec, SPE, whatever.
+> 
+> In any case, mixing 32- and 64-bit tasks across restart is something I
+> eventually want to support, not reject.  But the problem I've outlined
+> applies to FPU state and vector extensions (VMX, SPE), as well as
+> sanity-checking debug register (DABR) contents.  We'll need to be able
+> to error out gracefully from restart when a checkpoint image specifies a
+> feature unsupported by the current kernel or hardware.  But I don't see
+> how to do it with the current architecture.  Am I missing something?
+> 
 
-Not having it breaks modules because we don't map the text executable.
+More specifically, I envision restart to work like this:
 
-cheers
+1) user invokes user-land utility (e.g. "cr --restart ..."
+2) 'cr' will create a new container
+3) 'cr' will start a child in that container
+4) child will create rest of tree (in kernel or in user space - tbd)
+5) each task in that tree will restore itself
+6) 'cr' monitors this process
+7) if all goes well - 'cr' report ok.
+8) if something goes bad, 'cr' notices and notifies caller/user
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+so tasks that are restarting may just as well die badly - we don't care.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Does that make sense ?
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-s73eQT8NWoephu0xP7YD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkm51psACgkQdSjSd0sB4dIWtACfQD49Em98I3b9zyXMw3k5VM4v
-+OIAoIBZccaahimNE+TwPyqooMZ5pmeQ
-=KHsg
------END PGP SIGNATURE-----
-
---=-s73eQT8NWoephu0xP7YD--
+Oren.
