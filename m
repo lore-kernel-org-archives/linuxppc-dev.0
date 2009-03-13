@@ -1,16 +1,16 @@
 Return-Path: <liranrazlinux@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 605F1DE145
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 06:01:22 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so1340907ywb.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 12:01:20 -0700 (PDT)
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id E93B6DDFEC
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 07:03:45 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so1050335yxb.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 13:03:44 -0700 (PDT)
 MIME-Version: 1.0
-Date: Fri, 13 Mar 2009 14:56:02 -0400
-Message-ID: <e3b3ab5c0903131156l45ab934fyf7fb33b71468594a@mail.gmail.com>
+Date: Fri, 13 Mar 2009 16:03:43 -0400
+Message-ID: <e3b3ab5c0903131303of4d8720w92117c63454a5357@mail.gmail.com>
 Subject: node /dev/ttyCPM2 not created
 From: liran raz <liranrazlinux@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=00151750d940fb11f9046504a66b
+Content-Type: multipart/alternative; boundary=000e0cd30af60e552b04650599fa
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,7 +20,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---00151750d940fb11f9046504a66b
+--000e0cd30af60e552b04650599fa
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
@@ -60,7 +60,7 @@ in order to have: /dev/ttyCPM2 ?
 Thanks,
 Liran.
 
---00151750d940fb11f9046504a66b
+--000e0cd30af60e552b04650599fa
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
@@ -80,4 +80,4 @@ M0<br><br>crw-rw-rw-=A0=A0=A0 1 root=A0=A0=A0=A0 root=A0=A0=A0=A0 204,=A0 4=
 ng? or what do I need to configure<br>in order to have: /dev/ttyCPM2 ?<br><=
 br>Thanks,<br>Liran.<br>
 
---00151750d940fb11f9046504a66b--
+--000e0cd30af60e552b04650599fa--
