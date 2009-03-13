@@ -1,27 +1,17 @@
-Return-Path: <orenl@cs.columbia.edu>
-Received: from serrano.cc.columbia.edu (serrano.cc.columbia.edu [128.59.29.6])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 29283DE0FB
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 14:37:38 +1100 (EST)
-Message-ID: <49B9D4D1.8020807@cs.columbia.edu>
-Date: Thu, 12 Mar 2009 23:36:49 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
-	implementation
-References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
-	<1233182478-27113-2-git-send-email-ntl@pobox.com>
-	<49814FA2.9060108@cs.columbia.edu>
-	<20090129214035.GB6913@localdomain>
-	<20090217010355.58afd5cf@thinkcentre.lan>
-	<20090224195826.GA25909@us.ibm.com>
-	<20090224151152.29e98b5f@thinkcentre.lan>
-In-Reply-To: <20090224151152.29e98b5f@thinkcentre.lan>
-Content-Type: text/plain; charset=US-ASCII
-Cc: containers@lists.osdl.org, "Serge E. Hallyn" <serue@us.ibm.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 4/9] powerpc/mm: Tweak PTE bit combination definitions (v2)
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20090311035335.5899BDE1A6@ozlabs.org>
+References: <20090311035335.5899BDE1A6@ozlabs.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-s73eQT8NWoephu0xP7YD"
+Date: Fri, 13 Mar 2009 14:44:27 +1100
+Message-Id: <1236915867.10992.6.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,82 +22,69 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+--=-s73eQT8NWoephu0xP7YD
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Nathan Lynch wrote:
-> On Tue, 24 Feb 2009 13:58:26 -0600
-> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
-> 
->> Quoting Nathan Lynch (ntl@pobox.com):
->>> Nathan Lynch <ntl@pobox.com> wrote:
->>>> Oren Laadan wrote:
->>>>> Nathan Lynch wrote:
->>>>>> What doesn't work:
->>>>>> * restarting a 32-bit task from a 64-bit task and vice versa
->>>>> Is there a test to bail if we attempt to checkpoint such tasks ?
->>>> No, but I'll add one if it looks too hard to fix for the next round.
->>> Unfortunately, adding a check for this is hard.
->>>
->>> The "point of no return" in the restart path is cr_read_mm, which tears
->>> down current's address space.  cr_read_mm runs way before cr_read_cpu,
->>> which is the only restart method I've implemented for powerpc so far.
->>> So, checking for this condition in cr_read_cpu is too late if I want
->>> restart(2) to return an error and leave the caller's memory map
->>> intact.  (And I do want this: restart should be as robust as execve.)
->>>
->>> Well okay then, cr_read_head_arch seems to be the right place in the
->>> restart sequence for the architecture code to handle this.  However,
->>> cr_write_head_arch (which produces the buffer that cr_read_head_arch
->>> consumes) is not provided a reference to the task to be checkpointed,
->>> nor can it assume that it's operating on current.  I need a reference
->>> to a task before I can determine whether it's running in 32- or 64-bit
->>> mode, or using the FPU, Altivec, SPE, whatever.
->>>
->>> In any case, mixing 32- and 64-bit tasks across restart is something I
->>> eventually want to support, not reject.  But the problem I've outlined
->>> applies to FPU state and vector extensions (VMX, SPE), as well as
->>> sanity-checking debug register (DABR) contents.  We'll need to be able
->>> to error out gracefully from restart when a checkpoint image specifies a
->>> feature unsupported by the current kernel or hardware.  But I don't see
->>> how to do it with the current architecture.  Am I missing something?
->> I suspect I can guess the response to this suggestion, but how about we
->> accept that if sys_restart() fails due to something like this, the
->> task is lost and can't exit gracefully?
-> 
-> In the short term it might be necessary.  But the restart code should
-> forcibly kill the task instead of returning an error back up to
-> userspace in this case.  Once the memory map of the process has been
-> altered, there is no point in allowing it to continue (and likely dump
-> a useless core).  Btw, this failure mode seems to apply when
-> cr_read_files() fails, too...
-> 
-> But in the long term, things need to be more robust (e.g. restart(2)
-> returns ENOEXEC without messing with current->mm).  I think it's worth
-> looking at how execve operates... if I understand correctly, it sets up
-> a new mm_struct disconnected from the current task and activates it at
-> the last moment.
-> 
+On Wed, 2009-03-11 at 14:53 +1100, Benjamin Herrenschmidt wrote:
+> This patch tweaks the way some PTE bit combinations are defined, in such =
+a
+> way that the 32 and 64-bit variant become almost identical and that will
+> make it easier to bring in a new common pte-* file for the new variant
+> of the Book3-E support.
+>=20
+<snip>
+> +/* Permission masks used to generate the __P and __S table,
+> + *
+> + * Note:__pgprot is defined in arch/powerpc/include/asm/page.h
+> + */
+> +#define PAGE_NONE	__pgprot(_PAGE_BASE)
+> +#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+> +#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAG=
+E_EXEC)
+>  #define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
+>  #define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+>  #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
+>  #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+> -#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_WRENABLE)
+> -#define PAGE_KERNEL_CI	__pgprot(_PAGE_PRESENT | _PAGE_ACCESSED | \
+> -			       _PAGE_WRENABLE | _PAGE_NO_CACHE | _PAGE_GUARDED)
+> -#define PAGE_KERNEL_EXEC __pgprot(_PAGE_BASE | _PAGE_WRENABLE | _PAGE_EX=
+EC)
 
-That's a good idea, and I have considered it in the past.
+Generic code needs PAGE_KERNEL_EXEC:
 
-However, it is easier to restarti a task in its own, new, context,
-including the MM. For instance, you can leverage all memory syscalls.
+mm/vmalloc.c:
 
-An in-between way would be to switch to the new MM but not tear down
-the original one, but rather save it along side. If a failure occur -
-restore it.
+#ifndef PAGE_KERNEL_EXEC
+# define PAGE_KERNEL_EXEC PAGE_KERNEL
+#endif
 
-Then, you'll have to ask the same question about all other resources -
-signal handlers, open files, etc. Either you make all changes atomic
-at once, or none - if you want the operation to be non-intrusive in
-the case of an error.
 
-However, I do think that this is not necessary: the tasks that are
-doing the restart have been created from scratch for that purpose,
-so they need not return any specific value to the user. It is the
-task that initiates the restart that needs to handle error gracefully.
-The scheme I proposed in the previous email does exactly that.
+Not having it breaks modules because we don't map the text executable.
 
-(This does not apply to self-restart, for obvious reasons, but that
-is a special case anyway).
+cheers
 
-Oren.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-s73eQT8NWoephu0xP7YD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkm51psACgkQdSjSd0sB4dIWtACfQD49Em98I3b9zyXMw3k5VM4v
++OIAoIBZccaahimNE+TwPyqooMZ5pmeQ
+=KHsg
+-----END PGP SIGNATURE-----
+
+--=-s73eQT8NWoephu0xP7YD--
