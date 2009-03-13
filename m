@@ -1,21 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1FD59DE371
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 00:22:30 +1100 (EST)
-Message-Id: <34B75591-5E9D-4966-BE06-9F4E48ED31B2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Jander <david.jander@protonic.nl>
-In-Reply-To: <200903131126.28662.david.jander@protonic.nl>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [RFC] [PATCH v2] MPC5121 TLB errata workaround
-Date: Fri, 13 Mar 2009 08:22:22 -0500
-References: <200903131121.00077.david.jander@protonic.nl>
-	<200903131126.28662.david.jander@protonic.nl>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Wolfgang Denk <wd@denx.de>, Gunnar Von Boehn <gunnar@genesi-usa.com>
+Return-Path: <jhautbois@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
+	by ozlabs.org (Postfix) with ESMTP id 0F7C9DE13F
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 00:38:57 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id k4so901918nfd.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 06:38:55 -0700 (PDT)
+MIME-Version: 1.0
+Date: Fri, 13 Mar 2009 14:38:55 +0100
+Message-ID: <8cad0aa0903130638w6fab6299kcd23d92d4c2d0a8@mail.gmail.com>
+Subject: [MPC8272ADS]Can not configure the ttyCPM0
+From: Jean-Michel Hautbois <jhautbois@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi all !
 
-On Mar 13, 2009, at 5:26 AM, David Jander wrote:
+I am currently facing a big problem on my MPC8272ADS development board.
+I have tried to use the /dev/ttyCPM1 port in order to send data over
+the serial cable to another device.
 
->
-> Forgot to mention: The patch is based on denx git tree head  
-> 'ads5121', but
-> it should apply without problem (some offset at most) to mainline.
->
-> Best regards,
->
+This is just not working but nothing is sent, my DTR signal is down:
 
-Out of interest did this version produce better performance on the  
-benchmarks than your v1 version?
+> cat /proc/tty/driver/ttyCPM
+0: uart:CPM UART mmio:0xF0011A00 irq:40 tx:296 rx:0 RTS|CTS|DTR|DSR|CD
+1: uart:CPM UART mmio:0xF0011A60 irq:43 tx:0 rx:0 CTS|DSR|CD
 
-- k
+So, I have tried to use the serial port /dev/ttyCPM0. It is
+successfully sending out my bytes, but I can't configure it !!
+When I am trying to use the tcsetattr() function, I don't have any
+error, but the signal is always the same (no effect, if you prefer).
+
+I have tried to disable the kernel console output, but it is not
+working, either...
+
+Can anyone help me ?
+Thanks in advance !
+Best Regards,
+
+JM
