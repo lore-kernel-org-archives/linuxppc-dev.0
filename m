@@ -1,17 +1,20 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E9B50DE0AA
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 22:34:52 +1100 (EST)
-From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH] powerpc/86xx: Run sbc310 USB fixup code only on the
-	appropriate platform.
-To: linuxppc-dev@ozlabs.org
-Date: Fri, 13 Mar 2009 11:35:08 +0000
-Message-ID: <20090313113258.6583.64155.stgit@ubuntu8041.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	by ozlabs.org (Postfix) with ESMTPS id B4AFEDDFF2
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 00:22:09 +1100 (EST)
+Message-Id: <9223B51A-4340-4636-B1F8-6D49A5F8833A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Jander <david.jander@protonic.nl>
+In-Reply-To: <200903131121.00077.david.jander@protonic.nl>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [RFC] [PATCH v2] MPC5121 TLB errata workaround
+Date: Fri, 13 Mar 2009 08:21:57 -0500
+References: <200903131121.00077.david.jander@protonic.nl>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Wolfgang Denk <wd@denx.de>, Gunnar Von Boehn <gunnar@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Patch to limit NEC fixup to SBC310, following similar patch to SBC610 by Tony Breeds: 368a12117dd8abf6eaefa37c21ac313b517128b9
+>
 
-Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
----
+What does cat /proc/cpuinfo show on this board?
 
-Hi Kumar, 
+> +#ifdef CONFIG_PPC_MPC512x
+> +/* MPC512x: workaround for errata in die M36P and earlier:
+> + * Implement LRW for TLB way.
+> + */
 
-The sbc310 patches have been added to your next tree. This patch is
-needed to stop the same problem occuring as occured with the sbc610.
+This errata impacts a number of cores and so we should make this a CPU  
+feature fixup rather than #ifdef code.
 
- arch/powerpc/platforms/86xx/gef_sbc310.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+> +       mfspr   r3,SPRN_DMISS
+> +       rlwinm  r3,r3,19,25,29 /* Get Address bits 19:15 */
+> +       lis     r2,lrw@ha       /* Search index in lrw[] */
+> +       addi    r2,r2,lrw@l
+> +       tophys(r2,r2)
+> +       lwzx    r1,r3,r2       /* Get item from lrw[] */
+> +       cmpwi   0,r1,0         /* Was it way 0 last time? */
 
-diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
-index 0f20172..ba3ce43 100644
---- a/arch/powerpc/platforms/86xx/gef_sbc310.c
-+++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
-@@ -153,6 +153,10 @@ static void __init gef_sbc310_nec_fixup(struct pci_dev *pdev)
- {
- 	unsigned int val;
- 
-+	/* Do not do the fixup on other platforms! */
-+	if (!machine_is(gef_sbc310))
-+		return;
-+
- 	printk(KERN_INFO "Running NEC uPD720101 Fixup\n");
- 
- 	/* Ensure only ports 1 & 2 are enabled */
+Why not use a bit vector since we only need one bit of information.   
+Additionally we can use a single SPRG at that point instead to keep  
+track of the LRU information.
+
+> +       beq-    0,113f         /* Then goto 113: */
+> +
+> +       mfspr   r1,SPRN_SRR1
+> +       rlwinm  r1,r1,0,15,13  /* Mask out SRR1[WAY] */
+> +       mtspr   SPRN_SRR1,r1
+> +
+> +       li      r0,0
+> +       stwx    r0,r3,r2       /* Make lrw[] entry 0 */
+> +       b       114f
+> +113:
+> +       li      r0,1
+> +       stwx    r0,r3,r2       /* Make lrw[] entry 1 */
+> +114:
+> +#endif
+>        mfctr   r0
+>        /* Get PTE (linux-style) and check access */
+>        mfspr   r3,SPRN_DMISS
+> @@ -688,6 +717,34 @@ DataStoreTLBMiss:
+>        .globl mol_trampoline
+>        .set mol_trampoline, i0x2f00
+>
+> +#ifdef CONFIG_PPC_MPC512x
+> +TlbWo:
+> +/* MPC512x: workaround for errata in die M36P and earlier:
+> + * Implement LRW for TLB way.
+> + */
+> +       mfspr   r3,SPRN_DMISS
+> +       rlwinm  r3,r3,19,25,29 /* Get Address bits 19:15 */
+> +       lis     r2,lrw@ha       /* Search index in lrw[] */
+> +       addi    r2,r2,lrw@l
+> +       tophys(r2,r2)
+> +       lwzx    r1,r3,r2       /* Get item from lrw[] */
+> +       cmpwi   0,r1,0         /* Was it way 0 last time? */
+> +       beq-    0,113f         /* Then goto 113: */
+> +
+> +       mfspr   r1,SPRN_SRR1
+> +       rlwinm  r1,r1,0,15,13  /* Mask out SRR1[WAY] */
+> +       mtspr   SPRN_SRR1,r1
+> +
+> +       li      r0,0
+> +       stwx    r0,r3,r2       /* Make lrw[] entry 0 */
+> +       b       114f
+> +113:
+> +       li      r0,1
+> +       stwx    r0,r3,r2       /* Make lrw[] entry 1 */
+> +114:
+> +       b       RFTlbWo
+> +#endif
+> +
+>        . = 0x3000
+>
+> AltiVecUnavailable:
+> @@ -1321,6 +1378,14 @@ intercept_table:
+>        .long 0, 0, 0, 0, 0, 0, 0, 0
+>        .long 0, 0, 0, 0, 0, 0, 0, 0
+>        .long 0, 0, 0, 0, 0, 0, 0, 0
+> +
+> +#ifdef CONFIG_PPC_MPC512x
+> +lrw:
+> +       .long 0, 0, 0, 0, 0, 0, 0, 0
+> +       .long 0, 0, 0, 0, 0, 0, 0, 0
+> +       .long 0, 0, 0, 0, 0, 0, 0, 0
+> +       .long 0, 0, 0, 0, 0, 0, 0, 0
+> +#endif
+>
+> /* Room for two PTE pointers, usually the kernel and current user  
+> pointers
+>  * to their respective root page table.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
