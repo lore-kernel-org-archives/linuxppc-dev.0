@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 56026DE0B7
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 09:45:58 +1100 (EST)
-Subject: Re: [RFC] Moving toward smarter disabling of FPRs, VRs, and VSRs
-	in the MSR
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <6F79BA93-346D-479F-BD63-D1D89B289D6F@kernel.crashing.org>
-References: <1236975831.3137.61.camel@localhost.localdomain>
-	<6F79BA93-346D-479F-BD63-D1D89B289D6F@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sat, 14 Mar 2009 09:45:51 +1100
-Message-Id: <1236984351.25062.71.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Steven Munroe <sjmunroe@us.ibm.com>
+Return-Path: <fkan@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 6B2D9DDFD6
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 10:12:31 +1100 (EST)
+Message-ID: <49BAE5E1.7080606@amcc.com>
+Date: Fri, 13 Mar 2009 16:01:53 -0700
+From: Feng Kan <fkan@amcc.com>
+MIME-Version: 1.0
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] PowerPC 440EPx/GRx fix memory size calculation
+References: <49B58779.9040905@lebon.org.ua><20090311103716.GE26415@zod.rchland.ibm.com><49B80BA3.1090301@ru.mvista.com>
+	<200903120702.03286.sr@denx.de>
+In-Reply-To: <200903120702.03286.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, lebon@lebon.org.ua
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Guys:
+     Sequoia uses on board discrete memory with one rank. So one chip 
+select would be fine.
+Turning on both won't matter, since the other cs is never used.
 
-> If these applications are aware they are heavy users (of FP, VMX, VSX)  
-> can we not use a sysctl()?  Doing so wouldn't be that difficult.
-> 
-> I think trying to do something based on a runtime heuristic sounds a  
-> bit iffy.
+Feng Kan
 
-Another option might be simply to say that if an app has used FP, VMX or
-VSX -once-, then it's likely to do it again and just keep re-enabling
-it :-)
-
-I'm serious here, do we know that many cases where these things are used
-seldomly once in a while ?
-
-An if we do, maybe then a simple counter in the task struct... if the
-app re-enables it more than a few consecutive switches, then make it
-stick. I have the feeling that would work out reasonably well.
-
-Cheers,
-Ben.
+ Stefan Roese wrote:
+> On Wednesday 11 March 2009, Valentine Barshak wrote:
+>   
+>> I've been looking at the docs once again and actually I couldn't find an
+>>    explanation there. And I don't have that e-mail from AMCC support
+>> that I got a while back regarding the issue anymore.
+>> There might have been some misunderstanding.
+>> The docs (PPC440EPX UM 19.2 Device Address Mapping) say that the chip
+>> select field width is always fixed at one bit, but this doesn't actually
+>>   mean that there's always one chip select used.
+>> The patch works fine on Sequoia and another Sequoia-like board with 1GB
+>> RAM installed, but it might not work with 2GB RAM. I've tried to play
+>> with DDR0_10 settings and Sequoia works fine regardless of what's
+>> actually written to DDR0_10.
+>> So, probably the best way would be to fix that in u-boot
+>> amcc/sequoia/sdram.c by doing mtsdram(DDR0_10, 0x00000100); instead of
+>> mtsdram(DDR0_10, 0x00000300);
+>> Sorry, for confusion, but after reviewing the docs, I think that
+>> only REDUC interpretation has to be fixed. The chips select part should
+>> be fixed in u-boot sdram code for Sequoia as was originally proposed by
+>> Mikhail.
+>>
+>> Stefan, could you please take a look?
+>>     
+>
+> I'll apply the U-Boot patch today. But as Josh pointed out, we should try to 
+> find a way for the bootwrapper to work in all cases.
+>
+> Best regards,
+> Stefan
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+>   
