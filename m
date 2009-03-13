@@ -1,24 +1,29 @@
-Return-Path: <orenl@cs.columbia.edu>
-Received: from serrano.cc.columbia.edu (serrano.cc.columbia.edu [128.59.29.6])
+Return-Path: <kyle@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 09AD6DE115
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 15:00:47 +1100 (EST)
-Message-ID: <49B9D37A.1070503@cs.columbia.edu>
-Date: Thu, 12 Mar 2009 23:31:06 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
+	by ozlabs.org (Postfix) with ESMTPS id 37FE5DDDB2
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 15:25:53 +1100 (EST)
+Date: Fri, 13 Mar 2009 00:25:43 -0400
+From: Kyle McMartin <kyle@infradead.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 0/7] Generic RTC class driver
+Message-ID: <20090313042543.GA3907@bombadil.infradead.org>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be>
+	<20090311154505.GB5448@bombadil.infradead.org>
+	<alpine.LRH.2.00.0903111825040.1040@vixen.sonytel.be>
 MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
-	implementation
-References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
-	<1233182478-27113-2-git-send-email-ntl@pobox.com>
-	<49814FA2.9060108@cs.columbia.edu>
-	<20090129214035.GB6913@localdomain>
-	<20090217010355.58afd5cf@thinkcentre.lan>
-In-Reply-To: <20090217010355.58afd5cf@thinkcentre.lan>
-Content-Type: text/plain; charset=US-ASCII
-Cc: containers@lists.osdl.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LRH.2.00.0903111825040.1040@vixen.sonytel.be>
+Cc: linux-m68k@vger.kernel.org,
+	Alessandro Zummo <alessandro.zummo@towertech.it>,
+	linux-parisc@vger.kernel.org, rtc-linux@googlegroups.com,
+	Paul Mundt <lethal@linux-sh.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Kyle McMartin <kyle@infradead.org>, Dann Frazier <dannf@dannf.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,69 +33,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-Nathan Lynch wrote:
-> Nathan Lynch <ntl@pobox.com> wrote:
->> Oren Laadan wrote:
->>> Nathan Lynch wrote:
->>>> What doesn't work:
->>>> * restarting a 32-bit task from a 64-bit task and vice versa
->>> Is there a test to bail if we attempt to checkpoint such tasks ?
->> No, but I'll add one if it looks too hard to fix for the next round.
+On Wed, Mar 11, 2009 at 06:26:12PM +0100, Geert Uytterhoeven wrote:
+> 	Hi Kyle,
 > 
-> Unfortunately, adding a check for this is hard.
+> On Wed, 11 Mar 2009, Kyle McMartin wrote:
+> > On Wed, Mar 11, 2009 at 11:36:02AM +0100, Geert Uytterhoeven wrote:
+> > > Is it OK for you to take it through your PA-RISC tree?
+> > > If yes, I can resend the patch series with the collected acks.
+> > 
+> > That's fine with me, just hit me up with a git tree address and I'll
+> > suck it all into the rtc-parisc tree?
 > 
-> The "point of no return" in the restart path is cr_read_mm, which tears
-> down current's address space.  cr_read_mm runs way before cr_read_cpu,
-> which is the only restart method I've implemented for powerpc so far.
-> So, checking for this condition in cr_read_cpu is too late if I want
-> restart(2) to return an error and leave the caller's memory map
-> intact.  (And I do want this: restart should be as robust as execve.)
-
-In the case of restarting a container, I think it's ok if a restarting
-tasks dies in an "ugly" way -- this will be observed and handled by the
-initiating task outside the container, which will gracefully report to
-the caller/user.
-
-Even if you close this hole, then any other failure later on during
-restart - even a failure to allocate kernel memory due to memory pressure,
-will give that undesired effect that you are trying to avoid.
-
-That said, any difference in the architecture that may cause restart to
-fail is probably best placed in cr_write_head_arch.
-
+> I put it up at:
 > 
-> Well okay then, cr_read_head_arch seems to be the right place in the
-> restart sequence for the architecture code to handle this.  However,
-> cr_write_head_arch (which produces the buffer that cr_read_head_arch
-> consumes) is not provided a reference to the task to be checkpointed,
-> nor can it assume that it's operating on current.  I need a reference
-> to a task before I can determine whether it's running in 32- or 64-bit
-> mode, or using the FPU, Altivec, SPE, whatever.
+> master.kernel.org:/pub/scm/linux/kernel/git/geert/linux-rtc-generic.git
 > 
-> In any case, mixing 32- and 64-bit tasks across restart is something I
-> eventually want to support, not reject.  But the problem I've outlined
-> applies to FPU state and vector extensions (VMX, SPE), as well as
-> sanity-checking debug register (DABR) contents.  We'll need to be able
-> to error out gracefully from restart when a checkpoint image specifies a
-> feature unsupported by the current kernel or hardware.  But I don't see
-> how to do it with the current architecture.  Am I missing something?
+> The master branch should be a descendant of your rtc-parisc branch.
 > 
+> Thanks!
+>
 
-More specifically, I envision restart to work like this:
+Great, thanks Geert!
 
-1) user invokes user-land utility (e.g. "cr --restart ..."
-2) 'cr' will create a new container
-3) 'cr' will start a child in that container
-4) child will create rest of tree (in kernel or in user space - tbd)
-5) each task in that tree will restore itself
-6) 'cr' monitors this process
-7) if all goes well - 'cr' report ok.
-8) if something goes bad, 'cr' notices and notifies caller/user
+I've pulled it and pushed it back out, I'll submit it when the merge
+window opens.
 
-so tasks that are restarting may just as well die badly - we don't care.
-
-Does that make sense ?
-
-Oren.
+cheers, Kyle
