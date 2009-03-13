@@ -1,19 +1,9 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DEC51DE10C
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 16:20:43 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 13 Mar 2009 16:19:25 +1100
-Message-Id: <1236921565.25062.42.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <fc1755dacb01bff52fcf77ee18c4d7a075b01c37.1236923542.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/2] powerpc/msi: Mark the MSI bitmap selftest code as __init
+Date: Fri, 13 Mar 2009 16:52:45 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +13,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/sysdev/msi_bitmap.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-So here's the new ps3 nvram driver for 2.6.29 that we discussed earlier
-
-Cheers,
-Ben.
-
-The following changes since commit 9ead64974b05501bbac0d63a47c99fa786d064ba:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../sam/kbuild-fixes
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Geert Uytterhoeven (1):
-      ps3/block: Replace mtd/ps3vram by block/ps3vram
-
- arch/powerpc/platforms/ps3/Kconfig |    7 +
- drivers/block/Makefile             |    1 +
- drivers/block/ps3vram.c            |  865 ++++++++++++++++++++++++++++++++++++
- drivers/mtd/devices/Kconfig        |    7 -
- drivers/mtd/devices/Makefile       |    1 -
- drivers/mtd/devices/ps3vram.c      |  768 --------------------------------
- 6 files changed, 873 insertions(+), 776 deletions(-)
- create mode 100644 drivers/block/ps3vram.c
- delete mode 100644 drivers/mtd/devices/ps3vram.c
+diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
+index f84217b..5a32cbe 100644
+--- a/arch/powerpc/sysdev/msi_bitmap.c
++++ b/arch/powerpc/sysdev/msi_bitmap.c
+@@ -141,7 +141,7 @@ void msi_bitmap_free(struct msi_bitmap *bmp)
+ #define check(x)	\
+ 	if (!(x)) printk("msi_bitmap: test failed at line %d\n", __LINE__);
+ 
+-void test_basics(void)
++void __init test_basics(void)
+ {
+ 	struct msi_bitmap bmp;
+ 	int i, size = 512;
+@@ -186,7 +186,7 @@ void test_basics(void)
+ 	kfree(bmp.bitmap);
+ }
+ 
+-void test_of_node(void)
++void __init test_of_node(void)
+ {
+ 	u32 prop_data[] = { 10, 10, 25, 3, 40, 1, 100, 100, 200, 20 };
+ 	const char *expected_str = "0-9,20-24,28-39,41-99,220-255";
+@@ -234,7 +234,7 @@ void test_of_node(void)
+ 	kfree(bmp.bitmap);
+ }
+ 
+-int msi_bitmap_selftest(void)
++int __init msi_bitmap_selftest(void)
+ {
+ 	printk(KERN_DEBUG "Running MSI bitmap self-tests ...\n");
+ 
+-- 
+1.6.1.2
