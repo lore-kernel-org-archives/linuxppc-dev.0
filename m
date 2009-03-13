@@ -1,25 +1,27 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <orenl@cs.columbia.edu>
+Received: from serrano.cc.columbia.edu (serrano.cc.columbia.edu [128.59.29.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D89B0DE115
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 06:01:40 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n2CJ118V001089
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 12:01:02 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n2CJ11hD007649
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2009 14:01:01 -0500 (CDT)
-Message-ID: <49B95BEC.2010404@freescale.com>
-Date: Thu, 12 Mar 2009 14:01:00 -0500
-From: Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 29283DE0FB
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 14:37:38 +1100 (EST)
+Message-ID: <49B9D4D1.8020807@cs.columbia.edu>
+Date: Thu, 12 Mar 2009 23:36:49 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Confused about CLOCK_TICK_RATE
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
+	implementation
+References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
+	<1233182478-27113-2-git-send-email-ntl@pobox.com>
+	<49814FA2.9060108@cs.columbia.edu>
+	<20090129214035.GB6913@localdomain>
+	<20090217010355.58afd5cf@thinkcentre.lan>
+	<20090224195826.GA25909@us.ibm.com>
+	<20090224151152.29e98b5f@thinkcentre.lan>
+In-Reply-To: <20090224151152.29e98b5f@thinkcentre.lan>
+Content-Type: text/plain; charset=US-ASCII
+Cc: containers@lists.osdl.org, "Serge E. Hallyn" <serue@us.ibm.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,17 +31,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Can someone explain CLOCK_TICK_RATE to me?  It's defined in
-arch/powerpc/include/asm/timex.h as such:
 
-#define CLOCK_TICK_RATE	1024000 /* Underlying HZ */
 
-Every architecture defines this, but some use the better comment
-"Underlying frequency of the HZ timer".
+Nathan Lynch wrote:
+> On Tue, 24 Feb 2009 13:58:26 -0600
+> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> 
+>> Quoting Nathan Lynch (ntl@pobox.com):
+>>> Nathan Lynch <ntl@pobox.com> wrote:
+>>>> Oren Laadan wrote:
+>>>>> Nathan Lynch wrote:
+>>>>>> What doesn't work:
+>>>>>> * restarting a 32-bit task from a 64-bit task and vice versa
+>>>>> Is there a test to bail if we attempt to checkpoint such tasks ?
+>>>> No, but I'll add one if it looks too hard to fix for the next round.
+>>> Unfortunately, adding a check for this is hard.
+>>>
+>>> The "point of no return" in the restart path is cr_read_mm, which tears
+>>> down current's address space.  cr_read_mm runs way before cr_read_cpu,
+>>> which is the only restart method I've implemented for powerpc so far.
+>>> So, checking for this condition in cr_read_cpu is too late if I want
+>>> restart(2) to return an error and leave the caller's memory map
+>>> intact.  (And I do want this: restart should be as robust as execve.)
+>>>
+>>> Well okay then, cr_read_head_arch seems to be the right place in the
+>>> restart sequence for the architecture code to handle this.  However,
+>>> cr_write_head_arch (which produces the buffer that cr_read_head_arch
+>>> consumes) is not provided a reference to the task to be checkpointed,
+>>> nor can it assume that it's operating on current.  I need a reference
+>>> to a task before I can determine whether it's running in 32- or 64-bit
+>>> mode, or using the FPU, Altivec, SPE, whatever.
+>>>
+>>> In any case, mixing 32- and 64-bit tasks across restart is something I
+>>> eventually want to support, not reject.  But the problem I've outlined
+>>> applies to FPU state and vector extensions (VMX, SPE), as well as
+>>> sanity-checking debug register (DABR) contents.  We'll need to be able
+>>> to error out gracefully from restart when a checkpoint image specifies a
+>>> feature unsupported by the current kernel or hardware.  But I don't see
+>>> how to do it with the current architecture.  Am I missing something?
+>> I suspect I can guess the response to this suggestion, but how about we
+>> accept that if sys_restart() fails due to something like this, the
+>> task is lost and can't exit gracefully?
+> 
+> In the short term it might be necessary.  But the restart code should
+> forcibly kill the task instead of returning an error back up to
+> userspace in this case.  Once the memory map of the process has been
+> altered, there is no point in allowing it to continue (and likely dump
+> a useless core).  Btw, this failure mode seems to apply when
+> cr_read_files() fails, too...
+> 
+> But in the long term, things need to be more robust (e.g. restart(2)
+> returns ENOEXEC without messing with current->mm).  I think it's worth
+> looking at how execve operates... if I understand correctly, it sets up
+> a new mm_struct disconnected from the current task and activates it at
+> the last moment.
+> 
 
-My question is: why is this a constant? Shouldn't it be a variable,
-perhaps something that is based on tb_ticks_per_usec?
+That's a good idea, and I have considered it in the past.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+However, it is easier to restarti a task in its own, new, context,
+including the MM. For instance, you can leverage all memory syscalls.
+
+An in-between way would be to switch to the new MM but not tear down
+the original one, but rather save it along side. If a failure occur -
+restore it.
+
+Then, you'll have to ask the same question about all other resources -
+signal handlers, open files, etc. Either you make all changes atomic
+at once, or none - if you want the operation to be non-intrusive in
+the case of an error.
+
+However, I do think that this is not necessary: the tasks that are
+doing the restart have been created from scratch for that purpose,
+so they need not return any specific value to the user. It is the
+task that initiates the restart that needs to handle error gracefully.
+The scheme I proposed in the previous email does exactly that.
+
+(This does not apply to self-restart, for obvious reasons, but that
+is a special case anyway).
+
+Oren.
