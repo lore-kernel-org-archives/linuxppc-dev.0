@@ -1,19 +1,19 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 8E4F4DDFBD
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 07:49:17 +1100 (EST)
-Date: Fri, 13 Mar 2009 13:49:03 -0700 (PDT)
-Message-Id: <20090313.134903.259220375.davem@davemloft.net>
-To: felix@embedded-sol.com
-Subject: Re: RX problem in ibm_newemac driver
+	by ozlabs.org (Postfix) with ESMTP id 8B774DDFBD
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 07:51:01 +1100 (EST)
+Date: Fri, 13 Mar 2009 13:50:48 -0700 (PDT)
+Message-Id: <20090313.135048.202553524.davem@davemloft.net>
+To: ossthema@de.ibm.com
+Subject: Re: [PATCH net-next-2.6] ehea: fix circular locking problem
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <49B77CBF.6070005@embedded-sol.com>
-References: <49B6FA3B.8030509@embedded-sol.com>
-	<1236730894.7086.29.camel@pasglop>
-	<49B77CBF.6070005@embedded-sol.com>
+In-Reply-To: <200903121620.19075.ossthema@de.ibm.com>
+References: <200903121620.19075.ossthema@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Cc: tklein@de.ibm.com, hering2@de.ibm.com, netdev@vger.kernel.org,
+	themann@de.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Felix Radensky <felix@embedded-sol.com>
-Date: Wed, 11 Mar 2009 10:56:31 +0200
+From: "Jan-Bernd Themann" <ossthema@de.ibm.com>
+Date: Thu, 12 Mar 2009 16:20:18 +0100
 
-> Benjamin Herrenschmidt wrote:
-> > emac: Fix clock control for 405EX and 405EXr chips
-> >
-> > The EMAC variant in the 405EX and 405EXr chips needs the "440EP" type clock
-> > control workaround to avoid lockups of the Rx side during reset.
-> >
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
- ...
-> This patch fixes a problem for me. Thank you very much for a quick fix.
+> This patch fixes the circular locking problem by changing the locking strategy
+> concerning the logging of firmware handles.
+> 
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-Patch applied, thanks everyone.
+Applied, thanks.
