@@ -1,22 +1,23 @@
-Return-Path: <takatz@pericle.com>
-Received: from xceltech.net (mail2.xceltech.net [199.227.119.213])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 45B22DE0E9
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 10:19:54 +1100 (EST)
-Received: from [70.56.244.175] (helo=[192.168.1.12])
-	by xceltech.net with esmtpa (Exim 4.62)
-	(envelope-from <takatz@pericle.com>) id KGGV2K-0009IX-N4
-	for linuxppc-dev@ozlabs.org; Fri, 13 Mar 2009 16:42:20 -0600
-Message-ID: <49BAE147.4060102@pericle.com>
-Date: Fri, 13 Mar 2009 16:42:15 -0600
-From: Mark Takatz <takatz@pericle.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
+	by ozlabs.org (Postfix) with ESMTP id 61856DE155
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 10:52:48 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so1342579qwe.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 16:52:46 -0700 (PDT)
+Date: Fri, 13 Mar 2009 19:52:18 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC] Moving toward smarter disabling of FPRs, VRs, and VSRs
+	in the MSR
+Message-ID: <20090313235218.GA2799@yoda.jdub.homelinux.org>
+References: <1236975831.3137.61.camel@localhost.localdomain>
+	<6F79BA93-346D-479F-BD63-D1D89B289D6F@kernel.crashing.org>
+	<1236984351.25062.71.camel@pasglop>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: use generic	pci_assign_unassign_resources
-References: %(message_id_url)s
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: Mark Takatz <takatz@pericle.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1236984351.25062.71.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Steven Munroe <sjmunroe@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben,
+On Sat, Mar 14, 2009 at 09:45:51AM +1100, Benjamin Herrenschmidt wrote:
+>
+>> If these applications are aware they are heavy users (of FP, VMX, VSX)  
+>> can we not use a sysctl()?  Doing so wouldn't be that difficult.
+>> 
+>> I think trying to do something based on a runtime heuristic sounds a  
+>> bit iffy.
+>
+>Another option might be simply to say that if an app has used FP, VMX or
+>VSX -once-, then it's likely to do it again and just keep re-enabling
+>it :-)
+>
+>I'm serious here, do we know that many cases where these things are used
+>seldomly once in a while ?
 
-We're looking at the fixes you put in place for the various PCI errors 
-and we think this is the solution we need for our system, a GE Fanuc CM6 
-PPC board (single 8641), but your patches appear to apply either to 
-2.6.24 or 2.6.25, and we have 2.6.23.  Do you know of any similar work 
-done on the 2.6.23 release?
+This seems reasonable to me.
 
-Thanks in advance for any help you can provide,
+>An if we do, maybe then a simple counter in the task struct... if the
+>app re-enables it more than a few consecutive switches, then make it
+>stick. I have the feeling that would work out reasonably well.
 
--- 
-Mark J. Takatz
-Pericle Communications Company
-1910 Vindicator Drive, Suite 100
-Colorado Springs, CO 80919
-Office:  (719) 548-1170
-Cell:  (719) 287-5267
-Fax:  (719) 548-1211
-takatz@pericle.com
+Gee.  That sounds like a runtime heuristic :)
+
+josh
