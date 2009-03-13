@@ -1,22 +1,17 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 49929DDEEF
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 17:07:47 +1100 (EST)
-Date: Thu, 12 Mar 2009 23:03:18 -0700
-From: Greg KH <greg@kroah.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc: Remove extra semicolon in fsl_soc.c
-Message-ID: <20090313060318.GA19770@kroah.com>
-References: <ba5d9360903110850gbcb0d2y25f8756a19d46cda@mail.gmail.com>
-	<fa686aa40903110903h1077860dt45c1a5aecd2ef42f@mail.gmail.com>
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id E3C54DE0AB
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2009 21:18:07 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
+Subject: [RFC] [PATCH v2] MPC5121 TLB errata workaround
+Date: Fri, 13 Mar 2009 11:20:59 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <fa686aa40903110903h1077860dt45c1a5aecd2ef42f@mail.gmail.com>
-Cc: afleming@freescale.com, Greg KH <gregkh@suse.de>,
-	Johns Daniel <johns.daniel@gmail.com>, stable@kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200903131121.00077.david.jander@protonic.nl>
+Cc: Paul Mackerras <paulus@samba.org>, Wolfgang Denk <wd@denx.de>,
+	Gunnar Von Boehn <gunnar@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +21,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 11, 2009 at 10:03:22AM -0600, Grant Likely wrote:
-> On Wed, Mar 11, 2009 at 9:50 AM, Johns Daniel <johns.daniel@gmail.com> wrote:
-> > A semicolon at the end of the macro means that the for loop has an
-> > empty body, and so TSEC/MDIO will not work with older device trees.
-> >
-> > This fix only applies to 2.6.28; apparently, this code is gone for
-> > 2.6.29, according to Grant Likely!
-> >
-> > Signed-off-by: Johns Daniel <johns.daniel@gmail.com>
-> 
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> 
-> Greg:  Andy Flemming should probably confirm this, but I think this
-> one should be backported to the stable series.
+Complete workaround for DTLB errata in MPC5121e processors of die M36P and 
+older (all currently existing versions).
 
-Hm, this patch is line-wrapped and tabs are stripped, so I can't apply
-it :(
+Due to the bug, the hardware-implemented LRU algorythm always goes to way 1 of 
+the TLB. This fix implements the proposed software workaround in form of a LRW table for chosing the TLB-way.
 
-Anyone care to resend it?
+Signed-off-by: David Jander <david@protonic.nl>
 
-thanks,
+---
+ arch/powerpc/kernel/head_32.S |   65 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 65 insertions(+), 0 deletions(-)
 
-greg k-h
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 0f4fac5..a88b3aa 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -540,6 +540,10 @@ DataLoadTLBMiss:
+  * r2: ptr to linux-style pte
+  * r3: scratch
+  */
++#ifdef CONFIG_PPC_MPC512x
++       b      TlbWo    /* Code for TLB-errata workaround doesn't fit here */
++RFTlbWo:
++#endif
+        mfctr   r0
+        /* Get PTE (linux-style) and check access */
+        mfspr   r3,SPRN_DMISS
+@@ -612,6 +616,31 @@ DataStoreTLBMiss:
+  * r2: ptr to linux-style pte
+  * r3: scratch
+  */
++#ifdef CONFIG_PPC_MPC512x
++/* MPC512x: workaround for errata in die M36P and earlier:
++ * Implement LRW for TLB way.
++ */
++       mfspr   r3,SPRN_DMISS
++       rlwinm  r3,r3,19,25,29 /* Get Address bits 19:15 */
++       lis     r2,lrw@ha       /* Search index in lrw[] */
++       addi    r2,r2,lrw@l
++       tophys(r2,r2)
++       lwzx    r1,r3,r2       /* Get item from lrw[] */
++       cmpwi   0,r1,0         /* Was it way 0 last time? */
++       beq-    0,113f         /* Then goto 113: */
++
++       mfspr   r1,SPRN_SRR1
++       rlwinm  r1,r1,0,15,13  /* Mask out SRR1[WAY] */
++       mtspr   SPRN_SRR1,r1
++
++       li      r0,0
++       stwx    r0,r3,r2       /* Make lrw[] entry 0 */
++       b       114f
++113:
++       li      r0,1
++       stwx    r0,r3,r2       /* Make lrw[] entry 1 */
++114:
++#endif
+        mfctr   r0
+        /* Get PTE (linux-style) and check access */
+        mfspr   r3,SPRN_DMISS
+@@ -688,6 +717,34 @@ DataStoreTLBMiss:
+        .globl mol_trampoline
+        .set mol_trampoline, i0x2f00
 
-> > ---
-> > --- linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c.orig   2009-02-20
-> > 16:41:27.000000000 -0600
-> > +++ linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c        2009-03-10
-> > 15:56:47.000000000 -0500
-> > @@ -257,7 +257,7 @@
-> >                gfar_mdio_of_init_one(np);
-> >
-> >        /* try the deprecated version */
-> > -       for_each_compatible_node(np, "mdio", "gianfar");
-> > +       for_each_compatible_node(np, "mdio", "gianfar")
-> >                gfar_mdio_of_init_one(np);
-> >
-> >        return 0;
-> > ---
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> >
-> 
-> 
-> 
-> -- 
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
++#ifdef CONFIG_PPC_MPC512x
++TlbWo:
++/* MPC512x: workaround for errata in die M36P and earlier:
++ * Implement LRW for TLB way.
++ */
++       mfspr   r3,SPRN_DMISS
++       rlwinm  r3,r3,19,25,29 /* Get Address bits 19:15 */
++       lis     r2,lrw@ha       /* Search index in lrw[] */
++       addi    r2,r2,lrw@l
++       tophys(r2,r2)
++       lwzx    r1,r3,r2       /* Get item from lrw[] */
++       cmpwi   0,r1,0         /* Was it way 0 last time? */
++       beq-    0,113f         /* Then goto 113: */
++
++       mfspr   r1,SPRN_SRR1
++       rlwinm  r1,r1,0,15,13  /* Mask out SRR1[WAY] */
++       mtspr   SPRN_SRR1,r1
++
++       li      r0,0
++       stwx    r0,r3,r2       /* Make lrw[] entry 0 */
++       b       114f
++113:
++       li      r0,1
++       stwx    r0,r3,r2       /* Make lrw[] entry 1 */
++114:
++       b       RFTlbWo
++#endif
++
+        . = 0x3000
+
+ AltiVecUnavailable:
+@@ -1321,6 +1378,14 @@ intercept_table:
+        .long 0, 0, 0, 0, 0, 0, 0, 0
+        .long 0, 0, 0, 0, 0, 0, 0, 0
+        .long 0, 0, 0, 0, 0, 0, 0, 0
++
++#ifdef CONFIG_PPC_MPC512x
++lrw:
++       .long 0, 0, 0, 0, 0, 0, 0, 0
++       .long 0, 0, 0, 0, 0, 0, 0, 0
++       .long 0, 0, 0, 0, 0, 0, 0, 0
++       .long 0, 0, 0, 0, 0, 0, 0, 0
++#endif
+
+ /* Room for two PTE pointers, usually the kernel and current user pointers
+  * to their respective root page table.
