@@ -1,22 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 39F39DE145
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 14:22:25 +1100 (EST)
-Subject: Re: [RFC] Moving toward smarter disabling of FPRs, VRs, and VSRs
-	in the MSR
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
 To: rsa@us.ibm.com
-In-Reply-To: <1236997906.3346.8.camel@localhost.localdomain>
+Subject: Re: [RFC] Moving toward smarter disabling of FPRs, VRs,
+	and VSRs in the MSR
+In-reply-to: <1236975831.3137.61.camel@localhost.localdomain> 
 References: <1236975831.3137.61.camel@localhost.localdomain>
-	<6F79BA93-346D-479F-BD63-D1D89B289D6F@kernel.crashing.org>
-	<1236984351.25062.71.camel@pasglop>
-	<1236997906.3346.8.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 14 Mar 2009 14:22:18 +1100
-Message-Id: <1237000938.25062.74.camel@pasglop>
-Mime-Version: 1.0
+Date: Sat, 14 Mar 2009 19:20:45 +1100
+Message-ID: <1746.1237018845@neuling.org>
 Cc: linuxppc-dev@ozlabs.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
 	Steven Munroe <sjmunroe@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,23 +18,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> Both of these thoughts came to mind.  I don't have a particular
-> preference.  It's very likely that a process which results in the
-> enabling of FP,VMX, or VSX may continue to use the facility for the
-> duration of it's lifetime.  Threads would be even more likely to exhibit
-> this behavior.
+> Hi all,
 > 
-> The case where this might not be true is if we use VMX or VSX for string
-> routine optimization in GLIBC.  This will require metrics to prove it's
-> utility of course.  Perhaps what I can do in the string routines is
-> check if the bits are already set and use the facility if it is already
-> enabled and the usage scenario warrants it, i.e. if the size and
-> alignment of the data are in a sweet spot as indicated by profiling
-> data.
+> Those of us working on the POWER toolchain can envision a certain class
+> of customers who may benefit from intelligently disabling certain
+> register class enable bits on context switches, i.e. not disabling by
+> default.
+> 
+> Currently, per process, if the MSR enable bits for FPs, VRs or VSRs are
+> set to disabled, an interrupt will be generated as soon as an FP, VMX,
+> or VSX instruction is encountered.  At this point the kernel enables the
+> relevant bits in the MSR and returns.
+> 
+> Currently, the kernel will disable all of the bits on a context switch.
+> 
+> If a customer _knows_ a process will be using a register class
+> extensively, e.g. VRs, they're paying the interrupt->enable-VMX price
+> with every context switch.  It'd be nice if we could intelligently leave
+> the bits enabled.
+> 
+> Solutions:
+> - A boot flag which always enables VSRs, VRs, FPRs, etc.  These are
+> cumulative, i.e. VSRs implies VRs and FPRS; VRs implies FPRs.
+> 
+> - A heuristic which permanently enables said register classes for a
+> process if they've been enabled during the previous X interrupts.
+> 
+> - The same heuristic could disable the register class bits after a
+> certain criteria is met.
 
-Or we just add some instrumentation to today kernel to see how often
-those gets enabled and then not-re-enabled on the next time slice and do
-some stats with common workloads.
+Another option is to look at getting lazy save working on SMP.  We
+currently only enable it on UP compiles.  
 
-Ben.
+This would probably have the biggest performance impact when there is
+only 1 FP/VSX/VMX application running per CPU.
+
+Mikey
+
+> 
+> We have some ideas on how to benchmark this to verify the expense of the
+> interrupt->enable.  As it presently works this stands in the way of
+> using VMX or VSX for optimized string routines in GLIBC.
+> 
+> Regards,
+> 
+> Ryan S. Arnold
+> IBM Linux Technology Center
+> Linux Toolchain Development
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
