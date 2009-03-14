@@ -1,24 +1,36 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <rsa@us.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CF485DE0F9
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Mar 2009 00:54:23 +1100 (EST)
-In-Reply-To: <1236997906.3346.8.camel@localhost.localdomain>
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 56831DE0E7
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Mar 2009 01:59:08 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n2EEuO8R012745
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 10:56:24 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n2EEx4UR054260
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 10:59:04 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n2EEx4Po030887
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 10:59:04 -0400
+Subject: Re: [RFC] Moving toward smarter disabling of FPRs, VRs, and VSRs
+	in the MSR
+From: Ryan Arnold <rsa@us.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <FFBC9638-D064-43F9-B764-243739289710@kernel.crashing.org>
 References: <1236975831.3137.61.camel@localhost.localdomain>
 	<6F79BA93-346D-479F-BD63-D1D89B289D6F@kernel.crashing.org>
 	<1236984351.25062.71.camel@pasglop>
-	<1236997906.3346.8.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2204A047-8251-4280-8E8A-9707F882C9C5@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC] Moving toward smarter disabling of FPRs, VRs,
-	and VSRs in the MSR
-Date: Sat, 14 Mar 2009 14:55:07 +0100
-To: rsa@us.ibm.com
+	<FFBC9638-D064-43F9-B764-243739289710@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sat, 14 Mar 2009 09:58:59 -0500
+Message-Id: <1237042739.8874.3.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: Will Schmidt <will_schmidt@vnet.ibm.com>,
 	Steven Munroe <sjmunroe@us.ibm.com>, linuxppc-dev@ozlabs.org
+Reply-To: rsa@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> It's very likely that a process which results in the
-> enabling of FP,VMX, or VSX may continue to use the facility for the
-> duration of it's lifetime.  Threads would be even more likely to  
-> exhibit
-> this behavior.
->
-> The case where this might not be true is if we use VMX or VSX for  
-> string
-> routine optimization in GLIBC.  This will require metrics to prove  
-> it's
-> utility of course.
+On Sat, 2009-03-14 at 14:49 +0100, Segher Boessenkool wrote:
+> > Another option might be simply to say that if an app has used FP,  
+> > VMX or
+> > VSX -once-, then it's likely to do it again and just keep re-enabling
+> > it :-)
+> >
+> > I'm serious here, do we know that many cases where these things are  
+> > used
+> > seldomly once in a while ?
+> 
+> For FP, I believe many apps use it only sporadically.  But for VMX  
+> and VSX,
+> yeah, it might well be optimal to keep it enabled all the time.  Someone
+> should do some profiling...
 
-OTOH, the main cost of using VMX etc. is exactly this register save/ 
-restore,
-and it's a win otherwise pretty much always.  I.e., as soon as you take
-that initial hit, almost anything can get a speedup from VMX.  So  
-even if
-you do not see an overall speedup from, say, only some optimised string
-routines, it probably is worth it anyway as it pays the initial cost for
-enabling more optimisations later.
+We can do some VMX testing on existing POWER6 machines.  The VSX
+instruction set hasn't been fully implemented in GCC yet so we'll need
+to wait a bit for that.  Does anyone have an idea for a good VMX/Altivec
+benchmark?
 
-
-Segher
+Ryan
