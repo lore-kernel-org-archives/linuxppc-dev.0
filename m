@@ -1,20 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f174.google.com (mail-gx0-f174.google.com
-	[209.85.217.174]) by ozlabs.org (Postfix) with ESMTP id 0FDF1DDFDD
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Mar 2009 13:01:44 +1100 (EST)
-Received: by gxk22 with SMTP id 22so6249821gxk.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2009 19:01:42 -0700 (PDT)
+Return-Path: <thunderbird2k@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 74016DE08A
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Mar 2009 19:38:29 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Sun, 15 Mar 2009 09:38:26 +0100
+From: "Roderick Colenbrander" <thunderbird2k@gmx.net>
+In-Reply-To: <20090314215439.8080@gmx.net>
+Message-ID: <20090315083826.302680@gmx.net>
 MIME-Version: 1.0
-In-Reply-To: <49BBC757.7090001@computer.org>
-References: <49BBC757.7090001@computer.org>
-Date: Sat, 14 Mar 2009 20:01:42 -0600
-Message-ID: <fa686aa40903141901jc25836dne554e14182e35dfd@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Remove extra semicolon in fsl_soc.c (2nd try)
-From: Grant Likely <grant.likely@secretlab.ca>
-To: jdaniel@computer.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: greg@kroah.com, afleming@freescale.com, stable@kernel.org,
-	linuxppc-dev@ozlabs.org
+References: <20090312103219.228100@gmx.net> <20090314215439.8080@gmx.net>
+Subject: Re: DTS file PCI / i8259 for Xilinx ML510
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Mar 14, 2009 at 9:03 AM, Johns Daniel <jdaniel@computer.org> wrote:
-> TSEC/MDIO will not work with older device trees because of a semicolon at
-> the end of a macro resulting in an empty for loop body.
->
-> This fix only applies to 2.6.28; this code is gone in 2.6.29, according t=
-o
-> Grant Likely!
->
-> Signed-off-by: Johns Daniel <johns.daniel@gmail.com
-> <mailto:johns.daniel@gmail.com>>
 
-Your signed-off-by line is odd.  I assume your mailer did this to you.
- But in case Greg picks it up anyway:
+> > At some point in the file they create some (dummy?) pcie section in
+> > which they define a uli1575, an isa bus and attached to that isa bus a
+> > i8259. Is this the correct way of doing things? The i8259 driver seems
+> > to use io ports 0x20-21/0xa0-0xa1/0x4d0-0x4d1 those are also defined
+> > below but how are those mapped to the south bridge? I have seen some
+> > code in kernel/isa-bridge, is that code indeed responsible for setting
+> > up these ports?
+> Yes, the pcie node is the PCI host bridge node and the uli1571 node acts
+> as PCI2ISA bridge node. AFAIK their ranges properties are parsed by
+> pci_process_bridge_OF_ranges().
+> IIRC the code in kernel/isa-bridge is used for 64bit PPC machines only
+> for now. The I/O addresses for the i8259 PIC are currently hardcoded and
+> setup (request_resource()) in sysdev/i8259.c.
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+I got the i8259 south bridge working now after adding an io_base_virt offset to all inb/outb lines in sysdev/i8259.c. Would it be worth all the troubles to add ppc32 support to isa-bridge.c? The whole point of the code is basically to remap the io memory to low addresses for these 64-bit ppc systems (mainly freescale boards with a i8259 and pseries systems with a i8259). As far as I have seen it is only needed for i8259 interrupt controllers. Personally I think it would be better to pass a io base offset to i8259_setup or so. Or perhaps do some dts file parsing in i8259.c. I'm not sure what the proper layout would be for this in the dts file though.
 
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> --- linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c.orig =A0 2009-02-20
-> 16:41:27.000000000 -0600
-> +++ linux-2.6.28.7/arch/powerpc/sysdev/fsl_soc.c =A0 =A0 =A0 =A02009-03-1=
-4
-> 09:01:38.994630400 -0500
-> @@ -257,7 +257,7 @@ static int __init gfar_mdio_of_init(void
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gfar_mdio_of_init_one(np);
->
-> =A0 =A0 =A0 =A0/* try the deprecated version */
-> - =A0 =A0 =A0 for_each_compatible_node(np, "mdio", "gianfar");
-> + =A0 =A0 =A0 for_each_compatible_node(np, "mdio", "gianfar")
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gfar_mdio_of_init_one(np);
->
-> =A0 =A0 =A0 =A0return 0;
->
->
->
+With those changes I mentioned to i8259.c I got some PCI devices of my ali m1553 south bridge working. The code is ugly and I need to do cleanups. When it is done I will submit some patches.
 
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Regards,
+Roderick Colenbrander
+-- 
+Psssst! Schon vom neuen GMX MultiMessenger gehört? Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger01
