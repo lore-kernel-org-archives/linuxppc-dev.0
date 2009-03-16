@@ -1,21 +1,18 @@
-Return-Path: <takatz@pericle.com>
-Received: from xceltech.net (mail2.xceltech.net [199.227.119.213])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9896BDDF00
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 01:40:21 +1100 (EST)
-Message-ID: <49BE64C9.2000104@pericle.com>
-Date: Mon, 16 Mar 2009 08:40:09 -0600
-From: Mark Takatz <takatz@pericle.com>
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id D8181DDE25
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 02:02:36 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC][PATCH v4] powerpc/mm: e300c2/c3/c4 TLB errata workaround
+Date: Mon, 16 Mar 2009 16:02:32 +0100
+References: <1237208538-32597-1-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1237208538-32597-1-git-send-email-galak@kernel.crashing.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: use generic	pci_assign_unassign_resources
-References: %(message_id_url)s <49BAE147.4060102@pericle.com>
-	<1237161414.25062.105.camel@pasglop>
-In-Reply-To: <1237161414.25062.105.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Robert Wuest <rwuest@wuest.org>
-Reply-To: Mark Takatz <takatz@pericle.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200903161602.33218.david.jander@protonic.nl>
+Cc: linuxppc-dev@ozlabs.org, wd@denx.de, gunnar@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,43 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hehe, and that opens up an entirely different can of worms with our board.
 
-Thanks, however.
+Ok, I was analysing your code (which seems much more compact than mine):
 
-Mark
+On Monday 16 March 2009 14:02:18 Kumar Gala wrote:
+>[...]
+> --- a/arch/powerpc/kernel/head_32.S
+> +++ b/arch/powerpc/kernel/head_32.S
+> @@ -587,9 +587,19 @@ DataLoadTLBMiss:
+>  	ori	r1,r1,0xe04		/* clear out reserved bits */
+>  	andc	r1,r0,r1		/* PP = user? (rw&dirty? 2: 3): 0 */
+>  	mtspr	SPRN_RPA,r1
+> +	mfspr	r2,SPRN_SRR1		/* Need to restore CR0 */
+> +	mtcrf	0x80,r2
+> +BEGIN_MMU_FTR_SECTION
+> +	li	r0,1
+> +	lwz	r1,sw_way_lru@l(0)
+> +	rlwinm	r3,r3,19,25,29		/* Get Address bits 19:15 */
 
-Benjamin Herrenschmidt wrote:
-> On Fri, 2009-03-13 at 16:42 -0600, Mark Takatz wrote:
->   
->> Ben,
->>
->> We're looking at the fixes you put in place for the various PCI errors 
->> and we think this is the solution we need for our system, a GE Fanuc CM6 
->> PPC board (single 8641), but your patches appear to apply either to 
->> 2.6.24 or 2.6.25, and we have 2.6.23.  Do you know of any similar work 
->> done on the 2.6.23 release?
->>
->> Thanks in advance for any help you can provide,
->>     
+This should be 'rlwinm	r3,r3,17,27,31' now, since you address bits, not ints.
+Note that you are trashing r3 (SPRN_DMISS) here!
+
+> +	slw	r0,r0,r3
+> +	xor	r1,r0,r1
+> +	srw	r0,r1,r3
+> +	stw	r1,sw_way_lru@l(0)
+> +	rlwimi	r2,r0,31-14,14,14
+> +END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
+>  	tlbld	r3
+
+And now you load r3 into the tlb, is this right? It doesn't seem right to 
+me....
+
+> -	mfspr	r3,SPRN_SRR1		/* Need to restore CR0 */
+> -	mtcrf	0x80,r3
+>  	rfi
+>  DataAddressInvalid:
+>  	mfspr	r3,SPRN_SRR1
+> @@ -652,11 +662,25 @@ DataStoreTLBMiss:
+>  	li	r1,0xe05		/* clear out reserved bits & PP lsb */
+>  	andc	r1,r0,r1		/* PP = user? 2: 0 */
+>  	mtspr	SPRN_RPA,r1
+> +	mfspr	r2,SPRN_SRR1		/* Need to restore CR0 */
+> +	mtcrf	0x80,r2
+> +BEGIN_MMU_FTR_SECTION
+> +	li	r0,1
+> +	lwz	r1,sw_way_lru@l(0)
+> +	rlwinm	r3,r3,19,25,29		/* Get Address bits 19:15 */
+> +	slw	r0,r0,r3
+> +	xor	r1,r0,r1
+> +	srw	r0,r1,r3
+> +	stw	r1,sw_way_lru@l(0)
+> +	rlwimi	r2,r0,31-14,14,14
+> +END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
+>  	tlbld	r3
+
+Same thing here, r3 is trashed.
+
+> -	mfspr	r3,SPRN_SRR1		/* Need to restore CR0 */
+> -	mtcrf	0x80,r3
+>  	rfi
 >
-> No, you would have to backport major chunks of the PCI rework I did in
-> between, along with fixes I did after that. At this stage I would
-> recommend considering an update to 2.6.27 or 2.6.28.
->
-> Cheers,
-> Ben.
->
->
->
->   
+> +	.balign	L1_CACHE_BYTES
+> +sw_way_lru:
+> +	.long 0
+> +
+
+Ok, I'll try to do it like this, but with lru stored in SPRG6
+
+Best regards,
 
 -- 
-Mark J. Takatz
-Pericle Communications Company
-1910 Vindicator Drive, Suite 100
-Colorado Springs, CO 80919
-Office:  (719) 548-1170
-Cell:  (719) 287-5267
-Fax:  (719) 548-1211
-takatz@pericle.com
+David Jander
+Protonic Holland.
