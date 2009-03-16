@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 970F3DE2E5
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:14:03 +1100 (EST)
-Date: Tue, 17 Mar 2009 00:14:02 +0300
+	by ozlabs.org (Postfix) with ESMTP id 1B498DE308
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:14:05 +1100 (EST)
+Date: Tue, 17 Mar 2009 00:14:03 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 09/11] sdhci: Add quirk for controllers that need IRQ
-	re-init after reset
-Message-ID: <20090316211402.GI9375@oksana.dev.rtsoft.ru>
+Subject: [PATCH 10/11] sdhci: Add quirk for forcing maximum block size to
+	2048 bytes
+Message-ID: <20090316211403.GJ9375@oksana.dev.rtsoft.ru>
 References: <20090316211306.GA1736@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,57 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-FSL eSDHC controllers losing signal/interrupt enable states after
-reset, so we should re-enable them.
+FSL eSDHC controllers can support maximum block size up to 4096 bytes,
+the MBL (Maximum Block Length) field in the capabilities register
+extended by one bit, and is set to 0x3.
+
+But the SDHCI core doesn't support blocks of 4096 bytes, and thus
+forces blksz to the lowest value -- 512 bytes. With this patch we can
+pin up the blksz to the maximum supported block size, i.e. 2048 bytes.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |    7 +++++++
+ drivers/mmc/host/sdhci.c |   20 +++++++++++++-------
  drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 9 insertions(+), 0 deletions(-)
+ 2 files changed, 15 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index cd6dab3..3a72fe2 100644
+index 3a72fe2..30d8e3d 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -134,6 +134,7 @@ static void sdhci_disable_card_detection(struct sdhci_host *host)
- static void sdhci_reset(struct sdhci_host *host, u8 mask)
- {
- 	unsigned long timeout;
-+	u32 uninitialized_var(ier);
- 
- 	if (host->quirks & SDHCI_QUIRK_NO_CARD_NO_RESET) {
- 		if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) &
-@@ -141,6 +142,9 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
- 			return;
- 	}
- 
-+	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
-+		ier = sdhci_readl(host, SDHCI_INT_ENABLE);
+@@ -1777,13 +1777,19 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	 * Maximum block size. This varies from controller to controller and
+ 	 * is specified in the capabilities register.
+ 	 */
+-	mmc->max_blk_size = (caps & SDHCI_MAX_BLOCK_MASK) >> SDHCI_MAX_BLOCK_SHIFT;
+-	if (mmc->max_blk_size >= 3) {
+-		printk(KERN_WARNING "%s: Invalid maximum block size, "
+-			"assuming 512 bytes\n", mmc_hostname(mmc));
+-		mmc->max_blk_size = 512;
+-	} else
+-		mmc->max_blk_size = 512 << mmc->max_blk_size;
++	if (host->quirks & SDHCI_QUIRK_FORCE_BLK_SZ_2048) {
++		mmc->max_blk_size = 2;
++	} else {
++		mmc->max_blk_size = (caps & SDHCI_MAX_BLOCK_MASK) >>
++				SDHCI_MAX_BLOCK_SHIFT;
++		if (mmc->max_blk_size >= 3) {
++			printk(KERN_WARNING "%s: Invalid maximum block size, "
++				"assuming 512 bytes\n", mmc_hostname(mmc));
++			mmc->max_blk_size = 0;
++		}
++	}
 +
- 	sdhci_writeb(host, mask, SDHCI_SOFTWARE_RESET);
++	mmc->max_blk_size = 512 << mmc->max_blk_size;
  
- 	if (mask & SDHCI_RESET_ALL)
-@@ -160,6 +164,9 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
- 		timeout--;
- 		mdelay(1);
- 	}
-+
-+	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
-+		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
- }
- 
- static void sdhci_init(struct sdhci_host *host)
+ 	/*
+ 	 * Maximum block count.
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index c5ce9ee..2962102 100644
+index 2962102..f20a834 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -222,6 +222,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<17)
- /* Controller does not like fast PIO transfers */
+@@ -224,6 +224,8 @@ struct sdhci_host {
  #define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<18)
-+/* Controller losing signal/interrupt enable states after reset */
-+#define SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET		(1<<19)
+ /* Controller losing signal/interrupt enable states after reset */
+ #define SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET		(1<<19)
++/* Controller has to be forced to use block size of 2048 bytes */
++#define SDHCI_QUIRK_FORCE_BLK_SZ_2048			(1<<20)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
