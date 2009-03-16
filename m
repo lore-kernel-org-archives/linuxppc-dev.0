@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DD04CDDF90
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 02:09:51 +1100 (EST)
-Message-Id: <4C8B89DE-877B-43FC-95E1-81407CE99C46@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <A59AAF78-1AC1-4B67-A0DB-6D2F9CE0FA20@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [RFC][PATCH v4] powerpc/mm: e300c2/c3/c4 TLB errata workaround
-Date: Mon, 16 Mar 2009 10:09:40 -0500
-References: <1237208538-32597-1-git-send-email-galak@kernel.crashing.org>
-	<200903161602.33218.david.jander@protonic.nl>
-	<A59AAF78-1AC1-4B67-A0DB-6D2F9CE0FA20@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, David Jander <david.jander@protonic.nl>,
-	wd@denx.de, gunnar@genesi-usa.com
+Return-Path: <liranrazlinux@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id B31EADDF31
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 00:39:11 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so1733921ywb.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 06:39:09 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <ed82fe3e0903131718u2d49cad3j78e2d08d4de0bf4a@mail.gmail.com>
+References: <e3b3ab5c0903131156l45ab934fyf7fb33b71468594a@mail.gmail.com>
+	<ed82fe3e0903131718u2d49cad3j78e2d08d4de0bf4a@mail.gmail.com>
+Date: Mon, 16 Mar 2009 05:39:08 -0800
+Message-ID: <e3b3ab5c0903160639u625a0fd3xa665896bb378b109@mail.gmail.com>
+Subject: Re: node /dev/ttyCPM2 not created
+From: liran raz <liranrazlinux@gmail.com>
+To: Timur Tabi <timur@tabi.org>
+Content-Type: multipart/alternative; boundary=000e0cd487ba272d9e04653c9384
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--000e0cd487ba272d9e04653c9384
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Mar 16, 2009, at 10:06 AM, Kumar Gala wrote:
+Thanks, I don't see any mdev process running.
+Just wonder who is creating /dev/ttyCPM1 since in the device table file
+(device_table.txt)
+I have only node: 204 (major) 46 (minor) defined.
+But I can see /dev/ttyCPM1 (204 47)
+Liran.
 
->
-> On Mar 16, 2009, at 10:02 AM, David Jander wrote:
->
->>
->> Ok, I was analysing your code (which seems much more compact than  
->> mine):
->>
->> On Monday 16 March 2009 14:02:18 Kumar Gala wrote:
->>> [...]
->>> --- a/arch/powerpc/kernel/head_32.S
->>> +++ b/arch/powerpc/kernel/head_32.S
->>> @@ -587,9 +587,19 @@ DataLoadTLBMiss:
->>> 	ori	r1,r1,0xe04		/* clear out reserved bits */
->>> 	andc	r1,r0,r1		/* PP = user? (rw&dirty? 2: 3): 0 */
->>> 	mtspr	SPRN_RPA,r1
->>> +	mfspr	r2,SPRN_SRR1		/* Need to restore CR0 */
->>> +	mtcrf	0x80,r2
->>> +BEGIN_MMU_FTR_SECTION
->>> +	li	r0,1
->>> +	lwz	r1,sw_way_lru@l(0)
->>> +	rlwinm	r3,r3,19,25,29		/* Get Address bits 19:15 */
->>
->> This should be 'rlwinm	r3,r3,17,27,31' now, since you address bits,  
->> not ints.
->
-> was just copying/pasting what you had :)
->
->> Note that you are trashing r3 (SPRN_DMISS) here!
->
-> good catch..
->
->>> +	slw	r0,r0,r3
->>> +	xor	r1,r0,r1
->>> +	srw	r0,r1,r3
->>> +	stw	r1,sw_way_lru@l(0)
->>> +	rlwimi	r2,r0,31-14,14,14
+On Fri, Mar 13, 2009 at 4:18 PM, Timur Tabi <timur@tabi.org> wrote:
 
-I'm also missing a:
-	mtspr	SPRN_SRR1,r2
+> On Fri, Mar 13, 2009 at 1:56 PM, liran raz <liranrazlinux@gmail.com>
+> wrote:
+>
+> > Does anyone know what I'm missing? or what do I need to configure
+> > in order to have: /dev/ttyCPM2 ?
+>
+> My guess is that you don't have udev or mdev running.
+>
+>
+> --
+> Timur Tabi
+> Linux kernel developer at Freescale
+>
 
-- k
+--000e0cd487ba272d9e04653c9384
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<div>Thanks, I don&#39;t see any mdev process=A0running.</div>
+<div>Just wonder who is creating /dev/ttyCPM1 since in the device table fil=
+e (device_table.txt)</div>
+<div>I have only node: 204 (major) 46 (minor) defined.</div>
+<div>But I can see /dev/ttyCPM1 (204 47)</div>
+<div>Liran.<br><br></div>
+<div class=3D"gmail_quote">On Fri, Mar 13, 2009 at 4:18 PM, Timur Tabi <spa=
+n dir=3D"ltr">&lt;<a href=3D"mailto:timur@tabi.org">timur@tabi.org</a>&gt;<=
+/span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"PADDING-LEFT: 1ex; MARGIN: 0px 0=
+px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">
+<div class=3D"im">On Fri, Mar 13, 2009 at 1:56 PM, liran raz &lt;<a href=3D=
+"mailto:liranrazlinux@gmail.com">liranrazlinux@gmail.com</a>&gt; wrote:<br>=
+<br>&gt; Does anyone know what I&#39;m missing? or what do I need to config=
+ure<br>
+&gt; in order to have: /dev/ttyCPM2 ?<br><br></div>My guess is that you don=
+&#39;t have udev or mdev running.<br><font color=3D"#888888"><br><br>--<br>=
+Timur Tabi<br>Linux kernel developer at Freescale<br></font></blockquote>
+</div><br>
+
+--000e0cd487ba272d9e04653c9384--
