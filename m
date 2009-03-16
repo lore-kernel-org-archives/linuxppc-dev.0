@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 7F3F8DE090
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:14:00 +1100 (EST)
-Date: Tue, 17 Mar 2009 00:13:59 +0300
+	by ozlabs.org (Postfix) with ESMTP id 2A62DDE2AD
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:14:02 +1100 (EST)
+Date: Tue, 17 Mar 2009 00:14:00 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 07/11] sdhci: Add set_clock callback and a quirk for
-	nonstandard clocks
-Message-ID: <20090316211359.GG9375@oksana.dev.rtsoft.ru>
+Subject: [PATCH 08/11] sdhci: Add quirk for controllers that need small
+	delays for PIO
+Message-ID: <20090316211400.GH9375@oksana.dev.rtsoft.ru>
 References: <20090316211306.GA1736@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,60 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-FSL eSDHC hosts have incompatible register map to manage the SDCLK.
-This patch adds set_clock callback so that drivers could overwrite
-set_clock behaviour.
-
-Similar patch[1] was posted by Ben Dooks, though in Ben's version the
-callback is named change_clock, plus the patch has some unrelated bits
-that makes the patch difficult to reuse.
-
-[1] http://lkml.org/lkml/2008/12/2/160
+Small udelay is needed to make eSDHC work in PIO mode. Without
+the delay reading causes endless interrupt storm, and writing
+corrupts data. The first guess would be that we must wait for
+some bit in some register, but I didn't find any reliable bits
+that change before and after the delay.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |    6 ++++++
- drivers/mmc/host/sdhci.h |    4 ++++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+ drivers/mmc/host/sdhci.c |    3 +++
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 34ab77b..75d0ecb 100644
+index 75d0ecb..cd6dab3 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -949,6 +949,12 @@ static void sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
- 	if (clock == host->clock)
- 		return;
+@@ -336,6 +336,9 @@ static void sdhci_transfer_pio(struct sdhci_host *host)
+ 		mask = ~0;
  
-+	if (host->ops->set_clock) {
-+		host->ops->set_clock(host, clock);
-+		if (host->quirks & SDHCI_QUIRK_NONSTANDARD_CLOCK)
-+			return;
-+	}
+ 	while (sdhci_readl(host, SDHCI_PRESENT_STATE) & mask) {
++		if (host->quirks & SDHCI_QUIRK_PIO_NEEDS_DELAY)
++			udelay(100);
 +
- 	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
- 
- 	if (clock == 0)
+ 		if (host->data->flags & MMC_DATA_READ)
+ 			sdhci_read_block_pio(host);
+ 		else
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index aab0652..b9bc622 100644
+index b9bc622..c5ce9ee 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -218,6 +218,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<15)
- /* Controller reports inverted write-protect state */
+@@ -220,6 +220,8 @@ struct sdhci_host {
  #define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<16)
-+/* Controller has nonstandard clock management */
-+#define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<17)
+ /* Controller has nonstandard clock management */
+ #define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<17)
++/* Controller does not like fast PIO transfers */
++#define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<18)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
-@@ -284,6 +286,8 @@ struct sdhci_ops {
- 	void		(*writeb)(struct sdhci_host *host, u8 val, int reg);
- #endif
- 
-+	void	(*set_clock)(struct sdhci_host *host, unsigned int clock);
-+
- 	int		(*enable_dma)(struct sdhci_host *host);
- 	unsigned int	(*get_max_clock)(struct sdhci_host *host);
- 	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
 -- 
 1.5.6.5
