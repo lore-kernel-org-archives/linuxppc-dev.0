@@ -1,22 +1,25 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 4BA70DDF2E
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 05:37:57 +1100 (EST)
-Date: Mon, 16 Mar 2009 13:37:45 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [PATCH 1/3] powerpc: bare minimum checkpoint/restart
-	implementation
-Message-ID: <20090316133745.4f636979@thinkcentre.lan>
-In-Reply-To: <49B9D37A.1070503@cs.columbia.edu>
-References: <1233182478-27113-1-git-send-email-ntl@pobox.com>
-	<1233182478-27113-2-git-send-email-ntl@pobox.com>
-	<49814FA2.9060108@cs.columbia.edu> <20090129214035.GB6913@localdomain>
-	<20090217010355.58afd5cf@thinkcentre.lan>
-	<49B9D37A.1070503@cs.columbia.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: containers@lists.osdl.org, linuxppc-dev@ozlabs.org
+Return-Path: <hpa@hera.kernel.org>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 11BE4DDF81
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 05:42:50 +1100 (EST)
+Date: Mon, 16 Mar 2009 18:42:27 GMT
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090316185256.4a160374.sfr@canb.auug.org.au>
+References: <20090316185256.4a160374.sfr@canb.auug.org.au>
+Subject: [tip:irq/sparseirq] sparseirq,
+	powerpc/cell: fix unused variable warning in interrupt.c
+Message-ID: <tip-a6bc3262c561780d2a6587aa3d5715b1e7d8fa13@git.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de,
+	yinghai@kernel.org, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+	yinghai@kernel.org, linuxppc-dev@ozlabs.org, tglx@linutronix.de,
+	sfr@canb.auug.org.au, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,80 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Oren Laadan <orenl@cs.columbia.edu> wrote:
-> 
-> Nathan Lynch wrote:
-> > Nathan Lynch <ntl@pobox.com> wrote:
-> >> Oren Laadan wrote:
-> >>> Nathan Lynch wrote:
-> >>>> What doesn't work:
-> >>>> * restarting a 32-bit task from a 64-bit task and vice versa
-> >>> Is there a test to bail if we attempt to checkpoint such tasks ?
-> >> No, but I'll add one if it looks too hard to fix for the next round.
-> > 
-> > Unfortunately, adding a check for this is hard.
-> > 
-> > The "point of no return" in the restart path is cr_read_mm, which tears
-> > down current's address space.  cr_read_mm runs way before cr_read_cpu,
-> > which is the only restart method I've implemented for powerpc so far.
-> > So, checking for this condition in cr_read_cpu is too late if I want
-> > restart(2) to return an error and leave the caller's memory map
-> > intact.  (And I do want this: restart should be as robust as execve.)
-> 
-> In the case of restarting a container, I think it's ok if a restarting
-> tasks dies in an "ugly" way -- this will be observed and handled by the
-> initiating task outside the container, which will gracefully report to
-> the caller/user.
+Commit-ID:  a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
+Gitweb:     http://git.kernel.org/tip/a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
+Author:     Stephen Rothwell <sfr@canb.auug.org.au>
+AuthorDate: Mon, 16 Mar 2009 18:52:56 +1100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 16 Mar 2009 09:21:57 +0100
 
-How would task exit be observed?  Are all tasks in a restarted
-container guaranteed to be children (in the sense that wait(2) would
-work) of the initiating task?
+sparseirq, powerpc/cell: fix unused variable warning in interrupt.c
+
+This new compiler warning:
+
+   arch/powerpc/platforms/cell/interrupt.c: In function 'handle_iic_irq':
+   arch/powerpc/platforms/cell/interrupt.c:240: warning: unused variable 'cpu'
+
+Triggers because the local variable 'cpu' became unused due to commit:
+
+   dee4102: sparseirq: use kstat_irqs_cpu instead
+
+Remove the variable.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+LKML-Reference: <20090316185256.4a160374.sfr@canb.auug.org.au>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-> Even if you close this hole, then any other failure later on during
-> restart - even a failure to allocate kernel memory due to memory pressure,
-> will give that undesired effect that you are trying to avoid.
+---
+ arch/powerpc/platforms/cell/interrupt.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-Kernel memory allocation failure is not the kind of problem I'm trying
-to address.  I am trying to address the case of restarting a checkpoint
-image that needs features that are not present, where the set of
-features used by the checkpoint image can be compared against the set
-of features the platform provides.
-
-
-> That said, any difference in the architecture that may cause restart to
-> fail is probably best placed in cr_write_head_arch.
-
-I think I explained in my earlier mail why the current implementation's
-cr_write_head_arch doesn't help in this case:
-
-> > Well okay then, cr_read_head_arch seems to be the right place in the
-> > restart sequence for the architecture code to handle this.  However,
-> > cr_write_head_arch (which produces the buffer that cr_read_head_arch
-> > consumes) is not provided a reference to the task to be checkpointed,
-> > nor can it assume that it's operating on current.  I need a reference
-> > to a task before I can determine whether it's running in 32- or 64-bit
-> > mode, or using the FPU, Altivec, SPE, whatever.
-> > 
-> > In any case, mixing 32- and 64-bit tasks across restart is something I
-> > eventually want to support, not reject.  But the problem I've outlined
-> > applies to FPU state and vector extensions (VMX, SPE), as well as
-> > sanity-checking debug register (DABR) contents.  We'll need to be able
-> > to error out gracefully from restart when a checkpoint image specifies a
-> > feature unsupported by the current kernel or hardware.  But I don't see
-> > how to do it with the current architecture.  Am I missing something?
-> > 
-> 
-> More specifically, I envision restart to work like this:
-> 
-> 1) user invokes user-land utility (e.g. "cr --restart ..."
-> 2) 'cr' will create a new container
-> 3) 'cr' will start a child in that container
-> 4) child will create rest of tree (in kernel or in user space - tbd)
-> 5) each task in that tree will restore itself
-> 6) 'cr' monitors this process
-> 7) if all goes well - 'cr' report ok.
-> 8) if something goes bad, 'cr' notices and notifies caller/user
-
-Again, how would 'cr' obtain exit status for these tasks, and how would
-it distinguish failure from normal operation?
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 1f0d774..882e470 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -237,8 +237,6 @@ extern int noirqdebug;
+ 
+ static void handle_iic_irq(unsigned int irq, struct irq_desc *desc)
+ {
+-	const unsigned int cpu = smp_processor_id();
+-
+ 	spin_lock(&desc->lock);
+ 
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
