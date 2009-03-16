@@ -1,16 +1,15 @@
-Return-Path: <adrian@rhlx01.hs-esslingen.de>
-Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rhlx01.hs-esslingen.de", Issuer "HE CA - G02" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D36DCDDF77
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 23:44:27 +1100 (EST)
-Date: Mon, 16 Mar 2009 13:35:43 +0100
-From: Adrian Reber <adrian@lisas.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix RTAS watchdog driver temperature read functionality
-Message-ID: <20090316123543.GG15530@lisas.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5AAABDDF59
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 00:02:26 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: david.jander@protonic.nl
+Subject: [RFC][PATCH v4] powerpc/mm: e300c2/c3/c4 TLB errata workaround
+Date: Mon, 16 Mar 2009 08:02:18 -0500
+Message-Id: <1237208538-32597-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, wd@denx.de, gunnar@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,69 +19,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Complete workaround for DTLB errata in e300c2/c3/c4 processors.
 
-Using the RTAS watchdog driver to read out the temperature crashes
-on a PXCAB:
+Due to the bug, the hardware-implemented LRU algorythm always goes to way
+1 of the TLB. This fix implements the proposed software workaround in
+form of a LRW table for chosing the TLB-way.
 
-Unable to handle kernel paging request for data at address 0xfe347b50
-Faulting instruction address: 0xc00000000001af64
-Oops: Kernel access of bad area, sig: 11 [#1]
+Based on patch from David Jander <david@protonic.nl>
 
-This (removing "(void *)__pa") fixes it.
-
-Signed-off-by: Adrian Reber <adrian@lisas.de>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- drivers/watchdog/wdrtas.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/mmu.h |    6 ++++++
+ arch/powerpc/kernel/cputable.c |    9 ++++++---
+ arch/powerpc/kernel/head_32.S  |   32 ++++++++++++++++++++++++++++----
+ 3 files changed, 40 insertions(+), 7 deletions(-)
 
-Fix for:
-
-Unable to handle kernel paging request for data at address 0xfe347b50
-Faulting instruction address: 0xc00000000001af64
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=4 NUMA Cell
-Modules linked in:
-NIP: c00000000001af64 LR: c00000000001af28 CTR: c000000000281888
-REGS: c0000000fe3477a0 TRAP: 0300   Not tainted  (2.6.29-rc6-11955-g2450cf5)
-MSR: 9000000000001032 <ME,IR,DR>  CR: 22000422  XER: 00000000
-DAR: 00000000fe347b50, DSISR: 0000000042000000
-TASK = c0000000fe4886f0[1184] 'a.out' THREAD: c0000000fe344000 CPU: 1
-GPR00: 000000000000002a c0000000fe347a20 c000000000ab2160 c000000000007bc0 
-GPR04: 0000000022000422 c000000000281888 0000000000000000 00000400001e6138  
-GPR08: 0000000000000008 c000000000b23ce4 0000000000000008 00000000fe347b54 
-GPR12: 0000000082000424 c000000000b23680 c0000000003b37b0 c000000000441620 
-GPR16: c0000000004412e0 c000000000441130 000000000e154ec8 c0000000003b4580 
-GPR20: 0000000000000000 00000000100a0370 00000000100a0390 c000000000b23cc8 
-GPR24: 0000000000000001 0000000000000002 00000000fe347b50 0000000000000002 
-GPR28: 0000000000000010 c000000000b23cb0 c000000000a59588 0000000000000002 
-NIP [c00000000001af64] .rtas_call+0x1ac/0x1f8
-LR [c00000000001af28] .rtas_call+0x170/0x1f8
-Call Trace:
-[c0000000fe347a20] [c00000000001af28] .rtas_call+0x170/0x1f8 (unreliable)          
-[c0000000fe347ae0] [c0000000002812e8] .wdrtas_get_temperature+0x48/0xa8  
-[c0000000fe347b70] [c000000000281948] .wdrtas_ioctl+0xc0/0x300
-[c0000000fe347c00] [c0000000000f58a4] .vfs_ioctl+0x54/0x138
-[c0000000fe347c90] [c0000000000f5a20] .do_vfs_ioctl+0x98/0x738
-[c0000000fe347d80] [c0000000000f6114] .SyS_ioctl+0x54/0xc8
-[c0000000fe347e30] [c0000000000074b4] syscall_exit+0x0/0x40
-Instruction dump:
-2fba0000 419e0034 3939fffe 39400004 79290020 39290002 79281764 e93d0070 
-7d7a5214 7c09502e 394a0004 7faa4000 <900bfffc> 409effe8 e93d0070 ebe90002 
----[ end trace 084fb7ab3feda750 ]---
-
-diff --git a/drivers/watchdog/wdrtas.c b/drivers/watchdog/wdrtas.c
-index 5d3b1a8..30ee1f2 100644
---- a/drivers/watchdog/wdrtas.c
-+++ b/drivers/watchdog/wdrtas.c
-@@ -218,8 +218,7 @@ static int wdrtas_get_temperature(void)
- 	int temperature = 0;
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 10476a8..cbf1543 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -46,6 +46,12 @@
+  */
+ #define MMU_FTR_LOCK_BCAST_INVAL	ASM_CONST(0x00100000)
  
- 	result = rtas_call(wdrtas_token_get_sensor_state, 2, 2,
--			   (void *)__pa(&temperature),
--			   WDRTAS_THERMAL_SENSOR, 0);
-+			   &temperature, WDRTAS_THERMAL_SENSOR, 0);
++/* This indicates that the processor doesn't handle way selection
++ * properly and needs SW to track and update the LRU state.  This
++ * is specific to an errata on e300c2/c3/c4 class parts
++ */
++#define MMU_FTR_NEED_DTLB_SW_LRU	ASM_CONST(0x00200000)
++
+ #ifndef __ASSEMBLY__
+ #include <asm/cputable.h>
  
- 	if (result < 0)
- 		printk(KERN_WARNING "wdrtas: reading the thermal sensor "
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index ccea243..cd1b687 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1090,7 +1090,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_name		= "e300c2",
+ 		.cpu_features		= CPU_FTRS_E300C2,
+ 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+-		.mmu_features		= MMU_FTR_USE_HIGH_BATS,
++		.mmu_features		= MMU_FTR_USE_HIGH_BATS |
++			MMU_FTR_NEED_DTLB_SW_LRU,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.cpu_setup		= __setup_cpu_603,
+@@ -1103,7 +1104,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_name		= "e300c3",
+ 		.cpu_features		= CPU_FTRS_E300,
+ 		.cpu_user_features	= COMMON_USER,
+-		.mmu_features		= MMU_FTR_USE_HIGH_BATS,
++		.mmu_features		= MMU_FTR_USE_HIGH_BATS |
++			MMU_FTR_NEED_DTLB_SW_LRU,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.cpu_setup		= __setup_cpu_603,
+@@ -1118,7 +1120,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_name		= "e300c4",
+ 		.cpu_features		= CPU_FTRS_E300,
+ 		.cpu_user_features	= COMMON_USER,
+-		.mmu_features		= MMU_FTR_USE_HIGH_BATS,
++		.mmu_features		= MMU_FTR_USE_HIGH_BATS |
++			MMU_FTR_NEED_DTLB_SW_LRU,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.cpu_setup		= __setup_cpu_603,
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index b6c5955..d59771d 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -587,9 +587,19 @@ DataLoadTLBMiss:
+ 	ori	r1,r1,0xe04		/* clear out reserved bits */
+ 	andc	r1,r0,r1		/* PP = user? (rw&dirty? 2: 3): 0 */
+ 	mtspr	SPRN_RPA,r1
++	mfspr	r2,SPRN_SRR1		/* Need to restore CR0 */
++	mtcrf	0x80,r2
++BEGIN_MMU_FTR_SECTION
++	li	r0,1
++	lwz	r1,sw_way_lru@l(0)
++	rlwinm	r3,r3,19,25,29		/* Get Address bits 19:15 */
++	slw	r0,r0,r3
++	xor	r1,r0,r1
++	srw	r0,r1,r3
++	stw	r1,sw_way_lru@l(0)
++	rlwimi	r2,r0,31-14,14,14
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
+ 	tlbld	r3
+-	mfspr	r3,SPRN_SRR1		/* Need to restore CR0 */
+-	mtcrf	0x80,r3
+ 	rfi
+ DataAddressInvalid:
+ 	mfspr	r3,SPRN_SRR1
+@@ -652,11 +662,25 @@ DataStoreTLBMiss:
+ 	li	r1,0xe05		/* clear out reserved bits & PP lsb */
+ 	andc	r1,r0,r1		/* PP = user? 2: 0 */
+ 	mtspr	SPRN_RPA,r1
++	mfspr	r2,SPRN_SRR1		/* Need to restore CR0 */
++	mtcrf	0x80,r2
++BEGIN_MMU_FTR_SECTION
++	li	r0,1
++	lwz	r1,sw_way_lru@l(0)
++	rlwinm	r3,r3,19,25,29		/* Get Address bits 19:15 */
++	slw	r0,r0,r3
++	xor	r1,r0,r1
++	srw	r0,r1,r3
++	stw	r1,sw_way_lru@l(0)
++	rlwimi	r2,r0,31-14,14,14
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
+ 	tlbld	r3
+-	mfspr	r3,SPRN_SRR1		/* Need to restore CR0 */
+-	mtcrf	0x80,r3
+ 	rfi
+ 
++	.balign	L1_CACHE_BYTES
++sw_way_lru:
++	.long 0
++
+ #ifndef CONFIG_ALTIVEC
+ #define altivec_assist_exception	unknown_exception
+ #endif
 -- 
 1.5.6.6
