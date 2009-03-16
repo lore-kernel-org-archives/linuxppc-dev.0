@@ -2,22 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 29857DDFB5
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 22:41:37 +1100 (EST)
-Message-Id: <4A2B46D3-A304-4F66-82F9-4FFF37D0A0E8@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id BA879DDFB6
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 22:54:00 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2GBru1N029561
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 06:53:57 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
-To: David Jander <david.jander@protonic.nl>
-In-Reply-To: <200903161144.48861.david.jander@protonic.nl>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [RFC] [PATCH v2] MPC5121 TLB errata workaround
-Date: Mon, 16 Mar 2009 06:41:21 -0500
-References: <200903131121.00077.david.jander@protonic.nl>
-	<200903131524.36865.david.jander@protonic.nl>
-	<D4F18914-8CE5-46E4-9BBB-3AEF7E2DD2CA@kernel.crashing.org>
-	<200903161144.48861.david.jander@protonic.nl>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Wolfgang Denk <wd@denx.de>, Gunnar Von Boehn <gunnar@genesi-usa.com>
+To: 
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/3] powerpc/mm: Respect _PAGE_COHERENT on classic ppc32 SW
+	TLB load machines
+Date: Mon, 16 Mar 2009 06:53:54 -0500
+Message-Id: <1237204436-6025-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,118 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Since we now set _PAGE_COHERENT in the Linux PTE we shouldn't be clearing
+it out before we setup the SW TLB.  Today all the SW TLB machines
+(603/e300) that we support are non-SMP, however there are some errata on
+some devices that cause us to set _PAGE_COHERENT via CPU_FTR_NEED_COHERENT.
 
-On Mar 16, 2009, at 5:44 AM, David Jander wrote:
-
-> On Friday 13 March 2009 16:23:15 Kumar Gala wrote:
->> [...]
->>>> This errata impacts a number of cores and so we should make this a
->>>> CPU
->>>> feature fixup rather than #ifdef code.
->>>
->>> It should impact only MPC5121e and probably MPC5123, but according  
->>> to
->>> Freescale no other processors that use this core...
->>
->> Not sure about that.. But the errata impacts all e300c2/c3/c4 parts.
->
-> Can someone please check if this is true? There should be errata's  
-> for all
-> other parts that use one of these cores then.
->
->>> Anyway, I'll try to investigate about how to write a "CPU feature
->>> fixup",
->>> I've never done that before (If you could give me a hint?)
->>
->> I've posted a patch that should add the CPU feature support.  This is
->> only compile tested.  You'll need to try it out on real HW :)
->
-> That's a problem right now: The only useable kernel for the MPC5121e  
-> is the
-> one on the 'ads5121' head from denx, and that is version 2.6.24.6.  
-> Your patch
-> (v3) does not apply to that kernel, so I would have to change a few  
-> things
-> before I can actually try it out:
->
->> #define CPU_FTR_NEED_DTLB_SW_LRU       ASM_CONST(0x0000000000010000)
->
-> In 2.6.24.6 this constant is used for something else. Would it be  
-> possible to
-> pick anotherone, in order to make dual-kernel patches easier to  
-> maintain for
-> now?
->
->>>>> +       mfspr   r3,SPRN_DMISS
->>>>> +       rlwinm  r3,r3,19,25,29 /* Get Address bits 19:15 */
->>>>> +       lis     r2,lrw@ha       /* Search index in lrw[] */
->>>>> +       addi    r2,r2,lrw@l
->>>>> +       tophys(r2,r2)
->>>>> +       lwzx    r1,r3,r2       /* Get item from lrw[] */
->>>>> +       cmpwi   0,r1,0         /* Was it way 0 last time? */
->>>>
->>>> Why not use a bit vector since we only need one bit of information.
->>>> Additionally we can use a single SPRG at that point instead to keep
->>>> track of the LRU information.
->>>
->>> Sounds interesting. I am just learning my first steps in powerpc-
->>> assembly, so
->>> please forgive if this is a little inefficient still. I'll try again
->>> next week.
->>
->> Not at all.  This has been on my todo list just not high priority so
->> I'm happy to get someone to work on it and have setup already that  
->> can
->> show perf differences.
->
-> On your Todo list? Does that mean you know about another processor  
-> that has
-> the same problem?
-
-Yes, I work at Freescale and am aware that the errata impacts all c2/ 
-c3/c4 class chips.
-
->> I might work up a newer version w/the SPRG idea if I'm feeling up  
->> to it.
->
-> Do you mean it is possible to just pick an SPRG that will be used  
-> only by this
-> handler and make sure no other piece of software will touch it?  
-> Would be
-> great. Is there a way of knowing which SPRG's are used by linux? I  
-> read in
-> the e300 core-RM, that SPRG4...7 are unique to this iteration of the  
-> G2
-> anyway, so one of those might be a good candidate?
-
-I was thinking one from SPRG4..7 should be fine since Linux doesn't  
-use them for anything.
-
-We should try this w/SPRG & w/memory to see if we notice any perf  
-difference.
-
-> I have quite a lot of work pressure right now, and unfortunately  
-> very little
-> time I can dedicate to this. Given the fact that I also cannot test  
-> patches
-> for mainline, because MPC5121e support is just not complete enough  
-> yet, do
-> you agree if I modify my own patch (with ifdef's instead of  
-> CPU_FTR...) to
-> give you feedback on performance impacts, while you implement it as  
-> CPU_FTR
-> afterwards for mainline? That way I can avoid doing double work, and  
-> spend
-> more time on testing it actually....
-> If you agree, I'll start hacking away on the SPRG version  
-> immediately :-)
-
-I think that's fine.  The CPU feature bit is minor to deal with and  
-Ben has stated he wants it to be a MMU feature which is something new  
-as well.  It should be easy to convert the CPU_FTR wrapping into  
-#ifdefs instead.
-
-I have a few other patches related to this that I am not sure if they  
-will apply to the 2.6.24.6 tree you are based on.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+Note: I've only compiled tested this and not booted on real HW.
 
 - k
+
+ arch/powerpc/kernel/head_32.S |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index f8c2e6b..6da5505 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -514,7 +514,7 @@ InstructionTLBMiss:
+ 	and	r1,r1,r2		/* writable if _RW and _DIRTY */
+ 	rlwimi	r3,r3,32-1,30,30	/* _PAGE_USER -> PP msb */
+ 	rlwimi	r3,r3,32-1,31,31	/* _PAGE_USER -> PP lsb */
+-	ori	r1,r1,0xe14		/* clear out reserved bits and M */
++	ori	r1,r1,0xe04		/* clear out reserved bits */
+ 	andc	r1,r3,r1		/* PP = user? (rw&dirty? 2: 3): 0 */
+ 	mtspr	SPRN_RPA,r1
+ 	mfspr	r3,SPRN_IMISS
+@@ -588,7 +588,7 @@ DataLoadTLBMiss:
+ 	and	r1,r1,r2		/* writable if _RW and _DIRTY */
+ 	rlwimi	r3,r3,32-1,30,30	/* _PAGE_USER -> PP msb */
+ 	rlwimi	r3,r3,32-1,31,31	/* _PAGE_USER -> PP lsb */
+-	ori	r1,r1,0xe14		/* clear out reserved bits and M */
++	ori	r1,r1,0xe04		/* clear out reserved bits */
+ 	andc	r1,r3,r1		/* PP = user? (rw&dirty? 2: 3): 0 */
+ 	mtspr	SPRN_RPA,r1
+ 	mfspr	r3,SPRN_DMISS
+@@ -656,7 +656,7 @@ DataStoreTLBMiss:
+ 	stw	r3,0(r2)		/* update PTE (accessed/dirty bits) */
+ 	/* Convert linux-style PTE to low word of PPC-style PTE */
+ 	rlwimi	r3,r3,32-1,30,30	/* _PAGE_USER -> PP msb */
+-	li	r1,0xe15		/* clear out reserved bits and M */
++	li	r1,0xe05		/* clear out reserved bits & PP lsb */
+ 	andc	r1,r3,r1		/* PP = user? 2: 0 */
+ 	mtspr	SPRN_RPA,r1
+ 	mfspr	r3,SPRN_DMISS
+-- 
+1.5.6.6
