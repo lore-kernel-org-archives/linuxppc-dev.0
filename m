@@ -1,20 +1,14 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id EF820DDF77
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:05:44 +1100 (EST)
-Date: Tue, 17 Mar 2009 00:05:42 +0300
+	by ozlabs.org (Postfix) with ESMTP id 4E1FCDDDA5
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:13:08 +1100 (EST)
+Date: Tue, 17 Mar 2009 00:13:06 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: [PATCH 05/13] sdhci: Add support for card-detection polling
-Message-ID: <20090316210542.GA1991@oksana.dev.rtsoft.ru>
-References: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
-	<20090213144718.GE23889@oksana.dev.rtsoft.ru>
-	<20090221165821.1239aa5a@mjolnir.ossman.eu>
-	<20090304174917.GD7477@oksana.dev.rtsoft.ru>
-	<20090308151121.291f1abb@mjolnir.ossman.eu>
+To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Subject: [PATCH v3 0/11] FSL eSDHC support
+Message-ID: <20090316211306.GA1736@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20090308151121.291f1abb@mjolnir.ossman.eu>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
 	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
@@ -28,48 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Mar 08, 2009 at 03:11:21PM +0100, Pierre Ossman wrote:
-> On Wed, 4 Mar 2009 20:49:17 +0300
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > On Sat, Feb 21, 2009 at 04:58:21PM +0100, Pierre Ossman wrote:
-> > > Just modify the if-clause and
-> > > things will work.
-> > 
-> > That would look horrid...
-> > 
-> >         if ((!(host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION) &&
-> >                         !(sdhci_readl(host, SDHCI_PRESENT_STATE) &
-> >                                 SDHCI_CARD_PRESENT)) ||
-> >                         (host->flags & SDHCI_DEVICE_DEAD)) {
-> > 
-> 
-> There are worse ones in that code, but I see your point. :)
-> 
-> > > Might want to add a comment also to make it more obvious what the
-> > > if-clause does.
-> > 
-> > Let's try to avoid the if-clause above? How about this:
-> > 
-> 
-> Looks ok.
-> 
-> > @@ -1096,6 +1099,7 @@ out:
-> >  static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
-> >  {
-> >  	struct sdhci_host *host;
-> > +	bool present;
-> >  	unsigned long flags;
-> >  
-> >  	host = mmc_priv(mmc);
-> 
-> Can we use bool in the kernel?
+Hi all,
 
-Sure, it's widely used in the kernel, even in such places as
-mm/ or kernel/.
+Here comes another version, let's hope that one is final. ;-)
 
+Changes since v2:
+- Introduced MMC_SDHCI_IO_ACCESSORS Kconfig symbol. If not selected,
+  SDHCI will just use PCI memory accessors unconditionally.
+- Added MAINTAINERS entry.
 
-Thanks for the review!
+Changes since v1:
+- "Add support for bus-specific IO memory accessors" patch no longer
+  touches sdhci-pci. The changes were no longer needed since I dropped
+  "Add type checking ..." patch back in RFCv2;
+- Patch "Add support for hosts with strict 32 bit addressing" dropped.
+  Now we handle the 32 bit magic in eSDHC's writew() accessor;
+- Patch "Add quirk for controllers with max. block size up to 4096 bytes"
+  replaced by "Add quirk for forcing maximum block size to 2048 bytes";
+- SDHCI_INT_ALL_MASK changed to (unsigned int)-1;
+- Addressed Pierre's comments in "Add support for card-detection polling"
+  patch.
+
+Changes since the third RFC:
+- Use uninitialized_var() (suggested by Laurent Pinchart);
+- Fixed a bug in eSDHC SDCLK prescaler calculations because of which
+  we were over-clocking the SDCLK, and that caused CRC errors using some
+  SD cards;
+- Not a change, but some status: SDHS (50 MHz) cards were tested to
+  NOT work (at least on MPC837x boards) -- this is to be investigated
+  further. SDHC (> 4 GB) cards were not tested, yet.
+
+Changes since the second RFC:
+- Addressed all comments that were raised by Pierre Ossman.
+  There were too many to mention them all, so here is the link:
+  http://lkml.org/lkml/2009/2/6/320
+
+Changes since the first RFC:
+- Use of_iomap() in sdhci-of.c (suggested by Arnd Bergmann). Also added
+  Arnd's Acked-by: line for the sdhci-of patch.
+- Kconfig help text improved (thanks to Matt Sealey and M. Warner Losh).
+- In "sdhci: Add quirk to suppress PIO interrupts during DMA transfers"
+  patch: sdhci_init() now clears SDHCI_PIO_DISABLED flag, otherwise we
+  won't disable PIO interrupts after suspend.
+- New patch: "sdhci: Add type checking for IO memory accessors"
 
 -- 
 Anton Vorontsov
