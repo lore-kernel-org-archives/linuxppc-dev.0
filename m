@@ -2,21 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 29039DE03B
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 22:54:08 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2GBrxRY029568
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 06:53:59 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 74682DDED5
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 23:42:28 +1100 (EST)
+Message-Id: <7D7326A0-B3F2-4E85-8A6B-B003A7B3F009@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: 
-Cc: linuxppc-dev@ozlabs.org
-Subject: [RFC][PATCH 3/3] powerpc/mm: Used free register to save a few cycles
-	in SW TLB miss handling
-Date: Mon, 16 Mar 2009 06:53:56 -0500
-Message-Id: <1237204436-6025-3-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1237204436-6025-2-git-send-email-galak@kernel.crashing.org>
-References: <1237204436-6025-1-git-send-email-galak@kernel.crashing.org>
-	<1237204436-6025-2-git-send-email-galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1E3E0E6E-39A6-4DC5-BB38-0C66D96C9C75@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [RFC][PATCH v3] powerpc: e300c2/c3/c4 TLB errata workaround
+Date: Mon, 16 Mar 2009 07:42:12 -0500
+References: <1236957383-20240-1-git-send-email-galak@kernel.crashing.org>
+	<1236979602.25062.55.camel@pasglop>
+	<1E3E0E6E-39A6-4DC5-BB38-0C66D96C9C75@kernel.crashing.org>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	David Jander <david.jander@protonic.nl>, Wolfgang Denk <wd@denx.de>,
+	Gunnar Von Boehn <gunnar@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,122 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that r0 is free we can keep the value of I/DMISS in r3 and not reload
-it before doing the tlbli/d.  This saves us a few cycles in the fast path
-case.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+On Mar 13, 2009, at 5:06 PM, Kumar Gala wrote:
 
-There might be better uses of the free r0 to save more cycles in these code paths.
-If anyone has suggestions I'm willing to look at them.
+>
+> On Mar 13, 2009, at 4:26 PM, Benjamin Herrenschmidt wrote:
+>
+>>> +BEGIN_FTR_SECTION
+>>> +	b      TlbWo    /* Code for TLB-errata workaround doesn't fit  
+>>> here */
+>>> +END_FTR_SECTION_IFSET(CPU_FTR_NEED_DTLB_SW_LRU)
+>>> +RFTlbWo:
+>>
+>> Can you use nicer label names ? :-)
+>>
+>> Also, that's a lot of code for such a hot path...
+>>
+>> Cheers,
+>> Ben.
+>
+> The code needs reworking.  However, we are doing SW LRU, not sure  
+> how we reduce this in the hot path.
 
-- k
+Ben, David,
 
- arch/powerpc/kernel/head_32.S |   51 +++++++++++++++++++---------------------
- 1 files changed, 24 insertions(+), 27 deletions(-)
+Here's my attempt at reworking the code to use an SPRG, remove  
+branches, optimize it down, etc.  I haven't validated that this is  
+even correct.  It should be easy to replace the m{f,t}spr SPRG w/lwz/ 
+stw if we want to keep the LRU state in memory instead.
 
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index aafb469..b6c5955 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -498,25 +498,24 @@ InstructionTLBMiss:
- 	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
- 	beq-	InstructionAddressInvalid	/* return if no mapping */
- 	rlwimi	r2,r3,22,20,29		/* insert next 10 bits of address */
--	lwz	r3,0(r2)		/* get linux-style pte */
--	andc.	r1,r1,r3		/* check access & ~permission */
-+	lwz	r0,0(r2)		/* get linux-style pte */
-+	andc.	r1,r1,r0		/* check access & ~permission */
- 	bne-	InstructionAddressInvalid /* return if access not permitted */
--	ori	r3,r3,_PAGE_ACCESSED	/* set _PAGE_ACCESSED in pte */
-+	ori	r0,r0,_PAGE_ACCESSED	/* set _PAGE_ACCESSED in pte */
- 	/*
- 	 * NOTE! We are assuming this is not an SMP system, otherwise
- 	 * we would need to update the pte atomically with lwarx/stwcx.
- 	 */
--	stw	r3,0(r2)		/* update PTE (accessed bit) */
-+	stw	r0,0(r2)		/* update PTE (accessed bit) */
- 	/* Convert linux-style PTE to low word of PPC-style PTE */
--	rlwinm	r1,r3,32-10,31,31	/* _PAGE_RW -> PP lsb */
--	rlwinm	r2,r3,32-7,31,31	/* _PAGE_DIRTY -> PP lsb */
-+	rlwinm	r1,r0,32-10,31,31	/* _PAGE_RW -> PP lsb */
-+	rlwinm	r2,r0,32-7,31,31	/* _PAGE_DIRTY -> PP lsb */
- 	and	r1,r1,r2		/* writable if _RW and _DIRTY */
--	rlwimi	r3,r3,32-1,30,30	/* _PAGE_USER -> PP msb */
--	rlwimi	r3,r3,32-1,31,31	/* _PAGE_USER -> PP lsb */
-+	rlwimi	r0,r0,32-1,30,30	/* _PAGE_USER -> PP msb */
-+	rlwimi	r0,r0,32-1,31,31	/* _PAGE_USER -> PP lsb */
- 	ori	r1,r1,0xe04		/* clear out reserved bits */
--	andc	r1,r3,r1		/* PP = user? (rw&dirty? 2: 3): 0 */
-+	andc	r1,r0,r1		/* PP = user? (rw&dirty? 2: 3): 0 */
- 	mtspr	SPRN_RPA,r1
--	mfspr	r3,SPRN_IMISS
- 	tlbli	r3
- 	mfspr	r3,SPRN_SRR1		/* Need to restore CR0 */
- 	mtcrf	0x80,r3
-@@ -570,25 +569,24 @@ DataLoadTLBMiss:
- 	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
- 	beq-	DataAddressInvalid	/* return if no mapping */
- 	rlwimi	r2,r3,22,20,29		/* insert next 10 bits of address */
--	lwz	r3,0(r2)		/* get linux-style pte */
--	andc.	r1,r1,r3		/* check access & ~permission */
-+	lwz	r0,0(r2)		/* get linux-style pte */
-+	andc.	r1,r1,r0		/* check access & ~permission */
- 	bne-	DataAddressInvalid	/* return if access not permitted */
--	ori	r3,r3,_PAGE_ACCESSED	/* set _PAGE_ACCESSED in pte */
-+	ori	r0,r0,_PAGE_ACCESSED	/* set _PAGE_ACCESSED in pte */
- 	/*
- 	 * NOTE! We are assuming this is not an SMP system, otherwise
- 	 * we would need to update the pte atomically with lwarx/stwcx.
- 	 */
--	stw	r3,0(r2)		/* update PTE (accessed bit) */
-+	stw	r0,0(r2)		/* update PTE (accessed bit) */
- 	/* Convert linux-style PTE to low word of PPC-style PTE */
--	rlwinm	r1,r3,32-10,31,31	/* _PAGE_RW -> PP lsb */
--	rlwinm	r2,r3,32-7,31,31	/* _PAGE_DIRTY -> PP lsb */
-+	rlwinm	r1,r0,32-10,31,31	/* _PAGE_RW -> PP lsb */
-+	rlwinm	r2,r0,32-7,31,31	/* _PAGE_DIRTY -> PP lsb */
- 	and	r1,r1,r2		/* writable if _RW and _DIRTY */
--	rlwimi	r3,r3,32-1,30,30	/* _PAGE_USER -> PP msb */
--	rlwimi	r3,r3,32-1,31,31	/* _PAGE_USER -> PP lsb */
-+	rlwimi	r0,r0,32-1,30,30	/* _PAGE_USER -> PP msb */
-+	rlwimi	r0,r0,32-1,31,31	/* _PAGE_USER -> PP lsb */
- 	ori	r1,r1,0xe04		/* clear out reserved bits */
--	andc	r1,r3,r1		/* PP = user? (rw&dirty? 2: 3): 0 */
-+	andc	r1,r0,r1		/* PP = user? (rw&dirty? 2: 3): 0 */
- 	mtspr	SPRN_RPA,r1
--	mfspr	r3,SPRN_DMISS
- 	tlbld	r3
- 	mfspr	r3,SPRN_SRR1		/* Need to restore CR0 */
- 	mtcrf	0x80,r3
-@@ -640,21 +638,20 @@ DataStoreTLBMiss:
- 	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
- 	beq-	DataAddressInvalid	/* return if no mapping */
- 	rlwimi	r2,r3,22,20,29		/* insert next 10 bits of address */
--	lwz	r3,0(r2)		/* get linux-style pte */
--	andc.	r1,r1,r3		/* check access & ~permission */
-+	lwz	r0,0(r2)		/* get linux-style pte */
-+	andc.	r1,r1,r0		/* check access & ~permission */
- 	bne-	DataAddressInvalid	/* return if access not permitted */
--	ori	r3,r3,_PAGE_ACCESSED|_PAGE_DIRTY
-+	ori	r0,r0,_PAGE_ACCESSED|_PAGE_DIRTY
- 	/*
- 	 * NOTE! We are assuming this is not an SMP system, otherwise
- 	 * we would need to update the pte atomically with lwarx/stwcx.
- 	 */
--	stw	r3,0(r2)		/* update PTE (accessed/dirty bits) */
-+	stw	r0,0(r2)		/* update PTE (accessed/dirty bits) */
- 	/* Convert linux-style PTE to low word of PPC-style PTE */
--	rlwimi	r3,r3,32-1,30,30	/* _PAGE_USER -> PP msb */
-+	rlwimi	r0,r0,32-1,30,30	/* _PAGE_USER -> PP msb */
- 	li	r1,0xe05		/* clear out reserved bits & PP lsb */
--	andc	r1,r3,r1		/* PP = user? 2: 0 */
-+	andc	r1,r0,r1		/* PP = user? 2: 0 */
- 	mtspr	SPRN_RPA,r1
--	mfspr	r3,SPRN_DMISS
- 	tlbld	r3
- 	mfspr	r3,SPRN_SRR1		/* Need to restore CR0 */
- 	mtcrf	0x80,r3
--- 
-1.5.6.6
+Ben, do you think we can optimize this further with some random LRU  
+selection?
+
+         mtspr   SPRN_RPA,r1
+         mfspr   r2,SPRN_SRR1            /* Need to restore CR0 */
+         mtcrf   0x80,r2
+#if 1
+         li      r0,1
+	mfspr	r1,SPRN_SPRG4		/* could replace w/lwz	r1,sw_way_lru@l(0) */
+         rlwinm  r3,r3,19,25,29          /* Get Address bits 19:15 */
+         slw     r0,r0,r3
+         xor     r1,r0,r1
+         srw     r0,r1,r3
+	mtspr	SPRN_SPRG4,r1		/* could replace w/stw	r1,sw_way_lru@l(0) */
+         rlwimi  r2,r0,31-14,14,14
+#endif
+         tlbld   r3
+         rfi
