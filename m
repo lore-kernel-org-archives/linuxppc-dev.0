@@ -1,13 +1,21 @@
-Return-Path: <rusty@rustcorp.com.au>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: benh@kernel.crashing.org
-Subject: [PATCH] cpumask: use mm_cpumask() wrapper: powerpc
-Date: Mon, 16 Mar 2009 14:46:43 +1030
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 4BC88DDF77
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 15:57:36 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so1375292yxb.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Mar 2009 21:57:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200903161446.43726.rusty@rustcorp.com.au>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <44C5CFA72BC0E242A53B64DC1E67DEB80A695E7512@SI-MBX10.de.bosch.com>
+References: <44C5CFA72BC0E242A53B64DC1E67DEB80A695E6FE2@SI-MBX10.de.bosch.com>
+	<fa686aa40903120632yb46c34bxdecf21f01996bf42@mail.gmail.com>
+	<44C5CFA72BC0E242A53B64DC1E67DEB80A695E7512@SI-MBX10.de.bosch.com>
+Date: Sun, 15 Mar 2009 22:57:34 -0600
+Message-ID: <fa686aa40903152157u558727a8ydebbfa49480d71a8@mail.gmail.com>
+Subject: Re: DTS device tree node for dual port RAM
+From: Grant Likely <grant.likely@secretlab.ca>
+To: "EXTERNAL Lange Matthias (AA-DGW/ENG1)" <Matthias.Lange@beissbarth.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,180 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Makes code futureproof against the impending change to mm->cpu_vm_mask.
+On Thu, Mar 12, 2009 at 9:19 AM, EXTERNAL Lange Matthias (AA-DGW/ENG1)
+<Matthias.Lange@beissbarth.com> wrote:
+>> What hardware irq# are you using? =A0See this link for a description of
+>> what the interrupts property should look like for external IRQs:
+>
+> I am using hardware irq# 0 which is wired to the critical input line. Tha=
+t's why I was defining the interrupts property to <0 0 0>. So my device tre=
+e node now looks like this
 
-It's also a chance to use the new cpumask_ ops which take a pointer
-(the older ones are deprecated, but there's no hurry for arch code).
+Okay, good.  I just wanted to make sure.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/powerpc/include/asm/mmu_context.h |    2 +-
- arch/powerpc/mm/hash_utils_64.c        |   10 ++++------
- arch/powerpc/mm/mmu_context_nohash.c   |    2 +-
- arch/powerpc/mm/pgtable.c              |    3 +--
- arch/powerpc/mm/tlb_hash64.c           |    6 +++---
- arch/powerpc/mm/tlb_nohash.c           |   18 +++++++++---------
- arch/powerpc/platforms/cell/spu_base.c |    2 +-
- 7 files changed, 20 insertions(+), 23 deletions(-)
+> dpram@40000000 {
+> =A0 =A0 =A0 =A0compatible =3D "beissbarth,orion-dpram";
+> =A0 =A0 =A0 =A0interrupts =3D <0 0 0>;
+> =A0 =A0 =A0 =A0interrupt-parent =3D <&mpc5200_pic>;
+> };
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -31,7 +31,7 @@ static inline void switch_mm(struct mm_s
- 			     struct task_struct *tsk)
- {
- 	/* Mark this context has been used on the new CPU */
--	cpu_set(smp_processor_id(), next->cpu_vm_mask);
-+	cpumask_set_cpu(smp_processor_id(), mm_cpumask(next));
- 
- 	/* 32-bit keeps track of the current PGDIR in the thread struct */
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -858,7 +858,7 @@ int hash_page(unsigned long ea, unsigned
- 	unsigned long vsid;
- 	struct mm_struct *mm;
- 	pte_t *ptep;
--	cpumask_t tmp;
-+	const struct cpumask *tmp;
- 	int rc, user_region = 0, local = 0;
- 	int psize, ssize;
- 
-@@ -906,8 +906,8 @@ int hash_page(unsigned long ea, unsigned
- 		return 1;
- 
- 	/* Check CPU locality */
--	tmp = cpumask_of_cpu(smp_processor_id());
--	if (user_region && cpus_equal(mm->cpu_vm_mask, tmp))
-+	tmp = cpumask_of(smp_processor_id());
-+	if (user_region && cpumask_equal(mm_cpumask(mm), tmp))
- 		local = 1;
- 
- #ifdef CONFIG_HUGETLB_PAGE
-@@ -1023,7 +1023,6 @@ void hash_preload(struct mm_struct *mm, 
- 	unsigned long vsid;
- 	void *pgdir;
- 	pte_t *ptep;
--	cpumask_t mask;
- 	unsigned long flags;
- 	int local = 0;
- 	int ssize;
-@@ -1066,8 +1065,7 @@ void hash_preload(struct mm_struct *mm, 
- 	local_irq_save(flags);
- 
- 	/* Is that local to this CPU ? */
--	mask = cpumask_of_cpu(smp_processor_id());
--	if (cpus_equal(mm->cpu_vm_mask, mask))
-+	if (cpumask_equal(mm_cpumask(mm), cpumask_of(smp_processor_id())))
- 		local = 1;
- 
- 	/* Hash it in */
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -97,7 +97,7 @@ static unsigned int steal_context_smp(un
- 		mm->context.id = MMU_NO_CONTEXT;
- 
- 		/* Mark it stale on all CPUs that used this mm */
--		for_each_cpu_mask_nr(cpu, mm->cpu_vm_mask)
-+		for_each_cpu(cpu, mm_cpumask(mm))
- 			__set_bit(id, stale_map[cpu]);
- 		return id;
- 	}
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -81,11 +81,10 @@ void pgtable_free_tlb(struct mmu_gather 
- void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
- {
- 	/* This is safe since tlb_gather_mmu has disabled preemption */
--        cpumask_t local_cpumask = cpumask_of_cpu(smp_processor_id());
- 	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
- 
- 	if (atomic_read(&tlb->mm->mm_users) < 2 ||
--	    cpus_equal(tlb->mm->cpu_vm_mask, local_cpumask)) {
-+	    cpumask_equal(mm_cpumask(tlb->mm), cpumask_of(smp_processor_id()))){
- 		pgtable_free(pgf);
- 		return;
- 	}
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -139,12 +139,12 @@ void hpte_need_flush(struct mm_struct *m
-  */
- void __flush_tlb_pending(struct ppc64_tlb_batch *batch)
- {
--	cpumask_t tmp;
-+	const struct cpumask *tmp;
- 	int i, local = 0;
- 
- 	i = batch->index;
--	tmp = cpumask_of_cpu(smp_processor_id());
--	if (cpus_equal(batch->mm->cpu_vm_mask, tmp))
-+	tmp = cpumask_of(smp_processor_id());
-+	if (cpumask_equal(mm_cpumask(batch->mm), tmp))
- 		local = 1;
- 	if (i == 1)
- 		flush_hash_page(batch->vaddr[0], batch->pte[0],
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -132,11 +132,11 @@ void flush_tlb_mm(struct mm_struct *mm)
- 	pid = mm->context.id;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
- 		goto no_context;
--	cpu_mask = mm->cpu_vm_mask;
--	cpu_clear(smp_processor_id(), cpu_mask);
--	if (!cpus_empty(cpu_mask)) {
-+	if (!cpumask_equal(mm_cpumask(mm), cpumask_of(smp_processor_id()))) {
- 		struct tlb_flush_param p = { .pid = pid };
--		smp_call_function_mask(cpu_mask, do_flush_tlb_mm_ipi, &p, 1);
-+		/* Ignores smp_processor_id() even if set. */
-+		smp_call_function_many(mm_cpumask(mm),
-+				       do_flush_tlb_mm_ipi, &p, 1);
- 	}
- 	_tlbil_pid(pid);
-  no_context:
-@@ -146,16 +146,15 @@ EXPORT_SYMBOL(flush_tlb_mm);
- 
- void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
- {
--	cpumask_t cpu_mask;
-+	struct cpumask *cpu_mask;
- 	unsigned int pid;
- 
- 	preempt_disable();
- 	pid = vma ? vma->vm_mm->context.id : 0;
- 	if (unlikely(pid == MMU_NO_CONTEXT))
- 		goto bail;
--	cpu_mask = vma->vm_mm->cpu_vm_mask;
--	cpu_clear(smp_processor_id(), cpu_mask);
--	if (!cpus_empty(cpu_mask)) {
-+	cpu_mask = mm_cpumask(vma->vm_mm);
-+	if (!cpumask_equal(cpu_mask, cpumask_of(smp_processor_id()))) {
- 		/* If broadcast tlbivax is supported, use it */
- 		if (mmu_has_feature(MMU_FTR_USE_TLBIVAX_BCAST)) {
- 			int lock = mmu_has_feature(MMU_FTR_LOCK_BCAST_INVAL);
-@@ -167,7 +166,8 @@ void flush_tlb_page(struct vm_area_struc
- 			goto bail;
- 		} else {
- 			struct tlb_flush_param p = { .pid = pid, .addr = vmaddr };
--			smp_call_function_mask(cpu_mask,
-+			/* Ignores smp_processor_id() even if set in cpu_mask */
-+			smp_call_function_many(cpu_mask,
- 					       do_flush_tlb_page_ipi, &p, 1);
- 		}
- 	}
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -114,7 +114,7 @@ static inline void mm_needs_global_tlbie
- 	int nr = (NR_CPUS > 1) ? NR_CPUS : NR_CPUS + 1;
- 
- 	/* Global TLBIE broadcast required with SPEs. */
--	__cpus_setall(&mm->cpu_vm_mask, nr);
-+	bitmap_fill(cpumask_bits(mm_cpumask(mm)), nr);
- }
- 
- void spu_associate_mm(struct spu *spu, struct mm_struct *mm)
+This is unrelated to your question, but I'm wondering why you don't
+have a reg property in your node.
+
+> If I am understanding it correctly I now need to implement a OF platform =
+driver in which I can use irq_of_parse_and_map() to get the virq for my dev=
+ice.
+
+That is the easiest way, yes.  Actually, all you need to call
+irq_of_parse_and_map() is a pointer to the device_node which can be
+obtained by directly searching the tree.  However, writing an
+of_platform driver is a better way to get the device_node in this
+case.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
