@@ -1,25 +1,24 @@
-Return-Path: <hpa@hera.kernel.org>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 11BE4DDF81
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 05:42:50 +1100 (EST)
-Date: Mon, 16 Mar 2009 18:42:27 GMT
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090316185256.4a160374.sfr@canb.auug.org.au>
-References: <20090316185256.4a160374.sfr@canb.auug.org.au>
-Subject: [tip:irq/sparseirq] sparseirq,
-	powerpc/cell: fix unused variable warning in interrupt.c
-Message-ID: <tip-a6bc3262c561780d2a6587aa3d5715b1e7d8fa13@git.kernel.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id EF820DDF77
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:05:44 +1100 (EST)
+Date: Tue, 17 Mar 2009 00:05:42 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [PATCH 05/13] sdhci: Add support for card-detection polling
+Message-ID: <20090316210542.GA1991@oksana.dev.rtsoft.ru>
+References: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
+	<20090213144718.GE23889@oksana.dev.rtsoft.ru>
+	<20090221165821.1239aa5a@mjolnir.ossman.eu>
+	<20090304174917.GD7477@oksana.dev.rtsoft.ru>
+	<20090308151121.291f1abb@mjolnir.ossman.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de,
-	yinghai@kernel.org, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-	yinghai@kernel.org, linuxppc-dev@ozlabs.org, tglx@linutronix.de,
-	sfr@canb.auug.org.au, mingo@elte.hu
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <20090308151121.291f1abb@mjolnir.ossman.eu>
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,47 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit-ID:  a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
-Gitweb:     http://git.kernel.org/tip/a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
-Author:     Stephen Rothwell <sfr@canb.auug.org.au>
-AuthorDate: Mon, 16 Mar 2009 18:52:56 +1100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 16 Mar 2009 09:21:57 +0100
+On Sun, Mar 08, 2009 at 03:11:21PM +0100, Pierre Ossman wrote:
+> On Wed, 4 Mar 2009 20:49:17 +0300
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > On Sat, Feb 21, 2009 at 04:58:21PM +0100, Pierre Ossman wrote:
+> > > Just modify the if-clause and
+> > > things will work.
+> > 
+> > That would look horrid...
+> > 
+> >         if ((!(host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION) &&
+> >                         !(sdhci_readl(host, SDHCI_PRESENT_STATE) &
+> >                                 SDHCI_CARD_PRESENT)) ||
+> >                         (host->flags & SDHCI_DEVICE_DEAD)) {
+> > 
+> 
+> There are worse ones in that code, but I see your point. :)
+> 
+> > > Might want to add a comment also to make it more obvious what the
+> > > if-clause does.
+> > 
+> > Let's try to avoid the if-clause above? How about this:
+> > 
+> 
+> Looks ok.
+> 
+> > @@ -1096,6 +1099,7 @@ out:
+> >  static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+> >  {
+> >  	struct sdhci_host *host;
+> > +	bool present;
+> >  	unsigned long flags;
+> >  
+> >  	host = mmc_priv(mmc);
+> 
+> Can we use bool in the kernel?
 
-sparseirq, powerpc/cell: fix unused variable warning in interrupt.c
-
-This new compiler warning:
-
-   arch/powerpc/platforms/cell/interrupt.c: In function 'handle_iic_irq':
-   arch/powerpc/platforms/cell/interrupt.c:240: warning: unused variable 'cpu'
-
-Triggers because the local variable 'cpu' became unused due to commit:
-
-   dee4102: sparseirq: use kstat_irqs_cpu instead
-
-Remove the variable.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
-LKML-Reference: <20090316185256.4a160374.sfr@canb.auug.org.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Sure, it's widely used in the kernel, even in such places as
+mm/ or kernel/.
 
 
----
- arch/powerpc/platforms/cell/interrupt.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+Thanks for the review!
 
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 1f0d774..882e470 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -237,8 +237,6 @@ extern int noirqdebug;
- 
- static void handle_iic_irq(unsigned int irq, struct irq_desc *desc)
- {
--	const unsigned int cpu = smp_processor_id();
--
- 	spin_lock(&desc->lock);
- 
- 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
