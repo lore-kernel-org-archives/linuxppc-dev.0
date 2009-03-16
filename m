@@ -1,23 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <adrian@rhlx01.hs-esslingen.de>
+Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 74682DDED5
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 23:42:28 +1100 (EST)
-Message-Id: <7D7326A0-B3F2-4E85-8A6B-B003A7B3F009@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1E3E0E6E-39A6-4DC5-BB38-0C66D96C9C75@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [RFC][PATCH v3] powerpc: e300c2/c3/c4 TLB errata workaround
-Date: Mon, 16 Mar 2009 07:42:12 -0500
-References: <1236957383-20240-1-git-send-email-galak@kernel.crashing.org>
-	<1236979602.25062.55.camel@pasglop>
-	<1E3E0E6E-39A6-4DC5-BB38-0C66D96C9C75@kernel.crashing.org>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	David Jander <david.jander@protonic.nl>, Wolfgang Denk <wd@denx.de>,
-	Gunnar Von Boehn <gunnar@genesi-usa.com>
+	(Client CN "rhlx01.hs-esslingen.de", Issuer "HE CA - G02" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D36DCDDF77
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2009 23:44:27 +1100 (EST)
+Date: Mon, 16 Mar 2009 13:35:43 +0100
+From: Adrian Reber <adrian@lisas.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix RTAS watchdog driver temperature read functionality
+Message-ID: <20090316123543.GG15530@lisas.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,49 +21,68 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 13, 2009, at 5:06 PM, Kumar Gala wrote:
+Using the RTAS watchdog driver to read out the temperature crashes
+on a PXCAB:
 
->
-> On Mar 13, 2009, at 4:26 PM, Benjamin Herrenschmidt wrote:
->
->>> +BEGIN_FTR_SECTION
->>> +	b      TlbWo    /* Code for TLB-errata workaround doesn't fit  
->>> here */
->>> +END_FTR_SECTION_IFSET(CPU_FTR_NEED_DTLB_SW_LRU)
->>> +RFTlbWo:
->>
->> Can you use nicer label names ? :-)
->>
->> Also, that's a lot of code for such a hot path...
->>
->> Cheers,
->> Ben.
->
-> The code needs reworking.  However, we are doing SW LRU, not sure  
-> how we reduce this in the hot path.
+Unable to handle kernel paging request for data at address 0xfe347b50
+Faulting instruction address: 0xc00000000001af64
+Oops: Kernel access of bad area, sig: 11 [#1]
 
-Ben, David,
+This (removing "(void *)__pa") fixes it.
 
-Here's my attempt at reworking the code to use an SPRG, remove  
-branches, optimize it down, etc.  I haven't validated that this is  
-even correct.  It should be easy to replace the m{f,t}spr SPRG w/lwz/ 
-stw if we want to keep the LRU state in memory instead.
+Signed-off-by: Adrian Reber <adrian@lisas.de>
+---
+ drivers/watchdog/wdrtas.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Ben, do you think we can optimize this further with some random LRU  
-selection?
+Fix for:
 
-         mtspr   SPRN_RPA,r1
-         mfspr   r2,SPRN_SRR1            /* Need to restore CR0 */
-         mtcrf   0x80,r2
-#if 1
-         li      r0,1
-	mfspr	r1,SPRN_SPRG4		/* could replace w/lwz	r1,sw_way_lru@l(0) */
-         rlwinm  r3,r3,19,25,29          /* Get Address bits 19:15 */
-         slw     r0,r0,r3
-         xor     r1,r0,r1
-         srw     r0,r1,r3
-	mtspr	SPRN_SPRG4,r1		/* could replace w/stw	r1,sw_way_lru@l(0) */
-         rlwimi  r2,r0,31-14,14,14
-#endif
-         tlbld   r3
-         rfi
+Unable to handle kernel paging request for data at address 0xfe347b50
+Faulting instruction address: 0xc00000000001af64
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=4 NUMA Cell
+Modules linked in:
+NIP: c00000000001af64 LR: c00000000001af28 CTR: c000000000281888
+REGS: c0000000fe3477a0 TRAP: 0300   Not tainted  (2.6.29-rc6-11955-g2450cf5)
+MSR: 9000000000001032 <ME,IR,DR>  CR: 22000422  XER: 00000000
+DAR: 00000000fe347b50, DSISR: 0000000042000000
+TASK = c0000000fe4886f0[1184] 'a.out' THREAD: c0000000fe344000 CPU: 1
+GPR00: 000000000000002a c0000000fe347a20 c000000000ab2160 c000000000007bc0 
+GPR04: 0000000022000422 c000000000281888 0000000000000000 00000400001e6138  
+GPR08: 0000000000000008 c000000000b23ce4 0000000000000008 00000000fe347b54 
+GPR12: 0000000082000424 c000000000b23680 c0000000003b37b0 c000000000441620 
+GPR16: c0000000004412e0 c000000000441130 000000000e154ec8 c0000000003b4580 
+GPR20: 0000000000000000 00000000100a0370 00000000100a0390 c000000000b23cc8 
+GPR24: 0000000000000001 0000000000000002 00000000fe347b50 0000000000000002 
+GPR28: 0000000000000010 c000000000b23cb0 c000000000a59588 0000000000000002 
+NIP [c00000000001af64] .rtas_call+0x1ac/0x1f8
+LR [c00000000001af28] .rtas_call+0x170/0x1f8
+Call Trace:
+[c0000000fe347a20] [c00000000001af28] .rtas_call+0x170/0x1f8 (unreliable)          
+[c0000000fe347ae0] [c0000000002812e8] .wdrtas_get_temperature+0x48/0xa8  
+[c0000000fe347b70] [c000000000281948] .wdrtas_ioctl+0xc0/0x300
+[c0000000fe347c00] [c0000000000f58a4] .vfs_ioctl+0x54/0x138
+[c0000000fe347c90] [c0000000000f5a20] .do_vfs_ioctl+0x98/0x738
+[c0000000fe347d80] [c0000000000f6114] .SyS_ioctl+0x54/0xc8
+[c0000000fe347e30] [c0000000000074b4] syscall_exit+0x0/0x40
+Instruction dump:
+2fba0000 419e0034 3939fffe 39400004 79290020 39290002 79281764 e93d0070 
+7d7a5214 7c09502e 394a0004 7faa4000 <900bfffc> 409effe8 e93d0070 ebe90002 
+---[ end trace 084fb7ab3feda750 ]---
+
+diff --git a/drivers/watchdog/wdrtas.c b/drivers/watchdog/wdrtas.c
+index 5d3b1a8..30ee1f2 100644
+--- a/drivers/watchdog/wdrtas.c
++++ b/drivers/watchdog/wdrtas.c
+@@ -218,8 +218,7 @@ static int wdrtas_get_temperature(void)
+ 	int temperature = 0;
+ 
+ 	result = rtas_call(wdrtas_token_get_sensor_state, 2, 2,
+-			   (void *)__pa(&temperature),
+-			   WDRTAS_THERMAL_SENSOR, 0);
++			   &temperature, WDRTAS_THERMAL_SENSOR, 0);
+ 
+ 	if (result < 0)
+ 		printk(KERN_WARNING "wdrtas: reading the thermal sensor "
+-- 
+1.5.6.6
