@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 2A62DDE2AD
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:14:02 +1100 (EST)
-Date: Tue, 17 Mar 2009 00:14:00 +0300
+	by ozlabs.org (Postfix) with ESMTP id 970F3DE2E5
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:14:03 +1100 (EST)
+Date: Tue, 17 Mar 2009 00:14:02 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: [PATCH 08/11] sdhci: Add quirk for controllers that need small
-	delays for PIO
-Message-ID: <20090316211400.GH9375@oksana.dev.rtsoft.ru>
+Subject: [PATCH 09/11] sdhci: Add quirk for controllers that need IRQ
+	re-init after reset
+Message-ID: <20090316211402.GI9375@oksana.dev.rtsoft.ru>
 References: <20090316211306.GA1736@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,42 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Small udelay is needed to make eSDHC work in PIO mode. Without
-the delay reading causes endless interrupt storm, and writing
-corrupts data. The first guess would be that we must wait for
-some bit in some register, but I didn't find any reliable bits
-that change before and after the delay.
+FSL eSDHC controllers losing signal/interrupt enable states after
+reset, so we should re-enable them.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |    3 +++
+ drivers/mmc/host/sdhci.c |    7 +++++++
  drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+ 2 files changed, 9 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 75d0ecb..cd6dab3 100644
+index cd6dab3..3a72fe2 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -336,6 +336,9 @@ static void sdhci_transfer_pio(struct sdhci_host *host)
- 		mask = ~0;
+@@ -134,6 +134,7 @@ static void sdhci_disable_card_detection(struct sdhci_host *host)
+ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ {
+ 	unsigned long timeout;
++	u32 uninitialized_var(ier);
  
- 	while (sdhci_readl(host, SDHCI_PRESENT_STATE) & mask) {
-+		if (host->quirks & SDHCI_QUIRK_PIO_NEEDS_DELAY)
-+			udelay(100);
+ 	if (host->quirks & SDHCI_QUIRK_NO_CARD_NO_RESET) {
+ 		if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) &
+@@ -141,6 +142,9 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 			return;
+ 	}
+ 
++	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
++		ier = sdhci_readl(host, SDHCI_INT_ENABLE);
 +
- 		if (host->data->flags & MMC_DATA_READ)
- 			sdhci_read_block_pio(host);
- 		else
+ 	sdhci_writeb(host, mask, SDHCI_SOFTWARE_RESET);
+ 
+ 	if (mask & SDHCI_RESET_ALL)
+@@ -160,6 +164,9 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 		timeout--;
+ 		mdelay(1);
+ 	}
++
++	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
++		sdhci_clear_set_irqs(host, SDHCI_INT_ALL_MASK, ier);
+ }
+ 
+ static void sdhci_init(struct sdhci_host *host)
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index b9bc622..c5ce9ee 100644
+index c5ce9ee..2962102 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -220,6 +220,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<16)
- /* Controller has nonstandard clock management */
+@@ -222,6 +222,8 @@ struct sdhci_host {
  #define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<17)
-+/* Controller does not like fast PIO transfers */
-+#define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<18)
+ /* Controller does not like fast PIO transfers */
+ #define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<18)
++/* Controller losing signal/interrupt enable states after reset */
++#define SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET		(1<<19)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
