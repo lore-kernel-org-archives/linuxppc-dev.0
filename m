@@ -1,11 +1,18 @@
-Return-Path: <skrishnakar@gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.226])
+	by ozlabs.org (Postfix) with ESMTP id 9A249DDE26
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 02:29:25 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id b25so48317rvf.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 08:29:24 -0700 (PDT)
 MIME-Version: 1.0
-Date: Tue, 17 Mar 2009 20:24:28 +0530
-Message-ID: <6213bc560903170754v7e4e5017r813e990f01a5c070@mail.gmail.com>
-Subject: Re: Compilation of PREEMPT_RT on PowerPC PPC440 Linux-2.6.29-rc7
-From: srikanth krishnakar <skrishnakar@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=000e0cd304706c870d046551bee8
+Date: Tue, 17 Mar 2009 09:29:24 -0600
+Message-ID: <fa686aa40903170829m4ca9def0k4e33b1012f654fa8@mail.gmail.com>
+Subject: Please pull mpc52xx-next - CPU_FTR_NEED_COHERENT fixes for 2.6.29
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Kumar Gala <kumar.gala@freescale.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Piotr Ziecik <kosmo@semihalf.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,166 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---000e0cd304706c870d046551bee8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hi Ben,
 
-Hi all,
+Here are 2 coherency related fixes that need to go into 2.6.29.  The
+first is the patch we discussed last night about setting
+CPU_FTR_NEED_COHERENT when the 5200 is selected.  After discussing it
+with galak, we agreed to stick with the ugly way for 2.6.29 and then
+fix all of them at once in 2.6.30 (CONFIG_PPC_83XX, CONFIG_PPC_8260
+and CONFIG_PPC_MPC52xx).
 
-Just managed to compile PREEMPT_RT on Linux-2.6.29-rc7 PowerPC, I used
-following patches from broken package of RT
-(Patch-2.6.26.8-rt16-broken-out.tar.gz) , Need to investigate further with
-respect to HRT,
+Second is Kumar's page table _PAGE_COHERENT fix.  I've tested it on MPC5200.
 
-patches/patch-2.6.29-rc7
+Cheers,
+g.
 
-patches/patch-2.6.29-rc7-rt1.patch
+The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
+  Kyle McMartin (1):
+        parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
 
-patches/percpu-locked-powerpc-fixups.patch
+are available in the git repository at:
 
-patches/powerpc-02-make-the-irq-reverse-mapping-radix-tree-lockless.patch
+  git://git.secretlab.ca/git/linux-2.6-mpc52xx.git merge
 
-patches/powerpc-ftrace-stop-on-oops.patch
+Kumar Gala (1):
+      powerpc/mm: Respect _PAGE_COHERENT on classic ppc32 SW
 
-patches/powerpc-match-__rw_yield-function-declaration-to-prototype.patch
+Piotr Ziecik (1):
+      powerpc/5200: Enable CPU_FTR_NEED_COHERENT for MPC52xx
 
-patches/ppc32-latency-compile-hack-fixes.patch
-
-patches/ppc32_notrace_init_functions.patch
-
-patches/ppc64-fix-preempt-unsafe-paths-accessing-per_cpu-variables.patch
-
-patches/ppc-gtod-notrace-fix.patch
-
-patches/ppc-hacks-to-allow-rt-to-run-kernbench.patch
-
-patches/ppc-make-tlb-batch-64-only.patch
-
-patches/ppc-remove-duplicate-save-stack-trace.patch
-
-patches/ppc-tlbflush-preempt.patch
-
-patches/preempt-irqs-ppc-ack-irq-fixups.patch
-
-patches/preempt-irqs-ppc-fix-b5.patch
-
-patches/preempt-irqs-ppc-fix-more-fasteoi.patch
-
-patches/preempt-realtime-powerpc-add-raw-relax-macros.patch
-
-patches/preempt-realtime-powerpc-b2.patch
-
-patches/preempt-realtime-powerpc-b3.patch
-
-patches/preempt-realtime-powerpc-b4.patch
-
-patches/preempt-realtime-powerpc-celleb-raw-spinlocks.patch
-
-patches/preempt-realtime-powerpc.patch
-
-patches/preempt-realtime-powerpc-tlb-batching.patch
-
-patches/preempt-realtime-powerpc-update.patch
-
-patches/preempt-irqs-ppc-fix-b6.patch
-
-patches/preempt-irqs-ppc.patch
-
-patches/preempt-irqs-ppc-preempt-schedule-irq-entry-fix.patch
-
-patches/rt-mutex-ppc-fix-a5.patch
-
-patches/rt-mutex-ppc.patch
+ arch/powerpc/include/asm/cputable.h |    4 +++-
+ arch/powerpc/kernel/head_32.S       |    6 +++---
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
 
-Please reply back, If anybody working on this !!! Or if anything is missing
-from this pls. let me know.
-
-Regards
-Srikanth
-**********
-
---000e0cd304706c870d046551bee8
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: base64
-
-SGkgYWxsLDxicj48YnI+SnVzdCBtYW5hZ2VkIHRvIGNvbXBpbGUgUFJFRU1QVF9SVCBvbiBMaW51
-eC0yLjYuMjktcmM3IFBvd2VyUEMsIEkgdXNlZCBmb2xsb3dpbmcgcGF0Y2hlcyBmcm9tIGJyb2tl
-biBwYWNrYWdlIG9mIFJUIChQYXRjaC0yLjYuMjYuOC1ydDE2LWJyb2tlbi1vdXQudGFyLmd6KSAs
-IE5lZWQgdG8gaW52ZXN0aWdhdGUgZnVydGhlciB3aXRoIHJlc3BlY3QgdG8gSFJULCA8YnI+Cjxi
-cj5wYXRjaGVzL3BhdGNoLTIuNi4yOS1yYzegoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5wYXRjaGVzL3BhdGNoLTIuNi4yOS1yYzctcnQxLnBh
-dGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KcGF0Y2hl
-cy9wZXJjcHUtbG9ja2VkLXBvd2VycGMtZml4dXBzLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoCA8YnI+cGF0Y2hlcy9wb3dlcnBjLTAyLW1ha2UtdGhlLWlycS1yZXZlcnNl
-LW1hcHBpbmctcmFkaXgtdHJlZS1sb2NrbGVzcy5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnBhdGNoZXMvcG93ZXJw
-Yy1mdHJhY2Utc3RvcC1vbi1vb3BzLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKAgPGJyPnBhdGNoZXMvcG93ZXJwYy1tYXRjaC1fX3J3X3lpZWxkLWZ1bmN0aW9uLWRlY2xh
-cmF0aW9uLXRvLXByb3RvdHlwZS5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpwYXRjaGVzL3BwYzMyLWxhdGVuY3kt
-Y29tcGlsZS1oYWNrLWZpeGVzLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxi
-cj5wYXRjaGVzL3BwYzMyX25vdHJhY2VfaW5pdF9mdW5jdGlvbnMucGF0Y2igoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KcGF0Y2hlcy9wcGM2NC1maXgtcHJlZW1wdC11bnNh
-ZmUtcGF0aHMtYWNjZXNzaW5nLXBlcl9jcHUtdmFyaWFibGVzLnBhdGNooKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+cGF0Y2hl
-cy9wcGMtZ3RvZC1ub3RyYWNlLWZpeC5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoCA8YnI+CnBhdGNoZXMvcHBjLWhhY2tzLXRvLWFsbG93LXJ0LXRvLXJ1bi1r
-ZXJuYmVuY2gucGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPnBhdGNoZXMvcHBjLW1h
-a2UtdGxiLWJhdGNoLTY0LW9ubHkucGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKAgPGJyPgpwYXRjaGVzL3BwYy1yZW1vdmUtZHVwbGljYXRlLXNhdmUtc3RhY2stdHJhY2Uu
-cGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5wYXRjaGVzL3BwYy10bGJmbHVzaC1w
-cmVlbXB0LnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxi
-cj4KcGF0Y2hlcy9wcmVlbXB0LWlycXMtcHBjLWFjay1pcnEtZml4dXBzLnBhdGNooKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+cGF0Y2hlcy9wcmVlbXB0LWlycXMtcHBjLWZpeC1i
-NS5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnBhdGNo
-ZXMvcHJlZW1wdC1pcnFzLXBwYy1maXgtbW9yZS1mYXN0ZW9pLnBhdGNooKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKAgPGJyPnBhdGNoZXMvcHJlZW1wdC1yZWFsdGltZS1wb3dlcnBjLWFkZC1y
-YXctcmVsYXgtbWFjcm9zLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpwYXRjaGVzL3ByZWVt
-cHQtcmVhbHRpbWUtcG93ZXJwYy1iMi5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgIDxicj5wYXRjaGVzL3ByZWVtcHQtcmVhbHRpbWUtcG93ZXJwYy1iMy5wYXRjaKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KcGF0Y2hlcy9wcmVlbXB0LXJlYWx0
-aW1lLXBvd2VycGMtYjQucGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8
-YnI+cGF0Y2hlcy9wcmVlbXB0LXJlYWx0aW1lLXBvd2VycGMtY2VsbGViLXJhdy1zcGlubG9ja3Mu
-cGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnBhdGNoZXMvcHJlZW1wdC1yZWFsdGltZS1wb3dl
-cnBjLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPnBhdGNo
-ZXMvcHJlZW1wdC1yZWFsdGltZS1wb3dlcnBjLXRsYi1iYXRjaGluZy5wYXRjaKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKAgPGJyPgpwYXRjaGVzL3ByZWVtcHQtcmVhbHRpbWUtcG93ZXJwYy11cGRh
-dGUucGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5wYXRjaGVzL3ByZWVt
-cHQtaXJxcy1wcGMtZml4LWI2LnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgIDxicj4KcGF0Y2hlcy9wcmVlbXB0LWlycXMtcHBjLnBhdGNooKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+cGF0Y2hlcy9wcmVlbXB0LWlycXMt
-cHBjLXByZWVtcHQtc2NoZWR1bGUtaXJxLWVudHJ5LWZpeC5wYXRjaKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8
-YnI+CnBhdGNoZXMvcnQtbXV0ZXgtcHBjLWZpeC1hNS5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPnBhdGNoZXMvcnQtbXV0ZXgtcHBjLnBhdGNooKCg
-oKAgPGJyPjxicj48YnI+UGxlYXNlIHJlcGx5IGJhY2ssIElmIGFueWJvZHkgd29ya2luZyBvbiB0
-aGlzICEhISBPciBpZiBhbnl0aGluZyBpcyBtaXNzaW5nIGZyb20gdGhpcyBwbHMuIGxldCBtZSBr
-bm93LjxiciBjbGVhcj0iYWxsIj4KPGJyPlJlZ2FyZHM8YnI+U3Jpa2FudGggPGJyPioqKioqKioq
-Kio8YnI+Cg==
---000e0cd304706c870d046551bee8--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
