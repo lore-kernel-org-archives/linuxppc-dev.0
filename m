@@ -1,18 +1,19 @@
 Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 8B16ADDEEB
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 930A6DDEF3
 	for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2009 20:12:33 +1100 (EST)
 From: Wolfgang Grandegegr <wg@grandegger.com>
 To: linux-mtd@lists.infradead.org
 Subject: [PATCH 4/4] powerpc/85xx: TQM8548: Update DTS file for multi-chip
 	support
-Date: Tue, 17 Mar 2009 10:12:22 +0100
-Message-Id: <1237281143-8768-5-git-send-email-wg@grandegger.com>
-In-Reply-To: <1237281143-8768-4-git-send-email-wg@grandegger.com>
+Date: Tue, 17 Mar 2009 10:12:23 +0100
+Message-Id: <1237281143-8768-6-git-send-email-wg@grandegger.com>
+In-Reply-To: <1237281143-8768-5-git-send-email-wg@grandegger.com>
 References: <1237281143-8768-1-git-send-email-wg@grandegger.com>
 	<1237281143-8768-2-git-send-email-wg@grandegger.com>
 	<1237281143-8768-3-git-send-email-wg@grandegger.com>
 	<1237281143-8768-4-git-send-email-wg@grandegger.com>
+	<1237281143-8768-5-git-send-email-wg@grandegger.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,7 +29,7 @@ From: Wolfgang Grandegger <wg@grandegger.com>
 This patch adds multi-chip support for the Micron MT29F8G08FAB NAND
 flash memory on the TQM8548 modules.
 
-This patch should go through the powerpc/85xx channel.
+It should go through the powerpc/85xx maintainer.
 
 Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
 ---
