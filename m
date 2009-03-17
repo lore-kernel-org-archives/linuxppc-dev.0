@@ -1,22 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C442DDDF00
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 01:00:07 +1100 (EST)
-Message-Id: <0D92A341-7883-4339-8967-5B8B33DB099A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <49BF6D55.7020108@gefanuc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH v2 1/2] powerpc/86xx: Board support for GE Fanuc's PPC9A
-Date: Tue, 17 Mar 2009 08:59:45 -0500
-References: <20090316102912.10805.98764.stgit@ubuntu8041.localdomain>
-	<20090316103048.10805.15368.stgit@ubuntu8041.localdomain>
-	<20090317013918.GA9643@yookeroo.seuss>
-	<49BF6D55.7020108@gefanuc.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <skrishnakar@gmail.com>
+MIME-Version: 1.0
+Date: Tue, 17 Mar 2009 20:24:28 +0530
+Message-ID: <6213bc560903170754v7e4e5017r813e990f01a5c070@mail.gmail.com>
+Subject: Re: Compilation of PREEMPT_RT on PowerPC PPC440 Linux-2.6.29-rc7
+From: srikanth krishnakar <skrishnakar@gmail.com>
+To: Linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=000e0cd304706c870d046551bee8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +15,166 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--000e0cd304706c870d046551bee8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Mar 17, 2009, at 4:28 AM, Martyn Welch wrote:
+Hi all,
 
->>>
->>> +		i2c1: i2c@3000 {
->>> +			#address-cells = <1>;
->>> +			#size-cells = <0>;
->>> +			compatible = "fsl-i2c";
->> This should list include a compatible string specific to the
->> particular SoC model before the general name.
->
-> The documentation seems to suggest to use "fsl-i2c". Should it be  
-> like this?:
->
-> compatible = "fsl,mpc8641d-i2c", fsl-i2c";
+Just managed to compile PREEMPT_RT on Linux-2.6.29-rc7 PowerPC, I used
+following patches from broken package of RT
+(Patch-2.6.26.8-rt16-broken-out.tar.gz) , Need to investigate further with
+respect to HRT,
 
-in theory it should be, in practice don't bother.
+patches/patch-2.6.29-rc7
 
-- k
+patches/patch-2.6.29-rc7-rt1.patch
+
+patches/percpu-locked-powerpc-fixups.patch
+
+patches/powerpc-02-make-the-irq-reverse-mapping-radix-tree-lockless.patch
+
+patches/powerpc-ftrace-stop-on-oops.patch
+
+patches/powerpc-match-__rw_yield-function-declaration-to-prototype.patch
+
+patches/ppc32-latency-compile-hack-fixes.patch
+
+patches/ppc32_notrace_init_functions.patch
+
+patches/ppc64-fix-preempt-unsafe-paths-accessing-per_cpu-variables.patch
+
+patches/ppc-gtod-notrace-fix.patch
+
+patches/ppc-hacks-to-allow-rt-to-run-kernbench.patch
+
+patches/ppc-make-tlb-batch-64-only.patch
+
+patches/ppc-remove-duplicate-save-stack-trace.patch
+
+patches/ppc-tlbflush-preempt.patch
+
+patches/preempt-irqs-ppc-ack-irq-fixups.patch
+
+patches/preempt-irqs-ppc-fix-b5.patch
+
+patches/preempt-irqs-ppc-fix-more-fasteoi.patch
+
+patches/preempt-realtime-powerpc-add-raw-relax-macros.patch
+
+patches/preempt-realtime-powerpc-b2.patch
+
+patches/preempt-realtime-powerpc-b3.patch
+
+patches/preempt-realtime-powerpc-b4.patch
+
+patches/preempt-realtime-powerpc-celleb-raw-spinlocks.patch
+
+patches/preempt-realtime-powerpc.patch
+
+patches/preempt-realtime-powerpc-tlb-batching.patch
+
+patches/preempt-realtime-powerpc-update.patch
+
+patches/preempt-irqs-ppc-fix-b6.patch
+
+patches/preempt-irqs-ppc.patch
+
+patches/preempt-irqs-ppc-preempt-schedule-irq-entry-fix.patch
+
+patches/rt-mutex-ppc-fix-a5.patch
+
+patches/rt-mutex-ppc.patch
+
+
+Please reply back, If anybody working on this !!! Or if anything is missing
+from this pls. let me know.
+
+Regards
+Srikanth
+**********
+
+--000e0cd304706c870d046551bee8
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: base64
+
+SGkgYWxsLDxicj48YnI+SnVzdCBtYW5hZ2VkIHRvIGNvbXBpbGUgUFJFRU1QVF9SVCBvbiBMaW51
+eC0yLjYuMjktcmM3IFBvd2VyUEMsIEkgdXNlZCBmb2xsb3dpbmcgcGF0Y2hlcyBmcm9tIGJyb2tl
+biBwYWNrYWdlIG9mIFJUIChQYXRjaC0yLjYuMjYuOC1ydDE2LWJyb2tlbi1vdXQudGFyLmd6KSAs
+IE5lZWQgdG8gaW52ZXN0aWdhdGUgZnVydGhlciB3aXRoIHJlc3BlY3QgdG8gSFJULCA8YnI+Cjxi
+cj5wYXRjaGVzL3BhdGNoLTIuNi4yOS1yYzegoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5wYXRjaGVzL3BhdGNoLTIuNi4yOS1yYzctcnQxLnBh
+dGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KcGF0Y2hl
+cy9wZXJjcHUtbG9ja2VkLXBvd2VycGMtZml4dXBzLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoCA8YnI+cGF0Y2hlcy9wb3dlcnBjLTAyLW1ha2UtdGhlLWlycS1yZXZlcnNl
+LW1hcHBpbmctcmFkaXgtdHJlZS1sb2NrbGVzcy5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnBhdGNoZXMvcG93ZXJw
+Yy1mdHJhY2Utc3RvcC1vbi1vb3BzLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKAgPGJyPnBhdGNoZXMvcG93ZXJwYy1tYXRjaC1fX3J3X3lpZWxkLWZ1bmN0aW9uLWRlY2xh
+cmF0aW9uLXRvLXByb3RvdHlwZS5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpwYXRjaGVzL3BwYzMyLWxhdGVuY3kt
+Y29tcGlsZS1oYWNrLWZpeGVzLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxi
+cj5wYXRjaGVzL3BwYzMyX25vdHJhY2VfaW5pdF9mdW5jdGlvbnMucGF0Y2igoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KcGF0Y2hlcy9wcGM2NC1maXgtcHJlZW1wdC11bnNh
+ZmUtcGF0aHMtYWNjZXNzaW5nLXBlcl9jcHUtdmFyaWFibGVzLnBhdGNooKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+cGF0Y2hl
+cy9wcGMtZ3RvZC1ub3RyYWNlLWZpeC5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoCA8YnI+CnBhdGNoZXMvcHBjLWhhY2tzLXRvLWFsbG93LXJ0LXRvLXJ1bi1r
+ZXJuYmVuY2gucGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPnBhdGNoZXMvcHBjLW1h
+a2UtdGxiLWJhdGNoLTY0LW9ubHkucGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKAgPGJyPgpwYXRjaGVzL3BwYy1yZW1vdmUtZHVwbGljYXRlLXNhdmUtc3RhY2stdHJhY2Uu
+cGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5wYXRjaGVzL3BwYy10bGJmbHVzaC1w
+cmVlbXB0LnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxi
+cj4KcGF0Y2hlcy9wcmVlbXB0LWlycXMtcHBjLWFjay1pcnEtZml4dXBzLnBhdGNooKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+cGF0Y2hlcy9wcmVlbXB0LWlycXMtcHBjLWZpeC1i
+NS5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnBhdGNo
+ZXMvcHJlZW1wdC1pcnFzLXBwYy1maXgtbW9yZS1mYXN0ZW9pLnBhdGNooKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKAgPGJyPnBhdGNoZXMvcHJlZW1wdC1yZWFsdGltZS1wb3dlcnBjLWFkZC1y
+YXctcmVsYXgtbWFjcm9zLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpwYXRjaGVzL3ByZWVt
+cHQtcmVhbHRpbWUtcG93ZXJwYy1iMi5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgIDxicj5wYXRjaGVzL3ByZWVtcHQtcmVhbHRpbWUtcG93ZXJwYy1iMy5wYXRjaKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KcGF0Y2hlcy9wcmVlbXB0LXJlYWx0
+aW1lLXBvd2VycGMtYjQucGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8
+YnI+cGF0Y2hlcy9wcmVlbXB0LXJlYWx0aW1lLXBvd2VycGMtY2VsbGViLXJhdy1zcGlubG9ja3Mu
+cGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnBhdGNoZXMvcHJlZW1wdC1yZWFsdGltZS1wb3dl
+cnBjLnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPnBhdGNo
+ZXMvcHJlZW1wdC1yZWFsdGltZS1wb3dlcnBjLXRsYi1iYXRjaGluZy5wYXRjaKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKAgPGJyPgpwYXRjaGVzL3ByZWVtcHQtcmVhbHRpbWUtcG93ZXJwYy11cGRh
+dGUucGF0Y2igoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5wYXRjaGVzL3ByZWVt
+cHQtaXJxcy1wcGMtZml4LWI2LnBhdGNooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgIDxicj4KcGF0Y2hlcy9wcmVlbXB0LWlycXMtcHBjLnBhdGNooKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+cGF0Y2hlcy9wcmVlbXB0LWlycXMt
+cHBjLXByZWVtcHQtc2NoZWR1bGUtaXJxLWVudHJ5LWZpeC5wYXRjaKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8
+YnI+CnBhdGNoZXMvcnQtbXV0ZXgtcHBjLWZpeC1hNS5wYXRjaKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPnBhdGNoZXMvcnQtbXV0ZXgtcHBjLnBhdGNooKCg
+oKAgPGJyPjxicj48YnI+UGxlYXNlIHJlcGx5IGJhY2ssIElmIGFueWJvZHkgd29ya2luZyBvbiB0
+aGlzICEhISBPciBpZiBhbnl0aGluZyBpcyBtaXNzaW5nIGZyb20gdGhpcyBwbHMuIGxldCBtZSBr
+bm93LjxiciBjbGVhcj0iYWxsIj4KPGJyPlJlZ2FyZHM8YnI+U3Jpa2FudGggPGJyPioqKioqKioq
+Kio8YnI+Cg==
+--000e0cd304706c870d046551bee8--
