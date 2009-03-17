@@ -1,12 +1,16 @@
-Return-Path: <edfuchs@uni-kassel.de>
-From: Eduard Fuchs <edfuchs@uni-kassel.de>
-To: Linuxppc-dev@ozlabs.org
-Subject: Problem with radeonfb on PowerPC 7448&MV64560
-Date: Tue, 17 Mar 2009 16:30:25 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200903171630.25340.edfuchs@uni-kassel.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 514E0DDEE3
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 03:16:16 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: davem@davemloft.net
+Subject: [PATCH] gianfar: pass the proper dev to DMA ops
+Date: Tue, 17 Mar 2009 11:16:07 -0500
+Message-Id: <1237306567-32219-1-git-send-email-galak@kernel.crashing.org>
+Cc: Becky Bruce <becky.bruce@freescale.com>, netdev@vger.kernel.org,
+	Andy Fleming <afleming@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,90 +20,187 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+We need to be passing the of_platform device struct into the DMA ops as
+its the one that has the archdata setup to know which low-level DMA ops we
+should be using (not the net_device one).  This isn't an issue until we
+expect the archdata to be setup correctly.
 
-since several days I'm trying to run an ATI 9250 (PCI) graphic card under 
-Linux Kernel 2.6.27.19. Nevertheless without success. The kernel shows the 
-following message:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-videoboot: Booting PCI video card bus 0, function 0, device 7
-biosEmu: undefined interrupt 15h called!                     
-biosEmu/bios.int42: unknown function AH=0x0, AL=0x7, BL=0x0  
-radeonfb (0000:00:07.0): Cannot match card to OF node !      
-RADEON: CHIP_FAMILY 10 (0xa)
-RADEON: MMIO_BASE 0xf1058000
-RADEON: MMIO_BASE_PHYS 0x88000000
-radeonfb (0000:00:07.0): Found 0k of SDRAM 64 bits wide videoram
-RADEON: Try map FB Phys 0x80000000, size 0, 16777216. 0
-radeonfb (0000:00:07.0): cannot map FB
-radeonfb: probe of 0000:00:07.0 failed with error -5
+Dave,
 
-This is the PCI initialization :
+This is for net-next.  We are working on having per device dma ops for .30 and
+expect the struct device archdata to be setup properly but in .29 we still
+default to a direct DMA ops on ppc32 so this "bug" will never show up.
 
-PCI: Probing PCI hardware                                                                                
-pci 0000:00:00.0: unknown header type 7f, ignoring device                                                
-pci 0000:00:08.0: PME# supported from D0 D1 D2 D3hot                                                     
-pci 0000:00:08.0: PME# disabled                                                                          
-pci 0000:00:08.1: PME# supported from D0 D1 D2 D3hot                                                     
-pci 0000:00:08.1: PME# disabled                                                                          
-pci 0000:00:08.2: PME# supported from D0 D1 D2 D3hot                                                     
-pci 0000:00:08.2: PME# disabled                                                                          
-PCI: PHB (bus 0) bridge rsrc 0: 0000000000011000-0000000000020fff [0x100], 
-parent c0439ce0 (PCI IO)      
-PCI BUS: 0xc063e044:0xc0439ce0, 0xc063e060:0xc0439cc4                                                    
-PCI: PHB (bus 0) bridge rsrc 1: 0000000080000000-00000000bfffffff [0x200], 
-parent c0439cc4 (PCI mem)     
-PCI: PHB (bus 0) bridge rsrc 0: 00000000d8080000-00000000d808ffff [0x100], 
-parent c0439ce0 (PCI IO)      
-PCI: PHB (bus 0) bridge rsrc 1: 0000000060000000-000000007fffffff [0x200], 
-parent c0439cc4 (PCI mem)     
-PCI: Allocating 0000:00:07.0: Resource 0: 0000000080000000..0000000087ffffff 
-[21208]                     
-PCI: Allocating 0000:00:07.0: Resource 1: 00000000d8011000..00000000d80110ff 
-[20101]                     
-PCI: Cannot allocate resource region 1 of device 0000:00:07.0, will remap                                
-PCI: Allocating 0000:00:07.0: Resource 2: 0000000088000000..000000008800ffff 
-[20200]                     
-PCI: Allocating 0000:00:07.1: Resource 0: 0000000090000000..0000000097ffffff 
-[21208]                     
-PCI: Allocating 0000:00:07.1: Resource 1: 0000000098000000..000000009800ffff 
-[20200]                     
-PCI: Allocating 0000:00:08.0: Resource 0: 0000000098010000..0000000098010fff 
-[20200]                     
-PCI: Allocating 0000:00:08.1: Resource 0: 0000000098011000..0000000098011fff 
-[20200]                     
-PCI: Allocating 0000:00:08.2: Resource 0: 0000000098012000..00000000980120ff 
-[20200]                     
-PCI: Allocating 0000:00:09.0: Resource 0: 00000000d8011100..00000000d8011107 
-[20101]                     
-PCI: Cannot allocate resource region 0 of device 0000:00:09.0, will remap                                
-PCI: Allocating 0000:00:09.0: Resource 1: 00000000d8011108..00000000d801110b 
-[20101]                     
-PCI: Cannot allocate resource region 1 of device 0000:00:09.0, will remap                                
-PCI: Allocating 0000:00:09.0: Resource 2: 00000000d8011110..00000000d8011117 
-[20101]
-PCI: Cannot allocate resource region 2 of device 0000:00:09.0, will remap                                
-PCI: Allocating 0000:00:09.0: Resource 3: 00000000d8011118..00000000d801111b 
-[20101]                     
-PCI: Cannot allocate resource region 3 of device 0000:00:09.0, will remap                                
-PCI: Allocating 0000:00:09.0: Resource 4: 00000000d8011120..00000000d801112f 
-[20101]                     
-PCI: Cannot allocate resource region 4 of device 0000:00:09.0, will remap                                
-PCI: Allocating 0000:00:09.0: Resource 5: 0000000098012400..00000000980127ff 
-[20200]                     
-PCI: Allocating 0000:00:0a.0: Resource 0: 000000009c000000..000000009fffffff 
-[20200]                     
-PCI: Assigning unassigned resouces...                                                                    
-bus: 00 index 0 io port: [11000, 20fff]                                                                  
-bus: 00 index 1 mmio: [80000000, bfffffff]                                                               
-bus: 00 index 0 io port: [d8080000, d808ffff]                                                            
-bus: 00 index 1 mmio: [60000000, 7fffffff]
+- k
 
+ drivers/net/gianfar.c |   34 ++++++++++++++++++----------------
+ drivers/net/gianfar.h |    3 ++-
+ 2 files changed, 20 insertions(+), 17 deletions(-)
 
-At chipset's MV6450 init, I haven't found any errors. Otherwise an PCI SATA 
-controller and an 3Com network card running very well. I have no more ideas, 
-where can be the possible problem. Do you have any suggestions?
-
-Best regards
-
-Eduard Fuchs
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index bed30ef..8659833 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -365,8 +365,10 @@ static int gfar_probe(struct of_device *ofdev,
+ 		return -ENOMEM;
+ 
+ 	priv = netdev_priv(dev);
+-	priv->dev = dev;
++	priv->ndev = dev;
++	priv->ofdev = ofdev;
+ 	priv->node = ofdev->node;
++	SET_NETDEV_DEV(dev, &ofdev->dev);
+ 
+ 	err = gfar_of_init(dev);
+ 
+@@ -538,7 +540,7 @@ static int gfar_remove(struct of_device *ofdev)
+ 	dev_set_drvdata(&ofdev->dev, NULL);
+ 
+ 	iounmap(priv->regs);
+-	free_netdev(priv->dev);
++	free_netdev(priv->ndev);
+ 
+ 	return 0;
+ }
+@@ -870,7 +872,7 @@ void stop_gfar(struct net_device *dev)
+ 
+ 	free_skb_resources(priv);
+ 
+-	dma_free_coherent(&dev->dev,
++	dma_free_coherent(&priv->ofdev->dev,
+ 			sizeof(struct txbd8)*priv->tx_ring_size
+ 			+ sizeof(struct rxbd8)*priv->rx_ring_size,
+ 			priv->tx_bd_base,
+@@ -892,12 +894,12 @@ static void free_skb_resources(struct gfar_private *priv)
+ 		if (!priv->tx_skbuff[i])
+ 			continue;
+ 
+-		dma_unmap_single(&priv->dev->dev, txbdp->bufPtr,
++		dma_unmap_single(&priv->ofdev->dev, txbdp->bufPtr,
+ 				txbdp->length, DMA_TO_DEVICE);
+ 		txbdp->lstatus = 0;
+ 		for (j = 0; j < skb_shinfo(priv->tx_skbuff[i])->nr_frags; j++) {
+ 			txbdp++;
+-			dma_unmap_page(&priv->dev->dev, txbdp->bufPtr,
++			dma_unmap_page(&priv->ofdev->dev, txbdp->bufPtr,
+ 					txbdp->length, DMA_TO_DEVICE);
+ 		}
+ 		txbdp++;
+@@ -914,7 +916,7 @@ static void free_skb_resources(struct gfar_private *priv)
+ 	if(priv->rx_skbuff != NULL) {
+ 		for (i = 0; i < priv->rx_ring_size; i++) {
+ 			if (priv->rx_skbuff[i]) {
+-				dma_unmap_single(&priv->dev->dev, rxbdp->bufPtr,
++				dma_unmap_single(&priv->ofdev->dev, rxbdp->bufPtr,
+ 						priv->rx_buffer_size,
+ 						DMA_FROM_DEVICE);
+ 
+@@ -980,7 +982,7 @@ int startup_gfar(struct net_device *dev)
+ 	gfar_write(&regs->imask, IMASK_INIT_CLEAR);
+ 
+ 	/* Allocate memory for the buffer descriptors */
+-	vaddr = (unsigned long) dma_alloc_coherent(&dev->dev,
++	vaddr = (unsigned long) dma_alloc_coherent(&priv->ofdev->dev,
+ 			sizeof (struct txbd8) * priv->tx_ring_size +
+ 			sizeof (struct rxbd8) * priv->rx_ring_size,
+ 			&addr, GFP_KERNEL);
+@@ -1192,7 +1194,7 @@ err_rxalloc_fail:
+ rx_skb_fail:
+ 	free_skb_resources(priv);
+ tx_skb_fail:
+-	dma_free_coherent(&dev->dev,
++	dma_free_coherent(&priv->ofdev->dev,
+ 			sizeof(struct txbd8)*priv->tx_ring_size
+ 			+ sizeof(struct rxbd8)*priv->rx_ring_size,
+ 			priv->tx_bd_base,
+@@ -1345,7 +1347,7 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 			if (i == nr_frags - 1)
+ 				lstatus |= BD_LFLAG(TXBD_LAST | TXBD_INTERRUPT);
+ 
+-			bufaddr = dma_map_page(&dev->dev,
++			bufaddr = dma_map_page(&priv->ofdev->dev,
+ 					skb_shinfo(skb)->frags[i].page,
+ 					skb_shinfo(skb)->frags[i].page_offset,
+ 					length,
+@@ -1377,7 +1379,7 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	/* setup the TxBD length and buffer pointer for the first BD */
+ 	priv->tx_skbuff[priv->skb_curtx] = skb;
+-	txbdp_start->bufPtr = dma_map_single(&dev->dev, skb->data,
++	txbdp_start->bufPtr = dma_map_single(&priv->ofdev->dev, skb->data,
+ 			skb_headlen(skb), DMA_TO_DEVICE);
+ 
+ 	lstatus |= BD_LFLAG(TXBD_CRC | TXBD_READY) | skb_headlen(skb);
+@@ -1563,7 +1565,7 @@ static void gfar_reset_task(struct work_struct *work)
+ {
+ 	struct gfar_private *priv = container_of(work, struct gfar_private,
+ 			reset_task);
+-	struct net_device *dev = priv->dev;
++	struct net_device *dev = priv->ndev;
+ 
+ 	if (dev->flags & IFF_UP) {
+ 		stop_gfar(dev);
+@@ -1610,7 +1612,7 @@ static int gfar_clean_tx_ring(struct net_device *dev)
+ 				(lstatus & BD_LENGTH_MASK))
+ 			break;
+ 
+-		dma_unmap_single(&dev->dev,
++		dma_unmap_single(&priv->ofdev->dev,
+ 				bdp->bufPtr,
+ 				bdp->length,
+ 				DMA_TO_DEVICE);
+@@ -1619,7 +1621,7 @@ static int gfar_clean_tx_ring(struct net_device *dev)
+ 		bdp = next_txbd(bdp, base, tx_ring_size);
+ 
+ 		for (i = 0; i < frags; i++) {
+-			dma_unmap_page(&dev->dev,
++			dma_unmap_page(&priv->ofdev->dev,
+ 					bdp->bufPtr,
+ 					bdp->length,
+ 					DMA_TO_DEVICE);
+@@ -1696,7 +1698,7 @@ static void gfar_new_rxbdp(struct net_device *dev, struct rxbd8 *bdp,
+ 	struct gfar_private *priv = netdev_priv(dev);
+ 	u32 lstatus;
+ 
+-	bdp->bufPtr = dma_map_single(&dev->dev, skb->data,
++	bdp->bufPtr = dma_map_single(&priv->ofdev->dev, skb->data,
+ 			priv->rx_buffer_size, DMA_FROM_DEVICE);
+ 
+ 	lstatus = BD_LFLAG(RXBD_EMPTY | RXBD_INTERRUPT);
+@@ -1856,7 +1858,7 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
+ 
+ 		skb = priv->rx_skbuff[priv->skb_currx];
+ 
+-		dma_unmap_single(&priv->dev->dev, bdp->bufPtr,
++		dma_unmap_single(&priv->ofdev->dev, bdp->bufPtr,
+ 				priv->rx_buffer_size, DMA_FROM_DEVICE);
+ 
+ 		/* We drop the frame if we failed to allocate a new buffer */
+@@ -1916,7 +1918,7 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
+ static int gfar_poll(struct napi_struct *napi, int budget)
+ {
+ 	struct gfar_private *priv = container_of(napi, struct gfar_private, napi);
+-	struct net_device *dev = priv->dev;
++	struct net_device *dev = priv->ndev;
+ 	int tx_cleaned = 0;
+ 	int rx_cleaned = 0;
+ 	unsigned long flags;
+diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
+index 54332b0..dd499d7 100644
+--- a/drivers/net/gianfar.h
++++ b/drivers/net/gianfar.h
+@@ -738,7 +738,8 @@ struct gfar_private {
+ 	spinlock_t rxlock;
+ 
+ 	struct device_node *node;
+-	struct net_device *dev;
++	struct net_device *ndev;
++	struct of_device *ofdev;
+ 	struct napi_struct napi;
+ 
+ 	/* skb array and index */
+-- 
+1.5.6.6
