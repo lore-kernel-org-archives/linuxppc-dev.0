@@ -1,21 +1,20 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id E6D6FDDDB6
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 06:23:43 +1100 (EST)
-Date: Tue, 17 Mar 2009 22:23:41 +0300
+	by ozlabs.org (Postfix) with ESMTP id 65FBDDDE00
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 06:27:23 +1100 (EST)
+Date: Tue, 17 Mar 2009 22:01:26 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Wolfgang Grandegegr <wg@grandegger.com>
-Subject: Re: [PATCH 4/4] powerpc/85xx: TQM8548: Update DTS file for
-	multi-chip support
-Message-ID: <20090317192341.GB4287@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 3/4] NAND: FSL-UPM: Add wait flags to support
+	board/chip specific delays
+Message-ID: <20090317190126.GA4287@oksana.dev.rtsoft.ru>
 References: <1237281143-8768-1-git-send-email-wg@grandegger.com>
 	<1237281143-8768-2-git-send-email-wg@grandegger.com>
 	<1237281143-8768-3-git-send-email-wg@grandegger.com>
 	<1237281143-8768-4-git-send-email-wg@grandegger.com>
-	<1237281143-8768-5-git-send-email-wg@grandegger.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <1237281143-8768-5-git-send-email-wg@grandegger.com>
+In-Reply-To: <1237281143-8768-4-git-send-email-wg@grandegger.com>
 Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,44 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 17, 2009 at 10:12:22AM +0100, Wolfgang Grandegegr wrote:
+On Tue, Mar 17, 2009 at 10:12:21AM +0100, Wolfgang Grandegegr wrote:
 > From: Wolfgang Grandegger <wg@grandegger.com>
 > 
-> This patch adds multi-chip support for the Micron MT29F8G08FAB NAND
-> flash memory on the TQM8548 modules.
-> 
-> This patch should go through the powerpc/85xx channel.
+> The NAND flash on the TQM8548_BE modules requires a short delay after
+> running the UPM pattern. The TQM8548_BE requires a further short delay
+> after writing out a buffer. Normally the R/B pin should be checked, but
+> it's not connected on the TQM8548_BE. The existing driver uses similar
+> fixed delay points. To manage these extra delays in a more general way,
+> I introduced the "wait_flags" field allowing the board-specific driver
+> to specify various types of extra delay.
 > 
 > Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
 > ---
->  arch/powerpc/boot/dts/tqm8548.dts |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/tqm8548.dts b/arch/powerpc/boot/dts/tqm8548.dts
-> index 81d3fbb..e5c3c67 100644
-> --- a/arch/powerpc/boot/dts/tqm8548.dts
-> +++ b/arch/powerpc/boot/dts/tqm8548.dts
-> @@ -389,6 +389,11 @@
->  			reg = <3 0x0 0x800>;
->  			fsl,upm-addr-offset = <0x10>;
->  			fsl,upm-cmd-offset = <0x08>;
-> +			wait-flags = <0x05>;
 
-Should be at least fsl,upm-wait-flags. (And the flags should
-be documented in dts-bindings ;-).
+Just a nitpick...
 
-> +			/* Multi-chip device */
-> +			fsl,upm-mar-chip-offset = <0x200>;
-> +			max-chips = <2>;
+> +	prop = of_get_property(ofdev->node, "wait-flags", &size);
+> +	if (prop && size == sizeof(uint32_t))
+> +		fun->wait_flags = *prop;
+> +	else
+> +		fun->wait_flags = (FSL_UPM_WAIT_RUN_PATTERN |
+> +				   FSL_UPM_WAIT_WRITE_BYTE);
 
-num-chips would be more appropriate, no?
+No need for parenthesis here.
 
-> +			chip-offset = <0x200>;
-
-I believe this is from some old code...
-
-
-Thanks!
+Thanks,
 
 -- 
 Anton Vorontsov
