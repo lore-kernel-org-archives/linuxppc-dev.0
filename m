@@ -1,19 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 5EC99DDFC7
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 06:27:36 +1100 (EST)
-Date: Tue, 17 Mar 2009 22:27:35 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Wolfgang Grandegegr <wg@grandegger.com>
-Subject: Re: [PATCH 1/4] NAND: FSL-UPM: add multi chip support
-Message-ID: <20090317192735.GC4287@oksana.dev.rtsoft.ru>
-References: <1237281143-8768-1-git-send-email-wg@grandegger.com>
-	<1237281143-8768-2-git-send-email-wg@grandegger.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 51CFCDDF02
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 08:15:32 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LjgdF-0008GW-Ll
+	for linuxppc-dev@ozlabs.org; Tue, 17 Mar 2009 14:15:29 -0700
+Message-ID: <22567864.post@talk.nabble.com>
+Date: Tue, 17 Mar 2009 14:15:29 -0700 (PDT)
+From: davidastro <davidastro@hotmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Fix for __div64_32 locks when using some 64 bit numbers
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1237281143-8768-2-git-send-email-wg@grandegger.com>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 17, 2009 at 10:12:19AM +0100, Wolfgang Grandegegr wrote:
-> From: Wolfgang Grandegger <wg@grandegger.com>
-> 
-> This patch adds support for multi-chip NAND devices to the FSL-UPM
-> driver. This requires support for multiple GPIOs for the RNB pins.
-> 
-> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-> ---
->  drivers/mtd/nand/fsl_upm.c |   90 +++++++++++++++++++++++++++++++++----------
->  1 files changed, 69 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-> index 7815a40..ca7e85a 100644
-> --- a/drivers/mtd/nand/fsl_upm.c
-> +++ b/drivers/mtd/nand/fsl_upm.c
-> @@ -23,6 +23,8 @@
->  #include <linux/io.h>
->  #include <asm/fsl_lbc.h>
->  
-> +#define FSL_UPM_NAND_MAX_CHIPS 4
 
-Is there any reason to hardcode max chips? Some obscure limit in the
-UPMs maybe?
+I found a bug when using the function __div64_32 in assembly in a 32 bit ppc
+architecture unit.
 
-Otherwise we'd better allocate the rnb_gpios dynamically, depending
-on the num-chips property.
+I tried the numbers 55834565048000000 for the dividend and 4294967079 for
+the divisor. When passing these two numbers to the function  __div64_32, I
+had a software lock. I searched for possible patches online and in different
+forums but I could not find anything related to the assembly implementation
+to this function (I would have to apologize if somebody already found a fix
+:-) ).
 
-Thanks,
+Anyway, when analyzing the assembly code, I found out with gdb the problem.
+I am not an expert in ppc architecture but I read the documentation and I am
+pretty sure I solved the issue (I have been testing for couple of days using
+random 64 to 32 number combinations with good results).
 
+Who or Where should I post the fix to be reviewed.
+
+Thanks for your attention
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+View this message in context: http://www.nabble.com/Fix-for-__div64_32-locks-when-using-some-64-bit-numbers-tp22567864p22567864.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
