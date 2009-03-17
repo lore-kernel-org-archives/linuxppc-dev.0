@@ -1,25 +1,23 @@
-Return-Path: <mark@bish.net>
-Received: from vincent.bish.net (bish.net [209.241.232.100])
-	by ozlabs.org (Postfix) with ESMTP id 6B0B8DDED8
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 03:37:22 +1100 (EST)
-Message-ID: <20090317125252.rqhc78q90k0wsoww@www.bish.net>
-Date: Tue, 17 Mar 2009 12:52:52 -0400
-From: Mark Bishop <mark@bish.net>
-To: Vijay Nikam <vijay.t.nikam@gmail.com>
-References: <20090311115234.7hmj4jj79csgk4wo@www.bish.net>
-	<A0ED6D80-FD02-4BED-B50B-7F3028E47888@kernel.crashing.org>
-	<20090311120300.atgtikpneo0gos0w@www.bish.net>
-	<20090311165320.GB11120@ld0162-tx32.am.freescale.net>
-	<20090311142708.olkbrtn5hws0cg8w@www.bish.net>
-	<f234e2140903152241i7a8b4c39jd4b4f5935bffed3e@mail.gmail.com>
-In-Reply-To: <f234e2140903152241i7a8b4c39jd4b4f5935bffed3e@mail.gmail.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id E6D6FDDDB6
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 06:23:43 +1100 (EST)
+Date: Tue, 17 Mar 2009 22:23:41 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Wolfgang Grandegegr <wg@grandegger.com>
+Subject: Re: [PATCH 4/4] powerpc/85xx: TQM8548: Update DTS file for
+	multi-chip support
+Message-ID: <20090317192341.GB4287@oksana.dev.rtsoft.ru>
+References: <1237281143-8768-1-git-send-email-wg@grandegger.com>
+	<1237281143-8768-2-git-send-email-wg@grandegger.com>
+	<1237281143-8768-3-git-send-email-wg@grandegger.com>
+	<1237281143-8768-4-git-send-email-wg@grandegger.com>
+	<1237281143-8768-5-git-send-email-wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Subject: Re: Freescale MPC8313ERDB-RevA and newer BSP/kernel
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1237281143-8768-5-git-send-email-wg@grandegger.com>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,34 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Quoting Vijay Nikam <vijay.t.nikam@gmail.com>:
+On Tue, Mar 17, 2009 at 10:12:22AM +0100, Wolfgang Grandegegr wrote:
+> From: Wolfgang Grandegger <wg@grandegger.com>
+> 
+> This patch adds multi-chip support for the Micron MT29F8G08FAB NAND
+> flash memory on the TQM8548 modules.
+> 
+> This patch should go through the powerpc/85xx channel.
+> 
+> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+> ---
+>  arch/powerpc/boot/dts/tqm8548.dts |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/tqm8548.dts b/arch/powerpc/boot/dts/tqm8548.dts
+> index 81d3fbb..e5c3c67 100644
+> --- a/arch/powerpc/boot/dts/tqm8548.dts
+> +++ b/arch/powerpc/boot/dts/tqm8548.dts
+> @@ -389,6 +389,11 @@
+>  			reg = <3 0x0 0x800>;
+>  			fsl,upm-addr-offset = <0x10>;
+>  			fsl,upm-cmd-offset = <0x08>;
+> +			wait-flags = <0x05>;
 
-> Hi Mark,
->
-> Could you please let me know how you booted the latest Linux kernel on
-> MPC8313ERDB board ? ? ? As I tried but was not successful. It hangs or
-> does nothing and waits at network configuration, mean to determine IP
-> address (as I have used dhcp).
->
-> Kindly please acknowledge ... thank you ...
->
-> Kind Regards,
-> Vijay Nikam
->
->
+Should be at least fsl,upm-wait-flags. (And the flags should
+be documented in dts-bindings ;-).
 
-I modified the .dts file (mpc8313erdb.dts)
+> +			/* Multi-chip device */
+> +			fsl,upm-mar-chip-offset = <0x200>;
+> +			max-chips = <2>;
 
-WAS interrupts = <37 0x8 36 0x8 35 0x8>;
-IS  interrupts = <34 0x8 33 0x8 32 0x8>;
+num-chips would be more appropriate, no?
 
-WAS interrupts = <34 0x8 33 0x8 32 0x8>;
-IS  interrupts = <37 0x8 36 0x8 35 0x8>;
+> +			chip-offset = <0x200>;
 
-This is from memory, so let me know if you have a problem.
-
-And sorry for the manual diff.
+I believe this is from some old code...
 
 
+Thanks!
 
-Any idea on how to get spidev up and running on this board?  :)
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
