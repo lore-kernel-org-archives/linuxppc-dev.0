@@ -1,27 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1CFB1DDEDF
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 00:49:19 +1100 (EST)
-Message-Id: <C33213CA-9EE4-4496-8D32-3832AEA1FB41@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40903170645p43aa4790ve4f48ea472751987@mail.gmail.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 69C86DDEDD
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 00:55:59 +1100 (EST)
+Message-Id: <7669531C-28D6-496E-8351-A4A8B02DF51C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Andy Fleming <afleming@freescale.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] powerpc: Enable CPU_FTR_NEED_COHERENT for MPC52xx
-Date: Tue, 17 Mar 2009 08:49:11 -0500
-References: <20090311222615.63410@gmx.net>
-	<1237197925-71727-1-git-send-email-kosmo@semihalf.com>
-	<fa686aa40903162054v2d28fc2er53aa4f71837110a2@mail.gmail.com>
-	<fa686aa40903162143j5f641d7dob53b96b681737e07@mail.gmail.com>
-	<396BE890-40BF-451E-AE3E-2E2E1D440951@freescale.com>
-	<fa686aa40903170645p43aa4790ve4f48ea472751987@mail.gmail.com>
-Cc: LinuxPPC Mailing List <linuxppc-dev@ozlabs.org>,
-	Piotr Ziecik <kosmo@semihalf.com>
+Subject: oops w/genphy & gianfar.. on MPC8315 RDB
+Date: Tue, 17 Mar 2009 08:55:49 -0500
+Cc: LinuxPPC Mailing List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,54 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Andy,
 
-On Mar 17, 2009, at 8:45 AM, Grant Likely wrote:
-
-> On Tue, Mar 17, 2009 at 6:10 AM, Kumar Gala  
-> <kumar.gala@freescale.com> wrote:
->> On Mar 16, 2009, at 11:43 PM, Grant Likely wrote:
->>> diff --git a/arch/powerpc/include/asm/cputable.h
->>> b/arch/powerpc/include/asm/cput
->>> index 4911104..48d7f5f 100644
->>> --- a/arch/powerpc/include/asm/cputable.h
->>> +++ b/arch/powerpc/include/asm/cputable.h
->>> @@ -348,8 +348,15 @@ extern const char *powerpc_base_platform;
->>>           CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
->>> #define CPU_FTRS_82XX  (CPU_FTR_COMMON | \
->>>           CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB)
->>> +
->>> +#if defined(CONFIG_PPC_MPC52xx)
->>> +#define CPU_FTRS_G2_LE (CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
->>> +           CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP |
->>> CPU_FTR_NEED_COHERENT)
->>> +#else
->>> #define CPU_FTRS_G2_LE (CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
->>>           CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP)
->>> +#endif
->>> +
->>> #define CPU_FTRS_E300  (CPU_FTR_MAYBE_CAN_DOZE | \
->>>           CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | \
->>>           CPU_FTR_COMMON)
->>
->> Doing this via a static CPU FTR fixup isn't really the best way to  
->> handle
->> it.  I was thinking about this the other day in my patch to  
->> actually make
->> G2/e300 cores respect _PAGE_COHERENT.  We really should set this  
->> via a
->> platform fixup.  Just not sure if that's soon enough.
->
-> I agree, but as Ben pointed out last night on IRC, feature fixup
-> (early_init) occurs well before platform probe time.  Platform code
-> cannot fix it up until someone does the work of making platform probe
-> time earlier.  It's non-trivial.
->
-> However, I need to get a fix in for this ASAP, otherwise the 5200 will
-> be broken in 2.6.29.  I don't see this patch as a final solution, but
-> it works as a stop-gap until platform probing can be reworked.
-
-So for .29 lets just go with the easy solution of adding  
-CONFIG_PPC_MPC52xx to the list that set CPU_FTR_NEED_COHERENT (10x,  
-83xx, etc..).
+Any ideas what's going on here?  I'm trying to use top of Linus + PPC  
+next.  Top of Linus doesn't show this.
 
 - k
+
+Setting up networking on eth0:
+------------[ cut here ]------------
+Kernel BUG at c0192e48 [verbose debug info unavailable]
+Oops: Exception in kernel mode, sig: 5 [#1]
+MPC831x RDB
+Modules linked in:
+NIP: c0192e48 LR: c01936a8 CTR: c0194870
+REGS: c4c9dc90 TRAP: 0700   Not tainted  (2.6.29-rc8-00280-g242497a)
+MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 84008228  XER: 00000000
+TASK = c7469bd0[874] 'ifconfig' THREAD: c4c9c000
+GPR00: 00000001 c4c9dd40 c7469bd0 c7462000 00000100 0000000f ffffffff  
+00000000
+GPR08: 00000220 00000000 fffee0bf 00000100 84002228 100237d4 07ff9000  
+00000000
+GPR16: 00000000 07fedc44 07fedc44 07fedc44 c7462000 ffff8914 c74603a0  
+c74603ac
+GPR24: c74621e8 c78c0e20 c9018000 c7462000 c7462000 c7462360 c6e3f800  
+c7462360
+NIP [c0192e48] startup_gfar+0x54/0x644
+LR [c01936a8] gfar_enet_open+0x270/0x478
+Call Trace:
+[c4c9dd40] [c019be04] genphy_config_init+0xa4/0xc8 (unreliable)
+[c4c9dd80] [c01936a8] gfar_enet_open+0x270/0x478
+[c4c9ddb0] [c02238e8] dev_open+0xc0/0x124
+[c4c9ddd0] [c0223048] dev_change_flags+0x90/0x1d4
+[c4c9ddf0] [c0266a68] devinet_ioctl+0x700/0x7ac
+[c4c9de60] [c0267b3c] inet_ioctl+0xcc/0xf8
+[c4c9de70] [c0211afc] sock_ioctl+0x60/0x2c8
+[c4c9de90] [c0099418] vfs_ioctl+0x34/0x90
+[c4c9dea0] [c0099524] do_vfs_ioctl+0x8c/0x704
+[c4c9df10] [c0099bdc] sys_ioctl+0x40/0x88
+[c4c9df40] [c001167c] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xff69268
+     LR = 0xffecdec
+Instruction dump:
+90010008 835d007c 7c0004ac 901a0014 3b0301e8 817d001c 2e180000 809d0068
+4192052c 812302bc 7d200034 5400d97e <0f000000> 81290000 7c845a14  
+7f03c378
+---[ end trace fca8f422a0a9a061 ]---
+Trace/breakpoint trap
