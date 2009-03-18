@@ -4,20 +4,23 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C4FD9DDDA2
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 05:37:47 +1100 (EST)
-Date: Wed, 18 Mar 2009 13:37:26 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 17054DDD1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 05:52:01 +1100 (EST)
+Date: Wed, 18 Mar 2009 13:51:30 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: liran raz <liranrazlinux@gmail.com>
-Subject: Re: node /dev/ttyCPM2 not created
-Message-ID: <20090318183726.GC3410@loki.buserror.net>
-References: <e3b3ab5c0903131156l45ab934fyf7fb33b71468594a@mail.gmail.com>
-	<ed82fe3e0903131718u2d49cad3j78e2d08d4de0bf4a@mail.gmail.com>
-	<e3b3ab5c0903160639u625a0fd3xa665896bb378b109@mail.gmail.com>
+To: Wolfgang Grandegegr <wg@grandegger.com>
+Subject: Re: [PATCH 4/4] powerpc/85xx: TQM8548: Update DTS file for
+	multi-chip support
+Message-ID: <20090318185130.GD3410@loki.buserror.net>
+References: <1237281143-8768-1-git-send-email-wg@grandegger.com>
+	<1237281143-8768-2-git-send-email-wg@grandegger.com>
+	<1237281143-8768-3-git-send-email-wg@grandegger.com>
+	<1237281143-8768-4-git-send-email-wg@grandegger.com>
+	<1237281143-8768-5-git-send-email-wg@grandegger.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e3b3ab5c0903160639u625a0fd3xa665896bb378b109@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@tabi.org>
+In-Reply-To: <1237281143-8768-5-git-send-email-wg@grandegger.com>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 16, 2009 at 05:39:08AM -0800, liran raz wrote:
-> Thanks, I don't see any mdev process running.
+On Tue, Mar 17, 2009 at 10:12:22AM +0100, Wolfgang Grandegegr wrote:
+> --- a/arch/powerpc/boot/dts/tqm8548.dts
+> +++ b/arch/powerpc/boot/dts/tqm8548.dts
+> @@ -389,6 +389,11 @@
+>  			reg = <3 0x0 0x800>;
+>  			fsl,upm-addr-offset = <0x10>;
+>  			fsl,upm-cmd-offset = <0x08>;
+> +			wait-flags = <0x05>;
+> +			/* Multi-chip device */
+> +			fsl,upm-mar-chip-offset = <0x200>;
+> +			max-chips = <2>;
+> +			chip-offset = <0x200>;
 
-Does it run during the boot scripts?  Or do you have udev?
+Device-specific properties (especially vaguely-named ones like wait-flags)
+should have at least an "fsl," prefix (or better, an "fsl,upm-" or
+"fsl,upm-nand-" prefix).
 
-> Just wonder who is creating /dev/ttyCPM1 since in the device table file
-> (device_table.txt)
-> I have only node: 204 (major) 46 (minor) defined.
-> But I can see /dev/ttyCPM1 (204 47)
-
-Ideally, it would be a program such as udev or mdev.  If you're using a
-static /dev with no utility to automatically create nodes, then it's *you*
-that creates it, with mknod. :-)
+Please update Documentation/powerpc/dts-bindings/fsl/upm-nand.txt with the
+definitions of these new properties.
 
 -Scott
