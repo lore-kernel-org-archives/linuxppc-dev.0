@@ -1,20 +1,21 @@
-Return-Path: <posco.grubb@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id AAB5BDDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 00:47:33 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id j37so30308waf.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 06:47:32 -0700 (PDT)
-Date: Wed, 18 Mar 2009 22:47:26 +0900
-From: TOMARI Hisanobu <posco.grubb@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: IDE cable detection on Apple PowerBook
-Message-Id: <20090318224726.5cf83e23.posco.grubb@gmail.com>
-In-Reply-To: <1237363097.25062.345.camel@pasglop>
-References: <20090318140638.e6b61eaa.posco.grubb@gmail.com>
-	<1237363097.25062.345.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id E87E6DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 02:28:01 +1100 (EST)
+Date: Wed, 18 Mar 2009 18:28:00 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2 2/2] powerpc/83xx: Move gianfar mdio nodes under the
+	ethernet nodes
+Message-ID: <20090318152800.GA29557@oksana.dev.rtsoft.ru>
+References: <20090317185902.GB4055@oksana.dev.rtsoft.ru>
+	<D688018D-6CE0-4627-B813-FC552B1A6E83@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <D688018D-6CE0-4627-B813-FC552B1A6E83@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>, David Gibson <david@gibson.dropbear.id.au>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,61 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I thought the short-40pin assumption would cause no problem
-considering all models beginning with "PowerBook5" are laptops.
-Do you mean an option to toggle this hack on/off should be present 
-in Kconfig?
+On Wed, Mar 18, 2009 at 08:21:18AM -0500, Kumar Gala wrote:
+[...]
+>> arch/powerpc/platforms/83xx/mpc834x_mds.c |    1 +
+>> arch/powerpc/platforms/83xx/mpc837x_mds.c |    1 +
+>> arch/powerpc/platforms/83xx/mpc837x_rdb.c |    1 +
+>> 14 files changed, 398 insertions(+), 319 deletions(-)
+>
+> If we do this we should also fixup all the 85xx & 86xx .dts
+
+OK.
+
+It would be great to have #include <gianfar_enet.dts> facility in .dts
+files. ;-) I heard some rumors about this, what was the consequence?..
+
+[...]
+>> +			ranges;
+>
+> Can this be proper?
+> 			ranges = <0x0 0x24520 0x20>;
+
+Yes, will change.
+
+I was actually asking that q in RFC, i.e. whether we want
+proper ranges or these stubs (I took stubs approach since
+it's already in mpc8313_rdb device tree).
 
 Thanks,
-TOMARI Hisanobu
 
-On Wed, 18 Mar 2009 18:58:17 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Wed, 2009-03-18 at 14:06 +0900, TOMARI Hisanobu wrote:
-> > Hello,
-> > 
-> > I'm using an OCZ PATA SSD on Apple PowerBook5,4 computer.
-> > The IDE drive fails to recognize 80-conductor cable that
-> > connects the drive to motherboard to fall back to UDMA33.
-> > 
-> > This patch fixes this behavior by assuming that the cable is
-> > short-40pin when the model string matches "PowerBook5" and 
-> > the motherboard detects 80c cable.
-> > 
-> > This patch is against drivers/ide/pmac.c in linux 2.6.28.8.
-> 
-> The patch is too much of an ad-hoc hack... _maybe_ an option is to make
-> the core fallback to 40 "short" when 80 pin detection fails on
-> powerbooks instead ?
-> 
-> Ben.
-> 
-> > (before applying the patch) hdparm -i /dev/hda
-> > /dev/hda:
-> >  Timing buffered disk reads:   90 MB in  3.03 seconds =  29.73 MB/sec
-> > (dmesg 2.6.26)
-> > ide0: Found Apple UniNorth ATA-6 controller, bus ID 3, irq 39
-> > Probing IDE interface ide0...
-> > hda: CORE_PATA, ATA DISK drive
-> > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-> > hda: drive side 80-wire cable detection failed, limiting max speed to UDMA33
-> > hda: UDMA/33 mode selected
-> > 
-> > (after applying the patch) hdparm -i /dev/hda
-> > /dev/hda:
-> >  Timing buffered disk reads:  240 MB in  3.02 seconds =  79.42 MB/sec
-> > (dmesg 2.6.28.8)
-> > ide-pmac: Found Apple UniNorth ATA-6 controller (PCI), bus ID 3, irq 39
-> > Probing IDE interface ide0...
-> > hda: CORE_PATA, ATA DISK drive
-> > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-> > hda: UDMA/100 mode selected
-> > ide0 at 0xf102a000-0xf102a070,0xf102a160 on irq 39
-> > 
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
