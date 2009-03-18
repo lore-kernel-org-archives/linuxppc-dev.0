@@ -1,21 +1,25 @@
-Return-Path: <wim@iguana.be>
-Received: from mailrelay002.isp.belgacom.be (mailrelay002.isp.belgacom.be
-	[195.238.6.175]) by ozlabs.org (Postfix) with ESMTP id E1C31DDE11
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 05:09:03 +1100 (EST)
-Date: Wed, 18 Mar 2009 19:09:01 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3 1/2] powerpc/86xx: Board support for GE Fanuc's PPC9A
-Message-ID: <20090318180901.GG7571@infomag.iguana.be>
-References: <20090318122501.25609.11105.stgit@ubuntu8041.localdomain>
-	<20090318122914.25609.765.stgit@ubuntu8041.localdomain>
-	<20090318173547.GF7571@infomag.iguana.be>
-	<6F051FC3-3DDF-4EFF-ACCC-03CE969D0C55@kernel.crashing.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D27C0DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 05:34:15 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n2IIYAut024143
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 11:34:11 -0700 (MST)
+Date: Wed, 18 Mar 2009 13:34:10 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Confused about CLOCK_TICK_RATE
+Message-ID: <20090318183410.GB3410@loki.buserror.net>
+References: <49B95BEC.2010404@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6F051FC3-3DDF-4EFF-ACCC-03CE969D0C55@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Wim Van Sebroeck <wim@iguana.be>,
-	Martyn Welch <martyn.welch@gefanuc.com>, david@gibson.dropbear.id.au
+In-Reply-To: <49B95BEC.2010404@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+On Thu, Mar 12, 2009 at 02:01:00PM -0500, Timur Tabi wrote:
+> Can someone explain CLOCK_TICK_RATE to me?  It's defined in
+> arch/powerpc/include/asm/timex.h as such:
+> 
+> #define CLOCK_TICK_RATE	1024000 /* Underlying HZ */
+> 
+> Every architecture defines this, but some use the better comment
+> "Underlying frequency of the HZ timer".
+> 
+> My question is: why is this a constant? Shouldn't it be a variable,
+> perhaps something that is based on tb_ticks_per_usec?
 
->>> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
->>> index c7352f7..ecf52e4 100644
->>> --- a/drivers/watchdog/Kconfig
->>> +++ b/drivers/watchdog/Kconfig
->>> @@ -772,7 +772,7 @@ config TXX9_WDT
->>>
->>> config GEF_WDT
->>> 	tristate "GE Fanuc Watchdog Timer"
->>> -	depends on GEF_SBC610 || GEF_SBC310
->>> +	depends on GEF_SBC610 || GEF_SBC310 || GEF_PPC9A
->>> 	---help---
->>> 	  Watchdog timer found in a number of GE Fanuc single board  
->>> computers.
->>
->> This part is Signed-off-by me. The rest I leave up to the powerpc  
->> maintainers.
->>
->> Kind regards,
->> Wim.
->
-> Ok w/me adding an actually signed-of-by for you when I apply this?
+Looks like legacy crud, originally meant to be the PIT input frequency, that
+isn't used for much on powerpc.  It was probably chosen so as to make HZ ==
+ACTHZ for the supported values of HZ.
 
-Yes, please add a signed-off-by for me when you apply this patch.
-
-Kind regards,
-Wim.
+-Scott
