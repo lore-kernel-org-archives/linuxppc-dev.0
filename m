@@ -4,22 +4,20 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D27C0DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 05:34:15 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n2IIYAut024143
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 11:34:11 -0700 (MST)
-Date: Wed, 18 Mar 2009 13:34:10 -0500
+	by ozlabs.org (Postfix) with ESMTPS id C4FD9DDDA2
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 05:37:47 +1100 (EST)
+Date: Wed, 18 Mar 2009 13:37:26 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: Confused about CLOCK_TICK_RATE
-Message-ID: <20090318183410.GB3410@loki.buserror.net>
-References: <49B95BEC.2010404@freescale.com>
+To: liran raz <liranrazlinux@gmail.com>
+Subject: Re: node /dev/ttyCPM2 not created
+Message-ID: <20090318183726.GC3410@loki.buserror.net>
+References: <e3b3ab5c0903131156l45ab934fyf7fb33b71468594a@mail.gmail.com>
+	<ed82fe3e0903131718u2d49cad3j78e2d08d4de0bf4a@mail.gmail.com>
+	<e3b3ab5c0903160639u625a0fd3xa665896bb378b109@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49B95BEC.2010404@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <e3b3ab5c0903160639u625a0fd3xa665896bb378b109@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@tabi.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 12, 2009 at 02:01:00PM -0500, Timur Tabi wrote:
-> Can someone explain CLOCK_TICK_RATE to me?  It's defined in
-> arch/powerpc/include/asm/timex.h as such:
-> 
-> #define CLOCK_TICK_RATE	1024000 /* Underlying HZ */
-> 
-> Every architecture defines this, but some use the better comment
-> "Underlying frequency of the HZ timer".
-> 
-> My question is: why is this a constant? Shouldn't it be a variable,
-> perhaps something that is based on tb_ticks_per_usec?
+On Mon, Mar 16, 2009 at 05:39:08AM -0800, liran raz wrote:
+> Thanks, I don't see any mdev process running.
 
-Looks like legacy crud, originally meant to be the PIT input frequency, that
-isn't used for much on powerpc.  It was probably chosen so as to make HZ ==
-ACTHZ for the supported values of HZ.
+Does it run during the boot scripts?  Or do you have udev?
+
+> Just wonder who is creating /dev/ttyCPM1 since in the device table file
+> (device_table.txt)
+> I have only node: 204 (major) 46 (minor) defined.
+> But I can see /dev/ttyCPM1 (204 47)
+
+Ideally, it would be a program such as udev or mdev.  If you're using a
+static /dev with no utility to automatically create nodes, then it's *you*
+that creates it, with mknod. :-)
 
 -Scott
