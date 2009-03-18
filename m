@@ -1,16 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0244BDDF77
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 11:40:48 +1100 (EST)
-Date: Tue, 17 Mar 2009 19:40:41 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull from 'test'
-Message-ID: <Pine.LNX.4.64.0903171939360.26038@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	by ozlabs.org (Postfix) with ESMTPS id 093C9DDF7B
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 11:43:03 +1100 (EST)
+Subject: Re: [RFC] powerpc/8xxx: Clean up setting of CPU_FTR_NEED_COHERENT
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20090317045815.27319.62728.stgit@localhost.localdomain>
+References: <20090317045815.27319.62728.stgit@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 18 Mar 2009 11:42:57 +1100
+Message-Id: <1237336977.25062.168.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,28 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'test' branch of
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git test
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index 48d7f5f..a36494e 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -242,8 +242,7 @@ extern const char *powerpc_base_platform;
+>   * 74[45]x and an MPC107 host bridge. Also 83xx and PowerQUICC II
+>   * require it for PCI "streaming/prefetch" to work properly.
+>   */
+> -#if defined(CONFIG_SMP) || defined(CONFIG_MPC10X_BRIDGE) \
+> -	|| defined(CONFIG_PPC_83xx) || defined(CONFIG_8260)
+> +#if defined(CONFIG_SMP) || defined(CONFIG_MPC10X_BRIDGE)
+>  #define CPU_FTR_COMMON                  CPU_FTR_NEED_COHERENT
+>  #else
+>  #define CPU_FTR_COMMON                  0
 
-to receive the following updates:
+Even the above sucks but at this stage, it's hard to do better. We
+really need to fix ppc32 so that the feature fixup is done -after- the
+platform probe, so that the platform gets a chance to stick in the bit
+when needed.
 
- arch/powerpc/include/asm/mmu.h      |    6 +
- arch/powerpc/include/asm/mpic.h     |    5 +
- arch/powerpc/kernel/cpu_setup_6xx.S |    4 +
- arch/powerpc/kernel/cputable.c      |    9 +-
- arch/powerpc/kernel/head_32.S       |  109 ++++++++++++++++++++++--------------
- arch/powerpc/kernel/pci-common.c    |    2
- arch/powerpc/sysdev/mpic.c          |   30 +++++++++
- drivers/net/gianfar.c               |   34 +++++------
- drivers/net/gianfar.h               |    3
- 9 files changed, 139 insertions(+), 63 deletions(-)
-
-Kumar Gala (7):
-      powerpc: Add support for CoreInt delivery of interrupts on MPIC
-      powerpc/pci: Default to dma_direct_ops for pci dma_ops
-      powerpc/mm: Respect _PAGE_COHERENT on classic ppc32 SW TLB load machines
-      powerpc/mm: Remove unused register usage in SW TLB miss handling
-      powerpc/mm: Used free register to save a few cycles in SW TLB miss handling
-      powerpc/mm: e300c2/c3/c4 TLB errata workaround
-      gianfar: pass the proper dev to DMA ops
+Ben.
