@@ -1,21 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 96B2BDDDA5
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 00:21:26 +1100 (EST)
-Message-Id: <D688018D-6CE0-4627-B813-FC552B1A6E83@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090317185902.GB4055@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH v2 2/2] powerpc/83xx: Move gianfar mdio nodes under the
-	ethernet nodes
-Date: Wed, 18 Mar 2009 08:21:18 -0500
-References: <20090317185902.GB4055@oksana.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>
+Return-Path: <posco.grubb@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
+	by ozlabs.org (Postfix) with ESMTP id AAB5BDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 00:47:33 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so30308waf.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 06:47:32 -0700 (PDT)
+Date: Wed, 18 Mar 2009 22:47:26 +0900
+From: TOMARI Hisanobu <posco.grubb@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: IDE cable detection on Apple PowerBook
+Message-Id: <20090318224726.5cf83e23.posco.grubb@gmail.com>
+In-Reply-To: <1237363097.25062.345.camel@pasglop>
+References: <20090318140638.e6b61eaa.posco.grubb@gmail.com>
+	<1237363097.25062.345.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,110 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I thought the short-40pin assumption would cause no problem
+considering all models beginning with "PowerBook5" are laptops.
+Do you mean an option to toggle this hack on/off should be present 
+in Kconfig?
 
-On Mar 17, 2009, at 1:59 PM, Anton Vorontsov wrote:
+Thanks,
+TOMARI Hisanobu
 
-> Currently it doesn't matter where the mdio nodes are placed, but with
-> power management support (i.e. when sleep = <> properties will take
-> effect), mdio nodes placement will become important: mdio controller
-> is a part of the ethernet block, so the mdio nodes should be placed
-> correctly. Otherwise we may wrongly assume that MDIO controllers are
-> available during sleep.
->
-> Suggested-by: Scott Wood <scottwood@freescale.com>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->
-> Changes since RFC:
-> - Don't use compatible = "simple-bus" for gianfar nodes.
->
-> arch/powerpc/boot/dts/mpc8315erdb.dts     |   80 +++++++++++++++ 
-> +-------------
-> arch/powerpc/boot/dts/mpc8349emitx.dts    |   69 ++++++++++++ 
-> +-----------
-> arch/powerpc/boot/dts/mpc8349emitxgp.dts  |   42 ++++++++-------
-> arch/powerpc/boot/dts/mpc834x_mds.dts     |   81 +++++++++++++++ 
-> +-------------
-> arch/powerpc/boot/dts/mpc8377_mds.dts     |   80 +++++++++++++++ 
-> +-------------
-> arch/powerpc/boot/dts/mpc8377_rdb.dts     |   67 ++++++++++++ 
-> +-----------
-> arch/powerpc/boot/dts/mpc8378_mds.dts     |   80 +++++++++++++++ 
-> +-------------
-> arch/powerpc/boot/dts/mpc8378_rdb.dts     |   69 +++++++++++++ 
-> +-----------
-> arch/powerpc/boot/dts/mpc8379_mds.dts     |   79 +++++++++++++++ 
-> +------------
-> arch/powerpc/boot/dts/mpc8379_rdb.dts     |   66 ++++++++++++ 
-> +----------
-> arch/powerpc/platforms/83xx/mpc834x_itx.c |    1 +
-> arch/powerpc/platforms/83xx/mpc834x_mds.c |    1 +
-> arch/powerpc/platforms/83xx/mpc837x_mds.c |    1 +
-> arch/powerpc/platforms/83xx/mpc837x_rdb.c |    1 +
-> 14 files changed, 398 insertions(+), 319 deletions(-)
+On Wed, 18 Mar 2009 18:58:17 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-If we do this we should also fixup all the 85xx & 86xx .dts
-
-> diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/ 
-> boot/dts/mpc8315erdb.dts
-> index 88d691c..c0d5b34 100644
-> --- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-> @@ -190,66 +190,74 @@
-> 			phy_type = "utmi";
-> 		};
-
-[snip]
-
->
-> 		enet0: ethernet@24000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> 			cell-index = <0>;
-> 			device_type = "network";
-> 			model = "eTSEC";
-> 			compatible = "gianfar";
-> 			reg = <0x24000 0x1000>;
-> +			ranges;
-
-Can this be proper?
-			ranges = <0x0 0x24520 0x20>;
->
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> 			interrupts = <32 0x8 33 0x8 34 0x8>;
-> 			interrupt-parent = <&ipic>;
-> 			tbi-handle = <&tbi0>;
-> 			phy-handle = < &phy0 >;
-> +
-> +			mdio@24520 {
-> +				#address-cells = <1>;
-> +				#size-cells = <0>;
-> +				compatible = "fsl,gianfar-mdio";
-> +				reg = <0x24520 0x20>;
-
-update here for ranges change.
-
->
-> +
-> +				phy0: ethernet-phy@0 {
-> +					interrupt-parent = <&ipic>;
-> +					interrupts = <20 0x8>;
-> +					reg = <0x0>;
-> +					device_type = "ethernet-phy";
-> +				};
-> +
-> +				phy1: ethernet-phy@1 {
-> +					interrupt-parent = <&ipic>;
-> +					interrupts = <19 0x8>;
-> +					reg = <0x1>;
-> +					device_type = "ethernet-phy";
-> +				};
-> +
-> +				tbi0: tbi-phy@11 {
-> +					reg = <0x11>;
-> +					device_type = "tbi-phy";
-> +				};
-> +			};
-> 		};
-
-- k
+> On Wed, 2009-03-18 at 14:06 +0900, TOMARI Hisanobu wrote:
+> > Hello,
+> > 
+> > I'm using an OCZ PATA SSD on Apple PowerBook5,4 computer.
+> > The IDE drive fails to recognize 80-conductor cable that
+> > connects the drive to motherboard to fall back to UDMA33.
+> > 
+> > This patch fixes this behavior by assuming that the cable is
+> > short-40pin when the model string matches "PowerBook5" and 
+> > the motherboard detects 80c cable.
+> > 
+> > This patch is against drivers/ide/pmac.c in linux 2.6.28.8.
+> 
+> The patch is too much of an ad-hoc hack... _maybe_ an option is to make
+> the core fallback to 40 "short" when 80 pin detection fails on
+> powerbooks instead ?
+> 
+> Ben.
+> 
+> > (before applying the patch) hdparm -i /dev/hda
+> > /dev/hda:
+> >  Timing buffered disk reads:   90 MB in  3.03 seconds =  29.73 MB/sec
+> > (dmesg 2.6.26)
+> > ide0: Found Apple UniNorth ATA-6 controller, bus ID 3, irq 39
+> > Probing IDE interface ide0...
+> > hda: CORE_PATA, ATA DISK drive
+> > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> > hda: drive side 80-wire cable detection failed, limiting max speed to UDMA33
+> > hda: UDMA/33 mode selected
+> > 
+> > (after applying the patch) hdparm -i /dev/hda
+> > /dev/hda:
+> >  Timing buffered disk reads:  240 MB in  3.02 seconds =  79.42 MB/sec
+> > (dmesg 2.6.28.8)
+> > ide-pmac: Found Apple UniNorth ATA-6 controller (PCI), bus ID 3, irq 39
+> > Probing IDE interface ide0...
+> > hda: CORE_PATA, ATA DISK drive
+> > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> > hda: UDMA/100 mode selected
+> > ide0 at 0xf102a000-0xf102a070,0xf102a160 on irq 39
+> > 
+> > 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
