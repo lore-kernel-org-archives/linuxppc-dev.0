@@ -1,24 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
-	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id 61796DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 02:50:53 +1100 (EST)
-Received: by gxk1 with SMTP id 1so1665458gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 08:50:51 -0700 (PDT)
+Return-Path: <eddie@embeddedarm.com>
+Received: from oz.embeddedARM.com (oz.embeddedarm.com [67.40.67.44])
+	by ozlabs.org (Postfix) with ESMTP id C0C71DDD1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 03:26:39 +1100 (EST)
+Received: from [192.168.0.200] (oz3 [192.168.0.200])
+	by oz.embeddedARM.com (8.12.11.20060614/8.11.6) with ESMTP id
+	n2IGQaI9011085
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 09:26:36 -0700 (MST)
+Message-ID: <49C12159.4060100@embeddedarm.com>
+Date: Wed, 18 Mar 2009 09:29:13 -0700
+From: Eddie Dawydiuk <eddie@embeddedarm.com>
 MIME-Version: 1.0
-In-Reply-To: <20090318154307.GB3182@loki.buserror.net>
-References: <20090317185902.GB4055@oksana.dev.rtsoft.ru>
-	<D688018D-6CE0-4627-B813-FC552B1A6E83@kernel.crashing.org>
-	<20090318152800.GA29557@oksana.dev.rtsoft.ru>
-	<20090318154307.GB3182@loki.buserror.net>
-Date: Wed, 18 Mar 2009 09:50:50 -0600
-Message-ID: <fa686aa40903180850j6a2ee2ejded46d2233f1e591@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] powerpc/83xx: Move gianfar mdio nodes under the
-	ethernet nodes
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC]PPC driver lock for DMA registers
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 18, 2009 at 9:43 AM, Scott Wood <scottwood@freescale.com> wrote=
-:
-> On Wed, Mar 18, 2009 at 06:28:00PM +0300, Anton Vorontsov wrote:
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ranges =3D <0x0 0x24520 0x20>;
->>
->> Yes, will change.
->
-> I'd prefer ranges =3D <0 0x24000 0x1000>, in case any other sub-blocks co=
-me
-> along in the future.
+Hello,
 
-FWIW, ditto.
+I'm working on SD card and Nand drivers that I would like to eventually submit 
+for inclusion in the mainline kernel. This being my first kernel port being 
+submitted upstream I was hoping for comments on my proposed design to ensure it 
+would be excepted in the mainline kernel(from a design standpoint). We have an 
+FPGA on our product that has an interface for transferring data via DMA. The SD 
+card driver and Nand flash driver will both be accessing these registers. As a 
+result I was planning on writing a dma driver(drivers/dma/ts81xx.c) that 
+implements a function dma_op() that gets passed a physical address, virtual 
+address, length, and read/write op and returns an int. I'd use a semaphore to 
+protect the registers. I'd also implement a function dma_bus_init() for 
+allocating a cache coherent buffer, initializing the semaphore, and ioremapping 
+the FPGA regs.
 
-g.
+I'd really appreciate any feedback or suggestions.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-- 
+Best Regards,
+________________________________________________________________
+  Eddie Dawydiuk, Technologic Systems | voice:  (480) 837-5200
+  16525 East Laser Drive 	     | fax:    (480) 837-5300
+  Fountain Hills, AZ 85268            | web: www.embeddedARM.com
