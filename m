@@ -1,16 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 295EBDDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 02:52:34 +1100 (EST)
-Date: Thu, 19 Mar 2009 18:52:32 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH -next] fsl_pq_mdio: Revive Gianfar TBI PHY support
-Message-ID: <20090319155232.GA5419@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: netdev@vger.kernel.org, Andy Fleming <afleming@freescale.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 230F1DDED1
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 02:57:20 +1100 (EST)
+Message-Id: <5D5BAD65-6ED3-4B07-9106-7DD2A715B6BA@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090319155232.GA5419@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH -next] fsl_pq_mdio: Revive Gianfar TBI PHY support
+Date: Thu, 19 Mar 2009 10:56:59 -0500
+References: <20090319155232.GA5419@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-commit 1577ecef766650a57fceb171acee2b13cbfaf1d3 ("netdev: Merge UCC
-and gianfar MDIO bus drivers") broke the TSEC TBI PHY support: the
-driver now refuses to probe TBI MDIO buses as it doesn't know about
-"fsl,gianfar-tbi" compatible entry, and thus _probe() fails with
--ENODEV status.
 
-Fix this by adding "fsl,gianfar-tbi" to the list of known Gianfar
-MDIO buses.
+On Mar 19, 2009, at 10:52 AM, Anton Vorontsov wrote:
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/fsl_pq_mdio.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> commit 1577ecef766650a57fceb171acee2b13cbfaf1d3 ("netdev: Merge UCC
+> and gianfar MDIO bus drivers") broke the TSEC TBI PHY support: the
+> driver now refuses to probe TBI MDIO buses as it doesn't know about
+> "fsl,gianfar-tbi" compatible entry, and thus _probe() fails with
+> -ENODEV status.
+>
+> Fix this by adding "fsl,gianfar-tbi" to the list of known Gianfar
+> MDIO buses.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-diff --git a/drivers/net/fsl_pq_mdio.c b/drivers/net/fsl_pq_mdio.c
-index b0ce144..6be36b9 100644
---- a/drivers/net/fsl_pq_mdio.c
-+++ b/drivers/net/fsl_pq_mdio.c
-@@ -321,6 +321,7 @@ static int fsl_pq_mdio_probe(struct of_device *ofdev,
- 	dev_set_drvdata(&ofdev->dev, new_bus);
- 
- 	if (of_device_is_compatible(np, "fsl,gianfar-mdio") ||
-+			of_device_is_compatible(np, "fsl,gianfar-tbi") ||
- 			of_device_is_compatible(np, "gianfar")) {
- #ifdef CONFIG_GIANFAR
- 		tbipa = get_gfar_tbipa(regs);
--- 
-1.5.6.5
+Acked-by: Andy Fleming <afleming@freescale.com>
