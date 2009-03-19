@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C518ADDE2A
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 17:08:48 +1100 (EST)
-Subject: Re: IDE cable detection on Apple PowerBook
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: TOMARI Hisanobu <posco.grubb@gmail.com>
-In-Reply-To: <1237442846.25062.466.camel@pasglop>
-References: <20090318140638.e6b61eaa.posco.grubb@gmail.com>
-	<1237363097.25062.345.camel@pasglop>
-	<20090318224726.5cf83e23.posco.grubb@gmail.com>
-	<1237442846.25062.466.camel@pasglop>
-Content-Type: text/plain
-Date: Thu, 19 Mar 2009 17:08:37 +1100
-Message-Id: <1237442917.25062.467.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 64C4BDDE07
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 17:11:57 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so257779yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 23:11:55 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090318.224252.236876628.davem@davemloft.net>
+References: <20090319050015.11320.61641.stgit@localhost.localdomain>
+	<20090319050100.11320.64495.stgit@localhost.localdomain>
+	<fa686aa40903182207r2f62985ar35afcf36b480b7e2@mail.gmail.com>
+	<20090318.224252.236876628.davem@davemloft.net>
+Date: Thu, 19 Mar 2009 00:11:55 -0600
+Message-ID: <fa686aa40903182311q2abee3bag5498aeab86ec1acb@mail.gmail.com>
+Subject: Re: [PATCH 9/9] net/fs_enet: Rework fs_enet driver to use of_mdio
+	infrastructure
+From: Grant Likely <grant.likely@secretlab.ca>
+To: David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,76 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-03-19 at 17:07 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-03-18 at 22:47 +0900, TOMARI Hisanobu wrote:
-> > I thought the short-40pin assumption would cause no problem
-> > considering all models beginning with "PowerBook5" are laptops.
-> > Do you mean an option to toggle this hack on/off should be present 
-> > in Kconfig?
-> 
-> Actually, it makes -some- amount of sense to do it by testing
-> specifically for the prefix "PowerBook" and "iBook" without a specific
-> number I suppose.
+On Wed, Mar 18, 2009 at 11:42 PM, David Miller <davem@davemloft.net> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Wed, 18 Mar 2009 23:07:35 -0600
+>
+>> RFC, please don't apply yet.
+>
+> You know, if you have posted a "0/9" patch explaining the purpose
+> and intent of the patch series, you'd only need to re-shit into
+> my inbox one time to say this stuff is RFC and "don't apply yet"
+> instead of 9 FREAKIN' TIMES!
 
-Actually "PowerBook" is enough, there's no iBook prefix in the
-device-tree, I was confusing with old busted iMac firmwares that used
-iMac instead of PowerMac in there.
+Ugh.  Sorry.  My lame excuse is that its late and I'm tired.  Normally
+I do actually know better.
 
-Cheers,
-Ben.
+g.
 
-> Ben.
-> 
-> > Thanks,
-> > TOMARI Hisanobu
-> > 
-> > On Wed, 18 Mar 2009 18:58:17 +1100
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > > On Wed, 2009-03-18 at 14:06 +0900, TOMARI Hisanobu wrote:
-> > > > Hello,
-> > > > 
-> > > > I'm using an OCZ PATA SSD on Apple PowerBook5,4 computer.
-> > > > The IDE drive fails to recognize 80-conductor cable that
-> > > > connects the drive to motherboard to fall back to UDMA33.
-> > > > 
-> > > > This patch fixes this behavior by assuming that the cable is
-> > > > short-40pin when the model string matches "PowerBook5" and 
-> > > > the motherboard detects 80c cable.
-> > > > 
-> > > > This patch is against drivers/ide/pmac.c in linux 2.6.28.8.
-> > > 
-> > > The patch is too much of an ad-hoc hack... _maybe_ an option is to make
-> > > the core fallback to 40 "short" when 80 pin detection fails on
-> > > powerbooks instead ?
-> > > 
-> > > Ben.
-> > > 
-> > > > (before applying the patch) hdparm -i /dev/hda
-> > > > /dev/hda:
-> > > >  Timing buffered disk reads:   90 MB in  3.03 seconds =  29.73 MB/sec
-> > > > (dmesg 2.6.26)
-> > > > ide0: Found Apple UniNorth ATA-6 controller, bus ID 3, irq 39
-> > > > Probing IDE interface ide0...
-> > > > hda: CORE_PATA, ATA DISK drive
-> > > > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-> > > > hda: drive side 80-wire cable detection failed, limiting max speed to UDMA33
-> > > > hda: UDMA/33 mode selected
-> > > > 
-> > > > (after applying the patch) hdparm -i /dev/hda
-> > > > /dev/hda:
-> > > >  Timing buffered disk reads:  240 MB in  3.02 seconds =  79.42 MB/sec
-> > > > (dmesg 2.6.28.8)
-> > > > ide-pmac: Found Apple UniNorth ATA-6 controller (PCI), bus ID 3, irq 39
-> > > > Probing IDE interface ide0...
-> > > > hda: CORE_PATA, ATA DISK drive
-> > > > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-> > > > hda: UDMA/100 mode selected
-> > > > ide0 at 0xf102a000-0xf102a070,0xf102a160 on irq 39
-> > > > 
-> > > > 
-> > > > _______________________________________________
-> > > > Linuxppc-dev mailing list
-> > > > Linuxppc-dev@ozlabs.org
-> > > > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> > > 
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
