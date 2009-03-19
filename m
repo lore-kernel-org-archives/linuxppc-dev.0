@@ -1,18 +1,18 @@
-Return-Path: <manish2312@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id DD452DDE25
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 17:14:55 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so258105yxg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 23:14:54 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <d7ca49770903181013h20368741t7cd4653a83286006@mail.gmail.com>
-References: <d7ca49770903181013h20368741t7cd4653a83286006@mail.gmail.com>
-Date: Thu, 19 Mar 2009 11:44:54 +0530
-Message-ID: <d7ca49770903182314j6849decbhaa1039dbb5276f86@mail.gmail.com>
-Subject: [newbie] uboot relevant !
-From: Manish D <manish2312@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 10155DDE98
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 17:28:47 +1100 (EST)
+Date: Wed, 18 Mar 2009 23:28:35 -0700 (PDT)
+Message-Id: <20090318.232835.178183479.davem@davemloft.net>
+To: galak@kernel.crashing.org
+Subject: Re: [PATCH] gianfar: pass the proper dev to DMA ops
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1237306567-32219-1-git-send-email-galak@kernel.crashing.org>
+References: <1237306567-32219-1-git-send-email-galak@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: becky.bruce@freescale.com, netdev@vger.kernel.org, afleming@freescale.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Tue, 17 Mar 2009 11:16:07 -0500
 
-please bear these probably newbie questions.
+> We need to be passing the of_platform device struct into the DMA ops as
+> its the one that has the archdata setup to know which low-level DMA ops we
+> should be using (not the net_device one).  This isn't an issue until we
+> expect the archdata to be setup correctly.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> 
+> Dave,
+> 
+> This is for net-next.  We are working on having per device dma ops for .30 and
+> expect the struct device archdata to be setup properly but in .29 we still
+> default to a direct DMA ops on ppc32 so this "bug" will never show up.
 
-I am trying to port a BSP from 2.4 to 2.6 for a mpc834x based platform.
-I am building and working on the device tree now.
-Is there a way build this bsp, without taking the device tree route ?
-I guess not.
-
-The uboot version i am using is old and not sure how this uboot can
-pass the device tree details while booting the kernel.
-Is there a way to load 2.6 kernel from this older bootloader (cuImage
-?) or will i have to upgrade to a newer uboot ?
-
-Any relevant pointers for this would be appreciated.
-
-TIA,
-Manish
+Applied to net-next-2.6, thanks.
