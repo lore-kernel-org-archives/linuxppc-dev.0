@@ -1,24 +1,24 @@
-Return-Path: <hpa@hera.kernel.org>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 89DC2DDE0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 22:55:09 +1100 (EST)
-Date: Thu, 19 Mar 2009 11:54:27 GMT
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090319220322.3baa4613.sfr@canb.auug.org.au>
-References: <20090319220322.3baa4613.sfr@canb.auug.org.au>
-Subject: [tip:cpus4096] numa,
-	cpumask: move numa_node_id default implementation to topology.h, fix
-Message-ID: <tip-17ad6ea621b1c7952ebd7330ce65de26b6ee9cca@git.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, tglx@linutronix.de,
-	sfr@canb.auug.org.au, mingo@elte.hu
+Return-Path: <posco.grubb@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id 72E17DDDA9
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 00:30:07 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so307221waf.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 06:30:06 -0700 (PDT)
+Date: Thu, 19 Mar 2009 22:30:01 +0900
+From: TOMARI Hisanobu <posco.grubb@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: IDE cable detection on Apple PowerBook
+Message-Id: <20090319223001.c2674366.posco.grubb@gmail.com>
+In-Reply-To: <1237442917.25062.467.camel@pasglop>
+References: <20090318140638.e6b61eaa.posco.grubb@gmail.com>
+	<1237363097.25062.345.camel@pasglop>
+	<20090318224726.5cf83e23.posco.grubb@gmail.com>
+	<1237442846.25062.466.camel@pasglop>
+	<1237442917.25062.467.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="Multipart=_Thu__19_Mar_2009_22_30_01_+0900_9SJ72hV3kt0vbvk/"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,67 +28,168 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit-ID:  17ad6ea621b1c7952ebd7330ce65de26b6ee9cca
-Gitweb:     http://git.kernel.org/tip/17ad6ea621b1c7952ebd7330ce65de26b6ee9cca
-Author:     Stephen Rothwell <sfr@canb.auug.org.au>
-AuthorDate: Thu, 19 Mar 2009 22:03:22 +1100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 19 Mar 2009 12:51:25 +0100
+This is a multi-part message in MIME format.
 
-numa, cpumask: move numa_node_id default implementation to topology.h, fix
+--Multipart=_Thu__19_Mar_2009_22_30_01_+0900_9SJ72hV3kt0vbvk/
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Impact: build fix for powerpc and sparc
+Thanks for helpful advices.
+This patch adds an option to drivers/ide/Kconfig and adds 
+some lines to drivers/ide/pmac.c . Now the driver checks
+if the model is prefixed with "PowerBook" and the entire hack
+can be toggled in the Kconfig.
 
-Today's linux-next build (powerpc allyesconfig) failed like this:
+Again, the patch is against linux 2.6.28.8.
 
-> In file included from include/linux/mmzone.h:776,
->                  from include/linux/gfp.h:5,
->                  from include/linux/kmod.h:23,
->                  from include/linux/module.h:14,
->                  from init/version.c:11:
-> arch/powerpc/include/asm/mmzone.h:32: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'numa_cpumask_lookup_table'
+Best regards,
+TOMARI Hisanobu
 
-Caused by commit 082edb7bf443eb8eda15b482d16ad9dd8137ad24 ("numa,
-cpumask: move numa_node_id default implementation to topology.h") from
-the cpus4096 tree which removed the include of linux/topology.h from
-linux/mmzone.h.
+p.s. oddly, the drive works in ATA/100 mode under untouched
+MacOS X 10.5.
 
-Same for sparc64 defconfig.
+On Thu, 19 Mar 2009 17:08:37 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-b: Rusty Russell <rusty@rustcorp.com.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
-LKML-Reference: <20090319220322.3baa4613.sfr@canb.auug.org.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> On Thu, 2009-03-19 at 17:07 +1100, Benjamin Herrenschmidt wrote:
+> > On Wed, 2009-03-18 at 22:47 +0900, TOMARI Hisanobu wrote:
+> > > I thought the short-40pin assumption would cause no problem
+> > > considering all models beginning with "PowerBook5" are laptops.
+> > > Do you mean an option to toggle this hack on/off should be present 
+> > > in Kconfig?
+> > 
+> > Actually, it makes -some- amount of sense to do it by testing
+> > specifically for the prefix "PowerBook" and "iBook" without a specific
+> > number I suppose.
+> 
+> Actually "PowerBook" is enough, there's no iBook prefix in the
+> device-tree, I was confusing with old busted iMac firmwares that used
+> iMac instead of PowerMac in there.
+> 
+> Cheers,
+> Ben.
+> 
+> > Ben.
+> > 
+> > > Thanks,
+> > > TOMARI Hisanobu
+> > > 
+> > > On Wed, 18 Mar 2009 18:58:17 +1100
+> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > > 
+> > > > On Wed, 2009-03-18 at 14:06 +0900, TOMARI Hisanobu wrote:
+> > > > > Hello,
+> > > > > 
+> > > > > I'm using an OCZ PATA SSD on Apple PowerBook5,4 computer.
+> > > > > The IDE drive fails to recognize 80-conductor cable that
+> > > > > connects the drive to motherboard to fall back to UDMA33.
+> > > > > 
+> > > > > This patch fixes this behavior by assuming that the cable is
+> > > > > short-40pin when the model string matches "PowerBook5" and 
+> > > > > the motherboard detects 80c cable.
+> > > > > 
+> > > > > This patch is against drivers/ide/pmac.c in linux 2.6.28.8.
+> > > > 
+> > > > The patch is too much of an ad-hoc hack... _maybe_ an option is to make
+> > > > the core fallback to 40 "short" when 80 pin detection fails on
+> > > > powerbooks instead ?
+> > > > 
+> > > > Ben.
+> > > > 
+> > > > > (before applying the patch) hdparm -i /dev/hda
+> > > > > /dev/hda:
+> > > > >  Timing buffered disk reads:   90 MB in  3.03 seconds =  29.73 MB/sec
+> > > > > (dmesg 2.6.26)
+> > > > > ide0: Found Apple UniNorth ATA-6 controller, bus ID 3, irq 39
+> > > > > Probing IDE interface ide0...
+> > > > > hda: CORE_PATA, ATA DISK drive
+> > > > > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> > > > > hda: drive side 80-wire cable detection failed, limiting max speed to UDMA33
+> > > > > hda: UDMA/33 mode selected
+> > > > > 
+> > > > > (after applying the patch) hdparm -i /dev/hda
+> > > > > /dev/hda:
+> > > > >  Timing buffered disk reads:  240 MB in  3.02 seconds =  79.42 MB/sec
+> > > > > (dmesg 2.6.28.8)
+> > > > > ide-pmac: Found Apple UniNorth ATA-6 controller (PCI), bus ID 3, irq 39
+> > > > > Probing IDE interface ide0...
+> > > > > hda: CORE_PATA, ATA DISK drive
+> > > > > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> > > > > hda: UDMA/100 mode selected
+> > > > > ide0 at 0xf102a000-0xf102a070,0xf102a160 on irq 39
+> > > > > 
+> > > > > 
+> > > > > _______________________________________________
+> > > > > Linuxppc-dev mailing list
+> > > > > Linuxppc-dev@ozlabs.org
+> > > > > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> > > > 
+> 
 
+--Multipart=_Thu__19_Mar_2009_22_30_01_+0900_9SJ72hV3kt0vbvk/
+Content-Type: text/x-diff;
+ name="ide-pmac-shortcable.patch"
+Content-Disposition: attachment;
+ filename="ide-pmac-shortcable.patch"
+Content-Transfer-Encoding: 7bit
 
----
- arch/powerpc/include/asm/mmzone.h |    1 +
- arch/sparc/include/asm/mmzone.h   |    2 ++
- 2 files changed, 3 insertions(+), 0 deletions(-)
+*** linux-2.6.28.8/drivers/ide/Kconfig.old	2009-03-19 21:30:24.594129124 +0900
+--- linux-2.6.28.8/drivers/ide/Kconfig	2009-03-19 21:49:41.776996312 +0900
+***************
+*** 691,696 ****
+--- 691,706 ----
+  	  CD-ROM on hda. This option changes this to more natural hda for
+  	  hard disk and hdc for CD-ROM.
+  
++ config BLK_DEV_IDE_PMAC_SHORTCABLE
++        bool "Assume short IDE cable on PowerBook/iBook"
++        depends on BLK_DEV_IDE_PMAC
++        help
++          Some IDE drives fail to recognize 80-conductor IDE cable used in
++ 	 PowerBooks and the driver limits the transfer speed to ATA/33.
++ 	 With this option, the driver reports the 80-conductor cable to be 
++ 	 of "40 conductor short" type on PowerBook/iBook, and enables to use
++ 	 ATA/100 on drives that support the transfer mode.
++ 
+  config BLK_DEV_IDE_AU1XXX
+         bool "IDE for AMD Alchemy Au1200"
+         depends on SOC_AU1200
+*** linux-2.6.28.8/drivers/ide/pmac.c.orig	2009-03-19 22:21:14.137849502 +0900
+--- linux-2.6.28.8/drivers/ide/pmac.c	2009-03-19 22:16:44.612877441 +0900
+***************
+*** 917,926 ****
+  		(pmac_ide_hwif_t *)dev_get_drvdata(hwif->gendev.parent);
+  	struct device_node *np = pmif->node;
+  	const char *cable = of_get_property(np, "cable-type", NULL);
+  
+  	/* Get cable type from device-tree. */
+  	if (cable && !strncmp(cable, "80-", 3))
+! 		return ATA_CBL_PATA80;
+  
+  	/*
+  	 * G5's seem to have incorrect cable type in device-tree.
+--- 917,938 ----
+  		(pmac_ide_hwif_t *)dev_get_drvdata(hwif->gendev.parent);
+  	struct device_node *np = pmif->node;
+  	const char *cable = of_get_property(np, "cable-type", NULL);
++ #ifdef CONFIG_BLK_DEV_IDE_PMAC_SHORTCABLE
++ 	struct device_node *root = of_find_node_by_path("/");
++ 	const char *model = of_get_property(root, "model", NULL);
++ #endif
+  
+  	/* Get cable type from device-tree. */
+  	if (cable && !strncmp(cable, "80-", 3))
+! 	  {
+! #ifdef CONFIG_BLK_DEV_IDE_PMAC_SHORTCABLE
+! 	    if(strncmp(model,"PowerBook",9)==0)
+! 	      /* Some drives fail to detect 80c cable in PowerBook */
+! 	      return ATA_CBL_PATA40_SHORT;
+! 	    else
+! #endif
+! 	      return ATA_CBL_PATA80;
+! 	  }
+  
+  	/*
+  	 * G5's seem to have incorrect cable type in device-tree.
 
-diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
-index 19f299b..35acac9 100644
---- a/arch/powerpc/include/asm/mmzone.h
-+++ b/arch/powerpc/include/asm/mmzone.h
-@@ -8,6 +8,7 @@
- #define _ASM_MMZONE_H_
- #ifdef __KERNEL__
- 
-+#include <linux/cpumask.h>
- 
- /*
-  * generic non-linear memory support:
-diff --git a/arch/sparc/include/asm/mmzone.h b/arch/sparc/include/asm/mmzone.h
-index ebf5986..e8c6487 100644
---- a/arch/sparc/include/asm/mmzone.h
-+++ b/arch/sparc/include/asm/mmzone.h
-@@ -3,6 +3,8 @@
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
- 
-+#include <linux/cpumask.h>
-+
- extern struct pglist_data *node_data[];
- 
- #define NODE_DATA(nid)		(node_data[nid])
+--Multipart=_Thu__19_Mar_2009_22_30_01_+0900_9SJ72hV3kt0vbvk/--
