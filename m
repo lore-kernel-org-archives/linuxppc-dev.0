@@ -1,20 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 92B9ADDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 16:43:06 +1100 (EST)
-Date: Wed, 18 Mar 2009 22:42:52 -0700 (PDT)
-Message-Id: <20090318.224252.236876628.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 9/9] net/fs_enet: Rework fs_enet driver to use of_mdio
-	infrastructure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <fa686aa40903182207r2f62985ar35afcf36b480b7e2@mail.gmail.com>
-References: <20090319050015.11320.61641.stgit@localhost.localdomain>
-	<20090319050100.11320.64495.stgit@localhost.localdomain>
-	<fa686aa40903182207r2f62985ar35afcf36b480b7e2@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+In-Reply-To: <d90126080903182237i6057e9afi9051723685bcb2d2@mail.gmail.com>
+References: <d90126080903182237i6057e9afi9051723685bcb2d2@mail.gmail.com>
+Date: Thu, 19 Mar 2009 00:01:02 -0600
+Message-ID: <fa686aa40903182301l63d9319r40a9e8e20f89af5a@mail.gmail.com>
+Subject: Re: [PATCH 1/9] of: add of_parse_phandle() helper for parsing
+From: Grant Likely <grant.likely@secretlab.ca>
+To: sunder ramani <sunder.svit@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
+	afleming@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 18 Mar 2009 23:07:35 -0600
+On Wed, Mar 18, 2009 at 11:37 PM, sunder ramani <sunder.svit@gmail.com> wrote:
+> To Summarize, should not we have a phy_type flag in the OF tree which
+> will let the PHY layer do the various PHY tasks based on if it is a
+> copper/fiber interface. I really dont like my fix in my kernel and am
+> new to open source. Do you think it is a valid argument? If it so, I
+> would like to plan to introduce those changes and post to the
+> community.
 
-> RFC, please don't apply yet.
+Yes, we probably do need some form of flag here for describing the PHY
+interface.  Feel free to post a suggested binding for this.
 
-You know, if you have posted a "0/9" patch explaining the purpose
-and intent of the patch series, you'd only need to re-shit into
-my inbox one time to say this stuff is RFC and "don't apply yet"
-instead of 9 FREAKIN' TIMES!
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
