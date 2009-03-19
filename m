@@ -2,20 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B4CA2DDFC8
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 20:02:05 +1100 (EST)
-Message-Id: <8B70DF11-6F19-453A-94B7-8A67003196E6@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 81BABDE576
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 20:02:32 +1100 (EST)
+Message-Id: <050058C2-20A4-4629-921E-DF149ECC1A6C@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <20090319085413.7336.40406.stgit@ubuntu8041.localdomain>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20090319041752.8666.46540.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH v4 2/2] powerpc/86xx: Default configuration for GE Fanuc's
-	PPC9A
-Date: Thu, 19 Mar 2009 04:01:52 -0500
-References: <20090319084914.7336.81244.stgit@ubuntu8041.localdomain>
-	<20090319085413.7336.40406.stgit@ubuntu8041.localdomain>
-Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+Subject: Re: [PATCH] powerpc/cpm2: fix building fs_enet driver as a module.
+Date: Thu, 19 Mar 2009 04:02:27 -0500
+References: <20090319041752.8666.46540.stgit@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +24,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 19, 2009, at 3:54 AM, Martyn Welch wrote:
+On Mar 18, 2009, at 11:21 PM, Grant Likely wrote:
 
-> Support for the PPC9A VME Single Board Computer from GE Fanuc (PowerPC
-> MPC8641D).
+> From: Grant Likely <grant.likely@secretlab.ca>
 >
-> This is the default config file for GE Fanuc's PPC9A, a 6U single  
-> board
-> computer, based on Freescale's MPC8641D.
+> Building the fs_enet driver as a modules fails because it cannot
+> access the global cpm2_immr symbol.
 >
-> Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 > ---
+>
+> Hey Ben and Kumar,
+>
+> Just found this while testing some unrelated changes.  Technically
+> this is a bug fix that should go into 2.6.29, but it looks like an
+> old problem and probably nobody is getting bitten by it.  I don't
+> think the world is going to end if it misses the 2.6.29 release.
+>
+> g.
+>
+> arch/powerpc/sysdev/cpm2.c |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
-applied to next
+applied to next.  (I agree this isn't worth .29 at this point, if  
+anyone cares they can lobby for it in .29.1)
 
 - k
