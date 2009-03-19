@@ -1,25 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 92D2FDDEEA
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 08:14:23 +1100 (EST)
-Subject: Re: IDE cable detection on Apple PowerBook
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090319134113.GA31953@oksana.dev.rtsoft.ru>
-References: <20090318140638.e6b61eaa.posco.grubb@gmail.com>
-	<1237363097.25062.345.camel@pasglop>
-	<20090318224726.5cf83e23.posco.grubb@gmail.com>
-	<1237442846.25062.466.camel@pasglop>
-	<1237442917.25062.467.camel@pasglop>
-	<20090319223001.c2674366.posco.grubb@gmail.com>
-	<20090319134113.GA31953@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Fri, 20 Mar 2009 08:14:14 +1100
-Message-Id: <1237497254.25062.473.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 47DE4DDED6
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 08:22:38 +1100 (EST)
+Date: Fri, 20 Mar 2009 08:22:32 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: cpus4096 tree build failure
+Message-Id: <20090320082232.d0bf787b.sfr@canb.auug.org.au>
+In-Reply-To: <20090319115342.GA22905@elte.hu>
+References: <20090319215300.1833d28e.sfr@canb.auug.org.au>
+	<200903192137.15209.rusty@rustcorp.com.au>
+	<20090319115342.GA22905@elte.hu>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, TOMARI Hisanobu <posco.grubb@gmail.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__20_Mar_2009_08_22_32_+1100_dR+stm2rpRUm3Hgf"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	linux-next@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,14 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-03-19 at 16:41 +0300, Anton Vorontsov wrote:
-> 
-> The other option is to enable BLK_DEV_IDE_PMAC_SHORTCABLE by default,
-> but I'm not sure if it's safe thing to do (most probably not).
+--Signature=_Fri__20_Mar_2009_08_22_32_+1100_dR+stm2rpRUm3Hgf
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It should be allright for powerbooks. If the firmware says 80 pin cable,
-then it probably is, and in fact, It used to work, I think the test in
-the IDE code is new there, and MacOS X solely relies on the firmware
-data.
+Hi Ingo,
 
-Ben.
+On Thu, 19 Mar 2009 12:53:42 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> I've applied it.
+
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__20_Mar_2009_08_22_32_+1100_dR+stm2rpRUm3Hgf
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknCt5gACgkQjjKRsyhoI8zOqgCfT3NmBvyAs8Jff3QTeW8Rsg0y
+otsAnjh/0hBku652b6DihVJnuJqW726c
+=8sFq
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__20_Mar_2009_08_22_32_+1100_dR+stm2rpRUm3Hgf--
