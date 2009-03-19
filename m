@@ -3,19 +3,22 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B04A6DDD1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 11:11:35 +1100 (EST)
-Date: Thu, 19 Mar 2009 11:05:33 +1100
+	by ozlabs.org (Postfix) with ESMTPS id 5CA47DDD1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 12:34:33 +1100 (EST)
+Date: Thu, 19 Mar 2009 12:20:28 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: Re: [PATCH v3 1/2] powerpc/86xx: Board support for GE Fanuc's PPC9A
-Message-ID: <20090319000533.GA20163@yookeroo.seuss>
-References: <20090318122501.25609.11105.stgit@ubuntu8041.localdomain>
-	<20090318122914.25609.765.stgit@ubuntu8041.localdomain>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 2/2] powerpc/83xx: Move gianfar mdio nodes under the
+	ethernet nodes
+Message-ID: <20090319012028.GA22262@yookeroo.seuss>
+References: <20090317185902.GB4055@oksana.dev.rtsoft.ru>
+	<D688018D-6CE0-4627-B813-FC552B1A6E83@kernel.crashing.org>
+	<20090318152800.GA29557@oksana.dev.rtsoft.ru>
+	<20090318154307.GB3182@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090318122914.25609.765.stgit@ubuntu8041.localdomain>
-Cc: linuxppc-dev@ozlabs.org, wim@iguana.be
+In-Reply-To: <20090318154307.GB3182@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 18, 2009 at 12:29:15PM +0000, Martyn Welch wrote:
-> Support for the PPC9A VME Single Board Computer from GE Fanuc (PowerPC
-> MPC8641D).
+On Wed, Mar 18, 2009 at 10:43:07AM -0500, Scott Wood wrote:
+> On Wed, Mar 18, 2009 at 06:28:00PM +0300, Anton Vorontsov wrote:
+> > It would be great to have #include <gianfar_enet.dts> facility in .dts
+> > files. ;-) I heard some rumors about this, what was the consequence?..
 > 
-> This is the basic board support for GE Fanuc's PPC9A, a 6U single board
-> computer, based on Freescale's MPC8641D.
+> You can already do a raw include, but in most cases it needs parameterized
+> templates/macros to make it useful.  There were some patches floating around
+> for that, but there was some disagreement about syntax and the discussion
+> seems to have died out.
 
-One tiny nit left..
-
-[snip]
-> +		flash@1,0 {
-> +			compatible = "gef, ppc9a-paged-flash", "cfi-flash";
-
-The space in the compatible string is probably not a good idea.
+Yeah - basically Jon got busy with other things, so we no longer had
+critical mass to keep things moving.  I have an idea for a partway
+step that will be enough for at least some applications without making
+life awkward for a more complete approach later.  Basically the idea
+is just to have "weak" property assignments - you can have an include
+file which has a bunch of these, but they can be silently overriden by
+normal property assignments afterwards.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
