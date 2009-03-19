@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6E180DDF33
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 00:55:49 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2JDthhA011254
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 08:55:44 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: 
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc/mm: e300c2/c3/c4 TLB errata workaround
-Date: Thu, 19 Mar 2009 08:55:41 -0500
-Message-Id: <1237470941-23418-3-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1237470941-23418-2-git-send-email-galak@kernel.crashing.org>
-References: <1237470941-23418-1-git-send-email-galak@kernel.crashing.org>
-	<1237470941-23418-2-git-send-email-galak@kernel.crashing.org>
+Return-Path: <edfuchs@uni-kassel.de>
+Received: from hrz-ws39.hrz.uni-kassel.de (smtp.hrz.uni-kassel.de
+	[141.51.12.230]) by ozlabs.org (Postfix) with ESMTP id B9EBDDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 01:39:00 +1100 (EST)
+Received: from ws-87.localnet (rs-pc1.rs.eecs.uni-kassel.de [141.51.112.154])
+	by hrz-ws39.hrz.uni-kassel.de (8.14.0/8.14.0) with ESMTP id
+	n2JEcueu021763
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 15:38:57 +0100
+From: Eduard Fuchs <edfuchs@uni-kassel.de>
+To: linuxppc-dev@ozlabs.org
+Subject: PCI resource allocation in linux 2.6.27
+Date: Thu, 19 Mar 2009 15:38:58 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200903191538.58485.edfuchs@uni-kassel.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,146 +23,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Complete workaround for DTLB errata in e300c2/c3/c4 processors.
+Hi,
 
-Due to the bug, the hardware-implemented LRU algorythm always goes to way
-1 of the TLB. This fix implements the proposed software workaround in
-form of a LRW table for chosing the TLB-way.
+i'm porting the linux 2.6.27 kernel to the custom board with PowerPC 7448 & 
+Marvell 64560. In DTS file the PCI ranges are configured as follows:
 
-Based on patch from David Jander <david@protonic.nl>
+	system-controller@fbe00000 { /* Marvell Discovery mv64560 (Discovery V)*/
+		#address-cells = <1>;
+		#size-cells = <1>;
+		model = "mv64560";			/* Default */
+		compatible = "marvell,mv64360", "marvell,mv64560";
+		clock-frequency = <133333333>;
+		reg = <0xfbe00000 0x100000>;
+		virtual-reg = <0xfbe00000>;
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-* Fix a linking problem that showed up in testing branch with not having
-  #include <asm/mmu.h> in cpu_setup_6xx.S for the MMU feature fixup
+		ranges =
+				<0xd8000000 0xd8000000 0x00010000		/* PCI 0 I/O Space */
+				 0x80000000 0x80000000 0x68000000		/* PCI 0 MEM Space */
+				 0xd8080000 0xd8080000 0x00010000		/* PCI 1 I/O Space */
+				 0x60000000 0x60000000 0x20000000		/* PCI 1 MEM Space */
+				 0x00000000 0xfbe00000 0x00100000>;		/* Bridge's regs */
 
- arch/powerpc/include/asm/mmu.h      |    6 ++++++
- arch/powerpc/kernel/cpu_setup_6xx.S |    5 +++++
- arch/powerpc/kernel/cputable.c      |    9 ++++++---
- arch/powerpc/kernel/head_32.S       |   32 ++++++++++++++++++++++++++++----
- 4 files changed, 45 insertions(+), 7 deletions(-)
+ .....
 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index dc82dcd..c073de4 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -46,6 +46,12 @@
-  */
- #define MMU_FTR_LOCK_BCAST_INVAL	ASM_CONST(0x00100000)
- 
-+/* This indicates that the processor doesn't handle way selection
-+ * properly and needs SW to track and update the LRU state.  This
-+ * is specific to an errata on e300c2/c3/c4 class parts
-+ */
-+#define MMU_FTR_NEED_DTLB_SW_LRU	ASM_CONST(0x00200000)
-+
- #ifndef __ASSEMBLY__
- #include <asm/cputable.h>
- 
-diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
-index 72d1d73..54f767e 100644
---- a/arch/powerpc/kernel/cpu_setup_6xx.S
-+++ b/arch/powerpc/kernel/cpu_setup_6xx.S
-@@ -15,9 +15,14 @@
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
- #include <asm/cache.h>
-+#include <asm/mmu.h>
- 
- _GLOBAL(__setup_cpu_603)
- 	mflr	r4
-+BEGIN_MMU_FTR_SECTION
-+	li	r10,0
-+	mtspr	SPRN_SPRG4,r10		/* init SW LRU tracking */
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
- BEGIN_FTR_SECTION
- 	bl	__init_fpu_registers
- END_FTR_SECTION_IFCLR(CPU_FTR_FPU_UNAVAILABLE)
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 6388386..4ec0a3a 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1082,7 +1082,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_name		= "e300c2",
- 		.cpu_features		= CPU_FTRS_E300C2,
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
--		.mmu_features		= MMU_FTR_USE_HIGH_BATS,
-+		.mmu_features		= MMU_FTR_USE_HIGH_BATS |
-+			MMU_FTR_NEED_DTLB_SW_LRU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -1095,7 +1096,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_name		= "e300c3",
- 		.cpu_features		= CPU_FTRS_E300,
- 		.cpu_user_features	= COMMON_USER,
--		.mmu_features		= MMU_FTR_USE_HIGH_BATS,
-+		.mmu_features		= MMU_FTR_USE_HIGH_BATS |
-+			MMU_FTR_NEED_DTLB_SW_LRU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-@@ -1110,7 +1112,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_name		= "e300c4",
- 		.cpu_features		= CPU_FTRS_E300,
- 		.cpu_user_features	= COMMON_USER,
--		.mmu_features		= MMU_FTR_USE_HIGH_BATS,
-+		.mmu_features		= MMU_FTR_USE_HIGH_BATS |
-+			MMU_FTR_NEED_DTLB_SW_LRU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.cpu_setup		= __setup_cpu_603,
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 8a9dc79..6469ffa 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -590,9 +590,21 @@ BEGIN_FTR_SECTION
- 	rlwinm	r1,r1,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
- END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 	mtspr	SPRN_RPA,r1
-+	mfspr	r2,SPRN_SRR1		/* Need to restore CR0 */
-+	mtcrf	0x80,r2
-+BEGIN_MMU_FTR_SECTION
-+	li	r0,1
-+	mfspr	r1,SPRN_SPRG4
-+	rlwinm	r2,r3,20,27,31		/* Get Address bits 15:19 */
-+	slw	r0,r0,r2
-+	xor	r1,r0,r1
-+	srw	r0,r1,r2
-+	mtspr   SPRN_SPRG4,r1
-+	mfspr	r2,SPRN_SRR1
-+	rlwimi	r2,r0,31-14,14,14
-+	mtspr   SPRN_SRR1,r2
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
- 	tlbld	r3
--	mfspr	r3,SPRN_SRR1		/* Need to restore CR0 */
--	mtcrf	0x80,r3
- 	rfi
- DataAddressInvalid:
- 	mfspr	r3,SPRN_SRR1
-@@ -658,9 +670,21 @@ BEGIN_FTR_SECTION
- 	rlwinm	r1,r1,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
- END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
- 	mtspr	SPRN_RPA,r1
-+	mfspr	r2,SPRN_SRR1		/* Need to restore CR0 */
-+	mtcrf	0x80,r2
-+BEGIN_MMU_FTR_SECTION
-+	li	r0,1
-+	mfspr	r1,SPRN_SPRG4
-+	rlwinm	r2,r3,20,27,31		/* Get Address bits 15:19 */
-+	slw	r0,r0,r2
-+	xor	r1,r0,r1
-+	srw	r0,r1,r2
-+	mtspr   SPRN_SPRG4,r1
-+	mfspr	r2,SPRN_SRR1
-+	rlwimi	r2,r0,31-14,14,14
-+	mtspr   SPRN_SRR1,r2
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
- 	tlbld	r3
--	mfspr	r3,SPRN_SRR1		/* Need to restore CR0 */
--	mtcrf	0x80,r3
- 	rfi
- 
- #ifndef CONFIG_ALTIVEC
--- 
-1.5.6.6
+		PCI0: pci@30000 {
+			#address-cells = <3>;
+			#size-cells = <2>;
+			#interrupt-cells = <1>;
+			device_type = "pci";
+			compatible = "marvell,mv64360-pci";
+			reg = <0x30c78 12>;
+
+			ranges =
+				<0x01000000 0x0 0x00000000 0xd8000000 0x0 0x00010000
+				 0x02000000 0x0 0x80000000 0x80000000 0x0 0x40000000>;
+
+			bus-range = <0 255>;
+			clock-frequency = <33000000>;
+			interrupt-pci-iack = <0x30c34>;
+			interrupt-parent = <&PIC>;
+
+			interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+			interrupt-map = <
+				/* IDSEL 0x07 */
+				0x3800 0 0 1 &PIC 74
+				0x3800 0 0 2 &PIC 74
+				0x3800 0 0 3 &PIC 74
+				0x3800 0 0 4 &PIC 74
+
+				/* IDSEL 0x09 */
+				0x4800 0 0 1 &PIC 68
+				0x4800 0 0 2 &PIC 68
+				0x4800 0 0 3 &PIC 68
+				0x4800 0 0 4 &PIC 68
+
+				/* IDSEL 0x0A */
+				0x5000 0 0 1 &PIC 69
+				0x5000 0 0 2 &PIC 69
+				0x5000 0 0 3 &PIC 69
+				0x5000 0 0 4 &PIC 69
+			>;
+		};
+
+when the kernel is booting, at the beginning the ranges are detected 
+correctly:
+
+PCI host bridge /system-controller@fbe00000/pci@30000 (primary) ranges:                            
+  IO 0x00000000d8000000..0x00000000d800ffff -> 0x0000000000000000                                  
+ MEM 0x0000000080000000..0x00000000bfffffff -> 0x0000000080000000                                  
+
+
+nevertheless later the range for IO space is changed as follow:
+
+PCI: Probing PCI hardware                                                                                  
+....
+PCI: PHB (bus 0) bridge rsrc 0: 0000000000011000-0000000000020fff [0x100],
+PCI: PHB (bus 0) bridge rsrc 1: 0000000080000000-00000000bfffffff [0x200],
+
+normally the IO space should be from 0x00000000-0x0000ffff. Can someone 
+explain to me where the offset 0x11000 comes from.
+
+Best regards
+
+Eduard Fuchs
