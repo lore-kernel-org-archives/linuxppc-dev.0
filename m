@@ -1,21 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
-	by ozlabs.org (Postfix) with ESMTP id C3D23DE138
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 16:01:04 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id j37so215150waf.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 22:01:04 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 9/9] net/fs_enet: Rework fs_enet driver to use of_mdio
-	infrastructure
-To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, afleming@freescale.com,
-	avorontsov@ru.mvista.com, davem@davemloft.net, galak@kernel.crashing.org
-Date: Wed, 18 Mar 2009 23:01:01 -0600
-Message-ID: <20090319050100.11320.64495.stgit@localhost.localdomain>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id AB95CDF8AA
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 16:05:23 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 9so251590ywe.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 22:05:21 -0700 (PDT)
+MIME-Version: 1.0
 In-Reply-To: <20090319050015.11320.61641.stgit@localhost.localdomain>
 References: <20090319050015.11320.61641.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Date: Wed, 18 Mar 2009 23:05:21 -0600
+Message-ID: <fa686aa40903182205w231e17e9wbd0dcc05d994d46e@mail.gmail.com>
+Subject: Re: [PATCH 1/9] of: add of_parse_phandle() helper for parsing phandle
+	properties
+From: Grant Likely <grant.likely@secretlab.ca>
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, afleming@freescale.com,
+	avorontsov@ru.mvista.com, davem@davemloft.net, galak@kernel.crashing.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,249 +24,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Bah!  Messed up the 'stg mail' command when sending this series and
+the 'RFC' tag didn't get added.
 
-This patch simplifies the driver by making use of more common code.
+This is firmly in the RFC category.  Please don't apply.  It doesn't
+have the level of polish that I'm happy with.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+This series is intended to make phy_device connecting simpler and more
+robust by using the PHY's device_node as the search key when
+connecting to PHY.  Changes are made to both the MDIO busses to
+extract the PHY data out of the device tree, and to the drivers to use
+a common helper function for finding the PHY it is interested in.
 
- drivers/net/fs_enet/fs_enet-main.c |   66 +++++-------------------------------
- drivers/net/fs_enet/mii-bitbang.c  |   29 +---------------
- drivers/net/fs_enet/mii-fec.c      |   26 +-------------
- include/linux/fs_enet_pd.h         |    6 +--
- 4 files changed, 14 insertions(+), 113 deletions(-)
+Comments please.
+g.
+
+On Wed, Mar 18, 2009 at 11:00 PM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> of_parse_phandle() is a helper function to read and parse a phandle
+> property and return a pointer to the resulting device_node.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+> =A0drivers/of/base.c =A0| =A0 23 +++++++++++++++++++++++
+> =A0include/linux/of.h | =A0 =A03 +++
+> =A02 files changed, 26 insertions(+), 0 deletions(-)
+>
+>
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index cd17092..1eaada4 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -494,6 +494,29 @@ int of_modalias_node(struct device_node *node, char =
+*modalias, int len)
+> =A0EXPORT_SYMBOL_GPL(of_modalias_node);
+>
+> =A0/**
+> + * of_parse_phandle - Resolve a phandle property to a device_node pointe=
+r
+> + * @np: Pointer to device node holding phandle property
+> + * @phandle_name: Name of property holding a phandle value
+> + * @index: For properties holding a table of phandles, this is the index=
+ into
+> + * =A0 =A0 =A0 =A0 the table
+> + *
+> + * Returns the device_node pointer pointed to by the phandle, or NULL
+> + */
+> +struct device_node *
+> +of_parse_phandle(struct device_node *np, const char *phandle_name, int i=
+ndex)
+> +{
+> + =A0 =A0 =A0 const phandle *phandle;
+> + =A0 =A0 =A0 int size;
+> +
+> + =A0 =A0 =A0 phandle =3D of_get_property(np, phandle_name, &size);
+> + =A0 =A0 =A0 if ((!phandle) || (size < sizeof(*phandle) * (index + 1)))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NULL;
+> +
+> + =A0 =A0 =A0 return of_find_node_by_phandle(phandle[index]);
+> +}
+> +EXPORT_SYMBOL(of_parse_phandle);
+> +
+> +/**
+> =A0* of_parse_phandles_with_args - Find a node pointed by phandle in a li=
+st
+> =A0* @np: =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pointer to a device tree node co=
+ntaining a list
+> =A0* @list_name: property name that contains a list
+> diff --git a/include/linux/of.h b/include/linux/of.h
+> index 6a7efa2..7be2d10 100644
+> --- a/include/linux/of.h
+> +++ b/include/linux/of.h
+> @@ -77,6 +77,9 @@ extern int of_n_size_cells(struct device_node *np);
+> =A0extern const struct of_device_id *of_match_node(
+> =A0 =A0 =A0 =A0const struct of_device_id *matches, const struct device_no=
+de *node);
+> =A0extern int of_modalias_node(struct device_node *node, char *modalias, =
+int len);
+> +extern struct device_node *of_parse_phandle(struct device_node *np,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 const char *phandle_name,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 int index);
+> =A0extern int of_parse_phandles_with_args(struct device_node *np,
+> =A0 =A0 =A0 =A0const char *list_name, const char *cells_name, int index,
+> =A0 =A0 =A0 =A0struct device_node **out_node, const void **out_args);
+>
+>
 
 
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index ce900e5..e039d6a 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -36,6 +36,8 @@
- #include <linux/fs.h>
- #include <linux/platform_device.h>
- #include <linux/phy.h>
-+#include <linux/of.h>
-+#include <linux/of_mdio.h>
- #include <linux/of_platform.h>
- #include <linux/of_gpio.h>
- 
-@@ -752,9 +754,10 @@ static int fs_init_phy(struct net_device *dev)
- 	fep->oldlink = 0;
- 	fep->oldspeed = 0;
- 	fep->oldduplex = -1;
--	if(fep->fpi->bus_id)
--		phydev = phy_connect(dev, fep->fpi->bus_id, &fs_adjust_link, 0,
--				PHY_INTERFACE_MODE_MII);
-+	if(fep->fpi->phy_node)
-+		phydev = of_phy_connect(dev, fep->fpi->phy_node,
-+					&fs_adjust_link, 0,
-+					PHY_INTERFACE_MODE_MII);
- 	else {
- 		printk("No phy bus ID specified in BSP code\n");
- 		return -EINVAL;
-@@ -962,57 +965,6 @@ static void cleanup_immap(void)
- 
- /**************************************************************************************/
- 
--static int __devinit find_phy(struct device_node *np,
--                              struct fs_platform_info *fpi)
--{
--	struct device_node *phynode, *mdionode;
--	int ret = 0, len, bus_id;
--	const u32 *data;
--
--	data  = of_get_property(np, "fixed-link", NULL);
--	if (data) {
--		snprintf(fpi->bus_id, 16, "%x:%02x", 0, *data);
--		return 0;
--	}
--
--	data = of_get_property(np, "phy-handle", &len);
--	if (!data || len != 4)
--		return -EINVAL;
--
--	phynode = of_find_node_by_phandle(*data);
--	if (!phynode)
--		return -EINVAL;
--
--	data = of_get_property(phynode, "reg", &len);
--	if (!data || len != 4) {
--		ret = -EINVAL;
--		goto out_put_phy;
--	}
--
--	mdionode = of_get_parent(phynode);
--	if (!mdionode) {
--		ret = -EINVAL;
--		goto out_put_phy;
--	}
--
--	bus_id = of_get_gpio(mdionode, 0);
--	if (bus_id < 0) {
--		struct resource res;
--		ret = of_address_to_resource(mdionode, 0, &res);
--		if (ret)
--			goto out_put_mdio;
--		bus_id = res.start;
--	}
--
--	snprintf(fpi->bus_id, 16, "%x:%02x", bus_id, *data);
--
--out_put_mdio:
--	of_node_put(mdionode);
--out_put_phy:
--	of_node_put(phynode);
--	return ret;
--}
--
- #ifdef CONFIG_FS_ENET_HAS_FEC
- #define IS_FEC(match) ((match)->data == &fs_fec_ops)
- #else
-@@ -1046,9 +998,9 @@ static int __devinit fs_enet_probe(struct of_device *ofdev,
- 	fpi->rx_copybreak = 240;
- 	fpi->use_napi = 1;
- 	fpi->napi_weight = 17;
--
--	ret = find_phy(ofdev->node, fpi);
--	if (ret)
-+	fpi->phy_node = of_parse_phandle(ofdev->node, "phy-handle", 0);
-+	if ((!fpi->phy_node) && (!of_get_property(ofdev->node, "fixed-link",
-+						  NULL)))
- 		goto out_free_fpi;
- 
- 	privsize = sizeof(*fep) +
-diff --git a/drivers/net/fs_enet/mii-bitbang.c b/drivers/net/fs_enet/mii-bitbang.c
-index 49b6645..93b481b 100644
---- a/drivers/net/fs_enet/mii-bitbang.c
-+++ b/drivers/net/fs_enet/mii-bitbang.c
-@@ -22,6 +22,7 @@
- #include <linux/mii.h>
- #include <linux/platform_device.h>
- #include <linux/mdio-bitbang.h>
-+#include <linux/of_mdio.h>
- #include <linux/of_platform.h>
- 
- #include "fs_enet.h"
-@@ -149,31 +150,12 @@ static int __devinit fs_mii_bitbang_init(struct mii_bus *bus,
- 	return 0;
- }
- 
--static void __devinit add_phy(struct mii_bus *bus, struct device_node *np)
--{
--	const u32 *data;
--	int len, id, irq;
--
--	data = of_get_property(np, "reg", &len);
--	if (!data || len != 4)
--		return;
--
--	id = *data;
--	bus->phy_mask &= ~(1 << id);
--
--	irq = of_irq_to_resource(np, 0, NULL);
--	if (irq != NO_IRQ)
--		bus->irq[id] = irq;
--}
--
- static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
-                                         const struct of_device_id *match)
- {
--	struct device_node *np = NULL;
- 	struct mii_bus *new_bus;
- 	struct bb_info *bitbang;
- 	int ret = -ENOMEM;
--	int i;
- 
- 	bitbang = kzalloc(sizeof(struct bb_info), GFP_KERNEL);
- 	if (!bitbang)
-@@ -196,17 +178,10 @@ static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
- 	if (!new_bus->irq)
- 		goto out_unmap_regs;
- 
--	for (i = 0; i < PHY_MAX_ADDR; i++)
--		new_bus->irq[i] = -1;
--
--	while ((np = of_get_next_child(ofdev->node, np)))
--		if (!strcmp(np->type, "ethernet-phy"))
--			add_phy(new_bus, np);
--
- 	new_bus->parent = &ofdev->dev;
- 	dev_set_drvdata(&ofdev->dev, new_bus);
- 
--	ret = mdiobus_register(new_bus);
-+	ret = of_mdiobus_register(new_bus, ofdev->node);
- 	if (ret)
- 		goto out_free_irqs;
- 
-diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
-index 28077cc..bdc3160 100644
---- a/drivers/net/fs_enet/mii-fec.c
-+++ b/drivers/net/fs_enet/mii-fec.c
-@@ -102,23 +102,6 @@ static int fs_enet_fec_mii_reset(struct mii_bus *bus)
- 	return 0;
- }
- 
--static void __devinit add_phy(struct mii_bus *bus, struct device_node *np)
--{
--	const u32 *data;
--	int len, id, irq;
--
--	data = of_get_property(np, "reg", &len);
--	if (!data || len != 4)
--		return;
--
--	id = *data;
--	bus->phy_mask &= ~(1 << id);
--
--	irq = of_irq_to_resource(np, 0, NULL);
--	if (irq != NO_IRQ)
--		bus->irq[id] = irq;
--}
--
- static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
-                                         const struct of_device_id *match)
- {
-@@ -165,17 +148,10 @@ static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
- 	if (!new_bus->irq)
- 		goto out_unmap_regs;
- 
--	for (i = 0; i < PHY_MAX_ADDR; i++)
--		new_bus->irq[i] = -1;
--
--	while ((np = of_get_next_child(ofdev->node, np)))
--		if (!strcmp(np->type, "ethernet-phy"))
--			add_phy(new_bus, np);
--
- 	new_bus->parent = &ofdev->dev;
- 	dev_set_drvdata(&ofdev->dev, new_bus);
- 
--	ret = mdiobus_register(new_bus);
-+	ret = of_mdiobus_register(new_bus, ofdev->node);
- 	if (ret)
- 		goto out_free_irqs;
- 
-diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
-index 8300cab..51b7934 100644
---- a/include/linux/fs_enet_pd.h
-+++ b/include/linux/fs_enet_pd.h
-@@ -17,6 +17,7 @@
- #define FS_ENET_PD_H
- 
- #include <linux/string.h>
-+#include <linux/of_mdio.h>
- #include <asm/types.h>
- 
- #define FS_ENET_NAME	"fs_enet"
-@@ -130,10 +131,7 @@ struct fs_platform_info {
- 	
- 	u32 device_flags;
- 
--	int phy_addr;		/* the phy address (-1 no phy) */
--	char bus_id[16];
--	int phy_irq;		/* the phy irq (if it exists)  */
--
-+	struct device_node *phy_node;
- 	const struct fs_mii_bus_info *bus_info;
- 
- 	int rx_ring, tx_ring;	/* number of buffers on rx     */
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
