@@ -1,18 +1,25 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 6979BDDDA1
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 15:21:27 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id j37so207565waf.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 21:21:25 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc/cpm2: fix building fs_enet driver as a module.
-To: galak@kernel.crashing.org, benh@kernel.crashing.org,
-	linuxppc-dev@ozlabs.org
-Date: Wed, 18 Mar 2009 22:21:23 -0600
-Message-ID: <20090319041752.8666.46540.stgit@localhost.localdomain>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 88B32DDDA1
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 15:35:15 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so247615yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 21:35:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20090310202949.GA17184@oksana.dev.rtsoft.ru>
+References: <20090310150751.12455.70598.stgit@localhost.localdomain>
+	<20090310152224.12455.99348.stgit@localhost.localdomain>
+	<20090310191638.GA8539@oksana.dev.rtsoft.ru>
+	<fa686aa40903101248n33ee35c2o32c4b24b349b14fc@mail.gmail.com>
+	<20090310202949.GA17184@oksana.dev.rtsoft.ru>
+Date: Wed, 18 Mar 2009 22:35:14 -0600
+Message-ID: <fa686aa40903182135v51bbeafahc7fa899fb454a312@mail.gmail.com>
+Subject: Re: [PATCH 5/5] net: make mpc5200 fec driver use of_mdio
+	infrastructure
+From: Grant Likely <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, afleming@freescale.com,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Tue, Mar 10, 2009 at 2:29 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Tue, Mar 10, 2009 at 01:48:26PM -0600, Grant Likely wrote:
+>> Regardless, I
+>> think all the drivers should be using common code for obtaining the
+>> phy_device from the device tree.
+>
+> Not necessary `struct phy_device'. All we need is some common
+> routine for translating PHY's "mdio_node->full_name + phy id" to
+> phy_bus_id.
 
-Building the fs_enet driver as a modules fails because it cannot
-access the global cpm2_immr symbol.
+This only works if the network driver knows how the MDIO bus is named.
+ The current code assumes that the MDIO bus name is the register
+address, but this is a driver implementation detail and MDIO bus
+drivers can deviate from this.  What about MDIO busses that don't have
+a reg property?  For example, fs_enet/mii-bitbang.c sets the bus name
+to "CPM2 Bitbanged MII".  There is no one-size-fits-all way to figure
+out the phy bus id from the ethernet driver side of things.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+The sure and simple way to guarantee a match between the PHY device
+node and the phy_device is to use the PHY device_node pointer itself
+as the search key.
 
-Hey Ben and Kumar,
-
-Just found this while testing some unrelated changes.  Technically
-this is a bug fix that should go into 2.6.29, but it looks like an
-old problem and probably nobody is getting bitten by it.  I don't
-think the world is going to end if it misses the 2.6.29 release.
+I concede that my first attempt at this was overly complex, but I've
+reworked the code and I think it makes thinks considerably simpler.
+I'll post a new series tomorrow.  I've got patches to make the
+ucc_eth, gianfar and fs_enet drivers to use the device_node method
+also.
 
 g.
 
- arch/powerpc/sysdev/cpm2.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-
-diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
-index f1c3395..021480e 100644
---- a/arch/powerpc/sysdev/cpm2.c
-+++ b/arch/powerpc/sysdev/cpm2.c
-@@ -52,6 +52,7 @@ cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
-  * the communication processor devices.
-  */
- cpm2_map_t __iomem *cpm2_immr;
-+EXPORT_SYMBOL(cpm2_immr);
- 
- #define CPM_MAP_SIZE	(0x40000)	/* 256k - the PQ3 reserve this amount
- 					   of space for CPM as it is larger
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
