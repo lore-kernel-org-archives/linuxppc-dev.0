@@ -1,21 +1,20 @@
-Return-Path: <crquan@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.26])
-	by ozlabs.org (Postfix) with ESMTP id E6613DDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 13:47:48 +1100 (EST)
-Received: by ey-out-2122.google.com with SMTP id 4so48433eyf.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Mar 2009 19:47:46 -0700 (PDT)
+Return-Path: <paulus@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EDC7CDDEDF
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 13:48:09 +1100 (EST)
 MIME-Version: 1.0
-In-Reply-To: <49C173EA.4030904@amcc.com>
-References: <91b13c310903180551j4b86880cr269b01b58055febc@mail.gmail.com>
-	<49C173EA.4030904@amcc.com>
-Date: Thu, 19 Mar 2009 10:47:44 +0800
-Message-ID: <91b13c310903181947s6bdf50b7u323b5630a0ea5fce@mail.gmail.com>
-Subject: Re: About [AMCC 460EX/canyonlands board] Synopsys DesignWare Cores
-	(DWC) SATA host driver
-From: Cheng Renquan <crquan@gmail.com>
-To: Feng Kan <fkan@amcc.com>, support@amcc.com
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18881.45670.404687.859754@cargo.ozlabs.ibm.com>
+Date: Thu, 19 Mar 2009 13:48:06 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Confused about CLOCK_TICK_RATE
+In-Reply-To: <49B95BEC.2010404@freescale.com>
+References: <49B95BEC.2010404@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,68 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 19, 2009 at 6:21 AM, Feng Kan <fkan@amcc.com> wrote:
-> Hi RenQuan:
->
-> We are aware of the issue, currently the sata is only supported up to
-> 2.6.25.7. We are working on a patchable version
-> to submit to main line.
+Timur Tabi writes:
 
-Well, we want some new kernel features on amcc borads,
-(squashfs/ubifs/layered fs/..) those are only in newer mainline
-kernels, so please respond soon, thanks.
+> Can someone explain CLOCK_TICK_RATE to me?  It's defined in
+> arch/powerpc/include/asm/timex.h as such:
+> 
+> #define CLOCK_TICK_RATE	1024000 /* Underlying HZ */
+> 
+> Every architecture defines this, but some use the better comment
+> "Underlying frequency of the HZ timer".
+> 
+> My question is: why is this a constant? Shouldn't it be a variable,
+> perhaps something that is based on tb_ticks_per_usec?
 
-BTW, the author declared in drivers/ata/sata_dwc.c Mark Miesfeld
-<mmiesfeld@amcc.com> seems not receive mail permanently, pruned here,
-and please consider change another maintainer of that file.
+It's used essentially for making small adjustments to ACTHZ and
+TICK_NSEC in include/linux/jiffies.h.  The value was chosen so that
+ACTHZ == HZ and TICK_NSEC = 1e9 for all common HZ values, since we
+can't say at compile time what the decrementer frequency will be.
+I believe it's all pretty moot since we changed over to using the
+generic time framework anyway.
 
->
-> Thanks
-> Feng Kan
-
-Besides, here's some kernel panic message on 2.6.28.7,
-
-NIP: c0195a18 LR: c01807a8 CTR: c01959ec
-REGS: df82bb60 TRAP: 0300   Not tainted  (2.6.28.7-dirty)
-MSR: 00029000 <EE,ME>  CR: 44008048  XER: 00000000
-DEAR: 00000008, ESR: 00000000
-TASK =3D df82c000[1] 'swapper' THREAD: df82a000
-GPR00: c01807a8 df82bc10 df82c000 df92d588 00000002 df92d59c 4ebc7fe3 00000=
-001
-GPR08: 4ebc7fe3 00000000 c032f0b4 00000008 24008042 1005543c 1ffb1100 00000=
-000
-GPR16: 1000bd80 1000bda8 00000000 c0360000 00000000 c02c5934 c02c5918 c032f=
-774
-GPR24: c02c4ed0 00000000 df874950 df874950 00000002 df92d59c 00000002 df92d=
-588
-NIP [c0195a18] sata_dwc_scr_read+0x2c/0x88
-LR [c01807a8] sata_scr_read+0x7c/0x90
-Call Trace:
-[df82bc10] [c0179664] scsi_sysfs_add_host+0x94/0xac (unreliable)
-[df82bc20] [c01807a8] sata_scr_read+0x7c/0x90
-[df82bc40] [c01807dc] sata_link_init_spd+0x20/0x238
-[df82bc80] [c01851e4] ata_host_register+0x174/0x2e0
-[df82bcc0] [c0185404] ata_host_activate+0xb4/0x124
-[df82bcf0] [c0196974] sata_dwc_probe+0x334/0x52c
-[df82bd60] [c0162f78] platform_drv_probe+0x20/0x30
-[df82bd70] [c0161de0] driver_probe_device+0xb8/0x1e8
-[df82bd90] [c0161fb4] __driver_attach+0xa4/0xa8
-[df82bdb0] [c01612e4] bus_for_each_dev+0x5c/0x98
-[df82bde0] [c0161be8] driver_attach+0x24/0x34
-[df82bdf0] [c0161934] bus_add_driver+0x1d8/0x258
-[df82be20] [c01621c4] driver_register+0x5c/0x158
-[df82be40] [c01631d4] platform_driver_register+0xac/0xbc
-[df82be50] [c030c0c0] sata_dwc_init+0x18/0x28
-[df82be60] [c00013dc] do_one_initcall+0x38/0x19c
-[df82bfd0] [c02f3168] kernel_init+0x88/0xf4
-[df82bff0] [c000d5e4] kernel_thread+0x4c/0x68
-Instruction dump:
-4e800020 2b840004 9421fff0 7c0802a6 bfc10008 90010014 7c9e2378 7c7f1b78
-419d0038 81230060 548b103a 7c0004ac <7c095c2c> 0c000000 4c00012c 90050000
----[ end trace e066981a4cd0462b ]---
-Kernel panic - not syncing: Attempted to kill init!
-Rebooting in 1 seconds..
-
---=20
-Cheng Renquan (=E7=A8=8B=E4=BB=BB=E5=85=A8), from Shenzhen, China
-Samuel Beckett  - "Birth was the death of him."
+Paul.
