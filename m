@@ -1,17 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 93B63DDD1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 20:05:35 +1100 (EST)
-Date: Thu, 19 Mar 2009 04:05:30 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull from 'next' branch
-Message-ID: <Pine.LNX.4.64.0903190405070.18895@blarg.am.freescale.net>
+Return-Path: <edfuchs@uni-kassel.de>
+Received: from hrz-ws41.hrz.uni-kassel.de (smtp.hrz.uni-kassel.de
+	[141.51.12.231]) by ozlabs.org (Postfix) with ESMTP id E7B2CDDDA2
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 20:51:44 +1100 (EST)
+Received: from ws-87.localnet (rs-pc1.rs.eecs.uni-kassel.de [141.51.112.154])
+	by hrz-ws41.hrz.uni-kassel.de (8.14.0/8.14.0) with ESMTP id
+	n2J9pbNA026399
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 10:51:38 +0100
+From: Eduard Fuchs <edfuchs@uni-kassel.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Problem with radeonfb on PowerPC 7448&MV64560
+Date: Thu, 19 Mar 2009 10:51:37 +0100
+References: <200903171630.25340.edfuchs@uni-kassel.de>
+	<1237331100.25062.166.camel@pasglop>
+In-Reply-To: <1237331100.25062.166.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200903191051.37875.edfuchs@uni-kassel.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'next' branch of
+Am Mittwoch 18 M=E4rz 2009 00:05:00 schrieb Benjamin Herrenschmidt:
+> On Tue, 2009-03-17 at 16:30 +0100, Eduard Fuchs wrote:
+> > Hi all,
+> >
+> > since several days I'm trying to run an ATI 9250 (PCI) graphic card und=
+er
+> > Linux Kernel 2.6.27.19. Nevertheless without success. The kernel shows
+> > the following message:
+> >
+> > videoboot: Booting PCI video card bus 0, function 0, device 7
+> > biosEmu: undefined interrupt 15h called!
+> > biosEmu/bios.int42: unknown function AH=3D0x0, AL=3D0x7, BL=3D0x0
+>
+> The above comes from some patches you added to the kernel ? You should
+> probably do the softboot in the firmware instead...
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
+Yes. I'm using the videoboot-2.6x.patch (this patch contain also the xf86em=
+u=20
+from www.scitechsoft.com). With this pach the radeon card work properly wit=
+h=20
+2.6.12 kernel version. On the 2.6.27 kernel the "videoboot" fetch the bios=
+=20
+from the video card and start them in the xf86emu.
 
-to receive the following updates:
+Can I initialize the video card in uboot too?
 
- arch/powerpc/Makefile                          |    4
- arch/powerpc/boot/dts/gef_ppc9a.dts            |  364 ++++
- arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |    2
- arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |    2
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig  | 1889 +++++++++++++++++++++++++
- arch/powerpc/math-emu/Makefile                 |    5
- arch/powerpc/platforms/85xx/ksi8560.c          |    2
- arch/powerpc/platforms/85xx/smp.c              |   43
- arch/powerpc/platforms/86xx/Kconfig            |   10
- arch/powerpc/platforms/86xx/Makefile           |    1
- arch/powerpc/platforms/86xx/gef_ppc9a.c        |  223 ++
- arch/powerpc/platforms/86xx/gef_sbc310.c       |    4
- arch/powerpc/sysdev/cpm2.c                     |    1
- drivers/watchdog/Kconfig                       |    2
- 14 files changed, 2533 insertions(+), 19 deletions(-)
+>
+> > radeonfb (0000:00:07.0): Cannot match card to OF node !
+>
+> The above should be mostly harmless.
+>
+> > RADEON: CHIP_FAMILY 10 (0xa)
+> > RADEON: MMIO_BASE 0xf1058000
+> > RADEON: MMIO_BASE_PHYS 0x88000000
+> > radeonfb (0000:00:07.0): Found 0k of SDRAM 64 bits wide videoram
+> > RADEON: Try map FB Phys 0x80000000, size 0, 16777216. 0
+>
+> The above sounds wrong, was the card properly initialized ? Looks like
+> your videoboot failed...
 
-Grant Likely (1):
-      powerpc/cpm2: fix building fs_enet driver as a module.
+I dont know what exactly happens when the xf86emu runs the video bios and i=
+=20
+have no idea how can i verify that the card was properly initialized.
 
-Kumar Gala (1):
-      powerpc/85xx: Update smp support to handle doorbells and non-mpic init
+Best regards
 
-Liu Yu (1):
-      powerpc/math-emu: Fix efp dependence
-
-Martyn Welch (3):
-      powerpc/86xx: Run sbc310 USB fixup code only on the appropriate platform.
-      powerpc/86xx: Board support for GE Fanuc's PPC9A
-      powerpc/86xx: Default configuration for GE Fanuc's PPC9A
-
-Ted Peters (1):
-      powerpc/85xx: Fix MPC8572DS PCI protected interrupt sources
-
-Thomas Gleixner (1):
-      powerpc/85xx: remove setup_irq(NULL action) in ksi8560
+Eduard Fuchs
