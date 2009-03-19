@@ -1,22 +1,17 @@
-Return-Path: <edfuchs@uni-kassel.de>
-Received: from hrz-ws41.hrz.uni-kassel.de (smtp.hrz.uni-kassel.de
-	[141.51.12.231]) by ozlabs.org (Postfix) with ESMTP id E7B2CDDDA2
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 20:51:44 +1100 (EST)
-Received: from ws-87.localnet (rs-pc1.rs.eecs.uni-kassel.de [141.51.112.154])
-	by hrz-ws41.hrz.uni-kassel.de (8.14.0/8.14.0) with ESMTP id
-	n2J9pbNA026399
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 10:51:38 +0100
-From: Eduard Fuchs <edfuchs@uni-kassel.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Problem with radeonfb on PowerPC 7448&MV64560
-Date: Thu, 19 Mar 2009 10:51:37 +0100
-References: <200903171630.25340.edfuchs@uni-kassel.de>
-	<1237331100.25062.166.camel@pasglop>
-In-Reply-To: <1237331100.25062.166.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200903191051.37875.edfuchs@uni-kassel.de>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 5CB16DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 21:53:02 +1100 (EST)
+Date: Thu, 19 Mar 2009 21:53:00 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	"H. Peter Anvin" <hpa@zytor.com>
+Subject: linux-next: cpus4096 tree build failure
+Message-Id: <20090319215300.1833d28e.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Mittwoch 18 M=E4rz 2009 00:05:00 schrieb Benjamin Herrenschmidt:
-> On Tue, 2009-03-17 at 16:30 +0100, Eduard Fuchs wrote:
-> > Hi all,
-> >
-> > since several days I'm trying to run an ATI 9250 (PCI) graphic card und=
-er
-> > Linux Kernel 2.6.27.19. Nevertheless without success. The kernel shows
-> > the following message:
-> >
-> > videoboot: Booting PCI video card bus 0, function 0, device 7
-> > biosEmu: undefined interrupt 15h called!
-> > biosEmu/bios.int42: unknown function AH=3D0x0, AL=3D0x7, BL=3D0x0
->
-> The above comes from some patches you added to the kernel ? You should
-> probably do the softboot in the firmware instead...
+Hi all,
 
-Yes. I'm using the videoboot-2.6x.patch (this patch contain also the xf86em=
-u=20
-from www.scitechsoft.com). With this pach the radeon card work properly wit=
-h=20
-2.6.12 kernel version. On the 2.6.27 kernel the "videoboot" fetch the bios=
-=20
-from the video card and start them in the xf86emu.
+Today's linux-next build (powerpc allyesconfig) failed like this:
 
-Can I initialize the video card in uboot too?
+In file included from include/linux/mmzone.h:776,
+                 from include/linux/gfp.h:5,
+                 from include/linux/kmod.h:23,
+                 from include/linux/module.h:14,
+                 from init/version.c:11:
+arch/powerpc/include/asm/mmzone.h:32: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'numa_cpumask_lookup_table'
 
->
-> > radeonfb (0000:00:07.0): Cannot match card to OF node !
->
-> The above should be mostly harmless.
->
-> > RADEON: CHIP_FAMILY 10 (0xa)
-> > RADEON: MMIO_BASE 0xf1058000
-> > RADEON: MMIO_BASE_PHYS 0x88000000
-> > radeonfb (0000:00:07.0): Found 0k of SDRAM 64 bits wide videoram
-> > RADEON: Try map FB Phys 0x80000000, size 0, 16777216. 0
->
-> The above sounds wrong, was the card properly initialized ? Looks like
-> your videoboot failed...
+and many more.
 
-I dont know what exactly happens when the xf86emu runs the video bios and i=
-=20
-have no idea how can i verify that the card was properly initialized.
+Probably caused by commit 082edb7bf443eb8eda15b482d16ad9dd8137ad24 ("numa,
+cpumask: move numa_node_id default implementation to topology.h") from
+the cpus4096 tree which removed the include of linux/topology.h from
+linux/mmzone.h.
 
-Best regards
+I have added the following patch for today.  There may be a better fix.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Eduard Fuchs
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 19 Mar 2009 21:35:24 +1100
+Subject: [PATCH] powerpc: mmzone.h needs cpumask_t to be defined
+
+Commit 082edb7bf443eb8eda15b482d16ad9dd8137ad24 ("numa,cpumask: move
+numa_node_id default implementation to topology.h") removed the include
+of linux/topology.h from linux/mmzone.h which exposed this lack.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/asm/mmzone.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
+index 19f299b..35acac9 100644
+--- a/arch/powerpc/include/asm/mmzone.h
++++ b/arch/powerpc/include/asm/mmzone.h
+@@ -8,6 +8,7 @@
+ #define _ASM_MMZONE_H_
+ #ifdef __KERNEL__
+ 
++#include <linux/cpumask.h>
+ 
+ /*
+  * generic non-linear memory support:
+-- 
+1.6.2.1
