@@ -1,23 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 47DE4DDED6
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 08:22:38 +1100 (EST)
-Date: Fri, 20 Mar 2009 08:22:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: cpus4096 tree build failure
-Message-Id: <20090320082232.d0bf787b.sfr@canb.auug.org.au>
-In-Reply-To: <20090319115342.GA22905@elte.hu>
-References: <20090319215300.1833d28e.sfr@canb.auug.org.au>
-	<200903192137.15209.rusty@rustcorp.com.au>
-	<20090319115342.GA22905@elte.hu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__20_Mar_2009_08_22_32_+1100_dR+stm2rpRUm3Hgf"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-next@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Return-Path: <dhlii@dlasys.net>
+Received: from outbound-mail-39.bluehost.com (outbound-mail-39.bluehost.com
+	[69.89.20.193]) by ozlabs.org (Postfix) with SMTP id 9098ADDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 10:25:57 +1100 (EST)
+Message-ID: <49C2D2F0.7050005@dlasys.net>
+Date: Thu, 19 Mar 2009 19:19:12 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: C67x00 reset problems
+References: <49B1469B.9030609@gmail.com>	<1236379543.13132.10.camel@md40100b.ft>
+	<49B6F513.2090304@gmail.com>
+	<fa686aa40903101642l20d4d3e1qab1eac14493690f1@mail.gmail.com>
+In-Reply-To: <fa686aa40903101642l20d4d3e1qab1eac14493690f1@mail.gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, "A. Nolson" <alohanono@gmail.com>
+Reply-To: dhlii@dlasys.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,33 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__20_Mar_2009_08_22_32_+1100_dR+stm2rpRUm3Hgf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+    I have been using the mainline c67x00 driver on our boards for a while.
 
-Hi Ingo,
+    I am running 2.6.26-rc4 - basically the last arch/ppc version.
+    I can only detect devices on the first port of the first host but
+otherwise it has been working.  
 
-On Thu, 19 Mar 2009 12:53:42 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+
+
+Grant Likely wrote:
+> Unfortunately, the 2.6.24-rc3 stuff in my git tree is really old.
+> I've been getting all of my recent work into mainline.  The CF driver
+> is in much better shape there.  The c67x00 driver is merged into
+> mainline, but I haven't tested it at all in the last year so I don't
+> know how well it will work.
 >
-> I've applied it.
+> Cheers,
+> g.
 
-Thanks.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
---Signature=_Fri__20_Mar_2009_08_22_32_+1100_dR+stm2rpRUm3Hgf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknCt5gACgkQjjKRsyhoI8zOqgCfT3NmBvyAs8Jff3QTeW8Rsg0y
-otsAnjh/0hBku652b6DihVJnuJqW726c
-=8sFq
------END PGP SIGNATURE-----
-
---Signature=_Fri__20_Mar_2009_08_22_32_+1100_dR+stm2rpRUm3Hgf--
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
