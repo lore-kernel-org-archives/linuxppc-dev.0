@@ -1,30 +1,20 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 09AD7DDE31
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 18:24:36 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n2J7OUO1002079
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 00:24:31 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n2J7OSJF024277
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 02:24:29 -0500 (CDT)
+Return-Path: <daniel.ng1234@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id 26461DDE0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 19:32:43 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so254339waf.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 01:32:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: suspend-to-mem on the mpc8349e-mitx-gp?
-Date: Thu, 19 Mar 2009 15:24:26 +0800
-Message-ID: <3A45394FD742FA419B760BB8D398F9ED29EAC6@zch01exm26.fsl.freescale.net>
-In-Reply-To: <ffa0ad880903182246y4323e31bv6109fbf748858af0@mail.gmail.com>
-References: <ffa0ad880903182246y4323e31bv6109fbf748858af0@mail.gmail.com>
-From: "Li Yang-R58472" <LeoLi@freescale.com>
-To: "Soohyung Cho" <celius202@gmail.com>, <linuxppc-dev@ozlabs.org>,
-	"Wood Scott-B07421" <scottwood@freescale.com>
+In-Reply-To: <4206182445660643B9AEB8D4E55BBD0A02B9DDEEB3@HERMES2>
+References: <547eba1b0903180036m46f6ffc0g521a5081924a2613@mail.gmail.com>
+	<4206182445660643B9AEB8D4E55BBD0A02B9DDEEB3@HERMES2>
+Date: Thu, 19 Mar 2009 19:32:42 +1100
+Message-ID: <547eba1b0903190132pfd11ad5ld4b1bffb6dc22758@mail.gmail.com>
+Subject: Re: spidev.c driver on the ppc8247 (kernel 2.6.27.19)
+From: Daniel Ng <daniel.ng1234@gmail.com>
+To: "Stepanov, Sergej" <Sergej.Stepanov@ids.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,26 +24,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]=20
-> On Behalf Of Soohyung Cho
-> Sent: Thursday, March 19, 2009 1:47 PM
-> To: linuxppc-dev@ozlabs.org; Wood Scott-B07421
-> Subject: suspend-to-mem on the mpc8349e-mitx-gp?
->=20
-> Hello.
->=20
-> I need to enable suspend-to-mem(deep sleep) on my=20
-> mpc8349e-mitx-gp box.
-> When I send "mem" message to /sys/power/state, the box seems=20
-> to get stop.
-> I think the box get stop when it executes suspend-asm.S codes.
->=20
-> I know that the latest linux supports suspend-to-mem on the=20
-> mpc8313erdb box well.
-> Is it impossible to enable suspend-to-mem on the mpc8349e-mitx-gp?
+Hi Sergej,
 
-I don't think the MPC8349 hardware has the deep sleep functionality.
+On Wed, Mar 18, 2009 at 7:30 PM, Stepanov, Sergej
+<Sergej.Stepanov@ids.de> wrote:
+> in the attachment i send a spi driver (little bit "of") done by myself
 
-- Leo
+Thanks for your driver. I've already got a SPI Controller driver, I
+just want to hook it up to spidev.c so that it is has a Userspace
+interface via /dev/spi-0.
+
+I'm looking at the I2C driver for some ideas.
+
+i2cdev_attach_adapter() handles the creation of the /dev/i2c-0 dev
+node, and associates the i2c driver with this dev node.
+cpm_i2c_probe() seems to end up calling i2cdev_attach_adapter() via
+the following chain:
+
+cpm_i2c_probe() -> i2c_add_adapter() -> i2c_register_adapter() ->
+i2c_do_add_adaptor -> i2cdev_attach_adapter()
+
+It seems like spidev_probe() does generally the same thing as
+i2cdev_attach_adapter() for SPI.
+
+So, I tried to call spidev_probe() directly from the probe() function
+of my SPI Controller driver. However in this case spidev_probe()
+failed because its call to device_create_drvdata() failed with error
+code ENODEV. Why would this be?
+
+This is how I make the call from my SPI Controller driver:
+
+spidev_probe(to_spi_device(&ofdev->dev));
+
+And this is the relevant code in spidev_probe():
+
+dev = device_create_drvdata(spidev_class, &spi->dev, spidev->devt,
+spidev, "spidev%d.%d",
+                               /*spi->master->bus_num*/0, spi->chip_select);
+				
+Note that if I uncomment the spi->master->bus_num parameter and get
+rid of the hacked-in '0', the above results in a crash. I guess this
+means that spi->master has not been set up. But it *has* been set up
+in my SPI Controller's probe() function using platform_set_drvdata():
+
+static int __devinit XXX_spi_probe(struct of_device *ofdev, const
+struct of_device_id *match)
+{
+	struct spi_master *master;
+	struct XXX_spi *sp;
+  int res=0;
+
+	master = spi_alloc_master(&ofdev->dev, sizeof(struct XXX_spi));
+
+	if (master == NULL) {
+		dev_err(&ofdev->dev, "failed to allocate spi master\n");
+		return -ENOMEM;
+	}
+
+  master->bus_num = 0;
+  master->num_chipselect = XXX_MAX_CHIPSEL;
+
+  sp = spi_master_get_devdata(master);
+
+  platform_set_drvdata(ofdev, sp);			
+
+  res = spidev_probe(to_spi_device(&ofdev->dev));
+  if(res)
+  {
+    printk("XXX_spi_probe()- spidev_probe() FAILED\n");
+  }
+  return res;
+}
+
+
+Inserting the below just before the call to spidev_probe() solves the
+problem of the crash:
+
+  {
+    struct spi_device *spidev;
+    spidev = to_spi_device(&ofdev->dev);
+    spidev->master = master;
+  }
+
+But I still get the ENODEV error mentioned above. Can anyone explain why?
+
+Cheers,
+Daniel
