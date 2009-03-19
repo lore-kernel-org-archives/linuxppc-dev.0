@@ -1,33 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1027DDDDA1
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 04:05:35 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n2JH5VYm023551
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 10:05:31 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n2JH5U8c020443
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 12:05:31 -0500 (CDT)
-Date: Thu, 19 Mar 2009 12:05:30 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH v2 4/5] powerpc: NAND: FSL UPM: document new bindings
-Message-ID: <20090319170530.GA2744@ld0162-tx32.am.freescale.net>
-References: <1237475768-11481-1-git-send-email-wg@grandegger.com>
-	<1237475768-11481-2-git-send-email-wg@grandegger.com>
-	<1237475768-11481-3-git-send-email-wg@grandegger.com>
-	<1237475768-11481-4-git-send-email-wg@grandegger.com>
-	<1237475768-11481-5-git-send-email-wg@grandegger.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1237475768-11481-5-git-send-email-wg@grandegger.com>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 074F8DDDF9
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 05:00:56 +1100 (EST)
+Date: Thu, 19 Mar 2009 21:00:55 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH v4 0/4] Some PM-related patches for galak/powerpc.git next
+Message-ID: <20090319180055.GA3155@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,16 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 19, 2009 at 04:16:07PM +0100, Wolfgang Grandegger wrote:
-> +Optional properties:
-> +- fsl,upm-mar-offset : use the UPM machine address register to drive a
-> +  		       custom chip select logic using the specified
-> +		       offset.
+On Wed, Mar 18, 2009 at 03:27:22PM -0500, Scott Wood wrote:
+> Anton Vorontsov wrote:
+>> On Wed, Mar 18, 2009 at 03:05:51PM -0500, Scott Wood wrote:
+>>> Hmm, would that imply that the mdio underneath it is disabled as well?
+>>
+>> Technically, yes. In practice, MDIO and MAC drivers are probed
+>> separately.
+>
+> Currently, yes, but that may not always be the case.
+>
+>> I don't see any better solution, should I just leave the core1's
+>> mdio node intact?
+>
+> Probably.  It's not as if core1 is going to be putting ethernet@24000 to  
+> sleep.
 
-Your example uses the name fsl,upm-mar-chip-offset instead.
+OK, so the updated patches no longer touch mpc8572ds_camp_core1.dts.
 
-> +- chip-offset : address offset between chips for multi-chip support.
 
-How is this different from fsl,upm-mar-offset?
+Other changes:
 
--Scott
+- Now the patch set depends on
+  "fsl_pq_mdio: Use proper address translation"
+  http://patchwork.ozlabs.org/patch/24698/
+
+- Newly added gef_ppc9a board converted as well.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
