@@ -1,18 +1,16 @@
 Return-Path: <wg@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 6BDC9DDE24
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 02:24:22 +1100 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 22486DDF9A
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 02:24:34 +1100 (EST)
 From: Wolfgang Grandegger <wg@grandegger.com>
 To: linux-mtd@lists.infradead.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 4/5] powerpc: NAND: FSL UPM: document new bindings
-Date: Thu, 19 Mar 2009 16:16:07 +0100
-Message-Id: <1237475768-11481-5-git-send-email-wg@grandegger.com>
-In-Reply-To: <1237475768-11481-4-git-send-email-wg@grandegger.com>
+Subject: [PATCH v2 2/5] NAND: FSL-UPM: add support for selecting chips via MAR
+Date: Thu, 19 Mar 2009 16:16:05 +0100
+Message-Id: <1237475768-11481-3-git-send-email-wg@grandegger.com>
+In-Reply-To: <1237475768-11481-2-git-send-email-wg@grandegger.com>
 References: <1237475768-11481-1-git-send-email-wg@grandegger.com>
 	<1237475768-11481-2-git-send-email-wg@grandegger.com>
-	<1237475768-11481-3-git-send-email-wg@grandegger.com>
-	<1237475768-11481-4-git-send-email-wg@grandegger.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,74 +20,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds documentation for the new NAND FSL UPM bindings for:
-
- NAND: FSL-UPM: add multi chip support
- NAND: FSL-UPM: Add wait flags to support board/chip specific delays
- NAND: FSL-UPM: add support for selecting chips via MAR
+For the NAND chips on the TQM8548 modules, a special chip-select logic is
+used. It uses dedicated address lines to be set via UPM machine address
+register (mar). This patch also adds that support to the FSL-UPM driver.
 
 Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
 ---
- .../powerpc/dts-bindings/fsl/upm-nand.txt          |   42 +++++++++++++++++++-
- 1 files changed, 40 insertions(+), 2 deletions(-)
+ arch/powerpc/sysdev/fsl_lbc.c |    2 +-
+ drivers/mtd/nand/fsl_upm.c    |   13 ++++++++++++-
+ 2 files changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt b/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
-index 84a04d5..3919828 100644
---- a/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
-@@ -5,9 +5,24 @@ Required properties:
- - reg : should specify localbus chip select and size used for the chip.
- - fsl,upm-addr-offset : UPM pattern offset for the address latch.
- - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
--- gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
+diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+index 0494ee5..dceb8d1 100644
+--- a/arch/powerpc/sysdev/fsl_lbc.c
++++ b/arch/powerpc/sysdev/fsl_lbc.c
+@@ -150,7 +150,7 @@ int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base, u32 mar)
  
--Example:
-+Optional properties:
-+- fsl,upm-mar-offset : use the UPM machine address register to drive a
-+  		       custom chip select logic using the specified
-+		       offset.
-+- fsl,upm-wait-flags : add chip-dependent short delays after running the
-+  		       UPM pattern (0x1), after writing a data byte (0x2)
-+		       or after writing out a buffer (0x4).
-+- gpios : may specify optional GPIOs connected to the Ready-Not-Busy pins
-+	  (R/B#). For multi-chip devices, "num-chips" GPIO definitions are
-+	  required.
-+- chip-delay : chip dependent delay for transfering data from array to
-+	       read registers (tR). Required if property "gpios" is not
-+	       used (R/B# pins not connected).
-+- num-chips : number of chips per device for multi-chip support.
-+- chip-offset : address offset between chips for multi-chip support.
-+
-+Examples:
+ 	spin_lock_irqsave(&fsl_lbc_lock, flags);
  
- upm@1,0 {
- 	compatible = "fsl,upm-nand";
-@@ -26,3 +41,26 @@ upm@1,0 {
- 		};
- 	};
- };
+-	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
++	out_be32(&fsl_lbc_regs->mar, mar);
+ 
+ 	switch (upm->width) {
+ 	case 8:
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index 4b2c19f..d637da7 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -35,6 +35,7 @@ struct fsl_upm_nand {
+ 	struct fsl_upm upm;
+ 	uint8_t upm_addr_offset;
+ 	uint8_t upm_cmd_offset;
++	uint32_t upm_mar_chip_offset;
+ 	void __iomem *io_base;
+ 	int rnb_gpio[NAND_MAX_CHIPS];
+ 	int chip_delay;
+@@ -72,7 +73,9 @@ static void fun_wait_rnb(struct fsl_upm_nand *fun)
+ 
+ static void fun_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
+ {
++	struct nand_chip *chip = mtd->priv;
+ 	struct fsl_upm_nand *fun = to_fsl_upm_nand(mtd);
++	u32 mar;
+ 
+ 	if (!(ctrl & fun->last_ctrl)) {
+ 		fsl_upm_end_pattern(&fun->upm);
+@@ -90,7 +93,11 @@ static void fun_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
+ 			fsl_upm_start_pattern(&fun->upm, fun->upm_cmd_offset);
+ 	}
+ 
+-	fsl_upm_run_pattern(&fun->upm, fun->io_base, cmd);
++	mar = cmd << (32 - fun->upm.width);
++	if (fun->upm_mar_chip_offset && fun->chip_number > 0) {
++		mar |= fun->chip_number * fun->upm_mar_chip_offset;
++	}
++	fsl_upm_run_pattern(&fun->upm, chip->IO_ADDR_R, mar);
+ 
+ 	fun_wait_rnb(fun);
+ }
+@@ -242,6 +249,10 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 	}
+ 	fun->upm_cmd_offset = *prop;
+ 
++	prop = of_get_property(ofdev->node, "fsl,upm-mar-chip-offset", &size);
++	if (prop && size == sizeof(uint32_t))
++		fun->upm_mar_chip_offset = *prop;
 +
-+upm@3,0 {
-+	compatible = "fsl,upm-nand";
-+	reg = <3 0x0 0x800>;
-+	fsl,upm-addr-offset = <0x10>;
-+	fsl,upm-cmd-offset = <0x08>;
-+	fsl,upm-wait-flags = <0x5>;
-+	/* Multi-chip device */
-+	fsl,upm-mar-chip-offset = <0x200>;
-+	num-chips = <2>;
-+	chip-offset = <0x200>;
-+	chip-delay = <25>; // in micro-seconds
-+
-+	nand@0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+
-+		partition@0 {
-+			    label = "fs";
-+			    reg = <0x00000000 0x10000000>;
-+		};
-+	};
-+};
+ 	prop = of_get_property(ofdev->node, "num-chips", &size);
+ 	if (prop && size == sizeof(uint32_t)) {
+ 		fun->num_chips = *prop;
 -- 
 1.6.0.6
