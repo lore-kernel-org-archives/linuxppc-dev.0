@@ -1,23 +1,19 @@
-Return-Path: <edfuchs@uni-kassel.de>
-Received: from hrz-ws39.hrz.uni-kassel.de (smtp.hrz.uni-kassel.de
-	[141.51.12.230]) by ozlabs.org (Postfix) with ESMTP id C1059DDDA0
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 02:35:05 +1100 (EST)
-Received: from ws-87.localnet (rs-pc1.rs.eecs.uni-kassel.de [141.51.112.154])
-	by hrz-ws39.hrz.uni-kassel.de (8.14.0/8.14.0) with ESMTP id
-	n2KFZ1Lh012683
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 16:35:01 +0100
-From: Eduard Fuchs <edfuchs@uni-kassel.de>
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 63FBDDDDA2
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 03:15:21 +1100 (EST)
+Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
+	by gw1.transmode.se (Postfix) with ESMTP id D782B8C05E
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 17:06:18 +0100 (CET)
 To: linuxppc-dev@ozlabs.org
-Subject: Re: Problem with radeonfb on PowerPC 7448&MV64560
-Date: Fri, 20 Mar 2009 16:35:02 +0100
-References: <200903171630.25340.edfuchs@uni-kassel.de>
-	<200903191051.37875.edfuchs__31387.3780928136$1237456433$gmane$org@uni-kassel.de>
-	<m2bprw79i8.fsf@ohwell.denx.de>
-In-Reply-To: <m2bprw79i8.fsf@ohwell.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200903201635.03017.edfuchs@uni-kassel.de>
+Subject: ucc_geth broken w.r.t fixed_link PHY
+Message-ID: <OF118046F1.CE4E43CC-ONC125757F.0057EA5C-C125757F.005877E9@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Fri, 20 Mar 2009 17:06:19 +0100
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,67 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Freitag 20 M=C3=A4rz 2009 11:51:11 schrieb Detlev Zundel:
-> Hi Eduard,
->
-> > Am Mittwoch 18 M=C3=A4rz 2009 00:05:00 schrieb Benjamin Herrenschmidt:
-> >> On Tue, 2009-03-17 at 16:30 +0100, Eduard Fuchs wrote:
-> >> > Hi all,
-> >> >
-> >> > since several days I'm trying to run an ATI 9250 (PCI) graphic card
-> >> > under Linux Kernel 2.6.27.19. Nevertheless without success. The kern=
-el
-> >> > shows the following message:
-> >> >
-> >> > videoboot: Booting PCI video card bus 0, function 0, device 7
-> >> > biosEmu: undefined interrupt 15h called!
-> >> > biosEmu/bios.int42: unknown function AH=3D0x0, AL=3D0x7, BL=3D0x0
-> >>
-> >> The above comes from some patches you added to the kernel ? You should
-> >> probably do the softboot in the firmware instead...
-> >
-> > Yes. I'm using the videoboot-2.6x.patch (this patch contain also the
-> > xf86emu from www.scitechsoft.com). With this pach the radeon card work
-> > properly with 2.6.12 kernel version. On the 2.6.27 kernel the "videoboo=
-t"
-> > fetch the bios from the video card and start them in the xf86emu.
-> >
-> > Can I initialize the video card in uboot too?
->
-> Yes, indeed you can.  In a recent version of U-Boot, search for
-> 'CONFIG_BIOSEMU' in include/configs/*.  We tested this on a sequoia
-> board, so include/configs/sequoia.h should be a good start for this.
+Trying to upgrade to latest linus latest just to see if it still works I 
+get this:
 
-Thanks.
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc0151270
+Oops: Kernel access of bad area, sig: 11 [#1]
+TMCUTU
+NIP: c0151270 LR: c0151270 CTR: c0017760
+REGS: cf81fa60 TRAP: 0300   Not tainted  (2.6.29-rc8)
+MSR: 00009032 <EE,ME,IR,DR>  CR: 24024042  XER: 20000000
+DAR: 00000000, DSISR: 20000000
+TASK = cf81cba0[1] 'swapper' THREAD: cf81e000
+GPR00: c0151270 cf81fb10 cf81cba0 00000000 c0272e20 c025f354 00001e80 
+cf86b08c 
+GPR08: d1068200 cffffb74 06000000 d106c200 42024042 10085148 0fffd000 
+0ffc81a0 
+GPR16: 00000001 00000001 00000000 007ffeb0 00000000 0000c000 cf83f36c 
+cf83f000 
+GPR24: 00000030 cf83f360 cf81fb20 00000000 d106c200 20000000 00001e80 
+cf83f360 
+NIP [c0151270] ucc_geth_open+0x330/0x1efc
+LR [c0151270] ucc_geth_open+0x330/0x1efc
+Call Trace:
+[cf81fb10] [c0151270] ucc_geth_open+0x330/0x1efc (unreliable)
+[cf81fba0] [c0187638] dev_open+0xbc/0x12c
+[cf81fbc0] [c0187e38] dev_change_flags+0x8c/0x1b0
+[cf81fbe0] [c02a5e94] tm_icn_address+0x5f0/0x1038
+[cf81fd70] [c00038b0] do_one_initcall+0x34/0x1dc
+[cf81ffd0] [c02887dc] kernel_init+0x90/0x10c
+[cf81fff0] [c00106a4] kernel_thread+0x4c/0x68
+Instruction dump:
+7c0004ac 914b0144 3800ffff 807f02b4 3c80c027 901f02ac 38842e20 38a00000 
+937f02a8 3b410010 937f02b0 48022ef9 <80630000> 4bebc8c9 7c7d1b78 48023155 
+---[ end trace 5e5a8c89939b0ba3 ]---
+gdb vmlinux shows:
+(gdb) list *0xc0151270
+0xc0151270 is in ucc_geth_open (drivers/net/ucc_geth.c:1552).
+1547            priv->oldlink = 0;
+1548            priv->oldspeed = 0;
+1549            priv->oldduplex = -1;
+1550 
+1551            ph = of_get_property(np, "phy-handle", NULL);
+1552            phy = of_find_node_by_phandle(*ph);
+1553            mdio = of_get_parent(phy);
+1554 
+1555            id = of_get_property(phy, "reg", NULL);
+1556 
 
-I tried to include BIOSEMU and RADEON_FB in my u-boot. Bios emulator seems =
-to=20
-be properly loaded, but when u-boot attempt to read or write Radeon's=20
-registers, the board freezes.
+Tunrsn out that my fixed_link PHY doesn't work anymore. I don't have a 
+phy-handle in
+in my of tree. Instead I got fixed-link:
+               enet2: ucc@3200 { //UCC4
+                        device_type = "network";
+                        compatible = "ucc_geth";
+                        model = "UCC";
+                        device-id = <4>;
+                        cell-index = <4>;
+                        reg = <3200 200>;
+                        interrupts = <23>;
+                        interrupt-parent = <&qeic>;
+                        mac-address = [ 00 11 22 33 44 99 ];
+                        rx-clock = <17>; //CLK7, 23
+                        tx-clock = <18>; //CLK8, 24
+                        fixed-link = <19 1 1 100 0 0>;
+                        phy-connection-type = "mii";
+                        pio-handle = <&pio4>;
+                };
 
-What means exactly the value of "VIDEO_IO_OFFSET" in the config file?=20
+So what is broken, ucc_geth or my OF tree?
 
-There is a u-boot's output when I init the VIDEO_IO_OFFSET with PCI's I/O b=
-ase=20
-address:
-
-
-INFO : PCI0_IO : base - 0xd8000000 size - 1M bytes
-INFO : PCI0_MEM0: base - 0x80000000 size - 1024M bytes
-INFO : PCI0_MEM1: base - 0xc0000000 size - 128M bytes
-INFO : PCI0_MEM2: base - 0xc8000000 size - 128M bytes
-INFO : PCI0_MEM3: base - 0xd0000000 size - 128M bytes
-=2E....
-PCI Scan: Found Bus 0, Device 7, Function 0
-PCI Scan: Found Bus 0, Device 7, Function 1
-PCI Scan: Found Bus 0, Device 9, Function 0
-PCI Scan: Found Bus 0, Device 10, Function 0
-Video: ATI Radeon video card (1002, 5960) found @(0:7:0)
-videoboot: Booting PCI video card bus 0, function 0, device 7
-E 0000 0 F00P0F000NI00PMS0EG 0F00
-
-and after that follows board reset.
-
-Best regards.
-
-Eduard Fuchs
+      Jocke
