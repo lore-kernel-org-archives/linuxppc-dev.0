@@ -1,20 +1,17 @@
-Return-Path: <Joakim.Tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD86BDDD1C
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 07:46:17 +1100 (EST)
-In-Reply-To: <20090320200740.GA32082@oksana.dev.rtsoft.ru>
-References: <OF20EA88BB.017079CD-ONC125757F.006C40A2-C125757F.006C646E@transmode.se>
-	<20090320200740.GA32082@oksana.dev.rtsoft.ru>
-To: avorontsov@ru.mvista.com
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 1C90CDDE1D
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 09:02:37 +1100 (EST)
+Message-ID: <49C41278.6060801@grandegger.com>
+Date: Fri, 20 Mar 2009 23:02:32 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Subject: Re: Fw: [PATCH] ucc_geth: Correct fixed_link OOPS.
-Message-ID: <OF9395F5D9.8C7241AA-ONC125757F.00714908-C125757F.0072183A@transmode.se>
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Fri, 20 Mar 2009 21:46:13 +0100
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
+To: Wolfgang Grandegger <wg@grandegger.com>, linuxppc-dev@ozlabs.org
+Subject: Re: powerpc/85xx: Add support for the "socrates" board (MPC8544)
+References: <49C26434.30302@grandegger.com>
+	<20090320041022.GB30527@yookeroo.seuss>
+In-Reply-To: <20090320041022.GB30527@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,64 +21,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 20/03/2009 21:07:40:
+David Gibson wrote:
+> On Thu, Mar 19, 2009 at 04:26:44PM +0100, Wolfgang Grandegger wrote:
+>> This patch adds support for the "socrates" board based on the MPC8544.
+>> Supported are Ethernet, serial console, I2C, I2C-based RTC and
+>> temperature sensors, NOR and NAND flash, PCI, USB, CAN and Lime
+>> display controller.
+>>
+>> The multiplexing of FPGA interrupts onto PowerPC interrupt lines is
+>> supported through our own fpga_pic interrupt controller driver.
+>>
+>> For example the SJA1000 controller is level low sensitive connected to
+>> fpga_pic line 2 and is routed to the second (of three) irq lines to
+>> the CPU:
 > 
-> On Fri, Mar 20, 2009 at 08:43:56PM +0100, Joakim Tjernlund wrote:
-> > hmm, this mail didn't seem to reach the lists. Resending
-> > 
-> >  Jocke
-> > ----- Forwarded by Joakim Tjernlund/Transmode on 20/03/2009 20:42 
------
-> > 
-> > From:
-> > Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> > To:
-> > leoli@freescale.com, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-> > Cc:
-> > Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> > Date:
-> > 20/03/2009 18:01
-> > Subject:
-> > [PATCH] ucc_geth: Correct fixed_link OOPS.
-> > 
-> > 
-> > 
-> > fixed_link(PHY less) mode will get you an NULL
-> > deference as it does not have a phy-handle.
-> > Correct by using already probed information.
-> > 
-> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> > ---
-> > 
-> > The below fixes the problem and seems like the right thing to do.
-> > Can we have this in 2.6.29?
-> > 
-> >  drivers/net/ucc_geth.c |   17 +----------------
-> >  1 files changed, 1 insertions(+), 16 deletions(-)
-
-[SNIP]
-
+> A few minor device tree nits.
 > 
-> This effectivly breaks boards where Gianfar is using UCC's MDIO
-> bus (i.e. breaks commit b1c4a9dddf09fe99b8f88252718ac5b357363dc4,
-> which is the cause of fixed-link breakage, btw). And, your patch
-> is line-wrapped and tabs are substituted by white spaces...
-
-Yes, I noticed that afterwards. It is our "great" new mailsystem
-that gets in the way. I really need to find another mailsystem as
-Lotus/Domino gets in my way too often :(
-
+>> +	soc8544@e0000000 {
+>> +		#address-cells = <1>;
+>> +		#size-cells = <1>;
+>> +		device_type = "soc";
+>> +
+>> +		ranges = <0x00000000 0xe0000000 0x00100000>;
+>> +		reg = <0xe0000000 0x00001000>;	// CCSRBAR 1M
+>> +		bus-frequency = <0>;		// Filled in by U-Boot
+>> +		compatible = "fsl,socrates-immr", "simple-bus";
 > 
-> I would suggest something along these lines (unfortunately
-> right now I can't test it on real HW, only compile-tested):
+> This should probably refer to 8544 instead of socrates.  Unless you
+> really do have a board-specific version of the SoC...
 
-Tested here, works fine for fixed-link PHYs, thanks.
-I left the 
-    priv->oldlink = 0;
-    priv->oldspeed = 0;
-    priv->oldduplex = -1;
-in though. Seemed like a good idea.
+OK, that should then be:
 
-Tested By: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+   +		compatible = "fsl,mpc8544-immr", "simple-bus";
 
- Jocke
+It should always be with the prefix "mpc", I guess. But some of the
+following compatible names are without that prefix:
+
+$ grep -h '\-l2-cache-controller' *
+			compatible = "fsl,8540-l2-cache-controller";
+			compatible = "fsl,mpc8536-l2-cache-controller";
+			compatible = "fsl,8540-l2-cache-controller";
+			compatible = "fsl,8541-l2-cache-controller";
+			compatible = "fsl,8544-l2-cache-controller";
+			compatible = "fsl,8548-l2-cache-controller";
+			compatible = "fsl,8555-l2-cache-controller";
+			compatible = "fsl,8540-l2-cache-controller";
+			compatible = "fsl,8568-l2-cache-controller";
+			compatible = "fsl,mpc8572-l2-cache-controller";
+			compatible = "fsl,mpc8572-l2-cache-controller";
+			compatible = "fsl,mpc8572-l2-cache-controller";
+			compatible = "fsl,8548-l2-cache-controller";
+			compatible = "fsl,8560-l2-cache-controller";
+			compatible = "fsl,mpc8544-l2-cache-controller";
+			compatible = "fsl,mpc8544-l2-cache-controller";
+			compatible = "fsl,8540-l2-cache-controller";
+			compatible = "fsl,8540-l2-cache-controller";
+			compatible = "fsl,8540-l2-cache-controller";
+			compatible = "fsl,mpc8548-l2-cache-controller";
+			compatible = "fsl,mpc8548-l2-cache-controller";
+			compatible = "fsl,8540-l2-cache-controller";
+			compatible = "fsl,8540-l2-cache-controller";
+
+That's confusing.
+
+Wolfgang.
