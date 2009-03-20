@@ -1,20 +1,18 @@
-Return-Path: <mhiramat@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 812BADDED8
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 21:53:59 +1100 (EST)
-Message-ID: <49C375B7.5090806@redhat.com>
-Date: Fri, 20 Mar 2009 06:53:43 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
+	by ozlabs.org (Postfix) with ESMTP id 2A8B9DDEDA
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 22:18:11 +1100 (EST)
+Message-ID: <49C37B5A.1080307@mlbassoc.com>
+Date: Fri, 20 Mar 2009 05:17:46 -0600
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-To: ananth@in.ibm.com
-Subject: Re: [RFC][PATCH -tip 4/9] power: add kernel_trap_sp()
-References: <49C2B4BF.4080904@redhat.com> <1237527760.25062.567.camel@pasglop>
-	<20090320073334.GA10519@in.ibm.com>
-In-Reply-To: <20090320073334.GA10519@in.ibm.com>
+To: dhlii@dlasys.net
+Subject: Re: Xilinx cygwin linux cross recommendations ?
+References: <49C2DC5D.6000701@dlasys.net>	<fa686aa40903191716wa0fa4f5r15fc9c5560468a20@mail.gmail.com>
+	<49C2EA49.90907@dlasys.net>
+In-Reply-To: <49C2EA49.90907@dlasys.net>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-	linuxppc-dev@ozlabs.org, systemtap-ml <systemtap@sources.redhat.com>,
-	Ingo Molnar <mingo@elte.hu>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ananth N Mavinakayanahalli wrote:
-> On Fri, Mar 20, 2009 at 04:42:40PM +1100, Benjamin Herrenschmidt wrote:
->> On Thu, 2009-03-19 at 17:10 -0400, Masami Hiramatsu wrote:
->>> Add kernel_trap_sp() on powerpc, based on systemtap's runtime/regs.h.
->>>
->>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->> I haven't looked at the usage of it, but it's weird to have something
->> call "kernel_trap_sp" that returns the -user- stack pointer... is
->> this really what's expected here ?
+David H. Lynch Jr. wrote:
+>     I have no experience with ELDK.
+>     Have you used it ? Do you like it ?
 > 
-> In the current usage scenario, this gets called only with a pt_regs
-> snapshot from in kernel. user_stack_pointer() is a misnomer though;
-> all this macro needs is to return the stack pointer from the given
-> pt_regs.
+>     When I started I mostly did a roll my own environment using crosstool.
+>     I would have stuck to that except I can not get uclibc and it has
+> not been updated in a long time.
+>     Crosstool-ng did not support the ppc last time I looked.
 
-Indeed,
-I expect kernel_trap_sp() returns the top of stack from pt_regs in the kernel.
-Why I'm using user_stack_pointer() for kernel_trap_sp() is just that the
-definitions of both are same...
+Look again - PowerPC is quite well supported by CrossTool-ng
 
-Perhaps, should I define as below, even it is same as user_stack_pointer()?
-#define kernel_trap_sp(regs) ((regs)->gpr[1])
+>     Today I use buildroot - mostly just to build a toolchain - I have
+> never been able to get it to do many of the other things it is capable of.
+> 
+>     I am not particularly fond (serious understatement)  of "integrated
+> solve all the problems of the world" environments, they rarely work, and
+> you must think inside their box.
+>    
+>     I would be ecstatic with just a cygwin-linux-ppc-uclibc tool chain.
+> 
 
-Thank you,
+Why not just skip the torture (CygWin) and just run a virtual machine
+on Windows [I assume you _have_ to have Windows].  Both VM-Ware and VirtualBox
+handle this problem beautifully.  Then you have *Linux* for your development
+environment, not some cobbled set of pieces...
 
 > 
-> Ananth
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Grant Likely wrote:
+>> On Thu, Mar 19, 2009 at 5:59 PM, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
+>>   
+>>>    Does anyone have experience sugestions for building ppc/linux apps
+>>> or even ppc kernels under windows.
+>>>     
+>> I hear rumors that there is a Windows version of ELDK.
+>>
+>>   
+> 
+> 
+
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
