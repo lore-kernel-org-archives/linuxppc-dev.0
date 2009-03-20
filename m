@@ -1,28 +1,20 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 7B59FDDEDF
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 23:06:08 +1100 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1LkcJv-0008Bk-6r
-	for linuxppc-dev@ozlabs.org; Fri, 20 Mar 2009 10:51:23 +0000
-Received: from p4ff0427b.dip.t-dialin.net ([79.240.66.123])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 10:51:23 +0000
-Received: from dzu by p4ff0427b.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 10:51:23 +0000
-To: linuxppc-dev@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: Problem with radeonfb on PowerPC 7448&MV64560
-Date: Fri, 20 Mar 2009 11:51:11 +0100
-Message-ID: <m2bprw79i8.fsf@ohwell.denx.de>
-References: <200903171630.25340.edfuchs@uni-kassel.de>
-	<1237331100.25062.166.camel@pasglop>
-	<200903191051.37875.edfuchs__31387.3780928136$1237456433$gmane$org@uni-kassel.de>
+Return-Path: <posco.grubb@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id D2691DDDA1
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 00:27:10 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so565017waf.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 06:27:09 -0700 (PDT)
+Date: Fri, 20 Mar 2009 22:27:05 +0900
+From: TOMARI Hisanobu <posco.grubb@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [Fwd: Re: IDE cable detection on Apple PowerBook]
+Message-Id: <20090320222705.1974aaeb.posco.grubb@gmail.com>
+In-Reply-To: <200903201240.30383.bzolnier@gmail.com>
+References: <1237530407.25062.569.camel@pasglop>
+	<200903201240.30383.bzolnier@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Sender: news <news@ger.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,38 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Eduard,
+On Fri, 20 Mar 2009 12:40:29 +0100
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> Am Mittwoch 18 März 2009 00:05:00 schrieb Benjamin Herrenschmidt:
->> On Tue, 2009-03-17 at 16:30 +0100, Eduard Fuchs wrote:
->> > Hi all,
->> >
->> > since several days I'm trying to run an ATI 9250 (PCI) graphic card under
->> > Linux Kernel 2.6.27.19. Nevertheless without success. The kernel shows
->> > the following message:
->> >
->> > videoboot: Booting PCI video card bus 0, function 0, device 7
->> > biosEmu: undefined interrupt 15h called!
->> > biosEmu/bios.int42: unknown function AH=0x0, AL=0x7, BL=0x0
->>
->> The above comes from some patches you added to the kernel ? You should
->> probably do the softboot in the firmware instead...
->
-> Yes. I'm using the videoboot-2.6x.patch (this patch contain also the xf86emu 
-> from www.scitechsoft.com). With this pach the radeon card work properly with 
-> 2.6.12 kernel version. On the 2.6.27 kernel the "videoboot" fetch the bios 
-> from the video card and start them in the xf86emu.
->
-> Can I initialize the video card in uboot too?
+> Moreover the underlying issue is non-PMAC specific and asks for generic
+> resolution, please see:
+> 
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=12734#c13
+> 
+> for previous discussion.
+> 
+> In the very least case it should be a generic kernel parameter, i.e.
+> "ide_core.ignore_cables" and iff the current "ide_core.ignore_cable="
+> is not enough.  TOMARI, could please look into it?
+> 
+> Thanks,
+> Bart
 
-Yes, indeed you can.  In a recent version of U-Boot, search for
-'CONFIG_BIOSEMU' in include/configs/*.  We tested this on a sequoia
-board, so include/configs/sequoia.h should be a good start for this.
+It works!
+As the internal IDE controller is detected as ide0, I passed
+"ide_core.ignore_cable=0" to the kernel, and the drive works in
+UDMA/100 mode.
+This method seems much cleaner way to solve the problem.
+Thank you, Bart, Ben and Anton.
 
-Cheers
-  Detlev
+% dmesg |grep hda
+Kernel command line: root=/dev/hda4 ro ide_core.ignore_cable=0 
+hda: CORE_PATA, ATA DISK drive
+hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+hda: UDMA/100 mode selected
+hda: max request size: 512KiB
+hda: 252411904 sectors (129234 MB), CHS=16383/255/63
+hda: cache flushes supported
+ hda: [mac] hda1 hda2 hda3 hda4 hda5 hda6 hda7
+XFS mounting filesystem hda4
+Ending clean XFS mount for filesystem: hda4
+Adding 846672k swap on /dev/hda5.  Priority:-1 extents:1 across:846672k
 
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+-- 
+TOMARI Hisanobu <posco.grubb@gmail.com>
