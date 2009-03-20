@@ -1,18 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 95AF7DDE0E
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 07:16:56 +1100 (EST)
-Message-ID: <49C3F9B5.5000909@grandegger.com>
-Date: Fri, 20 Mar 2009 21:16:53 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 7E514DDE1F
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 07:22:48 +1100 (EST)
+Date: Fri, 20 Mar 2009 23:22:47 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
+Message-ID: <20090320202247.GA30654@oksana.dev.rtsoft.ru>
+References: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
+	<20090320190428.GD6224@elte.hu>
+	<20090320193904.GA13707@oksana.dev.rtsoft.ru>
+	<20090320195743.GA25147@elte.hu>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: powerpc/85xx: Add support for the "socrates" board (MPC8544)
-References: <49C26434.30302@grandegger.com>
-	<734DA8C3-EADB-4426-BD18-AC190918CD7E@kernel.crashing.org>
-In-Reply-To: <734DA8C3-EADB-4426-BD18-AC190918CD7E@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20090320195743.GA25147@elte.hu>
+Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,70 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar,
-
-Kumar Gala wrote:
+On Fri, Mar 20, 2009 at 08:57:43PM +0100, Ingo Molnar wrote:
 > 
-> On Mar 19, 2009, at 10:26 AM, Wolfgang Grandegger wrote:
+> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
->> +        mdio@24520 {
->> +            #address-cells = <1>;
->> +            #size-cells = <0>;
->> +            compatible = "fsl,gianfar-mdio";
->> +            reg = <0x24520 0x20>;
->> +
->> +            phy0: ethernet-phy@0 {
->> +                interrupt-parent = <&mpic>;
->> +                interrupts = <0 1>;
->> +                reg = <0>;
->> +                device_type = "ethernet-phy";
->> +            };
->> +            phy1: ethernet-phy@1 {
->> +                interrupt-parent = <&mpic>;
->> +                interrupts = <0 1>;
->> +                reg = <1>;
->> +                device_type = "ethernet-phy";
->> +            };
->> +            tbi0: tbi-phy@11 {
->> +                reg = <0x11>;
->> +                device_type = "tbi-phy";
->> +            };
->> +        };
->> +
->> +        mdio@26520 {
->> +            #address-cells = <1>;
->> +            #size-cells = <0>;
->> +            compatible = "fsl,gianfar-tbi";
->> +            reg = <0x26520 0x20>;
->> +
->> +            tbi1: tbi-phy@11 {
->> +                reg = <0x11>;
->> +                device_type = "tbi-phy";
->> +            };
->> +        };
->> +
->> +        enet0: ethernet@24000 {
->> +            cell-index = <0>;
->> +            device_type = "network";
->> +            model = "eTSEC";
->> +            compatible = "gianfar";
->> +            reg = <0x24000 0x1000>;
->> +            local-mac-address = [ 00 00 00 00 00 00 ];
->> +            interrupts = <29 2 30 2 34 2>;
->> +            interrupt-parent = <&mpic>;
->> +            phy-handle = <&phy0>;
->> +            tbi-handle = <&tbi0>;
->> +            phy-connection-type = "rgmii-id";
->> +        };
->> +
+> > On Fri, Mar 20, 2009 at 08:04:28PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > > 
+> > > > commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean 
+> > > > up menu"), despite the "clean up" in its purpose, introduced 
+> > > > behavioural change for Kconfig symbols: we no longer able to 
+> > > > select tracing support on PPC32 (because IRQFLAGS_SUPPORT isn't 
+> > > > yet implemented).
+> > > 
+> > > Could you please solve this by implementing proper 
+> > > irqflag-tracing support? It's been available upstream for almost 
+> > > three years. It's needed for lockdep support as well, etc.
+> > 
+> > Breaking things via clean up patches is an interesting method of 
+> > encouraging something to implement. ;-)
+> >
+> > Surely I'll look into implementing irqflags tracing, but 
+> > considering that no one ever needed this for almost three years, 
+> > [...]
 > 
-> See Anton's recent post in moving the mdio node under the ethernet. 
-> Please match.
+> Weird, there's no lockdep support?
 
-I have fixed it for the socrates board. Is there a GIT tree with that
-modifications which I can base my patches on, also for the one for the
-TQM8548 posted recently:
+*ashamed*: apparently no such support currently exist for PPC32. ;-)
 
-  http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069364.html
-
-Wolfgang.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
