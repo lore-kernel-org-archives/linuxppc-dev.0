@@ -1,21 +1,20 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 718F1DDD1B
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 06:33:35 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LkkTD-0007Ht-7M
-	for linuxppc-dev@ozlabs.org; Fri, 20 Mar 2009 12:33:31 -0700
-Message-ID: <22627440.post@talk.nabble.com>
-Date: Fri, 20 Mar 2009 12:33:31 -0700 (PDT)
-From: davidastro <davidastro@hotmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Fix for __div64_32 locks when using some 64 bit numbers
-In-Reply-To: <1237330984.25062.164.camel@pasglop>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 0BF96DDE0E
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 06:39:06 +1100 (EST)
+Date: Fri, 20 Mar 2009 22:39:04 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
+Message-ID: <20090320193904.GA13707@oksana.dev.rtsoft.ru>
+References: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
+	<20090320190428.GD6224@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <22567864.post@talk.nabble.com>
-	<1237330984.25062.164.camel@pasglop>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20090320190428.GD6224@elte.hu>
+Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,56 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Mar 20, 2009 at 08:04:28PM +0100, Ingo Molnar wrote:
+> 
+> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean 
+> > up menu"), despite the "clean up" in its purpose, introduced 
+> > behavioural change for Kconfig symbols: we no longer able to 
+> > select tracing support on PPC32 (because IRQFLAGS_SUPPORT isn't 
+> > yet implemented).
+> 
+> Could you please solve this by implementing proper irqflag-tracing 
+> support? It's been available upstream for almost three years. It's 
+> needed for lockdep support as well, etc.
 
-Hi Ben:
+Breaking things via clean up patches is an interesting method of
+encouraging something to implement. ;-)
 
-I was wondering if you have any change to look into and test the propose fix
-I suggested in my previous post.
-I'd like to know if the fix is correct.
+Surely I'll look into implementing irqflags tracing, but considering
+that no one ever needed this for almost three years, and that we
+explicitly have the code to deal with tracing-w/o-irqflags, can we
+please restore the old behaviour?
 
-Thanks for your attention,
+At least for 2.6.30, because I don't think I'll have enough time to
+implement/test/push irqflags tracing support in time for 2.6.30-rc1.
 
+Thanks,
 
-Benjamin Herrenschmidt wrote:
-> 
-> On Tue, 2009-03-17 at 14:15 -0700, davidastro wrote:
->> I found a bug when using the function __div64_32 in assembly in a 32 bit
->> ppc
->> architecture unit.
->> 
->> I tried the numbers 55834565048000000 for the dividend and 4294967079 for
->> the divisor. When passing these two numbers to the function  __div64_32,
->> I
->> had a software lock. I searched for possible patches online and in
->> different
->> forums but I could not find anything related to the assembly
->> implementation
->> to this function (I would have to apologize if somebody already found a
->> fix
->> :-) ).
->> 
->> Anyway, when analyzing the assembly code, I found out with gdb the
->> problem.
->> I am not an expert in ppc architecture but I read the documentation and I
->> am
->> pretty sure I solved the issue (I have been testing for couple of days
->> using
->> random 64 to 32 number combinations with good results).
->> 
->> Who or Where should I post the fix to be reviewed.
-> 
-> Here is fine :-)
-> 
-> Ben.
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
+p.s.
+It would make more sense if 40ada30f's commit message would state
+that tracing w/o irqflags is now obsolete, or better, if it was
+discussed on some mailinglist, so that we'd have some time to
+adapt the architecture-specific code.
 
 -- 
-View this message in context: http://www.nabble.com/Fix-for-__div64_32-locks-when-using-some-64-bit-numbers-tp22567864p22627440.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
