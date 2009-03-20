@@ -1,21 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F2229DDE23
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 01:42:14 +1100 (EST)
-Message-ID: <49C3AB35.4080700@freescale.com>
-Date: Fri, 20 Mar 2009 09:41:57 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 1CA07DDEE2
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 02:09:17 +1100 (EST)
+Date: Fri, 20 Mar 2009 18:09:14 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] tracing: Fix TRACING_SUPPORT dependency
+Message-ID: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Li Yang-R58472 <LeoLi@freescale.com>
-Subject: Re: suspend-to-mem on the mpc8349e-mitx-gp?
-References: <3A45394FD742FA419B760BB8D398F9ED29EB95@zch01exm26.fsl.freescale.net>
-In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED29EB95@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Soohyung Cho <celius202@gmail.com>
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Li Yang-R58472 wrote:
->> However, the code should treat "mem" as "standby" on chips 
->> that don't support deep sleep.  What does the device tree 
-> 
-> Well, shouldn't the valid() callback reject unsupported states instead
-> of covering up?
+commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean up
+menu"), despite the "clean up" in its purpose, introduced behavioural
+change for Kconfig symbols: we no longer able to select tracing
+support on PPC32 (because IRQFLAGS_SUPPORT isn't yet implemented).
 
-I don't think so, in this case.  The user is not asking for "sleep" or 
-deep sleep"; they are asking for a power state that meets the definition 
-of "standby" (which sleep does) or which meets the definition of "mem" 
-(which both sleep and deep sleep do).  When the user asks for "mem", we 
-provide the lowest power mode that qualifies.
+The IRQFLAGS_SUPPORT is not mandatory for most tracers, tracing core
+has a special case for platforms w/o irqflags (which, by the way, has
+become useless as of the commit above).
 
-I'm willing to change it if there's substantial existing practice to the 
-contrary, though.
+This patch restores the old behaviour, and thus brings the tracing
+back on PPC32.
 
--Scott
+p.s.
+The IRQSOFF_TRACER (which is the only tracer that requires IRQFLAGS
+support) still depends on TRACE_IRQFLAGS_SUPPORT Kconfig symbol.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ kernel/trace/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index ee70841..774aba7 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -63,7 +63,6 @@ config TRACING
+ #
+ config TRACING_SUPPORT
+ 	bool
+-	depends on TRACE_IRQFLAGS_SUPPORT
+ 	depends on STACKTRACE_SUPPORT
+ 	default y
+ 
+-- 
+1.5.6.5
