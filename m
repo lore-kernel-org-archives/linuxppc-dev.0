@@ -2,20 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4AC0CDDE06
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 16:43:06 +1100 (EST)
-Subject: Re: [RFC][PATCH -tip 4/9] power: add kernel_trap_sp()
+	by ozlabs.org (Postfix) with ESMTPS id E4DDBDDF01
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 16:48:35 +1100 (EST)
+Subject: Re: [PATCH v2] powerpc: Add support for CoreInt delivery of
+	interrupts on MPIC
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-In-Reply-To: <49C2B4BF.4080904@redhat.com>
-References: <49C2B4BF.4080904@redhat.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1236784730-616-1-git-send-email-galak@kernel.crashing.org>
+References: <1236784730-616-1-git-send-email-galak@kernel.crashing.org>
 Content-Type: text/plain
-Date: Fri, 20 Mar 2009 16:42:40 +1100
-Message-Id: <1237527760.25062.567.camel@pasglop>
+Date: Fri, 20 Mar 2009 16:48:29 +1100
+Message-Id: <1237528109.25062.568.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-	systemtap-ml <systemtap@sources.redhat.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-03-19 at 17:10 -0400, Masami Hiramatsu wrote:
-> Add kernel_trap_sp() on powerpc, based on systemtap's runtime/regs.h.
+On Wed, 2009-03-11 at 10:18 -0500, Kumar Gala wrote:
+> CoreInt provides a mechansim to deliver the IRQ vector directly
+> into the core on an interrupt (via the SPR EPR) rather than having
+> to go IACK on the PIC.  This is suppose to provide an improvment
+> in interrupt latency by reducing the time to get the IRQ vector.
 > 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-
-I haven't looked at the usage of it, but it's weird to have something
-call "kernel_trap_sp" that returns the -user- stack pointer... is
-this really what's expected here ?
-
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 > ---
->  arch/powerpc/include/asm/ptrace.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-> index c9c678f..0ac366c 100644
-> --- a/arch/powerpc/include/asm/ptrace.h
-> +++ b/arch/powerpc/include/asm/ptrace.h
-> @@ -83,6 +83,7 @@ struct pt_regs {
-> 
->  #define instruction_pointer(regs) ((regs)->nip)
->  #define user_stack_pointer(regs) ((regs)->gpr[1])
-> +#define kernel_trap_sp(regs) (user_stack_pointer(regs))
->  #define regs_return_value(regs) ((regs)->gpr[3])
-> 
->  #ifdef CONFIG_SMP
+> * Fixed MPIC_GREG_GCONF_COREINT flag to be 0x60000000 as per spec and pointed about by Dave
+
+Are you sure ? That's 2 bits ...
+
+Ben.
