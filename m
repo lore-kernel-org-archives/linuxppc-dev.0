@@ -2,23 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 14BA5DDEF0
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 17:27:08 +1100 (EST)
-Subject: Re: IDE cable detection on Apple PowerBook
+	by ozlabs.org (Postfix) with ESMTPS id 4F19ADDE00
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 17:36:25 +1100 (EST)
+Subject: Re: [PATCH] cpumask: use mm_cpumask() wrapper: powerpc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: TOMARI Hisanobu <posco.grubb@gmail.com>
-In-Reply-To: <20090319223001.c2674366.posco.grubb@gmail.com>
-References: <20090318140638.e6b61eaa.posco.grubb@gmail.com>
-	<1237363097.25062.345.camel@pasglop>
-	<20090318224726.5cf83e23.posco.grubb@gmail.com>
-	<1237442846.25062.466.camel@pasglop>
-	<1237442917.25062.467.camel@pasglop>
-	<20090319223001.c2674366.posco.grubb@gmail.com>
-Content-Type: text/plain
-Date: Fri, 20 Mar 2009 17:27:00 +1100
-Message-Id: <1237530420.25062.570.camel@pasglop>
+To: Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <200903161446.43726.rusty@rustcorp.com.au>
+References: <200903161446.43726.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Mar 2009 17:36:17 +1100
+Message-Id: <1237530977.25062.572.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,99 +23,188 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-03-19 at 22:30 +0900, TOMARI Hisanobu wrote:
-> Thanks for helpful advices.
-> This patch adds an option to drivers/ide/Kconfig and adds 
-> some lines to drivers/ide/pmac.c . Now the driver checks
-> if the model is prefixed with "PowerBook" and the entire hack
-> can be toggled in the Kconfig.
+On Mon, 2009-03-16 at 14:46 +1030, Rusty Russell wrote:
+> Makes code futureproof against the impending change to mm->cpu_vm_mask.
 > 
-> Again, the patch is against linux 2.6.28.8.
+> It's also a chance to use the new cpumask_ ops which take a pointer
+> (the older ones are deprecated, but there's no hurry for arch code).
 
-Ack. I forwarded it to Bart for his queue.
+Boom :-)
 
-Ben.
+In file included from /home/benh/linux-powerpc-test/arch/powerpc/kernel/vdso.c:30:
+/home/benh/linux-powerpc-test/arch/powerpc/include/asm/mmu_context.h: In function ‘switch_mm’:
+/home/benh/linux-powerpc-test/arch/powerpc/include/asm/mmu_context.h:34: error: implicit declaration of function ‘mm_cpumask’
+/home/benh/linux-powerpc-test/arch/powerpc/include/asm/mmu_context.h:34: warning: passing argument 2 of ‘cpumask_set_cpu’ makes pointer from integer without a cast
 
-> Best regards,
-> TOMARI Hisanobu
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> ---
+>  arch/powerpc/include/asm/mmu_context.h |    2 +-
+>  arch/powerpc/mm/hash_utils_64.c        |   10 ++++------
+>  arch/powerpc/mm/mmu_context_nohash.c   |    2 +-
+>  arch/powerpc/mm/pgtable.c              |    3 +--
+>  arch/powerpc/mm/tlb_hash64.c           |    6 +++---
+>  arch/powerpc/mm/tlb_nohash.c           |   18 +++++++++---------
+>  arch/powerpc/platforms/cell/spu_base.c |    2 +-
+>  7 files changed, 20 insertions(+), 23 deletions(-)
 > 
-> p.s. oddly, the drive works in ATA/100 mode under untouched
-> MacOS X 10.5.
-> 
-> On Thu, 19 Mar 2009 17:08:37 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > On Thu, 2009-03-19 at 17:07 +1100, Benjamin Herrenschmidt wrote:
-> > > On Wed, 2009-03-18 at 22:47 +0900, TOMARI Hisanobu wrote:
-> > > > I thought the short-40pin assumption would cause no problem
-> > > > considering all models beginning with "PowerBook5" are laptops.
-> > > > Do you mean an option to toggle this hack on/off should be present 
-> > > > in Kconfig?
-> > > 
-> > > Actually, it makes -some- amount of sense to do it by testing
-> > > specifically for the prefix "PowerBook" and "iBook" without a specific
-> > > number I suppose.
-> > 
-> > Actually "PowerBook" is enough, there's no iBook prefix in the
-> > device-tree, I was confusing with old busted iMac firmwares that used
-> > iMac instead of PowerMac in there.
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> > > Ben.
-> > > 
-> > > > Thanks,
-> > > > TOMARI Hisanobu
-> > > > 
-> > > > On Wed, 18 Mar 2009 18:58:17 +1100
-> > > > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > > > 
-> > > > > On Wed, 2009-03-18 at 14:06 +0900, TOMARI Hisanobu wrote:
-> > > > > > Hello,
-> > > > > > 
-> > > > > > I'm using an OCZ PATA SSD on Apple PowerBook5,4 computer.
-> > > > > > The IDE drive fails to recognize 80-conductor cable that
-> > > > > > connects the drive to motherboard to fall back to UDMA33.
-> > > > > > 
-> > > > > > This patch fixes this behavior by assuming that the cable is
-> > > > > > short-40pin when the model string matches "PowerBook5" and 
-> > > > > > the motherboard detects 80c cable.
-> > > > > > 
-> > > > > > This patch is against drivers/ide/pmac.c in linux 2.6.28.8.
-> > > > > 
-> > > > > The patch is too much of an ad-hoc hack... _maybe_ an option is to make
-> > > > > the core fallback to 40 "short" when 80 pin detection fails on
-> > > > > powerbooks instead ?
-> > > > > 
-> > > > > Ben.
-> > > > > 
-> > > > > > (before applying the patch) hdparm -i /dev/hda
-> > > > > > /dev/hda:
-> > > > > >  Timing buffered disk reads:   90 MB in  3.03 seconds =  29.73 MB/sec
-> > > > > > (dmesg 2.6.26)
-> > > > > > ide0: Found Apple UniNorth ATA-6 controller, bus ID 3, irq 39
-> > > > > > Probing IDE interface ide0...
-> > > > > > hda: CORE_PATA, ATA DISK drive
-> > > > > > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-> > > > > > hda: drive side 80-wire cable detection failed, limiting max speed to UDMA33
-> > > > > > hda: UDMA/33 mode selected
-> > > > > > 
-> > > > > > (after applying the patch) hdparm -i /dev/hda
-> > > > > > /dev/hda:
-> > > > > >  Timing buffered disk reads:  240 MB in  3.02 seconds =  79.42 MB/sec
-> > > > > > (dmesg 2.6.28.8)
-> > > > > > ide-pmac: Found Apple UniNorth ATA-6 controller (PCI), bus ID 3, irq 39
-> > > > > > Probing IDE interface ide0...
-> > > > > > hda: CORE_PATA, ATA DISK drive
-> > > > > > hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-> > > > > > hda: UDMA/100 mode selected
-> > > > > > ide0 at 0xf102a000-0xf102a070,0xf102a160 on irq 39
-> > > > > > 
-> > > > > > 
-> > > > > > _______________________________________________
-> > > > > > Linuxppc-dev mailing list
-> > > > > > Linuxppc-dev@ozlabs.org
-> > > > > > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> > > > > 
-> > 
+> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+> --- a/arch/powerpc/include/asm/mmu_context.h
+> +++ b/arch/powerpc/include/asm/mmu_context.h
+> @@ -31,7 +31,7 @@ static inline void switch_mm(struct mm_s
+>  			     struct task_struct *tsk)
+>  {
+>  	/* Mark this context has been used on the new CPU */
+> -	cpu_set(smp_processor_id(), next->cpu_vm_mask);
+> +	cpumask_set_cpu(smp_processor_id(), mm_cpumask(next));
+>  
+>  	/* 32-bit keeps track of the current PGDIR in the thread struct */
+>  #ifdef CONFIG_PPC32
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -858,7 +858,7 @@ int hash_page(unsigned long ea, unsigned
+>  	unsigned long vsid;
+>  	struct mm_struct *mm;
+>  	pte_t *ptep;
+> -	cpumask_t tmp;
+> +	const struct cpumask *tmp;
+>  	int rc, user_region = 0, local = 0;
+>  	int psize, ssize;
+>  
+> @@ -906,8 +906,8 @@ int hash_page(unsigned long ea, unsigned
+>  		return 1;
+>  
+>  	/* Check CPU locality */
+> -	tmp = cpumask_of_cpu(smp_processor_id());
+> -	if (user_region && cpus_equal(mm->cpu_vm_mask, tmp))
+> +	tmp = cpumask_of(smp_processor_id());
+> +	if (user_region && cpumask_equal(mm_cpumask(mm), tmp))
+>  		local = 1;
+>  
+>  #ifdef CONFIG_HUGETLB_PAGE
+> @@ -1023,7 +1023,6 @@ void hash_preload(struct mm_struct *mm, 
+>  	unsigned long vsid;
+>  	void *pgdir;
+>  	pte_t *ptep;
+> -	cpumask_t mask;
+>  	unsigned long flags;
+>  	int local = 0;
+>  	int ssize;
+> @@ -1066,8 +1065,7 @@ void hash_preload(struct mm_struct *mm, 
+>  	local_irq_save(flags);
+>  
+>  	/* Is that local to this CPU ? */
+> -	mask = cpumask_of_cpu(smp_processor_id());
+> -	if (cpus_equal(mm->cpu_vm_mask, mask))
+> +	if (cpumask_equal(mm_cpumask(mm), cpumask_of(smp_processor_id())))
+>  		local = 1;
+>  
+>  	/* Hash it in */
+> diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+> --- a/arch/powerpc/mm/mmu_context_nohash.c
+> +++ b/arch/powerpc/mm/mmu_context_nohash.c
+> @@ -97,7 +97,7 @@ static unsigned int steal_context_smp(un
+>  		mm->context.id = MMU_NO_CONTEXT;
+>  
+>  		/* Mark it stale on all CPUs that used this mm */
+> -		for_each_cpu_mask_nr(cpu, mm->cpu_vm_mask)
+> +		for_each_cpu(cpu, mm_cpumask(mm))
+>  			__set_bit(id, stale_map[cpu]);
+>  		return id;
+>  	}
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -81,11 +81,10 @@ void pgtable_free_tlb(struct mmu_gather 
+>  void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
+>  {
+>  	/* This is safe since tlb_gather_mmu has disabled preemption */
+> -        cpumask_t local_cpumask = cpumask_of_cpu(smp_processor_id());
+>  	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
+>  
+>  	if (atomic_read(&tlb->mm->mm_users) < 2 ||
+> -	    cpus_equal(tlb->mm->cpu_vm_mask, local_cpumask)) {
+> +	    cpumask_equal(mm_cpumask(tlb->mm), cpumask_of(smp_processor_id()))){
+>  		pgtable_free(pgf);
+>  		return;
+>  	}
+> diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+> --- a/arch/powerpc/mm/tlb_hash64.c
+> +++ b/arch/powerpc/mm/tlb_hash64.c
+> @@ -139,12 +139,12 @@ void hpte_need_flush(struct mm_struct *m
+>   */
+>  void __flush_tlb_pending(struct ppc64_tlb_batch *batch)
+>  {
+> -	cpumask_t tmp;
+> +	const struct cpumask *tmp;
+>  	int i, local = 0;
+>  
+>  	i = batch->index;
+> -	tmp = cpumask_of_cpu(smp_processor_id());
+> -	if (cpus_equal(batch->mm->cpu_vm_mask, tmp))
+> +	tmp = cpumask_of(smp_processor_id());
+> +	if (cpumask_equal(mm_cpumask(batch->mm), tmp))
+>  		local = 1;
+>  	if (i == 1)
+>  		flush_hash_page(batch->vaddr[0], batch->pte[0],
+> diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+> --- a/arch/powerpc/mm/tlb_nohash.c
+> +++ b/arch/powerpc/mm/tlb_nohash.c
+> @@ -132,11 +132,11 @@ void flush_tlb_mm(struct mm_struct *mm)
+>  	pid = mm->context.id;
+>  	if (unlikely(pid == MMU_NO_CONTEXT))
+>  		goto no_context;
+> -	cpu_mask = mm->cpu_vm_mask;
+> -	cpu_clear(smp_processor_id(), cpu_mask);
+> -	if (!cpus_empty(cpu_mask)) {
+> +	if (!cpumask_equal(mm_cpumask(mm), cpumask_of(smp_processor_id()))) {
+>  		struct tlb_flush_param p = { .pid = pid };
+> -		smp_call_function_mask(cpu_mask, do_flush_tlb_mm_ipi, &p, 1);
+> +		/* Ignores smp_processor_id() even if set. */
+> +		smp_call_function_many(mm_cpumask(mm),
+> +				       do_flush_tlb_mm_ipi, &p, 1);
+>  	}
+>  	_tlbil_pid(pid);
+>   no_context:
+> @@ -146,16 +146,15 @@ EXPORT_SYMBOL(flush_tlb_mm);
+>  
+>  void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
+>  {
+> -	cpumask_t cpu_mask;
+> +	struct cpumask *cpu_mask;
+>  	unsigned int pid;
+>  
+>  	preempt_disable();
+>  	pid = vma ? vma->vm_mm->context.id : 0;
+>  	if (unlikely(pid == MMU_NO_CONTEXT))
+>  		goto bail;
+> -	cpu_mask = vma->vm_mm->cpu_vm_mask;
+> -	cpu_clear(smp_processor_id(), cpu_mask);
+> -	if (!cpus_empty(cpu_mask)) {
+> +	cpu_mask = mm_cpumask(vma->vm_mm);
+> +	if (!cpumask_equal(cpu_mask, cpumask_of(smp_processor_id()))) {
+>  		/* If broadcast tlbivax is supported, use it */
+>  		if (mmu_has_feature(MMU_FTR_USE_TLBIVAX_BCAST)) {
+>  			int lock = mmu_has_feature(MMU_FTR_LOCK_BCAST_INVAL);
+> @@ -167,7 +166,8 @@ void flush_tlb_page(struct vm_area_struc
+>  			goto bail;
+>  		} else {
+>  			struct tlb_flush_param p = { .pid = pid, .addr = vmaddr };
+> -			smp_call_function_mask(cpu_mask,
+> +			/* Ignores smp_processor_id() even if set in cpu_mask */
+> +			smp_call_function_many(cpu_mask,
+>  					       do_flush_tlb_page_ipi, &p, 1);
+>  		}
+>  	}
+> diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
+> --- a/arch/powerpc/platforms/cell/spu_base.c
+> +++ b/arch/powerpc/platforms/cell/spu_base.c
+> @@ -114,7 +114,7 @@ static inline void mm_needs_global_tlbie
+>  	int nr = (NR_CPUS > 1) ? NR_CPUS : NR_CPUS + 1;
+>  
+>  	/* Global TLBIE broadcast required with SPEs. */
+> -	__cpus_setall(&mm->cpu_vm_mask, nr);
+> +	bitmap_fill(cpumask_bits(mm_cpumask(mm)), nr);
+>  }
+>  
+>  void spu_associate_mm(struct spu *spu, struct mm_struct *mm)
