@@ -1,15 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 1CA07DDEE2
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 02:09:17 +1100 (EST)
-Date: Fri, 20 Mar 2009 18:09:14 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] tracing: Fix TRACING_SUPPORT dependency
-Message-ID: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
+Return-Path: <edfuchs@uni-kassel.de>
+Received: from hrz-ws39.hrz.uni-kassel.de (smtp.hrz.uni-kassel.de
+	[141.51.12.230]) by ozlabs.org (Postfix) with ESMTP id C1059DDDA0
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 02:35:05 +1100 (EST)
+Received: from ws-87.localnet (rs-pc1.rs.eecs.uni-kassel.de [141.51.112.154])
+	by hrz-ws39.hrz.uni-kassel.de (8.14.0/8.14.0) with ESMTP id
+	n2KFZ1Lh012683
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 16:35:01 +0100
+From: Eduard Fuchs <edfuchs@uni-kassel.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Problem with radeonfb on PowerPC 7448&MV64560
+Date: Fri, 20 Mar 2009 16:35:02 +0100
+References: <200903171630.25340.edfuchs@uni-kassel.de>
+	<200903191051.37875.edfuchs__31387.3780928136$1237456433$gmane$org@uni-kassel.de>
+	<m2bprw79i8.fsf@ohwell.denx.de>
+In-Reply-To: <m2bprw79i8.fsf@ohwell.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200903201635.03017.edfuchs@uni-kassel.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,38 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean up
-menu"), despite the "clean up" in its purpose, introduced behavioural
-change for Kconfig symbols: we no longer able to select tracing
-support on PPC32 (because IRQFLAGS_SUPPORT isn't yet implemented).
+Am Freitag 20 M=C3=A4rz 2009 11:51:11 schrieb Detlev Zundel:
+> Hi Eduard,
+>
+> > Am Mittwoch 18 M=C3=A4rz 2009 00:05:00 schrieb Benjamin Herrenschmidt:
+> >> On Tue, 2009-03-17 at 16:30 +0100, Eduard Fuchs wrote:
+> >> > Hi all,
+> >> >
+> >> > since several days I'm trying to run an ATI 9250 (PCI) graphic card
+> >> > under Linux Kernel 2.6.27.19. Nevertheless without success. The kern=
+el
+> >> > shows the following message:
+> >> >
+> >> > videoboot: Booting PCI video card bus 0, function 0, device 7
+> >> > biosEmu: undefined interrupt 15h called!
+> >> > biosEmu/bios.int42: unknown function AH=3D0x0, AL=3D0x7, BL=3D0x0
+> >>
+> >> The above comes from some patches you added to the kernel ? You should
+> >> probably do the softboot in the firmware instead...
+> >
+> > Yes. I'm using the videoboot-2.6x.patch (this patch contain also the
+> > xf86emu from www.scitechsoft.com). With this pach the radeon card work
+> > properly with 2.6.12 kernel version. On the 2.6.27 kernel the "videoboo=
+t"
+> > fetch the bios from the video card and start them in the xf86emu.
+> >
+> > Can I initialize the video card in uboot too?
+>
+> Yes, indeed you can.  In a recent version of U-Boot, search for
+> 'CONFIG_BIOSEMU' in include/configs/*.  We tested this on a sequoia
+> board, so include/configs/sequoia.h should be a good start for this.
 
-The IRQFLAGS_SUPPORT is not mandatory for most tracers, tracing core
-has a special case for platforms w/o irqflags (which, by the way, has
-become useless as of the commit above).
+Thanks.
 
-This patch restores the old behaviour, and thus brings the tracing
-back on PPC32.
+I tried to include BIOSEMU and RADEON_FB in my u-boot. Bios emulator seems =
+to=20
+be properly loaded, but when u-boot attempt to read or write Radeon's=20
+registers, the board freezes.
 
-p.s.
-The IRQSOFF_TRACER (which is the only tracer that requires IRQFLAGS
-support) still depends on TRACE_IRQFLAGS_SUPPORT Kconfig symbol.
+What means exactly the value of "VIDEO_IO_OFFSET" in the config file?=20
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- kernel/trace/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+There is a u-boot's output when I init the VIDEO_IO_OFFSET with PCI's I/O b=
+ase=20
+address:
 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index ee70841..774aba7 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -63,7 +63,6 @@ config TRACING
- #
- config TRACING_SUPPORT
- 	bool
--	depends on TRACE_IRQFLAGS_SUPPORT
- 	depends on STACKTRACE_SUPPORT
- 	default y
- 
--- 
-1.5.6.5
+
+INFO : PCI0_IO : base - 0xd8000000 size - 1M bytes
+INFO : PCI0_MEM0: base - 0x80000000 size - 1024M bytes
+INFO : PCI0_MEM1: base - 0xc0000000 size - 128M bytes
+INFO : PCI0_MEM2: base - 0xc8000000 size - 128M bytes
+INFO : PCI0_MEM3: base - 0xd0000000 size - 128M bytes
+=2E....
+PCI Scan: Found Bus 0, Device 7, Function 0
+PCI Scan: Found Bus 0, Device 7, Function 1
+PCI Scan: Found Bus 0, Device 9, Function 0
+PCI Scan: Found Bus 0, Device 10, Function 0
+Video: ATI Radeon video card (1002, 5960) found @(0:7:0)
+videoboot: Booting PCI video card bus 0, function 0, device 7
+E 0000 0 F00P0F000NI00PMS0EG 0F00
+
+and after that follows board reset.
+
+Best regards.
+
+Eduard Fuchs
