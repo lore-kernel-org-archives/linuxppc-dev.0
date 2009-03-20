@@ -1,17 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1C90CDDE1D
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 09:02:37 +1100 (EST)
-Message-ID: <49C41278.6060801@grandegger.com>
-Date: Fri, 20 Mar 2009 23:02:32 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>, linuxppc-dev@ozlabs.org
-Subject: Re: powerpc/85xx: Add support for the "socrates" board (MPC8544)
-References: <49C26434.30302@grandegger.com>
-	<20090320041022.GB30527@yookeroo.seuss>
-In-Reply-To: <20090320041022.GB30527@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7E1E9DDE22
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 09:08:32 +1100 (EST)
+Subject: Re: [PATCH v2] powerpc: Add support for CoreInt delivery of
+	interrupts on MPIC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <051D5D14-4CD9-4138-879A-23DA2B02AB7F@kernel.crashing.org>
+References: <1236784730-616-1-git-send-email-galak@kernel.crashing.org>
+	<1237528109.25062.568.camel@pasglop>
+	<051D5D14-4CD9-4138-879A-23DA2B02AB7F@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sat, 21 Mar 2009 09:08:26 +1100
+Message-Id: <1237586906.25062.610.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,67 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Thu, Mar 19, 2009 at 04:26:44PM +0100, Wolfgang Grandegger wrote:
->> This patch adds support for the "socrates" board based on the MPC8544.
->> Supported are Ethernet, serial console, I2C, I2C-based RTC and
->> temperature sensors, NOR and NAND flash, PCI, USB, CAN and Lime
->> display controller.
->>
->> The multiplexing of FPGA interrupts onto PowerPC interrupt lines is
->> supported through our own fpga_pic interrupt controller driver.
->>
->> For example the SJA1000 controller is level low sensitive connected to
->> fpga_pic line 2 and is routed to the second (of three) irq lines to
->> the CPU:
+On Fri, 2009-03-20 at 06:47 -0500, Kumar Gala wrote:
+> On Mar 20, 2009, at 12:48 AM, Benjamin Herrenschmidt wrote:
 > 
-> A few minor device tree nits.
+> > On Wed, 2009-03-11 at 10:18 -0500, Kumar Gala wrote:
+> >> CoreInt provides a mechansim to deliver the IRQ vector directly
+> >> into the core on an interrupt (via the SPR EPR) rather than having
+> >> to go IACK on the PIC.  This is suppose to provide an improvment
+> >> in interrupt latency by reducing the time to get the IRQ vector.
+> >>
+> >> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> >> ---
+> >> * Fixed MPIC_GREG_GCONF_COREINT flag to be 0x60000000 as per spec  
+> >> and pointed about by Dave
+> >
+> > Are you sure ? That's 2 bits ...
 > 
->> +	soc8544@e0000000 {
->> +		#address-cells = <1>;
->> +		#size-cells = <1>;
->> +		device_type = "soc";
->> +
->> +		ranges = <0x00000000 0xe0000000 0x00100000>;
->> +		reg = <0xe0000000 0x00001000>;	// CCSRBAR 1M
->> +		bus-frequency = <0>;		// Filled in by U-Boot
->> +		compatible = "fsl,socrates-immr", "simple-bus";
+> Yeah.  We expanded the mode field to two bits (mask would be 0x60000000)
 > 
-> This should probably refer to 8544 instead of socrates.  Unless you
-> really do have a board-specific version of the SoC...
+> 0x00 = pass through (interrupts routed to IRQ0)
+> 0x01 = Mixed mode
+> 0x10 = reserved
+> 0x11 = External proxy / coreint
 
-OK, that should then be:
+Ah ok, that's a bit funny but should do. Maybe worth a comment though.
 
-   +		compatible = "fsl,mpc8544-immr", "simple-bus";
-
-It should always be with the prefix "mpc", I guess. But some of the
-following compatible names are without that prefix:
-
-$ grep -h '\-l2-cache-controller' *
-			compatible = "fsl,8540-l2-cache-controller";
-			compatible = "fsl,mpc8536-l2-cache-controller";
-			compatible = "fsl,8540-l2-cache-controller";
-			compatible = "fsl,8541-l2-cache-controller";
-			compatible = "fsl,8544-l2-cache-controller";
-			compatible = "fsl,8548-l2-cache-controller";
-			compatible = "fsl,8555-l2-cache-controller";
-			compatible = "fsl,8540-l2-cache-controller";
-			compatible = "fsl,8568-l2-cache-controller";
-			compatible = "fsl,mpc8572-l2-cache-controller";
-			compatible = "fsl,mpc8572-l2-cache-controller";
-			compatible = "fsl,mpc8572-l2-cache-controller";
-			compatible = "fsl,8548-l2-cache-controller";
-			compatible = "fsl,8560-l2-cache-controller";
-			compatible = "fsl,mpc8544-l2-cache-controller";
-			compatible = "fsl,mpc8544-l2-cache-controller";
-			compatible = "fsl,8540-l2-cache-controller";
-			compatible = "fsl,8540-l2-cache-controller";
-			compatible = "fsl,8540-l2-cache-controller";
-			compatible = "fsl,mpc8548-l2-cache-controller";
-			compatible = "fsl,mpc8548-l2-cache-controller";
-			compatible = "fsl,8540-l2-cache-controller";
-			compatible = "fsl,8540-l2-cache-controller";
-
-That's confusing.
-
-Wolfgang.
+Cheers,
+Ben.
