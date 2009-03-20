@@ -1,22 +1,20 @@
-Return-Path: <martyn.welch@gefanuc.com>
-Received: from exprod5og110.obsmtp.com (exprod5og110.obsmtp.com [64.18.0.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D3053DDE9F
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 20:38:32 +1100 (EST)
-Message-ID: <49C3640D.5040008@gefanuc.com>
-Date: Fri, 20 Mar 2009 09:38:21 +0000
-From: Martyn Welch <martyn.welch@gefanuc.com>
+Return-Path: <mhiramat@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 812BADDED8
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 21:53:59 +1100 (EST)
+Message-ID: <49C375B7.5090806@redhat.com>
+Date: Fri, 20 Mar 2009 06:53:43 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 4/4] powerpc/86xx: Move gianfar mdio nodes under
-	the	ethernet nodes
-References: <20090319180055.GA3155@oksana.dev.rtsoft.ru>
-	<20090319180151.GD6114@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090319180151.GD6114@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>
+To: ananth@in.ibm.com
+Subject: Re: [RFC][PATCH -tip 4/9] power: add kernel_trap_sp()
+References: <49C2B4BF.4080904@redhat.com> <1237527760.25062.567.camel@pasglop>
+	<20090320073334.GA10519@in.ibm.com>
+In-Reply-To: <20090320073334.GA10519@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+	linuxppc-dev@ozlabs.org, systemtap-ml <systemtap@sources.redhat.com>,
+	Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> Currently it doesn't matter where the mdio nodes are placed, but with
-> power management support (i.e. when sleep = <> properties will take
-> effect), mdio nodes placement will become important: mdio controller
-> is a part of the ethernet block, so the mdio nodes should be placed
-> correctly. Otherwise we may wrongly assume that MDIO controllers are
-> available during sleep.
+Ananth N Mavinakayanahalli wrote:
+> On Fri, Mar 20, 2009 at 04:42:40PM +1100, Benjamin Herrenschmidt wrote:
+>> On Thu, 2009-03-19 at 17:10 -0400, Masami Hiramatsu wrote:
+>>> Add kernel_trap_sp() on powerpc, based on systemtap's runtime/regs.h.
+>>>
+>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>> I haven't looked at the usage of it, but it's weird to have something
+>> call "kernel_trap_sp" that returns the -user- stack pointer... is
+>> this really what's expected here ?
 > 
-> Suggested-by: Scott Wood <scottwood@freescale.com>
-> Suggested-by: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  arch/powerpc/boot/dts/gef_ppc9a.dts        |   39 ++++---
->  arch/powerpc/boot/dts/gef_sbc310.dts       |   39 ++++---
->  arch/powerpc/boot/dts/gef_sbc610.dts       |   39 ++++---
->  arch/powerpc/boot/dts/mpc8641_hpcn.dts     |  157 +++++++++++++++-------------
->  arch/powerpc/boot/dts/sbc8641d.dts         |  156 +++++++++++++++-------------
->  arch/powerpc/platforms/86xx/gef_ppc9a.c    |    1 +
->  arch/powerpc/platforms/86xx/gef_sbc310.c   |    1 +
->  arch/powerpc/platforms/86xx/gef_sbc610.c   |    1 +
->  arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    1 +
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 +
->  arch/powerpc/platforms/86xx/sbc8641d.c     |    1 +
->  11 files changed, 237 insertions(+), 199 deletions(-)
+> In the current usage scenario, this gets called only with a pt_regs
+> snapshot from in kernel. user_stack_pointer() is a misnomer though;
+> all this macro needs is to return the stack pointer from the given
+> pt_regs.
+
+Indeed,
+I expect kernel_trap_sp() returns the top of stack from pt_regs in the kernel.
+Why I'm using user_stack_pointer() for kernel_trap_sp() is just that the
+definitions of both are same...
+
+Perhaps, should I define as below, even it is same as user_stack_pointer()?
+#define kernel_trap_sp(regs) ((regs)->gpr[1])
+
+Thank you,
+
 > 
-
-Tested on ppc9a. Other GE Fanuc boards look sane.
-
-Tested-by: Martyn Welch <martyn.welch@gefanuc.com>
-
-Martyn
+> Ananth
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 729849476
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
