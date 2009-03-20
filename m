@@ -1,22 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 7E514DDE1F
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 07:22:48 +1100 (EST)
-Date: Fri, 20 Mar 2009 23:22:47 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
-Message-ID: <20090320202247.GA30654@oksana.dev.rtsoft.ru>
-References: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
-	<20090320190428.GD6224@elte.hu>
-	<20090320193904.GA13707@oksana.dev.rtsoft.ru>
-	<20090320195743.GA25147@elte.hu>
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CD86BDDD1C
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 07:46:17 +1100 (EST)
+In-Reply-To: <20090320200740.GA32082@oksana.dev.rtsoft.ru>
+References: <OF20EA88BB.017079CD-ONC125757F.006C40A2-C125757F.006C646E@transmode.se>
+	<20090320200740.GA32082@oksana.dev.rtsoft.ru>
+To: avorontsov@ru.mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090320195743.GA25147@elte.hu>
-Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	linux-kernel@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Subject: Re: Fw: [PATCH] ucc_geth: Correct fixed_link OOPS.
+Message-ID: <OF9395F5D9.8C7241AA-ONC125757F.00714908-C125757F.0072183A@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Fri, 20 Mar 2009 21:46:13 +0100
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 20, 2009 at 08:57:43PM +0100, Ingo Molnar wrote:
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 20/03/2009 21:07:40:
 > 
-> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > On Fri, Mar 20, 2009 at 08:04:28PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> > > 
-> > > > commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean 
-> > > > up menu"), despite the "clean up" in its purpose, introduced 
-> > > > behavioural change for Kconfig symbols: we no longer able to 
-> > > > select tracing support on PPC32 (because IRQFLAGS_SUPPORT isn't 
-> > > > yet implemented).
-> > > 
-> > > Could you please solve this by implementing proper 
-> > > irqflag-tracing support? It's been available upstream for almost 
-> > > three years. It's needed for lockdep support as well, etc.
+> On Fri, Mar 20, 2009 at 08:43:56PM +0100, Joakim Tjernlund wrote:
+> > hmm, this mail didn't seem to reach the lists. Resending
 > > 
-> > Breaking things via clean up patches is an interesting method of 
-> > encouraging something to implement. ;-)
-> >
-> > Surely I'll look into implementing irqflags tracing, but 
-> > considering that no one ever needed this for almost three years, 
-> > [...]
+> >  Jocke
+> > ----- Forwarded by Joakim Tjernlund/Transmode on 20/03/2009 20:42 
+-----
+> > 
+> > From:
+> > Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > To:
+> > leoli@freescale.com, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+> > Cc:
+> > Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > Date:
+> > 20/03/2009 18:01
+> > Subject:
+> > [PATCH] ucc_geth: Correct fixed_link OOPS.
+> > 
+> > 
+> > 
+> > fixed_link(PHY less) mode will get you an NULL
+> > deference as it does not have a phy-handle.
+> > Correct by using already probed information.
+> > 
+> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > ---
+> > 
+> > The below fixes the problem and seems like the right thing to do.
+> > Can we have this in 2.6.29?
+> > 
+> >  drivers/net/ucc_geth.c |   17 +----------------
+> >  1 files changed, 1 insertions(+), 16 deletions(-)
+
+[SNIP]
+
 > 
-> Weird, there's no lockdep support?
+> This effectivly breaks boards where Gianfar is using UCC's MDIO
+> bus (i.e. breaks commit b1c4a9dddf09fe99b8f88252718ac5b357363dc4,
+> which is the cause of fixed-link breakage, btw). And, your patch
+> is line-wrapped and tabs are substituted by white spaces...
 
-*ashamed*: apparently no such support currently exist for PPC32. ;-)
+Yes, I noticed that afterwards. It is our "great" new mailsystem
+that gets in the way. I really need to find another mailsystem as
+Lotus/Domino gets in my way too often :(
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> 
+> I would suggest something along these lines (unfortunately
+> right now I can't test it on real HW, only compile-tested):
+
+Tested here, works fine for fixed-link PHYs, thanks.
+I left the 
+    priv->oldlink = 0;
+    priv->oldspeed = 0;
+    priv->oldduplex = -1;
+in though. Seemed like a good idea.
+
+Tested By: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+
+ Jocke
