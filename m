@@ -1,32 +1,20 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <dgibson@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D7285DDDF9
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 14:43:21 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n2K3hIhe025846
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 20:43:18 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n2K3hF6g029824
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 22:43:16 -0500 (CDT)
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2179CDDE2A
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 15:10:29 +1100 (EST)
+Date: Fri, 20 Mar 2009 15:10:22 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: powerpc/85xx: Add support for the "socrates" board (MPC8544)
+Message-ID: <20090320041022.GB30527@yookeroo.seuss>
+References: <49C26434.30302@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: suspend-to-mem on the mpc8349e-mitx-gp?
-Date: Fri, 20 Mar 2009 11:43:12 +0800
-Message-ID: <3A45394FD742FA419B760BB8D398F9ED29EB95@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20090319161101.GA2304@ld0162-tx32.am.freescale.net>
-References: <ffa0ad880903182246y4323e31bv6109fbf748858af0@mail.gmail.com>
-	<3A45394FD742FA419B760BB8D398F9ED29EAC6@zch01exm26.fsl.freescale.net>
-	<20090319161101.GA2304@ld0162-tx32.am.freescale.net>
-From: "Li Yang-R58472" <LeoLi@freescale.com>
-To: "Wood Scott-B07421" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Soohyung Cho <celius202@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49C26434.30302@grandegger.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,42 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Wood Scott-B07421=20
-> Sent: Friday, March 20, 2009 12:11 AM
-> To: Li Yang-R58472
-> Cc: Soohyung Cho; linuxppc-dev@ozlabs.org
-> Subject: Re: suspend-to-mem on the mpc8349e-mitx-gp?
->=20
-> On Thu, Mar 19, 2009 at 12:24:26AM -0700, Li Yang-R58472 wrote:
-> > > -----Original Message-----
-> > > From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org
-> > > [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]
-> > > On Behalf Of Soohyung Cho
-> > > Sent: Thursday, March 19, 2009 1:47 PM
-> > > To: linuxppc-dev@ozlabs.org; Wood Scott-B07421
-> > > Subject: suspend-to-mem on the mpc8349e-mitx-gp?
-> > >=20
-> > > Hello.
-> > >=20
-> > > I need to enable suspend-to-mem(deep sleep) on my=20
-> mpc8349e-mitx-gp=20
-> > > box.
-> > > When I send "mem" message to /sys/power/state, the box=20
-> seems to get=20
-> > > stop.
-> > > I think the box get stop when it executes suspend-asm.S codes.
-> > >=20
-> > > I know that the latest linux supports suspend-to-mem on the=20
-> > > mpc8313erdb box well.
-> > > Is it impossible to enable suspend-to-mem on the mpc8349e-mitx-gp?
-> >=20
-> > I don't think the MPC8349 hardware has the deep sleep functionality.
->=20
-> However, the code should treat "mem" as "standby" on chips=20
-> that don't support deep sleep.  What does the device tree=20
+On Thu, Mar 19, 2009 at 04:26:44PM +0100, Wolfgang Grandegger wrote:
+> This patch adds support for the "socrates" board based on the MPC8544.
+> Supported are Ethernet, serial console, I2C, I2C-based RTC and
+> temperature sensors, NOR and NAND flash, PCI, USB, CAN and Lime
+> display controller.
+> 
+> The multiplexing of FPGA interrupts onto PowerPC interrupt lines is
+> supported through our own fpga_pic interrupt controller driver.
+> 
+> For example the SJA1000 controller is level low sensitive connected to
+> fpga_pic line 2 and is routed to the second (of three) irq lines to
+> the CPU:
 
-Well, shouldn't the valid() callback reject unsupported states instead
-of covering up?
+A few minor device tree nits.
 
-- Leo
+> +	soc8544@e0000000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "soc";
+> +
+> +		ranges = <0x00000000 0xe0000000 0x00100000>;
+> +		reg = <0xe0000000 0x00001000>;	// CCSRBAR 1M
+> +		bus-frequency = <0>;		// Filled in by U-Boot
+> +		compatible = "fsl,socrates-immr", "simple-bus";
+
+This should probably refer to 8544 instead of socrates.  Unless you
+really do have a board-specific version of the SoC...
+
+[snip]
+> +		mdio@24520 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			compatible = "fsl,gianfar-mdio";
+> +			reg = <0x24520 0x20>;
+> +
+> +			phy0: ethernet-phy@0 {
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <0 1>;
+> +				reg = <0>;
+> +				device_type = "ethernet-phy";
+
+No device_type here.
+
+> +			};
+> +			phy1: ethernet-phy@1 {
+> +				interrupt-parent = <&mpic>;
+> +				interrupts = <0 1>;
+> +				reg = <1>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +			tbi0: tbi-phy@11 {
+> +				reg = <0x11>;
+> +				device_type = "tbi-phy";
+
+Or here.
+
+[snip]
+> +	localbus {
+> +		compatible = "fsl,socrates-localbus",
+> +		             "fsl,mpc85xx-localbus",
+> +		             "fsl,pq3-localbus";
+
+Is this bus controller part of the SoC?  If so, the first compatible
+string probably shouldn't be there (as for the soc/immr node itself).
+
+[snip[
+> +		display@2,0 {
+> +			compatible = "fujitsu,lime";
+
+This compat string looks slightly worryingly non-specific.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
