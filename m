@@ -1,18 +1,21 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-315.bluehost.com (outbound-mail-315.bluehost.com
-	[67.222.54.8]) by ozlabs.org (Postfix) with SMTP id 69138DDE0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 12:05:35 +1100 (EST)
-Message-ID: <49C2EA49.90907@dlasys.net>
-Date: Thu, 19 Mar 2009 20:58:49 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+Return-Path: <daniel.ng1234@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
+	by ozlabs.org (Postfix) with ESMTP id 98E0FDDE26
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 12:19:55 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g9so805985rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 18:19:54 -0700 (PDT)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org
-Subject: Re: Xilinx cygwin linux cross recommendations ?
-References: <49C2DC5D.6000701@dlasys.net>
-	<fa686aa40903191716wa0fa4f5r15fc9c5560468a20@mail.gmail.com>
-In-Reply-To: <fa686aa40903191716wa0fa4f5r15fc9c5560468a20@mail.gmail.com>
-Content-Type: text/plain; charset=iso-8859-1
-Reply-To: dhlii@dlasys.net
+In-Reply-To: <547eba1b0903190132pfd11ad5ld4b1bffb6dc22758@mail.gmail.com>
+References: <547eba1b0903180036m46f6ffc0g521a5081924a2613@mail.gmail.com>
+	<4206182445660643B9AEB8D4E55BBD0A02B9DDEEB3@HERMES2>
+	<547eba1b0903190132pfd11ad5ld4b1bffb6dc22758@mail.gmail.com>
+Date: Fri, 20 Mar 2009 12:19:54 +1100
+Message-ID: <547eba1b0903191819v5b03d38ci7a60839873e5bd66@mail.gmail.com>
+Subject: Re: spidev.c driver on the ppc8247 (kernel 2.6.27.19)
+From: Daniel Ng <daniel.ng1234@gmail.com>
+To: "Stepanov, Sergej" <Sergej.Stepanov@ids.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,44 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-    I have no experience with ELDK.
-    Have you used it ? Do you like it ?
-
-    When I started I mostly did a roll my own environment using crosstool.
-    I would have stuck to that except I can not get uclibc and it has
-not been updated in a long time.
-    Crosstool-ng did not support the ppc last time I looked.
-    Today I use buildroot - mostly just to build a toolchain - I have
-never been able to get it to do many of the other things it is capable of.
-
-    I am not particularly fond (serious understatement)  of "integrated
-solve all the problems of the world" environments, they rarely work, and
-you must think inside their box.
-   
-    I would be ecstatic with just a cygwin-linux-ppc-uclibc tool chain.
-
-   
-   
-   
-
-Grant Likely wrote:
-> On Thu, Mar 19, 2009 at 5:59 PM, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
->   
->>    Does anyone have experience sugestions for building ppc/linux apps
->> or even ppc kernels under windows.
->>     
+On Thu, Mar 19, 2009 at 7:32 PM, Daniel Ng <daniel.ng1234@gmail.com> wrote:
 >
-> I hear rumors that there is a Windows version of ELDK.
+> So, I tried to call spidev_probe() directly from the probe() function
+> of my SPI Controller driver. However in this case spidev_probe()
+> failed because its call to device_create_drvdata() failed with error
+> code ENODEV. Why would this be?
 >
->   
+> This is how I make the call from my SPI Controller driver:
+>
+> spidev_probe(to_spi_device(&ofdev->dev));
+>
+> And this is the relevant code in spidev_probe():
+>
+> dev =3D device_create_drvdata(spidev_class, &spi->dev, spidev->devt,
+> spidev, "spidev%d.%d",
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /*spi->master=
+->bus_num*/0, spi->chip_select);
 
+It looks like spidev_class was uninitialised because spidev_init() had
+not yet been called. To force spidev_init() to be called before my SPI
+Controller's driver initialisation, I just used:
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+subsys_initcall(spidev_init);
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+This seems to do the job...
