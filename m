@@ -1,20 +1,21 @@
-Return-Path: <posco.grubb@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id D2691DDDA1
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 00:27:10 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id j37so565017waf.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 06:27:09 -0700 (PDT)
-Date: Fri, 20 Mar 2009 22:27:05 +0900
-From: TOMARI Hisanobu <posco.grubb@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [Fwd: Re: IDE cable detection on Apple PowerBook]
-Message-Id: <20090320222705.1974aaeb.posco.grubb@gmail.com>
-In-Reply-To: <200903201240.30383.bzolnier@gmail.com>
-References: <1237530407.25062.569.camel@pasglop>
-	<200903201240.30383.bzolnier@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F2229DDE23
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 01:42:14 +1100 (EST)
+Message-ID: <49C3AB35.4080700@freescale.com>
+Date: Fri, 20 Mar 2009 09:41:57 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Li Yang-R58472 <LeoLi@freescale.com>
+Subject: Re: suspend-to-mem on the mpc8349e-mitx-gp?
+References: <3A45394FD742FA419B760BB8D398F9ED29EB95@zch01exm26.fsl.freescale.net>
+In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED29EB95@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Soohyung Cho <celius202@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Mar 2009 12:40:29 +0100
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-
-> Moreover the underlying issue is non-PMAC specific and asks for generic
-> resolution, please see:
+Li Yang-R58472 wrote:
+>> However, the code should treat "mem" as "standby" on chips 
+>> that don't support deep sleep.  What does the device tree 
 > 
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=12734#c13
-> 
-> for previous discussion.
-> 
-> In the very least case it should be a generic kernel parameter, i.e.
-> "ide_core.ignore_cables" and iff the current "ide_core.ignore_cable="
-> is not enough.  TOMARI, could please look into it?
-> 
-> Thanks,
-> Bart
+> Well, shouldn't the valid() callback reject unsupported states instead
+> of covering up?
 
-It works!
-As the internal IDE controller is detected as ide0, I passed
-"ide_core.ignore_cable=0" to the kernel, and the drive works in
-UDMA/100 mode.
-This method seems much cleaner way to solve the problem.
-Thank you, Bart, Ben and Anton.
+I don't think so, in this case.  The user is not asking for "sleep" or 
+deep sleep"; they are asking for a power state that meets the definition 
+of "standby" (which sleep does) or which meets the definition of "mem" 
+(which both sleep and deep sleep do).  When the user asks for "mem", we 
+provide the lowest power mode that qualifies.
 
-% dmesg |grep hda
-Kernel command line: root=/dev/hda4 ro ide_core.ignore_cable=0 
-hda: CORE_PATA, ATA DISK drive
-hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-hda: UDMA/100 mode selected
-hda: max request size: 512KiB
-hda: 252411904 sectors (129234 MB), CHS=16383/255/63
-hda: cache flushes supported
- hda: [mac] hda1 hda2 hda3 hda4 hda5 hda6 hda7
-XFS mounting filesystem hda4
-Ending clean XFS mount for filesystem: hda4
-Adding 846672k swap on /dev/hda5.  Priority:-1 extents:1 across:846672k
+I'm willing to change it if there's substantial existing practice to the 
+contrary, though.
 
--- 
-TOMARI Hisanobu <posco.grubb@gmail.com>
+-Scott
