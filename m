@@ -1,13 +1,32 @@
-Return-Path: <jk@bilbo.ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D7285DDDF9
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2009 14:43:21 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n2K3hIhe025846
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 20:43:18 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n2K3hF6g029824
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Mar 2009 22:43:16 -0500 (CDT)
 MIME-Version: 1.0
-Subject: [PATCH] powerpc/cell: fix iommu exception reporting
-Message-Id: <1237517195.409190.720454178196.1.gpush@pingu>
-To: Ben Herrenschmidt <benh@kernel.crashing.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Fri, 20 Mar 2009 13:46:35 +1100
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: suspend-to-mem on the mpc8349e-mitx-gp?
+Date: Fri, 20 Mar 2009 11:43:12 +0800
+Message-ID: <3A45394FD742FA419B760BB8D398F9ED29EB95@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20090319161101.GA2304@ld0162-tx32.am.freescale.net>
+References: <ffa0ad880903182246y4323e31bv6109fbf748858af0@mail.gmail.com>
+	<3A45394FD742FA419B760BB8D398F9ED29EAC6@zch01exm26.fsl.freescale.net>
+	<20090319161101.GA2304@ld0162-tx32.am.freescale.net>
+From: "Li Yang-R58472" <LeoLi@freescale.com>
+To: "Wood Scott-B07421" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Soohyung Cho <celius202@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,50 +36,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently, we will report a page fault as a segment fault, and report
-a segment fault as both a page and segment fault.
+> -----Original Message-----
+> From: Wood Scott-B07421=20
+> Sent: Friday, March 20, 2009 12:11 AM
+> To: Li Yang-R58472
+> Cc: Soohyung Cho; linuxppc-dev@ozlabs.org
+> Subject: Re: suspend-to-mem on the mpc8349e-mitx-gp?
+>=20
+> On Thu, Mar 19, 2009 at 12:24:26AM -0700, Li Yang-R58472 wrote:
+> > > -----Original Message-----
+> > > From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org
+> > > [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]
+> > > On Behalf Of Soohyung Cho
+> > > Sent: Thursday, March 19, 2009 1:47 PM
+> > > To: linuxppc-dev@ozlabs.org; Wood Scott-B07421
+> > > Subject: suspend-to-mem on the mpc8349e-mitx-gp?
+> > >=20
+> > > Hello.
+> > >=20
+> > > I need to enable suspend-to-mem(deep sleep) on my=20
+> mpc8349e-mitx-gp=20
+> > > box.
+> > > When I send "mem" message to /sys/power/state, the box=20
+> seems to get=20
+> > > stop.
+> > > I think the box get stop when it executes suspend-asm.S codes.
+> > >=20
+> > > I know that the latest linux supports suspend-to-mem on the=20
+> > > mpc8313erdb box well.
+> > > Is it impossible to enable suspend-to-mem on the mpc8349e-mitx-gp?
+> >=20
+> > I don't think the MPC8349 hardware has the deep sleep functionality.
+>=20
+> However, the code should treat "mem" as "standby" on chips=20
+> that don't support deep sleep.  What does the device tree=20
 
-Fix the SPF_P definition to be correct according to the iommu docs, and
-mask before comparing.
+Well, shouldn't the valid() callback reject unsupported states instead
+of covering up?
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
----
- arch/powerpc/platforms/cell/iommu.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index faabc3f..6bd4be5 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -72,7 +72,7 @@
- #define IOC_IO_ExcpStat_V		0x8000000000000000ul
- #define IOC_IO_ExcpStat_SPF_Mask	0x6000000000000000ul
- #define IOC_IO_ExcpStat_SPF_S		0x6000000000000000ul
--#define IOC_IO_ExcpStat_SPF_P		0x4000000000000000ul
-+#define IOC_IO_ExcpStat_SPF_P		0x2000000000000000ul
- #define IOC_IO_ExcpStat_ADDR_Mask	0x00000007fffff000ul
- #define IOC_IO_ExcpStat_RW_Mask		0x0000000000000800ul
- #define IOC_IO_ExcpStat_IOID_Mask	0x00000000000007fful
-@@ -242,17 +242,18 @@ static void tce_free_cell(struct iommu_table *tbl, long index, long npages)
- 
- static irqreturn_t ioc_interrupt(int irq, void *data)
- {
--	unsigned long stat;
-+	unsigned long stat, spf;
- 	struct cbe_iommu *iommu = data;
- 
- 	stat = in_be64(iommu->xlate_regs + IOC_IO_ExcpStat);
-+	spf = stat & IOC_IO_ExcpStat_SPF_Mask;
- 
- 	/* Might want to rate limit it */
- 	printk(KERN_ERR "iommu: DMA exception 0x%016lx\n", stat);
- 	printk(KERN_ERR "  V=%d, SPF=[%c%c], RW=%s, IOID=0x%04x\n",
- 	       !!(stat & IOC_IO_ExcpStat_V),
--	       (stat & IOC_IO_ExcpStat_SPF_S) ? 'S' : ' ',
--	       (stat & IOC_IO_ExcpStat_SPF_P) ? 'P' : ' ',
-+	       (spf == IOC_IO_ExcpStat_SPF_S) ? 'S' : ' ',
-+	       (spf == IOC_IO_ExcpStat_SPF_P) ? 'P' : ' ',
- 	       (stat & IOC_IO_ExcpStat_RW_Mask) ? "Read" : "Write",
- 	       (unsigned int)(stat & IOC_IO_ExcpStat_IOID_Mask));
- 	printk(KERN_ERR "  page=0x%016lx\n",
+- Leo
