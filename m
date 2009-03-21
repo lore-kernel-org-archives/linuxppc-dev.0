@@ -1,18 +1,18 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 45997DDE06
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 07:28:24 +1100 (EST)
-Date: Sat, 21 Mar 2009 13:28:11 -0700 (PDT)
-Message-Id: <20090321.132811.142453736.davem@davemloft.net>
-To: galak@kernel.crashing.org
-Subject: Re: [PATCH -next] gianfar: Fix build with CONFIG_PM enabled
+	by ozlabs.org (Postfix) with ESMTP id 14AF2DDE1C
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 07:30:29 +1100 (EST)
+Date: Sat, 21 Mar 2009 13:30:16 -0700 (PDT)
+Message-Id: <20090321.133016.135139160.davem@davemloft.net>
+To: afleming@freescale.com
+Subject: Re: [PATCH -next] fsl_pq_mdio: Revive Gianfar TBI PHY support
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <DA082A7B-8C8A-47A9-9B50-143AF6A27F18@kernel.crashing.org>
-References: <20090319151217.GA11465@oksana.dev.rtsoft.ru>
-	<DA082A7B-8C8A-47A9-9B50-143AF6A27F18@kernel.crashing.org>
+In-Reply-To: <5D5BAD65-6ED3-4B07-9106-7DD2A715B6BA@freescale.com>
+References: <20090319155232.GA5419@oksana.dev.rtsoft.ru>
+	<5D5BAD65-6ED3-4B07-9106-7DD2A715B6BA@freescale.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, afleming@freescale.com, linuxppc-dev@ozlabs.org
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,17 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Thu, 19 Mar 2009 10:16:26 -0500
+From: Andy Fleming <afleming@freescale.com>
+Date: Thu, 19 Mar 2009 10:56:59 -0500
 
 > 
-> On Mar 19, 2009, at 10:12 AM, Anton Vorontsov wrote:
+> On Mar 19, 2009, at 10:52 AM, Anton Vorontsov wrote:
 > 
-> > commit 4826857f1bf07f9c0f1495e9b05d125552c88a85 ("gianfar: pass the
-> > proper dev to DMA ops") introduced this build breakage:
-...
+> > commit 1577ecef766650a57fceb171acee2b13cbfaf1d3 ("netdev: Merge UCC
+> > and gianfar MDIO bus drivers") broke the TSEC TBI PHY support: the
+ ...
 > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > 
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> Acked-by: Andy Fleming <afleming@freescale.com>
 
-Applied, thanks.
+Applied
