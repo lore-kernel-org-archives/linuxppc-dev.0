@@ -1,22 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 4F566DDDA9
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 11:45:08 +1100 (EST)
-Date: Sat, 21 Mar 2009 03:45:06 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: yamazaki <yamazaki-seiji@jcom.home.ne.jp>
-Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
-Message-ID: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
-References: <20090320224330.GA23390@oksana.dev.rtsoft.ru>
-	<200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
-Cc: sdhci-devel@list.drzeus.cx, Arnd Bergmann <arnd@arndb.de>,
-	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
-	Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <srostedt@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 9B83EDDD0C
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 14:10:23 +1100 (EST)
+Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
+From: Steven Rostedt <srostedt@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090320195743.GA25147@elte.hu>
+References: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
+	<20090320190428.GD6224@elte.hu>
+	<20090320193904.GA13707@oksana.dev.rtsoft.ru>
+	<20090320195743.GA25147@elte.hu>
+Content-Type: text/plain
+Date: Fri, 20 Mar 2009 23:09:58 -0400
+Message-Id: <1237604998.17367.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,44 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Mar 21, 2009 at 09:15:25AM +0900, yamazaki wrote:
-> Hi 
+
+Ug, My Red Hat email was not being updated. I totally missed this
+thread.
+
+On Fri, 2009-03-20 at 20:57 +0100, Ingo Molnar wrote:
+> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> Thank you for your reply.
-> I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
-> which is probably new product.
+> > On Fri, Mar 20, 2009 at 08:04:28PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > > 
+> > > > commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean 
+> > > > up menu"), despite the "clean up" in its purpose, introduced 
+> > > > behavioural change for Kconfig symbols: we no longer able to 
+> > > > select tracing support on PPC32 (because IRQFLAGS_SUPPORT isn't 
+> > > > yet implemented).
+> > > 
+> > > Could you please solve this by implementing proper 
+> > > irqflag-tracing support? It's been available upstream for almost 
+> > > three years. It's needed for lockdep support as well, etc.
+> > 
+> > Breaking things via clean up patches is an interesting method of 
+> > encouraging something to implement. ;-)
+> >
+> > Surely I'll look into implementing irqflags tracing, but 
+> > considering that no one ever needed this for almost three years, 
+> > [...]
+> 
+> Weird, there's no lockdep support?
 
-Ah, then it must be connected via MPC8347's localbus.
+I've discussed this with several people before. lockdep exists for
+PPC64, but apparently it does not work for PPC32. There's been ongoing
+work in this area, but unfortunately, nothing stable has come out of it.
 
-Well, then you need 2.6.29-rcX kernels, for example
-http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
-is suitable.
+I believe Dale was the last one to be working on this.
 
-Untar it and apply the patches (they'll apply fine on that
-kernel). Then you'll need some device tree additions for
-your MPC8347 board, something like this:
-
-        localbus@e0005000 {
-                #address-cells = <2>;
-                #size-cells = <1>;
-                compatible = "fsl,mpc8347-localbus",
-                             "fsl,pq2pro-localbus";
-                reg = <0xe0005000 0xd8>;
-                ranges = <0x1 0x0 0xf0000000 0x1000>;
-		// ^^ change the 0xf0000000 to the actual address
-                sdhci@1,0 {
-                        compatible = "ricoh,r5c807", "generic-sdhci";
-                        reg = <0x1 0x0 0x1000>;
-                        interrupts = <ricoh-interrupt-here 0x8>;
-                        interrupt-parent = <&ipic>;
-                        // if needed, clock-frequency = <freq-in-HZ-here>;
-                };
-        };
-
-Note that I'm not sure what endiannes you'll get when connecting
-the ricoh chip to the big-endinan host...
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+-- Steve
