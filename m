@@ -1,15 +1,16 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id 47111DDF9E
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 09:28:27 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so1928968wfg.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 15:28:26 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTP id B143FDDF31
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 09:28:28 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1929047wfg.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 15:28:27 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2 01/13] net: fix fec_mpc52xx driver to use net_device_ops
+Subject: [PATCH v2 02/13] of: add of_parse_phandle() helper for parsing
+	phandle properties
 To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, olof@lixom.net
-Date: Sat, 21 Mar 2009 16:28:16 -0600
-Message-ID: <20090321222815.20493.68683.stgit@localhost.localdomain>
+Date: Sat, 21 Mar 2009 16:28:22 -0600
+Message-ID: <20090321222821.20493.53188.stgit@localhost.localdomain>
 In-Reply-To: <20090321222047.20493.87335.stgit@localhost.localdomain>
 References: <20090321222047.20493.87335.stgit@localhost.localdomain>
 MIME-Version: 1.0
@@ -24,116 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Henk Stegeman <henk.stegeman@gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Fix fec_mpc52xx driver to use net_device_ops and to be careful not to
-dereference phy_device if a phy has not yet been connected.
+of_parse_phandle() is a helper function to read and parse a phandle
+property and return a pointer to the resulting device_node.
 
-Waiting for a signed-off-by line from Henk on this one
-
-CC: Henk Stegeman <henk.stegeman@gmail.com>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+CC: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- drivers/net/fec_mpc52xx.c |   47 ++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 36 insertions(+), 11 deletions(-)
+ drivers/of/base.c  |   24 ++++++++++++++++++++++++
+ include/linux/of.h |    3 +++
+ 2 files changed, 27 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index 049b0a7..3d55f9a 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -847,24 +847,40 @@ static void mpc52xx_fec_get_drvinfo(struct net_device *dev,
- static int mpc52xx_fec_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+
-+	if (!priv->phydev)
-+		return -ENODEV;
-+
- 	return phy_ethtool_gset(priv->phydev, cmd);
- }
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index cd17092..104b8c0 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -494,6 +494,30 @@ int of_modalias_node(struct device_node *node, char *modalias, int len)
+ EXPORT_SYMBOL_GPL(of_modalias_node);
  
- static int mpc52xx_fec_set_settings(struct net_device *dev, struct ethtool_cmd *cmd)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
+ /**
++ * of_parse_phandle - Resolve a phandle property to a device_node pointer
++ * @np: Pointer to device node holding phandle property
++ * @phandle_name: Name of property holding a phandle value
++ * @index: For properties holding a table of phandles, this is the index into
++ *         the table
++ *
++ * Returns the device_node pointer with refcount incremented.  Use
++ * of_node_put() on it when done.
++ */
++struct device_node *
++of_parse_phandle(struct device_node *np, const char *phandle_name, int index)
++{
++	const phandle *phandle;
++	int size;
 +
-+	if (!priv->phydev)
-+		return -ENODEV;
++	phandle = of_get_property(np, phandle_name, &size);
++	if ((!phandle) || (size < sizeof(*phandle) * (index + 1)))
++		return NULL;
 +
- 	return phy_ethtool_sset(priv->phydev, cmd);
- }
- 
- static u32 mpc52xx_fec_get_msglevel(struct net_device *dev)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+	
-+	if (!priv->phydev)
-+		return 0;
++	return of_find_node_by_phandle(phandle[index]);
++}
++EXPORT_SYMBOL(of_parse_phandle);
 +
- 	return priv->msg_enable;
- }
- 
- static void mpc52xx_fec_set_msglevel(struct net_device *dev, u32 level)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+
-+	if (!priv->phydev)
-+		return;
-+
- 	priv->msg_enable = level;
- }
- 
-@@ -882,12 +898,31 @@ static int mpc52xx_fec_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
- 
-+	if (!priv->phydev)
-+		return -ENODEV;
-+
- 	return mpc52xx_fec_phy_mii_ioctl(priv, if_mii(rq), cmd);
- }
- 
- /* ======================================================================== */
- /* OF Driver                                                                */
- /* ======================================================================== */
-+static const struct net_device_ops mpc52xx_fec_netdev_ops = {
-+	.ndo_open               = mpc52xx_fec_open,
-+	.ndo_stop               = mpc52xx_fec_close,
-+	.ndo_start_xmit         = mpc52xx_fec_hard_start_xmit,
-+	.ndo_tx_timeout         = mpc52xx_fec_tx_timeout,
-+	.ndo_get_stats          = mpc52xx_fec_get_stats,
-+	.ndo_set_multicast_list = mpc52xx_fec_set_multicast_list,
-+	.ndo_validate_addr      = eth_validate_addr,
-+	.ndo_set_mac_address    = mpc52xx_fec_set_mac_address,
-+	.ndo_do_ioctl           = mpc52xx_fec_ioctl,
-+
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	.ndo_poll_controller     = mpc52xx_fec_poll_controller,
-+#endif
-+};
-+
- 
- static int __devinit
- mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
-@@ -929,20 +964,10 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 		return -EBUSY;
- 
- 	/* Init ether ndev with what we have */
--	ndev->open		= mpc52xx_fec_open;
--	ndev->stop		= mpc52xx_fec_close;
--	ndev->hard_start_xmit	= mpc52xx_fec_hard_start_xmit;
--	ndev->do_ioctl		= mpc52xx_fec_ioctl;
- 	ndev->ethtool_ops	= &mpc52xx_fec_ethtool_ops;
--	ndev->get_stats		= mpc52xx_fec_get_stats;
--	ndev->set_mac_address	= mpc52xx_fec_set_mac_address;
--	ndev->set_multicast_list = mpc52xx_fec_set_multicast_list;
--	ndev->tx_timeout	= mpc52xx_fec_tx_timeout;
- 	ndev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
- 	ndev->base_addr		= mem.start;
--#ifdef CONFIG_NET_POLL_CONTROLLER
--	ndev->poll_controller = mpc52xx_fec_poll_controller;
--#endif
-+	ndev->netdev_ops = &mpc52xx_fec_netdev_ops;
- 
- 	priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are free for now */
- 
++/**
+  * of_parse_phandles_with_args - Find a node pointed by phandle in a list
+  * @np:		pointer to a device tree node containing a list
+  * @list_name:	property name that contains a list
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 6a7efa2..7be2d10 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -77,6 +77,9 @@ extern int of_n_size_cells(struct device_node *np);
+ extern const struct of_device_id *of_match_node(
+ 	const struct of_device_id *matches, const struct device_node *node);
+ extern int of_modalias_node(struct device_node *node, char *modalias, int len);
++extern struct device_node *of_parse_phandle(struct device_node *np,
++					    const char *phandle_name,
++					    int index);
+ extern int of_parse_phandles_with_args(struct device_node *np,
+ 	const char *list_name, const char *cells_name, int index,
+ 	struct device_node **out_node, const void **out_args);
