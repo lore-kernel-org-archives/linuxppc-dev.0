@@ -1,20 +1,25 @@
-Return-Path: <yamazaki-seiji@jcom.home.ne.jp>
-Received: from smtp11.m3.home.ne.jp (smtp11.m3.home.ne.jp [220.152.44.17])
-	by ozlabs.org (Postfix) with ESMTP id A3A1CDDE11
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 18:46:06 +1100 (EST)
-Message-Id: <200903210747.AA00743@cj3020122-b.jcom.home.ne.jp>
-From: yamazaki <yamazaki-seiji@jcom.home.ne.jp>
-Date: Sat, 21 Mar 2009 16:47:47 +0900
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
-In-Reply-To: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
-References: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A9351DDDF3
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 03:18:32 +1100 (EST)
+Date: Sat, 21 Mar 2009 17:18:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>,
+	Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
+Message-ID: <20090321161814.GC11183@elte.hu>
+References: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
+	<20090320190428.GD6224@elte.hu>
+	<20090320193904.GA13707@oksana.dev.rtsoft.ru>
+	<20090320195743.GA25147@elte.hu>
+	<20090320202247.GA30654@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: sdhci-devel@list.drzeus.cx, Arnd Bergmann <arnd@arndb.de>,
-	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
-	Pierre Ossman <drzeus-sdhci@drzeus.cx>
+In-Reply-To: <20090320202247.GA30654@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi 
 
-Thank you for your reply again.
+* Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
->Ah, then it must be connected via MPC8347's localbus.
+> On Fri, Mar 20, 2009 at 08:57:43PM +0100, Ingo Molnar wrote:
+> > 
+> > * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > 
+> > > On Fri, Mar 20, 2009 at 08:04:28PM +0100, Ingo Molnar wrote:
+> > > > 
+> > > > * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > > > 
+> > > > > commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean 
+> > > > > up menu"), despite the "clean up" in its purpose, introduced 
+> > > > > behavioural change for Kconfig symbols: we no longer able to 
+> > > > > select tracing support on PPC32 (because IRQFLAGS_SUPPORT isn't 
+> > > > > yet implemented).
+> > > > 
+> > > > Could you please solve this by implementing proper 
+> > > > irqflag-tracing support? It's been available upstream for almost 
+> > > > three years. It's needed for lockdep support as well, etc.
+> > > 
+> > > Breaking things via clean up patches is an interesting method of 
+> > > encouraging something to implement. ;-)
+> > >
+> > > Surely I'll look into implementing irqflags tracing, but 
+> > > considering that no one ever needed this for almost three years, 
+> > > [...]
+> > 
+> > Weird, there's no lockdep support?
+> 
+> *ashamed*: apparently no such support currently exist for PPC32. ;-)
 
-That's right.
+Hm, do all the tracers even compile on ppc32 with your patch?
 
-I will try it,and I inform them of the result. 
+We had periodic build failures on weird, unmaintained architectures 
+that had no irqflags-tracing support and hence didnt know the 
+raw_irqs_save/restore primitives ...
 
->On Sat, Mar 21, 2009 at 09:15:25AM +0900, yamazaki wrote:
->> Hi 
->> 
->> Thank you for your reply.
->> I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
->> which is probably new product.
->
->Ah, then it must be connected via MPC8347's localbus.
->
->Well, then you need 2.6.29-rcX kernels, for example
->http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
->is suitable.
->
->Untar it and apply the patches (they'll apply fine on that
->kernel). Then you'll need some device tree additions for
->your MPC8347 board, something like this:
->
->        localbus@e0005000 {
->                #address-cells = <2>;
->                #size-cells = <1>;
->                compatible = "fsl,mpc8347-localbus",
->                             "fsl,pq2pro-localbus";
->                reg = <0xe0005000 0xd8>;
->                ranges = <0x1 0x0 0xf0000000 0x1000>;
->		// ^^ change the 0xf0000000 to the actual address
->                sdhci@1,0 {
->                        compatible = "ricoh,r5c807", "generic-sdhci";
->                        reg = <0x1 0x0 0x1000>;
->                        interrupts = <ricoh-interrupt-here 0x8>;
->                        interrupt-parent = <&ipic>;
->                        // if needed, clock-frequency = <freq-in-HZ-here>;
->                };
->        };
->
->Note that I'm not sure what endiannes you'll get when connecting
->the ricoh chip to the big-endinan host...
->
->-- 
->Anton Vorontsov
->email: cbouatmailru@gmail.com
->irc://irc.freenode.net/bd2
+I'm not trying to make things more difficult for you (and we can 
+apply your patch if it builds fine and does not cause problems 
+elsewhere), but there were some real downsides to not having proper 
+irq APIs ...
 
-----
-yamazaki-seiji@jcom.home.ne.jp
+	Ingo
