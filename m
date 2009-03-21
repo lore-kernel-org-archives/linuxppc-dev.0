@@ -1,29 +1,18 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD70DDDE00
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 03:46:19 +1100 (EST)
-Date: Sat, 21 Mar 2009 17:46:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
-Message-ID: <20090321164604.GL11183@elte.hu>
-References: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
-	<20090320190428.GD6224@elte.hu>
-	<20090320193904.GA13707@oksana.dev.rtsoft.ru>
-	<20090320195743.GA25147@elte.hu>
-	<20090320202247.GA30654@oksana.dev.rtsoft.ru>
-	<20090321161814.GC11183@elte.hu>
-	<alpine.DEB.2.00.0903211230580.13615@gandalf.stny.rr.com>
-	<20090321163328.GH11183@elte.hu>
-	<alpine.DEB.2.00.0903211239170.13615@gandalf.stny.rr.com>
-	<alpine.DEB.2.00.0903211242530.13615@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.00.0903211242530.13615@gandalf.stny.rr.com>
-Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
-	linux-kernel@vger.kernel.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 45997DDE06
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 07:28:24 +1100 (EST)
+Date: Sat, 21 Mar 2009 13:28:11 -0700 (PDT)
+Message-Id: <20090321.132811.142453736.davem@davemloft.net>
+To: galak@kernel.crashing.org
+Subject: Re: [PATCH -next] gianfar: Fix build with CONFIG_PM enabled
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <DA082A7B-8C8A-47A9-9B50-143AF6A27F18@kernel.crashing.org>
+References: <20090319151217.GA11465@oksana.dev.rtsoft.ru>
+	<DA082A7B-8C8A-47A9-9B50-143AF6A27F18@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, afleming@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,26 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Thu, 19 Mar 2009 10:16:26 -0500
 
 > 
-> On Sat, 21 Mar 2009, Steven Rostedt wrote:
-> > 
-> > Since we know that's not an issue with PPC32, perhaps we should add (I 
-> > hate to do this)...
-> > 
-> > 
-> > 	depends on TRACE_IRQFLAGS_SUPPORT || PPC32
-> > 
-> > And document that the "|| PPC32" should go when PowerPC32 gets its act
-> > together.  :-/
+> On Mar 19, 2009, at 10:12 AM, Anton Vorontsov wrote:
 > 
-> Note, the only tracer broken on PPC32 is the IRQSOFF tracer, and 
-> that already depends on TRACE_IRQFLAGS_SUPPORT.
+> > commit 4826857f1bf07f9c0f1495e9b05d125552c88a85 ("gianfar: pass the
+> > proper dev to DMA ops") introduced this build breakage:
+...
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> 
+> Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-Ok, that's fine with me too. Perhaps we could add a TRACING_SUPPORT 
-thing that architectures can enable - but it's probably overkill in 
-this case.
-
-	Ingo
+Applied, thanks.
