@@ -1,23 +1,18 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 6906EDDE26
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 09:00:36 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 9so933849ywe.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 15:00:34 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <fa686aa40903101013j2324e8acw18830c930e12ae46@mail.gmail.com>
-References: <ae4f76fd0902180241s28458450hd91ebf8da94ceb53@mail.gmail.com>
-	<20090218.134852.118040610.davem@davemloft.net>
-	<ae4f76fd0902190145r7ed5fadbwfca18c97dbfc9ed1@mail.gmail.com>
-	<fa686aa40903101013j2324e8acw18830c930e12ae46@mail.gmail.com>
-Date: Sat, 21 Mar 2009 16:00:34 -0600
-Message-ID: <fa686aa40903211500s1cfbc599lc2a51a6aeca34396@mail.gmail.com>
-Subject: Re: net_device_ops support in bridging and fec_mpc52xx.c
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id A19C9DDE25
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 09:28:15 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1928968wfg.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 15:28:14 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Henk Stegeman <henk.stegeman@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, bridge@osdl.org, Jeff Garzik <jgarzik@pobox.com>,
-	netdev@vger.kernel.org
+Subject: [PATCH v2 00/13] Rework network drivers to use of_mdio common code
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, olof@lixom.net
+Date: Sat, 21 Mar 2009 16:28:10 -0600
+Message-ID: <20090321222047.20493.87335.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: afleming@freescale.com, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,312 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Henk,
+This series reworks some of the phylib code and adds of_mdio helper
+functions to make it easier for device drivers to retrieve the PHY
+configuration by reading the OF device tree.
 
-At the very least, I still need a signed-off-by: line from you on this one.
+Most of these changes have been only compile tested, but not booted on
+real hardware.  Exceptions are mpc52xx and ll_temac which have been tested,
+and pasemi which hasn't even been compile tested because my 64bit
+environment is broken at the moment.
 
-g.
+For those with access to hardware, please test and provide me with feedback.
 
-On Tue, Mar 10, 2009 at 11:13 AM, Grant Likely
-<grant.likely@secretlab.ca> wrote:
-> Hi Henk,
->
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
->
-> Can you please repost with a blurb for the commit description and your
-> signed-off-by line? =A0The blub below makes sense in the context of this
-> mailing list thread, but it won't be very useful for someone looking
-> at the commit message in git. =A0Also, your patch is line-wrap damaged
-> (cut and paste into your mail client doesn't usually work) and has
-> inconsistent whitespace (run it through scripts/checkpatch.pl).
->
-> Jeff, after Henk provides his s-o-b line, do you want to pick it up,
-> or should I merge it through my mpc52xx powerpc tree (via benh).
->
-> Thanks,
-> g.
->
-> On Thu, Feb 19, 2009 at 3:45 AM, Henk Stegeman <henk.stegeman@gmail.com> =
-wrote:
->> I must have made a mistake when I tested the previous patch, I
->> discovered later it still had errors:
->> - I had accidentally removed the base address in the fec_mpc52xx driver.
->> - The priv->phydev pointer was sometimes not initialized (NULL) but
->> still passed by the fec_mpc52xx driver, this pointer is then used
->> unchecked by the eth_tool_* functions (used by bridging to determine
->> port priority). As far as I see this depends on whether
->> mpc52xx_fec_open (or mpc52xx_fec_close) is called which in turn call
->> mpc52xx_init_phy to initialize priv->phydev. My work around checks the
->> priv->phydev pointer in the fec_mpc52xx driver and returns -ENODEV to
->> indicate there's no physical device. Big chance this is not the right
->> way to handle the problem, but it works, hopefully someone with some
->> more fundamental Linux network driver experience can pick this up or
->> give me some hints on this.
->>
->> At least bridging now works on my board in combination with the
->> fec_mpc52xx driver.
->>
->> ifconfig eth0 0.0.0.0 down
->> ifconfig eth1 0.0.0.0 down
->> brctl addbr br0
->> brctl setfd br0 0
->> brctl stp br0 off
->> ifconfig br0 192.168.1.30 down
->> ifconfig br0 up
->> brctl addif br0 eth0
->> ifconfig eth0 up
->> brctl addif br0 eth1
->> ifconfig eth1 up
->>
->>
->> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
->> index cd8e98b..e228973 100644
->> --- a/drivers/net/fec_mpc52xx.c
->> +++ b/drivers/net/fec_mpc52xx.c
->> @@ -847,24 +847,40 @@ static void mpc52xx_fec_get_drvinfo(struct
->> net_device *dev,
->> =A0static int mpc52xx_fec_get_settings(struct net_device *dev, struct
->> ethtool_cmd *cmd)
->> =A0{
->> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
->> +
->> + =A0 =A0 =A0 if (!priv->phydev)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
->> +
->> =A0 =A0 =A0 =A0return phy_ethtool_gset(priv->phydev, cmd);
->> =A0}
->>
->> =A0static int mpc52xx_fec_set_settings(struct net_device *dev, struct
->> ethtool_cmd *cmd)
->> =A0{
->> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
->> +
->> + =A0 =A0 =A0 if (!priv->phydev)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
->> +
->> =A0 =A0 =A0 =A0return phy_ethtool_sset(priv->phydev, cmd);
->> =A0}
->>
->> =A0static u32 mpc52xx_fec_get_msglevel(struct net_device *dev)
->> =A0{
->> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
->> +
->> + =A0 =A0 =A0 if (!priv->phydev)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
->> +
->> =A0 =A0 =A0 =A0return priv->msg_enable;
->> =A0}
->>
->> =A0static void mpc52xx_fec_set_msglevel(struct net_device *dev, u32 leve=
-l)
->> =A0{
->> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
->> +
->> + =A0 =A0 =A0 if (!priv->phydev)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
->> +
->> =A0 =A0 =A0 =A0priv->msg_enable =3D level;
->> =A0}
->>
->> @@ -882,12 +898,31 @@ static int mpc52xx_fec_ioctl(struct net_device
->> *dev, struct ifreq *rq, int cmd)
->> =A0{
->> =A0 =A0 =A0 =A0struct mpc52xx_fec_priv *priv =3D netdev_priv(dev);
->>
->> + =A0 =A0 =A0 if (!priv->phydev)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
->> +
->> =A0 =A0 =A0 =A0return mpc52xx_fec_phy_mii_ioctl(priv, if_mii(rq), cmd);
->> =A0}
->>
->> =A0/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
- */
->> =A0/* OF Driver =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
->> =A0/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
- */
->> +static const struct net_device_ops mpc52xx_fec_netdev_ops =3D {
->> + =A0 =A0 =A0 .ndo_open =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_open=
-,
->> + =A0 =A0 =A0 .ndo_stop =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_clos=
-e,
->> + =A0 =A0 =A0 .ndo_start_xmit =A0 =A0 =A0 =A0 =3D mpc52xx_fec_hard_start=
-_xmit,
->> + =A0 =A0 =A0 .ndo_tx_timeout =A0 =A0 =A0 =A0 =3D mpc52xx_fec_tx_timeout=
-,
->> + =A0 =A0 =A0 .ndo_get_stats =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_get_stat=
-s,
->> + =A0 =A0 =A0 .ndo_set_multicast_list =3D mpc52xx_fec_set_multicast_list=
-,
->> + =A0 =A0 =A0 .ndo_validate_addr =A0 =A0 =A0=3D eth_validate_addr,
->> + =A0 =A0 =A0 .ndo_set_mac_address =A0 =A0=3D mpc52xx_fec_set_mac_addres=
-s,
->> + =A0 =A0 =A0 .ndo_do_ioctl =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_ioctl,
->> +
->> +#ifdef CONFIG_NET_POLL_CONTROLLER
->> + =A0 =A0 =A0 .ndo_poll_controller =A0 =A0 =3D mpc52xx_fec_poll_controll=
-er,
->> +#endif
->> +};
->> +
->>
->> =A0static int __devinit
->> =A0mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *ma=
-tch)
->> @@ -929,20 +964,10 @@ mpc52xx_fec_probe(struct of_device *op, const
->> struct of_device_id *match)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EBUSY;
->>
->> =A0 =A0 =A0 =A0/* Init ether ndev with what we have */
->> - =A0 =A0 =A0 ndev->open =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_open=
-;
->> - =A0 =A0 =A0 ndev->stop =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_clos=
-e;
->> - =A0 =A0 =A0 ndev->hard_start_xmit =A0 =3D mpc52xx_fec_hard_start_xmit;
->> - =A0 =A0 =A0 ndev->do_ioctl =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_ioctl;
->> =A0 =A0 =A0 =A0ndev->ethtool_ops =A0 =A0 =A0 =3D &mpc52xx_fec_ethtool_op=
-s;
->> - =A0 =A0 =A0 ndev->get_stats =A0 =A0 =A0 =A0 =3D mpc52xx_fec_get_stats;
->> - =A0 =A0 =A0 ndev->set_mac_address =A0 =3D mpc52xx_fec_set_mac_address;
->> - =A0 =A0 =A0 ndev->set_multicast_list =3D mpc52xx_fec_set_multicast_lis=
-t;
->> - =A0 =A0 =A0 ndev->tx_timeout =A0 =A0 =A0 =A0=3D mpc52xx_fec_tx_timeout=
-;
->> =A0 =A0 =A0 =A0ndev->watchdog_timeo =A0 =A0=3D FEC_WATCHDOG_TIMEOUT;
->> =A0 =A0 =A0 =A0ndev->base_addr =A0 =A0 =A0 =A0 =3D mem.start;
->> -#ifdef CONFIG_NET_POLL_CONTROLLER
->> - =A0 =A0 =A0 ndev->poll_controller =3D mpc52xx_fec_poll_controller;
->> -#endif
->> + =A0 =A0 =A0 ndev->netdev_ops =3D &mpc52xx_fec_netdev_ops;
->>
->> =A0 =A0 =A0 =A0priv->t_irq =3D priv->r_irq =3D ndev->irq =3D NO_IRQ; /* =
-IRQ are free for now */
->>
->>
->>
->> On Wed, Feb 18, 2009 at 10:48 PM, David Miller <davem@davemloft.net> wro=
-te:
->>> From: Henk Stegeman <henk.stegeman@gmail.com>
->>> Date: Wed, 18 Feb 2009 11:41:14 +0100
->>>
->>> Please CC: netdev, now added, on all networking reports and patches.
->>>
->>> Thank you.
->>>
->>>> I discovered the hard way that because linux bridging uses
->>>> net_device_ops, bridging only works with network drivers that publish
->>>> their device operations trough net_device_ops.
->>>>
->>>> In my case running:
->>>>
->>>> brctl addif br0 eth0 (where eth0 fec_mpc52xx.c did not yet support
->>>> net_device_ops) gave me a:
->>>>
->>>> Unable to handle kernel paging request...
->>>>
->>>> After changing fec_mpc52xx.c to support net_device_ops the problem was=
- fixed.
->>>>
->>>> If possible some kind of detection in the bridging software is i think
->>>> mostly appreciated for early detection of this problem, as it is
->>>> pretty hard to relate the error message to a not updated driver.
->>>>
->>>> cheers,
->>>>
->>>> Henk
->>>>
->>>> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
->>>> index cd8e98b..a2841eb 100644
->>>> --- a/drivers/net/fec_mpc52xx.c
->>>> +++ b/drivers/net/fec_mpc52xx.c
->>>> @@ -888,6 +888,22 @@ static int mpc52xx_fec_ioctl(struct net_device
->>>> *dev, struct ifreq *rq, int cmd)
->>>> =A0/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D */
->>>> =A0/* OF Driver =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-*/
->>>> =A0/* =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D */
->>>> +static const struct net_device_ops mpc52xx_fec_netdev_ops =3D {
->>>> + =A0 =A0 =A0 .ndo_open =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_op=
-en,
->>>> + =A0 =A0 =A0 .ndo_stop =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_cl=
-ose,
->>>> + =A0 =A0 =A0 .ndo_start_xmit =A0 =A0 =A0 =A0 =3D mpc52xx_fec_hard_sta=
-rt_xmit,
->>>> + =A0 =A0 =A0 .ndo_tx_timeout =A0 =A0 =A0 =A0 =3D mpc52xx_fec_tx_timeo=
-ut,
->>>> + =A0 =A0 =A0 .ndo_get_stats =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_get_st=
-ats,
->>>> + =A0 =A0 =A0 .ndo_set_multicast_list =3D mpc52xx_fec_set_multicast_li=
-st,
->>>> + =A0 =A0 =A0 .ndo_validate_addr =A0 =A0 =A0=3D eth_validate_addr,
->>>> + =A0 =A0 =A0 .ndo_set_mac_address =A0 =A0=3D mpc52xx_fec_set_mac_addr=
-ess,
->>>> + =A0 =A0 =A0 .ndo_do_ioctl =A0 =A0 =A0 =A0 =A0 =3D mpc52xx_fec_ioctl,
->>>> +
->>>> +#ifdef CONFIG_NET_POLL_CONTROLLER
->>>> + =A0 =A0 =A0 .ndo_poll_controller =A0 =A0 =3D mpc52xx_fec_poll_contro=
-ller,
->>>> +#endif
->>>> +};
->>>> +
->>>>
->>>> =A0static int __devinit
->>>> =A0mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *=
-match)
->>>> @@ -929,20 +945,7 @@ mpc52xx_fec_probe(struct of_device *op, const
->>>> struct of_device_id *match)
->>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EBUSY;
->>>>
->>>> =A0 =A0 =A0 /* Init ether ndev with what we have */
->>>> - =A0 =A0 ndev->open =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_open;
->>>> - =A0 =A0 ndev->stop =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_close;
->>>> - =A0 =A0 ndev->hard_start_xmit =A0 =3D mpc52xx_fec_hard_start_xmit;
->>>> - =A0 =A0 ndev->do_ioctl =A0 =A0 =A0 =A0 =A0=3D mpc52xx_fec_ioctl;
->>>> - =A0 =A0 ndev->ethtool_ops =A0 =A0 =A0 =3D &mpc52xx_fec_ethtool_ops;
->>>> - =A0 =A0 ndev->get_stats =A0 =A0 =A0 =A0 =3D mpc52xx_fec_get_stats;
->>>> - =A0 =A0 ndev->set_mac_address =A0 =3D mpc52xx_fec_set_mac_address;
->>>> - =A0 =A0 ndev->set_multicast_list =3D mpc52xx_fec_set_multicast_list;
->>>> - =A0 =A0 ndev->tx_timeout =A0 =A0 =A0 =A0=3D mpc52xx_fec_tx_timeout;
->>>> - =A0 =A0 ndev->watchdog_timeo =A0 =A0=3D FEC_WATCHDOG_TIMEOUT;
->>>> - =A0 =A0 ndev->base_addr =A0 =A0 =A0 =A0 =3D mem.start;
->>>> -#ifdef CONFIG_NET_POLL_CONTROLLER
->>>> - =A0 =A0 ndev->poll_controller =3D mpc52xx_fec_poll_controller;
->>>> -#endif
->>>> + =A0 =A0 ndev->netdev_ops =3D &mpc52xx_fec_netdev_ops;
->>>>
->>>> =A0 =A0 =A0 priv->t_irq =3D priv->r_irq =3D ndev->irq =3D NO_IRQ; /* I=
-RQ are free for now */
->>>> _______________________________________________
->>>> Linuxppc-dev mailing list
->>>> Linuxppc-dev@ozlabs.org
->>>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
->
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
->
+This series also adds a new network driver for the Xilinx ll_temac
+10/100/1000 MAC.
+
+For those who are interested, this series is available on my git server at:
+
+git://git.secretlab.ca/git/linux-2.6-mpc52xx test
+
+Right now it is based on current mainline plus a bunch of patches that I've
+already got in Benh's -next tree (but is not actually based on Benh's tree).
+I'll probably rebase before I post v3
+
+Changes since v1:
+- Add ll_temac driver
+- Clean up of_node_put() calls
+- removal of dead code from ucc_geth driver
+- Fix changes to gianfar driver to not try to connect to tbi phy.
 
 
+diffstat:
+ arch/powerpc/boot/dts/virtex440-ml507.dts |   14 +-
+ arch/powerpc/platforms/82xx/ep8248e.c     |    7 +-
+ arch/powerpc/platforms/pasemi/gpio_mdio.c |   29 +-
+ drivers/net/Kconfig                       |    8 +
+ drivers/net/Makefile                      |    2 +
+ drivers/net/fec_mpc52xx.c                 |  228 +++----
+ drivers/net/fec_mpc52xx_phy.c             |   26 +-
+ drivers/net/fs_enet/fs_enet-main.c        |   69 +--
+ drivers/net/fs_enet/mii-bitbang.c         |   29 +-
+ drivers/net/fs_enet/mii-fec.c             |   26 +-
+ drivers/net/gianfar.c                     |  103 ++--
+ drivers/net/gianfar.h                     |    3 +-
+ drivers/net/gianfar_mii.c                 |   52 +--
+ drivers/net/pasemi_mac.c                  |   19 +-
+ drivers/net/pasemi_mac.h                  |    1 -
+ drivers/net/phy/marvell.c                 |    2 +
+ drivers/net/phy/mdio_bus.c                |   29 +-
+ drivers/net/phy/phy_device.c              |  163 ++++--
+ drivers/net/ucc_geth.c                    |   65 +--
+ drivers/net/ucc_geth.h                    |    2 -
+ drivers/net/ucc_geth_mii.c                |   17 +-
+ drivers/net/xilinx_temac.c                |  970 +++++++++++++++++++++++++++++
+ drivers/net/xilinx_temac.h                |  374 +++++++++++
+ drivers/net/xilinx_temac_mdio.c           |  119 ++++
+ drivers/of/Kconfig                        |    6 +
+ drivers/of/Makefile                       |    1 +
+ drivers/of/base.c                         |   24 +
+ drivers/of/of_mdio.c                      |  139 ++++
+ include/linux/fs_enet_pd.h                |    6 +-
+ include/linux/of.h                        |    3 +
+ include/linux/of_mdio.h                   |   22 +
+ include/linux/phy.h                       |    6 +
+ 32 files changed, 1989 insertions(+), 575 deletions(-)
+ create mode 100644 drivers/net/xilinx_temac.c
+ create mode 100644 drivers/net/xilinx_temac.h
+ create mode 100644 drivers/net/xilinx_temac_mdio.c
+ create mode 100644 drivers/of/of_mdio.c
+ create mode 100644 include/linux/of_mdio.h
 
---=20
-Grant Likely, B.Sc., P.Eng.
+--
+Grant Likely, B.Sc. P.Eng.
 Secret Lab Technologies Ltd.
