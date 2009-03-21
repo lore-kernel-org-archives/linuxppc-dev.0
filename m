@@ -1,18 +1,20 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 5674ADDE1B
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 11:09:36 +1100 (EST)
-Message-ID: <49C42E1F.6030701@denx.de>
-Date: Sat, 21 Mar 2009 01:00:31 +0100
-From: Anatolij Gustschin <agust@denx.de>
+Return-Path: <yamazaki-seiji@jcom.home.ne.jp>
+Received: from smtp11.m3.home.ne.jp (smtp11.m3.home.ne.jp [220.152.44.17])
+	by ozlabs.org (Postfix) with ESMTP id 7D45DDDED7
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 11:13:45 +1100 (EST)
+Message-Id: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
+From: yamazaki <yamazaki-seiji@jcom.home.ne.jp>
+Date: Sat, 21 Mar 2009 09:15:25 +0900
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
+In-Reply-To: <20090320224330.GA23390@oksana.dev.rtsoft.ru>
+References: <20090320224330.GA23390@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Eduard Fuchs <edfuchs@uni-kassel.de>
-Subject: Re: Problem with radeonfb on PowerPC 7448&MV64560
-References: <200903171630.25340.edfuchs@uni-kassel.de>	<200903191051.37875.edfuchs__31387.3780928136$1237456433$gmane$org@uni-kassel.de>	<m2bprw79i8.fsf@ohwell.denx.de>
-	<200903201635.03017.edfuchs@uni-kassel.de>
-In-Reply-To: <200903201635.03017.edfuchs@uni-kassel.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: sdhci-devel@list.drzeus.cx, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
+	Pierre Ossman <drzeus-sdhci@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,48 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Eduard Fuchs wrote:
+Hi 
 
-<snip>
->>> Can I initialize the video card in uboot too?
->> Yes, indeed you can.  In a recent version of U-Boot, search for
->> 'CONFIG_BIOSEMU' in include/configs/*.  We tested this on a sequoia
->> board, so include/configs/sequoia.h should be a good start for this.
-> 
-> Thanks.
-> 
-> I tried to include BIOSEMU and RADEON_FB in my u-boot. Bios emulator seems to 
-> be properly loaded, but when u-boot attempt to read or write Radeon's 
-> registers, the board freezes.
+Thank you for your reply.
+I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
+which is probably new product.
 
->From the U-Boot output below it seems that the Radeon register access
-works already. At least one register read access succeeded before
-"videoboot: Booting PCI video card bus 0, function 0, device 7" output.
+I made the "sdhci-of.c" from patch file,then I compiled it.
+But is was not succeeded.
+I thought the reason is the format of "the struct sdhci_of_data" is defferent from the 
+kernel 2.6.28.7,
+That is why I sent this question.
 
-> What means exactly the value of "VIDEO_IO_OFFSET" in the config file? 
+>Hi!
+>
+>On Fri, Mar 20, 2009 at 08:28:39AM +0900, yamazaki wrote:
+>> Hi all,
+>> 
+>> I am running the Linux kernel 2.6.28.7 on my PPC8347 BRD.
+>> I have to write the driver of SDHCI driver(using R5C807 RICOH). 
+>
+>RICOH? It should be a PCI SD/MMC controller, so you even don't
+>need any patches to make it work in 2.6.28.7. Just make sure your
+>.config file has following symbols enabled:
+>
+>CONFIG_MMC_SDHCI=y
+>CONFIG_MMC_SDHCI_PCI=y
+>CONFIG_MMC_RICOH_MMC=y
+>
+>-- 
+>Anton Vorontsov
+>email: cbouatmailru@gmail.com
+>irc://irc.freenode.net/bd2
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-It is the base address of an address range accesses to which are
-translated to an I/O access on PCI by the PCI bridge.
-
-> There is a u-boot's output when I init the VIDEO_IO_OFFSET with PCI's I/O base 
-> address:
-> 
-> 
-> INFO : PCI0_IO : base - 0xd8000000 size - 1M bytes
-> INFO : PCI0_MEM0: base - 0x80000000 size - 1024M bytes
-> INFO : PCI0_MEM1: base - 0xc0000000 size - 128M bytes
-> INFO : PCI0_MEM2: base - 0xc8000000 size - 128M bytes
-> INFO : PCI0_MEM3: base - 0xd0000000 size - 128M bytes
-> .....
-> PCI Scan: Found Bus 0, Device 7, Function 0
-> PCI Scan: Found Bus 0, Device 7, Function 1
-> PCI Scan: Found Bus 0, Device 9, Function 0
-> PCI Scan: Found Bus 0, Device 10, Function 0
-> Video: ATI Radeon video card (1002, 5960) found @(0:7:0)
-> videoboot: Booting PCI video card bus 0, function 0, device 7
-> E 0000 0 F00P0F000NI00PMS0EG 0F00
-
-Is the address translation for PCI I/O configured by some BAT?
-
-Best regards,
-Anatolij
+----
+yamazaki-seiji@jcom.home.ne.jp
