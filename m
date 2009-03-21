@@ -1,21 +1,20 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 95AF4DE2D3
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 14:50:20 +1100 (EST)
-Subject: Re: [PATCH 2/3] powerpc: Remove -fno-omit-frame-pointer workarounds
-From: Steven Rostedt <srostedt@redhat.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20090320164431.GB28037@oksana.dev.rtsoft.ru>
-References: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
-	<20090320164431.GB28037@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Fri, 20 Mar 2009 23:50:06 -0400
-Message-Id: <1237607406.17367.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <yamazaki-seiji@jcom.home.ne.jp>
+Received: from smtp11.m3.home.ne.jp (smtp11.m3.home.ne.jp [220.152.44.17])
+	by ozlabs.org (Postfix) with ESMTP id A3A1CDDE11
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 18:46:06 +1100 (EST)
+Message-Id: <200903210747.AA00743@cj3020122-b.jcom.home.ne.jp>
+From: yamazaki <yamazaki-seiji@jcom.home.ne.jp>
+Date: Sat, 21 Mar 2009 16:47:47 +0900
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
+In-Reply-To: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
+References: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: sdhci-devel@list.drzeus.cx, Arnd Bergmann <arnd@arndb.de>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
+	Pierre Ossman <drzeus-sdhci@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,108 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi 
 
-Ben,
+Thank you for your reply again.
 
-Can you ACK or take this patch too.
+>Ah, then it must be connected via MPC8347's localbus.
 
-Thanks,
+That's right.
 
--- Steve
+I will try it,and I inform them of the result. 
 
+>On Sat, Mar 21, 2009 at 09:15:25AM +0900, yamazaki wrote:
+>> Hi 
+>> 
+>> Thank you for your reply.
+>> I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
+>> which is probably new product.
+>
+>Ah, then it must be connected via MPC8347's localbus.
+>
+>Well, then you need 2.6.29-rcX kernels, for example
+>http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
+>is suitable.
+>
+>Untar it and apply the patches (they'll apply fine on that
+>kernel). Then you'll need some device tree additions for
+>your MPC8347 board, something like this:
+>
+>        localbus@e0005000 {
+>                #address-cells = <2>;
+>                #size-cells = <1>;
+>                compatible = "fsl,mpc8347-localbus",
+>                             "fsl,pq2pro-localbus";
+>                reg = <0xe0005000 0xd8>;
+>                ranges = <0x1 0x0 0xf0000000 0x1000>;
+>		// ^^ change the 0xf0000000 to the actual address
+>                sdhci@1,0 {
+>                        compatible = "ricoh,r5c807", "generic-sdhci";
+>                        reg = <0x1 0x0 0x1000>;
+>                        interrupts = <ricoh-interrupt-here 0x8>;
+>                        interrupt-parent = <&ipic>;
+>                        // if needed, clock-frequency = <freq-in-HZ-here>;
+>                };
+>        };
+>
+>Note that I'm not sure what endiannes you'll get when connecting
+>the ricoh chip to the big-endinan host...
+>
+>-- 
+>Anton Vorontsov
+>email: cbouatmailru@gmail.com
+>irc://irc.freenode.net/bd2
 
-On Fri, 2009-03-20 at 19:44 +0300, Anton Vorontsov wrote:
-> The workarounds aren't needed any longer since the top level Makefile
-> doesn't pass -fno-omit-frame-pointer cflag for PowerPC.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  arch/powerpc/Makefile                    |    5 -----
->  arch/powerpc/kernel/Makefile             |   12 ++++++------
->  arch/powerpc/platforms/powermac/Makefile |    2 +-
->  lib/Kconfig.debug                        |    6 +++---
->  4 files changed, 10 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 551fc58..1dd7748 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -120,11 +120,6 @@ ifeq ($(CONFIG_6xx),y)
->  KBUILD_CFLAGS		+= -mcpu=powerpc
->  endif
->  
-> -# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
-> -ifeq ($(CONFIG_FUNCTION_TRACER),y)
-> -KBUILD_CFLAGS		+= -mno-sched-epilog
-> -endif
-> -
->  cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
->  cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
->  cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltivec
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index dfec3d2..f86caeb 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -14,14 +14,14 @@ endif
->  
->  ifdef CONFIG_FUNCTION_TRACER
->  # Do not trace early boot code
-> -CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
-> -CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
-> -CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
-> -CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
-> +CFLAGS_REMOVE_cputable.o = -pg
-> +CFLAGS_REMOVE_prom_init.o = -pg
-> +CFLAGS_REMOVE_btext.o = -pg
-> +CFLAGS_REMOVE_prom.o = -pg
->  # do not trace tracer code
-> -CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
-> +CFLAGS_REMOVE_ftrace.o = -pg
->  # timers used by tracing
-> -CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
-> +CFLAGS_REMOVE_time.o = -pg
->  endif
->  
->  obj-y				:= cputable.o ptrace.o syscalls.o \
-> diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
-> index 50f1693..0eb8781 100644
-> --- a/arch/powerpc/platforms/powermac/Makefile
-> +++ b/arch/powerpc/platforms/powermac/Makefile
-> @@ -2,7 +2,7 @@ CFLAGS_bootx_init.o  		+= -fPIC
->  
->  ifdef CONFIG_FUNCTION_TRACER
->  # Do not trace early boot code
-> -CFLAGS_REMOVE_bootx_init.o = -pg -mno-sched-epilog
-> +CFLAGS_REMOVE_bootx_init.o = -pg
->  endif
->  
->  obj-y				+= pic.o setup.o time.o feature.o pci.o \
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index fc8cd1f..713620d 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -493,7 +493,7 @@ config LOCKDEP
->  	bool
->  	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
->  	select STACKTRACE
-> -	select FRAME_POINTER if !MIPS && !PPC && !ARM_UNWIND
-> +	select FRAME_POINTER if !MIPS && !ARM_UNWIND
->  	select KALLSYMS
->  	select KALLSYMS_ALL
->  
-> @@ -866,13 +866,13 @@ config FAULT_INJECTION_STACKTRACE_FILTER
->  	depends on FAULT_INJECTION_DEBUG_FS && STACKTRACE_SUPPORT
->  	depends on !X86_64
->  	select STACKTRACE
-> -	select FRAME_POINTER if !PPC
-> +	select FRAME_POINTER
->  	help
->  	  Provide stacktrace filter for fault-injection capabilities
->  
->  config LATENCYTOP
->  	bool "Latency measuring infrastructure"
-> -	select FRAME_POINTER if !MIPS && !PPC
-> +	select FRAME_POINTER if !MIPS
->  	select KALLSYMS
->  	select KALLSYMS_ALL
->  	select STACKTRACE
+----
+yamazaki-seiji@jcom.home.ne.jp
