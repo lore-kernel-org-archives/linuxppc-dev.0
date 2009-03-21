@@ -1,20 +1,22 @@
-Return-Path: <yamazaki-seiji@jcom.home.ne.jp>
-Received: from smtp11.m3.home.ne.jp (smtp11.m3.home.ne.jp [220.152.44.17])
-	by ozlabs.org (Postfix) with ESMTP id 7D45DDDED7
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 11:13:45 +1100 (EST)
-Message-Id: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
-From: yamazaki <yamazaki-seiji@jcom.home.ne.jp>
-Date: Sat, 21 Mar 2009 09:15:25 +0900
-To: avorontsov@ru.mvista.com
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 4F566DDDA9
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 11:45:08 +1100 (EST)
+Date: Sat, 21 Mar 2009 03:45:06 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: yamazaki <yamazaki-seiji@jcom.home.ne.jp>
 Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
-In-Reply-To: <20090320224330.GA23390@oksana.dev.rtsoft.ru>
+Message-ID: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
 References: <20090320224330.GA23390@oksana.dev.rtsoft.ru>
+	<200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
 Cc: sdhci-devel@list.drzeus.cx, Arnd Bergmann <arnd@arndb.de>,
 	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
 	Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi 
+On Sat, Mar 21, 2009 at 09:15:25AM +0900, yamazaki wrote:
+> Hi 
+> 
+> Thank you for your reply.
+> I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
+> which is probably new product.
 
-Thank you for your reply.
-I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
-which is probably new product.
+Ah, then it must be connected via MPC8347's localbus.
 
-I made the "sdhci-of.c" from patch file,then I compiled it.
-But is was not succeeded.
-I thought the reason is the format of "the struct sdhci_of_data" is defferent from the 
-kernel 2.6.28.7,
-That is why I sent this question.
+Well, then you need 2.6.29-rcX kernels, for example
+http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
+is suitable.
 
->Hi!
->
->On Fri, Mar 20, 2009 at 08:28:39AM +0900, yamazaki wrote:
->> Hi all,
->> 
->> I am running the Linux kernel 2.6.28.7 on my PPC8347 BRD.
->> I have to write the driver of SDHCI driver(using R5C807 RICOH). 
->
->RICOH? It should be a PCI SD/MMC controller, so you even don't
->need any patches to make it work in 2.6.28.7. Just make sure your
->.config file has following symbols enabled:
->
->CONFIG_MMC_SDHCI=y
->CONFIG_MMC_SDHCI_PCI=y
->CONFIG_MMC_RICOH_MMC=y
->
->-- 
->Anton Vorontsov
->email: cbouatmailru@gmail.com
->irc://irc.freenode.net/bd2
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Untar it and apply the patches (they'll apply fine on that
+kernel). Then you'll need some device tree additions for
+your MPC8347 board, something like this:
 
-----
-yamazaki-seiji@jcom.home.ne.jp
+        localbus@e0005000 {
+                #address-cells = <2>;
+                #size-cells = <1>;
+                compatible = "fsl,mpc8347-localbus",
+                             "fsl,pq2pro-localbus";
+                reg = <0xe0005000 0xd8>;
+                ranges = <0x1 0x0 0xf0000000 0x1000>;
+		// ^^ change the 0xf0000000 to the actual address
+                sdhci@1,0 {
+                        compatible = "ricoh,r5c807", "generic-sdhci";
+                        reg = <0x1 0x0 0x1000>;
+                        interrupts = <ricoh-interrupt-here 0x8>;
+                        interrupt-parent = <&ipic>;
+                        // if needed, clock-frequency = <freq-in-HZ-here>;
+                };
+        };
+
+Note that I'm not sure what endiannes you'll get when connecting
+the ricoh chip to the big-endinan host...
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
