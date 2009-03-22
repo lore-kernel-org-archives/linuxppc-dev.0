@@ -1,20 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id 9E452DE08D
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 09:29:29 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so1928968wfg.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2009 15:29:29 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2 13/13] net: add Xilinx ll_temac device driver
-To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, olof@lixom.net
-Date: Sat, 21 Mar 2009 16:29:24 -0600
-Message-ID: <20090321222923.20493.19960.stgit@localhost.localdomain>
-In-Reply-To: <20090321222047.20493.87335.stgit@localhost.localdomain>
-References: <20090321222047.20493.87335.stgit@localhost.localdomain>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 665F1DDEDD
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 00:58:48 +1100 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id B37471C15276
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 15:01:03 +0100 (CET)
+Received: from lancy.denx.de (p4FE660CB.dip.t-dialin.net [79.230.96.203])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id EA52890137
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 14:58:44 +0100 (CET)
+Message-ID: <49C64413.605@grandegger.com>
+Date: Sun, 22 Mar 2009 14:58:43 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: afleming@freescale.com, davem@davemloft.net
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/85xx: Add support for the "socrates" board
+	(MPC8544).
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,1553 +27,2320 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Supported are Ethernet, serial console, I2C, I2C-based RTC and
+temperature sensors, NOR and NAND flash, PCI, USB, CAN and Lime
+display controller.
 
-This patch adds support for the Xilinx ll_temac 10/100/1000 Ethernet
-device.  The ll_temac ipcore is typically used on Xilinx Virtex and
-Spartan designs attached to either a PowerPC 4xx or Microblaze
-processor.
+The multiplexing of FPGA interrupts onto PowerPC interrupt lines is
+supported through our own fpga_pic interrupt controller driver.
 
-At the present moment, this driver only works with Virtex5 PowerPC
-designs because it assumes DCR is used to access the DMA registers.
-However, the low level access to DMA registers is abstracted and
-it should be easy to adapt for the other implementations.
+For example the SJA1000 controller is level low sensitive connected to
+fpga_pic line 2 and is routed to the second (of three) irq lines to
+the CPU:
 
-I'm posting this driver now as an RFC.  There are still some things that
-need to be tightened up, but it does appear to be stable.
+    can@3,100 {
+            compatible = "philips,sja1000";
+            reg = <3 0x100 0x80>;
+            interrupts = <2 2>;
+            interrupts = <2 8 1>;   // number, type, routing
+            interrupt-parent = <&fpga_pic>;
+    };
 
-Derived from driver code written by Yoshio Kashiwagi and David H. Lynch Jr.
-
-CC: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
-CC: David H. Lynch Jr. <dhlii@dlasys.net>
-CC: John Linn <john.linn@xilinx.com>
-CC: John Bonesio <john.bonesio@xilinx.com>
-CC: David DeBonis <ddeboni@xilinx.com>
-CC: Wilson Yang <wyang@xilinx.com>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Sergei Poselenov <sposelenov@emcraft.com>
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Signed-off-by: Dmitry Rakhchev <rda@emcraft.com>
 ---
+ arch/powerpc/boot/dts/socrates.dts              |  338 +++++
+ arch/powerpc/configs/85xx/socrates_defconfig    | 1410 ++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/Kconfig             |    6 
+ arch/powerpc/platforms/85xx/Makefile            |    1 
+ arch/powerpc/platforms/85xx/socrates.c          |  133 ++
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.c |  327 +++++
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.h |   16 
+ 7 files changed, 2231 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/socrates.dts
+ create mode 100644 arch/powerpc/configs/85xx/socrates_defconfig
+ create mode 100644 arch/powerpc/platforms/85xx/socrates.c
+ create mode 100644 arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+ create mode 100644 arch/powerpc/platforms/85xx/socrates_fpga_pic.h
+ create mode 100644 drivers/mtd/nand/socrates_nand.c
 
- drivers/net/Kconfig             |    8 
- drivers/net/Makefile            |    2 
- drivers/net/xilinx_temac.c      |  970 +++++++++++++++++++++++++++++++++++++++
- drivers/net/xilinx_temac.h      |  374 +++++++++++++++
- drivers/net/xilinx_temac_mdio.c |  119 +++++
- 5 files changed, 1473 insertions(+), 0 deletions(-)
- create mode 100644 drivers/net/xilinx_temac.c
- create mode 100644 drivers/net/xilinx_temac.h
- create mode 100644 drivers/net/xilinx_temac_mdio.c
-
-
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 435e2e3..29d6c1f 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2321,6 +2321,14 @@ config MV643XX_ETH
- 	  Some boards that use the Discovery chipset are the Momenco
- 	  Ocelot C and Jaguar ATX and Pegasos II.
- 
-+config XILINX_TEMAC
-+	tristate "Xilinx TEMAC 10/100/1000 Ethernet MAC driver"
-+	select PHYLIB
-+	depends on PPC
-+	help
-+	  This driver supports the Xilinx 10/100/1000 LocalLink TEMAC
-+	  device found in Virtex FPGAs
-+
- config QLA3XXX
- 	tristate "QLogic QLA3XXX Network Driver Support"
- 	depends on PCI
-diff --git a/drivers/net/Makefile b/drivers/net/Makefile
-index 471baaf..c7b4dd9 100644
---- a/drivers/net/Makefile
-+++ b/drivers/net/Makefile
-@@ -132,6 +132,8 @@ obj-$(CONFIG_AX88796) += ax88796.o
- 
- obj-$(CONFIG_TSI108_ETH) += tsi108_eth.o
- obj-$(CONFIG_MV643XX_ETH) += mv643xx_eth.o
-+xilinxtemac-objs := xilinx_temac.o xilinx_temac_mdio.o
-+obj-$(CONFIG_XILINX_TEMAC) += xilinxtemac.o
- obj-$(CONFIG_QLA3XXX) += qla3xxx.o
- obj-$(CONFIG_QLGE) += qlge/
- 
-diff --git a/drivers/net/xilinx_temac.c b/drivers/net/xilinx_temac.c
-new file mode 100644
-index 0000000..d778a55
+Index: linux-2.6/arch/powerpc/boot/dts/socrates.dts
+===================================================================
 --- /dev/null
-+++ b/drivers/net/xilinx_temac.c
-@@ -0,0 +1,970 @@
++++ linux-2.6/arch/powerpc/boot/dts/socrates.dts
+@@ -0,0 +1,338 @@
 +/*
-+ * Driver for Xilinx TEMAC Ethernet device
++ * Device Tree Source for the Socrates board (MPC8544).
 + *
-+ * Copyright (c) 2008 Nissin Systems Co., Ltd.,  Yoshio Kashiwagi
-+ * Copyright (c) 2005-2008 DLA Systems,  David H. Lynch Jr. <dhlii@dlasys.net>
-+ * Copyright (c) 2008-2009 Secret Lab Technologies Ltd.
++ * Copyright (c) 2008 Emcraft Systems.
++ * Sergei Poselenov, <sposelenov@emcraft.com>
 + *
-+ * This is a driver for the Xilinx ll_temac ipcore which is often used
-+ * in the Virtex and Spartan series of chips.
-+ *
-+ * Notes:
-+ * - The ll_temac hardware uses indirect access for many of the TEMAC
-+ *   registers, include the MDIO bus.  However, indirect access to MDIO
-+ *   registers take considerably more clock cycles than to TEMAC registers.
-+ *   MDIO accesses are long, so threads doing them should probably sleep
-+ *   rather than busywait.  However, since only one indirect access can be
-+ *   in progress at any given time, that means that *all* indirect accesses
-+ *   could end up sleeping (to wait for an MDIO access to complete).
-+ *   Fortunately none of the indirect accesses are on the 'hot' path for tx
-+ *   or rx, so this should be okay.
-+ *
-+ * TODO:
-+ * - Fix driver to work on more than just Virtex5.  Right now the driver
-+ *   assumes that the locallink DMA registers are accessed via DCR
-+ *   instructions.
-+ * - Factor out locallink DMA code into separate driver
-+ * - Fix multicast assignment.
-+ * - Fix support for hardware checksumming.
-+ * - Testing.  Lots and lots of testing.
-+ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
 +
-+#include <linux/delay.h>
-+#include <linux/etherdevice.h>
-+#include <linux/init.h>
-+#include <linux/mii.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/netdevice.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/of_mdio.h>
-+#include <linux/of_platform.h>
-+#include <linux/skbuff.h>
-+#include <linux/spinlock.h>
-+#include <linux/tcp.h>      /* needed for sizeof(tcphdr) */
-+#include <linux/udp.h>      /* needed for sizeof(udphdr) */
++/dts-v1/;
++
++/ {
++	model = "abb,socrates";
++	compatible = "abb,socrates";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,8544@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <0x8000>;	// L1, 32K
++			i-cache-size = <0x8000>;	// L1, 32K
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
++			next-level-cache = <&L2>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x00000000>;	// Filled in by U-Boot
++	};
++
++	soc8544@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++
++		ranges = <0x00000000 0xe0000000 0x00100000>;
++		reg = <0xe0000000 0x00001000>;	// CCSRBAR 1M
++		bus-frequency = <0>;		// Filled in by U-Boot
++		compatible = "fsl,mpc8544-immr", "simple-bus";
++
++		memory-controller@2000 {
++			compatible = "fsl,mpc8544-memory-controller";
++			reg = <0x2000 0x1000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <18 2>;
++		};
++
++		L2: l2-cache-controller@20000 {
++			compatible = "fsl,mpc8544-l2-cache-controller";
++			reg = <0x20000 0x1000>;
++			cache-line-size = <32>;
++			cache-size = <0x40000>;	// L2, 256K
++			interrupt-parent = <&mpic>;
++			interrupts = <16 2>;
++		};
++
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <43 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++
++			dtt@28 {
++				compatible = "winbond,w83782d";
++				reg = <0x28>;
++			};
++			rtc@32 {
++				compatible = "epson,rx8025";
++				reg = <0x32>;
++				interrupts = <7 1>;
++				interrupt-parent = <&mpic>;
++			};
++			dtt@4c {
++				compatible = "dallas,ds75";
++				reg = <0x4c>;
++			};
++			ts@4a {
++				compatible = "ti,tsc2003";
++				reg = <0x4a>;
++				interrupt-parent = <&mpic>;
++				interrupts = <8 1>;
++			};
++		};
++
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <1>;
++			compatible = "fsl-i2c";
++			reg = <0x3100 0x100>;
++			interrupts = <43 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
++
++		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <29 2 30 2 34 2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy0>;
++			tbi-handle = <&tbi0>;
++			phy-connection-type = "rgmii-id";
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <0 1>;
++					reg = <0>;
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <0 1>;
++					reg = <1>;
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++				};
++			};
++		};
++
++		enet1: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <1>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <31 2 32 2 33 2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy1>;
++			tbi-handle = <&tbi1>;
++			phy-connection-type = "rgmii-id";
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++				};
++			};
++		};
++
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>;
++			clock-frequency = <0>;
++			interrupts = <42 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;
++			clock-frequency = <0>;
++			interrupts = <42 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		global-utilities@e0000 {	//global utilities block
++			compatible = "fsl,mpc8548-guts";
++			reg = <0xe0000 0x1000>;
++			fsl,has-rstcr;
++		};
++
++		mpic: pic@40000 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x40000 0x40000>;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++		};
++	};
++
++
++	localbus {
++		compatible = "fsl,mpc8544-localbus",
++		             "fsl,pq3-localbus",
++			     "simple-bus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		reg = <0xe0005000 0x40>;
++
++		ranges = <0 0 0xfc000000 0x04000000
++			  2 0 0xc8000000 0x04000000
++			  3 0 0xc0000000 0x00100000
++			>; /* Overwritten by U-Boot */
++
++		nor_flash@0,0 {
++			compatible = "amd,s29gl256n", "cfi-flash";
++			bank-width = <2>;
++			reg = <0x0 0x000000 0x4000000>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			partition@0 {
++				label = "kernel";
++				reg = <0x0 0x1e0000>;
++				read-only;
++			};
++			partition@1e0000 {
++				label = "dtb";
++				reg = <0x1e0000 0x20000>;
++			};
++			partition@200000 {
++				label = "root";
++				reg = <0x200000 0x200000>;
++			};
++			partition@400000 {
++				label = "user";
++				reg = <0x400000 0x3b80000>;
++			};
++			partition@3f80000 {
++				label = "env";
++				reg = <0x3f80000 0x40000>;
++				read-only;
++			};
++			partition@3fc0000 {
++				label = "u-boot";
++				reg = <0x3fc0000 0x40000>;
++				read-only;
++			};
++		};
++
++		display@2,0 {
++			compatible = "fujitsu,lime";
++			reg = <2 0x0 0x4000000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <6 1>;
++		};
++
++		fpga_pic: fpga-pic@3,10 {
++			compatible = "abb,socrates-fpga-pic";
++			reg = <3 0x10 0x10>;
++			interrupt-controller;
++			/* IRQs 2, 10, 11, active low, level-sensitive */
++			interrupts = <2 1 10 1 11 1>;
++			interrupt-parent = <&mpic>;
++			#interrupt-cells = <3>;
++		};
++
++		spi@3,60 {
++			compatible = "abb,socrates-spi";
++			reg = <3 0x60 0x10>;
++			interrupts = <8 4 0>;	// number, type, routing
++			interrupt-parent = <&fpga_pic>;
++		};
++
++		nand@3,70 {
++			compatible = "abb,socrates-nand";
++			reg = <3 0x70 0x04>;
++			bank-width = <1>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			data@0 {
++				label = "data";
++				reg = <0x0 0x40000000>;
++			};
++		};
++
++		can@3,100 {
++			compatible = "philips,sja1000";
++			reg = <3 0x100 0x80>;
++			interrupts = <2 8 1>;	// number, type, routing
++			interrupt-parent = <&fpga_pic>;
++		};
++	};
++
++	pci0: pci@e0008000 {
++		cell-index = <0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		compatible = "fsl,mpc8540-pci";
++		device_type = "pci";
++		reg = <0xe0008000 0x1000>;
++		clock-frequency = <66666666>;
++
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++				/* IDSEL 0x11 */
++				 0x8800 0x0 0x0 1 &mpic 5 1
++				/* IDSEL 0x12 */
++				 0x9000 0x0 0x0 1 &mpic 4 1>;
++		interrupt-parent = <&mpic>;
++		interrupts = <24 2>;
++		bus-range = <0x0 0x0>;
++		ranges = <0x02000000 0x0 0x80000000 0x80000000 0x0 0x20000000
++			  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x01000000>;
++	};
++
++};
+Index: linux-2.6/arch/powerpc/configs/85xx/socrates_defconfig
+===================================================================
+--- /dev/null
++++ linux-2.6/arch/powerpc/configs/85xx/socrates_defconfig
+@@ -0,0 +1,1410 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.26.2
++# Sat Oct 18 11:06:13 2008
++#
++# CONFIG_PPC64 is not set
++
++#
++# Processor support
++#
++# CONFIG_6xx is not set
++CONFIG_PPC_85xx=y
++# CONFIG_PPC_8xx is not set
++# CONFIG_40x is not set
++# CONFIG_44x is not set
++# CONFIG_E200 is not set
++CONFIG_E500=y
++CONFIG_BOOKE=y
++CONFIG_FSL_BOOKE=y
++CONFIG_FSL_EMB_PERFMON=y
++# CONFIG_PHYS_64BIT is not set
++CONFIG_SPE=y
++# CONFIG_PPC_MM_SLICES is not set
++CONFIG_PPC32=y
++CONFIG_WORD_SIZE=32
++CONFIG_PPC_MERGE=y
++CONFIG_MMU=y
++CONFIG_GENERIC_CMOS_UPDATE=y
++CONFIG_GENERIC_TIME=y
++CONFIG_GENERIC_TIME_VSYSCALL=y
++CONFIG_GENERIC_CLOCKEVENTS=y
++CONFIG_GENERIC_HARDIRQS=y
++# CONFIG_HAVE_SETUP_PER_CPU_AREA is not set
++CONFIG_IRQ_PER_CPU=y
++CONFIG_STACKTRACE_SUPPORT=y
++CONFIG_LOCKDEP_SUPPORT=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_ARCH_HAS_ILOG2_U32=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
++CONFIG_PPC=y
++CONFIG_EARLY_PRINTK=y
++CONFIG_GENERIC_NVRAM=y
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
++CONFIG_PPC_OF=y
++CONFIG_OF=y
++CONFIG_PPC_UDBG_16550=y
++# CONFIG_GENERIC_TBSYNC is not set
++CONFIG_AUDIT_ARCH=y
++CONFIG_GENERIC_BUG=y
++CONFIG_DEFAULT_UIMAGE=y
++# CONFIG_PPC_DCR_NATIVE is not set
++# CONFIG_PPC_DCR_MMIO is not set
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++
++#
++# General setup
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
++CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION_AUTO=y
++CONFIG_SWAP=y
++CONFIG_SYSVIPC=y
++CONFIG_SYSVIPC_SYSCTL=y
++# CONFIG_POSIX_MQUEUE is not set
++# CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_TASKSTATS is not set
++# CONFIG_AUDIT is not set
++# CONFIG_IKCONFIG is not set
++CONFIG_LOG_BUF_SHIFT=16
++# CONFIG_CGROUPS is not set
++CONFIG_GROUP_SCHED=y
++CONFIG_FAIR_GROUP_SCHED=y
++# CONFIG_RT_GROUP_SCHED is not set
++CONFIG_USER_SCHED=y
++# CONFIG_CGROUP_SCHED is not set
++CONFIG_SYSFS_DEPRECATED=y
++CONFIG_SYSFS_DEPRECATED_V2=y
++# CONFIG_RELAY is not set
++# CONFIG_NAMESPACES is not set
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_INITRAMFS_SOURCE=""
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SYSCTL=y
++CONFIG_EMBEDDED=y
++CONFIG_SYSCTL_SYSCALL=y
++CONFIG_SYSCTL_SYSCALL_CHECK=y
++# CONFIG_KALLSYMS is not set
++# CONFIG_HOTPLUG is not set
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++CONFIG_COMPAT_BRK=y
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_ANON_INODES=y
++# CONFIG_EPOLL is not set
++CONFIG_SIGNALFD=y
++CONFIG_TIMERFD=y
++CONFIG_EVENTFD=y
++CONFIG_SHMEM=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_SLUB_DEBUG=y
++# CONFIG_SLAB is not set
++CONFIG_SLUB=y
++# CONFIG_SLOB is not set
++# CONFIG_PROFILING is not set
++# CONFIG_MARKERS is not set
++CONFIG_HAVE_OPROFILE=y
++CONFIG_HAVE_KPROBES=y
++CONFIG_HAVE_KRETPROBES=y
++# CONFIG_HAVE_DMA_ATTRS is not set
++CONFIG_PROC_PAGE_MONITOR=y
++CONFIG_SLABINFO=y
++CONFIG_RT_MUTEXES=y
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
++CONFIG_MODULES=y
++# CONFIG_MODULE_FORCE_LOAD is not set
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_FORCE_UNLOAD=y
++# CONFIG_MODVERSIONS is not set
++# CONFIG_MODULE_SRCVERSION_ALL is not set
++# CONFIG_KMOD is not set
++CONFIG_BLOCK=y
++# CONFIG_LBD is not set
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_LSF is not set
++# CONFIG_BLK_DEV_BSG is not set
++
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_DEADLINE is not set
++# CONFIG_DEFAULT_CFQ is not set
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="anticipatory"
++CONFIG_CLASSIC_RCU=y
++
++#
++# Platform support
++#
++# CONFIG_PPC_MPC512x is not set
++# CONFIG_PPC_MPC5121 is not set
++# CONFIG_PPC_CELL is not set
++# CONFIG_PPC_CELL_NATIVE is not set
++# CONFIG_PQ2ADS is not set
++CONFIG_MPC85xx=y
++# CONFIG_MPC8540_ADS is not set
++# CONFIG_MPC8560_ADS is not set
++# CONFIG_MPC85xx_CDS is not set
++# CONFIG_MPC85xx_MDS is not set
++# CONFIG_MPC85xx_DS is not set
++CONFIG_SOCRATES=y
++# CONFIG_KSI8560 is not set
++# CONFIG_STX_GP3 is not set
++# CONFIG_TQM8540 is not set
++# CONFIG_TQM8541 is not set
++# CONFIG_TQM8555 is not set
++# CONFIG_TQM8560 is not set
++# CONFIG_SBC8548 is not set
++# CONFIG_SBC8560 is not set
++# CONFIG_IPIC is not set
++CONFIG_MPIC=y
++# CONFIG_MPIC_WEIRD is not set
++# CONFIG_PPC_I8259 is not set
++# CONFIG_PPC_RTAS is not set
++# CONFIG_MMIO_NVRAM is not set
++# CONFIG_PPC_MPC106 is not set
++# CONFIG_PPC_970_NAP is not set
++# CONFIG_PPC_INDIRECT_IO is not set
++# CONFIG_GENERIC_IOMAP is not set
++# CONFIG_CPU_FREQ is not set
++# CONFIG_CPM2 is not set
++# CONFIG_FSL_ULI1575 is not set
++
++#
++# Kernel options
++#
++# CONFIG_HIGHMEM is not set
++# CONFIG_TICK_ONESHOT is not set
++# CONFIG_NO_HZ is not set
++# CONFIG_HIGH_RES_TIMERS is not set
++CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
++# CONFIG_HZ_100 is not set
++CONFIG_HZ_250=y
++# CONFIG_HZ_300 is not set
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=250
++# CONFIG_SCHED_HRTICK is not set
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_BINFMT_ELF=y
++# CONFIG_BINFMT_MISC is not set
++CONFIG_MATH_EMULATION=y
++# CONFIG_IOMMU_HELPER is not set
++CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
++CONFIG_ARCH_HAS_WALK_MEMORY=y
++CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
++CONFIG_ARCH_FLATMEM_ENABLE=y
++CONFIG_ARCH_POPULATES_NODE_MAP=y
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
++CONFIG_PAGEFLAGS_EXTENDED=y
++CONFIG_SPLIT_PTLOCK_CPUS=4
++# CONFIG_RESOURCES_64BIT is not set
++CONFIG_ZONE_DMA_FLAG=1
++CONFIG_BOUNCE=y
++CONFIG_VIRT_TO_BUS=y
++CONFIG_FORCE_MAX_ZONEORDER=11
++# CONFIG_PROC_DEVICETREE is not set
++# CONFIG_CMDLINE_BOOL is not set
++# CONFIG_PM is not set
++CONFIG_SECCOMP=y
++CONFIG_ISA_DMA_API=y
++
++#
++# Bus options
++#
++CONFIG_ZONE_DMA=y
++CONFIG_PPC_INDIRECT_PCI=y
++CONFIG_FSL_SOC=y
++CONFIG_FSL_PCI=y
++CONFIG_PCI=y
++CONFIG_PCI_DOMAINS=y
++CONFIG_PCI_SYSCALL=y
++# CONFIG_PCIEPORTBUS is not set
++CONFIG_ARCH_SUPPORTS_MSI=y
++# CONFIG_PCI_MSI is not set
++CONFIG_PCI_LEGACY=y
++# CONFIG_HAS_RAPIDIO is not set
++
++#
++# Advanced setup
++#
++# CONFIG_ADVANCED_OPTIONS is not set
++
++#
++# Default settings for advanced configuration options are used
++#
++CONFIG_LOWMEM_SIZE=0x30000000
++CONFIG_PAGE_OFFSET=0xc0000000
++CONFIG_KERNEL_START=0xc0000000
++CONFIG_PHYSICAL_START=0x00000000
++CONFIG_PHYSICAL_ALIGN=0x10000000
++CONFIG_TASK_SIZE=0xc0000000
++
++#
++# Networking
++#
++CONFIG_NET=y
++
++#
++# Networking options
++#
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=y
++CONFIG_XFRM=y
++# CONFIG_XFRM_USER is not set
++# CONFIG_XFRM_SUB_POLICY is not set
++# CONFIG_XFRM_MIGRATE is not set
++# CONFIG_XFRM_STATISTICS is not set
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++CONFIG_IP_MULTICAST=y
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
++# CONFIG_IP_PNP_RARP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_IP_MROUTE is not set
++# CONFIG_ARPD is not set
++CONFIG_SYN_COOKIES=y
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++# CONFIG_INET_TUNNEL is not set
++CONFIG_INET_XFRM_MODE_TRANSPORT=y
++CONFIG_INET_XFRM_MODE_TUNNEL=y
++CONFIG_INET_XFRM_MODE_BEET=y
++# CONFIG_INET_LRO is not set
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_CUBIC=y
++CONFIG_DEFAULT_TCP_CONG="cubic"
++# CONFIG_TCP_MD5SIG is not set
++# CONFIG_IPV6 is not set
++# CONFIG_NETWORK_SECMARK is not set
++# CONFIG_NETFILTER is not set
++# CONFIG_IP_DCCP is not set
++# CONFIG_IP_SCTP is not set
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++# CONFIG_NET_SCHED is not set
++
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++CONFIG_CAN=y
++CONFIG_CAN_RAW=y
++CONFIG_CAN_BCM=y
++
++#
++# CAN Device Drivers
++#
++# CONFIG_CAN_VCAN is not set
++# CONFIG_CAN_OLD_DRIVERS is not set
++# CONFIG_CAN_SLCAN is not set
++CONFIG_CAN_SJA1000=y
++CONFIG_CAN_SJA1000_MEM_OF=y
++# CONFIG_CAN_EMS_PCI is not set
++# CONFIG_CAN_IXXAT_PCI is not set
++# CONFIG_CAN_PEAK_PCI is not set
++# CONFIG_CAN_KVASER_PCI is not set
++# CONFIG_CAN_MSCAN is not set
++# CONFIG_CAN_DEBUG_DEVICES is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_AF_RXRPC is not set
++
++#
++# Wireless
++#
++# CONFIG_CFG80211 is not set
++# CONFIG_WIRELESS_EXT is not set
++# CONFIG_MAC80211 is not set
++# CONFIG_IEEE80211 is not set
++# CONFIG_RFKILL is not set
++# CONFIG_NET_9P is not set
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++# CONFIG_SYS_HYPERVISOR is not set
++# CONFIG_CONNECTOR is not set
++CONFIG_MTD=y
++# CONFIG_MTD_DEBUG is not set
++CONFIG_MTD_CONCAT=y
++CONFIG_MTD_PARTITIONS=y
++# CONFIG_MTD_REDBOOT_PARTS is not set
++CONFIG_MTD_CMDLINE_PARTS=y
++CONFIG_MTD_OF_PARTS=y
++# CONFIG_MTD_AR7_PARTS is not set
++
++#
++# User Modules And Translation Layers
++#
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLKDEVS=y
++CONFIG_MTD_BLOCK=y
++# CONFIG_FTL is not set
++# CONFIG_NFTL is not set
++# CONFIG_INFTL is not set
++# CONFIG_RFD_FTL is not set
++# CONFIG_SSFDC is not set
++# CONFIG_MTD_OOPS is not set
++
++#
++# RAM/ROM/Flash chip drivers
++#
++CONFIG_MTD_CFI=y
++CONFIG_MTD_JEDECPROBE=y
++CONFIG_MTD_GEN_PROBE=y
++# CONFIG_MTD_CFI_ADV_OPTIONS is not set
++CONFIG_MTD_MAP_BANK_WIDTH_1=y
++CONFIG_MTD_MAP_BANK_WIDTH_2=y
++CONFIG_MTD_MAP_BANK_WIDTH_4=y
++# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
++CONFIG_MTD_CFI_I1=y
++CONFIG_MTD_CFI_I2=y
++# CONFIG_MTD_CFI_I4 is not set
++# CONFIG_MTD_CFI_I8 is not set
++# CONFIG_MTD_CFI_INTELEXT is not set
++CONFIG_MTD_CFI_AMDSTD=y
++# CONFIG_MTD_CFI_STAA is not set
++CONFIG_MTD_CFI_UTIL=y
++# CONFIG_MTD_RAM is not set
++# CONFIG_MTD_ROM is not set
++# CONFIG_MTD_ABSENT is not set
++
++#
++# Mapping drivers for chip access
++#
++# CONFIG_MTD_COMPLEX_MAPPINGS is not set
++# CONFIG_MTD_PHYSMAP is not set
++CONFIG_MTD_PHYSMAP_OF=y
++# CONFIG_MTD_INTEL_VR_NOR is not set
++# CONFIG_MTD_PLATRAM is not set
++
++#
++# Self-contained MTD device drivers
++#
++# CONFIG_MTD_PMC551 is not set
++# CONFIG_MTD_DATAFLASH is not set
++# CONFIG_MTD_M25P80 is not set
++# CONFIG_MTD_SLRAM is not set
++# CONFIG_MTD_PHRAM is not set
++# CONFIG_MTD_MTDRAM is not set
++# CONFIG_MTD_BLOCK2MTD is not set
++
++#
++# Disk-On-Chip Device Drivers
++#
++# CONFIG_MTD_DOC2000 is not set
++# CONFIG_MTD_DOC2001 is not set
++# CONFIG_MTD_DOC2001PLUS is not set
++CONFIG_MTD_NAND=y
++# CONFIG_MTD_NAND_VERIFY_WRITE is not set
++# CONFIG_MTD_NAND_ECC_SMC is not set
++# CONFIG_MTD_NAND_MUSEUM_IDS is not set
++CONFIG_MTD_NAND_IDS=y
++# CONFIG_MTD_NAND_DISKONCHIP is not set
++# CONFIG_MTD_NAND_CAFE is not set
++# CONFIG_MTD_NAND_NANDSIM is not set
++# CONFIG_MTD_NAND_PLATFORM is not set
++# CONFIG_MTD_ALAUDA is not set
++# CONFIG_MTD_NAND_FSL_ELBC is not set
++CONFIG_MTD_NAND_SOCRATES=y
++# CONFIG_MTD_ONENAND is not set
++
++#
++# UBI - Unsorted block images
++#
++# CONFIG_MTD_UBI is not set
++CONFIG_OF_DEVICE=y
++CONFIG_OF_I2C=y
++# CONFIG_PARPORT is not set
++CONFIG_BLK_DEV=y
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++CONFIG_BLK_DEV_LOOP=y
++# CONFIG_BLK_DEV_CRYPTOLOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_SX8 is not set
++# CONFIG_BLK_DEV_UB is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=32768
++# CONFIG_BLK_DEV_XIP is not set
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
++CONFIG_MISC_DEVICES=y
++# CONFIG_PHANTOM is not set
++# CONFIG_EEPROM_93CX6 is not set
++# CONFIG_SGI_IOC4 is not set
++# CONFIG_TIFM_CORE is not set
++# CONFIG_ENCLOSURE_SERVICES is not set
++CONFIG_HAVE_IDE=y
++# CONFIG_IDE is not set
++
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++CONFIG_SCSI=y
++CONFIG_SCSI_DMA=y
++# CONFIG_SCSI_TGT is not set
++# CONFIG_SCSI_NETLINK is not set
++CONFIG_SCSI_PROC_FS=y
++
++#
++# SCSI support type (disk, tape, CD-ROM)
++#
++CONFIG_BLK_DEV_SD=y
++# CONFIG_CHR_DEV_ST is not set
++# CONFIG_CHR_DEV_OSST is not set
++# CONFIG_BLK_DEV_SR is not set
++# CONFIG_CHR_DEV_SG is not set
++# CONFIG_CHR_DEV_SCH is not set
++
++#
++# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
++#
++# CONFIG_SCSI_MULTI_LUN is not set
++# CONFIG_SCSI_CONSTANTS is not set
++# CONFIG_SCSI_LOGGING is not set
++# CONFIG_SCSI_SCAN_ASYNC is not set
++CONFIG_SCSI_WAIT_SCAN=m
++
++#
++# SCSI Transports
++#
++# CONFIG_SCSI_SPI_ATTRS is not set
++# CONFIG_SCSI_FC_ATTRS is not set
++# CONFIG_SCSI_ISCSI_ATTRS is not set
++# CONFIG_SCSI_SAS_LIBSAS is not set
++# CONFIG_SCSI_SRP_ATTRS is not set
++# CONFIG_SCSI_LOWLEVEL is not set
++# CONFIG_ATA is not set
++# CONFIG_MD is not set
++# CONFIG_FUSION is not set
++
++#
++# IEEE 1394 (FireWire) support
++#
++
++#
++# Enable only one of the two stacks, unless you know what you are doing
++#
++# CONFIG_FIREWIRE is not set
++# CONFIG_IEEE1394 is not set
++# CONFIG_I2O is not set
++# CONFIG_MACINTOSH_DRIVERS is not set
++CONFIG_NETDEVICES=y
++# CONFIG_NETDEVICES_MULTIQUEUE is not set
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_MACVLAN is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++# CONFIG_VETH is not set
++# CONFIG_ARCNET is not set
++CONFIG_PHYLIB=y
++
++#
++# MII PHY device drivers
++#
++CONFIG_MARVELL_PHY=y
++# CONFIG_DAVICOM_PHY is not set
++# CONFIG_QSEMI_PHY is not set
++# CONFIG_LXT_PHY is not set
++# CONFIG_CICADA_PHY is not set
++# CONFIG_VITESSE_PHY is not set
++# CONFIG_SMSC_PHY is not set
++# CONFIG_BROADCOM_PHY is not set
++# CONFIG_ICPLUS_PHY is not set
++# CONFIG_REALTEK_PHY is not set
++# CONFIG_FIXED_PHY is not set
++# CONFIG_MDIO_BITBANG is not set
++CONFIG_NET_ETHERNET=y
++CONFIG_MII=y
++# CONFIG_HAPPYMEAL is not set
++# CONFIG_SUNGEM is not set
++# CONFIG_CASSINI is not set
++# CONFIG_NET_VENDOR_3COM is not set
++# CONFIG_ENC28J60 is not set
++# CONFIG_NET_TULIP is not set
++# CONFIG_HP100 is not set
++# CONFIG_IBM_NEW_EMAC_ZMII is not set
++# CONFIG_IBM_NEW_EMAC_RGMII is not set
++# CONFIG_IBM_NEW_EMAC_TAH is not set
++# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
++# CONFIG_NET_PCI is not set
++# CONFIG_B44 is not set
++CONFIG_NETDEV_1000=y
++# CONFIG_ACENIC is not set
++# CONFIG_DL2K is not set
++# CONFIG_E1000 is not set
++# CONFIG_E1000E is not set
++# CONFIG_E1000E_ENABLED is not set
++# CONFIG_IP1000 is not set
++# CONFIG_IGB is not set
++# CONFIG_NS83820 is not set
++# CONFIG_HAMACHI is not set
++# CONFIG_YELLOWFIN is not set
++# CONFIG_R8169 is not set
++# CONFIG_SIS190 is not set
++# CONFIG_SKGE is not set
++# CONFIG_SKY2 is not set
++# CONFIG_VIA_VELOCITY is not set
++# CONFIG_TIGON3 is not set
++# CONFIG_BNX2 is not set
++CONFIG_GIANFAR=y
++CONFIG_GFAR_NAPI=y
++# CONFIG_QLA3XXX is not set
++# CONFIG_ATL1 is not set
++# CONFIG_NETDEV_10000 is not set
++# CONFIG_TR is not set
++
++#
++# Wireless LAN
++#
++# CONFIG_WLAN_PRE80211 is not set
++# CONFIG_WLAN_80211 is not set
++# CONFIG_IWLWIFI_LEDS is not set
++
++#
++# USB Network Adapters
++#
++# CONFIG_USB_CATC is not set
++# CONFIG_USB_KAWETH is not set
++# CONFIG_USB_PEGASUS is not set
++# CONFIG_USB_RTL8150 is not set
++# CONFIG_USB_USBNET is not set
++# CONFIG_WAN is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_NET_FC is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++# CONFIG_ISDN is not set
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++# CONFIG_INPUT_FF_MEMLESS is not set
++# CONFIG_INPUT_POLLDEV is not set
++
++#
++# Userland interfaces
++#
++CONFIG_INPUT_MOUSEDEV=y
++CONFIG_INPUT_MOUSEDEV_PSAUX=y
++CONFIG_INPUT_MOUSEDEV_SCREEN_X=800
++CONFIG_INPUT_MOUSEDEV_SCREEN_Y=480
++# CONFIG_INPUT_JOYDEV is not set
++CONFIG_INPUT_EVDEV=y
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TABLET is not set
++CONFIG_INPUT_TOUCHSCREEN=y
++# CONFIG_TOUCHSCREEN_ADS7846 is not set
++# CONFIG_TOUCHSCREEN_FUJITSU is not set
++# CONFIG_TOUCHSCREEN_GUNZE is not set
++# CONFIG_TOUCHSCREEN_ELO is not set
++# CONFIG_TOUCHSCREEN_MTOUCH is not set
++# CONFIG_TOUCHSCREEN_MK712 is not set
++# CONFIG_TOUCHSCREEN_PENMOUNT is not set
++# CONFIG_TOUCHSCREEN_TOUCHRIGHT is not set
++# CONFIG_TOUCHSCREEN_TOUCHWIN is not set
++# CONFIG_TOUCHSCREEN_UCB1400 is not set
++CONFIG_TOUCHSCREEN_TSC2003=y
++# CONFIG_TOUCHSCREEN_USB_COMPOSITE is not set
++# CONFIG_INPUT_MISC is not set
++
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++CONFIG_VT=y
++CONFIG_VT_CONSOLE=y
++CONFIG_HW_CONSOLE=y
++# CONFIG_VT_HW_CONSOLE_BINDING is not set
++CONFIG_DEVKMEM=y
++# CONFIG_SERIAL_NONSTANDARD is not set
++# CONFIG_NOZOMI is not set
++
++#
++# Serial drivers
++#
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_PCI=y
++CONFIG_SERIAL_8250_NR_UARTS=2
++CONFIG_SERIAL_8250_RUNTIME_UARTS=2
++CONFIG_SERIAL_8250_EXTENDED=y
++CONFIG_SERIAL_8250_MANY_PORTS=y
++CONFIG_SERIAL_8250_SHARE_IRQ=y
++CONFIG_SERIAL_8250_DETECT_IRQ=y
++CONFIG_SERIAL_8250_RSA=y
++
++#
++# Non-8250 serial port support
++#
++# CONFIG_SERIAL_UARTLITE is not set
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++# CONFIG_SERIAL_JSM is not set
++# CONFIG_SERIAL_OF_PLATFORM is not set
++CONFIG_UNIX98_PTYS=y
++CONFIG_LEGACY_PTYS=y
++CONFIG_LEGACY_PTY_COUNT=256
++# CONFIG_IPMI_HANDLER is not set
++CONFIG_HW_RANDOM=y
++# CONFIG_NVRAM is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++# CONFIG_RAW_DRIVER is not set
++# CONFIG_TCG_TPM is not set
++CONFIG_DEVPORT=y
++CONFIG_I2C=y
++CONFIG_I2C_BOARDINFO=y
++CONFIG_I2C_CHARDEV=y
++
++#
++# I2C Hardware Bus support
++#
++# CONFIG_I2C_ALI1535 is not set
++# CONFIG_I2C_ALI1563 is not set
++# CONFIG_I2C_ALI15X3 is not set
++# CONFIG_I2C_AMD756 is not set
++# CONFIG_I2C_AMD8111 is not set
++# CONFIG_I2C_I801 is not set
++# CONFIG_I2C_I810 is not set
++# CONFIG_I2C_PIIX4 is not set
++CONFIG_I2C_MPC=y
++# CONFIG_I2C_NFORCE2 is not set
++# CONFIG_I2C_OCORES is not set
++# CONFIG_I2C_PARPORT_LIGHT is not set
++# CONFIG_I2C_PROSAVAGE is not set
++# CONFIG_I2C_SAVAGE4 is not set
++# CONFIG_I2C_SIMTEC is not set
++# CONFIG_I2C_SIS5595 is not set
++# CONFIG_I2C_SIS630 is not set
++# CONFIG_I2C_SIS96X is not set
++# CONFIG_I2C_TAOS_EVM is not set
++# CONFIG_I2C_STUB is not set
++# CONFIG_I2C_TINY_USB is not set
++# CONFIG_I2C_VIA is not set
++# CONFIG_I2C_VIAPRO is not set
++# CONFIG_I2C_VOODOO3 is not set
++# CONFIG_I2C_PCA_PLATFORM is not set
++
++#
++# Miscellaneous I2C Chip support
++#
++# CONFIG_DS1682 is not set
++# CONFIG_SENSORS_EEPROM is not set
++# CONFIG_SENSORS_PCF8574 is not set
++# CONFIG_PCF8575 is not set
++# CONFIG_SENSORS_PCF8591 is not set
++# CONFIG_SENSORS_MAX6875 is not set
++# CONFIG_SENSORS_TSL2550 is not set
++# CONFIG_I2C_DEBUG_CORE is not set
++# CONFIG_I2C_DEBUG_ALGO is not set
++# CONFIG_I2C_DEBUG_BUS is not set
++# CONFIG_I2C_DEBUG_CHIP is not set
++CONFIG_SPI=y
++CONFIG_SPI_MASTER=y
++
++#
++# SPI Master Controller Drivers
++#
++# CONFIG_SPI_BITBANG is not set
++CONFIG_SPI_SOCRATES=y
++
++#
++# SPI Protocol Masters
++#
++# CONFIG_SPI_AT25 is not set
++# CONFIG_SPI_SPIDEV is not set
++# CONFIG_SPI_TLE62X0 is not set
++# CONFIG_W1 is not set
++# CONFIG_POWER_SUPPLY is not set
++CONFIG_HWMON=y
++CONFIG_HWMON_VID=y
++# CONFIG_SENSORS_AD7418 is not set
++# CONFIG_SENSORS_ADM1021 is not set
++# CONFIG_SENSORS_ADM1025 is not set
++# CONFIG_SENSORS_ADM1026 is not set
++# CONFIG_SENSORS_ADM1029 is not set
++# CONFIG_SENSORS_ADM1031 is not set
++# CONFIG_SENSORS_ADM9240 is not set
++# CONFIG_SENSORS_ADT7470 is not set
++# CONFIG_SENSORS_ADT7473 is not set
++# CONFIG_SENSORS_ATXP1 is not set
++# CONFIG_SENSORS_DS1621 is not set
++# CONFIG_SENSORS_I5K_AMB is not set
++# CONFIG_SENSORS_F71805F is not set
++# CONFIG_SENSORS_F71882FG is not set
++# CONFIG_SENSORS_F75375S is not set
++# CONFIG_SENSORS_GL518SM is not set
++# CONFIG_SENSORS_GL520SM is not set
++# CONFIG_SENSORS_IT87 is not set
++# CONFIG_SENSORS_LM63 is not set
++# CONFIG_SENSORS_LM70 is not set
++CONFIG_SENSORS_LM75=y
++# CONFIG_SENSORS_LM77 is not set
++# CONFIG_SENSORS_LM78 is not set
++# CONFIG_SENSORS_LM80 is not set
++# CONFIG_SENSORS_LM83 is not set
++# CONFIG_SENSORS_LM85 is not set
++# CONFIG_SENSORS_LM87 is not set
++# CONFIG_SENSORS_LM90 is not set
++# CONFIG_SENSORS_LM92 is not set
++# CONFIG_SENSORS_LM93 is not set
++# CONFIG_SENSORS_MAX1619 is not set
++# CONFIG_SENSORS_MAX6650 is not set
++# CONFIG_SENSORS_PC87360 is not set
++# CONFIG_SENSORS_PC87427 is not set
++# CONFIG_SENSORS_SIS5595 is not set
++# CONFIG_SENSORS_DME1737 is not set
++# CONFIG_SENSORS_SMSC47M1 is not set
++# CONFIG_SENSORS_SMSC47M192 is not set
++# CONFIG_SENSORS_SMSC47B397 is not set
++# CONFIG_SENSORS_ADS7828 is not set
++# CONFIG_SENSORS_THMC50 is not set
++# CONFIG_SENSORS_VIA686A is not set
++# CONFIG_SENSORS_VT1211 is not set
++# CONFIG_SENSORS_VT8231 is not set
++CONFIG_SENSORS_W83781D=y
++# CONFIG_SENSORS_W83791D is not set
++# CONFIG_SENSORS_W83792D is not set
++# CONFIG_SENSORS_W83793 is not set
++# CONFIG_SENSORS_W83L785TS is not set
++# CONFIG_SENSORS_W83L786NG is not set
++# CONFIG_SENSORS_W83627HF is not set
++# CONFIG_SENSORS_W83627EHF is not set
++CONFIG_HWMON_DEBUG_CHIP=y
++# CONFIG_THERMAL is not set
++# CONFIG_THERMAL_HWMON is not set
++# CONFIG_WATCHDOG is not set
++
++#
++# Sonics Silicon Backplane
++#
++CONFIG_SSB_POSSIBLE=y
++# CONFIG_SSB is not set
++
++#
++# Multifunction device drivers
++#
++# CONFIG_MFD_SM501 is not set
++# CONFIG_HTC_PASIC3 is not set
++
++#
++# Multimedia devices
++#
++
++#
++# Multimedia core support
++#
++# CONFIG_VIDEO_DEV is not set
++# CONFIG_DVB_CORE is not set
++# CONFIG_VIDEO_MEDIA is not set
++
++#
++# Multimedia drivers
++#
++CONFIG_DAB=y
++# CONFIG_USB_DABUSB is not set
++
++#
++# Graphics support
++#
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++# CONFIG_VGASTATE is not set
++# CONFIG_VIDEO_OUTPUT_CONTROL is not set
++CONFIG_FB=y
++# CONFIG_FIRMWARE_EDID is not set
++# CONFIG_FB_DDC is not set
++CONFIG_FB_CFB_FILLRECT=y
++CONFIG_FB_CFB_COPYAREA=y
++CONFIG_FB_CFB_IMAGEBLIT=y
++# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
++# CONFIG_FB_SYS_FILLRECT is not set
++# CONFIG_FB_SYS_COPYAREA is not set
++# CONFIG_FB_SYS_IMAGEBLIT is not set
++CONFIG_FB_FOREIGN_ENDIAN=y
++CONFIG_FB_BOTH_ENDIAN=y
++# CONFIG_FB_BIG_ENDIAN is not set
++# CONFIG_FB_LITTLE_ENDIAN is not set
++# CONFIG_FB_SYS_FOPS is not set
++# CONFIG_FB_SVGALIB is not set
++# CONFIG_FB_MACMODES is not set
++# CONFIG_FB_BACKLIGHT is not set
++# CONFIG_FB_MODE_HELPERS is not set
++# CONFIG_FB_TILEBLITTING is not set
++
++#
++# Frame buffer hardware drivers
++#
++CONFIG_FB_MB862XX=y
++# CONFIG_FB_MB862XX_PCI_GDC is not set
++CONFIG_FB_MB862XX_LIME=y
++# CONFIG_FB_PRE_INIT_FB is not set
++# CONFIG_FB_CIRRUS is not set
++# CONFIG_FB_PM2 is not set
++# CONFIG_FB_CYBER2000 is not set
++# CONFIG_FB_OF is not set
++# CONFIG_FB_CT65550 is not set
++# CONFIG_FB_ASILIANT is not set
++# CONFIG_FB_IMSTT is not set
++# CONFIG_FB_VGA16 is not set
++# CONFIG_FB_S1D13XXX is not set
++# CONFIG_FB_NVIDIA is not set
++# CONFIG_FB_RIVA is not set
++# CONFIG_FB_MATROX is not set
++# CONFIG_FB_RADEON is not set
++# CONFIG_FB_ATY128 is not set
++# CONFIG_FB_ATY is not set
++# CONFIG_FB_S3 is not set
++# CONFIG_FB_SAVAGE is not set
++# CONFIG_FB_SIS is not set
++# CONFIG_FB_NEOMAGIC is not set
++# CONFIG_FB_KYRO is not set
++# CONFIG_FB_3DFX is not set
++# CONFIG_FB_VOODOO1 is not set
++# CONFIG_FB_VT8623 is not set
++# CONFIG_FB_TRIDENT is not set
++# CONFIG_FB_ARK is not set
++# CONFIG_FB_PM3 is not set
++# CONFIG_FB_FSL_DIU is not set
++# CONFIG_FB_IBM_GXT4500 is not set
++# CONFIG_FB_VIRTUAL is not set
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++
++#
++# Display device support
++#
++# CONFIG_DISPLAY_SUPPORT is not set
++
++#
++# Console display driver support
++#
++# CONFIG_VGA_CONSOLE is not set
++CONFIG_DUMMY_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE=y
++# CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY is not set
++# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
++CONFIG_FONTS=y
++# CONFIG_FONT_8x8 is not set
++CONFIG_FONT_8x16=y
++# CONFIG_FONT_6x11 is not set
++# CONFIG_FONT_7x14 is not set
++# CONFIG_FONT_PEARL_8x8 is not set
++# CONFIG_FONT_ACORN_8x8 is not set
++# CONFIG_FONT_MINI_4x6 is not set
++# CONFIG_FONT_SUN8x16 is not set
++# CONFIG_FONT_SUN12x22 is not set
++# CONFIG_FONT_10x18 is not set
++# CONFIG_LOGO is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++CONFIG_HID_SUPPORT=y
++CONFIG_HID=y
++# CONFIG_HID_DEBUG is not set
++# CONFIG_HIDRAW is not set
++
++#
++# USB Input Devices
++#
++CONFIG_USB_HID=y
++# CONFIG_USB_HIDINPUT_POWERBOOK is not set
++# CONFIG_HID_FF is not set
++# CONFIG_USB_HIDDEV is not set
++CONFIG_USB_SUPPORT=y
++CONFIG_USB_ARCH_HAS_HCD=y
++CONFIG_USB_ARCH_HAS_OHCI=y
++CONFIG_USB_ARCH_HAS_EHCI=y
++CONFIG_USB=y
++# CONFIG_USB_DEBUG is not set
++CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
++
++#
++# Miscellaneous USB options
++#
++CONFIG_USB_DEVICEFS=y
++CONFIG_USB_DEVICE_CLASS=y
++# CONFIG_USB_DYNAMIC_MINORS is not set
++# CONFIG_USB_OTG is not set
++# CONFIG_USB_OTG_WHITELIST is not set
++# CONFIG_USB_OTG_BLACKLIST_HUB is not set
++
++#
++# USB Host Controller Drivers
++#
++# CONFIG_USB_C67X00_HCD is not set
++CONFIG_USB_EHCI_HCD=y
++# CONFIG_USB_EHCI_ROOT_HUB_TT is not set
++# CONFIG_USB_EHCI_TT_NEWSCHED is not set
++# CONFIG_USB_EHCI_FSL is not set
++CONFIG_USB_EHCI_HCD_PPC_OF=y
++# CONFIG_USB_ISP116X_HCD is not set
++# CONFIG_USB_ISP1760_HCD is not set
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_OHCI_HCD_PPC_OF=y
++CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
++# CONFIG_USB_OHCI_HCD_PPC_OF_LE is not set
++CONFIG_USB_OHCI_HCD_PCI=y
++CONFIG_USB_OHCI_BIG_ENDIAN_DESC=y
++CONFIG_USB_OHCI_BIG_ENDIAN_MMIO=y
++CONFIG_USB_OHCI_LITTLE_ENDIAN=y
++# CONFIG_USB_UHCI_HCD is not set
++# CONFIG_USB_SL811_HCD is not set
++# CONFIG_USB_R8A66597_HCD is not set
++
++#
++# USB Device Class drivers
++#
++# CONFIG_USB_ACM is not set
++# CONFIG_USB_PRINTER is not set
++# CONFIG_USB_WDM is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++
++#
++# may also be needed; see USB_STORAGE Help for more information
++#
++CONFIG_USB_STORAGE=y
++# CONFIG_USB_STORAGE_DEBUG is not set
++# CONFIG_USB_STORAGE_DATAFAB is not set
++# CONFIG_USB_STORAGE_FREECOM is not set
++# CONFIG_USB_STORAGE_ISD200 is not set
++# CONFIG_USB_STORAGE_DPCM is not set
++# CONFIG_USB_STORAGE_USBAT is not set
++# CONFIG_USB_STORAGE_SDDR09 is not set
++# CONFIG_USB_STORAGE_SDDR55 is not set
++# CONFIG_USB_STORAGE_JUMPSHOT is not set
++# CONFIG_USB_STORAGE_ALAUDA is not set
++# CONFIG_USB_STORAGE_ONETOUCH is not set
++# CONFIG_USB_STORAGE_KARMA is not set
++# CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
++# CONFIG_USB_LIBUSUAL is not set
++
++#
++# USB Imaging devices
++#
++# CONFIG_USB_MDC800 is not set
++# CONFIG_USB_MICROTEK is not set
++CONFIG_USB_MON=y
++
++#
++# USB port drivers
++#
++# CONFIG_USB_SERIAL is not set
++
++#
++# USB Miscellaneous drivers
++#
++# CONFIG_USB_EMI62 is not set
++# CONFIG_USB_EMI26 is not set
++# CONFIG_USB_ADUTUX is not set
++# CONFIG_USB_AUERSWALD is not set
++# CONFIG_USB_RIO500 is not set
++# CONFIG_USB_LEGOTOWER is not set
++# CONFIG_USB_LCD is not set
++# CONFIG_USB_BERRY_CHARGE is not set
++# CONFIG_USB_LED is not set
++# CONFIG_USB_CYPRESS_CY7C63 is not set
++# CONFIG_USB_CYTHERM is not set
++# CONFIG_USB_PHIDGET is not set
++# CONFIG_USB_IDMOUSE is not set
++# CONFIG_USB_FTDI_ELAN is not set
++# CONFIG_USB_APPLEDISPLAY is not set
++# CONFIG_USB_SISUSBVGA is not set
++# CONFIG_USB_LD is not set
++# CONFIG_USB_TRANCEVIBRATOR is not set
++# CONFIG_USB_IOWARRIOR is not set
++# CONFIG_USB_TEST is not set
++# CONFIG_USB_ISIGHTFW is not set
++# CONFIG_USB_GADGET is not set
++# CONFIG_MMC is not set
++# CONFIG_MEMSTICK is not set
++# CONFIG_NEW_LEDS is not set
++# CONFIG_ACCESSIBILITY is not set
++# CONFIG_INFINIBAND is not set
++# CONFIG_EDAC is not set
++CONFIG_RTC_LIB=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_HCTOSYS=y
++CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
++# CONFIG_RTC_DEBUG is not set
++
++#
++# RTC interfaces
++#
++CONFIG_RTC_INTF_SYSFS=y
++CONFIG_RTC_INTF_PROC=y
++CONFIG_RTC_INTF_DEV=y
++# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
++# CONFIG_RTC_DRV_TEST is not set
++
++#
++# I2C RTC drivers
++#
++# CONFIG_RTC_DRV_DS1307 is not set
++# CONFIG_RTC_DRV_DS1374 is not set
++# CONFIG_RTC_DRV_DS1672 is not set
++# CONFIG_RTC_DRV_MAX6900 is not set
++# CONFIG_RTC_DRV_RS5C372 is not set
++# CONFIG_RTC_DRV_ISL1208 is not set
++# CONFIG_RTC_DRV_X1205 is not set
++# CONFIG_RTC_DRV_PCF8563 is not set
++# CONFIG_RTC_DRV_PCF8583 is not set
++# CONFIG_RTC_DRV_M41T80 is not set
++# CONFIG_RTC_DRV_S35390A is not set
++# CONFIG_RTC_DRV_FM3130 is not set
++CONFIG_RTC_DRV_RX8025=y
++
++#
++# SPI RTC drivers
++#
++# CONFIG_RTC_DRV_MAX6902 is not set
++# CONFIG_RTC_DRV_R9701 is not set
++# CONFIG_RTC_DRV_RS5C348 is not set
++
++#
++# Platform RTC drivers
++#
++# CONFIG_RTC_DRV_CMOS is not set
++# CONFIG_RTC_DRV_DS1511 is not set
++# CONFIG_RTC_DRV_DS1553 is not set
++# CONFIG_RTC_DRV_DS1742 is not set
++# CONFIG_RTC_DRV_STK17TA8 is not set
++# CONFIG_RTC_DRV_M48T86 is not set
++# CONFIG_RTC_DRV_M48T59 is not set
++# CONFIG_RTC_DRV_V3020 is not set
++
++#
++# on-CPU RTC drivers
++#
++CONFIG_RTC_DRV_PPC=y
++# CONFIG_DMADEVICES is not set
++# CONFIG_UIO is not set
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++# CONFIG_EXT2_FS_XATTR is not set
++# CONFIG_EXT2_FS_XIP is not set
++CONFIG_EXT3_FS=y
++CONFIG_EXT3_FS_XATTR=y
++# CONFIG_EXT3_FS_POSIX_ACL is not set
++# CONFIG_EXT3_FS_SECURITY is not set
++# CONFIG_EXT4DEV_FS is not set
++CONFIG_JBD=y
++CONFIG_FS_MBCACHE=y
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_OCFS2_FS is not set
++CONFIG_DNOTIFY=y
++CONFIG_INOTIFY=y
++CONFIG_INOTIFY_USER=y
++# CONFIG_QUOTA is not set
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++CONFIG_TMPFS=y
++# CONFIG_TMPFS_POSIX_ACL is not set
++# CONFIG_HUGETLB_PAGE is not set
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++CONFIG_JFFS2_FS=y
++CONFIG_JFFS2_FS_DEBUG=0
++CONFIG_JFFS2_FS_WRITEBUFFER=y
++# CONFIG_JFFS2_FS_WBUF_VERIFY is not set
++# CONFIG_JFFS2_SUMMARY is not set
++# CONFIG_JFFS2_FS_XATTR is not set
++# CONFIG_JFFS2_COMPRESSION_OPTIONS is not set
++CONFIG_JFFS2_ZLIB=y
++# CONFIG_JFFS2_LZO is not set
++CONFIG_JFFS2_RTIME=y
++# CONFIG_JFFS2_RUBIN is not set
++CONFIG_CRAMFS=y
++# CONFIG_VXFS_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_ROMFS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++CONFIG_NETWORK_FILESYSTEMS=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++# CONFIG_NFS_V3_ACL is not set
++# CONFIG_NFS_V4 is not set
++# CONFIG_NFSD is not set
++CONFIG_ROOT_NFS=y
++CONFIG_LOCKD=y
++CONFIG_LOCKD_V4=y
++CONFIG_NFS_COMMON=y
++CONFIG_SUNRPC=y
++# CONFIG_SUNRPC_BIND34 is not set
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++
++#
++# Partition Types
++#
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_ACORN_PARTITION is not set
++# CONFIG_OSF_PARTITION is not set
++# CONFIG_AMIGA_PARTITION is not set
++# CONFIG_ATARI_PARTITION is not set
++# CONFIG_MAC_PARTITION is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_BSD_DISKLABEL is not set
++# CONFIG_MINIX_SUBPARTITION is not set
++# CONFIG_SOLARIS_X86_PARTITION is not set
++# CONFIG_UNIXWARE_DISKLABEL is not set
++# CONFIG_LDM_PARTITION is not set
++# CONFIG_SGI_PARTITION is not set
++# CONFIG_ULTRIX_PARTITION is not set
++# CONFIG_SUN_PARTITION is not set
++# CONFIG_KARMA_PARTITION is not set
++# CONFIG_EFI_PARTITION is not set
++# CONFIG_SYSV68_PARTITION is not set
++# CONFIG_NLS is not set
++# CONFIG_DLM is not set
++
++#
++# Library routines
++#
++CONFIG_BITREVERSE=y
++# CONFIG_GENERIC_FIND_FIRST_BIT is not set
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++# CONFIG_CRC_ITU_T is not set
++CONFIG_CRC32=y
++# CONFIG_CRC7 is not set
++# CONFIG_LIBCRC32C is not set
++CONFIG_ZLIB_INFLATE=y
++CONFIG_ZLIB_DEFLATE=y
++CONFIG_PLIST=y
++CONFIG_HAS_IOMEM=y
++CONFIG_HAS_IOPORT=y
++CONFIG_HAS_DMA=y
++CONFIG_HAVE_LMB=y
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_WARN_DEPRECATED=y
++CONFIG_ENABLE_MUST_CHECK=y
++CONFIG_FRAME_WARN=1024
++# CONFIG_MAGIC_SYSRQ is not set
++# CONFIG_UNUSED_SYMBOLS is not set
++# CONFIG_DEBUG_FS is not set
++# CONFIG_HEADERS_CHECK is not set
++# CONFIG_DEBUG_KERNEL is not set
++# CONFIG_SLUB_DEBUG_ON is not set
++# CONFIG_SLUB_STATS is not set
++# CONFIG_DEBUG_BUGVERBOSE is not set
++# CONFIG_SAMPLES is not set
++# CONFIG_IRQSTACKS is not set
++# CONFIG_PPC_EARLY_DEBUG is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++# CONFIG_SECURITY_FILE_CAPABILITIES is not set
++CONFIG_CRYPTO=y
++
++#
++# Crypto core or helper
++#
++# CONFIG_CRYPTO_MANAGER is not set
++# CONFIG_CRYPTO_GF128MUL is not set
++# CONFIG_CRYPTO_NULL is not set
++# CONFIG_CRYPTO_CRYPTD is not set
++# CONFIG_CRYPTO_AUTHENC is not set
++# CONFIG_CRYPTO_TEST is not set
++
++#
++# Authenticated Encryption with Associated Data
++#
++# CONFIG_CRYPTO_CCM is not set
++# CONFIG_CRYPTO_GCM is not set
++# CONFIG_CRYPTO_SEQIV is not set
++
++#
++# Block modes
++#
++# CONFIG_CRYPTO_CBC is not set
++# CONFIG_CRYPTO_CTR is not set
++# CONFIG_CRYPTO_CTS is not set
++# CONFIG_CRYPTO_ECB is not set
++# CONFIG_CRYPTO_LRW is not set
++# CONFIG_CRYPTO_PCBC is not set
++# CONFIG_CRYPTO_XTS is not set
++
++#
++# Hash modes
++#
++# CONFIG_CRYPTO_HMAC is not set
++# CONFIG_CRYPTO_XCBC is not set
++
++#
++# Digest
++#
++# CONFIG_CRYPTO_CRC32C is not set
++# CONFIG_CRYPTO_MD4 is not set
++# CONFIG_CRYPTO_MD5 is not set
++# CONFIG_CRYPTO_MICHAEL_MIC is not set
++# CONFIG_CRYPTO_SHA1 is not set
++# CONFIG_CRYPTO_SHA256 is not set
++# CONFIG_CRYPTO_SHA512 is not set
++# CONFIG_CRYPTO_TGR192 is not set
++# CONFIG_CRYPTO_WP512 is not set
++
++#
++# Ciphers
++#
++# CONFIG_CRYPTO_AES is not set
++# CONFIG_CRYPTO_ANUBIS is not set
++# CONFIG_CRYPTO_ARC4 is not set
++# CONFIG_CRYPTO_BLOWFISH is not set
++# CONFIG_CRYPTO_CAMELLIA is not set
++# CONFIG_CRYPTO_CAST5 is not set
++# CONFIG_CRYPTO_CAST6 is not set
++# CONFIG_CRYPTO_DES is not set
++# CONFIG_CRYPTO_FCRYPT is not set
++# CONFIG_CRYPTO_KHAZAD is not set
++# CONFIG_CRYPTO_SALSA20 is not set
++# CONFIG_CRYPTO_SEED is not set
++# CONFIG_CRYPTO_SERPENT is not set
++# CONFIG_CRYPTO_TEA is not set
++# CONFIG_CRYPTO_TWOFISH is not set
++
++#
++# Compression
++#
++# CONFIG_CRYPTO_DEFLATE is not set
++# CONFIG_CRYPTO_LZO is not set
++CONFIG_CRYPTO_HW=y
++# CONFIG_CRYPTO_DEV_HIFN_795X is not set
++# CONFIG_PPC_CLOCK is not set
++# CONFIG_VIRTUALIZATION is not set
+Index: linux-2.6/arch/powerpc/platforms/85xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/85xx/Kconfig
+@@ -51,6 +51,12 @@ config MPC85xx_DS
+ 	help
+ 	  This option enables support for the MPC85xx DS (MPC8544 DS) board
+ 
++config SOCRATES
++	bool "Socrates"
++	select DEFAULT_UIMAGE
++	help
++	  This option enables support for the Socrates board.
++
+ config KSI8560
+         bool "Emerson KSI8560"
+         select DEFAULT_UIMAGE
+Index: linux-2.6/arch/powerpc/platforms/85xx/Makefile
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/Makefile
++++ linux-2.6/arch/powerpc/platforms/85xx/Makefile
+@@ -13,4 +13,5 @@ obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
+ obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
+ obj-$(CONFIG_SBC8560)     += sbc8560.o
+ obj-$(CONFIG_SBC8548)     += sbc8548.o
++obj-$(CONFIG_SOCRATES)    += socrates.o socrates_fpga_pic.o
+ obj-$(CONFIG_KSI8560)	  += ksi8560.o
+Index: linux-2.6/arch/powerpc/platforms/85xx/socrates.c
+===================================================================
+--- /dev/null
++++ linux-2.6/arch/powerpc/platforms/85xx/socrates.c
+@@ -0,0 +1,133 @@
++/*
++ * Copyright (c) 2008 Emcraft Systems
++ * Sergei Poselenov <sposelenov@emcraft.com>
++ *
++ * Based on MPC8560 ADS and arch/ppc tqm85xx ports
++ *
++ * Maintained by Kumar Gala (see MAINTAINERS for contact information)
++ *
++ * Copyright 2008 Freescale Semiconductor Inc.
++ *
++ * Copyright (c) 2005-2006 DENX Software Engineering
++ * Stefan Roese <sr@denx.de>
++ *
++ * Based on original work by
++ * 	Kumar Gala <kumar.gala@freescale.com>
++ *      Copyright 2004 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/stddef.h>
++#include <linux/kernel.h>
 +#include <linux/pci.h>
-+#include <linux/phy.h>
-+#include <linux/in.h>
-+#include <linux/io.h>
-+#include <linux/ip.h>
++#include <linux/kdev_t.h>
++#include <linux/delay.h>
++#include <linux/seq_file.h>
++#include <linux/of_platform.h>
 +
-+#include "xilinx_temac.h"
++#include <asm/system.h>
++#include <asm/time.h>
++#include <asm/machdep.h>
++#include <asm/pci-bridge.h>
++#include <asm/mpic.h>
++#include <asm/prom.h>
++#include <mm/mmu_decl.h>
++#include <asm/udbg.h>
 +
-+#define TX_BD_NUM   64
-+#define RX_BD_NUM   128
++#include <sysdev/fsl_soc.h>
++#include <sysdev/fsl_pci.h>
 +
-+/* ---------------------------------------------------------------------
-+ * Low level register access functions
-+ */
++#include "socrates_fpga_pic.h"
 +
-+u32 temac_ior(struct temac_local *lp, int offset)
++static void __init socrates_pic_init(void)
 +{
-+	return in_be32((u32 *)(lp->regs + offset));
-+}
-+
-+void temac_iow(struct temac_local *lp, int offset, u32 value)
-+{
-+	out_be32((u32 *) (lp->regs + offset), value);
-+}
-+
-+int temac_indirect_busywait(struct temac_local *lp)
-+{
-+	long end = jiffies + 2;
-+
-+	while (!(temac_ior(lp, XTE_RDY0_OFFSET) & XTE_RDY0_HARD_ACS_RDY_MASK)) {
-+		if (end - jiffies <= 0) {
-+			WARN_ON(1);
-+			return -ETIMEDOUT;
-+		}
-+		msleep(1);
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * temac_indirect_in32
-+ *
-+ * lp->indirect_mutex must be held when calling this function
-+ */
-+u32 temac_indirect_in32(struct temac_local *lp, int reg)
-+{
-+	u32 val;
-+
-+	if (temac_indirect_busywait(lp))
-+		return -ETIMEDOUT;
-+	temac_iow(lp, XTE_CTL0_OFFSET, reg);
-+	if (temac_indirect_busywait(lp))
-+		return -ETIMEDOUT;
-+	val = temac_ior(lp, XTE_LSW0_OFFSET);
-+
-+	return val;
-+}
-+
-+/**
-+ * temac_indirect_out32
-+ *
-+ * lp->indirect_mutex must be held when calling this function
-+ */
-+void temac_indirect_out32(struct temac_local *lp, int reg, u32 value)
-+{
-+	if (temac_indirect_busywait(lp))
-+		return;
-+	temac_iow(lp, XTE_LSW0_OFFSET, value);
-+	temac_iow(lp, XTE_CTL0_OFFSET, CNTLREG_WRITE_ENABLE_MASK | reg);
-+}
-+
-+static u32 temac_dma_in32(struct temac_local *lp, int reg)
-+{
-+	return dcr_read(lp->sdma_dcrs, reg);
-+}
-+
-+static void temac_dma_out32(struct temac_local *lp, int reg, u32 value)
-+{
-+	dcr_write(lp->sdma_dcrs, reg, value);
-+}
-+
-+/**
-+ * temac_dma_bd_init - Setup buffer descriptor rings
-+ */
-+static int temac_dma_bd_init(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	struct sk_buff *skb;
-+	int i;
-+
-+	lp->rx_skb = kzalloc(sizeof(struct sk_buff)*RX_BD_NUM, GFP_KERNEL);
-+	/* allocate the tx and rx ring buffer descriptors. */
-+	/* returns a virtual addres and a physical address. */
-+	lp->tx_bd_v = dma_alloc_coherent(NULL, sizeof(*lp->tx_bd_v) * TX_BD_NUM,
-+					 &lp->tx_bd_p, GFP_KERNEL);
-+	lp->rx_bd_v = dma_alloc_coherent(NULL, sizeof(*lp->rx_bd_v) * RX_BD_NUM,
-+					 &lp->rx_bd_p, GFP_KERNEL);
-+
-+	memset(lp->tx_bd_v, 0, sizeof(*lp->tx_bd_v) * TX_BD_NUM);
-+	for (i = 0; i < TX_BD_NUM; i++) {
-+		lp->tx_bd_v[i].next = lp->tx_bd_p +
-+				sizeof(*lp->tx_bd_v) * ((i + 1) % TX_BD_NUM);
-+	}
-+
-+	memset(lp->rx_bd_v, 0, sizeof(*lp->rx_bd_v) * RX_BD_NUM);
-+	for (i = 0; i < RX_BD_NUM; i++) {
-+		lp->rx_bd_v[i].next = lp->rx_bd_p +
-+				sizeof(*lp->rx_bd_v) * ((i + 1) % RX_BD_NUM);
-+
-+		skb = alloc_skb(XTE_MAX_JUMBO_FRAME_SIZE
-+				+ XTE_ALIGN, GFP_ATOMIC);
-+		if (skb == 0) {
-+			dev_err(&ndev->dev, "alloc_skb error %d\n", i);
-+			return -1;
-+		}
-+		lp->rx_skb[i] = skb;
-+		skb_reserve(skb,  BUFFER_ALIGN(skb->data));
-+		/* returns physical address of skb->data */
-+		lp->rx_bd_v[i].phys = pci_map_single(NULL, skb->data,
-+						     XTE_MAX_JUMBO_FRAME_SIZE,
-+						     PCI_DMA_FROMDEVICE);
-+		lp->rx_bd_v[i].len = XTE_MAX_JUMBO_FRAME_SIZE;
-+		lp->rx_bd_v[i].app0 = STS_CTRL_APP0_IRQONEND;
-+	}
-+
-+	temac_dma_out32(lp, TX_CHNL_CTRL, 0x10220400 |
-+					  CHNL_CTRL_IRQ_EN |
-+					  CHNL_CTRL_IRQ_DLY_EN |
-+					  CHNL_CTRL_IRQ_COAL_EN);
-+	/* 0x10220483 */
-+	/* 0x00100483 */
-+	temac_dma_out32(lp, RX_CHNL_CTRL, 0xff010000 |
-+					  CHNL_CTRL_IRQ_EN |
-+					  CHNL_CTRL_IRQ_DLY_EN |
-+					  CHNL_CTRL_IRQ_COAL_EN |
-+					  CHNL_CTRL_IRQ_IOE);
-+	/* 0xff010283 */
-+
-+	temac_dma_out32(lp, RX_CURDESC_PTR,  lp->rx_bd_p);
-+	temac_dma_out32(lp, RX_TAILDESC_PTR,
-+		       lp->rx_bd_p + (sizeof(*lp->rx_bd_v) * (RX_BD_NUM - 1)));
-+	temac_dma_out32(lp, TX_CURDESC_PTR, lp->tx_bd_p);
-+
-+	return 0;
-+}
-+
-+/* ---------------------------------------------------------------------
-+ * net_device_ops
-+ */
-+
-+static int temac_set_mac_address(struct net_device *ndev, void *address)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+
-+	if (address)
-+		memcpy(ndev->dev_addr, address, ETH_ALEN);
-+
-+	if (!is_valid_ether_addr(ndev->dev_addr))
-+		random_ether_addr(ndev->dev_addr);
-+
-+	/* set up unicast MAC address filter set its mac address */
-+	mutex_lock(&lp->indirect_mutex);
-+	temac_indirect_out32(lp, XTE_UAW0_OFFSET,
-+			     (ndev->dev_addr[0]) |
-+			     (ndev->dev_addr[1] << 8) |
-+			     (ndev->dev_addr[2] << 16) |
-+			     (ndev->dev_addr[3] << 24));
-+	/* There are reserved bits in EUAW1
-+	 * so don't affect them Set MAC bits [47:32] in EUAW1 */
-+	temac_indirect_out32(lp, XTE_UAW1_OFFSET,
-+			     (ndev->dev_addr[4] & 0x000000ff) |
-+			     (ndev->dev_addr[5] << 8));
-+	mutex_unlock(&lp->indirect_mutex);
-+
-+	return 0;
-+}
-+
-+static void temac_set_multicast_list(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	u32 multi_addr_msw, multi_addr_lsw, val;
-+	int i;
-+
-+	mutex_lock(&lp->indirect_mutex);
-+	if (ndev->flags & (IFF_ALLMULTI | IFF_PROMISC)
-+			|| ndev->mc_count > MULTICAST_CAM_TABLE_NUM) {
-+		/*
-+		 *	We must make the kernel realise we had to move
-+		 *	into promisc mode or we start all out war on
-+		 *	the cable. If it was a promisc request the
-+		 *	flag is already set. If not we assert it.
-+		 */
-+		ndev->flags |= IFF_PROMISC;
-+		temac_indirect_out32(lp, XTE_AFM_OFFSET, XTE_AFM_EPPRM_MASK);
-+		dev_info(&ndev->dev, "Promiscuous mode enabled.\n");
-+	} else if (ndev->mc_count) {
-+		struct dev_mc_list *mclist = ndev->mc_list;
-+		for (i = 0; mclist && i < ndev->mc_count; i++) {
-+
-+			if (i >= MULTICAST_CAM_TABLE_NUM)
-+				break;
-+			multi_addr_msw = ((mclist->dmi_addr[3] << 24) |
-+					  (mclist->dmi_addr[2] << 16) |
-+					  (mclist->dmi_addr[1] << 8) |
-+					  (mclist->dmi_addr[0]));
-+			temac_indirect_out32(lp, XTE_MAW0_OFFSET,
-+					     multi_addr_msw);
-+			multi_addr_lsw = ((mclist->dmi_addr[5] << 8) |
-+					  (mclist->dmi_addr[4]) | (i << 16));
-+			temac_indirect_out32(lp, XTE_MAW1_OFFSET,
-+					     multi_addr_lsw);
-+			mclist = mclist->next;
-+		}
-+	} else {
-+		val = temac_indirect_in32(lp, XTE_AFM_OFFSET);
-+		temac_indirect_out32(lp, XTE_AFM_OFFSET,
-+				     val & ~XTE_AFM_EPPRM_MASK);
-+		temac_indirect_out32(lp, XTE_MAW0_OFFSET, 0);
-+		temac_indirect_out32(lp, XTE_MAW1_OFFSET, 0);
-+		dev_info(&ndev->dev, "Promiscuous mode disabled.\n");
-+	}
-+	mutex_unlock(&lp->indirect_mutex);
-+}
-+
-+struct temac_option {
-+	int flg;
-+	u32 opt;
-+	u32 reg;
-+	u32 m_or;
-+	u32 m_and;
-+} temac_options[] = {
-+	/* Turn on jumbo packet support for both Rx and Tx */
-+	{
-+		.opt = XTE_OPTION_JUMBO,
-+		.reg = XTE_TXC_OFFSET,
-+		.m_or = XTE_TXC_TXJMBO_MASK,
-+	},
-+	{
-+		.opt = XTE_OPTION_JUMBO,
-+		.reg = XTE_RXC1_OFFSET,
-+		.m_or =XTE_RXC1_RXJMBO_MASK,
-+	},
-+	/* Turn on VLAN packet support for both Rx and Tx */
-+	{
-+		.opt = XTE_OPTION_VLAN,
-+		.reg = XTE_TXC_OFFSET,
-+		.m_or =XTE_TXC_TXVLAN_MASK,
-+	},
-+	{
-+		.opt = XTE_OPTION_VLAN,
-+		.reg = XTE_RXC1_OFFSET,
-+		.m_or =XTE_RXC1_RXVLAN_MASK,
-+	},
-+	/* Turn on FCS stripping on receive packets */
-+	{
-+		.opt = XTE_OPTION_FCS_STRIP,
-+		.reg = XTE_RXC1_OFFSET,
-+		.m_or =XTE_RXC1_RXFCS_MASK,
-+	},
-+	/* Turn on FCS insertion on transmit packets */
-+	{
-+		.opt = XTE_OPTION_FCS_INSERT,
-+		.reg = XTE_TXC_OFFSET,
-+		.m_or =XTE_TXC_TXFCS_MASK,
-+	},
-+	/* Turn on length/type field checking on receive packets */
-+	{
-+		.opt = XTE_OPTION_LENTYPE_ERR,
-+		.reg = XTE_RXC1_OFFSET,
-+		.m_or =XTE_RXC1_RXLT_MASK,
-+	},
-+	/* Turn on flow control */
-+	{
-+		.opt = XTE_OPTION_FLOW_CONTROL,
-+		.reg = XTE_FCC_OFFSET,
-+		.m_or =XTE_FCC_RXFLO_MASK,
-+	},
-+	/* Turn on flow control */
-+	{
-+		.opt = XTE_OPTION_FLOW_CONTROL,
-+		.reg = XTE_FCC_OFFSET,
-+		.m_or =XTE_FCC_TXFLO_MASK,
-+	},
-+	/* Turn on promiscuous frame filtering (all frames are received ) */
-+	{
-+		.opt = XTE_OPTION_PROMISC,
-+		.reg = XTE_AFM_OFFSET,
-+		.m_or =XTE_AFM_EPPRM_MASK,
-+	},
-+	/* Enable transmitter if not already enabled */
-+	{
-+		.opt = XTE_OPTION_TXEN,
-+		.reg = XTE_TXC_OFFSET,
-+		.m_or =XTE_TXC_TXEN_MASK,
-+	},
-+	/* Enable receiver? */
-+	{
-+		.opt = XTE_OPTION_RXEN,
-+		.reg = XTE_RXC1_OFFSET,
-+		.m_or =XTE_RXC1_RXEN_MASK,
-+	},
-+	{}
-+};
-+
-+/**
-+ * temac_setoptions
-+ */
-+static u32 temac_setoptions(struct net_device *ndev, u32 options)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	struct temac_option *tp = &temac_options[0];
-+	int reg;
-+
-+	mutex_lock(&lp->indirect_mutex);
-+	while (tp->opt) {
-+		reg = temac_indirect_in32(lp, tp->reg) & ~tp->m_or;
-+		if (options & tp->opt)
-+			reg |= tp->m_or;
-+		temac_indirect_out32(lp, tp->reg, reg);
-+		tp++;
-+	}
-+	lp->options |= options;
-+	mutex_unlock(&lp->indirect_mutex);
-+
-+	return (0);
-+}
-+
-+/* Initilize temac */
-+static void temac_device_reset(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	u32 timeout;
-+	u32 val;
-+
-+	/* Perform a software reset */
-+
-+	/* 0x300 host enable bit ? */
-+	/* reset PHY through control register ?:1 */
-+
-+	dev_dbg(&ndev->dev, "%s()\n", __func__);
-+
-+	mutex_lock(&lp->indirect_mutex);
-+	/* Reset the receiver and wait for it to finish reset */
-+	temac_indirect_out32(lp, XTE_RXC1_OFFSET, XTE_RXC1_RXRST_MASK);
-+	timeout = 1000;
-+	while (temac_indirect_in32(lp, XTE_RXC1_OFFSET) & XTE_RXC1_RXRST_MASK) {
-+		udelay(1);
-+		if (--timeout == 0) {
-+			dev_err(&ndev->dev,
-+				"temac_device_reset RX reset timeout!!\n");
-+			break;
-+		}
-+	}
-+
-+	/* Reset the transmitter and wait for it to finish reset */
-+	temac_indirect_out32(lp, XTE_TXC_OFFSET, XTE_TXC_TXRST_MASK);
-+	timeout = 1000;
-+	while (temac_indirect_in32(lp, XTE_TXC_OFFSET) & XTE_TXC_TXRST_MASK) {
-+		udelay(1);
-+		if (--timeout == 0) {
-+			dev_err(&ndev->dev,
-+				"temac_device_reset TX reset timeout!!\n");
-+			break;
-+		}
-+	}
-+
-+	/* Disable the receiver */
-+	val = temac_indirect_in32(lp, XTE_RXC1_OFFSET);
-+	temac_indirect_out32(lp, XTE_RXC1_OFFSET, val & ~XTE_RXC1_RXEN_MASK);
-+
-+	/* Reset Local Link (DMA) */
-+	temac_dma_out32(lp, DMA_CONTROL_REG, DMA_CONTROL_RST);
-+	timeout = 1000;
-+	while (temac_dma_in32(lp, DMA_CONTROL_REG) & DMA_CONTROL_RST) {
-+		udelay(1);
-+		if (--timeout == 0) {
-+			dev_err(&ndev->dev,
-+				"temac_device_reset DMA reset timeout!!\n");
-+			break;
-+		}
-+	}
-+	temac_dma_out32(lp, DMA_CONTROL_REG, DMA_TAIL_ENABLE);
-+
-+	temac_dma_bd_init(ndev);
-+
-+	temac_indirect_out32(lp, XTE_RXC0_OFFSET, 0);
-+	temac_indirect_out32(lp, XTE_RXC1_OFFSET, 0);
-+	temac_indirect_out32(lp, XTE_TXC_OFFSET, 0);
-+	temac_indirect_out32(lp, XTE_FCC_OFFSET, XTE_FCC_RXFLO_MASK);
-+
-+	mutex_unlock(&lp->indirect_mutex);
-+
-+	/* Sync default options with HW
-+	 * but leave receiver and transmitter disabled.  */
-+	temac_setoptions(ndev,
-+			 lp->options & ~(XTE_OPTION_TXEN | XTE_OPTION_RXEN));
-+
-+	temac_set_mac_address(ndev, NULL);
-+
-+	/* Set address filter table */
-+	temac_set_multicast_list(ndev);
-+	if (temac_setoptions(ndev, lp->options))
-+		dev_err(&ndev->dev, "Error setting TEMAC options\n");
-+
-+	/* Init Driver variable */
-+	ndev->trans_start = 0;
-+}
-+
-+void temac_adjust_link(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	struct phy_device *phy = lp->phy_dev;
-+	u32 mii_speed;
-+	int link_state;
-+
-+	/* hash together the state values to decide if something has changed */
-+	link_state = phy->speed | (phy->duplex << 1) | phy->link;
-+
-+	mutex_lock(&lp->indirect_mutex);
-+	if (lp->last_link != link_state) {
-+		mii_speed = temac_indirect_in32(lp, XTE_EMCFG_OFFSET);
-+		mii_speed &= ~XTE_EMCFG_LINKSPD_MASK;
-+
-+		switch (phy->speed) {
-+		case SPEED_1000: mii_speed |= XTE_EMCFG_LINKSPD_1000; break;
-+		case SPEED_100: mii_speed |= XTE_EMCFG_LINKSPD_100; break;
-+		case SPEED_10: mii_speed |= XTE_EMCFG_LINKSPD_10; break;
-+		}
-+
-+		/* Write new speed setting out to TEMAC */
-+		temac_indirect_out32(lp, XTE_EMCFG_OFFSET, mii_speed);
-+		lp->last_link = link_state;
-+		phy_print_status(phy);
-+	}
-+	mutex_unlock(&lp->indirect_mutex);
-+}
-+
-+static void temac_start_xmit_done(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	struct cdmac_bd *cur_p;
-+	unsigned int stat = 0;
-+
-+	cur_p = &lp->tx_bd_v[lp->tx_bd_ci];
-+	stat = cur_p->app0;
-+
-+	while (stat & STS_CTRL_APP0_CMPLT) {
-+		pci_unmap_single(NULL, (unsigned long)cur_p->phys,
-+				cur_p->len, PCI_DMA_TODEVICE);
-+		if (cur_p->app4)
-+			dev_kfree_skb_irq((struct sk_buff *)cur_p->app4);
-+		cur_p->app0 = 0;
-+
-+		ndev->stats.tx_packets++;
-+		ndev->stats.tx_bytes += cur_p->len;
-+
-+		lp->tx_bd_ci++;
-+		if (lp->tx_bd_ci >= TX_BD_NUM)
-+			lp->tx_bd_ci = 0;
-+
-+		cur_p = &lp->tx_bd_v[lp->tx_bd_ci];
-+		stat = cur_p->app0;
-+	}
-+
-+	netif_wake_queue(ndev);
-+}
-+
-+static int temac_start_xmit(struct sk_buff *skb, struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	struct cdmac_bd *cur_p;
-+	dma_addr_t start_p, tail_p;
-+	int ii;
-+	unsigned long num_frag;
-+	skb_frag_t *frag;
-+
-+	num_frag = skb_shinfo(skb)->nr_frags;
-+	frag = &skb_shinfo(skb)->frags[0];
-+	start_p = lp->tx_bd_p + sizeof(*lp->tx_bd_v) * lp->tx_bd_tail;
-+	cur_p = &lp->tx_bd_v[lp->tx_bd_tail];
-+
-+	if (cur_p->app0 & STS_CTRL_APP0_CMPLT) {
-+		if (!netif_queue_stopped(ndev)) {
-+			netif_stop_queue(ndev);
-+			return NETDEV_TX_BUSY;
-+		}
-+		return NETDEV_TX_BUSY;
-+	}
-+
-+	cur_p->app0 = 0;
-+	if (skb->ip_summed == CHECKSUM_PARTIAL) {
-+		const struct iphdr *ip = ip_hdr(skb);
-+		int length = 0, start, insert = 0, headlen;
-+
-+		switch (ip->protocol) {
-+		case IPPROTO_TCP:
-+			start = sizeof(struct iphdr) + ETH_HLEN;
-+			insert = sizeof(struct iphdr) + ETH_HLEN + 16;
-+			length = ip->tot_len - sizeof(struct iphdr);
-+			headlen = ETH_HLEN + sizeof(struct iphdr) +
-+				  sizeof(struct tcphdr);
-+			break;
-+		case IPPROTO_UDP:
-+			start = sizeof(struct iphdr) + ETH_HLEN;
-+			insert = sizeof(struct iphdr) + ETH_HLEN + 6;
-+			length = ip->tot_len - sizeof(struct iphdr);
-+			headlen = ETH_HLEN + sizeof(struct iphdr) +
-+				  sizeof(struct udphdr);
-+			break;
-+		default:
-+			break;
-+		}
-+		cur_p->app1 = ((start << 16) | insert);
-+		cur_p->app2 = csum_tcpudp_magic(ip->saddr, ip->daddr,
-+						length, ip->protocol, 0);
-+		skb->data[insert] = 0;
-+		skb->data[insert + 1] = 0;
-+	}
-+	cur_p->app0 |= STS_CTRL_APP0_SOP;
-+	cur_p->len = skb_headlen(skb);
-+	cur_p->phys = pci_map_single(NULL, skb->data, skb->len,
-+				     PCI_DMA_TODEVICE);
-+	cur_p->app4 = (unsigned long)skb;
-+
-+	for (ii = 0; ii < num_frag; ii++) {
-+		lp->tx_bd_tail++;
-+		if (lp->tx_bd_tail >= TX_BD_NUM)
-+			lp->tx_bd_tail = 0;
-+
-+		cur_p = &lp->tx_bd_v[lp->tx_bd_tail];
-+		cur_p->phys = pci_map_single(NULL,
-+				(void *)page_address(frag->page)
-+				+ frag->page_offset,
-+				frag->size, PCI_DMA_TODEVICE);
-+		cur_p->len = frag->size;
-+		cur_p->app0 = 0;
-+		frag++;
-+	}
-+	cur_p->app0 |= STS_CTRL_APP0_EOP;
-+
-+	tail_p = lp->tx_bd_p + sizeof(*lp->tx_bd_v) * lp->tx_bd_tail;
-+	lp->tx_bd_tail++;
-+	if (lp->tx_bd_tail >= TX_BD_NUM)
-+		lp->tx_bd_tail = 0;
-+
-+	/* Kick off the transfer */
-+	temac_dma_out32(lp, TX_TAILDESC_PTR, tail_p); /* DMA start */
-+
-+	return 0;
-+}
-+
-+
-+static void ll_temac_recv(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	struct sk_buff *skb, *new_skb;
-+	unsigned int bdstat;
-+	struct cdmac_bd *cur_p;
-+	dma_addr_t tail_p;
-+	int length;
-+	unsigned long skb_vaddr;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&lp->rx_lock, flags);
-+
-+	tail_p = lp->rx_bd_p + sizeof(*lp->rx_bd_v) * lp->rx_bd_ci;
-+	cur_p = &lp->rx_bd_v[lp->rx_bd_ci];
-+
-+	bdstat = cur_p->app0;
-+	while ((bdstat & STS_CTRL_APP0_CMPLT)) {
-+
-+		skb = lp->rx_skb[lp->rx_bd_ci];
-+		length = cur_p->app4;
-+
-+		skb_vaddr = virt_to_bus(skb->data);
-+		pci_unmap_single(NULL, skb_vaddr, length, PCI_DMA_FROMDEVICE);
-+
-+		skb_put(skb, length);
-+		skb->dev = ndev;
-+		skb->protocol = eth_type_trans(skb, ndev);
-+		skb->ip_summed = CHECKSUM_NONE;
-+
-+		netif_rx(skb);
-+
-+		ndev->stats.rx_packets++;
-+		ndev->stats.rx_bytes += length;
-+
-+		new_skb = alloc_skb(XTE_MAX_JUMBO_FRAME_SIZE + XTE_ALIGN,
-+				GFP_ATOMIC);
-+		if (new_skb == 0) {
-+			dev_err(&ndev->dev, "no memory for new sk_buff\n");
-+			spin_unlock_irqrestore(&lp->rx_lock, flags);
-+			return;
-+		}
-+
-+		skb_reserve(new_skb, BUFFER_ALIGN(new_skb->data));
-+
-+		cur_p->app0 = STS_CTRL_APP0_IRQONEND;
-+		cur_p->phys = pci_map_single(NULL, new_skb->data,
-+					     XTE_MAX_JUMBO_FRAME_SIZE,
-+					     PCI_DMA_FROMDEVICE);
-+		cur_p->len = XTE_MAX_JUMBO_FRAME_SIZE;
-+		lp->rx_skb[lp->rx_bd_ci] = new_skb;
-+
-+		lp->rx_bd_ci++;
-+		if (lp->rx_bd_ci >= RX_BD_NUM)
-+			lp->rx_bd_ci = 0;
-+
-+		cur_p = &lp->rx_bd_v[lp->rx_bd_ci];
-+		bdstat = cur_p->app0;
-+	}
-+	temac_dma_out32(lp, RX_TAILDESC_PTR, tail_p);
-+
-+	spin_unlock_irqrestore(&lp->rx_lock, flags);
-+}
-+
-+static irqreturn_t ll_temac_tx_irq(int irq, void *_ndev)
-+{
-+	struct net_device *ndev = _ndev;
-+	struct temac_local *lp = netdev_priv(ndev);
-+	unsigned int status;
-+
-+	status = temac_dma_in32(lp, TX_IRQ_REG);
-+	temac_dma_out32(lp, TX_IRQ_REG, status);
-+
-+	if (status & (IRQ_COAL | IRQ_DLY))
-+		temac_start_xmit_done(lp->ndev);
-+	if (status & 0x080)
-+		dev_err(&ndev->dev, "DMA error 0x%x\n", status);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t ll_temac_rx_irq(int irq, void *_ndev)
-+{
-+	struct net_device *ndev = _ndev;
-+	struct temac_local *lp = netdev_priv(ndev);
-+	unsigned int status;
-+
-+	/* Read and clear the status registers */
-+	status = temac_dma_in32(lp, RX_IRQ_REG);
-+	temac_dma_out32(lp, RX_IRQ_REG, status);
-+
-+	if (status & (IRQ_COAL | IRQ_DLY))
-+		ll_temac_recv(lp->ndev);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int temac_open(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+	int rc;
-+
-+	dev_dbg(&ndev->dev, "temac_open()\n");
-+
-+	if (lp->phy_node) {
-+		lp->phy_dev = of_phy_connect(lp->ndev, lp->phy_node,
-+					     temac_adjust_link, 0, 0);
-+		if (!lp->phy_dev) {
-+			dev_err(lp->dev, "of_phy_connect() failed\n");
-+			return -ENODEV;
-+		}
-+
-+		phy_start(lp->phy_dev);
-+	}
-+
-+	rc = request_irq(lp->tx_irq, ll_temac_tx_irq, 0, ndev->name, ndev);
-+	if (rc)
-+		goto err_tx_irq;
-+	rc = request_irq(lp->rx_irq, ll_temac_rx_irq, 0, ndev->name, ndev);
-+	if (rc)
-+		goto err_rx_irq;
-+
-+	temac_device_reset(ndev);
-+	return 0;
-+
-+ err_rx_irq:
-+	free_irq(lp->tx_irq, ndev);
-+ err_tx_irq:
-+	if (lp->phy_dev)
-+		phy_disconnect(lp->phy_dev);
-+	lp->phy_dev = NULL;
-+	dev_err(lp->dev, "request_irq() failed\n");
-+	return rc;
-+}
-+
-+static int temac_stop(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+
-+	dev_dbg(&ndev->dev, "temac_close()\n");
-+
-+	free_irq(lp->tx_irq, ndev);
-+	free_irq(lp->rx_irq, ndev);
-+
-+	if (lp->phy_dev)
-+		phy_disconnect(lp->phy_dev);
-+	lp->phy_dev = NULL;
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+static void
-+temac_poll_controller(struct net_device *ndev)
-+{
-+	struct temac_local *lp = netdev_priv(ndev);
-+
-+	disable_irq(lp->tx_irq);
-+	disable_irq(lp->rx_irq);
-+
-+	ll_temac_rx_irq(lp->tx_irq, lp, 0);
-+	ll_temac_tx_irq(lp->rx_irq, lp, 0);
-+
-+	enable_irq(lp->tx_irq);
-+	enable_irq(lp->rx_irq);
-+}
-+#endif
-+
-+static const struct net_device_ops temac_netdev_ops = {
-+	.ndo_open = temac_open,
-+	.ndo_stop = temac_stop,
-+	.ndo_start_xmit = temac_start_xmit,
-+	.ndo_set_mac_address = temac_set_mac_address,
-+	//.ndo_set_multicast_list = temac_set_multicast_list,
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	.ndo_poll_controller = temac_poll_controller,
-+#endif
-+};
-+
-+/* ---------------------------------------------------------------------
-+ * SYSFS device attributes
-+ */
-+static ssize_t temac_show_llink_regs(struct device *dev,
-+				     struct device_attribute *attr, char *buf)
-+{
-+	struct net_device *ndev = dev_get_drvdata(dev);
-+	struct temac_local *lp = netdev_priv(ndev);
-+	int i, len = 0;
-+
-+	for (i = 0; i < 0x11; i++)
-+		len += sprintf(buf + len, "%.8x%s", temac_dma_in32(lp, i),
-+			       (i % 8) == 7 ? "\n" : " ");
-+	len += sprintf(buf + len, "\n");
-+
-+	return len;
-+}
-+
-+static DEVICE_ATTR(llink_regs, 0440, temac_show_llink_regs, NULL);
-+
-+static struct attribute *temac_device_attrs[] = {
-+	&dev_attr_llink_regs.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group temac_attr_group = {
-+	.attrs = temac_device_attrs,
-+};
-+
-+static int __init
-+temac_of_probe(struct of_device *op, const struct of_device_id *match)
-+{
++	struct mpic *mpic;
++	struct resource r;
 +	struct device_node *np;
-+	struct temac_local *lp;
-+	struct net_device *ndev;
-+	const void *addr;
-+	int size, rc = 0;
-+	unsigned int dcrs;
 +
-+	/* Init network device structure */
-+	ndev = alloc_etherdev(sizeof(*lp));
-+	if (!ndev) {
-+		dev_err(&op->dev, "could not allocate device.\n");
-+		return -ENOMEM;
++	np = of_find_node_by_type(NULL, "open-pic");
++	if (!np) {
++		printk(KERN_ERR "Could not find open-pic node\n");
++		return;
 +	}
-+	ether_setup(ndev);
-+	dev_set_drvdata(&op->dev, ndev);
-+	SET_NETDEV_DEV(ndev, &op->dev);
-+	ndev->flags &= ~IFF_MULTICAST;  /* clear multicast */
-+	ndev->features = NETIF_F_SG | NETIF_F_FRAGLIST;
-+	ndev->netdev_ops = &temac_netdev_ops;
-+#if 0
-+	ndev->features |= NETIF_F_IP_CSUM; /* Can checksum TCP/UDP over IPv4. */
-+	ndev->features |= NETIF_F_HW_CSUM; /* Can checksum all the packets. */
-+	ndev->features |= NETIF_F_IPV6_CSUM; /* Can checksum IPV6 TCP/UDP */
-+	ndev->features |= NETIF_F_HIGHDMA; /* Can DMA to high memory. */
-+	ndev->features |= NETIF_F_HW_VLAN_TX; /* Transmit VLAN hw accel */
-+	ndev->features |= NETIF_F_HW_VLAN_RX; /* Receive VLAN hw acceleration */
-+	ndev->features |= NETIF_F_HW_VLAN_FILTER; /* Receive VLAN filtering */
-+	ndev->features |= NETIF_F_VLAN_CHALLENGED; /* cannot handle VLAN pkts */
-+	ndev->features |= NETIF_F_GSO; /* Enable software GSO. */
-+	ndev->features |= NETIF_F_MULTI_QUEUE; /* Has multiple TX/RX queues */
-+	ndev->features |= NETIF_F_LRO; /* large receive offload */
++
++	if (of_address_to_resource(np, 0, &r)) {
++		printk(KERN_ERR "Could not map mpic register space\n");
++		of_node_put(np);
++		return;
++	}
++
++	mpic = mpic_alloc(np, r.start,
++			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
++			0, 256, " OpenPIC  ");
++	BUG_ON(mpic == NULL);
++	of_node_put(np);
++
++	mpic_init(mpic);
++
++	np = of_find_compatible_node(NULL, NULL, "abb,socrates-fpga-pic");
++	if (!np) {
++		printk(KERN_ERR "Could not find socrates-fpga-pic node\n");
++		return;
++	}
++	socrates_fpga_pic_init(np);
++	of_node_put(np);
++}
++
++/*
++ * Setup the architecture
++ */
++static void __init socrates_setup_arch(void)
++{
++#ifdef CONFIG_PCI
++	struct device_node *np;
 +#endif
 +
-+	/* setup temac private info structure */
-+	lp = netdev_priv(ndev);
-+	lp->ndev = ndev;
-+	lp->dev = &op->dev;
-+	lp->options = XTE_OPTION_DEFAULTS;
-+	spin_lock_init(&lp->rx_lock);
-+	mutex_init(&lp->indirect_mutex);
++	if (ppc_md.progress)
++		ppc_md.progress("socrates_setup_arch()", 0);
 +
-+	/* map device registers */
-+	lp->regs = of_iomap(op->node, 0);
-+	if (!lp->regs) {
-+		dev_err(&op->dev, "could not map temac regs.\n");
-+		goto nodev;
-+	}
-+
-+	/* Find the DMA node, map the DMA registers, and decode the DMA IRQs */
-+	np = of_parse_phandle(op->node, "llink-connected", 0);
-+	if (!np) {
-+		dev_err(&op->dev, "could not find DMA node\n");
-+		goto nodev;
-+	}
-+
-+	dcrs = dcr_resource_start(np, 0);
-+	if (dcrs == 0) {
-+		dev_err(&op->dev, "could not get DMA register address\n");
-+		goto nodev;;
-+	}
-+	lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
-+	dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
-+
-+	lp->rx_irq = irq_of_parse_and_map(np, 0);
-+	lp->tx_irq = irq_of_parse_and_map(np, 1);
-+	if (!lp->rx_irq || !lp->tx_irq) {
-+		dev_err(&op->dev, "could not determine irqs\n");
-+		rc = -ENOMEM;
-+		goto nodev;
-+	}
-+
-+	of_node_put(np); /* Finished with the DMA node; drop the reference */
-+
-+	/* Retrieve the MAC address */
-+	addr = of_get_property(op->node, "local-mac-address", &size);
-+	if ((!addr) || (size != 6)) {
-+		dev_err(&op->dev, "could not find MAC address\n");
-+		rc = -ENODEV;
-+		goto nodev;
-+	}
-+	temac_set_mac_address(ndev, (void *)addr);
-+
-+	rc = temac_mdio_setup(lp, op->node);
-+	if (rc)
-+		dev_warn(&op->dev, "error registering MDIO bus\n");
-+
-+	lp->phy_node = of_parse_phandle(op->node, "phy-handle", 0);
-+	if (lp->phy_node)
-+		dev_dbg(lp->dev, "using PHY node %s (%p)\n", np->full_name, np);
-+
-+	/* Add the device attributes */
-+	rc = sysfs_create_group(&lp->dev->kobj, &temac_attr_group);
-+	if (rc) {
-+		dev_err(lp->dev, "Error creating sysfs files\n");
-+		goto nodev;
-+	}
-+
-+	rc = register_netdev(lp->ndev);
-+	if (rc) {
-+		dev_err(lp->dev, "register_netdev() error (%i)\n", rc);
-+		goto err_register_ndev;
-+	}
-+
-+	return 0;
-+
-+ err_register_ndev:
-+	sysfs_remove_group(&lp->dev->kobj, &temac_attr_group);
-+ nodev:
-+	free_netdev(ndev);
-+	ndev = NULL;
-+	return rc;
++#ifdef CONFIG_PCI
++	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
++		fsl_add_bridge(np, 1);
++#endif
 +}
 +
-+static int __devexit temac_of_remove(struct of_device *op)
-+{
-+	struct net_device *ndev = dev_get_drvdata(&op->dev);
-+	struct temac_local *lp = netdev_priv(ndev);
-+
-+	temac_mdio_teardown(lp);
-+	unregister_netdev(ndev);
-+	sysfs_remove_group(&lp->dev->kobj, &temac_attr_group);
-+	if (lp->phy_node)
-+		of_node_put(lp->phy_node);
-+	lp->phy_node = NULL;
-+	dev_set_drvdata(&op->dev, NULL);
-+	free_netdev(ndev);
-+	return 0;
-+}
-+
-+static struct of_device_id temac_of_match[] __devinitdata = {
-+	{ .compatible = "xlnx,xps-ll-temac-1.01.b", },
++static struct of_device_id __initdata socrates_of_bus_ids[] = {
++	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
 +	{},
 +};
-+MODULE_DEVICE_TABLE(of, temac_of_match);
 +
-+static struct of_platform_driver temac_of_driver = {
-+	.match_table = temac_of_match,
-+	.probe = temac_of_probe,
-+	.remove = __devexit_p(temac_of_remove),
-+	.driver = {
-+		.owner = THIS_MODULE,
-+		.name = "xilinx_temac",
-+	},
-+};
-+
-+static int __init temac_init(void)
++static void __init socrates_init(void)
 +{
-+	return of_register_platform_driver(&temac_of_driver);
-+}
-+module_init(temac_init);
-+
-+static void __exit temac_exit(void)
-+{
-+	of_unregister_platform_driver(&temac_of_driver);
-+}
-+module_exit(temac_exit);
-+
-+MODULE_DESCRIPTION("Xilinx LL_TEMAC Ethernet driver");
-+MODULE_AUTHOR("Yoshio Kashiwagi");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/net/xilinx_temac.h b/drivers/net/xilinx_temac.h
-new file mode 100644
-index 0000000..4bc340c
---- /dev/null
-+++ b/drivers/net/xilinx_temac.h
-@@ -0,0 +1,374 @@
-+
-+#ifndef XILINX_TEMAC_H
-+#define XILINX_TEMAC_H
-+
-+#include <linux/netdevice.h>
-+#include <linux/of.h>
-+#include <linux/spinlock.h>
-+#include <asm/dcr.h>
-+#include <asm/dcr-regs.h>
-+
-+/* packet size info */
-+#define XTE_HDR_SIZE			14      /* size of Ethernet header */
-+#define XTE_TRL_SIZE			4       /* size of Ethernet trailer (FCS) */
-+#define XTE_JUMBO_MTU			9000
-+#define XTE_MAX_JUMBO_FRAME_SIZE	(XTE_JUMBO_MTU + XTE_HDR_SIZE + XTE_TRL_SIZE)
-+
-+/*  Configuration options */
-+
-+/*  Accept all incoming packets.
-+ *  This option defaults to disabled (cleared) */
-+#define XTE_OPTION_PROMISC                      (1 << 0)
-+/*  Jumbo frame support for Tx & Rx.
-+ *  This option defaults to disabled (cleared) */
-+#define XTE_OPTION_JUMBO                        (1 << 1)
-+/*  VLAN Rx & Tx frame support.
-+ *  This option defaults to disabled (cleared) */
-+#define XTE_OPTION_VLAN                         (1 << 2)
-+/*  Enable recognition of flow control frames on Rx
-+ *  This option defaults to enabled (set) */
-+#define XTE_OPTION_FLOW_CONTROL                 (1 << 4)
-+/*  Strip FCS and PAD from incoming frames.
-+ *  Note: PAD from VLAN frames is not stripped.
-+ *  This option defaults to disabled (set) */
-+#define XTE_OPTION_FCS_STRIP                    (1 << 5)
-+/*  Generate FCS field and add PAD automatically for outgoing frames.
-+ *  This option defaults to enabled (set) */
-+#define XTE_OPTION_FCS_INSERT                   (1 << 6)
-+/*  Enable Length/Type error checking for incoming frames. When this option is
-+set, the MAC will filter frames that have a mismatched type/length field
-+and if XTE_OPTION_REPORT_RXERR is set, the user is notified when these
-+types of frames are encountered. When this option is cleared, the MAC will
-+allow these types of frames to be received.
-+This option defaults to enabled (set) */
-+#define XTE_OPTION_LENTYPE_ERR                  (1 << 7)
-+/*  Enable the transmitter.
-+ *  This option defaults to enabled (set) */
-+#define XTE_OPTION_TXEN                         (1 << 11)
-+/*  Enable the receiver
-+*   This option defaults to enabled (set) */
-+#define XTE_OPTION_RXEN                         (1 << 12)
-+
-+/*  Default options set when device is initialized or reset */
-+#define XTE_OPTION_DEFAULTS                     \
-+	(XTE_OPTION_TXEN |                          \
-+	 XTE_OPTION_FLOW_CONTROL |                  \
-+	 XTE_OPTION_RXEN)
-+
-+/* XPS_LL_TEMAC SDMA registers definition */
-+
-+#define TX_NXTDESC_PTR      0x00            /* r */
-+#define TX_CURBUF_ADDR      0x01            /* r */
-+#define TX_CURBUF_LENGTH    0x02            /* r */
-+#define TX_CURDESC_PTR      0x03            /* rw */
-+#define TX_TAILDESC_PTR     0x04            /* rw */
-+#define TX_CHNL_CTRL        0x05            /* rw */
-+/*
-+ 0:7      24:31       IRQTimeout
-+ 8:15     16:23       IRQCount
-+ 16:20    11:15       Reserved
-+ 21       10          0
-+ 22       9           UseIntOnEnd
-+ 23       8           LdIRQCnt
-+ 24       7           IRQEn
-+ 25:28    3:6         Reserved
-+ 29       2           IrqErrEn
-+ 30       1           IrqDlyEn
-+ 31       0           IrqCoalEn
-+*/
-+#define CHNL_CTRL_IRQ_IOE       (1 << 9)
-+#define CHNL_CTRL_IRQ_EN        (1 << 7)
-+#define CHNL_CTRL_IRQ_ERR_EN    (1 << 2)
-+#define CHNL_CTRL_IRQ_DLY_EN    (1 << 1)
-+#define CHNL_CTRL_IRQ_COAL_EN   (1 << 0)
-+#define TX_IRQ_REG          0x06            /* rw */
-+/*
-+  0:7      24:31       DltTmrValue
-+ 8:15     16:23       ClscCntrValue
-+ 16:17    14:15       Reserved
-+ 18:21    10:13       ClscCnt
-+ 22:23    8:9         DlyCnt
-+ 24:28    3::7        Reserved
-+ 29       2           ErrIrq
-+ 30       1           DlyIrq
-+ 31       0           CoalIrq
-+ */
-+#define TX_CHNL_STS         0x07            /* r */
-+/*
-+   0:9      22:31   Reserved
-+ 10       21      TailPErr
-+ 11       20      CmpErr
-+ 12       19      AddrErr
-+ 13       18      NxtPErr
-+ 14       17      CurPErr
-+ 15       16      BsyWr
-+ 16:23    8:15    Reserved
-+ 24       7       Error
-+ 25       6       IOE
-+ 26       5       SOE
-+ 27       4       Cmplt
-+ 28       3       SOP
-+ 29       2       EOP
-+ 30       1       EngBusy
-+ 31       0       Reserved
-+*/
-+
-+#define RX_NXTDESC_PTR      0x08            /* r */
-+#define RX_CURBUF_ADDR      0x09            /* r */
-+#define RX_CURBUF_LENGTH    0x0a            /* r */
-+#define RX_CURDESC_PTR      0x0b            /* rw */
-+#define RX_TAILDESC_PTR     0x0c            /* rw */
-+#define RX_CHNL_CTRL        0x0d            /* rw */
-+/*
-+ 0:7      24:31       IRQTimeout
-+ 8:15     16:23       IRQCount
-+ 16:20    11:15       Reserved
-+ 21       10          0
-+ 22       9           UseIntOnEnd
-+ 23       8           LdIRQCnt
-+ 24       7           IRQEn
-+ 25:28    3:6         Reserved
-+ 29       2           IrqErrEn
-+ 30       1           IrqDlyEn
-+ 31       0           IrqCoalEn
-+ */
-+#define RX_IRQ_REG          0x0e            /* rw */
-+#define IRQ_COAL        (1 << 0)
-+#define IRQ_DLY         (1 << 1)
-+#define IRQ_ERR         (1 << 2)
-+#define IRQ_DMAERR      (1 << 7)            /* this is not documented ??? */
-+/*
-+ 0:7      24:31       DltTmrValue
-+ 8:15     16:23       ClscCntrValue
-+ 16:17    14:15       Reserved
-+ 18:21    10:13       ClscCnt
-+ 22:23    8:9         DlyCnt
-+ 24:28    3::7        Reserved
-+*/
-+#define RX_CHNL_STS         0x0f        /* r */
-+#define CHNL_STS_ENGBUSY    (1 << 1)
-+#define CHNL_STS_EOP        (1 << 2)
-+#define CHNL_STS_SOP        (1 << 3)
-+#define CHNL_STS_CMPLT      (1 << 4)
-+#define CHNL_STS_SOE        (1 << 5)
-+#define CHNL_STS_IOE        (1 << 6)
-+#define CHNL_STS_ERR        (1 << 7)
-+
-+#define CHNL_STS_BSYWR      (1 << 16)
-+#define CHNL_STS_CURPERR    (1 << 17)
-+#define CHNL_STS_NXTPERR    (1 << 18)
-+#define CHNL_STS_ADDRERR    (1 << 19)
-+#define CHNL_STS_CMPERR     (1 << 20)
-+#define CHNL_STS_TAILERR    (1 << 21)
-+/*
-+ 0:9      22:31   Reserved
-+ 10       21      TailPErr
-+ 11       20      CmpErr
-+ 12       19      AddrErr
-+ 13       18      NxtPErr
-+ 14       17      CurPErr
-+ 15       16      BsyWr
-+ 16:23    8:15    Reserved
-+ 24       7       Error
-+ 25       6       IOE
-+ 26       5       SOE
-+ 27       4       Cmplt
-+ 28       3       SOP
-+ 29       2       EOP
-+ 30       1       EngBusy
-+ 31       0       Reserved
-+*/
-+
-+#define DMA_CONTROL_REG             0x10            /* rw */
-+#define DMA_CONTROL_RST                 (1 << 0)
-+#define DMA_TAIL_ENABLE                 (1 << 2)
-+
-+/* XPS_LL_TEMAC direct registers definition */
-+
-+#define XTE_RAF0_OFFSET              0x00
-+#define RAF0_RST                        (1 << 0)
-+#define RAF0_MCSTREJ                    (1 << 1)
-+#define RAF0_BCSTREJ                    (1 << 2)
-+#define XTE_TPF0_OFFSET              0x04
-+#define XTE_IFGP0_OFFSET             0x08
-+#define XTE_ISR0_OFFSET              0x0c
-+#define ISR0_HARDACSCMPLT               (1 << 0)
-+#define ISR0_AUTONEG                    (1 << 1)
-+#define ISR0_RXCMPLT                    (1 << 2)
-+#define ISR0_RXREJ                      (1 << 3)
-+#define ISR0_RXFIFOOVR                  (1 << 4)
-+#define ISR0_TXCMPLT                    (1 << 5)
-+#define ISR0_RXDCMLCK                   (1 << 6)
-+
-+#define XTE_IPR0_OFFSET              0x10
-+#define XTE_IER0_OFFSET              0x14
-+
-+#define XTE_MSW0_OFFSET              0x20
-+#define XTE_LSW0_OFFSET              0x24
-+#define XTE_CTL0_OFFSET              0x28
-+#define XTE_RDY0_OFFSET              0x2c
-+
-+#define XTE_RSE_MIIM_RR_MASK      0x0002
-+#define XTE_RSE_MIIM_WR_MASK      0x0004
-+#define XTE_RSE_CFG_RR_MASK       0x0020
-+#define XTE_RSE_CFG_WR_MASK       0x0040
-+#define XTE_RDY0_HARD_ACS_RDY_MASK  (0x10000)
-+
-+/* XPS_LL_TEMAC indirect registers offset definition */
-+
-+#define	XTE_RXC0_OFFSET			0x00000200 /* Rx configuration word 0 */
-+#define	XTE_RXC1_OFFSET			0x00000240 /* Rx configuration word 1 */
-+#define XTE_RXC1_RXRST_MASK		(1 << 31)  /* Receiver reset */
-+#define XTE_RXC1_RXJMBO_MASK		(1 << 30)  /* Jumbo frame enable */
-+#define XTE_RXC1_RXFCS_MASK		(1 << 29)  /* FCS not stripped */
-+#define XTE_RXC1_RXEN_MASK		(1 << 28)  /* Receiver enable */
-+#define XTE_RXC1_RXVLAN_MASK		(1 << 27)  /* VLAN enable */
-+#define XTE_RXC1_RXHD_MASK		(1 << 26)  /* Half duplex */
-+#define XTE_RXC1_RXLT_MASK		(1 << 25)  /* Length/type check disable */
-+
-+#define XTE_TXC_OFFSET			0x00000280 /*  Tx configuration */
-+#define XTE_TXC_TXRST_MASK		(1 << 31)  /* Transmitter reset */
-+#define XTE_TXC_TXJMBO_MASK		(1 << 30)  /* Jumbo frame enable */
-+#define XTE_TXC_TXFCS_MASK		(1 << 29)  /* Generate FCS */
-+#define XTE_TXC_TXEN_MASK		(1 << 28)  /* Transmitter enable */
-+#define XTE_TXC_TXVLAN_MASK		(1 << 27)  /* VLAN enable */
-+#define XTE_TXC_TXHD_MASK		(1 << 26)  /* Half duplex */
-+
-+#define XTE_FCC_OFFSET			0x000002C0 /* Flow control config */
-+#define XTE_FCC_RXFLO_MASK		(1 << 29)  /* Rx flow control enable */
-+#define XTE_FCC_TXFLO_MASK		(1 << 30)  /* Tx flow control enable */
-+
-+#define XTE_EMCFG_OFFSET		0x00000300 /* EMAC configuration */
-+#define XTE_EMCFG_LINKSPD_MASK		0xC0000000 /* Link speed */
-+#define XTE_EMCFG_HOSTEN_MASK		(1 << 26)  /* Host interface enable */
-+#define XTE_EMCFG_LINKSPD_10		0x00000000 /* 10 Mbit LINKSPD_MASK */
-+#define XTE_EMCFG_LINKSPD_100		(1 << 30)  /* 100 Mbit LINKSPD_MASK */
-+#define XTE_EMCFG_LINKSPD_1000		(1 << 31)  /* 1000 Mbit LINKSPD_MASK */
-+
-+#define XTE_GMIC_OFFSET			0x00000320 /* RGMII/SGMII config */
-+#define XTE_MC_OFFSET			0x00000340 /* MDIO configuration */
-+#define XTE_UAW0_OFFSET			0x00000380 /* Unicast address word 0 */
-+#define XTE_UAW1_OFFSET			0x00000384 /* Unicast address word 1 */
-+
-+#define XTE_MAW0_OFFSET			0x00000388 /* Multicast addr word 0 */
-+#define XTE_MAW1_OFFSET			0x0000038C /* Multicast addr word 1 */
-+#define XTE_AFM_OFFSET			0x00000390 /* Promiscuous mode */
-+#define XTE_AFM_EPPRM_MASK		(1 << 31)  /* Promiscuous mode enable */
-+
-+/* Interrupt Request status */
-+#define XTE_TIS_OFFSET			0x000003A0
-+#define TIS_FRIS			(1 << 0)
-+#define TIS_MRIS			(1 << 1)
-+#define TIS_MWIS			(1 << 2)
-+#define TIS_ARIS			(1 << 3)
-+#define TIS_AWIS			(1 << 4)
-+#define TIS_CRIS			(1 << 5)
-+#define TIS_CWIS			(1 << 6)
-+
-+#define XTE_TIE_OFFSET			0x000003A4 /* Interrupt enable */
-+
-+/**  MII Mamagement Control register (MGTCR) */
-+#define XTE_MGTDR_OFFSET		0x000003B0 /* MII data */
-+#define XTE_MIIMAI_OFFSET		0x000003B4 /* MII control */
-+
-+#define CNTLREG_WRITE_ENABLE_MASK   0x8000
-+#define CNTLREG_EMAC1SEL_MASK       0x0400
-+#define CNTLREG_ADDRESSCODE_MASK    0x03ff
-+
-+/* CDMAC descriptor status bit definitions */
-+
-+#define STS_CTRL_APP0_ERR         (1 << 31)
-+#define STS_CTRL_APP0_IRQONEND    (1 << 30)
-+/* undoccumented */
-+#define STS_CTRL_APP0_STOPONEND   (1 << 29)
-+#define STS_CTRL_APP0_CMPLT       (1 << 28)
-+#define STS_CTRL_APP0_SOP         (1 << 27)
-+#define STS_CTRL_APP0_EOP         (1 << 26)
-+#define STS_CTRL_APP0_ENGBUSY     (1 << 25)
-+/* undocumented */
-+#define STS_CTRL_APP0_ENGRST      (1 << 24)
-+
-+#define TX_CONTROL_CALC_CSUM_MASK   1
-+
-+#define XTE_ALIGN       32
-+#define BUFFER_ALIGN(adr) ((XTE_ALIGN - ((u32) adr)) % XTE_ALIGN)
-+
-+#define MULTICAST_CAM_TABLE_NUM 4
-+
-+/* TX/RX CURDESC_PTR points to first descriptor */
-+/* TX/RX TAILDESC_PTR points to last descriptor in linked list */
-+
-+/**
-+ * struct cdmac_bd - LocalLink buffer descriptor format
-+ *
-+ * app0 bits:
-+ *	0    Error
-+ *	1    IrqOnEnd    generate an interrupt at completion of DMA  op
-+ *	2    reserved
-+ *	3    completed   Current descriptor completed
-+ *	4    SOP         TX - marks first desc/ RX marks first desct
-+ *	5    EOP         TX marks last desc/RX marks last desc
-+ *	6    EngBusy     DMA is processing
-+ *	7    reserved
-+ *	8:31 application specific
-+ */
-+struct cdmac_bd {
-+	u32 next;	/* Physical address of next buffer descriptor */
-+	u32 phys;
-+	u32 len;
-+	u32 app0;
-+	u32 app1;	/* TX start << 16 | insert */
-+	u32 app2;	/* TX csum */
-+	u32 app3;
-+	u32 app4;	/* skb for TX length for RX */
-+};
-+
-+struct temac_local {
-+	struct net_device *ndev;
-+	struct device *dev;
-+
-+	/* Connection to PHY device */
-+	struct phy_device *phy_dev;	/* Pointer to PHY device */
-+	struct device_node *phy_node;
-+
-+	/* MDIO bus data */
-+	struct mii_bus *mii_bus;	/* MII bus reference */
-+	int mdio_irqs[PHY_MAX_ADDR];	/* IRQs table for MDIO bus */
-+
-+	/* IO registers and IRQs */
-+	void __iomem *regs;
-+	dcr_host_t sdma_dcrs;
-+	int tx_irq;
-+	int rx_irq;
-+	int emac_num;
-+
-+	struct sk_buff **rx_skb;
-+	spinlock_t rx_lock;
-+	struct mutex indirect_mutex;
-+	u32 options;			/* Current options word */
-+	int last_link;
-+
-+	/* Buffer descriptors */
-+	struct cdmac_bd *tx_bd_v;
-+	dma_addr_t tx_bd_p;
-+	struct cdmac_bd *rx_bd_v;
-+	dma_addr_t rx_bd_p;
-+	int tx_bd_ci;
-+	int tx_bd_next;
-+	int tx_bd_tail;
-+	int rx_bd_ci;
-+};
-+
-+/* xilinx_temac.c */
-+u32 temac_ior(struct temac_local *lp, int offset);
-+void temac_iow(struct temac_local *lp, int offset, u32 value);
-+int temac_indirect_busywait(struct temac_local *lp);
-+u32 temac_indirect_in32(struct temac_local *lp, int reg);
-+void temac_indirect_out32(struct temac_local *lp, int reg, u32 value);
-+
-+
-+/* xilinx_temac_mdio.c */
-+int temac_mdio_setup(struct temac_local *lp, struct device_node *np);
-+void temac_mdio_teardown(struct temac_local *lp);
-+
-+#endif /* XILINX_TEMAC_H */
-diff --git a/drivers/net/xilinx_temac_mdio.c b/drivers/net/xilinx_temac_mdio.c
-new file mode 100644
-index 0000000..eeea61b
---- /dev/null
-+++ b/drivers/net/xilinx_temac_mdio.c
-@@ -0,0 +1,119 @@
-+/*
-+ * MDIO bus driver for the Xilinx TEMAC device
-+ *
-+ * Copyright (c) 2009 Secret Lab Technologies, Ltd.
-+ */
-+
-+#include <linux/io.h>
-+#include <linux/netdevice.h>
-+#include <linux/mutex.h>
-+#include <linux/phy.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/of_mdio.h>
-+#include "xilinx_temac.h"
-+
-+/* ---------------------------------------------------------------------
-+ * MDIO Bus functions
-+ */
-+static int temac_mdio_read(struct mii_bus *bus, int phy_id, int reg)
-+{
-+	struct temac_local *lp = bus->priv;
-+	u32 rc;
-+
-+	/* Write the PHY address to the MIIM Access Initiator register.
-+	 * When the transfer completes, the PHY register value will appear
-+	 * in the LSW0 register */
-+	mutex_lock(&lp->indirect_mutex);
-+	temac_iow(lp, XTE_LSW0_OFFSET, (phy_id << 5) | reg);
-+	rc = temac_indirect_in32(lp, XTE_MIIMAI_OFFSET);
-+	mutex_unlock(&lp->indirect_mutex);
-+
-+	dev_dbg(lp->dev, "temac_mdio_read(phy_id=%i, reg=%x) == %x\n",
-+		phy_id, reg, rc);
-+
-+	return rc;
++	of_platform_bus_probe(NULL, socrates_of_bus_ids, NULL);
 +}
 +
-+static int temac_mdio_write(struct mii_bus *bus, int phy_id, int reg, u16 val)
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++static int __init socrates_probe(void)
 +{
-+	struct temac_local *lp = bus->priv;
++	unsigned long root = of_get_flat_dt_root();
 +
-+	dev_dbg(lp->dev, "temac_mdio_write(phy_id=%i, reg=%x, val=%x)\n",
-+		phy_id, reg, val);
-+
-+	/* First write the desired value into the write data register
-+	 * and then write the address into the access initiator register
-+	 */
-+	mutex_lock(&lp->indirect_mutex);
-+	temac_indirect_out32(lp, XTE_MGTDR_OFFSET, val);
-+	temac_indirect_out32(lp, XTE_MIIMAI_OFFSET, (phy_id << 5) | reg);
-+	mutex_unlock(&lp->indirect_mutex);
++	if (of_flat_dt_is_compatible(root, "abb,socrates"))
++		return 1;
 +
 +	return 0;
 +}
 +
-+int temac_mdio_setup(struct temac_local *lp, struct device_node *np)
-+{
-+	struct mii_bus *bus;
-+	const u32 *bus_hz;
-+	int clk_div;
-+	int rc, size;
-+	struct resource res;
++define_machine(socrates) {
++	.name			= "Socrates",
++	.probe			= socrates_probe,
++	.setup_arch		= socrates_setup_arch,
++	.init			= socrates_init,
++	.init_IRQ		= socrates_pic_init,
++	.get_irq		= mpic_get_irq,
++	.restart		= fsl_rstcr_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
+Index: linux-2.6/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+===================================================================
+--- /dev/null
++++ linux-2.6/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+@@ -0,0 +1,327 @@
++/*
++ *  Copyright (C) 2008 Ilya Yanok, Emcraft Systems
++ *
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
 +
-+	/* Calculate a reasonable divisor for the clock rate */
-+	clk_div = 0x3f; /* worst-case default setting */
-+	bus_hz = of_get_property(np, "clock-frequency", &size);
-+	if (bus_hz && size >= sizeof(*bus_hz)) {
-+		clk_div = (*bus_hz) / (2500 * 1000 * 2) - 1;
-+		if (clk_div < 1)
-+			clk_div = 1;
-+		if (clk_div > 0x3f)
-+			clk_div = 0x3f;
++#include <linux/irq.h>
++#include <linux/of_platform.h>
++#include <linux/io.h>
++
++/*
++ * The FPGA supports 9 interrupt sources, which can be routed to 3
++ * interrupt request lines of the MPIC. The line to be used can be
++ * specified through the third cell of FDT property  "interrupts".
++ */
++
++#define SOCRATES_FPGA_NUM_IRQS	9
++
++#define FPGA_PIC_IRQCFG		(0x0)
++#define FPGA_PIC_IRQMASK(n)	(0x4 + 0x4 * (n))
++
++#define SOCRATES_FPGA_IRQ_MASK	((1 << SOCRATES_FPGA_NUM_IRQS) - 1)
++
++struct socrates_fpga_irq_info {
++	unsigned int irq_line;
++	int type;
++};
++
++/*
++ * Interrupt routing and type table
++ *
++ * IRQ_TYPE_NONE means the interrupt type is configurable,
++ * otherwise it's fixed to the specified value.
++ */
++static struct socrates_fpga_irq_info fpga_irqs[SOCRATES_FPGA_NUM_IRQS] = {
++	[0] = {0, IRQ_TYPE_NONE},
++	[1] = {0, IRQ_TYPE_LEVEL_HIGH},
++	[2] = {0, IRQ_TYPE_LEVEL_LOW},
++	[3] = {0, IRQ_TYPE_NONE},
++	[4] = {0, IRQ_TYPE_NONE},
++	[5] = {0, IRQ_TYPE_NONE},
++	[6] = {0, IRQ_TYPE_NONE},
++	[7] = {0, IRQ_TYPE_NONE},
++	[8] = {0, IRQ_TYPE_LEVEL_HIGH},
++};
++
++#define socrates_fpga_irq_to_hw(virq)    ((unsigned int)irq_map[virq].hwirq)
++
++static DEFINE_SPINLOCK(socrates_fpga_pic_lock);
++
++static void __iomem *socrates_fpga_pic_iobase;
++static struct irq_host *socrates_fpga_pic_irq_host;
++static unsigned int socrates_fpga_irqs[3];
++
++static inline uint32_t socrates_fpga_pic_read(int reg)
++{
++	return in_be32(socrates_fpga_pic_iobase + reg);
++}
++
++static inline void socrates_fpga_pic_write(int reg, uint32_t val)
++{
++	out_be32(socrates_fpga_pic_iobase + reg, val);
++}
++
++static inline unsigned int socrates_fpga_pic_get_irq(unsigned int irq)
++{
++	uint32_t cause;
++	unsigned long flags;
++	int i;
++
++	/* Check irq line routed to the MPIC */
++	for (i = 0; i < 3; i++) {
++		if (irq == socrates_fpga_irqs[i])
++			break;
++	}
++	if (i == 3)
++		return NO_IRQ;
++
++	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	cause = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(i));
++	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	for (i = SOCRATES_FPGA_NUM_IRQS - 1; i >= 0; i--) {
++		if (cause >> (i + 16))
++			break;
++	}
++	return irq_linear_revmap(socrates_fpga_pic_irq_host,
++			(irq_hw_number_t)i);
++}
++
++void socrates_fpga_pic_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	unsigned int cascade_irq;
++
++	/*
++	 * See if we actually have an interrupt, call generic handling code if
++	 * we do.
++	 */
++	cascade_irq = socrates_fpga_pic_get_irq(irq);
++
++	if (cascade_irq != NO_IRQ)
++		generic_handle_irq(cascade_irq);
++	desc->chip->eoi(irq);
++
++}
++
++static void socrates_fpga_pic_ack(unsigned int virq)
++{
++	unsigned long flags;
++	unsigned int hwirq, irq_line;
++	uint32_t mask;
++
++	hwirq = socrates_fpga_irq_to_hw(virq);
++
++	irq_line = fpga_irqs[hwirq].irq_line;
++	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
++		& SOCRATES_FPGA_IRQ_MASK;
++	mask |= (1 << (hwirq + 16));
++	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
++	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++}
++
++static void socrates_fpga_pic_mask(unsigned int virq)
++{
++	unsigned long flags;
++	unsigned int hwirq;
++	int irq_line;
++	u32 mask;
++
++	hwirq = socrates_fpga_irq_to_hw(virq);
++
++	irq_line = fpga_irqs[hwirq].irq_line;
++	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
++		& SOCRATES_FPGA_IRQ_MASK;
++	mask &= ~(1 << hwirq);
++	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
++	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++}
++
++static void socrates_fpga_pic_mask_ack(unsigned int virq)
++{
++	unsigned long flags;
++	unsigned int hwirq;
++	int irq_line;
++	u32 mask;
++
++	hwirq = socrates_fpga_irq_to_hw(virq);
++
++	irq_line = fpga_irqs[hwirq].irq_line;
++	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
++		& SOCRATES_FPGA_IRQ_MASK;
++	mask &= ~(1 << hwirq);
++	mask |= (1 << (hwirq + 16));
++	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
++	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++}
++
++static void socrates_fpga_pic_unmask(unsigned int virq)
++{
++	unsigned long flags;
++	unsigned int hwirq;
++	int irq_line;
++	u32 mask;
++
++	hwirq = socrates_fpga_irq_to_hw(virq);
++
++	irq_line = fpga_irqs[hwirq].irq_line;
++	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
++		& SOCRATES_FPGA_IRQ_MASK;
++	mask |= (1 << hwirq);
++	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
++	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++}
++
++static void socrates_fpga_pic_eoi(unsigned int virq)
++{
++	unsigned long flags;
++	unsigned int hwirq;
++	int irq_line;
++	u32 mask;
++
++	hwirq = socrates_fpga_irq_to_hw(virq);
++
++	irq_line = fpga_irqs[hwirq].irq_line;
++	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
++		& SOCRATES_FPGA_IRQ_MASK;
++	mask |= (1 << (hwirq + 16));
++	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
++	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++}
++
++static int socrates_fpga_pic_set_type(unsigned int virq,
++		unsigned int flow_type)
++{
++	unsigned long flags;
++	unsigned int hwirq;
++	int polarity;
++	u32 mask;
++
++	hwirq = socrates_fpga_irq_to_hw(virq);
++
++	if (fpga_irqs[hwirq].type != IRQ_TYPE_NONE)
++		return -EINVAL;
++
++	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
++	case IRQ_TYPE_LEVEL_HIGH:
++		polarity = 1;
++		break;
++	case IRQ_TYPE_LEVEL_LOW:
++		polarity = 0;
++		break;
++	default:
++		return -EINVAL;
++	}
++	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	mask = socrates_fpga_pic_read(FPGA_PIC_IRQCFG);
++	if (polarity)
++		mask |= (1 << hwirq);
++	else
++		mask &= ~(1 << hwirq);
++	socrates_fpga_pic_write(FPGA_PIC_IRQCFG, mask);
++	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	return 0;
++}
++
++static struct irq_chip socrates_fpga_pic_chip = {
++	.typename       = " FPGA-PIC ",
++	.ack		= socrates_fpga_pic_ack,
++	.mask           = socrates_fpga_pic_mask,
++	.mask_ack       = socrates_fpga_pic_mask_ack,
++	.unmask         = socrates_fpga_pic_unmask,
++	.eoi		= socrates_fpga_pic_eoi,
++	.set_type	= socrates_fpga_pic_set_type,
++};
++
++static int socrates_fpga_pic_host_map(struct irq_host *h, unsigned int virq,
++		irq_hw_number_t hwirq)
++{
++	/* All interrupts are LEVEL sensitive */
++	get_irq_desc(virq)->status |= IRQ_LEVEL;
++	set_irq_chip_and_handler(virq, &socrates_fpga_pic_chip,
++			handle_fasteoi_irq);
++
++	return 0;
++}
++
++static int socrates_fpga_pic_host_xlate(struct irq_host *h,
++		struct device_node *ct,	u32 *intspec, unsigned int intsize,
++		irq_hw_number_t *out_hwirq, unsigned int *out_flags)
++{
++	struct socrates_fpga_irq_info *fpga_irq = &fpga_irqs[intspec[0]];
++
++	*out_hwirq = intspec[0];
++	if  (fpga_irq->type == IRQ_TYPE_NONE) {
++		/* type is configurable */
++		if (intspec[1] != IRQ_TYPE_LEVEL_LOW &&
++		    intspec[1] != IRQ_TYPE_LEVEL_HIGH) {
++			pr_warning("FPGA PIC: invalid irq type, "
++				   "setting default active low\n");
++			*out_flags = IRQ_TYPE_LEVEL_LOW;
++		} else {
++			*out_flags = intspec[1];
++		}
++	} else {
++		/* type is fixed */
++		*out_flags = fpga_irq->type;
 +	}
 +
-+	/* Enable the MDIO bus by asserting the enable bit and writing
-+	 * in the clock config */
-+	mutex_lock(&lp->indirect_mutex);
-+	temac_indirect_out32(lp, XTE_MC_OFFSET, 1 << 6 | clk_div);
-+	mutex_unlock(&lp->indirect_mutex);
++	/* Use specified interrupt routing */
++	if (intspec[2] <= 2)
++		fpga_irq->irq_line = intspec[2];
++	else
++		pr_warning("FPGA PIC: invalid irq routing\n");
 +
-+	bus = mdiobus_alloc();
-+	if (!bus)
-+		return -ENOMEM;
-+
-+	of_address_to_resource(np, 0, &res);
-+	snprintf(bus->id, MII_BUS_ID_SIZE, "%.8llx",
-+		 (unsigned long long)res.start);
-+	bus->priv = lp;
-+	bus->name = "Xilinx TEMAC MDIO";
-+	bus->read = temac_mdio_read;
-+	bus->write = temac_mdio_write;
-+	bus->parent = lp->dev;
-+	bus->irq = lp->mdio_irqs; /* preallocated IRQ table */
-+
-+	lp->mii_bus = bus;
-+
-+	rc = of_mdiobus_register(bus, np);
-+	if (rc)
-+		goto err_register;
-+
-+	mutex_lock(&lp->indirect_mutex);
-+	dev_dbg(lp->dev, "MDIO bus registered;  MC:%x\n",
-+		temac_indirect_in32(lp, XTE_MC_OFFSET));
-+	mutex_unlock(&lp->indirect_mutex);
 +	return 0;
-+
-+ err_register:
-+	mdiobus_free(bus);
-+	return rc;
 +}
 +
-+void temac_mdio_teardown(struct temac_local *lp)
++static struct irq_host_ops socrates_fpga_pic_host_ops = {
++	.map    = socrates_fpga_pic_host_map,
++	.xlate  = socrates_fpga_pic_host_xlate,
++};
++
++void socrates_fpga_pic_init(struct device_node *pic)
 +{
-+	mdiobus_unregister(lp->mii_bus);
-+	kfree(lp->mii_bus->irq);
-+	mdiobus_free(lp->mii_bus);
-+	lp->mii_bus = NULL;
-+}
++	unsigned long flags;
++	int i;
 +
++	/* Setup an irq_host structure */
++	socrates_fpga_pic_irq_host = irq_alloc_host(pic, IRQ_HOST_MAP_LINEAR,
++			SOCRATES_FPGA_NUM_IRQS,	&socrates_fpga_pic_host_ops,
++			SOCRATES_FPGA_NUM_IRQS);
++	if (socrates_fpga_pic_irq_host == NULL) {
++		pr_err("FPGA PIC: Unable to allocate host\n");
++		return;
++	}
++
++	for (i = 0; i < 3; i++) {
++		socrates_fpga_irqs[i] = irq_of_parse_and_map(pic, i);
++		if (socrates_fpga_irqs[i] == NO_IRQ) {
++			pr_warning("FPGA PIC: can't get irq%d.\n", i);
++			continue;
++		}
++		set_irq_chained_handler(socrates_fpga_irqs[i],
++				socrates_fpga_pic_cascade);
++	}
++
++	socrates_fpga_pic_iobase = of_iomap(pic, 0);
++
++	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(0),
++			SOCRATES_FPGA_IRQ_MASK << 16);
++	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(1),
++			SOCRATES_FPGA_IRQ_MASK << 16);
++	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(2),
++			SOCRATES_FPGA_IRQ_MASK << 16);
++	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++
++	pr_info("FPGA PIC: Setting up Socrates FPGA PIC\n");
++}
+Index: linux-2.6/arch/powerpc/platforms/85xx/socrates_fpga_pic.h
+===================================================================
+--- /dev/null
++++ linux-2.6/arch/powerpc/platforms/85xx/socrates_fpga_pic.h
+@@ -0,0 +1,16 @@
++/*
++ *  Copyright (C) 2008 Ilya Yanok, Emcraft Systems
++ *
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#ifndef SOCRATES_FPGA_PIC_H
++#define SOCRATES_FPGA_PIC_H
++
++void socrates_fpga_pic_init(struct device_node *pic);
++
++#endif
