@@ -1,24 +1,23 @@
-Return-Path: <drzeus@drzeus.cx>
-Received: from smtp.ossman.eu (82-117-125-11.tcdsl.calypso.net [82.117.125.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0EDBCDDF01
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 02:48:19 +1100 (EST)
-Date: Sun, 22 Mar 2009 16:48:06 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v3 0/11] FSL eSDHC support
-Message-ID: <20090322164806.68310b61@mjolnir.ossman.eu>
-In-Reply-To: <20090316211306.GA1736@oksana.dev.rtsoft.ru>
-References: <20090316211306.GA1736@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature";
-	boundary="=_freyr.ossman.eu-23988-1237736889-0001-2"
-Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
-	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx,
-	Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
+	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id D237BDDE98
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 05:36:46 +1100 (EST)
+Received: by gxk1 with SMTP id 1so7510701gxk.9
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 11:36:44 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090322154710.GA6473@lixom.net>
+References: <20090321222047.20493.87335.stgit@localhost.localdomain>
+	<20090321222901.20493.67103.stgit@localhost.localdomain>
+	<20090322154710.GA6473@lixom.net>
+Date: Sun, 22 Mar 2009 12:36:44 -0600
+Message-ID: <fa686aa40903221136k5a926381u69fe6e57b927d1d2@mail.gmail.com>
+Subject: Re: [PATCH v2 09/13] net: Rework pasemi_mac driver to use of_mdio
+	infrastructure
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Olof Johansson <olof@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, davem@davemloft.net, afleming@freescale.com,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,43 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Sun, Mar 22, 2009 at 9:47 AM, Olof Johansson <olof@lixom.net> wrote:
+> On Sat, Mar 21, 2009 at 04:29:01PM -0600, Grant Likely wrote:
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> This patch simplifies the driver by making use of more common code.
+>
+> Did you ever try building it? pasemi_defconfig gives me:
 
---=_freyr.ossman.eu-23988-1237736889-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+No.  I mentioned it in the series header email, but not in the patch
+description.  My 64bit build environment is broken at the moment so I
+couldn't build test the pasemi patch.  All the others are build
+tested.  I'll have it sorted out before I post v3.
 
-On Tue, 17 Mar 2009 00:13:06 +0300
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> drivers/net/pasemi_mac.c: In function 'pasemi_mac_phy_init':
+> drivers/net/pasemi_mac.c:1102: error: implicit declaration of function 'of_phy_connect'
+> drivers/net/pasemi_mac.c:1103: warning: assignment makes pointer from integer without a cast
+> drivers/net/pasemi_mac.c:1114: warning: label 'err' defined but not used
+> drivers/net/pasemi_mac.c:1092: warning: unused variable 'ret'
+> drivers/net/pasemi_mac.c:1091: warning: unused variable 'r'
+> drivers/net/pasemi_mac.c:1090: warning: unused variable 'prop'
+> drivers/net/pasemi_mac.c:1089: warning: unused variable 'ph'
+> make[2]: *** [drivers/net/pasemi_mac.o] Error 1
+>
+> The changes needed are trivial, include <linux/of_mdio.h> and remove the
+> variables, label and following code. I could send a patch but that's likely
+> more of a hassle than you fixing it up yourself?
 
-> Hi all,
->=20
-> Here comes another version, let's hope that one is final. ;-)
->=20
+Yeah, I'll fix it.  Thanks for the testing.
 
-I think so. I've queued it all for 2.6.30. Thanks :)
+> Otherwise, with the above changes, seems to test out ok on my Electra.
+> When you checkin the changes, feel free to add:
 
-Rgds
---=20
-     -- Pierre Ossman
+Awesome.  Thanks for the testing.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+g.
 
---=_freyr.ossman.eu-23988-1237736889-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAknGXbkACgkQ7b8eESbyJLiCtQCgrn2ei+NuPh6P07my6/dc3/U1
-DmgAnAtclNlkx9i25OPBloCfAw8FkxF4
-=Gx8T
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-23988-1237736889-0001-2--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
