@@ -1,24 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 15C67DDF1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 03:16:58 +1100 (EST)
-Date: Mon, 23 Mar 2009 19:16:55 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: =?utf8?B?5bGx5bSO44CA57K+5LqM?= <yamazaki.seiji@kk.jp.panasonic.com>
-Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
-Message-ID: <20090323161655.GA30262@oksana.dev.rtsoft.ru>
-References: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
-	<20090321004506.GA13031@oksana.dev.rtsoft.ru>
-	<20090323152051.D2F9.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090323152051.D2F9.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
-Cc: justinmattock@gmail.com, Ben Dooks <ben-linux@fluff.org>,
-	Arnd Bergmann <arnd@arndb.de>, yamazaki <yamazaki-seiji@jcom.home.ne.jp>,
-	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx,
-	Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CBBA1DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 03:49:17 +1100 (EST)
+Message-Id: <95190FB6-C6A3-43F7-9684-9B4BC095D480@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20090319164808.GA17795@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH -next] fsl_pq_mdio: Use proper address translation
+Date: Mon, 23 Mar 2009 11:49:07 -0500
+References: <20090319164808.GA17795@oksana.dev.rtsoft.ru>
+Cc: netdev@vger.kernel.org, Andy Fleming <afleming@freescale.com>,
+	LinuxPPC Mailing List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 23, 2009 at 03:34:45PM +0900, 山崎　精二 wrote:
-> Hi 
-> 
-> I downloaded linux-2.6.29-rc8.tar.bz2,and I patched .
-> I was succeeded. Thank you very match.
-> But I have the other problem.
-> 
-> Compile was not succeeded.
-> 
-> Message is ...
-> 
->  CALL    arch/powerpc/kernel/prom_init_check.sh
->   CC      drivers/mmc/host/sdhci-of.o
-> drivers/mmc/host/sdhci-of.c:163: error: 'SDHCI_QUIRK_FORCE_BLK_SZ_2048' undeclared here (not in a function)
-> drivers/mmc/host/sdhci-of.c:164: error: 'SDHCI_QUIRK_BROKEN_CARD_DETECTION' undeclared here (not in a function)
-> drivers/mmc/host/sdhci-of.c:165: error: 'SDHCI_QUIRK_INVERTED_WRITE_PROTECT' undeclared here (not in a function)
-> drivers/mmc/host/sdhci-of.c:167: error: 'SDHCI_QUIRK_NONSTANDARD_CLOCK' undeclared here (not in a function)
-> drivers/mmc/host/sdhci-of.c:168: error: 'SDHCI_QUIRK_PIO_NEEDS_DELAY' undeclared here (not in a function)
-> drivers/mmc/host/sdhci-of.c:169: error: 'SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET' undeclared here (not in a function)
-[...]
-> drivers/mmc/host/sdhci-of.c:181: warning: excess elements in struct initializer
-> drivers/mmc/host/sdhci-of.c:181: warning: (near initialization for 'sdhci_esdhc.ops')
-> make[3]: *** [drivers/mmc/host/sdhci-of.o] Error 1
-> make[2]: *** [drivers/mmc/host] Error 2
-> make[1]: *** [drivers/mmc] Error 2
 
-All these errors indicate that you didn't apply all the patches.
-You'll need all 11 patches from this series, not only the last
-one.
+On Mar 19, 2009, at 11:48 AM, Anton Vorontsov wrote:
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> Currently the driver just read "reg" property for constructing MDIO
+> bus IDs, but this won't work when we'll start using "ranges = <>" in
+> the device tree, so this will pop up:
+>
+> Freescale PowerQUICC MII Bus: probed
+> sysfs: duplicate filename 'mdio@520' can not be created
+> ------------[ cut here ]------------
+> Badness at c00cb6b8 [verbose debug info unavailable]
+> NIP: c00cb6b8 LR: c00cb6b8 CTR: c001271c
+> REGS: cf82fc10 TRAP: 0700   Not tainted  (2.6.29-rc7-03702-g7ccd10f)
+> MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 42044022  XER: 20000000
+> TASK = cf81fbd0[1] 'swapper' THREAD: cf82e000
+> GPR00: c00cb6b8 cf82fcc0 cf81fbd0 0000003b 00000e42 ffffffff  
+> 00004000 00000e42
+> GPR08: c03cb0fc c03bfbdc 00000e42 c03cac50 22044022 1006a2bc  
+> 0ffcb000 00000000
+> GPR16: 0ffc04b0 0ffc5a40 00000000 0ffc79a8 0f7863a8 00000004  
+> 00000000 00000000
+> GPR24: c033a6a8 d1014520 cf85e840 cf82fd08 cf87cf2c cf82fcd8  
+> cf85dea8 ffffffef
+> NIP [c00cb6b8] sysfs_add_one+0x4c/0x54
+> LR [c00cb6b8] sysfs_add_one+0x4c/0x54
+> Call Trace:
+> [cf82fcc0] [c00cb6b8] sysfs_add_one+0x4c/0x54 (unreliable)
+> [cf82fcd0] [c00cbc18] create_dir+0x58/0xc0
+> [cf82fd00] [c00cbcc0] sysfs_create_dir+0x40/0x70
+> [cf82fd20] [c0159388] create_dir+0x28/0x78
+> [cf82fd30] [c0159824] kobject_add_internal+0x98/0x13c
+> [cf82fd50] [c0159e98] kobject_add+0x60/0x98
+> [cf82fd80] [c018a480] device_add+0x98/0x2ac
+> [cf82fda0] [c01a2380] mdiobus_register+0xbc/0x1c0
+> [cf82fdc0] [c019f31c] fsl_pq_mdio_probe+0x284/0x2a0
+> [cf82fe00] [c0223814] of_platform_device_probe+0x5c/0x84
+> ...
+>
+> This patch fixes the issue by translating the "reg" property to a full
+> address, and thus avoids the duplicate names.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
+
+David, I'm expecting you to pick this up and put it into net-next.
+
+thanks
+
+- k
