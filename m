@@ -1,9 +1,18 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 23 Mar 2009 13:04:53 +1100
-Subject: [PATCH] powerpc: Fix prom_init on 32-bit OF machines
-Message-Id: <20090323020516.D633FDDE19@ozlabs.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 41AC9DDEDA
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 15:31:35 +1100 (EST)
+Date: Sun, 22 Mar 2009 21:31:22 -0700 (PDT)
+Message-Id: <20090322.213122.199224311.davem@davemloft.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 2.6.29] ucc_geth: Fix oops when using fixed-link support
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090320223417.GA20018@oksana.dev.rtsoft.ru>
+References: <20090320223417.GA20018@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, leoli@freescale.com,
+	Joakim.Tjernlund@transmode.se, Haiying.Wang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,24 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit e7943fbbfdb6eef03c003b374de1f802cc14f02a broke ppc32 using
-Open Firmware client interface due to using the wrong relocation
-macro when accessing the variable "linux_banner".
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date: Sat, 21 Mar 2009 01:34:17 +0300
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> commit b1c4a9dddf09fe99b8f88252718ac5b357363dc4 ("ucc_geth: Change
+> uec phy id to the same format as gianfar's") introduced a regression
+> in the ucc_geth driver that causes this oops when fixed-link is used:
+> 
+> Unable to handle kernel paging request for data at address 0x00000000
+> Faulting instruction address: 0xc0151270
+...
+> Reported-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Tested-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 
- arch/powerpc/kernel/prom_init.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-work.orig/arch/powerpc/kernel/prom_init.c	2009-03-23 11:55:25.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/prom_init.c	2009-03-23 11:55:37.000000000 +1100
-@@ -2283,7 +2283,7 @@ unsigned long __init prom_init(unsigned 
- 	 */
- 	prom_init_stdout();
- 
--       	prom_printf("Preparing to boot %s", PTRRELOC((char *)linux_banner));
-+       	prom_printf("Preparing to boot %s", RELOC(linux_banner));
- 
- 	/*
- 	 * Get default machine type. At this point, we do not differentiate
+Applied, thanks.
