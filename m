@@ -1,22 +1,16 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 226DEDDDEE
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 15:39:22 +1100 (EST)
+Return-Path: <rusty@rustcorp.com.au>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] cpumask: use mm_cpumask() wrapper: powerpc
+Date: Mon, 23 Mar 2009 16:13:22 +1030
+References: <200903161446.43726.rusty@rustcorp.com.au>
+	<1237530977.25062.572.camel@pasglop>
+In-Reply-To: <1237530977.25062.572.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18887.4715.765245.409925@drongo.ozlabs.ibm.com>
-Date: Mon, 23 Mar 2009 15:39:07 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: davidastro <davidastro@hotmail.com>
-Subject: Re: Fix for __div64_32 locks when using some 64 bit numbers
-In-Reply-To: <22581509.post@talk.nabble.com>
-References: <22567864.post@talk.nabble.com>
-	<1237330984.25062.164.camel@pasglop>
-	<22581509.post@talk.nabble.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200903231613.23213.rusty@rustcorp.com.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-davidastro <davidastro@hotmail.com> writes:
+On Friday 20 March 2009 17:06:17 Benjamin Herrenschmidt wrote:
+> On Mon, 2009-03-16 at 14:46 +1030, Rusty Russell wrote:
+> > Makes code futureproof against the impending change to mm->cpu_vm_mask.
+> >=20
+> > It's also a chance to use the new cpumask_ ops which take a pointer
+> > (the older ones are deprecated, but there's no hurry for arch code).
+>=20
+> Boom :-)
+>=20
+> In file included from /home/benh/linux-powerpc-test/arch/powerpc/kernel/v=
+dso.c:30:
+> /home/benh/linux-powerpc-test/arch/powerpc/include/asm/mmu_context.h: In =
+function =E2=80=98switch_mm=E2=80=99:
+> /home/benh/linux-powerpc-test/arch/powerpc/include/asm/mmu_context.h:34: =
+error: implicit declaration of function =E2=80=98mm_cpumask=E2=80=99
+> /home/benh/linux-powerpc-test/arch/powerpc/include/asm/mmu_context.h:34: =
+warning: passing argument 2 of =E2=80=98cpumask_set_cpu=E2=80=99 makes poin=
+ter from integer without a cast
 
-> Basically, the numbers shown above was causing the 64 by 32 bit algorithm to
-> divide by zero making the unit spin and also giving incorrect results.
-> Here is the code as it was before.
-[snip]
->         cntlzw  r0,r5           # we are shifting the dividend right
->         li      r10,-1          # to make it < 2^32, and shifting
->         srw     r10,r10,r0      # the divisor right the same amount,
->         add     r9,r4,r10       # rounding up (so the estimate cannot
->         andc    r11,r6,r10      # ever be too large, only too small)
->         andc    r9,r9,r10      #THIS CODE COULD STORE A ZERO IN r9
->         or      r11,r5,r11
->         rotlw   r9,r9,r0
->         rotlw   r11,r11,r0
+Hmm, I think you need to pull from Linus?  He only added the accessor
+in "45e575ab (Rusty Russell       2009-03-12 14:35:44 -0600 281)"; you
+can't get struct mm_struct without seeing mm_cpumask.
 
-That bug was fixed in October 2005 in commit 344480b99730bfd2, and the
-fix is in v2.6.15-rc1 and all later kernels.  I fixed it a bit
-differently to your suggestion though - see
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=344480b99730bfd205e306d3fd168cdcebe83425
-
-You must be working from an old kernel tree - which kernel version are
-you using?
-
-Paul.
+Thanks,
+Rusty.
