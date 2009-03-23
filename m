@@ -1,23 +1,17 @@
-Return-Path: <yamazaki.seiji@kk.jp.panasonic.com>
-Received: from smtp.mei.co.jp (smtp.mei.co.jp [133.183.100.20])
-	by ozlabs.org (Postfix) with ESMTP id 9AC84DDEE1
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 20:25:01 +1100 (EST)
-Date: Mon, 23 Mar 2009 18:24:25 +0900
-From: =?ISO-2022-JP?B?GyRCOzM6aiEhQDpGcxsoQg==?=
-	<yamazaki.seiji@kk.jp.panasonic.com>
-To: avorontsov@ru.mvista.com, justinmattock@gmail.com
-Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
-In-Reply-To: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
-References: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
-	<20090321004506.GA13031@oksana.dev.rtsoft.ru>
-Message-Id: <20090323182001.D30E.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 090C0DDEE8
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 21:17:44 +1100 (EST)
+To: leoli@freescale.com, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Anton Vorontsov <avorontsov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
-	yamazaki <yamazaki-seiji@jcom.home.ne.jp>,
-	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx,
-	Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Subject: [PATCH] ucc_geth: Convert to net_device_ops
+Message-ID: <OF2EE08546.DF677136-ONC1257582.0037C87E-C1257582.00388BCE@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Mon, 23 Mar 2009 11:17:39 +0100
+Content-Type: multipart/mixed; boundary="=_mixed 00388BC7C1257582_="
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,245 +21,122 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
+--=_mixed 00388BC7C1257582_=
+Content-Type: text/plain; charset="US-ASCII"
 
-> The patch might be fine, but are you receiving this without the patch?
+Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+---
 
-Befor patch,no sdhci-of.c found.
-After patch,found sdhci-of.c.
-
-> if you receive this with the patch then well there you go, but if this
-> happens as a result with a clean fresh .tar.ball(vanilla kernel) then this 
-> is something
-> else.
-> 
-
-I got the kernel from
-Well, then you need 2.6.29-rcX kernels, for example
-http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
-
-I do not know why so many errors when compile.
-
-regards,
-
--- Seiji Yamazaki
+Sorry for the WS damaged patch, but my current company mailer cannot
+handle inline patches. Due to this we are setting up a new mail system
+but it will be a few days before this is ready.
+Therefore I am attaching this patch as well, use that one
+to apply instaed of the inline variant.
 
 
-On Mon, 23 Mar 2009 01:43:38 -0700 (PDT)
-justinmattock@gmail.com wrote:
+ drivers/net/ucc_geth.c |   28 +++++++++++++++++++---------
+ 1 files changed, 19 insertions(+), 9 deletions(-)
 
-> On Mon, 23 Mar 2009, ????? wrote:
-> 
-> > Hi
-> >
-> > I tried again form first.
-> >
-> > I patched like this.
-> >
-> > [yama@localhost Ippf]$ cd linux-2.6.29-rc8
-> > [yama@localhost linux-2.6.29-rc8]$ patch -p 1 <patch.txt
-> > (Stripping trailing CRs from patch.)
-> > patching file MAINTAINERS
-> > Hunk #1 succeeded at 3839 (offset 2 lines).
-> > (Stripping trailing CRs from patch.)
-> > patching file drivers/mmc/host/Kconfig
-> > Hunk #1 succeeded at 65 (offset -7 lines).
-> > (Stripping trailing CRs from patch.)
-> > patching file drivers/mmc/host/Makefile
-> > (Stripping trailing CRs from patch.)
-> > patching file drivers/mmc/host/sdhci-of.c
-> > [yama@localhost linux-2.6.29-rc8]$
-> 
-> The patch might be fine, but are you receiving this without the patch?
-> 
-> >
-> > I Believe patch is OK.
-> > And I got linux-2.6.29-rc8 kernel from kernel.org
-> >
-> >> What are the outcomes when not applying a patch?
-> >>
-> > Before applying a patch,sdhci-of.c was not exist in it.
-> >
-> > I attach the patch file?
-> >
-> > regards,
-> >
-> > -- Seiji Yamazaki
-> >
-> > On Mon, 23 Mar 2009 01:05:07 -0700 (PDT)
-> > justinmattock@gmail.com wrote:
-> >
-> >> On Mon, 23 Mar 2009, ????? wrote:
-> >>
-> >>> Hi
-> >>>
-> >>> Sorry about it.
-> >>>
-> >>>> On Mon, 23 Mar 2009, ????? wrote:
-> >>>
-> >>> ????? is Japanese language.
-> >>>
-> >>>> my guess is one of the header files has a changed definition
-> >>>> and/or you're missing the file completely.
-> >>>> (but could be wrong);
-> >>>
-> >>> I tried to grep SDHCI_QUIRK_FORCE_BLK_SZ_2048 on linux-2.6.29-rc8.
-> >>> But no found execpt sdhci-of.c.
-> >>> Does anybody know why?
-> >>
-> >> well I guess this is where you have to work from.
-> >> (but then after contemplating you did add a patch right?)
-> >>
-> >>
-> >>>
-> >>> regards,
-> >>>
-> >>> -- Seiji Yamazaki
-> >>>
-> >>> On Mon, 23 Mar 2009 00:14:23 -0700 (PDT)
-> >>> justinmattock@gmail.com wrote:
-> >>>
-> >>>> On Mon, 23 Mar 2009, ????? wrote:
-> >>>>
-> >>>>> Hi
-> >>>>>
-> >>>>> I downloaded linux-2.6.29-rc8.tar.bz2,and I patched .
-> >>>>> I was succeeded. Thank you very match.
-> >>>>> But I have the other problem.
-> >>>>>
-> >>>>> Compile was not succeeded.
-> >>>>>
-> >>>>> Message is ...
-> >>>>>
-> >>>>> CALL    arch/powerpc/kernel/prom_init_check.sh
-> >>>>>  CC      drivers/mmc/host/sdhci-of.o
-> >>>>> drivers/mmc/host/sdhci-of.c:163: error: 'SDHCI_QUIRK_FORCE_BLK_SZ_2048' undeclared here (not in a function)
-> >>>>> drivers/mmc/host/sdhci-of.c:164: error: 'SDHCI_QUIRK_BROKEN_CARD_DETECTION' undeclared here (not in a function)
-> >>>>> drivers/mmc/host/sdhci-of.c:165: error: 'SDHCI_QUIRK_INVERTED_WRITE_PROTECT' undeclared here (not in a function)
-> >>>>> drivers/mmc/host/sdhci-of.c:167: error: 'SDHCI_QUIRK_NONSTANDARD_CLOCK' undeclared here (not in a function)
-> >>>>> drivers/mmc/host/sdhci-of.c:168: error: 'SDHCI_QUIRK_PIO_NEEDS_DELAY' undeclared here (not in a function)
-> >>>>> drivers/mmc/host/sdhci-of.c:169: error: 'SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET' undeclared here (not in a function)
-> >>>>> drivers/mmc/host/sdhci-of.c:172: error: unknown field 'readl' specified in initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:172: warning: initialization from incompatible pointer type
-> >>>>> drivers/mmc/host/sdhci-of.c:173: error: unknown field 'readw' specified in initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:173: warning: excess elements in struct initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:173: warning: (near initialization for 'sdhci_esdhc.ops')
-> >>>>> drivers/mmc/host/sdhci-of.c:174: error: unknown field 'readb' specified in initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:174: warning: excess elements in struct initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:174: warning: (near initialization for 'sdhci_esdhc.ops')
-> >>>>> drivers/mmc/host/sdhci-of.c:175: error: unknown field 'writel' specified in initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:175: warning: excess elements in struct initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:175: warning: (near initialization for 'sdhci_esdhc.ops')
-> >>>>> drivers/mmc/host/sdhci-of.c:176: error: unknown field 'writew' specified in initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:176: warning: excess elements in struct initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:176: warning: (near initialization for 'sdhci_esdhc.ops')
-> >>>>> drivers/mmc/host/sdhci-of.c:177: error: unknown field 'writeb' specified in initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:177: warning: excess elements in struct initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:177: warning: (near initialization for 'sdhci_esdhc.ops')
-> >>>>> drivers/mmc/host/sdhci-of.c:178: error: unknown field 'set_clock' specified in initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:178: warning: excess elements in struct initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:178: warning: (near initialization for 'sdhci_esdhc.ops')
-> >>>>> drivers/mmc/host/sdhci-of.c:180: error: unknown field 'get_max_clock' specified in initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:180: warning: excess elements in struct initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:180: warning: (near initialization for 'sdhci_esdhc.ops')
-> >>>>> drivers/mmc/host/sdhci-of.c:181: error: unknown field 'get_timeout_clock' specified in initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:181: warning: excess elements in struct initializer
-> >>>>> drivers/mmc/host/sdhci-of.c:181: warning: (near initialization for 'sdhci_esdhc.ops')
-> >>>>> make[3]: *** [drivers/mmc/host/sdhci-of.o] Error 1
-> >>>>> make[2]: *** [drivers/mmc/host] Error 2
-> >>>>> make[1]: *** [drivers/mmc] Error 2
-> >>>>> make: *** [drivers] Error 2
-> >>>>>
-> >>>>> I do not know why. Could you please tell us why.
-> >>>>> Thanks.
-> >>>>>
-> >>>>> On Sat, 21 Mar 2009 03:45:06 +0300
-> >>>>> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> >>>>>
-> >>>>>> On Sat, Mar 21, 2009 at 09:15:25AM +0900, yamazaki wrote:
-> >>>>>>> Hi
-> >>>>>>>
-> >>>>>>> Thank you for your reply.
-> >>>>>>> I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
-> >>>>>>> which is probably new product.
-> >>>>>>
-> >>>>>> Ah, then it must be connected via MPC8347's localbus.
-> >>>>>>
-> >>>>>> Well, then you need 2.6.29-rcX kernels, for example
-> >>>>>> http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
-> >>>>>> is suitable.
-> >>>>>>
-> >>>>>> Untar it and apply the patches (they'll apply fine on that
-> >>>>>> kernel). Then you'll need some device tree additions for
-> >>>>>> your MPC8347 board, something like this:
-> >>>>>>
-> >>>>>>         localbus@e0005000 {
-> >>>>>>                 #address-cells = <2>;
-> >>>>>>                 #size-cells = <1>;
-> >>>>>>                 compatible = "fsl,mpc8347-localbus",
-> >>>>>>                              "fsl,pq2pro-localbus";
-> >>>>>>                 reg = <0xe0005000 0xd8>;
-> >>>>>>                 ranges = <0x1 0x0 0xf0000000 0x1000>;
-> >>>>>> 		// ^^ change the 0xf0000000 to the actual address
-> >>>>>>                 sdhci@1,0 {
-> >>>>>>                         compatible = "ricoh,r5c807", "generic-sdhci";
-> >>>>>>                         reg = <0x1 0x0 0x1000>;
-> >>>>>>                         interrupts = <ricoh-interrupt-here 0x8>;
-> >>>>>>                         interrupt-parent = <&ipic>;
-> >>>>>>                         // if needed, clock-frequency = <freq-in-HZ-here>;
-> >>>>>>                 };
-> >>>>>>         };
-> >>>>>>
-> >>>>>> Note that I'm not sure what endiannes you'll get when connecting
-> >>>>>> the ricoh chip to the big-endinan host...
-> >>>>>>
-> >>>>>> --
-> >>>>>> Anton Vorontsov
-> >>>>>> email: cbouatmailru@gmail.com
-> >>>>>> irc://irc.freenode.net/bd2
-> >>>>>
-> >>>>> --
-> >>>>> ????? <yamazaki.seiji@kk.jp.panasonic.com>
-> >>>>>
-> >>>>> --
-> >>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >>>>> the body of a message to majordomo@vger.kernel.org
-> >>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >>>>> Please read the FAQ at  http://www.tux.org/lkml/
-> >>>>>
-> >>>>
-> >>>> my guess is one of the header files has a changed definition
-> >>>> and/or you're missing the file completely.
-> >>>> (but could be wrong);
-> >>>>
-> >>>> regards,
-> >>>>
-> >>>> -- Justin P. Mattock
-> >>>
-> >>> --
-> >>> ????? <yamazaki.seiji@kk.jp.panasonic.com>
-> >>>
-> >>>
-> >>
-> >> What are the outcomes when not applying a patch?
-> >>
-> >> regards,
-> >>
-> >>
-> >> -- Justin P. Mattock
-> >
-> > -- 
-> > ????? <yamazaki.seiji@kk.jp.panasonic.com>
-> >
-> 
-> if you receive this with the patch then well there you go, but if this
-> happens as a result with a clean fresh .tar.ball(vanilla kernel) then this 
-> is something
-> else.
-> 
-> regards,
-> 
-> -- Justin P. Mattock
-
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 12e5c3d..d3f6eee 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3503,6 +3503,24 @@ static phy_interface_t to_phy_interface(const char 
+*phy_connection_type)
+        return PHY_INTERFACE_MODE_MII;
+ }
+ 
++static const struct net_device_ops ucc_geth_netdev_ops = {
++       .ndo_open               = ucc_geth_open,
++       .ndo_stop               = ucc_geth_close,
++       .ndo_start_xmit         = ucc_geth_start_xmit,
++       .ndo_validate_addr      = eth_validate_addr,
++       .ndo_set_multicast_list = ucc_geth_set_multi,
++#if 0
++/* not yet */
++       .ndo_set_mac_address    = ucc_geth_set_mac_address,
++       .ndo_change_mtu         = ucc_geth_change_mtu,
++       .ndo_do_ioctl           = ucc_geth_do_ioctl,
++#endif
++       .ndo_tx_timeout         = ucc_geth_timeout,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++       .ndo_poll_controller    = ucc_netpoll,
++#endif
++};
++
+ static int ucc_geth_probe(struct of_device* ofdev, const struct 
+of_device_id *match)
+ {
+        struct device *device = &ofdev->dev;
+@@ -3715,19 +3733,11 @@ static int ucc_geth_probe(struct of_device* ofdev, 
+const struct of_device_id *ma
+ 
+        /* Fill in the dev structure */
+        uec_set_ethtool_ops(dev);
+-       dev->open = ucc_geth_open;
+-       dev->hard_start_xmit = ucc_geth_start_xmit;
+-       dev->tx_timeout = ucc_geth_timeout;
++       dev->netdev_ops = &ucc_geth_netdev_ops;
+        dev->watchdog_timeo = TX_TIMEOUT;
+        INIT_WORK(&ugeth->timeout_work, ucc_geth_timeout_work);
+        netif_napi_add(dev, &ugeth->napi, ucc_geth_poll, 
+UCC_GETH_DEV_WEIGHT);
+-#ifdef CONFIG_NET_POLL_CONTROLLER
+-       dev->poll_controller = ucc_netpoll;
+-#endif
+-       dev->stop = ucc_geth_close;
+-//    dev->change_mtu = ucc_geth_change_mtu;
+        dev->mtu = 1500;
+-       dev->set_multicast_list = ucc_geth_set_multi;
+ 
+        ugeth->msg_enable = netif_msg_init(debug.msg_enable, 
+UGETH_MSG_DEFAULT);
+        ugeth->phy_interface = phy_interface;
 -- 
-<yamazaki.seiji@kk.jp.panasonic.com>
+1.6.1.3
+--=_mixed 00388BC7C1257582_=
+Content-Type: application/octet-stream; name="0001-ucc_geth-Convert-to-net_device_ops.patch"
+Content-Disposition: attachment; filename="0001-ucc_geth-Convert-to-net_device_ops.patch"
+Content-Transfer-Encoding: base64
+
+RnJvbSBhOTJjMzg5YmE5Y2Q3ZWI2NzRiZmE1ODg4MmRkYzVmZGY5M2UxMWQwIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBKb2FraW0gVGplcm5sdW5kIDxKb2FraW0uVGplcm5sdW5kQHRy
+YW5zbW9kZS5zZT4KRGF0ZTogRnJpLCAyMCBNYXIgMjAwOSAyMTowOToxNCArMDEwMApTdWJqZWN0
+OiBbUEFUQ0hdIHVjY19nZXRoOiBDb252ZXJ0IHRvIG5ldF9kZXZpY2Vfb3BzCgoKU2lnbmVkLW9m
+Zi1ieTogSm9ha2ltIFRqZXJubHVuZCA8Sm9ha2ltLlRqZXJubHVuZEB0cmFuc21vZGUuc2U+Ci0t
+LQogZHJpdmVycy9uZXQvdWNjX2dldGguYyB8ICAgMjggKysrKysrKysrKysrKysrKysrKy0tLS0t
+LS0tLQogMSBmaWxlcyBjaGFuZ2VkLCAxOSBpbnNlcnRpb25zKCspLCA5IGRlbGV0aW9ucygtKQoK
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L3VjY19nZXRoLmMgYi9kcml2ZXJzL25ldC91Y2NfZ2V0
+aC5jCmluZGV4IDEyZTVjM2QuLmQzZjZlZWUgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbmV0L3VjY19n
+ZXRoLmMKKysrIGIvZHJpdmVycy9uZXQvdWNjX2dldGguYwpAQCAtMzUwMyw2ICszNTAzLDI0IEBA
+IHN0YXRpYyBwaHlfaW50ZXJmYWNlX3QgdG9fcGh5X2ludGVyZmFjZShjb25zdCBjaGFyICpwaHlf
+Y29ubmVjdGlvbl90eXBlKQogCXJldHVybiBQSFlfSU5URVJGQUNFX01PREVfTUlJOwogfQogCitz
+dGF0aWMgY29uc3Qgc3RydWN0IG5ldF9kZXZpY2Vfb3BzIHVjY19nZXRoX25ldGRldl9vcHMgPSB7
+CisJLm5kb19vcGVuCQk9IHVjY19nZXRoX29wZW4sCisJLm5kb19zdG9wCQk9IHVjY19nZXRoX2Ns
+b3NlLAorCS5uZG9fc3RhcnRfeG1pdAkJPSB1Y2NfZ2V0aF9zdGFydF94bWl0LAorCS5uZG9fdmFs
+aWRhdGVfYWRkcgk9IGV0aF92YWxpZGF0ZV9hZGRyLAorCS5uZG9fc2V0X211bHRpY2FzdF9saXN0
+CT0gdWNjX2dldGhfc2V0X211bHRpLAorI2lmIDAKKy8qIG5vdCB5ZXQgKi8KKwkubmRvX3NldF9t
+YWNfYWRkcmVzcwk9IHVjY19nZXRoX3NldF9tYWNfYWRkcmVzcywKKwkubmRvX2NoYW5nZV9tdHUJ
+CT0gdWNjX2dldGhfY2hhbmdlX210dSwKKwkubmRvX2RvX2lvY3RsCQk9IHVjY19nZXRoX2RvX2lv
+Y3RsLAorI2VuZGlmCisJLm5kb190eF90aW1lb3V0CQk9IHVjY19nZXRoX3RpbWVvdXQsCisjaWZk
+ZWYgQ09ORklHX05FVF9QT0xMX0NPTlRST0xMRVIKKwkubmRvX3BvbGxfY29udHJvbGxlcgk9IHVj
+Y19uZXRwb2xsLAorI2VuZGlmCit9OworCiBzdGF0aWMgaW50IHVjY19nZXRoX3Byb2JlKHN0cnVj
+dCBvZl9kZXZpY2UqIG9mZGV2LCBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkICptYXRjaCkKIHsK
+IAlzdHJ1Y3QgZGV2aWNlICpkZXZpY2UgPSAmb2ZkZXYtPmRldjsKQEAgLTM3MTUsMTkgKzM3MzMs
+MTEgQEAgc3RhdGljIGludCB1Y2NfZ2V0aF9wcm9iZShzdHJ1Y3Qgb2ZfZGV2aWNlKiBvZmRldiwg
+Y29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCAqbWEKIAogCS8qIEZpbGwgaW4gdGhlIGRldiBzdHJ1
+Y3R1cmUgKi8KIAl1ZWNfc2V0X2V0aHRvb2xfb3BzKGRldik7Ci0JZGV2LT5vcGVuID0gdWNjX2dl
+dGhfb3BlbjsKLQlkZXYtPmhhcmRfc3RhcnRfeG1pdCA9IHVjY19nZXRoX3N0YXJ0X3htaXQ7Ci0J
+ZGV2LT50eF90aW1lb3V0ID0gdWNjX2dldGhfdGltZW91dDsKKwlkZXYtPm5ldGRldl9vcHMgPSAm
+dWNjX2dldGhfbmV0ZGV2X29wczsKIAlkZXYtPndhdGNoZG9nX3RpbWVvID0gVFhfVElNRU9VVDsK
+IAlJTklUX1dPUksoJnVnZXRoLT50aW1lb3V0X3dvcmssIHVjY19nZXRoX3RpbWVvdXRfd29yayk7
+CiAJbmV0aWZfbmFwaV9hZGQoZGV2LCAmdWdldGgtPm5hcGksIHVjY19nZXRoX3BvbGwsIFVDQ19H
+RVRIX0RFVl9XRUlHSFQpOwotI2lmZGVmIENPTkZJR19ORVRfUE9MTF9DT05UUk9MTEVSCi0JZGV2
+LT5wb2xsX2NvbnRyb2xsZXIgPSB1Y2NfbmV0cG9sbDsKLSNlbmRpZgotCWRldi0+c3RvcCA9IHVj
+Y19nZXRoX2Nsb3NlOwotLy8gICAgZGV2LT5jaGFuZ2VfbXR1ID0gdWNjX2dldGhfY2hhbmdlX210
+dTsKIAlkZXYtPm10dSA9IDE1MDA7Ci0JZGV2LT5zZXRfbXVsdGljYXN0X2xpc3QgPSB1Y2NfZ2V0
+aF9zZXRfbXVsdGk7CiAKIAl1Z2V0aC0+bXNnX2VuYWJsZSA9IG5ldGlmX21zZ19pbml0KGRlYnVn
+Lm1zZ19lbmFibGUsIFVHRVRIX01TR19ERUZBVUxUKTsKIAl1Z2V0aC0+cGh5X2ludGVyZmFjZSA9
+IHBoeV9pbnRlcmZhY2U7Ci0tIAoxLjYuMS4zCgo=
+
+--=_mixed 00388BC7C1257582_=--
