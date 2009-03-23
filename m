@@ -1,23 +1,24 @@
-Return-Path: <monstr@monstr.eu>
-Received: from mail-fx0-f174.google.com (mail-fx0-f174.google.com
-	[209.85.220.174]) by ozlabs.org (Postfix) with ESMTP id 8CB15DDEED
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 08:13:24 +1100 (EST)
-Received: by fxm22 with SMTP id 22so1819938fxm.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 14:13:22 -0700 (PDT)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 99953DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 09:07:26 +1100 (EST)
+Date: Tue, 24 Mar 2009 01:07:24 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] tracing: Fix TRACING_SUPPORT dependency for PPC32
+Message-ID: <20090323220724.GA9851@oksana.dev.rtsoft.ru>
+References: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
+	<20090320190428.GD6224@elte.hu>
+	<20090320193904.GA13707@oksana.dev.rtsoft.ru>
+	<20090320195743.GA25147@elte.hu>
+	<20090320202247.GA30654@oksana.dev.rtsoft.ru>
+	<20090321161814.GC11183@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <200903231951.23902.arnd@arndb.de>
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
-	<4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
-	<af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu>
-	<200903231951.23902.arnd@arndb.de>
-Date: Mon, 23 Mar 2009 21:44:46 +0100
-Message-ID: <c1a198be0903231344g3ada4e9dta6310d1a92da8cf3@mail.gmail.com>
-Subject: Re: [PATCH 04/57] microblaze_v7: Open firmware files
-From: Michal Simek <monstr@monstr.eu>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: multipart/alternative; boundary=001636c5a4b84739da0465cf5634
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	john.williams@petalogix.com
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20090321161814.GC11183@elte.hu>
+Cc: linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,115 +28,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---001636c5a4b84739da0465cf5634
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+commit 40ada30f9621fbd831ac2437b9a2a399aa ("tracing: clean up menu"),
+despite the "clean up" in its purpose, introduced a behavioural
+change for Kconfig symbols: we no longer able to select tracing
+support on PPC32 (because IRQFLAGS_SUPPORT isn't yet implemented).
 
-Hi Arnd,
+The IRQFLAGS_SUPPORT is not mandatory for most tracers, tracing core
+has a special case for platforms w/o irqflags (which, by the way, has
+become useless as of the commit above).
 
-nice to hear you.
+Though according to Ingo Molnar, there was periodic build failures on
+weird, unmaintained architectures that had no irqflags-tracing support
+and hence didn't know the raw_irqs_save/restore primitives. Thus we'd
+better not enable irqflags-less tracing for all architectures.
 
-On Wednesday 18 March 2009, monstr@monstr.eu wrote:
-> > From: Michal Simek <monstr@monstr.eu>
-> >
-> >
-> > Signed-off-by: Michal Simek <monstr@monstr.eu>
-> > ---
-> >  arch/microblaze/include/asm/of_device.h   |   45 ++
-> >  arch/microblaze/include/asm/of_platform.h |   64 ++
-> >  arch/microblaze/include/asm/prom.h        |  313 ++++++++
-> >  arch/microblaze/kernel/of_device.c        |  115 +++
-> >  arch/microblaze/kernel/of_platform.c      |  201 +++++
-> >  arch/microblaze/kernel/prom.c             | 1147
-> +++++++++++++++++++++++++++++
-> >  arch/microblaze/kernel/prom_parse.c       | 1025
-> ++++++++++++++++++++++++++
-> >  7 files changed, 2910 insertions(+), 0 deletions(-)
-> >  create mode 100644 arch/microblaze/include/asm/of_device.h
-> >  create mode 100644 arch/microblaze/include/asm/of_platform.h
-> >  create mode 100644 arch/microblaze/include/asm/prom.h
-> >  create mode 100644 arch/microblaze/kernel/of_device.c
-> >  create mode 100644 arch/microblaze/kernel/of_platform.c
-> >  create mode 100644 arch/microblaze/kernel/prom.c
-> >  create mode 100644 arch/microblaze/kernel/prom_parse.c
->
-> Since these files are derived from the powerpc versions, what is the
-> plan on them? IIRC, you had them in a common directory in an earlier
-> version. Are you planning to merge them at some point in the future
-> or do you intend to maintain a fork?
+This patch restores the old behaviour for PPC32, and thus brings the
+tracing back. Other architectures can either add themselves to the
+exception list or (better) implement TRACE_IRQFLAGS_SUPPORT.
 
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-yes, these files are defived from PPC version. Yes, I added them to generic
-location and in this version
-are in arch folder. It is easier for me to have them in arch folder till
-Microblaze will be in  linus tree.
-And then create patch which will synchronize them.
+On Sat, Mar 21, 2009 at 05:18:14PM +0100, Ingo Molnar wrote:
+[...]
+> > > > Surely I'll look into implementing irqflags tracing, but 
+> > > > considering that no one ever needed this for almost three years, 
+> > > > [...]
+> > > 
+> > > Weird, there's no lockdep support?
+> > 
+> > *ashamed*: apparently no such support currently exist for PPC32. ;-)
+> 
+> Hm, do all the tracers even compile on ppc32 with your patch?
 
-I prefer to have this code in generic location as much as possible but first
-stage should be add microblaze code to tree and
-then add it to generic location and remove it from all archs which use it.
+Following config compiles fine:
 
-Thanks,
-Michal
+$ grep TRAC .config
+CONFIG_STACKTRACE_SUPPORT=y
+# CONFIG_TREE_RCU_TRACE is not set
+# CONFIG_PREEMPT_RCU_TRACE is not set
+CONFIG_TRACEPOINTS=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+CONFIG_STACKTRACE=y
+CONFIG_NOP_TRACER=y
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_TRACER_MAX_TRACE=y
+CONFIG_TRACING=y
+CONFIG_TRACING_SUPPORT=y
+CONFIG_FUNCTION_TRACER=y
+CONFIG_FUNCTION_GRAPH_TRACER=y
+CONFIG_SCHED_TRACER=y
+CONFIG_CONTEXT_SWITCH_TRACER=y
+CONFIG_EVENT_TRACER=y
+CONFIG_BOOT_TRACER=y
+# CONFIG_TRACE_BRANCH_PROFILING is not set
+CONFIG_STACK_TRACER=y
+CONFIG_KMEMTRACE=y
+CONFIG_WORKQUEUE_TRACER=y
+# CONFIG_BLK_DEV_IO_TRACE is not set
+CONFIG_DYNAMIC_FTRACE=y
+CONFIG_FTRACE_MCOUNT_RECORD=y
+CONFIG_FTRACE_SELFTEST=y
+CONFIG_FTRACE_STARTUP_TEST=y
 
+With CONFIG_TRACE_BRANCH_PROFILING=y the kernel builds fine too,
+but vmlinux is too big to boot (we still can boot it, but we'll
+need a bit modified bootloader for that).
 
+OK, how about the patch down below?
 
+ kernel/trace/Kconfig |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-
->
->
->        Arnd <><
->
-
---001636c5a4b84739da0465cf5634
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi Arnd,<br><br>nice to hear you.<br><br><div class=3D"gmail_quote"><blockq=
-uote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, 20=
-4); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">On Wednesday 18 March 20=
-09, monstr@monstr.eu wrote:<br>
-
-&gt; From: Michal Simek &lt;monstr@monstr.eu&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt; Signed-off-by: Michal Simek &lt;monstr@monstr.eu&gt;<br>
-&gt; ---<br>
-&gt; =A0arch/microblaze/include/asm/of_device.h =A0 | =A0 45 ++<br>
-&gt; =A0arch/microblaze/include/asm/of_platform.h | =A0 64 ++<br>
-&gt; =A0arch/microblaze/include/asm/prom.h =A0 =A0 =A0 =A0| =A0313 ++++++++=
-<br>
-&gt; =A0arch/microblaze/kernel/of_device.c =A0 =A0 =A0 =A0| =A0115 +++<br>
-&gt; =A0arch/microblaze/kernel/of_platform.c =A0 =A0 =A0| =A0201 +++++<br>
-&gt; =A0arch/microblaze/kernel/prom.c =A0 =A0 =A0 =A0 =A0 =A0 | 1147 ++++++=
-+++++++++++++++++++++++<br>
-&gt; =A0arch/microblaze/kernel/prom_parse.c =A0 =A0 =A0 | 1025 ++++++++++++=
-++++++++++++++<br>
-&gt; =A07 files changed, 2910 insertions(+), 0 deletions(-)<br>
-&gt; =A0create mode 100644 arch/microblaze/include/asm/of_device.h<br>
-&gt; =A0create mode 100644 arch/microblaze/include/asm/of_platform.h<br>
-&gt; =A0create mode 100644 arch/microblaze/include/asm/prom.h<br>
-&gt; =A0create mode 100644 arch/microblaze/kernel/of_device.c<br>
-&gt; =A0create mode 100644 arch/microblaze/kernel/of_platform.c<br>
-&gt; =A0create mode 100644 arch/microblaze/kernel/prom.c<br>
-&gt; =A0create mode 100644 arch/microblaze/kernel/prom_parse.c<br>
-<br>
-Since these files are derived from the powerpc versions, what is the<br>
-plan on them? IIRC, you had them in a common directory in an earlier<br>
-version. Are you planning to merge them at some point in the future<br>
-or do you intend to maintain a fork?</blockquote><div><br>yes, these files =
-are defived from PPC version. Yes, I added them to generic location and in =
-this version<br>are in arch folder. It is easier for me to have them in arc=
-h folder till Microblaze will be in=A0 linus tree.<br>
-And then create patch which will synchronize them.<br><br>I prefer to have =
-this code in generic location as much as possible but first stage should be=
- add microblaze code to tree and<br>then add it to generic location and rem=
-ove it from all archs which use it.<br>
-<br>Thanks,<br>Michal<br><br><br><br>=A0</div><blockquote class=3D"gmail_qu=
-ote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0p=
-t 0.8ex; padding-left: 1ex;"><br>
-<font color=3D"#888888"><br>
- =A0 =A0 =A0 =A0Arnd &lt;&gt;&lt;<br>
-</font></blockquote></div><br>
-
---001636c5a4b84739da0465cf5634--
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index ee70841..2246141 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -63,7 +63,11 @@ config TRACING
+ #
+ config TRACING_SUPPORT
+ 	bool
+-	depends on TRACE_IRQFLAGS_SUPPORT
++	# PPC32 has no irqflags tracing support, but it can use most of the
++	# tracers anyway, they were tested to build and work. Note that new
++	# exceptions to this list aren't welcomed, better implement the
++	# irqflags tracing for your architecture.
++	depends on TRACE_IRQFLAGS_SUPPORT || PPC32
+ 	depends on STACKTRACE_SUPPORT
+ 	default y
+ 
+-- 
+1.5.6.5
