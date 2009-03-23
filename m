@@ -1,30 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 197E6DDEDF
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 03:54:08 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n2NGs3LN004047
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 09:54:04 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n2NGs31S025045
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 11:54:03 -0500 (CDT)
-Date: Mon, 23 Mar 2009 11:54:02 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Li Yang-R58472 <LeoLi@freescale.com>
-Subject: Re: suspend-to-mem on the mpc8349e-mitx-gp?
-Message-ID: <20090323165402.GC25217@ld0162-tx32.am.freescale.net>
-References: <49C3AB35.4080700@freescale.com>
-	<3A45394FD742FA419B760BB8D398F9ED2FA48E@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED2FA48E@zch01exm26.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, Soohyung Cho <celius202@gmail.com>
+Return-Path: <John.Linn@xilinx.com>
+Received: from WA4EHSOBE004.bigfish.com (wa4ehsobe004.messaging.microsoft.com
+	[216.32.181.14]) by ozlabs.org (Postfix) with ESMTP id C96CDDDE25
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 04:17:24 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: Xilinx cygwin linux cross recommendations ?
+Date: Mon, 23 Mar 2009 11:17:15 -0600
+In-Reply-To: <49C2DC5D.6000701@dlasys.net>
+References: <49C2DC5D.6000701@dlasys.net>
+From: John Linn <John.Linn@xilinx.com>
+To: <dhlii@dlasys.net>,
+	<linuxppc-dev@ozlabs.org>
+Message-ID: <20090323171717.5D3ECB2005D@mail163-wa4.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,30 +21,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Mar 22, 2009 at 10:45:23PM -0700, Li Yang-R58472 wrote:
-> > I don't think so, in this case.  The user is not asking for 
-> > "sleep" or deep sleep"; they are asking for a power state 
-> > that meets the definition of "standby" (which sleep does) or 
-> > which meets the definition of "mem" 
-> > (which both sleep and deep sleep do).  When the user asks for 
-> > "mem", we provide the lowest power mode that qualifies.
-> 
-> In my understanding, "mem" which is suspend-to-ram means all CPU states
-> and registers are kept in memory and the CPU is completely off during
-> suspension.  I don't think the sleep mode of 8349 qualifies, does it?
+I agree that VmWare is a reasonable solution.
 
-Is there a difference visible to software or to the user (other than not
-achieving power savings that the board does not support)?  It seems
-simpler for userspace to just specify the "heaviest" sleep state it wants
-deal with (though some feedback to an administrator of what actually
-happens would be nice).  
+Some of our field guys, that don't do Linux everyday, use the ELDK in a
+VmWare appliance and this seems reasonable.  We never had great luck
+with cygwin stuff in this area.
 
-And if we want to be really pedantic, neither sleep nor deep sleep meet
-the definitions for either "standby" or "mem", because they specify
-acceptable latency ranges in seconds, and (in the absence of a disk) we
-are much faster than that (it doesn't say "up to 1-2 seconds"). :-)
+-- John
 
-Are there any existing suspend drivers that suppord standby but not mem? 
-I see omap1 as a counterexample that treats them both the same.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-dev-
+> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of David H. Lynch
+Jr.
+> Sent: Thursday, March 19, 2009 5:59 PM
+> To: linuxppc-dev@ozlabs.org
+> Subject: Xilinx cygwin linux cross recommendations ?
+> =
 
--Scott
+> =
+
+>     Does anyone have experience sugestions for building ppc/linux apps
+> or even ppc kernels under windows.
+> =
+
+>     I work (and live) under Linux. I am very happy to work under
+Linux.
+> I only spend about 20 minutes a week in windows anymore.
+> =
+
+>     But I have coworkers, and clients that live under windows.
+>     Mostly I have them working under coLinux, but even that seems to
+be
+> too much for many of them.
+> =
+
+>     I have been able to mangle my build environment to  work under
+msys
+> and use the xilinx edk cross compiler to build standalone PPC apps,
+>     But the libraries do not seem to be present for linux
+applications.
+> =
+
+>     I build my own uclibc crosscompiler under linux from buildroot.
+>        Has anyone got experience doing that under windows ?
+> =
+
+>     Can I just copy the appropriate library binaries and use them with
+> the xilinx EDK cross compiler ? Presumably I need to match versions of
+GCC.
+> =
+
+>     Other suguestions ?
+> =
+
+>     Thanks.
+> =
+
+> =
+
+> =
+
+> =
+
+> --
+> Dave Lynch 					  	    DLA Systems
+> Software Development:
+Embedded Linux
+> 717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+> fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+> Over 25 years' experience in platforms, languages, and technologies
+too numerous to list.
+> =
+
+> "Any intelligent fool can make things bigger and more complex... It
+takes a touch of genius - and a
+> lot of courage to move in the opposite direction."
+> Albert Einstein
+> =
+
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
