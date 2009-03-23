@@ -1,20 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CBBA1DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 03:49:17 +1100 (EST)
-Message-Id: <95190FB6-C6A3-43F7-9684-9B4BC095D480@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20090319164808.GA17795@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH -next] fsl_pq_mdio: Use proper address translation
-Date: Mon, 23 Mar 2009 11:49:07 -0500
-References: <20090319164808.GA17795@oksana.dev.rtsoft.ru>
-Cc: netdev@vger.kernel.org, Andy Fleming <afleming@freescale.com>,
-	LinuxPPC Mailing List <linuxppc-dev@ozlabs.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 197E6DDEDF
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 03:54:08 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n2NGs3LN004047
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 09:54:04 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n2NGs31S025045
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 11:54:03 -0500 (CDT)
+Date: Mon, 23 Mar 2009 11:54:02 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Li Yang-R58472 <LeoLi@freescale.com>
+Subject: Re: suspend-to-mem on the mpc8349e-mitx-gp?
+Message-ID: <20090323165402.GC25217@ld0162-tx32.am.freescale.net>
+References: <49C3AB35.4080700@freescale.com>
+	<3A45394FD742FA419B760BB8D398F9ED2FA48E@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED2FA48E@zch01exm26.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Soohyung Cho <celius202@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,54 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, Mar 22, 2009 at 10:45:23PM -0700, Li Yang-R58472 wrote:
+> > I don't think so, in this case.  The user is not asking for 
+> > "sleep" or deep sleep"; they are asking for a power state 
+> > that meets the definition of "standby" (which sleep does) or 
+> > which meets the definition of "mem" 
+> > (which both sleep and deep sleep do).  When the user asks for 
+> > "mem", we provide the lowest power mode that qualifies.
+> 
+> In my understanding, "mem" which is suspend-to-ram means all CPU states
+> and registers are kept in memory and the CPU is completely off during
+> suspension.  I don't think the sleep mode of 8349 qualifies, does it?
 
-On Mar 19, 2009, at 11:48 AM, Anton Vorontsov wrote:
+Is there a difference visible to software or to the user (other than not
+achieving power savings that the board does not support)?  It seems
+simpler for userspace to just specify the "heaviest" sleep state it wants
+deal with (though some feedback to an administrator of what actually
+happens would be nice).  
 
-> Currently the driver just read "reg" property for constructing MDIO
-> bus IDs, but this won't work when we'll start using "ranges = <>" in
-> the device tree, so this will pop up:
->
-> Freescale PowerQUICC MII Bus: probed
-> sysfs: duplicate filename 'mdio@520' can not be created
-> ------------[ cut here ]------------
-> Badness at c00cb6b8 [verbose debug info unavailable]
-> NIP: c00cb6b8 LR: c00cb6b8 CTR: c001271c
-> REGS: cf82fc10 TRAP: 0700   Not tainted  (2.6.29-rc7-03702-g7ccd10f)
-> MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 42044022  XER: 20000000
-> TASK = cf81fbd0[1] 'swapper' THREAD: cf82e000
-> GPR00: c00cb6b8 cf82fcc0 cf81fbd0 0000003b 00000e42 ffffffff  
-> 00004000 00000e42
-> GPR08: c03cb0fc c03bfbdc 00000e42 c03cac50 22044022 1006a2bc  
-> 0ffcb000 00000000
-> GPR16: 0ffc04b0 0ffc5a40 00000000 0ffc79a8 0f7863a8 00000004  
-> 00000000 00000000
-> GPR24: c033a6a8 d1014520 cf85e840 cf82fd08 cf87cf2c cf82fcd8  
-> cf85dea8 ffffffef
-> NIP [c00cb6b8] sysfs_add_one+0x4c/0x54
-> LR [c00cb6b8] sysfs_add_one+0x4c/0x54
-> Call Trace:
-> [cf82fcc0] [c00cb6b8] sysfs_add_one+0x4c/0x54 (unreliable)
-> [cf82fcd0] [c00cbc18] create_dir+0x58/0xc0
-> [cf82fd00] [c00cbcc0] sysfs_create_dir+0x40/0x70
-> [cf82fd20] [c0159388] create_dir+0x28/0x78
-> [cf82fd30] [c0159824] kobject_add_internal+0x98/0x13c
-> [cf82fd50] [c0159e98] kobject_add+0x60/0x98
-> [cf82fd80] [c018a480] device_add+0x98/0x2ac
-> [cf82fda0] [c01a2380] mdiobus_register+0xbc/0x1c0
-> [cf82fdc0] [c019f31c] fsl_pq_mdio_probe+0x284/0x2a0
-> [cf82fe00] [c0223814] of_platform_device_probe+0x5c/0x84
-> ...
->
-> This patch fixes the issue by translating the "reg" property to a full
-> address, and thus avoids the duplicate names.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
+And if we want to be really pedantic, neither sleep nor deep sleep meet
+the definitions for either "standby" or "mem", because they specify
+acceptable latency ranges in seconds, and (in the absence of a disk) we
+are much faster than that (it doesn't say "up to 1-2 seconds"). :-)
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+Are there any existing suspend drivers that suppord standby but not mem? 
+I see omap1 as a counterexample that treats them both the same.
 
-David, I'm expecting you to pick this up and put it into net-next.
-
-thanks
-
-- k
+-Scott
