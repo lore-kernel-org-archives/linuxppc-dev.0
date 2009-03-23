@@ -1,15 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 15C67DDF1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 03:16:58 +1100 (EST)
+Date: Mon, 23 Mar 2009 19:16:55 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: =?utf8?B?5bGx5bSO44CA57K+5LqM?= <yamazaki.seiji@kk.jp.panasonic.com>
+Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
+Message-ID: <20090323161655.GA30262@oksana.dev.rtsoft.ru>
+References: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
+	<20090321004506.GA13031@oksana.dev.rtsoft.ru>
+	<20090323152051.D2F9.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
 MIME-Version: 1.0
-In-Reply-To: <200903231151.10373.sr@denx.de>
-References: <200903231151.10373.sr@denx.de>
-Date: Mon, 23 Mar 2009 09:37:31 -0600
-Message-ID: <fa686aa40903230837w52a9f764n29b3f9cf4c95cc57@mail.gmail.com>
-Subject: Re: physmap_of and partitions (mtd concat support)
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Stefan Roese <sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20090323152051.D2F9.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
+Cc: justinmattock@gmail.com, Ben Dooks <ben-linux@fluff.org>,
+	Arnd Bergmann <arnd@arndb.de>, yamazaki <yamazaki-seiji@jcom.home.ne.jp>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx,
+	Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,26 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 23, 2009 at 4:51 AM, Stefan Roese <sr@denx.de> wrote:
-> I just noticed that physmap_of can't handle multiple devices of different type
-> described in one device node. For example the Intel P30 48F4400 (64MByte)
-> consists internally of 2 non-identical NOR chips. So a "simple"
+On Mon, Mar 23, 2009 at 03:34:45PM +0900, 山崎　精二 wrote:
+> Hi 
+> 
+> I downloaded linux-2.6.29-rc8.tar.bz2,and I patched .
+> I was succeeded. Thank you very match.
+> But I have the other problem.
+> 
+> Compile was not succeeded.
+> 
+> Message is ...
+> 
+>  CALL    arch/powerpc/kernel/prom_init_check.sh
+>   CC      drivers/mmc/host/sdhci-of.o
+> drivers/mmc/host/sdhci-of.c:163: error: 'SDHCI_QUIRK_FORCE_BLK_SZ_2048' undeclared here (not in a function)
+> drivers/mmc/host/sdhci-of.c:164: error: 'SDHCI_QUIRK_BROKEN_CARD_DETECTION' undeclared here (not in a function)
+> drivers/mmc/host/sdhci-of.c:165: error: 'SDHCI_QUIRK_INVERTED_WRITE_PROTECT' undeclared here (not in a function)
+> drivers/mmc/host/sdhci-of.c:167: error: 'SDHCI_QUIRK_NONSTANDARD_CLOCK' undeclared here (not in a function)
+> drivers/mmc/host/sdhci-of.c:168: error: 'SDHCI_QUIRK_PIO_NEEDS_DELAY' undeclared here (not in a function)
+> drivers/mmc/host/sdhci-of.c:169: error: 'SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET' undeclared here (not in a function)
 [...]
-> Now the real problem: How should I describe a partition in the device tree
-> spanning over both devices (concat)?. The current physmap_of driver doesn't
-> handle concat at all (physmap.c does). I already have some ideas on how to
-> implement this concat support in physmap_of. But ideas about a device-tree
-> syntax for such partitions are very welcome.
+> drivers/mmc/host/sdhci-of.c:181: warning: excess elements in struct initializer
+> drivers/mmc/host/sdhci-of.c:181: warning: (near initialization for 'sdhci_esdhc.ops')
+> make[3]: *** [drivers/mmc/host/sdhci-of.o] Error 1
+> make[2]: *** [drivers/mmc/host] Error 2
+> make[1]: *** [drivers/mmc] Error 2
 
-Sounds to me like a physmap_of driver bug.  I don't think there is any
-advantage in changing the partition syntax since concatenated flash
-will always be used as a single device.  It doesn't make any sense to
-try and span partitions over two nodes.
-
-Do additional properties need to be added to describe the concat layout?
-
-g.
+All these errors indicate that you didn't apply all the patches.
+You'll need all 11 patches from this series, not only the last
+one.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
