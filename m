@@ -1,18 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 41AC9DDEDA
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 15:31:35 +1100 (EST)
-Date: Sun, 22 Mar 2009 21:31:22 -0700 (PDT)
-Message-Id: <20090322.213122.199224311.davem@davemloft.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 2.6.29] ucc_geth: Fix oops when using fixed-link support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090320223417.GA20018@oksana.dev.rtsoft.ru>
-References: <20090320223417.GA20018@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, leoli@freescale.com,
-	Joakim.Tjernlund@transmode.se, Haiying.Wang@freescale.com
+Return-Path: <paulus@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 226DEDDDEE
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 15:39:22 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18887.4715.765245.409925@drongo.ozlabs.ibm.com>
+Date: Mon, 23 Mar 2009 15:39:07 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: davidastro <davidastro@hotmail.com>
+Subject: Re: Fix for __div64_32 locks when using some 64 bit numbers
+In-Reply-To: <22581509.post@talk.nabble.com>
+References: <22567864.post@talk.nabble.com>
+	<1237330984.25062.164.camel@pasglop>
+	<22581509.post@talk.nabble.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Sat, 21 Mar 2009 01:34:17 +0300
+davidastro <davidastro@hotmail.com> writes:
 
-> commit b1c4a9dddf09fe99b8f88252718ac5b357363dc4 ("ucc_geth: Change
-> uec phy id to the same format as gianfar's") introduced a regression
-> in the ucc_geth driver that causes this oops when fixed-link is used:
-> 
-> Unable to handle kernel paging request for data at address 0x00000000
-> Faulting instruction address: 0xc0151270
-...
-> Reported-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Tested-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> Basically, the numbers shown above was causing the 64 by 32 bit algorithm to
+> divide by zero making the unit spin and also giving incorrect results.
+> Here is the code as it was before.
+[snip]
+>         cntlzw  r0,r5           # we are shifting the dividend right
+>         li      r10,-1          # to make it < 2^32, and shifting
+>         srw     r10,r10,r0      # the divisor right the same amount,
+>         add     r9,r4,r10       # rounding up (so the estimate cannot
+>         andc    r11,r6,r10      # ever be too large, only too small)
+>         andc    r9,r9,r10      #THIS CODE COULD STORE A ZERO IN r9
+>         or      r11,r5,r11
+>         rotlw   r9,r9,r0
+>         rotlw   r11,r11,r0
 
-Applied, thanks.
+That bug was fixed in October 2005 in commit 344480b99730bfd2, and the
+fix is in v2.6.15-rc1 and all later kernels.  I fixed it a bit
+differently to your suggestion though - see
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=344480b99730bfd205e306d3fd168cdcebe83425
+
+You must be working from an old kernel tree - which kernel version are
+you using?
+
+Paul.
