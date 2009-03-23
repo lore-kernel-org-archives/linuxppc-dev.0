@@ -1,21 +1,23 @@
-Return-Path: <celius202@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id D8EF8DDEEB
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 17:17:20 +1100 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so877860qwb.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Mar 2009 23:17:18 -0700 (PDT)
+Return-Path: <yamazaki.seiji@kk.jp.panasonic.com>
+Received: from smtp.mei.co.jp (smtp.mei.co.jp [133.183.100.20])
+	by ozlabs.org (Postfix) with ESMTP id 210D6DDEF3
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 18:06:31 +1100 (EST)
+Date: Mon, 23 Mar 2009 15:34:45 +0900
+From: =?ISO-2022-JP?B?GyRCOzM6aiEhQDpGcxsoQg==?=
+	<yamazaki.seiji@kk.jp.panasonic.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
+In-Reply-To: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
+References: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
+	<20090321004506.GA13031@oksana.dev.rtsoft.ru>
+Message-Id: <20090323152051.D2F9.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
 MIME-Version: 1.0
-In-Reply-To: <3A45394FD742FA419B760BB8D398F9ED2FA48E@zch01exm26.fsl.freescale.net>
-References: <3A45394FD742FA419B760BB8D398F9ED29EB95@zch01exm26.fsl.freescale.net>
-	<49C3AB35.4080700@freescale.com>
-	<3A45394FD742FA419B760BB8D398F9ED2FA48E@zch01exm26.fsl.freescale.net>
-Date: Mon, 23 Mar 2009 15:17:18 +0900
-Message-ID: <ffa0ad880903222317p6e675f6q59e59afd8a630ad3@mail.gmail.com>
-Subject: Re: suspend-to-mem on the mpc8349e-mitx-gp?
-From: Soohyung Cho <celius202@gmail.com>
-To: Li Yang-R58472 <LeoLi@freescale.com>, scottwood@freescale.com,
-	linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=0015175ce0e4eb5d2f0465c33762
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+	yamazaki <yamazaki-seiji@jcom.home.ne.jp>,
+	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx,
+	Pierre Ossman <drzeus-sdhci@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,92 +27,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0015175ce0e4eb5d2f0465c33762
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hi 
 
-2009/3/23 Li Yang-R58472 <LeoLi@freescale.com>
+I downloaded linux-2.6.29-rc8.tar.bz2,and I patched .
+I was succeeded. Thank you very match.
+But I have the other problem.
 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, March 20, 2009 10:42 PM
-> > To: Li Yang-R58472
-> > Cc: Soohyung Cho; linuxppc-dev@ozlabs.org
-> > Subject: Re: suspend-to-mem on the mpc8349e-mitx-gp?
-> >
-> > Li Yang-R58472 wrote:
-> > >> However, the code should treat "mem" as "standby" on chips
-> > that don't
-> > >> support deep sleep.  What does the device tree
-> > >
-> > > Well, shouldn't the valid() callback reject unsupported
-> > states instead
-> > > of covering up?
-> >
-> > I don't think so, in this case.  The user is not asking for
-> > "sleep" or deep sleep"; they are asking for a power state
-> > that meets the definition of "standby" (which sleep does) or
-> > which meets the definition of "mem"
-> > (which both sleep and deep sleep do).  When the user asks for
-> > "mem", we provide the lowest power mode that qualifies.
->
-> In my understanding, "mem" which is suspend-to-ram means all CPU states and
-> registers are kept in memory and the CPU is completely off during
-> suspension.  I don't think the sleep mode of 8349 qualifies, does it?
->
-> - Leo
->
+Compile was not succeeded.
 
+Message is ...
 
-I also agree to Leo.
-It can be confusing, if "mem" means both sleep and deep sleep.
-It would be better not to show "mem", if 8349 don't have deep sleep mode.
+ CALL    arch/powerpc/kernel/prom_init_check.sh
+  CC      drivers/mmc/host/sdhci-of.o
+drivers/mmc/host/sdhci-of.c:163: error: 'SDHCI_QUIRK_FORCE_BLK_SZ_2048' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:164: error: 'SDHCI_QUIRK_BROKEN_CARD_DETECTION' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:165: error: 'SDHCI_QUIRK_INVERTED_WRITE_PROTECT' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:167: error: 'SDHCI_QUIRK_NONSTANDARD_CLOCK' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:168: error: 'SDHCI_QUIRK_PIO_NEEDS_DELAY' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:169: error: 'SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:172: error: unknown field 'readl' specified in initializer
+drivers/mmc/host/sdhci-of.c:172: warning: initialization from incompatible pointer type
+drivers/mmc/host/sdhci-of.c:173: error: unknown field 'readw' specified in initializer
+drivers/mmc/host/sdhci-of.c:173: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:173: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:174: error: unknown field 'readb' specified in initializer
+drivers/mmc/host/sdhci-of.c:174: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:174: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:175: error: unknown field 'writel' specified in initializer
+drivers/mmc/host/sdhci-of.c:175: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:175: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:176: error: unknown field 'writew' specified in initializer
+drivers/mmc/host/sdhci-of.c:176: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:176: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:177: error: unknown field 'writeb' specified in initializer
+drivers/mmc/host/sdhci-of.c:177: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:177: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:178: error: unknown field 'set_clock' specified in initializer
+drivers/mmc/host/sdhci-of.c:178: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:178: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:180: error: unknown field 'get_max_clock' specified in initializer
+drivers/mmc/host/sdhci-of.c:180: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:180: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:181: error: unknown field 'get_timeout_clock' specified in initializer
+drivers/mmc/host/sdhci-of.c:181: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:181: warning: (near initialization for 'sdhci_esdhc.ops')
+make[3]: *** [drivers/mmc/host/sdhci-of.o] Error 1
+make[2]: *** [drivers/mmc/host] Error 2
+make[1]: *** [drivers/mmc] Error 2
+make: *** [drivers] Error 2
 
-- Soohyung
+I do not know why. Could you please tell us why.
+Thanks.
 
---0015175ce0e4eb5d2f0465c33762
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sat, 21 Mar 2009 03:45:06 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-<div>=A0=A0</div>
-<div class=3D"gmail_quote">2009/3/23 Li Yang-R58472 <span dir=3D"ltr">&lt;<=
-a href=3D"mailto:LeoLi@freescale.com">LeoLi@freescale.com</a>&gt;</span><br=
->
-<blockquote class=3D"gmail_quote" style=3D"PADDING-LEFT: 1ex; MARGIN: 0px 0=
-px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">
-<div class=3D"im">&gt; -----Original Message-----<br>&gt; From: Wood Scott-=
-B07421<br></div>
-<div class=3D"im">&gt; Sent: Friday, March 20, 2009 10:42 PM<br>&gt; To: Li=
- Yang-R58472<br>&gt; Cc: Soohyung Cho; <a href=3D"mailto:linuxppc-dev@ozlab=
-s.org">linuxppc-dev@ozlabs.org</a><br>&gt; Subject: Re: suspend-to-mem on t=
-he mpc8349e-mitx-gp?<br>
-&gt;<br></div>
-<div class=3D"im">&gt; Li Yang-R58472 wrote:<br>&gt; &gt;&gt; However, the =
-code should treat &quot;mem&quot; as &quot;standby&quot; on chips<br>&gt; t=
-hat don&#39;t<br>&gt; &gt;&gt; support deep sleep. =A0What does the device =
-tree<br>
-&gt; &gt;<br>&gt; &gt; Well, shouldn&#39;t the valid() callback reject unsu=
-pported<br>&gt; states instead<br>&gt; &gt; of covering up?<br>&gt;<br>&gt;=
- I don&#39;t think so, in this case. =A0The user is not asking for<br>&gt; =
-&quot;sleep&quot; or deep sleep&quot;; they are asking for a power state<br=
->
-&gt; that meets the definition of &quot;standby&quot; (which sleep does) or=
-<br>&gt; which meets the definition of &quot;mem&quot;<br>&gt; (which both =
-sleep and deep sleep do). =A0When the user asks for<br>&gt; &quot;mem&quot;=
-, we provide the lowest power mode that qualifies.<br>
-<br></div>In my understanding, &quot;mem&quot; which is suspend-to-ram mean=
-s all CPU states and registers are kept in memory and the CPU is completely=
- off during suspension. =A0I don&#39;t think the sleep mode of 8349 qualifi=
-es, does it?<br>
-<br>- Leo<br></blockquote></div>
-<div>=A0</div>
-<div><br>
-<div>I also agree to Leo. </div>
-<div>It can be confusing, if &quot;mem&quot; means both sleep and deep slee=
-p.</div>
-<div>It would be better not to show=A0&quot;mem&quot;, if 8349 don&#39;t ha=
-ve deep sleep mode.</div>
-<div>=A0</div>
-<div>- Soohyung</div></div>
+> On Sat, Mar 21, 2009 at 09:15:25AM +0900, yamazaki wrote:
+> > Hi 
+> > 
+> > Thank you for your reply.
+> > I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
+> > which is probably new product.
+> 
+> Ah, then it must be connected via MPC8347's localbus.
+> 
+> Well, then you need 2.6.29-rcX kernels, for example
+> http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
+> is suitable.
+> 
+> Untar it and apply the patches (they'll apply fine on that
+> kernel). Then you'll need some device tree additions for
+> your MPC8347 board, something like this:
+> 
+>         localbus@e0005000 {
+>                 #address-cells = <2>;
+>                 #size-cells = <1>;
+>                 compatible = "fsl,mpc8347-localbus",
+>                              "fsl,pq2pro-localbus";
+>                 reg = <0xe0005000 0xd8>;
+>                 ranges = <0x1 0x0 0xf0000000 0x1000>;
+> 		// ^^ change the 0xf0000000 to the actual address
+>                 sdhci@1,0 {
+>                         compatible = "ricoh,r5c807", "generic-sdhci";
+>                         reg = <0x1 0x0 0x1000>;
+>                         interrupts = <ricoh-interrupt-here 0x8>;
+>                         interrupt-parent = <&ipic>;
+>                         // if needed, clock-frequency = <freq-in-HZ-here>;
+>                 };
+>         };
+> 
+> Note that I'm not sure what endiannes you'll get when connecting
+> the ricoh chip to the big-endinan host...
+> 
+> -- 
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
 
---0015175ce0e4eb5d2f0465c33762--
+-- 
+山崎　精二 <yamazaki.seiji@kk.jp.panasonic.com>
