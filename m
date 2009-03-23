@@ -1,17 +1,23 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from WA4EHSOBE004.bigfish.com (wa4ehsobe004.messaging.microsoft.com
-	[216.32.181.14]) by ozlabs.org (Postfix) with ESMTP id C96CDDDE25
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 04:17:24 +1100 (EST)
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id BA2CFDDF4A
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 04:56:11 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LloNc-0002a5-1K
+	for linuxppc-dev@ozlabs.org; Mon, 23 Mar 2009 10:56:08 -0700
+Message-ID: <22665081.post@talk.nabble.com>
+Date: Mon, 23 Mar 2009 10:56:08 -0700 (PDT)
+From: davidastro <davidastro@hotmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Fix for __div64_32 locks when using some 64 bit numbers
+In-Reply-To: <18887.4715.765245.409925@drongo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Xilinx cygwin linux cross recommendations ?
-Date: Mon, 23 Mar 2009 11:17:15 -0600
-In-Reply-To: <49C2DC5D.6000701@dlasys.net>
-References: <49C2DC5D.6000701@dlasys.net>
-From: John Linn <John.Linn@xilinx.com>
-To: <dhlii@dlasys.net>,
-	<linuxppc-dev@ozlabs.org>
-Message-ID: <20090323171717.5D3ECB2005D@mail163-wa4.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
+References: <22567864.post@talk.nabble.com>
+	<1237330984.25062.164.camel@pasglop>
+	<22581509.post@talk.nabble.com>
+	<18887.4715.765245.409925@drongo.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,93 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I agree that VmWare is a reasonable solution.
 
-Some of our field guys, that don't do Linux everyday, use the ELDK in a
-VmWare appliance and this seems reasonable.  We never had great luck
-with cygwin stuff in this area.
+Paul,
 
--- John
+You are correct. Since it was such a small piece of code, I didn't use diff
+between the kernel I am using (2.6.14) and the newest ones (2.6.28 on the
+Linux). Also, I do not know how to look in the kernel files commit history.
+I guess the link you gave me might be of some help. 
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of David H. Lynch
-Jr.
-> Sent: Thursday, March 19, 2009 5:59 PM
-> To: linuxppc-dev@ozlabs.org
-> Subject: Xilinx cygwin linux cross recommendations ?
-> =
+Thanks for your help
 
-> =
 
->     Does anyone have experience sugestions for building ppc/linux apps
-> or even ppc kernels under windows.
-> =
-
->     I work (and live) under Linux. I am very happy to work under
-Linux.
-> I only spend about 20 minutes a week in windows anymore.
-> =
-
->     But I have coworkers, and clients that live under windows.
->     Mostly I have them working under coLinux, but even that seems to
-be
-> too much for many of them.
-> =
-
->     I have been able to mangle my build environment to  work under
-msys
-> and use the xilinx edk cross compiler to build standalone PPC apps,
->     But the libraries do not seem to be present for linux
-applications.
-> =
-
->     I build my own uclibc crosscompiler under linux from buildroot.
->        Has anyone got experience doing that under windows ?
-> =
-
->     Can I just copy the appropriate library binaries and use them with
-> the xilinx EDK cross compiler ? Presumably I need to match versions of
-GCC.
-> =
-
->     Other suguestions ?
-> =
-
->     Thanks.
-> =
-
-> =
-
-> =
-
-> =
-
-> --
-> Dave Lynch 					  	    DLA Systems
-> Software Development:
-Embedded Linux
-> 717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-> fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-> Over 25 years' experience in platforms, languages, and technologies
-too numerous to list.
-> =
-
-> "Any intelligent fool can make things bigger and more complex... It
-takes a touch of genius - and a
-> lot of courage to move in the opposite direction."
-> Albert Einstein
-> =
-
+Paul Mackerras wrote:
+> 
+> davidastro <davidastro@hotmail.com> writes:
+> 
+>> Basically, the numbers shown above was causing the 64 by 32 bit algorithm
+>> to
+>> divide by zero making the unit spin and also giving incorrect results.
+>> Here is the code as it was before.
+> [snip]
+>>         cntlzw  r0,r5           # we are shifting the dividend right
+>>         li      r10,-1          # to make it < 2^32, and shifting
+>>         srw     r10,r10,r0      # the divisor right the same amount,
+>>         add     r9,r4,r10       # rounding up (so the estimate cannot
+>>         andc    r11,r6,r10      # ever be too large, only too small)
+>>         andc    r9,r9,r10      #THIS CODE COULD STORE A ZERO IN r9
+>>         or      r11,r5,r11
+>>         rotlw   r9,r9,r0
+>>         rotlw   r11,r11,r0
+> 
+> That bug was fixed in October 2005 in commit 344480b99730bfd2, and the
+> fix is in v2.6.15-rc1 and all later kernels.  I fixed it a bit
+> differently to your suggestion though - see
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=344480b99730bfd205e306d3fd168cdcebe83425
+> 
+> You must be working from an old kernel tree - which kernel version are
+> you using?
+> 
+> Paul.
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
 
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+-- 
+View this message in context: http://www.nabble.com/Fix-for-__div64_32-locks-when-using-some-64-bit-numbers-tp22567864p22665081.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
