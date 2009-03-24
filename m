@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AAEA1DDEDF
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 08:00:47 +1100 (EST)
-Subject: Re: [PATCH] Fix RTAS watchdog driver temperature read functionality
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Reber <adrian@lisas.de>
-In-Reply-To: <20090324114505.GB24724@lisas.de>
-References: <20090316123543.GG15530@lisas.de>
-	<1237868838.25062.712.camel@pasglop> <20090324114505.GB24724@lisas.de>
-Content-Type: text/plain
-Date: Wed, 25 Mar 2009 08:00:33 +1100
-Message-Id: <1237928433.25062.725.camel@pasglop>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 3B10FDDF55
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 08:22:22 +1100 (EST)
+Date: Tue, 24 Mar 2009 14:22:09 -0700 (PDT)
+Message-Id: <20090324.142209.234280606.davem@davemloft.net>
+To: Joakim.Tjernlund@transmode.se
+Subject: Re: [PATCH] ucc_geth: Convert to net_device_ops
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <OFA0B803BB.DEC93B9A-ONC1257583.0039CF3E-C1257583.003A55BA@transmode.se>
+References: <OF2EE08546.DF677136-ONC1257582.0037C87E-C1257582.00388BCE@transmode.se>
+	<20090323.114928.01832203.davem@davemloft.net>
+	<OFA0B803BB.DEC93B9A-ONC1257583.0039CF3E-C1257583.003A55BA@transmode.se>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,53 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-03-24 at 12:45 +0100, Adrian Reber wrote:
-> On Tue, Mar 24, 2009 at 03:27:18PM +1100, Benjamin Herrenschmidt wrote:
-> > On Mon, 2009-03-16 at 13:35 +0100, Adrian Reber wrote:
-> > > Using the RTAS watchdog driver to read out the temperature crashes
-> > > on a PXCAB:
-> > > 
-> > > Unable to handle kernel paging request for data at address 0xfe347b50
-> > > Faulting instruction address: 0xc00000000001af64
-> > > Oops: Kernel access of bad area, sig: 11 [#1]
-> > > 
-> > > This (removing "(void *)__pa") fixes it.
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Tue, 24 Mar 2009 11:37:11 +0100
+
+> David Miller <davem@davemloft.net> wrote on 23/03/2009 19:49:28:
 > > 
-> > Looks correct, but why not use rtas_get_sensor() instead ? (Exported by
-> > arch/powerpc/kernel/rtas.c
+> > From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > Date: Mon, 23 Mar 2009 11:17:39 +0100
+> > 
+> > > Sorry for the WS damaged patch, but my current company mailer cannot
+> > > handle inline patches. Due to this we are setting up a new mail system
+> > > but it will be a few days before this is ready.
+> > > Therefore I am attaching this patch as well, use that one
+> > > to apply instaed of the inline variant.
+> > 
+> > This patch has other problems, anyways.
+> > 
+> > > +#if 0
+> > > +/* not yet */
+> > > +       .ndo_set_mac_address    = ucc_geth_set_mac_address,
+> > > +       .ndo_change_mtu         = ucc_geth_change_mtu,
+> > > +       .ndo_do_ioctl           = ucc_geth_do_ioctl,
+> > > +#endif
+> > 
+> > Don't do stuff like this, please.  Even the code you are
+> > copying from doesn't have the set_mac_address method
+> > assignment proceted by #if 0 stuff.
+> > 
+> > Just get rid of all the unused stuff completely.
 > 
-> Ah, you mean something like?
+> OK, here is a new version. The #if 0 ..#endif has been removed.
 
-Right, now turn it into a proper patch submission :-)
+Missing ".ndo_set_mac_address = eth_set_mac_address," and
+also ".ndo_change_mtu = eth_change_mtu".
 
-Cheers,
-Ben.
-
->  drivers/watchdog/wdrtas.c |    8 +++-----
->  1 files changed, 3 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/watchdog/wdrtas.c b/drivers/watchdog/wdrtas.c
-> index 5d3b1a8..af2bbfa 100644
-> --- a/drivers/watchdog/wdrtas.c
-> +++ b/drivers/watchdog/wdrtas.c
-> @@ -214,16 +214,14 @@ static void wdrtas_timer_keepalive(void)
->   */
->  static int wdrtas_get_temperature(void)
->  {
-> -	long result;
-> +	int result;
->  	int temperature = 0;
->  
-> -	result = rtas_call(wdrtas_token_get_sensor_state, 2, 2,
-> -			   (void *)__pa(&temperature),
-> -			   WDRTAS_THERMAL_SENSOR, 0);
-> +	result = rtas_get_sensor(WDRTAS_THERMAL_SENSOR, 0, &temperature);
->  
->  	if (result < 0)
->  		printk(KERN_WARNING "wdrtas: reading the thermal sensor "
-> -		       "faild: %li\n", result);
-> +		       "faild: %i\n", result);
->  	else
->  		temperature = ((temperature * 9) / 5) + 32; /* fahrenheit */
-> 
-> 		Adrian
+Also please inline your patches so that people can quote them in
+replies.
