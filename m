@@ -1,19 +1,33 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 3B10FDDF55
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 08:22:22 +1100 (EST)
-Date: Tue, 24 Mar 2009 14:22:09 -0700 (PDT)
-Message-Id: <20090324.142209.234280606.davem@davemloft.net>
-To: Joakim.Tjernlund@transmode.se
-Subject: Re: [PATCH] ucc_geth: Convert to net_device_ops
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <OFA0B803BB.DEC93B9A-ONC1257583.0039CF3E-C1257583.003A55BA@transmode.se>
-References: <OF2EE08546.DF677136-ONC1257582.0037C87E-C1257582.00388BCE@transmode.se>
-	<20090323.114928.01832203.davem@davemloft.net>
-	<OFA0B803BB.DEC93B9A-ONC1257583.0039CF3E-C1257583.003A55BA@transmode.se>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
+Return-Path: <utz.bacher@de.ibm.com>
+Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 42FADDDF66
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 01:31:41 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate8.de.ibm.com (8.14.3/8.13.8) with ESMTP id n2OEVXUD190092
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 14:31:33 GMT
+Received: from d12av06.megacenter.de.ibm.com (d12av06.megacenter.de.ibm.com
+	[9.149.165.230])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.2) with
+	ESMTP id n2OEVXpZ4292852
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 15:31:33 +0100
+Received: from d12av06.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av06.megacenter.de.ibm.com (8.13.1/8.13.3) with ESMTP id
+	n2OEVWwt013734
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 15:31:33 +0100
+In-Reply-To: <20090324123131.GC24724@lisas.de>
+To: Adrian Reber <adrian@lisas.de>
+MIME-Version: 1.0
+Subject: Re: [PATCH] powerpc/wdrtas: Update wdrtas_get_interval to
+	use	rtas_data_buf
+From: Utz Bacher <utz.bacher@de.ibm.com>
+Message-ID: <OF2EBA91DF.87037392-ONC1257583.004A2432-C1257583.004FC7A9@de.ibm.com>
+Date: Tue, 24 Mar 2009 15:31:32 +0100
+Content-Type: multipart/alternative;
+	boundary="=_alternative 004F6C3DC1257583_="
+Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +37,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Tue, 24 Mar 2009 11:37:11 +0100
+This is a multipart message in MIME format.
+--=_alternative 004F6C3DC1257583_=
+Content-Type: text/plain; charset="US-ASCII"
 
-> David Miller <davem@davemloft.net> wrote on 23/03/2009 19:49:28:
+Adrian Reber <adrian@lisas.de> wrote on 24.03.2009 13:31:31:
+> On Tue, Mar 24, 2009 at 05:30:41PM +1100, Mark Nelson wrote:
+> > The buffer passed to the ibm,get-system-parameter RTAS call must be
+> > in the RMA. To ensure we pass an address in the RMA use rtas_data_buf
+> > for the actual RTAS call and then copy the result to value. We can't
+> > just make it static because this can be compiled in as a module.
 > > 
-> > From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> > Date: Mon, 23 Mar 2009 11:17:39 +0100
+> > Also add the WDRTAS_SP_SPI_LEN so we don't litter '4' throughout the
+> > function.
 > > 
-> > > Sorry for the WS damaged patch, but my current company mailer cannot
-> > > handle inline patches. Due to this we are setting up a new mail system
-> > > but it will be a few days before this is ready.
-> > > Therefore I am attaching this patch as well, use that one
-> > > to apply instaed of the inline variant.
+> > Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+> > ---
 > > 
-> > This patch has other problems, anyways.
-> > 
-> > > +#if 0
-> > > +/* not yet */
-> > > +       .ndo_set_mac_address    = ucc_geth_set_mac_address,
-> > > +       .ndo_change_mtu         = ucc_geth_change_mtu,
-> > > +       .ndo_do_ioctl           = ucc_geth_do_ioctl,
-> > > +#endif
-> > 
-> > Don't do stuff like this, please.  Even the code you are
-> > copying from doesn't have the set_mac_address method
-> > assignment proceted by #if 0 stuff.
-> > 
-> > Just get rid of all the unused stuff completely.
+> > Adrian, does this patch cause any problems for your pxcabs?
 > 
-> OK, here is a new version. The #if 0 ..#endif has been removed.
+> No, it even helps. I have no tried the watchdog until now, but without 
+the
+> patch I get: 
+> 
+>    wdrtas: could not get sp_spi watchdog timeout (0). Continuing
+> 
+> and with the patch it reads the correct value. So only with your patch
+> it works like it is supposed to. Thanks!
+> 
+> Tested-by: Adrian Reber <adrian@lisas.de>
 
-Missing ".ndo_set_mac_address = eth_set_mac_address," and
-also ".ndo_change_mtu = eth_change_mtu".
+looks good to me.
 
-Also please inline your patches so that people can quote them in
-replies.
+Acked-by: Utz Bacher <utz.bacher@de.ibm.com>
+
+Utz
+
+:wq
+--=_alternative 004F6C3DC1257583_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><tt><font size=2>Adrian Reber &lt;adrian@lisas.de&gt; wrote on 24.03.2009
+13:31:31:<br>
+&gt; On Tue, Mar 24, 2009 at 05:30:41PM +1100, Mark Nelson wrote:<br>
+&gt; &gt; The buffer passed to the ibm,get-system-parameter RTAS call must
+be<br>
+&gt; &gt; in the RMA. To ensure we pass an address in the RMA use rtas_data_buf<br>
+&gt; &gt; for the actual RTAS call and then copy the result to value. We
+can't<br>
+&gt; &gt; just make it static because this can be compiled in as a module.<br>
+&gt; &gt; <br>
+&gt; &gt; Also add the WDRTAS_SP_SPI_LEN so we don't litter '4' throughout
+the<br>
+&gt; &gt; function.<br>
+&gt; &gt; <br>
+&gt; &gt; Signed-off-by: Mark Nelson &lt;markn@au1.ibm.com&gt;<br>
+&gt; &gt; ---<br>
+&gt; &gt; <br>
+&gt; &gt; Adrian, does this patch cause any problems for your pxcabs?<br>
+&gt; <br>
+&gt; No, it even helps. I have no tried the watchdog until now, but without
+the<br>
+&gt; patch I get: <br>
+&gt; <br>
+&gt; &nbsp; &nbsp;wdrtas: could not get sp_spi watchdog timeout (0). Continuing<br>
+&gt; <br>
+&gt; and with the patch it reads the correct value. So only with your patch<br>
+&gt; it works like it is supposed to. Thanks!<br>
+&gt; <br>
+&gt; Tested-by: Adrian Reber &lt;adrian@lisas.de&gt;</font></tt>
+<br>
+<br><tt><font size=2>looks good to me.</font></tt>
+<br>
+<br><tt><font size=2>Acked-by: Utz Bacher &lt;utz.bacher@de.ibm.com&gt;</font></tt>
+<br>
+<br><tt><font size=2>Utz</font></tt>
+<br>
+<br><tt><font size=2>:wq</font></tt>
+--=_alternative 004F6C3DC1257583_=--
