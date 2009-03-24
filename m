@@ -1,16 +1,19 @@
-Return-Path: <johns.daniel@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
-	by ozlabs.org (Postfix) with ESMTP id B2D8CDDF8E
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 07:24:52 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 9so1637904ywe.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 13:24:50 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 24 Mar 2009 15:24:50 -0500
-Message-ID: <ba5d9360903241324n57aa74caq2dd2bcdd2a885e19@mail.gmail.com>
-Subject: PCIe interrupts in the device tree
-From: Johns Daniel <johns.daniel@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C4477DDF6B
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 07:54:34 +1100 (EST)
+Message-Id: <651BE815-4BF6-4AA3-AA43-C0B7C98A0FCC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Johns Daniel <johns.daniel@gmail.com>
+In-Reply-To: <ba5d9360903241324n57aa74caq2dd2bcdd2a885e19@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: PCIe interrupts in the device tree
+Date: Tue, 24 Mar 2009 15:54:26 -0500
+References: <ba5d9360903241324n57aa74caq2dd2bcdd2a885e19@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,30 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Could somebody please explain the declaration of the PCIe interrupts
-in the device tree?
 
-I was under the impression that PCIe interrupts in the PowerPC Linux
-kernel default to using INTx signaling (vs. external IRQ pin assertion
-and MSI signaling). Am I right?
+On Mar 24, 2009, at 3:24 PM, Johns Daniel wrote:
 
-If so, then do the interrupt-map lines in the DTS refer to the
-internal IRQ used by Freescale processors to implement INTx virtual
-wire interrupts?
+> Could somebody please explain the declaration of the PCIe interrupts
+> in the device tree?
+>
+> I was under the impression that PCIe interrupts in the PowerPC Linux
+> kernel default to using INTx signaling (vs. external IRQ pin assertion
+> and MSI signaling). Am I right?
+>
+> If so, then do the interrupt-map lines in the DTS refer to the
+> internal IRQ used by Freescale processors to implement INTx virtual
+> wire interrupts?
+>
+> For example, in the mpc8536ds.dts file, under "pci1: pcie@ffe09000"  
+> we have:
+> 		interrupt-map = <
+> 			/* IDSEL 0x0 */
+> 			0000 0 0 1 &mpic 4 1
+> 			0000 0 0 2 &mpic 5 1
+> 			0000 0 0 3 &mpic 6 1
+> 			0000 0 0 4 &mpic 7 1
+> 			>;
+> Are the 4, 5, 6, and 7 internal or external IRQs?
 
-For example, in the mpc8536ds.dts file, under "pci1: pcie@ffe09000" we have:
-		interrupt-map = <
-			/* IDSEL 0x0 */
-			0000 0 0 1 &mpic 4 1
-			0000 0 0 2 &mpic 5 1
-			0000 0 0 3 &mpic 6 1
-			0000 0 0 4 &mpic 7 1
-			>;
-Are the 4, 5, 6, and 7 internal or external IRQs?
+The .dts and linux make no distinction between internal & external  
+IRQs.  This is a silly artifact of Freescale UMs.  IRQ 0 starts at  
+offset 0x50000 and each 0x20 offset is another IRQ.  So typically  
+External 0 == IRQ0, Internal 0 == IRQ16.
 
-And the "msi@41600" section in the same mpc8536ds.dts file does NOT
-affect PCIe interrupts unless a driver calls pci_enable_msi()?
+So this says that Ext 4, 5, 6, 7 and wired to INTA, INTB, INTC, INTD  
+for this particular PCIe controller.
 
-TIA!
+> And the "msi@41600" section in the same mpc8536ds.dts file does NOT
+> affect PCIe interrupts unless a driver calls pci_enable_msi()?
 
--- Johns
+correct.
+
+- k
