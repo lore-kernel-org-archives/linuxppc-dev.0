@@ -1,17 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <BATV+6f373c4282e37a9c7400+2039+infradead.org+dwmw2@casper.srs.infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BD03FDDEFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 00:35:59 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2ODZjUN013177
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 08:35:46 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/83xx: Update ranges in gianfar node to match other dts
-Date: Tue, 24 Mar 2009 08:35:45 -0500
-Message-Id: <1237901745-27418-1-git-send-email-galak@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 16A8DDDF6B
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 01:05:04 +1100 (EST)
+Subject: Re: [PATCH v2] Check name property to determine partition nodes.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Krill <ben@codiert.org>
+In-Reply-To: <20090324132733.GN11318@codiert.org>
+References: <20090123161805.GA2598@codiert.org>
+	<1233720542.16867.187.camel@pasglop>
+	<20090218074738.GC12204@codiert.org>
+	<20090324132733.GN11318@codiert.org>
+Content-Type: text/plain
+Date: Tue, 24 Mar 2009 14:04:54 +0000
+Message-Id: <1237903494.9441.1364.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Cc: dwg@au1.ibm.com, linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The gianfar node @ 25000 was missing its ranges prop for the mdio bus
-and provided an explicit ranges property on gianfar@24000 to match
-all other .dts
+On Tue, 2009-03-24 at 14:27 +0100, Benjamin Krill wrote:
+> >>On Fri, 2009-01-23 at 17:18 +0100, Benjamin Krill wrote:
+> >>> SLOF has a further node which could not be evaluate
+> >>> by the current routine. The current routine returns
+> >>> because the node hasn't the required reg property. As
+> >>> fix this patch adds a check to determine the partition
+> >>> child nodes. If the node is not an partition the number
+> >>> of total partitions will be decreased and loop continue
+> >>> with the next nodes.
+> >>
+> >>Somebody on the MTD list is taking that ? David ? Or should I merge it
+> >>via powerpc ?
+> >
+> >Could somebody merge it for the next release?
+> 
+> Again, new try to get it somewhere merged.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/boot/dts/mpc8313erdb.dts |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Applied; thanks.
 
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index 3ebf7ec..20a0fa8 100644
---- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -180,7 +180,7 @@
- 			#address-cells = <1>;
- 			#size-cells = <1>;
- 			sleep = <&pmc 0x20000000>;
--			ranges;
-+			ranges = <0x0 0x24000 0x1000>;
- 
- 			cell-index = <0>;
- 			device_type = "network";
-@@ -221,6 +221,7 @@
- 			model = "eTSEC";
- 			compatible = "gianfar";
- 			reg = <0x25000 0x1000>;
-+			ranges = <0x0 0x25000 0x1000>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupts = <34 0x8 33 0x8 32 0x8>;
- 			interrupt-parent = <&ipic>;
 -- 
-1.5.6.6
+dwmw2
