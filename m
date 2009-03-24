@@ -1,30 +1,17 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id ABC5CDDFAC
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 17:28:53 +1100 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id n2O6Se7M027190
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 17:28:40 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n2O6TAJq422052
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 17:29:10 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n2O6Sqme023260
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 17:28:52 +1100
-From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/wdrtas: Update wdrtas_get_interval to use
-	rtas_data_buf
-Date: Tue, 24 Mar 2009 17:30:41 +1100
+Return-Path: <sr@denx.de>
+From: Stefan Roese <sr@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: physmap_of and partitions (mtd concat support)
+Date: Tue, 24 Mar 2009 10:07:51 +0100
+References: <200903231151.10373.sr@denx.de>
+	<fa686aa40903230837w52a9f764n29b3f9cf4c95cc57@mail.gmail.com>
+In-Reply-To: <fa686aa40903230837w52a9f764n29b3f9cf4c95cc57@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200903241730.41711.markn@au1.ibm.com>
-Cc: Utz Bacher <utz.bacher@de.ibm.com>
+  charset="iso-8859-1"
+Message-Id: <200903241007.51321.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,55 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The buffer passed to the ibm,get-system-parameter RTAS call must be
-in the RMA. To ensure we pass an address in the RMA use rtas_data_buf
-for the actual RTAS call and then copy the result to value. We can't
-just make it static because this can be compiled in as a module.
+On Monday 23 March 2009, Grant Likely wrote:
+> On Mon, Mar 23, 2009 at 4:51 AM, Stefan Roese <sr@denx.de> wrote:
+> > I just noticed that physmap_of can't handle multiple devices of different
+> > type described in one device node. For example the Intel P30 48F4400
+> > (64MByte) consists internally of 2 non-identical NOR chips. So a "simple"
+>
+> [...]
+>
+> > Now the real problem: How should I describe a partition in the device
+> > tree spanning over both devices (concat)?. The current physmap_of driver
+> > doesn't handle concat at all (physmap.c does). I already have some ideas
+> > on how to implement this concat support in physmap_of. But ideas about a
+> > device-tree syntax for such partitions are very welcome.
+>
+> Sounds to me like a physmap_of driver bug.  I don't think there is any
+> advantage in changing the partition syntax since concatenated flash
+> will always be used as a single device.  It doesn't make any sense to
+> try and span partitions over two nodes.
 
-Also add the WDRTAS_SP_SPI_LEN so we don't litter '4' throughout the
-function.
+Yes, I would really love to make this possible with only one flash node. But 
+just think about the following system configuration:
 
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
----
+One Intel Strataflash (compatible = "cfi-flash") and one non-cfi compatible 
+flash (e.g. compatible = "jedec-flash"). And the user wants to define a 
+partition that spans over both flash chips. How could this be described in 
+one flash node?
 
-Adrian, does this patch cause any problems for your pxcabs?
+> Do additional properties need to be added to describe the concat layout?
 
-Thanks!
-Mark
+Not sure. If we have multiple identical devices they can currently be 
+described in one flash node. So with some changes to the physmap_of driver 
+this configuration will work with concat as well. But more complex is a 
+system configuration as described above. Meaning two or more non-identical 
+chips. I don't see how this could be described in a sane way in one flash 
+node.
 
- drivers/watchdog/wdrtas.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
-
-Index: upstream/drivers/watchdog/wdrtas.c
-===================================================================
---- upstream.orig/drivers/watchdog/wdrtas.c
-+++ upstream/drivers/watchdog/wdrtas.c
-@@ -106,6 +106,8 @@ static int wdrtas_set_interval(int inter
- 	return result;
- }
- 
-+#define WDRTAS_SP_SPI_LEN 4
-+
- /**
-  * wdrtas_get_interval - returns the current watchdog interval
-  * @fallback_value: value (in seconds) to use, if the RTAS call fails
-@@ -119,10 +121,17 @@ static int wdrtas_set_interval(int inter
- static int wdrtas_get_interval(int fallback_value)
- {
- 	long result;
--	char value[4];
-+	char value[WDRTAS_SP_SPI_LEN];
- 
-+	spin_lock(&rtas_data_buf_lock);
-+	memset(rtas_data_buf, 0, WDRTAS_SP_SPI_LEN);
- 	result = rtas_call(wdrtas_token_get_sp, 3, 1, NULL,
--			   WDRTAS_SP_SPI, (void *)__pa(&value), 4);
-+			   WDRTAS_SP_SPI, __pa(rtas_data_buf),
-+			   WDRTAS_SP_SPI_LEN);
-+
-+	memcpy(value, rtas_data_buf, WDRTAS_SP_SPI_LEN);
-+	spin_unlock(&rtas_data_buf_lock);
-+
- 	if (value[0] != 0 || value[1] != 2 || value[3] != 0 || result < 0) {
- 		printk(KERN_WARNING "wdrtas: could not get sp_spi watchdog "
- 		       "timeout (%li). Continuing\n", result);
+Best regards,
+Stefan
