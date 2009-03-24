@@ -2,19 +2,19 @@ Return-Path: <adrian@rhlx01.hs-esslingen.de>
 Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "rhlx01.hs-esslingen.de", Issuer "HE CA - G02" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C05C8DE264
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 22:45:13 +1100 (EST)
-Date: Tue, 24 Mar 2009 12:45:05 +0100
+	by ozlabs.org (Postfix) with ESMTPS id 1EFE6DDF2A
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 23:31:35 +1100 (EST)
+Date: Tue, 24 Mar 2009 13:31:31 +0100
 From: Adrian Reber <adrian@lisas.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Fix RTAS watchdog driver temperature read functionality
-Message-ID: <20090324114505.GB24724@lisas.de>
-References: <20090316123543.GG15530@lisas.de>
-	<1237868838.25062.712.camel@pasglop>
+To: Mark Nelson <markn@au1.ibm.com>
+Subject: Re: [PATCH] powerpc/wdrtas: Update wdrtas_get_interval to use
+	rtas_data_buf
+Message-ID: <20090324123131.GC24724@lisas.de>
+References: <200903241730.41711.markn@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1237868838.25062.712.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <200903241730.41711.markn@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Utz Bacher <utz.bacher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 24, 2009 at 03:27:18PM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-03-16 at 13:35 +0100, Adrian Reber wrote:
-> > Using the RTAS watchdog driver to read out the temperature crashes
-> > on a PXCAB:
-> > 
-> > Unable to handle kernel paging request for data at address 0xfe347b50
-> > Faulting instruction address: 0xc00000000001af64
-> > Oops: Kernel access of bad area, sig: 11 [#1]
-> > 
-> > This (removing "(void *)__pa") fixes it.
+On Tue, Mar 24, 2009 at 05:30:41PM +1100, Mark Nelson wrote:
+> The buffer passed to the ibm,get-system-parameter RTAS call must be
+> in the RMA. To ensure we pass an address in the RMA use rtas_data_buf
+> for the actual RTAS call and then copy the result to value. We can't
+> just make it static because this can be compiled in as a module.
 > 
-> Looks correct, but why not use rtas_get_sensor() instead ? (Exported by
-> arch/powerpc/kernel/rtas.c
+> Also add the WDRTAS_SP_SPI_LEN so we don't litter '4' throughout the
+> function.
+> 
+> Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+> ---
+> 
+> Adrian, does this patch cause any problems for your pxcabs?
 
-Ah, you mean something like?
+No, it even helps. I have no tried the watchdog until now, but without the
+patch I get: 
 
- drivers/watchdog/wdrtas.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+   wdrtas: could not get sp_spi watchdog timeout (0). Continuing
 
-diff --git a/drivers/watchdog/wdrtas.c b/drivers/watchdog/wdrtas.c
-index 5d3b1a8..af2bbfa 100644
---- a/drivers/watchdog/wdrtas.c
-+++ b/drivers/watchdog/wdrtas.c
-@@ -214,16 +214,14 @@ static void wdrtas_timer_keepalive(void)
-  */
- static int wdrtas_get_temperature(void)
- {
--	long result;
-+	int result;
- 	int temperature = 0;
- 
--	result = rtas_call(wdrtas_token_get_sensor_state, 2, 2,
--			   (void *)__pa(&temperature),
--			   WDRTAS_THERMAL_SENSOR, 0);
-+	result = rtas_get_sensor(WDRTAS_THERMAL_SENSOR, 0, &temperature);
- 
- 	if (result < 0)
- 		printk(KERN_WARNING "wdrtas: reading the thermal sensor "
--		       "faild: %li\n", result);
-+		       "faild: %i\n", result);
- 	else
- 		temperature = ((temperature * 9) / 5) + 32; /* fahrenheit */
+and with the patch it reads the correct value. So only with your patch
+it works like it is supposed to. Thanks!
+
+Tested-by: Adrian Reber <adrian@lisas.de>
+
+> Thanks!
+> Mark
+> 
+>  drivers/watchdog/wdrtas.c |   13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> Index: upstream/drivers/watchdog/wdrtas.c
+> ===================================================================
+> --- upstream.orig/drivers/watchdog/wdrtas.c
+> +++ upstream/drivers/watchdog/wdrtas.c
+> @@ -106,6 +106,8 @@ static int wdrtas_set_interval(int inter
+>  	return result;
+>  }
+>  
+> +#define WDRTAS_SP_SPI_LEN 4
+> +
+>  /**
+>   * wdrtas_get_interval - returns the current watchdog interval
+>   * @fallback_value: value (in seconds) to use, if the RTAS call fails
+> @@ -119,10 +121,17 @@ static int wdrtas_set_interval(int inter
+>  static int wdrtas_get_interval(int fallback_value)
+>  {
+>  	long result;
+> -	char value[4];
+> +	char value[WDRTAS_SP_SPI_LEN];
+>  
+> +	spin_lock(&rtas_data_buf_lock);
+> +	memset(rtas_data_buf, 0, WDRTAS_SP_SPI_LEN);
+>  	result = rtas_call(wdrtas_token_get_sp, 3, 1, NULL,
+> -			   WDRTAS_SP_SPI, (void *)__pa(&value), 4);
+> +			   WDRTAS_SP_SPI, __pa(rtas_data_buf),
+> +			   WDRTAS_SP_SPI_LEN);
+> +
+> +	memcpy(value, rtas_data_buf, WDRTAS_SP_SPI_LEN);
+> +	spin_unlock(&rtas_data_buf_lock);
+> +
+>  	if (value[0] != 0 || value[1] != 2 || value[3] != 0 || result < 0) {
+>  		printk(KERN_WARNING "wdrtas: could not get sp_spi watchdog "
+>  		       "timeout (%li). Continuing\n", result);
 
 		Adrian
+
+-- 
+Adrian Reber <adrian@lisas.de>            http://lisas.de/~adrian/
+There's coffee in that nebula!
+		-- Capt. Kathryn Janeway, Star Trek: Voyager, "The Cloud"
