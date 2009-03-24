@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ben@codiert.org>
+Received: from cursor.subgra.de (cursor.subgra.de [78.46.252.50])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 04790DDF61
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 00:15:28 +1100 (EST)
-Message-Id: <382F4B5D-93C4-41BB-A00A-8A6C240CD170@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>,
-	Andy Fleming <afleming@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: make sure ucc_geth.c fixed-link support still works in net-next
-Date: Tue, 24 Mar 2009 08:15:13 -0500
-Cc: LinuxPPC Mailing List <linuxppc-dev@ozlabs.org>,
-	Joakim Tjernlund <Joakim.Tjernlund@transmode.se>, netdev@vger.kernel.org
+	(Client CN "cursor.subgra.de", Issuer "cursor.subgra.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 21735DDDFF
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 00:27:43 +1100 (EST)
+Date: Tue, 24 Mar 2009 14:27:33 +0100
+From: Benjamin Krill <ben@codiert.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2] Check name property to determine partition nodes.
+Message-ID: <20090324132733.GN11318@codiert.org>
+References: <20090123161805.GA2598@codiert.org>
+	<1233720542.16867.187.camel@pasglop>
+	<20090218074738.GC12204@codiert.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090218074738.GC12204@codiert.org>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Woodhouse <dwmw2@infradead.org>, dwg@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,15 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton, Andy
+>>On Fri, 2009-01-23 at 17:18 +0100, Benjamin Krill wrote:
+>>> SLOF has a further node which could not be evaluate
+>>> by the current routine. The current routine returns
+>>> because the node hasn't the required reg property. As
+>>> fix this patch adds a check to determine the partition
+>>> child nodes. If the node is not an partition the number
+>>> of total partitions will be decreased and loop continue
+>>> with the next nodes.
+>>
+>>Somebody on the MTD list is taking that ? David ? Or should I merge it
+>>via powerpc ?
+>
+>Could somebody merge it for the next release?
 
-Can you take a look at the recent net-next tree and make sure that the  
-merge between the fsl_pq_mdio.c support and the patch that went into  
-2.6.29 to fix fixed-link support in ucc_geth.c is correct and still  
-works.
+Again, new try to get it somewhere merged.
 
-See commits:
-	Merge branch master... (8be7cdccacfbfc707e7370cad9bb168defed636f)
-	ucc_geth: Fix merge error. (039a6f6a39d2aa30ee53afdb213ea6dd4482928b)
-
-- k
+cheers
+ ben
