@@ -1,24 +1,20 @@
-Return-Path: <simon.kagstrom@ericsson.com>
-Received: from mailgw3.ericsson.se (mailgw3.ericsson.se [193.180.251.60])
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DEFDEDDF2A
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 20:23:54 +1100 (EST)
-Received: from mailgw3.ericsson.se (unknown [127.0.0.1])
-	by mailgw3.ericsson.se (Symantec Mail Security) with ESMTP id
-	9A5152074C
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 09:50:10 +0100 (CET)
-Received: from esealmw128.eemea.ericsson.se (unknown [153.88.253.124])
-	by mailgw3.ericsson.se (Symantec Mail Security) with ESMTP id
-	EAA79205EC
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 09:50:08 +0100 (CET)
-Date: Tue, 24 Mar 2009 09:49:59 +0100
-From: Simon Kagstrom <simon.kagstrom@ericsson.com>
-To: linuxppc-dev@ozlabs.org <linuxppc-dev@ozlabs.org>
-Subject: of_serial and device trees
-Message-ID: <20090324094959.447a3a31@seasc0532.dyn.rnd.as.sw.ericsson.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	by ozlabs.org (Postfix) with ESMTPS id 12D17DDE19
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 21:37:21 +1100 (EST)
+In-Reply-To: <20090323.114928.01832203.davem@davemloft.net>
+References: <OF2EE08546.DF677136-ONC1257582.0037C87E-C1257582.00388BCE@transmode.se>
+	<20090323.114928.01832203.davem@davemloft.net>
+To: David Miller <davem@davemloft.net>
+MIME-Version: 1.0
+Subject: Re: [PATCH] ucc_geth: Convert to net_device_ops
+Message-ID: <OFA0B803BB.DEC93B9A-ONC1257583.0039CF3E-C1257583.003A55BA@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Tue, 24 Mar 2009 11:37:11 +0100
+Content-Type: multipart/mixed; boundary="=_mixed 003A55AEC1257583_="
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,71 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi!
+--=_mixed 003A55AEC1257583_=
+Content-Type: text/plain; charset="US-ASCII"
 
-I'm working on a custom Freescale 8544-based board and having some
-trouble with getting the device tree right. In particular, we have a
-setup which looks like this:
+David Miller <davem@davemloft.net> wrote on 23/03/2009 19:49:28:
+> 
+> From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> Date: Mon, 23 Mar 2009 11:17:39 +0100
+> 
+> > Sorry for the WS damaged patch, but my current company mailer cannot
+> > handle inline patches. Due to this we are setting up a new mail system
+> > but it will be a few days before this is ready.
+> > Therefore I am attaching this patch as well, use that one
+> > to apply instaed of the inline variant.
+> 
+> This patch has other problems, anyways.
+> 
+> > +#if 0
+> > +/* not yet */
+> > +       .ndo_set_mac_address    = ucc_geth_set_mac_address,
+> > +       .ndo_change_mtu         = ucc_geth_change_mtu,
+> > +       .ndo_do_ioctl           = ucc_geth_do_ioctl,
+> > +#endif
+> 
+> Don't do stuff like this, please.  Even the code you are
+> copying from doesn't have the set_mac_address method
+> assignment proceted by #if 0 stuff.
+> 
+> Just get rid of all the unused stuff completely.
 
-* We have an FPGA which contains a few serial ports, an interrupt
-  controller and some other devices
+OK, here is a new version. The #if 0 ..#endif has been removed.
 
-* The serial ports are "normal" 16550s and interrupt the FPGA interrupt
-  controller
 
-* The interrupt controller is in turn cascaded to the 8544 OpenPIC
-  (mpic).
+ Jocke
 
-My problem is that I can't figure out how to express this correctly in
-the device tree for the board. My device tree looks like this ("isf" is
-the name of the FPGA):
+--=_mixed 003A55AEC1257583_=
+Content-Type: application/octet-stream; name="0001-ucc_geth-Convert-to-net_device_ops.patch"
+Content-Disposition: attachment; filename="0001-ucc_geth-Convert-to-net_device_ops.patch"
+Content-Transfer-Encoding: base64
 
-	isf@c0020000 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		reg = <c0020000 00020000>;
+RnJvbSA3ZjFjNmYzMmRmMTE0Y2ZkYTc1MDA0OWJlNGQyNjAxYWY3NDE3NGE4IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBKb2FraW0gVGplcm5sdW5kIDxKb2FraW0uVGplcm5sdW5kQHRy
+YW5zbW9kZS5zZT4KRGF0ZTogRnJpLCAyMCBNYXIgMjAwOSAyMTowOToxNCArMDEwMApTdWJqZWN0
+OiBbUEFUQ0hdIHVjY19nZXRoOiBDb252ZXJ0IHRvIG5ldF9kZXZpY2Vfb3BzCgotLS0KIGRyaXZl
+cnMvbmV0L3VjY19nZXRoLmMgfCAgIDIyICsrKysrKysrKysrKystLS0tLS0tLS0KIDEgZmlsZXMg
+Y2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKSwgOSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9k
+cml2ZXJzL25ldC91Y2NfZ2V0aC5jIGIvZHJpdmVycy9uZXQvdWNjX2dldGguYwppbmRleCA3NzE2
+MjM5Li40MmIxYTUwIDEwMDY0NAotLS0gYS9kcml2ZXJzL25ldC91Y2NfZ2V0aC5jCisrKyBiL2Ry
+aXZlcnMvbmV0L3VjY19nZXRoLmMKQEAgLTM1MDEsNiArMzUwMSwxOCBAQCBzdGF0aWMgcGh5X2lu
+dGVyZmFjZV90IHRvX3BoeV9pbnRlcmZhY2UoY29uc3QgY2hhciAqcGh5X2Nvbm5lY3Rpb25fdHlw
+ZSkKIAlyZXR1cm4gUEhZX0lOVEVSRkFDRV9NT0RFX01JSTsKIH0KIAorc3RhdGljIGNvbnN0IHN0
+cnVjdCBuZXRfZGV2aWNlX29wcyB1Y2NfZ2V0aF9uZXRkZXZfb3BzID0geworCS5uZG9fb3BlbgkJ
+PSB1Y2NfZ2V0aF9vcGVuLAorCS5uZG9fc3RvcAkJPSB1Y2NfZ2V0aF9jbG9zZSwKKwkubmRvX3N0
+YXJ0X3htaXQJCT0gdWNjX2dldGhfc3RhcnRfeG1pdCwKKwkubmRvX3ZhbGlkYXRlX2FkZHIJPSBl
+dGhfdmFsaWRhdGVfYWRkciwKKwkubmRvX3NldF9tdWx0aWNhc3RfbGlzdAk9IHVjY19nZXRoX3Nl
+dF9tdWx0aSwKKwkubmRvX3R4X3RpbWVvdXQJCT0gdWNjX2dldGhfdGltZW91dCwKKyNpZmRlZiBD
+T05GSUdfTkVUX1BPTExfQ09OVFJPTExFUgorCS5uZG9fcG9sbF9jb250cm9sbGVyCT0gdWNjX25l
+dHBvbGwsCisjZW5kaWYKK307CisKIHN0YXRpYyBpbnQgdWNjX2dldGhfcHJvYmUoc3RydWN0IG9m
+X2RldmljZSogb2ZkZXYsIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgKm1hdGNoKQogewogCXN0
+cnVjdCBkZXZpY2UgKmRldmljZSA9ICZvZmRldi0+ZGV2OwpAQCAtMzcxNiwxOSArMzcyOCwxMSBA
+QCBzdGF0aWMgaW50IHVjY19nZXRoX3Byb2JlKHN0cnVjdCBvZl9kZXZpY2UqIG9mZGV2LCBjb25z
+dCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkICptYQogCiAJLyogRmlsbCBpbiB0aGUgZGV2IHN0cnVjdHVy
+ZSAqLwogCXVlY19zZXRfZXRodG9vbF9vcHMoZGV2KTsKLQlkZXYtPm9wZW4gPSB1Y2NfZ2V0aF9v
+cGVuOwotCWRldi0+aGFyZF9zdGFydF94bWl0ID0gdWNjX2dldGhfc3RhcnRfeG1pdDsKLQlkZXYt
+PnR4X3RpbWVvdXQgPSB1Y2NfZ2V0aF90aW1lb3V0OworCWRldi0+bmV0ZGV2X29wcyA9ICZ1Y2Nf
+Z2V0aF9uZXRkZXZfb3BzOwogCWRldi0+d2F0Y2hkb2dfdGltZW8gPSBUWF9USU1FT1VUOwogCUlO
+SVRfV09SSygmdWdldGgtPnRpbWVvdXRfd29yaywgdWNjX2dldGhfdGltZW91dF93b3JrKTsKIAlu
+ZXRpZl9uYXBpX2FkZChkZXYsICZ1Z2V0aC0+bmFwaSwgdWNjX2dldGhfcG9sbCwgVUNDX0dFVEhf
+REVWX1dFSUdIVCk7Ci0jaWZkZWYgQ09ORklHX05FVF9QT0xMX0NPTlRST0xMRVIKLQlkZXYtPnBv
+bGxfY29udHJvbGxlciA9IHVjY19uZXRwb2xsOwotI2VuZGlmCi0JZGV2LT5zdG9wID0gdWNjX2dl
+dGhfY2xvc2U7Ci0vLyAgICBkZXYtPmNoYW5nZV9tdHUgPSB1Y2NfZ2V0aF9jaGFuZ2VfbXR1Owog
+CWRldi0+bXR1ID0gMTUwMDsKLQlkZXYtPnNldF9tdWx0aWNhc3RfbGlzdCA9IHVjY19nZXRoX3Nl
+dF9tdWx0aTsKIAogCXVnZXRoLT5tc2dfZW5hYmxlID0gbmV0aWZfbXNnX2luaXQoZGVidWcubXNn
+X2VuYWJsZSwgVUdFVEhfTVNHX0RFRkFVTFQpOwogCXVnZXRoLT5waHlfaW50ZXJmYWNlID0gcGh5
+X2ludGVyZmFjZTsKLS0gCjEuNi4xLjMKCg==
 
-                isf_pic: isf_pic@4000 {
-                        device_type = "isf-pic";
-                        compatible = "isf-pic";
-                        interrupt-controller;
-                        clock-frequency = <0>;
-                        #address-cells = <0>;
-                        #interrupt-cells = <2>;
-                        reg = <4000 100>;
-                        built-in;
-                        interrupts = <4 1>;
-                        interrupt-parent = <&mpic>;
-                };
-
-                serial2: isf-serial@4200 {
-                        device_type = "serial";
-                        compatible = "ns16550";
-                        reg = <4200 100>;
-                        clock-frequency = <13ab6680>; /* 330Mhz */
-                        interrupts = <0 1>;
-                        interrupt-parent = <&isf_pic>;
-                };
-                <... and a few more serial ports which look the same >
-
-Following the example set in mpc85xx_ds.c, I lookup the interrupt
-controller manually in the platform setup code (init_IRQ). Basically
-
-        np = of_find_compatible_node(NULL, "isf-pic", "isf-pic");
-        if (np == NULL) {
-                printk(KERN_ERR "Could not find ISF PIC\n");
-                return;
-        }
-
-and thereafter calling a custom setup function for the FPGA interrupt
-controller. That appears to work fine, but I'm wondering how to get the
-serial ports detected properly by of_serial.
-
-I suppose I can do something similar in code to what is done in
-arch/powerpc/kernel/legacy_serial.c:find_legacy_serial_ports, but I
-thought I could do without that with the device trees. Is it so, or do
-I have to add code to walk through and setup the rest of the serial
-ports?
-
-Thanks in advance,
-// Simon
+--=_mixed 003A55AEC1257583_=--
