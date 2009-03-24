@@ -1,22 +1,19 @@
-Return-Path: <BATV+6f373c4282e37a9c7400+2039+infradead.org+dwmw2@casper.srs.infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 16A8DDDF6B
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 01:05:04 +1100 (EST)
-Subject: Re: [PATCH v2] Check name property to determine partition nodes.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Krill <ben@codiert.org>
-In-Reply-To: <20090324132733.GN11318@codiert.org>
-References: <20090123161805.GA2598@codiert.org>
-	<1233720542.16867.187.camel@pasglop>
-	<20090218074738.GC12204@codiert.org>
-	<20090324132733.GN11318@codiert.org>
-Content-Type: text/plain
-Date: Tue, 24 Mar 2009 14:04:54 +0000
-Message-Id: <1237903494.9441.1364.camel@macbook.infradead.org>
-Mime-Version: 1.0
-Cc: dwg@au1.ibm.com, linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 77616DDF0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 01:20:47 +1100 (EST)
+Date: Tue, 24 Mar 2009 17:20:45 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/83xx: Update ranges in gianfar node to match
+	other dts
+Message-ID: <20090324142045.GA17184@oksana.dev.rtsoft.ru>
+References: <1237901745-27418-1-git-send-email-galak@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1237901745-27418-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-03-24 at 14:27 +0100, Benjamin Krill wrote:
-> >>On Fri, 2009-01-23 at 17:18 +0100, Benjamin Krill wrote:
-> >>> SLOF has a further node which could not be evaluate
-> >>> by the current routine. The current routine returns
-> >>> because the node hasn't the required reg property. As
-> >>> fix this patch adds a check to determine the partition
-> >>> child nodes. If the node is not an partition the number
-> >>> of total partitions will be decreased and loop continue
-> >>> with the next nodes.
-> >>
-> >>Somebody on the MTD list is taking that ? David ? Or should I merge it
-> >>via powerpc ?
-> >
-> >Could somebody merge it for the next release?
+On Tue, Mar 24, 2009 at 08:35:45AM -0500, Kumar Gala wrote:
+> The gianfar node @ 25000 was missing its ranges prop for the mdio bus
+> and provided an explicit ranges property on gianfar@24000 to match
+> all other .dts
 > 
-> Again, new try to get it somewhere merged.
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
 
-Applied; thanks.
+I think this part is missing:
+
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index 3ebf7ec..98de8bf 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -195,11 +195,11 @@
+ 			fixed-link = <1 1 1000 0 0>;
+ 			fsl,magic-packet;
+ 
+-			mdio@24520 {
++			mdio@520 {
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+ 				compatible = "fsl,gianfar-mdio";
+-				reg = <0x24520 0x20>;
++				reg = <0x520 0x20>;
+ 				phy4: ethernet-phy@4 {
+ 					interrupt-parent = <&ipic>;
+ 					interrupts = <20 0x8>;
+@@ -229,11 +229,11 @@
+ 			sleep = <&pmc 0x10000000>;
+ 			fsl,magic-packet;
+ 
+-			mdio@25520 {
++			mdio@520 {
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+ 				compatible = "fsl,gianfar-tbi";
+-				reg = <0x25520 0x20>;
++				reg = <0x520 0x20>;
+ 
+ 				tbi1: tbi-phy@11 {
+ 					reg = <0x11>;
+
+
+>  arch/powerpc/boot/dts/mpc8313erdb.dts |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+> index 3ebf7ec..20a0fa8 100644
+> --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+> @@ -180,7 +180,7 @@
+>  			#address-cells = <1>;
+>  			#size-cells = <1>;
+>  			sleep = <&pmc 0x20000000>;
+> -			ranges;
+> +			ranges = <0x0 0x24000 0x1000>;
+>  
+>  			cell-index = <0>;
+>  			device_type = "network";
+> @@ -221,6 +221,7 @@
+>  			model = "eTSEC";
+>  			compatible = "gianfar";
+>  			reg = <0x25000 0x1000>;
+> +			ranges = <0x0 0x25000 0x1000>;
+>  			local-mac-address = [ 00 00 00 00 00 00 ];
+>  			interrupts = <34 0x8 33 0x8 32 0x8>;
+>  			interrupt-parent = <&ipic>;
+> -- 
+> 1.5.6.6
 
 -- 
-dwmw2
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
