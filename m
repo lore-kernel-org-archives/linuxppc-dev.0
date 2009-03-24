@@ -1,19 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 32210DDF6B
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 06:07:15 +1100 (EST)
-Date: Tue, 24 Mar 2009 12:07:02 -0700 (PDT)
-Message-Id: <20090324.120702.232678762.davem@davemloft.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] ucc_geth: Fix build breakage caused by a merge
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090324153734.GA8276@oksana.dev.rtsoft.ru>
-References: <382F4B5D-93C4-41BB-A00A-8A6C240CD170@kernel.crashing.org>
-	<20090324153734.GA8276@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com,
-	Joakim.Tjernlund@transmode.se, netdev@vger.kernel.org
+Return-Path: <johns.daniel@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id B2D8CDDF8E
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 07:24:52 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 9so1637904ywe.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 13:24:50 -0700 (PDT)
+MIME-Version: 1.0
+Date: Tue, 24 Mar 2009 15:24:50 -0500
+Message-ID: <ba5d9360903241324n57aa74caq2dd2bcdd2a885e19@mail.gmail.com>
+Subject: PCIe interrupts in the device tree
+From: Johns Daniel <johns.daniel@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Tue, 24 Mar 2009 18:37:34 +0300
+Could somebody please explain the declaration of the PCIe interrupts
+in the device tree?
 
-> This patch fixes following build error:
-> 
->   CC      ucc_geth.o
-> ucc_geth.c: In function 'ucc_geth_probe':
-> ucc_geth.c:3644: error: implicit declaration of function 'uec_mdio_bus_name'
-> make[2]: *** [ucc_geth.o] Error 1
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+I was under the impression that PCIe interrupts in the PowerPC Linux
+kernel default to using INTx signaling (vs. external IRQ pin assertion
+and MSI signaling). Am I right?
 
-Applied, thanks Anton.
+If so, then do the interrupt-map lines in the DTS refer to the
+internal IRQ used by Freescale processors to implement INTx virtual
+wire interrupts?
+
+For example, in the mpc8536ds.dts file, under "pci1: pcie@ffe09000" we have:
+		interrupt-map = <
+			/* IDSEL 0x0 */
+			0000 0 0 1 &mpic 4 1
+			0000 0 0 2 &mpic 5 1
+			0000 0 0 3 &mpic 6 1
+			0000 0 0 4 &mpic 7 1
+			>;
+Are the 4, 5, 6, and 7 internal or external IRQs?
+
+And the "msi@41600" section in the same mpc8536ds.dts file does NOT
+affect PCIe interrupts unless a driver calls pci_enable_msi()?
+
+TIA!
+
+-- Johns
