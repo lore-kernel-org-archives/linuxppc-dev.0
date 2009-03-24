@@ -1,17 +1,24 @@
-Return-Path: <sr@denx.de>
-From: Stefan Roese <sr@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: physmap_of and partitions (mtd concat support)
-Date: Tue, 24 Mar 2009 10:07:51 +0100
-References: <200903231151.10373.sr@denx.de>
-	<fa686aa40903230837w52a9f764n29b3f9cf4c95cc57@mail.gmail.com>
-In-Reply-To: <fa686aa40903230837w52a9f764n29b3f9cf4c95cc57@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200903241007.51321.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Return-Path: <simon.kagstrom@ericsson.com>
+Received: from mailgw3.ericsson.se (mailgw3.ericsson.se [193.180.251.60])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DEFDEDDF2A
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 20:23:54 +1100 (EST)
+Received: from mailgw3.ericsson.se (unknown [127.0.0.1])
+	by mailgw3.ericsson.se (Symantec Mail Security) with ESMTP id
+	9A5152074C
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 09:50:10 +0100 (CET)
+Received: from esealmw128.eemea.ericsson.se (unknown [153.88.253.124])
+	by mailgw3.ericsson.se (Symantec Mail Security) with ESMTP id
+	EAA79205EC
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 09:50:08 +0100 (CET)
+Date: Tue, 24 Mar 2009 09:49:59 +0100
+From: Simon Kagstrom <simon.kagstrom@ericsson.com>
+To: linuxppc-dev@ozlabs.org <linuxppc-dev@ozlabs.org>
+Subject: of_serial and device trees
+Message-ID: <20090324094959.447a3a31@seasc0532.dyn.rnd.as.sw.ericsson.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,41 +28,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 23 March 2009, Grant Likely wrote:
-> On Mon, Mar 23, 2009 at 4:51 AM, Stefan Roese <sr@denx.de> wrote:
-> > I just noticed that physmap_of can't handle multiple devices of different
-> > type described in one device node. For example the Intel P30 48F4400
-> > (64MByte) consists internally of 2 non-identical NOR chips. So a "simple"
->
-> [...]
->
-> > Now the real problem: How should I describe a partition in the device
-> > tree spanning over both devices (concat)?. The current physmap_of driver
-> > doesn't handle concat at all (physmap.c does). I already have some ideas
-> > on how to implement this concat support in physmap_of. But ideas about a
-> > device-tree syntax for such partitions are very welcome.
->
-> Sounds to me like a physmap_of driver bug.  I don't think there is any
-> advantage in changing the partition syntax since concatenated flash
-> will always be used as a single device.  It doesn't make any sense to
-> try and span partitions over two nodes.
+Hi!
 
-Yes, I would really love to make this possible with only one flash node. But 
-just think about the following system configuration:
+I'm working on a custom Freescale 8544-based board and having some
+trouble with getting the device tree right. In particular, we have a
+setup which looks like this:
 
-One Intel Strataflash (compatible = "cfi-flash") and one non-cfi compatible 
-flash (e.g. compatible = "jedec-flash"). And the user wants to define a 
-partition that spans over both flash chips. How could this be described in 
-one flash node?
+* We have an FPGA which contains a few serial ports, an interrupt
+  controller and some other devices
 
-> Do additional properties need to be added to describe the concat layout?
+* The serial ports are "normal" 16550s and interrupt the FPGA interrupt
+  controller
 
-Not sure. If we have multiple identical devices they can currently be 
-described in one flash node. So with some changes to the physmap_of driver 
-this configuration will work with concat as well. But more complex is a 
-system configuration as described above. Meaning two or more non-identical 
-chips. I don't see how this could be described in a sane way in one flash 
-node.
+* The interrupt controller is in turn cascaded to the 8544 OpenPIC
+  (mpic).
 
-Best regards,
-Stefan
+My problem is that I can't figure out how to express this correctly in
+the device tree for the board. My device tree looks like this ("isf" is
+the name of the FPGA):
+
+	isf@c0020000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <c0020000 00020000>;
+
+                isf_pic: isf_pic@4000 {
+                        device_type = "isf-pic";
+                        compatible = "isf-pic";
+                        interrupt-controller;
+                        clock-frequency = <0>;
+                        #address-cells = <0>;
+                        #interrupt-cells = <2>;
+                        reg = <4000 100>;
+                        built-in;
+                        interrupts = <4 1>;
+                        interrupt-parent = <&mpic>;
+                };
+
+                serial2: isf-serial@4200 {
+                        device_type = "serial";
+                        compatible = "ns16550";
+                        reg = <4200 100>;
+                        clock-frequency = <13ab6680>; /* 330Mhz */
+                        interrupts = <0 1>;
+                        interrupt-parent = <&isf_pic>;
+                };
+                <... and a few more serial ports which look the same >
+
+Following the example set in mpc85xx_ds.c, I lookup the interrupt
+controller manually in the platform setup code (init_IRQ). Basically
+
+        np = of_find_compatible_node(NULL, "isf-pic", "isf-pic");
+        if (np == NULL) {
+                printk(KERN_ERR "Could not find ISF PIC\n");
+                return;
+        }
+
+and thereafter calling a custom setup function for the FPGA interrupt
+controller. That appears to work fine, but I'm wondering how to get the
+serial ports detected properly by of_serial.
+
+I suppose I can do something similar in code to what is done in
+arch/powerpc/kernel/legacy_serial.c:find_legacy_serial_ports, but I
+thought I could do without that with the device trees. Is it so, or do
+I have to add code to walk through and setup the rest of the serial
+ports?
+
+Thanks in advance,
+// Simon
