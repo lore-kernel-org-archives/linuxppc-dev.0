@@ -1,21 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C2871DDF1E
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 01:24:46 +1100 (EST)
-Message-Id: <416D545E-14C4-4BD8-A7D6-C66CC2F92F1F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090324142045.GA17184@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] powerpc/83xx: Update ranges in gianfar node to match
-	other dts
-Date: Tue, 24 Mar 2009 09:24:39 -0500
-References: <1237901745-27418-1-git-send-email-galak@kernel.crashing.org>
-	<20090324142045.GA17184@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+In-Reply-To: <200903241007.51321.sr@denx.de>
+References: <200903231151.10373.sr@denx.de>
+	<fa686aa40903230837w52a9f764n29b3f9cf4c95cc57@mail.gmail.com>
+	<200903241007.51321.sr@denx.de>
+Date: Tue, 24 Mar 2009 08:57:57 -0600
+Message-ID: <fa686aa40903240757n569f2b04t1309e817fd30728d@mail.gmail.com>
+Subject: Re: physmap_of and partitions (mtd concat support)
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Stefan Roese <sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,54 +21,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Mar 24, 2009, at 9:20 AM, Anton Vorontsov wrote:
-
-> On Tue, Mar 24, 2009 at 08:35:45AM -0500, Kumar Gala wrote:
->> The gianfar node @ 25000 was missing its ranges prop for the mdio bus
->> and provided an explicit ranges property on gianfar@24000 to match
->> all other .dts
+On Tue, Mar 24, 2009 at 3:07 AM, Stefan Roese <sr@denx.de> wrote:
+> On Monday 23 March 2009, Grant Likely wrote:
+>> On Mon, Mar 23, 2009 at 4:51 AM, Stefan Roese <sr@denx.de> wrote:
+>> > I just noticed that physmap_of can't handle multiple devices of differ=
+ent
+>> > type described in one device node. For example the Intel P30 48F4400
+>> > (64MByte) consists internally of 2 non-identical NOR chips. So a "simp=
+le"
 >>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->
-> I think this part is missing:
->
-> diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/ 
-> boot/dts/mpc8313erdb.dts
-> index 3ebf7ec..98de8bf 100644
-> --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> @@ -195,11 +195,11 @@
-> 			fixed-link = <1 1 1000 0 0>;
-> 			fsl,magic-packet;
->
-> -			mdio@24520 {
-> +			mdio@520 {
-> 				#address-cells = <1>;
-> 				#size-cells = <0>;
-> 				compatible = "fsl,gianfar-mdio";
-> -				reg = <0x24520 0x20>;
-> +				reg = <0x520 0x20>;
-> 				phy4: ethernet-phy@4 {
-> 					interrupt-parent = <&ipic>;
-> 					interrupts = <20 0x8>;
-> @@ -229,11 +229,11 @@
-> 			sleep = <&pmc 0x10000000>;
-> 			fsl,magic-packet;
->
-> -			mdio@25520 {
-> +			mdio@520 {
-> 				#address-cells = <1>;
-> 				#size-cells = <0>;
-> 				compatible = "fsl,gianfar-tbi";
-> -				reg = <0x25520 0x20>;
-> +				reg = <0x520 0x20>;
->
-> 				tbi1: tbi-phy@11 {
-> 					reg = <0x11>;
+>> [...]
 >>
+>> > Now the real problem: How should I describe a partition in the device
+>> > tree spanning over both devices (concat)?. The current physmap_of driv=
+er
+>> > doesn't handle concat at all (physmap.c does). I already have some ide=
+as
+>> > on how to implement this concat support in physmap_of. But ideas about=
+ a
+>> > device-tree syntax for such partitions are very welcome.
+>>
+>> Sounds to me like a physmap_of driver bug. =A0I don't think there is any
+>> advantage in changing the partition syntax since concatenated flash
+>> will always be used as a single device. =A0It doesn't make any sense to
+>> try and span partitions over two nodes.
+>
+> Yes, I would really love to make this possible with only one flash node. =
+But
+> just think about the following system configuration:
+>
+> One Intel Strataflash (compatible =3D "cfi-flash") and one non-cfi compat=
+ible
+> flash (e.g. compatible =3D "jedec-flash"). And the user wants to define a
+> partition that spans over both flash chips. How could this be described i=
+n
+> one flash node?
+>
+>> Do additional properties need to be added to describe the concat layout?
+>
+> Not sure. If we have multiple identical devices they can currently be
+> described in one flash node. So with some changes to the physmap_of drive=
+r
+> this configuration will work with concat as well. But more complex is a
+> system configuration as described above. Meaning two or more non-identica=
+l
+> chips. I don't see how this could be described in a sane way in one flash
+> node.
 
-yep, sending a new version
+Are there any such platforms?  Is there much likelihood that such a
+platform will be created?  Would it even be a good idea to span
+partitions across such an arrangement given that different devices
+will behave differently?
 
-- k
+I think just leave that arrangement as hypothetical until the
+situation actually occurs.  If it does occur, then strongly recommend
+to not span a partition across the boundary.  If someone really
+insists on doing this then we can create a new binding for the
+purpose; but leave the old binding as is.  Maybe something like:
+
+mtd {
+        #address-cells =3D <1>;
+        #size-cells =3D <1>;
+        compatibly =3D "weird-mtd-concat";
+        devices =3D <&mtd1 &mtd2 &mtd3>;
+        partition1@0 {
+                reg =3D <0 0x100000>;
+        };
+        partition2@100000 {
+                reg =3D <0x100000 0x100000>;
+        };
+}
+
+Where mtd1, 2 & 3 point to real flash nodes.  That way the
+concatenated MTD devices could be anything NAND, NOR, SRAM, whatever
+and it doesn't have to try and overload the existing device bindings.
+
+g.
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
