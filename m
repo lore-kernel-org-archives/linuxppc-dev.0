@@ -1,23 +1,22 @@
-Return-Path: <yamazaki.seiji@kk.jp.panasonic.com>
-Received: from smtp.mei.co.jp (smtp.mei.co.jp [133.183.100.20])
-	by ozlabs.org (Postfix) with ESMTP id 09038DDF66
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 15:46:41 +1100 (EST)
-Date: Tue, 24 Mar 2009 13:46:11 +0900
-From: =?ISO-2022-JP?B?GyRCOzM6aiEhQDpGcxsoQg==?=
-	<yamazaki.seiji@kk.jp.panasonic.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
-In-Reply-To: <20090323161655.GA30262@oksana.dev.rtsoft.ru>
-References: <20090323152051.D2F9.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
-	<20090323161655.GA30262@oksana.dev.rtsoft.ru>
-Message-Id: <20090324131210.9BFF.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
+Return-Path: <daniel.ng1234@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
+	by ozlabs.org (Postfix) with ESMTP id A8730DDE1A
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 16:05:19 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so1460024waf.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2009 22:05:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Cc: justinmattock@gmail.com, Ben Dooks <ben-linux@fluff.org>,
-	Arnd Bergmann <arnd@arndb.de>, yamazaki <yamazaki-seiji@jcom.home.ne.jp>,
-	Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx,
-	Pierre Ossman <drzeus-sdhci@drzeus.cx>
+In-Reply-To: <4206182445660643B9AEB8D4E55BBD0A02B9DDEEB4@HERMES2>
+References: <547eba1b0903180036m46f6ffc0g521a5081924a2613@mail.gmail.com>
+	<4206182445660643B9AEB8D4E55BBD0A02B9DDEEB3@HERMES2>
+	<547eba1b0903190132pfd11ad5ld4b1bffb6dc22758@mail.gmail.com>
+	<547eba1b0903191819v5b03d38ci7a60839873e5bd66@mail.gmail.com>
+	<4206182445660643B9AEB8D4E55BBD0A02B9DDEEB4@HERMES2>
+Date: Tue, 24 Mar 2009 16:05:17 +1100
+Message-ID: <547eba1b0903232205uc3b6a78y6db7e7ce161bd39@mail.gmail.com>
+Subject: Re: spidev.c driver on the ppc8247 (kernel 2.6.27.19)
+From: Daniel Ng <daniel.ng1234@gmail.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,60 +26,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
+The solution is in Documentation/spi/spidev:
 
-> 
-> All these errors indicate that you didn't apply all the patches.
-> You'll need all 11 patches from this series, not only the last
-> one.
-> 
+-in the slave device spi_board_info struct, specify 'spidev' for the
+'modalias' of *every* SPI slave.
 
-I applyed all the patches,then Compile was succeeded.
-
-Thank you for your advice.
-
-regards,
-
--- Seiji Yamazaki
-
-
-On Mon, 23 Mar 2009 19:16:55 +0300
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-
-> On Mon, Mar 23, 2009 at 03:34:45PM +0900, $Bj3%"j6<e(B??$Bn4%;h<7(Bwrote:
-> > Hi 
-> > 
-> > I downloaded linux-2.6.29-rc8.tar.bz2,and I patched .
-> > I was succeeded. Thank you very match.
-> > But I have the other problem.
-> > 
-> > Compile was not succeeded.
-> > 
-> > Message is ...
-> > 
-> >  CALL    arch/powerpc/kernel/prom_init_check.sh
-> >   CC      drivers/mmc/host/sdhci-of.o
-> > drivers/mmc/host/sdhci-of.c:163: error: 'SDHCI_QUIRK_FORCE_BLK_SZ_2048' undeclared here (not in a function)
-> > drivers/mmc/host/sdhci-of.c:164: error: 'SDHCI_QUIRK_BROKEN_CARD_DETECTION' undeclared here (not in a function)
-> > drivers/mmc/host/sdhci-of.c:165: error: 'SDHCI_QUIRK_INVERTED_WRITE_PROTECT' undeclared here (not in a function)
-> > drivers/mmc/host/sdhci-of.c:167: error: 'SDHCI_QUIRK_NONSTANDARD_CLOCK' undeclared here (not in a function)
-> > drivers/mmc/host/sdhci-of.c:168: error: 'SDHCI_QUIRK_PIO_NEEDS_DELAY' undeclared here (not in a function)
-> > drivers/mmc/host/sdhci-of.c:169: error: 'SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET' undeclared here (not in a function)
-> [...]
-> > drivers/mmc/host/sdhci-of.c:181: warning: excess elements in struct initializer
-> > drivers/mmc/host/sdhci-of.c:181: warning: (near initialization for 'sdhci_esdhc.ops')
-> > make[3]: *** [drivers/mmc/host/sdhci-of.o] Error 1
-> > make[2]: *** [drivers/mmc/host] Error 2
-> > make[1]: *** [drivers/mmc] Error 2
-> 
-> All these errors indicate that you didn't apply all the patches.
-> You'll need all 11 patches from this series, not only the last
-> one.
-> 
-> -- 
-> Anton Vorontsov
-> email: cbouatmailru@gmail.com
-> irc://irc.freenode.net/bd2
-
--- 
-yamazaki seiji <yamazaki.seiji@kk.jp.panasonic.com>
+I wonder what magic was involved to set this up!!?
