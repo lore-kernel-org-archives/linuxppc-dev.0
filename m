@@ -1,17 +1,29 @@
-Return-Path: <sr@denx.de>
-From: Stefan Roese <sr@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: physmap_of and partitions (mtd concat support)
-Date: Tue, 24 Mar 2009 16:39:56 +0100
-References: <200903231151.10373.sr@denx.de> <200903241007.51321.sr@denx.de>
-	<fa686aa40903240757n569f2b04t1309e817fd30728d@mail.gmail.com>
-In-Reply-To: <fa686aa40903240757n569f2b04t1309e817fd30728d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200903241639.56637.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E3779DDE31
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 02:55:51 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n2OFtlxU021497
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 08:55:47 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n2OFtkEr013314
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2009 10:55:46 -0500 (CDT)
+Date: Tue, 24 Mar 2009 10:55:45 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Simon Kagstrom <simon.kagstrom@ericsson.com>
+Subject: Re: of_serial and device trees
+Message-ID: <20090324155545.GA24778@ld0162-tx32.am.freescale.net>
+References: <20090324094959.447a3a31@seasc0532.dyn.rnd.as.sw.ericsson.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090324094959.447a3a31@seasc0532.dyn.rnd.as.sw.ericsson.se>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,85 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 24 March 2009, Grant Likely wrote:
-> >> Sounds to me like a physmap_of driver bug. =A0I don't think there is a=
-ny
-> >> advantage in changing the partition syntax since concatenated flash
-> >> will always be used as a single device. =A0It doesn't make any sense to
-> >> try and span partitions over two nodes.
-> >
-> > Yes, I would really love to make this possible with only one flash node.
-> > But just think about the following system configuration:
-> >
-> > One Intel Strataflash (compatible =3D "cfi-flash") and one non-cfi
-> > compatible flash (e.g. compatible =3D "jedec-flash"). And the user want=
-s to
-> > define a partition that spans over both flash chips. How could this be
-> > described in one flash node?
-> >
-> >> Do additional properties need to be added to describe the concat layou=
-t?
-> >
-> > Not sure. If we have multiple identical devices they can currently be
-> > described in one flash node. So with some changes to the physmap_of
-> > driver this configuration will work with concat as well. But more compl=
-ex
-> > is a system configuration as described above. Meaning two or more
-> > non-identical chips. I don't see how this could be described in a sane
-> > way in one flash node.
->
-> Are there any such platforms?
+On Tue, Mar 24, 2009 at 09:49:59AM +0100, Simon Kagstrom wrote:
+> My problem is that I can't figure out how to express this correctly in
+> the device tree for the board. My device tree looks like this ("isf" is
+> the name of the FPGA):
+> 
+> 	isf@c0020000 {
+> 		#address-cells = <1>;
+> 		#size-cells = <1>;
+> 		reg = <c0020000 00020000>;
+> 
 
-Yes, I know some. Even though they are currently not used with a partition=
-=20
-spanning over those multiple chips (jedec and cfi).
+Change this line to: ranges = <0 c0020000 00020000>;
+This causes reg resources in child nodes to be properly translated.  What
+you have above indicates that all 0x20000 bytes are for the driver of *this*
+node.
 
-> Is there much likelihood that such a=20
-> platform will be created?  Would it even be a good idea to span
-> partitions across such an arrangement given that different devices
-> will behave differently?
+Add compatible = "simple-bus".  This lets children of this node be probed
+by of_platform drivers (make sure you list simple-bus when calling
+of_platform_bus_probe), and in a few other places (like legacy_serial.c).
 
-OK, in the example above such a spanning partition is not so likely. But th=
-ink=20
-about my original example, the Intel P30 with two different cfi compatible=
-=20
-chips on one die. Here a partition spanning over both devices is very likel=
-y.
+>                 isf_pic: isf_pic@4000 {
+>                         device_type = "isf-pic";
+>                         compatible = "isf-pic";
+>                         interrupt-controller;
+>                         clock-frequency = <0>;
+>                         #address-cells = <0>;
+>                         #interrupt-cells = <2>;
+>                         reg = <4000 100>;
+>                         built-in;
+>                         interrupts = <4 1>;
+>                         interrupt-parent = <&mpic>;
 
-As a sidenote: All this (concat over different chips) is possible with the=
-=20
-physmap.c mapping driver which was used on most of my platforms in the "old=
-"=20
-arch/ppc days.
+Ged rid of built-in, clock-frequency, and device_type.
 
-> I think just leave that arrangement as hypothetical until the
-> situation actually occurs.  If it does occur, then strongly recommend
-> to not span a partition across the boundary.  If someone really
-> insists on doing this then we can create a new binding for the
-> purpose; but leave the old binding as is.  Maybe something like:
->
-> mtd {
->         #address-cells =3D <1>;
->         #size-cells =3D <1>;
->         compatibly =3D "weird-mtd-concat";
->         devices =3D <&mtd1 &mtd2 &mtd3>;
->         partition1@0 {
->                 reg =3D <0 0x100000>;
->         };
->         partition2@100000 {
->                 reg =3D <0x100000 0x100000>;
->         };
-> }
->
-> Where mtd1, 2 & 3 point to real flash nodes.  That way the
-> concatenated MTD devices could be anything NAND, NOR, SRAM, whatever
-> and it doesn't have to try and overload the existing device bindings.
+Compatible should be of the form "vendor,device" -- and does "isf"
+uniquely identify the specific FPGA logic, or are there other versions
+out there (or likely to exist in the future)?  Note that there are some
+bad examples in existing device trees that have yet to be fixed.
 
-I think I like this idea. If nobody objects or has a better idea then I cou=
-ld=20
-start implementing it this way in a while.
+Node name should be interrupt-controller, not isf_pic.
 
-Thanks.
+>                         clock-frequency = <13ab6680>; /* 330Mhz */
 
-Best regards,
-Stefan
+Note that dts-v1 syntax has C-like constants, with decimal by default. 
+I'm guessing you're working with a relatively old kernel?
+
+> and thereafter calling a custom setup function for the FPGA interrupt
+> controller. That appears to work fine, but I'm wondering how to get the
+> serial ports detected properly by of_serial.
+
+The simple-bus compatible, and ranges property, should do it.  I'm
+guessing that your FPGA PIC driver isn't getting its register address
+from the device tree, given that it works without the ranges property?
+
+-Scott
