@@ -1,9 +1,22 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 25 Mar 2009 12:51:02 +1100
-Subject: [PATCH] powerpc: Fix warnings introduced by sysfs changes
-Message-Id: <20090325015128.C109DDDEFE@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 79C6CDDFB3
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 14:47:44 +1100 (EST)
+In-Reply-To: <1237928433.25062.725.camel@pasglop>
+References: <20090316123543.GG15530@lisas.de>
+	<1237868838.25062.712.camel@pasglop>
+	<20090324114505.GB24724@lisas.de>
+	<1237928433.25062.725.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D030DE57-7C4E-4DEE-BC5F-08B8A230F755@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Fix RTAS watchdog driver temperature read functionality
+Date: Wed, 25 Mar 2009 04:49:27 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,32 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rusty's patch to change our sysfs access to various registers
-to use smp_call_function_single() introduced a whole bunch of
-warnings. This fixes them
+> Right, now turn it into a proper patch submission :-)
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+>>  	if (result < 0)
+>>  		printk(KERN_WARNING "wdrtas: reading the thermal sensor "
+>> -		       "faild: %li\n", result);
+>> +		       "faild: %i\n", result);
+>>  	else
+>>  		temperature = ((temperature * 9) / 5) + 32; /* fahrenheit */
 
-I've also now fixed my build test tool to report warnings properly
-so hopefully I won't miss that next time around :-)
+Fix the spelling of "failed" while you're at it?  (And Fahrenheit  
+maybe).
 
- arch/powerpc/kernel/sysfs.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- linux-work.orig/arch/powerpc/kernel/sysfs.c	2009-03-25 11:17:28.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/sysfs.c	2009-03-25 11:18:15.000000000 +1100
-@@ -140,11 +140,10 @@ static void read_##NAME(void *val) \
- { \
- 	mtspr(ADDRESS, *(unsigned long *)val);	\
- } \
--static unsigned long write_##NAME(unsigned long val) \
-+static void write_##NAME(void *val) \
- { \
- 	ppc_enable_pmcs(); \
--	mtspr(ADDRESS, *(unsigned long *)val);	\
--	return 0; \
-+	mtspr(ADDRESS, *(unsigned long *)val); \
- } \
- static ssize_t show_##NAME(struct sys_device *dev, \
- 			struct sysdev_attribute *attr, \
+Segher
