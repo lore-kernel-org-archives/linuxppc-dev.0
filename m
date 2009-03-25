@@ -1,16 +1,18 @@
-Return-Path: <guangye.tian@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.187])
-	by ozlabs.org (Postfix) with ESMTP id 3A4B8DDD1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 03:01:34 +1100 (EST)
-Received: by ti-out-0910.google.com with SMTP id j2so68990tid.13
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 09:01:31 -0700 (PDT)
+Return-Path: <jwboyer@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.235])
+	by ozlabs.org (Postfix) with ESMTP id 0D750DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 03:24:29 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g9so94059rvb.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 09:24:28 -0700 (PDT)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Wed, 25 Mar 2009 12:23:59 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Sanitize stack pointer in signal handling code
+Message-ID: <20090325162359.GA2367@yoda.jdub.homelinux.org>
 MIME-Version: 1.0
-Date: Wed, 25 Mar 2009 17:01:31 +0100
-Message-ID: <2a3c3b490903250901l65f46cdbv3c6f93f853b56bbf@mail.gmail.com>
-Subject: FSL driver for powerpc linux2.6 (xilinx ML403)
-From: Guangye Tian <guangye.tian@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,39 +22,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On powerpc64 machines running 32-bit userspace, we can get garbage bits in the
+stack pointer passed into the kernel.  Most places handle this correctly, but
+the signal handling code uses the passed value directly for allocating signal
+stack frames.
 
-I am working with the xilinx ML403 evaluation board which has a
-Virtex4 FPGA and one powerpc405 processor is integrated.
+This fixes the issue by introducing a get_clean_sp function that returns a
+sanitized stack pointer.  For 32-bit tasks on a 64-bit kernel, the stack
+pointer is masked correctly.  In all other cases, the stack pointer is simply
+returned.
 
-I am trying to develop a linux driver for FSL link for powerpc405. I
-developed one first version (with the referce of the microblaze fsl
-driver developped by Mr. John Williams for uClinux) as a loadable
-module, and loaded it after Linux is booted. But when I run some
-testing function like "cat /dev/fslfifo", it crashes the kernel.
+Additionally, we pass an 'is_32' parameter to get_sigframe now in order to
+get the properly sanitized stack.  The callers are know to be 32 or 64-bit
+statically.
 
-I suppose that it is because FSL operations (like nget, nput, etc. )
-are not part of the ppc instruction set and are realized by APU
-instruction extension. For the processor to execute the extended
-instructions correctly, the MSR register should be set accordingly to
-enable APU. (XREG_MSR_APU_AVAILABLE + XREG_MSR_APU_ENABLE). Before I
-worked with ppc without os, and the management of special purpose
-registers are rather straight forward and it concerns only some
-assembly language at the beginning of the main() function. But with
-os, I have no experience dealing explicitely with special purpose
-registers. So I tried the following:
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-I set the MSR at the initialisation phase by
+---
+ arch/powerpc/include/asm/processor.h |   19 +++++++++++++++++++
+ arch/powerpc/kernel/signal.c         |    4 ++--
+ arch/powerpc/kernel/signal.h         |    2 +-
+ arch/powerpc/kernel/signal_32.c      |    4 ++--
+ arch/powerpc/kernel/signal_64.c      |    2 +-
+ 5 files changed, 25 insertions(+), 6 deletions(-)
 
-mtmsr(XREG_MSR_APU_AVAILABLE | XREG_MSR_APU_ENABLE | mfmsr())
-
-However, when I set the MSR at the initialization function, and test
-afterwards, the MSR value is set back to some default value. I don't
-know where it happened neighter do I know if I am using the correct
-measure to change the MSR value.
-
-Does anybody have any suggestions?
-
-Thank you,
-
-Guangye
+--- linux-2.6.orig/arch/powerpc/kernel/signal_32.c
++++ linux-2.6/arch/powerpc/kernel/signal_32.c
+@@ -836,7 +836,7 @@ int handle_rt_signal32(unsigned long sig
+ 
+ 	/* Set up Signal Frame */
+ 	/* Put a Real Time Context onto stack */
+-	rt_sf = get_sigframe(ka, regs, sizeof(*rt_sf));
++	rt_sf = get_sigframe(ka, regs, sizeof(*rt_sf), 1);
+ 	addr = rt_sf;
+ 	if (unlikely(rt_sf == NULL))
+ 		goto badframe;
+@@ -1182,7 +1182,7 @@ int handle_signal32(unsigned long sig, s
+ 	unsigned long newsp = 0;
+ 
+ 	/* Set up Signal Frame */
+-	frame = get_sigframe(ka, regs, sizeof(*frame));
++	frame = get_sigframe(ka, regs, sizeof(*frame), 1);
+ 	if (unlikely(frame == NULL))
+ 		goto badframe;
+ 	sc = (struct sigcontext __user *) &frame->sctx;
+--- linux-2.6.orig/arch/powerpc/include/asm/processor.h
++++ linux-2.6/arch/powerpc/include/asm/processor.h
+@@ -313,6 +313,25 @@ static inline void prefetchw(const void 
+ #define HAVE_ARCH_PICK_MMAP_LAYOUT
+ #endif
+ 
++#ifdef CONFIG_PPC64
++static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
++{
++	unsigned long sp;
++
++	if (is_32)
++		sp = regs->gpr[1] & 0x0ffffffffUL;
++	else
++		sp = regs->gpr[1];
++
++	return sp;
++}
++#else
++static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
++{
++	return regs->gpr[1];
++}
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_PROCESSOR_H */
+--- linux-2.6.orig/arch/powerpc/kernel/signal.c
++++ linux-2.6/arch/powerpc/kernel/signal.c
+@@ -26,12 +26,12 @@ int show_unhandled_signals = 0;
+  * Allocate space for the signal frame
+  */
+ void __user * get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
+-			   size_t frame_size)
++			   size_t frame_size, int is_32)
+ {
+         unsigned long oldsp, newsp;
+ 
+         /* Default to using normal stack */
+-        oldsp = regs->gpr[1];
++        oldsp = get_clean_sp(regs, is_32);
+ 
+ 	/* Check for alt stack */
+ 	if ((ka->sa.sa_flags & SA_ONSTACK) &&
+--- linux-2.6.orig/arch/powerpc/kernel/signal.h
++++ linux-2.6/arch/powerpc/kernel/signal.h
+@@ -15,7 +15,7 @@
+ extern void do_signal(struct pt_regs *regs, unsigned long thread_info_flags);
+ 
+ extern void __user * get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
+-				  size_t frame_size);
++				  size_t frame_size, int is_32);
+ extern void restore_sigmask(sigset_t *set);
+ 
+ extern int handle_signal32(unsigned long sig, struct k_sigaction *ka,
+--- linux-2.6.orig/arch/powerpc/kernel/signal_64.c
++++ linux-2.6/arch/powerpc/kernel/signal_64.c
+@@ -402,7 +402,7 @@ int handle_rt_signal64(int signr, struct
+ 	unsigned long newsp = 0;
+ 	long err = 0;
+ 
+-	frame = get_sigframe(ka, regs, sizeof(*frame));
++	frame = get_sigframe(ka, regs, sizeof(*frame), 0);
+ 	if (unlikely(frame == NULL))
+ 		goto badframe;
+ 
