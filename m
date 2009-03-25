@@ -1,17 +1,14 @@
-Return-Path: <sr@denx.de>
-From: Stefan Roese <sr@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: physmap_of and partitions (mtd concat support)
-Date: Wed, 25 Mar 2009 10:35:27 +0100
-References: <200903231151.10373.sr@denx.de> <200903241639.56637.sr@denx.de>
-	<fa686aa40903240928t2a3fcccdrb4508e34c7079aef@mail.gmail.com>
-In-Reply-To: <fa686aa40903240928t2a3fcccdrb4508e34c7079aef@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200903251035.28074.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+Return-Path: <wg@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id C57DEDDE17
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 21:08:24 +1100 (EST)
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: linux-mtd@lists.infradead.org,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 0/4] NAND: Multi-chip support for FSL-UPM for TQM8548
+	modules
+Date: Wed, 25 Mar 2009 11:08:17 +0100
+Message-Id: <1237975701-23201-1-git-send-email-wg@grandegger.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,56 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 24 March 2009, Grant Likely wrote:
-> > OK, in the example above such a spanning partition is not so likely. But
-> > think about my original example, the Intel P30 with two different cfi
-> > compatible chips on one die. Here a partition spanning over both devices
-> > is very likely.
->
-> I agree.  Same thing when two or more flash chips are put on a board
-> in consecutive addresses.  I've worked on plenty of these arrangements
-> myself.
+This is my third version of the patch series adding generic support
+for multi-chip NAND devices to the FSL-UPM driver and support for
+the Micron MT29F8G08FAB NAND flash memory on the TQM8548 modules.
+It addresses the issues reported on the mailing list, e.g. the new
+bindings are now documented as well.
 
-Yes, multiple identical devices are no problem at all. This is handled 
-correctly with the current code and device tree syntax.
+[PATCH v3 1/4] NAND: FSL-UPM: add multi chip support
+[PATCH v3 2/4] NAND: FSL-UPM: Add wait flags to support board/chip specific delays
+[PATCH v3 3/4] powerpc: NAND: FSL UPM: document new bindings
+[PATCH v3 4/4] powerpc/85xx: TQM8548: Update DTS file for multi-chip support
 
-> This case really does sound like a driver bug and that the existing
-> cfi-flash binding is sufficient to describe the hardware.  IIUC, when
-> all the flash chips are of the same type the physmap_of driver should
-> be smart enough to detect each of the flash chips within the reg
-> range.
-
-*When* all are identical then this works, yes. But in the Intel P30 case the 2 
-chips are not identical. And from my understanding this is not a problem/bug 
-in the physmap_of driver.
-
-> If I'm wrong and it cannot do this, then it would be a simple matter
-> of adding an additional tuple to reg for each discrete chip.  A
-> simple, backwards compatible extension which doesn't require a new
-> binding.
-
-So you are thinking of something like this?
-
-	flash@f0000000,0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		compatible = "cfi-flash";
-		reg = <0 0x00000000 0x02000000
-		       0 0x02000000 0x02000000>;
-                bank-width = <2>;
-                device-width = <2>;
-                partition@0 {
-                        label = "test-part1";
-                        reg = <0 0x04000000>;
-                };
-	};
-
-That's also fine with me. Changes to physmap_of would be minimal this way.
-
-Do we have a consensus that this should be the way to implement concat support 
-in physmap_of?
+Please consider these patches for inclusion into kernel version 2.6.30. 
+Patch 3 and 4 should go through the powerpc maintainer(s).
 
 Thanks.
 
-Best regards,
-Stefan
+Wolfgang.
