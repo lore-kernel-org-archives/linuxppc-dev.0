@@ -1,17 +1,18 @@
-Return-Path: <sr@denx.de>
-From: Stefan Roese <sr@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: physmap_of and partitions (mtd concat support)
-Date: Wed, 25 Mar 2009 15:14:01 +0100
-References: <200903231151.10373.sr@denx.de> <200903251035.28074.sr@denx.de>
-	<fa686aa40903250628t1e5e97c0q340746dd78e61c83@mail.gmail.com>
-In-Reply-To: <fa686aa40903250628t1e5e97c0q340746dd78e61c83@mail.gmail.com>
+Return-Path: <dada1@cosmosbay.com>
+Received: from gw1.cosmosbay.com (gw1.cosmosbay.com [212.99.114.194])
+	by ozlabs.org (Postfix) with ESMTP id 2D4CCDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 01:18:26 +1100 (EST)
+Message-ID: <49CA39EA.6020208@cosmosbay.com>
+Date: Wed, 25 Mar 2009 15:04:26 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200903251514.01817.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>
+To: joakim.tjernlund@transmode.se
+Subject: Re: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
+References: <1237987849.2194.9.camel@gentoo-jocke.transmode.se>
+In-Reply-To: <1237987849.2194.9.camel@gentoo-jocke.transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Netdev <netdev@vger.kernel.org>, leoli@freescale.com,
+	'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +22,117 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 25 March 2009, Grant Likely wrote:
-> >> This case really does sound like a driver bug and that the existing
-> >> cfi-flash binding is sufficient to describe the hardware. =A0IIUC, when
-> >> all the flash chips are of the same type the physmap_of driver should
-> >> be smart enough to detect each of the flash chips within the reg
-> >> range.
-> >
-> > *When* all are identical then this works, yes. But in the Intel P30 case
-> > the 2 chips are not identical. And from my understanding this is not a
-> > problem/bug in the physmap_of driver.
->
-> To satisfy my own curiosity, why is physmap_of unable to probe
-> multiple cfi chips that are non identical?  After detecting the first
-> chip it and calculated then end address of it can it not do another
-> full cfi probe for the rest of the reg range?
+Joakim Tjernlund a =E9crit :
+>>From 1c2f23b1f37f4818c0fd0217b93eb38ab6564840 Mon Sep 17 00:00:00 2001
+> From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> Date: Tue, 24 Mar 2009 10:19:27 +0100
+> Subject: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
+>  Also increase NAPI weight somewhat.
+>  This will make the system alot more responsive while
+>  ping flooding the ucc_geth ethernet interaface.
+>=20
+>=20
+> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> ---
+>  drivers/net/ucc_geth.c |   30 +++++++++++-------------------
+>  drivers/net/ucc_geth.h |    2 +-
+>  2 files changed, 12 insertions(+), 20 deletions(-)
+>=20
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index 097aed8..7d5d110 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -3214,7 +3214,7 @@ static int ucc_geth_tx(struct net_device *dev, u8=
+ txQ)
+>  		dev->stats.tx_packets++;
+> =20
+>  		/* Free the sk buffer associated with this TxBD */
+> -		dev_kfree_skb_irq(ugeth->
+> +		dev_kfree_skb(ugeth->
+>  				  tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]]);
+>  		ugeth->tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]] =3D NULL;
+>  		ugeth->skb_dirtytx[txQ] =3D
+> @@ -3248,9 +3248,16 @@ static int ucc_geth_poll(struct napi_struct *nap=
+i, int budget)
+>  	for (i =3D 0; i < ug_info->numQueuesRx; i++)
+>  		howmany +=3D ucc_geth_rx(ugeth, i, budget - howmany);
+> =20
 
-The "real" probing is done in the mtd core (cfi_probe). So it's nothing tha=
-t=20
-could be changed in physmap_of. I have to admit that I didn't fully debug i=
-t.
+Cant you test (ucce & UCCE_TX_EVENTS) or something here to avoid
+taking lock and checking queues if not necessary ?
 
-> Regardless, even if it could the solution you have below is probably a
-> better idea anyway than relying on probing.
->
-> >> If I'm wrong and it cannot do this, then it would be a simple matter
-> >> of adding an additional tuple to reg for each discrete chip. =A0A
-> >> simple, backwards compatible extension which doesn't require a new
-> >> binding.
-> >
-> > So you are thinking of something like this?
-> >
-> > =A0 =A0 =A0 =A0flash@f0000000,0 {
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <1>;
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <1>;
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "cfi-flash";
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0 0x00000000 0x02000000
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 0x02000000 0x02000000>;
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bank-width =3D <2>;
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device-width =3D <2>;
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0partition@0 {
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0label =3D "test-part1";
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0 0x04000000>;
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
-> > =A0 =A0 =A0 =A0};
->
-> Yes, this looks good to me.  In fact, it is probably better to be
-> explicit about multiple chips anyway in terms of providing the driver
-> as much information as possible about where to probe for the chips.
-> It also elegantly supports sparsely mapped flash chips (ie. if the
-> board supports larger chips than is actually populated).
+> +	/* Tx event processing */
+> +	spin_lock(&ugeth->lock);
+> +	for (i =3D 0; i < ug_info->numQueuesTx; i++) {
+> +		ucc_geth_tx(ugeth->dev, i);
+> +	}
+> +	spin_unlock(&ugeth->lock);
+> +
 
-OK, then we have a solution. Grant, thanks for your input here.
+Why tx completions dont change "howmany" ?
+It seems strange you changed UCC_GETH_DEV_WEIGHT if not taking into accou=
+nt tx event above...
 
-Best regards,
-Stefan
+
+>  	if (howmany < budget) {
+>  		netif_rx_complete(napi);
+> -		setbits32(ugeth->uccf->p_uccm, UCCE_RX_EVENTS);
+> +		setbits32(ugeth->uccf->p_uccm, UCCE_RX_EVENTS | UCCE_TX_EVENTS);
+>  	}
+> =20
+>  	return howmany;
+> @@ -3264,8 +3271,6 @@ static irqreturn_t ucc_geth_irq_handler(int irq, =
+void *info)
+>  	struct ucc_geth_info *ug_info;
+>  	register u32 ucce;
+>  	register u32 uccm;
+> -	register u32 tx_mask;
+> -	u8 i;
+> =20
+>  	ugeth_vdbg("%s: IN", __func__);
+> =20
+> @@ -3279,27 +3284,14 @@ static irqreturn_t ucc_geth_irq_handler(int irq=
+, void *info)
+>  	out_be32(uccf->p_ucce, ucce);
+> =20
+>  	/* check for receive events that require processing */
+> -	if (ucce & UCCE_RX_EVENTS) {
+> +	if (ucce & (UCCE_RX_EVENTS | UCCE_TX_EVENTS)) {
+>  		if (netif_rx_schedule_prep(&ugeth->napi)) {
+> -			uccm &=3D ~UCCE_RX_EVENTS;
+> +			uccm &=3D ~(UCCE_RX_EVENTS | UCCE_TX_EVENTS);
+>  			out_be32(uccf->p_uccm, uccm);
+>  			__netif_rx_schedule(&ugeth->napi);
+>  		}
+>  	}
+> =20
+> -	/* Tx event processing */
+> -	if (ucce & UCCE_TX_EVENTS) {
+> -		spin_lock(&ugeth->lock);
+> -		tx_mask =3D UCC_GETH_UCCE_TXB0;
+> -		for (i =3D 0; i < ug_info->numQueuesTx; i++) {
+> -			if (ucce & tx_mask)
+> -				ucc_geth_tx(dev, i);
+> -			ucce &=3D ~tx_mask;
+> -			tx_mask <<=3D 1;
+> -		}
+> -		spin_unlock(&ugeth->lock);
+> -	}
+> -
+>  	/* Errors and other events */
+>  	if (ucce & UCCE_OTHER) {
+>  		if (ucce & UCC_GETH_UCCE_BSY)
+> diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
+> index 44218b8..ea30aa7 100644
+> --- a/drivers/net/ucc_geth.h
+> +++ b/drivers/net/ucc_geth.h
+> @@ -843,7 +843,7 @@ struct ucc_geth_hardware_statistics {
+>  /* Driver definitions */
+>  #define TX_BD_RING_LEN                          0x10
+>  #define RX_BD_RING_LEN                          0x10
+> -#define UCC_GETH_DEV_WEIGHT                     TX_BD_RING_LEN
+> +#define UCC_GETH_DEV_WEIGHT                     (RX_BD_RING_LEN+TX_BD_=
+RING_LEN/2)
+> =20
+>  #define TX_RING_MOD_MASK(size)                  (size-1)
+>  #define RX_RING_MOD_MASK(size)                  (size-1)
