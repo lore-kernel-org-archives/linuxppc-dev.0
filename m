@@ -4,23 +4,19 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 59B13DDDA5
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 03:32:35 +1100 (EST)
-Message-ID: <49CA5C7D.1050904@freescale.com>
-Date: Wed, 25 Mar 2009 11:31:57 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 90642DDDA0
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 03:39:58 +1100 (EST)
+Message-ID: <49CA5E45.9070300@freescale.com>
+Date: Wed, 25 Mar 2009 11:39:33 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: suspend-to-mem on the mpc8349e-mitx-gp?
-References: <49C3AB35.4080700@freescale.com>
-	<3A45394FD742FA419B760BB8D398F9ED2FA48E@zch01exm26.fsl.freescale.net>
-	<20090323165402.GC25217@ld0162-tx32.am.freescale.net>
-	<2a27d3730903250342qc7c98abt95534372af174703@mail.gmail.com>
-	<20090325111113.GG24172@elf.ucw.cz>
-In-Reply-To: <20090325111113.GG24172@elf.ucw.cz>
+To: Simon Kagstrom <simon.kagstrom@ericsson.com>
+Subject: Re: of_serial and device trees
+References: <20090324094959.447a3a31@seasc0532.dyn.rnd.as.sw.ericsson.se>	<20090324155545.GA24778@ld0162-tx32.am.freescale.net>
+	<20090325155113.52048fe0@seasc0532.dyn.rnd.as.sw.ericsson.se>
+In-Reply-To: <20090325155113.52048fe0@seasc0532.dyn.rnd.as.sw.ericsson.se>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
-	Soohyung Cho <celius202@gmail.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,18 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Pavel Machek wrote:
->> Pavel, what's the preferred way for current PM sub-system?
+Simon Kagstrom wrote:
+> There are no other versions yet, but I suppose there will be (it's
+> implemented in a FPGA after all!). So what is the general handling of
+> versions, should it be something like
 > 
-> If you have single sleep state, use "mem" > /sys/power/state. 
+>   compatible = "ericsson,isf-pic", "ericsson,isf-pic-v2"
 > 
-> If you have two, use mem and standby. Do you have more?
+> etc if we'd make new revisions of the device?
 
-Some of our chips have two, and some have one.  However, the sleep state 
-of the chips that have only one is the same as the "standby" state of 
-the chips that have two, not the "mem" state.  Accepting "mem" and only 
-"mem" for the one-state chip seems like the most confusing of the 
-options discussed.  There would be no consistent way for userspace to 
-request the milder suspend state.
+Looks good.
+
+>> I'm guessing that your FPGA PIC driver isn't getting its register address
+>> from the device tree, given that it works without the ranges property?
+> 
+> It is, but I didn't check it for correctness yet, so I suppose I might
+> have mapped the wrong thing. The code looks like this:
+> 
+>         struct resource phys_addr;
+> 
+>         if (of_address_to_resource(np, 0, &phys_addr) != 0) {
+>                  printk(KERN_ERR": Could not get ISF PIC memory resource\n");
+>                  return NULL;
+>          }
+> 
+> 	spin_lock_init(&isf->lock);
+> 	isf->ioaddr = ioremap(phys_addr.start,
+> 	                phys_addr.end - phys_addr.start);
+
+That looks good -- I'd have expected of_address_to_resource to fail, 
+though, when the ranges property was missing.  The kernel's device tree 
+parsing code can sometimes be overly tolerant of broken device trees, 
+which is probably what happened.
 
 -Scott
