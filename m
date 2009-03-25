@@ -1,22 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 79C6CDDFB3
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 14:47:44 +1100 (EST)
-In-Reply-To: <1237928433.25062.725.camel@pasglop>
-References: <20090316123543.GG15530@lisas.de>
-	<1237868838.25062.712.camel@pasglop>
-	<20090324114505.GB24724@lisas.de>
-	<1237928433.25062.725.camel@pasglop>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D030DE57-7C4E-4DEE-BC5F-08B8A230F755@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Fix RTAS watchdog driver temperature read functionality
-Date: Wed, 25 Mar 2009 04:49:27 +0100
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 68118DDF03
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 15:33:43 +1100 (EST)
+Date: Wed, 25 Mar 2009 15:33:33 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Fw: linux-next: manual merge of the rr tree with the powerpc tree
+Message-Id: <20090325153333.8a245026.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__25_Mar_2009_15_33_33_+1100_llgqCnMGwy0xxNw+"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Right, now turn it into a proper patch submission :-)
+--Signature=_Wed__25_Mar_2009_15_33_33_+1100_llgqCnMGwy0xxNw+
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->>  	if (result < 0)
->>  		printk(KERN_WARNING "wdrtas: reading the thermal sensor "
->> -		       "faild: %li\n", result);
->> +		       "faild: %i\n", result);
->>  	else
->>  		temperature = ((temperature * 9) / 5) + 32; /* fahrenheit */
+[Forgot the cc]
 
-Fix the spelling of "failed" while you're at it?  (And Fahrenheit  
-maybe).
+Begin forwarded message:
+
+Date: Wed, 25 Mar 2009 15:08:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org
+Subject: linux-next: manual merge of the rr tree with the powerpc tree
 
 
-Segher
+Hi Rusty,
+
+Today's linux-next merge of the rr tree got a conflict in
+arch/powerpc/kernel/sysfs.c between commit
+9a3719341a9b5d2f5a2e590497346b61cf3462a5 ("powerpc: Make sysfs code use
+smp_call_function_single") from the powerpc tree and commits
+a604eba6e6850d9d225cc5e983c29be78e629580
+("cpumask:remove-cpumask-games-arch-powerpc-kernel-sysfs.c") and
+40d45a4bf32db8c75f837caa72bf4bb2c1040597
+("cpumask:smp_call_function-in-powerpc-sysfs") from the rr tree.
+
+The former appears to be an earlier version of the latter two.  I fixed
+it up (using the rr tree version) and can carry the fix as necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__25_Mar_2009_15_33_33_+1100_llgqCnMGwy0xxNw+
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknJtB0ACgkQjjKRsyhoI8zLaACghTroU4SM40Hj7T2/UXYmyCVg
+72wAnA4fWdcS+ARZyIaxsR52zCdlTeZK
+=9sYs
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__25_Mar_2009_15_33_33_+1100_llgqCnMGwy0xxNw+--
