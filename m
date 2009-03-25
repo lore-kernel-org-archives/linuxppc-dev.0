@@ -1,21 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: of_serial and device trees
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <49CA5E45.9070300@freescale.com>
-References: <20090324094959.447a3a31@seasc0532.dyn.rnd.as.sw.ericsson.se>
-	<20090324155545.GA24778@ld0162-tx32.am.freescale.net>
-	<20090325155113.52048fe0@seasc0532.dyn.rnd.as.sw.ericsson.se>
-	<49CA5E45.9070300@freescale.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-fsPoyQMlGlrliEZyl03H"
-Date: Thu, 26 Mar 2009 11:53:39 +1100
-Message-Id: <1238028819.20679.25.camel@localhost>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Simon Kagstrom <simon.kagstrom@ericsson.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <YGoldberger@nds.com>
+Received: from ilsmtp.nds.com (ilsmtp.nds.com [192.118.32.12])
+	by ozlabs.org (Postfix) with ESMTP id 6673BDDDA0
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 04:12:45 +1100 (EST)
+From: "Goldberger, Yigal" <YGoldberger@nds.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Wed, 25 Mar 2009 19:06:50 +0200
+Subject: ELDK with Xenomai for PPC
+Message-ID: <7913DB5FA7D3F643A2C10A4A8E2DFAF43A3A5D7C25@ILMA1.IL.NDS.COM>
+Content-Type: multipart/alternative;
+	boundary="_000_7913DB5FA7D3F643A2C10A4A8E2DFAF43A3A5D7C25ILMA1ILNDSCOM_"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,72 +19,196 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-fsPoyQMlGlrliEZyl03H
-Content-Type: text/plain
+--_000_7913DB5FA7D3F643A2C10A4A8E2DFAF43A3A5D7C25ILMA1ILNDSCOM_
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2009-03-25 at 11:39 -0500, Scott Wood wrote:
-> Simon Kagstrom wrote:
-> > There are no other versions yet, but I suppose there will be (it's
-> > implemented in a FPGA after all!). So what is the general handling of
-> > versions, should it be something like
-> >=20
-> >   compatible =3D "ericsson,isf-pic", "ericsson,isf-pic-v2"
-> >=20
-> > etc if we'd make new revisions of the device?
->=20
-> Looks good.
->=20
-> >> I'm guessing that your FPGA PIC driver isn't getting its register addr=
-ess
-> >> from the device tree, given that it works without the ranges property?
-> >=20
-> > It is, but I didn't check it for correctness yet, so I suppose I might
-> > have mapped the wrong thing. The code looks like this:
-> >=20
-> >         struct resource phys_addr;
-> >=20
-> >         if (of_address_to_resource(np, 0, &phys_addr) !=3D 0) {
-> >                  printk(KERN_ERR": Could not get ISF PIC memory resourc=
-e\n");
-> >                  return NULL;
-> >          }
-> >=20
-> > 	spin_lock_init(&isf->lock);
-> > 	isf->ioaddr =3D ioremap(phys_addr.start,
-> > 	                phys_addr.end - phys_addr.start);
->=20
-> That looks good -- I'd have expected of_address_to_resource to fail,=20
-> though, when the ranges property was missing.  The kernel's device tree=20
-> parsing code can sometimes be overly tolerant of broken device trees,=20
-> which is probably what happened.
+Hi All,
 
-It assumes a missing ranges =3D=3D empty ranges, which means 1:1. See the
-comment in of_translate_one(). And thank Apple ;)
+I'll try to be as accurate as I can.
+Yesterday I downloaded ELDK 4.2 from DENX site and Installed it.
+I want to build a Xenomai enabled kernel.
+I saw that my kernel is 2.6.24-xenomai and that's what I'm trying to build.
+My target is freescale quicc II (MPC8248) and I want to start by building a=
+ Xenomai enabled kernel for a target board as close as possible to my custo=
+m board.
+I know from the old build we had that the defconfig that was used to build =
+the kernel was ads8272_defconfig ( I hope some research was done before cho=
+osing it... )
+It probebly was sufficiently close since it worked fine with some configura=
+ions and changes .
 
-cheers
+My board has 2 flash chips AMD29LV256ML (from which one is the boot memory)=
+ , 4SDRAM chips  48LC32M16A2 an FPGA from Xilinx with some logic as a perip=
+heral device and that's about it.
+It should comunicate with a host PC via Ethernet or via RS-232 serial com.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+I'd like to get the following assistance :
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+A) help in building the kernel as is for this target board without changes =
+.
+B) hints as to how and where should modifications and changes be made to po=
+rt to a custom board .
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+BTW :
+Currently I did :
+> make ads8272_defconfig
+> make uImage
 
---=-fsPoyQMlGlrliEZyl03H
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+and I'm failing on :
+  CC      drivers/net/fs_enet/mac-fcc.o
+drivers/net/fs_enet/mac-fcc.c: In function 'fcc_cr_cmd':
+drivers/net/fs_enet/mac-fcc.c:85: error: implicit declaration of function '=
+cpm_command'
+make[3]: *** [drivers/net/fs_enet/mac-fcc.o] Error 1
+make[2]: *** [drivers/net/fs_enet] Error 2
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAknK0hMACgkQdSjSd0sB4dL1TgCdHBHbEIOAYEnPm2krg5jobZWK
-Ds0AoKhCJORuv6clTxuuE1JX5AxBu79O
-=Z5b1
------END PGP SIGNATURE-----
+Best Regards,
+Yigal Goldberger.
 
---=-fsPoyQMlGlrliEZyl03H--
+________________________________
+This e-mail is confidential, the property of NDS Ltd and intended for the a=
+ddressee only. Any dissemination, copying or distribution of this message o=
+r any attachments by anyone other than the intended recipient is strictly p=
+rohibited. If you have received this message in error, please immediately n=
+otify the postmaster@nds.com and destroy the original message. Messages sen=
+t to and from NDS may be monitored. NDS cannot guarantee any message delive=
+ry method is secure or error-free. Information could be intercepted, corrup=
+ted, lost, destroyed, arrive late or incomplete, or contain viruses. We do =
+not accept responsibility for any errors or omissions in this message and/o=
+r attachment that arise as a result of transmission. You should carry out y=
+our own virus checks before opening any attachment. Any views or opinions p=
+resented are solely those of the author and do not necessarily represent th=
+ose of NDS.
+
+To protect the environment please do not print this e-mail unless necessary=
+.
+
+NDS Limited Registered Office: One London Road, Staines,Middlesex TW18 4EX,=
+ United Kingdom. A company registered in England and Wales Registered no. 3=
+080780 VAT no. GB 603 8808 40-00
+
+--_000_7913DB5FA7D3F643A2C10A4A8E2DFAF43A3A5D7C25ILMA1ILNDSCOM_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+<meta content=3D"MSHTML 6.00.2900.3492" name=3D"GENERATOR">
+</head>
+<body>
+<div><font face=3D"Arial" size=3D"2">
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">Hi =
+All,</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"></s=
+pan></font>&nbsp;</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">I'l=
+l try to be as accurate as I can.</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">Yes=
+terday I downloaded ELDK 4.2 from DENX site and Installed it.</span></font>=
+</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">I w=
+ant to build a Xenomai enabled kernel.</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">I s=
+aw that my kernel is 2.6.24-xenomai and that's what I'm trying to build.</s=
+pan></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">My =
+target is freescale quicc II&nbsp;(MPC8248) and I want to start by building=
+ a Xenomai enabled kernel for a&nbsp;target&nbsp;board as close as possible=
+&nbsp;to my custom board.</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">I k=
+now from the old build we had that the&nbsp;defconfig that was used to buil=
+d the kernel was ads8272_defconfig ( I&nbsp;hope some research was done bef=
+ore choosing it... )</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">It =
+probebly was sufficiently close since it worked fine with some configuraion=
+s and changes .</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"><st=
+rong><u></u></strong></span></font>&nbsp;</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">My =
+board has 2 flash chips AMD29LV256ML (from which one is the boot memory) , =
+4SDRAM chips&nbsp; 48LC32M16A2 an FPGA from Xilinx with some logic as a per=
+ipheral device and that's about it.</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">It =
+should comunicate with a host PC via Ethernet or via RS-232 serial com.</sp=
+an></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"></s=
+pan></font>&nbsp;</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">I'd=
+ like to get the following assistance&nbsp;:</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"></s=
+pan></font>&nbsp;</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"><st=
+rong><u>A) help in building the kernel as is&nbsp;for this target board wit=
+hout changes .</u></strong></span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"><st=
+rong><u>B) hints&nbsp;as to how and where should modifications and changes =
+be made to port to a custom board .</u></strong></span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"></s=
+pan></font>&nbsp;</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">BTW=
+ :</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">Cur=
+rently I did :</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">&gt=
+; make ads8272_defconfig
+</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">&gt=
+; make uImage</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"></s=
+pan></font>&nbsp;</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">and=
+ I'm failing on :</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">&nb=
+sp; CC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drivers/net/fs_enet/mac-fcc.o<br>
+drivers/net/fs_enet/mac-fcc.c: In function 'fcc_cr_cmd':<br>
+drivers/net/fs_enet/mac-fcc.c:85: error: implicit declaration of function '=
+cpm_command'<br>
+make[3]: *** [drivers/net/fs_enet/mac-fcc.o] Error 1<br>
+make[2]: *** [drivers/net/fs_enet] Error 2<br>
+make[1]: *** [drivers/net] Error 2<br>
+make: *** [drivers] Error 2</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"></s=
+pan></font>&nbsp;</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009"></s=
+pan></font>&nbsp;</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">Bes=
+t Regards,</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"731124616-25032009">Yig=
+al Goldberger.&nbsp;</span></font></div>
+</font></div>
+<br>
+<hr>
+<font face=3D"Arial" color=3D"Gray" size=3D"1">This e-mail is confidential,=
+ the property of NDS Ltd and intended for the addressee only. Any dissemina=
+tion, copying or distribution of this message or any attachments by anyone =
+other than the intended recipient is strictly
+ prohibited. If you have received this message in error, please immediately=
+ notify the postmaster@nds.com and destroy the original message. Messages s=
+ent to and from NDS may be monitored. NDS cannot guarantee any message deli=
+very method is secure or error-free.
+ Information could be intercepted, corrupted, lost, destroyed, arrive late =
+or incomplete, or contain viruses. We do not accept responsibility for any =
+errors or omissions in this message and/or attachment that arise as a resul=
+t of transmission. You should carry
+ out your own virus checks before opening any attachment. Any views or opin=
+ions presented are solely those of the author and do not necessarily repres=
+ent those of NDS.<br>
+<br>
+To protect the environment please do not print this e-mail unless necessary=
+.<br>
+<br>
+NDS Limited Registered Office: One London Road, Staines,Middlesex TW18 4EX,=
+ United Kingdom. A company registered in England and Wales Registered no. 3=
+080780 VAT no. GB 603 8808 40-00<br>
+</font>
+</body>
+</html>
+
+--_000_7913DB5FA7D3F643A2C10A4A8E2DFAF43A3A5D7C25ILMA1ILNDSCOM_--
