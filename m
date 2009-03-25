@@ -1,16 +1,17 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 31B4BDDD1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 07:10:14 +1100 (EST)
-Message-ID: <49CA8501.1000000@nortel.com>
-Date: Wed, 25 Mar 2009 13:24:49 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <49CA9899.30604@grandegger.com>
+Date: Wed, 25 Mar 2009 21:48:25 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel-owner@vger.kernel.org
-Subject: /proc/<pid>/maps offset output broken
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 3/4] powerpc: NAND: FSL UPM: document new bindings
+References: <1237975701-23201-1-git-send-email-wg@grandegger.com>	<1237975701-23201-2-git-send-email-wg@grandegger.com>	<1237975701-23201-3-git-send-email-wg@grandegger.com>	<1237975701-23201-4-git-send-email-wg@grandegger.com>
+	<fa686aa40903251048g479d63f8i5a715defdbfc33d4@mail.gmail.com>
+In-Reply-To: <fa686aa40903251048g479d63f8i5a715defdbfc33d4@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,35 +21,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Grant Likely wrote:
+> (cc'ing devicetree-discuss)
+> 
+> On Wed, Mar 25, 2009 at 4:08 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>> This patch adds documentation for the new NAND FSL UPM bindings for:
+>>
+>>  NAND: FSL-UPM: add multi chip support
+>>  NAND: FSL-UPM: Add wait flags to support board/chip specific delays
+>>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+> 
+> Mostly looks good to me; but some comments below.
+> 
+>> ---
+>>  .../powerpc/dts-bindings/fsl/upm-nand.txt          |   39 +++++++++++++++++++-
+>>  1 files changed, 37 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt b/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
+>> index 84a04d5..0272e70 100644
+>> --- a/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
+>> +++ b/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
+>> @@ -5,9 +5,22 @@ Required properties:
+>>  - reg : should specify localbus chip select and size used for the chip.
+>>  - fsl,upm-addr-offset : UPM pattern offset for the address latch.
+>>  - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
+>> -- gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
+>>
+>> -Example:
+>> +Optional properties:
+>> +- fsl,upm-wait-flags : add chip-dependent short delays after running the
+>> +                      UPM pattern (0x1), after writing a data byte (0x2)
+>> +                      or after writing out a buffer (0x4).
+>> +- gpios : may specify optional GPIOs connected to the Ready-Not-Busy pins
+>> +         (R/B#). For multi-chip devices, "num-chips" GPIO definitions are
+>> +         required.
+>> +- chip-delay : chip dependent delay for transfering data from array to
+>> +              read registers (tR). Required if property "gpios" is not
+>> +              used (R/B# pins not connected).
+>> +- num-chips : number of chips per device for multi-chip support.
+>> +- chip-offset : address offset between chips for multi-chip support. The
+>> +               corresponding address lines are used to select the chip.
+> 
+> Since these properties (chip-delay, num-chips and chip-offset) are
+> currently controller specific, it would probably be a good idea to
+> prefix 'fsl,' onto them.  That way when common NAND controller
+> properties start getting defined then there won't be any concern about
+> conflicting with existing meanings.  If you do see these as properties
+> that other NAND controllers will use, then maybe a 'nand-' prefix is
+> appropriate (like the SPI binding in booting-without-of).
 
-I was validating some code dealing with /proc/<pid>/maps on 2.6.29 and 
-was surprised when it failed.  It turns out that at least on my ppc64 G5 
-machine the offset value for the last entry is strange--it shows up as a 
-64-bit value even though the process itself is only 32-bit.
+The chip-delay is NAND device specific. The proper value can be find in
+the data sheet. num-chip is also quite generic. A prefix 'nand-' would
+be fine for me. But fsl,upm-chip-offset would be more appropriate than
+just chip-offset, indeed.
 
-This behaviour also shows up in 2.6.25, but doesn't in 2.6.14.  I 
-haven't yet tested anything else in between.
+> For the chip offset, it's not clear what the meaning is.  First, does
+> the UPM controller support access of multiple chips simultaneously?
 
-[cfriesen@localhost cfriesen]$ cat /proc/self/maps
-00100000-00103000 r-xp 00100000 00:00 0         [vdso]
-0fe70000-0ffbf000 r-xp 00000000 08:03 4312393   /lib/tls/libc-2.3.3.so
-0ffbf000-0ffc0000 ---p 0014f000 08:03 4312393   /lib/tls/libc-2.3.3.so
-0ffc0000-0ffc2000 r--p 00150000 08:03 4312393   /lib/tls/libc-2.3.3.so
-0ffc2000-0ffc6000 rwxp 00152000 08:03 4312393   /lib/tls/libc-2.3.3.so
-0ffc6000-0ffc8000 rwxp 0ffc6000 00:00 0
-0ffd0000-0ffec000 r-xp 00000000 08:03 4309011   /lib/ld-2.3.3.so
-0fff0000-0fff1000 r--p 00020000 08:03 4309011   /lib/ld-2.3.3.so
-0fff1000-0fff2000 rwxp 00021000 08:03 4309011   /lib/ld-2.3.3.so
-10000000-10004000 r-xp 00000000 08:03 917536    /bin/cat
-10013000-10015000 rwxp 00003000 08:03 917536    /bin/cat
-10015000-10036000 rwxp 10015000 00:00 0         [heap]
-f7deb000-f7feb000 r--p 00000000 08:03 2560322 
-/usr/lib/locale/locale-archive
-f7feb000-f7fec000 rw-p f7feb000 00:00 0
-ffe6d000-ffe82000 rw-p ffffffeb000 00:00 0      [stack]
+The offset drives the corresponding address lines, which are used to
+select the chip. That's how it's done on the TQM8548 board. In
+principle, the chips could also be selected through dedicated GPIO pins.
+Well, I'm not a hardware guy.
 
-I'm at a loss to explain what's going on here.  Anyone got any ideas?
+> If so, then can you elaborate in the description on how board design
+> translates to a chip-offset value.  If it cannot, then it might be
+> better to have multiple tuples in the 'reg' property for each discrete
+> chip.  Multiple reg tuples would also remove the need for the
+> num-chips property.
 
-Thanks,
+The node still describes one device mapping all relevant control
+registers. How about using fsl,upm-chip-offsets = <0x200 0x400>. It
+would be more generic and makes num-chips obsolete as well. And the
+property would be reserved for that way of implementing the chip select
+in hardware.
 
-Chris
+Wolfgang.
