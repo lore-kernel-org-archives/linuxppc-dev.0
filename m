@@ -1,19 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Add write barrier before enabling DTL flags
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jeremy Kerr <jk@ozlabs.org>
-In-Reply-To: <200903241659.55302.jk@ozlabs.org>
-References: <1237863308.620048.912148989400.1.gpush@pingu>
-	<1237874006.6478.284.camel@localhost>
-	<200903241659.55302.jk@ozlabs.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-J7nX/HkyCTHJqJSdy8+L"
-Date: Wed, 25 Mar 2009 11:44:42 +1100
-Message-Id: <1237941882.6462.64.camel@localhost>
-Mime-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 41716DDFB5
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2009 12:12:24 +1100 (EST)
+Message-Id: <FC69A78E-BDFC-4E89-AF28-42CBA49234FE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Johns Daniel <johns.daniel@gmail.com>
+In-Reply-To: <ba5d9360903241413u47a199d4kbde3ed9af238a916@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: PCIe interrupts in the device tree
+Date: Tue, 24 Mar 2009 20:12:17 -0500
+References: <ba5d9360903241324n57aa74caq2dd2bcdd2a885e19@mail.gmail.com>
+	<651BE815-4BF6-4AA3-AA43-C0B7C98A0FCC@kernel.crashing.org>
+	<ba5d9360903241413u47a199d4kbde3ed9af238a916@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +26,51 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-J7nX/HkyCTHJqJSdy8+L
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Mar 24, 2009, at 4:13 PM, Johns Daniel wrote:
 
-On Tue, 2009-03-24 at 16:59 +1100, Jeremy Kerr wrote:
-> Michael,
->=20
-> > Wouldn't this still be a problem on a UP kernel?
->=20
-> I don't believe so - stores should be ordered with respect to the=20
-> current CPU, and in the UP case we still get a barrier().
+>
+> On Tue, Mar 24, 2009 at 3:54 PM, Kumar Gala  
+> <galak@kernel.crashing.org> wrote:
+>
+> On Mar 24, 2009, at 3:24 PM, Johns Daniel wrote:
+>
+> Could somebody please explain the declaration of the PCIe interrupts
+> in the device tree?
+>
+> I was under the impression that PCIe interrupts in the PowerPC Linux
+> kernel default to using INTx signaling (vs. external IRQ pin assertion
+> and MSI signaling). Am I right?
+>
+> If so, then do the interrupt-map lines in the DTS refer to the
+> internal IRQ used by Freescale processors to implement INTx virtual
+> wire interrupts?
+>
+> For example, in the mpc8536ds.dts file, under "pci1: pcie@ffe09000"  
+> we have:
+>                interrupt-map = <
+>                        /* IDSEL 0x0 */
+>                        0000 0 0 1 &mpic 4 1
+>                        0000 0 0 2 &mpic 5 1
+>                        0000 0 0 3 &mpic 6 1
+>                        0000 0 0 4 &mpic 7 1
+>                        >;
+> Are the 4, 5, 6, and 7 internal or external IRQs?
+>
+> The .dts and linux make no distinction between internal & external  
+> IRQs.  This is a silly artifact of Freescale UMs.  IRQ 0 starts at  
+> offset 0x50000 and each 0x20 offset is another IRQ.  So typically  
+> External 0 == IRQ0, Internal 0 == IRQ16.
+>
+> So this says that Ext 4, 5, 6, 7 and wired to INTA, INTB, INTC, INTD  
+> for this particular PCIe controller.
+>
+> When you say "wired", do you mean hard-wired?
 
-But what if the CPU decides to do the store to the enable_mask before
-the stores to the other fields?
+Yes.  The INTx emulation interrupts are hard-wired by the SoC on top  
+of the external IRQs.
 
-cheers
+> If so, how would you specify and use INTx message interrupts?
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Do you mean MSI or INTx emulation?
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-J7nX/HkyCTHJqJSdy8+L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknJfnoACgkQdSjSd0sB4dLWYgCdEpBKR9/KbrK7qc6ebGADvj7E
-2LAAoK5ztDCsglYnk7/QyPWlKmqQTr5s
-=+04I
------END PGP SIGNATURE-----
-
---=-J7nX/HkyCTHJqJSdy8+L--
+- k
