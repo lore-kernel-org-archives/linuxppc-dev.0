@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 90642DDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 03:39:58 +1100 (EST)
-Message-ID: <49CA5E45.9070300@freescale.com>
-Date: Wed, 25 Mar 2009 11:39:33 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-To: Simon Kagstrom <simon.kagstrom@ericsson.com>
-Subject: Re: of_serial and device trees
-References: <20090324094959.447a3a31@seasc0532.dyn.rnd.as.sw.ericsson.se>	<20090324155545.GA24778@ld0162-tx32.am.freescale.net>
-	<20090325155113.52048fe0@seasc0532.dyn.rnd.as.sw.ericsson.se>
-In-Reply-To: <20090325155113.52048fe0@seasc0532.dyn.rnd.as.sw.ericsson.se>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <49CA3503.5040006@grandegger.com>
+References: <1237975701-23201-1-git-send-email-wg@grandegger.com>
+	<1237975701-23201-2-git-send-email-wg@grandegger.com>
+	<fa686aa40903250631w6a0cc8b9p3b2e3c1348e0acee@mail.gmail.com>
+	<fa686aa40903250632o759921c8n1ae8d17286c1f976@mail.gmail.com>
+	<49CA3503.5040006@grandegger.com>
+Date: Wed, 25 Mar 2009 11:26:54 -0600
+Message-ID: <fa686aa40903251026q4a618810vcbac025f047153e7@mail.gmail.com>
+Subject: Re: [PATCH v3 1/4] NAND: FSL-UPM: add multi chip support
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Simon Kagstrom wrote:
-> There are no other versions yet, but I suppose there will be (it's
-> implemented in a FPGA after all!). So what is the general handling of
-> versions, should it be something like
-> 
->   compatible = "ericsson,isf-pic", "ericsson,isf-pic-v2"
-> 
-> etc if we'd make new revisions of the device?
+On Wed, Mar 25, 2009 at 7:43 AM, Wolfgang Grandegger <wg@grandegger.com> wr=
+ote:
+> Grant Likely wrote:
+>> On Wed, Mar 25, 2009 at 7:31 AM, Grant Likely <grant.likely@secretlab.ca=
+> wrote:
+>>> On Wed, Mar 25, 2009 at 4:08 AM, Wolfgang Grandegger <wg@grandegger.com=
+> wrote:
+>>>> This patch adds support for multi-chip NAND devices to the FSL-UPM
+>>>> driver. This requires support for multiple GPIOs for the RNB pins.
+>>>> The NAND chips are selected through address lines defined by the
+>>>> FDT property "chip-offset".
+>>>>
+>>>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>>> Hi Wolfgang,
+>>>
+>>> Can you please send a sample device tree snippit for this and add
+>>> documentation updates to your patch for the extended binding?
+>>
+>> Oh, and cc: devicetree-discuss@ozlabs.org in your next posting.
+>
+> OK, does patch 3/4 not already contain what you are looking for? See:
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069787.html
 
-Looks good.
+Oops, sorry.  Missed that.
 
->> I'm guessing that your FPGA PIC driver isn't getting its register address
->> from the device tree, given that it works without the ranges property?
-> 
-> It is, but I didn't check it for correctness yet, so I suppose I might
-> have mapped the wrong thing. The code looks like this:
-> 
->         struct resource phys_addr;
-> 
->         if (of_address_to_resource(np, 0, &phys_addr) != 0) {
->                  printk(KERN_ERR": Could not get ISF PIC memory resource\n");
->                  return NULL;
->          }
-> 
-> 	spin_lock_init(&isf->lock);
-> 	isf->ioaddr = ioremap(phys_addr.start,
-> 	                phys_addr.end - phys_addr.start);
+> I separated it from the NAND patches because they go through the MTD
+> maintainer(s).
+>
+> BTW: did you have a chance to look into the following RFC on I2C bus
+> speed setting?
+>
+> =A0http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069489.html
 
-That looks good -- I'd have expected of_address_to_resource to fail, 
-though, when the ranges property was missing.  The kernel's device tree 
-parsing code can sometimes be overly tolerant of broken device trees, 
-which is probably what happened.
+No.  Looking at it now.
 
--Scott
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
