@@ -1,18 +1,20 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id DAF1DDDD1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 08:40:53 +1100 (EST)
-Date: Wed, 25 Mar 2009 14:40:41 -0700 (PDT)
-Message-Id: <20090325.144041.128558998.davem@davemloft.net>
-To: dada1@cosmosbay.com
+	by ozlabs.org (Postfix) with ESMTP id 58D58DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 08:42:19 +1100 (EST)
+Date: Wed, 25 Mar 2009 14:42:07 -0700 (PDT)
+Message-Id: <20090325.144207.225365184.davem@davemloft.net>
+To: Joakim.Tjernlund@transmode.se
 Subject: Re: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <49CA39EA.6020208@cosmosbay.com>
+In-Reply-To: <OF73F7C45F.ACAACBF8-ONC1257584.0052EC21-C1257584.0053E5EF@transmode.se>
 References: <1237987849.2194.9.camel@gentoo-jocke.transmode.se>
 	<49CA39EA.6020208@cosmosbay.com>
+	<OF73F7C45F.ACAACBF8-ONC1257584.0052EC21-C1257584.0053E5EF@transmode.se>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: leoli@freescale.com, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, leoli@freescale.com,
+	dada1@cosmosbay.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Wed, 25 Mar 2009 15:04:26 +0100
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Wed, 25 Mar 2009 16:16:24 +0100
 
-> Joakim Tjernlund a =E9crit :
-> > +	/* Tx event processing */
-> > +	spin_lock(&ugeth->lock);
-> > +	for (i =3D 0; i < ug_info->numQueuesTx; i++) {
-> > +		ucc_geth_tx(ugeth->dev, i);
-> > +	}
-> > +	spin_unlock(&ugeth->lock);
-> > +
-> =
+> UCC_GETH_DEV_WEIGHT needs to be a bit bigger than the number of RX
+> HW buffers avaliable, otherwise one won't be able to drain the whole
+> queue in one go. Changing weight to something bigger made a big
+> difference.
 
-> Why tx completions dont change "howmany" ?
-> It seems strange you changed UCC_GETH_DEV_WEIGHT if not taking into a=
-ccount tx event above...
+You're not supposed to "drain the whole queue in one go", that
+is not the goal of the weight value.
 
-He should leave howmany alone for TX work and use a weight
-value of 64 just like most other drivers in the tree do.
-
-Due to the abuse and random ignorant fiddling of the
-weight value, I am going to make it something the core
-rather than drivers choose.
+The goal of the weight value is that it is low enough such that
+other devices also scheduled for NAPI on the current processor
+can get some fair time to process packets too.
