@@ -1,22 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <49CB31CB.2010704@grandegger.com>
-Date: Thu, 26 Mar 2009 08:42:03 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <adrian@rhlx01.hs-esslingen.de>
+Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "rhlx01.hs-esslingen.de", Issuer "HE CA - G02" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AB418DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 23:05:49 +1100 (EST)
+Date: Thu, 26 Mar 2009 13:05:42 +0100
+From: Adrian Reber <adrian@lisas.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2] Fix RTAS watchdog driver temperature read functionality
+Message-ID: <20090326120542.GD24889@lisas.de>
+References: <20090316123543.GG15530@lisas.de>
+	<1237868838.25062.712.camel@pasglop>
+	<20090324114505.GB24724@lisas.de>
+	<1237928433.25062.725.camel@pasglop>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 3/4] powerpc: NAND: FSL UPM: document new bindings
-References: <1237975701-23201-1-git-send-email-wg@grandegger.com>	
-	<1237975701-23201-2-git-send-email-wg@grandegger.com>	
-	<1237975701-23201-3-git-send-email-wg@grandegger.com>	
-	<1237975701-23201-4-git-send-email-wg@grandegger.com>	
-	<fa686aa40903251048g479d63f8i5a715defdbfc33d4@mail.gmail.com>	
-	<49CA9899.30604@grandegger.com>
-	<fa686aa40903252209r52a1bc1cn995a7da16bc3527f@mail.gmail.com>
-In-Reply-To: <fa686aa40903252209r52a1bc1cn995a7da16bc3527f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
-	linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1237928433.25062.725.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Utz Bacher <utz.bacher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,59 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, Mar 25, 2009 at 2:48 PM, Wolfgang Grandegger <wg@grandegger.com> wrote:
->> Grant Likely wrote:
->>> For the chip offset, it's not clear what the meaning is.  First, does
->>> the UPM controller support access of multiple chips simultaneously?
->> The offset drives the corresponding address lines, which are used to
->> select the chip. That's how it's done on the TQM8548 board. In
->> principle, the chips could also be selected through dedicated GPIO pins.
->> Well, I'm not a hardware guy.
-> 
-> Heh.  I mean elaborate in the binding documentation.  :-)
-> 
->>> If so, then can you elaborate in the description on how board design
->>> translates to a chip-offset value.  If it cannot, then it might be
->>> better to have multiple tuples in the 'reg' property for each discrete
->>> chip.  Multiple reg tuples would also remove the need for the
->>> num-chips property.
->> The node still describes one device mapping all relevant control
->> registers. How about using fsl,upm-chip-offsets = <0x200 0x400>. It
->> would be more generic and makes num-chips obsolete as well. And the
->> property would be reserved for that way of implementing the chip select
->> in hardware.
-> 
-> It really sounds like this binding is describing multiple NAND chips
-> mapped to different base addresses (and looking at the fsm_upm.c
-> driver appears to confirm it).  So, does this work?  reg = <3 0x200 4
->  3 0x400 4>;
+Using the RTAS watchdog driver to read out the temperature crashes
+on a PXCAB:
 
-The chip-offset, and not the address, needs to be added to the MAR
-register as well before running the pattern:
+Unable to handle kernel paging request for data at address 0xfe347b50
+Faulting instruction address: 0xc00000000001af64
+Oops: Kernel access of bad area, sig: 11 [#1]
 
-        mar = cmd << (32 - fun->upm.width);
+The wrong usage of "(void *)__pa(&temperature)" in rtas_call() is
+removed by using the function rtas_get_sensor() which does the
+right thing.
 
-        if (fun->chip_offset && fun->chip_number > 0)
+Signed-off-by: Adrian Reber <adrian@lisas.de>
+---
+v2: use rtas_get_sensor(); typo fixed
+---
+ drivers/watchdog/wdrtas.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-                mar |= fun->chip_number * fun->chip_offset;
-
-        fsl_upm_run_pattern(&fun->upm, chip->IO_ADDR_R, mar);
-
-
-> It is true that other methods could be used for implementing the chip
-> select, but that is *not* what the proposed binding describes.  This
-> proposed binding describes NAND chips selected by address lines
-> (particular addresses), and in this case I think using reg is the
-> natural description.
-
-OK, the chips are selected by accessing a defined address range. Will
-prepare a patch using the reg property.
-
-Wolfgang.
-
-
-
-
-> g.
-> 
+diff --git a/drivers/watchdog/wdrtas.c b/drivers/watchdog/wdrtas.c
+index 5d3b1a8..a9f00dc 100644
+--- a/drivers/watchdog/wdrtas.c
++++ b/drivers/watchdog/wdrtas.c
+@@ -214,16 +214,14 @@ static void wdrtas_timer_keepalive(void)
+  */
+ static int wdrtas_get_temperature(void)
+ {
+-	long result;
++	int result;
+ 	int temperature = 0;
+ 
+-	result = rtas_call(wdrtas_token_get_sensor_state, 2, 2,
+-			   (void *)__pa(&temperature),
+-			   WDRTAS_THERMAL_SENSOR, 0);
++	result = rtas_get_sensor(WDRTAS_THERMAL_SENSOR, 0, &temperature);
+ 
+ 	if (result < 0)
+ 		printk(KERN_WARNING "wdrtas: reading the thermal sensor "
+-		       "faild: %li\n", result);
++		       "failed: %i\n", result);
+ 	else
+ 		temperature = ((temperature * 9) / 5) + 32; /* fahrenheit */
+ 
+-- 
+1.5.6.6
