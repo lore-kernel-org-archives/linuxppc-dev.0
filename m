@@ -1,22 +1,21 @@
-Return-Path: <adrian@rhlx01.hs-esslingen.de>
-Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rhlx01.hs-esslingen.de", Issuer "HE CA - G02" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AB418DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 23:05:49 +1100 (EST)
-Date: Thu, 26 Mar 2009 13:05:42 +0100
-From: Adrian Reber <adrian@lisas.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2] Fix RTAS watchdog driver temperature read functionality
-Message-ID: <20090326120542.GD24889@lisas.de>
-References: <20090316123543.GG15530@lisas.de>
-	<1237868838.25062.712.camel@pasglop>
-	<20090324114505.GB24724@lisas.de>
-	<1237928433.25062.725.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1237928433.25062.725.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Utz Bacher <utz.bacher@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 66D3EDDD04
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 23:54:45 +1100 (EST)
+Received: from tmnt04.transmode.se (tmnt04.transmode.se [192.168.46.15])
+	by gw1.transmode.se (Postfix) with ESMTP id F3F0DD31BD
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 13:54:40 +0100 (CET)
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+To: avorontsov@ru.mvista.com, leoli@freescale.com, linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org
+Subject: [PATCH 2/2] ucc_geth: Rework the TX logic.
+Date: Thu, 26 Mar 2009 13:54:37 +0100
+Message-Id: <1238072077-27044-2-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1238072077-27044-1-git-send-email-Joakim.Tjernlund@transmode.se>
+References: <1238072077-27044-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Cc: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +25,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Using the RTAS watchdog driver to read out the temperature crashes
-on a PXCAB:
+The line:
+ if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
+       break;
+in ucc_geth_tx() didn not make sense to me. Rework & cleanup
+this logic to something understandable.
 
-Unable to handle kernel paging request for data at address 0xfe347b50
-Faulting instruction address: 0xc00000000001af64
-Oops: Kernel access of bad area, sig: 11 [#1]
-
-The wrong usage of "(void *)__pa(&temperature)" in rtas_call() is
-removed by using the function rtas_get_sensor() which does the
-right thing.
-
-Signed-off-by: Adrian Reber <adrian@lisas.de>
+Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 ---
-v2: use rtas_get_sensor(); typo fixed
----
- drivers/watchdog/wdrtas.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ drivers/net/ucc_geth.c |   40 ++++++++++++++++++++--------------------
+ 1 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/watchdog/wdrtas.c b/drivers/watchdog/wdrtas.c
-index 5d3b1a8..a9f00dc 100644
---- a/drivers/watchdog/wdrtas.c
-+++ b/drivers/watchdog/wdrtas.c
-@@ -214,16 +214,14 @@ static void wdrtas_timer_keepalive(void)
-  */
- static int wdrtas_get_temperature(void)
- {
--	long result;
-+	int result;
- 	int temperature = 0;
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 7fc91aa..b6ebefd 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3048,6 +3048,7 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	u8 __iomem *bd;			/* BD pointer */
+ 	u32 bd_status;
+ 	u8 txQ = 0;
++	int txInd;
  
--	result = rtas_call(wdrtas_token_get_sensor_state, 2, 2,
--			   (void *)__pa(&temperature),
--			   WDRTAS_THERMAL_SENSOR, 0);
-+	result = rtas_get_sensor(WDRTAS_THERMAL_SENSOR, 0, &temperature);
+ 	ugeth_vdbg("%s: IN", __func__);
  
- 	if (result < 0)
- 		printk(KERN_WARNING "wdrtas: reading the thermal sensor "
--		       "faild: %li\n", result);
-+		       "failed: %i\n", result);
- 	else
- 		temperature = ((temperature * 9) / 5) + 32; /* fahrenheit */
+@@ -3059,12 +3060,12 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	bd = ugeth->txBd[txQ];
+ 	bd_status = in_be32((u32 __iomem *)bd);
+ 	/* Save the skb pointer so we can free it later */
+-	ugeth->tx_skbuff[txQ][ugeth->skb_curtx[txQ]] = skb;
++	txInd = ugeth->skb_curtx[txQ];
++	ugeth->tx_skbuff[txQ][txInd] = skb;
+ 
+ 	/* Update the current skb pointer (wrapping if this was the last) */
+-	ugeth->skb_curtx[txQ] =
+-	    (ugeth->skb_curtx[txQ] +
+-	     1) & TX_RING_MOD_MASK(ugeth->ug_info->bdRingLenTx[txQ]);
++	txInd = (txInd + 1) & TX_RING_MOD_MASK(ugeth->ug_info->bdRingLenTx[txQ]);
++	ugeth->skb_curtx[txQ] = txInd;
+ 
+ 	/* set up the buffer descriptor */
+ 	out_be32(&((struct qe_bd __iomem *)bd)->buf,
+@@ -3088,9 +3089,8 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	/* If the next BD still needs to be cleaned up, then the bds
+ 	   are full.  We need to tell the kernel to stop sending us stuff. */
+-	if (bd == ugeth->confBd[txQ]) {
+-		if (!netif_queue_stopped(dev))
+-			netif_stop_queue(dev);
++	if (!in_be32((u32 __iomem *)(bd+4))) {
++		netif_stop_queue(dev);
+ 	}
+ 
+ 	ugeth->txBd[txQ] = bd;
+@@ -3198,32 +3198,29 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 	u8 __iomem *bd;		/* BD pointer */
+ 	u32 bd_status;
++	int txInd, num_freed;
+ 
+ 	bd = ugeth->confBd[txQ];
+ 	bd_status = in_be32((u32 __iomem *)bd);
+-
++	txInd = ugeth->skb_dirtytx[txQ];
++	num_freed = 0;
+ 	/* Normal processing. */
+ 	while ((bd_status & T_R) == 0) {
+ 		/* BD contains already transmitted buffer.   */
+ 		/* Handle the transmitted buffer and release */
+ 		/* the BD to be used with the current frame  */
+ 
+-		if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
+-			break;
++		if (!in_be32((u32 __iomem *)(bd+4)))
++			break; /* Queue is empty */
+ 
+ 		dev->stats.tx_packets++;
+ 
+ 		/* Free the sk buffer associated with this TxBD */
+-		dev_kfree_skb(ugeth->
+-				  tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]]);
+-		ugeth->tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]] = NULL;
+-		ugeth->skb_dirtytx[txQ] =
+-		    (ugeth->skb_dirtytx[txQ] +
+-		     1) & TX_RING_MOD_MASK(ugeth->ug_info->bdRingLenTx[txQ]);
+-
+-		/* We freed a buffer, so now we can restart transmission */
+-		if (netif_queue_stopped(dev))
+-			netif_wake_queue(dev);
++		dev_kfree_skb(ugeth->tx_skbuff[txQ][txInd]);
++		ugeth->tx_skbuff[txQ][txInd] = NULL;
++		out_be32((u32 __iomem *)(bd+4), (int)NULL); /* Mark it free */
++		num_freed++;
++		txInd = (txInd + 1) & TX_RING_MOD_MASK(ugeth->ug_info->bdRingLenTx[txQ]);
+ 
+ 		/* Advance the confirmation BD pointer */
+ 		if (!(bd_status & T_W))
+@@ -3233,6 +3230,9 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
+ 		bd_status = in_be32((u32 __iomem *)bd);
+ 	}
+ 	ugeth->confBd[txQ] = bd;
++	ugeth->skb_dirtytx[txQ] = txInd;
++	if (num_freed)
++		netif_wake_queue(dev); /* We freed some buffers, so restart transmission */
+ 	return 0;
+ }
  
 -- 
-1.5.6.6
+1.6.1.3
