@@ -1,19 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B00A7DDE0E
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 04:44:11 +1100 (EST)
-Received: from tmnt04.transmode.se (tmnt04.transmode.se [192.168.46.15])
-	by gw1.transmode.se (Postfix) with ESMTP id A62206A7DB
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 18:44:07 +0100 (CET)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: avorontsov@ru.mvista.com, leoli@freescale.com, linuxppc-dev@ozlabs.org,
-	netdev@vger.kernel.org
-Subject: [PATCH] ucc_geth: Rework the TX logic.
-Date: Thu, 26 Mar 2009 18:44:05 +0100
-Message-Id: <1238089445-28396-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Cc: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 4F5C5DDE0F
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 05:03:56 +1100 (EST)
+Date: Thu, 26 Mar 2009 21:03:54 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH] ucc_geth: Rework the TX logic.
+Message-ID: <20090326180354.GA31732@oksana.dev.rtsoft.ru>
+References: <1238089445-28396-1-git-send-email-Joakim.Tjernlund@transmode.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1238089445-28396-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,147 +22,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The line:
- if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
-       break;
-in ucc_geth_tx() didn not make sense to me. Rework & cleanup
-this logic to something understandable.
----
+On Thu, Mar 26, 2009 at 06:44:05PM +0100, Joakim Tjernlund wrote:
+> The line:
+>  if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
+>        break;
+> in ucc_geth_tx() didn not make sense to me. Rework & cleanup
+> this logic to something understandable.
+> ---
+> 
+> Reworked the patch according to Antons comments.
+> 
+>  drivers/net/ucc_geth.c |   66 +++++++++++++++++++++++++++--------------------
+>  1 files changed, 38 insertions(+), 28 deletions(-)
+> 
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index 7fc91aa..465de3a 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -161,6 +161,17 @@ static struct ucc_geth_info ugeth_primary_info = {
+>  
+>  static struct ucc_geth_info ugeth_info[8];
+>  
+> +
+> +static inline u32 __iomem *bd2buf(u8 __iomem *bd)
+> +{
+> +	return (u32 __iomem *)(bd+4);
 
-Reworked the patch according to Antons comments.
+Spaces around "+"...
 
- drivers/net/ucc_geth.c |   66 +++++++++++++++++++++++++++--------------------
- 1 files changed, 38 insertions(+), 28 deletions(-)
+Also, now it's obvious that we're just reading status or buf.
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 7fc91aa..465de3a 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -161,6 +161,17 @@ static struct ucc_geth_info ugeth_primary_info = {
- 
- static struct ucc_geth_info ugeth_info[8];
- 
-+
-+static inline u32 __iomem *bd2buf(u8 __iomem *bd)
-+{
-+	return (u32 __iomem *)(bd+4);
-+}
-+
-+static inline u32 __iomem *bd2status(u8 __iomem *bd)
-+{
-+	return (u32 __iomem *)bd;
-+}
-+
- #ifdef DEBUG
- static void mem_disp(u8 *addr, int size)
- {
-@@ -3048,6 +3059,7 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	u8 __iomem *bd;			/* BD pointer */
- 	u32 bd_status;
- 	u8 txQ = 0;
-+	int tx_ind;
- 
- 	ugeth_vdbg("%s: IN", __func__);
- 
-@@ -3057,21 +3069,19 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 
- 	/* Start from the next BD that should be filled */
- 	bd = ugeth->txBd[txQ];
--	bd_status = in_be32((u32 __iomem *)bd);
-+	bd_status = in_be32(bd2status(bd));
- 	/* Save the skb pointer so we can free it later */
--	ugeth->tx_skbuff[txQ][ugeth->skb_curtx[txQ]] = skb;
-+	tx_ind = ugeth->skb_curtx[txQ];
-+	ugeth->tx_skbuff[txQ][tx_ind] = skb;
- 
- 	/* Update the current skb pointer (wrapping if this was the last) */
--	ugeth->skb_curtx[txQ] =
--	    (ugeth->skb_curtx[txQ] +
--	     1) & TX_RING_MOD_MASK(ugeth->ug_info->bdRingLenTx[txQ]);
-+	tx_ind = (tx_ind + 1) & TX_RING_MOD_MASK(ugeth->ug_info->bdRingLenTx[txQ]);
-+	ugeth->skb_curtx[txQ] = tx_ind;
- 
- 	/* set up the buffer descriptor */
--	out_be32(&((struct qe_bd __iomem *)bd)->buf,
--		      dma_map_single(&ugeth->dev->dev, skb->data,
--			      skb->len, DMA_TO_DEVICE));
--
--	/* printk(KERN_DEBUG"skb->data is 0x%x\n",skb->data); */
-+	out_be32(bd2buf(bd),
-+		 dma_map_single(&ugeth->dev->dev, skb->data,
-+				skb->len, DMA_TO_DEVICE));
- 
- 	bd_status = (bd_status & T_W) | T_R | T_I | T_L | skb->len;
- 
-@@ -3088,9 +3098,9 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 
- 	/* If the next BD still needs to be cleaned up, then the bds
- 	   are full.  We need to tell the kernel to stop sending us stuff. */
--	if (bd == ugeth->confBd[txQ]) {
--		if (!netif_queue_stopped(dev))
--			netif_stop_queue(dev);
-+
-+	if (!in_be32(bd2buf(bd))) {
-+		netif_stop_queue(dev);
- 	}
- 
- 	ugeth->txBd[txQ] = bd;
-@@ -3198,41 +3208,41 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
- 	struct ucc_geth_private *ugeth = netdev_priv(dev);
- 	u8 __iomem *bd;		/* BD pointer */
- 	u32 bd_status;
-+	int tx_ind, num_freed;
- 
- 	bd = ugeth->confBd[txQ];
--	bd_status = in_be32((u32 __iomem *)bd);
--
-+	bd_status = in_be32(bd2status(bd));
-+	tx_ind = ugeth->skb_dirtytx[txQ];
-+	num_freed = 0;
- 	/* Normal processing. */
- 	while ((bd_status & T_R) == 0) {
- 		/* BD contains already transmitted buffer.   */
- 		/* Handle the transmitted buffer and release */
- 		/* the BD to be used with the current frame  */
- 
--		if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
--			break;
-+		if (bd == ugeth->txBd[txQ])
-+			break; /* Queue is empty */
- 
- 		dev->stats.tx_packets++;
- 
- 		/* Free the sk buffer associated with this TxBD */
--		dev_kfree_skb(ugeth->
--				  tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]]);
--		ugeth->tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]] = NULL;
--		ugeth->skb_dirtytx[txQ] =
--		    (ugeth->skb_dirtytx[txQ] +
--		     1) & TX_RING_MOD_MASK(ugeth->ug_info->bdRingLenTx[txQ]);
--
--		/* We freed a buffer, so now we can restart transmission */
--		if (netif_queue_stopped(dev))
--			netif_wake_queue(dev);
-+		dev_kfree_skb(ugeth->tx_skbuff[txQ][tx_ind]);
-+		ugeth->tx_skbuff[txQ][tx_ind] = NULL;
-+		out_be32(bd2buf(bd), 0); /* Mark it free */
-+		num_freed++;
-+		tx_ind = (tx_ind + 1) & TX_RING_MOD_MASK(ugeth->ug_info->bdRingLenTx[txQ]);
- 
- 		/* Advance the confirmation BD pointer */
- 		if (!(bd_status & T_W))
- 			bd += sizeof(struct qe_bd);
- 		else
- 			bd = ugeth->p_tx_bd_ring[txQ];
--		bd_status = in_be32((u32 __iomem *)bd);
-+		bd_status = in_be32(bd2status(bd));
- 	}
- 	ugeth->confBd[txQ] = bd;
-+	ugeth->skb_dirtytx[txQ] = tx_ind;
-+	if (num_freed)
-+		netif_wake_queue(dev); /* We freed some buffers, so restart transmission */
- 	return 0;
- }
- 
+So instead of these inlines we could use struct qe_bd as described
+in asm/qe.h.
+
+I.e.
+
+struct qe_bd *bd = ...;
+
+in_be32(&bd->buf);
+in_be16(&bd->status);
+
+Oh, wait. We can't, ucc_geth assumes status is u32, which includes
+the length field, i.e. ucc_fast.h defines:
+
+#define T_W     0x20000000
+
+:-(
+
+The cleanup work surely desires a separate patch, so bd2buf and
+bd2status are OK, for now.
+
+I'll test the patch as soon as I'll get some QE board back on
+my table (actually I have one QE board handy, but it's a 1GHz
+one, while I'd like to test the patch on a slow machine, where
+we'll actually see performance regressions).
+
+[...]
+> +               tx_ind = (tx_ind + 1) & TX_RING_MOD_MASK(ugeth->ug_info->bdRingLenTx[txQ]);
+
+Line over 80 columns.
+
+[...]
+> +       if (num_freed)
+> +               netif_wake_queue(dev); /* We freed some buffers, so restart transmission */
+
+Ditto.
+
+Please make sure your patches pass scripts/checkpatch.pl.
+
+Thanks,
+
 -- 
-1.6.1.3
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
