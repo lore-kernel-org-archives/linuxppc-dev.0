@@ -1,19 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 94B08DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 00:39:20 +1100 (EST)
-Date: Thu, 26 Mar 2009 16:39:18 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 2/2] ucc_geth: Rework the TX logic.
-Message-ID: <20090326133918.GA27085@oksana.dev.rtsoft.ru>
-References: <1238072077-27044-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1238072077-27044-2-git-send-email-Joakim.Tjernlund@transmode.se>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id B374ADDDA1
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 00:56:51 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1Lmq4e-0006G2-Ow
+	for linuxppc-dev@ozlabs.org; Thu, 26 Mar 2009 06:56:48 -0700
+Message-ID: <22722574.post@talk.nabble.com>
+Date: Thu, 26 Mar 2009 06:56:48 -0700 (PDT)
+From: rizwan ahmad <rizwanamu@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: sata device failed to IDENTIFY...
+In-Reply-To: <22655709.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1238072077-27044-2-git-send-email-Joakim.Tjernlund@transmode.se>
-Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+References: <22655709.post@talk.nabble.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,69 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Joakim,
 
-On Thu, Mar 26, 2009 at 01:54:37PM +0100, Joakim Tjernlund wrote:
-> The line:
->  if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
->        break;
-> in ucc_geth_tx() didn not make sense to me. Rework & cleanup
-> this logic to something understandable.
-> 
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> ---
->  drivers/net/ucc_geth.c |   40 ++++++++++++++++++++--------------------
->  1 files changed, 20 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> index 7fc91aa..b6ebefd 100644
-> --- a/drivers/net/ucc_geth.c
-> +++ b/drivers/net/ucc_geth.c
-> @@ -3048,6 +3048,7 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
->  	u8 __iomem *bd;			/* BD pointer */
->  	u32 bd_status;
->  	u8 txQ = 0;
-> +	int txInd;
 
-camelCase should not be used in Linux.
 
-Surely, the driver is full of camelCases... though, it should be
-fixed, not encouraged further.
+output of lspci -vv
 
-And btw, there is even Hungarian notation in the driver. :-(
+-bash-3.2# lspci -vv
+00:0c.0 Class 0c03: Unknown device 1106:3038 (rev 62)
+        Subsystem: Unknown device 1106:3038
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Ste-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbor-        Latency: 128
+        Interrupt: pin A routed to IRQ 25
+        Region 4: I/O ports at ffe0 [size=32]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA
+PME(D0+,D1+,D2+,D3)                Status: D0 PME-Enable- DSel=0 DScale=0
+PME-
 
-[...]
->  	/* If the next BD still needs to be cleaned up, then the bds
->  	   are full.  We need to tell the kernel to stop sending us stuff. */
-> -	if (bd == ugeth->confBd[txQ]) {
-> -		if (!netif_queue_stopped(dev))
-> -			netif_stop_queue(dev);
-> +	if (!in_be32((u32 __iomem *)(bd+4))) {
+00:0c.1 Class 0c03: Unknown device 1106:3038 (rev 62)
+        Subsystem: Unknown device 1106:3038
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Ste-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbor-        Latency: 128
+        Interrupt: pin B routed to IRQ 25
+        Region 4: I/O ports at ffc0 [size=32]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA
+PME(D0+,D1+,D2+,D3)                Status: D0 PME-Enable- DSel=0 DScale=0
+PME-
 
-bd == ugeth->confBd[txQ]
-and
-!in_be32((u32 __iomem *)(bd+4))
+00:0c.2 Class 0c03: Unknown device 1106:3104 (rev 65) (prog-if 20)
+        Subsystem: Unknown device 1106:3104
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Ste-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbor-        Latency: 128
+        Interrupt: pin C routed to IRQ 25
+        Region 0: Memory at afffff00 (32-bit, non-prefetchable) [size=256]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA
+PME(D0+,D1+,D2+,D3)                Status: D0 PME-Enable- DSel=0 DScale=0
+PME-
 
-Are not equivalent wrt. speed. MMIO accessors should be rather
-slow comparing to normal memory.
+00:0c.3 Class 0104: Unknown device 1106:3249 (rev 50)
+        Subsystem: Unknown device 1106:3249
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Ste-        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+<TAbor-        Latency: 128
+        Interrupt: pin A routed to IRQ 25
+        Region 0: I/O ports at ffb0 [size=16]
+        Region 1: I/O ports at ffa0 [size=16]
+        Region 2: I/O ports at ff90 [size=16]
+        Region 3: I/O ports at ff80 [size=16]
+        Region 4: I/O ports at ff60 [size=32]
+        Region 5: I/O ports at fe00 [size=256]
+        Expansion ROM at <ignored> [disabled]
+        Capabilities: [e0] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3ho)                Status: D0 PME-Enable- DSel=0 DScale=0
+PME-
 
-We should really do some performance tests (using gbit links).
-I'll try to help you with the tests, but it might take some time.
+-bash-3.2#
 
-[...]
-> +		if (!in_be32((u32 __iomem *)(bd+4)))
-[...]
-> +		out_be32((u32 __iomem *)(bd+4), (int)NULL); /* Mark it free */
 
-How about some inline function that will self-document the bd + 4
-stuff? Plus that way we'll get rid of the casts.
-
-Note that "bd+4" should be "bd + 4". And (int)NULL makes
-little sense, just 0 will work.
-
-Thanks,
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+View this message in context: http://www.nabble.com/sata-device-failed-to-IDENTIFY...-tp22655709p22722574.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
