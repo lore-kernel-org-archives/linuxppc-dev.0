@@ -1,20 +1,17 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
-	by ozlabs.org (Postfix) with ESMTP id 478AEDDDA2
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 07:02:46 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 9so433416ywe.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 13:02:45 -0700 (PDT)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <1238093075.5262.0@antares>
-References: <1238093075.5262.0@antares>
-Date: Thu, 26 Mar 2009 15:02:42 -0500
-Message-ID: <ed82fe3e0903261302r4644188ar9860899ccaa125fc@mail.gmail.com>
-Subject: Re: Q: define i2c nodes in device tree?
-From: Timur Tabi <timur@freescale.com>
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <jeff@theptrgroup.com>
+Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.246.247.9])
+	by ozlabs.org (Postfix) with ESMTP id 4633FDDE11
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 08:35:12 +1100 (EST)
+Received: from [10.11.13.34] (unknown [10.11.13.34])
+	by mail.theptrgroup.com (Postfix) with ESMTP id 459F35F0CA
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 17:35:30 -0400 (EDT)
+Subject: Xenomai on powerpc
+From: jeff angielski <jeff@theptrgroup.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 26 Mar 2009 17:35:09 -0400
+Message-Id: <1238103309.20670.17.camel@penguin>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2009/3/26 Albrecht Dre=DF <albrecht.dress@arcor.de>:
 
-> and some other like "gpio-controller" instead of "gpio" but (surprise) it
-> doesn't work - dmesg says that the driver is registered, but nothing else
-> shows up. =A0Unfortunately, I couldn't find documentation about the namin=
-g
-> conventions of the i2c child nodes.
+Which DENX git tree should I be using with the xenomai 2.4.7 patches?
+The linux-2.6-denx.git or the ipipe-2.6.git? 
 
-You need to have a "gpio I2C" device driver that registers the same
-name as what's in the DTS, like this:
+I could not find the tags mentioned in the
+xenomai/ksrc/arch/powerpc/patches/README in either repository.  In fact,
+the xenomai 2.6.28.5 patch won't compile against the 2.6-denx 2.6.28.5
+tag.
 
-cs4270:codec@4f {
-	compatible =3D "cirrus,cs4270";
-	reg =3D <0x4f>;
-	/* MCLK source is a stand-alone oscillator */
-	clock-frequency =3D <12288000>;
-};
+TIA
 
-...
 
-static struct i2c_device_id cs4270_id[] =3D {
-	{"cs4270", 0},
-	{}
-};
-MODULE_DEVICE_TABLE(i2c, cs4270_id);
-
-> As I actually want to use the chips as parallel io (not separate gpio's) =
-and
-> thus would need to write my own driver I wonder if I really have to decla=
-re
-> it in the device tree? =A0Would the simple way -just load the kernel modu=
-le as
-> with arm/intel- also work? =A0Would it be possible to use additional reso=
-urces
-> like an interrupt pin on the '5200 without the device tree?
-
-No, the only acceptable way to do this is on PowerPC is with a device
-tree entry and a driver that registers itself properly.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+-- 
+Jeff Angielski
+The PTR Group
+www.theptrgroup.com
