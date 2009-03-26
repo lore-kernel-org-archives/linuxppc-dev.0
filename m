@@ -1,20 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id B374ADDDA1
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 00:56:51 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Lmq4e-0006G2-Ow
-	for linuxppc-dev@ozlabs.org; Thu, 26 Mar 2009 06:56:48 -0700
-Message-ID: <22722574.post@talk.nabble.com>
-Date: Thu, 26 Mar 2009 06:56:48 -0700 (PDT)
-From: rizwan ahmad <rizwanamu@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: sata device failed to IDENTIFY...
-In-Reply-To: <22655709.post@talk.nabble.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <22655709.post@talk.nabble.com>
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from accolon.hansenpartnership.com (accolon.hansenpartnership.com
+	[76.243.235.52]) by ozlabs.org (Postfix) with ESMTP id 78E60DDDA2
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 00:57:54 +1100 (EST)
+Subject: Re: Next March 25: Boot failure on powerpc [recursive locking
+	detected]
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <49CB2200.50703@in.ibm.com>
+References: <20090325191229.0e17eaf6.sfr@canb.auug.org.au>
+	<49CA3BF4.3050801@in.ibm.com>  <49CB2200.50703@in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 26 Mar 2009 08:50:03 -0500
+Message-Id: <1238075403.3342.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	linux-scsi <linux-scsi@vger.kernel.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,70 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2009-03-26 at 12:04 +0530, Sachin Sant wrote:
+> Sachin Sant wrote:
+> > Today's next failed to boot on a powerpc box
+> > (Power6 blade IBM,7998-61X) with following recursive locking message.
+> >
+> > =============================================
+> > [ INFO: possible recursive locking detected ]
+> > 2.6.29-next-20090325 #1
+> After bisecting the failure seems to be because of the following
+> patch from James ( block: move SCSI timeout check into block )
+> 
+> http://patchwork.kernel.org/patch/8017/
+> 
+> If i back out the above mentioned patch, the machine boots fine
+> without any problems.
 
+Yes, that patch already got dropped for other reasons:
 
+http://marc.info/?t=123740773700002
 
-output of lspci -vv
+I'm going to see if I can redo it in a better way, since moving this
+type of timeout checking from scsi to block is a useful generalisation.
 
--bash-3.2# lspci -vv
-00:0c.0 Class 0c03: Unknown device 1106:3038 (rev 62)
-        Subsystem: Unknown device 1106:3038
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Ste-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbor-        Latency: 128
-        Interrupt: pin A routed to IRQ 25
-        Region 4: I/O ports at ffe0 [size=32]
-        Capabilities: [80] Power Management version 2
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA
-PME(D0+,D1+,D2+,D3)                Status: D0 PME-Enable- DSel=0 DScale=0
-PME-
-
-00:0c.1 Class 0c03: Unknown device 1106:3038 (rev 62)
-        Subsystem: Unknown device 1106:3038
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Ste-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbor-        Latency: 128
-        Interrupt: pin B routed to IRQ 25
-        Region 4: I/O ports at ffc0 [size=32]
-        Capabilities: [80] Power Management version 2
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA
-PME(D0+,D1+,D2+,D3)                Status: D0 PME-Enable- DSel=0 DScale=0
-PME-
-
-00:0c.2 Class 0c03: Unknown device 1106:3104 (rev 65) (prog-if 20)
-        Subsystem: Unknown device 1106:3104
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Ste-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbor-        Latency: 128
-        Interrupt: pin C routed to IRQ 25
-        Region 0: Memory at afffff00 (32-bit, non-prefetchable) [size=256]
-        Capabilities: [80] Power Management version 2
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA
-PME(D0+,D1+,D2+,D3)                Status: D0 PME-Enable- DSel=0 DScale=0
-PME-
-
-00:0c.3 Class 0104: Unknown device 1106:3249 (rev 50)
-        Subsystem: Unknown device 1106:3249
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Ste-        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbor-        Latency: 128
-        Interrupt: pin A routed to IRQ 25
-        Region 0: I/O ports at ffb0 [size=16]
-        Region 1: I/O ports at ffa0 [size=16]
-        Region 2: I/O ports at ff90 [size=16]
-        Region 3: I/O ports at ff80 [size=16]
-        Region 4: I/O ports at ff60 [size=32]
-        Region 5: I/O ports at fe00 [size=256]
-        Expansion ROM at <ignored> [disabled]
-        Capabilities: [e0] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-PME(D0-,D1-,D2-,D3ho)                Status: D0 PME-Enable- DSel=0 DScale=0
-PME-
-
--bash-3.2#
-
-
-
--- 
-View this message in context: http://www.nabble.com/sata-device-failed-to-IDENTIFY...-tp22655709p22722574.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+James
