@@ -1,17 +1,23 @@
-Return-Path: <dada1@cosmosbay.com>
-Received: from gw1.cosmosbay.com (gw1.cosmosbay.com [212.99.114.194])
-	by ozlabs.org (Postfix) with ESMTP id C0A28DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 01:15:37 +1100 (EST)
-Message-ID: <49CB8DFD.2050504@cosmosbay.com>
-Date: Thu, 26 Mar 2009 15:15:25 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH 1/2] ucc_geth: Move freeing of TX packets to NAPI context.
-References: <1238072077-27044-1-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1238072077-27044-1-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <49CB31CB.2010704@grandegger.com>
+References: <1237975701-23201-1-git-send-email-wg@grandegger.com>
+	<1237975701-23201-2-git-send-email-wg@grandegger.com>
+	<1237975701-23201-3-git-send-email-wg@grandegger.com>
+	<1237975701-23201-4-git-send-email-wg@grandegger.com>
+	<fa686aa40903251048g479d63f8i5a715defdbfc33d4@mail.gmail.com>
+	<49CA9899.30604@grandegger.com>
+	<fa686aa40903252209r52a1bc1cn995a7da16bc3527f@mail.gmail.com>
+	<49CB31CB.2010704@grandegger.com>
+Date: Thu, 26 Mar 2009 08:27:55 -0600
+Message-ID: <fa686aa40903260727y3266e394g5e574680fe70bbbf@mail.gmail.com>
+Subject: Re: [PATCH v3 3/4] powerpc: NAND: FSL UPM: document new bindings
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Wolfgang Grandegger <wg@grandegger.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,133 +27,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund a =E9crit :
-> Also set NAPI weight to 64 as this is a common value.
-> This will make the system alot more responsive while
-> ping flooding the ucc_geth ethernet interaface.
->=20
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> ---
->  drivers/net/ucc_geth.c |   32 ++++++++++++--------------------
->  drivers/net/ucc_geth.h |    1 -
->  2 files changed, 12 insertions(+), 21 deletions(-)
->=20
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> index 097aed8..7fc91aa 100644
-> --- a/drivers/net/ucc_geth.c
-> +++ b/drivers/net/ucc_geth.c
-> @@ -3214,7 +3214,7 @@ static int ucc_geth_tx(struct net_device *dev, u8=
- txQ)
->  		dev->stats.tx_packets++;
-> =20
->  		/* Free the sk buffer associated with this TxBD */
-> -		dev_kfree_skb_irq(ugeth->
-> +		dev_kfree_skb(ugeth->
->  				  tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]]);
->  		ugeth->tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]] =3D NULL;
->  		ugeth->skb_dirtytx[txQ] =3D
-> @@ -3248,9 +3248,16 @@ static int ucc_geth_poll(struct napi_struct *nap=
-i, int budget)
+On Thu, Mar 26, 2009 at 1:42 AM, Wolfgang Grandegger <wg@grandegger.com> wr=
+ote:
+> Grant Likely wrote:
+>> On Wed, Mar 25, 2009 at 2:48 PM, Wolfgang Grandegger <wg@grandegger.com>=
+ wrote:
+>>> Grant Likely wrote:
+>>>> For the chip offset, it's not clear what the meaning is. =A0First, doe=
+s
+>>>> the UPM controller support access of multiple chips simultaneously?
+>>> The offset drives the corresponding address lines, which are used to
+>>> select the chip. That's how it's done on the TQM8548 board. In
+>>> principle, the chips could also be selected through dedicated GPIO pins=
+.
+>>> Well, I'm not a hardware guy.
+>>
+>> Heh. =A0I mean elaborate in the binding documentation. =A0:-)
+>>
+>>>> If so, then can you elaborate in the description on how board design
+>>>> translates to a chip-offset value. =A0If it cannot, then it might be
+>>>> better to have multiple tuples in the 'reg' property for each discrete
+>>>> chip. =A0Multiple reg tuples would also remove the need for the
+>>>> num-chips property.
+>>> The node still describes one device mapping all relevant control
+>>> registers. How about using fsl,upm-chip-offsets =3D <0x200 0x400>. It
+>>> would be more generic and makes num-chips obsolete as well. And the
+>>> property would be reserved for that way of implementing the chip select
+>>> in hardware.
+>>
+>> It really sounds like this binding is describing multiple NAND chips
+>> mapped to different base addresses (and looking at the fsm_upm.c
+>> driver appears to confirm it). =A0So, does this work? =A0reg =3D <3 0x20=
+0 4
+>> =A03 0x400 4>;
+>
+> The chip-offset, and not the address, needs to be added to the MAR
+> register as well before running the pattern:
+>
+> =A0 =A0 =A0 =A0mar =3D cmd << (32 - fun->upm.width);
+>
+> =A0 =A0 =A0 =A0if (fun->chip_offset && fun->chip_number > 0)
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mar |=3D fun->chip_number * fun->chip_offs=
+et;
+>
+> =A0 =A0 =A0 =A0fsl_upm_run_pattern(&fun->upm, chip->IO_ADDR_R, mar);
+>
+>
+>> It is true that other methods could be used for implementing the chip
+>> select, but that is *not* what the proposed binding describes. =A0This
+>> proposed binding describes NAND chips selected by address lines
+>> (particular addresses), and in this case I think using reg is the
+>> natural description.
+>
+> OK, the chips are selected by accessing a defined address range. Will
+> prepare a patch using the reg property.
 
->  	for (i =3D 0; i < ug_info->numQueuesRx; i++)
->  		howmany +=3D ucc_geth_rx(ugeth, i, budget - howmany);
+Hold on a sec.  I'm debating from my experience with device tree
+bindings, but I'm fairly ignorant about the implementation of NAND on
+UPM.  It *looks* to me like reg is sufficient, but if I'm wrong then
+tell me so and why.  Your comment above about fsl_upm_run_pattern()
+makes me doubt my position.
 
-Not related to your patch, but seeing above code, I can understand
-you might have a problem in flood situation : Only first queue(s) are
-depleted, and last one cannot be because howmany >=3D budget.
+Does using the reg property give the driver enough information to
+reliably program the MAR for NAND connections that use the address
+line chip select scheme?  Related to that, should the binding include
+a property that explicitly states that an address line chip select
+scheme is being used?
 
-This driver might have to remember last queue it handled at previous
-call ucc_geth_poll(), so that all rxqueues have same probability to be sc=
-anned.
+g.
 
-j =3D ug->lastslot;
-for (i =3D 0; ug_info->numQueuesRx; i++) {
-	if (++j >=3D ug_info->numQueuesRx)
-		j =3D 0;
-	howmany +=3D ucc_geth_rx(ugeth, j, budget - howmany);
-	if (howmany >=3D budget)
-		break;
-}
-ug->lastslot =3D j;
-
-
-> =20
-> +	/* Tx event processing */
-> +	spin_lock(&ugeth->lock);
-> +	for (i =3D 0; i < ug_info->numQueuesTx; i++) {
-> +		ucc_geth_tx(ugeth->dev, i);
-> +	}
-> +	spin_unlock(&ugeth->lock);
-> +
->  	if (howmany < budget) {
->  		netif_rx_complete(napi);
-> -		setbits32(ugeth->uccf->p_uccm, UCCE_RX_EVENTS);
-> +		setbits32(ugeth->uccf->p_uccm, UCCE_RX_EVENTS | UCCE_TX_EVENTS);
->  	}
-> =20
->  	return howmany;
-> @@ -3264,8 +3271,6 @@ static irqreturn_t ucc_geth_irq_handler(int irq, =
-void *info)
->  	struct ucc_geth_info *ug_info;
->  	register u32 ucce;
->  	register u32 uccm;
-> -	register u32 tx_mask;
-> -	u8 i;
-> =20
->  	ugeth_vdbg("%s: IN", __func__);
-> =20
-> @@ -3279,27 +3284,14 @@ static irqreturn_t ucc_geth_irq_handler(int irq=
-, void *info)
->  	out_be32(uccf->p_ucce, ucce);
-> =20
->  	/* check for receive events that require processing */
-> -	if (ucce & UCCE_RX_EVENTS) {
-> +	if (ucce & (UCCE_RX_EVENTS | UCCE_TX_EVENTS)) {
->  		if (netif_rx_schedule_prep(&ugeth->napi)) {
-> -			uccm &=3D ~UCCE_RX_EVENTS;
-> +			uccm &=3D ~(UCCE_RX_EVENTS | UCCE_TX_EVENTS);
->  			out_be32(uccf->p_uccm, uccm);
->  			__netif_rx_schedule(&ugeth->napi);
->  		}
->  	}
-> =20
-> -	/* Tx event processing */
-> -	if (ucce & UCCE_TX_EVENTS) {
-> -		spin_lock(&ugeth->lock);
-> -		tx_mask =3D UCC_GETH_UCCE_TXB0;
-> -		for (i =3D 0; i < ug_info->numQueuesTx; i++) {
-> -			if (ucce & tx_mask)
-> -				ucc_geth_tx(dev, i);
-> -			ucce &=3D ~tx_mask;
-> -			tx_mask <<=3D 1;
-> -		}
-> -		spin_unlock(&ugeth->lock);
-> -	}
-> -
->  	/* Errors and other events */
->  	if (ucce & UCCE_OTHER) {
->  		if (ucce & UCC_GETH_UCCE_BSY)
-> @@ -3733,7 +3725,7 @@ static int ucc_geth_probe(struct of_device* ofdev=
-, const struct of_device_id *ma
->  	dev->netdev_ops =3D &ucc_geth_netdev_ops;
->  	dev->watchdog_timeo =3D TX_TIMEOUT;
->  	INIT_WORK(&ugeth->timeout_work, ucc_geth_timeout_work);
-> -	netif_napi_add(dev, &ugeth->napi, ucc_geth_poll, UCC_GETH_DEV_WEIGHT)=
-;
-> +	netif_napi_add(dev, &ugeth->napi, ucc_geth_poll, 64);
->  	dev->mtu =3D 1500;
-> =20
->  	ugeth->msg_enable =3D netif_msg_init(debug.msg_enable, UGETH_MSG_DEFA=
-ULT);
-> diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
-> index 44218b8..50bad53 100644
-> --- a/drivers/net/ucc_geth.h
-> +++ b/drivers/net/ucc_geth.h
-> @@ -843,7 +843,6 @@ struct ucc_geth_hardware_statistics {
->  /* Driver definitions */
->  #define TX_BD_RING_LEN                          0x10
->  #define RX_BD_RING_LEN                          0x10
-> -#define UCC_GETH_DEV_WEIGHT                     TX_BD_RING_LEN
-> =20
->  #define TX_RING_MOD_MASK(size)                  (size-1)
->  #define RX_RING_MOD_MASK(size)                  (size-1)
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
