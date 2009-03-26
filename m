@@ -1,26 +1,21 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <49CBAED4.8030802@grandegger.com>
-Date: Thu, 26 Mar 2009 17:35:32 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7A52ADDDB2
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 03:43:30 +1100 (EST)
+In-Reply-To: <20090326133918.GA27085@oksana.dev.rtsoft.ru>
+References: <1238072077-27044-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1238072077-27044-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20090326133918.GA27085@oksana.dev.rtsoft.ru>
+To: avorontsov@ru.mvista.com
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 3/4] powerpc: NAND: FSL UPM: document new bindings
-References: <1237975701-23201-1-git-send-email-wg@grandegger.com>	
-	<1237975701-23201-2-git-send-email-wg@grandegger.com>	
-	<1237975701-23201-3-git-send-email-wg@grandegger.com>	
-	<1237975701-23201-4-git-send-email-wg@grandegger.com>	
-	<fa686aa40903251048g479d63f8i5a715defdbfc33d4@mail.gmail.com>	
-	<49CA9899.30604@grandegger.com>	
-	<fa686aa40903252209r52a1bc1cn995a7da16bc3527f@mail.gmail.com>	
-	<49CB31CB.2010704@grandegger.com>	
-	<fa686aa40903260727y3266e394g5e574680fe70bbbf@mail.gmail.com>	
-	<49CBA062.5050000@grandegger.com>
-	<fa686aa40903260904s67258fbbge3c87e06946c5f58@mail.gmail.com>
-In-Reply-To: <fa686aa40903260904s67258fbbge3c87e06946c5f58@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
-	linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 2/2] ucc_geth: Rework the TX logic.
+Message-ID: <OF5FC70952.28684E98-ONC1257585.005ADBF9-C1257585.005BDD35@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Thu, 26 Mar 2009 17:43:25 +0100
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,50 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Thu, Mar 26, 2009 at 9:33 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
->> Grant Likely wrote:
->>> Does using the reg property give the driver enough information to
->>> reliably program the MAR for NAND connections that use the address
->>> line chip select scheme?  Related to that, should the binding include
->> In principle yes:
->>
->>  if (i > 0)
->>      offset[i] = resource[i].start - resource[0].start;
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 26/03/2009 14:39:18:
 > 
-> Ewww.  That's ugly.
+> Hi Joakim,
 
-Yep.
-
->>> a property that explicitly states that an address line chip select
->>> scheme is being used?
->> That's why I'm still in favor of:
->>
->>  fsl,upm-multi-chip-offsets = <0x200 0x400>
->>
->> That would state that the address line chip select scheme is used with
->> the specified offsets. It also allows for a more elegant solution
->> (code-wise).
-> 
-> Alright.  Then at the very least the property name should reflect that
-> address lines CS is used to reduce the chance of confusion with
-> another multi-chip scheme.  Something like
-> fsl,upm-addr-line-cs-offsets maybe?
-
+Hi Anton
 
 > 
-> Here is another thought.  The binding is describing that address lines
-> are used to activate CS lines.  Offset for chip access purposes is
-> derived from the address line, but it doesn't directly describe the
-> hardware.  The following may be a better description of the hardware.
+> On Thu, Mar 26, 2009 at 01:54:37PM +0100, Joakim Tjernlund wrote:
+> > The line:
+> >  if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
+> >        break;
+> > in ucc_geth_tx() didn not make sense to me. Rework & cleanup
+> > this logic to something understandable.
+> > 
+> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > ---
+> >  drivers/net/ucc_geth.c |   40 
+++++++++++++++++++++--------------------
+> >  1 files changed, 20 insertions(+), 20 deletions(-)
+> > 
+> > diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> > index 7fc91aa..b6ebefd 100644
+> > --- a/drivers/net/ucc_geth.c
+> > +++ b/drivers/net/ucc_geth.c
+> > @@ -3048,6 +3048,7 @@ static int ucc_geth_start_xmit(struct sk_buff 
+*skb, struct net_device *dev)
+> >     u8 __iomem *bd;         /* BD pointer */
+> >     u32 bd_status;
+> >     u8 txQ = 0;
+> > +   int txInd;
 > 
-> fsl,upm-addr-line-cs = <9 10>;
+> camelCase should not be used in Linux.
+> 
+> Surely, the driver is full of camelCases... though, it should be
+> fixed, not encouraged further.
 
-The TQM8548 hardware has some logic connected to the two address lines
-allowing to select up to 4 chips with two address lines:
+OK, I will rename to tx_ind instead.
 
- fsl,upm-addr-line-cs-offsets = <0x0 0x200 0x400 0x600>
+> 
+> And btw, there is even Hungarian notation in the driver. :-(
 
-That's the more general solution.
+Hopefully that will go away in time.
 
-Wolfgang.
+> 
+> [...]
+> >     /* If the next BD still needs to be cleaned up, then the bds
+> >        are full.  We need to tell the kernel to stop sending us stuff. 
+*/
+> > -   if (bd == ugeth->confBd[txQ]) {
+> > -      if (!netif_queue_stopped(dev))
+> > -         netif_stop_queue(dev);
+> > +   if (!in_be32((u32 __iomem *)(bd+4))) {
+> 
+> bd == ugeth->confBd[txQ]
+> and
+> !in_be32((u32 __iomem *)(bd+4))
+> 
+> Are not equivalent wrt. speed. MMIO accessors should be rather
+> slow comparing to normal memory.
+
+Yes, I know. I did it this way because I something broke under stress
+when ugeth->confBd[txQ] instead. The ucc_geth_tx() and 
+ucc_geth_start_xmit()
+gets out of sync somehow.
+
+> 
+> We should really do some performance tests (using gbit links).
+> I'll try to help you with the tests, but it might take some time.
+
+Good, because I don't have GBE links :(
+
+> 
+> [...]
+> > +      if (!in_be32((u32 __iomem *)(bd+4)))
+> [...]
+> > +      out_be32((u32 __iomem *)(bd+4), (int)NULL); /* Mark it free */
+> 
+> How about some inline function that will self-document the bd + 4
+> stuff? Plus that way we'll get rid of the casts.
+
+Good idea, will look at that.
+
+> 
+> Note that "bd+4" should be "bd + 4". And (int)NULL makes
+> little sense, just 0 will work.
+
+Sure, done.
