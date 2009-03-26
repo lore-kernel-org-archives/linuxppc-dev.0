@@ -1,33 +1,22 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id ACDE2DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 17:34:45 +1100 (EST)
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28smtp05.in.ibm.com (8.13.1/8.13.1) with ESMTP id n2Q6YeAM019760
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 12:04:40 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n2Q6V8IM4419682
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 12:01:08 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.13.1/8.13.3) with ESMTP id n2Q6Ye7j002148
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 17:34:40 +1100
-Message-ID: <49CB2200.50703@in.ibm.com>
-Date: Thu, 26 Mar 2009 12:04:40 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <49CB31CB.2010704@grandegger.com>
+Date: Thu, 26 Mar 2009 08:42:03 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Next March 25: Boot failure on powerpc [recursive locking
-	detected]
-References: <20090325191229.0e17eaf6.sfr@canb.auug.org.au>
-	<49CA3BF4.3050801@in.ibm.com>
-In-Reply-To: <49CA3BF4.3050801@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	linux-scsi <linux-scsi@vger.kernel.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 3/4] powerpc: NAND: FSL UPM: document new bindings
+References: <1237975701-23201-1-git-send-email-wg@grandegger.com>	
+	<1237975701-23201-2-git-send-email-wg@grandegger.com>	
+	<1237975701-23201-3-git-send-email-wg@grandegger.com>	
+	<1237975701-23201-4-git-send-email-wg@grandegger.com>	
+	<fa686aa40903251048g479d63f8i5a715defdbfc33d4@mail.gmail.com>	
+	<49CA9899.30604@grandegger.com>
+	<fa686aa40903252209r52a1bc1cn995a7da16bc3527f@mail.gmail.com>
+In-Reply-To: <fa686aa40903252209r52a1bc1cn995a7da16bc3527f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org,
+	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,30 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sachin Sant wrote:
-> Today's next failed to boot on a powerpc box
-> (Power6 blade IBM,7998-61X) with following recursive locking message.
->
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.29-next-20090325 #1
-After bisecting the failure seems to be because of the following
-patch from James ( block: move SCSI timeout check into block )
+Grant Likely wrote:
+> On Wed, Mar 25, 2009 at 2:48 PM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>> Grant Likely wrote:
+>>> For the chip offset, it's not clear what the meaning is.  First, does
+>>> the UPM controller support access of multiple chips simultaneously?
+>> The offset drives the corresponding address lines, which are used to
+>> select the chip. That's how it's done on the TQM8548 board. In
+>> principle, the chips could also be selected through dedicated GPIO pins.
+>> Well, I'm not a hardware guy.
+> 
+> Heh.  I mean elaborate in the binding documentation.  :-)
+> 
+>>> If so, then can you elaborate in the description on how board design
+>>> translates to a chip-offset value.  If it cannot, then it might be
+>>> better to have multiple tuples in the 'reg' property for each discrete
+>>> chip.  Multiple reg tuples would also remove the need for the
+>>> num-chips property.
+>> The node still describes one device mapping all relevant control
+>> registers. How about using fsl,upm-chip-offsets = <0x200 0x400>. It
+>> would be more generic and makes num-chips obsolete as well. And the
+>> property would be reserved for that way of implementing the chip select
+>> in hardware.
+> 
+> It really sounds like this binding is describing multiple NAND chips
+> mapped to different base addresses (and looking at the fsm_upm.c
+> driver appears to confirm it).  So, does this work?  reg = <3 0x200 4
+>  3 0x400 4>;
 
-http://patchwork.kernel.org/patch/8017/
+The chip-offset, and not the address, needs to be added to the MAR
+register as well before running the pattern:
 
-If i back out the above mentioned patch, the machine boots fine
-without any problems.
+        mar = cmd << (32 - fun->upm.width);
 
-Thanks
--Sachin
+        if (fun->chip_offset && fun->chip_number > 0)
+
+                mar |= fun->chip_number * fun->chip_offset;
+
+        fsl_upm_run_pattern(&fun->upm, chip->IO_ADDR_R, mar);
 
 
--- 
+> It is true that other methods could be used for implementing the chip
+> select, but that is *not* what the proposed binding describes.  This
+> proposed binding describes NAND chips selected by address lines
+> (particular addresses), and in this case I think using reg is the
+> natural description.
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+OK, the chips are selected by accessing a defined address range. Will
+prepare a patch using the reg property.
+
+Wolfgang.
+
+
+
+
+> g.
+> 
