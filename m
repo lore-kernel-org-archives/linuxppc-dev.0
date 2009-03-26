@@ -1,21 +1,20 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp4.netcologne.de (smtp4.netcologne.de [194.8.194.137])
-	by ozlabs.org (Postfix) with ESMTP id 2F260DDDEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 06:09:26 +1100 (EST)
-Received: from antares (xdsl-78-34-234-207.netcologne.de [78.34.234.207])
-	by smtp4.netcologne.de (Postfix) with ESMTP id 9DF19DA9AE
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 19:44:36 +0100 (CET)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id 30274BA629
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 19:44:36 +0100 (CET)
-Date: Thu, 26 Mar 2009 19:44:26 +0100
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Q: define i2c nodes in device tree?
-To: Linux PPC Development <linuxppc-dev@ozlabs.org>
-Message-Id: <1238093075.5262.0@antares>
+Return-Path: <timur.tabi@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id 478AEDDDA2
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 07:02:46 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 9so433416ywe.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 13:02:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-uvHnmspbTOzLpAg+sYFx"
+Sender: timur.tabi@gmail.com
+In-Reply-To: <1238093075.5262.0@antares>
+References: <1238093075.5262.0@antares>
+Date: Thu, 26 Mar 2009 15:02:42 -0500
+Message-ID: <ed82fe3e0903261302r4644188ar9860899ccaa125fc@mail.gmail.com>
+Subject: Re: Q: define i2c nodes in device tree?
+From: Timur Tabi <timur@freescale.com>
+To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,60 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---=-uvHnmspbTOzLpAg+sYFx
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+2009/3/26 Albrecht Dre=DF <albrecht.dress@arcor.de>:
 
-Hi all,
+> and some other like "gpio-controller" instead of "gpio" but (surprise) it
+> doesn't work - dmesg says that the driver is registered, but nothing else
+> shows up. =A0Unfortunately, I couldn't find documentation about the namin=
+g
+> conventions of the i2c child nodes.
 
-I have some probably dumb questions regarding the definition of i2c =20
-slaves in the of device tree file...
+You need to have a "gpio I2C" device driver that registers the same
+name as what's in the DTS, like this:
 
-My test system is a lite5200b board to which I attached two pca8575 io =20
-expander chips at i2c addresses 0x20 and 0x21.  Using the stock kernel =20
-2.6.29, I added the driver from the GPIO section, but I couldn't figure =20
-out how to add them to the dts file.  I tried e.g.
-
-<snip>
-i2c@3d40 {
-	[...]
-         compatible =3D "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
-         [...]
-
-         gpio@20 {
-                 compatible =3D "pcf857x";
-                 device_type =3D "gpio";
-                 reg =3D <0x20 1>;
-	};
+cs4270:codec@4f {
+	compatible =3D "cirrus,cs4270";
+	reg =3D <0x4f>;
+	/* MCLK source is a stand-alone oscillator */
+	clock-frequency =3D <12288000>;
 };
-</snip>
 
-and some other like "gpio-controller" instead of "gpio" but (surprise) =20
-it doesn't work - dmesg says that the driver is registered, but nothing =20
-else shows up.  Unfortunately, I couldn't find documentation about the =20
-naming conventions of the i2c child nodes.
+...
 
-As I actually want to use the chips as parallel io (not separate =20
-gpio's) and thus would need to write my own driver I wonder if I really =20
-have to declare it in the device tree?  Would the simple way -just load =20
-the kernel module as with arm/intel- also work?  Would it be possible =20
-to use additional resources like an interrupt pin on the '5200 without =20
-the device tree?
+static struct i2c_device_id cs4270_id[] =3D {
+	{"cs4270", 0},
+	{}
+};
+MODULE_DEVICE_TABLE(i2c, cs4270_id);
 
-Any information about a proper approach would be really helpful!
+> As I actually want to use the chips as parallel io (not separate gpio's) =
+and
+> thus would need to write my own driver I wonder if I really have to decla=
+re
+> it in the device tree? =A0Would the simple way -just load the kernel modu=
+le as
+> with arm/intel- also work? =A0Would it be possible to use additional reso=
+urces
+> like an interrupt pin on the '5200 without the device tree?
 
-Thanks in advance, Albrecht.
+No, the only acceptable way to do this is on PowerPC is with a device
+tree entry and a driver that registers itself properly.
 
---=-uvHnmspbTOzLpAg+sYFx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBJy80Tn/9unNAn/9ERAhjeAJ9BgZ/MZNiePRqdCIfanE/cRRzkYQCfZPCy
-DFxI7Xdl1DDkBJupvh+B+hM=
-=Jx6N
------END PGP SIGNATURE-----
-
---=-uvHnmspbTOzLpAg+sYFx--
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
