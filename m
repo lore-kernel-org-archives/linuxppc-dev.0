@@ -1,25 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-In-Reply-To: <49CBA062.5050000@grandegger.com>
-References: <1237975701-23201-1-git-send-email-wg@grandegger.com>
-	<1237975701-23201-2-git-send-email-wg@grandegger.com>
-	<1237975701-23201-3-git-send-email-wg@grandegger.com>
-	<1237975701-23201-4-git-send-email-wg@grandegger.com>
-	<fa686aa40903251048g479d63f8i5a715defdbfc33d4@mail.gmail.com>
-	<49CA9899.30604@grandegger.com>
-	<fa686aa40903252209r52a1bc1cn995a7da16bc3527f@mail.gmail.com>
-	<49CB31CB.2010704@grandegger.com>
-	<fa686aa40903260727y3266e394g5e574680fe70bbbf@mail.gmail.com>
-	<49CBA062.5050000@grandegger.com>
-Date: Thu, 26 Mar 2009 10:04:37 -0600
-Message-ID: <fa686aa40903260904s67258fbbge3c87e06946c5f58@mail.gmail.com>
-Subject: Re: [PATCH v3 3/4] powerpc: NAND: FSL UPM: document new bindings
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
-	linux-mtd@lists.infradead.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F16ACDDDEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 03:11:58 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n2QGBtHM023390
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 09:11:56 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n2QGBsc2018554
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2009 11:11:55 -0500 (CDT)
+Date: Thu, 26 Mar 2009 11:11:54 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "Goldberger, Yigal" <YGoldberger@nds.com>
+Subject: Re: ELDK with Xenomai for PPC
+Message-ID: <20090326161154.GA26521@ld0162-tx32.am.freescale.net>
+References: <7913DB5FA7D3F643A2C10A4A8E2DFAF43A3A5D7C25@ILMA1.IL.NDS.COM>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7913DB5FA7D3F643A2C10A4A8E2DFAF43A3A5D7C25@ILMA1.IL.NDS.COM>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,47 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 26, 2009 at 9:33 AM, Wolfgang Grandegger <wg@grandegger.com> wr=
-ote:
-> Grant Likely wrote:
->> Does using the reg property give the driver enough information to
->> reliably program the MAR for NAND connections that use the address
->> line chip select scheme? =A0Related to that, should the binding include
->
-> In principle yes:
->
-> =A0if (i > 0)
-> =A0 =A0 =A0offset[i] =3D resource[i].start - resource[0].start;
+On Wed, Mar 25, 2009 at 07:06:50PM +0200, Goldberger, Yigal wrote:
+> I'll try to be as accurate as I can.
+> Yesterday I downloaded ELDK 4.2 from DENX site and Installed it.
+> I want to build a Xenomai enabled kernel.
+> I saw that my kernel is 2.6.24-xenomai and that's what I'm trying to build.
+[snip]
+> Currently I did :
+> > make ads8272_defconfig
+> > make uImage
+> 
+> and I'm failing on :
+>   CC      drivers/net/fs_enet/mac-fcc.o
+> drivers/net/fs_enet/mac-fcc.c: In function 'fcc_cr_cmd':
+> drivers/net/fs_enet/mac-fcc.c:85: error: implicit declaration of function 'cpm_command'
+> make[3]: *** [drivers/net/fs_enet/mac-fcc.o] Error 1
+> make[2]: *** [drivers/net/fs_enet] Error 2
+> make[1]: *** [drivers/net] Error 2
+> make: *** [drivers] Error 2
 
-Ewww.  That's ugly.
+Please try a more recent kernel; there was a lot of cleanup of 82xx
+support going on in the 2.6.24 timeframe.  Also, in general you should
+try building a vanilla kernel of the same version/platform, to see if it
+is a problem introduced by xenomai.  Note that in vanilla 2.6.24 I do not
+see any reference to cpm_command -- it looks like you have the 2.6.25
+version of mac-fcc.c.
 
->> a property that explicitly states that an address line chip select
->> scheme is being used?
->
-> That's why I'm still in favor of:
->
-> =A0fsl,upm-multi-chip-offsets =3D <0x200 0x400>
->
-> That would state that the address line chip select scheme is used with
-> the specified offsets. It also allows for a more elegant solution
-> (code-wise).
+Is this arch/powerpc or arch/ppc?  If the latter, it's no longer
+supported, is gone in current kernels, and was highly deprecated back
+when 2.6.24 came out.  It seems that the last two releases with arch/ppc
+(2.6.25 and 2.6.26) had this problem.
 
-Alright.  Then at the very least the property name should reflect that
-address lines CS is used to reduce the chance of confusion with
-another multi-chip scheme.  Something like
-fsl,upm-addr-line-cs-offsets maybe?
-
-Here is another thought.  The binding is describing that address lines
-are used to activate CS lines.  Offset for chip access purposes is
-derived from the address line, but it doesn't directly describe the
-hardware.  The following may be a better description of the hardware.
-
-fsl,upm-addr-line-cs =3D <9 10>;
-
-g.
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Scott
