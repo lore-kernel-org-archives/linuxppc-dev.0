@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 68301DDE11
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 00:26:06 +1100 (EST)
-Message-ID: <49CCD3E8.9040007@freescale.com>
-Date: Fri, 27 Mar 2009 08:26:00 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH] ucc_geth: Rework the TX logic.
-References: <1238089445-28396-1-git-send-email-Joakim.Tjernlund@transmode.se>	<2a27d3730903270245k6e8633eehfb5cd3fcebd36240@mail.gmail.com>
-	<OFDCE90357.0EDC5DC1-ONC1257586.003759A3-C1257586.00390AD3@transmode.se>
-In-Reply-To: <OFDCE90357.0EDC5DC1-ONC1257586.003759A3-C1257586.00390AD3@transmode.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, pku.leo@gmail.com,
-	netdev@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 6AAFDDDE06
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 01:21:26 +1100 (EST)
+Date: Sat, 28 Mar 2009 01:21:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Steven Rostedt <srostedt@redhat.com>
+Subject: Re: linux-next: tracing/powerpc tree build failure
+Message-Id: <20090328012117.4669e153.sfr@canb.auug.org.au>
+In-Reply-To: <1238158131.22033.10.camel@localhost.localdomain>
+References: <20090327230834.93d0221d.sfr@canb.auug.org.au>
+	<1238158131.22033.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__28_Mar_2009_01_21_17_+1100_cZk=LqB1Ghvdy/83"
+Cc: Benjamin, linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,13 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund wrote:
-> This is a bit better than the current type casts. Moving over to qe_bd
-> accesses is a bigger cleanup that will have to be a seperate patch.
-> I am not sure it is an all win as you probably loose the ability
-> to read both status and len in one access.
+--Signature=_Sat__28_Mar_2009_01_21_17_+1100_cZk=LqB1Ghvdy/83
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Not if you define the struct to have one status_len field (or a union of 
-that with separate fields), as gianfar does.
+Hi Steve,
 
--Scott
+On Fri, 27 Mar 2009 08:48:51 -0400 Steven Rostedt <srostedt@redhat.com> wro=
+te:
+>
+> I knew this was going to break, but I needed to wait till powerpc merged
+> with tip before I could make the change.
+
+Yeah, a bit of a pain but we can live with it for a while.
+
+> This is exactly what I would have done.
+
+Thanks for the confirmation.  I guess I will keep applying this until one
+tree or the other hits mainline at which point it can be fixed in the
+other tree.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__28_Mar_2009_01_21_17_+1100_cZk=LqB1Ghvdy/83
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknM4N4ACgkQjjKRsyhoI8zyXwCgt0zjiyV2mtMCeoFDhoCxnz2t
+oIwAnRz2e3ORvJleGZStSfpIDUecj6EQ
+=l+wa
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__28_Mar_2009_01_21_17_+1100_cZk=LqB1Ghvdy/83--
