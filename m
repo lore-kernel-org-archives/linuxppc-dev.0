@@ -1,16 +1,21 @@
-Return-Path: <Antonio.DiBacco@technolabs.it>
-Received: from smtp.technolabs.it
-	(host20-155-static.82-213-b.business.telecomitalia.it
-	[213.82.155.20]) by ozlabs.org (Postfix) with ESMTP id 66179DDDA0
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 19:45:32 +1100 (EST)
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9D837DDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 20:37:51 +1100 (EST)
+In-Reply-To: <20090327.004237.113711845.davem@davemloft.net>
+References: <OF5FC70952.28684E98-ONC1257585.005ADBF9-C1257585.005BDD35@transmode.se>	<20090326180543.GA2406@oksana.dev.rtsoft.ru>
+	<OFEB54C9DC.647D70E1-ONC1257585.0064475A-C1257585.0064C85F@transmode.se>
+	<20090327.004237.113711845.davem@davemloft.net>
+To: David Miller <davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: ioremap_nocache on the nor flash, reading sporadically fails
-Date: Fri, 27 Mar 2009 09:33:23 +0100
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E013D5B2E@aquib01a>
-From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 2/2] ucc_geth: Rework the TX logic.
+Message-ID: <OF91B13D83.473A03D6-ONC1257586.003493EB-C1257586.0034E4BC@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Fri, 27 Mar 2009 10:37:45 +0100
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,16 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Miller <davem@davemloft.net> wrote on 27/03/2009 08:42:37:
+> 
+> 
+> These patches don't apply to the current tree, could you please
+> respin your final version against at the very least Linus's tree?
 
-I have an MPC880 with linux-2.6.19, I use a flash sector of my nor flash
-to store some parameters.=20
-In order to read them I mapped it with ioremap_nocache and most of the
-time the reading is working fine. Sporadically the read returns strange
-values...=20
-Could it be an hardware problem? Or mapping the flash is not permitted?
-Consider that linux is also stored on the flash and it is working fine.
-My only doubt is that on the uC bus there is also an fpga that is
-activated only after linux hgas started.=20
+That is strange, had a look at linus tree and I don't see any
+changes in his tree that touches the same area/functions.
 
-Bye,
-Antonio.
+If I get the time I will look at it a bit more but for now I am
+stuck on 2.6.29
+
+ Jocke
