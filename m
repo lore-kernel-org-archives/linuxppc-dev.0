@@ -1,9 +1,24 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 27 Mar 2009 16:29:06 +1100
-Subject: [PATCH] powerpc: Fix bugs introduced by sysfs changes (v2)
-Message-Id: <20090327052936.4EB43DDD04@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A3ECEDDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 16:56:39 +1100 (EST)
+Date: Fri, 27 Mar 2009 16:56:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Next March 25: Boot failure on powerpc [recursive locking
+	detected]
+Message-Id: <20090327165624.47a29945.sfr@canb.auug.org.au>
+In-Reply-To: <1238075403.3342.1.camel@localhost.localdomain>
+References: <20090325191229.0e17eaf6.sfr@canb.auug.org.au>
+	<49CA3BF4.3050801@in.ibm.com> <49CB2200.50703@in.ibm.com>
+	<1238075403.3342.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__27_Mar_2009_16_56_24_+1100_cOldlwHN2s6RDN+i"
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,37 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rusty's patch to change our sysfs access to various registers
-to use smp_call_function_single() introduced a whole bunch of
-warnings. This fixes them. This version also fixes an actual
-bug in here where it did mtspr instead of mfspr when reading
-the files
+--Signature=_Fri__27_Mar_2009_16_56_24_+1100_cOldlwHN2s6RDN+i
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Hi all,
 
- arch/powerpc/kernel/sysfs.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+On Thu, 26 Mar 2009 08:50:03 -0500 James Bottomley <James.Bottomley@HansenP=
+artnership.com> wrote:
+>
+> On Thu, 2009-03-26 at 12:04 +0530, Sachin Sant wrote:
+> > Sachin Sant wrote:
+> > > Today's next failed to boot on a powerpc box
+> > > (Power6 blade IBM,7998-61X) with following recursive locking message.
+> > >
+> > > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > > [ INFO: possible recursive locking detected ]
+> > > 2.6.29-next-20090325 #1
+> > After bisecting the failure seems to be because of the following
+> > patch from James ( block: move SCSI timeout check into block )
+> >=20
+> > http://patchwork.kernel.org/patch/8017/
+> >=20
+> > If i back out the above mentioned patch, the machine boots fine
+> > without any problems.
+>=20
+> Yes, that patch already got dropped for other reasons:
+>=20
+> http://marc.info/?t=3D123740773700002
+>=20
+> I'm going to see if I can redo it in a better way, since moving this
+> type of timeout checking from scsi to block is a useful generalisation.
 
---- linux-work.orig/arch/powerpc/kernel/sysfs.c	2009-03-27 14:12:04.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/sysfs.c	2009-03-27 14:16:06.000000000 +1100
-@@ -134,17 +134,15 @@ void ppc_enable_pmcs(void)
- }
- EXPORT_SYMBOL(ppc_enable_pmcs);
- 
--
- #define SYSFS_PMCSETUP(NAME, ADDRESS) \
- static void read_##NAME(void *val) \
- { \
--	mtspr(ADDRESS, *(unsigned long *)val);	\
-+	*(unsigned long *)val = mfspr(ADDRESS);	\
- } \
--static unsigned long write_##NAME(unsigned long val) \
-+static void write_##NAME(void *val) \
- { \
- 	ppc_enable_pmcs(); \
- 	mtspr(ADDRESS, *(unsigned long *)val);	\
--	return 0; \
- } \
- static ssize_t show_##NAME(struct sys_device *dev, \
- 			struct sysdev_attribute *attr, \
+I will revert it from next-20090327 as well as it is still in the
+for-next branch of the block tree.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__27_Mar_2009_16_56_24_+1100_cOldlwHN2s6RDN+i
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknMaokACgkQjjKRsyhoI8wU/ACfVogt2CorBOZeNDRe9Q+V8h7d
+vJkAoKTDmMySZdADARicPv1iJc1tAyD4
+=FSQo
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__27_Mar_2009_16_56_24_+1100_cOldlwHN2s6RDN+i--
