@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dgibson@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 285A5DDE1D
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 10:06:03 +1100 (EST)
-Subject: Re: CONFIG_DEBUG_PAGEALLOC generates WARN_ON() in ppc32 hash
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <765C1EA1-93F7-4FEF-930B-78E2B3DEB4FA@kernel.crashing.org>
-References: <765C1EA1-93F7-4FEF-930B-78E2B3DEB4FA@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sat, 28 Mar 2009 10:05:57 +1100
-Message-Id: <1238195157.20197.81.camel@pasglop>
-Mime-Version: 1.0
-Cc: LinuxPPC Mailing List <linuxppc-dev@ozlabs.org>
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6E3C4DDEE3
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 10:07:53 +1100 (EST)
+Date: Sat, 28 Mar 2009 10:06:15 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Albrecht =?utf-8?B?RHJl77+9?= <albrecht.dress@arcor.de>
+Subject: Re: Q: define i2c nodes in device tree?
+Message-ID: <20090327230615.GB20387@yookeroo.seuss>
+References: <17008330.1238159104446.JavaMail.ngmail@webmail11.arcor-online.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <17008330.1238159104446.JavaMail.ngmail@webmail11.arcor-online.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2009-03-27 at 06:56 -0500, Kumar Gala wrote:
-> Ben,
+On Fri, Mar 27, 2009 at 02:05:04PM +0100, Albrecht Dre� wrote:
+> Hi Timur:
 > 
-> If we have CONFIG_DEBUG_PAGEALLOC enabled we end up hitting the  
-> WARN_ON() in set_pte_at() when we boot.  This appears because we've  
-> already setup pte's via mapin_ram() after which we end up calling  
-> kernel_map_pages().
+> > You need to have a "gpio I2C" device driver that registers the same name as what's in the DTS, like this:
 > 
-> So I'm not sure if __change_page_attr() should be doing something  
-> different or if the WARN_ON() should be conditional on ! 
-> CONFIG_DEBUG_PAGEALLOC
+> Thanks, that did the trick; a proper naming is apparently
+> 
+> pca8575:gpio@20 {
+>         compatible = "nxp,pca8575";
+>         device_type = "gpio";
 
-Or use __set_pte_at() ?
+There shouldn't be device_type here, though.
 
-Note that C_D_P doesn't work on hash32 anyway...
+>         reg = <0x20 1>;
+> };
 
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
