@@ -1,19 +1,29 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 7047ADDDF0
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 23:49:31 +1100 (EST)
-Subject: Re: linux-next: tracing/powerpc tree build failure
-From: Steven Rostedt <srostedt@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20090327230834.93d0221d.sfr@canb.auug.org.au>
-References: <20090327230834.93d0221d.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Fri, 27 Mar 2009 08:48:51 -0400
-Message-Id: <1238158131.22033.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id ABA3DDDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 00:05:11 +1100 (EST)
+Received: from mail-in-09-z2.arcor-online.net (mail-in-09-z2.arcor-online.net
+	[151.189.8.21]) by mx.arcor.de (Postfix) with ESMTP id 3D22011FFDC
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 14:05:05 +0100 (CET)
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
+	by mail-in-09-z2.arcor-online.net (Postfix) with ESMTP id BE6FC28EDD0
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 14:05:04 +0100 (CET)
+Received: from webmail11.arcor-online.net (webmail11.arcor-online.net
+	[151.189.8.83])
+	by mail-in-10.arcor-online.net (Postfix) with ESMTP id 79A6828F2EF
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 14:05:04 +0100 (CET)
+Message-ID: <17008330.1238159104446.JavaMail.ngmail@webmail11.arcor-online.net>
+Date: Fri, 27 Mar 2009 14:05:04 +0100 (CET)
+From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Q: define i2c nodes in device tree?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,72 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Timur:
 
-On Fri, 2009-03-27 at 23:08 +1100, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Today's linux-next build (powerpc allyesconfig) failed like this:
-> 
-> arch/powerpc/kernel/ftrace.c: In function 'prepare_ftrace_return':
-> arch/powerpc/kernel/ftrace.c:612: warning: passing argument 3 of 'ftrace_push_return_trace' makes pointer from integer without a cast
-> arch/powerpc/kernel/ftrace.c:612: error: too many arguments to function 'ftrace_push_return_trace'
-> 
-> Caused by commit 5d1a03dc541dc6672e60e57249ed22f40654ca47
-> ("function-graph: moved the timestamp from arch to generic code") from
-> the tracing tree which (removed an argument from
-> ftrace_push_return_trace()) interacting with commit
-> 6794c78243bfda020ab184d6d578944f8e90d26c ("powerpc64: port of the
-> function graph tracer") from the powerpc tree.
-> 
-> I added the following patch and can carry it as necessary.
+> You need to have a "gpio I2C" device driver that registers the same name =
+as what's in the DTS, like this:
 
-Thanks Stephen!!!
+Thanks, that did the trick; a proper naming is apparently
 
-I knew this was going to break, but I needed to wait till powerpc merged
-with tip before I could make the change.
+pca8575:gpio@20 {
+        compatible =3D "nxp,pca8575";
+        device_type =3D "gpio";
+        reg =3D <0x20 1>;
+};
 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
-> 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Fri, 27 Mar 2009 22:47:58 +1100
-> Subject: [PATCH] tracing: fixup for ftrace_push_return_trace API change
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/kernel/ftrace.c |    6 +-----
->  1 files changed, 1 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-> index 5b5d16b..5455943 100644
-> --- a/arch/powerpc/kernel/ftrace.c
-> +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -557,7 +557,6 @@ extern void mod_return_to_handler(void);
->  void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
->  {
->  	unsigned long old;
-> -	unsigned long long calltime;
->  	int faulted;
->  	struct ftrace_graph_ent trace;
->  	unsigned long return_hooker = (unsigned long)&return_to_handler;
-> @@ -606,10 +605,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
->  		return;
->  	}
->  
-> -	calltime = cpu_clock(raw_smp_processor_id());
-> -
-> -	if (ftrace_push_return_trace(old, calltime,
-> -				self_addr, &trace.depth) == -EBUSY) {
-> +	if (ftrace_push_return_trace(old, self_addr, &trace.depth) == -EBUSY) {
+Now the driver is called, but complains that no platform data is present.  =
+Still have to figure out how to pass that... :-/
 
-This is exactly what I would have done.
+An other confusing thing: although the probe function fails with error -EIN=
+VAL, the device gets registered:
 
-Acked-by: Steven Rostedt <srostedt@redhat.com>
+<7>[    0.801814] i2c 1-0020: uevent
+<7>[    0.802213] pcf857x 1-0020: probe
+<7>[    0.802236] pcf857x 1-0020: no platform data
+<4>[    0.802265] pcf857x: probe of 1-0020 failed with error -22
+<7>[    0.807980] i2c-adapter i2c-1: client [pca8575] registered with bus i=
+d 1-0020
 
--- Steve
+# ls -al /sys/devices/f0000000.soc5200/f0003d40.i2c/i2c-adapter/i2c-1/
+drwxr-xr-x    6 0        0               0 Jan  1 00:00 .
+drwxr-xr-x    3 0        0               0 Jan  1 00:00 ..
+drwxr-xr-x    2 0        0               0 Jan  1 00:00 1-0020
+drwxr-xr-x    2 0        0               0 Jan  1 00:00 1-0021
+drwxr-xr-x    2 0        0               0 Jan  1 00:00 1-0022
+[...]
 
->  		*parent = old;
->  		return;
->  	}
+Is this the intended behaviour?
+
+Thanks, Albrecht.
+
+Zerrei=DFen Sie die Netze der Phisher, Hacker und Betr=FCger!
+Ihre Internet-Sicherheits-Seiten auf Arcor.de bieten alle Infos und Hilfsmi=
+ttel, die Sie zum sicheren Surfen brauchen! Play it safe!
+http://www.arcor.de/footer-sicherheit/
