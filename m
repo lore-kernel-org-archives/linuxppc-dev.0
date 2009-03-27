@@ -1,26 +1,9 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Date: Fri, 27 Mar 2009 02:32:45 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 3/4] powerpc: NAND: FSL UPM: document new bindings
-Message-ID: <20090326233245.GA17048@oksana.dev.rtsoft.ru>
-References: <fa686aa40903252209r52a1bc1cn995a7da16bc3527f@mail.gmail.com>
-	<49CB31CB.2010704@grandegger.com>
-	<fa686aa40903260727y3266e394g5e574680fe70bbbf@mail.gmail.com>
-	<49CBA062.5050000@grandegger.com>
-	<fa686aa40903260904s67258fbbge3c87e06946c5f58@mail.gmail.com>
-	<49CBAED4.8030802@grandegger.com>
-	<fa686aa40903261002l2c8e0d41s6e5ad4bc049058bf@mail.gmail.com>
-	<20090326173302.GA23187@oksana.dev.rtsoft.ru>
-	<49CBFE52.6090706@grandegger.com>
-	<fa686aa40903261622wa2a93f9i98435080c7ab6cea@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <fa686aa40903261622wa2a93f9i98435080c7ab6cea@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss list <devicetree-discuss@ozlabs.org>,
-	linux-mtd@lists.infradead.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 27 Mar 2009 16:29:06 +1100
+Subject: [PATCH] powerpc: Fix bugs introduced by sysfs changes (v2)
+Message-Id: <20090327052936.4EB43DDD04@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,16 +13,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 26, 2009 at 05:22:36PM -0600, Grant Likely wrote:
-[...]
-> That said, I won't oppose it if you go this route.  However at the
-> very least, please change the nand node's compatible list to be:
-> 
-> compatible = "tqc,tqm8548-upm-nand", "fsl,upm-nand";
+Rusty's patch to change our sysfs access to various registers
+to use smp_call_function_single() introduced a whole bunch of
+warnings. This fixes them. This version also fixes an actual
+bug in here where it did mtspr instead of mfspr when reading
+the files
 
-Yeah, that's definitely a good idea.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+ arch/powerpc/kernel/sysfs.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+--- linux-work.orig/arch/powerpc/kernel/sysfs.c	2009-03-27 14:12:04.000000000 +1100
++++ linux-work/arch/powerpc/kernel/sysfs.c	2009-03-27 14:16:06.000000000 +1100
+@@ -134,17 +134,15 @@ void ppc_enable_pmcs(void)
+ }
+ EXPORT_SYMBOL(ppc_enable_pmcs);
+ 
+-
+ #define SYSFS_PMCSETUP(NAME, ADDRESS) \
+ static void read_##NAME(void *val) \
+ { \
+-	mtspr(ADDRESS, *(unsigned long *)val);	\
++	*(unsigned long *)val = mfspr(ADDRESS);	\
+ } \
+-static unsigned long write_##NAME(unsigned long val) \
++static void write_##NAME(void *val) \
+ { \
+ 	ppc_enable_pmcs(); \
+ 	mtspr(ADDRESS, *(unsigned long *)val);	\
+-	return 0; \
+ } \
+ static ssize_t show_##NAME(struct sys_device *dev, \
+ 			struct sysdev_attribute *attr, \
