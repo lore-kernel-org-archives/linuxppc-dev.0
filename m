@@ -1,20 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 542BCDDE1F
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 08:55:15 +1100 (EST)
-Date: Fri, 27 Mar 2009 14:55:02 -0700 (PDT)
-Message-Id: <20090327.145502.214872726.davem@davemloft.net>
-To: Joakim.Tjernlund@transmode.se
-Subject: Re: [PATCH 1/2] ucc_geth: Move freeing of TX packets to NAPI context.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <OF073D5C49.F0D791DE-ONC1257586.0040163D-C1257586.00413F47@transmode.se>
-References: <1238072077-27044-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<2a27d3730903270350m52fcb837ge78c0b87cc3887d5@mail.gmail.com>
-	<OF073D5C49.F0D791DE-ONC1257586.0040163D-C1257586.00413F47@transmode.se>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, pku.leo@gmail.com,
-	netdev@vger.kernel.org
+Return-Path: <timur.tabi@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id B1991DDED9
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 09:07:54 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so747490yxg.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 15:07:52 -0700 (PDT)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <17008330.1238159104446.JavaMail.ngmail@webmail11.arcor-online.net>
+References: <17008330.1238159104446.JavaMail.ngmail@webmail11.arcor-online.net>
+Date: Fri, 27 Mar 2009 17:07:52 -0500
+Message-ID: <ed82fe3e0903271507x6e73e93er8e4899250bf09ff8@mail.gmail.com>
+Subject: Re: Q: define i2c nodes in device tree?
+From: Timur Tabi <timur@freescale.com>
+To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Fri, 27 Mar 2009 12:52:41 +0100
+On Fri, Mar 27, 2009 at 8:05 AM, Albrecht Dre=DF <albrecht.dress@arcor.de> =
+wrote:
 
-> pku.leo@gmail.com wrote on 27/03/2009 11:50:09:
-> > It doesn't make sense to have larger napi budget than the size of RX
-> > BD ring.  You can't have more BDs than RX_BD_RING_LEN in backlog for
-> > napi_poll to process.  Increase the RX_BD_RING_LEN if you want to
-> > increase UCC_GETH_DEV_WEIGHT.  However please also provide the
-> > performance comparison for this kind of change.  Thanks
-> 
-> Bring it up with David Miller.
+> Now the driver is called, but complains that no platform data is present.=
+ =A0Still have to figure out how to pass that... :-/
 
-Right I told him to make this very change.
+I believe there was code added recently to i2c-mpc.c to put DTS
+properties into the platform device, but I don't see it right now.
 
-Pretty soon the driver's won't be able to select this value
-and it will default to 64 everwhere anyways.
+> # ls -al /sys/devices/f0000000.soc5200/f0003d40.i2c/i2c-adapter/i2c-1/
+> drwxr-xr-x =A0 =A06 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
+=A01 00:00 .
+> drwxr-xr-x =A0 =A03 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
+=A01 00:00 ..
+> drwxr-xr-x =A0 =A02 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
+=A01 00:00 1-0020
+> drwxr-xr-x =A0 =A02 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
+=A01 00:00 1-0021
+> drwxr-xr-x =A0 =A02 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
+=A01 00:00 1-0022
+> [...]
+>
+> Is this the intended behaviour?
 
-"performance comparison"?  He can't do that unless he tests
-performance with two active NAPI devices on the same exact
-cpu as the weight value is for fairness between devices.
+I think the entries in /sys/devices/f0000000.soc5200 are from the
+device tree directly.  They're not related to any device driver.  I
+believe you'll find those entries still there even if your driver
+isn't loaded at all.
 
-So you don't tweak "weight" to make one device perform better,
-you tweak it to eliminate unfairness between multiple devices.
-And the only way to achieve that is to use similar values
-across all devices, perhaps link-speed rated which we can't
-do just yet, and that's why I told him to use 64 just like
-every other driver basically does.
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
