@@ -1,19 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7BA71DDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 17:56:05 +1100 (EST)
-Date: Fri, 27 Mar 2009 17:55:51 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Daniel Ng <daniel.ng1234@gmail.com>
-Subject: Re: How to submit patches?
-Message-Id: <20090327175551.17195743.sfr@canb.auug.org.au>
-In-Reply-To: <547eba1b0903262349ne434f33of96c0a31a452f2af@mail.gmail.com>
-References: <547eba1b0903262349ne434f33of96c0a31a452f2af@mail.gmail.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id A85CFDDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 18:42:50 +1100 (EST)
+Date: Fri, 27 Mar 2009 00:42:37 -0700 (PDT)
+Message-Id: <20090327.004237.113711845.davem@davemloft.net>
+To: Joakim.Tjernlund@transmode.se
+Subject: Re: [PATCH 2/2] ucc_geth: Rework the TX logic.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <OFEB54C9DC.647D70E1-ONC1257585.0064475A-C1257585.0064C85F@transmode.se>
+References: <OF5FC70952.28684E98-ONC1257585.005ADBF9-C1257585.005BDD35@transmode.se>
+	<20090326180543.GA2406@oksana.dev.rtsoft.ru>
+	<OFEB54C9DC.647D70E1-ONC1257585.0064475A-C1257585.0064C85F@transmode.se>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__27_Mar_2009_17_55_51_+1100_Y891qSBySgUsH/PX"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__27_Mar_2009_17_55_51_+1100_Y891qSBySgUsH/PX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Daniel,
+These patches don't apply to the current tree, could you please
+respin your final version against at the very least Linus's tree?
 
-On Fri, 27 Mar 2009 17:49:27 +1100 Daniel Ng <daniel.ng1234@gmail.com> wrot=
-e:
->
-> What are the current requirements for submitting a patch?
-
-See Documentation/SubmittingPatches in the kernel tree.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__27_Mar_2009_17_55_51_+1100_Y891qSBySgUsH/PX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknMeHcACgkQjjKRsyhoI8y0hgCglzOXD504ojUj39+stCab62O0
-Co8AoKhGsJtm5EHyLztSIAwRz+0qfRxL
-=2Fcz
------END PGP SIGNATURE-----
-
---Signature=_Fri__27_Mar_2009_17_55_51_+1100_Y891qSBySgUsH/PX--
+Thanks.
