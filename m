@@ -1,16 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id BBC8DDDE24
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 04:40:49 +1100 (EST)
-Date: Fri, 27 Mar 2009 20:40:47 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH] ucc_geth: Fix three oopses in PHY {de,}initialization code
-Message-ID: <20090327174047.GA23111@oksana.dev.rtsoft.ru>
+Return-Path: <timur.tabi@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id A813FDDE9F
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 05:58:42 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so817798qwb.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2009 11:58:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	Joakim Tjernlund <Joakim.Tjernlund@transmode.se>, linuxppc-dev@ozlabs.org
+Sender: timur.tabi@gmail.com
+In-Reply-To: <OF4B79F4DE.4DC6DEA7-ONC1257583.007ECBEA-C1257583.007F2805@transmode.se>
+References: <OFA0B803BB.DEC93B9A-ONC1257583.0039CF3E-C1257583.003A55BA@transmode.se>
+	<20090324.142209.234280606.davem@davemloft.net>
+	<OF603BDF0B.B740DD77-ONC1257583.007CAD9B-C1257583.007CFD35@transmode.se>
+	<20090324.154902.206324978.davem@davemloft.net>
+	<OF4B79F4DE.4DC6DEA7-ONC1257583.007ECBEA-C1257583.007F2805@transmode.se>
+Date: Fri, 27 Mar 2009 13:50:30 -0500
+Message-ID: <ed82fe3e0903271150v34fc18cbua6bb7918a3a71c71@mail.gmail.com>
+Subject: Re: [PATCH] ucc_geth: Convert to net_device_ops
+From: Timur Tabi <timur@freescale.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: leoli@freescale.com, linuxppc-dev@ozlabs.org,
+	David Miller <davem@davemloft.net>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,144 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When there are no free snums, UCC ethernet should gracefully fail, but
-currently it oopses this way:
+On Tue, Mar 24, 2009 at 6:08 PM, Joakim Tjernlund
+<Joakim.Tjernlund@transmode.se> wrote:
 
-  # ifconfig eth0 up
-  fill_init_enet_entries: Can not get SNUM.
-  ucc_geth_startup: Can not fill p_init_enet_param_shadow.
-  eth0: Cannot configure net device, aborting.
-  Unable to handle kernel paging request for data at address 0x00000190
-  Faulting instruction address: 0xc0294c88
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  [...]
-  NIP [c0294c88] mutex_lock+0x0/0x1c
-  LR [c01b6be8] phy_stop+0x20/0x70
-  Call Trace:
-  [efb25da0] [efb2eb60] 0xefb2eb60 (unreliable)
-  [efb25db0] [c01b2058] ucc_geth_stop+0x2c/0x8c
-  [efb25dd0] [c01b4194] ucc_geth_open+0x48/0x27c
-  [efb25df0] [c020eec0] dev_open+0xc0/0x118
-  [...]
+> + =A0 =A0 =A0 .ndo_change_mtu =A0 =A0 =A0 =A0 =3D eth_change_mtu,
 
-This is because the ucc_geth_stop() routine assumes that ugeth->phydev
-is always initialized by the ucc_geth_open(), while it is not in case
-of errors.
+I have an old patch for change_mtu support for ucc_geth which I've
+been meaning to push upstream.  This patch uses this function instead
+of eth_change_mtu():
 
-If we add a check to the ucc_geth_stop(), then another oops pops up:
-
-  Unable to handle kernel paging request for data at address 0x00000004
-  Faulting instruction address: 0xc01b46a4
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  [...]
-  NIP [c01b46a4] adjust_link+0x20/0x1b4
-  LR [c01b770c] phy_state_machine+0xdc/0x44c
-  Call Trace:
-  [ef83bf10] [c021b388] linkwatch_schedule_work+0x74/0xf8 (unreliable)
-  [ef83bf40] [c01b770c] phy_state_machine+0xdc/0x44c
-  [ef83bf60] [c004c13c] run_workqueue+0xb8/0x148
-  [ef83bf90] [c004c870] worker_thread+0x70/0xd0
-  [ef83bfd0] [c00505fc] kthread+0x48/0x84
-  [ef83bff0] [c000f464] kernel_thread+0x4c/0x68
-  [...]
-
-That one happens because ucc_geth_stop() does not call phy_disconnect()
-and so phylib state machine is running without any idea that a MAC has
-just died.
-
-Also, when device tree specifies fixed-link, and CONFIG_FIXED_PHY
-is disabled, we'll get this oops:
-
-  0:01 not found
-  eth2: Could not attach to PHY
-  eth2: Cannot initialize PHY, aborting.
-  Unable to handle kernel paging request for data at address 0x00000190
-  Faulting instruction address: 0xc02967d0
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  [...]
-  NIP [c02967d0] mutex_lock+0x0/0x1c
-  LR [c01b6bcc] phy_stop+0x20/0x70
-  Call Trace:
-  [ef82be50] [efb6bb60] 0xefb6bb60 (unreliable)
-  [ef82be60] [c01b2058] ucc_geth_stop+0x2c/0x8c
-  [ef82be80] [c01b4194] ucc_geth_open+0x48/0x27c
-  [ef82bea0] [c0210a04] dev_open+0xc0/0x118
-  [ef82bec0] [c020f85c] dev_change_flags+0x84/0x1ac
-  [ef82bee0] [c037b768] ic_open_devs+0x168/0x2bc
-  [ef82bf20] [c037ca98] ip_auto_config+0x90/0x28c
-  [ef82bf60] [c0001b9c] do_one_initcall+0x34/0x1a0
-  [ef82bfd0] [c035e240] do_initcalls+0x38/0x58
-  [ef82bfe0] [c035e2c4] kernel_init+0x30/0x90
-  [ef82bff0] [c000f464] kernel_thread+0x4c/0x68
-  [...]
-
-And again, ucc_geth_stop() assumes that ugeth->phydev is there, while
-it isn't.
-
-This patch fixes all three oopses simply by rearranging some code:
-
-- In ucc_geth_open(): move init_phy() call to the beginning, so
-  that we only call ucc_geth_stop() with a PHY attached;
-- Move phy_disconnect() call from ucc_geth_close() to
-  ucc_geth_stop(), so that we'll always disconnect the PHY.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/ucc_geth.c |   21 +++++++++++----------
- 1 files changed, 11 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 1f61e42..9eef04b 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -2009,6 +2009,9 @@ static void ucc_geth_stop(struct ucc_geth_private *ugeth)
- 	/* Disable Rx and Tx */
- 	clrbits32(&ug_regs->maccfg1, MACCFG1_ENABLE_RX | MACCFG1_ENABLE_TX);
- 
-+	phy_disconnect(ugeth->phydev);
-+	ugeth->phydev = NULL;
++static int ucc_geth_change_mtu(struct net_device *dev, int new_mtu)
++{
++	int max_rx_buf_length;
++	struct ucc_geth_private *ugeth =3D netdev_priv(dev);
++	int frame_size =3D new_mtu + 18;
++	struct ucc_geth_info *ug_info;
++	struct ucc_fast_info *uf_info;
 +
- 	ucc_geth_memclean(ugeth);
- }
- 
-@@ -3345,6 +3348,14 @@ static int ucc_geth_open(struct net_device *dev)
- 		return -EINVAL;
- 	}
- 
-+	err = init_phy(dev);
-+	if (err) {
-+		if (netif_msg_ifup(ugeth))
-+			ugeth_err("%s: Cannot initialize PHY, aborting.",
-+				  dev->name);
-+		return err;
++	if (ugeth->p_rx_glbl_pram) {
++		printk("%s: Interface is active!\n", __FUNCTION__);
++	} else {
++
++		ug_info =3D ugeth->ug_info;
++		uf_info =3D &ug_info->uf_info;
++
++		if ((frame_size < 64) || (frame_size > JUMBO_FRAME_SIZE)) {
++			printk(KERN_ERR "%s: Invalid MTU setting\n", dev->name);
++			return -EINVAL;
++		}
++
++		max_rx_buf_length =3D
++		    (frame_size & ~(UCC_GETH_MRBLR_ALIGNMENT - 1)) +
++		    UCC_GETH_MRBLR_ALIGNMENT;
++
++		ugeth->ug_info->uf_info.max_rx_buf_length =3D max_rx_buf_length;
++		dev->mtu =3D new_mtu;
++
++		/* Set the max. rx buffer size (MRBLR) */
++		uf_info->max_rx_buf_length =3D max_rx_buf_length;
++
++		/* set the max. frame length (MFLR) */
++		ug_info->maxFrameLength =3D frame_size;
++
++		ugeth_info("%s: MTU =3D %d (frame size=3D%d)\n", dev->name,
++		       dev->mtu, frame_size);
 +	}
-+
- 	err = ucc_struct_init(ugeth);
- 	if (err) {
- 		if (netif_msg_ifup(ugeth))
-@@ -3381,13 +3392,6 @@ static int ucc_geth_open(struct net_device *dev)
- 				   &ugeth->ug_regs->macstnaddr1,
- 				   &ugeth->ug_regs->macstnaddr2);
- 
--	err = init_phy(dev);
--	if (err) {
--		if (netif_msg_ifup(ugeth))
--			ugeth_err("%s: Cannot initialize PHY, aborting.", dev->name);
--		goto out_err;
--	}
--
- 	phy_start(ugeth->phydev);
- 
- 	err = ugeth_enable(ugeth, COMM_DIR_RX_AND_TX);
-@@ -3430,9 +3434,6 @@ static int ucc_geth_close(struct net_device *dev)
- 
- 	free_irq(ugeth->ug_info->uf_info.irq, ugeth->dev);
- 
--	phy_disconnect(ugeth->phydev);
--	ugeth->phydev = NULL;
--
- 	netif_stop_queue(dev);
- 
- 	return 0;
--- 
-1.5.6.5
++	return 0;
++}
+
+Do you think this is how it should be done?  I don't know enough about
+ucc_geth and MTUs to know off-hand.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
