@@ -1,18 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id B4EB8DDEEA
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 10:00:41 +1100 (EST)
-Date: Fri, 27 Mar 2009 16:00:29 -0700 (PDT)
-Message-Id: <20090327.160029.157396274.davem@davemloft.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] ucc_geth: Fix three oopses in PHY {de,}initialization code
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090327174047.GA23111@oksana.dev.rtsoft.ru>
-References: <20090327174047.GA23111@oksana.dev.rtsoft.ru>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 285A5DDE1D
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 10:06:03 +1100 (EST)
+Subject: Re: CONFIG_DEBUG_PAGEALLOC generates WARN_ON() in ppc32 hash
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <765C1EA1-93F7-4FEF-930B-78E2B3DEB4FA@kernel.crashing.org>
+References: <765C1EA1-93F7-4FEF-930B-78E2B3DEB4FA@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sat, 28 Mar 2009 10:05:57 +1100
+Message-Id: <1238195157.20197.81.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, leoli@freescale.com, Joakim.Tjernlund@transmode.se,
-	linuxppc-dev@ozlabs.org
+Cc: LinuxPPC Mailing List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Fri, 27 Mar 2009 20:40:47 +0300
-
-> When there are no free snums, UCC ethernet should gracefully fail, but
-> currently it oopses this way:
- ...
-> Also, when device tree specifies fixed-link, and CONFIG_FIXED_PHY
-> is disabled, we'll get this oops:
- ...
-> This patch fixes all three oopses simply by rearranging some code:
+On Fri, 2009-03-27 at 06:56 -0500, Kumar Gala wrote:
+> Ben,
 > 
-> - In ucc_geth_open(): move init_phy() call to the beginning, so
->   that we only call ucc_geth_stop() with a PHY attached;
-> - Move phy_disconnect() call from ucc_geth_close() to
->   ucc_geth_stop(), so that we'll always disconnect the PHY.
+> If we have CONFIG_DEBUG_PAGEALLOC enabled we end up hitting the  
+> WARN_ON() in set_pte_at() when we boot.  This appears because we've  
+> already setup pte's via mapin_ram() after which we end up calling  
+> kernel_map_pages().
 > 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> So I'm not sure if __change_page_attr() should be doing something  
+> different or if the WARN_ON() should be conditional on ! 
+> CONFIG_DEBUG_PAGEALLOC
 
-Applied, thanks Anton.
+Or use __set_pte_at() ?
+
+Note that C_D_P doesn't work on hash32 anyway...
+
+Ben.
