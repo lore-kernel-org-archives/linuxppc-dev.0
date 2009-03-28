@@ -1,23 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 7092BDDDFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 21:48:59 +1100 (EST)
-Date: Sat, 28 Mar 2009 13:48:57 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
-	select CONFIG_FRAME_POINTER
-Message-ID: <20090328104857.GA10897@oksana.dev.rtsoft.ru>
-References: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
-	<20090320164429.GA28037@oksana.dev.rtsoft.ru>
-	<1237607369.17367.7.camel@localhost.localdomain>
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 72814DDE00
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 22:27:16 +1100 (EST)
+In-Reply-To: <ed82fe3e0903271150v34fc18cbua6bb7918a3a71c71@mail.gmail.com>
+References: <OFA0B803BB.DEC93B9A-ONC1257583.0039CF3E-C1257583.003A55BA@transmode.se>	
+	<20090324.142209.234280606.davem@davemloft.net>
+	<OF603BDF0B.B740DD77-ONC1257583.007CAD9B-C1257583.007CFD35@transmode.se>
+	<20090324.154902.206324978.davem@davemloft.net>	
+	<OF4B79F4DE.4DC6DEA7-ONC1257583.007ECBEA-C1257583.007F2805@transmode.se>
+	<ed82fe3e0903271150v34fc18cbua6bb7918a3a71c71@mail.gmail.com>
+To: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1237607369.17367.7.camel@localhost.localdomain>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Sam Ravnborg <sam@ravnborg.org>
-Reply-To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] ucc_geth: Convert to net_device_ops
+Message-ID: <OF13743B7F.C32B8685-ONC1257587.003E2ABA-C1257587.003EE8DA@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Sat, 28 Mar 2009 12:27:09 +0100
+Content-Type: text/plain; charset="US-ASCII"
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, timur.tabi@gmail.com,
+	leoli@freescale.com, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,100 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 20, 2009 at 11:49:29PM -0400, Steven Rostedt wrote:
-> Ben,
+timur.tabi@gmail.com wrote on 27/03/2009 19:50:30:
+
 > 
-> Can you ACK this patch? Or even take it in your tree?
-
-Benjamin, have you had a chance to look into this? Sam, could
-you also take a look?
-
-Thanks!
-
-> On Fri, 2009-03-20 at 19:44 +0300, Anton Vorontsov wrote:
-> > This patch introduces ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol.
-> > When defined, the top level Makefile won't add -fno-omit-frame-pointer
-> > cflag (the flag is useless in PowerPC kernels, and also makes gcc
-> > generate wrong code).
-> > 
-> > Also move ARCH_WANT_FRAME_POINTERS's help text.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
-> >  Makefile             |    7 +++++--
-> >  arch/powerpc/Kconfig |    1 +
-> >  lib/Kconfig.debug    |   16 ++++++++++------
-> >  3 files changed, 16 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/Makefile b/Makefile
-> > index 46c04c5..bf41b05 100644
-> > --- a/Makefile
-> > +++ b/Makefile
-> > @@ -538,9 +538,12 @@ KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
-> >  endif
-> >  
-> >  ifdef CONFIG_FRAME_POINTER
-> > -KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-> > +  KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
-> > +  ifndef ARCH_HAS_NORMAL_FRAME_POINTERS
-> > +    KBUILD_CFLAGS	+= -fno-omit-frame-pointer
-> > +  endif
-> >  else
-> > -KBUILD_CFLAGS	+= -fomit-frame-pointer
-> > +  KBUILD_CFLAGS	+= -fomit-frame-pointer
-> >  endif
-> >  
-> >  ifdef CONFIG_DEBUG_INFO
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > index 97f9a64..4587e66 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -113,6 +113,7 @@ config PPC
-> >  	select HAVE_FUNCTION_TRACER
-> >  	select HAVE_FUNCTION_GRAPH_TRACER
-> >  	select ARCH_WANT_OPTIONAL_GPIOLIB
-> > +	select ARCH_HAS_NORMAL_FRAME_POINTERS
-> >  	select HAVE_IDE
-> >  	select HAVE_IOREMAP_PROT
-> >  	select HAVE_EFFICIENT_UNALIGNED_ACCESS
-> > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> > index 4b63b6b..fc8cd1f 100644
-> > --- a/lib/Kconfig.debug
-> > +++ b/lib/Kconfig.debug
-> > @@ -661,20 +661,24 @@ config DEBUG_NOTIFIERS
-> >  	  This is a relatively cheap check but if you care about maximum
-> >  	  performance, say N.
-> >  
-> > -#
-> > -# Select this config option from the architecture Kconfig, if it
-> > -# it is preferred to always offer frame pointers as a config
-> > -# option on the architecture (regardless of KERNEL_DEBUG):
-> > -#
-> >  config ARCH_WANT_FRAME_POINTERS
-> >  	bool
-> >  	help
-> > +	  Select this config option from the architecture Kconfig, if it
-> > +	  it is preferred to always offer frame pointers as a config
-> > +	  option on the architecture (regardless of KERNEL_DEBUG).
-> > +
-> > +config ARCH_HAS_NORMAL_FRAME_POINTERS
-> > +	bool
-> > +	help
-> > +	  Architectures should select this symbol if their ABI implies
-> > +	  having a frame pointer.
-> >  
-> >  config FRAME_POINTER
-> >  	bool "Compile the kernel with frame pointers"
-> >  	depends on DEBUG_KERNEL && \
-> >  		(CRIS || M68K || M68KNOMMU || FRV || UML || S390 || \
-> > -		 AVR32 || SUPERH || BLACKFIN || MN10300) || \
-> > +		 AVR32 || SUPERH || BLACKFIN || MN10300 || PPC) || \
-> >  		ARCH_WANT_FRAME_POINTERS
-> >  	default y if (DEBUG_INFO && UML) || ARCH_WANT_FRAME_POINTERS
-> >  	help
+> On Tue, Mar 24, 2009 at 6:08 PM, Joakim Tjernlund
+> <Joakim.Tjernlund@transmode.se> wrote:
 > 
+> > +       .ndo_change_mtu         = eth_change_mtu,
+> 
+> I have an old patch for change_mtu support for ucc_geth which I've
+> been meaning to push upstream.  This patch uses this function instead
+> of eth_change_mtu():
+> 
+> +static int ucc_geth_change_mtu(struct net_device *dev, int new_mtu)
+> +{
+> +   int max_rx_buf_length;
+> +   struct ucc_geth_private *ugeth = netdev_priv(dev);
+> +   int frame_size = new_mtu + 18;
+> +   struct ucc_geth_info *ug_info;
+> +   struct ucc_fast_info *uf_info;
+> +
+> +   if (ugeth->p_rx_glbl_pram) {
+> +      printk("%s: Interface is active!\n", __FUNCTION__);
+> +   } else {
+> +
+> +      ug_info = ugeth->ug_info;
+> +      uf_info = &ug_info->uf_info;
+> +
+> +      if ((frame_size < 64) || (frame_size > JUMBO_FRAME_SIZE)) {
+> +         printk(KERN_ERR "%s: Invalid MTU setting\n", dev->name);
+> +         return -EINVAL;
+> +      }
+> +
+> +      max_rx_buf_length =
+> +          (frame_size & ~(UCC_GETH_MRBLR_ALIGNMENT - 1)) +
+> +          UCC_GETH_MRBLR_ALIGNMENT;
+> +
+> +      ugeth->ug_info->uf_info.max_rx_buf_length = max_rx_buf_length;
+> +      dev->mtu = new_mtu;
+> +
+> +      /* Set the max. rx buffer size (MRBLR) */
+> +      uf_info->max_rx_buf_length = max_rx_buf_length;
+> +
+> +      /* set the max. frame length (MFLR) */
+> +      ug_info->maxFrameLength = frame_size;
+> +
+> +      ugeth_info("%s: MTU = %d (frame size=%d)\n", dev->name,
+> +             dev->mtu, frame_size);
+> +   }
+> +   return 0;
+> +}
+> 
+> Do you think this is how it should be done?  I don't know enough about
+> ucc_geth and MTUs to know off-hand.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Not quite so. I don't think you can support JUMBO frames with just one big 
+RX buffer.
+Also, maxframe & RX buffer should be somewhat bigger than the actual mtu 
+so you can
+support VLAN(4) and PPPOE(8) = 12 bytes.
+You need to add 12 bytes to the default values too.
+
+ Jocke 
