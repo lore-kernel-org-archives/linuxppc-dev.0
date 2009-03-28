@@ -1,19 +1,18 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 88341DDDA5
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Mar 2009 07:52:36 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so907265yxg.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 13:52:33 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <ac3eb2510903281210w689a48dcsa04d67392de06801@mail.gmail.com>
-References: <ac3eb2510903281210w689a48dcsa04d67392de06801@mail.gmail.com>
-Date: Sat, 28 Mar 2009 14:52:33 -0600
-Message-ID: <fa686aa40903281352j239b5e6ct33cd0cf1d23c0579@mail.gmail.com>
-Subject: Re: BUS_ID_SIZE is going away
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id D968FDDDB6
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Mar 2009 08:07:20 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so923649waf.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2009 14:07:19 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartmann <greg@kroah.com>
+Subject: [PATCH] powerpc: Remove unused symbols from fsl_devices.h
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Date: Sat, 28 Mar 2009 15:07:16 -0600
+Message-ID: <20090328210715.27260.66043.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Greg Kroah-Hartmann <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Mar 28, 2009 at 1:10 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> Hey,
-> care to replace:
-> =A0bus_id[BUS_ID_SIZE];
-> in:
-> =A0include/linux/fsl_devices.h
-> with a locally defined limit, or whatever fits your needs? Or let me
-> know how you like it to be converted, and I can make a patch, and we
-> can push it through the driver-core tree.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-gianfar_platform_data and several other symbols in that file are
-actually obsolete and unused.  They can be removed entirely from
-include/linux/fsl_devices.h.  I'll prepare a patch.
+Remove old artifacts leftover from the platform driver gianfar and
+fsl_i2c drivers.  These symbols became unused when the drivers
+were migrated over to use the of_platform bus.
 
-g.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+
+ include/linux/fsl_devices.h |   22 ----------------------
+ 1 files changed, 0 insertions(+), 22 deletions(-)
 
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index d9051d7..4953709 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -18,7 +18,6 @@
+ #define _FSL_DEVICE_H_
+ 
+ #include <linux/types.h>
+-#include <linux/phy.h>
+ 
+ /*
+  * Some conventions on how we handle peripherals on Freescale chips
+@@ -44,27 +43,6 @@
+  *
+  */
+ 
+-struct gianfar_platform_data {
+-	/* device specific information */
+-	u32	device_flags;
+-	char	bus_id[BUS_ID_SIZE];
+-	phy_interface_t interface;
+-};
+-
+-struct gianfar_mdio_data {
+-	/* board specific information */
+-	int	irq[32];
+-};
+-
+-/* Flags in gianfar_platform_data */
+-#define FSL_GIANFAR_BRD_HAS_PHY_INTR	0x00000001 /* set or use a timer */
+-#define FSL_GIANFAR_BRD_IS_REDUCED	0x00000002 /* Set if RGMII, RMII */
+-
+-struct fsl_i2c_platform_data {
+-	/* device specific information */
+-	u32	device_flags;
+-};
+-
+ /* Flags related to I2C device features */
+ #define FSL_I2C_DEV_SEPARATE_DFSRR	0x00000001
+ #define FSL_I2C_DEV_CLOCK_5200		0x00000002
