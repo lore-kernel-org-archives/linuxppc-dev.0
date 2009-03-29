@@ -1,26 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mikey@neuling.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 08D27DDE0D
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 09:55:19 +1100 (EST)
-Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
-	select CONFIG_FRAME_POINTER
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20090328104857.GA10897@oksana.dev.rtsoft.ru>
-References: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
-	<20090320164429.GA28037@oksana.dev.rtsoft.ru>
-	<1237607369.17367.7.camel@localhost.localdomain>
-	<20090328104857.GA10897@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Mon, 30 Mar 2009 09:54:50 +1100
-Message-Id: <1238367290.20197.113.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Steven Rostedt <srostedt@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Sam Ravnborg <sam@ravnborg.org>
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 66065DDE28
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 10:58:00 +1100 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH] Fix ptrace compat wrapper for fpu register access 
+In-reply-to: <m2k568xlfg.fsf@igel.home> 
+References: <m2k568xlfg.fsf@igel.home>
+Date: Mon, 30 Mar 2009 10:57:59 +1100
+Message-ID: <13580.1238371079@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,104 +22,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2009-03-28 at 13:48 +0300, Anton Vorontsov wrote:
-> On Fri, Mar 20, 2009 at 11:49:29PM -0400, Steven Rostedt wrote:
-> > Ben,
-> > 
-> > Can you ACK this patch? Or even take it in your tree?
+> The ptrace compat wrapper mishandles access to the fpu registers.  The
+> PTRACE_PEEKUSR and PTRACE_POKEUSR requests miscalculate the index into
+> the fpr array due to the broken FPINDEX macro.  The
+> PPC_PTRACE_PEEKUSR_3264 request needs to use the same formula that the
+> native ptrace interface uses when operating on the register number (as
+> opposed to the 4-byte offset).  The PPC_PTRACE_POKEUSR_3264 request
+> didn't take TS_FPRWIDTH into account.
 > 
-> Benjamin, have you had a chance to look into this? Sam, could
-> you also take a look?
+> This was tested with the gdb testsuite on a G5.
 
-Those patches look ok. I'm a little bit surprised that -mno-sched-epilog
-isn't needed, gcc weirdness never ceases to amaze me, but the
-Makefile/Kconfig churning isn't for me to judge. If Sam is happy, then
-let's merge it.
+So if you're looking fixing 32 bit apps ptracing 64 bit apps, does that
+mean we can get a single 32 bit GDB that'll ptrace both 64 and 32 bit
+apps?
 
-Ben.
+I'd been looking for a ptrace test suite... thanks!
 
-> Thanks!
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
 > 
-> > On Fri, 2009-03-20 at 19:44 +0300, Anton Vorontsov wrote:
-> > > This patch introduces ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol.
-> > > When defined, the top level Makefile won't add -fno-omit-frame-pointer
-> > > cflag (the flag is useless in PowerPC kernels, and also makes gcc
-> > > generate wrong code).
-> > > 
-> > > Also move ARCH_WANT_FRAME_POINTERS's help text.
-> > > 
-> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > ---
-> > >  Makefile             |    7 +++++--
-> > >  arch/powerpc/Kconfig |    1 +
-> > >  lib/Kconfig.debug    |   16 ++++++++++------
-> > >  3 files changed, 16 insertions(+), 8 deletions(-)
-> > > 
-> > > diff --git a/Makefile b/Makefile
-> > > index 46c04c5..bf41b05 100644
-> > > --- a/Makefile
-> > > +++ b/Makefile
-> > > @@ -538,9 +538,12 @@ KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
-> > >  endif
-> > >  
-> > >  ifdef CONFIG_FRAME_POINTER
-> > > -KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-> > > +  KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
-> > > +  ifndef ARCH_HAS_NORMAL_FRAME_POINTERS
-> > > +    KBUILD_CFLAGS	+= -fno-omit-frame-pointer
-> > > +  endif
-> > >  else
-> > > -KBUILD_CFLAGS	+= -fomit-frame-pointer
-> > > +  KBUILD_CFLAGS	+= -fomit-frame-pointer
-> > >  endif
-> > >  
-> > >  ifdef CONFIG_DEBUG_INFO
-> > > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > > index 97f9a64..4587e66 100644
-> > > --- a/arch/powerpc/Kconfig
-> > > +++ b/arch/powerpc/Kconfig
-> > > @@ -113,6 +113,7 @@ config PPC
-> > >  	select HAVE_FUNCTION_TRACER
-> > >  	select HAVE_FUNCTION_GRAPH_TRACER
-> > >  	select ARCH_WANT_OPTIONAL_GPIOLIB
-> > > +	select ARCH_HAS_NORMAL_FRAME_POINTERS
-> > >  	select HAVE_IDE
-> > >  	select HAVE_IOREMAP_PROT
-> > >  	select HAVE_EFFICIENT_UNALIGNED_ACCESS
-> > > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> > > index 4b63b6b..fc8cd1f 100644
-> > > --- a/lib/Kconfig.debug
-> > > +++ b/lib/Kconfig.debug
-> > > @@ -661,20 +661,24 @@ config DEBUG_NOTIFIERS
-> > >  	  This is a relatively cheap check but if you care about maximum
-> > >  	  performance, say N.
-> > >  
-> > > -#
-> > > -# Select this config option from the architecture Kconfig, if it
-> > > -# it is preferred to always offer frame pointers as a config
-> > > -# option on the architecture (regardless of KERNEL_DEBUG):
-> > > -#
-> > >  config ARCH_WANT_FRAME_POINTERS
-> > >  	bool
-> > >  	help
-> > > +	  Select this config option from the architecture Kconfig, if it
-> > > +	  it is preferred to always offer frame pointers as a config
-> > > +	  option on the architecture (regardless of KERNEL_DEBUG).
-> > > +
-> > > +config ARCH_HAS_NORMAL_FRAME_POINTERS
-> > > +	bool
-> > > +	help
-> > > +	  Architectures should select this symbol if their ABI implies
-> > > +	  having a frame pointer.
-> > >  
-> > >  config FRAME_POINTER
-> > >  	bool "Compile the kernel with frame pointers"
-> > >  	depends on DEBUG_KERNEL && \
-> > >  		(CRIS || M68K || M68KNOMMU || FRV || UML || S390 || \
-> > > -		 AVR32 || SUPERH || BLACKFIN || MN10300) || \
-> > > +		 AVR32 || SUPERH || BLACKFIN || MN10300 || PPC) || \
-> > >  		ARCH_WANT_FRAME_POINTERS
-> > >  	default y if (DEBUG_INFO && UML) || ARCH_WANT_FRAME_POINTERS
-> > >  	help
-> > 
+> ---
+> diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
+> index 197d49c..f992eaf 100644
+> --- a/arch/powerpc/kernel/ptrace32.c
+> +++ b/arch/powerpc/kernel/ptrace32.c
+> @@ -67,7 +67,7 @@ static long compat_ptrace_old(struct task_struct *child, lo
+ng request,
+>  /* Macros to workout the correct index for the FPR in the thread struct */
+>  #define FPRNUMBER(i) (((i) - PT_FPR0) >> 1)
+>  #define FPRHALF(i) (((i) - PT_FPR0) & 1)
+> -#define FPRINDEX(i) TS_FPRWIDTH * FPRNUMBER(i) + FPRHALF(i)
+> +#define FPRINDEX(i) TS_FPRWIDTH * FPRNUMBER(i) * 2 + FPRHALF(i)
+
+ACK, I have the same patch here:
+http://patchwork.ozlabs.org/patch/24940/
+
+>  
+>  long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
+>  			compat_ulong_t caddr, compat_ulong_t cdata)
+> @@ -169,7 +169,7 @@ long compat_arch_ptrace(struct task_struct *child, compat
+_long_t request,
+>  		if (numReg >= PT_FPR0) {
+>  			flush_fp_to_thread(child);
+>  			tmp = ((unsigned long int *)child->thread.fpr)
+> -				[FPRINDEX(numReg)];
+> +				[TS_FPRWIDTH * (numReg - PT_FPR0)];
+>  		} else { /* register within PT_REGS struct */
+>  			tmp = ptrace_get_reg(child, numReg);
+>  		} 
+> @@ -263,7 +263,8 @@ long compat_arch_ptrace(struct task_struct *child, compat
+_long_t request,
+>  			ret = ptrace_put_reg(child, numReg, freg);
+>  		} else {
+>  			flush_fp_to_thread(child);
+> -			((unsigned int *)child->thread.regs)[index] = data;
+> +			((unsigned int *)child->thread.regs)
+> +				[FPRINDEX(index)] = data;
+
+This index is into the ptregs structure not the fpr.  I'm not sure the
+FPRINDEX macro is applicable here.
+
+Mikey
+
+>  			ret = 0;
+>  		}
+>  		break;
+> 
+> -- 
+> Andreas Schwab, schwab@linux-m68k.org
+> GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+> "And now for something completely different."
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 > 
