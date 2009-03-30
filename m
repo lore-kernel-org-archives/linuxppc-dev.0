@@ -1,15 +1,20 @@
-Return-Path: <vbendeb@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.232])
-	by ozlabs.org (Postfix) with ESMTP id 537B3DDE22
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 07:04:40 +1100 (EST)
-MIME-Version: 1.0
-Sender: vbendeb@gmail.com
-Date: Mon, 30 Mar 2009 13:04:38 -0700
-Message-ID: <f608b67d0903301304t58028e88t6ba6d4f9b030ef88@mail.gmail.com>
-Subject: Setting eth interface oper state from user space
-From: vb <vb@vsbe.com>
-To: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>, linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 8C2CBDDEF5
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 07:37:01 +1100 (EST)
+Date: Mon, 30 Mar 2009 13:36:48 -0700 (PDT)
+Message-Id: <20090330.133648.202747210.davem@davemloft.net>
+To: Joakim.Tjernlund@transmode.se
+Subject: Re: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <OF42785A57.F2F3AFE4-ONC1257589.0035B462-C1257589.003712D0@transmode.se>
+References: <OF6D5FFE1D.1843C7FE-ONC1257589.00328D91-C1257589.00336B8B@transmode.se>
+	<2a27d3730903300236j79cc3035raef2bf5e895fe429@mail.gmail.com>
+	<OF42785A57.F2F3AFE4-ONC1257589.0035B462-C1257589.003712D0@transmode.se>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, pku.leo@gmail.com,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm debugging a fairly awkward system, where the ehernet controller
-and the phy device connected to the controller's mac are completely
-independent. (this is in the 2.6.25 tree, btw).
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Mon, 30 Mar 2009 12:01:33 +0200
 
-The phy device interface is through SysFs attributes, there is no
-interrupts, link state is polled by a user space thread.
+> I don't know. But the question you should ask is: Does the networking
+> code promise this now and for the future? If not, you should
+> fix the driver not to relay on netif_queue_stopped() here.
 
-When I try using this new ethernet interface, it's never in the
-operational 'running' state, so it never gets used.
+Stop this nonsense talk.
 
-I see that many drivers use netif_carrier_on() to set oper state, but
-this is invoked from the driver code in the kernel.
+If the driver can't be the one and only controller of the TX queue
+state, everything would essentially explode.
 
-Is there a recommended way of controlling the interface operstate from
-user space? Or maybe someone has a suggestion on how to do this in the
-cleanest possible way?
-
-As always, any hints/comments will be highly appreciated,
-TIA,
-Vadim
+The fact is, it does.
