@@ -1,20 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 8C2CBDDEF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 07:37:01 +1100 (EST)
-Date: Mon, 30 Mar 2009 13:36:48 -0700 (PDT)
-Message-Id: <20090330.133648.202747210.davem@davemloft.net>
-To: Joakim.Tjernlund@transmode.se
-Subject: Re: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <OF42785A57.F2F3AFE4-ONC1257589.0035B462-C1257589.003712D0@transmode.se>
-References: <OF6D5FFE1D.1843C7FE-ONC1257589.00328D91-C1257589.00336B8B@transmode.se>
-	<2a27d3730903300236j79cc3035raef2bf5e895fe429@mail.gmail.com>
-	<OF42785A57.F2F3AFE4-ONC1257589.0035B462-C1257589.003712D0@transmode.se>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0746DDDE1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 07:37:52 +1100 (EST)
+Date: Mon, 30 Mar 2009 13:35:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Subject: Re: [PATCH] hvc_console: prevent wrapping in hvc_console_print()
+Message-Id: <20090330133531.f5d99c09.akpm@linux-foundation.org>
+In-Reply-To: <49BF956B.9030109@gmail.com>
+References: <49BF956B.9030109@gmail.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, leoli@freescale.com, pku.leo@gmail.com,
-	netdev@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Mon, 30 Mar 2009 12:01:33 +0200
+On Tue, 17 Mar 2009 13:19:55 +0100
+Roel Kluin <roel.kluin@gmail.com> wrote:
 
-> I don't know. But the question you should ask is: Does the networking
-> code promise this now and for the future? If not, you should
-> fix the driver not to relay on netif_queue_stopped() here.
+> This was found by code analysis, is it needed?
+> ------------------------------>8-------------8<---------------------------------
+> If we subtract too much on unsigned i it wraps.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+> index 94e7e3c..d06313c 100644
+> --- a/drivers/char/hvc_console.c
+> +++ b/drivers/char/hvc_console.c
+> @@ -161,10 +161,10 @@ static void hvc_console_print(struct console *co, const char *b,
+>  			}
+>  		} else {
+>  			r = cons_ops[index]->put_chars(vtermnos[index], c, i);
+> -			if (r <= 0) {
+> +			if (r <= 0 || r > i) {
+>  				/* throw away chars on error */
+>  				i = 0;
+> -			} else if (r > 0) {
+> +			} else {
+>  				i -= r;
+>  				if (i > 0)
+>  					memmove(c, c+r, i);
 
-Stop this nonsense talk.
+I expect that ->put_chars() will either return a -ve errno or will
+return the number of chars which were written, which will be less than
+or equal to `i'.
 
-If the driver can't be the one and only controller of the TX queue
-state, everything would essentially explode.
+Or maybe I miss your point.
 
-The fact is, it does.
+Guys, could we have a MAINTAINERS entry for this driver please?
