@@ -1,18 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.226])
-	by ozlabs.org (Postfix) with ESMTP id C45CEDDE20
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 05:53:17 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g9so2179066rvb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 11:53:16 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] net/fec_mpc52xx: fix BUG on missing dma_ops
-To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	David Miller <davem@davemloft.net>
-Date: Mon, 30 Mar 2009 12:53:14 -0600
-Message-ID: <20090330184423.31699.61150.stgit@localhost.localdomain>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5855ADDDA0
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 06:33:00 +1100 (EST)
+Message-ID: <49D11E47.8080106@freescale.com>
+Date: Mon, 30 Mar 2009 14:32:23 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH] ucc_geth: Rework the TX logic.
+References: <1238089445-28396-1-git-send-email-Joakim.Tjernlund@transmode.se>	<2a27d3730903270245k6e8633eehfb5cd3fcebd36240@mail.gmail.com>
+	<OFDCE90357.0EDC5DC1-ONC1257586.003759A3-C1257586.00390AD3@transmode.se>
+	<49CCD3E8.9040007@freescale.com>
+	<OFEFCEAFB5.CC21FFBB-ONC1257589.005AEF16-C1257589.005B64EB@transmode.se>
+	<49D0FFBB.7000009@freescale.com>
+	<OF3127420C.081D4097-ONC1257589.00603E3D-C1257589.006093B3@transmode.se>
+	<49D1052D.2050609@freescale.com>
+	<OF70832E04.3DC53F05-ONC1257589.00663AFF-C1257589.0066C397@transmode.se>
+In-Reply-To: <OF70832E04.3DC53F05-ONC1257589.00663AFF-C1257589.0066C397@transmode.se>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, pku.leo@gmail.com,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Joakim Tjernlund wrote:
+>> different since descriptors are in MURAM which is ioremap()ed -- though 
+>> switching to a cacheable mapping with barriers should be a performance 
+>> improvement.
+> 
+> I always thought that MURAM was very fast. The whole reason to have BDs in
+> MURAM is that it is faster than normal RAM, at least that is what I 
+> thought.
 
-The driver triggers a BUG_ON() when allocating DMA buffers if the
-arch/powerpc dma_ops from the of_platform device are not copied
-into net_device structure.
+Yeah, on second thought it probably wouldn't be worth it.  There's also 
+the question of under what circumstances the QE's MURAM accesses will be 
+cache-coherent.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
-David, do you want to pick this one up right away, or should I merge it
-through Ben's powerpc tree?
+As for the CPU not reordering guarded+cache inhibited accesses, that 
+initially seemed to be true for the new arch stuff (book3e/book3s, but 
+not really, see below), but the classic arch documentation only 
+guarantees stores to such regions to be in-order (and the 
+explicitly-specified operation of eieio on I+G accesses wouldn't make 
+much sense if they were already guaranteed to be in-order).
 
-g.
+Then I looked at the EREF to see what older book E documents had to say 
+on the issue, and it suggests that when the architecture document says 
+"out of order", it really means "speculative" (and reading the arch 
+doc's definition of "out of order" seems to confirm this -- redefining 
+terms is bad, m'kay?).  So it seems that the simple answer is no, 
+guarded storage is not guaranteed to be in order, unless the only thing 
+that can cause an out-of-order access is speculative execution.
 
- drivers/net/fec_mpc52xx.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index 049b0a7..215207d 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -928,6 +928,9 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 	if (!request_mem_region(mem.start, sizeof(struct mpc52xx_fec), DRIVER_NAME))
- 		return -EBUSY;
- 
-+	/* Copy the PowerPC dma_ops from the of_device */
-+	set_dma_ops(&ndev->dev, get_dma_ops(&op->dev));
-+
- 	/* Init ether ndev with what we have */
- 	ndev->open		= mpc52xx_fec_open;
- 	ndev->stop		= mpc52xx_fec_close;
+-Scott
