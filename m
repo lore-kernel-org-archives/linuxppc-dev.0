@@ -1,26 +1,18 @@
-Return-Path: <Joakim.Tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6641BDDE20
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 05:42:35 +1100 (EST)
-In-Reply-To: <49D1052D.2050609@freescale.com>
-References: <1238089445-28396-1-git-send-email-Joakim.Tjernlund@transmode.se>	<2a27d3730903270245k6e8633eehfb5cd3fcebd36240@mail.gmail.com>
-	<OFDCE90357.0EDC5DC1-ONC1257586.003759A3-C1257586.00390AD3@transmode.se>
-	<49CCD3E8.9040007@freescale.com>
-	<OFEFCEAFB5.CC21FFBB-ONC1257589.005AEF16-C1257589.005B64EB@transmode.se>
-	<49D0FFBB.7000009@freescale.com>
-	<OF3127420C.081D4097-ONC1257589.00603E3D-C1257589.006093B3@transmode.se>
-	<49D1052D.2050609@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.226])
+	by ozlabs.org (Postfix) with ESMTP id C45CEDDE20
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 05:53:17 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g9so2179066rvb.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 11:53:16 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] net/fec_mpc52xx: fix BUG on missing dma_ops
+To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	David Miller <davem@davemloft.net>
+Date: Mon, 30 Mar 2009 12:53:14 -0600
+Message-ID: <20090330184423.31699.61150.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Subject: Re: [PATCH] ucc_geth: Rework the TX logic.
-Message-ID: <OF70832E04.3DC53F05-ONC1257589.00663AFF-C1257589.0066C397@transmode.se>
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Mon, 30 Mar 2009 20:42:28 +0200
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, pku.leo@gmail.com,
-	netdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,37 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 30/03/2009 19:45:17:
-> 
-> Joakim Tjernlund wrote:
-> > Scott Wood <scottwood@freescale.com> wrote on 30/03/2009 19:22:03:
-> >> Joakim Tjernlund wrote:
-> >>> gianfar does not seem to use in_/out_ functions for the BDs. Works 
-> > just
-> >>> fine that too it seems.
-> >> It does now that it has explicit barriers in a few places.  Before 
-they
-> > 
-> > In 2.6.29 or later?
-> 
-> No, it was earlier.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Ah, I see now. The eieio() stuff.
+The driver triggers a BUG_ON() when allocating DMA buffers if the
+arch/powerpc dma_ops from the of_platform device are not copied
+into net_device structure.
 
-> 
-> >> were added, it would sometimes fail under load.  That was due to a 
-> >> compiler reordering, but CPU reordering was possible as well.
-> > 
-> > Does not the CPU skip reordering if the guarded bit is set?
-> 
-> The guarded bit is typically not set for DMA buffers.  ucc_geth is a bit 
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+David, do you want to pick this one up right away, or should I merge it
+through Ben's powerpc tree?
 
-> different since descriptors are in MURAM which is ioremap()ed -- though 
-> switching to a cacheable mapping with barriers should be a performance 
-> improvement.
+g.
 
-I always thought that MURAM was very fast. The whole reason to have BDs in
-MURAM is that it is faster than normal RAM, at least that is what I 
-thought.
+ drivers/net/fec_mpc52xx.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
- Jocke
+
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index 049b0a7..215207d 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -928,6 +928,9 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+ 	if (!request_mem_region(mem.start, sizeof(struct mpc52xx_fec), DRIVER_NAME))
+ 		return -EBUSY;
+ 
++	/* Copy the PowerPC dma_ops from the of_device */
++	set_dma_ops(&ndev->dev, get_dma_ops(&op->dev));
++
+ 	/* Init ether ndev with what we have */
+ 	ndev->open		= mpc52xx_fec_open;
+ 	ndev->stop		= mpc52xx_fec_close;
