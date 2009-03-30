@@ -1,28 +1,19 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id B931ADDE1C
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 21:24:09 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so2235582wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 03:24:08 -0700 (PDT)
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 94AC7DDE19
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 22:11:56 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] Fix ptrace compat wrapper for fpu register access
+References: <m2k568xlfg.fsf@igel.home> <13580.1238371079@neuling.org>
+	<m2vdpr2wv4.fsf@igel.home> <29891.1238406751@neuling.org>
+Date: Mon, 30 Mar 2009 13:11:51 +0200
+In-Reply-To: <29891.1238406751@neuling.org> (Michael Neuling's message of
+	"Mon, 30 Mar 2009 20:52:31 +1100")
+Message-ID: <m2myb32rk8.fsf@igel.home>
 MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <OF42785A57.F2F3AFE4-ONC1257589.0035B462-C1257589.003712D0@transmode.se>
-References: <1237987849.2194.9.camel@gentoo-jocke.transmode.se>
-	<20090325142540.GA20944@oksana.dev.rtsoft.ru>
-	<OF3C4E8131.4223FD1A-ONC1257584.0061D2E6-C1257584.0062233E@transmode.se>
-	<2a27d3730903300134q673de9cbg6c92e981efc12695@mail.gmail.com>
-	<OF6D5FFE1D.1843C7FE-ONC1257589.00328D91-C1257589.00336B8B@transmode.se>
-	<2a27d3730903300236j79cc3035raef2bf5e895fe429@mail.gmail.com>
-	<OF42785A57.F2F3AFE4-ONC1257589.0035B462-C1257589.003712D0@transmode.se>
-Date: Mon, 30 Mar 2009 18:24:07 +0800
-Message-ID: <2a27d3730903300324n5da94ed0g80283038849b224b@mail.gmail.com>
-Subject: Re: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
-From: Li Yang <leoli@freescale.com>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>,
-	David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Netdev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,83 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 30, 2009 at 6:01 PM, Joakim Tjernlund
-<Joakim.Tjernlund@transmode.se> wrote:
-> pku.leo@gmail.com wrote on 30/03/2009 11:36:36:
->>
->> On Mon, Mar 30, 2009 at 5:21 PM, Joakim Tjernlund
->> <Joakim.Tjernlund@transmode.se> wrote:
->> > pku.leo@gmail.com wrote on 30/03/2009 10:34:47:
->> >>
->> >> On Thu, Mar 26, 2009 at 1:51 AM, Joakim Tjernlund
->> >> <Joakim.Tjernlund@transmode.se> wrote:
->> >> > Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 25/03/2009
->> > 15:25:40:
->> >> >> On Wed, Mar 25, 2009 at 02:30:49PM +0100, Joakim Tjernlund wrote:
->> >> >> > >>From 1c2f23b1f37f4818c0fd0217b93eb38ab6564840 Mon Sep 17
-> 00:00:00
->> >> > 2001
->> >> >> > From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
->> >> >> > Date: Tue, 24 Mar 2009 10:19:27 +0100
->> >> >> > Subject: [PATCH] ucc_geth: Move freeing of TX packets to NAPI
->> > context.
->> >> >> > =C2=A0Also increase NAPI weight somewhat.
->> >> >> > =C2=A0This will make the system alot more responsive while
->> >> >> > =C2=A0ping flooding the ucc_geth ethernet interaface.
->> >> >>
->> >> >> Some time ago I've tried a similar thing for this driver, but
-> during
->> >> >> tcp (or udp I don't quite remember) netperf tests I was getting tx
->> >> >> watchdog timeouts after ~2-5 minutes of work. I was testing with a
->> >> >> gigabit and 100 Mbit link, with 100 Mbit link the issue was not
->> >> >> reproducible.
->> >> >>
->> >> >> Though, I recalling I was doing a bit more than your patch: I was
->> >> >> also clearing the TX events in the ucce register before calling
->> >> >> ucc_geth_tx, that way I was trying to avoid stale interrupts. That
->> >> >> helped to increase an overall performance (not only
-> responsiveness),
->> >> >> but as I said my approach didn't pass the tests.
->> >> >>
->> >> >> I don't really think that your patch may cause this, but can you
->> >> >> try netperf w/ this patch applied anyway? And see if it really
->> >> >> doesn't cause any issues under stress?
->> >> >
->> >> > Does the line(in ucc_geth_tx()) look OK to you:
->> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0if ((bd =3D=3D ugeth->txBd[txQ]) && (net=
-if_queue_stopped(dev) =3D=3D
->> > 0))
->> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0break;
->> >> >
->> >> > Sure does look fishy to me.
->> >>
->> >> There are two cases when txBd=3DConfBd: the BD ring is full or empty.
->> >> The condition used here ensures that it is the empty case. =C2=A0Beca=
-use
-> in
->> >> hard_start_xmit, the queue will be stopped when the BD ring is full.
->> >> Maybe some comment is needed here.
->> >
->> > But how do you know that the queue hasn't been stopped by someone else
->> > than
->> > the driver?
->> > If it is stopped by higher layers, the if stmt will fail.
->>
->> It looks like from existing code that only the driver can legally stop
->> the queue. =C2=A0I'm not 100% sure though. =C2=A0Correct me if I'm wrong=
-.
+Michael Neuling <mikey@neuling.org> writes:
+
+>> @@ -263,7 +263,9 @@ long compat_arch_ptrace(struct task_stru
+>>  			ret = ptrace_put_reg(child, numReg, freg);
+>>  		} else {
+>>  			flush_fp_to_thread(child);
+>> -			((unsigned int *)child->thread.regs)[index] = data;
+>> +			((unsigned int *)child->thread.fpr)
+>> +				[TS_FPRWIDTH * (numReg - PT_FPR0) * 2 +
+>> +				 index % 2] = data;
 >
-> I don't know. But the question you should ask is: Does the networking
-> code promise this now and for the future?
+> I think the indexing here should be the same as PEEKUSR_3264.  This
+> looks better but all this magic indexing makes me want to vomit.
 
-Right.  But it's beyond my knowledge to answer this question.  If not,
-adding a device specific flag is not very costing.
+How about this instead:
 
-Hi Dave,
+@@ -241,6 +241,7 @@ long compat_arch_ptrace(struct task_stru
+ 	case PPC_PTRACE_POKEUSR_3264: {
+ 		u32 index;
+ 		u32 numReg;
++		u32 *tmp;
+ 
+ 		ret = -EIO;
+ 		/* Determine which register the user wants */
+@@ -263,7 +264,8 @@ long compat_arch_ptrace(struct task_stru
+ 			ret = ptrace_put_reg(child, numReg, freg);
+ 		} else {
+ 			flush_fp_to_thread(child);
+-			((unsigned int *)child->thread.regs)[index] = data;
++			tmp = (u32 *)child->thread.fpr[numReg - PT_FPR0];
++			tmp[index % 2] = data;
+ 			ret = 0;
+ 		}
+ 		break;
 
-Can we assume that the netif_stop_queue() and netif_wake_queue() are
-only used by the netdev driver?  And the queue state will not be
-changed by other part of the networking subsystem?
+Andreas.
 
-- Leo
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
