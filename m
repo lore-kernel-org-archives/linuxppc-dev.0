@@ -1,16 +1,28 @@
-Return-Path: <wg@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E2D10DDE07
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 21:06:00 +1100 (EST)
-Message-Id: <20090330100555.428525142@denx.de>
-Date: Mon, 30 Mar 2009 12:02:45 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-To: linux-mtd@lists.infradead.org,
- linuxppc-dev@ozlabs.org
-Subject: [PATCH v4 4/4] powerpc/85xx: TQM8548: Update DTS file for multi-chip
-	support
-References: <20090330100241.346785618@denx.de>
-Cc: devicetree-discuss@ozlabs.org
+Return-Path: <pku.leo@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id B931ADDE1C
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 21:24:09 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so2235582wfg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 03:24:08 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <OF42785A57.F2F3AFE4-ONC1257589.0035B462-C1257589.003712D0@transmode.se>
+References: <1237987849.2194.9.camel@gentoo-jocke.transmode.se>
+	<20090325142540.GA20944@oksana.dev.rtsoft.ru>
+	<OF3C4E8131.4223FD1A-ONC1257584.0061D2E6-C1257584.0062233E@transmode.se>
+	<2a27d3730903300134q673de9cbg6c92e981efc12695@mail.gmail.com>
+	<OF6D5FFE1D.1843C7FE-ONC1257589.00328D91-C1257589.00336B8B@transmode.se>
+	<2a27d3730903300236j79cc3035raef2bf5e895fe429@mail.gmail.com>
+	<OF42785A57.F2F3AFE4-ONC1257589.0035B462-C1257589.003712D0@transmode.se>
+Date: Mon, 30 Mar 2009 18:24:07 +0800
+Message-ID: <2a27d3730903300324n5da94ed0g80283038849b224b@mail.gmail.com>
+Subject: Re: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
+From: Li Yang <leoli@freescale.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>,
+	David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,68 +32,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds multi-chip support for the Micron MT29F8G08FAB NAND
-flash memory on the TQM8548 modules.
+On Mon, Mar 30, 2009 at 6:01 PM, Joakim Tjernlund
+<Joakim.Tjernlund@transmode.se> wrote:
+> pku.leo@gmail.com wrote on 30/03/2009 11:36:36:
+>>
+>> On Mon, Mar 30, 2009 at 5:21 PM, Joakim Tjernlund
+>> <Joakim.Tjernlund@transmode.se> wrote:
+>> > pku.leo@gmail.com wrote on 30/03/2009 10:34:47:
+>> >>
+>> >> On Thu, Mar 26, 2009 at 1:51 AM, Joakim Tjernlund
+>> >> <Joakim.Tjernlund@transmode.se> wrote:
+>> >> > Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 25/03/2009
+>> > 15:25:40:
+>> >> >> On Wed, Mar 25, 2009 at 02:30:49PM +0100, Joakim Tjernlund wrote:
+>> >> >> > >>From 1c2f23b1f37f4818c0fd0217b93eb38ab6564840 Mon Sep 17
+> 00:00:00
+>> >> > 2001
+>> >> >> > From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+>> >> >> > Date: Tue, 24 Mar 2009 10:19:27 +0100
+>> >> >> > Subject: [PATCH] ucc_geth: Move freeing of TX packets to NAPI
+>> > context.
+>> >> >> > =C2=A0Also increase NAPI weight somewhat.
+>> >> >> > =C2=A0This will make the system alot more responsive while
+>> >> >> > =C2=A0ping flooding the ucc_geth ethernet interaface.
+>> >> >>
+>> >> >> Some time ago I've tried a similar thing for this driver, but
+> during
+>> >> >> tcp (or udp I don't quite remember) netperf tests I was getting tx
+>> >> >> watchdog timeouts after ~2-5 minutes of work. I was testing with a
+>> >> >> gigabit and 100 Mbit link, with 100 Mbit link the issue was not
+>> >> >> reproducible.
+>> >> >>
+>> >> >> Though, I recalling I was doing a bit more than your patch: I was
+>> >> >> also clearing the TX events in the ucce register before calling
+>> >> >> ucc_geth_tx, that way I was trying to avoid stale interrupts. That
+>> >> >> helped to increase an overall performance (not only
+> responsiveness),
+>> >> >> but as I said my approach didn't pass the tests.
+>> >> >>
+>> >> >> I don't really think that your patch may cause this, but can you
+>> >> >> try netperf w/ this patch applied anyway? And see if it really
+>> >> >> doesn't cause any issues under stress?
+>> >> >
+>> >> > Does the line(in ucc_geth_tx()) look OK to you:
+>> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0if ((bd =3D=3D ugeth->txBd[txQ]) && (net=
+if_queue_stopped(dev) =3D=3D
+>> > 0))
+>> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0break;
+>> >> >
+>> >> > Sure does look fishy to me.
+>> >>
+>> >> There are two cases when txBd=3DConfBd: the BD ring is full or empty.
+>> >> The condition used here ensures that it is the empty case. =C2=A0Beca=
+use
+> in
+>> >> hard_start_xmit, the queue will be stopped when the BD ring is full.
+>> >> Maybe some comment is needed here.
+>> >
+>> > But how do you know that the queue hasn't been stopped by someone else
+>> > than
+>> > the driver?
+>> > If it is stopped by higher layers, the if stmt will fail.
+>>
+>> It looks like from existing code that only the driver can legally stop
+>> the queue. =C2=A0I'm not 100% sure though. =C2=A0Correct me if I'm wrong=
+.
+>
+> I don't know. But the question you should ask is: Does the networking
+> code promise this now and for the future?
 
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
----
- arch/powerpc/boot/dts/tqm8548-bigflash.dts |    7 +++++--
- arch/powerpc/boot/dts/tqm8548.dts          |    7 +++++--
- 2 files changed, 10 insertions(+), 4 deletions(-)
+Right.  But it's beyond my knowledge to answer this question.  If not,
+adding a device specific flag is not very costing.
 
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548-bigflash.dts	2009-03-30 12:01:22.015719619 +0200
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts	2009-03-30 12:01:45.007720662 +0200
-@@ -380,10 +380,13 @@
- 		upm@3,0 {
- 			#address-cells = <0>;
- 			#size-cells = <0>;
--			compatible = "fsl,upm-nand";
-+			compatible = "tqc,tqm8548-upm-nand", "fsl,upm-nand";
- 			reg = <3 0x0 0x800>;
- 			fsl,upm-addr-offset = <0x10>;
- 			fsl,upm-cmd-offset = <0x08>;
-+			/* Micron MT29F8G08FAB multi-chip device */
-+			fsl,upm-addr-line-cs-offsets = <0x0 0x200>;
-+			fsl,upm-wait-flags = <0x5>;
- 			chip-delay = <25>; // in micro-seconds
- 
- 			nand@0 {
-@@ -392,7 +395,7 @@
- 
- 				partition@0 {
- 					    label = "fs";
--					    reg = <0x00000000 0x01000000>;
-+					    reg = <0x00000000 0x10000000>;
- 				};
- 			};
- 		};
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8548.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548.dts	2009-03-30 12:01:22.015719619 +0200
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8548.dts	2009-03-30 12:01:45.008720246 +0200
-@@ -380,10 +380,13 @@
- 		upm@3,0 {
- 			#address-cells = <0>;
- 			#size-cells = <0>;
--			compatible = "fsl,upm-nand";
-+			compatible = "tqc,tqm8548-upm-nand", "fsl,upm-nand";
- 			reg = <3 0x0 0x800>;
- 			fsl,upm-addr-offset = <0x10>;
- 			fsl,upm-cmd-offset = <0x08>;
-+			/* Micron MT29F8G08FAB multi-chip device */
-+			fsl,upm-addr-line-cs-offsets = <0x0 0x200>;
-+			fsl,upm-wait-flags = <0x5>;
- 			chip-delay = <25>; // in micro-seconds
- 
- 			nand@0 {
-@@ -392,7 +395,7 @@
- 
- 				partition@0 {
- 					    label = "fs";
--					    reg = <0x00000000 0x01000000>;
-+					    reg = <0x00000000 0x10000000>;
- 				};
- 			};
- 		};
+Hi Dave,
+
+Can we assume that the netif_stop_queue() and netif_wake_queue() are
+only used by the netdev driver?  And the queue state will not be
+changed by other part of the networking subsystem?
+
+- Leo
