@@ -1,25 +1,15 @@
-Return-Path: <Joakim.Tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2079DDDE1A
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 21:01:39 +1100 (EST)
-In-Reply-To: <2a27d3730903300236j79cc3035raef2bf5e895fe429@mail.gmail.com>
-References: <1237987849.2194.9.camel@gentoo-jocke.transmode.se>	
-	<20090325142540.GA20944@oksana.dev.rtsoft.ru>
-	<OF3C4E8131.4223FD1A-ONC1257584.0061D2E6-C1257584.0062233E@transmode.se>
-	<2a27d3730903300134q673de9cbg6c92e981efc12695@mail.gmail.com>	
-	<OF6D5FFE1D.1843C7FE-ONC1257589.00328D91-C1257589.00336B8B@transmode.se>
-	<2a27d3730903300236j79cc3035raef2bf5e895fe429@mail.gmail.com>
-To: Li Yang <leoli@freescale.com>
-MIME-Version: 1.0
-Subject: Re: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
-Message-ID: <OF42785A57.F2F3AFE4-ONC1257589.0035B462-C1257589.003712D0@transmode.se>
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Mon, 30 Mar 2009 12:01:33 +0200
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>, pku.leo@gmail.com,
-	Netdev <netdev@vger.kernel.org>
+Return-Path: <wg@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id EAE90DDE07
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 21:05:58 +1100 (EST)
+Message-Id: <20090330100241.346785618@denx.de>
+Date: Mon, 30 Mar 2009 12:02:41 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: linux-mtd@lists.infradead.org,
+ linuxppc-dev@ozlabs.org
+Subject: [PATCH v4 0/4] NAND: Multi-chip support for FSL-UPM for TQM8548
+	modules
+Cc: devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,69 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pku.leo@gmail.com wrote on 30/03/2009 11:36:36:
-> 
-> On Mon, Mar 30, 2009 at 5:21 PM, Joakim Tjernlund
-> <Joakim.Tjernlund@transmode.se> wrote:
-> > pku.leo@gmail.com wrote on 30/03/2009 10:34:47:
-> >>
-> >> On Thu, Mar 26, 2009 at 1:51 AM, Joakim Tjernlund
-> >> <Joakim.Tjernlund@transmode.se> wrote:
-> >> > Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 25/03/2009
-> > 15:25:40:
-> >> >> On Wed, Mar 25, 2009 at 02:30:49PM +0100, Joakim Tjernlund wrote:
-> >> >> > >>From 1c2f23b1f37f4818c0fd0217b93eb38ab6564840 Mon Sep 17 
-00:00:00
-> >> > 2001
-> >> >> > From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> >> >> > Date: Tue, 24 Mar 2009 10:19:27 +0100
-> >> >> > Subject: [PATCH] ucc_geth: Move freeing of TX packets to NAPI
-> > context.
-> >> >> >  Also increase NAPI weight somewhat.
-> >> >> >  This will make the system alot more responsive while
-> >> >> >  ping flooding the ucc_geth ethernet interaface.
-> >> >>
-> >> >> Some time ago I've tried a similar thing for this driver, but 
-during
-> >> >> tcp (or udp I don't quite remember) netperf tests I was getting tx
-> >> >> watchdog timeouts after ~2-5 minutes of work. I was testing with a
-> >> >> gigabit and 100 Mbit link, with 100 Mbit link the issue was not
-> >> >> reproducible.
-> >> >>
-> >> >> Though, I recalling I was doing a bit more than your patch: I was
-> >> >> also clearing the TX events in the ucce register before calling
-> >> >> ucc_geth_tx, that way I was trying to avoid stale interrupts. That
-> >> >> helped to increase an overall performance (not only 
-responsiveness),
-> >> >> but as I said my approach didn't pass the tests.
-> >> >>
-> >> >> I don't really think that your patch may cause this, but can you
-> >> >> try netperf w/ this patch applied anyway? And see if it really
-> >> >> doesn't cause any issues under stress?
-> >> >
-> >> > Does the line(in ucc_geth_tx()) look OK to you:
-> >> >        if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) ==
-> > 0))
-> >> >                        break;
-> >> >
-> >> > Sure does look fishy to me.
-> >>
-> >> There are two cases when txBd=ConfBd: the BD ring is full or empty.
-> >> The condition used here ensures that it is the empty case.  Because 
-in
-> >> hard_start_xmit, the queue will be stopped when the BD ring is full.
-> >> Maybe some comment is needed here.
-> >
-> > But how do you know that the queue hasn't been stopped by someone else
-> > than
-> > the driver?
-> > If it is stopped by higher layers, the if stmt will fail.
-> 
-> It looks like from existing code that only the driver can legally stop
-> the queue.  I'm not 100% sure though.  Correct me if I'm wrong.
+This is my forth version of the patch series adding generic support
+for multi-chip NAND devices to the FSL-UPM driver and support for
+the Micron MT29F8G08FAB NAND flash memory on the TQM8548 modules.
+It addresses the issues reported on the mailing list, e.g. the new
+bindings are now documented as well:
 
-I don't know. But the question you should ask is: Does the networking
-code promise this now and for the future? If not, you should
-fix the driver not to relay on netif_queue_stopped() here.
+ NAND: FSL-UPM: add multi chip support
+ NAND: FSL-UPM: Add wait flags to support board/chip specific delays
+ powerpc: NAND: FSL UPM: document new bindings
+ powerpc/85xx: TQM8548: Update DTS file for multi-chip support
 
- Jocke
+Changes since v3:
+  - As Grant suggested, the property "fsl,upm-addr-line-cs-offsets"
+    is now used to define multi-chip support using dedicated address
+    lines for chip selection. This make the properties "num-chips"
+    and "chip-offset" obsolte.
+
+  - As Grant suggested, I added the string "tqc,tqm8548-upm-nand" to
+    the list of compatible devices for the TQM8548 modules in case it
+    turns out in the future that the "fsl,upm-addr-line-cs-offsets"
+    method is not generic enough.
+
+  - For multi-chip chip devices, the name "mchip" is now used in the
+    code to avoid confusion with the normal NAND "chip".
+
+  - Coding style fixes as pointed out by Anton.
+
+Patch 3 and 4 should go through the powerpc maintainer(s).
+
+Hope this patch series is fine now for inclusion into 2.6.30.
+
+Thanks,
+
+Wolfgang.
