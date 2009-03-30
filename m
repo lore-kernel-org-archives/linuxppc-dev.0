@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 49097DDED8
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 04:22:39 +1100 (EST)
-Message-ID: <49D0FFBB.7000009@freescale.com>
-Date: Mon, 30 Mar 2009 12:22:03 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH] ucc_geth: Rework the TX logic.
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B2386DDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 04:35:00 +1100 (EST)
+In-Reply-To: <49D0FFBB.7000009@freescale.com>
 References: <1238089445-28396-1-git-send-email-Joakim.Tjernlund@transmode.se>	<2a27d3730903270245k6e8633eehfb5cd3fcebd36240@mail.gmail.com>
 	<OFDCE90357.0EDC5DC1-ONC1257586.003759A3-C1257586.00390AD3@transmode.se>
 	<49CCD3E8.9040007@freescale.com>
 	<OFEFCEAFB5.CC21FFBB-ONC1257589.005AEF16-C1257589.005B64EB@transmode.se>
-In-Reply-To: <OFEFCEAFB5.CC21FFBB-ONC1257589.005AEF16-C1257589.005B64EB@transmode.se>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	<49D0FFBB.7000009@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+Subject: Re: [PATCH] ucc_geth: Rework the TX logic.
+Message-ID: <OF3127420C.081D4097-ONC1257589.00603E3D-C1257589.006093B3@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Mon, 30 Mar 2009 19:34:53 +0200
+Content-Type: text/plain; charset="US-ASCII"
 Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, pku.leo@gmail.com,
 	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,12 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund wrote:
-> gianfar does not seem to use in_/out_ functions for the BDs. Works just
-> fine that too it seems.
+Scott Wood <scottwood@freescale.com> wrote on 30/03/2009 19:22:03:
+> 
+> Joakim Tjernlund wrote:
+> > gianfar does not seem to use in_/out_ functions for the BDs. Works 
+just
+> > fine that too it seems.
+> 
+> It does now that it has explicit barriers in a few places.  Before they
 
-It does now that it has explicit barriers in a few places.  Before they 
-were added, it would sometimes fail under load.  That was due to a 
-compiler reordering, but CPU reordering was possible as well.
+In 2.6.29 or later?
+ 
+> were added, it would sometimes fail under load.  That was due to a 
+> compiler reordering, but CPU reordering was possible as well.
 
--Scott
+Does not the CPU skip reordering if the guarded bit is set?
+
+Could we not use the same in ucc_geth as well? Then people would
+not need to worry about "performance issues".
+
+ Jocke
