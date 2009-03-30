@@ -1,20 +1,21 @@
-Return-Path: <mikey@neuling.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 17F04DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 09:54:00 +1100 (EST)
-From: Michael Neuling <mikey@neuling.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Subject: Re: [PATCH] Fix ptrace compat wrapper for fpu register access 
-In-reply-to: <m2myb32rk8.fsf@igel.home> 
-References: <m2k568xlfg.fsf@igel.home> <13580.1238371079@neuling.org>
-	<m2vdpr2wv4.fsf@igel.home> <29891.1238406751@neuling.org>
-	<m2myb32rk8.fsf@igel.home>
-Date: Tue, 31 Mar 2009 09:53:59 +1100
-Message-ID: <12572.1238453639@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D482CDDE9F
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 10:19:06 +1100 (EST)
+Subject: Re: Build error
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20090330135903.GA11614@oksana.dev.rtsoft.ru>
+References: <1238383506.17330.0.camel@pasglop>
+	<7E26E694-85F8-445F-9113-88DCD61BC32C@kernel.crashing.org>
+	<20090330135903.GA11614@oksana.dev.rtsoft.ru>
+Content-Type: text/plain
+Date: Tue, 31 Mar 2009 10:18:56 +1100
+Message-Id: <1238455136.17330.12.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-In message <m2myb32rk8.fsf@igel.home> you wrote:
-> Michael Neuling <mikey@neuling.org> writes:
-> 
-> >> @@ -263,7 +263,9 @@ long compat_arch_ptrace(struct task_stru
-> >>  			ret = ptrace_put_reg(child, numReg, freg);
-> >>  		} else {
-> >>  			flush_fp_to_thread(child);
-> >> -			((unsigned int *)child->thread.regs)[index] = data;
-> >> +			((unsigned int *)child->thread.fpr)
-> >> +				[TS_FPRWIDTH * (numReg - PT_FPR0) * 2 +
-> >> +				 index % 2] = data;
+On Mon, 2009-03-30 at 17:59 +0400, Anton Vorontsov wrote:
+> On Mon, Mar 30, 2009 at 08:51:38AM -0500, Kumar Gala wrote:
 > >
-> > I think the indexing here should be the same as PEEKUSR_3264.  This
-> > looks better but all this magic indexing makes me want to vomit.
+> > On Mar 29, 2009, at 10:25 PM, Benjamin Herrenschmidt wrote:
+> >
+> >> My next branch (after merging from you):
+> >>
+> >> ERROR: "fsl_pq_mdio_bus_name" [drivers/net/gianfar_driver.ko]  
+> >> undefined!
+> >>
+> >> I'll ask Linus to pull anyway though.
+> >>
+> >> Cheers,
+> >> Ben.
+> >
+> > I believe this is fixed in net-next (and possible linus has already  
+> > pulled that in.)
 > 
-> How about this instead:
-> 
-> @@ -241,6 +241,7 @@ long compat_arch_ptrace(struct task_stru
->  	case PPC_PTRACE_POKEUSR_3264: {
->  		u32 index;
->  		u32 numReg;
-> +		u32 *tmp;
->  
->  		ret = -EIO;
->  		/* Determine which register the user wants */
-> @@ -263,7 +264,8 @@ long compat_arch_ptrace(struct task_stru
->  			ret = ptrace_put_reg(child, numReg, freg);
->  		} else {
->  			flush_fp_to_thread(child);
-> -			((unsigned int *)child->thread.regs)[index] = data;
-> +			tmp = (u32 *)child->thread.fpr[numReg - PT_FPR0];
-> +			tmp[index % 2] = data;
+> FWIW, I can't reproduce the issue neither in benh/powerpc.git `next'
+> branch nor in `merge' branch...
 
-I do like this approach better (two arrays) but there is no accounting
-for TS_WIDTH, so I'm not sure it works.
+Ah .. .weird :-)
 
-We *really* need a test case for this stuff :-)
+Oh well, I'll see if it still happens after I pull back from Linus (who
+merged all our stuff) and if it does, I'll send you my .config.
 
-Mikey
-
->  			ret = 0;
->  		}
->  		break;
-> 
-> Andreas.
-> 
-> -- 
-> Andreas Schwab, schwab@linux-m68k.org
-> GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-> "And now for something completely different."
-> 
+Cheers,
+Ben.
