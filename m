@@ -1,24 +1,23 @@
 Return-Path: <pku.leo@gmail.com>
 Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id 02E74DDE41
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 18:57:52 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so2179579wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 00:57:51 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTP id 4DDC0DDE22
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 19:34:49 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so2193991wfg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 01:34:47 -0700 (PDT)
 MIME-Version: 1.0
 Sender: pku.leo@gmail.com
-In-Reply-To: <OF8F2A374C.8C3B68EA-ONC1257589.002A7868-C1257589.002AD913@transmode.se>
-References: <1238072077-27044-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<2a27d3730903270350m52fcb837ge78c0b87cc3887d5@mail.gmail.com>
-	<OF073D5C49.F0D791DE-ONC1257586.0040163D-C1257586.00413F47@transmode.se>
-	<2a27d3730903300036x1dc265a3o76ea36ca6a16fb5b@mail.gmail.com>
-	<OF8F2A374C.8C3B68EA-ONC1257589.002A7868-C1257589.002AD913@transmode.se>
-Date: Mon, 30 Mar 2009 15:57:51 +0800
-Message-ID: <2a27d3730903300057l53d3f702jb34765a95e7ec3cb@mail.gmail.com>
-Subject: Re: [PATCH 1/2] ucc_geth: Move freeing of TX packets to NAPI context.
+In-Reply-To: <OF3C4E8131.4223FD1A-ONC1257584.0061D2E6-C1257584.0062233E@transmode.se>
+References: <1237987849.2194.9.camel@gentoo-jocke.transmode.se>
+	<20090325142540.GA20944@oksana.dev.rtsoft.ru>
+	<OF3C4E8131.4223FD1A-ONC1257584.0061D2E6-C1257584.0062233E@transmode.se>
+Date: Mon, 30 Mar 2009 16:34:47 +0800
+Message-ID: <2a27d3730903300134q673de9cbg6c92e981efc12695@mail.gmail.com>
+Subject: Re: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
 From: Li Yang <leoli@freescale.com>
 To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,65 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 30, 2009 at 3:48 PM, Joakim Tjernlund
+On Thu, Mar 26, 2009 at 1:51 AM, Joakim Tjernlund
 <Joakim.Tjernlund@transmode.se> wrote:
-> pku.leo@gmail.com wrote on 30/03/2009 09:36:21:
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 25/03/2009 15:25:40:
+>> On Wed, Mar 25, 2009 at 02:30:49PM +0100, Joakim Tjernlund wrote:
+>> > >>From 1c2f23b1f37f4818c0fd0217b93eb38ab6564840 Mon Sep 17 00:00:00
+> 2001
+>> > From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+>> > Date: Tue, 24 Mar 2009 10:19:27 +0100
+>> > Subject: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
+>> > =C2=A0Also increase NAPI weight somewhat.
+>> > =C2=A0This will make the system alot more responsive while
+>> > =C2=A0ping flooding the ucc_geth ethernet interaface.
 >>
->> On Fri, Mar 27, 2009 at 7:52 PM, Joakim Tjernlund
->> <Joakim.Tjernlund@transmode.se> wrote:
->> > pku.leo@gmail.com wrote on 27/03/2009 11:50:09:
->> >>
->> >> On Thu, Mar 26, 2009 at 8:54 PM, Joakim Tjernlund
->> >> <Joakim.Tjernlund@transmode.se> wrote:
->> >> > Also set NAPI weight to 64 as this is a common value.
->> >> > This will make the system alot more responsive while
->> >> > ping flooding the ucc_geth ethernet interaface.
->> >> >
->> >> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
->> >> > ---
->> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0/* Errors and other events */
->> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0if (ucce & UCCE_OTHER) {
->> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (ucce & U=
-CC_GETH_UCCE_BSY)
->> >> > @@ -3733,7 +3725,7 @@ static int ucc_geth_probe(struct of_device*
->> > ofdev, const struct of_device_id *ma
->> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0dev->netdev_ops =3D &ucc_geth_netdev_ops=
-;
->> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0dev->watchdog_timeo =3D TX_TIMEOUT;
->> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0INIT_WORK(&ugeth->timeout_work, ucc_geth=
-_timeout_work);
->> >> > - =C2=A0 =C2=A0 =C2=A0 netif_napi_add(dev, &ugeth->napi, ucc_geth_p=
-oll,
->> > UCC_GETH_DEV_WEIGHT);
->> >> > + =C2=A0 =C2=A0 =C2=A0 netif_napi_add(dev, &ugeth->napi, ucc_geth_p=
-oll, 64);
->> >>
->> >> It doesn't make sense to have larger napi budget than the size of RX
->> >> BD ring. =C2=A0You can't have more BDs than RX_BD_RING_LEN in backlog=
- for
->> >> napi_poll to process. =C2=A0Increase the RX_BD_RING_LEN if you want t=
-o
->> >> increase UCC_GETH_DEV_WEIGHT. =C2=A0However please also provide the
->> >> performance comparison for this kind of change. =C2=A0Thanks
->> >
->> > Bring it up with David Miller. After my initial attempt to just
-> increase
->> > weight somewhat, he requested that I hardcoded it to 64. Just read the
->> > whole thread.
->> > If I don't increase weight somewhat, ping -f -l 3 almost halts the
-> board.
->> > Logging
->> > in takes forever. These are my "performance numbers".
+>> Some time ago I've tried a similar thing for this driver, but during
+>> tcp (or udp I don't quite remember) netperf tests I was getting tx
+>> watchdog timeouts after ~2-5 minutes of work. I was testing with a
+>> gigabit and 100 Mbit link, with 100 Mbit link the issue was not
+>> reproducible.
 >>
->> Faster response time is surely good. =C2=A0But it might also mean CPU is
->> not fully loaded. =C2=A0IMHO, throughput is a more important factor for
->> network devices. =C2=A0When you try to optimize the driver, please also
->> consider the throughput change. =C2=A0Thanks.
+>> Though, I recalling I was doing a bit more than your patch: I was
+>> also clearing the TX events in the ucce register before calling
+>> ucc_geth_tx, that way I was trying to avoid stale interrupts. That
+>> helped to increase an overall performance (not only responsiveness),
+>> but as I said my approach didn't pass the tests.
+>>
+>> I don't really think that your patch may cause this, but can you
+>> try netperf w/ this patch applied anyway? And see if it really
+>> doesn't cause any issues under stress?
 >
-> This particular change isn't about performance, it is about not
-> "bricking" the board during heavy traffic. Next step is to optimize
-> the driver.
+> Does the line(in ucc_geth_tx()) look OK to you:
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0if ((bd =3D=3D ugeth->txBd[txQ]) && (netif_que=
+ue_stopped(dev) =3D=3D 0))
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0break;
+>
+> Sure does look fishy to me.
 
-Sure.  I mean for other changes like tx NAPI, ring size tweak and tx logic.
+There are two cases when txBd=3DConfBd: the BD ring is full or empty.
+The condition used here ensures that it is the empty case.  Because in
+hard_start_xmit, the queue will be stopped when the BD ring is full.
+Maybe some comment is needed here.
 
 - Leo
