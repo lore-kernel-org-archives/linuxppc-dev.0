@@ -1,22 +1,17 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
-	by ozlabs.org (Postfix) with ESMTP id 3EF6FDDEF0
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 07:56:11 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g9so2224034rvb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 13:56:09 -0700 (PDT)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Mon, 30 Mar 2009 16:55:53 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] hvc_console: prevent wrapping in hvc_console_print()
-Message-ID: <20090330205553.GA19278@yoda.jdub.homelinux.org>
-References: <49BF956B.9030109@gmail.com>
-	<20090330133531.f5d99c09.akpm@linux-foundation.org>
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83504.mail.sp1.yahoo.com (web83504.mail.sp1.yahoo.com
+	[216.252.120.160]) by ozlabs.org (Postfix) with SMTP id 7061EDDEE3
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 08:11:56 +1100 (EST)
+Message-ID: <21841.75975.qm@web83504.mail.sp1.yahoo.com>
+Date: Mon, 30 Mar 2009 14:11:54 -0700 (PDT)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: Bootlog bug?
+To: michael@ellerman.id.au
+In-Reply-To: <1238107887.15460.3.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090330133531.f5d99c09.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, Roel Kluin <roel.kluin@gmail.com>,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: ron_madrid@sbcglobal.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,11 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 30, 2009 at 01:35:31PM -0700, Andrew Morton wrote:
->Guys, could we have a MAINTAINERS entry for this driver please?
 
-To my knowledge, there isn't one.  Would be Ben now by default I
-guess.  The previous developers have disclaimed ownership for a
-while from what I remember.
+--- On Thu, 3/26/09, Michael Ellerman <michael@ellerman.id.au> wrote:
 
-josh
+> From: Michael Ellerman <michael@ellerman.id.au>
+> Subject: Re: Bootlog bug?
+> To: ron_madrid@sbcglobal.net
+> Cc: linuxppc-dev@ozlabs.org
+> Date: Thursday, March 26, 2009, 3:51 PM
+> On Thu, 2009-03-26 at 11:25 -0700, Ron Madrid wrote:
+> > I have a little problem with my boot messages. 
+> I'm not sure what this
+> > is, but does anyone have any ideas as to what it could
+> be or what
+> > further information I could give to help track this
+> down.  As of now
+> > this is not manifesting itself, but I don't know
+> what it might do.
+> 
+> You have ended up with a duplicate device, or duplicate
+> device _name_,
+> somehow.
+
+Thank you.  I found my duplicate device!
+
+Ron
