@@ -1,19 +1,19 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 94AC7DDE19
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 22:11:56 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] Fix ptrace compat wrapper for fpu register access
-References: <m2k568xlfg.fsf@igel.home> <13580.1238371079@neuling.org>
-	<m2vdpr2wv4.fsf@igel.home> <29891.1238406751@neuling.org>
-Date: Mon, 30 Mar 2009 13:11:51 +0200
-In-Reply-To: <29891.1238406751@neuling.org> (Michael Neuling's message of
-	"Mon, 30 Mar 2009 20:52:31 +1100")
-Message-ID: <m2myb32rk8.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DACBCDDE1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 00:51:44 +1100 (EST)
+Message-Id: <7E26E694-85F8-445F-9113-88DCD61BC32C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1238383506.17330.0.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: Build error
+Date: Mon, 30 Mar 2009 08:51:38 -0500
+References: <1238383506.17330.0.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
 
->> @@ -263,7 +263,9 @@ long compat_arch_ptrace(struct task_stru
->>  			ret = ptrace_put_reg(child, numReg, freg);
->>  		} else {
->>  			flush_fp_to_thread(child);
->> -			((unsigned int *)child->thread.regs)[index] = data;
->> +			((unsigned int *)child->thread.fpr)
->> +				[TS_FPRWIDTH * (numReg - PT_FPR0) * 2 +
->> +				 index % 2] = data;
+On Mar 29, 2009, at 10:25 PM, Benjamin Herrenschmidt wrote:
+
+> My next branch (after merging from you):
 >
-> I think the indexing here should be the same as PEEKUSR_3264.  This
-> looks better but all this magic indexing makes me want to vomit.
+> ERROR: "fsl_pq_mdio_bus_name" [drivers/net/gianfar_driver.ko]  
+> undefined!
+>
+> I'll ask Linus to pull anyway though.
+>
+> Cheers,
+> Ben.
 
-How about this instead:
+I believe this is fixed in net-next (and possible linus has already  
+pulled that in.)
 
-@@ -241,6 +241,7 @@ long compat_arch_ptrace(struct task_stru
- 	case PPC_PTRACE_POKEUSR_3264: {
- 		u32 index;
- 		u32 numReg;
-+		u32 *tmp;
- 
- 		ret = -EIO;
- 		/* Determine which register the user wants */
-@@ -263,7 +264,8 @@ long compat_arch_ptrace(struct task_stru
- 			ret = ptrace_put_reg(child, numReg, freg);
- 		} else {
- 			flush_fp_to_thread(child);
--			((unsigned int *)child->thread.regs)[index] = data;
-+			tmp = (u32 *)child->thread.fpr[numReg - PT_FPR0];
-+			tmp[index % 2] = data;
- 			ret = 0;
- 		}
- 		break;
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+- k
