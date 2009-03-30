@@ -1,18 +1,23 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 0F759DDDF6
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 20:17:25 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] Fix ptrace compat wrapper for fpu register access
-References: <m2k568xlfg.fsf@igel.home> <13580.1238371079@neuling.org>
-Date: Mon, 30 Mar 2009 11:17:19 +0200
-In-Reply-To: <13580.1238371079@neuling.org> (Michael Neuling's message of
-	"Mon, 30 Mar 2009 10:57:59 +1100")
-Message-ID: <m2vdpr2wv4.fsf@igel.home>
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 65636DDEED
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 20:21:44 +1100 (EST)
+In-Reply-To: <2a27d3730903300134q673de9cbg6c92e981efc12695@mail.gmail.com>
+References: <1237987849.2194.9.camel@gentoo-jocke.transmode.se>	
+	<20090325142540.GA20944@oksana.dev.rtsoft.ru>
+	<OF3C4E8131.4223FD1A-ONC1257584.0061D2E6-C1257584.0062233E@transmode.se>
+	<2a27d3730903300134q673de9cbg6c92e981efc12695@mail.gmail.com>
+To: Li Yang <leoli@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context.
+Message-ID: <OF6D5FFE1D.1843C7FE-ONC1257589.00328D91-C1257589.00336B8B@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Mon, 30 Mar 2009 11:21:39 +0200
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>, pku.leo@gmail.com,
+	Netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+pku.leo@gmail.com wrote on 30/03/2009 10:34:47:
+> 
+> On Thu, Mar 26, 2009 at 1:51 AM, Joakim Tjernlund
+> <Joakim.Tjernlund@transmode.se> wrote:
+> > Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 25/03/2009 
+15:25:40:
+> >> On Wed, Mar 25, 2009 at 02:30:49PM +0100, Joakim Tjernlund wrote:
+> >> > >>From 1c2f23b1f37f4818c0fd0217b93eb38ab6564840 Mon Sep 17 00:00:00
+> > 2001
+> >> > From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> >> > Date: Tue, 24 Mar 2009 10:19:27 +0100
+> >> > Subject: [PATCH] ucc_geth: Move freeing of TX packets to NAPI 
+context.
+> >> >  Also increase NAPI weight somewhat.
+> >> >  This will make the system alot more responsive while
+> >> >  ping flooding the ucc_geth ethernet interaface.
+> >>
+> >> Some time ago I've tried a similar thing for this driver, but during
+> >> tcp (or udp I don't quite remember) netperf tests I was getting tx
+> >> watchdog timeouts after ~2-5 minutes of work. I was testing with a
+> >> gigabit and 100 Mbit link, with 100 Mbit link the issue was not
+> >> reproducible.
+> >>
+> >> Though, I recalling I was doing a bit more than your patch: I was
+> >> also clearing the TX events in the ucce register before calling
+> >> ucc_geth_tx, that way I was trying to avoid stale interrupts. That
+> >> helped to increase an overall performance (not only responsiveness),
+> >> but as I said my approach didn't pass the tests.
+> >>
+> >> I don't really think that your patch may cause this, but can you
+> >> try netperf w/ this patch applied anyway? And see if it really
+> >> doesn't cause any issues under stress?
+> >
+> > Does the line(in ucc_geth_tx()) look OK to you:
+> >        if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 
+0))
+> >                        break;
+> >
+> > Sure does look fishy to me.
+> 
+> There are two cases when txBd=ConfBd: the BD ring is full or empty.
+> The condition used here ensures that it is the empty case.  Because in
+> hard_start_xmit, the queue will be stopped when the BD ring is full.
+> Maybe some comment is needed here.
 
-> So if you're looking fixing 32 bit apps ptracing 64 bit apps, does that
-> mean we can get a single 32 bit GDB that'll ptrace both 64 and 32 bit
-> apps?
+But how do you know that the queue hasn't been stopped by someone else 
+than
+the driver? 
+If it is stopped by higher layers, the if stmt will fail.
 
-Currently gdb only supports 32x64 debugging for the SPU.
-
->> @@ -263,7 +263,8 @@ long compat_arch_ptrace(struct task_struct *child, compat
-> _long_t request,
->>  			ret = ptrace_put_reg(child, numReg, freg);
->>  		} else {
->>  			flush_fp_to_thread(child);
->> -			((unsigned int *)child->thread.regs)[index] = data;
->> +			((unsigned int *)child->thread.regs)
->> +				[FPRINDEX(index)] = data;
->
-> This index is into the ptregs structure not the fpr.  I'm not sure the
-> FPRINDEX macro is applicable here.
-
-You're right, this hunk is bogus.  But indexing off thread.regs is
-totally bogus as well.  I think what was intented is this:
-
-@@ -263,7 +263,9 @@ long compat_arch_ptrace(struct task_stru
- 			ret = ptrace_put_reg(child, numReg, freg);
- 		} else {
- 			flush_fp_to_thread(child);
--			((unsigned int *)child->thread.regs)[index] = data;
-+			((unsigned int *)child->thread.fpr)
-+				[TS_FPRWIDTH * (numReg - PT_FPR0) * 2 +
-+				 index % 2] = data;
- 			ret = 0;
- 		}
- 		break;
-
-But gdb does not actually use PPC_PTRACE_POKEUSR_3264.
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+ Jocke
