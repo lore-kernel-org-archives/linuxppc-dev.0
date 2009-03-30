@@ -1,23 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DC875DDEE8
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 08:22:16 +1100 (EST)
-Date: Mon, 30 Mar 2009 14:18:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] hvc_console: prevent wrapping in hvc_console_print()
-Message-Id: <20090330141852.59baaeda.akpm@linux-foundation.org>
-In-Reply-To: <20090330205553.GA19278@yoda.jdub.homelinux.org>
-References: <49BF956B.9030109@gmail.com>
-	<20090330133531.f5d99c09.akpm@linux-foundation.org>
-	<20090330205553.GA19278@yoda.jdub.homelinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, roel.kluin@gmail.com, linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D31CADDE20
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 09:30:08 +1100 (EST)
+Message-Id: <48A51477-AF94-4E65-A224-A3D5125D22E4@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20090330184423.31699.61150.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] net/fec_mpc52xx: fix BUG on missing dma_ops
+Date: Mon, 30 Mar 2009 17:30:01 -0500
+References: <20090330184423.31699.61150.stgit@localhost.localdomain>
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 30 Mar 2009 16:55:53 -0400
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-> On Mon, Mar 30, 2009 at 01:35:31PM -0700, Andrew Morton wrote:
-> >Guys, could we have a MAINTAINERS entry for this driver please?
-> 
-> To my knowledge, there isn't one.  Would be Ben now by default I
-> guess.  The previous developers have disclaimed ownership for a
-> while from what I remember.
-> 
+On Mar 30, 2009, at 1:53 PM, Grant Likely wrote:
 
-A MAINAINERS record doesn't have to identify an individual.  It can at
-least point people at the appropriate mailing list(s).
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> The driver triggers a BUG_ON() when allocating DMA buffers if the
+> arch/powerpc dma_ops from the of_platform device are not copied
+> into net_device structure.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> David, do you want to pick this one up right away, or should I merge  
+> it
+> through Ben's powerpc tree?
+
+
+Grant,
+
+I really think you need to do what Kumar did for gianfar (http://patchwork.ozlabs.org/patch/24562/ 
+) - your  patch just fixes the dma_ops problem, not the problem with  
+getting to the correct archdata, which contains an offset (dma_data)  
+that is used to form a bus address used in the various dma  
+operations.  Grep for get_dma_direct_offset in arch/powerpc and you'll  
+see it used in the various dma operations.
+
+Cheers,
+B
+
+>
+>
+> g.
+>
+> drivers/net/fec_mpc52xx.c |    3 +++
+> 1 files changed, 3 insertions(+), 0 deletions(-)
+>
+>
+> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+> index 049b0a7..215207d 100644
+> --- a/drivers/net/fec_mpc52xx.c
+> +++ b/drivers/net/fec_mpc52xx.c
+> @@ -928,6 +928,9 @@ mpc52xx_fec_probe(struct of_device *op, const  
+> struct of_device_id *match)
+> 	if (!request_mem_region(mem.start, sizeof(struct mpc52xx_fec),  
+> DRIVER_NAME))
+> 		return -EBUSY;
+>
+> +	/* Copy the PowerPC dma_ops from the of_device */
+> +	set_dma_ops(&ndev->dev, get_dma_ops(&op->dev));
+> +
+> 	/* Init ether ndev with what we have */
+> 	ndev->open		= mpc52xx_fec_open;
+> 	ndev->stop		= mpc52xx_fec_close;
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
