@@ -1,14 +1,15 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <49D21145.3060400@grandegger.com>
-Date: Tue, 31 Mar 2009 14:49:09 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <jean-philippe.jacquemin@barco.com>
+Received: from kuumail.barco.com (kuumail.barco.com [32.58.34.195])
+	by ozlabs.org (Postfix) with SMTP id 9D3DBDE859
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 23:42:31 +1100 (EST)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/8] powerpc: i2c-mpc: make I2C bus speed configurable
-References: <20090331123727.853787299@denx.de>
-In-Reply-To: <20090331123727.853787299@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C9B1FE.25A894FE"
+Subject: configuring the DMA for using the SCPLC on the MPC5121
+Date: Tue, 31 Mar 2009 14:42:26 +0200
+Message-ID: <ED2EA636E2C9744A96B417491D4793BB04E16EFA@KUUMEX03.barco.com>
+From: "Jacquemin, Jean-Philippe" <jean-philippe.jacquemin@barco.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,67 +19,164 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please *FORGET* this series of patches. Only the I2C related patches are
-relevant but I accidentally sent out the complete patch stack :-(. I
-will resent them in a second.
+This is a multi-part message in MIME format.
 
-Sorry for any inconvenience this has caused.
+------_=_NextPart_001_01C9B1FE.25A894FE
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Wolfgang.
+Dear all,
+=20
+I am trying to configure the MPC5121 to perform DMA transfers from the
+CPU RAM to the RAM of an FPGA attached on ChipSelect 2.
+I have to use the LocalPlus Bus and configure the chipselect2 for bust
+mode and non-multiplexed.
+I also have to configure a DMA task to copy the content of my buffer to
+the local bus Fifo and then kick this content to the wanted address on
+chipselect 2.
+=20
+I have some code (thanks to Grant Likely) to implement a LocalPlus Bus
+Fifo driver (SCPLC) but have no clue how to configure the DMA for using
+the SCPLC... Can someone help me??
+=20
+The 5121 fifo is directly derived from the 5200 fifo, only it is :
+* deeper (1024bytes instead of 512),=20
+* up to 56 bytes can be transfered with one transaction
+* increased SCPLC packet size register to 31 bits
+=20
+=20
+best regards,
+=20
+=20
+Jean-Philippe Jacquemin
+Sofware Engineer
+Barco Media & Entertainment Division
+Noordlaan 5
+B-8520 Kurrne, Belgium
+Tel : +32 56 36 82 28
+Fax : +32 56 36 88 62
+=20
 
-Wolfgang Grandegger wrote:
-> Following (most of) Grant's suggestions to my RFC:
-> 
-> http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069820.html
-> 
-> this new patch series now uses:
-> 
-> - the I2c node property "fsl,preserve-clocking" to overtake the
->   clock settings from the boot loader. The first patch provides this
->   feature and can be applied *without* delay. This rest will take
->   more time and discussion, I'm afraid :-(.
-> 
-> - the OF match table to define the I2C clock properties, especially
->   the source clock pre-scaler:
-> 
->   static const struct of_device_id mpc_i2c_of_match[] = {
-> 	{.compatible = "fsl,mpc5200b-i2c",
-> 	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
-> 	{.compatible = "fsl,mpc5200-i2c",
-> 	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
-> 	{.compatible = "fsl,mpc8313-i2c",
-> 	 .data = (void *)FSL_I2C_DEV_SEPARATE_DFSRR, },
-> 	{.compatible = "fsl,mpc8543-i2c",
-> 	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
-> 			  FSL_I2C_DEV_CLOCK_DIV2), },
-> 	{.compatible = "fsl,mpc8544-i2c",
-> 	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
-> 			  FSL_I2C_DEV_CLOCK_DIV23), },
-> 	/* Backward compatibility */
-> 	{.compatible = "fsl-i2c", },
-> 	{},
->   };
-> 
->   The "data" field defines the relevant I2C flags.
-> 
-> - arch-specific tables and functions to get the proper Freqency
->   Divider Register (fdr). I added them to sysdev/fsl_soc.c for
->   the MPC8xxx and to platforms/52xx/mpc52xx_common.c for the
->   MPC52xx. This also solves the problem with arch-specific
->   functions, e.g. for getting the bus frequency.
-> 
-> - dev_dbg() and dev_info() to profit from a more descriptive output.
-> 
-> Hope this solution is OK now?
-> 
-> Thanks,
-> 
-> Wolfgang.
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
+
+DISCLAIMER:
+Unless indicated otherwise, the information contained in this message is =
+privileged and confidential, and is intended only for the use of the =
+addressee(s) named above and others who have been specifically =
+authorized to receive it. If you are not the intended recipient, you are =
+hereby notified that any dissemination, distribution or copying of this =
+message and/or attachments is strictly prohibited. The company accepts =
+no liability for any damage caused by any virus transmitted by this =
+email. Furthermore, the company does not warrant a proper and complete =
+transmission of this information, nor does it accept liability for any =
+delays. If you have received this message in error, please contact the =
+sender and delete the message. Thank you.
+
+------_=_NextPart_001_01C9B1FE.25A894FE
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3492" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009>Dear=20
+all,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D778552409-31032009></SPAN></FONT><FONT=20
+face=3DArial size=3D2><SPAN =
+class=3D778552409-31032009></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009>I am =
+trying to=20
+configure the MPC5121 to perform DMA transfers from the CPU RAM to the =
+RAM of an=20
+FPGA attached on ChipSelect 2.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009>I have =
+to use the=20
+LocalPlus Bus and configure the chipselect2 for bust mode and=20
+non-multiplexed.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009>I also =
+have to=20
+configure a DMA task to copy the content of my buffer to the local bus =
+Fifo and=20
+then kick this content to the wanted address on chipselect=20
+2.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D778552409-31032009></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009>I have =
+some code=20
+(thanks to&nbsp;Grant Likely) to implement a LocalPlus Bus Fifo driver =
+(SCPLC)=20
+but have no clue how to configure the DMA for using the SCPLC... Can =
+someone=20
+help me??</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009><FONT=20
+size=3D2></FONT></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009><FONT =
+size=3D2>The=20
+5121 fifo is directly derived from the 5200 fifo, only it=20
+is&nbsp;:</FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009><FONT =
+size=3D2>*=20
+deeper (1024bytes instead of 512), </FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009><FONT =
+size=3D2>* up to=20
+56 bytes can be transfered with one =
+transaction</FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009><FONT =
+size=3D2>*=20
+increased SCPLC packet size register to&nbsp;31 =
+bits</DIV></FONT></SPAN></FONT>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D778552409-31032009></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D778552409-31032009></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D778552409-31032009>best=20
+regards,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV align=3Dleft></FONT>&nbsp;</DIV></DIV>
+<DIV align=3Dleft>
+<DIV align=3Dleft><FONT face=3DArial size=3D2><SPAN =
+class=3D570311614-19032008><SPAN=20
+class=3D735275811-21032008>Jean-Philippe =
+Jacquemin</SPAN></SPAN></FONT></DIV>
+<DIV><SPAN class=3D570311614-19032008><SPAN=20
+style=3D"FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><SPAN=20
+class=3D735275811-21032008>Sofware Engineer</SPAN></SPAN></SPAN></DIV>
+<DIV><SPAN class=3D570311614-19032008><SPAN=20
+style=3D"FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><SPAN=20
+class=3D735275811-21032008>Barco Media &amp; Entertainment=20
+Division</SPAN></SPAN></SPAN></DIV>
+<DIV><SPAN class=3D570311614-19032008><SPAN=20
+style=3D"FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><SPAN=20
+class=3D735275811-21032008>Noordlaan 5</SPAN></SPAN></SPAN></DIV>
+<DIV><SPAN class=3D570311614-19032008><SPAN=20
+style=3D"FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><SPAN=20
+class=3D735275811-21032008>B-8520 Kurrne, =
+Belgium</SPAN></SPAN></SPAN></DIV>
+<DIV><SPAN class=3D570311614-19032008><SPAN=20
+style=3D"FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><SPAN=20
+class=3D735275811-21032008>Tel : +32 56 36 82 =
+28</SPAN></SPAN></SPAN></DIV>
+<DIV><SPAN class=3D570311614-19032008><SPAN=20
+style=3D"FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><SPAN=20
+class=3D735275811-21032008>Fax : +32 56 36 88 =
+62</SPAN></SPAN></SPAN></DIV></DIV>
+<DIV>&nbsp;</DIV><p></p><p>DISCLAIMER:<br>Unless indicated otherwise, =
+the information contained in this message is privileged and =
+confidential, and is intended only for the use of the addressee(s) named =
+above and others who have been specifically authorized to receive it. If =
+you are not the intended recipient, you are hereby notified that any =
+dissemination, distribution or copying of this message and/or =
+attachments is strictly prohibited. The company accepts no liability for =
+any damage caused by any virus transmitted by this email. Furthermore, =
+the company does not warrant a proper and complete transmission of this =
+information, nor does it accept liability for any delays. If you have =
+received this message in error, please contact the sender and delete the =
+message. Thank you.</BODY></HTML>
+
+------_=_NextPart_001_01C9B1FE.25A894FE--
