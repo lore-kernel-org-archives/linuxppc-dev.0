@@ -1,20 +1,9 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id B014ADDEEF
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 13:25:15 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id j37so1394289waf.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 19:25:14 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] net/fec_mpc52xx: fix BUG on missing dma_ops
-To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	David Miller <davem@davemloft.net>,
-	Becky Bruce <beckyb@kernel.crashing.org>
-Date: Mon, 30 Mar 2009 20:25:10 -0600
-Message-ID: <20090331022428.26151.55232.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: galak@kernel.crashing.net
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 31 Mar 2009 14:34:04 +1100
+Subject: [PATCH] powerpc/pmac: Fix internal modem IRQ on Wallstreet PowerBook
+Message-Id: <20090331033442.7D891DDEE3@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,92 +13,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+The (relatively) new pmac_zilog driver doesn't use the pre-munged
+IRQ numbers from the macio_dev unlike other macio things, it
+directly maps it off the OF device-tree.
 
-The driver triggers a BUG_ON() when allocating DMA buffers if the
-arch/powerpc dma_ops from the of_platform device are not copied
-into net_device structure.
+It does that because it can be initialized much earlier than the
+registration of the macio devices, in order to get a serial
+console early.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Unfortunately, that means that it "misses" some fixups done
+by the macio layer to work around missing interrupt descriptions
+in the device-tree of the Wallstreet machines.
+
+This patch brings the necessary workaround into the pmac_zilog
+driver itself to bring it back to working condition.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-Becky, does this look better to you?
 
-g.
+ drivers/serial/pmac_zilog.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
- drivers/net/fec_mpc52xx.c |   19 ++++++++++++-------
- 1 files changed, 12 insertions(+), 7 deletions(-)
-
-
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index 049b0a7..f99463f 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -129,7 +129,8 @@ static void mpc52xx_fec_free_rx_buffers(struct net_device *dev, struct bcom_task
- 		struct sk_buff *skb;
+--- linux-work.orig/drivers/serial/pmac_zilog.c	2009-03-31 14:15:13.000000000 +1100
++++ linux-work/drivers/serial/pmac_zilog.c	2009-03-31 14:31:34.000000000 +1100
+@@ -1538,6 +1538,21 @@ no_dma:
+ 	uap->port.type = PORT_PMAC_ZILOG;
+ 	uap->port.flags = 0;
  
- 		skb = bcom_retrieve_buffer(s, NULL, (struct bcom_bd **)&bd);
--		dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_FROM_DEVICE);
-+		dma_unmap_single(dev->dev.parent, bd->skb_pa, skb->len,
-+				 DMA_FROM_DEVICE);
- 		kfree_skb(skb);
- 	}
- }
-@@ -150,7 +151,7 @@ static int mpc52xx_fec_alloc_rx_buffers(struct net_device *dev, struct bcom_task
- 		bd = (struct bcom_fec_bd *)bcom_prepare_next_buffer(rxtsk);
- 
- 		bd->status = FEC_RX_BUFFER_SIZE;
--		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
-+		bd->skb_pa = dma_map_single(dev->dev.parent, skb->data,
- 				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
- 
- 		bcom_submit_next_buffer(rxtsk, skb);
-@@ -388,7 +389,8 @@ static int mpc52xx_fec_hard_start_xmit(struct sk_buff *skb, struct net_device *d
- 		bcom_prepare_next_buffer(priv->tx_dmatsk);
- 
- 	bd->status = skb->len | BCOM_FEC_TX_BD_TFD | BCOM_FEC_TX_BD_TC;
--	bd->skb_pa = dma_map_single(&dev->dev, skb->data, skb->len, DMA_TO_DEVICE);
-+	bd->skb_pa = dma_map_single(dev->dev.parent, skb->data, skb->len,
-+				    DMA_TO_DEVICE);
- 
- 	bcom_submit_next_buffer(priv->tx_dmatsk, skb);
- 
-@@ -430,7 +432,8 @@ static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
- 		struct bcom_fec_bd *bd;
- 		skb = bcom_retrieve_buffer(priv->tx_dmatsk, NULL,
- 				(struct bcom_bd **)&bd);
--		dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_TO_DEVICE);
-+		dma_unmap_single(dev->dev.parent, bd->skb_pa, skb->len,
-+				 DMA_TO_DEVICE);
- 
- 		dev_kfree_skb_irq(skb);
- 	}
-@@ -455,7 +458,8 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
- 
- 		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status,
- 				(struct bcom_bd **)&bd);
--		dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_FROM_DEVICE);
-+		dma_unmap_single(dev->dev.parent, bd->skb_pa, rskb->len,
-+				 DMA_FROM_DEVICE);
- 
- 		/* Test for errors in received frame */
- 		if (status & BCOM_FEC_RX_BD_ERRORS) {
-@@ -464,7 +468,8 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
- 				bcom_prepare_next_buffer(priv->rx_dmatsk);
- 
- 			bd->status = FEC_RX_BUFFER_SIZE;
--			bd->skb_pa = dma_map_single(&dev->dev, rskb->data,
-+			bd->skb_pa = dma_map_single(dev->dev.parent,
-+					rskb->data,
- 					FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
- 
- 			bcom_submit_next_buffer(priv->rx_dmatsk, rskb);
-@@ -499,7 +504,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
- 			bcom_prepare_next_buffer(priv->rx_dmatsk);
- 
- 		bd->status = FEC_RX_BUFFER_SIZE;
--		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
-+		bd->skb_pa = dma_map_single(dev->dev.parent, skb->data,
- 				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
- 
- 		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
++	/*
++	 * Fixup for the port on Gatwick for which the device-tree has
++	 * missing interrupts. Normally, the macio_dev would contain
++	 * fixed up interrupt info, but we use the device-tree directly
++	 * here due to early probing so we need the fixup too.
++	 */
++	if (uap->port.irq == NO_IRQ &&
++	    np->parent && np->parent->parent &&
++	    of_device_is_compatible(np->parent->parent, "gatwick")) {
++		/* IRQs on gatwick are offset by 64 */
++		uap->port.irq = irq_create_mapping(NULL, 64 + 15);
++		uap->tx_dma_irq = irq_create_mapping(NULL, 64 + 4);
++		uap->rx_dma_irq = irq_create_mapping(NULL, 64 + 5);
++	}
++
+ 	/* Setup some valid baud rate information in the register
+ 	 * shadows so we don't write crap there before baud rate is
+ 	 * first initialized.
