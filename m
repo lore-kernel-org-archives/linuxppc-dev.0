@@ -1,18 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D938ADDE06
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:48:51 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2VDmkPC023307
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 08:48:46 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: Use fsl,
-	mpc85.. as prefix for memory ctrl & l2-cache nodes
-Date: Tue, 31 Mar 2009 08:48:46 -0500
-Message-Id: <1238507326-8851-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 777C8DDEDA
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:56:34 +1100 (EST)
+Date: Tue, 31 Mar 2009 15:56:29 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH 1/2] powerpc: i2c-mpc: preserve I2C clocking
+Message-ID: <20090331135629.GC3044@pengutronix.de>
+References: <20090331125028.066613801@denx.de>
+	<20090331125451.600446749@denx.de>
+	<20090331133953.GB3044@pengutronix.de>
+	<49D21EF1.9050200@grandegger.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="bAmEntskrkuBymla"
+In-Reply-To: <49D21EF1.9050200@grandegger.com>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,190 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Older devices tree's used "fsl,85.." instead of the preferred
-"fsl,mpc85.." for the memory controller & l2 cache controller nodes.
-The EDAC code is the only use of these and has been updated for some
-time to support both "fsl,85.." and "fsl,mpc85.."
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/boot/dts/ksi8560.dts      |    4 ++--
- arch/powerpc/boot/dts/sbc8548.dts      |    4 ++--
- arch/powerpc/boot/dts/sbc8560.dts      |    4 ++--
- arch/powerpc/boot/dts/stx_gp3_8560.dts |    4 ++--
- arch/powerpc/boot/dts/tqm8540.dts      |    4 ++--
- arch/powerpc/boot/dts/tqm8541.dts      |    4 ++--
- arch/powerpc/boot/dts/tqm8555.dts      |    4 ++--
- arch/powerpc/boot/dts/tqm8560.dts      |    4 ++--
- 8 files changed, 16 insertions(+), 16 deletions(-)
+--bAmEntskrkuBymla
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/boot/dts/ksi8560.dts b/arch/powerpc/boot/dts/ksi8560.dts
-index 308fe7c..c9cfd37 100644
---- a/arch/powerpc/boot/dts/ksi8560.dts
-+++ b/arch/powerpc/boot/dts/ksi8560.dts
-@@ -57,14 +57,14 @@
- 		bus-frequency = <0>;				/* Fixed by bootwrapper */
- 
- 		memory-controller@2000 {
--			compatible = "fsl,8540-memory-controller";
-+			compatible = "fsl,mpc8540-memory-controller";
- 			reg = <0x2000 0x1000>;
- 			interrupt-parent = <&mpic>;
- 			interrupts = <0x12 0x2>;
- 		};
- 
- 		L2: l2-cache-controller@20000 {
--			compatible = "fsl,8540-l2-cache-controller";
-+			compatible = "fsl,mpc8540-l2-cache-controller";
- 			reg = <0x20000 0x1000>;
- 			cache-line-size = <0x20>;		/* 32 bytes */
- 			cache-size = <0x40000>;			/* L2, 256K */
-diff --git a/arch/powerpc/boot/dts/sbc8548.dts b/arch/powerpc/boot/dts/sbc8548.dts
-index 9c5079f..b1f1416 100644
---- a/arch/powerpc/boot/dts/sbc8548.dts
-+++ b/arch/powerpc/boot/dts/sbc8548.dts
-@@ -156,14 +156,14 @@
- 		compatible = "simple-bus";
- 
- 		memory-controller@2000 {
--			compatible = "fsl,8548-memory-controller";
-+			compatible = "fsl,mpc8548-memory-controller";
- 			reg = <0x2000 0x1000>;
- 			interrupt-parent = <&mpic>;
- 			interrupts = <0x12 0x2>;
- 		};
- 
- 		L2: l2-cache-controller@20000 {
--			compatible = "fsl,8548-l2-cache-controller";
-+			compatible = "fsl,mpc8548-l2-cache-controller";
- 			reg = <0x20000 0x1000>;
- 			cache-line-size = <0x20>;	// 32 bytes
- 			cache-size = <0x80000>;	// L2, 512K
-diff --git a/arch/powerpc/boot/dts/sbc8560.dts b/arch/powerpc/boot/dts/sbc8560.dts
-index b772405..c4564b8 100644
---- a/arch/powerpc/boot/dts/sbc8560.dts
-+++ b/arch/powerpc/boot/dts/sbc8560.dts
-@@ -61,14 +61,14 @@
- 		clock-frequency = <0>;
- 
- 		memory-controller@2000 {
--			compatible = "fsl,8560-memory-controller";
-+			compatible = "fsl,mpc8560-memory-controller";
- 			reg = <0x2000 0x1000>;
- 			interrupt-parent = <&mpic>;
- 			interrupts = <0x12 0x2>;
- 		};
- 
- 		L2: l2-cache-controller@20000 {
--			compatible = "fsl,8560-l2-cache-controller";
-+			compatible = "fsl,mpc8560-l2-cache-controller";
- 			reg = <0x20000 0x1000>;
- 			cache-line-size = <0x20>;	// 32 bytes
- 			cache-size = <0x40000>;		// L2, 256K
-diff --git a/arch/powerpc/boot/dts/stx_gp3_8560.dts b/arch/powerpc/boot/dts/stx_gp3_8560.dts
-index 8b17395..ea6b151 100644
---- a/arch/powerpc/boot/dts/stx_gp3_8560.dts
-+++ b/arch/powerpc/boot/dts/stx_gp3_8560.dts
-@@ -57,14 +57,14 @@
- 		compatible = "fsl,mpc8560-immr", "simple-bus";
- 
- 		memory-controller@2000 {
--			compatible = "fsl,8540-memory-controller";
-+			compatible = "fsl,mpc8540-memory-controller";
- 			reg = <0x2000 0x1000>;
- 			interrupt-parent = <&mpic>;
- 			interrupts = <18 2>;
- 		};
- 
- 		L2: l2-cache-controller@20000 {
--			compatible = "fsl,8540-l2-cache-controller";
-+			compatible = "fsl,mpc8540-l2-cache-controller";
- 			reg = <0x20000 0x1000>;
- 			cache-line-size = <32>;
- 			cache-size = <0x40000>;	// L2, 256K
-diff --git a/arch/powerpc/boot/dts/tqm8540.dts b/arch/powerpc/boot/dts/tqm8540.dts
-index ac9413a..231bae7 100644
---- a/arch/powerpc/boot/dts/tqm8540.dts
-+++ b/arch/powerpc/boot/dts/tqm8540.dts
-@@ -59,14 +59,14 @@
- 		compatible = "fsl,mpc8540-immr", "simple-bus";
- 
- 		memory-controller@2000 {
--			compatible = "fsl,8540-memory-controller";
-+			compatible = "fsl,mpc8540-memory-controller";
- 			reg = <0x2000 0x1000>;
- 			interrupt-parent = <&mpic>;
- 			interrupts = <18 2>;
- 		};
- 
- 		L2: l2-cache-controller@20000 {
--			compatible = "fsl,8540-l2-cache-controller";
-+			compatible = "fsl,mpc8540-l2-cache-controller";
- 			reg = <0x20000 0x1000>;
- 			cache-line-size = <32>;
- 			cache-size = <0x40000>;	// L2, 256K
-diff --git a/arch/powerpc/boot/dts/tqm8541.dts b/arch/powerpc/boot/dts/tqm8541.dts
-index c71bb5d..4356a1f 100644
---- a/arch/powerpc/boot/dts/tqm8541.dts
-+++ b/arch/powerpc/boot/dts/tqm8541.dts
-@@ -58,14 +58,14 @@
- 		compatible = "fsl,mpc8541-immr", "simple-bus";
- 
- 		memory-controller@2000 {
--			compatible = "fsl,8540-memory-controller";
-+			compatible = "fsl,mpc8540-memory-controller";
- 			reg = <0x2000 0x1000>;
- 			interrupt-parent = <&mpic>;
- 			interrupts = <18 2>;
- 		};
- 
- 		L2: l2-cache-controller@20000 {
--			compatible = "fsl,8540-l2-cache-controller";
-+			compatible = "fsl,mpc8540-l2-cache-controller";
- 			reg = <0x20000 0x1000>;
- 			cache-line-size = <32>;
- 			cache-size = <0x40000>;	// L2, 256K
-diff --git a/arch/powerpc/boot/dts/tqm8555.dts b/arch/powerpc/boot/dts/tqm8555.dts
-index a133ded..06d366e 100644
---- a/arch/powerpc/boot/dts/tqm8555.dts
-+++ b/arch/powerpc/boot/dts/tqm8555.dts
-@@ -58,14 +58,14 @@
- 		compatible = "fsl,mpc8555-immr", "simple-bus";
- 
- 		memory-controller@2000 {
--			compatible = "fsl,8540-memory-controller";
-+			compatible = "fsl,mpc8540-memory-controller";
- 			reg = <0x2000 0x1000>;
- 			interrupt-parent = <&mpic>;
- 			interrupts = <18 2>;
- 		};
- 
- 		L2: l2-cache-controller@20000 {
--			compatible = "fsl,8540-l2-cache-controller";
-+			compatible = "fsl,mpc8540-l2-cache-controller";
- 			reg = <0x20000 0x1000>;
- 			cache-line-size = <32>;
- 			cache-size = <0x40000>;	// L2, 256K
-diff --git a/arch/powerpc/boot/dts/tqm8560.dts b/arch/powerpc/boot/dts/tqm8560.dts
-index 649e2e5..feff915 100644
---- a/arch/powerpc/boot/dts/tqm8560.dts
-+++ b/arch/powerpc/boot/dts/tqm8560.dts
-@@ -60,14 +60,14 @@
- 		compatible = "fsl,mpc8560-immr", "simple-bus";
- 
- 		memory-controller@2000 {
--			compatible = "fsl,8540-memory-controller";
-+			compatible = "fsl,mpc8540-memory-controller";
- 			reg = <0x2000 0x1000>;
- 			interrupt-parent = <&mpic>;
- 			interrupts = <18 2>;
- 		};
- 
- 		L2: l2-cache-controller@20000 {
--			compatible = "fsl,8540-l2-cache-controller";
-+			compatible = "fsl,mpc8540-l2-cache-controller";
- 			reg = <0x20000 0x1000>;
- 			cache-line-size = <32>;
- 			cache-size = <0x40000>;	// L2, 256K
--- 
-1.5.6.6
+
+> >> -=09
+> >> -	mpc_i2c_setclock(i2c);
+> >> +
+> >> +	if (set_clock)
+> >> +		mpc_i2c_setclock(i2c);
+> >=20
+> > Can't we drop 'set_clock' with something like this here?
+> >=20
+> > +	if (!of_get_property(op->node, "fsl,preserve-clocking", NULL)) {
+> > +
+> > +		if (of_get_property(op->node, "dfsrr", NULL))
+> > +			i2c->flags |=3D FSL_I2C_DEV_SEPARATE_DFSRR;
+> > +
+> > +		if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
+> > +		    of_device_is_compatible(op->node, "mpc5200-i2c"))
+> > +			i2c->flags |=3D FSL_I2C_DEV_CLOCK_5200;
+> > +
+> > +		mpc_i2c_setclock(i2c);
+> > +	}
+>=20
+> No, because the I2C registers are not yet mapped.
+
+Sorry, I used misleading words :) With 'here' I meant 'at this
+position', i.e. insert my above block where mpc_i2c_setclock was used
+anyway.
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--bAmEntskrkuBymla
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknSIQ0ACgkQD27XaX1/VRtgGgCaA8NXZCaycG9m10echwEbflPH
+0h4An1f+rODAfKMA7sQBtcMauawjHmc4
+=mWLk
+-----END PGP SIGNATURE-----
+
+--bAmEntskrkuBymla--
