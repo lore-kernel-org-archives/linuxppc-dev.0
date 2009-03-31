@@ -1,10 +1,9 @@
 Return-Path: <wg@denx.de>
-Message-Id: <20090331125451.600446749@denx.de>
-Date: Tue, 31 Mar 2009 14:50:29 +0200
+Message-Id: <20090331125028.066613801@denx.de>
+Date: Tue, 31 Mar 2009 14:50:28 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] powerpc: i2c-mpc: preserve I2C clocking
-References: <20090331125028.066613801@denx.de>
+Subject: [PATCH 0/2] powerpc: i2c-mpc: make I2C bus speed configurable
 Cc: devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -15,58 +14,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The I2c node property "fsl,preserve-clocking" allows to overtake the
-clock settings from the boot loader and avoids the hard-coded setting.
+Following (most of) Grant's suggestions to my RFC:
 
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
----
- drivers/i2c/busses/i2c-mpc.c |   24 ++++++++++++++++--------
- 1 file changed, 16 insertions(+), 8 deletions(-)
+http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069820.html
 
-Index: linux-2.6/drivers/i2c/busses/i2c-mpc.c
-===================================================================
---- linux-2.6.orig/drivers/i2c/busses/i2c-mpc.c	2009-03-31 13:25:08.000000000 +0200
-+++ linux-2.6/drivers/i2c/busses/i2c-mpc.c	2009-03-31 13:28:03.000000000 +0200
-@@ -318,17 +318,24 @@
- {
- 	int result = 0;
- 	struct mpc_i2c *i2c;
-+	int set_clock;
- 
- 	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
- 	if (!i2c)
- 		return -ENOMEM;
- 
--	if (of_get_property(op->node, "dfsrr", NULL))
--		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
--
--	if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
--			of_device_is_compatible(op->node, "mpc5200-i2c"))
--		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
-+	if (of_get_property(op->node, "fsl,preserve-clocking", NULL)) {
-+		set_clock = 0;
-+	} else {
-+		set_clock = 1;
-+
-+		if (of_get_property(op->node, "dfsrr", NULL))
-+			i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
-+
-+		if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
-+		    of_device_is_compatible(op->node, "mpc5200-i2c"))
-+			i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
-+	}
- 
- 	init_waitqueue_head(&i2c->queue);
- 
-@@ -348,8 +355,9 @@
- 			goto fail_request;
- 		}
- 	}
--	
--	mpc_i2c_setclock(i2c);
-+
-+	if (set_clock)
-+		mpc_i2c_setclock(i2c);
- 
- 	dev_set_drvdata(&op->dev, i2c);
- 
+this new patch series now uses:
+
+- the I2c node property "fsl,preserve-clocking" to overtake the
+  clock settings from the boot loader. The first patch provides this
+  feature and can be applied *without* delay. This rest will take
+  more time and discussion, I'm afraid  :-( .
+
+- the OF match table to define the I2C clock properties, especially
+  the source clock pre-scaler:
+
+  static const struct of_device_id mpc_i2c_of_match[] = {
+	{.compatible = "fsl,mpc5200b-i2c",
+	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
+	{.compatible = "fsl,mpc5200-i2c",
+	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
+	{.compatible = "fsl,mpc8313-i2c",
+	 .data = (void *)FSL_I2C_DEV_SEPARATE_DFSRR, },
+	{.compatible = "fsl,mpc8543-i2c",
+	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
+			  FSL_I2C_DEV_CLOCK_DIV2), },
+	{.compatible = "fsl,mpc8544-i2c",
+	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
+			  FSL_I2C_DEV_CLOCK_DIV23), },
+	/* Backward compatibility */
+	{.compatible = "fsl-i2c", },
+	{},
+  };
+
+  The "data" field defines the relevant I2C flags.
+
+- arch-specific tables and functions to get the proper Freqency
+  Divider Register (fdr). I added them to sysdev/fsl_soc.c for
+  the MPC8xxx and to platforms/52xx/mpc52xx_common.c for the
+  MPC52xx. This also solves the problem with arch-specific
+  functions, e.g. for getting the bus frequency.
+
+- dev_dbg() and dev_info() to profit from a more descriptive output.
+
+Hope this solution is OK now?
+
+Thanks,
+
+Wolfgang.
