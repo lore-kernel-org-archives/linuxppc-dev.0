@@ -1,17 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5D65BDDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:43:07 +1100 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH 2/2] ucc_geth: Remove unused header
-Date: Tue, 31 Mar 2009 08:42:59 -0500
-Message-Id: <1238506979-8678-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1238506979-8678-1-git-send-email-galak@kernel.crashing.org>
-References: <1238506979-8678-1-git-send-email-galak@kernel.crashing.org>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <wg@grandegger.com>
+Message-ID: <49D21EF1.9050200@grandegger.com>
+Date: Tue, 31 Mar 2009 15:47:29 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH 1/2] powerpc: i2c-mpc: preserve I2C clocking
+References: <20090331125028.066613801@denx.de>
+	<20090331125451.600446749@denx.de>
+	<20090331133953.GB3044@pengutronix.de>
+In-Reply-To: <20090331133953.GB3044@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +21,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that the driver is exclusively an of_platform driver we no longer
-use the structs and #defines in fsl_devices.h
+Wolfram Sang wrote:
+> On Tue, Mar 31, 2009 at 02:50:29PM +0200, Wolfgang Grandegger wrote:
+>> The I2c node property "fsl,preserve-clocking" allows to overtake the
+>> clock settings from the boot loader and avoids the hard-coded setting.
+>>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>> ---
+>>  drivers/i2c/busses/i2c-mpc.c |   24 ++++++++++++++++--------
+>>  1 file changed, 16 insertions(+), 8 deletions(-)
+>>
+>> Index: linux-2.6/drivers/i2c/busses/i2c-mpc.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/i2c/busses/i2c-mpc.c	2009-03-31 13:25:08.000000000 +0200
+>> +++ linux-2.6/drivers/i2c/busses/i2c-mpc.c	2009-03-31 13:28:03.000000000 +0200
+>> @@ -318,17 +318,24 @@
+>>  {
+>>  	int result = 0;
+>>  	struct mpc_i2c *i2c;
+>> +	int set_clock;
+>>  
+>>  	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
+>>  	if (!i2c)
+>>  		return -ENOMEM;
+>>  
+>> -	if (of_get_property(op->node, "dfsrr", NULL))
+>> -		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+>> -
+>> -	if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
+>> -			of_device_is_compatible(op->node, "mpc5200-i2c"))
+>> -		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
+>> +	if (of_get_property(op->node, "fsl,preserve-clocking", NULL)) {
+>> +		set_clock = 0;
+>> +	} else {
+>> +		set_clock = 1;
+>> +
+>> +		if (of_get_property(op->node, "dfsrr", NULL))
+>> +			i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+>> +
+>> +		if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
+>> +		    of_device_is_compatible(op->node, "mpc5200-i2c"))
+>> +			i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
+>> +	}
+>>  
+>>  	init_waitqueue_head(&i2c->queue);
+>>  
+>> @@ -348,8 +355,9 @@
+>>  			goto fail_request;
+>>  		}
+>>  	}
+>> -	
+>> -	mpc_i2c_setclock(i2c);
+>> +
+>> +	if (set_clock)
+>> +		mpc_i2c_setclock(i2c);
+> 
+> Can't we drop 'set_clock' with something like this here?
+> 
+> +	if (!of_get_property(op->node, "fsl,preserve-clocking", NULL)) {
+> +
+> +		if (of_get_property(op->node, "dfsrr", NULL))
+> +			i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+> +
+> +		if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
+> +		    of_device_is_compatible(op->node, "mpc5200-i2c"))
+> +			i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
+> +
+> +		mpc_i2c_setclock(i2c);
+> +	}
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- drivers/net/ucc_geth.c         |    1 -
- drivers/net/ucc_geth.h         |    1 -
- drivers/net/ucc_geth_ethtool.c |    1 -
- 3 files changed, 0 insertions(+), 3 deletions(-)
+No, because the I2C registers are not yet mapped.
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 933fcfb..a124615 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -24,7 +24,6 @@
- #include <linux/spinlock.h>
- #include <linux/mm.h>
- #include <linux/dma-mapping.h>
--#include <linux/fsl_devices.h>
- #include <linux/mii.h>
- #include <linux/phy.h>
- #include <linux/workqueue.h>
-diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
-index e3a25e6..48fde5a 100644
---- a/drivers/net/ucc_geth.h
-+++ b/drivers/net/ucc_geth.h
-@@ -20,7 +20,6 @@
- 
- #include <linux/kernel.h>
- #include <linux/list.h>
--#include <linux/fsl_devices.h>
- 
- #include <asm/immap_qe.h>
- #include <asm/qe.h>
-diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
-index a755bea..6fcb500 100644
---- a/drivers/net/ucc_geth_ethtool.c
-+++ b/drivers/net/ucc_geth_ethtool.c
-@@ -28,7 +28,6 @@
- #include <linux/mm.h>
- #include <linux/delay.h>
- #include <linux/dma-mapping.h>
--#include <linux/fsl_devices.h>
- #include <linux/ethtool.h>
- #include <linux/mii.h>
- #include <linux/phy.h>
--- 
-1.5.6.6
+Wolfgang.
