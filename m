@@ -1,18 +1,15 @@
-Return-Path: <edfuchs@uni-kassel.de>
-Received: from hrz-ws41.hrz.uni-kassel.de (smtp.hrz.uni-kassel.de
-	[141.51.12.231]) by ozlabs.org (Postfix) with ESMTP id 635C1DDDB6
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 02:06:47 +1100 (EST)
-From: Eduard Fuchs <edfuchs@uni-kassel.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: 8641D with linux 2.6.29 did'n show second cpu
-Date: Tue, 31 Mar 2009 17:06:55 +0200
-References: <200903311215.55237.edfuchs@uni-kassel.de>
-	<446E5D82-7F37-42B5-8AD9-F8F368A5520A@kernel.crashing.org>
-In-Reply-To: <446E5D82-7F37-42B5-8AD9-F8F368A5520A@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200903311706.55478.edfuchs@uni-kassel.de>
+In-Reply-To: <20090331124035.908249543@denx.de>
+References: <20090331123727.853787299@denx.de>
+	<20090331124035.908249543@denx.de>
+Date: Tue, 31 Mar 2009 09:41:48 -0600
+Message-ID: <fa686aa40903310841x42876819rafe3e8bf24b8646e@mail.gmail.com>
+Subject: Re: [PATCH 5/8] powerpc: i2c-mpc: make I2C bus speed configurable
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +19,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-Am Dienstag 31 M=E4rz 2009 15:20:21 schrieb Kumar Gala:
-> On Mar 31, 2009, at 5:15 AM, Eduard Fuchs wrote:
-> > Hi,
-> >
-> > I'm testing the evaluation board from freescale (MPC8641DHPCN) with
-> > the latest
-> > linux kernel (2.6.29) and the second core seems disabled. CONFIG_SPM
-> > is
-> > enabled but the /proc/cpuinfo shows only one cpu. With original
-> > 2.6.27 kernel
-> > both cpu cores appears in /proc/cpuinfo.
-> >
-> > Has anyone an idea how can i enable the second core?
+On Tue, Mar 31, 2009 at 6:37 AM, Wolfgang Grandegger <wg@grandegger.com> wr=
+ote:
+> This patch makes the I2C bus speed configurable by using the I2C node
+> property "clock-frequency". If the property is not defined, the old
+> fixed clock settings will be used for backward comptibility.
 >
-> Are you using u-boot?  I can't remember if you need a newer u-boot to
-> deal with changes in how we bring up the second core.
+> The generic I2C clock properties, especially the CPU-specific source
+> clock pre-scaler are defined via the OF match table:
+>
+> =A0static const struct of_device_id mpc_i2c_of_match[] =3D {
+> =A0 =A0 =A0 =A0{.compatible =3D "fsl,mpc5200b-i2c",
+> =A0 =A0 =A0 =A0 .data =3D (void *)FSL_I2C_DEV_CLOCK_5200, },
+> =A0 =A0 =A0 =A0{.compatible =3D "fsl,mpc5200-i2c",
+> =A0 =A0 =A0 =A0 .data =3D (void *)FSL_I2C_DEV_CLOCK_5200, },
+> =A0 =A0 =A0 =A0{.compatible =3D "fsl,mpc8313-i2c",
+> =A0 =A0 =A0 =A0 .data =3D (void *)FSL_I2C_DEV_SEPARATE_DFSRR, },
+> =A0 =A0 =A0 =A0{.compatible =3D "fsl,mpc8543-i2c",
+> =A0 =A0 =A0 =A0 .data =3D (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0FSL_I2C_DEV_CLOCK_DIV2=
+), },
+> =A0 =A0 =A0 =A0{.compatible =3D "fsl,mpc8544-i2c",
+> =A0 =A0 =A0 =A0 .data =3D (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0FSL_I2C_DEV_CLOCK_DIV2=
+3), },
+> =A0 =A0 =A0 =A0/* Backward compatibility */
+> =A0 =A0 =A0 =A0{.compatible =3D "fsl-i2c", },
+> =A0 =A0 =A0 =A0{},
+> =A0};
 
-Yes. My u-boot version is 2009.03. Are there some additional config keys fo=
-r=20
-SMP support in u-boot?
 
-Best regard
+Instead passing in a flag (and using an ugly cast to do it) which is
+then checked inside the mpc_i2c_setclock(), you should do this
+instead:
 
-Eduard
+struct fsl_i2c_match_data {
+        int static void *(setclock)(struct device_node *node, struct
+mpc_i2c *i2c, u32 clock);
+        int flags;
+        /* Other stuff can go here */
+};
+
+static const struct of_device_id mpc_i2c_of_match[] =3D {
+        {.compatible =3D "fsl,mpc5200b-i2c",
+         .data =3D (struct fsl_i2c_match_data[]) { .setclock =3D
+mpc_i2c_setclock_mpc5200, },
+        },
+        {.compatible =3D "fsl,mpc5200-i2c",
+         .data =3D (struct fsl_i2c_match_data[]) { .setclock =3D
+mpc_i2c_setclock_mpc5200, },
+        },
+        {.compatible =3D "fsl,mpc8313-i2c",
+         .data =3D (struct fsl_i2c_match_data[]) { .setclock =3D
+mpc_i2c_setclock_separate_dfsrr, },
+        },
+        {.compatible =3D "fsl,mpc8543-i2c",
+         .data =3D (struct fsl_i2c_match_data[]) { .setclock =3D
+mpc_i2c_setclock_separate_dfsrr, },
+         .flags =3D FSL_I2C_DEV_CLOCK_DIV2,
+        },
+        {.compatible =3D "fsl,mpc8544-i2c",
+         .data =3D (struct fsl_i2c_match_data[]) { .setclock =3D
+mpc_i2c_setclock_separate_dfsrr, },
+         .flags =3D FSL_I2C_DEV_CLOCK_DIV23,
+        },
+        /* Backward compatibility */
+        {.compatible =3D "fsl-i2c",
+         .data =3D (struct fsl_i2c_match_data[]) { .setclock =3D
+mpc_i2c_setclock, },
+        },
+        {},
+  };
+
+The table definition is more verbose this way, but I think it results
+in more understandable and easier to extend code.  It also adds lets
+the compiler do more type checking for you.
+
+
+Also, this ...
+
+> --- linux-2.6.orig/arch/powerpc/sysdev/fsl_soc.c =A0 =A0 =A0 =A02009-03-3=
+1 13:25:08.000000000 +0200
+> +++ linux-2.6/arch/powerpc/sysdev/fsl_soc.c =A0 =A0 2009-03-31 13:34:40.5=
+31721011 +0200
+> +int fsl_i2c_get_fdr(struct device_node *node, u32 i2c_clock, u32 i2c_fla=
+gs)
+> +{
+> [...]
+> +}
+> +EXPORT_SYMBOL(fsl_i2c_get_fdr);
+
+... and this ...
+
+> --- linux-2.6.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c 2009-03-3=
+1 13:25:08.000000000 +0200
+> +++ linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c =A0 =A0 =A0200=
+9-03-31 13:28:54.309718526 +0200
+> +int fsl_i2c_get_fdr(struct device_node *node, u32 i2c_clock, u32 i2c_fla=
+gs)
+> +{
+> [...]
+> +}
+> +EXPORT_SYMBOL(fsl_i2c_get_fdr);
+
+does not work on a multiplatform kernel.  Both 8xxx and 52xx support
+can be selected at the same time.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
