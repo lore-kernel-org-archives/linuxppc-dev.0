@@ -1,16 +1,11 @@
-Return-Path: <weiyi.huang@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.191])
-	by ozlabs.org (Postfix) with ESMTP id 083E3DDE9F
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 23:41:26 +1100 (EST)
-Received: by ti-out-0910.google.com with SMTP id j2so2160757tid.13
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 05:41:25 -0700 (PDT)
-From: Huang Weiyi <weiyi.huang@gmail.com>
-To: benh@kernel.crashing.org,
-	paulus@samba.org
-Subject: [PATCH 1/3] powerpc: remove duplicated #include's
-Date: Tue, 31 Mar 2009 20:41:18 +0800
-Message-Id: <1238503278-3876-1-git-send-email-weiyi.huang@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Huang Weiyi <weiyi.huang@gmail.com>
+Return-Path: <wg@denx.de>
+Message-Id: <20090331124348.330571158@denx.de>
+Date: Tue, 31 Mar 2009 14:43:39 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc: i2c-mpc: preserve I2C clocking
+References: <20090331124338.531903515@denx.de>
+Cc: devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,39 +15,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove duplicated #include's in
-  - arch/powerpc/include/asm/ps3fb.h 
-  - arch/powerpc/kernel/setup-common.c
+The I2c node property "fsl,preserve-clocking" allows to overtake the
+clock settings from the boot loader and avoids the hard-coded setting.
 
-Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
 ---
- arch/powerpc/include/asm/ps3fb.h   |    1 -
- arch/powerpc/kernel/setup-common.c |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/i2c/busses/i2c-mpc.c |   24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ps3fb.h b/arch/powerpc/include/asm/ps3fb.h
-index 90dbefb..e7233a8 100644
---- a/arch/powerpc/include/asm/ps3fb.h
-+++ b/arch/powerpc/include/asm/ps3fb.h
-@@ -21,7 +21,6 @@
+Index: linux-2.6/drivers/i2c/busses/i2c-mpc.c
+===================================================================
+--- linux-2.6.orig/drivers/i2c/busses/i2c-mpc.c	2009-03-31 13:25:08.000000000 +0200
++++ linux-2.6/drivers/i2c/busses/i2c-mpc.c	2009-03-31 13:28:03.000000000 +0200
+@@ -318,17 +318,24 @@
+ {
+ 	int result = 0;
+ 	struct mpc_i2c *i2c;
++	int set_clock;
  
- #include <linux/types.h>
- #include <linux/ioctl.h>
--#include <linux/types.h>
+ 	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
+ 	if (!i2c)
+ 		return -ENOMEM;
  
- /* ioctl */
- #define PS3FB_IOCTL_SETMODE       _IOW('r',  1, int) /* set video mode */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 9774f9f..02fed27 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -36,7 +36,6 @@
- #include <linux/percpu.h>
- #include <linux/lmb.h>
- #include <linux/of_platform.h>
--#include <linux/platform_device.h>
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/processor.h>
--- 
-1.6.0.4
+-	if (of_get_property(op->node, "dfsrr", NULL))
+-		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+-
+-	if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
+-			of_device_is_compatible(op->node, "mpc5200-i2c"))
+-		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
++	if (of_get_property(op->node, "fsl,preserve-clocking", NULL)) {
++		set_clock = 0;
++	} else {
++		set_clock = 1;
++
++		if (of_get_property(op->node, "dfsrr", NULL))
++			i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
++
++		if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
++		    of_device_is_compatible(op->node, "mpc5200-i2c"))
++			i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
++	}
+ 
+ 	init_waitqueue_head(&i2c->queue);
+ 
+@@ -348,8 +355,9 @@
+ 			goto fail_request;
+ 		}
+ 	}
+-	
+-	mpc_i2c_setclock(i2c);
++
++	if (set_clock)
++		mpc_i2c_setclock(i2c);
+ 
+ 	dev_set_drvdata(&op->dev, i2c);
+ 
