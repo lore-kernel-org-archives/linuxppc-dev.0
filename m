@@ -1,29 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F28BFDDE98
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:07:25 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n2VD8pZI032156
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 09:08:51 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n2VD7JbY193560
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 09:07:19 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n2VD7I27030468
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 09:07:19 -0400
-Date: Tue, 31 Mar 2009 09:06:29 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Cheng Renquan <crquan@gmail.com>
-Subject: Re: please disable several items in 44x/canyonlands_defconfig
-Message-ID: <20090331130629.GA563@zod.rchland.ibm.com>
-References: <91b13c310903301916x1729f38dj982b185754a7c1df@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <91b13c310903301916x1729f38dj982b185754a7c1df@mail.gmail.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 97D03DDEED
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:20:27 +1100 (EST)
+Message-Id: <446E5D82-7F37-42B5-8AD9-F8F368A5520A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Eduard Fuchs <edfuchs@uni-kassel.de>
+In-Reply-To: <200903311215.55237.edfuchs@uni-kassel.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: 8641D with linux 2.6.29 did'n show second cpu
+Date: Tue, 31 Mar 2009 08:20:21 -0500
+References: <200903311215.55237.edfuchs@uni-kassel.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -34,17 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2009 at 10:16:01AM +0800, Cheng Renquan wrote:
->These 3 items are generally not used in 44x/canyonlands board, please
->consider disable them when you change 44x/canyonlands_defconfig next
->time,
+
+On Mar 31, 2009, at 5:15 AM, Eduard Fuchs wrote:
+
+> Hi,
 >
->CONFIG_PCI_LEGACY
->CONFIG_DAB
->CONFIG_VIDEO_OUTPUT_CONTROL
+> I'm testing the evaluation board from freescale (MPC8641DHPCN) with  
+> the latest
+> linux kernel (2.6.29) and the second core seems disabled. CONFIG_SPM  
+> is
+> enabled but the /proc/cpuinfo shows only one cpu. With original  
+> 2.6.27 kernel
+> both cpu cores appears in /proc/cpuinfo.
+>
+> Has anyone an idea how can i enable the second core?
 
-I've done a bit broader patch that did this for the rest of the 4xx boards
-as well.  It should be sitting in my -next tree.
+Are you using u-boot?  I can't remember if you need a newer u-boot to  
+deal with changes in how we bring up the second core.
 
-Thanks,
-josh
+- k
