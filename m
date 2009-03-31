@@ -1,22 +1,19 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 777C8DDEDA
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:56:34 +1100 (EST)
-Date: Tue, 31 Mar 2009 15:56:29 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH 1/2] powerpc: i2c-mpc: preserve I2C clocking
-Message-ID: <20090331135629.GC3044@pengutronix.de>
-References: <20090331125028.066613801@denx.de>
-	<20090331125451.600446749@denx.de>
-	<20090331133953.GB3044@pengutronix.de>
-	<49D21EF1.9050200@grandegger.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bAmEntskrkuBymla"
-In-Reply-To: <49D21EF1.9050200@grandegger.com>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	linux-i2c@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 39C03DDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 01:09:14 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n2VE99Rm024559
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 09:09:10 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: 
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH v3] powerpc: Add support for CoreInt delivery of interrupts on
+	MPIC
+Date: Tue, 31 Mar 2009 09:09:09 -0500
+Message-Id: <1238508549-25449-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,54 +23,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+CoreInt provides a mechansim to deliver the IRQ vector directly
+into the core on an interrupt (via the SPR EPR) rather than having
+to go IACK on the PIC.  This is suppose to provide an improvment
+in interrupt latency by reducing the time to get the IRQ vector.
 
---bAmEntskrkuBymla
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+Ben, this version is pretty much identical to v2 with the following changes.
+Please look to pull it into your tree for .30
 
+* Add comment about mode field on FSL mpics
+* Fixed build issue on non-booke parts since SPRN_EPR doesn't exist there
 
-> >> -=09
-> >> -	mpc_i2c_setclock(i2c);
-> >> +
-> >> +	if (set_clock)
-> >> +		mpc_i2c_setclock(i2c);
-> >=20
-> > Can't we drop 'set_clock' with something like this here?
-> >=20
-> > +	if (!of_get_property(op->node, "fsl,preserve-clocking", NULL)) {
-> > +
-> > +		if (of_get_property(op->node, "dfsrr", NULL))
-> > +			i2c->flags |=3D FSL_I2C_DEV_SEPARATE_DFSRR;
-> > +
-> > +		if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
-> > +		    of_device_is_compatible(op->node, "mpc5200-i2c"))
-> > +			i2c->flags |=3D FSL_I2C_DEV_CLOCK_5200;
-> > +
-> > +		mpc_i2c_setclock(i2c);
-> > +	}
->=20
-> No, because the I2C registers are not yet mapped.
+ arch/powerpc/include/asm/mpic.h |   12 ++++++++++++
+ arch/powerpc/sysdev/mpic.c      |   34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+), 0 deletions(-)
 
-Sorry, I used misleading words :) With 'here' I meant 'at this
-position', i.e. insert my above block where mpc_i2c_setclock was used
-anyway.
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---bAmEntskrkuBymla
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknSIQ0ACgkQD27XaX1/VRtgGgCaA8NXZCaycG9m10echwEbflPH
-0h4An1f+rODAfKMA7sQBtcMauawjHmc4
-=mWLk
------END PGP SIGNATURE-----
-
---bAmEntskrkuBymla--
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index c2ccca5..a002682 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -22,6 +22,14 @@
+ #define MPIC_GREG_FEATURE_1		0x00010
+ #define MPIC_GREG_GLOBAL_CONF_0		0x00020
+ #define		MPIC_GREG_GCONF_RESET			0x80000000
++/* On the FSL mpic implementations the Mode field is expand to be
++ * 2 bits wide:
++ *	0b00 = pass through (interrupts routed to IRQ0)
++ *	0b01 = Mixed mode
++ *	0b10 = reserved
++ *	0b11 = External proxy / coreint
++ */
++#define		MPIC_GREG_GCONF_COREINT			0x60000000
+ #define		MPIC_GREG_GCONF_8259_PTHROU_DIS		0x20000000
+ #define		MPIC_GREG_GCONF_NO_BIAS			0x10000000
+ #define		MPIC_GREG_GCONF_BASE_MASK		0x000fffff
+@@ -357,6 +365,8 @@ struct mpic
+ #define MPIC_BROKEN_FRR_NIRQS		0x00000800
+ /* Destination only supports a single CPU at a time */
+ #define MPIC_SINGLE_DEST_CPU		0x00001000
++/* Enable CoreInt delivery of interrupts */
++#define MPIC_ENABLE_COREINT		0x00002000
+ 
+ /* MPIC HW modification ID */
+ #define MPIC_REGSET_MASK		0xf0000000
+@@ -470,6 +480,8 @@ extern void mpic_end_irq(unsigned int irq);
+ extern unsigned int mpic_get_one_irq(struct mpic *mpic);
+ /* This one gets from the primary mpic */
+ extern unsigned int mpic_get_irq(void);
++/* This one gets from the primary mpic via CoreInt*/
++extern unsigned int mpic_get_coreint_irq(void);
+ /* Fetch Machine Check interrupt from primary mpic */
+ extern unsigned int mpic_get_mcirq(void);
+ 
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 532e205..21b9567 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1170,6 +1170,12 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 			mb();
+ 	}
+ 
++	/* CoreInt */
++	if (flags & MPIC_ENABLE_COREINT)
++		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
++			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
++			   | MPIC_GREG_GCONF_COREINT);
++
+ 	if (flags & MPIC_ENABLE_MCK)
+ 		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
+ 			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
+@@ -1525,6 +1531,34 @@ unsigned int mpic_get_irq(void)
+ 	return mpic_get_one_irq(mpic);
+ }
+ 
++unsigned int mpic_get_coreint_irq(void)
++{
++#ifdef CONFIG_BOOKE
++	struct mpic *mpic = mpic_primary;
++	u32 src;
++
++	BUG_ON(mpic == NULL);
++
++	src = mfspr(SPRN_EPR);
++
++	if (unlikely(src == mpic->spurious_vec)) {
++		if (mpic->flags & MPIC_SPV_EOI)
++			mpic_eoi(mpic);
++		return NO_IRQ;
++	}
++	if (unlikely(mpic->protected && test_bit(src, mpic->protected))) {
++		if (printk_ratelimit())
++			printk(KERN_WARNING "%s: Got protected source %d !\n",
++			       mpic->name, (int)src);
++		return NO_IRQ;
++	}
++
++	return irq_linear_revmap(mpic->irqhost, src);
++#else
++	return NO_IRQ;
++#endif
++}
++
+ unsigned int mpic_get_mcirq(void)
+ {
+ 	struct mpic *mpic = mpic_primary;
+-- 
+1.5.6.6
