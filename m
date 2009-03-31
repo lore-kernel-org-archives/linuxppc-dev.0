@@ -1,16 +1,30 @@
-Return-Path: <henk.stegeman@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.24])
-	by ozlabs.org (Postfix) with ESMTP id 035A6DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 21:44:19 +1100 (EST)
-Received: by ey-out-2122.google.com with SMTP id 4so461779eyf.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 03:44:15 -0700 (PDT)
+Return-Path: <pku.leo@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.168])
+	by ozlabs.org (Postfix) with ESMTP id 825F1DDE06
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 21:58:35 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so2802267wfg.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 03:58:33 -0700 (PDT)
 MIME-Version: 1.0
-Date: Tue, 31 Mar 2009 12:44:15 +0200
-Message-ID: <ae4f76fd0903310344s2d46edf2l505a1d21a4778d54@mail.gmail.com>
-Subject: Patch: Fix fec_mpc52xx driver to use net_device_ops
-From: Henk Stegeman <henk.stegeman@gmail.com>
-To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Sender: pku.leo@gmail.com
+In-Reply-To: <OFEAA9D1E3.4B2F3270-ONC125758A.00307236-C125758A.00322239@transmode.se>
+References: <1238089445-28396-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<OFDCE90357.0EDC5DC1-ONC1257586.003759A3-C1257586.00390AD3@transmode.se>
+	<49CCD3E8.9040007@freescale.com>
+	<OFEFCEAFB5.CC21FFBB-ONC1257589.005AEF16-C1257589.005B64EB@transmode.se>
+	<49D0FFBB.7000009@freescale.com>
+	<OF3127420C.081D4097-ONC1257589.00603E3D-C1257589.006093B3@transmode.se>
+	<49D1052D.2050609@freescale.com>
+	<OF70832E04.3DC53F05-ONC1257589.00663AFF-C1257589.0066C397@transmode.se>
+	<49D11E47.8080106@freescale.com>
+	<OFEAA9D1E3.4B2F3270-ONC125758A.00307236-C125758A.00322239@transmode.se>
+Date: Tue, 31 Mar 2009 18:58:33 +0800
+Message-ID: <2a27d3730903310358t56caaba9uba6e1835b716bc25@mail.gmail.com>
+Subject: Re: [PATCH] ucc_geth: Rework the TX logic.
+From: Li Yang <leoli@freescale.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Content-Type: text/plain; charset=UTF-8
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,111 +34,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix fec_mpc52xx driver to use net_device_ops and to be careful not to
-dereference phy_device if a phy has not yet been connected.
+On Tue, Mar 31, 2009 at 5:07 PM, Joakim Tjernlund
+<Joakim.Tjernlund@transmode.se> wrote:
+> Scott Wood <scottwood@freescale.com> wrote on 30/03/2009 21:32:23:
+>>
+>> Joakim Tjernlund wrote:
+>> >> different since descriptors are in MURAM which is ioremap()ed --
+> though
+>> >> switching to a cacheable mapping with barriers should be a
+> performance
+>> >> improvement.
+>> >
+>> > I always thought that MURAM was very fast. The whole reason to have
+> BDs in
+>> > MURAM is that it is faster than normal RAM, at least that is what I
+>> > thought.
+>>
+>> Yeah, on second thought it probably wouldn't be worth it. =C2=A0There's =
+also
+>> the question of under what circumstances the QE's MURAM accesses will be
+>
+>> cache-coherent.
+>
+> I am a bit confused, what isn't worth it? Currently MURAM isn't used by
+> ucc_geth, but
+> it is easy to change. Swap MEM_PART_SYSTEM to MEM_PART_MURAM, however,
+> just
+> tried that and the driver stopped working. I known this worked earlier
+> because
+> I tried it and I even think I sent a patch to Leo.
+>
+> What choices do we have, I see three:
+>
+> 1) MEM_PART_SYSTEM, as today.
+> 2) MEM_PART_MURAM. I guess this should be uncacheable memory?
+> 3) as gianfar, dma_alloc_coherent(). I presume this is uncacheable memory=
+?
+>
 
-Signed-off-by: Henk Stegeman <henk.stegeman@gmail.com>
+1 and 3 are the same.  All of them use cacheable memory as we have a
+hardware coherency module to take care of the cache coherency problem.
+ However it might be better to use dma_alloc_coherent() for the code
+to be more readible.  Thanks.
 
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index cd8e98b..ca76b95 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -847,24 +847,40 @@ static void mpc52xx_fec_get_drvinfo(struct
-net_device *dev,
- static int mpc52xx_fec_get_settings(struct net_device *dev, struct
-ethtool_cmd *cmd)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+
-+	if (!priv->phydev)
-+			return -ENODEV;
-+
- 	return phy_ethtool_gset(priv->phydev, cmd);
- }
-
- static int mpc52xx_fec_set_settings(struct net_device *dev, struct
-ethtool_cmd *cmd)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+
-+	if (!priv->phydev)
-+			return -ENODEV;
-+
- 	return phy_ethtool_sset(priv->phydev, cmd);
- }
-
- static u32 mpc52xx_fec_get_msglevel(struct net_device *dev)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+
-+	if (!priv->phydev)
-+		return 0;
-+
- 	return priv->msg_enable;
- }
-
- static void mpc52xx_fec_set_msglevel(struct net_device *dev, u32 level)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+
-+	if (!priv->phydev)
-+			return;
-+
- 	priv->msg_enable = level;
- }
-
-@@ -882,12 +898,31 @@ static int mpc52xx_fec_ioctl(struct net_device
-*dev, struct ifreq *rq, int cmd)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-
-+	if (!priv->phydev)
-+			return -ENODEV;
-+
- 	return mpc52xx_fec_phy_mii_ioctl(priv, if_mii(rq), cmd);
- }
-
- /* ======================================================================== */
- /* OF Driver                                                                */
- /* ======================================================================== */
-+static const struct net_device_ops mpc52xx_fec_netdev_ops = {
-+       .ndo_open               = mpc52xx_fec_open,
-+       .ndo_stop               = mpc52xx_fec_close,
-+       .ndo_start_xmit         = mpc52xx_fec_hard_start_xmit,
-+       .ndo_tx_timeout         = mpc52xx_fec_tx_timeout,
-+       .ndo_get_stats          = mpc52xx_fec_get_stats,
-+       .ndo_set_multicast_list = mpc52xx_fec_set_multicast_list,
-+       .ndo_validate_addr      = eth_validate_addr,
-+       .ndo_set_mac_address    = mpc52xx_fec_set_mac_address,
-+       .ndo_do_ioctl           = mpc52xx_fec_ioctl,
-+
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+       .ndo_poll_controller     = mpc52xx_fec_poll_controller,
-+#endif
-+};
-+
-
- static int __devinit
- mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
-@@ -929,20 +964,10 @@ mpc52xx_fec_probe(struct of_device *op, const
-struct of_device_id *match)
- 		return -EBUSY;
-
- 	/* Init ether ndev with what we have */
--	ndev->open		= mpc52xx_fec_open;
--	ndev->stop		= mpc52xx_fec_close;
--	ndev->hard_start_xmit	= mpc52xx_fec_hard_start_xmit;
--	ndev->do_ioctl		= mpc52xx_fec_ioctl;
- 	ndev->ethtool_ops	= &mpc52xx_fec_ethtool_ops;
--	ndev->get_stats		= mpc52xx_fec_get_stats;
--	ndev->set_mac_address	= mpc52xx_fec_set_mac_address;
--	ndev->set_multicast_list = mpc52xx_fec_set_multicast_list;
--	ndev->tx_timeout	= mpc52xx_fec_tx_timeout;
- 	ndev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
- 	ndev->base_addr		= mem.start;
--#ifdef CONFIG_NET_POLL_CONTROLLER
--	ndev->poll_controller = mpc52xx_fec_poll_controller;
--#endif
-+	ndev->netdev_ops = &mpc52xx_fec_netdev_ops;
-
- 	priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are free for now */
+- Leo
