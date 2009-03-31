@@ -1,22 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id D13D6DDDA5
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 07:57:45 +1100 (EST)
-Date: Wed, 1 Apr 2009 00:57:44 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Build error
-Message-ID: <20090331205744.GA1156@oksana.dev.rtsoft.ru>
-References: <1238383506.17330.0.camel@pasglop>
-	<7E26E694-85F8-445F-9113-88DCD61BC32C@kernel.crashing.org>
-	<20090330135903.GA11614@oksana.dev.rtsoft.ru>
-	<1238455136.17330.12.camel@pasglop>
-	<38D8651E-1AB6-4358-AD1F-408E3DB8F4E9@kernel.crashing.org>
+Return-Path: <ypelletier@haivision.com>
+Received: from mx11.exchange.telus.com (mx11.exchange.telus.com
+	[216.123.224.145]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "mx11.exchange.telus.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DA407DDDF9
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 07:59:37 +1100 (EST)
+From: Yann Pelletier <ypelletier@haivision.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Tue, 31 Mar 2009 14:59:33 -0600
+Subject: RE:  Interrupts on GPIO
+Message-ID: <9A8B45DD4DE17F4783430D784DA0B68811C429F9B7@HEXMBVS12.hostedmsx.local>
+In-Reply-To: <mailman.3884.1238431353.26545.linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <38D8651E-1AB6-4358-AD1F-408E3DB8F4E9@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,62 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2009 at 10:41:38PM +0200, Segher Boessenkool wrote:
->>>>> ERROR: "fsl_pq_mdio_bus_name" [drivers/net/gianfar_driver.ko]
->>>>> undefined!
->>>>>
->>>>> I'll ask Linus to pull anyway though.
->>>>>
->>>>> Cheers,
->>>>> Ben.
->>>>
->>>> I believe this is fixed in net-next (and possible linus has already
->>>> pulled that in.)
->>>
->>> FWIW, I can't reproduce the issue neither in benh/powerpc.git `next'
->>> branch nor in `merge' branch...
->>
->> Ah .. .weird :-)
->
-> I had this happen a few days ago already, on Linus' tree.  I also told
-> you about it (on IRC), but you were too busy or something :-)
->
-> A simple ppc6xx_defconfig is enough to reproduce, fwiw.
->
-> Here's the patch I used, sorry if my mailer wraps it, it's a one-liner,
-> you can handle it I'm sure :-)
+> Message: 7
+> Date: Mon, 30 Mar 2009 10:32:17 -0600
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Subject: > To: Yann Pelletier <ypelletier@haivision.com>
+> Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+> Message-ID:
+> 	<fa686aa40903300932p2c92110g2907bb7bf80d44d@mail.gmail.com>
+> Content-Type: text/plain; charset=3DISO-8859-1
+>=20
+> On Mon, Mar 30, 2009 at 9:57 AM, Yann Pelletier
+> <ypelletier@haivision.com> wrote:
+> >
+> > Hi,
+> > I'd like to add supports for interrupts handling from GPIO controller.
+> ?Some of these interrupts are from I2C devices and some others are from
+> SPI devices.
+> >
+> > What is the best approach to enable interrupts handling for those
+> devices through GPIO.
+>=20
+> Modify the GPIO driver to also be a cascaded IRQ driver (see
+> http://patchwork.ozlabs.org/patch/21914/ for an example).
+>=20
 
-Ah, the modular build. Yeah, I didn't try it, but should have... :-(
+I've looked at the patch but I wonder if this would be applicable to the MP=
+C8313.  If my understanding is good, in the MPC52xx you have 8 gpio only in=
+terrupts and 8 gpio/gpt.  With the MPC8313, each GPIO can act as an interru=
+pt but they are all muxed to only 1 interrupt in the IPIC.  So I'm concern =
+about making the GPIO controller act as an interrupt controller.
 
-Thanks!
 
-> Segher
->
->
-> Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
->
->
-> Author: Segher Boessenkool <segher@kernel.crashing.org>
-> Date:   Fri Mar 27 21:10:59 2009 +0100
->
->     powerpc: EXPORT_SYMBOL_GPL(fsl_pq_mdio_bus_name)
->
-> diff --git a/drivers/net/fsl_pq_mdio.c b/drivers/net/fsl_pq_mdio.c
-> index b3079a5..a108332 100644
-> --- a/drivers/net/fsl_pq_mdio.c
-> +++ b/drivers/net/fsl_pq_mdio.c
-> @@ -204,6 +204,7 @@ void fsl_pq_mdio_bus_name(char *name, struct  
-> device_node *np
->         snprintf(name, MII_BUS_ID_SIZE, "%s@%llx", np->name,
->                 (unsigned long long)taddr);
->  }
-> +EXPORT_SYMBOL_GPL(fsl_pq_mdio_bus_name);
->
->  /* Scan the bus in reverse, looking for an empty spot */
->  static int fsl_pq_mdio_find_free(struct mii_bus *new_bus)
->
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> > Also,
+> >
+> > # cat /proc/interrupts
+> > ? ? ? ? ? CPU0
+> > ?16: ? ? ? ? 60 ? IPIC ? Level ? ? serial
+> > ?17: ? ? ? ? ?0 ? IPIC ? Level ? ? fpga
+> > ?18: ? ? ? ? ?4 ? IPIC ? Level ? ? mpc83xx_spi
+> > ?21: ? ? ? ? ?0 ? IPIC ? Level ? ? i2c-mpc
+> > ?22: ? ? ? ? ?7 ? IPIC ? Level ? ? i2c-mpc
+> >
+> > According to my platform device tree, serial irq should be on int9, SPI
+> on int16 and i2c on int14,15. ?This causes me some problems as I need
+> int18 to map to external IRQ2.
+>=20
+> These numbers are *Linux internal* virtual irq numbers.  They have no
+> relation to the physical IRQ number for each interrupt controller.
+> Just make sure your Device Tree maps the IRQs correctly and you'll be
+> okay.
+>=20
+
+This is good now, thanks
+
+> g.
+>=20
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+>=20
+>=20
