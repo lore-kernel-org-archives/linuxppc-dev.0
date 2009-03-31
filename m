@@ -1,19 +1,21 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 60F68DDE26
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 03:25:34 +1100 (EST)
-Received: from vixen.sonytel.be (piraat.sonytel.be [43.221.60.197])
-	by vervifontaine.sonycom.com (Postfix) with ESMTP id 239CB58ADF
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 18:25:19 +0200 (MEST)
-Date: Tue, 31 Mar 2009 18:25:19 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: kexec: proc/device-tree/chosen/linux,kernel-end: No such file or
-	directory
-Message-ID: <alpine.LRH.2.00.0903311808310.32461@vixen.sonytel.be>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.239])
+	by ozlabs.org (Postfix) with ESMTP id 73831DDE2A
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 03:42:33 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g9so2615691rvb.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 09:42:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+In-Reply-To: <20090331074806.432a882a@nehalam>
+References: <ae4f76fd0903310344s2d46edf2l505a1d21a4778d54@mail.gmail.com>
+	<20090331074806.432a882a@nehalam>
+Date: Tue, 31 Mar 2009 10:42:32 -0600
+Message-ID: <fa686aa40903310942q7ae3c246g10a862b44cf29e15@mail.gmail.com>
+Subject: Re: Patch: Fix fec_mpc52xx driver to use net_device_ops
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Henk Stegeman <henk.stegeman@gmail.com>,
+	David Miller <davem@davemloft.net>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With today's kernel, I can no longer kexec any kernel on PS3:
+On Tue, Mar 31, 2009 at 8:48 AM, Stephen Hemminger
+<shemminger@vyatta.com> wrote:
+> On Tue, 31 Mar 2009 12:44:15 +0200
+> Henk Stegeman <henk.stegeman@gmail.com> wrote:
+>
+>> Fix fec_mpc52xx driver to use net_device_ops and to be careful not to
+>> dereference phy_device if a phy has not yet been connected.
+>>
+>> Signed-off-by: Henk Stegeman <henk.stegeman@gmail.com>
 
-| /proc/device-tree/chosen/linux,kernel-end: No such file or directory
-| Could not get memory layout
+Hi Henk,
 
-Today's bad version: 15f7176eb1cccec0a332541285ee752b935c1c85
-Yesterday's good version: 0d34fb8e93ceba7b6dad0062dbb4a0813bacd75b
+I hadn't heard from you for a while about the signed-off-by line, but
+I really needed to get those changes queued because the 2.6.30 merge
+window is open now, and some of my patches depend on it.  I ended up
+rewriting your patch from scratch, testing it and posting it last
+night.
 
-Before I start bisecting (tomorrow or the day thereafter), anyone with an idea?
-Thanks!
+I would really like to stick with the rewritten version since it is a
+little tighter, and it is the one I've got tested.  However, now that
+I've heard from you, I'm happy to change the patch author credit to
+you.  You should look on the list for the patches I sent out last
+night (labeled [PATCH 02/14] and [PATCH 03/14]) and reply to each of
+them with an "Acked-by:" line if they look good to you.
 
-With kind regards,
+g.
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
