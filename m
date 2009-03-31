@@ -1,11 +1,9 @@
 Return-Path: <wg@denx.de>
-Message-Id: <20090331124036.057237866@denx.de>
-Date: Tue, 31 Mar 2009 14:37:33 +0200
+Message-Id: <20090331123727.853787299@denx.de>
+Date: Tue, 31 Mar 2009 14:37:27 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/8] --- arch/powerpc/boot/dts/socrates.dts | 9 +++++++-- 1
-	file changed, 7 insertions(+), 2 deletions(-)
-References: <20090331123727.853787299@denx.de>
+Subject: [PATCH 0/8] powerpc: i2c-mpc: make I2C bus speed configurable
 Cc: devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,50 +14,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Index: linux-2.6/arch/powerpc/boot/dts/socrates.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:24:38.078719288 +0200
-+++ linux-2.6/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:47:56.986720719 +0200
-@@ -52,6 +52,7 @@
- 	soc8544@e0000000 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
-+		device_type = "soc";
- 
- 		ranges = <0x00000000 0xe0000000 0x00100000>;
- 		reg = <0xe0000000 0x00001000>;	// CCSRBAR 1M
-@@ -78,10 +79,11 @@
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			cell-index = <0>;
--			compatible = "fsl-i2c";
-+			compatible = "fsl,mpc8544-i2c", "fsl-i2c";
- 			reg = <0x3000 0x100>;
- 			interrupts = <43 2>;
- 			interrupt-parent = <&mpic>;
-+			clock-frequency = <103000>;
- 			dfsrr;
- 
- 			dtt@28 {
-@@ -110,10 +112,12 @@
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			cell-index = <1>;
--			compatible = "fsl-i2c";
-+			compatible = "fsl,mpc8544-i2c", "fsl-i2c";
- 			reg = <0x3100 0x100>;
- 			interrupts = <43 2>;
- 			interrupt-parent = <&mpic>;
-+			fsl,preserve-clocking;
-+			clock-frequency = <400000>;
- 			dfsrr;
- 		};
- 
-@@ -207,6 +211,7 @@
- 			compatible = "fsl,mpc8548-guts";
- 			reg = <0xe0000 0x1000>;
- 			fsl,has-rstcr;
-+			fsl,has-sec-cfg;
- 		};
- 
- 		mpic: pic@40000 {
+Following (most of) Grant's suggestions to my RFC:
+
+http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069820.html
+
+this new patch series now uses:
+
+- the I2c node property "fsl,preserve-clocking" to overtake the
+  clock settings from the boot loader. The first patch provides this
+  feature and can be applied *without* delay. This rest will take
+  more time and discussion, I'm afraid :-(.
+
+- the OF match table to define the I2C clock properties, especially
+  the source clock pre-scaler:
+
+  static const struct of_device_id mpc_i2c_of_match[] = {
+	{.compatible = "fsl,mpc5200b-i2c",
+	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
+	{.compatible = "fsl,mpc5200-i2c",
+	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
+	{.compatible = "fsl,mpc8313-i2c",
+	 .data = (void *)FSL_I2C_DEV_SEPARATE_DFSRR, },
+	{.compatible = "fsl,mpc8543-i2c",
+	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
+			  FSL_I2C_DEV_CLOCK_DIV2), },
+	{.compatible = "fsl,mpc8544-i2c",
+	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
+			  FSL_I2C_DEV_CLOCK_DIV23), },
+	/* Backward compatibility */
+	{.compatible = "fsl-i2c", },
+	{},
+  };
+
+  The "data" field defines the relevant I2C flags.
+
+- arch-specific tables and functions to get the proper Freqency
+  Divider Register (fdr). I added them to sysdev/fsl_soc.c for
+  the MPC8xxx and to platforms/52xx/mpc52xx_common.c for the
+  MPC52xx. This also solves the problem with arch-specific
+  functions, e.g. for getting the bus frequency.
+
+- dev_dbg() and dev_info() to profit from a more descriptive output.
+
+Hope this solution is OK now?
+
+Thanks,
+
+Wolfgang.
