@@ -1,25 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
-	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id 196F7DDEFE
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 03:02:08 +1100 (EST)
-Received: by gxk1 with SMTP id 1so9380683gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 09:02:07 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090331155443.GA28242@oksana.dev.rtsoft.ru>
-References: <49C26434.30302@grandegger.com>
-	<fa686aa40903192205yed7eb13t45db80a201549f0d@mail.gmail.com>
-	<49D1E3E5.3080607@grandegger.com>
-	<fa686aa40903310623r2b2db0adjb912cfefd3a321e2@mail.gmail.com>
-	<49D21C75.7060307@grandegger.com>
-	<fa686aa40903310805k794b9df0s4d21a8080907a767@mail.gmail.com>
-	<20090331155443.GA28242@oksana.dev.rtsoft.ru>
-Date: Tue, 31 Mar 2009 10:02:06 -0600
-Message-ID: <fa686aa40903310902i609da31eu958c150502a6004e@mail.gmail.com>
-Subject: Re: powerpc/85xx: Add support for the "socrates" board (MPC8544)
-From: Grant Likely <grant.likely@secretlab.ca>
-To: avorontsov@ru.mvista.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <anemo@mba.ocn.ne.jp>
+Received: from smtp.mba.ocn.ne.jp (mba.ocn.ne.jp [122.1.235.107])
+	by ozlabs.org (Postfix) with ESMTP id 21576DDE24
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 03:09:58 +1100 (EST)
+Date: Wed, 01 Apr 2009 00:26:51 +0900 (JST)
+Message-Id: <20090401.002651.95063058.anemo@mba.ocn.ne.jp>
+To: Geert.Uytterhoeven@sonycom.com
+Subject: Re: [PATCH] linux-next remove wmb() from ide-dma-sff.c and scc_pata.c
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <alpine.LRH.2.00.0903310950040.9551@vixen.sonytel.be>
+References: <da824cf30903301739l688e8eb2r46086953245ebbe5@mail.gmail.com>
+	<alpine.LRH.2.00.0903310950040.9551@vixen.sonytel.be>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-mips@linux-mips.org, bzolnier@gmail.com, linuxppc-dev@ozlabs.org,
+	linux-ide@vger.kernel.org, grundler@google.com, linux-kernel@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,69 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2009 at 9:54 AM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Tue, Mar 31, 2009 at 09:05:28AM -0600, Grant Likely wrote:
-> [...]
->> >>>>> + =A0 =A0 =A0 soc8544@e0000000 {
->> >>>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
->> >>>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <1>;
->> >>>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 device_type =3D "soc";
->> >>>> Drop device_type here too.
->> >>> Grrr, I just realized that removing the devices type "soc" has broke=
-n
->> >>> fsl_get_sys_freq(). See:
->> >>>
->> >>> http://lxr.linux.no/linux+v2.6.29/arch/powerpc/sysdev/fsl_soc.c#L80
->> >>>
->> >>> We need a quick fix and we could take the occasion to establish a co=
-mmon
->> >>> function for the MPC52xx as well, but it's not obvious to me how to =
-find
->> >>> the SOC node without the device type property.
->> >>
->> >> SoC node should have a compatible property, just like everything else=
-.
->> >>
->> >> compatible =3D "fsl,mpc8544-immr"; =A0(immr =3D=3D Internally Memory =
-Mapped Registers)
->> >>
->> >> Many other boards already do this.
->> >
->> > Yes, it does, but searching for the SOC node is not straight-forward
->> > because there is no common compatibility string but many CPU-specific
->> > compatibility strings, e.g. "fsl,mpc8560-immr", etc. Have I missed
->> > something?
->>
->> Choose a new value ("fsl,mpc-immr" perhaps?), document exactly what it
->> means, and add add it to the end of the compatible list.
->
-> As Scott Wood once pointed out, IMMR does not exists for MPC85xx
-> parts. There it's called CCSR.
->
-> See this thread:
->
-> http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg12665.html
->
-> I still think that
-> "fsl,mpc83NN-immr", "fsl,soc", "simple-bus" for 83xx
-> and
-> "fsl,mpc85NN-ccsr", "fsl,soc", "simple-bus" for 85xx
->
-> would be OK, at least to start with. We can always deprecate "fsl,soc"
-> compatible in favour of something more elegant, but "fsl,soc" should be
-> just fine to replace device_type =3D "soc".
->
-> Also, there is another good thing about "fsl,soc" -- U-Boot already
-> finds it for 83xx CPUs. ;-)
+On Tue, 31 Mar 2009 09:51:53 +0200 (CEST), Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > Followup to "[PATCH 03/10] ide: destroy DMA mappings after ending DMA"
+> > email on March 14th:
+> >     http://lkml.org/lkml/2009/3/14/17
+> > 
+> > No maintainer is listed for "Toshiba CELL Reference Set IDE" (BLK_DEV_CELLEB)
+> > or tx4939ide.c in MAINTAINERS. I've CC'd "Ishizaki Kou" @Toshiba (Maintainer for
+> > "Spidernet Network Driver for CELL") and linuxppc-dev list in the hope
+> > someone else
+> > would know or would be able to ACK this patch.
+> 
+> tx49xx is MIPS, for Nemoto-san.
+> 
+> > This patch:
+> > o replaces "mask" variable in ide_dma_end() with #define.
+> > o removes use of wmb() in ide-dma-sff.c and scc_pata.c.
+> > o is not tested - I don't have (or want) the HW.
+> > 
+> > I did NOT remove wmb() use in tx4939ide.c. tx4939ide.c __raw_writeb()
+> > for MMIO transactions. __raw_writeb() does NOT guarantee memory
+> > transaction ordering.
 
-I'm totally fine with fsl,soc *providing* that it is documented as to
-exactly what it describes, what properties are expected, and how they
-are used.  Since fsl,soc is not tied to a specific piece of silicon I
-want to guard against the definition of "fsl,soc" drifting over time.
+The wmb() in tx4939ide.c was just copied from ide_dma_end().  On this
+MIPS core memory operations are strictly ordered so that the wmb() can
+be removed.
 
-g.
+And on MIPS __raw_writeb() and writeb() do same thing except for
+endian conversion.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+I will send a patch just for tx4939ide.c.  Thank you for suggestion.
+
+> > tx4939ide also uses mmiowb(). AFAIK, mmiowb() only has an effect on
+> > SGI IA64 NUMA machines. I'm not going to guess how this driver might work.
+
+On MIPS mmiowb() can be (ab)used to flush write buffer.  Please do not
+drop this mmiowb().
+
+---
+Atsushi Nemoto
