@@ -1,11 +1,13 @@
 Return-Path: <wg@denx.de>
-Message-Id: <20090331124036.358830112@denx.de>
-Date: Tue, 31 Mar 2009 14:37:35 +0200
+Message-Id: <20090331124035.269301563@denx.de>
+Date: Tue, 31 Mar 2009 14:37:28 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 8/8] NAND: Add support for NAND on the Socrates board
+To: linuxppc-dev@ozlabs.org,
+ Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 1/8] [PATCH 3/4] powerpc/85xx: Move gianfar mdio nodes under
+	the
 References: <20090331123727.853787299@denx.de>
-Cc: devicetree-discuss@ozlabs.org, Ilya Yanok <yanok@emcraft.com>
+Cc: Scott Wood <scottwood@freescale.com>, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,366 +17,3040 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
-Acked-by: Wolfgang Grandegger <wg@grandegger.com>
----
- drivers/mtd/nand/Kconfig         |    6 
- drivers/mtd/nand/Makefile        |    1 
- drivers/mtd/nand/socrates_nand.c |  324 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 331 insertions(+)
+Currently it doesn't matter where the mdio nodes are placed, but with
+power management support (i.e. when sleep = <> properties will take
+effect), mdio nodes placement will become important: mdio controller
+is a part of the ethernet block, so the mdio nodes should be placed
+correctly. Otherwise we may wrongly assume that MDIO controllers are
+available during sleep.
 
-Index: linux-2.6/drivers/mtd/nand/Kconfig
+Suggested-by: Scott Wood <scottwood@freescale.com>
+Suggested-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/boot/dts/ksi8560.dts              |   79 ++++++-----
+ arch/powerpc/boot/dts/mpc8536ds.dts            |   78 ++++++-----
+ arch/powerpc/boot/dts/mpc8540ads.dts           |  117 +++++++++--------
+ arch/powerpc/boot/dts/mpc8541cds.dts           |   78 ++++++-----
+ arch/powerpc/boot/dts/mpc8544ds.dts            |   81 ++++++------
+ arch/powerpc/boot/dts/mpc8548cds.dts           |  156 ++++++++++++-----------
+ arch/powerpc/boot/dts/mpc8555cds.dts           |   78 ++++++-----
+ arch/powerpc/boot/dts/mpc8560ads.dts           |  102 ++++++++-------
+ arch/powerpc/boot/dts/mpc8568mds.dts           |  102 ++++++++-------
+ arch/powerpc/boot/dts/mpc8572ds.dts            |  150 ++++++++++++----------
+ arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |   39 +++--
+ arch/powerpc/boot/dts/sbc8548.dts              |   78 ++++++-----
+ arch/powerpc/boot/dts/sbc8560.dts              |  100 +++++++-------
+ arch/powerpc/boot/dts/stx_gp3_8560.dts         |   78 ++++++-----
+ arch/powerpc/boot/dts/tqm8540.dts              |  117 +++++++++--------
+ arch/powerpc/boot/dts/tqm8541.dts              |   90 +++++++------
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts     |  168 +++++++++++++------------
+ arch/powerpc/boot/dts/tqm8548.dts              |  168 +++++++++++++------------
+ arch/powerpc/boot/dts/tqm8555.dts              |   90 +++++++------
+ arch/powerpc/boot/dts/tqm8560.dts              |   90 +++++++------
+ arch/powerpc/platforms/85xx/ksi8560.c          |    1 
+ arch/powerpc/platforms/85xx/mpc8536_ds.c       |    1 
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c      |    1 
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c      |    1 
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c       |    1 
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c      |    1 
+ arch/powerpc/platforms/85xx/sbc8548.c          |    1 
+ arch/powerpc/platforms/85xx/sbc8560.c          |    1 
+ arch/powerpc/platforms/85xx/stx_gp3.c          |    1 
+ arch/powerpc/platforms/85xx/tqm85xx.c          |    1 
+ 30 files changed, 1102 insertions(+), 947 deletions(-)
+
+Index: linux-2.6/arch/powerpc/boot/dts/ksi8560.dts
 ===================================================================
---- linux-2.6.orig/drivers/mtd/nand/Kconfig	2009-03-26 17:22:32.459721679 +0100
-+++ linux-2.6/drivers/mtd/nand/Kconfig	2009-03-30 12:48:26.554740302 +0200
-@@ -427,4 +427,10 @@
- 	  Several Renesas SuperH CPU has FLCTL. This option enables support
- 	  for NAND Flash using FLCTL. This driver support SH7723.
+--- linux-2.6.orig/arch/powerpc/boot/dts/ksi8560.dts
++++ linux-2.6/arch/powerpc/boot/dts/ksi8560.dts
+@@ -124,67 +124,72 @@
+ 			};
+ 		};
  
-+config MTD_NAND_SOCRATES
-+	tristate "Support for NAND on Socrates board"
-+	depends on MTD_NAND && SOCRATES
-+	help
-+	  Enables support for NAND Flash chips wired onto Socrates board.
+-		mdio@24520 {					/* For TSECs */
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			PHY1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				reg = <0x1>;
+-				device_type = "ethernet-phy";
+-			};
+-
+-			PHY2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				reg = <0x2>;
+-				device_type = "ethernet-phy";
+-			};
+-
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			/* Mac address filled in by bootwrapper */
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <0x1d 0x2 0x1e 0x2 0x22 0x2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&PHY1>;
 +
- endif # MTD_NAND
-Index: linux-2.6/drivers/mtd/nand/Makefile
-===================================================================
---- linux-2.6.orig/drivers/mtd/nand/Makefile	2009-03-26 17:22:32.459721679 +0100
-+++ linux-2.6/drivers/mtd/nand/Makefile	2009-03-30 12:48:26.555971204 +0200
-@@ -36,5 +36,6 @@
- obj-$(CONFIG_MTD_NAND_FSL_UPM)		+= fsl_upm.o
- obj-$(CONFIG_MTD_NAND_SH_FLCTL)		+= sh_flctl.o
- obj-$(CONFIG_MTD_NAND_MXC)		+= mxc_nand.o
-+obj-$(CONFIG_MTD_NAND_SOCRATES)		+= socrates_nand.o
++			mdio@520 {					/* For TSECs */
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				PHY1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
++
++				PHY2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					reg = <0x2>;
++					device_type = "ethernet-phy";
++				};
++
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
  
- nand-objs := nand_base.o nand_bbt.o
-Index: linux-2.6/drivers/mtd/nand/socrates_nand.c
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			/* Mac address filled in by bootwrapper */
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <0x23 0x2 0x24 0x2 0x28 0x2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&PHY2>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		mpic: pic@40000 {
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8536ds.dts
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/drivers/mtd/nand/socrates_nand.c	2009-03-30 12:48:26.560971080 +0200
-@@ -0,0 +1,324 @@
-+/*
-+ * drivers/mtd/nand/socrates_nand.c
-+ *
-+ *  Copyright (C) 2008 Ilya Yanok, Emcraft Systems
-+ *
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8536ds.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8536ds.dts
+@@ -137,42 +137,6 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 0x1>;
+-				reg = <0>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 0x1>;
+-				reg = <1>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@26520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x26520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		usb@22000 {
+ 			compatible = "fsl,mpc8536-usb2-mph", "fsl-usb2-mph";
+ 			reg = <0x22000 0x1000>;
+@@ -194,31 +158,73 @@
+ 		};
+ 
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy1>;
+ 			phy-connection-type = "rgmii-id";
 +
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/of_platform.h>
-+#include <linux/io.h>
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+#define FPGA_NAND_CMD_MASK		(0x7 << 28)
-+#define FPGA_NAND_CMD_COMMAND		(0x0 << 28)
-+#define FPGA_NAND_CMD_ADDR		(0x1 << 28)
-+#define FPGA_NAND_CMD_READ		(0x2 << 28)
-+#define FPGA_NAND_CMD_WRITE		(0x3 << 28)
-+#define FPGA_NAND_BUSY			(0x1 << 15)
-+#define FPGA_NAND_ENABLE		(0x1 << 31)
-+#define FPGA_NAND_DATA_SHIFT		16
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 0x1>;
++					reg = <0>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 0x1>;
++					reg = <1>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <31 2 32 2 33 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy0>;
+ 			phy-connection-type = "rgmii-id";
 +
-+struct socrates_nand_host {
-+	struct nand_chip	nand_chip;
-+	struct mtd_info		mtd;
-+	void __iomem		*io_base;
-+	struct device		*dev;
-+};
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+/**
-+ * socrates_nand_write_buf -  write buffer to chip
-+ * @mtd:	MTD device structure
-+ * @buf:	data buffer
-+ * @len:	number of bytes to write
-+ */
-+static void socrates_nand_write_buf(struct mtd_info *mtd,
-+		const uint8_t *buf, int len)
-+{
-+	int i;
-+	struct nand_chip *this = mtd->priv;
-+	struct socrates_nand_host *host = this->priv;
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		usb@2b000 {
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8540ads.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8540ads.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8540ads.dts
+@@ -126,97 +126,106 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x0>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <7 1>;
+-				reg = <0x3>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@26520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x26520 0x20>;
+-
+-			tbi2: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
 +
-+	for (i = 0; i < len; i++) {
-+		out_be32(host->io_base, FPGA_NAND_ENABLE |
-+				FPGA_NAND_CMD_WRITE |
-+				(buf[i] << FPGA_NAND_DATA_SHIFT));
-+	}
-+}
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+/**
-+ * socrates_nand_read_buf -  read chip data into buffer
-+ * @mtd:	MTD device structure
-+ * @buf:	buffer to store date
-+ * @len:	number of bytes to read
-+ */
-+static void socrates_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
-+{
-+	int i;
-+	struct nand_chip *this = mtd->priv;
-+	struct socrates_nand_host *host = this->priv;
-+	uint32_t val;
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x0>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <7 1>;
++					reg = <0x3>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
 +
-+	val = FPGA_NAND_ENABLE | FPGA_NAND_CMD_READ;
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+	out_be32(host->io_base, val);
-+	for (i = 0; i < len; i++) {
-+		buf[i] = (in_be32(host->io_base) >>
-+				FPGA_NAND_DATA_SHIFT) & 0xff;
-+	}
-+}
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet2: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <2>;
+ 			device_type = "network";
+ 			model = "FEC";
+ 			compatible = "gianfar";
+ 			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <41 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi2>;
+ 			phy-handle = <&phy3>;
 +
-+/**
-+ * socrates_nand_read_byte -  read one byte from the chip
-+ * @mtd:	MTD device structure
-+ */
-+static uint8_t socrates_nand_read_byte(struct mtd_info *mtd)
-+{
-+	uint8_t byte;
-+	socrates_nand_read_buf(mtd, (uint8_t *)&byte, sizeof(byte));
-+	return byte;
-+}
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+/**
-+ * socrates_nand_read_word -  read one word from the chip
-+ * @mtd:	MTD device structure
-+ */
-+static uint16_t socrates_nand_read_word(struct mtd_info *mtd)
-+{
-+	uint16_t word;
-+	socrates_nand_read_buf(mtd, (uint8_t *)&word, sizeof(word));
-+	return word;
-+}
++				tbi2: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8541cds.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8541cds.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8541cds.dts
+@@ -126,66 +126,72 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x0>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x1>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
 +
-+/**
-+ * socrates_nand_verify_buf -  Verify chip data against buffer
-+ * @mtd:	MTD device structure
-+ * @buf:	buffer containing the data to compare
-+ * @len:	number of bytes to compare
-+ */
-+static int socrates_nand_verify_buf(struct mtd_info *mtd, const u8 *buf,
-+		int len)
-+{
-+	int i;
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+	for (i = 0; i < len; i++) {
-+		if (buf[i] != socrates_nand_read_byte(mtd))
-+			return -EFAULT;
-+	}
-+	return 0;
-+}
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x0>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
 +
-+/*
-+ * Hardware specific access to control-lines
-+ */
-+static void socrates_nand_cmd_ctrl(struct mtd_info *mtd, int cmd,
-+		unsigned int ctrl)
-+{
-+	struct nand_chip *nand_chip = mtd->priv;
-+	struct socrates_nand_host *host = nand_chip->priv;
-+	uint32_t val;
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+	if (cmd == NAND_CMD_NONE)
-+		return;
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8544ds.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8544ds.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8544ds.dts
+@@ -98,44 +98,6 @@
+ 			dfsrr;
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 1>;
+-				reg = <0x0>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 1>;
+-				reg = <0x1>;
+-				device_type = "ethernet-phy";
+-			};
+-
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@26520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x26520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-
+ 		dma@21300 {
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+@@ -178,31 +140,74 @@
+ 		};
+ 
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			phy-handle = <&phy0>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-connection-type = "rgmii-id";
 +
-+	if (ctrl & NAND_CLE)
-+		val = FPGA_NAND_CMD_COMMAND;
-+	else
-+		val = FPGA_NAND_CMD_ADDR;
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+	if (ctrl & NAND_NCE)
-+		val |= FPGA_NAND_ENABLE;
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 1>;
++					reg = <0x0>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 1>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
 +
-+	val |= (cmd & 0xff) << FPGA_NAND_DATA_SHIFT;
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <31 2 32 2 33 2>;
+ 			interrupt-parent = <&mpic>;
+ 			phy-handle = <&phy1>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-connection-type = "rgmii-id";
 +
-+	out_be32(host->io_base, val);
-+}
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+/*
-+ * Read the Device Ready pin.
-+ */
-+static int socrates_nand_device_ready(struct mtd_info *mtd)
-+{
-+	struct nand_chip *nand_chip = mtd->priv;
-+	struct socrates_nand_host *host = nand_chip->priv;
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8548cds.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8548cds.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8548cds.dts
+@@ -142,129 +142,141 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x0>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x3>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@26520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x26520 0x20>;
+-
+-			tbi2: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@27520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x27520 0x20>;
+-
+-			tbi3: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
 +
-+	if (in_be32(host->io_base) & FPGA_NAND_BUSY)
-+		return 0; /* busy */
-+	return 1;
-+}
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+#ifdef CONFIG_MTD_PARTITIONS
-+static const char *part_probes[] = { "cmdlinepart", NULL };
-+#endif
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x0>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x2>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x3>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
 +
-+/*
-+ * Probe for the NAND device.
-+ */
-+static int __devinit socrates_nand_probe(struct of_device *ofdev,
-+		const struct of_device_id *ofid)
-+{
-+	struct socrates_nand_host *host;
-+	struct mtd_info *mtd;
-+	struct nand_chip *nand_chip;
-+	int res;
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+#ifdef CONFIG_MTD_PARTITIONS
-+	struct mtd_partition *partitions = NULL;
-+	int num_partitions = 0;
-+#endif
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ /* eTSEC 3/4 are currently broken
+ 		enet2: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <2>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <31 2 32 2 33 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi2>;
+ 			phy-handle = <&phy2>;
 +
-+	/* Allocate memory for the device structure (and zero it) */
-+	host = kzalloc(sizeof(struct socrates_nand_host), GFP_KERNEL);
-+	if (!host) {
-+		printk(KERN_ERR "socrates_nand: failed to allocate device "
-+				"structure.\n");
-+		return -ENOMEM;
-+	}
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+	host->io_base = of_iomap(ofdev->node, 0);
-+	if (host->io_base == NULL) {
-+		printk(KERN_ERR "socrates_nand: ioremap failed\n");
-+		kfree(host);
-+		return -EIO;
-+	}
++				tbi2: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet3: ethernet@27000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <3>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x27000 0x1000>;
++			ranges = <0x0 0x27000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <37 2 38 2 39 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi3>;
+ 			phy-handle = <&phy3>;
 +
-+	mtd = &host->mtd;
-+	nand_chip = &host->nand_chip;
-+	host->dev = &ofdev->dev;
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+	nand_chip->priv = host;		/* link the private data structures */
-+	mtd->priv = nand_chip;
-+	mtd->name = "socrates_nand";
-+	mtd->owner = THIS_MODULE;
++				tbi3: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+  */
+ 
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8555cds.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8555cds.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8555cds.dts
+@@ -126,66 +126,72 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x0>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x1>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
 +
-+	/*should never be accessed directly */
-+	nand_chip->IO_ADDR_R = (void *)0xdeadbeef;
-+	nand_chip->IO_ADDR_W = (void *)0xdeadbeef;
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+	nand_chip->cmd_ctrl = socrates_nand_cmd_ctrl;
-+	nand_chip->read_byte = socrates_nand_read_byte;
-+	nand_chip->read_word = socrates_nand_read_word;
-+	nand_chip->write_buf = socrates_nand_write_buf;
-+	nand_chip->read_buf = socrates_nand_read_buf;
-+	nand_chip->verify_buf = socrates_nand_verify_buf;
-+	nand_chip->dev_ready = socrates_nand_device_ready;
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x0>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
 +
-+	nand_chip->ecc.mode = NAND_ECC_SOFT;	/* enable ECC */
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+	/* TODO: I have no idea what real delay is. */
-+	nand_chip->chip_delay = 20;		/* 20us command delay time */
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8560ads.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8560ads.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8560ads.dts
+@@ -115,78 +115,84 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x0>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 1>;
+-				reg = <0x1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <7 1>;
+-				reg = <0x2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <7 1>;
+-				reg = <0x3>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
 +
-+	dev_set_drvdata(&ofdev->dev, host);
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+	/* first scan to find the device and get the page size */
-+	if (nand_scan_ident(mtd, 1)) {
-+		res = -ENXIO;
-+		goto out;
-+	}
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x0>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <7 1>;
++					reg = <0x2>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <7 1>;
++					reg = <0x3>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
 +
-+	/* second phase scan */
-+	if (nand_scan_tail(mtd)) {
-+		res = -ENXIO;
-+		goto out;
-+	}
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+#ifdef CONFIG_MTD_PARTITIONS
-+#ifdef CONFIG_MTD_CMDLINE_PARTS
-+	num_partitions = parse_mtd_partitions(mtd, part_probes,
-+					      &partitions, 0);
-+	if (num_partitions < 0) {
-+		res = num_partitions;
-+		goto release;
-+	}
-+#endif
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		mpic: pic@40000 {
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8568mds.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8568mds.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -149,78 +149,84 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@7 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <1 1>;
+-				reg = <0x7>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <2 1>;
+-				reg = <0x1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <1 1>;
+-				reg = <0x2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <2 1>;
+-				reg = <0x3>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+  			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy2>;
 +
-+#ifdef CONFIG_MTD_OF_PARTS
-+	if (num_partitions == 0) {
-+		num_partitions = of_mtd_parse_partitions(&ofdev->dev,
-+							 ofdev->node,
-+							 &partitions);
-+		if (num_partitions < 0) {
-+			res = num_partitions;
-+			goto release;
-+		}
-+	}
-+#endif
-+	if (partitions && (num_partitions > 0))
-+		res = add_mtd_partitions(mtd, partitions, num_partitions);
-+	else
-+#endif
-+		res = add_mtd_device(mtd);
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+	if (!res)
-+		return res;
++				phy0: ethernet-phy@7 {
++					interrupt-parent = <&mpic>;
++					interrupts = <1 1>;
++					reg = <0x7>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <2 1>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <1 1>;
++					reg = <0x2>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <2 1>;
++					reg = <0x3>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+  			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy3>;
 +
-+#ifdef CONFIG_MTD_PARTITIONS
-+release:
-+#endif
-+	nand_release(mtd);
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+out:
-+	dev_set_drvdata(&ofdev->dev, NULL);
-+	iounmap(host->io_base);
-+	kfree(host);
-+	return res;
-+}
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8572ds.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8572ds.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8572ds.dts
+@@ -312,129 +312,141 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 1>;
+-				reg = <0x0>;
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 1>;
+-				reg = <0x1>;
+-			};
+-			phy2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 1>;
+-				reg = <0x2>;
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 1>;
+-				reg = <0x3>;
+-			};
+-
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@26520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x26520 0x20>;
+-
+-			tbi2: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@27520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x27520 0x20>;
+-
+-			tbi3: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
+ 			phy-connection-type = "rgmii-id";
 +
-+/*
-+ * Remove a NAND device.
-+ */
-+static int __devexit socrates_nand_remove(struct of_device *ofdev)
-+{
-+	struct socrates_nand_host *host = dev_get_drvdata(&ofdev->dev);
-+	struct mtd_info *mtd = &host->mtd;
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+	nand_release(mtd);
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 1>;
++					reg = <0x0>;
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 1>;
++					reg = <0x1>;
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 1>;
++					reg = <0x2>;
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 1>;
++					reg = <0x3>;
++				};
 +
-+	dev_set_drvdata(&ofdev->dev, NULL);
-+	iounmap(host->io_base);
-+	kfree(host);
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
+ 			phy-connection-type = "rgmii-id";
 +
-+	return 0;
-+}
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+static struct of_device_id socrates_nand_match[] =
-+{
-+	{
-+		.compatible   = "abb,socrates-nand",
-+	},
-+	{},
-+};
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet2: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <2>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <31 2 32 2 33 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi2>;
+ 			phy-handle = <&phy2>;
+ 			phy-connection-type = "rgmii-id";
 +
-+MODULE_DEVICE_TABLE(of, socrates_nand_match);
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+static struct of_platform_driver socrates_nand_driver = {
-+	.name		= "socrates_nand",
-+	.match_table	= socrates_nand_match,
-+	.probe		= socrates_nand_probe,
-+	.remove		= __devexit_p(socrates_nand_remove),
-+};
++				tbi2: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet3: ethernet@27000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <3>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x27000 0x1000>;
++			ranges = <0x0 0x27000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <37 2 38 2 39 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi3>;
+ 			phy-handle = <&phy3>;
+ 			phy-connection-type = "rgmii-id";
 +
-+static int __init socrates_nand_init(void)
-+{
-+	return of_register_platform_driver(&socrates_nand_driver);
-+}
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
 +
-+static void __exit socrates_nand_exit(void)
-+{
-+	of_unregister_platform_driver(&socrates_nand_driver);
-+}
++				tbi3: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
++++ linux-2.6/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+@@ -148,35 +148,38 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 1>;
+-				reg = <0x0>;
+-			};
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <10 1>;
+-				reg = <0x1>;
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			phy-handle = <&phy0>;
+ 			phy-connection-type = "rgmii-id";
 +
-+module_init(socrates_nand_init);
-+module_exit(socrates_nand_exit);
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
 +
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Ilya Yanok");
-+MODULE_DESCRIPTION("NAND driver for Socrates board");
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 1>;
++					reg = <0x0>;
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <10 1>;
++					reg = <0x1>;
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
+Index: linux-2.6/arch/powerpc/boot/dts/sbc8548.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/sbc8548.dts
++++ linux-2.6/arch/powerpc/boot/dts/sbc8548.dts
+@@ -234,66 +234,72 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy0: ethernet-phy@19 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <0x6 0x1>;
+-				reg = <0x19>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1a {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <0x7 0x1>;
+-				reg = <0x1a>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <0x1d 0x2 0x1e 0x2 0x22 0x2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy0: ethernet-phy@19 {
++					interrupt-parent = <&mpic>;
++					interrupts = <0x6 0x1>;
++					reg = <0x19>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1a {
++					interrupt-parent = <&mpic>;
++					interrupts = <0x7 0x1>;
++					reg = <0x1a>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <0x23 0x2 0x24 0x2 0x28 0x2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/sbc8560.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/sbc8560.dts
++++ linux-2.6/arch/powerpc/boot/dts/sbc8560.dts
+@@ -139,77 +139,83 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-			phy0: ethernet-phy@19 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <0x6 0x1>;
+-				reg = <0x19>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy1: ethernet-phy@1a {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <0x7 0x1>;
+-				reg = <0x1a>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@1b {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <0x8 0x1>;
+-				reg = <0x1b>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@1c {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <0x8 0x1>;
+-				reg = <0x1c>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <0x1d 0x2 0x1e 0x2 0x22 0x2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy0>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++				phy0: ethernet-phy@19 {
++					interrupt-parent = <&mpic>;
++					interrupts = <0x6 0x1>;
++					reg = <0x19>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@1a {
++					interrupt-parent = <&mpic>;
++					interrupts = <0x7 0x1>;
++					reg = <0x1a>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@1b {
++					interrupt-parent = <&mpic>;
++					interrupts = <0x8 0x1>;
++					reg = <0x1b>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@1c {
++					interrupt-parent = <&mpic>;
++					interrupts = <0x8 0x1>;
++					reg = <0x1c>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <0x23 0x2 0x24 0x2 0x28 0x2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		mpic: pic@40000 {
+Index: linux-2.6/arch/powerpc/boot/dts/stx_gp3_8560.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/stx_gp3_8560.dts
++++ linux-2.6/arch/powerpc/boot/dts/stx_gp3_8560.dts
+@@ -124,66 +124,72 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 4>;
+-				reg = <2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy4: ethernet-phy@4 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <5 4>;
+-				reg = <4>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy2>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 4>;
++					reg = <2>;
++					device_type = "ethernet-phy";
++				};
++				phy4: ethernet-phy@4 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 4>;
++					reg = <4>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy4>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		mpic: pic@40000 {
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8540.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8540.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8540.dts
+@@ -131,94 +131,103 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <3>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@26520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x26520 0x20>;
+-
+-			tbi2: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			phy-handle = <&phy2>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <2>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <3>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			phy-handle = <&phy1>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet2: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <2>;
+ 			device_type = "network";
+ 			model = "FEC";
+ 			compatible = "gianfar";
+ 			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <41 2>;
+ 			interrupt-parent = <&mpic>;
+ 			phy-handle = <&phy3>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi2: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8541.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8541.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8541.dts
+@@ -130,72 +130,78 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <3>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy2>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <2>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <3>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548-bigflash.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+@@ -143,134 +143,146 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy1: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <3>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy4: ethernet-phy@4 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <4>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy5: ethernet-phy@5 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <5>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@26520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x26520 0x20>;
+-
+-			tbi2: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@27520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x27520 0x20>;
+-
+-			tbi3: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy2>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy1: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <2>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <3>;
++					device_type = "ethernet-phy";
++				};
++				phy4: ethernet-phy@4 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <4>;
++					device_type = "ethernet-phy";
++				};
++				phy5: ethernet-phy@5 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <5>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet2: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <2>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <31 2 32 2 33 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi2>;
+ 			phy-handle = <&phy3>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi2: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet3: ethernet@27000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <3>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x27000 0x1000>;
++			ranges = <0x0 0x27000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <37 2 38 2 39 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi3>;
+ 			phy-handle = <&phy4>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi3: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8548.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8548.dts
+@@ -143,134 +143,146 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy1: ethernet-phy@0 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <3>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy4: ethernet-phy@4 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <4>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy5: ethernet-phy@5 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <5>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@26520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x26520 0x20>;
+-
+-			tbi2: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@27520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x27520 0x20>;
+-
+-			tbi3: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy2>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy1: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <2>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <3>;
++					device_type = "ethernet-phy";
++				};
++				phy4: ethernet-phy@4 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <4>;
++					device_type = "ethernet-phy";
++				};
++				phy5: ethernet-phy@5 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <5>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet2: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <2>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <31 2 32 2 33 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi2>;
+ 			phy-handle = <&phy3>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi2: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet3: ethernet@27000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <3>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x27000 0x1000>;
++			ranges = <0x0 0x27000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <37 2 38 2 39 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi3>;
+ 			phy-handle = <&phy4>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi3: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8555.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8555.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8555.dts
+@@ -130,72 +130,78 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <3>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy2>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <2>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <3>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8560.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8560.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8560.dts
+@@ -132,72 +132,78 @@
+ 			};
+ 		};
+ 
+-		mdio@24520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy2: ethernet-phy@2 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <2>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy3: ethernet-phy@3 {
+-				interrupt-parent = <&mpic>;
+-				interrupts = <8 1>;
+-				reg = <3>;
+-				device_type = "ethernet-phy";
+-			};
+-			tbi0: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+-		mdio@25520 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-tbi";
+-			reg = <0x25520 0x20>;
+-
+-			tbi1: tbi-phy@11 {
+-				reg = <0x11>;
+-				device_type = "tbi-phy";
+-			};
+-		};
+-
+ 		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <29 2 30 2 34 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi0>;
+ 			phy-handle = <&phy2>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <1>;
++					device_type = "ethernet-phy";
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <2>;
++					device_type = "ethernet-phy";
++				};
++				phy3: ethernet-phy@3 {
++					interrupt-parent = <&mpic>;
++					interrupts = <8 1>;
++					reg = <3>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			cell-index = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+ 			compatible = "gianfar";
+ 			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <35 2 36 2 40 2>;
+ 			interrupt-parent = <&mpic>;
+ 			tbi-handle = <&tbi1>;
+ 			phy-handle = <&phy1>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
+ 		};
+ 
+ 		mpic: pic@40000 {
+Index: linux-2.6/arch/powerpc/platforms/85xx/ksi8560.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/ksi8560.c
++++ linux-2.6/arch/powerpc/platforms/85xx/ksi8560.c
+@@ -221,6 +221,7 @@ static struct of_device_id __initdata of
+ 	{ .type = "simple-bus", },
+ 	{ .name = "cpm", },
+ 	{ .name = "localbus", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc8536_ds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc8536_ds.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc8536_ds.c
+@@ -92,6 +92,7 @@ static struct of_device_id __initdata mp
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -226,6 +226,7 @@ static struct of_device_id __initdata of
+ 	{ .name = "cpm", },
+ 	{ .name = "localbus", },
+ 	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -336,6 +336,7 @@ static struct of_device_id __initdata of
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -204,6 +204,7 @@ static struct of_device_id __initdata mp
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ linux-2.6/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -265,6 +265,7 @@ static struct of_device_id mpc85xx_ids[]
+ 	{ .compatible = "simple-bus", },
+ 	{ .type = "qe", },
+ 	{ .compatible = "fsl,qe", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/sbc8548.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/sbc8548.c
++++ linux-2.6/arch/powerpc/platforms/85xx/sbc8548.c
+@@ -154,6 +154,7 @@ static struct of_device_id __initdata of
+ 	{ .name = "soc", },
+ 	{ .type = "soc", },
+ 	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/sbc8560.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/sbc8560.c
++++ linux-2.6/arch/powerpc/platforms/85xx/sbc8560.c
+@@ -213,6 +213,7 @@ static struct of_device_id __initdata of
+ 	{ .name = "cpm", },
+ 	{ .name = "localbus", },
+ 	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/stx_gp3.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/stx_gp3.c
++++ linux-2.6/arch/powerpc/platforms/85xx/stx_gp3.c
+@@ -145,6 +145,7 @@ static void stx_gp3_show_cpuinfo(struct 
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+ 	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/tqm85xx.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/tqm85xx.c
++++ linux-2.6/arch/powerpc/platforms/85xx/tqm85xx.c
+@@ -153,6 +153,7 @@ static void tqm85xx_show_cpuinfo(struct 
+ 
+ static struct of_device_id __initdata of_bus_ids[] = {
+ 	{ .compatible = "simple-bus", },
++	{ .compatible = "gianfar", },
+ 	{},
+ };
+ 
