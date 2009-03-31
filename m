@@ -1,11 +1,12 @@
 Return-Path: <wg@denx.de>
-Message-Id: <20090331124035.908249543@denx.de>
-Date: Tue, 31 Mar 2009 14:37:32 +0200
+Message-Id: <20090331124035.427262955@denx.de>
+Date: Tue, 31 Mar 2009 14:37:29 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/8] powerpc: i2c-mpc: make I2C bus speed configurable
+Subject: [PATCH 2/8] [PATCH 01/28] RTC: Add support for RX8025 chip.
 References: <20090331123727.853787299@denx.de>
-Cc: devicetree-discuss@ozlabs.org
+Cc: Sergei Poselenov <sposelenov@emcraft.com>, devicetree-discuss@ozlabs.org,
+	Matthias Fuchs <matthias.fuchs@esd.eu>, Dmitry Rakhchev <rda@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,445 +16,967 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch makes the I2C bus speed configurable by using the I2C node
-property "clock-frequency". If the property is not defined, the old
-fixed clock settings will be used for backward comptibility.
+This patch adds support for the Epson RX-8025SA/NB RTC chips. It
+includes support for alarms update interrupts (1 Hz) and clock
+precision adjustment.
 
-The generic I2C clock properties, especially the CPU-specific source
-clock pre-scaler are defined via the OF match table:
+For clock precision adjustment, the SYSFS file "clock_adjust_ppb" gets
+created in "/sys/class/rtc/rtcX/device". It permits to set and get the
+clock adjustment in ppb (parts per billion), e.g.:
 
-  static const struct of_device_id mpc_i2c_of_match[] = {
-	{.compatible = "fsl,mpc5200b-i2c",
-	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
-	{.compatible = "fsl,mpc5200-i2c",
-	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
-	{.compatible = "fsl,mpc8313-i2c",
-	 .data = (void *)FSL_I2C_DEV_SEPARATE_DFSRR, },
-	{.compatible = "fsl,mpc8543-i2c",
-	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
-			  FSL_I2C_DEV_CLOCK_DIV2), },
-	{.compatible = "fsl,mpc8544-i2c",
-	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
-			  FSL_I2C_DEV_CLOCK_DIV23), },
-	/* Backward compatibility */
-	{.compatible = "fsl-i2c", },
-	{},
-  };
+  # echo -183000 > /sys/class/rtc/rtc0/device/clock_adjust_ppb
+  # cat /sys/class/rtc/rtc0/device/clock_adjust_ppb
+  -183000
 
-The "data" field defines the relevant I2C flags for the comptible CPU.
+This allows to compensate temperature dependent clock drifts. According
+to the RX8025 SA/NB application manual the frequency and temperature 
+charateristics can be approximated using the following equation:
 
-It used arch-specific tables and functions to determine the proper
-Freqency Divider Register (fdr).
+  df = a * (ut - t)**2
 
-Furthermore dev_dbg() and dev_info() are now used to profit from a more
-comprehensive output.
+  df: Frequency deviation in any temperature
+  a : Coefficient = (-35 +-5) * 10**-9  
+  ut: Ultimate temperature in degree = +25 +-5 degree  
+  t : Any temperature in degree  
+
 
 Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+Signed-off-by: Sergei Poselenov <sposelenov@emcraft.com>
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Dmitry Rakhchev <rda@emcraft.com>
+Signed-off-by: Matthias Fuchs <matthias.fuchs@esd.eu>
 ---
- arch/powerpc/platforms/52xx/mpc52xx_common.c |   48 ++++++++++++
- arch/powerpc/sysdev/fsl_soc.c                |   90 +++++++++++++++++++++++
- drivers/i2c/busses/i2c-mpc.c                 |  104 +++++++++++++++++++--------
- include/linux/fsl_devices.h                  |    6 +
- 4 files changed, 221 insertions(+), 27 deletions(-)
+ drivers/rtc/Kconfig      |    9 
+ drivers/rtc/Makefile     |    1 
+ drivers/rtc/rtc-rx8025.c |  891 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 901 insertions(+)
+ create mode 100644 drivers/rtc/rtc-rx8025.c
 
-Index: linux-2.6/drivers/i2c/busses/i2c-mpc.c
+Index: linux-2.6/drivers/rtc/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/i2c/busses/i2c-mpc.c	2009-03-31 13:28:03.000000000 +0200
-+++ linux-2.6/drivers/i2c/busses/i2c-mpc.c	2009-03-31 13:38:01.355720989 +0200
-@@ -20,12 +20,14 @@
- #include <linux/of_platform.h>
- #include <linux/of_i2c.h>
+--- linux-2.6.orig/drivers/rtc/Kconfig
++++ linux-2.6/drivers/rtc/Kconfig
+@@ -295,6 +295,15 @@ config RTC_DRV_RX8581
+ 	  This driver can also be built as a module. If so the module
+ 	  will be called rtc-rx8581.
  
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <linux/fsl_devices.h>
- #include <linux/i2c.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- 
-+#include <sysdev/fsl_soc.h>
++config RTC_DRV_RX8025
++	tristate "Epson RX-8025SA/NB"
++	help
++	  If you say yes here you get support for the Epson
++	  RX-8025SA/NB RTC chips.
 +
- #define DRV_NAME "mpc-i2c"
- 
- #define MPC_I2C_FDR 	0x04
-@@ -50,6 +52,7 @@
- #define CSR_RXAK 0x01
- 
- struct mpc_i2c {
-+	struct device *dev;
- 	void __iomem *base;
- 	u32 interrupt;
- 	wait_queue_head_t queue;
-@@ -105,7 +108,7 @@
- 		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
- 			schedule();
- 			if (time_after(jiffies, orig_jiffies + timeout)) {
--				pr_debug("I2C: timeout\n");
-+				dev_dbg(i2c->dev, "timeout\n");
- 				writeccr(i2c, 0);
- 				result = -EIO;
- 				break;
-@@ -119,10 +122,10 @@
- 			(i2c->interrupt & CSR_MIF), timeout * HZ);
- 
- 		if (unlikely(result < 0)) {
--			pr_debug("I2C: wait interrupted\n");
-+			dev_dbg(i2c->dev, "wait interrupted\n");
- 			writeccr(i2c, 0);
- 		} else if (unlikely(!(i2c->interrupt & CSR_MIF))) {
--			pr_debug("I2C: wait timeout\n");
-+			dev_dbg(i2c->dev, "wait timeout\n");
- 			writeccr(i2c, 0);
- 			result = -ETIMEDOUT;
- 		}
-@@ -135,17 +138,17 @@
- 		return result;
- 
- 	if (!(x & CSR_MCF)) {
--		pr_debug("I2C: unfinished\n");
-+		dev_dbg(i2c->dev, "unfinished\n");
- 		return -EIO;
- 	}
- 
- 	if (x & CSR_MAL) {
--		pr_debug("I2C: MAL\n");
-+		dev_dbg(i2c->dev, "MAL\n");
- 		return -EIO;
- 	}
- 
- 	if (writing && (x & CSR_RXAK)) {
--		pr_debug("I2C: No RXAK\n");
-+		dev_dbg(i2c->dev, "No RXAK\n");
- 		/* generate stop */
- 		writeccr(i2c, CCR_MEN);
- 		return -EIO;
-@@ -153,17 +156,38 @@
- 	return 0;
- }
- 
--static void mpc_i2c_setclock(struct mpc_i2c *i2c)
-+static void mpc_i2c_setclock(struct device_node *node,
-+			     struct mpc_i2c *i2c, u32 clock)
- {
--	/* Set clock and filters */
--	if (i2c->flags & FSL_I2C_DEV_SEPARATE_DFSRR) {
--		writeb(0x31, i2c->base + MPC_I2C_FDR);
--		writeb(0x10, i2c->base + MPC_I2C_DFSRR);
--	} else if (i2c->flags & FSL_I2C_DEV_CLOCK_5200)
--		writeb(0x3f, i2c->base + MPC_I2C_FDR);
--	else
--		writel(0x1031, i2c->base + MPC_I2C_FDR);
--}
-+	int fdr;
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-rx8025.
 +
-+	fdr = fsl_i2c_get_fdr(node, clock, i2c->flags);
-+
-+	if (i2c->flags & FSL_I2C_DEV_CLOCK_5200) {
-+		pr_debug("I2C: old fdr=%d\n", readb(i2c->base + MPC_I2C_FDR));
-+		if (fdr < 0)
-+			fdr = 0x3f; /* backward compatibility */
-+		writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
-+		dev_info("clock %d Hz (fdr=%d)\n", clock, fdr);
-+	} else {
-+		if (fdr < 0)
-+			fdr = 0x1031; /* backward compatibility */
-+		if (i2c->flags & FSL_I2C_DEV_SEPARATE_DFSRR) {
-+			pr_debug("I2C: old dfsrr=%d fdr=%d\n",
-+			       readb(i2c->base + MPC_I2C_DFSRR),
-+			       readb(i2c->base + MPC_I2C_FDR));
-+			writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
-+			writeb((fdr >> 8) & 0xff, i2c->base + MPC_I2C_DFSRR);
-+			dev_info("clock %d Hz (dfsrr=%d fdr=%d)\n",
-+			       clock, fdr >> 8, fdr & 0xff);
-+		} else {
-+			pr_debug("I2C: old fdr=%d\n",
-+				 readl(i2c->base + MPC_I2C_FDR));
-+			writel(fdr & 0xffff, i2c->base + MPC_I2C_FDR);
-+			dev_info("clock %d Hz (fdr=%d)\n", clock, fdr);
-+		}
-+	}
-+ }
+ endif # I2C
  
- static void mpc_i2c_start(struct mpc_i2c *i2c)
- {
-@@ -267,12 +291,12 @@
- 	/* Allow bus up to 1s to become not busy */
- 	while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
- 		if (signal_pending(current)) {
--			pr_debug("I2C: Interrupted\n");
-+			dev_dbg(i2c->dev, "interrupted\n");
- 			writeccr(i2c, 0);
- 			return -EINTR;
- 		}
- 		if (time_after(jiffies, orig_jiffies + HZ)) {
--			pr_debug("I2C: timeout\n");
-+			dev_dbg(i2c->dev, "timeout\n");
- 			if (readb(i2c->base + MPC_I2C_SR) ==
- 			    (CSR_MCF | CSR_MBB | CSR_RXAK))
- 				mpc_i2c_fixup(i2c);
-@@ -283,9 +307,10 @@
- 
- 	for (i = 0; ret >= 0 && i < num; i++) {
- 		pmsg = &msgs[i];
--		pr_debug("Doing %s %d bytes to 0x%02x - %d of %d messages\n",
--			 pmsg->flags & I2C_M_RD ? "read" : "write",
--			 pmsg->len, pmsg->addr, i + 1, num);
-+		dev_dbg(i2c->dev,
-+			"doing %s %d bytes to 0x%02x - %d of %d messages\n",
-+			pmsg->flags & I2C_M_RD ? "read" : "write",
-+			pmsg->len, pmsg->addr, i + 1, num);
- 		if (pmsg->flags & I2C_M_RD)
- 			ret =
- 			    mpc_read(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
-@@ -316,9 +341,12 @@
- 
- static int __devinit fsl_i2c_probe(struct of_device *op, const struct of_device_id *match)
- {
--	int result = 0;
- 	struct mpc_i2c *i2c;
-+	const u32 *prop;
-+	u32 clock = 0;
- 	int set_clock;
-+	int result = 0;
-+	int plen;
- 
- 	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
- 	if (!i2c)
-@@ -328,7 +356,11 @@
- 		set_clock = 0;
- 	} else {
- 		set_clock = 1;
-+		prop = of_get_property(op->node, "clock-frequency", &plen);
-+		if (prop && plen == sizeof(u32))
-+			clock = *prop;
- 
-+		/* Backwards compatibility */
- 		if (of_get_property(op->node, "dfsrr", NULL))
- 			i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
- 
-@@ -356,11 +388,15 @@
- 		}
- 	}
- 
--	if (set_clock)
--		mpc_i2c_setclock(i2c);
-+	if (set_clock) {
-+		if (match->data)
-+			i2c->flags = (u32)match->data;
-+		mpc_i2c_setclock(op->node, i2c, clock);
-+	}
- 
- 	dev_set_drvdata(&op->dev, i2c);
- 
-+	i2c->dev = &op->dev;
- 	i2c->adap = mpc_ops;
- 	i2c_set_adapdata(&i2c->adap, i2c);
- 	i2c->adap.dev.parent = &op->dev;
-@@ -402,9 +438,23 @@
- };
- 
- static const struct of_device_id mpc_i2c_of_match[] = {
--	{.compatible = "fsl-i2c",},
-+	{.compatible = "fsl,mpc5200b-i2c",
-+	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
-+	{.compatible = "fsl,mpc5200-i2c",
-+	 .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
-+	{.compatible = "fsl,mpc8313-i2c",
-+	 .data = (void *)FSL_I2C_DEV_SEPARATE_DFSRR, },
-+	{.compatible = "fsl,mpc8543-i2c",
-+	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
-+			  FSL_I2C_DEV_CLOCK_DIV2), },
-+	{.compatible = "fsl,mpc8544-i2c",
-+	 .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
-+			  FSL_I2C_DEV_CLOCK_DIV23), },
-+	/* Backward compatibility */
-+	{.compatible = "fsl-i2c", },
- 	{},
- };
-+
- MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
- 
- 
-@@ -425,7 +475,7 @@
- 
- 	rv = of_register_platform_driver(&mpc_i2c_driver);
- 	if (rv)
--		printk(KERN_ERR DRV_NAME 
-+		printk(KERN_ERR DRV_NAME
- 		       " of_register_platform_driver failed (%i)\n", rv);
- 	return rv;
- }
-Index: linux-2.6/arch/powerpc/sysdev/fsl_soc.c
+ comment "SPI RTC drivers"
+Index: linux-2.6/drivers/rtc/Makefile
 ===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/fsl_soc.c	2009-03-31 13:25:08.000000000 +0200
-+++ linux-2.6/arch/powerpc/sysdev/fsl_soc.c	2009-03-31 13:34:40.531721011 +0200
-@@ -102,6 +102,96 @@
- }
- EXPORT_SYMBOL(fsl_get_sys_freq);
- 
-+#ifdef CONFIG_I2C_MPC
-+static const struct fsl_i2c_divider {
-+	u16 divider;
-+	u16 fdr;	/* including dfsrr */
-+} fsl_i2c_8xxx_dividers[] = {
-+	{160, 0x0120}, {192, 0x0121}, {224, 0x0122}, {256, 0x0123},
-+	{288, 0x0100}, {320, 0x0101}, {352, 0x0601}, {384, 0x0102},
-+	{416, 0x0602}, {448, 0x0126}, {480, 0x0103}, {512, 0x0127},
-+	{544, 0x0b03}, {576, 0x0104}, {608, 0x1603}, {640, 0x0105},
-+	{672, 0x2003}, {704, 0x0b05}, {736, 0x2b03}, {768, 0x0106},
-+	{800, 0x3603}, {832, 0x0b06}, {896, 0x012a}, {960, 0x0107},
-+	{1024, 0x012b}, {1088, 0x1607}, {1152, 0x0108}, {1216, 0x2b07},
-+	{1280, 0x0109}, {1408, 0x1609}, {1536, 0x010a}, {1664, 0x160a},
-+	{1792, 0x012e}, {1920, 0x010b}, {2048, 0x012f}, {2176, 0x2b0b},
-+	{2304, 0x010c}, {2560, 0x010d}, {2816, 0x2b0d}, {3072, 0x010e},
-+	{3328, 0x2b0e}, {3584, 0x0132}, {3840, 0x010f}, {4096, 0x0133},
-+	{4608, 0x0110}, {5120, 0x0111}, {6144, 0x0112}, {7168, 0x0136},
-+	{7680, 0x0113}, {8192, 0x0137}, {9216, 0x0114}, {10240, 0x0115},
-+	{12288, 0x0116}, {14336, 0x013a}, {15360, 0x0117}, {16384, 0x013b},
-+	{18432, 0x0118}, {20480, 0x0119}, {24576, 0x011a}, {28672, 0x013e},
-+	{30720, 0x011b}, {32768, 0x013f}, {36864, 0x011c}, {40960, 0x011d},
-+	{49152, 0x011e}, {61440, 0x011f}
-+};
-+
-+u32 fsl_i2c_get_sec_cfg(void)
-+{
-+	struct device_node *node = NULL;
-+	u32 __iomem *reg;
-+	u32 val = 0;
-+
-+	node = of_find_node_by_name(NULL, "global-utilities");
-+	if (node) {
-+		const u32 *prop = of_get_property(node, "reg", NULL);
-+		if (prop) {
-+			/*
-+			 * Map and check POR Device Status Register 2
-+			 * (PORDEVSR2) at 0xE0014
-+			 */
-+			reg = ioremap(get_immrbase() + *prop + 0x14, 0x4);
-+			if (!reg)
-+				printk(KERN_ERR
-+				       "Error: couldn't map PORDEVSR2\n");
-+			else
-+				val = in_be32(reg);
-+			iounmap(reg);
-+		}
-+	}
-+	if (node)
-+		of_node_put(node);
-+
-+	return val;
-+}
-+
-+int fsl_i2c_get_fdr(struct device_node *node, u32 i2c_clock, u32 i2c_flags)
-+{
-+	const struct fsl_i2c_divider *div = NULL;
-+	u32 src_clock, divider;
-+	int i;
-+
-+	if (!i2c_clock)
-+		return -EINVAL;
-+
-+	/* Determine divider value */
-+	src_clock = fsl_get_sys_freq();
-+	divider =  src_clock / i2c_clock;
-+	if (i2c_flags & FSL_I2C_DEV_CLOCK_DIV2)
-+		divider /= 2;
-+	else if (i2c_flags & FSL_I2C_DEV_CLOCK_DIV3)
-+		divider /= 3;
-+	else if (i2c_flags & FSL_I2C_DEV_CLOCK_DIV23)
-+		divider /= fsl_i2c_get_sec_cfg() ? 3 : 2;
-+
-+	pr_debug("I2C: src_clock=%d clock=%d flags=%#x divider=%d\n",
-+		 src_clock, i2c_clock, i2c_flags, divider);
-+
-+	/*
-+	 * We want to choose an FDR/DFSR that generates an I2C bus speed that
-+	 * is equal to or lower than the requested speed.
-+	 */
-+	for (i = 0; i < ARRAY_SIZE(fsl_i2c_8xxx_dividers); i++) {
-+		div = &fsl_i2c_8xxx_dividers[i];
-+		if (div->divider >= divider)
-+			break;
-+	}
-+
-+	return div ? (int)div->fdr : -EINVAL;
-+}
-+EXPORT_SYMBOL(fsl_i2c_get_fdr);
-+#endif /* CONFIG_I2C_MPC */
-+
- #if defined(CONFIG_CPM2) || defined(CONFIG_QUICC_ENGINE) || defined(CONFIG_8xx)
- 
- static u32 brgfreq = -1;
-Index: linux-2.6/include/linux/fsl_devices.h
+--- linux-2.6.orig/drivers/rtc/Makefile
++++ linux-2.6/drivers/rtc/Makefile
+@@ -62,6 +62,7 @@ obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701
+ obj-$(CONFIG_RTC_DRV_RS5C313)	+= rtc-rs5c313.o
+ obj-$(CONFIG_RTC_DRV_RS5C348)	+= rtc-rs5c348.o
+ obj-$(CONFIG_RTC_DRV_RS5C372)	+= rtc-rs5c372.o
++obj-$(CONFIG_RTC_DRV_RX8025)	+= rtc-rx8025.o
+ obj-$(CONFIG_RTC_DRV_RX8581)	+= rtc-rx8581.o
+ obj-$(CONFIG_RTC_DRV_S35390A)	+= rtc-s35390a.o
+ obj-$(CONFIG_RTC_DRV_S3C)	+= rtc-s3c.o
+Index: linux-2.6/drivers/rtc/rtc-rx8025.c
 ===================================================================
---- linux-2.6.orig/include/linux/fsl_devices.h	2009-03-31 13:25:08.000000000 +0200
-+++ linux-2.6/include/linux/fsl_devices.h	2009-03-31 13:28:54.305720748 +0200
-@@ -68,6 +68,12 @@
- /* Flags related to I2C device features */
- #define FSL_I2C_DEV_SEPARATE_DFSRR	0x00000001
- #define FSL_I2C_DEV_CLOCK_5200		0x00000002
-+#define FSL_I2C_DEV_CLOCK_DIV2		0x00000004
-+#define FSL_I2C_DEV_CLOCK_DIV3		0x00000008
-+#define FSL_I2C_DEV_CLOCK_DIV23		0x00000010
-+
-+extern int fsl_i2c_get_fdr(struct device_node *node,
-+			   u32 i2c_clock, u32 i2c_flags);
- 
- enum fsl_usb2_operating_modes {
- 	FSL_USB2_MPH_HOST,
-Index: linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c	2009-03-31 13:25:08.000000000 +0200
-+++ linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c	2009-03-31 13:28:54.309718526 +0200
-@@ -225,3 +225,51 @@
- 
- 	while (1);
- }
-+
-+/**
-+ * fsl_i2c_get_fdr: get calculate and return I2 frequency divider register
+--- /dev/null
++++ linux-2.6/drivers/rtc/rtc-rx8025.c
+@@ -0,0 +1,891 @@
++/*
++ * Driver for Epson's RTC module RX-8025 SA/NB
++ *
++ * Copyright (C) 2005 by Digi International Inc.
++ * All rights reserved.
++ *
++ * Modify by fengjh at rising.com.cn
++ * <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>
++ * 2006.11
++ *
++ * Code cleanup by Sergei Poselenov, <sposelenov@emcraft.com>
++ * Converted to new style by Wolfgang Grandegger <wg@grandegger.com>
++ * Alarm and periodic interrupt added by Dmitry Rakhchev <rda@emcraft.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
 + */
-+static const struct mpc52xx_i2c_divider {
-+	u16 divider;
-+	u16 fdr;	/* including dfsrr */
-+} mpc52xx_i2_dividers[] = {
-+	{20, 0x20}, {22, 0x21}, {24, 0x22}, {26, 0x23},
-+	{28, 0x24}, {30, 0x01}, {32, 0x25}, {34, 0x02},
-+	{36, 0x26}, {40, 0x27}, {44, 0x04}, {48, 0x28},
-+	{56, 0x29}, {64, 0x2a}, {68, 0x07}, {72, 0x2b},
-+	{80, 0x2c}, {88, 0x09}, {96, 0x2d}, {104, 0x0a},
-+	{112, 0x2e}, {128, 0x2f}, {144, 0x0c}, {160, 0x30},
-+	{192, 0x31}, {224, 0x32}, {240, 0x0f}, {256, 0x33},
-+	{288, 0x10}, {320, 0x34}, {384, 0x35}, {448, 0x36},
-+	{480, 0x13}, {512, 0x37}, {576, 0x14}, {640, 0x38},
-+	{768, 0x39}, {896, 0x3a}, {960, 0x17}, {1024, 0x3b},
-+	{1152, 0x18}, {1280, 0x3c}, {1536, 0x3d}, {1792, 0x3e},
-+	{1920, 0x1b}, {2048, 0x3f}, {2304, 0x1c}, {2560, 0x1d},
-+	{3072, 0x1e}, {3840, 0x1f}
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/bcd.h>
++#include <linux/i2c.h>
++#include <linux/init.h>
++#include <linux/list.h>
++#include <linux/rtc.h>
++#include <linux/spinlock.h>
++#include <linux/fs.h>
++#include <linux/miscdevice.h>
++#include <linux/uaccess.h>
++
++/* registers */
++#define RX8025_REG_SEC		0x00
++#define RX8025_REG_MIN		0x01
++#define RX8025_REG_HOUR		0x02
++#define RX8025_REG_WDAY		0x03
++#define RX8025_REG_MDAY		0x04
++#define RX8025_REG_MONTH	0x05
++#define RX8025_REG_YEAR		0x06
++#define RX8025_REG_DIGOFF	0x07
++#define RX8025_REG_ALWMIN	0x08
++#define RX8025_REG_ALWHOUR	0x09
++#define RX8025_REG_ALWWDAY	0x0a
++#define RX8025_REG_ALDMIN	0x0b
++#define RX8025_REG_ALDHOUR	0x0c
++/* 0x0d is reserved */
++#define RX8025_REG_CTRL1	0x0e
++#define RX8025_REG_CTRL2	0x0f
++
++#define RX8025_BIT_CTRL1_CT	(7 << 0)
++/* 1 Hz periodic level irq */
++#define RX8025_BIT_CTRL1_CT_1HZ	4
++#define RX8025_BIT_CTRL1_TEST	(1 << 3)
++#define RX8025_BIT_CTRL1_1224	(1 << 5)
++#define RX8025_BIT_CTRL1_DALE	(1 << 6)
++#define RX8025_BIT_CTRL1_WALE	(1 << 7)
++
++#define RX8025_BIT_CTRL2_DAFG	(1 << 0)
++#define RX8025_BIT_CTRL2_WAFG	(1 << 1)
++#define RX8025_BIT_CTRL2_CTFG	(1 << 2)
++#define RX8025_BIT_CTRL2_PON	(1 << 4)
++#define RX8025_BIT_CTRL2_XST	(1 << 5)
++#define RX8025_BIT_CTRL2_VDET	(1 << 6)
++
++/* Clock precision adjustment */
++#define RX8025_ADJ_RESOLUTION	3050 /* in ppb */
++#define RX8025_ADJ_DATA_MAX	62
++#define RX8025_ADJ_DATA_MIN	-62
++
++static const struct i2c_device_id rx8025_id[] = {
++	{ "rx8025", 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, rx8025_id);
++
++struct rx8025_data {
++	struct i2c_client *client;
++	struct rtc_device *rtc;
++	struct work_struct work;
++	struct mutex mutex;
++	u8 ctrl1;
++	int exiting;
 +};
 +
-+int fsl_i2c_get_fdr(struct device_node *node, u32 i2c_clock, u32 i2c_flags)
++static irqreturn_t rx8025_irq(int irq, void *dev_id)
 +{
-+	const struct fsl_i2c_divider *div = NULL;
-+	u32 divider;
-+	int i;
++	struct i2c_client *client = dev_id;
++	struct rx8025_data *rx8025 = i2c_get_clientdata(client);
 +
-+	if (!i2c_clock)
-+		return -EINVAL;
++	disable_irq_nosync(irq);
++	schedule_work(&rx8025->work);
++	return IRQ_HANDLED;
++}
 +
-+	/* Determine divider value */
-+	divider = mpc52xx_find_ipb_freq(node) / i2c_clock;
++static void rx8025_work(struct work_struct *work)
++{
++	struct rx8025_data *rx8025 = container_of(work,
++			struct rx8025_data, work);
++	struct i2c_client *client = rx8025->client;
++	u8 command[2] = {RX8025_REG_CTRL2 << 4 | 0x08,};
++	int ret;
++	struct i2c_msg msg[] = {
++		{
++			.addr = client->addr,
++			.flags = 0,
++			.len = 1,
++			.buf = command,
++		},
++		{
++			.addr = client->addr,
++			.flags = I2C_M_RD,
++			.len = sizeof(command) - 1,
++			.buf = command + 1,
++		}
++	};
++	u8 status;
 +
-+	/*
-+	 * We want to choose an FDR/DFSR that generates an I2C bus speed that
-+	 * is equal to or lower than the requested speed.
-+	 */
-+	for (i = 0; i < ARRAY_SIZE(fsl_i2c_8xxx_dividers); i++) {
-+		div = &fsl_i2c_8xxx_dividers[i];
-+		if (div->divider >= divider)
-+			break;
++	mutex_lock(&rx8025->mutex);
++
++	ret = i2c_transfer(to_i2c_adapter(client->dev.parent),
++			   msg, ARRAY_SIZE(msg));
++	if (ret < ARRAY_SIZE(msg)) {
++		ret = ret >= 0 ? -EIO : ret;
++		goto out;
++	}
++	status = command[1];
++	if (!(status & RX8025_BIT_CTRL2_XST)) {
++		dev_warn(&client->dev, "Oscillation stop was detected,"
++			 "you may have to readjust the clock\n");
 +	}
 +
-+	return div ? (int)div->fdr : -EINVAL;
++
++	if (status & RX8025_BIT_CTRL2_CTFG) {
++		/* periodic */
++		status &= ~RX8025_BIT_CTRL2_CTFG;
++		local_irq_disable();
++		rtc_update_irq(rx8025->rtc, 1, RTC_PF | RTC_IRQF);
++		local_irq_enable();
++	}
++
++	if (status & RX8025_BIT_CTRL2_DAFG) {
++		/* alarm */
++		status &= RX8025_BIT_CTRL2_DAFG;
++
++		command[0] = RX8025_REG_CTRL1 << 4;
++		command[1] = rx8025->ctrl1 & ~RX8025_BIT_CTRL1_DALE;
++
++
++		ret = i2c_master_send(client, command, sizeof(command));
++		if (ret < sizeof(command)) {
++			ret = ret >= 0 ? -EIO : ret;
++			goto out;
++		}
++		local_irq_disable();
++		rtc_update_irq(rx8025->rtc, 1, RTC_AF | RTC_IRQF);
++		local_irq_enable();
++	}
++	/* acknowledge IRQ */
++	command[0] = RX8025_REG_CTRL2 << 4;
++	command[1] = status | RX8025_BIT_CTRL2_XST;
++
++	ret = i2c_master_send(client, command, sizeof(command));
++	if (ret < sizeof(command))
++		ret = ret >= 0 ? -EIO : ret;
++	else
++		ret = 0;
++
++
++out:
++	if (!rx8025->exiting)
++		enable_irq(client->irq);
++
++	mutex_unlock(&rx8025->mutex);
 +}
-+EXPORT_SYMBOL(fsl_i2c_get_fdr);
++
++static int rx8025_get_time(struct device *dev, struct rtc_time *dt)
++{
++	struct rx8025_data *rx8025 = dev_get_drvdata(dev);
++	u8 command = (RX8025_REG_SEC << 4) | 0x08;
++	u8 result[7];
++	int ret;
++	struct i2c_msg msg[] = {
++		{
++			.addr = rx8025->client->addr,
++			.flags = 0,
++			.len = 1,
++			.buf = &command,
++		},
++		{
++			.addr = rx8025->client->addr,
++			.flags = I2C_M_RD,
++			.len = sizeof(result),
++			.buf = result,
++		}
++	};
++
++	ret = i2c_transfer(to_i2c_adapter(rx8025->client->dev.parent),
++			   msg, ARRAY_SIZE(msg));
++	if (ret < ARRAY_SIZE(msg))
++		return ret >= 0 ? -EIO : ret;
++
++	dev_dbg(dev, "%s: read 0x%02x 0x%02x "
++		"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n", __func__,
++		result[0], result[1], result[2], result[3], result[4],
++		result[5], result[6]);
++
++	dt->tm_sec = bcd2bin(result[RX8025_REG_SEC] & 0x7f);
++	dt->tm_min = bcd2bin(result[RX8025_REG_MIN] & 0x7f);
++	if (rx8025->ctrl1 & RX8025_BIT_CTRL1_1224)
++		dt->tm_hour = bcd2bin(result[RX8025_REG_HOUR] & 0x3f);
++	else
++		dt->tm_hour = bcd2bin(result[RX8025_REG_HOUR] & 0x1f) % 12
++			+ (result[RX8025_REG_HOUR] & 0x20 ? 12 : 0);
++
++	dt->tm_mday = bcd2bin(result[RX8025_REG_MDAY] & 0x3f);
++	dt->tm_mon = bcd2bin(result[RX8025_REG_MONTH] & 0x1f) - 1;
++	dt->tm_year = bcd2bin(result[RX8025_REG_YEAR]);
++
++	if (dt->tm_year < 70)
++		dt->tm_year += 100;
++
++	dev_dbg(dev, "%s: result: %ds %dm %dh %dmd %dm %dy\n",
++		__func__,
++		dt->tm_sec, dt->tm_min, dt->tm_hour,
++		dt->tm_mday, dt->tm_mon, dt->tm_year);
++
++	return rtc_valid_tm(dt);
++}
++
++static int rx8025_set_time(struct device *dev, struct rtc_time *dt)
++{
++	struct rx8025_data *rx8025 = dev_get_drvdata(dev);
++	u8 command[8] = {RX8025_REG_SEC << 4,};
++	int ret;
++
++	/*
++	 * BUG: The HW assumes every year that is a multiple of 4 to be a leap
++	 * year.  Next time this is wrong is 2100, which will not be a leap
++	 * year.
++	 */
++
++
++	/*
++	 * Here the read-only bits are written as "0".  I'm not sure if that
++	 * is sound.
++	 */
++	command[1 + RX8025_REG_SEC] = bin2bcd(dt->tm_sec);
++	command[1 + RX8025_REG_MIN] = bin2bcd(dt->tm_min);
++	if (rx8025->ctrl1 & RX8025_BIT_CTRL1_1224)
++		command[1 + RX8025_REG_HOUR] = bin2bcd(dt->tm_hour);
++	else
++		command[1 + RX8025_REG_HOUR] = (dt->tm_hour >= 12 ? 0x20 : 0) |
++			bin2bcd((dt->tm_hour + 11) % 12 + 1);
++
++	command[1 + RX8025_REG_WDAY] = bin2bcd(dt->tm_wday);
++	command[1 + RX8025_REG_MDAY] = bin2bcd(dt->tm_mday);
++	command[1 + RX8025_REG_MONTH] = bin2bcd(dt->tm_mon + 1);
++	command[1 + RX8025_REG_YEAR] = bin2bcd(dt->tm_year % 100);
++
++	dev_dbg(dev, "%s: send 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
++		"0x%02x 0x%02x\n", __func__,
++		command[0], command[1], command[2], command[3],
++		command[4], command[5], command[6], command[7]);
++
++	ret = i2c_master_send(rx8025->client, command, sizeof(command));
++	if (ret < sizeof(command))
++		return ret >= 0 ? -EIO : ret;
++
++	return 0;
++
++}
++
++static int rx8025_init_client(struct i2c_client *client, int *need_reset)
++{
++	u8 command[3] = {RX8025_REG_CTRL1 << 4 | 0x08,};
++	int ret;
++	struct i2c_msg msg[] = {
++		{
++			.addr = client->addr,
++			.flags = 0,
++			.len = 1,
++			.buf = command,
++		},
++		{
++			.addr = client->addr,
++			.flags = I2C_M_RD,
++			.len = sizeof(command) - 1,
++			.buf = command + 1,
++		}
++	};
++	struct rx8025_data *rx8025 = i2c_get_clientdata(client);
++	int need_clear = 0;
++
++	ret = i2c_transfer(to_i2c_adapter(client->dev.parent),
++			   msg, ARRAY_SIZE(msg));
++	if (ret < ARRAY_SIZE(msg))
++		return ret >= 0 ? -EIO : ret;
++
++	/* Keep TEST bit zero ! */
++	rx8025->ctrl1 = command[1] & ~RX8025_BIT_CTRL1_TEST;
++
++	if (command[2] & RX8025_BIT_CTRL2_PON) {
++		dev_warn(&client->dev, "power-on reset was detected, "
++			 "you may have to readjust the clock\n");
++		*need_reset = 1;
++	}
++
++	if (command[2] & RX8025_BIT_CTRL2_VDET) {
++		dev_warn(&client->dev, "a power voltage drop was detected, "
++			 "you may have to readjust the clock\n");
++		*need_reset = 1;
++	}
++
++	if (!(command[2] & RX8025_BIT_CTRL2_XST)) {
++		dev_warn(&client->dev, "Oscillation stop was detected,"
++			 "you may have to readjust the clock\n");
++		*need_reset = 1;
++	}
++
++	if (command[2] & (RX8025_BIT_CTRL2_DAFG | RX8025_BIT_CTRL2_WAFG)) {
++		dev_warn(&client->dev, "Alarm was detected\n");
++		need_clear = 1;
++	}
++
++	if (!(command[2] & RX8025_BIT_CTRL2_CTFG))
++		need_clear = 1;
++
++	if (*need_reset || need_clear) {
++		command[1] &= ~(RX8025_BIT_CTRL2_PON | RX8025_BIT_CTRL2_VDET
++				| RX8025_BIT_CTRL2_CTFG | RX8025_BIT_CTRL2_WAFG
++				| RX8025_BIT_CTRL2_DAFG);
++		command[1] |= RX8025_BIT_CTRL2_XST;
++
++		command[0] = RX8025_REG_CTRL2 << 4;
++
++		ret = i2c_master_send(client, command, 2);
++		if (ret < 2)
++			return ret >= 0 ? -EIO : ret;
++	}
++
++	return 0;
++}
++
++/* Alarm support */
++static int rx8025_read_alarm(struct device *dev, struct rtc_wkalrm *t)
++{
++
++	struct rx8025_data *rx8025 = dev_get_drvdata(dev);
++	struct i2c_client *client = rx8025->client;
++	u8 command = (RX8025_REG_ALDMIN << 4) | 0x08;
++	u8 result[2];
++	int ret;
++	u8 ctrl2;
++	u8 ctrl2_cmd = (RX8025_REG_CTRL2 << 4) | 0x08;
++	struct i2c_msg ctrl2_msg[] = {
++		{
++			.addr = client->addr,
++			.flags = 0,
++			.len = 1,
++			.buf = &ctrl2_cmd,
++		},
++		{
++			.addr = client->addr,
++			.flags = I2C_M_RD,
++			.len = sizeof(result),
++			.buf = &ctrl2,
++		}
++	};
++	struct i2c_msg msg[] = {
++		{
++			.addr = rx8025->client->addr,
++			.flags = 0,
++			.len = 1,
++			.buf = &command,
++		},
++		{
++			.addr = rx8025->client->addr,
++			.flags = I2C_M_RD,
++			.len = sizeof(result),
++			.buf = result,
++		}
++	};
++
++	if (client->irq < 0)
++		return -EINVAL;
++
++	mutex_lock(&rx8025->mutex);
++
++	ret = i2c_transfer(to_i2c_adapter(rx8025->client->dev.parent),
++			   msg, ARRAY_SIZE(msg));
++	if (ret < ARRAY_SIZE(msg)) {
++		ret = ret >= 0 ? -EIO : ret;
++		goto out;
++	}
++
++	ret = i2c_transfer(to_i2c_adapter(rx8025->client->dev.parent),
++			   ctrl2_msg, ARRAY_SIZE(ctrl2_msg));
++	if (ret < ARRAY_SIZE(ctrl2_msg)) {
++		ret = ret >= 0 ? -EIO : ret;
++		goto out;
++	}
++
++	dev_dbg(dev, "%s: read 0x%02x 0x%02x ctrl2: %02x\n", __func__,
++		result[0], result[1], ctrl2);
++
++	/* Hardware alarms precision is 1 minute! */
++	t->time.tm_sec = 0;
++	t->time.tm_min = bcd2bin(result[0] & 0x7f);
++	if (rx8025->ctrl1 & RX8025_BIT_CTRL1_1224)
++		t->time.tm_hour = bcd2bin(result[1] & 0x3f);
++	else
++		t->time.tm_hour = bcd2bin(result[1] & 0x1f) % 12
++			+ (result[1] & 0x20 ? 12 : 0);
++
++	if (t->time.tm_min >= 60)
++		t->time.tm_min = -1;
++
++	if (t->time.tm_hour >= 24)
++		t->time.tm_hour = -1;
++
++	t->time.tm_wday = -1;
++	t->time.tm_mday = -1;
++	t->time.tm_mon = -1;
++	t->time.tm_year = -1;
++
++	dev_dbg(dev, "%s: result: %ds %dm %dh %dmd %dm %dy\n",
++		__func__,
++		t->time.tm_sec, t->time.tm_min, t->time.tm_hour,
++		t->time.tm_mday, t->time.tm_mon, t->time.tm_year);
++	t->enabled = !!(rx8025->ctrl1 & RX8025_BIT_CTRL1_DALE);
++	t->pending = (ctrl2 & RX8025_BIT_CTRL2_DAFG) && t->enabled;
++	ret = 0;
++out:
++	mutex_unlock(&rx8025->mutex);
++
++	return ret;
++}
++
++static int rx8025_set_alarm(struct device *dev, struct rtc_wkalrm *t)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct rx8025_data *rx8025 = dev_get_drvdata(dev);
++	u8 command[3] = {RX8025_REG_ALDMIN << 4,};
++	int ret;
++
++	if (client->irq < 0)
++		return -EINVAL;
++
++	if ((t->time.tm_min < 0) || (t->time.tm_min >= 60))
++		return -EINVAL;
++
++	if ((t->time.tm_hour < 0) || (t->time.tm_hour >= 24))
++		return -EINVAL;
++
++	/* Hardware alarms precision is 1 minute! */
++	command[1] = bin2bcd(t->time.tm_min);
++	if (rx8025->ctrl1 & RX8025_BIT_CTRL1_1224)
++		command[2] = bin2bcd(t->time.tm_hour);
++	else
++		command[2] = (t->time.tm_hour >= 12 ? 0x20 : 0) |
++			bin2bcd((t->time.tm_hour + 11) % 12 + 1);
++
++	dev_dbg(dev, "%s: send 0x%02x 0x%02x 0x%02x\n", __func__,
++		command[0], command[1], command[2]);
++
++	mutex_lock(&rx8025->mutex);
++
++	if (rx8025->ctrl1 & RX8025_BIT_CTRL1_DALE) {
++		u8 command[2] = {RX8025_REG_CTRL1 << 4, };
++		rx8025->ctrl1 &= ~RX8025_BIT_CTRL1_DALE;
++		command[1] = rx8025->ctrl1;
++		ret = i2c_master_send(rx8025->client, command, sizeof(command));
++		if (ret < sizeof(command)) {
++			ret = ret >= 0 ? -EIO : ret;
++			goto out;
++		}
++	}
++	ret = i2c_master_send(rx8025->client, command, sizeof(command));
++	if (ret < sizeof(command)) {
++		ret = ret >= 0 ? -EIO : ret;
++		goto out;
++	}
++
++	if (t->enabled) {
++		u8 command[2] = {RX8025_REG_CTRL1 << 4, };
++		rx8025->ctrl1 |= RX8025_BIT_CTRL1_DALE;
++		command[1] = rx8025->ctrl1;
++		ret = i2c_master_send(rx8025->client, command, sizeof(command));
++		if (ret < sizeof(command)) {
++			ret = ret >= 0 ? -EIO : ret;
++			goto out;
++		}
++	}
++	ret = 0;
++out:
++	mutex_unlock(&rx8025->mutex);
++	return ret;
++}
++
++static int
++rx8025_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
++{
++	struct rx8025_data *rx8025 = dev_get_drvdata(dev);
++	u8 command[2] = {RX8025_REG_CTRL1 << 4,};
++	u8 reg;
++	int ret = 0;
++
++	mutex_lock(&rx8025->mutex);
++
++	reg = rx8025->ctrl1;
++	switch (cmd) {
++	/* AIE = Alarm Interrupt Enable */
++	case RTC_AIE_OFF:
++		reg &= ~RX8025_BIT_CTRL1_DALE;
++		break;
++	case RTC_AIE_ON:
++		reg |= RX8025_BIT_CTRL1_DALE;
++		break;
++	default:
++		ret = -ENOIOCTLCMD;
++	}
++	if (ret == 0 && reg != rx8025->ctrl1) {
++		rx8025->ctrl1 = reg;
++		command[1] = rx8025->ctrl1;
++		ret = i2c_master_send(rx8025->client, command, sizeof(command));
++		if (ret < sizeof(command)) {
++			ret = ret >= 0 ? -EIO : ret;
++			goto out;
++		}
++	}
++out:
++	mutex_unlock(&rx8025->mutex);
++
++	return ret;
++}
++
++static int rx8025_irq_set_freq(struct device *dev, int freq)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++
++	if (client->irq < 0)
++		return -ENXIO;
++
++	/* Hardware support 1Hz, 1/60Hz, 1/3600Hz and monthly
++	 * interrupts, but only 1Hz fits on 2^N requirement.
++	 *
++	 * There's also 2Hz 50% duty pulse mode, but it is difficult
++	 * to support as IRQ.
++	 */
++	/* Mark, that frequency can't be changed */
++	return -ENOTTY;
++}
++
++static int rx8025_irq_set_state(struct device *dev, int enabled)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct rx8025_data *rx8025 = i2c_get_clientdata(client);
++	int	ret;
++	u8	reg;
++
++	if (client->irq < 0)
++		return -ENXIO;
++
++	mutex_lock(&rx8025->mutex);
++
++	reg = rx8025->ctrl1;
++	reg &= ~RX8025_BIT_CTRL1_CT;
++	if (enabled)
++		reg |= RX8025_BIT_CTRL1_CT_1HZ;
++	if (reg != rx8025->ctrl1) {
++		u8	command[2];
++
++		rx8025->ctrl1 = reg;
++		command[0] = RX8025_REG_CTRL1 << 4;
++		command[1] = rx8025->ctrl1;
++		ret = i2c_master_send(rx8025->client, command, sizeof(command));
++		if (ret < sizeof(command)) {
++			ret = ret >= 0 ? -EIO : ret;
++			goto out;
++		}
++	}
++	ret = 0;
++out:
++	mutex_unlock(&rx8025->mutex);
++
++	return ret;
++}
++
++static struct rtc_class_ops rx8025_rtc_ops = {
++	.ioctl		= rx8025_ioctl,
++	.read_time	= rx8025_get_time,
++	.set_time	= rx8025_set_time,
++	.read_alarm	= rx8025_read_alarm,
++	.set_alarm	= rx8025_set_alarm,
++	.irq_set_freq   = rx8025_irq_set_freq,
++	.irq_set_state  = rx8025_irq_set_state,
++
++};
++
++/*
++ * Clock precision adjustment support
++ *
++ * According to the RX8025 SA/NB application manual the frequency and
++ * temperature charateristics can be approximated using the following
++ * equation:
++ *
++ *   df = a * (ut - t)**2
++ *
++ *   df: Frequency deviation in any temperature
++ *   a : Coefficient = (-35 +-5) * 10**-9
++ *   ut: Ultimate temperature in degree = +25 +-5 degree
++ *   t : Any temperature in degree
++ *
++ * Note that the clock adjustment in ppb must be entered (which is
++ * the negative value of the deviation).
++ */
++static int rx8025_get_clock_adjust(struct device *dev, int *adj)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	u8 command = RX8025_REG_DIGOFF << 4 | 0x08;
++	u8 result;
++	int ret;
++	struct i2c_msg msg[] = {
++		{
++			.addr = client->addr,
++			.flags = 0,
++			.len = 1,
++			.buf = &command,
++		},
++		{
++			.addr = client->addr,
++			.flags = I2C_M_RD,
++			.len = sizeof(result),
++			.buf = &result,
++		}
++	};
++
++	ret = i2c_transfer(to_i2c_adapter(client->dev.parent),
++			   msg, ARRAY_SIZE(msg));
++	if (ret < ARRAY_SIZE(msg)) {
++		ret = ret >= 0 ? -EIO : ret;
++		return ret;
++	}
++
++	*adj = result >= 64 ? result - 128 : result;
++	if (*adj > 0)
++		(*adj)--;
++	*adj *= -RX8025_ADJ_RESOLUTION;
++
++	return 0;
++}
++
++static int rx8025_set_clock_adjust(struct device *dev, int adj)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	u8 command[2];
++	int ret;
++
++	adj /= -RX8025_ADJ_RESOLUTION;
++	if (adj > RX8025_ADJ_DATA_MAX)
++		adj = RX8025_ADJ_DATA_MAX;
++	else if (adj < RX8025_ADJ_DATA_MIN)
++		adj = RX8025_ADJ_DATA_MIN;
++	else if (adj > 0)
++		adj++;
++	else if (adj < 0)
++		adj += 128;
++
++	command[0] = RX8025_REG_DIGOFF << 4;
++	command[1] = adj;
++
++	dev_dbg(dev, "%s: send 0x%02x 0x%02x\n",
++		__func__, command[0], command[1]);
++
++	ret = i2c_master_send(client, command, sizeof(command));
++	if (ret < sizeof(command))
++		return ret >= 0 ? -EIO : ret;
++
++	return 0;
++}
++
++static ssize_t rx8025_sysfs_show_clock_adjust(struct device *dev,
++					      struct device_attribute *attr,
++					      char *buf)
++{
++	int err, adj = 0;
++
++	err = rx8025_get_clock_adjust(dev, &adj);
++	if (err)
++		return err;
++
++	return sprintf(buf, "%d\n", adj);
++}
++
++static ssize_t rx8025_sysfs_store_clock_adjust(struct device *dev,
++					       struct device_attribute *attr,
++					       const char *buf, size_t count)
++{
++	int adj, err;
++
++	if (sscanf(buf, "%i", &adj) != 1)
++		return -EINVAL;
++
++	err = rx8025_set_clock_adjust(dev, adj);
++
++	return err ? err : count;
++}
++
++static DEVICE_ATTR(clock_adjust_ppb, S_IRUGO | S_IWUSR,
++		   rx8025_sysfs_show_clock_adjust,
++		   rx8025_sysfs_store_clock_adjust);
++
++static int rx8025_sysfs_register(struct device *dev)
++{
++	return device_create_file(dev, &dev_attr_clock_adjust_ppb);
++}
++
++static void rx8025_sysfs_unregister(struct device *dev)
++{
++	device_remove_file(dev, &dev_attr_clock_adjust_ppb);
++}
++
++static int __devinit rx8025_probe(struct i2c_client *client,
++				  const struct i2c_device_id *id)
++{
++	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
++	struct rx8025_data *rx8025;
++	int i, err, need_reset = 0;
++	u8 command = 0x08;
++	u8 result[RX8025_REG_YEAR + 1];
++	struct i2c_msg msg[] = {
++		{
++			.addr = client->addr,
++			.flags = 0,
++			.len = 1,
++			.buf = &command,
++		},
++		{
++			.addr = client->addr,
++			.flags = I2C_M_RD,
++			.len = sizeof(result),
++			.buf = result,
++		}
++	};
++	u8 zero_mask[] = {
++		0x80,	/* seconds */
++		0x80,	/* minutes */
++		0xC0,	/* hours */
++		0xF8,	/* days */
++		0xC0,	/* days */
++		0x60,	/* months */
++		0x00,	/* years */
++	};
++
++	if (!i2c_check_functionality(adapter, I2C_FUNC_I2C)) {
++		dev_err(&adapter->dev, "doesn't support full I2C\n");
++		err = -EIO;
++		goto errout;
++	}
++
++	rx8025 = kzalloc(sizeof(*rx8025), GFP_KERNEL);
++	if (!rx8025) {
++		dev_err(&adapter->dev, "failed to alloc memory\n");
++		err = -ENOMEM;
++		goto errout;
++	}
++
++	rx8025->client = client;
++	i2c_set_clientdata(client, rx8025);
++	INIT_WORK(&rx8025->work, rx8025_work);
++	mutex_init(&rx8025->mutex);
++
++	err = i2c_transfer(adapter, msg, ARRAY_SIZE(msg));
++	if (err < ARRAY_SIZE(msg)) {
++		err = err >= 0 ? 0 : err;
++		goto errout_free;
++	}
++
++	for (i = 0; i < ARRAY_SIZE(zero_mask); ++i) {
++		if (result[i] & zero_mask[i]) {
++			dev_dbg(&adapter->dev, "%s: register=0x%02x, "
++				"value=0x%02x\n", __func__,
++				i, result[i]);
++			err = -ENODEV;
++			goto errout_free;
++		}
++	}
++
++	err = rx8025_init_client(client, &need_reset);
++	if (err)
++		goto errout_free;
++
++	rx8025->rtc = rtc_device_register(client->name, &client->dev,
++					  &rx8025_rtc_ops, THIS_MODULE);
++	if (IS_ERR(rx8025->rtc)) {
++		err = PTR_ERR(rx8025->rtc);
++		dev_err(&client->dev,
++			"unable to register the class device\n");
++		goto errout_free;
++	}
++
++	dev_info(&client->dev, "IRQ %d supplied\n", client->irq);
++	if (client->irq >= 0) {
++		err = request_irq(client->irq, rx8025_irq, 0,
++			"rx8025", client);
++		if (err) {
++			dev_err(&client->dev, "unable to request IRQ\n");
++			goto errout_reg;
++		}
++	}
++
++
++	rx8025->rtc->irq_freq = 1;
++	rx8025->rtc->max_user_freq = 1;
++
++	err = rx8025_sysfs_register(&client->dev);
++	if (err)
++		goto errout_irq;
++
++	dev_info(&client->dev, "chip found\n");
++
++	if (need_reset) {
++		struct rtc_time tm;
++		dev_info(&client->dev,
++			 "Bad conditions detected, resetting date\n");
++		rtc_time_to_tm(0, &tm);	/* 1970/1/1 */
++		rx8025_set_time(&client->dev, &tm);
++	}
++	return 0;
++
++ errout_reg:
++	rtc_device_unregister(rx8025->rtc);
++
++ errout_irq:
++	if (client->irq >= 0)
++		free_irq(client->irq, client);
++
++ errout_free:
++	kfree(rx8025);
++
++ errout:
++	dev_err(&adapter->dev, "Probing for rx8025 failed\n");
++	return err;
++}
++
++static int __devexit rx8025_remove(struct i2c_client *client)
++{
++	struct rx8025_data *rx8025 = i2c_get_clientdata(client);
++
++	if (client->irq >= 0) {
++		mutex_lock(&rx8025->mutex);
++		rx8025->exiting = 1;
++		mutex_unlock(&rx8025->mutex);
++
++		free_irq(client->irq, client);
++		flush_scheduled_work();
++	}
++
++	rx8025_sysfs_unregister(&client->dev);
++	rtc_device_unregister(rx8025->rtc);
++	i2c_set_clientdata(client, NULL);
++	kfree(rx8025);
++	return 0;
++}
++
++static struct i2c_driver rx8025_driver = {
++	.driver = {
++		.name = "rtc-rx8025",
++		.owner = THIS_MODULE,
++	},
++	.probe		= rx8025_probe,
++	.remove		= __devexit_p(rx8025_remove),
++	.id_table	= rx8025_id,
++};
++
++static int __init rx8025_init(void)
++{
++	return i2c_add_driver(&rx8025_driver);
++}
++
++static void __exit rx8025_exit(void)
++{
++	i2c_del_driver(&rx8025_driver);
++}
++
++MODULE_AUTHOR("Uwe Zeisberger <Uwe_Zeisberger <at> digi.com>"
++	      " and modified by fengjh <at> rising.com.cn");
++MODULE_DESCRIPTION("RX-8025 SA/NB RTC driver");
++MODULE_LICENSE("GPL");
++
++module_init(rx8025_init);
++module_exit(rx8025_exit);
