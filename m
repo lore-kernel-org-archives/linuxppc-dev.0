@@ -1,16 +1,16 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
-	by ozlabs.org (Postfix) with ESMTP id 365BADDF34
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 19:27:32 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g9so2448207rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 01:27:32 -0700 (PDT)
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 8CE5BDE05A
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 19:27:38 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so1472031waf.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 01:27:38 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 09/14] net: Rework gianfar driver to use of_mdio
-	infrastructure.
+Subject: [PATCH 10/14] net: Rework ucc_geth driver to use of_mdio
+	infrastructure
 To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Date: Tue, 31 Mar 2009 02:27:30 -0600
-Message-ID: <20090331082730.1427.96418.stgit@localhost.localdomain>
+Date: Tue, 31 Mar 2009 02:27:35 -0600
+Message-ID: <20090331082735.1427.92022.stgit@localhost.localdomain>
 In-Reply-To: <20090331075537.1427.7819.stgit@localhost.localdomain>
 References: <20090331075537.1427.7819.stgit@localhost.localdomain>
 MIME-Version: 1.0
@@ -33,202 +33,118 @@ This patch simplifies the driver by making use of more common code.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/net/gianfar.c |  103 ++++++++++++++++++-------------------------------
- drivers/net/gianfar.h |    3 +
- 2 files changed, 40 insertions(+), 66 deletions(-)
+ drivers/net/ucc_geth.c |   47 ++++++++++++-----------------------------------
+ drivers/net/ucc_geth.h |    2 +-
+ 2 files changed, 13 insertions(+), 36 deletions(-)
 
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 65f5587..c22eba9 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -75,6 +75,7 @@
- #include <linux/if_vlan.h>
- #include <linux/spinlock.h>
- #include <linux/mm.h>
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 933fcfb..471a30a 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -28,6 +28,7 @@
+ #include <linux/mii.h>
+ #include <linux/phy.h>
+ #include <linux/workqueue.h>
 +#include <linux/of_mdio.h>
  #include <linux/of_platform.h>
- #include <linux/ip.h>
- #include <linux/tcp.h>
-@@ -168,17 +169,13 @@ static inline int gfar_uses_fcb(struct gfar_private *priv)
  
- static int gfar_of_init(struct net_device *dev)
- {
--	struct device_node *phy, *mdio;
--	const unsigned int *id;
- 	const char *model;
- 	const char *ctype;
- 	const void *mac_addr;
--	const phandle *ph;
- 	u64 addr, size;
- 	int err = 0;
- 	struct gfar_private *priv = netdev_priv(dev);
- 	struct device_node *np = priv->node;
--	char bus_name[MII_BUS_ID_SIZE];
- 	const u32 *stash;
- 	const u32 *stash_len;
- 	const u32 *stash_idx;
-@@ -264,8 +261,8 @@ static int gfar_of_init(struct net_device *dev)
- 	if (of_get_property(np, "fsl,magic-packet", NULL))
- 		priv->device_flags |= FSL_GIANFAR_DEV_HAS_MAGIC_PACKET;
+ #include <asm/uaccess.h>
+@@ -1543,12 +1544,14 @@ static int init_phy(struct net_device *dev)
+ 	priv->oldspeed = 0;
+ 	priv->oldduplex = -1;
  
--	ph = of_get_property(np, "phy-handle", NULL);
--	if (ph == NULL) {
-+	priv->phy_node = of_parse_phandle(np, "phy-device", 0);
-+	if (!priv->phy_node) {
- 		u32 *fixed_link;
- 
- 		fixed_link = (u32 *)of_get_property(np, "fixed-link", NULL);
-@@ -273,57 +270,10 @@ static int gfar_of_init(struct net_device *dev)
- 			err = -ENODEV;
- 			goto err_out;
- 		}
--
--		snprintf(priv->phy_bus_id, sizeof(priv->phy_bus_id),
--				PHY_ID_FMT, "0", fixed_link[0]);
--	} else {
--		phy = of_find_node_by_phandle(*ph);
--
--		if (phy == NULL) {
--			err = -ENODEV;
--			goto err_out;
--		}
--
--		mdio = of_get_parent(phy);
--
--		id = of_get_property(phy, "reg", NULL);
--
--		of_node_put(phy);
--
--		fsl_pq_mdio_bus_name(bus_name, mdio);
--		of_node_put(mdio);
--		snprintf(priv->phy_bus_id, sizeof(priv->phy_bus_id), "%s:%02x",
--				bus_name, *id);
- 	}
- 
- 	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
--	ph = of_get_property(np, "tbi-handle", NULL);
--	if (ph) {
--		struct device_node *tbi = of_find_node_by_phandle(*ph);
--		struct of_device *ofdev;
--		struct mii_bus *bus;
--
--		if (!tbi)
--			return 0;
--
--		mdio = of_get_parent(tbi);
--		if (!mdio)
--			return 0;
--
--		ofdev = of_find_device_by_node(mdio);
--
--		of_node_put(mdio);
--
--		id = of_get_property(tbi, "reg", NULL);
--		if (!id)
--			return 0;
--
--		of_node_put(tbi);
--
--		bus = dev_get_drvdata(&ofdev->dev);
--
--		priv->tbiphy = bus->phy_map[*id];
--	}
-+	priv->tbi_node = of_parse_phandle(np, "tbi-handle", 0);
- 
- 	return 0;
- 
-@@ -529,6 +479,10 @@ static int gfar_probe(struct of_device *ofdev,
- register_fail:
- 	iounmap(priv->regs);
- regs_fail:
-+	if (priv->phy_node)
-+		of_node_put(priv->phy_node);
-+	if (priv->tbi_node)
-+		of_node_put(priv->tbi_node);
- 	free_netdev(dev);
- 	return err;
- }
-@@ -537,6 +491,11 @@ static int gfar_remove(struct of_device *ofdev)
- {
- 	struct gfar_private *priv = dev_get_drvdata(&ofdev->dev);
- 
-+	if (priv->phy_node)
-+		of_node_put(priv->phy_node);
-+	if (priv->tbi_node)
-+		of_node_put(priv->tbi_node);
-+
- 	dev_set_drvdata(&ofdev->dev, NULL);
- 
- 	iounmap(priv->regs);
-@@ -690,7 +649,6 @@ static int init_phy(struct net_device *dev)
- 	uint gigabit_support =
- 		priv->device_flags & FSL_GIANFAR_DEV_HAS_GIGABIT ?
- 		SUPPORTED_1000baseT_Full : 0;
--	struct phy_device *phydev;
- 	phy_interface_t interface;
- 
- 	priv->oldlink = 0;
-@@ -699,23 +657,38 @@ static int init_phy(struct net_device *dev)
- 
- 	interface = gfar_get_interface(dev);
- 
--	phydev = phy_connect(dev, priv->phy_bus_id, &adjust_link, 0, interface);
-+	if (priv->phy_node) {
-+		priv->phydev = of_phy_connect(dev, priv->phy_node, &adjust_link,
-+					      0, interface);
-+		if (!priv->phydev) {
-+			dev_err(&dev->dev, "error: Could not attach to PHY\n");
-+			return -ENODEV;
-+		}
-+	}
-+
-+	if (priv->tbi_node) {
-+		priv->tbiphy = of_phy_connect(dev, priv->tbi_node, &adjust_link,
-+					      0, interface);
-+		if (!priv->tbiphy) {
-+			dev_err(&dev->dev, "error: Could not attach to TBI\n");
-+			goto err_tbiphy;
-+		}
-+	}
- 
- 	if (interface == PHY_INTERFACE_MODE_SGMII)
- 		gfar_configure_serdes(dev);
+-	phydev = phy_connect(dev, ug_info->phy_bus_id, &adjust_link, 0,
+-			     priv->phy_interface);
++	if (!ug_info->phy_node)
++		return 0;
  
 -	if (IS_ERR(phydev)) {
--		printk(KERN_ERR "%s: Could not attach to PHY\n", dev->name);
++	phydev = of_phy_connect(dev, ug_info->phy_node, &adjust_link, 0,
++				priv->phy_interface);
++	if (!phydev) {
+ 		printk("%s: Could not attach to PHY\n", dev->name);
 -		return PTR_ERR(phydev);
--	}
--
- 	/* Remove any features not supported by the controller */
--	phydev->supported &= (GFAR_SUPPORTED | gigabit_support);
--	phydev->advertising = phydev->supported;
--
--	priv->phydev = phydev;
-+	priv->phydev->supported &= (GFAR_SUPPORTED | gigabit_support);
-+	priv->phydev->advertising = priv->phydev->supported;
++		return -ENODEV;
+ 	}
  
- 	return 0;
+ 	phydev->supported &= (ADVERTISED_10baseT_Half |
+@@ -3520,14 +3523,12 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ {
+ 	struct device *device = &ofdev->dev;
+ 	struct device_node *np = ofdev->node;
+-	struct device_node *mdio;
+ 	struct net_device *dev = NULL;
+ 	struct ucc_geth_private *ugeth = NULL;
+ 	struct ucc_geth_info *ug_info;
+ 	struct resource res;
+ 	struct device_node *phy;
+ 	int err, ucc_num, max_speed = 0;
+-	const phandle *ph;
+ 	const u32 *fixed_link;
+ 	const unsigned int *prop;
+ 	const char *sprop;
+@@ -3627,45 +3628,21 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
+ 	fixed_link = of_get_property(np, "fixed-link", NULL);
+ 	if (fixed_link) {
+-		snprintf(ug_info->phy_bus_id, sizeof(ug_info->phy_bus_id),
+-			 PHY_ID_FMT, "0", fixed_link[0]);
+ 		phy = NULL;
+ 	} else {
+-		char bus_name[MII_BUS_ID_SIZE];
+-
+-		ph = of_get_property(np, "phy-handle", NULL);
+-		phy = of_find_node_by_phandle(*ph);
+-
++		phy = of_parse_phandle(np, "phy-handle", 0);
+ 		if (phy == NULL)
+ 			return -ENODEV;
+-
+-		/* set the PHY address */
+-		prop = of_get_property(phy, "reg", NULL);
+-		if (prop == NULL)
+-			return -1;
+-
+-		/* Set the bus id */
+-		mdio = of_get_parent(phy);
+-
+-		if (mdio == NULL)
+-			return -ENODEV;
+-
+-		err = of_address_to_resource(mdio, 0, &res);
+-
+-		if (err) {
+-			of_node_put(mdio);
+-			return err;
+-		}
+-		fsl_pq_mdio_bus_name(bus_name, mdio);
+-		of_node_put(mdio);
+-		snprintf(ug_info->phy_bus_id, sizeof(ug_info->phy_bus_id),
+-			"%s:%02x", bus_name, *prop);
+ 	}
++	ug_info->phy_node = phy;
+ 
+ 	/* get the phy interface type, or default to MII */
+ 	prop = of_get_property(np, "phy-connection-type", NULL);
+ 	if (!prop) {
+ 		/* handle interface property present in old trees */
++		if (!phy)
++			return -ENODEV;
 +
-+ err_tbiphy:
-+	if (priv->phy_node)
-+		phy_disconnect(priv->phydev);
-+	priv->phydev = NULL;
-+	return -ENODEV;
- }
- 
- /*
-diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
-index dd499d7..4c69a3a 100644
---- a/drivers/net/gianfar.h
-+++ b/drivers/net/gianfar.h
-@@ -780,7 +780,8 @@ struct gfar_private {
- 	spinlock_t bflock;
- 
- 	phy_interface_t interface;
--	char	phy_bus_id[BUS_ID_SIZE];
+ 		prop = of_get_property(phy, "interface", NULL);
+ 		if (prop != NULL) {
+ 			phy_interface = enet_to_phy_interface[*prop];
+diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
+index e3a25e6..77e01de 100644
+--- a/drivers/net/ucc_geth.h
++++ b/drivers/net/ucc_geth.h
+@@ -1101,7 +1101,7 @@ struct ucc_geth_info {
+ 	u32 eventRegMask;
+ 	u16 pausePeriod;
+ 	u16 extensionField;
+-	char phy_bus_id[BUS_ID_SIZE];
 +	struct device_node *phy_node;
-+	struct device_node *tbi_node;
- 	u32 device_flags;
- 	unsigned char rx_csum_enable:1,
- 		extended_hash:1,
+ 	u8 weightfactor[NUM_TX_QUEUES];
+ 	u8 interruptcoalescingmaxvalue[NUM_RX_QUEUES];
+ 	u8 l2qt[UCC_GETH_VLAN_PRIORITY_MAX];
