@@ -1,21 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id D0444DDE1D
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:23:04 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 9so1492804ywe.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 06:23:03 -0700 (PDT)
+Return-Path: <jwboyer@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.234])
+	by ozlabs.org (Postfix) with ESMTP id E7F0DDDE28
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:29:52 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g9so2540388rvb.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 06:29:51 -0700 (PDT)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Tue, 31 Mar 2009 09:29:44 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Add hvc_console to MAINTAINERS
+Message-ID: <20090331132944.GB2332@yoda.jdub.homelinux.org>
+References: <49BF956B.9030109@gmail.com>
+	<20090330133531.f5d99c09.akpm@linux-foundation.org>
+	<20090330205553.GA19278@yoda.jdub.homelinux.org>
+	<20090330141852.59baaeda.akpm@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <49D1E3E5.3080607@grandegger.com>
-References: <49C26434.30302@grandegger.com>
-	<fa686aa40903192205yed7eb13t45db80a201549f0d@mail.gmail.com>
-	<49D1E3E5.3080607@grandegger.com>
-Date: Tue, 31 Mar 2009 07:23:02 -0600
-Message-ID: <fa686aa40903310623r2b2db0adjb912cfefd3a321e2@mail.gmail.com>
-Subject: Re: powerpc/85xx: Add support for the "socrates" board (MPC8544)
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090330141852.59baaeda.akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, roel.kluin@gmail.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2009 at 3:35 AM, Wolfgang Grandegger <wg@grandegger.com> wr=
-ote:
-> Grant Likely wrote:
->> I agree 100% with David's comments, and I have some additional ones belo=
-w.
->>
->> On Thu, Mar 19, 2009 at 9:26 AM, Wolfgang Grandegger <wg@grandegger.com>=
- wrote:
->>> + =A0 =A0 =A0 soc8544@e0000000 {
->>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
->>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <1>;
->>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 device_type =3D "soc";
->>
->> Drop device_type here too.
->
-> Grrr, I just realized that removing the devices type "soc" has broken
-> fsl_get_sys_freq(). See:
->
-> http://lxr.linux.no/linux+v2.6.29/arch/powerpc/sysdev/fsl_soc.c#L80
->
-> We need a quick fix and we could take the occasion to establish a common
-> function for the MPC52xx as well, but it's not obvious to me how to find
-> the SOC node without the device type property.
+Add a MAINTAINERS entry for the hypervisor virtual console support
+used on IBM POWER servers.
 
-SoC node should have a compatible property, just like everything else.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+---
 
-compatible =3D "fsl,mpc8544-immr";  (immr =3D=3D Internally Memory Mapped R=
-egisters)
-
-Many other boards already do this.
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index c5f4e9d..387ad45 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2176,6 +2176,11 @@ W:       http://www.ia64-linux.org/
+ T:     git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+ S:     Maintained
+ 
++IBM HYPERVISOR VIRTUAL CONSOLE
++P:     Several
++L:     linuxppc-dev@ozlabs.org
++S:     Maintained
++
+ IBM MCA SCSI SUBSYSTEM DRIVER
+ P:     Michael Lang
+ M:     langa2@kph.uni-mainz.de
