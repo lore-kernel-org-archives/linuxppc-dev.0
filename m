@@ -1,14 +1,11 @@
 Return-Path: <wg@denx.de>
-Message-Id: <20090331124036.204185953@denx.de>
-Date: Tue, 31 Mar 2009 14:37:34 +0200
+Message-Id: <20090331124036.358830112@denx.de>
+Date: Tue, 31 Mar 2009 14:37:35 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
-To: linuxppc-dev@ozlabs.org,
- Wolfgang Grandegger <wg@grandegger.com>
-Subject: [PATCH 7/8] Re: [PATCH 1/2] NAND: Add support for oob size 128
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 8/8] NAND: Add support for NAND on the Socrates board
 References: <20090331123727.853787299@denx.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, devicetree-discuss@ozlabs.org,
-	David Woodhouse <dwmw2@infradead.org>,
-	Sebastian Siewior <bigeasy@linutronix.de>
+Cc: devicetree-discuss@ozlabs.org, Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,81 +15,366 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Wolfgang Grandegger | 2009-03-25 11:48:37 [+0100]:
-
->Signed-off-by: Ilya Yanok <yanok@emcraft.com>
->Acked-by: Wolfgang Grandegger <wg@grandegger.com>
-
-You seem to forgot a few bits (subpage_sft & max page size). I had this
-patch in my tree like for ever and forgot post it here. I did however
-merge the mtd-utils bits allready :)
-
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed, 12 Dec 2007 17:27:03 +0100
-Subject: [PATCH 7/8] [PATCH] [MTD] Add support for 4k pages.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+Acked-by: Wolfgang Grandegger <wg@grandegger.com>
 ---
- drivers/mtd/nand/nand_base.c |   18 ++++++++++++++++++
- include/linux/mtd/nand.h     |    4 ++--
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ drivers/mtd/nand/Kconfig         |    6 
+ drivers/mtd/nand/Makefile        |    1 
+ drivers/mtd/nand/socrates_nand.c |  324 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 331 insertions(+)
 
-Index: linux-2.6/drivers/mtd/nand/nand_base.c
+Index: linux-2.6/drivers/mtd/nand/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/mtd/nand/nand_base.c	2009-03-30 12:47:55.673721571 +0200
-+++ linux-2.6/drivers/mtd/nand/nand_base.c	2009-03-30 12:48:07.896719130 +0200
-@@ -82,6 +82,20 @@
- 		 .length = 38}}
- };
+--- linux-2.6.orig/drivers/mtd/nand/Kconfig	2009-03-26 17:22:32.459721679 +0100
++++ linux-2.6/drivers/mtd/nand/Kconfig	2009-03-30 12:48:26.554740302 +0200
+@@ -427,4 +427,10 @@
+ 	  Several Renesas SuperH CPU has FLCTL. This option enables support
+ 	  for NAND Flash using FLCTL. This driver support SH7723.
  
-+static struct nand_ecclayout nand_oob_128 = {
-+	.eccbytes = 48,
-+	.eccpos = {
-+		   80, 81, 82, 83, 84, 85, 86, 87,
-+		   88, 89, 90, 91, 92, 93, 94, 95,
-+		   96, 97, 98, 99, 100, 101, 102, 103,
-+		   104, 105, 106, 107, 108, 109, 110, 111,
-+		   112, 113, 114, 115, 116, 117, 118, 119,
-+		   120, 121, 122, 123, 124, 125, 126, 127},
-+	.oobfree = {
-+		{.offset = 2,
-+		 .length = 78}}
++config MTD_NAND_SOCRATES
++	tristate "Support for NAND on Socrates board"
++	depends on MTD_NAND && SOCRATES
++	help
++	  Enables support for NAND Flash chips wired onto Socrates board.
++
+ endif # MTD_NAND
+Index: linux-2.6/drivers/mtd/nand/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/mtd/nand/Makefile	2009-03-26 17:22:32.459721679 +0100
++++ linux-2.6/drivers/mtd/nand/Makefile	2009-03-30 12:48:26.555971204 +0200
+@@ -36,5 +36,6 @@
+ obj-$(CONFIG_MTD_NAND_FSL_UPM)		+= fsl_upm.o
+ obj-$(CONFIG_MTD_NAND_SH_FLCTL)		+= sh_flctl.o
+ obj-$(CONFIG_MTD_NAND_MXC)		+= mxc_nand.o
++obj-$(CONFIG_MTD_NAND_SOCRATES)		+= socrates_nand.o
+ 
+ nand-objs := nand_base.o nand_bbt.o
+Index: linux-2.6/drivers/mtd/nand/socrates_nand.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/drivers/mtd/nand/socrates_nand.c	2009-03-30 12:48:26.560971080 +0200
+@@ -0,0 +1,324 @@
++/*
++ * drivers/mtd/nand/socrates_nand.c
++ *
++ *  Copyright (C) 2008 Ilya Yanok, Emcraft Systems
++ *
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/nand.h>
++#include <linux/mtd/partitions.h>
++#include <linux/of_platform.h>
++#include <linux/io.h>
++
++#define FPGA_NAND_CMD_MASK		(0x7 << 28)
++#define FPGA_NAND_CMD_COMMAND		(0x0 << 28)
++#define FPGA_NAND_CMD_ADDR		(0x1 << 28)
++#define FPGA_NAND_CMD_READ		(0x2 << 28)
++#define FPGA_NAND_CMD_WRITE		(0x3 << 28)
++#define FPGA_NAND_BUSY			(0x1 << 15)
++#define FPGA_NAND_ENABLE		(0x1 << 31)
++#define FPGA_NAND_DATA_SHIFT		16
++
++struct socrates_nand_host {
++	struct nand_chip	nand_chip;
++	struct mtd_info		mtd;
++	void __iomem		*io_base;
++	struct device		*dev;
 +};
 +
- static int nand_get_device(struct nand_chip *chip, struct mtd_info *mtd,
- 			   int new_state);
- 
-@@ -2555,6 +2569,9 @@
- 		case 64:
- 			chip->ecc.layout = &nand_oob_64;
- 			break;
-+		case 128:
-+			chip->ecc.layout = &nand_oob_128;
-+			break;
- 		default:
- 			printk(KERN_WARNING "No oob scheme defined for "
- 			       "oobsize %d\n", mtd->oobsize);
-@@ -2676,6 +2693,7 @@
- 			break;
- 		case 4:
- 		case 8:
-+		case 16:
- 			mtd->subpage_sft = 2;
- 			break;
- 		}
-Index: linux-2.6/include/linux/mtd/nand.h
-===================================================================
---- linux-2.6.orig/include/linux/mtd/nand.h	2009-03-30 12:47:55.673721571 +0200
-+++ linux-2.6/include/linux/mtd/nand.h	2009-03-30 12:48:07.910718894 +0200
-@@ -43,8 +43,8 @@
-  * is supported now. If you add a chip with bigger oobsize/page
-  * adjust this accordingly.
-  */
--#define NAND_MAX_OOBSIZE	64
--#define NAND_MAX_PAGESIZE	2048
-+#define NAND_MAX_OOBSIZE	128
-+#define NAND_MAX_PAGESIZE	4096
- 
- /*
-  * Constants for hardware specific CLE/ALE/NCE function
++/**
++ * socrates_nand_write_buf -  write buffer to chip
++ * @mtd:	MTD device structure
++ * @buf:	data buffer
++ * @len:	number of bytes to write
++ */
++static void socrates_nand_write_buf(struct mtd_info *mtd,
++		const uint8_t *buf, int len)
++{
++	int i;
++	struct nand_chip *this = mtd->priv;
++	struct socrates_nand_host *host = this->priv;
++
++	for (i = 0; i < len; i++) {
++		out_be32(host->io_base, FPGA_NAND_ENABLE |
++				FPGA_NAND_CMD_WRITE |
++				(buf[i] << FPGA_NAND_DATA_SHIFT));
++	}
++}
++
++/**
++ * socrates_nand_read_buf -  read chip data into buffer
++ * @mtd:	MTD device structure
++ * @buf:	buffer to store date
++ * @len:	number of bytes to read
++ */
++static void socrates_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
++{
++	int i;
++	struct nand_chip *this = mtd->priv;
++	struct socrates_nand_host *host = this->priv;
++	uint32_t val;
++
++	val = FPGA_NAND_ENABLE | FPGA_NAND_CMD_READ;
++
++	out_be32(host->io_base, val);
++	for (i = 0; i < len; i++) {
++		buf[i] = (in_be32(host->io_base) >>
++				FPGA_NAND_DATA_SHIFT) & 0xff;
++	}
++}
++
++/**
++ * socrates_nand_read_byte -  read one byte from the chip
++ * @mtd:	MTD device structure
++ */
++static uint8_t socrates_nand_read_byte(struct mtd_info *mtd)
++{
++	uint8_t byte;
++	socrates_nand_read_buf(mtd, (uint8_t *)&byte, sizeof(byte));
++	return byte;
++}
++
++/**
++ * socrates_nand_read_word -  read one word from the chip
++ * @mtd:	MTD device structure
++ */
++static uint16_t socrates_nand_read_word(struct mtd_info *mtd)
++{
++	uint16_t word;
++	socrates_nand_read_buf(mtd, (uint8_t *)&word, sizeof(word));
++	return word;
++}
++
++/**
++ * socrates_nand_verify_buf -  Verify chip data against buffer
++ * @mtd:	MTD device structure
++ * @buf:	buffer containing the data to compare
++ * @len:	number of bytes to compare
++ */
++static int socrates_nand_verify_buf(struct mtd_info *mtd, const u8 *buf,
++		int len)
++{
++	int i;
++
++	for (i = 0; i < len; i++) {
++		if (buf[i] != socrates_nand_read_byte(mtd))
++			return -EFAULT;
++	}
++	return 0;
++}
++
++/*
++ * Hardware specific access to control-lines
++ */
++static void socrates_nand_cmd_ctrl(struct mtd_info *mtd, int cmd,
++		unsigned int ctrl)
++{
++	struct nand_chip *nand_chip = mtd->priv;
++	struct socrates_nand_host *host = nand_chip->priv;
++	uint32_t val;
++
++	if (cmd == NAND_CMD_NONE)
++		return;
++
++	if (ctrl & NAND_CLE)
++		val = FPGA_NAND_CMD_COMMAND;
++	else
++		val = FPGA_NAND_CMD_ADDR;
++
++	if (ctrl & NAND_NCE)
++		val |= FPGA_NAND_ENABLE;
++
++	val |= (cmd & 0xff) << FPGA_NAND_DATA_SHIFT;
++
++	out_be32(host->io_base, val);
++}
++
++/*
++ * Read the Device Ready pin.
++ */
++static int socrates_nand_device_ready(struct mtd_info *mtd)
++{
++	struct nand_chip *nand_chip = mtd->priv;
++	struct socrates_nand_host *host = nand_chip->priv;
++
++	if (in_be32(host->io_base) & FPGA_NAND_BUSY)
++		return 0; /* busy */
++	return 1;
++}
++
++#ifdef CONFIG_MTD_PARTITIONS
++static const char *part_probes[] = { "cmdlinepart", NULL };
++#endif
++
++/*
++ * Probe for the NAND device.
++ */
++static int __devinit socrates_nand_probe(struct of_device *ofdev,
++		const struct of_device_id *ofid)
++{
++	struct socrates_nand_host *host;
++	struct mtd_info *mtd;
++	struct nand_chip *nand_chip;
++	int res;
++
++#ifdef CONFIG_MTD_PARTITIONS
++	struct mtd_partition *partitions = NULL;
++	int num_partitions = 0;
++#endif
++
++	/* Allocate memory for the device structure (and zero it) */
++	host = kzalloc(sizeof(struct socrates_nand_host), GFP_KERNEL);
++	if (!host) {
++		printk(KERN_ERR "socrates_nand: failed to allocate device "
++				"structure.\n");
++		return -ENOMEM;
++	}
++
++	host->io_base = of_iomap(ofdev->node, 0);
++	if (host->io_base == NULL) {
++		printk(KERN_ERR "socrates_nand: ioremap failed\n");
++		kfree(host);
++		return -EIO;
++	}
++
++	mtd = &host->mtd;
++	nand_chip = &host->nand_chip;
++	host->dev = &ofdev->dev;
++
++	nand_chip->priv = host;		/* link the private data structures */
++	mtd->priv = nand_chip;
++	mtd->name = "socrates_nand";
++	mtd->owner = THIS_MODULE;
++
++	/*should never be accessed directly */
++	nand_chip->IO_ADDR_R = (void *)0xdeadbeef;
++	nand_chip->IO_ADDR_W = (void *)0xdeadbeef;
++
++	nand_chip->cmd_ctrl = socrates_nand_cmd_ctrl;
++	nand_chip->read_byte = socrates_nand_read_byte;
++	nand_chip->read_word = socrates_nand_read_word;
++	nand_chip->write_buf = socrates_nand_write_buf;
++	nand_chip->read_buf = socrates_nand_read_buf;
++	nand_chip->verify_buf = socrates_nand_verify_buf;
++	nand_chip->dev_ready = socrates_nand_device_ready;
++
++	nand_chip->ecc.mode = NAND_ECC_SOFT;	/* enable ECC */
++
++	/* TODO: I have no idea what real delay is. */
++	nand_chip->chip_delay = 20;		/* 20us command delay time */
++
++	dev_set_drvdata(&ofdev->dev, host);
++
++	/* first scan to find the device and get the page size */
++	if (nand_scan_ident(mtd, 1)) {
++		res = -ENXIO;
++		goto out;
++	}
++
++	/* second phase scan */
++	if (nand_scan_tail(mtd)) {
++		res = -ENXIO;
++		goto out;
++	}
++
++#ifdef CONFIG_MTD_PARTITIONS
++#ifdef CONFIG_MTD_CMDLINE_PARTS
++	num_partitions = parse_mtd_partitions(mtd, part_probes,
++					      &partitions, 0);
++	if (num_partitions < 0) {
++		res = num_partitions;
++		goto release;
++	}
++#endif
++
++#ifdef CONFIG_MTD_OF_PARTS
++	if (num_partitions == 0) {
++		num_partitions = of_mtd_parse_partitions(&ofdev->dev,
++							 ofdev->node,
++							 &partitions);
++		if (num_partitions < 0) {
++			res = num_partitions;
++			goto release;
++		}
++	}
++#endif
++	if (partitions && (num_partitions > 0))
++		res = add_mtd_partitions(mtd, partitions, num_partitions);
++	else
++#endif
++		res = add_mtd_device(mtd);
++
++	if (!res)
++		return res;
++
++#ifdef CONFIG_MTD_PARTITIONS
++release:
++#endif
++	nand_release(mtd);
++
++out:
++	dev_set_drvdata(&ofdev->dev, NULL);
++	iounmap(host->io_base);
++	kfree(host);
++	return res;
++}
++
++/*
++ * Remove a NAND device.
++ */
++static int __devexit socrates_nand_remove(struct of_device *ofdev)
++{
++	struct socrates_nand_host *host = dev_get_drvdata(&ofdev->dev);
++	struct mtd_info *mtd = &host->mtd;
++
++	nand_release(mtd);
++
++	dev_set_drvdata(&ofdev->dev, NULL);
++	iounmap(host->io_base);
++	kfree(host);
++
++	return 0;
++}
++
++static struct of_device_id socrates_nand_match[] =
++{
++	{
++		.compatible   = "abb,socrates-nand",
++	},
++	{},
++};
++
++MODULE_DEVICE_TABLE(of, socrates_nand_match);
++
++static struct of_platform_driver socrates_nand_driver = {
++	.name		= "socrates_nand",
++	.match_table	= socrates_nand_match,
++	.probe		= socrates_nand_probe,
++	.remove		= __devexit_p(socrates_nand_remove),
++};
++
++static int __init socrates_nand_init(void)
++{
++	return of_register_platform_driver(&socrates_nand_driver);
++}
++
++static void __exit socrates_nand_exit(void)
++{
++	of_unregister_platform_driver(&socrates_nand_driver);
++}
++
++module_init(socrates_nand_init);
++module_exit(socrates_nand_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Ilya Yanok");
++MODULE_DESCRIPTION("NAND driver for Socrates board");
