@@ -1,17 +1,20 @@
-Return-Path: <crquan@gmail.com>
-Received: from mail-ew0-f165.google.com (mail-ew0-f165.google.com
-	[209.85.219.165]) by ozlabs.org (Postfix) with ESMTP id B2F30DDDF0
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 13:16:03 +1100 (EST)
-Received: by ewy9 with SMTP id 9so2134645ewy.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 19:16:01 -0700 (PDT)
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by ozlabs.org (Postfix) with ESMTP id B014ADDEEF
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 13:25:15 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so1394289waf.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2009 19:25:14 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] net/fec_mpc52xx: fix BUG on missing dma_ops
+To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	David Miller <davem@davemloft.net>,
+	Becky Bruce <beckyb@kernel.crashing.org>
+Date: Mon, 30 Mar 2009 20:25:10 -0600
+Message-ID: <20090331022428.26151.55232.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Date: Tue, 31 Mar 2009 10:16:01 +0800
-Message-ID: <91b13c310903301916x1729f38dj982b185754a7c1df@mail.gmail.com>
-Subject: please disable several items in 44x/canyonlands_defconfig
-From: Cheng Renquan <crquan@gmail.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: galak@kernel.crashing.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These 3 items are generally not used in 44x/canyonlands board, please
-consider disable them when you change 44x/canyonlands_defconfig next
-time,
+From: Grant Likely <grant.likely@secretlab.ca>
 
-CONFIG_PCI_LEGACY
-CONFIG_DAB
-CONFIG_VIDEO_OUTPUT_CONTROL
+The driver triggers a BUG_ON() when allocating DMA buffers if the
+arch/powerpc dma_ops from the of_platform device are not copied
+into net_device structure.
 
-Thanks,
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-$ git diff HEAD -- arch/powerpc/configs/44x/canyonlands_defconfig
-diff --git a/arch/powerpc/configs/44x/canyonlands_defconfig
-b/arch/powerpc/configs/44x/canyonlands_defconfig
-index f9a08ee..8792045 100644
---- a/arch/powerpc/configs/44x/canyonlands_defconfig
-+++ b/arch/powerpc/configs/44x/canyonlands_defconfig
-@@ -262,7 +262,7 @@ CONFIG_PCI_SYSCALL=y
- # CONFIG_PCIEPORTBUS is not set
- CONFIG_ARCH_SUPPORTS_MSI=y
- # CONFIG_PCI_MSI is not set
--CONFIG_PCI_LEGACY=y
-+CONFIG_PCI_LEGACY=n
- # CONFIG_PCI_DEBUG is not set
- # CONFIG_PCI_STUB is not set
- # CONFIG_PCCARD is not set
-@@ -716,7 +716,7 @@ CONFIG_SSB_POSSIBLE=y
- #
- # Multimedia drivers
- #
--CONFIG_DAB=y
-+CONFIG_DAB=n
- # CONFIG_USB_DABUSB is not set
+Becky, does this look better to you?
 
- #
-@@ -725,7 +725,7 @@ CONFIG_DAB=y
- # CONFIG_AGP is not set
- # CONFIG_DRM is not set
- # CONFIG_VGASTATE is not set
--CONFIG_VIDEO_OUTPUT_CONTROL=m
-+CONFIG_VIDEO_OUTPUT_CONTROL=n
- # CONFIG_FB is not set
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+g.
 
--- 
-Cheng Renquan, Shenzhen, China
-Casey Stengel  - "All right everyone, line up alphabetically according
-to your height."
+ drivers/net/fec_mpc52xx.c |   19 ++++++++++++-------
+ 1 files changed, 12 insertions(+), 7 deletions(-)
+
+
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index 049b0a7..f99463f 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -129,7 +129,8 @@ static void mpc52xx_fec_free_rx_buffers(struct net_device *dev, struct bcom_task
+ 		struct sk_buff *skb;
+ 
+ 		skb = bcom_retrieve_buffer(s, NULL, (struct bcom_bd **)&bd);
+-		dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_FROM_DEVICE);
++		dma_unmap_single(dev->dev.parent, bd->skb_pa, skb->len,
++				 DMA_FROM_DEVICE);
+ 		kfree_skb(skb);
+ 	}
+ }
+@@ -150,7 +151,7 @@ static int mpc52xx_fec_alloc_rx_buffers(struct net_device *dev, struct bcom_task
+ 		bd = (struct bcom_fec_bd *)bcom_prepare_next_buffer(rxtsk);
+ 
+ 		bd->status = FEC_RX_BUFFER_SIZE;
+-		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
++		bd->skb_pa = dma_map_single(dev->dev.parent, skb->data,
+ 				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
+ 
+ 		bcom_submit_next_buffer(rxtsk, skb);
+@@ -388,7 +389,8 @@ static int mpc52xx_fec_hard_start_xmit(struct sk_buff *skb, struct net_device *d
+ 		bcom_prepare_next_buffer(priv->tx_dmatsk);
+ 
+ 	bd->status = skb->len | BCOM_FEC_TX_BD_TFD | BCOM_FEC_TX_BD_TC;
+-	bd->skb_pa = dma_map_single(&dev->dev, skb->data, skb->len, DMA_TO_DEVICE);
++	bd->skb_pa = dma_map_single(dev->dev.parent, skb->data, skb->len,
++				    DMA_TO_DEVICE);
+ 
+ 	bcom_submit_next_buffer(priv->tx_dmatsk, skb);
+ 
+@@ -430,7 +432,8 @@ static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
+ 		struct bcom_fec_bd *bd;
+ 		skb = bcom_retrieve_buffer(priv->tx_dmatsk, NULL,
+ 				(struct bcom_bd **)&bd);
+-		dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_TO_DEVICE);
++		dma_unmap_single(dev->dev.parent, bd->skb_pa, skb->len,
++				 DMA_TO_DEVICE);
+ 
+ 		dev_kfree_skb_irq(skb);
+ 	}
+@@ -455,7 +458,8 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
+ 
+ 		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status,
+ 				(struct bcom_bd **)&bd);
+-		dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_FROM_DEVICE);
++		dma_unmap_single(dev->dev.parent, bd->skb_pa, rskb->len,
++				 DMA_FROM_DEVICE);
+ 
+ 		/* Test for errors in received frame */
+ 		if (status & BCOM_FEC_RX_BD_ERRORS) {
+@@ -464,7 +468,8 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
+ 				bcom_prepare_next_buffer(priv->rx_dmatsk);
+ 
+ 			bd->status = FEC_RX_BUFFER_SIZE;
+-			bd->skb_pa = dma_map_single(&dev->dev, rskb->data,
++			bd->skb_pa = dma_map_single(dev->dev.parent,
++					rskb->data,
+ 					FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
+ 
+ 			bcom_submit_next_buffer(priv->rx_dmatsk, rskb);
+@@ -499,7 +504,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
+ 			bcom_prepare_next_buffer(priv->rx_dmatsk);
+ 
+ 		bd->status = FEC_RX_BUFFER_SIZE;
+-		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
++		bd->skb_pa = dma_map_single(dev->dev.parent, skb->data,
+ 				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
+ 
+ 		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
