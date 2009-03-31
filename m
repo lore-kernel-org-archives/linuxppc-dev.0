@@ -1,14 +1,18 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id DE785DDDFA
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 05:37:46 +1100 (EST)
-Date: Tue, 31 Mar 2009 14:37:42 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Problem with module_init?
-Message-ID: <20090331143742.083c6cb0@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 68CD3DDDF6
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 05:58:39 +1100 (EST)
+Date: Tue, 31 Mar 2009 22:58:37 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH] ucc_geth: Pass proper device to DMA routines, otherwise
+	oops happens
+Message-ID: <20090331185837.GA22545@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
+	Andy Fleming <afleming@freescale.com>,
+	Joakim Tjernlund <Joakim.Tjernlund@transmode.se>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,48 +22,135 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With the latest from Linus' tree, I get the following oops:
+The driver should pass a device that actually specifies internal DMA
+ops, but currently it passes netdev's device, which is wrong and that
+causes following oops:
 
-Oops: Kernel access of bad area, sig: 11 [#1]
-Warp
-Modules linked in: simple(+)
-NIP: d14b8000 LR: c0001420 CTR: 00000000
-REGS: cf2a1df0 TRAP: 0400   Not tainted  (2.6.29-pika)
-MSR: 00029000 <EE,ME,CE>  CR: 24000022  XER: 00000000
-TASK = cf896100[1673] 'insmod' THREAD: cf2a0000
-GPR00: 00000000 cf2a1ea0 cf896100 d14b8000 00000001 d14b5360 ffffffff
-00000000 GPR08: c03312fc c03312fc c0546018 c0546018 24000022 100872cc
-0ffa7d00 007fff99 GPR16: 00400450 00800000 007fff00 0ffa7cec 00000000
-ffffffff 00000000 1008323c GPR24: 10083254 00000000 c0330000 c0310000
-c03110a4 d14b8000 cf2a0000 d14b5360 NIP [d14b8000] simple_init+0x0/0x8
-[simple] LR [c0001420] do_one_initcall+0x34/0x1a0
+Kernel BUG at c01c4df8 [verbose debug info unavailable]
+Oops: Exception in kernel mode, sig: 5 [#1]
+[...]
+NIP [c01c4df8] get_new_skb+0x7c/0xf8
+LR [c01c4da4] get_new_skb+0x28/0xf8
 Call Trace:
-[cf2a1f20] [c0045e18] sys_init_module+0xb0/0x1b8
-[cf2a1f40] [c000dbbc] ret_from_syscall+0x0/0x3c
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX <38600000> 4e800020 XXXXXXXX
-XXXXXXXX ---[ end trace 9ac3b092cfc75a75 ]---
+[ef82be00] [c01c4da4] get_new_skb+0x28/0xf8 (unreliable)
+[ef82be20] [c01c4eb8] rx_bd_buffer_set+0x44/0x98
+[ef82be40] [c01c62bc] ucc_geth_startup+0x11b0/0x147c
+[ef82be80] [c01c6674] ucc_geth_open+0xec/0x2a4
+[ef82bea0] [c02288a4] dev_open+0xc0/0x11c
+[...]
 
-This is the entire driver:
+Fix this by passing of_device's device that specifies DMA ops in its
+archdata.
 
-#include <linux/module.h>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/ucc_geth.c |   21 +++++++++++----------
+ drivers/net/ucc_geth.h |    3 ++-
+ 2 files changed, 13 insertions(+), 11 deletions(-)
 
-static int __init simple_init(void)
-{
-	return 0;
-}
-module_init(simple_init);
-
-static void __exit simple_exit(void)
-{
-}
-module_exit(simple_exit);
-
-MODULE_DESCRIPTION("simple driver");
-MODULE_LICENSE("GPL");
-
-Has something changed for module?
-
-Cheers,
-   Sean
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 933fcfb..3ed402c 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -223,10 +223,10 @@ static struct sk_buff *get_new_skb(struct ucc_geth_private *ugeth,
+ 		    (((unsigned)skb->data) & (UCC_GETH_RX_DATA_BUF_ALIGNMENT -
+ 					      1)));
+ 
+-	skb->dev = ugeth->dev;
++	skb->dev = ugeth->ndev;
+ 
+ 	out_be32(&((struct qe_bd __iomem *)bd)->buf,
+-		      dma_map_single(&ugeth->dev->dev,
++		      dma_map_single(ugeth->dev,
+ 				     skb->data,
+ 				     ugeth->ug_info->uf_info.max_rx_buf_length +
+ 				     UCC_GETH_RX_DATA_BUF_ALIGNMENT,
+@@ -1872,7 +1872,7 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
+ 			continue;
+ 		for (j = 0; j < ugeth->ug_info->bdRingLenTx[i]; j++) {
+ 			if (ugeth->tx_skbuff[i][j]) {
+-				dma_unmap_single(&ugeth->dev->dev,
++				dma_unmap_single(ugeth->dev,
+ 						 in_be32(&((struct qe_bd __iomem *)bd)->buf),
+ 						 (in_be32((u32 __iomem *)bd) &
+ 						  BD_LENGTH_MASK),
+@@ -1900,7 +1900,7 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
+ 			bd = ugeth->p_rx_bd_ring[i];
+ 			for (j = 0; j < ugeth->ug_info->bdRingLenRx[i]; j++) {
+ 				if (ugeth->rx_skbuff[i][j]) {
+-					dma_unmap_single(&ugeth->dev->dev,
++					dma_unmap_single(ugeth->dev,
+ 						in_be32(&((struct qe_bd __iomem *)bd)->buf),
+ 						ugeth->ug_info->
+ 						uf_info.max_rx_buf_length +
+@@ -3071,7 +3071,7 @@ static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	/* set up the buffer descriptor */
+ 	out_be32(&((struct qe_bd __iomem *)bd)->buf,
+-		      dma_map_single(&ugeth->dev->dev, skb->data,
++		      dma_map_single(ugeth->dev, skb->data,
+ 			      skb->len, DMA_TO_DEVICE));
+ 
+ 	/* printk(KERN_DEBUG"skb->data is 0x%x\n",skb->data); */
+@@ -3127,7 +3127,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+ 
+ 	ugeth_vdbg("%s: IN", __func__);
+ 
+-	dev = ugeth->dev;
++	dev = ugeth->ndev;
+ 
+ 	/* collect received buffers */
+ 	bd = ugeth->rxBd[rxQ];
+@@ -3161,7 +3161,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+ 			skb_put(skb, length);
+ 
+ 			/* Tell the skb what kind of packet this is */
+-			skb->protocol = eth_type_trans(skb, ugeth->dev);
++			skb->protocol = eth_type_trans(skb, ugeth->ndev);
+ 
+ 			dev->stats.rx_bytes += length;
+ 			/* Send the packet up the stack */
+@@ -3432,7 +3432,7 @@ static int ucc_geth_close(struct net_device *dev)
+ 
+ 	ucc_geth_stop(ugeth);
+ 
+-	free_irq(ugeth->ug_info->uf_info.irq, ugeth->dev);
++	free_irq(ugeth->ug_info->uf_info.irq, ugeth->ndev);
+ 
+ 	netif_stop_queue(dev);
+ 
+@@ -3446,7 +3446,7 @@ static void ucc_geth_timeout_work(struct work_struct *work)
+ 	struct net_device *dev;
+ 
+ 	ugeth = container_of(work, struct ucc_geth_private, timeout_work);
+-	dev = ugeth->dev;
++	dev = ugeth->ndev;
+ 
+ 	ugeth_vdbg("%s: IN", __func__);
+ 
+@@ -3756,7 +3756,8 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 		memcpy(dev->dev_addr, mac_addr, 6);
+ 
+ 	ugeth->ug_info = ug_info;
+-	ugeth->dev = dev;
++	ugeth->dev = device;
++	ugeth->ndev = dev;
+ 	ugeth->node = np;
+ 
+ 	return 0;
+diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
+index e3a25e6..a6f5d0b 100644
+--- a/drivers/net/ucc_geth.h
++++ b/drivers/net/ucc_geth.h
+@@ -1129,7 +1129,8 @@ struct ucc_geth_info {
+ struct ucc_geth_private {
+ 	struct ucc_geth_info *ug_info;
+ 	struct ucc_fast_private *uccf;
+-	struct net_device *dev;
++	struct device *dev;
++	struct net_device *ndev;
+ 	struct napi_struct napi;
+ 	struct work_struct timeout_work;
+ 	struct ucc_geth __iomem *ug_regs;
+-- 
+1.5.6.5
