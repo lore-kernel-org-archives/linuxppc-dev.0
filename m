@@ -1,16 +1,15 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id 0F0CEDDE19
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 19:27:01 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id j37so1472031waf.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 01:27:01 -0700 (PDT)
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
+	by ozlabs.org (Postfix) with ESMTP id EBE86DDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 19:27:06 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g9so2448207rvb.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 01:27:06 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 03/14] net/fec_mpc52xx: Don't dereference phy_device if it is
-	NULL
+Subject: [PATCH 04/14] phylib: rework to prepare for OF registration of PHYs
 To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Date: Tue, 31 Mar 2009 02:26:59 -0600
-Message-ID: <20090331082659.1427.83509.stgit@localhost.localdomain>
+Date: Tue, 31 Mar 2009 02:27:04 -0600
+Message-ID: <20090331082704.1427.94043.stgit@localhost.localdomain>
 In-Reply-To: <20090331075537.1427.7819.stgit@localhost.localdomain>
 References: <20090331075537.1427.7819.stgit@localhost.localdomain>
 MIME-Version: 1.0
@@ -28,67 +27,174 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-The FEC Ethernet device isn't always attached to a phy.  Be careful
-not to dereference phy_device if it is NULL.
+This patch makes changes in preparation for supporting open firmware
+device tree descriptions of MDIO busses.  Changes include:
+- Cleanup handling of phy_map[] entries; they are already NULLed when
+  registering and so don't need to be re-cleared, and it is good practice
+  to clear them out when unregistering.
+- Split phy_device registration out into a new function so that the
+  OF helpers can do two stage registration (separate allocation and
+  registration steps).
 
-Reported-by: Henk Stegeman <henk.stegeman@gmail.com>
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+CC: linuxppc-dev@ozlabs.org
+CC: netdev@vger.kernel.org
+CC: Andy Fleming <afleming@freescale.com>
 ---
 
- drivers/net/fec_mpc52xx.c |   22 ++++++++++++----------
- 1 files changed, 12 insertions(+), 10 deletions(-)
+ drivers/net/phy/mdio_bus.c   |   29 +++------------------------
+ drivers/net/phy/phy_device.c |   45 ++++++++++++++++++++++++++++++++++++++----
+ include/linux/phy.h          |    1 +
+ 3 files changed, 45 insertions(+), 30 deletions(-)
 
 
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index 75d0569..e10eb2c 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -271,15 +271,6 @@ static void mpc52xx_fec_phy_stop(struct net_device *dev)
- 	phy_write(priv->phydev, MII_BMCR, BMCR_PDOWN);
- }
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index b754020..bd4e8d7 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -113,7 +113,6 @@ int mdiobus_register(struct mii_bus *bus)
+ 		bus->reset(bus);
  
--static int mpc52xx_fec_phy_mii_ioctl(struct mpc52xx_fec_priv *priv,
--		struct mii_ioctl_data *mii_data, int cmd)
--{
--	if (!priv->phydev)
--		return -ENOTSUPP;
+ 	for (i = 0; i < PHY_MAX_ADDR; i++) {
+-		bus->phy_map[i] = NULL;
+ 		if ((bus->phy_mask & (1 << i)) == 0) {
+ 			struct phy_device *phydev;
+ 
+@@ -150,6 +149,7 @@ void mdiobus_unregister(struct mii_bus *bus)
+ 	for (i = 0; i < PHY_MAX_ADDR; i++) {
+ 		if (bus->phy_map[i])
+ 			device_unregister(&bus->phy_map[i]->dev);
++		bus->phy_map[i] = NULL;
+ 	}
+ }
+ EXPORT_SYMBOL(mdiobus_unregister);
+@@ -188,35 +188,12 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
+ 	if (IS_ERR(phydev) || phydev == NULL)
+ 		return phydev;
+ 
+-	/* There's a PHY at this address
+-	 * We need to set:
+-	 * 1) IRQ
+-	 * 2) bus_id
+-	 * 3) parent
+-	 * 4) bus
+-	 * 5) mii_bus
+-	 * And, we need to register it */
 -
--	return phy_mii_ioctl(priv->phydev, mii_data, cmd);
--}
+-	phydev->irq = bus->irq != NULL ? bus->irq[addr] : PHY_POLL;
 -
- static void mpc52xx_fec_phy_hw_init(struct mpc52xx_fec_priv *priv)
+-	phydev->dev.parent = bus->parent;
+-	phydev->dev.bus = &mdio_bus_type;
+-	dev_set_name(&phydev->dev, PHY_ID_FMT, bus->id, addr);
+-
+-	phydev->bus = bus;
+-
+-	/* Run all of the fixups for this PHY */
+-	phy_scan_fixups(phydev);
+-
+-	err = device_register(&phydev->dev);
++	err = phy_device_register(phydev);
+ 	if (err) {
+-		printk(KERN_ERR "phy %d failed to register\n", addr);
+ 		phy_device_free(phydev);
+-		phydev = NULL;
++		return NULL;
+ 	}
+ 
+-	bus->phy_map[addr] = phydev;
+-
+ 	return phydev;
+ }
+ EXPORT_SYMBOL(mdiobus_scan);
+diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+index 0a06e4f..9352ca8 100644
+--- a/drivers/net/phy/phy_device.c
++++ b/drivers/net/phy/phy_device.c
+@@ -39,20 +39,21 @@ MODULE_DESCRIPTION("PHY library");
+ MODULE_AUTHOR("Andy Fleming");
+ MODULE_LICENSE("GPL");
+ 
+-static struct phy_driver genphy_driver;
+-extern int mdio_bus_init(void);
+-extern void mdio_bus_exit(void);
+-
+ void phy_device_free(struct phy_device *phydev)
  {
- 	struct mpc52xx_fec __iomem *fec = priv->fec;
-@@ -852,12 +843,20 @@ static void mpc52xx_fec_get_drvinfo(struct net_device *dev,
- static int mpc52xx_fec_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+ 	kfree(phydev);
+ }
++EXPORT_SYMBOL(phy_device_free);
+ 
+ static void phy_device_release(struct device *dev)
  {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+
-+	if (!priv->phydev)
-+		return -ENODEV;
-+
- 	return phy_ethtool_gset(priv->phydev, cmd);
+ 	phy_device_free(to_phy_device(dev));
  }
  
- static int mpc52xx_fec_set_settings(struct net_device *dev, struct ethtool_cmd *cmd)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
++static struct phy_driver genphy_driver;
++extern int mdio_bus_init(void);
++extern void mdio_bus_exit(void);
 +
-+	if (!priv->phydev)
-+		return -ENODEV;
-+
- 	return phy_ethtool_sset(priv->phydev, cmd);
+ static LIST_HEAD(phy_fixup_list);
+ static DEFINE_MUTEX(phy_fixup_lock);
+ 
+@@ -166,6 +167,10 @@ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
+ 	dev->addr = addr;
+ 	dev->phy_id = phy_id;
+ 	dev->bus = bus;
++	dev->dev.parent = bus->parent;
++	dev->dev.bus = &mdio_bus_type;
++	dev->irq = bus->irq != NULL ? bus->irq[addr] : PHY_POLL;
++	dev_set_name(&dev->dev, PHY_ID_FMT, bus->id, addr);
+ 
+ 	dev->state = PHY_DOWN;
+ 
+@@ -235,6 +240,38 @@ struct phy_device * get_phy_device(struct mii_bus *bus, int addr)
+ 
+ 	return dev;
  }
- 
-@@ -887,7 +886,10 @@ static int mpc52xx_fec_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
- 
--	return mpc52xx_fec_phy_mii_ioctl(priv, if_mii(rq), cmd);
-+	if (!priv->phydev)
-+		return -ENOTSUPP;
++EXPORT_SYMBOL(get_phy_device);
 +
-+	return phy_mii_ioctl(priv->phydev, if_mii(rq), cmd);
- }
++/**
++ * phy_device_register - Register the phy device on the MDIO bus
++ * @phy_device: phy_device structure to be added to the MDIO bus
++ */
++int phy_device_register(struct phy_device *phydev)
++{
++	int err;
++
++	/* Don't register a phy if one is already registered at this
++	 * address */
++	if (phydev->bus->phy_map[phydev->addr])
++		return -EINVAL;
++	phydev->bus->phy_map[phydev->addr] = phydev;
++
++	/* Run all of the fixups for this PHY */
++	phy_scan_fixups(phydev);
++
++	err = device_register(&phydev->dev);
++	if (err) {
++		pr_err("phy %d failed to register\n", phydev->addr);
++		goto out;
++	}
++
++	return 0;
++
++ out:
++	phydev->bus->phy_map[phydev->addr] = NULL;
++	return err;
++}
++EXPORT_SYMBOL(phy_device_register);
  
- static const struct net_device_ops mpc52xx_fec_netdev_ops = {
+ /**
+  * phy_prepare_link - prepares the PHY layer to monitor link status
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index 32cf14a..c0cf354 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -438,6 +438,7 @@ static inline int phy_write(struct phy_device *phydev, u16 regnum, u16 val)
+ 
+ int get_phy_id(struct mii_bus *bus, int addr, u32 *phy_id);
+ struct phy_device* get_phy_device(struct mii_bus *bus, int addr);
++int phy_device_register(struct phy_device *phy);
+ int phy_clear_interrupt(struct phy_device *phydev);
+ int phy_config_interrupt(struct phy_device *phydev, u32 interrupts);
+ struct phy_device * phy_attach(struct net_device *dev,
