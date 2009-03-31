@@ -1,20 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
-	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id B2F5DDDDA9
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 08:38:22 +1100 (EST)
-Received: by gxk1 with SMTP id 1so9906591gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 14:38:21 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <9A8B45DD4DE17F4783430D784DA0B68811C429F9B7@HEXMBVS12.hostedmsx.local>
-References: <mailman.3884.1238431353.26545.linuxppc-dev@ozlabs.org>
-	<9A8B45DD4DE17F4783430D784DA0B68811C429F9B7@HEXMBVS12.hostedmsx.local>
-Date: Tue, 31 Mar 2009 15:38:20 -0600
-Message-ID: <fa686aa40903311438m5bad6765sf2f99b691044953d@mail.gmail.com>
-Subject: Re: Interrupts on GPIO
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Yann Pelletier <ypelletier@haivision.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <joe@perches.com>
+Received: from mail.perches.com (136-022.dsl.LABridge.com [206.117.136.22])
+	by ozlabs.org (Postfix) with ESMTP id C1B41DDDFF
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 08:41:45 +1100 (EST)
+Subject: Re: [PATCH] Add hvc_console to MAINTAINERS
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090331142252.3bf74fe1.akpm@linux-foundation.org>
+References: <49BF956B.9030109@gmail.com>
+	<20090330133531.f5d99c09.akpm@linux-foundation.org>
+	<20090330205553.GA19278@yoda.jdub.homelinux.org>
+	<20090330141852.59baaeda.akpm@linux-foundation.org>
+	<20090331132944.GB2332@yoda.jdub.homelinux.org>
+	<1238533823.9715.292.camel@localhost>
+	<20090331142252.3bf74fe1.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 31 Mar 2009 14:40:58 -0700
+Message-Id: <1238535658.9715.321.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, roel.kluin@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2009 at 2:59 PM, Yann Pelletier
-<ypelletier@haivision.com> wrote:
->> Message: 7
->> Date: Mon, 30 Mar 2009 10:32:17 -0600
->> From: Grant Likely <grant.likely@secretlab.ca>
->> Subject: > To: Yann Pelletier <ypelletier@haivision.com>
->> Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
->> Message-ID:
->> =A0 =A0 =A0 <fa686aa40903300932p2c92110g2907bb7bf80d44d@mail.gmail.com>
->> Content-Type: text/plain; charset=3DISO-8859-1
->>
->> On Mon, Mar 30, 2009 at 9:57 AM, Yann Pelletier
->> <ypelletier@haivision.com> wrote:
->> >
->> > Hi,
->> > I'd like to add supports for interrupts handling from GPIO controller.
->> ?Some of these interrupts are from I2C devices and some others are from
->> SPI devices.
->> >
->> > What is the best approach to enable interrupts handling for those
->> devices through GPIO.
->>
->> Modify the GPIO driver to also be a cascaded IRQ driver (see
->> http://patchwork.ozlabs.org/patch/21914/ for an example).
->>
->
-> I've looked at the patch but I wonder if this would be applicable to the =
-MPC8313. =A0If my understanding is good, in the MPC52xx you have 8 gpio onl=
-y interrupts and 8 gpio/gpt. =A0With the MPC8313, each GPIO can act as an i=
-nterrupt but they are all muxed to only 1 interrupt in the IPIC. =A0So I'm =
-concern about making the GPIO controller act as an interrupt controller.
+On Tue, 2009-03-31 at 14:22 -0700, Andrew Morton wrote:
+> On Tue, 31 Mar 2009 14:10:23 -0700
+> Joe Perches <joe@perches.com> wrote:
+> > On Tue, 2009-03-31 at 09:29 -0400, Josh Boyer wrote:
+> > > Add a MAINTAINERS entry for the hypervisor virtual console support
+> > > used on IBM POWER servers.
+> > > diff --git a/MAINTAINERS b/MAINTAINERS
+> > > index c5f4e9d..387ad45 100644
+> > > --- a/MAINTAINERS
+> > > +++ b/MAINTAINERS
+> > > @@ -2176,6 +2176,11 @@ W:       http://www.ia64-linux.org/
+> > >  T:     git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+> > >  S:     Maintained
+> > >  
+> > > +IBM HYPERVISOR VIRTUAL CONSOLE
+> > > +P:     Several
+> > > +L:     linuxppc-dev@ozlabs.org
+> > > +S:     Maintained
+> > > +
+> > >  IBM MCA SCSI SUBSYSTEM DRIVER
+> > >  P:     Michael Lang
+> > >  M:     langa2@kph.uni-mainz.de
+> > 
+> > I think this sort of entry should not be acceptable.
+> > Maintainers should have individual names and contact addresses.
+> 
+> There isn't a maintainer.
+> 
+> But people send patches to the wrong list, so the ppc guys (who use
+> this driver) don't get to see them.
+> 
+> That's a practical, real-world problem.  We should have a fix for it.
+> 
+> > An exploder entry should be OK though.
+> > For instance, the DVB subsystem:
+> > 
+> > 	DVB SUBSYSTEM AND DRIVERS
+> > 	P:	LinuxTV.org Project
+> > 	M:	linux-media@vger.kernel.org
+> > 
+> > A list entry could be something like:
+> > 
+> > 	P:	Linux PCMCIA Team
+> > 	L:	linux-pcmcia@lists.infradead.org
+> > 
+> 
+> I'm unclear on what the difference is here..
 
-Why?  The situation really isn't any different.  Using the GPIO
-controller hardware as a Linux interrupt controller means that other
-drivers can just use it without having to do anything special.  It's
-just and IRQ.
+I have no problem with the "L: list" entry.
+I think that's good.  Along with some file
+matching pattern as well of course...
 
-g.
+I think the "P: Several" entry is not good.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+"Several" doesn't give any idea as to who
+actually does the work.
+
+If the "P:" entry is there at all, it should
+be the list name.
+
+Maybe "P: Linux PPC Development Team" or
+something similar.
