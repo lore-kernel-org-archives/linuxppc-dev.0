@@ -1,16 +1,15 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.227])
-	by ozlabs.org (Postfix) with ESMTP id 76B64DDDA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 19:27:12 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id C2E5BDDEF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 19:27:17 +1100 (EST)
 Received: by rv-out-0506.google.com with SMTP id g9so2448207rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 01:27:12 -0700 (PDT)
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 01:27:17 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 05/14] phylib: add *_direct() variants of phy_connect and
-	phy_attach functions
+Subject: [PATCH 06/14] openfirmware: Add OF phylib support code
 To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Date: Tue, 31 Mar 2009 02:27:09 -0600
-Message-ID: <20090331082709.1427.48689.stgit@localhost.localdomain>
+Date: Tue, 31 Mar 2009 02:27:14 -0600
+Message-ID: <20090331082714.1427.19541.stgit@localhost.localdomain>
 In-Reply-To: <20090331075537.1427.7819.stgit@localhost.localdomain>
 References: <20090331075537.1427.7819.stgit@localhost.localdomain>
 MIME-Version: 1.0
@@ -28,213 +27,217 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-Add phy_connect_direct() and phy_attach_direct() functions so that
-drivers can use a pointer to the phy_device instead of trying to determine
-the phy's bus_id string.
+Add support for parsing the device tree for PHY devices on an MDIO bus
 
-This patch is useful for OF device tree descriptions of phy devices where
-the driver doesn't need or know what the bus_id value in order to get a
-phy_device pointer.
+CC: Andy Fleming <afleming@freescale.com>
+CC: linuxppc-dev@ozlabs.org
+CC: devtree-discuss@ozlabs.org
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/net/phy/phy_device.c |  118 ++++++++++++++++++++++++++++++------------
- include/linux/phy.h          |    5 ++
- 2 files changed, 90 insertions(+), 33 deletions(-)
+ drivers/of/Kconfig      |    6 ++
+ drivers/of/Makefile     |    1 
+ drivers/of/of_mdio.c    |  139 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/of_mdio.h |   22 +++++++
+ 4 files changed, 168 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/of/of_mdio.c
+ create mode 100644 include/linux/of_mdio.h
 
 
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 9352ca8..3c8c1de 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -292,6 +292,33 @@ void phy_prepare_link(struct phy_device *phydev,
- }
- 
- /**
-+ * phy_connect_direct - connect an ethernet device to a specific phy_device
-+ * @dev: the network device to connect
-+ * @phydev: the pointer to the phy device
-+ * @handler: callback function for state change notifications
-+ * @flags: PHY device's dev_flags
-+ * @interface: PHY device's interface
-+ */
-+int phy_connect_direct(struct net_device *dev, struct phy_device *phydev,
-+		       void (*handler)(struct net_device *), u32 flags,
-+		       phy_interface_t interface)
-+{
-+	int rc;
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index f821dbc..6fe043b 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -19,3 +19,9 @@ config OF_SPI
+ 	depends on OF && PPC_OF && SPI
+ 	help
+ 	  OpenFirmware SPI accessors
 +
-+	rc = phy_attach_direct(dev, phydev, flags, interface);
++config OF_MDIO
++	def_tristate PHYLIB
++	depends on OF && PHYLIB
++	help
++	  OpenFirmware MDIO bus (Ethernet PHY) accessors
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index 4c3c6f8..bdfb5f5 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -3,3 +3,4 @@ obj-$(CONFIG_OF_DEVICE) += device.o platform.o
+ obj-$(CONFIG_OF_GPIO)   += gpio.o
+ obj-$(CONFIG_OF_I2C)	+= of_i2c.o
+ obj-$(CONFIG_OF_SPI)	+= of_spi.o
++obj-$(CONFIG_OF_MDIO)	+= of_mdio.o
+diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
+new file mode 100644
+index 0000000..aee967d
+--- /dev/null
++++ b/drivers/of/of_mdio.c
+@@ -0,0 +1,139 @@
++/*
++ * OF helpers for the MDIO (Ethernet PHY) API
++ *
++ * Copyright (c) 2009 Secret Lab Technologies, Ltd.
++ *
++ * This file is released under the GPLv2
++ *
++ * This file provides helper functions for extracting PHY device information
++ * out of the OpenFirmware device tree and using it to populate an mii_bus.
++ */
++
++#include <linux/phy.h>
++#include <linux/of.h>
++#include <linux/of_mdio.h>
++#include <linux/module.h>
++
++MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
++MODULE_LICENSE("GPL");
++
++/**
++ * of_mdiobus_register - Register mii_bus and create PHYs from the device tree
++ * @mdio: pointer to mii_bus structure
++ * @np: pointer to device_node of MDIO bus.
++ *
++ * This function registers the mii_bus structure and registers a phy_device
++ * for each child node of @np.
++ */
++int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
++{
++	struct phy_device *phy;
++	struct device_node *child;
++	int rc, i;
++
++	/* Mask out all PHYs from auto probing.  Instead the PHYs listed in
++	 * the device tree are populated after the bus has been registered */
++	mdio->phy_mask = ~0;
++
++	/* Clear all the IRQ properties */
++	if (mdio->irq)
++		for (i=0; i<PHY_MAX_ADDR; i++)
++			mdio->irq[i] = PHY_POLL;
++
++	/* Register the MDIO bus */
++	rc = mdiobus_register(mdio);
 +	if (rc)
 +		return rc;
 +
-+	phy_prepare_link(phydev, handler);
-+	phy_start_machine(phydev, NULL);
-+	if (phydev->irq > 0)
-+		phy_start_interrupts(phydev);
++	/* Loop over the child nodes and register a phy_device for each one */
++	for_each_child_of_node(np, child) {
++		const u32 *addr;
++		int len;
 +
-+	return 0;
-+}
-+EXPORT_SYMBOL(phy_connect_direct);
++		/* A PHY must have a reg property in the range [0-31] */
++		addr = of_get_property(child, "reg", &len);
++		if (!addr || len < sizeof(*addr) || *addr >= 32 || *addr < 0) {
++			dev_err(&mdio->dev, "%s has invalid PHY address\n",
++				child->full_name);
++			continue;
++		}
 +
-+/**
-  * phy_connect - connect an ethernet device to a PHY device
-  * @dev: the network device to connect
-  * @bus_id: the id string of the PHY device to connect
-@@ -312,18 +339,21 @@ struct phy_device * phy_connect(struct net_device *dev, const char *bus_id,
- 		phy_interface_t interface)
- {
- 	struct phy_device *phydev;
-+	struct device *d;
-+	int rc;
- 
--	phydev = phy_attach(dev, bus_id, flags, interface);
--
--	if (IS_ERR(phydev))
--		return phydev;
--
--	phy_prepare_link(phydev, handler);
--
--	phy_start_machine(phydev, NULL);
-+	/* Search the list of PHY devices on the mdio bus for the
-+	 * PHY with the requested name */
-+	d = bus_find_device_by_name(&mdio_bus_type, NULL, bus_id);
-+	if (!d) {
-+		pr_err("PHY %s not found\n", bus_id);
-+		return ERR_PTR(-ENODEV);
-+	}
-+	phydev = to_phy_device(d);
- 
--	if (phydev->irq > 0)
--		phy_start_interrupts(phydev);
-+	rc = phy_attach_direct(dev, phydev, flags, interface);
-+	if (rc)
-+		return ERR_PTR(rc);
- 
- 	return phydev;
- }
-@@ -347,9 +377,9 @@ void phy_disconnect(struct phy_device *phydev)
- EXPORT_SYMBOL(phy_disconnect);
- 
- /**
-- * phy_attach - attach a network device to a particular PHY device
-+ * phy_attach_direct - attach a network device to a given PHY device pointer
-  * @dev: network device to attach
-- * @bus_id: PHY device to attach
-+ * @phydev: Pointer to phy_device to attach
-  * @flags: PHY device's dev_flags
-  * @interface: PHY device's interface
-  *
-@@ -360,22 +390,10 @@ EXPORT_SYMBOL(phy_disconnect);
-  *     the attaching device, and given a callback for link status
-  *     change.  The phy_device is returned to the attaching driver.
-  */
--struct phy_device *phy_attach(struct net_device *dev,
--		const char *bus_id, u32 flags, phy_interface_t interface)
-+int phy_attach_direct(struct net_device *dev, struct phy_device *phydev,
-+		      u32 flags, phy_interface_t interface)
- {
--	struct bus_type *bus = &mdio_bus_type;
--	struct phy_device *phydev;
--	struct device *d;
--
--	/* Search the list of PHY devices on the mdio bus for the
--	 * PHY with the requested name */
--	d = bus_find_device_by_name(bus, NULL, bus_id);
--	if (d) {
--		phydev = to_phy_device(d);
--	} else {
--		printk(KERN_ERR "%s not found\n", bus_id);
--		return ERR_PTR(-ENODEV);
--	}
-+	struct device *d = &phydev->dev;
- 
- 	/* Assume that if there is no driver, that it doesn't
- 	 * exist, and we should use the genphy driver. */
-@@ -388,13 +406,12 @@ struct phy_device *phy_attach(struct net_device *dev,
- 			err = device_bind_driver(d);
- 
- 		if (err)
--			return ERR_PTR(err);
-+			return err;
- 	}
- 
- 	if (phydev->attached_dev) {
--		printk(KERN_ERR "%s: %s already attached\n",
--				dev->name, bus_id);
--		return ERR_PTR(-EBUSY);
-+		dev_err(&dev->dev, "PHY already attached\n");
-+		return -EBUSY;
- 	}
- 
- 	phydev->attached_dev = dev;
-@@ -412,13 +429,48 @@ struct phy_device *phy_attach(struct net_device *dev,
- 		err = phy_scan_fixups(phydev);
- 
- 		if (err < 0)
--			return ERR_PTR(err);
-+			return err;
- 
- 		err = phydev->drv->config_init(phydev);
- 
- 		if (err < 0)
--			return ERR_PTR(err);
-+			return err;
++		if (mdio->irq) {
++			mdio->irq[*addr] = irq_of_parse_and_map(child, 0);
++			if (!mdio->irq[*addr])
++				mdio->irq[*addr] = PHY_POLL;
++		}
++
++		phy = get_phy_device(mdio, *addr);
++		if (!phy) {
++			dev_err(&mdio->dev, "error probing PHY at address %i\n",
++				*addr);
++			continue;
++		}
++		phy_scan_fixups(phy);
++
++		/* Associate the OF node with the device structure so it
++		 * can be looked up later */
++		of_node_get(child);
++		dev_archdata_set_node(&phy->dev.archdata, child);
++
++		/* All data is now stored in the phy struct; register it */
++		rc = phy_device_register(phy);
++		if (rc) {
++			phy_device_free(phy);
++			of_node_put(child);
++			continue;
++		}
++
++		dev_dbg(&mdio->dev, "registered phy %s at address %i\n",
++			child->name, *addr);
 +	}
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL(phy_attach_direct);
++EXPORT_SYMBOL(of_mdiobus_register);
 +
 +/**
-+ * phy_attach - attach a network device to a particular PHY device
-+ * @dev: network device to attach
-+ * @bus_id: Bus ID of PHY device to attach
-+ * @flags: PHY device's dev_flags
-+ * @interface: PHY device's interface
++ * of_phy_find_device - Give a PHY node, find the phy_device
++ * @phy_np: Pointer to the phy's device tree node
 + *
-+ * Description: Same as phy_attach_direct() except that a PHY bus_id
-+ *     string is passed instead of a pointer to a struct phy_device.
++ * Returns a pointer to the phy_device.
 + */
-+struct phy_device *phy_attach(struct net_device *dev,
-+		const char *bus_id, u32 flags, phy_interface_t interface)
++struct phy_device *of_phy_find_device(struct device_node *phy_np)
 +{
-+	struct bus_type *bus = &mdio_bus_type;
-+	struct phy_device *phydev;
 +	struct device *d;
-+	int rc;
++	int match(struct device *dev, void *phy_np)
++	{
++		return dev_archdata_get_node(&dev->archdata) == phy_np;
++	}
 +
-+	/* Search the list of PHY devices on the mdio bus for the
-+	 * PHY with the requested name */
-+	d = bus_find_device_by_name(bus, NULL, bus_id);
-+	if (!d) {
-+		pr_err("PHY %s not found\n", bus_id);
-+		return ERR_PTR(-ENODEV);
- 	}
-+	phydev = to_phy_device(d);
++	if (!phy_np)
++		return NULL;
 +
-+	rc = phy_attach_direct(dev, phydev, flags, interface);
-+	if (rc)
-+		return ERR_PTR(rc);
- 
- 	return phydev;
- }
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index c0cf354..cd404f1 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -441,8 +441,13 @@ struct phy_device* get_phy_device(struct mii_bus *bus, int addr);
- int phy_device_register(struct phy_device *phy);
- int phy_clear_interrupt(struct phy_device *phydev);
- int phy_config_interrupt(struct phy_device *phydev, u32 interrupts);
-+int phy_attach_direct(struct net_device *dev, struct phy_device *phydev,
-+		u32 flags, phy_interface_t interface);
- struct phy_device * phy_attach(struct net_device *dev,
- 		const char *bus_id, u32 flags, phy_interface_t interface);
-+int phy_connect_direct(struct net_device *dev, struct phy_device *phydev,
-+		void (*handler)(struct net_device *), u32 flags,
-+		phy_interface_t interface);
- struct phy_device * phy_connect(struct net_device *dev, const char *bus_id,
- 		void (*handler)(struct net_device *), u32 flags,
- 		phy_interface_t interface);
++	d = bus_find_device(&mdio_bus_type, NULL, phy_np, match);
++	return d ? to_phy_device(d) : NULL;
++}
++EXPORT_SYMBOL(of_phy_find_device);
++
++/**
++ * of_phy_connect - Connect to the phy described in the device tree
++ * @dev: pointer to net_device claiming the phy
++ * @phy_np: Pointer to device tree node for the PHY
++ * @hndlr: Link state callback for the network device
++ * @iface: PHY data interface type
++ *
++ * Returns a pointer to the phy_device if successfull.  NULL otherwise
++ */
++struct phy_device *of_phy_connect(struct net_device *dev,
++				  struct device_node *phy_np,
++				  void (*hndlr)(struct net_device *), u32 flags,
++				  phy_interface_t iface)
++{
++	struct phy_device *phy = of_phy_find_device(phy_np);
++
++	if (!phy)
++		return NULL;
++
++	return phy_connect_direct(dev, phy, hndlr, flags, iface) ? NULL : phy;
++}
++EXPORT_SYMBOL(of_phy_connect);
+diff --git a/include/linux/of_mdio.h b/include/linux/of_mdio.h
+new file mode 100644
+index 0000000..c9663c6
+--- /dev/null
++++ b/include/linux/of_mdio.h
+@@ -0,0 +1,22 @@
++/*
++ * OF helpers for the MDIO (Ethernet PHY) API
++ *
++ * Copyright (c) 2009 Secret Lab Technologies, Ltd.
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_OF_MDIO_H
++#define __LINUX_OF_MDIO_H
++
++#include <linux/phy.h>
++#include <linux/of.h>
++
++extern int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np);
++extern struct phy_device *of_phy_find_device(struct device_node *phy_np);
++extern struct phy_device *of_phy_connect(struct net_device *dev,
++					 struct device_node *phy_np,
++					 void (*hndlr)(struct net_device *),
++					 u32 flags, phy_interface_t iface);
++
++#endif /* __LINUX_OF_MDIO_H */
