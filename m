@@ -1,16 +1,22 @@
-Return-Path: <mlcreech@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
-	by ozlabs.org (Postfix) with ESMTP id 0B426DDEDF
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 07:36:26 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 9so1625966ywe.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 13:36:24 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 31 Mar 2009 16:30:26 -0400
-Message-ID: <5ee96a840903311330y36ed97bet92319da8d118086@mail.gmail.com>
-Subject: MPC83xx console : no output after handover
-From: "Matthew L. Creech" <mlcreech@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 62DC6DDDA0
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 07:39:10 +1100 (EST)
+In-Reply-To: <1238455136.17330.12.camel@pasglop>
+References: <1238383506.17330.0.camel@pasglop>
+	<7E26E694-85F8-445F-9113-88DCD61BC32C@kernel.crashing.org>
+	<20090330135903.GA11614@oksana.dev.rtsoft.ru>
+	<1238455136.17330.12.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <38D8651E-1AB6-4358-AD1F-408E3DB8F4E9@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Build error
+Date: Tue, 31 Mar 2009 22:41:38 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,37 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(Sorry if this is a dupe, but I think my first attempt was filtered out)
+>>>> ERROR: "fsl_pq_mdio_bus_name" [drivers/net/gianfar_driver.ko]
+>>>> undefined!
+>>>>
+>>>> I'll ask Linus to pull anyway though.
+>>>>
+>>>> Cheers,
+>>>> Ben.
+>>>
+>>> I believe this is fixed in net-next (and possible linus has already
+>>> pulled that in.)
+>>
+>> FWIW, I can't reproduce the issue neither in benh/powerpc.git `next'
+>> branch nor in `merge' branch...
+>
+> Ah .. .weird :-)
 
-Hi,
+I had this happen a few days ago already, on Linus' tree.  I also told
+you about it (on IRC), but you were too busy or something :-)
 
-I'm trying to get Linux booting on a custom board based on the MPC8313
-ERDB, but there's no output after the console is transferred.  I get
-the following:
+A simple ppc6xx_defconfig is enough to reproduce, fwiw.
 
-Using MPC831x RDB machine description
-Linux version 2.6.29 (mlcreech@lap) (gcc version 4.3.2 (Sourcery G++ Lite 4.3-50
-) ) #2 PREEMPT Tue Mar 31 14:54:27 EDT 2009
-console [udbg0] enabled
+Here's the patch I used, sorry if my mailer wraps it, it's a one-liner,
+you can handle it I'm sure :-)
 
-... (normal boot output) ...
 
-Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-serial8250.0: ttyS0 at MMIO 0xe0004500 (irq = 16) is a 16550A
-console handover: boot [udbg0] -> real [ttyS0]
-serial8250.0: ttyS1 at MMIO 0xe0004600 (irq = 17) is a 16550A
+Segher
 
-If I boot with "console=udbg0,115200", then it gets much further along
-before printing "turn off boot console udbg0".  So presumably the
-kernel is booting beyond this point, but my console isn't printing any
-output.  I traced from that last line back up the call stack to the
-end of drivers/serial/8250.c:serial8250_init(), and everything seems
-okay (it returns 0, and pritnk() still works fine at that point).  I'm
-not sure where to go from there to figure out where the problem lies.
-Could someone point me in the right direction, or suggest what might
-cause a console problem like this?
 
-Thanks!
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
 
--- 
-Matthew L. Creech
+
+Author: Segher Boessenkool <segher@kernel.crashing.org>
+Date:   Fri Mar 27 21:10:59 2009 +0100
+
+     powerpc: EXPORT_SYMBOL_GPL(fsl_pq_mdio_bus_name)
+
+diff --git a/drivers/net/fsl_pq_mdio.c b/drivers/net/fsl_pq_mdio.c
+index b3079a5..a108332 100644
+--- a/drivers/net/fsl_pq_mdio.c
++++ b/drivers/net/fsl_pq_mdio.c
+@@ -204,6 +204,7 @@ void fsl_pq_mdio_bus_name(char *name, struct  
+device_node *np
+         snprintf(name, MII_BUS_ID_SIZE, "%s@%llx", np->name,
+                 (unsigned long long)taddr);
+  }
++EXPORT_SYMBOL_GPL(fsl_pq_mdio_bus_name);
+
+  /* Scan the bus in reverse, looking for an empty spot */
+  static int fsl_pq_mdio_find_free(struct mii_bus *new_bus)
