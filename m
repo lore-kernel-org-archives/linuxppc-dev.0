@@ -1,23 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.234])
-	by ozlabs.org (Postfix) with ESMTP id E7F0DDDE28
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:29:52 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g9so2540388rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 06:29:51 -0700 (PDT)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Tue, 31 Mar 2009 09:29:44 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Add hvc_console to MAINTAINERS
-Message-ID: <20090331132944.GB2332@yoda.jdub.homelinux.org>
-References: <49BF956B.9030109@gmail.com>
-	<20090330133531.f5d99c09.akpm@linux-foundation.org>
-	<20090330205553.GA19278@yoda.jdub.homelinux.org>
-	<20090330141852.59baaeda.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090330141852.59baaeda.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, roel.kluin@gmail.com, linux-kernel@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E7CA8DDE41
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 00:32:11 +1100 (EST)
+Message-Id: <6B1588B3-522D-4C7B-AFA9-5CE361CCA95F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090331120550.GA2332@yoda.jdub.homelinux.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc: Make LOWMEM_CAM_NUM depend on FSL_BOOKE
+Date: Tue, 31 Mar 2009 08:32:04 -0500
+References: <20090331120550.GA2332@yoda.jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a MAINTAINERS entry for the hypervisor virtual console support
-used on IBM POWER servers.
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
----
+On Mar 31, 2009, at 7:05 AM, Josh Boyer wrote:
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c5f4e9d..387ad45 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2176,6 +2176,11 @@ W:       http://www.ia64-linux.org/
- T:     git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
- S:     Maintained
- 
-+IBM HYPERVISOR VIRTUAL CONSOLE
-+P:     Several
-+L:     linuxppc-dev@ozlabs.org
-+S:     Maintained
-+
- IBM MCA SCSI SUBSYSTEM DRIVER
- P:     Michael Lang
- M:     langa2@kph.uni-mainz.de
+> The recent addition of CONFIG_LOWMEM_CAM_BOOL and
+> CONFIG_LOWMEM_CAM_NUM cause the latter to show up in configs
+> that do not need it during 'make oldconfig'.  Make LOWMEM_CAM_NUM
+> depend on FSL_BOOKE.
+>
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>
+> ---
+
+fixed up an applied
+
+- k
