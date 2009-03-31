@@ -1,21 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 0AEDADDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 06:10:15 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 9so1600014ywe.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 12:10:14 -0700 (PDT)
+Return-Path: <wg@grandegger.com>
+Message-ID: <49D26CFB.3070502@grandegger.com>
+Date: Tue, 31 Mar 2009 21:20:27 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-In-Reply-To: <0947433F-BDDA-48D8-A59C-BCF321EE465C@kernel.crashing.org>
-References: <20090331022428.26151.55232.stgit@localhost.localdomain>
-	<0947433F-BDDA-48D8-A59C-BCF321EE465C@kernel.crashing.org>
-Date: Tue, 31 Mar 2009 13:10:13 -0600
-Message-ID: <fa686aa40903311210k10ea4966g24ec6541af90b7cb@mail.gmail.com>
-Subject: Re: [PATCH] net/fec_mpc52xx: fix BUG on missing dma_ops
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Becky Bruce <beckyb@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 3/8] powerpc/85xx: Add support for the "socrates" board
+	(MPC8544).
+References: <20090331123727.853787299@denx.de>	
+	<20090331124035.594457231@denx.de>
+	<fa686aa40903310857w57b9d020i71d56f33ede4e875@mail.gmail.com>
+In-Reply-To: <fa686aa40903310857w57b9d020i71d56f33ede4e875@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, galak@kernel.crashing.net,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
+Cc: Sergei Poselenov <sposelenov@emcraft.com>, devicetree-discuss@ozlabs.org,
+	Ilya Yanok <yanok@emcraft.com>,
+	Dmitry Rakhchev <rda@emcraft.com>, linuxppc-dev@ozlabs.org,
+	Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,166 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks Becky.
+Hi Grant,
 
-g.
-
-2009/3/31 Becky Bruce <beckyb@kernel.crashing.org>:
->
-> On Mar 30, 2009, at 9:25 PM, Grant Likely wrote:
->
->> From: Grant Likely <grant.likely@secretlab.ca>
+Grant Likely wrote:
+> On Tue, Mar 31, 2009 at 6:37 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>> Supported are Ethernet, serial console, I2C, I2C-based RTC and
+>> temperature sensors, NOR and NAND flash, PCI, USB, CAN and Lime
+>> display controller.
 >>
->> The driver triggers a BUG_ON() when allocating DMA buffers if the
->> arch/powerpc dma_ops from the of_platform device are not copied
->> into net_device structure.
+>> The multiplexing of FPGA interrupts onto PowerPC interrupt lines is
+>> supported through our own fpga_pic interrupt controller driver.
 >>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>> For example the SJA1000 controller is level low sensitive connected to
+>> fpga_pic line 2 and is routed to the second (of three) irq lines to
+>> the CPU:
+>>
+>>    can@3,100 {
+>>            compatible = "philips,sja1000";
+>>            reg = <3 0x100 0x80>;
+>>            interrupts = <2 2>;
+>>            interrupts = <2 8 1>;   // number, type, routing
+>>            interrupt-parent = <&fpga_pic>;
+>>    };
+>>
+>> Signed-off-by: Sergei Poselenov <sposelenov@emcraft.com>
+>> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+>> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+>> Signed-off-by: Dmitry Rakhchev <rda@emcraft.com>
 >> ---
->>
->> Becky, does this look better to you?
->
-> Reviewed-by: Becky Bruce <beckyb@kernel.crashing.org>
->
-> I think this is OK now, and Kumar agrees....
->
-> Thanks!
-> B
->
->>
->>
->> g.
->>
->> drivers/net/fec_mpc52xx.c | =A0 19 ++++++++++++-------
->> 1 files changed, 12 insertions(+), 7 deletions(-)
->>
->>
->> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
->> index 049b0a7..f99463f 100644
->> --- a/drivers/net/fec_mpc52xx.c
->> +++ b/drivers/net/fec_mpc52xx.c
->> @@ -129,7 +129,8 @@ static void mpc52xx_fec_free_rx_buffers(struct
->> net_device *dev, struct bcom_task
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct sk_buff *skb;
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0skb =3D bcom_retrieve_buffer(s, NULL, (st=
-ruct bcom_bd
->> **)&bd);
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 dma_unmap_single(&dev->dev, bd->skb_pa, sk=
-b->len,
->> DMA_FROM_DEVICE);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dma_unmap_single(dev->dev.parent, bd->skb_=
-pa, skb->len,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0DMA_FRO=
-M_DEVICE);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0kfree_skb(skb);
->> =A0 =A0 =A0 =A0}
->> }
->> @@ -150,7 +151,7 @@ static int mpc52xx_fec_alloc_rx_buffers(struct
->> net_device *dev, struct bcom_task
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bd =3D (struct bcom_fec_bd *)bcom_prepare=
-_next_buffer(rxtsk);
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bd->status =3D FEC_RX_BUFFER_SIZE;
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 bd->skb_pa =3D dma_map_single(&dev->dev, s=
-kb->data,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 bd->skb_pa =3D dma_map_single(dev->dev.par=
-ent, skb->data,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0FEC_RX_BU=
-FFER_SIZE, DMA_FROM_DEVICE);
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bcom_submit_next_buffer(rxtsk, skb);
->> @@ -388,7 +389,8 @@ static int mpc52xx_fec_hard_start_xmit(struct sk_buf=
-f
->> *skb, struct net_device *d
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bcom_prepare_next_buffer(priv->tx_dmatsk)=
-;
->>
->> =A0 =A0 =A0 =A0bd->status =3D skb->len | BCOM_FEC_TX_BD_TFD | BCOM_FEC_T=
-X_BD_TC;
->> - =A0 =A0 =A0 bd->skb_pa =3D dma_map_single(&dev->dev, skb->data, skb->l=
-en,
->> DMA_TO_DEVICE);
->> + =A0 =A0 =A0 bd->skb_pa =3D dma_map_single(dev->dev.parent, skb->data, =
-skb->len,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 DM=
-A_TO_DEVICE);
->>
->> =A0 =A0 =A0 =A0bcom_submit_next_buffer(priv->tx_dmatsk, skb);
->>
->> @@ -430,7 +432,8 @@ static irqreturn_t mpc52xx_fec_tx_interrupt(int irq,
->> void *dev_id)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct bcom_fec_bd *bd;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0skb =3D bcom_retrieve_buffer(priv->tx_dma=
-tsk, NULL,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(struct b=
-com_bd **)&bd);
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 dma_unmap_single(&dev->dev, bd->skb_pa, sk=
-b->len,
->> DMA_TO_DEVICE);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dma_unmap_single(dev->dev.parent, bd->skb_=
-pa, skb->len,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0DMA_TO_=
-DEVICE);
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_kfree_skb_irq(skb);
->> =A0 =A0 =A0 =A0}
->> @@ -455,7 +458,8 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq,
->> void *dev_id)
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0rskb =3D bcom_retrieve_buffer(priv->rx_dm=
-atsk, &status,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(struct b=
-com_bd **)&bd);
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 dma_unmap_single(&dev->dev, bd->skb_pa, rs=
-kb->len,
->> DMA_FROM_DEVICE);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dma_unmap_single(dev->dev.parent, bd->skb_=
-pa, rskb->len,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0DMA_FRO=
-M_DEVICE);
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Test for errors in received frame */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (status & BCOM_FEC_RX_BD_ERRORS) {
->> @@ -464,7 +468,8 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq,
->> void *dev_id)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bcom_prep=
-are_next_buffer(priv->rx_dmatsk);
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bd->status =3D FEC_RX_BUF=
-FER_SIZE;
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 bd->skb_pa =3D dma_map_sin=
-gle(&dev->dev, rskb->data,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 bd->skb_pa =3D dma_map_sin=
-gle(dev->dev.parent,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 rskb->data,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0FEC_RX_BUFFER_SIZE,
->> DMA_FROM_DEVICE);
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bcom_submit_next_buffer(p=
-riv->rx_dmatsk, rskb);
->> @@ -499,7 +504,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq,
->> void *dev_id)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bcom_prepare_next_buffer(=
-priv->rx_dmatsk);
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bd->status =3D FEC_RX_BUFFER_SIZE;
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 bd->skb_pa =3D dma_map_single(&dev->dev, s=
-kb->data,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 bd->skb_pa =3D dma_map_single(dev->dev.par=
-ent, skb->data,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0FEC_RX_BU=
-FFER_SIZE, DMA_FROM_DEVICE);
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bcom_submit_next_buffer(priv->rx_dmatsk, =
-skb);
->
->
+>>  arch/powerpc/boot/dts/socrates.dts              |  338 +++++
+>>  arch/powerpc/configs/85xx/socrates_defconfig    | 1410 ++++++++++++++++++++++++
+> 
+> I always ask this question: Do you really need a board specific
+> defconfig file?  We are multiplatform now.
+> 
+>>  arch/powerpc/platforms/85xx/Kconfig             |    6
+>>  arch/powerpc/platforms/85xx/Makefile            |    1
+>>  arch/powerpc/platforms/85xx/socrates.c          |  133 ++
+>>  arch/powerpc/platforms/85xx/socrates_fpga_pic.c |  327 +++++
+>>  arch/powerpc/platforms/85xx/socrates_fpga_pic.h |   16
+> 
+> socrates_fpga_pic is only ever going to be used by socrates.c.  I'd
+> roll the two socrates.c files into one and eliminate the header file.
+> 
+>> Index: linux-2.6/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+>> ===================================================================
+>> --- /dev/null
+>> +++ linux-2.6/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+> [...]
+>> +struct socrates_fpga_irq_info {
+>> +       unsigned int irq_line;
+>> +       int type;
+>> +};
+>> +
+>> +/*
+>> + * Interrupt routing and type table
+>> + *
+>> + * IRQ_TYPE_NONE means the interrupt type is configurable,
+>> + * otherwise it's fixed to the specified value.
+>> + */
+>> +static struct socrates_fpga_irq_info fpga_irqs[SOCRATES_FPGA_NUM_IRQS] = {
+>> +       [0] = {0, IRQ_TYPE_NONE},
+>> +       [1] = {0, IRQ_TYPE_LEVEL_HIGH},
+>> +       [2] = {0, IRQ_TYPE_LEVEL_LOW},
+>> +       [3] = {0, IRQ_TYPE_NONE},
+>> +       [4] = {0, IRQ_TYPE_NONE},
+>> +       [5] = {0, IRQ_TYPE_NONE},
+>> +       [6] = {0, IRQ_TYPE_NONE},
+>> +       [7] = {0, IRQ_TYPE_NONE},
+>> +       [8] = {0, IRQ_TYPE_LEVEL_HIGH},
+>> +};
+> 
+> It is good practice to use named elements in initializers: {.type =
+> IRQ_TYPE_LEVEL_HIGH},
+> 
+> Static variables are initialized to zero.  Everything that is 0 can be
+> dropped from this initializer (lines 0 and 3-7, and the irq_line
+> field).
 
+Right, missed that.
 
+This is one of the patches I sent accidentally. I think Kumar already
+applied it to his tree.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Sorry for the noise.
+
+Wolfgang.
