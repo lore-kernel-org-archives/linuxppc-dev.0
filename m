@@ -1,21 +1,20 @@
-Return-Path: <beckyb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 09CCEDDE0D
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 07:04:21 +1100 (EST)
-Message-Id: <61576250-3589-4D1D-9335-30AA27BD3620@kernel.crashing.org>
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: Eduard Fuchs <edfuchs@uni-kassel.de>
-In-Reply-To: <200903311706.55478.edfuchs@uni-kassel.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: 8641D with linux 2.6.29 did'n show second cpu
-Date: Tue, 31 Mar 2009 15:04:17 -0500
-References: <200903311215.55237.edfuchs@uni-kassel.de>
-	<446E5D82-7F37-42B5-8AD9-F8F368A5520A@kernel.crashing.org>
-	<200903311706.55478.edfuchs@uni-kassel.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wg@grandegger.com>
+Message-ID: <49D27775.1050304@grandegger.com>
+Date: Tue, 31 Mar 2009 22:05:09 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/2] powerpc: i2c-mpc: preserve I2C clocking
+References: <20090331125028.066613801@denx.de>	
+	<20090331125451.600446749@denx.de>	
+	<20090331133953.GB3044@pengutronix.de>	
+	<49D21EF1.9050200@grandegger.com>	
+	<20090331135629.GC3044@pengutronix.de>
+	<fa686aa40903310844j11a85fb6w3558923e12670ba9@mail.gmail.com>
+In-Reply-To: <fa686aa40903310844j11a85fb6w3558923e12670ba9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mar 31, 2009, at 10:06 AM, Eduard Fuchs wrote:
+Grant Likely wrote:
+> 2009/3/31 Wolfram Sang <w.sang@pengutronix.de>:
+>>>>> -
+>>>>> -  mpc_i2c_setclock(i2c);
+>>>>> +
+>>>>> +  if (set_clock)
+>>>>> +          mpc_i2c_setclock(i2c);
+>>>> Can't we drop 'set_clock' with something like this here?
+>>>>
+>>>> +   if (!of_get_property(op->node, "fsl,preserve-clocking", NULL)) {
+>>>> +
+>>>> +           if (of_get_property(op->node, "dfsrr", NULL))
+>>>> +                   i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+>>>> +
+>>>> +           if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
+>>>> +               of_device_is_compatible(op->node, "mpc5200-i2c"))
+>>>> +                   i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
+>>>> +
+>>>> +           mpc_i2c_setclock(i2c);
+>>>> +   }
+>>> No, because the I2C registers are not yet mapped.
+>> Sorry, I used misleading words :) With 'here' I meant 'at this
+>> position', i.e. insert my above block where mpc_i2c_setclock was used
+>> anyway.
+> 
+> I agree.  The extra flag makes the flow more complex.  The code block
+> should be moved down.
 
-> Hi,
->
-> Am Dienstag 31 M=E4rz 2009 15:20:21 schrieb Kumar Gala:
->> On Mar 31, 2009, at 5:15 AM, Eduard Fuchs wrote:
->>> Hi,
->>>
->>> I'm testing the evaluation board from freescale (MPC8641DHPCN) with
->>> the latest
->>> linux kernel (2.6.29) and the second core seems disabled. CONFIG_SPM
->>> is
->>> enabled but the /proc/cpuinfo shows only one cpu. With original
->>> 2.6.27 kernel
->>> both cpu cores appears in /proc/cpuinfo.
->>>
->>> Has anyone an idea how can i enable the second core?
->>
->> Are you using u-boot?  I can't remember if you need a newer u-boot to
->> deal with changes in how we bring up the second core.
->
-> Yes. My u-boot version is 2009.03. Are there some additional config =20=
+OK, I just resent the patch standalone also including documentation. I
+think it can go in immediately without waiting for the full clock
+setting patch.
 
-> keys for
-> SMP support in u-boot?
-
-Hrm, I am able to reproduce this here - the second processor is =20
-reported as stuck and once we're booted, I only see one CPU online.  =20
-Let me poke around and see if I can figure out what's going on here.
-
-Cheers,
-Becky
+Wolfgang.
