@@ -1,17 +1,23 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id F066DDDE1B
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 07:45:22 +1100 (EST)
-Message-ID: <49D280E0.9020701@mlbassoc.com>
-Date: Tue, 31 Mar 2009 14:45:20 -0600
-From: Gary Thomas <gary@mlbassoc.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id 46FBADDD04
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 07:52:23 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 9so1630890ywe.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 13:52:22 -0700 (PDT)
 MIME-Version: 1.0
-To: "Matthew L. Creech" <mlcreech@gmail.com>
-Subject: Re: MPC83xx console : no output after handover
-References: <5ee96a840903311330y36ed97bet92319da8d118086@mail.gmail.com>
-In-Reply-To: <5ee96a840903311330y36ed97bet92319da8d118086@mail.gmail.com>
+In-Reply-To: <1238455136.17330.12.camel@pasglop>
+References: <1238383506.17330.0.camel@pasglop>
+	<7E26E694-85F8-445F-9113-88DCD61BC32C@kernel.crashing.org>
+	<20090330135903.GA11614@oksana.dev.rtsoft.ru>
+	<1238455136.17330.12.camel@pasglop>
+Date: Tue, 31 Mar 2009 14:52:22 -0600
+Message-ID: <fa686aa40903311352x1683ab55rada5f77458013864@mail.gmail.com>
+Subject: Re: Build error
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matthew L. Creech wrote:
-> (Sorry if this is a dupe, but I think my first attempt was filtered out)
+On Mon, Mar 30, 2009 at 5:18 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Mon, 2009-03-30 at 17:59 +0400, Anton Vorontsov wrote:
+>> On Mon, Mar 30, 2009 at 08:51:38AM -0500, Kumar Gala wrote:
+>> >
+>> > On Mar 29, 2009, at 10:25 PM, Benjamin Herrenschmidt wrote:
+>> >
+>> >> My next branch (after merging from you):
+>> >>
+>> >> ERROR: "fsl_pq_mdio_bus_name" [drivers/net/gianfar_driver.ko]
+>> >> undefined!
+>> >>
+>> >> I'll ask Linus to pull anyway though.
+>> >>
+>> >> Cheers,
+>> >> Ben.
+>> >
+>> > I believe this is fixed in net-next (and possible linus has already
+>> > pulled that in.)
+>>
+>> FWIW, I can't reproduce the issue neither in benh/powerpc.git `next'
+>> branch nor in `merge' branch...
+>
+> Ah .. .weird :-)
+>
+> Oh well, I'll see if it still happens after I pull back from Linus (who
+> merged all our stuff) and if it does, I'll send you my .config.
 
-Nope, it made it.
+It is triggered when the driver is built as a module.  I'm going to
+post the fix right now.
 
-> Hi,
-> 
-> I'm trying to get Linux booting on a custom board based on the MPC8313
-> ERDB, but there's no output after the console is transferred.  I get
-> the following:
-> 
-> Using MPC831x RDB machine description
-> Linux version 2.6.29 (mlcreech@lap) (gcc version 4.3.2 (Sourcery G++ Lite 4.3-50
-> ) ) #2 PREEMPT Tue Mar 31 14:54:27 EDT 2009
-> console [udbg0] enabled
-> 
-> ... (normal boot output) ...
-> 
-> Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-> serial8250.0: ttyS0 at MMIO 0xe0004500 (irq = 16) is a 16550A
-> console handover: boot [udbg0] -> real [ttyS0]
-> serial8250.0: ttyS1 at MMIO 0xe0004600 (irq = 17) is a 16550A
-> 
-> If I boot with "console=udbg0,115200", then it gets much further along
-> before printing "turn off boot console udbg0".  So presumably the
-> kernel is booting beyond this point, but my console isn't printing any
-> output.  I traced from that last line back up the call stack to the
-> end of drivers/serial/8250.c:serial8250_init(), and everything seems
-> okay (it returns 0, and pritnk() still works fine at that point).  I'm
-> not sure where to go from there to figure out where the problem lies.
-> Could someone point me in the right direction, or suggest what might
-> cause a console problem like this?
-
-What does your command line (boot args) when it fails?  It should
-probably have something like "console=ttyS0,115200" in it.
+g.
 
 -- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
