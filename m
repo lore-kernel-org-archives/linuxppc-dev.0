@@ -1,15 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1DAEEDDDA2
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 08:34:15 +1100 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH] Fix highmem build failure
-Date: Wed,  1 Apr 2009 16:33:31 -0500
-Message-Id: <1238621611-4844-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <roland@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 0ABA8DDE06
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 08:59:09 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: Maynard Johnson <maynardj@us.ibm.com>
+Subject: [PATCH] powerpc ptrace block-step
+Message-Id: <20090401215903.DE872FC3AB@magilla.sf.frob.com>
+Date: Wed,  1 Apr 2009 14:59:03 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org, utrace-devel@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,78 +19,103 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following commit breaks PPC builds with CONFIG_HIGHMEM=y
+Maynard asked about user_enable_block_step() support on powerpc.
+This is the old patch I've posted before.  I haven't even tried
+to compile it lately, but it rebased cleanly.
 
-commit f4112de6b679d84bd9b9681c7504be7bdfb7c7d5
-Author: Akinobu Mita <akinobu.mita@gmail.com>
-Date:   Tue Mar 31 15:23:25 2009 -0700
+AFAIK the only reason this didn't go in several months ago was waiting
+for someone to decide what the right arch_has_block_step() condition was,
+i.e. if it needs to check some cpu_feature or chip identifier bits.
 
-    mm: introduce debug_kmap_atomic
+I had hoped that I had passed the buck then to ppc folks to figure that out
+and make it so.  But it does not appear to have happened.
 
-We get:
+Note you can drop the #define PTRACE_SINGLEBLOCK if you want to be
+conservative and not touch the user (ptrace) ABI yet.  Then Maynard
+could beat on it with internal uses (utrace) before you worry about
+whether userland expects the new ptrace request macro to exist.
 
- CC      init/main.o
-In file included from include/linux/highmem.h:25,
-                 from include/linux/pagemap.h:11,
-                 from include/linux/mempolicy.h:63,
-                 from init/main.c:53:
-linux-2.6/arch/powerpc/include/asm/highmem.h: In function 'kmap_atomic_prot':
-linux-2.6/arch/powerpc/include/asm/highmem.h:98: error: implicit declaration of function 'debug_kmap_atomic'
-In file included from include/linux/pagemap.h:11,
-                 from include/linux/mempolicy.h:63,
-                 from init/main.c:53:
-include/linux/highmem.h: At top level:
-include/linux/highmem.h:196: warning: conflicting types for 'debug_kmap_atomic'
-include/linux/highmem.h:196: error: static declaration of 'debug_kmap_atomic' follows non-static declaration
-linux-2.6/include/asm/highmem.h:98: error: previous implicit declaration of 'debug_kmap_atomic' was here
-make[1]: *** [init/main.o] Error 1
-make: *** [init] Error 2
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Thanks,
+Roland
 ---
- include/linux/highmem.h |   25 +++++++++++++------------
- 1 files changed, 13 insertions(+), 12 deletions(-)
+>From 2482ed1a0ced9caf964275889ea2315916e84ada Mon Sep 17 00:00:00 2001
+From: Roland McGrath <roland@redhat.com>
+Date: Thu, 1 May 2008 23:40:58 -0700
+Subject: [PATCH] powerpc ptrace block-step
 
-diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index 7ff5c55..577b53d 100644
---- a/include/linux/highmem.h
-+++ b/include/linux/highmem.h
-@@ -20,6 +20,19 @@ static inline void flush_kernel_dcache_page(struct page *page)
+This adds block-step support on powerpc,
+including a PTRACE_SINGLEBLOCK request for ptrace.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/include/asm/ptrace.h |    4 ++++
+ arch/powerpc/kernel/ptrace.c      |   19 ++++++++++++++++++-
+ 2 files changed, 22 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index c9c678f..d7692b8 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -135,7 +135,9 @@ do {									      \
+  * These are defined as per linux/ptrace.h, which see.
+  */
+ #define arch_has_single_step()	(1)
++#define arch_has_block_step()	(1)
+ extern void user_enable_single_step(struct task_struct *);
++extern void user_enable_block_step(struct task_struct *);
+ extern void user_disable_single_step(struct task_struct *);
+ 
+ #endif /* __ASSEMBLY__ */
+@@ -288,4 +290,6 @@ extern void user_disable_single_step(struct task_struct *);
+ #define PPC_PTRACE_PEEKUSR_3264  0x91
+ #define PPC_PTRACE_POKEUSR_3264  0x90
+ 
++#define PTRACE_SINGLEBLOCK	0x100	/* resume execution until next branch */
++
+ #endif /* _ASM_POWERPC_PTRACE_H */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 3635be6..656fea2 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -707,12 +707,29 @@ void user_enable_single_step(struct task_struct *task)
+ 		task->thread.dbcr0 |= DBCR0_IDM | DBCR0_IC;
+ 		regs->msr |= MSR_DE;
+ #else
++		regs->msr &= ~MSR_BE;
+ 		regs->msr |= MSR_SE;
  #endif
- 
- #ifdef CONFIG_HIGHMEM
-+#include <asm/kmap_types.h>
-+
-+#if defined(CONFIG_DEBUG_HIGHMEM) && defined(CONFIG_TRACE_IRQFLAGS_SUPPORT)
-+
-+void debug_kmap_atomic(enum km_type type);
-+
-+#else
-+
-+static inline void debug_kmap_atomic(enum km_type type)
-+{
-+}
-+
-+#endif
- 
- #include <asm/highmem.h>
- 
-@@ -187,16 +200,4 @@ static inline void copy_highpage(struct page *to, struct page *from)
- 	kunmap_atomic(vto, KM_USER1);
+ 	}
+ 	set_tsk_thread_flag(task, TIF_SINGLESTEP);
  }
  
--#if defined(CONFIG_DEBUG_HIGHMEM) && defined(CONFIG_TRACE_IRQFLAGS_SUPPORT)
--
--void debug_kmap_atomic(enum km_type type);
--
--#else
--
--static inline void debug_kmap_atomic(enum km_type type)
--{
--}
--
--#endif
--
- #endif /* _LINUX_HIGHMEM_H */
++void user_enable_block_step(struct task_struct *task)
++{
++	struct pt_regs *regs = task->thread.regs;
++
++	if (regs != NULL) {
++#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
++		task->thread.dbcr0 = DBCR0_IDM | DBCR0_BT;
++		regs->msr |= MSR_DE;
++#else
++		regs->msr &= ~MSR_SE;
++		regs->msr |= MSR_BE;
++#endif
++	}
++	set_tsk_thread_flag(task, TIF_SINGLESTEP);
++}
++
+ void user_disable_single_step(struct task_struct *task)
+ {
+ 	struct pt_regs *regs = task->thread.regs;
+@@ -729,7 +746,7 @@ void user_disable_single_step(struct task_struct *task)
+ 		task->thread.dbcr0 &= ~(DBCR0_IC | DBCR0_IDM);
+ 		regs->msr &= ~MSR_DE;
+ #else
+-		regs->msr &= ~MSR_SE;
++		regs->msr &= ~(MSR_SE | MSR_BE);
+ #endif
+ 	}
+ 	clear_tsk_thread_flag(task, TIF_SINGLESTEP);
 -- 
-1.5.6.6
+1.6.0.6
