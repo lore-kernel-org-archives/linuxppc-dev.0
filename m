@@ -1,11 +1,18 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 1 Apr 2009 17:12:44 +1100
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: powerpc: Add dispatch diversion statistics
-Message-ID: <20090401061244.GC27084@kryten>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
+	by ozlabs.org (Postfix) with ESMTP id A38C8DE09B
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 17:16:53 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g37so3535847rvb.1
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 23:16:52 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 0/3] Series short description
+To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	David Miller <davem@davemloft.net>
+Date: Wed, 01 Apr 2009 00:16:46 -0600
+Message-ID: <20090401060117.8641.32252.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,57 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi David,
 
-PHYP tells us how often a shared processor dispatch changed physical cpus.
-This can highlight performance problems caused by the hypervisor.
+Here are the fec_mpc52xx patches which should be picked up for 2.6.29.
+Patch #1 fixes a dma related BUG_ON() discovered after the merge window
+opened.  #2 & #3 were original a single patch posted prior to the merge
+window, but not having a s-o-b line from the original author held them up.
+In the end I rewrote it from scratch as two patches just so I can get
+them merged.  #2 makes the driver use net_device_ops, and #3 fixes a NULL
+dereference.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+I've tested these patches on several MPC5200 platforms.
 
-Index: linux-2.6/arch/powerpc/include/asm/lppaca.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/lppaca.h	2009-02-28 18:37:02.000000000 +1100
-+++ linux-2.6/arch/powerpc/include/asm/lppaca.h	2009-02-28 18:37:07.000000000 +1100
-@@ -125,7 +125,7 @@
- 	// NOTE: This value will ALWAYS be zero for dedicated processors and
- 	// will NEVER be zero for shared processors (ie, initialized to a 1).
- 	volatile u32 yield_count;	// PLIC increments each dispatchx00-x03
--	u32 reserved6;
-+	volatile u32 dispersion_count;	// dispatch changed phys cpu    x04-x07
- 	volatile u64 cmo_faults;	// CMO page fault count         x08-x0F
- 	volatile u64 cmo_fault_time;	// CMO page fault time          x10-x17
- 	u8	reserved7[104];		// Reserved                     x18-x7F
-Index: linux-2.6/arch/powerpc/kernel/lparcfg.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/lparcfg.c	2009-02-28 18:37:02.000000000 +1100
-+++ linux-2.6/arch/powerpc/kernel/lparcfg.c	2009-02-28 18:38:50.000000000 +1100
-@@ -434,6 +434,21 @@
- 	seq_printf(m, "cmo_page_size=%lu\n", cmo_get_page_size());
- }
- 
-+static void splpar_dispatch_data(struct seq_file *m)
-+{
-+	int cpu;
-+	unsigned long dispatches = 0;
-+	unsigned long dispatch_dispersions = 0;
-+
-+	for_each_possible_cpu(cpu) {
-+		dispatches += lppaca[cpu].yield_count;
-+		dispatch_dispersions += lppaca[cpu].dispersion_count;
-+	}
-+
-+	seq_printf(m, "dispatches=%lu\n", dispatches);
-+	seq_printf(m, "dispatch_dispersions=%lu\n", dispatch_dispersions);
-+}
-+
- static int pseries_lparcfg_data(struct seq_file *m, void *v)
- {
- 	int partition_potential_processors;
-@@ -460,6 +475,7 @@
- 		parse_ppp_data(m);
- 		parse_mpp_data(m);
- 		pseries_cmo_data(m);
-+		splpar_dispatch_data(m);
- 
- 		seq_printf(m, "purr=%ld\n", get_purr());
- 	} else {		/* non SPLPAR case */
+ drivers/net/fec_mpc52xx.c |   77 +++++++++++++++++++++++++-------------------
+ 1 files changed, 44 insertions(+), 33 deletions(-)
+
+Cheers,
+g.
+
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
