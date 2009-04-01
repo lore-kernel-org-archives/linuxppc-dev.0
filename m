@@ -1,23 +1,18 @@
-Return-Path: <edfuchs@uni-kassel.de>
-Received: from hrz-ws41.hrz.uni-kassel.de (smtp.hrz.uni-kassel.de
-	[141.51.12.231]) by ozlabs.org (Postfix) with ESMTP id DFE3DDDE31
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 00:36:27 +1100 (EST)
-Received: from ws-87.localnet (rs-pc1.rs.eecs.uni-kassel.de [141.51.112.154])
-	by hrz-ws41.hrz.uni-kassel.de (8.14.0/8.14.0) with ESMTP id
-	n31DaMt2015267
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 15:36:22 +0200
-From: Eduard Fuchs <edfuchs@uni-kassel.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: 8641D with linux 2.6.29 did'n show second cpu
-Date: Wed, 1 Apr 2009 15:36:39 +0200
-References: <200903311215.55237.edfuchs@uni-kassel.de>
-	<200903311706.55478.edfuchs@uni-kassel.de>
-	<E33D1DD7-FEA1-4B57-99C3-D2CA3BDE77E7@kernel.crashing.org>
-In-Reply-To: <E33D1DD7-FEA1-4B57-99C3-D2CA3BDE77E7@kernel.crashing.org>
+Return-Path: <wg@grandegger.com>
+Message-ID: <49D36F1F.2050107@grandegger.com>
+Date: Wed, 01 Apr 2009 15:41:51 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200904011536.39689.edfuchs@uni-kassel.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 5/8] powerpc: i2c-mpc: make I2C bus speed configurable
+References: <20090331123727.853787299@denx.de>	
+	<20090331124035.908249543@denx.de>	
+	<fa686aa40903310841x42876819rafe3e8bf24b8646e@mail.gmail.com>	
+	<49D31D1D.6020004@grandegger.com>
+	<fa686aa40904010630l798528efh465a7543a15f50e5@mail.gmail.com>
+In-Reply-To: <fa686aa40904010630l798528efh465a7543a15f50e5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Grant Likely wrote:
+> On Wed, Apr 1, 2009 at 1:51 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>> Grant Likely wrote:
+>>> The table definition is more verbose this way, but I think it results
+>>> in more understandable and easier to extend code.  It also adds lets
+>>> the compiler do more type checking for you.
+>> OK but I don't like the callback function to do the settings. We need
+>> backward compatibility with old DTS files including the ugly "dfsrr"
+>> property, right? Then it seems consequent to continue using i2c->flags
+>> for that purpose and not to introduce another method. If we don't need
+>> backward compatibility, we could drop the flags completely and just use
+>> callback functions.
+> 
+> I don't understand why you don't like it.  It's an elegant solution
+> and it simplifies the code somewhat.  After grabbing the callback
+> pointer the compatibility code can simply override it.  But I won't
+> belabor the point or oppose the patch if you stick with the flags
+> pointer.
 
-Am Mittwoch 01 April 2009 06:10:36 schrieb Kumar Gala:
-> On Mar 31, 2009, at 10:06 AM, Eduard Fuchs wrote:
-> > Hi,
-> >
-> > Am Dienstag 31 M=E4rz 2009 15:20:21 schrieb Kumar Gala:
-> >> On Mar 31, 2009, at 5:15 AM, Eduard Fuchs wrote:
-> >>> Hi,
-> >>>
-> >>> I'm testing the evaluation board from freescale (MPC8641DHPCN) with
-> >>> the latest
-> >>> linux kernel (2.6.29) and the second core seems disabled. CONFIG_SPM
-> >>> is
-> >>> enabled but the /proc/cpuinfo shows only one cpu. With original
-> >>> 2.6.27 kernel
-> >>> both cpu cores appears in /proc/cpuinfo.
-> >>>
-> >>> Has anyone an idea how can i enable the second core?
-> >>
-> >> Are you using u-boot?  I can't remember if you need a newer u-boot to
-> >> deal with changes in how we bring up the second core.
-> >
-> > Yes. My u-boot version is 2009.03. Are there some additional config
-> > keys for
-> > SMP support in u-boot?
->
-> It appears we introduced a bug in v2009.03 of u-boot.
+I changed my mind ;-). Have a look to PATCH v2 I sent out a few minutes ago.
 
-I never thought that the problem could be in u-boot. I tested the board wit=
-h=20
-u-boot v2009.01 and it works well.
+>>>> --- linux-2.6.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c 2009-03-31 13:25:08.000000000 +0200
+>>>> +++ linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c      2009-03-31 13:28:54.309718526 +0200
+>>>> +int fsl_i2c_get_fdr(struct device_node *node, u32 i2c_clock, u32 i2c_flags)
+>>>> +{
+>>>> [...]
+>>>> +}
+>>>> +EXPORT_SYMBOL(fsl_i2c_get_fdr);
+>>> does not work on a multiplatform kernel.  Both 8xxx and 52xx support
+>>> can be selected at the same time.
+>> OK, then we need different functions including stubs.
+> 
+> I've been thinking about this more.  These tables are only ever going
+> to be used by the i2c_mpc driver and so really they are a part of the
+> i2c_mpc driver itself.  Putting them into common code doesn't make any
+> sense because it is not common code.  I will not merge a patch that
+> puts them into mpc5200 common code.
 
-Best regard
+It's not common code, I agree. How about putting it into mpc52xx_i2c.c
+and use:
 
-Eduard Fuchs
+  $ cat Makefile
+  obj-$(CONFIG_I2C_MPC) += mpc52xx_i2c.o
+
+Or it could be moved back to the i2c_mpc driver and we add stubs for the
+functions to get the bus frequency, or use #ifdef's.
+
+Wolfgang.
