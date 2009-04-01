@@ -1,23 +1,30 @@
-Return-Path: <hbausley@deltatau.com>
-Received: from Barracuda.deltatau.com (64-60-44-212.static-ip.telepacific.net
-	[64.60.44.212]) by ozlabs.org (Postfix) with ESMTP id C9392DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 10:58:02 +1100 (EST)
-Received: from mail.deltatau.com (localhost [127.0.0.1])
-	by Barracuda.deltatau.com (Spam Firewall) with ESMTP id 1467525A1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 16:41:10 -0700 (PDT)
-Received: from mail.deltatau.com (smtp.deltatau.com [64.60.44.211]) by
-	Barracuda.deltatau.com with ESMTP id aS3lRD1NdctKsDWb for
-	<linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 16:41:10 -0700 (PDT)
-Message-ID: <04bf01c9b262$95478040$0109220a@deltatau.local>
-From: "Henry Bausley" <hbausley@deltatau.com>
-To: <linuxppc-dev@ozlabs.org>
-References: <20090331125028.066613801@denx.de><20090331125451.600446749@denx.de><20090331133953.GB3044@pengutronix.de><49D21EF1.9050200@grandegger.com>
-	<20090331135629.GC3044@pengutronix.de>
-Subject: PowerPC 460EX AD7416 Temperature Sensor
-Date: Tue, 31 Mar 2009 17:41:23 -0700
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 28EB6DDDA9
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 11:04:14 +1100 (EST)
+Subject: Re: [PATCH] Add hvc_console to MAINTAINERS
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20090331235057.GB563@zod.rchland.ibm.com>
+References: <49BF956B.9030109@gmail.com>
+	<20090330133531.f5d99c09.akpm@linux-foundation.org>
+	<20090330205553.GA19278@yoda.jdub.homelinux.org>
+	<20090330141852.59baaeda.akpm@linux-foundation.org>
+	<20090331132944.GB2332@yoda.jdub.homelinux.org>
+	<1238543040.6522.10.camel@localhost>
+	<20090331235057.GB563@zod.rchland.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-Py/Iofe4NS3COC9azBJA"
+Date: Wed, 01 Apr 2009 11:04:13 +1100
+Message-Id: <1238544253.6522.14.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	roel.kluin@gmail.com, linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,44 +34,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Does anyone know if the I2C temperature sensor is functioning on the AMCC 
-460EX?
-When I do a cat /proc/ad7416 I get the following crash.
 
-Unable to handle kernel paging request for data at address 0x00000000
-Faulting instruction address: 0xc02cbe28
-Oops: Kernel access of bad area, sig: 11 [#1]
-PowerPC 44x Platform
-NIP: c02cbe28 LR: c023cec8 CTR: c023d314
-REGS: ef107d90 TRAP: 0300   Not tainted  (2.6.28.7)
-MSR: 00029000 <EE,ME>  CR: 88000444  XER: 00000000
-DEAR: 00000000, ESR: 00000000
-TASK = ef8590c0[2611] 'cat' THREAD: ef106000
-GPR00: 00000000 ef107e40 ef8590c0 00000000 ef107e9c 00000000 00000c00 
-ef107e98
-GPR08: 00000000 c0330000 ffffffff c0330000 48000448 1001cb7c 100042bc 
-100df49c
-GPR16: 00000002 00000400 c032f014 c032efe4 ef107e9c ef107e98 bfffffff 
-efb43a00
-GPR24: ef61d000 00000000 ef107f20 ef107e98 00000c00 c0400000 00001000 
-efb43a00
-NIP [c02cbe28] mutex_lock+0x0/0x1c
-LR [c023cec8] ad7416_read_temp+0x24/0x80
-Call Trace:
-[ef107e40] [00000400] 0x400 (unreliable)
-[ef107e70] [c023d334] i2c_ad7416_read_proc+0x20/0x70
-[ef107e90] [c00e8018] proc_file_read+0x108/0x334
-[ef107ee0] [c00e2d3c] proc_reg_read+0x4c/0x70
-[ef107ef0] [c00a54e8] vfs_read+0xb4/0x16c
-[ef107f10] [c00a58e0] sys_read+0x4c/0x90
-[ef107f40] [c000ea88] ret_from_syscall+0x0/0x3c
-Instruction dump:
-90010014 38000001 90030000 85230004 7f891800 419e000c 80690008 4bd50779
-80010014 38210010 7c0803a6 4e800020 <7c001828> 3000ffff 7c00192d 40a2fff4
----[ end trace 774db769c3754abe ]---
+--=-Py/Iofe4NS3COC9azBJA
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, 2009-03-31 at 19:50 -0400, Josh Boyer wrote:
+> On Wed, Apr 01, 2009 at 10:44:00AM +1100, Michael Ellerman wrote:
+> >On Tue, 2009-03-31 at 09:29 -0400, Josh Boyer wrote:
+> >> Add a MAINTAINERS entry for the hypervisor virtual console support
+> >> used on IBM POWER servers.
+> >>=20
+> >> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> >> ---
+> >>=20
+> >> diff --git a/MAINTAINERS b/MAINTAINERS
+> >> index c5f4e9d..387ad45 100644
+> >> --- a/MAINTAINERS
+> >> +++ b/MAINTAINERS
+> >> @@ -2176,6 +2176,11 @@ W:       http://www.ia64-linux.org/
+> >>  T:     git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+> >>  S:     Maintained
+> >> =20
+> >> +IBM HYPERVISOR VIRTUAL CONSOLE
+> >> +P:     Several
+> >> +L:     linuxppc-dev@ozlabs.org
+> >> +S:     Maintained
+> >
+> >I don't think it's the "IBM" Hypervisor virtual console driver anymore.
+> >There are backends for Xen, Beat (Toshiba) and virtio.=20
+>=20
+> Was just going by the copyright in the files, and Documentation/powerpc/h=
+vc*
+>=20
+> Also, if there are other backends, then is the list specified really
+> correct?  Perhaps it should just be linux-kernel.
 
+I would say /also/ linux-kernel.
 
-**********************************************************
-Outbound scan for Spam or Virus by Barracuda at Delta Tau
-**********************************************************
+I think there's still more folks on linux-ppc who have looked at the
+driver than elsewhere, but cross-posting to lkml is probably good as
+well.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-Py/Iofe4NS3COC9azBJA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknSr30ACgkQdSjSd0sB4dKBjgCgjKzOWeLmAGOFSqJWgYsWTpm6
+W7sAnirTqnTOESjZHD0kRh1MeUo77jZq
+=F8X4
+-----END PGP SIGNATURE-----
+
+--=-Py/Iofe4NS3COC9azBJA--
