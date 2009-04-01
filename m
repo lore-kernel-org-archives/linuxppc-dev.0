@@ -1,27 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 02ADDDDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 00:49:23 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so23554yxg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Apr 2009 06:49:21 -0700 (PDT)
+Return-Path: <wg@grandegger.com>
+Message-ID: <49D3723B.5030107@grandegger.com>
+Date: Wed, 01 Apr 2009 15:55:07 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-In-Reply-To: <D7365D0C-57B0-479C-9335-265620B8E5AE@kernel.crashing.org>
-References: <49C26434.30302@grandegger.com> <49D1E3E5.3080607@grandegger.com>
-	<fa686aa40903310623r2b2db0adjb912cfefd3a321e2@mail.gmail.com>
-	<49D21C75.7060307@grandegger.com>
-	<fa686aa40903310805k794b9df0s4d21a8080907a767@mail.gmail.com>
-	<20090331155443.GA28242@oksana.dev.rtsoft.ru>
-	<49D3197C.7000806@grandegger.com>
-	<fa686aa40904010540h53c8975ao196657f6fdd66583@mail.gmail.com>
-	<49D367C7.5010802@grandegger.com>
-	<D7365D0C-57B0-479C-9335-265620B8E5AE@kernel.crashing.org>
-Date: Wed, 1 Apr 2009 07:49:21 -0600
-Message-ID: <fa686aa40904010649t36cde982wc19fc05de42b340c@mail.gmail.com>
-Subject: Re: powerpc/85xx: Add support for the "socrates" board (MPC8544)
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Kumar Gala <galak@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 5/8] powerpc: i2c-mpc: make I2C bus speed configurable
+References: <20090331123727.853787299@denx.de>		<20090331124035.908249543@denx.de>		<fa686aa40903310841x42876819rafe3e8bf24b8646e@mail.gmail.com>		<49D31D1D.6020004@grandegger.com>	<fa686aa40904010630l798528efh465a7543a15f50e5@mail.gmail.com>
+	<49D36F1F.2050107@grandegger.com>
+In-Reply-To: <49D36F1F.2050107@grandegger.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,114 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 1, 2009 at 7:27 AM, Kumar Gala <galak@kernel.crashing.org> wrot=
-e:
->
-> On Apr 1, 2009, at 8:10 AM, Wolfgang Grandegger wrote:
->
->> Grant Likely wrote:
->>>
->>> On Wed, Apr 1, 2009 at 1:36 AM, Wolfgang Grandegger <wg@grandegger.com>
->>> wrote:
->>>>
->>>> Anton Vorontsov wrote:
->>>>>
->>>>> On Tue, Mar 31, 2009 at 09:05:28AM -0600, Grant Likely wrote:
+Wolfgang Grandegger wrote:
+> Grant Likely wrote:
+>> On Wed, Apr 1, 2009 at 1:51 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>>> Grant Likely wrote:
+>>>> The table definition is more verbose this way, but I think it results
+>>>> in more understandable and easier to extend code.  It also adds lets
+>>>> the compiler do more type checking for you.
+>>> OK but I don't like the callback function to do the settings. We need
+>>> backward compatibility with old DTS files including the ugly "dfsrr"
+>>> property, right? Then it seems consequent to continue using i2c->flags
+>>> for that purpose and not to introduce another method. If we don't need
+>>> backward compatibility, we could drop the flags completely and just use
+>>> callback functions.
+>> I don't understand why you don't like it.  It's an elegant solution
+>> and it simplifies the code somewhat.  After grabbing the callback
+>> pointer the compatibility code can simply override it.  But I won't
+>> belabor the point or oppose the patch if you stick with the flags
+>> pointer.
+> 
+> I changed my mind ;-). Have a look to PATCH v2 I sent out a few minutes ago.
+> 
+>>>>> --- linux-2.6.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c 2009-03-31 13:25:08.000000000 +0200
+>>>>> +++ linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c      2009-03-31 13:28:54.309718526 +0200
+>>>>> +int fsl_i2c_get_fdr(struct device_node *node, u32 i2c_clock, u32 i2c_flags)
+>>>>> +{
 >>>>> [...]
->>>>>>>>>>>
->>>>>>>>>>> + =A0 =A0 =A0 soc8544@e0000000 {
->>>>>>>>>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
->>>>>>>>>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <1>;
->>>>>>>>>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 device_type =3D "soc";
->>>>>>>>>>
->>>>>>>>>> Drop device_type here too.
->>>>>>>>>
->>>>>>>>> Grrr, I just realized that removing the devices type "soc" has
->>>>>>>>> broken
->>>>>>>>> fsl_get_sys_freq(). See:
->>>>>>>>>
->>>>>>>>> http://lxr.linux.no/linux+v2.6.29/arch/powerpc/sysdev/fsl_soc.c#L=
-80
->>>>>>>>>
->>>>>>>>> We need a quick fix and we could take the occasion to establish a
->>>>>>>>> common
->>>>>>>>> function for the MPC52xx as well, but it's not obvious to me how =
-to
->>>>>>>>> find
->>>>>>>>> the SOC node without the device type property.
->>>>>>>>
->>>>>>>> SoC node should have a compatible property, just like everything
->>>>>>>> else.
->>>>>>>>
->>>>>>>> compatible =3D "fsl,mpc8544-immr"; =A0(immr =3D=3D Internally Memo=
-ry Mapped
->>>>>>>> Registers)
->>>>>>>>
->>>>>>>> Many other boards already do this.
->>>>>>>
->>>>>>> Yes, it does, but searching for the SOC node is not straight-forwar=
-d
->>>>>>> because there is no common compatibility string but many CPU-specif=
-ic
->>>>>>> compatibility strings, e.g. "fsl,mpc8560-immr", etc. Have I missed
->>>>>>> something?
->>>>>>
->>>>>> Choose a new value ("fsl,mpc-immr" perhaps?), document exactly what =
-it
->>>>>> means, and add add it to the end of the compatible list.
->>>>>
->>>>> As Scott Wood once pointed out, IMMR does not exists for MPC85xx
->>>>> parts. There it's called CCSR.
->>>>>
->>>>> See this thread:
->>>>>
->>>>> http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg12665.html
->>>>>
->>>>> I still think that
->>>>> "fsl,mpc83NN-immr", "fsl,soc", "simple-bus" for 83xx
->>>>> and
->>>>> "fsl,mpc85NN-ccsr", "fsl,soc", "simple-bus" for 85xx
->>>>>
->>>>> would be OK, at least to start with. We can always deprecate "fsl,soc=
-"
->>>>> compatible in favour of something more elegant, but "fsl,soc" should =
-be
->>>>> just fine to replace device_type =3D "soc".
->>>>>
->>>>> Also, there is another good thing about "fsl,soc" -- U-Boot already
->>>>> finds it for 83xx CPUs. ;-)
->>>>
->>>> Ugh! I just realize the full impact of removing device type "soc". It
->>>> will break compatibility with U-Boot for many boards. Is it worth it?
->>>
->>> Yes, I know this. =A0I'm not asking you to fix all the other boards, bu=
-t
->>> make sure that it is not required for the new board.
->>
->> Hm, I'm confused, if we want to fix this issue we need first to
->>
->> - fix all functions in fsl_soc.c searching for the compatible string
->> =A0"fsl,soc" instead of the device type "soc" (or both for backward
->> =A0compatibility).
->>
->> - fix U-Boot to find the SOC node by looking for "fsl,soc" to insert the
->> =A0proper bus-frequency, at least.
->>
->> That affects *all* boards using CONFIG_FSL_SOC and requires an
->> up-to-date version of U-Boot for new kernels :-(. If that is fixed, I
->> can remove the "device_type =3D "soc";" from socrates.dts (and may more)=
-,
->> but not right now. Or have I missed something?
->
-> I presume the intent is not to break old u-boots w/new kernels, but to ma=
-ke
-> it so new .dts don't require device_type =3D soc in them if using new ker=
-nels.
+>>>>> +}
+>>>>> +EXPORT_SYMBOL(fsl_i2c_get_fdr);
+>>>> does not work on a multiplatform kernel.  Both 8xxx and 52xx support
+>>>> can be selected at the same time.
+>>> OK, then we need different functions including stubs.
+>> I've been thinking about this more.  These tables are only ever going
+>> to be used by the i2c_mpc driver and so really they are a part of the
+>> i2c_mpc driver itself.  Putting them into common code doesn't make any
+>> sense because it is not common code.  I will not merge a patch that
+>> puts them into mpc5200 common code.
+> 
+> It's not common code, I agree. How about putting it into mpc52xx_i2c.c
+> and use:
+> 
+>   $ cat Makefile
+>   obj-$(CONFIG_I2C_MPC) += mpc52xx_i2c.o
 
-Exactly.
+That not a good idea either. I just checked the I2C interface of the
+MPC512x and it can use the same table then the MPC5200B.
 
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Wolfgang.
