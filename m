@@ -1,16 +1,23 @@
-Return-Path: <jt.conklin@xorp.net>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.234])
-	by ozlabs.org (Postfix) with ESMTP id 08CB8DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 05:52:41 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g9so152742rvb.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Apr 2009 11:52:39 -0700 (PDT)
+Return-Path: <mlcreech@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 42A19DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 05:53:57 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so118539yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 01 Apr 2009 11:53:56 -0700 (PDT)
 MIME-Version: 1.0
-Date: Wed, 1 Apr 2009 11:52:39 -0700
-Message-ID: <6c5c8a400904011152n1dadb9bdoa244004595dbd95e@mail.gmail.com>
-Subject: Support for kernels with large (10MB+) initramfs images
-From: "J.T. Conklin" <jt.conklin@xorp.net>
-To: linuxppc-dev@ozlabs.org
+In-Reply-To: <5ee96a840903311522t10af5c64n53ab6f834ad475ff@mail.gmail.com>
+References: <5ee96a840903311330y36ed97bet92319da8d118086@mail.gmail.com>
+	<49D280E0.9020701@mlbassoc.com>
+	<5ee96a840903311403r331943d2wf9dbb16491f6bc3@mail.gmail.com>
+	<49D28A7E.2090703@mlbassoc.com>
+	<5ee96a840903311522t10af5c64n53ab6f834ad475ff@mail.gmail.com>
+Date: Wed, 1 Apr 2009 14:53:55 -0400
+Message-ID: <5ee96a840904011153qc052002i8c35229ca3e85c6c@mail.gmail.com>
+Subject: Re: MPC83xx console : no output after handover
+From: "Matthew L. Creech" <mlcreech@gmail.com>
+To: Gary Thomas <gary@mlbassoc.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm trying to embed the open source XORP routing stack in 85xx based
-embedded system.  XORP's original design didn't consider the
-possibility of an embedded deployment, so just getting it all to fit
-within the 32MB flash of our target has been a challenge all by
-itself.
+It turned out that the normally-initialized 8250 driver was getting
+stomped on by my device tree's serial driver (which is also an 8250) -
+apparently CONFIG_SERIAL_8250[_CONSOLE] and CONFIG_SERIAL_OF_PLATFORM
+don't play well together.  Disabling the latter fixed my problem.
 
-The BSP/SDK from the ODM that used a separate kernel and initrd, with
-a 2MB region reserved for the kernel and a 16MB region reserved for
-the initrd.  However, I'm investigating whether it would be possible
-to use a kernel with everything in a initramfs.  This currently gives
-us a 12MB image, and I'd be able to have two complete firmware images
-on the system (the remaining space would be used for a small jffs2
-filesystem and u-boot itself).
+Thanks for the help, and sorry for the noise.
 
-Unfortunately, I haven't been able to get this large kernel booting.
-
-The first problem I ran into was that the zImage wrapper was linked
-with a load address of 4MB, so the image couldn't be relocated without
-overwriting itself.  Changing zImage.lds.S to use a 32MB load address
-fixed this problem.
-
-I had hoped that that would be enough, but the kernel still does not
-start.  I have not yet attempted to trace kernel bring up (with a
-BDI3000), so I'm not quite sure what's gone wrong.
-
-I've done a bit of web browsing this morning, and saw some suggestions
-to change u-boot's CFG_BOOTMAPSZ from 8<<20 to 16<<20; but that hasn't
-helped either.
-
-I'll continue to poke at this on my own, but I'd appreciate if anyone
-can point me in the right direction.
-
-Many thanks,
-
-    --jtc
+-- 
+Matthew L. Creech
