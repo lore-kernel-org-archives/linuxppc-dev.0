@@ -1,19 +1,19 @@
 Return-Path: <dgibson@bilbo.ozlabs.org>
-Date: Thu, 2 Apr 2009 10:57:37 +1100
+Date: Thu, 2 Apr 2009 10:58:54 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Wolfgang Grandegger <wg@grandegger.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
 Subject: Re: [PATCH 6/8] --- arch/powerpc/boot/dts/socrates.dts | 9
 	+++++++-- 1 file changed, 7 insertions(+), 2 deletions(-)
-Message-ID: <20090401235737.GA7995@yookeroo.seuss>
+Message-ID: <20090401235854.GB7995@yookeroo.seuss>
 References: <20090331123727.853787299@denx.de>
 	<20090331124036.057237866@denx.de>
 	<20090331230451.GA23304@yookeroo.seuss>
 	<49D31856.9060808@grandegger.com>
 	<20090401110955.GA7507@yookeroo.seuss>
-	<49D35728.1060107@grandegger.com>
+	<20090401123029.GA31909@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49D35728.1060107@grandegger.com>
+In-Reply-To: <20090401123029.GA31909@oksana.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,46 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 01, 2009 at 01:59:36PM +0200, Wolfgang Grandegger wrote:
-> David Gibson wrote:
+On Wed, Apr 01, 2009 at 04:30:29PM +0400, Anton Vorontsov wrote:
+> On Wed, Apr 01, 2009 at 10:09:55PM +1100, David Gibson wrote:
 > > On Wed, Apr 01, 2009 at 09:31:34AM +0200, Wolfgang Grandegger wrote:
-> >> Hi David,
-> >>
-> >> this patch went out by mistake, sorry.
-> >>
-> >> David Gibson wrote:
-> >>> On Tue, Mar 31, 2009 at 02:37:33PM +0200, Wolfgang Grandegger wrote:
-> >>>> Index: linux-2.6/arch/powerpc/boot/dts/socrates.dts
-> >>>> ===================================================================
-> >>>> --- linux-2.6.orig/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:24:38.078719288 +0200
-> >>>> +++ linux-2.6/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:47:56.986720719 +0200
-> >>>> @@ -52,6 +52,7 @@
-> >>>>  	soc8544@e0000000 {
-> >>>>  		#address-cells = <1>;
-> >>>>  		#size-cells = <1>;
-> >>>> +		device_type = "soc";
-> >>> You should not be adding device_type to a new board's dts.  You
-> >>> *especially* shouldn't be doing that with no patch comment explaining
-> >>> why.
-> >> In the final patch I have removed the device_type = "soc", but it makes
-> >> trouble as some mpc85xx rely on it.
+> > > Hi David,
+> > > 
+> > > this patch went out by mistake, sorry.
+> > > 
+> > > David Gibson wrote:
+> > > > On Tue, Mar 31, 2009 at 02:37:33PM +0200, Wolfgang Grandegger wrote:
+> > > >> Index: linux-2.6/arch/powerpc/boot/dts/socrates.dts
+> > > >> ===================================================================
+> > > >> --- linux-2.6.orig/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:24:38.078719288 +0200
+> > > >> +++ linux-2.6/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:47:56.986720719 +0200
+> > > >> @@ -52,6 +52,7 @@
+> > > >>  	soc8544@e0000000 {
+> > > >>  		#address-cells = <1>;
+> > > >>  		#size-cells = <1>;
+> > > >> +		device_type = "soc";
+> > > > 
+> > > > You should not be adding device_type to a new board's dts.  You
+> > > > *especially* shouldn't be doing that with no patch comment explaining
+> > > > why.
+> > > 
+> > > In the final patch I have removed the device_type = "soc", but it makes
+> > > trouble as some mpc85xx rely on it.
 > > 
 > > Um.. what?  Some mpc85xx?  This is the dts for *one specific board*, I
 > > don't see how something that affects "some mpc85xx" is relevant.
 > 
-> Well, to be more precise, it affects all boards using CONFIG_FSL_SOC
-> because they use functions searching for the device type "soc", e.g.
-> fsl_get_sys_freq():
-> 
-> http://lxr.linux.no/linux+v2.6.29/arch/powerpc/sysdev/fsl_soc.c#L80
-> 
-> This needs to be fixed before the line 'device_type = "soc"' can be removed.
+> Not some, but *all* mpc85xx. The thing is that U-Boot is searching
+> for device_type = "soc" to fixup some properties (for example,
+> bus-frequency) for all mpc85xx parts, so you can't easily remove
+> the device_type w/o breaking boot for firmwares that customers have
+> pre-programmed in their products.
 
-Gah.  I had been under the impression that had been fixed already.
-Kumar!  Get your house in order!
+I thought that was fixed in current u-boot versions.
 
-Ok, I guess it will have to stay for now, just as long as the new
-style marker in compatible is there as well.
+> Note that upgrading firmware without JTAG is dangerous, so it's not
+> an option to "force" everybody to upgrade their firmware just
+> because we want to remove some cruft from the device tree.
+
+I realise that, but again this is a *new board*, which presumably can
+use an up-to-date u-boot version.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
