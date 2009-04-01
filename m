@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6E667DDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 09:24:53 +1100 (EST)
-Subject: Re: Problem with module_init?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20090401112756.GA14171@yoda.jdub.homelinux.org>
-References: <20090331143742.083c6cb0@lappy.seanm.ca>
-	<20090331231153.256d1bf4@lappy.seanm.ca>
-	<20090401112756.GA14171@yoda.jdub.homelinux.org>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 09:24:43 +1100
-Message-Id: <1238624683.17330.138.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kp.nortel.com (zrtps0kp.nortel.com [47.140.192.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7DD5ADDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 10:37:01 +1100 (EST)
+Message-ID: <49D3F662.4050100@nortel.com>
+Date: Wed, 01 Apr 2009 17:18:58 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org, linux-kernel-owner@vger.kernel.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Resend: /proc/<pid>/maps offset output broken in 2.6.29
+References: <49CA8501.1000000@nortel.com>
+In-Reply-To: <49CA8501.1000000@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-04-01 at 07:27 -0400, Josh Boyer wrote:
-> 
-> I'm assuming this is the result of a git-bisect run?
-> 
-> Can I also assume you were loading the module on your Warp board?
-> 
-> Ben, have you tested module loads on 4xx since you redid this?
-> 
-I must shamefully admit almost never testing modules ... I always
-netboot zImages with all the drivers I need built-in.
+Resending due to lack of response to original post.
 
-I suspect I just screwed up the definition of PAGE_KERNEL_EXEC or
-something like that. I'll have a look.
+I was validating some code dealing with /proc/<pid>/maps on 2.6.29 and 
+was surprised when it failed.  It turns out that at least on my ppc64 G5 
+machine the offset value for the last entry is strange--it shows up as a 
+64-bit value even though the process itself is only 32-bit.
 
-Cheers,
-Ben.
+This behaviour also shows up in 2.6.25, but doesn't in 2.6.14.  I 
+haven't yet tested anything else in between.
+
+[cfriesen@localhost cfriesen]$ cat /proc/self/maps
+00100000-00103000 r-xp 00100000 00:00 0         [vdso]
+0fe70000-0ffbf000 r-xp 00000000 08:03 4312393   /lib/tls/libc-2.3.3.so
+0ffbf000-0ffc0000 ---p 0014f000 08:03 4312393   /lib/tls/libc-2.3.3.so
+0ffc0000-0ffc2000 r--p 00150000 08:03 4312393   /lib/tls/libc-2.3.3.so
+0ffc2000-0ffc6000 rwxp 00152000 08:03 4312393   /lib/tls/libc-2.3.3.so
+0ffc6000-0ffc8000 rwxp 0ffc6000 00:00 0
+0ffd0000-0ffec000 r-xp 00000000 08:03 4309011   /lib/ld-2.3.3.so
+0fff0000-0fff1000 r--p 00020000 08:03 4309011   /lib/ld-2.3.3.so
+0fff1000-0fff2000 rwxp 00021000 08:03 4309011   /lib/ld-2.3.3.so
+10000000-10004000 r-xp 00000000 08:03 917536    /bin/cat
+10013000-10015000 rwxp 00003000 08:03 917536    /bin/cat
+10015000-10036000 rwxp 10015000 00:00 0         [heap]
+f7deb000-f7feb000 r--p 00000000 08:03 2560322 
+/usr/lib/locale/locale-archive
+f7feb000-f7fec000 rw-p f7feb000 00:00 0
+ffe6d000-ffe82000 rw-p ffffffeb000 00:00 0      [stack]
+
+I'm at a loss to explain what's going on here.  Anyone got any ideas?
+
+Thanks,
+
+Chris
