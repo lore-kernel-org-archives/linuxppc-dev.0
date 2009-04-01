@@ -1,18 +1,21 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <49D38D94.3010703@grandegger.com>
-Date: Wed, 01 Apr 2009 17:51:48 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <tmarri@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C205CDDDA0
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 04:05:05 +1100 (EST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v2] powerpc: i2c-mpc: make I2C bus speed configurable
-References: <49D36885.9070806@grandegger.com>	
-	<fa686aa40904010644t1c111c05ka7349869eb155429@mail.gmail.com>
-	<fa686aa40904010647o57b59845p54a9c1e1535e4453@mail.gmail.com>
-In-Reply-To: <fa686aa40904010647o57b59845p54a9c1e1535e4453@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	devicetree-discuss <devicetree-discuss@ozlabs.org>,
-	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: /dev/random on PPC40EXr
+Date: Wed, 1 Apr 2009 10:05:00 -0700
+Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C071F4A5D@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <22824979.post@talk.nabble.com>
+References: <22824979.post@talk.nabble.com>
+From: "Tirumala Reddy Marri" <tmarri@amcc.com>
+To: "Felix Radensky" <felix@embedded-sol.com>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,78 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, Apr 1, 2009 at 7:44 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
->> On Wed, Apr 1, 2009 at 7:13 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
->>> This patch makes the I2C bus speed configurable by using the I2C node
->>> property "clock-frequency". If the property is not defined, the old
->>> fixed clock settings will be used for backward compatibility.
->> I mostly like this patch.  However, as I mentioned in my other reply,
->> I'm going to NAK it because the divisor tables are not common code and
->> do not belong in common code files.
->>
->> Other than that, I like this version of the patch and I think it is
->> almost finished.  More comments below.
+There is PKA/TRNG driver for sure. Let me check if it was accepted in
+opensource yet. Otherwise I will forward you the driver which may not be
+there in opensource yet.
 
-Looks good now, indeed.
 
-> Oh, and you should look in MAINTAINERS and cc this patch to Ben Dooks
-> and the linux-i2c@vger.kernel.org mailing list.
+-----Original Message-----
+From: linuxppc-dev-bounces+tmarri=3Damcc.com@ozlabs.org
+[mailto:linuxppc-dev-bounces+tmarri=3Damcc.com@ozlabs.org] On Behalf Of
+Felix Radensky
+Sent: Wednesday, April 01, 2009 5:00 AM
+To: linuxppc-dev@ozlabs.org
+Subject: /dev/random on PPC40EXr
 
-Right, and I need to separate I2C and PowerPC related patches. And it
-will require another round but some acked-by lines will help.
 
->>> -static void mpc_i2c_setclock(struct mpc_i2c *i2c)
->>> -{
->>> -       /* Set clock and filters */
->>> -       if (i2c->flags & FSL_I2C_DEV_SEPARATE_DFSRR) {
->>> -               writeb(0x31, i2c->base + MPC_I2C_FDR);
->>> -               writeb(0x10, i2c->base + MPC_I2C_DFSRR);
->>> -       } else if (i2c->flags & FSL_I2C_DEV_CLOCK_5200)
->>> -               writeb(0x3f, i2c->base + MPC_I2C_FDR);
->>> -       else
->>> -               writel(0x1031, i2c->base + MPC_I2C_FDR);
->>> +static void mpc_i2c_setclock_52xx(struct device_node *node,
->>> +                                 struct mpc_i2c *i2c,
->>> +                                 u32 clock, u32 prescaler)
->>> +{
->>> +       int fdr = mpc52xx_i2c_get_fdr(node, clock, prescaler);
->>> +
->>> +       if (fdr < 0)
->>> +               fdr = 0x3f; /* backward compatibility */
->>> +       writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
->>> +       dev_info(i2c->dev, "clock %d Hz (fdr=%d)\n", clock, fdr);
->>> +}
->>> +
->>> +static void mpc_i2c_setclock_8xxx(struct device_node *node,
->>> +                                 struct mpc_i2c *i2c,
->>> +                                 u32 clock, u32 prescaler)
->>> +{
->>> +       int fdr = fsl_i2c_get_fdr(node, clock, prescaler);
->>> +
->>> +       if (fdr < 0)
->>> +               fdr = 0x1031; /* backward compatibility */
->>> +       writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
->>> +       writeb((fdr >> 8) & 0xff, i2c->base + MPC_I2C_DFSRR);
->>> +       dev_info(i2c->dev, "clock %d Hz (dfsrr=%d fdr=%d)\n",
->>> +                clock, fdr >> 8, fdr & 0xff);
->>>  }
->> Very neat and tidy indeed.  I like this.
+Hi,
 
-Yep.
+On my custom board based on 405EXr /dev/random produces no output
+at all, and /dev/urandom is not random enough for our purposes. Saving
+entropy pool between reboots doesn't help much.
 
->>> Index: linux-2.6/arch/powerpc/sysdev/fsl_soc.c
->>> ===================================================================
->>> --- linux-2.6.orig/arch/powerpc/sysdev/fsl_soc.c        2009-03-31 21:27:52.000000000 +0200
->>> +++ linux-2.6/arch/powerpc/sysdev/fsl_soc.c     2009-04-01 12:09:18.796719327 +0200
->>> @@ -39,7 +39,7 @@
->>>  #include <sysdev/fsl_soc.h>
->>>  #include <mm/mmu_decl.h>
->>>  #include <asm/cpm2.h>
->>> -
->>> +#define DEBUG
->>  ^^^^^^^^^^^^^^^^^^^^^^^  oops?
+What can be done to increase the entropy of the system ?
+I was thinking of adding IRQF_SAMPLE_RANDOM to network driver,
+but since not too many drivers implement it, I don't know whether
+it's a good idea or not.=20
 
-Will fix.
+Is there any work in progress to develop hw_random driver for 4xx
+TRNG ?
 
-Wolfgang.
+Thanks a lot.
+
+Felix.
+--=20
+View this message in context:
+http://www.nabble.com/-dev-random-on-PPC40EXr-tp22824979p22824979.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
