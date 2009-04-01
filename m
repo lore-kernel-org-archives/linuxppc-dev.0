@@ -1,31 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 85B79DDDA1
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 04:27:50 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n31HTKGj006208
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 13:29:20 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n31HRlhs198122
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 13:27:47 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n31HQCHp005440
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 13:26:13 -0400
-Date: Wed, 1 Apr 2009 13:27:04 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Tirumala Reddy Marri <tmarri@amcc.com>
-Subject: Re: /dev/random on PPC40EXr
-Message-ID: <20090401172704.GC11682@zod.rchland.ibm.com>
-References: <22824979.post@talk.nabble.com>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C071F4A5D@SDCEXCHANGE01.ad.amcc.com>
+Return-Path: <jt.conklin@xorp.net>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.234])
+	by ozlabs.org (Postfix) with ESMTP id 08CB8DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 05:52:41 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g9so152742rvb.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 01 Apr 2009 11:52:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C071F4A5D@SDCEXCHANGE01.ad.amcc.com>
-Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>
+Date: Wed, 1 Apr 2009 11:52:39 -0700
+Message-ID: <6c5c8a400904011152n1dadb9bdoa244004595dbd95e@mail.gmail.com>
+Subject: Support for kernels with large (10MB+) initramfs images
+From: "J.T. Conklin" <jt.conklin@xorp.net>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,11 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 01, 2009 at 10:05:00AM -0700, Tirumala Reddy Marri wrote:
->There is PKA/TRNG driver for sure. Let me check if it was accepted in
->opensource yet. Otherwise I will forward you the driver which may not be
->there in opensource yet.
+I'm trying to embed the open source XORP routing stack in 85xx based
+embedded system.  XORP's original design didn't consider the
+possibility of an embedded deployment, so just getting it all to fit
+within the 32MB flash of our target has been a challenge all by
+itself.
 
-You could just send it to the list instead.  That way everyone would have it...
+The BSP/SDK from the ODM that used a separate kernel and initrd, with
+a 2MB region reserved for the kernel and a 16MB region reserved for
+the initrd.  However, I'm investigating whether it would be possible
+to use a kernel with everything in a initramfs.  This currently gives
+us a 12MB image, and I'd be able to have two complete firmware images
+on the system (the remaining space would be used for a small jffs2
+filesystem and u-boot itself).
 
-josh
+Unfortunately, I haven't been able to get this large kernel booting.
+
+The first problem I ran into was that the zImage wrapper was linked
+with a load address of 4MB, so the image couldn't be relocated without
+overwriting itself.  Changing zImage.lds.S to use a 32MB load address
+fixed this problem.
+
+I had hoped that that would be enough, but the kernel still does not
+start.  I have not yet attempted to trace kernel bring up (with a
+BDI3000), so I'm not quite sure what's gone wrong.
+
+I've done a bit of web browsing this morning, and saw some suggestions
+to change u-boot's CFG_BOOTMAPSZ from 8<<20 to 16<<20; but that hasn't
+helped either.
+
+I'll continue to poke at this on my own, but I'd appreciate if anyone
+can point me in the right direction.
+
+Many thanks,
+
+    --jtc
