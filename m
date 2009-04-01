@@ -1,30 +1,19 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [59.145.155.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 403FFDDE0D
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 22:48:20 +1100 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28smtp09.in.ibm.com (8.13.1/8.13.1) with ESMTP id n31BJ3N6021173
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 16:49:03 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n31BmONx2678824
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 17:18:24 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
-	by d28av02.in.ibm.com (8.13.1/8.13.3) with ESMTP id n31BmE5o010340
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 22:48:14 +1100
-Message-ID: <49D3547E.8030200@in.ibm.com>
-Date: Wed, 01 Apr 2009 17:18:14 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <49D35728.1060107@grandegger.com>
+Date: Wed, 01 Apr 2009 13:59:36 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [ppc64] 2.6.29-git7 : offlining a cpu causes an exception
-References: <49D1E21E.3090505@in.ibm.com> <1238539469.17330.70.camel@pasglop>
-	<49D30C48.4090902@in.ibm.com>
-In-Reply-To: <49D30C48.4090902@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Wolfgang Grandegger <wg@grandegger.com>, linuxppc-dev@ozlabs.org,
+	devicetree-discuss@ozlabs.org
+Subject: Re: [PATCH 6/8] --- arch/powerpc/boot/dts/socrates.dts | 9	+++++++--
+	1 file changed, 7 insertions(+), 2 deletions(-)
+References: <20090331123727.853787299@denx.de>
+	<20090331124036.057237866@denx.de>
+	<20090331230451.GA23304@yookeroo.seuss>
+	<49D31856.9060808@grandegger.com>
+	<20090401110955.GA7507@yookeroo.seuss>
+In-Reply-To: <20090401110955.GA7507@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,36 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sachin Sant wrote:
-> Benjamin Herrenschmidt wrote:
->> On Tue, 2009-03-31 at 14:57 +0530, Sachin Sant wrote:
->>  
->>> While executing CPU HotPlug[1] tests i observed that during
->>> every cpu offline process an exception is thrown.
->>>     
+David Gibson wrote:
+> On Wed, Apr 01, 2009 at 09:31:34AM +0200, Wolfgang Grandegger wrote:
+>> Hi David,
 >>
->> Looks like a BUG_ON() to me... can you look at what other
->> messages just before that ?  
->
-Ben, seems like the following patch is causing the cpu hotplug
-test failure. 
+>> this patch went out by mistake, sorry.
+>>
+>> David Gibson wrote:
+>>> On Tue, Mar 31, 2009 at 02:37:33PM +0200, Wolfgang Grandegger wrote:
+>>>> Index: linux-2.6/arch/powerpc/boot/dts/socrates.dts
+>>>> ===================================================================
+>>>> --- linux-2.6.orig/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:24:38.078719288 +0200
+>>>> +++ linux-2.6/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:47:56.986720719 +0200
+>>>> @@ -52,6 +52,7 @@
+>>>>  	soc8544@e0000000 {
+>>>>  		#address-cells = <1>;
+>>>>  		#size-cells = <1>;
+>>>> +		device_type = "soc";
+>>> You should not be adding device_type to a new board's dts.  You
+>>> *especially* shouldn't be doing that with no patch comment explaining
+>>> why.
+>> In the final patch I have removed the device_type = "soc", but it makes
+>> trouble as some mpc85xx rely on it.
+> 
+> Um.. what?  Some mpc85xx?  This is the dts for *one specific board*, I
+> don't see how something that affects "some mpc85xx" is relevant.
 
-[PATCH 6/6] powerpc/mm: Introduce early_init_mmu() on 64-bit
+Well, to be more precise, it affects all boards using CONFIG_FSL_SOC
+because they use functions searching for the device type "soc", e.g.
+fsl_get_sys_freq():
 
-http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069613.html
+http://lxr.linux.no/linux+v2.6.29/arch/powerpc/sysdev/fsl_soc.c#L80
 
-If i back out this patch, i am able to offline/online cpu's
-without any issue.
+This needs to be fixed before the line 'device_type = "soc"' can be removed.
 
-Thanks
--Sachin
-
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+Wolfgang.
