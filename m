@@ -1,15 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: PPC_CELL_NATIVE should select PCI
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <alpine.LRH.2.00.0904011141550.13419@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0904011141550.13419@vixen.sonytel.be>
-Content-Type: text/plain
-Date: Wed, 01 Apr 2009 20:54:12 +1100
-Message-Id: <1238579652.17330.124.camel@pasglop>
-Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
+Return-Path: <sachinp@in.ibm.com>
+Message-ID: <49D3419E.7000005@in.ibm.com>
+Date: Wed, 01 Apr 2009 15:57:42 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [Patch next] powerpc: pseries/dtl.c should include asm/firmware.h
+References: <20090401164450.f8192631.sfr@canb.auug.org.au>
+In-Reply-To: <20090401164450.f8192631.sfr@canb.auug.org.au>
+Content-Type: multipart/mixed; boundary="------------050404090408000502010008"
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,29 +19,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-04-01 at 11:42 +0200, Geert Uytterhoeven wrote:
-> PPC_CELL_NATIVE selects PPC_OF_PLATFORM_PCI, but not the underlying PCI,
-> causing build failures if PCI is not set.
+This is a multi-part message in MIME format.
+--------------050404090408000502010008
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Maybe it should only select it if PCI is enabled ? Is qpace using PCI ?
+randconfig build on powerpc failed with :
 
-Cheers,
-Ben.
 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> ---
->  arch/powerpc/platforms/cell/Kconfig |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-> index 40e24c3..33f534f 100644
-> --- a/arch/powerpc/platforms/cell/Kconfig
-> +++ b/arch/powerpc/platforms/cell/Kconfig
-> @@ -14,6 +14,7 @@ config PPC_CELL_NATIVE
->  	bool
->  	select PPC_CELL_COMMON
->  	select PPC_OF_PLATFORM_PCI
-> +	select PCI
->  	select MPIC
->  	select IBM_NEW_EMAC_EMAC4
->  	select IBM_NEW_EMAC_RGMII
+arch/powerpc/platforms/pseries/dtl.c: In function ‘dtl_init’:
+arch/powerpc/platforms/pseries/dtl.c:238: error: implicit declaration of function ‘firmware_has_feature’
+arch/powerpc/platforms/pseries/dtl.c:238: error: ‘FW_FEATURE_SPLPAR’ undeclared (first use in this function)
+arch/powerpc/platforms/pseries/dtl.c:238: error: (Each undeclared identifier is reported only once
+arch/powerpc/platforms/pseries/dtl.c:238: error: for each function it appears in.)
+
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+---
+
+
+
+--------------050404090408000502010008
+Content-Type: text/x-patch;
+ name="fix-dtl-build-break.patch"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline;
+ filename="fix-dtl-build-break.patch"
+
+* Fixes the following build error
+*
+* arch/powerpc/platforms/pseries/dtl.c: In function â€˜dtl_initâ€™:
+* arch/powerpc/platforms/pseries/dtl.c:238:
+*       error: implicit declaration of function â€˜firmware_has_featureâ€™
+* arch/powerpc/platforms/pseries/dtl.c:238:
+*       error: â€˜FW_FEATURE_SPLPARâ€™ undeclared (first use in this function)
+* arch/powerpc/platforms/pseries/dtl.c:238:
+*        error: (Each undeclared identifier is reported only once
+* arch/powerpc/platforms/pseries/dtl.c:238: 
+*        error: for each function it appears in.)
+
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+---
+
+diff -Naurp a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
+--- a/arch/powerpc/platforms/pseries/dtl.c	2009-04-01 15:46:59.000000000 +0530
++++ b/arch/powerpc/platforms/pseries/dtl.c	2009-04-01 15:47:58.000000000 +0530
+@@ -25,6 +25,7 @@
+ #include <asm/smp.h>
+ #include <asm/system.h>
+ #include <asm/uaccess.h>
++#include <asm/firmware.h>
+ 
+ #include "plpar_wrappers.h"
+ 
+
+--------------050404090408000502010008--
