@@ -1,19 +1,20 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zrtps0kp.nortel.com (zrtps0kp.nortel.com [47.140.192.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7DD5ADDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 10:37:01 +1100 (EST)
-Message-ID: <49D3F662.4050100@nortel.com>
-Date: Wed, 01 Apr 2009 17:18:58 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <dgibson@bilbo.ozlabs.org>
+Date: Thu, 2 Apr 2009 10:57:37 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH 6/8] --- arch/powerpc/boot/dts/socrates.dts | 9
+	+++++++-- 1 file changed, 7 insertions(+), 2 deletions(-)
+Message-ID: <20090401235737.GA7995@yookeroo.seuss>
+References: <20090331123727.853787299@denx.de>
+	<20090331124036.057237866@denx.de>
+	<20090331230451.GA23304@yookeroo.seuss>
+	<49D31856.9060808@grandegger.com>
+	<20090401110955.GA7507@yookeroo.seuss>
+	<49D35728.1060107@grandegger.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel-owner@vger.kernel.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Resend: /proc/<pid>/maps offset output broken in 2.6.29
-References: <49CA8501.1000000@nortel.com>
-In-Reply-To: <49CA8501.1000000@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49D35728.1060107@grandegger.com>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Resending due to lack of response to original post.
+On Wed, Apr 01, 2009 at 01:59:36PM +0200, Wolfgang Grandegger wrote:
+> David Gibson wrote:
+> > On Wed, Apr 01, 2009 at 09:31:34AM +0200, Wolfgang Grandegger wrote:
+> >> Hi David,
+> >>
+> >> this patch went out by mistake, sorry.
+> >>
+> >> David Gibson wrote:
+> >>> On Tue, Mar 31, 2009 at 02:37:33PM +0200, Wolfgang Grandegger wrote:
+> >>>> Index: linux-2.6/arch/powerpc/boot/dts/socrates.dts
+> >>>> ===================================================================
+> >>>> --- linux-2.6.orig/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:24:38.078719288 +0200
+> >>>> +++ linux-2.6/arch/powerpc/boot/dts/socrates.dts	2009-03-31 13:47:56.986720719 +0200
+> >>>> @@ -52,6 +52,7 @@
+> >>>>  	soc8544@e0000000 {
+> >>>>  		#address-cells = <1>;
+> >>>>  		#size-cells = <1>;
+> >>>> +		device_type = "soc";
+> >>> You should not be adding device_type to a new board's dts.  You
+> >>> *especially* shouldn't be doing that with no patch comment explaining
+> >>> why.
+> >> In the final patch I have removed the device_type = "soc", but it makes
+> >> trouble as some mpc85xx rely on it.
+> > 
+> > Um.. what?  Some mpc85xx?  This is the dts for *one specific board*, I
+> > don't see how something that affects "some mpc85xx" is relevant.
+> 
+> Well, to be more precise, it affects all boards using CONFIG_FSL_SOC
+> because they use functions searching for the device type "soc", e.g.
+> fsl_get_sys_freq():
+> 
+> http://lxr.linux.no/linux+v2.6.29/arch/powerpc/sysdev/fsl_soc.c#L80
+> 
+> This needs to be fixed before the line 'device_type = "soc"' can be removed.
 
-I was validating some code dealing with /proc/<pid>/maps on 2.6.29 and 
-was surprised when it failed.  It turns out that at least on my ppc64 G5 
-machine the offset value for the last entry is strange--it shows up as a 
-64-bit value even though the process itself is only 32-bit.
+Gah.  I had been under the impression that had been fixed already.
+Kumar!  Get your house in order!
 
-This behaviour also shows up in 2.6.25, but doesn't in 2.6.14.  I 
-haven't yet tested anything else in between.
+Ok, I guess it will have to stay for now, just as long as the new
+style marker in compatible is there as well.
 
-[cfriesen@localhost cfriesen]$ cat /proc/self/maps
-00100000-00103000 r-xp 00100000 00:00 0         [vdso]
-0fe70000-0ffbf000 r-xp 00000000 08:03 4312393   /lib/tls/libc-2.3.3.so
-0ffbf000-0ffc0000 ---p 0014f000 08:03 4312393   /lib/tls/libc-2.3.3.so
-0ffc0000-0ffc2000 r--p 00150000 08:03 4312393   /lib/tls/libc-2.3.3.so
-0ffc2000-0ffc6000 rwxp 00152000 08:03 4312393   /lib/tls/libc-2.3.3.so
-0ffc6000-0ffc8000 rwxp 0ffc6000 00:00 0
-0ffd0000-0ffec000 r-xp 00000000 08:03 4309011   /lib/ld-2.3.3.so
-0fff0000-0fff1000 r--p 00020000 08:03 4309011   /lib/ld-2.3.3.so
-0fff1000-0fff2000 rwxp 00021000 08:03 4309011   /lib/ld-2.3.3.so
-10000000-10004000 r-xp 00000000 08:03 917536    /bin/cat
-10013000-10015000 rwxp 00003000 08:03 917536    /bin/cat
-10015000-10036000 rwxp 10015000 00:00 0         [heap]
-f7deb000-f7feb000 r--p 00000000 08:03 2560322 
-/usr/lib/locale/locale-archive
-f7feb000-f7fec000 rw-p f7feb000 00:00 0
-ffe6d000-ffe82000 rw-p ffffffeb000 00:00 0      [stack]
-
-I'm at a loss to explain what's going on here.  Anyone got any ideas?
-
-Thanks,
-
-Chris
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
