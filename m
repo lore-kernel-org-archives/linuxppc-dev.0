@@ -1,17 +1,10 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 54F4DDDD1B
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 16:38:10 +1100 (EST)
-Subject: Broken CONFIG_HIGHPTE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Content-Type: text/plain
-Date: Wed, 01 Apr 2009 16:38:00 +1100
-Message-Id: <1238564280.17330.119.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <anton@ozlabs.org>
+Message-Id: <20090401060656.920561864@samba.org>
+References: <20090401060613.377489909@samba.org>
+Date: Wed, 01 Apr 2009 17:06:14 +1100
+From: anton@samba.org
+To: linuxppc-dev@ozlabs.org
+Subject: [patch 1/2] powerpc: Print progress of ibm, client-architecture method
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,18 +14,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi !
+The ibm,client-architecture method will often cause a reconfiguration reboot.
+When this happens the last thing we see is:
 
-Just noticed... And I'll be travelling for a while so with no much
-time to look at it.
+	Hypertas detected, assuming LPAR !
 
-Your changes to use the PTE page free batch via RCU on ppc32 broke
-CONFIG_HIGHPTE for hash32...
+Which doesn't explain what just happened. Wrap the ibm,client-architecture
+so it's clear what is going on:
 
-You rely on passing a page_address() of the PTE page down to the
-freeing layer. That doesn't work for highmem pages. That needs to
-be changes to a struct page * on 32-bit (not on 64-bit where we
-are using slabs though)
+	Calling ibm,client-architecture... done
 
-Cheers,
-Ben.
+In order to maintain the law of conservation of screen real estate, downgrade
+two other messages to debug. 
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 7f1b33d..d5414fe 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -732,15 +732,17 @@ static void __init prom_send_capabilities(void)
+ 	root = call_prom("open", 1, 1, ADDR("/"));
+ 	if (root != 0) {
+ 		/* try calling the ibm,client-architecture-support method */
++		prom_printf("Calling ibm,client-architecture...");
+ 		if (call_prom_ret("call-method", 3, 2, &ret,
+ 				  ADDR("ibm,client-architecture-support"),
+ 				  root,
+ 				  ADDR(ibm_architecture_vec)) == 0) {
+ 			/* the call exists... */
+ 			if (ret)
+-				prom_printf("WARNING: ibm,client-architecture"
++				prom_printf("\nWARNING: ibm,client-architecture"
+ 					    "-support call FAILED!\n");
+ 			call_prom("close", 1, 0, root);
++			prom_printf(" done\n");
+ 			return;
+ 		}
+ 		call_prom("close", 1, 0, root);
+@@ -1495,7 +1497,7 @@ static int __init prom_find_machine_type(void)
+ 		return PLATFORM_GENERIC;
+ 	x = prom_getproplen(rtas, "ibm,hypertas-functions");
+ 	if (x != PROM_ERROR) {
+-		prom_printf("Hypertas detected, assuming LPAR !\n");
++		prom_debug("Hypertas detected, assuming LPAR !\n");
+ 		return PLATFORM_PSERIES_LPAR;
+ 	}
+ 	return PLATFORM_PSERIES;
+@@ -1544,7 +1546,7 @@ static void __init prom_check_displays(void)
+ 	};
+ 	const unsigned char *clut;
+ 
+-	prom_printf("Looking for displays\n");
++	prom_debug("Looking for displays\n");
+ 	for (node = 0; prom_next_node(&node); ) {
+ 		memset(type, 0, sizeof(type));
+ 		prom_getprop(node, "device_type", type, sizeof(type));
+
+-- 
