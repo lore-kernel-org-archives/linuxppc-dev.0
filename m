@@ -1,39 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 738A1DDDFA
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 10:53:35 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n2VNoeP9016655
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 17:50:40 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n2VNrUXk211450
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 17:53:30 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n2VNrUTW013135
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 17:53:30 -0600
-Date: Tue, 31 Mar 2009 19:52:48 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] Add hvc_console to MAINTAINERS
-Message-ID: <20090331235248.GC563@zod.rchland.ibm.com>
-References: <49BF956B.9030109@gmail.com>
-	<20090330133531.f5d99c09.akpm@linux-foundation.org>
-	<20090330205553.GA19278@yoda.jdub.homelinux.org>
-	<20090330141852.59baaeda.akpm@linux-foundation.org>
-	<20090331132944.GB2332@yoda.jdub.homelinux.org>
-	<1238533823.9715.292.camel@localhost>
-	<20090331142252.3bf74fe1.akpm@linux-foundation.org>
-	<1238535658.9715.321.camel@localhost>
+Return-Path: <hbausley@deltatau.com>
+Received: from Barracuda.deltatau.com (64-60-44-212.static-ip.telepacific.net
+	[64.60.44.212]) by ozlabs.org (Postfix) with ESMTP id C9392DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 10:58:02 +1100 (EST)
+Received: from mail.deltatau.com (localhost [127.0.0.1])
+	by Barracuda.deltatau.com (Spam Firewall) with ESMTP id 1467525A1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 16:41:10 -0700 (PDT)
+Received: from mail.deltatau.com (smtp.deltatau.com [64.60.44.211]) by
+	Barracuda.deltatau.com with ESMTP id aS3lRD1NdctKsDWb for
+	<linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 16:41:10 -0700 (PDT)
+Message-ID: <04bf01c9b262$95478040$0109220a@deltatau.local>
+From: "Henry Bausley" <hbausley@deltatau.com>
+To: <linuxppc-dev@ozlabs.org>
+References: <20090331125028.066613801@denx.de><20090331125451.600446749@denx.de><20090331133953.GB3044@pengutronix.de><49D21EF1.9050200@grandegger.com>
+	<20090331135629.GC3044@pengutronix.de>
+Subject: PowerPC 460EX AD7416 Temperature Sensor
+Date: Tue, 31 Mar 2009 17:41:23 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1238535658.9715.321.camel@localhost>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	roel.kluin@gmail.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,74 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2009 at 02:40:58PM -0700, Joe Perches wrote:
->On Tue, 2009-03-31 at 14:22 -0700, Andrew Morton wrote:
->> On Tue, 31 Mar 2009 14:10:23 -0700
->> Joe Perches <joe@perches.com> wrote:
->> > On Tue, 2009-03-31 at 09:29 -0400, Josh Boyer wrote:
->> > > Add a MAINTAINERS entry for the hypervisor virtual console support
->> > > used on IBM POWER servers.
->> > > diff --git a/MAINTAINERS b/MAINTAINERS
->> > > index c5f4e9d..387ad45 100644
->> > > --- a/MAINTAINERS
->> > > +++ b/MAINTAINERS
->> > > @@ -2176,6 +2176,11 @@ W:       http://www.ia64-linux.org/
->> > >  T:     git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
->> > >  S:     Maintained
->> > >  
->> > > +IBM HYPERVISOR VIRTUAL CONSOLE
->> > > +P:     Several
->> > > +L:     linuxppc-dev@ozlabs.org
->> > > +S:     Maintained
->> > > +
->> > >  IBM MCA SCSI SUBSYSTEM DRIVER
->> > >  P:     Michael Lang
->> > >  M:     langa2@kph.uni-mainz.de
->> > 
->> > I think this sort of entry should not be acceptable.
->> > Maintainers should have individual names and contact addresses.
->> 
->> There isn't a maintainer.
->> 
->> But people send patches to the wrong list, so the ppc guys (who use
->> this driver) don't get to see them.
->> 
->> That's a practical, real-world problem.  We should have a fix for it.
->> 
->> > An exploder entry should be OK though.
->> > For instance, the DVB subsystem:
->> > 
->> > 	DVB SUBSYSTEM AND DRIVERS
->> > 	P:	LinuxTV.org Project
->> > 	M:	linux-media@vger.kernel.org
->> > 
->> > A list entry could be something like:
->> > 
->> > 	P:	Linux PCMCIA Team
->> > 	L:	linux-pcmcia@lists.infradead.org
->> > 
->> 
->> I'm unclear on what the difference is here..
->
->I have no problem with the "L: list" entry.
->I think that's good.  Along with some file
->matching pattern as well of course...
->
->I think the "P: Several" entry is not good.
->
->"Several" doesn't give any idea as to who
->actually does the work.
+Does anyone know if the I2C temperature sensor is functioning on the AMCC 
+460EX?
+When I do a cat /proc/ad7416 I get the following crash.
 
-I copied that from something else in MAINTAINERS.  I believe it
-was the KERNEL JANITORS entry.  I guess I should have known better
-than to copy from that...
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc02cbe28
+Oops: Kernel access of bad area, sig: 11 [#1]
+PowerPC 44x Platform
+NIP: c02cbe28 LR: c023cec8 CTR: c023d314
+REGS: ef107d90 TRAP: 0300   Not tainted  (2.6.28.7)
+MSR: 00029000 <EE,ME>  CR: 88000444  XER: 00000000
+DEAR: 00000000, ESR: 00000000
+TASK = ef8590c0[2611] 'cat' THREAD: ef106000
+GPR00: 00000000 ef107e40 ef8590c0 00000000 ef107e9c 00000000 00000c00 
+ef107e98
+GPR08: 00000000 c0330000 ffffffff c0330000 48000448 1001cb7c 100042bc 
+100df49c
+GPR16: 00000002 00000400 c032f014 c032efe4 ef107e9c ef107e98 bfffffff 
+efb43a00
+GPR24: ef61d000 00000000 ef107f20 ef107e98 00000c00 c0400000 00001000 
+efb43a00
+NIP [c02cbe28] mutex_lock+0x0/0x1c
+LR [c023cec8] ad7416_read_temp+0x24/0x80
+Call Trace:
+[ef107e40] [00000400] 0x400 (unreliable)
+[ef107e70] [c023d334] i2c_ad7416_read_proc+0x20/0x70
+[ef107e90] [c00e8018] proc_file_read+0x108/0x334
+[ef107ee0] [c00e2d3c] proc_reg_read+0x4c/0x70
+[ef107ef0] [c00a54e8] vfs_read+0xb4/0x16c
+[ef107f10] [c00a58e0] sys_read+0x4c/0x90
+[ef107f40] [c000ea88] ret_from_syscall+0x0/0x3c
+Instruction dump:
+90010014 38000001 90030000 85230004 7f891800 419e000c 80690008 4bd50779
+80010014 38210010 7c0803a6 4e800020 <7c001828> 3000ffff 7c00192d 40a2fff4
+---[ end trace 774db769c3754abe ]---
 
->If the "P:" entry is there at all, it should
->be the list name.
->
->Maybe "P: Linux PPC Development Team" or
->something similar.
 
-Except that isn't right for the reasons Michael specified.
 
-josh
+**********************************************************
+Outbound scan for Spam or Virus by Barracuda at Delta Tau
+**********************************************************
