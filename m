@@ -1,15 +1,31 @@
-Return-Path: <ron_madrid@sbcglobal.net>
-Received: from web83502.mail.sp1.yahoo.com (web83502.mail.sp1.yahoo.com
-	[216.252.120.158]) by ozlabs.org (Postfix) with SMTP id 99B41DDD1B
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 04:24:57 +1100 (EST)
-Message-ID: <722080.36173.qm@web83502.mail.sp1.yahoo.com>
-Date: Wed, 1 Apr 2009 10:24:54 -0700 (PDT)
-From: Ron Madrid <ron_madrid@sbcglobal.net>
-Subject: USB drivers
-To: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 85B79DDDA1
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 04:27:50 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n31HTKGj006208
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 13:29:20 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n31HRlhs198122
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 13:27:47 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n31HQCHp005440
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 13:26:13 -0400
+Date: Wed, 1 Apr 2009 13:27:04 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Tirumala Reddy Marri <tmarri@amcc.com>
+Subject: Re: /dev/random on PPC40EXr
+Message-ID: <20090401172704.GC11682@zod.rchland.ibm.com>
+References: <22824979.post@talk.nabble.com>
+	<AC5E1C3367E37D44970B81A6ADD1DA2C071F4A5D@SDCEXCHANGE01.ad.amcc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Reply-To: ron_madrid@sbcglobal.net
+In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C071F4A5D@SDCEXCHANGE01.ad.amcc.com>
+Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,18 +35,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Apr 01, 2009 at 10:05:00AM -0700, Tirumala Reddy Marri wrote:
+>There is PKA/TRNG driver for sure. Let me check if it was accepted in
+>opensource yet. Otherwise I will forward you the driver which may not be
+>there in opensource yet.
 
-I have a custom board based on the MPC8313ERDB and have communications
-capabilities over Ethernet using internet sockets.  Basically, just data
-transfer from the host (my board) to a client (a PC).  I want to be able to
-perform similar transactions across USB.
+You could just send it to the list instead.  That way everyone would have it...
 
-I have done some cursory reading but am a little unclear on how I should
-approach this.  Am I going to have to write a host driver for my custom
-board, and also write a gadget driver for any client machine?  Also, since I
-am desiring to do simple data transfers only, which drivers could I use as a
-point of reference for my application?
-
-Thanks in advance for any tips and suggestions.
-
-Ron
+josh
