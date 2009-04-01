@@ -1,23 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
-	by ozlabs.org (Postfix) with ESMTP id 9F994DDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 12:45:03 +1100 (EST)
-Received: by yw-out-2324.google.com with SMTP id 9so1711729ywe.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 18:45:02 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090331.152237.210090951.davem@davemloft.net>
-References: <20090331075537.1427.7819.stgit@localhost.localdomain>
-	<20090331.145738.36845509.davem@davemloft.net>
-	<fa686aa40903311519m3108c697v52180d192975a3b1@mail.gmail.com>
-	<20090331.152237.210090951.davem@davemloft.net>
-Date: Tue, 31 Mar 2009 19:45:02 -0600
-Message-ID: <fa686aa40903311845v54ddfb91u56dd11eff64140d4@mail.gmail.com>
-Subject: Re: [PATCH 00/14] Add common OF device tree support for MDIO busses
-From: Grant Likely <grant.likely@secretlab.ca>
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Joakim.Tjernlund@transmode.se, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, afleming@freescale.com, olof@lixom.net
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 85EBBDDDFF
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 14:11:55 +1100 (EST)
+Date: Tue, 31 Mar 2009 23:11:53 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Problem with module_init?
+Message-ID: <20090331231153.256d1bf4@lappy.seanm.ca>
+In-Reply-To: <20090331143742.083c6cb0@lappy.seanm.ca>
+References: <20090331143742.083c6cb0@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2009 at 4:22 PM, David Miller <davem@davemloft.net> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Tue, 31 Mar 2009 16:19:42 -0600
->
->> On Tue, Mar 31, 2009 at 3:57 PM, David Miller <davem@davemloft.net> wrot=
-e:
->> > It therefore didn't get any -next exposure, so it's unreasonable to
->> > merge this stuff now.
->>
->> Since when has sitting in a -next tree been a requirement for merging
->> when the series has been kept up to date and tested? =A0I purposefully
->> kept it out of -next to ensure that when it was applied for real to a
->> -next tree it would be as complete, bug free, and bisectable as
->> possible since once it hits a signed-off -next branch the individual
->> commit cannot be modified.
->
-> I know your pissed off, but take a deep breath and consider this
-> from my position.
->
-> If I don't put a line in the sand somewhere, everyone can say
-> "I've been working so hard, I posted it to the lists a thousand
-> times, I have tons of testers" and I have to put the change in.
->
-> That doesn't work, so please wait until the next release to get
-> your changes in. =A0And get them into a tree that gets exposure
-> in linux-next. =A0Then you have nothing to worry about.
+8d1cf34e7ad5c7738ce20d20bd7f002f562cb8b5 is first bad commit
+commit 8d1cf34e7ad5c7738ce20d20bd7f002f562cb8b5
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Thu Mar 19 19:34:08 2009 +0000
 
-Dammit.  Why did you have to go and sound so reasonable when I was all
-geared up for a pointless flame war.
+    powerpc/mm: Tweak PTE bit combination definitions
+    
+    This patch tweaks the way some PTE bit combinations are defined, in
+    such a way that the 32 and 64-bit variant become almost identical
+    and that will make it easier to bring in a new common pte-* file
+    for the new variant of the Book3-E support.
+    
+    The combination of bits defining access to kernel pages are now
+    clearly separated from the combination used by userspace and the
+    core VM. The resulting generated code should remain identical
+    unless I made a mistake. 
+    Note: While at it, I removed a non-sensical statement related to
+    CONFIG_KGDB in ppc_mmu_32.c which could cause kernel mappings to be
+    user accessible when that option is enabled. Probably something
+    that bitrot. 
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-well... alright... but I reserve the right to be grumpy and surly for
-a few days.
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+:040000 040000 c105fb9641b078f1a8a60c2a7900ca2dd088b364
+e90678246962d7a455aa27ba12814c11cd9b3c22 M      arch
