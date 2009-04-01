@@ -1,20 +1,23 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from SG2EHSOBE002.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 701B7DDDFA
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 11:45:52 +1100 (EST)
-Message-ID: <49D2B928.2070603@am.sony.com>
-Date: Tue, 31 Mar 2009 17:45:28 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id 9F994DDDFF
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 12:45:03 +1100 (EST)
+Received: by yw-out-2324.google.com with SMTP id 9so1711729ywe.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Mar 2009 18:45:02 -0700 (PDT)
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: kexec: proc/device-tree/chosen/linux,kernel-end: No such file
-	or directory
-References: <alpine.LRH.2.00.0903311808310.32461@vixen.sonytel.be>
-	<1238543571.6522.12.camel@localhost>
-In-Reply-To: <1238543571.6522.12.camel@localhost>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20090331.152237.210090951.davem@davemloft.net>
+References: <20090331075537.1427.7819.stgit@localhost.localdomain>
+	<20090331.145738.36845509.davem@davemloft.net>
+	<fa686aa40903311519m3108c697v52180d192975a3b1@mail.gmail.com>
+	<20090331.152237.210090951.davem@davemloft.net>
+Date: Tue, 31 Mar 2009 19:45:02 -0600
+Message-ID: <fa686aa40903311845v54ddfb91u56dd11eff64140d4@mail.gmail.com>
+Subject: Re: [PATCH 00/14] Add common OF device tree support for MDIO busses
+From: Grant Likely <grant.likely@secretlab.ca>
+To: David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Joakim.Tjernlund@transmode.se, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, afleming@freescale.com, olof@lixom.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 03/31/2009 04:52 PM, Michael Ellerman wrote:
-> On Tue, 2009-03-31 at 18:25 +0200, Geert Uytterhoeven wrote:
->> With today's kernel, I can no longer kexec any kernel on PS3:
->> 
->> | /proc/device-tree/chosen/linux,kernel-end: No such file or directory
->> | Could not get memory layout
->> 
->> Today's bad version: 15f7176eb1cccec0a332541285ee752b935c1c85
->> Yesterday's good version: 0d34fb8e93ceba7b6dad0062dbb4a0813bacd75b
->> 
->> Before I start bisecting (tomorrow or the day thereafter), anyone with an idea?
-> 
-> Hmm, not really.
-> 
-> Looking at the code the only obvious way you could end up without that
-> property is if you didn't have a /chosen?
+On Tue, Mar 31, 2009 at 4:22 PM, David Miller <davem@davemloft.net> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Tue, 31 Mar 2009 16:19:42 -0600
+>
+>> On Tue, Mar 31, 2009 at 3:57 PM, David Miller <davem@davemloft.net> wrot=
+e:
+>> > It therefore didn't get any -next exposure, so it's unreasonable to
+>> > merge this stuff now.
+>>
+>> Since when has sitting in a -next tree been a requirement for merging
+>> when the series has been kept up to date and tested? =A0I purposefully
+>> kept it out of -next to ensure that when it was applied for real to a
+>> -next tree it would be as complete, bug free, and bisectable as
+>> possible since once it hits a signed-off -next branch the individual
+>> commit cannot be modified.
+>
+> I know your pissed off, but take a deep breath and consider this
+> from my position.
+>
+> If I don't put a line in the sand somewhere, everyone can say
+> "I've been working so hard, I posted it to the lists a thousand
+> times, I have tons of testers" and I have to put the change in.
+>
+> That doesn't work, so please wait until the next release to get
+> your changes in. =A0And get them into a tree that gets exposure
+> in linux-next. =A0Then you have nothing to worry about.
 
-We got one, but linux,kernel-end isn't there anymore.  Was before.
+Dammit.  Why did you have to go and sound so reasonable when I was all
+geared up for a pointless flame war.
 
-# ls /proc/device-tree/chosen/
-name
-# 
+well... alright... but I reserve the right to be grumpy and surly for
+a few days.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
