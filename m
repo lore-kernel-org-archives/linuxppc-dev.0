@@ -1,16 +1,33 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <49D31D1D.6020004@grandegger.com>
-Date: Wed, 01 Apr 2009 09:51:57 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <yamazaki.seiji@kk.jp.panasonic.com>
+Received: from smtp.mei.co.jp (smtp.mei.co.jp [133.183.100.20])
+	by ozlabs.org (Postfix) with ESMTP id 60FBFDDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 20:13:39 +1100 (EST)
+Received: from mail-gw.jp.panasonic.com ([157.8.1.145])
+	by smtp.mei.co.jp (8.12.11.20060614/3.7W/kc-maile14) with ESMTP id
+	n319DbIm022880
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 18:13:37 +0900 (JST)
+Received: by mail-gw.jp.panasonic.com (8.11.6p2/3.7W/somlb1) with ESMTP id
+	n319Dco00273
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 18:13:38 +0900 (JST)
+Received: from epochmail.jp.panasonic.com (localhost [127.0.0.1])
+	by mail.jp.panasonic.com (8.11.6p2/3.7W/kc-maili06) with ESMTP id
+	n319Dac15313
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 18:13:36 +0900 (JST)
+Received: by epochmail.jp.panasonic.com (8.12.11.20060308/3.7W/somla8) id
+	n319Db8J028688
+	for linuxppc-dev@ozlabs.org; Wed, 1 Apr 2009 18:13:37 +0900 (JST)
+Received: from [10.74.116.86]
+	by somla8.jp.panasonic.com (8.12.11.20060308/3.7W) with ESMTP id
+	n319DbJo028664
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Apr 2009 18:13:37 +0900 (JST)
+Date: Wed, 01 Apr 2009 18:13:37 +0900
+From: =?ISO-2022-JP?B?GyRCOzM6aiEhQDpGcxsoQg==?=
+	<yamazaki.seiji@kk.jp.panasonic.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: USB does not work on mpc8347
+Message-Id: <20090401180230.04BE.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 5/8] powerpc: i2c-mpc: make I2C bus speed configurable
-References: <20090331123727.853787299@denx.de>	
-	<20090331124035.908249543@denx.de>
-	<fa686aa40903310841x42876819rafe3e8bf24b8646e@mail.gmail.com>
-In-Reply-To: <fa686aa40903310841x42876819rafe3e8bf24b8646e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Content-Type: text/plain; charset="ISO-2022-JP"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,110 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Tue, Mar 31, 2009 at 6:37 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
->> This patch makes the I2C bus speed configurable by using the I2C node
->> property "clock-frequency". If the property is not defined, the old
->> fixed clock settings will be used for backward comptibility.
->>
->> The generic I2C clock properties, especially the CPU-specific source
->> clock pre-scaler are defined via the OF match table:
->>
->>  static const struct of_device_id mpc_i2c_of_match[] = {
->>        {.compatible = "fsl,mpc5200b-i2c",
->>         .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
->>        {.compatible = "fsl,mpc5200-i2c",
->>         .data = (void *)FSL_I2C_DEV_CLOCK_5200, },
->>        {.compatible = "fsl,mpc8313-i2c",
->>         .data = (void *)FSL_I2C_DEV_SEPARATE_DFSRR, },
->>        {.compatible = "fsl,mpc8543-i2c",
->>         .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
->>                          FSL_I2C_DEV_CLOCK_DIV2), },
->>        {.compatible = "fsl,mpc8544-i2c",
->>         .data = (void *)(FSL_I2C_DEV_SEPARATE_DFSRR |
->>                          FSL_I2C_DEV_CLOCK_DIV23), },
->>        /* Backward compatibility */
->>        {.compatible = "fsl-i2c", },
->>        {},
->>  };
-> 
-> 
-> Instead passing in a flag (and using an ugly cast to do it) which is
-> then checked inside the mpc_i2c_setclock(), you should do this
-> instead:
-> 
-> struct fsl_i2c_match_data {
->         int static void *(setclock)(struct device_node *node, struct
-> mpc_i2c *i2c, u32 clock);
->         int flags;
->         /* Other stuff can go here */
-> };
-> 
-> static const struct of_device_id mpc_i2c_of_match[] = {
->         {.compatible = "fsl,mpc5200b-i2c",
->          .data = (struct fsl_i2c_match_data[]) { .setclock =
-> mpc_i2c_setclock_mpc5200, },
->         },
->         {.compatible = "fsl,mpc5200-i2c",
->          .data = (struct fsl_i2c_match_data[]) { .setclock =
-> mpc_i2c_setclock_mpc5200, },
->         },
->         {.compatible = "fsl,mpc8313-i2c",
->          .data = (struct fsl_i2c_match_data[]) { .setclock =
-> mpc_i2c_setclock_separate_dfsrr, },
->         },
->         {.compatible = "fsl,mpc8543-i2c",
->          .data = (struct fsl_i2c_match_data[]) { .setclock =
-> mpc_i2c_setclock_separate_dfsrr, },
->          .flags = FSL_I2C_DEV_CLOCK_DIV2,
->         },
->         {.compatible = "fsl,mpc8544-i2c",
->          .data = (struct fsl_i2c_match_data[]) { .setclock =
-> mpc_i2c_setclock_separate_dfsrr, },
->          .flags = FSL_I2C_DEV_CLOCK_DIV23,
->         },
->         /* Backward compatibility */
->         {.compatible = "fsl-i2c",
->          .data = (struct fsl_i2c_match_data[]) { .setclock =
-> mpc_i2c_setclock, },
->         },
->         {},
->   };
-> 
-> The table definition is more verbose this way, but I think it results
-> in more understandable and easier to extend code.  It also adds lets
-> the compiler do more type checking for you.
+Hi all,
 
-OK but I don't like the callback function to do the settings. We need
-backward compatibility with old DTS files including the ugly "dfsrr"
-property, right? Then it seems consequent to continue using i2c->flags
-for that purpose and not to introduce another method. If we don't need
-backward compatibility, we could drop the flags completely and just use
-callback functions.
+I am running the Linux kernel 2.6.28.7 on my PPC8347 BRD.
+I have some problem.
 
-> Also, this ...
-> 
->> --- linux-2.6.orig/arch/powerpc/sysdev/fsl_soc.c        2009-03-31 13:25:08.000000000 +0200
->> +++ linux-2.6/arch/powerpc/sysdev/fsl_soc.c     2009-03-31 13:34:40.531721011 +0200
->> +int fsl_i2c_get_fdr(struct device_node *node, u32 i2c_clock, u32 i2c_flags)
->> +{
->> [...]
->> +}
->> +EXPORT_SYMBOL(fsl_i2c_get_fdr);
-> 
-> ... and this ...
-> 
->> --- linux-2.6.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c 2009-03-31 13:25:08.000000000 +0200
->> +++ linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c      2009-03-31 13:28:54.309718526 +0200
->> +int fsl_i2c_get_fdr(struct device_node *node, u32 i2c_clock, u32 i2c_flags)
->> +{
->> [...]
->> +}
->> +EXPORT_SYMBOL(fsl_i2c_get_fdr);
-> 
-> does not work on a multiplatform kernel.  Both 8xxx and 52xx support
-> can be selected at the same time.
+One is USB does not work on mpc8347.
+platform_driver_probe(&udc_driver, fsl_udc_probe) is failed.
+struct is 
+static struct platform_driver udc_driver = {
+	.probe = fsl_udc_probe,
+	.remove  = __exit_p(fsl_udc_remove),
+	/* these suspend and resume are not usb suspend and resume */
+	.suspend = fsl_udc_suspend,
+	.resume  = fsl_udc_resume,
+	.driver  = {
+//		.name = (char *)driver_name,
+		.name		= "fsl-usb2-mph",
+		.owner = THIS_MODULE,
+	},
+};
+I do not know why it fails.
+Do i have to do something ?
 
-OK, then we need different functions including stubs.
+-Seiji  
 
-Wolfgang.
+-- 
+yamazaki seiji <yamazaki.seiji@kk.jp.panasonic.com>
