@@ -1,21 +1,15 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.168])
-	by ozlabs.org (Postfix) with ESMTP id 96EECDDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 22:28:05 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so3403041wfg.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 01 Apr 2009 04:28:03 -0700 (PDT)
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Wed, 1 Apr 2009 07:27:56 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: Problem with module_init?
-Message-ID: <20090401112756.GA14171@yoda.jdub.homelinux.org>
-References: <20090331143742.083c6cb0@lappy.seanm.ca>
-	<20090331231153.256d1bf4@lappy.seanm.ca>
+Return-Path: <thunderbird2k@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id DE02BDDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Apr 2009 22:35:21 +1100 (EST)
+Content-Type: multipart/mixed; boundary="========GMX95801238585719296258"
+Date: Wed, 01 Apr 2009 13:35:19 +0200
+From: "Roderick Colenbrander" <thunderbird2k@gmx.net>
+Message-ID: <20090401113519.95800@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090331231153.256d1bf4@lappy.seanm.ca>
-Cc: linuxppc-dev@ozlabs.org
+Subject: RFC ML510 Linux support
+To: linuxppc-dev@ozlabs.org
+Cc: John.Linn@xilinx.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +19,958 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2009 at 11:11:53PM -0400, Sean MacLennan wrote:
->8d1cf34e7ad5c7738ce20d20bd7f002f562cb8b5 is first bad commit
->commit 8d1cf34e7ad5c7738ce20d20bd7f002f562cb8b5
->Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->Date:   Thu Mar 19 19:34:08 2009 +0000
->
->    powerpc/mm: Tweak PTE bit combination definitions
->    
->    This patch tweaks the way some PTE bit combinations are defined, in
->    such a way that the 32 and 64-bit variant become almost identical
->    and that will make it easier to bring in a new common pte-* file
->    for the new variant of the Book3-E support.
->    
->    The combination of bits defining access to kernel pages are now
->    clearly separated from the combination used by userspace and the
->    core VM. The resulting generated code should remain identical
->    unless I made a mistake. 
->    Note: While at it, I removed a non-sensical statement related to
->    CONFIG_KGDB in ppc_mmu_32.c which could cause kernel mappings to be
->    user accessible when that option is enabled. Probably something
->    that bitrot. 
->    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->
->:040000 040000 c105fb9641b078f1a8a60c2a7900ca2dd088b364
->e90678246962d7a455aa27ba12814c11cd9b3c22 M      arch
+--========GMX95801238585719296258
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-I'm assuming this is the result of a git-bisect run?
+Hi,
 
-Can I also assume you were loading the module on your Warp board?
+This is a draft version of my patch to add Linux support for the Xilinx ML510. The patch adds support for the board and a pci implementation which allows you to use onboard pci devices (usb, ide, audio) and pci slots (only slot 3 and 5 for now).
 
-Ben, have you tested module loads on 4xx since you redid this?
+This is an intial version of my work. There is some ide hack in which I need to submit to the ide list and I guess that I need to make my pci driver OF aware.
 
-josh
+Regards,
+Roderick Colenbrander
+-- 
+Neu: GMX FreeDSL Komplettanschluss mit DSL 6.000 Flatrate + Telefonanschluss für nur 17,95 Euro/mtl.!* http://dsl.gmx.de/?ac=OM.AD.PD003K11308T4569a
+
+--========GMX95801238585719296258
+Content-Type: text/x-diff; charset="iso-8859-15"; name="ml510.patch"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment; filename="ml510.patch"
+
+diff -urN -X linux-2.6.29/Documentation/dontdiff linux-2.6.29/arch/powerpc/boot/dts/virtex440-ml510.dts ml510-dev/linux-2.6.29/arch/powerpc/boot/dts/virtex440-ml510.dts
+--- linux-2.6.29/arch/powerpc/boot/dts/virtex440-ml510.dts	1970-01-01 01:00:00.000000000 +0100
++++ ml510-dev/linux-2.6.29/arch/powerpc/boot/dts/virtex440-ml510.dts	2009-04-01 13:18:50.000000000 +0200
+@@ -0,0 +1,452 @@
++/*
++ * Xilinx ML510 Reference Design support
++ * This DTS file was created for the ml510_bsb1_pcores_ppc440 reference design.
++ * The reference design contains two bugs which prevent PCI from working which
++ * should be fixed by the user:
++ * - the MPLB output of the soft-core should be connected to plbv46_plb_1 which
++ *   corresponds to SPLB0 of the ppc440 to allow the soft-core to access system
++ *   memory
++ * - C_IPIFBAR2PCIBAR_0 of the soft-core should be set to 0x80000000 in order to
++ *   reserve 0x80000000-0xffffffff (PCI) for memory mapped i/o and the lower addresses
++ *   can be used by PCI devices to access system memory (DMA).
++ *
++ * Copyright 2009, Roderick Colenbrander
++ */
++
++/dts-v1/;
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "xlnx,ml510-ref-design";
++	dcr-parent = <&ppc440_0>;
++	model = "testing";
++	DDR2_SDRAM_DIMM0: memory@0 {
++		device_type = "memory";
++		reg = < 0x0 0x20000000 >;
++	} ;
++	chosen {
++		bootargs = "console=ttyS0 root=/dev/xsa2 init=/etc/preinit";
++		linux,stdout-path = "/plb@0/serial@83e00000";
++	} ;
++	cpus {
++		#address-cells = <1>;
++		#cpus = <0x1>;
++		#size-cells = <0>;
++		ppc440_0: cpu@0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			clock-frequency = <300000000>;
++			compatible = "PowerPC,440", "ibm,ppc440";
++			d-cache-line-size = <0x20>;
++			d-cache-size = <0x8000>;
++			dcr-access-method = "native";
++			dcr-controller ;
++			device_type = "cpu";
++			i-cache-line-size = <0x20>;
++			i-cache-size = <0x8000>;
++			model = "PowerPC,440";
++			reg = <0>;
++			timebase-frequency = <300000000>;
++			xlnx,apu-control = <0x2000>;
++			xlnx,apu-udi-0 = <0x0>;
++			xlnx,apu-udi-1 = <0x0>;
++			xlnx,apu-udi-10 = <0x0>;
++			xlnx,apu-udi-11 = <0x0>;
++			xlnx,apu-udi-12 = <0x0>;
++			xlnx,apu-udi-13 = <0x0>;
++			xlnx,apu-udi-14 = <0x0>;
++			xlnx,apu-udi-15 = <0x0>;
++			xlnx,apu-udi-2 = <0x0>;
++			xlnx,apu-udi-3 = <0x0>;
++			xlnx,apu-udi-4 = <0x0>;
++			xlnx,apu-udi-5 = <0x0>;
++			xlnx,apu-udi-6 = <0x0>;
++			xlnx,apu-udi-7 = <0x0>;
++			xlnx,apu-udi-8 = <0x0>;
++			xlnx,apu-udi-9 = <0x0>;
++			xlnx,dcr-autolock-enable = <0x1>;
++			xlnx,dcu-rd-ld-cache-plb-prio = <0x0>;
++			xlnx,dcu-rd-noncache-plb-prio = <0x0>;
++			xlnx,dcu-rd-touch-plb-prio = <0x0>;
++			xlnx,dcu-rd-urgent-plb-prio = <0x0>;
++			xlnx,dcu-wr-flush-plb-prio = <0x0>;
++			xlnx,dcu-wr-store-plb-prio = <0x0>;
++			xlnx,dcu-wr-urgent-plb-prio = <0x0>;
++			xlnx,dma0-control = <0x0>;
++			xlnx,dma0-plb-prio = <0x0>;
++			xlnx,dma0-rxchannelctrl = <0x1010000>;
++			xlnx,dma0-rxirqtimer = <0x3ff>;
++			xlnx,dma0-txchannelctrl = <0x1010000>;
++			xlnx,dma0-txirqtimer = <0x3ff>;
++			xlnx,dma1-control = <0x0>;
++			xlnx,dma1-plb-prio = <0x0>;
++			xlnx,dma1-rxchannelctrl = <0x1010000>;
++			xlnx,dma1-rxirqtimer = <0x3ff>;
++			xlnx,dma1-txchannelctrl = <0x1010000>;
++			xlnx,dma1-txirqtimer = <0x3ff>;
++			xlnx,dma2-control = <0x0>;
++			xlnx,dma2-plb-prio = <0x0>;
++			xlnx,dma2-rxchannelctrl = <0x1010000>;
++			xlnx,dma2-rxirqtimer = <0x3ff>;
++			xlnx,dma2-txchannelctrl = <0x1010000>;
++			xlnx,dma2-txirqtimer = <0x3ff>;
++			xlnx,dma3-control = <0x0>;
++			xlnx,dma3-plb-prio = <0x0>;
++			xlnx,dma3-rxchannelctrl = <0x1010000>;
++			xlnx,dma3-rxirqtimer = <0x3ff>;
++			xlnx,dma3-txchannelctrl = <0x1010000>;
++			xlnx,dma3-txirqtimer = <0x3ff>;
++			xlnx,endian-reset = <0x0>;
++			xlnx,generate-plb-timespecs = <0x1>;
++			xlnx,icu-rd-fetch-plb-prio = <0x0>;
++			xlnx,icu-rd-spec-plb-prio = <0x0>;
++			xlnx,icu-rd-touch-plb-prio = <0x0>;
++			xlnx,interconnect-imask = <0xffffffff>;
++			xlnx,mplb-allow-lock-xfer = <0x1>;
++			xlnx,mplb-arb-mode = <0x0>;
++			xlnx,mplb-awidth = <0x20>;
++			xlnx,mplb-counter = <0x500>;
++			xlnx,mplb-dwidth = <0x80>;
++			xlnx,mplb-max-burst = <0x8>;
++			xlnx,mplb-native-dwidth = <0x80>;
++			xlnx,mplb-p2p = <0x0>;
++			xlnx,mplb-prio-dcur = <0x2>;
++			xlnx,mplb-prio-dcuw = <0x3>;
++			xlnx,mplb-prio-icu = <0x4>;
++			xlnx,mplb-prio-splb0 = <0x1>;
++			xlnx,mplb-prio-splb1 = <0x0>;
++			xlnx,mplb-read-pipe-enable = <0x1>;
++			xlnx,mplb-sync-tattribute = <0x0>;
++			xlnx,mplb-wdog-enable = <0x1>;
++			xlnx,mplb-write-pipe-enable = <0x1>;
++			xlnx,mplb-write-post-enable = <0x1>;
++			xlnx,num-dma = <0x0>;
++			xlnx,pir = <0xf>;
++			xlnx,ppc440mc-addr-base = <0x0>;
++			xlnx,ppc440mc-addr-high = <0x1fffffff>;
++			xlnx,ppc440mc-arb-mode = <0x0>;
++			xlnx,ppc440mc-bank-conflict-mask = <0x1800000>;
++			xlnx,ppc440mc-control = <0xf810008f>;
++			xlnx,ppc440mc-max-burst = <0x8>;
++			xlnx,ppc440mc-prio-dcur = <0x2>;
++			xlnx,ppc440mc-prio-dcuw = <0x3>;
++			xlnx,ppc440mc-prio-icu = <0x4>;
++			xlnx,ppc440mc-prio-splb0 = <0x1>;
++			xlnx,ppc440mc-prio-splb1 = <0x0>;
++			xlnx,ppc440mc-row-conflict-mask = <0x7ffe00>;
++			xlnx,ppcdm-asyncmode = <0x0>;
++			xlnx,ppcds-asyncmode = <0x0>;
++			xlnx,user-reset = <0x0>;
++		} ;
++	} ;
++	plb_v46_0: plb@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "xlnx,plb-v46-1.03.a", "simple-bus";
++		ranges ;
++		FLASH: flash@fc000000 {
++			bank-width = <2>;
++			compatible = "xlnx,xps-mch-emc-2.00.a", "cfi-flash";
++			reg = < 0xfc000000 0x2000000 >;
++			xlnx,family = "virtex5";
++			xlnx,include-datawidth-matching-0 = <0x1>;
++			xlnx,include-datawidth-matching-1 = <0x0>;
++			xlnx,include-datawidth-matching-2 = <0x0>;
++			xlnx,include-datawidth-matching-3 = <0x0>;
++			xlnx,include-negedge-ioregs = <0x0>;
++			xlnx,include-plb-ipif = <0x1>;
++			xlnx,include-wrbuf = <0x1>;
++			xlnx,max-mem-width = <0x10>;
++			xlnx,mch-native-dwidth = <0x20>;
++			xlnx,mch-plb-clk-period-ps = <0x2710>;
++			xlnx,mch-splb-awidth = <0x20>;
++			xlnx,mch0-accessbuf-depth = <0x10>;
++			xlnx,mch0-protocol = <0x0>;
++			xlnx,mch0-rddatabuf-depth = <0x10>;
++			xlnx,mch1-accessbuf-depth = <0x10>;
++			xlnx,mch1-protocol = <0x0>;
++			xlnx,mch1-rddatabuf-depth = <0x10>;
++			xlnx,mch2-accessbuf-depth = <0x10>;
++			xlnx,mch2-protocol = <0x0>;
++			xlnx,mch2-rddatabuf-depth = <0x10>;
++			xlnx,mch3-accessbuf-depth = <0x10>;
++			xlnx,mch3-protocol = <0x0>;
++			xlnx,mch3-rddatabuf-depth = <0x10>;
++			xlnx,mem0-width = <0x10>;
++			xlnx,mem1-width = <0x20>;
++			xlnx,mem2-width = <0x20>;
++			xlnx,mem3-width = <0x20>;
++			xlnx,num-banks-mem = <0x1>;
++			xlnx,num-channels = <0x2>;
++			xlnx,priority-mode = <0x0>;
++			xlnx,synch-mem-0 = <0x0>;
++			xlnx,synch-mem-1 = <0x0>;
++			xlnx,synch-mem-2 = <0x0>;
++			xlnx,synch-mem-3 = <0x0>;
++			xlnx,synch-pipedelay-0 = <0x2>;
++			xlnx,synch-pipedelay-1 = <0x2>;
++			xlnx,synch-pipedelay-2 = <0x2>;
++			xlnx,synch-pipedelay-3 = <0x2>;
++			xlnx,tavdv-ps-mem-0 = <0x1adb0>;
++			xlnx,tavdv-ps-mem-1 = <0x3a98>;
++			xlnx,tavdv-ps-mem-2 = <0x3a98>;
++			xlnx,tavdv-ps-mem-3 = <0x3a98>;
++			xlnx,tcedv-ps-mem-0 = <0x1adb0>;
++			xlnx,tcedv-ps-mem-1 = <0x3a98>;
++			xlnx,tcedv-ps-mem-2 = <0x3a98>;
++			xlnx,tcedv-ps-mem-3 = <0x3a98>;
++			xlnx,thzce-ps-mem-0 = <0x88b8>;
++			xlnx,thzce-ps-mem-1 = <0x1b58>;
++			xlnx,thzce-ps-mem-2 = <0x1b58>;
++			xlnx,thzce-ps-mem-3 = <0x1b58>;
++			xlnx,thzoe-ps-mem-0 = <0x1b58>;
++			xlnx,thzoe-ps-mem-1 = <0x1b58>;
++			xlnx,thzoe-ps-mem-2 = <0x1b58>;
++			xlnx,thzoe-ps-mem-3 = <0x1b58>;
++			xlnx,tlzwe-ps-mem-0 = <0x88b8>;
++			xlnx,tlzwe-ps-mem-1 = <0x0>;
++			xlnx,tlzwe-ps-mem-2 = <0x0>;
++			xlnx,tlzwe-ps-mem-3 = <0x0>;
++			xlnx,twc-ps-mem-0 = <0x1adb0>;
++			xlnx,twc-ps-mem-1 = <0x3a98>;
++			xlnx,twc-ps-mem-2 = <0x3a98>;
++			xlnx,twc-ps-mem-3 = <0x3a98>;
++			xlnx,twp-ps-mem-0 = <0x11170>;
++			xlnx,twp-ps-mem-1 = <0x2ee0>;
++			xlnx,twp-ps-mem-2 = <0x2ee0>;
++			xlnx,twp-ps-mem-3 = <0x2ee0>;
++			xlnx,xcl0-linesize = <0x4>;
++			xlnx,xcl0-writexfer = <0x1>;
++			xlnx,xcl1-linesize = <0x4>;
++			xlnx,xcl1-writexfer = <0x1>;
++			xlnx,xcl2-linesize = <0x4>;
++			xlnx,xcl2-writexfer = <0x1>;
++			xlnx,xcl3-linesize = <0x4>;
++			xlnx,xcl3-writexfer = <0x1>;
++		} ;
++		Hard_Ethernet_MAC: xps-ll-temac@81c00000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "xlnx,compound";
++			ethernet@81c00000 {
++				compatible = "xlnx,xps-ll-temac-1.01.b";
++				device_type = "network";
++				interrupt-parent = <&xps_intc_0>;
++				interrupts = < 8 2 >;
++				llink-connected = <&Hard_Ethernet_MAC_fifo>;
++				local-mac-address = [ 02 00 00 00 00 00 ];
++				reg = < 0x81c00000 0x40 >;
++				xlnx,bus2core-clk-ratio = <0x1>;
++				xlnx,phy-type = <0x3>;
++				xlnx,phyaddr = <0x1>;
++				xlnx,rxcsum = <0x0>;
++				xlnx,rxfifo = <0x8000>;
++				xlnx,temac-type = <0x0>;
++				xlnx,txcsum = <0x0>;
++				xlnx,txfifo = <0x8000>;
++			} ;
++		} ;
++		Hard_Ethernet_MAC_fifo: xps-ll-fifo@81a00000 {
++			compatible = "xlnx,xps-ll-fifo-1.01.a";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 6 2 >;
++			reg = < 0x81a00000 0x10000 >;
++			xlnx,family = "virtex5";
++		} ;
++		IIC_EEPROM: i2c@81600000 {
++			compatible = "xlnx,xps-iic-2.00.a";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 9 2 >;
++			reg = < 0x81600000 0x10000 >;
++			xlnx,clk-freq = <0x5f5e100>;
++			xlnx,family = "virtex5";
++			xlnx,gpo-width = <0x1>;
++			xlnx,iic-freq = <0x186a0>;
++			xlnx,scl-inertial-delay = <0x5>;
++			xlnx,sda-inertial-delay = <0x5>;
++			xlnx,ten-bit-adr = <0x0>;
++		} ;
++		LCD_OPTIONAL: gpio@81420000 {
++			compatible = "xlnx,xps-gpio-1.00.a";
++			reg = < 0x81420000 0x10000 >;
++			xlnx,all-inputs = <0x0>;
++			xlnx,all-inputs-2 = <0x0>;
++			xlnx,dout-default = <0x0>;
++			xlnx,dout-default-2 = <0x0>;
++			xlnx,family = "virtex5";
++			xlnx,gpio-width = <0xb>;
++			xlnx,interrupt-present = <0x0>;
++			xlnx,is-bidir = <0x1>;
++			xlnx,is-bidir-2 = <0x1>;
++			xlnx,is-dual = <0x0>;
++			xlnx,tri-default = <0xffffffff>;
++			xlnx,tri-default-2 = <0xffffffff>;
++		} ;
++		LEDs_4Bit: gpio@81400000 {
++			compatible = "xlnx,xps-gpio-1.00.a";
++			reg = < 0x81400000 0x10000 >;
++			xlnx,all-inputs = <0x0>;
++			xlnx,all-inputs-2 = <0x0>;
++			xlnx,dout-default = <0x0>;
++			xlnx,dout-default-2 = <0x0>;
++			xlnx,family = "virtex5";
++			xlnx,gpio-width = <0x4>;
++			xlnx,interrupt-present = <0x0>;
++			xlnx,is-bidir = <0x1>;
++			xlnx,is-bidir-2 = <0x1>;
++			xlnx,is-dual = <0x0>;
++			xlnx,tri-default = <0xffffffff>;
++			xlnx,tri-default-2 = <0xffffffff>;
++		} ;
++		RS232_Uart_1: serial@83e00000 {
++			clock-frequency = <100000000>;
++			compatible = "xlnx,xps-uart16550-2.00.b", "ns16550";
++			current-speed = <9600>;
++			device_type = "serial";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 11 2 >;
++			reg = < 0x83e00000 0x10000 >;
++			reg-offset = <0x1003>;
++			reg-shift = <2>;
++			xlnx,family = "virtex5";
++			xlnx,has-external-rclk = <0x0>;
++			xlnx,has-external-xin = <0x0>;
++			xlnx,is-a-16550 = <0x1>;
++		} ;
++		SPI_EEPROM: xps-spi@feff8000 {
++			compatible = "xlnx,xps-spi-2.00.b";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 10 2 >;
++			reg = < 0xfeff8000 0x80 >;
++			xlnx,family = "virtex5";
++			xlnx,fifo-exist = <0x1>;
++			xlnx,num-ss-bits = <0x1>;
++			xlnx,num-transfer-bits = <0x8>;
++			xlnx,sck-ratio = <0x80>;
++		} ;
++		SysACE_CompactFlash: sysace@83600000 {
++			compatible = "xlnx,xps-sysace-1.00.a";
++			interrupt-parent = <&xps_intc_0>;
++			interrupts = < 7 2 >;
++			reg = < 0x83600000 0x10000 >;
++			xlnx,family = "virtex5";
++			xlnx,mem-width = <0x10>;
++		} ;
++		dcr_v29_0: dcr@0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "xlnx,dcr-v29-1.00.a", "simple-bus";
++			ranges = < 0x0 0x44a00000 0x1000 >;
++		} ;
++		plbv46_dcr_bridge_0: plbv46-dcr-bridge@44a00000 {
++			compatible = "xlnx,plbv46-dcr-bridge-1.00.a";
++			dcr-access-method = "mmio";
++			dcr-controller ;
++			dcr-mmio-range = < 0x44a00000 0x1000 >;
++			dcr-mmio-stride = <4>;
++			reg = < 0x44a00000 0x1000 >;
++			xlnx,family = "virtex5";
++		} ;
++		plbv46_dvi_cntlr_0: plbv46-dvi-cntlr@c9800000 {
++			compatible = "xlnx,plbv46-dvi-cntlr-1.00.a";
++			dcr-parent = <&plbv46_dcr_bridge_0>;
++			dcr-reg = < 0x100 0x4 >;
++			reg = < 0xc9800000 0x10000 >;
++			xlnx,default-tft-base-addr = <0x0>;
++			xlnx,dps-init = <0x1>;
++			xlnx,family = "virtex5";
++			xlnx,mplb-awidth = <0x20>;
++			xlnx,mplb-clk-period-ps = <0x2710>;
++			xlnx,mplb-dwidth = <0x80>;
++			xlnx,mplb-native-dwidth = <0x40>;
++			xlnx,mplb-p2p = <0x1>;
++			xlnx,mplb-smallest-slave = <0x80>;
++			xlnx,on-init = <0x1>;
++		} ;
++		plbv46_pci_0: plbv46-pci@85e00000 {
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "xlnx,plbv46-pci-1.03.a";
++			device_type = "pci";
++			reg = < 0x85e00000 0x10000 >; /* addr is at +0x10c, data at +0x110 */
++
++			/* The PCI bus is implemented by a soft-core which is connected to the PLB bus which is seen by the CPU at 0xa0000000.
++			 * Both the PLB and PCI have their own address domain. The PCI soft-core performs this translation. The Xilinx plbpci doc
++			 * mentions 'the number of high-order bits substituted in the PLB address presented to the bridge is given by the number
++			 * of bits that are the SAME between C_IPIFBAR_N and C_IPIF_HIGHADDR_N.'
++			 *
++			 * For the default ml510_bsb1_pcores_ppc440 reference design this means:
++			 * C_IPIFBAR_0        = 0xa0000000
++			 * C_IPIF_HIGHADDR_0  = 0xbfffffff <- only the last 3 bits of (0xa=1010b, 0xb=1011b) are similar
++			 * C_IPIFBAR2PCIBAR_0 = 0x00000000
++			 *
++			 * C_IPIFBAR_1        = 0x94000000
++			 * C_IPIF_HIGHADDR_1  = 0x97ffffff <- only the last 6 bits are similar
++			 * C_IPIFBAR2PCIBAR_1 = 0x00000000
++			 *
++			 * This means that a CPU write to 0xa0001234 translates to 0x00001234 on the PCI bus and that
++			 * the pcibar_0 base and pcibar_1 base are zero. In order to prevent collision between inbound
++			 * and outbound memory reads/writes C_IPIFBAR2PCIBAR_0 needs to be set to 0x80000000.
++			 */
++			ranges = <0x02000000 0x00000000 0x80000000 0xa0000000 0x00000000 0x20000000
++				  0x01000000 0x00000000 0x00000000 0x94000000 0x00000000 0x00010000>;
++
++			#interrupt-cells = <1>;
++			interrupt-parent = <&xps_intc_0>;
++			interrupt-map-mask = <0xff00 0x0 0x0 0x7>;
++			interrupt-map = <
++				/* IDSEL 0x15 / dev=5, bus=0 / PCI slot 5 */
++				/* pci irq a is connected to xintc irq 5, b to 4, c to 3 and d to 2 */
++				/* According to the datasheet + schematic ABCD [FPGA] of slot 5 is mapped to DABC, testing showed that at least A maps to B */
++				0x2800 0 0 1 &xps_intc_0 4 2
++//				0x2800 0 0 2 &xps_intc_0 5 2
++//				0x2800 0 0 3 &xps_intc_0 4 2
++//				0x2800 0 0 4 &xps_intc_0 3 2
++
++				/* IDSEL 0x16 / dev=6, bus=0 / PCI slot 3 */
++				0x3000 0 0 1 &xps_intc_0 3 2
++				0x3000 0 0 2 &xps_intc_0 2 2
++				0x3000 0 0 3 &xps_intc_0 5 2
++				0x3000 0 0 4 &xps_intc_0 4 2
++
++				/* IDSEL 0x11 / dev=1, bus=0 / AC97 audio */
++				0x0800 0 0 1 &i8259 7 2
++
++				/* IDSEL 0x1b / dev=11, bus=0 / IDE */
++				0x5800 0 0 1 &i8259 14 2
++
++				/* IDSEL 0x1f / dev 15, bus=0 / USB */
++				0x7800 0 0 1 &i8259 7 2
++			>;
++			ali_m1533 {
++				#size-cells = <1>;
++				#address-cells = <2>;
++				i8259: interrupt-controller@20 {
++					reg = <1 0x20 2
++							1 0xa0 2
++							1 0x4d0 2>;
++					interrupt-controller;
++					device_type = "interrupt-controller";
++					#address-cells = <0>;
++					#interrupt-cells = <2>;
++					compatible = "chrp,iic";
++
++					interrupts = <1 2>;
++					interrupt-parent = <&xps_intc_0>;
++				};
++			};
++		} ;
++		xps_bram_if_cntlr_1: xps-bram-if-cntlr@ffff0000 {
++			compatible = "xlnx,xps-bram-if-cntlr-1.00.a";
++			reg = < 0xffff0000 0x10000 >;
++			xlnx,family = "virtex5";
++		} ;
++		xps_intc_0: interrupt-controller@81800000 {
++			#interrupt-cells = <0x2>;
++			compatible = "xlnx,xps-intc-1.00.a";
++			interrupt-controller ;
++			reg = < 0x81800000 0x10000 >;
++			xlnx,num-intr-inputs = <0xc>;
++		} ;
++	} ;
++}  ;
+Binary files linux-2.6.29/arch/powerpc/boot/simpleImage.virtex440-ml510 and ml510-dev/linux-2.6.29/arch/powerpc/boot/simpleImage.virtex440-ml510 differ
+diff -urN -X linux-2.6.29/Documentation/dontdiff linux-2.6.29/arch/powerpc/configs/44x/virtex5_defconfig ml510-dev/linux-2.6.29/arch/powerpc/configs/44x/virtex5_defconfig
+--- linux-2.6.29/arch/powerpc/configs/44x/virtex5_defconfig	2009-03-24 00:12:14.000000000 +0100
++++ ml510-dev/linux-2.6.29/arch/powerpc/configs/44x/virtex5_defconfig	2009-04-01 13:20:29.000000000 +0200
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.29-rc2
+-# Tue Jan 20 08:22:49 2009
++# Linux kernel version: 2.6.29
++# Wed Apr  1 13:20:29 2009
+ #
+ # CONFIG_PPC64 is not set
+ 
+@@ -75,6 +75,15 @@
+ # CONFIG_BSD_PROCESS_ACCT is not set
+ # CONFIG_TASKSTATS is not set
+ # CONFIG_AUDIT is not set
++
++#
++# RCU Subsystem
++#
++CONFIG_CLASSIC_RCU=y
++# CONFIG_TREE_RCU is not set
++# CONFIG_PREEMPT_RCU is not set
++# CONFIG_TREE_RCU_TRACE is not set
++# CONFIG_PREEMPT_RCU_TRACE is not set
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=14
+@@ -88,10 +97,12 @@
+ # CONFIG_IPC_NS is not set
+ # CONFIG_USER_NS is not set
+ # CONFIG_PID_NS is not set
++# CONFIG_NET_NS is not set
+ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_INITRAMFS_SOURCE=""
+ # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+ CONFIG_SYSCTL=y
++CONFIG_ANON_INODES=y
+ # CONFIG_EMBEDDED is not set
+ CONFIG_SYSCTL_SYSCALL=y
+ CONFIG_KALLSYMS=y
+@@ -101,10 +112,8 @@
+ CONFIG_PRINTK=y
+ CONFIG_BUG=y
+ CONFIG_ELF_CORE=y
+-CONFIG_COMPAT_BRK=y
+ CONFIG_BASE_FULL=y
+ CONFIG_FUTEX=y
+-CONFIG_ANON_INODES=y
+ CONFIG_EPOLL=y
+ CONFIG_SIGNALFD=y
+ CONFIG_TIMERFD=y
+@@ -113,6 +122,7 @@
+ CONFIG_AIO=y
+ CONFIG_VM_EVENT_COUNTERS=y
+ CONFIG_PCI_QUIRKS=y
++CONFIG_COMPAT_BRK=y
+ CONFIG_SLAB=y
+ # CONFIG_SLUB is not set
+ # CONFIG_SLOB is not set
+@@ -152,13 +162,9 @@
+ CONFIG_DEFAULT_CFQ=y
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="cfq"
+-CONFIG_CLASSIC_RCU=y
+-# CONFIG_TREE_RCU is not set
+-# CONFIG_PREEMPT_RCU is not set
+-# CONFIG_TREE_RCU_TRACE is not set
+-# CONFIG_PREEMPT_RCU_TRACE is not set
+ # CONFIG_FREEZER is not set
+ # CONFIG_PPC4xx_PCI_EXPRESS is not set
++CONFIG_XILINX_VIRTEX_PCI=y
+ 
+ #
+ # Platform support
+@@ -179,6 +185,7 @@
+ # CONFIG_GLACIER is not set
+ # CONFIG_YOSEMITE is not set
+ CONFIG_XILINX_VIRTEX440_GENERIC_BOARD=y
++CONFIG_XILINX_ML510=y
+ # CONFIG_PPC44x_SIMPLE is not set
+ # CONFIG_PPC4xx_GPIO is not set
+ CONFIG_XILINX_VIRTEX=y
+@@ -186,7 +193,7 @@
+ # CONFIG_IPIC is not set
+ # CONFIG_MPIC is not set
+ # CONFIG_MPIC_WEIRD is not set
+-# CONFIG_PPC_I8259 is not set
++CONFIG_PPC_I8259=y
+ # CONFIG_PPC_RTAS is not set
+ # CONFIG_MMIO_NVRAM is not set
+ # CONFIG_PPC_MPC106 is not set
+@@ -290,7 +297,6 @@
+ #
+ # Networking options
+ #
+-# CONFIG_NET_NS is not set
+ CONFIG_COMPAT_NET_DEV_OPS=y
+ CONFIG_PACKET=y
+ # CONFIG_PACKET_MMAP is not set
+@@ -499,12 +505,16 @@
+ # CONFIG_BLK_DEV_HD is not set
+ CONFIG_MISC_DEVICES=y
+ # CONFIG_PHANTOM is not set
+-# CONFIG_EEPROM_93CX6 is not set
+ # CONFIG_SGI_IOC4 is not set
+ # CONFIG_TIFM_CORE is not set
+ # CONFIG_ENCLOSURE_SERVICES is not set
+ # CONFIG_HP_ILO is not set
+ # CONFIG_C2PORT is not set
++
++#
++# EEPROM support
++#
++# CONFIG_EEPROM_93CX6 is not set
+ CONFIG_HAVE_IDE=y
+ # CONFIG_IDE is not set
+ 
+@@ -545,6 +555,7 @@
+ # CONFIG_SUNGEM is not set
+ # CONFIG_CASSINI is not set
+ # CONFIG_NET_VENDOR_3COM is not set
++# CONFIG_DNET is not set
+ # CONFIG_NET_TULIP is not set
+ # CONFIG_HP100 is not set
+ # CONFIG_IBM_NEW_EMAC is not set
+@@ -578,6 +589,7 @@
+ # CONFIG_QLA3XXX is not set
+ # CONFIG_ATL1 is not set
+ # CONFIG_ATL1E is not set
++# CONFIG_ATL1C is not set
+ # CONFIG_JME is not set
+ # CONFIG_NETDEV_10000 is not set
+ # CONFIG_TR is not set
+@@ -637,7 +649,6 @@
+ CONFIG_MOUSE_PS2_ALPS=y
+ CONFIG_MOUSE_PS2_LOGIPS2PP=y
+ CONFIG_MOUSE_PS2_SYNAPTICS=y
+-CONFIG_MOUSE_PS2_LIFEBOOK=y
+ CONFIG_MOUSE_PS2_TRACKPOINT=y
+ # CONFIG_MOUSE_PS2_ELANTECH is not set
+ # CONFIG_MOUSE_PS2_TOUCHKIT is not set
+diff -urN -X linux-2.6.29/Documentation/dontdiff linux-2.6.29/arch/powerpc/platforms/44x/Kconfig ml510-dev/linux-2.6.29/arch/powerpc/platforms/44x/Kconfig
+--- linux-2.6.29/arch/powerpc/platforms/44x/Kconfig	2009-03-24 00:12:14.000000000 +0100
++++ ml510-dev/linux-2.6.29/arch/powerpc/platforms/44x/Kconfig	2009-03-27 15:50:28.000000000 +0100
+@@ -160,6 +160,16 @@
+ 	  Most Virtex 5 designs should use this unless it needs to do some
+ 	  special configuration at board probe time.
+ 
++config XILINX_ML510
++	bool "Xilinx ML510 Reference Design support"
++	depends on 44x
++	default n
++	select XILINX_VIRTEX_5_FXT
++	select PPC_PCI_CHOICE
++	select XILINX_VIRTEX_PCI if PCI
++	select PPC_INDIRECT_PCI if PCI
++	select PPC_I8259 if PCI
++
+ config PPC44x_SIMPLE
+ 	bool "Simple PowerPC 44x board support"
+ 	depends on 44x
+@@ -232,4 +242,3 @@
+ config XILINX_VIRTEX_5_FXT
+ 	bool
+ 	select XILINX_VIRTEX
+-
+diff -urN -X linux-2.6.29/Documentation/dontdiff linux-2.6.29/arch/powerpc/platforms/44x/Makefile ml510-dev/linux-2.6.29/arch/powerpc/platforms/44x/Makefile
+--- linux-2.6.29/arch/powerpc/platforms/44x/Makefile	2009-03-24 00:12:14.000000000 +0100
++++ ml510-dev/linux-2.6.29/arch/powerpc/platforms/44x/Makefile	2009-04-01 11:59:28.000000000 +0200
+@@ -4,3 +4,4 @@
+ obj-$(CONFIG_SAM440EP) 	+= sam440ep.o
+ obj-$(CONFIG_WARP)	+= warp.o
+ obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
++obj-$(CONFIG_XILINX_ML510) += ml510.o
+\ No newline at end of file
+diff -urN -X linux-2.6.29/Documentation/dontdiff linux-2.6.29/arch/powerpc/platforms/44x/ml510.c ml510-dev/linux-2.6.29/arch/powerpc/platforms/44x/ml510.c
+--- linux-2.6.29/arch/powerpc/platforms/44x/ml510.c	1970-01-01 01:00:00.000000000 +0100
++++ ml510-dev/linux-2.6.29/arch/powerpc/platforms/44x/ml510.c	2009-04-01 12:42:28.000000000 +0200
+@@ -0,0 +1,161 @@
++/*
++ * Xilinx ML510 Reference Design support, derived from
++ * the generic Xilinx Virtex 5 board support
++ *
++ * Copyright 2007 Secret Lab Technologies Ltd.
++ * Copyright 2008 Xilinx, Inc.
++ * Copyright 2009 Roderick Colenbrander
++ *
++ * The i8259 cascade code was derived from 86xx/pic.c which is copyrighted by Freescale Semiconductor, Inc.
++ * Xilinx ML510 PCI initialization code, derived from the Xilinx ML300/ML410 based board support.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#include <linux/init.h>
++#include <linux/of_platform.h>
++#include <asm/machdep.h>
++#include <asm/prom.h>
++#include <asm/time.h>
++#include <asm/xilinx_intc.h>
++#include <asm/reg.h>
++#include <asm/ppc4xx.h>
++#ifdef CONFIG_PPC_I8259
++#include <asm/i8259.h>
++#endif
++#ifdef CONFIG_PCI
++#include <linux/pci.h>
++#endif
++#include "44x.h"
++
++static struct of_device_id xilinx_of_bus_ids[] __initdata = {
++	{ .compatible = "simple-bus", },
++	{ .compatible = "xlnx,plb-v46-1.00.a", },
++	{ .compatible = "xlnx,plb-v46-1.02.a", },
++	{ .compatible = "xlnx,plb-v34-1.01.a", },
++	{ .compatible = "xlnx,plb-v34-1.02.a", },
++	{ .compatible = "xlnx,opb-v20-1.10.c", },
++	{ .compatible = "xlnx,dcr-v29-1.00.a", },
++	{ .compatible = "xlnx,compound", },
++	{}
++};
++
++#ifdef CONFIG_PPC_I8259
++static void ml510_8259_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	unsigned int cascade_irq = i8259_irq();
++	if (cascade_irq != NO_IRQ)
++		generic_handle_irq(cascade_irq);
++
++	/* Let xilinx_intc end the interrupt */
++	desc->chip->ack(irq);
++	desc->chip->unmask(irq);
++}
++
++static void __init ml510_setup_i8259_cascade(void)
++{
++	struct device_node *np, *cascade_node = NULL;
++	int cascade_irq;
++
++	/* Initialize i8259 controller */
++	for_each_node_by_type(np, "interrupt-controller")
++			if (of_device_is_compatible(np, "chrp,iic")) {
++					cascade_node = np;
++					break;
++			}
++
++	if (cascade_node == NULL) {
++			printk(KERN_DEBUG "Could not find i8259 PIC\n");
++			return;
++	}
++
++	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
++	if (cascade_irq == NO_IRQ) {
++			printk(KERN_ERR "Failed to map cascade interrupt\n");
++			return;
++	}
++
++	i8259_init(cascade_node, 0);
++                
++	of_node_put(cascade_node);
++	set_irq_chained_handler(cascade_irq, ml510_8259_cascade);
++}
++#endif /* CONFIG_PPC_I8259 */
++
++#ifdef CONFIG_PCI
++static void __devinit ali_quirk(struct pci_dev *dev)
++{
++	/* Enable the IDE controller */
++	pci_write_config_byte(dev, 0x58, 0x4c);
++	/* Assign irq 14 to the primary ide channel */
++	pci_write_config_byte(dev, 0x44, 0x0d);
++	/* Assign irq 15 to the secondary ide channel */
++	pci_write_config_byte(dev, 0x75, 0x0f);
++	/* Set the ide controller in native mode */
++	pci_write_config_byte(dev, 0x09, 0xff);
++
++	pci_write_config_byte(dev, 0x48, 0x00); // INTB = disabled, INTA = disabled
++	pci_write_config_byte(dev, 0x4a, 0x00); // INTD = disabled, INTC = disabled
++	pci_write_config_byte(dev, 0x4b, 0x00); // Audio = INT7, Modem = disabled.
++	pci_write_config_byte(dev, 0x74, 0x06); // USB = INT7
++}
++DECLARE_PCI_FIXUP_EARLY(0x10b9, 0x1533, ali_quirk);
++#endif /* CONFIG_PCI */
++
++static int __init ml510_device_probe(void)
++{
++	of_platform_bus_probe(NULL, xilinx_of_bus_ids, NULL);
++
++	return 0;
++}
++machine_device_initcall(ml510, ml510_device_probe);
++
++static int __init ml510_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	if (!of_flat_dt_is_compatible(root, "xlnx,ml510-ref-design"))
++		return 0;
++
++	return 1;
++}
++
++void virtex_pci_init(void);
++static void __init ml510_setup_arch(void)
++{
++	struct device_node *pci_node = of_find_compatible_node(NULL, NULL, "xlnx,plbv46-pci-1.03.a");
++
++#ifdef CONFIG_PCI
++	if(pci_node)
++	{
++//Is this the right way or should this be done using OF?
++		/* Register the host bridge */
++		virtex_pci_init();
++	}
++#endif /* CONFIG_PCI */
++}
++
++static void ml510_init_IRQ(void)
++{
++	xilinx_intc_init_tree();
++
++#ifdef CONFIG_PPC_I8259
++	/* The devices on the ALI M1553 south bridge are connected to an internal i8259 */
++	ml510_setup_i8259_cascade();
++	/* Program irq 7 (usb/audio), 14/15 (ide) to level sensitive */
++	outb(0xc0, 0x4d0);
++	outb(0xc0, 0x4d1);
++#endif /* CONFIG_PPC_I8259 */
++}
++
++define_machine(ml510) {
++	.name			= "Xilinx ML510 Reference Design support",
++	.probe			= ml510_probe,
++	.setup_arch		= ml510_setup_arch,
++	.init_IRQ		= ml510_init_IRQ,
++	.get_irq		= xilinx_intc_get_irq,
++	.calibrate_decr		= generic_calibrate_decr,
++	.restart		= ppc4xx_reset_system,
++};
+diff -urN -X linux-2.6.29/Documentation/dontdiff linux-2.6.29/arch/powerpc/sysdev/Kconfig ml510-dev/linux-2.6.29/arch/powerpc/sysdev/Kconfig
+--- linux-2.6.29/arch/powerpc/sysdev/Kconfig	2009-03-24 00:12:14.000000000 +0100
++++ ml510-dev/linux-2.6.29/arch/powerpc/sysdev/Kconfig	2009-03-27 12:50:29.000000000 +0100
+@@ -12,3 +12,7 @@
+ 	depends on PCI_MSI
+ 	default y if MPIC
+ 	default y if FSL_PCI
++
++config XILINX_VIRTEX_PCI
++	bool
++	depends on PCI
+diff -urN -X linux-2.6.29/Documentation/dontdiff linux-2.6.29/arch/powerpc/sysdev/Makefile ml510-dev/linux-2.6.29/arch/powerpc/sysdev/Makefile
+--- linux-2.6.29/arch/powerpc/sysdev/Makefile	2009-03-24 00:12:14.000000000 +0100
++++ ml510-dev/linux-2.6.29/arch/powerpc/sysdev/Makefile	2009-03-27 11:57:45.000000000 +0100
+@@ -34,6 +34,7 @@
+ obj-$(CONFIG_4xx)		+= uic.o
+ obj-$(CONFIG_4xx_SOC)		+= ppc4xx_soc.o
+ obj-$(CONFIG_XILINX_VIRTEX)	+= xilinx_intc.o
++obj-$(CONFIG_XILINX_VIRTEX_PCI)	+= virtex_pci.o
+ obj-$(CONFIG_OF_RTC)		+= of_rtc.o
+ ifeq ($(CONFIG_PCI),y)
+ obj-$(CONFIG_4xx)		+= ppc4xx_pci.o
+diff -urN -X linux-2.6.29/Documentation/dontdiff linux-2.6.29/arch/powerpc/sysdev/virtex_pci.c ml510-dev/linux-2.6.29/arch/powerpc/sysdev/virtex_pci.c
+--- linux-2.6.29/arch/powerpc/sysdev/virtex_pci.c	1970-01-01 01:00:00.000000000 +0100
++++ ml510-dev/linux-2.6.29/arch/powerpc/sysdev/virtex_pci.c	2009-04-01 12:54:42.000000000 +0200
+@@ -0,0 +1,95 @@
++/*
++ * PCI support for Xilinx plbv46_pci soft-core which can be used on Xilinx Virtex ML410 / ML510 boards.
++ *
++ * Copyright 2009 Roderick Colenbrander
++ *
++ * The pci bridge fixup code was copied from ppc4xx_pci.c and was written by Benjamin Herrenschmidt.
++ * Copyright 2007 Ben. Herrenschmidt <benh@kernel.crashing.org>, IBM Corp.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#include <linux/pci.h>
++#include <mm/mmu_decl.h>
++#include <asm/io.h>
++
++#define XPLB_PCI_ADDR 0x10c
++#define XPLB_PCI_DATA 0x110
++#define XPLB_PCI_BUS  0x114
++
++#define PCI_HOST_ENABLE_CMD PCI_COMMAND_SERR | PCI_COMMAND_PARITY | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY
++
++static void fixup_virtex_pci_bridge(struct pci_dev *dev)
++{
++	struct pci_controller *hose;
++	int i;
++
++	if (dev->devfn != 0 || dev->bus->self != NULL)
++		return;
++
++	hose = pci_bus_to_host(dev->bus);
++	if (hose == NULL)
++		return;
++
++	if(!of_device_is_compatible(hose->dn, "xlnx,plbv46-pci-1.03.a"))
++		return;
++
++	/* Hide the PCI host BARs from the kernel as their content doesn't
++	 * fit well in the resource management
++	 */
++	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
++		dev->resource[i].start = dev->resource[i].end = 0;
++		dev->resource[i].flags = 0;
++	}
++
++	printk(KERN_INFO "PCI: Hiding Xilinx plb-pci host bridge resources %s\n",
++	       pci_name(dev));
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, fixup_virtex_pci_bridge);
++
++void virtex_pci_init(void)
++{
++	struct device_node *pci_node = of_find_compatible_node(NULL, NULL, "xlnx,plbv46-pci-1.03.a");
++
++	if(pci_node)
++	{
++		struct pci_controller *hose;
++		struct resource r;
++		void __iomem *pci_reg;
++
++		printk("Found a Xilinx plb-pci host bridge\n");
++
++		if(of_address_to_resource(pci_node, 0, &r))
++		{
++			printk("No address for Xilinx plb-pci host bridge\n");
++			return;
++		}
++
++		hose = pcibios_alloc_controller(pci_node);
++		if (!hose)
++			return;
++
++		hose->first_busno = 0;
++		hose->last_busno = 1; /* there are two slots behind a TI2250 pci-to-pci bridge */
++      
++		/* Setup config space */
++		setup_indirect_pci(hose, r.start + XPLB_PCI_ADDR, r.start + XPLB_PCI_DATA, 0);
++
++		/* According to the xilinx plbv46_pci documentation the soft-core starts a self-init when the bus master enable bit is set.
++		 * Without this bit set the pci bus can't be scanned. */
++		early_write_config_word(hose, 0, 0, PCI_COMMAND, PCI_HOST_ENABLE_CMD);
++
++		/* Set the max latency timer to 255 */
++		early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0xff);
++
++		/* Set the max bus number to 255 */
++		pci_reg = of_iomap(pci_node, 0);
++		out_8(pci_reg + XPLB_PCI_BUS, 0xff);
++		iounmap(pci_reg);
++
++		/* Register the host bridge with the linux kernel! */
++		pci_process_bridge_OF_ranges(hose, pci_node, 1 /* primary=yes */);
++	}
++}
+diff -urN -X linux-2.6.29/Documentation/dontdiff linux-2.6.29/drivers/ide/alim15x3.c ml510-dev/linux-2.6.29/drivers/ide/alim15x3.c
+--- linux-2.6.29/drivers/ide/alim15x3.c	2009-03-24 00:12:14.000000000 +0100
++++ ml510-dev/linux-2.6.29/drivers/ide/alim15x3.c	2009-03-27 14:47:50.000000000 +0100
+@@ -401,7 +401,8 @@
+ 	return cbl;
+ }
+ 
+-#if !defined(CONFIG_SPARC64) && !defined(CONFIG_PPC)
++#if !defined(CONFIG_SPARC64)
++// && !defined(CONFIG_PPC)
+ /**
+  *	init_hwif_ali15x3	-	Initialize the ALI IDE x86 stuff
+  *	@hwif: interface to configure
+
+--========GMX95801238585719296258--
