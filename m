@@ -1,20 +1,24 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 1C97DDDEE8
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 05:36:33 +1100 (EST)
-Date: Thu, 2 Apr 2009 22:36:31 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Marcel Ziswiler <marcel@ziswiler.com>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 28C4DDDDA2
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 05:42:41 +1100 (EST)
+Message-ID: <49D5071D.50001@freescale.com>
+Date: Thu, 02 Apr 2009 13:42:37 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
 Subject: Re: [PATCH] QE USB Host Integration for MPC832x
-Message-ID: <20090402183631.GA6699@oksana.dev.rtsoft.ru>
 References: <1238622396-9768-1-git-send-email-marcel@ziswiler.com>
 	<20090402183357.GA29050@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090402183357.GA29050@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+	<20090402183631.GA6699@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090402183631.GA6699@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Marcel Ziswiler <marcel@ziswiler.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 02, 2009 at 10:33:57PM +0400, Anton Vorontsov wrote:
-[...]
-> > +			compatible = "fsl,mpc8360-qe-usb",
-> 
-> Ditto. No need for mpc8360 compatible.
+Anton Vorontsov wrote:
 
-Oh, I was wrong. fsl_qe_udc driver uses mpc8360 compatible for
-matching, so you can't remove it. :-/
+> Oh, I was wrong. fsl_qe_udc driver uses mpc8360 compatible for
+> matching, so you can't remove it. :-/
+
+Ugh, that's a bug in the driver then.
+
+My understanding is that the only MPC8323 QE microcode update is the one
+for UART.  If there are any updates to any other QE devices for standard
+functionality, I'm not aware of any.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Timur Tabi
+Linux kernel developer at Freescale
