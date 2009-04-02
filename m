@@ -1,14 +1,15 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 68ACCDDE28
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 19:14:23 +1100 (EST)
-Date: Thu, 02 Apr 2009 01:14:12 -0700 (PDT)
-Message-Id: <20090402.011412.193054111.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id EDA52DDF78
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 19:14:27 +1100 (EST)
+Date: Thu, 02 Apr 2009 01:14:16 -0700 (PDT)
+Message-Id: <20090402.011416.201364166.davem@davemloft.net>
 To: galak@kernel.crashing.org
-Subject: Re: [PATCH 1/2] gianfar: Remove unused header
+Subject: Re: [PATCH 2/2] ucc_geth: Remove unused header
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1238506979-8678-1-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1238506979-8678-2-git-send-email-galak@kernel.crashing.org>
 References: <1238506979-8678-1-git-send-email-galak@kernel.crashing.org>
+	<1238506979-8678-2-git-send-email-galak@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
@@ -22,7 +23,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Kumar Gala <galak@kernel.crashing.org>
-Date: Tue, 31 Mar 2009 08:42:58 -0500
+Date: Tue, 31 Mar 2009 08:42:59 -0500
 
 > Now that the driver is exclusively an of_platform driver we no longer
 > use the structs and #defines in fsl_devices.h
