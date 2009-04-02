@@ -1,19 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id DFED6DDDA5
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 23:36:55 +1100 (EST)
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 796D0DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 23:40:24 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Harry Ciao <qingtao.cao@windriver.com>
-Subject: Re: [v0 PATCH 5/5] EDAC: CPC925 MC platform device setup
-Date: Thu, 2 Apr 2009 14:36:44 +0200
+Subject: Re: [v0 PATCH 2/5] EDAC: Add CPC925 driver source file
+Date: Thu, 2 Apr 2009 14:40:16 +0200
 References: <1238652440-9224-1-git-send-email-qingtao.cao@windriver.com>
-	<1238652440-9224-5-git-send-email-qingtao.cao@windriver.com>
-	<1238652440-9224-6-git-send-email-qingtao.cao@windriver.com>
-In-Reply-To: <1238652440-9224-6-git-send-email-qingtao.cao@windriver.com>
+	<1238652440-9224-2-git-send-email-qingtao.cao@windriver.com>
+	<1238652440-9224-3-git-send-email-qingtao.cao@windriver.com>
+In-Reply-To: <1238652440-9224-3-git-send-email-qingtao.cao@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Message-Id: <200904021436.44822.arnd@arndb.de>
+Message-Id: <200904021440.17366.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org, norsk5@yahoo.com, linux-kernel@vger.kernel.org,
 	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,20 +26,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thursday 02 April 2009, Harry Ciao wrote:
-> +#ifdef CONFIG_EDAC
-> +#define CPC925_MC_START=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A00=
-xf8000000
-> +#define CPC925_MC_END=A0=A0=A0=A0=A0=A0=A0=A0=A0=A00xf8ffffff /* sizeof =
-16MB */
-> +/* Register a platform device for CPC925 memory controller */
-> +static int __init maple_cpc925_edac_setup(void)
+> Introduce IBM CPC925 EDAC driver source file, which makes use of error
+> detections on the IBM CPC925 Bridge and Memory Controller.
+> 
+> Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
 
-It's not good to have these encoded as magic numbers.
-Can't you find the addresses in the device tree? Maybe it's
-even possible to make this an of_platform_driver if you
-find a good node to bind to.
+On a very brief review, the driver looks good to me, but please
+post the full series to the linuxppc-dev@ozlabs.org mailing list
+as well, because that is likely to have more people that will
+comment on it.
 
-Does the driver also work on a G5 Mac, or is it limited
-to the maple platform?
+The first three patches of your series should be merged into
+a single one, because none of them has any signficance by itself.
+You may also consider moving the contents of the header file
+into the main driver, because it does not actually act as an
+interface.
 
 	Arnd <><
