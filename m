@@ -1,16 +1,20 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 46129DDDA2
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 00:37:39 +1100 (EST)
-Message-ID: <49D4BB9F.8050903@harris.com>
-Date: Thu, 02 Apr 2009 09:20:31 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 685CFDDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 00:41:25 +1100 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so341181yxg.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 02 Apr 2009 06:41:23 -0700 (PDT)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, hjk@linutronix.de,
-	"Herrera-Bendezu, Luis" <lherrera@harris.com>
-Subject: Re: UIO: uio_mem does not handle devices above 4 GB address
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20090402.005715.02030593.davem@davemloft.net>
+References: <20090401060117.8641.32252.stgit@localhost.localdomain>
+	<20090402.005715.02030593.davem@davemloft.net>
+Date: Thu, 2 Apr 2009 07:41:23 -0600
+Message-ID: <fa686aa40904020641k4db9e66dh4f80b5b32f68455d@mail.gmail.com>
+Subject: Re: [PATCH 0/3] Series short description
+From: Grant Likely <grant.likely@secretlab.ca>
+To: David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,61 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Wed, Apr 01, 2009 at 01:20:49PM -0400, Herrera-Bendezu, Luis wrote:
-> >> I am working on a PPC440EPx board with some FPGAs located at
-> >> addresses above 4 GB
+On Thu, Apr 2, 2009 at 1:57 AM, David Miller <davem@davemloft.net> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Wed, 01 Apr 2009 00:16:46 -0600
+>
+>> Here are the fec_mpc52xx patches which should be picked up for 2.6.29.
+>> Patch #1 fixes a dma related BUG_ON() discovered after the merge window
+>> opened. =A0#2 & #3 were original a single patch posted prior to the merg=
+e
+>> window, but not having a s-o-b line from the original author held them u=
+p.
+>> In the end I rewrote it from scratch as two patches just so I can get
+>> them merged. =A0#2 makes the driver use net_device_ops, and #3 fixes a N=
+ULL
+>> dereference.
+>>
+>> I've tested these patches on several MPC5200 platforms.
+>
+> All applied, thanks Grant.
 
-Cc'ing the PPC list, since they have the most experience with this
-CPU, and may have some useful insights.  The topic is "UIO on the
-PPC440EPx - 36-bit physical addresses".
+Thanks David!
 
-The PPC440EPx uses 36-bit addressing but is a 32-bit processor.
-*All* peripherals are above the first 4 GB - that cannot be changed
-if you use this CPU chip.
+g.
 
-In general, the solution is to use "struct resource" to carry physical
-addresses and sizes.  The basic type is:
-
-#ifdef CONFIG_PHYS_ADDR_T_64BIT
-typedef u64 phys_addr_t;
-#else
-typedef u32 phys_addr_t;
-#endif
-
-and for this processor, we use u64 rather than u32.
-
-So, if we want to make UIO usable on this class of CPU, we might
-replace:
-
-struct uio_mem {
-	unsigned long		addr;
-	unsigned long		size;
-	int			memtype;
-	void __iomem		*internal_addr;
-	struct uio_map		*map;
-};
-
-with:
-
-struct uio_mem {
-	phys_addr_t		addr;
-	phys_addr_t		size;
-	int			memtype;
-	void __iomem		*internal_addr;
-	struct uio_map		*map;
-};
-
-A few other changes would be needed.  We'd have to use something
-other than
-
-	return sprintf(buf, "0x%lx\n", mem->addr);
-
-because the format would be incorrect for a u64.  Also, I believe
-we would get warnings in uio_vma_fault().  However, the phys_addr
-is really only applicable to UIO_MEM_PHYS, so perhaps we want a
-union of phys_addr_t and unsigned long for addr and size?
-
-Anyway, this is a real problem for the PPC440EPx, that board 
-designers cannot work around.
-
-	Steve
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
