@@ -1,21 +1,18 @@
 Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 796D0DDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 23:40:24 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Harry Ciao <qingtao.cao@windriver.com>
-Subject: Re: [v0 PATCH 2/5] EDAC: Add CPC925 driver source file
-Date: Thu, 2 Apr 2009 14:40:16 +0200
-References: <1238652440-9224-1-git-send-email-qingtao.cao@windriver.com>
-	<1238652440-9224-2-git-send-email-qingtao.cao@windriver.com>
-	<1238652440-9224-3-git-send-email-qingtao.cao@windriver.com>
-In-Reply-To: <1238652440-9224-3-git-send-email-qingtao.cao@windriver.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: PPC_CELL_NATIVE should select PCI
+Date: Thu, 2 Apr 2009 15:15:11 +0200
+References: <alpine.LRH.2.00.0904011141550.13419@vixen.sonytel.be>
+	<1238583750.17330.125.camel@pasglop>
+	<alpine.LRH.2.00.0904020931520.11458@vixen.sonytel.be>
+In-Reply-To: <alpine.LRH.2.00.0904020931520.11458@vixen.sonytel.be>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Message-Id: <200904021440.17366.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, norsk5@yahoo.com, linux-kernel@vger.kernel.org,
-	bluesmoke-devel@lists.sourceforge.net
+Message-Id: <200904021515.12082.arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 02 April 2009, Harry Ciao wrote:
-> Introduce IBM CPC925 EDAC driver source file, which makes use of error
-> detections on the IBM CPC925 Bridge and Memory Controller.
+On Thursday 02 April 2009, Geert Uytterhoeven wrote:
+> | arch/powerpc/platforms/built-in.o:(.toc1+0x4e8): undefined reference to `pci_io_base'
 > 
-> Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
+> due to arch/powerpc/platforms/cell/io-workarounds.c. I guess this file
+> shouldn't be built when CONFIG_PCI=n?
 
-On a very brief review, the driver looks good to me, but please
-post the full series to the linuxppc-dev@ozlabs.org mailing list
-as well, because that is likely to have more people that will
-comment on it.
+Right, the I/O workarounds are specific to the spider PCI implementation,
+so there is no point in having them without PCI support.
 
-The first three patches of your series should be merged into
-a single one, because none of them has any signficance by itself.
-You may also consider moving the contents of the header file
-into the main driver, because it does not actually act as an
-interface.
+> As I don't have the hardware to test anyway, I'll give up.
+
+BenK, can you try Geert's patch on QPACE?
 
 	Arnd <><
