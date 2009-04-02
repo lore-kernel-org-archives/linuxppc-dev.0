@@ -1,16 +1,25 @@
-Return-Path: <mlcreech@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
-	by ozlabs.org (Postfix) with ESMTP id 79F37DDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 07:02:57 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c38so464017ana.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 02 Apr 2009 13:02:55 -0700 (PDT)
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BE78FDDD0C
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 07:45:57 +1100 (EST)
+Message-ID: <49D523FB.2020504@nortel.com>
+Date: Thu, 02 Apr 2009 14:45:47 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
 MIME-Version: 1.0
-Date: Thu, 2 Apr 2009 16:02:55 -0400
-Message-ID: <5ee96a840904021302s152a46a4udc61d672acffde45@mail.gmail.com>
-Subject: [PATCH] net/gianfar: fix RMII mode detection
-From: "Matthew L. Creech" <mlcreech@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
+References: <49CA8501.1000000@nortel.com> <49D3F662.4050100@nortel.com>
+	<1238659491.9041.133.camel@localhost>
+	<Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
+	<49D4FB89.4070101@nortel.com>
+	<Pine.LNX.4.64.0904021938270.25731@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0904021938270.25731@blonde.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,54 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On MPC8313, the TSEC flags ECNTRL_REDUCED_MODE (for RGMII) and
-ECNTRL_REDUCED_MII_MODE (for RMII) are mutually exclusive (15-32 of
-the 8313 reference manual).  The current gianfar driver only checks
-for RMII when RGMII is enabled, so plain RMII is never detected.  This
-patch makes the flags independent.
+Hugh Dickins wrote:
 
-Signed-off-by: Matthew Creech <mlcreech@gmail.com>
----
- gianfar.c |   25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+> This is a cosmetic matter, not worth more than a couple of lines of
+> code: I suggested masking off the high bits in the display, but when
+> KAMEZAWA-san suggested just showing 0, it was hard to argue against
+> his brutal simplicity.
 
-diff -purN orig/drivers/net/gianfar.c linux-2.6.29/drivers/net/gianfar.c
---- orig/drivers/net/gianfar.c	2009-04-02 15:36:16.000000000 -0400
-+++ linux-2.6.29/drivers/net/gianfar.c	2009-04-02 15:38:18.000000000 -0400
-@@ -628,21 +628,20 @@ static phy_interface_t gfar_get_interfac
- 			return PHY_INTERFACE_MODE_TBI;
- 	}
+<snip>
 
-+	if (ecntrl & ECNTRL_REDUCED_MII_MODE)
-+		return PHY_INTERFACE_MODE_RMII;
-+
- 	if (ecntrl & ECNTRL_REDUCED_MODE) {
--		if (ecntrl & ECNTRL_REDUCED_MII_MODE)
--			return PHY_INTERFACE_MODE_RMII;
--		else {
--			phy_interface_t interface = priv->interface;
--
--			/*
--			 * This isn't autodetected right now, so it must
--			 * be set by the device tree or platform code.
--			 */
--			if (interface == PHY_INTERFACE_MODE_RGMII_ID)
--				return PHY_INTERFACE_MODE_RGMII_ID;
-+		phy_interface_t interface = priv->interface;
+> Consider this change a fix: it used to show 00000000 before 2.6.7.
+> 
+> See http://lkml.org/lkml/2009/1/13/331 for one of the threads
+> on the subject - but you've not tempted me to reopen it!
 
--			return PHY_INTERFACE_MODE_RGMII;
--		}
-+		/*
-+		 * This isn't autodetected right now, so it must
-+		 * be set by the device tree or platform code.
-+		 */
-+		if (interface == PHY_INTERFACE_MODE_RGMII_ID)
-+			return PHY_INTERFACE_MODE_RGMII_ID;
-+
-+		return PHY_INTERFACE_MODE_RGMII;
- 	}
+Okay, fair enough.  I'll change my code to deal with it.  Thanks for the 
+explanation.
 
- 	if (priv->device_flags & FSL_GIANFAR_DEV_HAS_GIGABIT)
-
--- 
-Matthew L. Creech
+Chris
