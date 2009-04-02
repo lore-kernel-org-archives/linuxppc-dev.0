@@ -1,17 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 75FB5DDE06
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 19:31:03 +1100 (EST)
-Subject: Preliminary 64-bit Book3E support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 19:30:56 +1100
-Message-Id: <1238661056.17330.208.camel@pasglop>
-Mime-Version: 1.0
-Cc: Kumar Gala <galak@gate.crashing.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 4E5E4DDECA
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 20:42:07 +1100 (EST)
+Date: Thu, 2 Apr 2009 11:42:02 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Kyle McMartin <kyle@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/7] Generic RTC class driver
+In-Reply-To: <20090313042543.GA3907@bombadil.infradead.org>
+Message-ID: <alpine.LRH.2.00.0904021141080.30882@vixen.sonytel.be>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be>
+	<20090311154505.GB5448@bombadil.infradead.org>
+	<alpine.LRH.2.00.0903111825040.1040@vixen.sonytel.be>
+	<20090313042543.GA3907@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: linux-m68k@vger.kernel.org,
+	Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com, linux-parisc@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,69 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi !
+On Fri, 13 Mar 2009, Kyle McMartin wrote:
+> On Wed, Mar 11, 2009 at 06:26:12PM +0100, Geert Uytterhoeven wrote:
+> > On Wed, 11 Mar 2009, Kyle McMartin wrote:
+> > > On Wed, Mar 11, 2009 at 11:36:02AM +0100, Geert Uytterhoeven wrote:
+> > > > Is it OK for you to take it through your PA-RISC tree?
+> > > > If yes, I can resend the patch series with the collected acks.
+> > > 
+> I've pulled it and pushed it back out, I'll submit it when the merge
+> window opens.
 
-I've posted for those interested at:
+Apparently the first half went it through akpm. Will you take care of the
+remaining commits?
 
-http://gate.crashing.org/~benh/patches-preliminary-book3e.tar.gz
+Thanks!
 
-A work-in-progress set of patches for adding support for a new processor
-type, which ultimately will be common to 32 and 64-bit, and will
-represent processors compliant with the architecture 2.06 "embedded"
-variant. (We -might- make that backward compatible with earlier FSL
-chips as well at some stage).
+With kind regards,
 
-The current set of patches is very rough, hackish, and incomplete as you
-can expect :-) It's a partial forward-rebase of an internal patch set
-based on an earlier kernel which I just got booting in a simulator
-internally so I can push it out before I go on vacation.
+Geert Uytterhoeven
+Software Architect
 
-Among other things:
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-  - It won't boot on anything you have access to :-)
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-  - Even if you did, it's missing any specific Book3E > 2.06 processor
-in cputable since neither IBM nor FSL has anything announced at this
-stagem and there's no platform neither
-
-  - It only does the 64-bit part for now
-
-  - It's missing various "features", for example, SMP probably doesn't
-work (though it's likely details, the original work does SMP just fine),
-hugetlbfs isn't there, etc...
-
-  - Some of the early setup code makes assumptions that may not be valid
-on all implementations and firmwares. This will have to be cleaned up.
-
-  - The patches are gross :-) They need to be split better of course.
-Some things might still want to be done a bit differently though it's
-actually ported from a reasonably mature code base. For example, the TLB
-invalidation code for virtual page tables & indirect entries is a bit
-gross right now.
-
-  - You may notice the complete lack of useful support for critical,
-debug or machine check interrupts :-) There is some initial bits there,
-debug interrupts -may- work to some extend from userspace only (though I
-may not have ported all the bits to handle that on the C side) etc...
-This will all be sorted in another batch later. There are issues that
-need to be solved with those guys vs. the TLB miss state stack which
-might have to be saved/restored or context switched.
-
-  - The move of the kernel virtual space to 0x8000000000000000 is due to
-the way the virtual page tables work (when you don't have a HW table
-walk, I create a giant linear virtual mapping of the page tables of a
-given process so that the TLB miss handler doesn't have to walk down 3
-or 4 levels of page table tree each time). It's a bit annoying though,
-and I may change that back to 0xD000* using a different technique to
-identify VPTs.
-
-   - And probably more I don't have off the top of my mind right now
-
-Don't bother looking if that stuff isn't your cup of tea and it's
-definitely not in any shape to be merged any time soon, but at least
-it's out so those who do care can have a look, discuss, comment, etc...
-
-I'll probably do a new drop some time in May or June.
-
-Cheers,
-Ben.
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
