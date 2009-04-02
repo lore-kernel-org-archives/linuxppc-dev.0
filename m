@@ -1,29 +1,26 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 10456DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 05:51:05 +1100 (EST)
-Message-ID: <49D50910.4020909@grandegger.com>
-Date: Thu, 02 Apr 2009 20:50:56 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
+	[216.10.194.135])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "extu-mxob-2.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0AFE7DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 06:11:50 +1100 (EST)
+Date: Thu, 2 Apr 2009 20:10:55 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
+In-Reply-To: <49D4FB89.4070101@nortel.com>
+Message-ID: <Pine.LNX.4.64.0904021938270.25731@blonde.anvils>
+References: <49CA8501.1000000@nortel.com>  <49D3F662.4050100@nortel.com>
+	<1238659491.9041.133.camel@localhost>
+	<Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
+	<49D4FB89.4070101@nortel.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: powerpc/85xx: Add support for the "socrates" board (MPC8544)
-References: <49C26434.30302@grandegger.com>	
-	<fa686aa40903192205yed7eb13t45db80a201549f0d@mail.gmail.com>	
-	<49D1E3E5.3080607@grandegger.com>	
-	<fa686aa40903310623r2b2db0adjb912cfefd3a321e2@mail.gmail.com>	
-	<49D21C75.7060307@grandegger.com>	
-	<fa686aa40903310805k794b9df0s4d21a8080907a767@mail.gmail.com>	
-	<20090331155443.GA28242@oksana.dev.rtsoft.ru>	
-	<49D3197C.7000806@grandegger.com>
-	<fa686aa40904010540h53c8975ao196657f6fdd66583@mail.gmail.com>
-	<49D367C7.5010802@grandegger.com>
-	<D7365D0C-57B0-479C-9335-265620B8E5AE@kernel.crashing.org>
-	<49D45D4F.3010103@grandegger.com>
-	<3247527D-1FD0-420F-99C6-9DADBB79B020@kernel.crashing.org>
-In-Reply-To: <3247527D-1FD0-420F-99C6-9DADBB79B020@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,53 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+On Thu, 2 Apr 2009, Chris Friesen wrote:
+> Hugh Dickins wrote:
+> > > > f7feb000-f7fec000 rw-p f7feb000 00:00 0
+> > > > ffe6d000-ffe82000 rw-p ffffffeb000 00:00 0      [stack]
 > 
-> On Apr 2, 2009, at 1:38 AM, Wolfgang Grandegger wrote:
+> > Chris isn't the first to be concerned by that: there's a patch in
+> > -mm which just shows 0 instead of anon vm_pgoff in /proc/<pid>/maps
+> > output.  That patch is on akpm's list for 2.6.30 merge, but I think
+> > hasn't gone to Linus yet: expect it in a later batch.
 > 
->>
->> Socrates is a new board and it has no problem using an up-to-date
->> version of U-Boot. The socrates.dts file in your "next" tree already has
->> the "device_type = "soc" removed. We need to add "fsl,soc" to the
->> "compatible" property and update fsl_get_sys_freq(), etc. to search for
->> it as well. And U-Boot should use the same name to fixup the
->> frequencies. Are you already working on that issue? Should I provide
->> patches?
->>
-> 
-> I'm not working on it at all.  I'm also guessing at this point the
-> Socrates support is in Linus tree :)
+> Alternately, what about just making the offset for the stack match the
+> starting address of the VMA?
 
-Yes, I know, but it does not work properly because the "device_type =
-"soc" is missing :-(. I did not realize that immediately, sorry. Could
-you please apply the fix below re-adding the 'device_type = "soc";' line
-for the time being.
+The rmap code for locating anonymous pages, even after the vma has
+been moved meanwhile, depends on vma->vm_pgoff.  There is no point
+in making that more complicated for this.
 
-Thanks.
+For display purposes only?  Well, yes, we could have done that,
+but why bother?  It wouldn't be adding any information, and
+might raise a question of identifying "the" stack to do that to.
 
-Wolfgang.
+> That way it would look the same as other anonymous areas,
 
+The stack will be looking the same as other anonymous areas:
+they'll all be showing 00000000 there.
 
-[PATCH] powerpc/85xx: Re-add the device_type soc to socrates.dts
+This is a cosmetic matter, not worth more than a couple of lines of
+code: I suggested masking off the high bits in the display, but when
+KAMEZAWA-san suggested just showing 0, it was hard to argue against
+his brutal simplicity.
 
-The device_type "soc" is still required for MPC85xx boards.
+> and as a bonus would look the same as previous releases.
+> Arguably, /proc/<pid>/maps should count as userspace-visible API.
 
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
----
- arch/powerpc/boot/dts/socrates.dts |    1 +
- 1 file changed, 1 insertion(+)
+Consider this change a fix: it used to show 00000000 before 2.6.7.
 
-Index: powerpc/arch/powerpc/boot/dts/socrates.dts
-===================================================================
---- powerpc.orig/arch/powerpc/boot/dts/socrates.dts	2009-04-01
-15:26:09.000000000 +0200
-+++ powerpc/arch/powerpc/boot/dts/socrates.dts	2009-04-02
-16:37:09.838719521 +0200
-@@ -52,6 +52,7 @@
- 	soc8544@e0000000 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
-+		device_type = "soc";
+See http://lkml.org/lkml/2009/1/13/331 for one of the threads
+on the subject - but you've not tempted me to reopen it!
 
- 		ranges = <0x00000000 0xe0000000 0x00100000>;
- 		reg = <0xe0000000 0x00001000>;	// CCSRBAR 1M
+Hugh
