@@ -1,24 +1,23 @@
-Return-Path: <ben@codiert.org>
-Received: from cursor.subgra.de (cursor.subgra.de [78.46.252.50])
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
+	[216.10.194.135])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "cursor.subgra.de", Issuer "cursor.subgra.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 01511DDDA2
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 00:59:05 +1100 (EST)
-Date: Thu, 2 Apr 2009 15:58:54 +0200
-From: Benjamin Krill <ben@codiert.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] powerpc: PPC_CELL_NATIVE should select PCI
-Message-ID: <20090402135853.GE27709@codiert.org>
-References: <alpine.LRH.2.00.0904011141550.13419@vixen.sonytel.be>
-	<1238583750.17330.125.camel@pasglop>
-	<alpine.LRH.2.00.0904020931520.11458@vixen.sonytel.be>
-	<200904021515.12082.arnd@arndb.de>
+	(Client CN "extu-mxob-2.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6C9A1DDDF6
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 00:59:52 +1100 (EST)
+Date: Thu, 2 Apr 2009 13:43:05 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
+In-Reply-To: <1238659491.9041.133.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
+References: <49CA8501.1000000@nortel.com>  <49D3F662.4050100@nortel.com>
+	<1238659491.9041.133.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200904021515.12082.arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,10 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Arnd Bergmann | 2009-04-02 15:15:11 [+0200]:
+On Thu, 2 Apr 2009, Michael Ellerman wrote:
+> On Wed, 2009-04-01 at 17:18 -0600, Chris Friesen wrote:
+> > Resending due to lack of response to original post.
+> 
+> Hi Chris,
+> 
+> You'll probably get a more useful response on lkml. You CC'ed
+> linux-kernel-owner originally :)
 
->BenK, can you try Geert's patch on QPACE?
+Thanks.
 
-Successfully tested on QPACE.
+> 
+> > I was validating some code dealing with /proc/<pid>/maps on 2.6.29 and 
+> > was surprised when it failed.  It turns out that at least on my ppc64 G5 
+> > machine the offset value for the last entry is strange--it shows up as a 
+> > 64-bit value even though the process itself is only 32-bit.
+> > 
+> > This behaviour also shows up in 2.6.25, but doesn't in 2.6.14.  I 
+> > haven't yet tested anything else in between.
+> > 
+> > [cfriesen@localhost cfriesen]$ cat /proc/self/maps
+> > 00100000-00103000 r-xp 00100000 00:00 0         [vdso]
+> > 0fe70000-0ffbf000 r-xp 00000000 08:03 4312393   /lib/tls/libc-2.3.3.so
+> > 0ffbf000-0ffc0000 ---p 0014f000 08:03 4312393   /lib/tls/libc-2.3.3.so
+> > 0ffc0000-0ffc2000 r--p 00150000 08:03 4312393   /lib/tls/libc-2.3.3.so
+> > 0ffc2000-0ffc6000 rwxp 00152000 08:03 4312393   /lib/tls/libc-2.3.3.so
+> > 0ffc6000-0ffc8000 rwxp 0ffc6000 00:00 0
+> > 0ffd0000-0ffec000 r-xp 00000000 08:03 4309011   /lib/ld-2.3.3.so
+> > 0fff0000-0fff1000 r--p 00020000 08:03 4309011   /lib/ld-2.3.3.so
+> > 0fff1000-0fff2000 rwxp 00021000 08:03 4309011   /lib/ld-2.3.3.so
+> > 10000000-10004000 r-xp 00000000 08:03 917536    /bin/cat
+> > 10013000-10015000 rwxp 00003000 08:03 917536    /bin/cat
+> > 10015000-10036000 rwxp 10015000 00:00 0         [heap]
+> > f7deb000-f7feb000 r--p 00000000 08:03 2560322 
+> > /usr/lib/locale/locale-archive
+> > f7feb000-f7fec000 rw-p f7feb000 00:00 0
+> > ffe6d000-ffe82000 rw-p ffffffeb000 00:00 0      [stack]
+> > 
+> > I'm at a loss to explain what's going on here.  Anyone got any ideas?
+> 
+> It looks like for vmas that don't have a vm_file (like the stack),
+> vm_pgoff is basically "internal use" - and so can be > 32 bit.
 
-Acked-by: Benjamin Krill <ben@codiert.org>
+Yes, it's just a cosmetic blemish, which comes from how the args on
+stack are initially prepared in a 64-bit space, then moved into place
+for the 32-bit task - the anon vm_pgoff still reflects the original
+location, precisely in order to track pages despite movements.
+
+(2.6.14 had the same use of anon vm_pgoff, but args on stack
+were limited, and inserted directly into the 32-bit space.)
+
+Chris isn't the first to be concerned by that: there's a patch in
+-mm which just shows 0 instead of anon vm_pgoff in /proc/<pid>/maps
+output.  That patch is on akpm's list for 2.6.30 merge, but I think
+hasn't gone to Linus yet: expect it in a later batch.
+
+Hugh
