@@ -1,23 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4CC04DDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 06:17:53 +1100 (EST)
-Message-ID: <49D50F37.7070201@freescale.com>
-Date: Thu, 02 Apr 2009 14:17:11 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <bzolnier@gmail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.189])
+	by ozlabs.org (Postfix) with ESMTP id A9766DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 06:44:18 +1100 (EST)
+Received: by mu-out-0910.google.com with SMTP id w9so286174mue.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 02 Apr 2009 12:44:15 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: KOBAYASHI Yoshitake <yoshitake.kobayashi@toshiba.co.jp>
+Subject: Re: [PATCH] linux-next remove wmb() from ide-dma-sff.c and scc_pata.c
+Date: Thu, 2 Apr 2009 21:08:32 +0200
+References: <da824cf30903301739l688e8eb2r46086953245ebbe5@mail.gmail.com>
+	<alpine.LRH.2.00.0903310950040.9551@vixen.sonytel.be>
+	<49D1E384.8080009@toshiba.co.jp>
+In-Reply-To: <49D1E384.8080009@toshiba.co.jp>
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] QE USB Host Integration for MPC832x
-References: <1238622396-9768-1-git-send-email-marcel@ziswiler.com>	<20090402183357.GA29050@oksana.dev.rtsoft.ru>	<20090402183631.GA6699@oksana.dev.rtsoft.ru>	<49D5071D.50001@freescale.com>
-	<20090402191159.GA14626@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090402191159.GA14626@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
-	linux-kernel@vger.kernel.org, Marcel Ziswiler <marcel@ziswiler.com>
+Message-Id: <200904022108.32808.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Cc: Linux/MIPS Development <linux-mips@linux-mips.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+	IDE/ATA Devel <linux-ide@vger.kernel.org>,
+	Grant Grundler <grundler@google.com>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	LKML <linux-kernel@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> On Thu, Apr 02, 2009 at 01:42:37PM -0500, Timur Tabi wrote:
->> Anton Vorontsov wrote:
->>
->>> Oh, I was wrong. fsl_qe_udc driver uses mpc8360 compatible for
->>> matching, so you can't remove it. :-/
->> Ugh, that's a bug in the driver then.
+On Tuesday 31 March 2009, KOBAYASHI Yoshitake wrote:
+> 2009/03/31 16:51, Geert Uytterhoeven wrote:
+> > On Mon, 30 Mar 2009, Grant Grundler wrote:
+> >> Followup to "[PATCH 03/10] ide: destroy DMA mappings after ending DMA"
+> >> email on March 14th:
+> >>     http://lkml.org/lkml/2009/3/14/17
+> >>
+> >> No maintainer is listed for "Toshiba CELL Reference Set IDE" (BLK_DEV_CELLEB)
+> >> or tx4939ide.c in MAINTAINERS. I've CC'd "Ishizaki Kou" @Toshiba (Maintainer for
+> >> "Spidernet Network Driver for CELL") and linuxppc-dev list in the hope
+> >> someone else
+> >> would know or would be able to ACK this patch.
+> > 
+> > tx49xx is MIPS, for Nemoto-san.
 > 
-> Yes, but that depends on what chip was the first one? MPC8323 or
-> MPC8360?
+> The patch looks good for Toshiba Cell Reference Set.
 
-Actually, it depends on which one we picked in the devtree binding 
-(assuming they're compatible both ways), which appears to be mpc8323.
+Great, I applied the patch.
 
--Scott
+Thanks,
+Bart
