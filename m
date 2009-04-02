@@ -1,26 +1,22 @@
-Return-Path: <hugh@veritas.com>
-Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
-	[216.10.194.135])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-2.symantec.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0AFE7DDD1B
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 06:11:50 +1100 (EST)
-Date: Thu, 2 Apr 2009 20:10:55 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Chris Friesen <cfriesen@nortel.com>
-Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
-In-Reply-To: <49D4FB89.4070101@nortel.com>
-Message-ID: <Pine.LNX.4.64.0904021938270.25731@blonde.anvils>
-References: <49CA8501.1000000@nortel.com>  <49D3F662.4050100@nortel.com>
-	<1238659491.9041.133.camel@localhost>
-	<Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
-	<49D4FB89.4070101@nortel.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id B5DEDDDED4
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 06:12:00 +1100 (EST)
+Date: Thu, 2 Apr 2009 23:11:59 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] QE USB Host Integration for MPC832x
+Message-ID: <20090402191159.GA14626@oksana.dev.rtsoft.ru>
+References: <1238622396-9768-1-git-send-email-marcel@ziswiler.com>
+	<20090402183357.GA29050@oksana.dev.rtsoft.ru>
+	<20090402183631.GA6699@oksana.dev.rtsoft.ru>
+	<49D5071D.50001@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <49D5071D.50001@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Marcel Ziswiler <marcel@ziswiler.com>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,43 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2 Apr 2009, Chris Friesen wrote:
-> Hugh Dickins wrote:
-> > > > f7feb000-f7fec000 rw-p f7feb000 00:00 0
-> > > > ffe6d000-ffe82000 rw-p ffffffeb000 00:00 0      [stack]
+On Thu, Apr 02, 2009 at 01:42:37PM -0500, Timur Tabi wrote:
+> Anton Vorontsov wrote:
 > 
-> > Chris isn't the first to be concerned by that: there's a patch in
-> > -mm which just shows 0 instead of anon vm_pgoff in /proc/<pid>/maps
-> > output.  That patch is on akpm's list for 2.6.30 merge, but I think
-> > hasn't gone to Linus yet: expect it in a later batch.
+> > Oh, I was wrong. fsl_qe_udc driver uses mpc8360 compatible for
+> > matching, so you can't remove it. :-/
 > 
-> Alternately, what about just making the offset for the stack match the
-> starting address of the VMA?
+> Ugh, that's a bug in the driver then.
 
-The rmap code for locating anonymous pages, even after the vma has
-been moved meanwhile, depends on vma->vm_pgoff.  There is no point
-in making that more complicated for this.
+Yes, but that depends on what chip was the first one? MPC8323 or
+MPC8360?
 
-For display purposes only?  Well, yes, we could have done that,
-but why bother?  It wouldn't be adding any information, and
-might raise a question of identifying "the" stack to do that to.
+> My understanding is that the only MPC8323 QE microcode update is the one
+> for UART.  If there are any updates to any other QE devices for standard
+> functionality, I'm not aware of any.
 
-> That way it would look the same as other anonymous areas,
+I found them:
 
-The stack will be looking the same as other anonymous areas:
-they'll all be showing 00000000 there.
+http://www.freescale.com/files/netcomm/software/app_software/microcode/QERAMPTCH.zip?fpsp=1
 
-This is a cosmetic matter, not worth more than a couple of lines of
-code: I suggested masking off the high bits in the display, but when
-KAMEZAWA-san suggested just showing 0, it was hard to argue against
-his brutal simplicity.
+File is qe_usb3-8323_Rev11.c
 
-> and as a bonus would look the same as previous releases.
-> Arguably, /proc/<pid>/maps should count as userspace-visible API.
-
-Consider this change a fix: it used to show 00000000 before 2.6.7.
-
-See http://lkml.org/lkml/2009/1/13/331 for one of the threads
-on the subject - but you've not tempted me to reopen it!
-
-Hugh
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
