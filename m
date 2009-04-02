@@ -1,19 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 685CFDDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 00:41:25 +1100 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so341181yxg.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 02 Apr 2009 06:41:23 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090402.005715.02030593.davem@davemloft.net>
-References: <20090401060117.8641.32252.stgit@localhost.localdomain>
-	<20090402.005715.02030593.davem@davemloft.net>
-Date: Thu, 2 Apr 2009 07:41:23 -0600
-Message-ID: <fa686aa40904020641k4db9e66dh4f80b5b32f68455d@mail.gmail.com>
-Subject: Re: [PATCH 0/3] Series short description
-From: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0C9D8DDDB2
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 00:45:30 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
 To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH] fsl_pq_mdio: Fix compile failure
+Date: Thu,  2 Apr 2009 08:45:23 -0500
+Message-Id: <1238679923-4370-1-git-send-email-galak@kernel.crashing.org>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,29 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 2, 2009 at 1:57 AM, David Miller <davem@davemloft.net> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Wed, 01 Apr 2009 00:16:46 -0600
->
->> Here are the fec_mpc52xx patches which should be picked up for 2.6.29.
->> Patch #1 fixes a dma related BUG_ON() discovered after the merge window
->> opened. =A0#2 & #3 were original a single patch posted prior to the merg=
-e
->> window, but not having a s-o-b line from the original author held them u=
-p.
->> In the end I rewrote it from scratch as two patches just so I can get
->> them merged. =A0#2 makes the driver use net_device_ops, and #3 fixes a N=
-ULL
->> dereference.
->>
->> I've tested these patches on several MPC5200 platforms.
->
-> All applied, thanks Grant.
+From: Segher Boessenkool <segher@kernel.crashing.org>
 
-Thanks David!
+Add EXPORT_SYMBOL_GPL(fsl_pq_mdio_bus_name) for module builds
 
-g.
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Dave, 
+
+I think this got lost in a thread on the ppc list.
+
+- k
+
+ drivers/net/fsl_pq_mdio.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/fsl_pq_mdio.c b/drivers/net/fsl_pq_mdio.c
+index d9e1ecf..aa1eb88 100644
+--- a/drivers/net/fsl_pq_mdio.c
++++ b/drivers/net/fsl_pq_mdio.c
+@@ -204,6 +204,7 @@ void fsl_pq_mdio_bus_name(char *name, struct device_node *np)
+ 	snprintf(name, MII_BUS_ID_SIZE, "%s@%llx", np->name,
+ 		(unsigned long long)taddr);
+ }
++EXPORT_SYMBOL_GPL(fsl_pq_mdio_bus_name);
+ 
+ /* Scan the bus in reverse, looking for an empty spot */
+ static int fsl_pq_mdio_find_free(struct mii_bus *new_bus)
+-- 
+1.5.6.6
