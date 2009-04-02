@@ -1,18 +1,14 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id C3F63DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 21:52:24 +1100 (EST)
-Message-ID: <49D498E0.80603@mlbassoc.com>
-Date: Thu, 02 Apr 2009 04:52:16 -0600
-From: Gary Thomas <gary@mlbassoc.com>
+Return-Path: <super.firetwister@googlemail.com>
+From: Markus Brunner <super.firetwister@googlemail.com>
+To: Andy Fleming <afleming@freescale.com>
+Subject: gianfar ooops after transmit timed out
+Date: Thu, 2 Apr 2009 14:20:51 +0200
 MIME-Version: 1.0
-To: "Matthew L. Creech" <mlcreech@gmail.com>
-Subject: Re: MPC83xx console : no output after handover
-References: <5ee96a840903311330y36ed97bet92319da8d118086@mail.gmail.com>	<49D280E0.9020701@mlbassoc.com>	<5ee96a840903311403r331943d2wf9dbb16491f6bc3@mail.gmail.com>	<49D28A7E.2090703@mlbassoc.com>	<5ee96a840903311522t10af5c64n53ab6f834ad475ff@mail.gmail.com>
-	<5ee96a840904011153qc052002i8c35229ca3e85c6c@mail.gmail.com>
-In-Reply-To: <5ee96a840904011153qc052002i8c35229ca3e85c6c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200904021420.52241.super.firetwister@gmail.com>
+Cc: Linuxppc-dev@ozlabs.org, Rini van Zetten <rini@arvoo.nl>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +18,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matthew L. Creech wrote:
-> It turned out that the normally-initialized 8250 driver was getting
-> stomped on by my device tree's serial driver (which is also an 8250) -
-> apparently CONFIG_SERIAL_8250[_CONSOLE] and CONFIG_SERIAL_OF_PLATFORM
-> don't play well together.  Disabling the latter fixed my problem.
-> 
-> Thanks for the help, and sorry for the noise.
-> 
+Hi,
 
-Can you share what you had and what you changed it to?  I'm
-running on very similar systems and may face this exact problem
-soon.
+my mpc8349 based board is known to have some problems with one ethernet phy 
+and is producing more (< 0.001%) frame errors than it should. This is enough 
+for the gianfar driver (of 2.6.27.20) to oops when I create lot's of packets 
+with a ping flood. 
+The oops occurs after "NETDEV WATCHDOG" reports that a "transmit timed out". 
 
-Thanks
+The driver does not oops on the other phy, which does not produce frame 
+errors.
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+Any Ideas?
+
+Markus
+
+
+ops: Kernel access of bad area, sig: 11 [#1]
+PREEMPT RSBBA100
+Modules linked in:
+NIP: c01a10c4 LR: c013b254 CTR: c013c038
+REGS: c02e7d20 TRAP: 0300   Not tainted  (2.6.27.20)
+MSR: 00001032 <ME,IR,DR>  CR: 24000082  XER: 20000000
+DAR: 000000a0, DSISR: 20000000
+TASK = c02ce578[0] 'swapper' THREAD: c02e6000
+GPR00: 000000a0 c02e7dd0 c02ce578 00000000 00000040 00000001 c02ec1c0 
+00001032
+GPR08: c080d1e0 df9ea800 00000000 00000000 24000082 ffffffff 0404f000 
+00000000
+GPR16: ffffffbf ffffffff ffffffff ffdff7ff ffffffff c02d0fd4 00100100 
+00200200
+GPR24: c031220c 00000001 00000001 00000000 00000000 df849800 ff109000 
+df849b80
+NIP [c01a10c4] dev_kfree_skb_irq+0x18/0x70
+LR [c013b254] gfar_clean_tx_ring+0x70/0x11c
+Call Trace:
+[c02e7dd0] [c003e978] update_wall_time+0x730/0x744 (unreliable)
+[c02e7df0] [c013b254] gfar_clean_tx_ring+0x70/0x11c
+[c02e7e10] [c013c07c] gfar_poll+0x44/0x150
+[c02e7e30] [c01a064c] net_rx_action+0xa8/0x19c
+[c02e7e70] [c00251d4] __do_softirq+0x64/0xc0
+[c02e7e90] [c0006384] do_softirq+0x40/0x58
+[c02e7ea0] [c00250a8] irq_exit+0x40/0x9c
+[c02e7eb0] [c000642c] do_IRQ+0x90/0xac
+[c02e7ec0] [c0010ab4] ret_from_except+0x0/0x14
+--- Exception: 501 at cpu_idle+0x9c/0xf8
+    LR = cpu_idle+0x9c/0xf8
+[c02e7f80] [c0009820] cpu_idle+0x58/0xf8 (unreliable)
+[c02e7fa0] [c01fb8c8] __got2_end+0x7c/0x90
+[c02e7fc0] [c026c794] start_kernel+0x2c0/0x2d4
+[c02e7ff0] [00003438] 0x3438
+Instruction dump:
+7fa00124 80010024 bba10014 38210020 7c0803a6 4e800020 9421ffe0 7c0802a6
+7c6b1b78 90010024 380300a0 bfa10014 <7d200028> 3129ffff 7d20012d 40a2fff4
+Kernel panic - not syncing: Fatal exception in interrupt
+
+
+
+The Trace with kgdb:
+
+
+dev_kfree_skb_irq (skb=0x0)
+    at 
+arch/powerpc/include/asm/atomic.h:165
+165             __asm__ __volatile__(
+(gdb) bt
+#0  dev_kfree_skb_irq (skb=0x0)
+    at 
+arch/powerpc/include/asm/atomic.h:165
+#1  0xc013b254 in gfar_clean_tx_ring (dev=0xdf849800) at 
+drivers/net/gianfar.c:1384
+#2  0xc013c07c in gfar_poll (napi=0xdf849ba4, budget=<value optimized 
+out>) at drivers/net/gianfar.c:1705
+#3  0xc01a064c in net_rx_action (h=<value optimized out>) at 
+net/core/dev.c:2384
+#4  0xc00251d4 in __do_softirq () at kernel/softirq.c:208
+#5  0xc0006384 in do_softirq () at arch/powerpc/kernel/irq.c:430
+#6  0xc00250a8 in irq_exit () at kernel/softirq.c:284
+#7  0xc000642c in do_IRQ (regs=<value optimized out>) at 
+arch/powerpc/kernel/irq.c:325
+#8  0xc0010ab4 in ret_from_except_full ()
+#9  0xc0009820 in cpu_idle () at arch/powerpc/kernel/idle.c:59
+#10 0xc01fb8c8 in rest_init () at init/main.c:481
+#11 0xc026c794 in start_kernel () at init/main.c:691
+#12 0x00003438 in ?? ()
+Backtrace stopped: previous frame inner to this frame (corrupt stack?)
