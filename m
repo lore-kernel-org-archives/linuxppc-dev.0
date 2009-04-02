@@ -1,18 +1,16 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: PPC_CELL_NATIVE should select PCI
-Date: Thu, 2 Apr 2009 15:15:11 +0200
-References: <alpine.LRH.2.00.0904011141550.13419@vixen.sonytel.be>
-	<1238583750.17330.125.camel@pasglop>
-	<alpine.LRH.2.00.0904020931520.11458@vixen.sonytel.be>
-In-Reply-To: <alpine.LRH.2.00.0904020931520.11458@vixen.sonytel.be>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 46129DDDA2
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 00:37:39 +1100 (EST)
+Message-ID: <49D4BB9F.8050903@harris.com>
+Date: Thu, 02 Apr 2009 09:20:31 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200904021515.12082.arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
+To: linux-kernel@vger.kernel.org, hjk@linutronix.de,
+	"Herrera-Bendezu, Luis" <lherrera@harris.com>
+Subject: Re: UIO: uio_mem does not handle devices above 4 GB address
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,17 +20,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 02 April 2009, Geert Uytterhoeven wrote:
-> | arch/powerpc/platforms/built-in.o:(.toc1+0x4e8): undefined reference to `pci_io_base'
-> 
-> due to arch/powerpc/platforms/cell/io-workarounds.c. I guess this file
-> shouldn't be built when CONFIG_PCI=n?
+> On Wed, Apr 01, 2009 at 01:20:49PM -0400, Herrera-Bendezu, Luis wrote:
+> >> I am working on a PPC440EPx board with some FPGAs located at
+> >> addresses above 4 GB
 
-Right, the I/O workarounds are specific to the spider PCI implementation,
-so there is no point in having them without PCI support.
+Cc'ing the PPC list, since they have the most experience with this
+CPU, and may have some useful insights.  The topic is "UIO on the
+PPC440EPx - 36-bit physical addresses".
 
-> As I don't have the hardware to test anyway, I'll give up.
+The PPC440EPx uses 36-bit addressing but is a 32-bit processor.
+*All* peripherals are above the first 4 GB - that cannot be changed
+if you use this CPU chip.
 
-BenK, can you try Geert's patch on QPACE?
+In general, the solution is to use "struct resource" to carry physical
+addresses and sizes.  The basic type is:
 
-	Arnd <><
+#ifdef CONFIG_PHYS_ADDR_T_64BIT
+typedef u64 phys_addr_t;
+#else
+typedef u32 phys_addr_t;
+#endif
+
+and for this processor, we use u64 rather than u32.
+
+So, if we want to make UIO usable on this class of CPU, we might
+replace:
+
+struct uio_mem {
+	unsigned long		addr;
+	unsigned long		size;
+	int			memtype;
+	void __iomem		*internal_addr;
+	struct uio_map		*map;
+};
+
+with:
+
+struct uio_mem {
+	phys_addr_t		addr;
+	phys_addr_t		size;
+	int			memtype;
+	void __iomem		*internal_addr;
+	struct uio_map		*map;
+};
+
+A few other changes would be needed.  We'd have to use something
+other than
+
+	return sprintf(buf, "0x%lx\n", mem->addr);
+
+because the format would be incorrect for a u64.  Also, I believe
+we would get warnings in uio_vma_fault().  However, the phys_addr
+is really only applicable to UIO_MEM_PHYS, so perhaps we want a
+union of phys_addr_t and unsigned long for addr and size?
+
+Anyway, this is a real problem for the PPC440EPx, that board 
+designers cannot work around.
+
+	Steve
