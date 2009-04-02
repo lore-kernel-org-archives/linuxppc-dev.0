@@ -1,17 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 80CAEDDDB2
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 09:19:42 +1100 (EST)
-Date: Thu, 2 Apr 2009 17:19:36 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull from 'next' branch (for 2.6.29)
-Message-ID: <Pine.LNX.4.64.0904021718450.27069@blarg.am.freescale.net>
+Return-Path: <yigal_gold@yahoo.com>
+Received: from web38901.mail.mud.yahoo.com (web38901.mail.mud.yahoo.com
+	[209.191.125.107]) by ozlabs.org (Postfix) with SMTP id A06EDDDDA2
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 07:12:39 +1100 (EST)
+Message-ID: <52907.72158.qm@web38901.mail.mud.yahoo.com>
+Date: Thu, 2 Apr 2009 13:05:58 -0700 (PDT)
+From: Yigal Goldberger <yigal_gold@yahoo.com>
+Subject: early kernel debugging
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +18,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Added a few minor commits..
 
-Please pull from 'next' branch of
+Hi All,
+I'm using u-boot to boot kernel 2.6.24.2 on a powerpc based board .
+I see that after uncompressing the kernel it hangs.
+I found a location (System.map) I think corresponds to the __log_buf (my SDRAM starts at physical address 0 (and u-boot performs -> Load Address: 00000000 Entry Point: 00000000) .
+So I just removed the leading C0xxxxxx from the address leaving xxxxxx .
+And that's where I looked . 
+I did see 2 error messages (though they were somewhat corrupt) the first designated a memory fault and the second a kernel oops at some address.
+I looked this address up on System.map and it's somewhere inside prom.c
+in of_scan_flat_dt( ) . 
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
+I have a few question at this point :
+A)Am I looking at the right memory location for __log_buf ?
+B)What is printed to the buffer (printk's of what verbose level ?)
+C)In a previous kernel version 2.6.14 I don't remember explicitly using a flat device tree or pointing at such a tree through the bootm command) , but I used the ARCH=ppc then as opposed to ARCH=powerpc Now .
+I see a lot of stuff regarding the need to provide such a data structure upon booting via bootm .Do I need to explicitly prepare such a data structure and provide a pointer to it via bootm ?
+Might this be the cause for this early hang ?
 
-to receive the following updates:
+Best Regards,
+Yigal Goldberger. 
 
- arch/powerpc/Kconfig                   |    1 +
- arch/powerpc/boot/dts/ksi8560.dts      |    4 ++--
- arch/powerpc/boot/dts/sbc8548.dts      |    4 ++--
- arch/powerpc/boot/dts/sbc8560.dts      |    4 ++--
- arch/powerpc/boot/dts/socrates.dts     |    1 +
- arch/powerpc/boot/dts/stx_gp3_8560.dts |    4 ++--
- arch/powerpc/boot/dts/tqm8540.dts      |    4 ++--
- arch/powerpc/boot/dts/tqm8541.dts      |    4 ++--
- arch/powerpc/boot/dts/tqm8555.dts      |    4 ++--
- arch/powerpc/boot/dts/tqm8560.dts      |    4 ++--
- arch/powerpc/include/asm/reg.h         |   30 ++++++++++++++++++++++++++++++
- arch/powerpc/include/asm/reg_booke.h   |   30 ------------------------------
- arch/powerpc/include/asm/sfp-machine.h |    6 +++---
- include/linux/fsl_devices.h            |   22 ----------------------
- 14 files changed, 51 insertions(+), 71 deletions(-)
 
-Grant Likely (1):
-      powerpc: Remove unused symbols from fsl_devices.h
-
-Josh Boyer (1):
-      powerpc: Make LOWMEM_CAM_NUM depend on FSL_BOOKE
-
-Kumar Gala (3):
-      powerpc/85xx: Use fsl,mpc85.. as prefix for memory ctrl & l2-cache nodes
-      powerpc: Move SPEFSCR defines to common header
-      powerpc/math-emu: Change types to work on ppc64
-
-Wolfgang Grandegger (1):
-      powerpc/85xx: Re-add the device_type soc to socrates.dts
+      
