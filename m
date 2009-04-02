@@ -1,29 +1,18 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A53ADDDE98
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 18:03:29 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n3273Lnh019214
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Apr 2009 00:03:22 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n3273JUt017082
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Apr 2009 02:03:20 -0500 (CDT)
+Return-Path: <subodh.nijsure@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id 4A971DDE2A
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 18:13:14 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so332659qwb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 02 Apr 2009 00:13:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: USB drivers
-Date: Thu, 2 Apr 2009 15:03:20 +0800
-Message-ID: <3A45394FD742FA419B760BB8D398F9ED2FAF28@zch01exm26.fsl.freescale.net>
-In-Reply-To: <722080.36173.qm@web83502.mail.sp1.yahoo.com>
-References: <722080.36173.qm@web83502.mail.sp1.yahoo.com>
-From: "Li Yang-R58472" <LeoLi@freescale.com>
-To: <ron_madrid@sbcglobal.net>, <linuxppc-dev@ozlabs.org>
+In-Reply-To: <2d43f95a0904012331u2cae68ft33ace018366b8f1@mail.gmail.com>
+References: <2d43f95a0904012331u2cae68ft33ace018366b8f1@mail.gmail.com>
+Date: Thu, 2 Apr 2009 00:13:12 -0700
+Message-ID: <2d43f95a0904020013x55ae8ca4l3afcd04447f12de1@mail.gmail.com>
+Subject: Re: Help with interrupts = <...> section of dtb file
+From: Subodh Nijsure <subodh.nijsure@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,25 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I have a custom board based on the MPC8313ERDB and have=20
-> communications capabilities over Ethernet using internet=20
-> sockets.  Basically, just data transfer from the host (my=20
-> board) to a client (a PC).  I want to be able to perform=20
-> similar transactions across USB.
->=20
-> I have done some cursory reading but am a little unclear on=20
-> how I should approach this.  Am I going to have to write a=20
-> host driver for my custom board, and also write a gadget=20
-> driver for any client machine?  Also, since I am desiring to=20
-> do simple data transfers only, which drivers could I use as a=20
-> point of reference for my application?
->=20
-> Thanks in advance for any tips and suggestions.
-
-Linux has a g_ether gadget, which can simulate a ethernet tunnal over
-USB.  If you already have the communication code through ethernet, it
-will be easier to make use of that gadget.  However, it has more
-overhead than pure usb transactions.  The best way is like you said,
-custom gadget driver and host driver.
-
-- Leo
+T24gV2VkLCBBcHIgMSwgMjAwOSBhdCAxMTozMSBQTSwgU3Vib2RoIE5panN1cmUKPHN1Ym9kaC5u
+aWpzdXJlQGdtYWlsLmNvbT4gd3JvdGU6Cj4gSGVsbG8sCj4KPiBJIG5lZWQgc29tZSBoZWxwIGlu
+IHVuZGVyc3RhbmRpbmcgdGhlIGludGVycnVwdHMgPSA8Li4uPiBzZWN0aW9uIG9mIERUQiBmaWxl
+Lgo+Cj4gSSBoYXZlIHJlYWQgdGhlIERvY3VtZW50YXRpb24vYm9vdGluZy13aXRob3V0LW9mLnR4
+dMKgIGFuZCBJIHVuZGVyc3RhbmQKPiB0aGF0IGludGVycnVwdHMgPSA8QSBCPiBtZWFucyBpbnRl
+cnJ1cHQgQSBhbmQgQiBpcyAiZW51bSIgdGhhdAo+IGluZGljYXRlcyBpZiBpdHMgYW4gZWRnZSBv
+ciBsZXZlbCBpbnRlcnJ1cHQuCj4KPiBJIG5lZWQgYml0IG9mIGhlbHAgaW4gcGFyc2luZyB0aGUg
+ZGVzY3JpcHRpb24gYmVsb3c6Cj4KPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgZW5l
+dDA6IGV0aGVybmV0QDI0MDAwIHsKPgo+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqAgY2VsbC1pbmRleCA9IDwwPjsKPgo+IMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgZGV2aWNlX3R5cGUgPSAibmV0d29yayI7Cj4KPiDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIG1vZGVsID0gImVU
+U0VDIjsKPgo+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAg
+Y29tcGF0aWJsZSA9ICJnaWFuZmFyIjsKPgo+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqAgcmVnID0gPDB4MjQwMDAgMHgxMDAwPjsKPgo+IMKgwqDCoMKgwqDC
+oMKgwqAgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgbG9jYWwtbWFjLWFkZHJlc3MgPSBb
+IDAwIDAwIDAwIDAwIDAwIDAwIF07Cj4KPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgIGludGVycnVwdHMgPSA8MjkgMiAzMCAyIDM0IDI+Owo+Cj4gwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBpbnRlcnJ1cHQtcGFyZW50
+ID0gPCZtcGljPjsKPgo+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqAgcGh5LWhhbmRsZSA9IDwmcGh5MD47Cj4KPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgIHBoeS1jb25uZWN0aW9uLXR5cGUgPSAic2dtaWkiOwo+Cj4g
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIH07Cj4KPiBJZiBJIGZvbGxvdyB0aGUgaW50
+ZXJydXB0cyBkZXNjcmlwdGlvbiBhcmUgd2Ugc2F5aW5nIHRoYXQgdGhpcyBlVFNFQzEKPiBvbiB0
+aGUgYm9hcmQgd2lsbCBnZW5lcmF0ZSBpbnRlcnJ1cHQgMjksIDMwICYgMzQ/IFNob3VsZCBzZWUg
+dGhlbSBhcwo+IHJlZ2lzdGVyZWQgaW50ZXJydXB0cyBpbiAvcHJvYy9pbnRlcnJ1cHQ/Cj4KCkFw
+b2xvZ2llcyBhYm91dCB0aGlzIC0tCgphIGR1aCBtb21lbnQuICBldGgwIHdhcyBtYXJrZWQgYXMg
+ZG93biBvbmNlIEkgYnJvdWdodCBpdCB1cCBJIGRvIHNlZQp0aG9zZSBpbnRlcnJ1cHRzIHJlZ2lz
+dGVyZWQuLi4KCmNhdCAvcHJvYy9pbnRlcnJ1cHRzCiAgICAgICAgICAgQ1BVMCAgICAgICBDUFUx
+CiAyOTogICAgICAgICAgMCAgICAgICAgICAwICAgT3BlblBJQyAgIExldmVsICAgICBlbmV0X3R4
+CiAzMDogICAgICAgICAgMCAgICAgICAgICAwICAgT3BlblBJQyAgIExldmVsICAgICBlbmV0X3J4
+CiAzNDogICAgICAgICAgMCAgICAgICAgICAwICAgT3BlblBJQyAgIExldmVsICAgICBlbmV0X2Vy
+cm9yCgoKL1N1Ym9kaAo=
