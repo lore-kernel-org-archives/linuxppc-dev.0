@@ -1,15 +1,14 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id E00C8DDE9F
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 19:26:29 +1100 (EST)
-Date: Thu, 02 Apr 2009 01:26:18 -0700 (PDT)
-Message-Id: <20090402.012618.151021224.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id AC3AADDE06
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2009 19:28:24 +1100 (EST)
+Date: Thu, 02 Apr 2009 01:28:13 -0700 (PDT)
+Message-Id: <20090402.012813.163966172.davem@davemloft.net>
 To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] ucc_geth: Pass proper device to DMA routines,
-	otherwise oops happens
+Subject: Re: [PATCH] fsl_pq_mdio: Revive UCC MDIO support
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090331185837.GA22545@oksana.dev.rtsoft.ru>
-References: <20090331185837.GA22545@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090331183352.GA4474@oksana.dev.rtsoft.ru>
+References: <20090331183352.GA4474@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: netdev@vger.kernel.org, leoli@freescale.com, afleming@freescale.com,
@@ -24,14 +23,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Tue, 31 Mar 2009 22:58:37 +0400
+Date: Tue, 31 Mar 2009 22:33:52 +0400
 
-> The driver should pass a device that actually specifies internal DMA
-> ops, but currently it passes netdev's device, which is wrong and that
-> causes following oops:
- ...
-> Fix this by passing of_device's device that specifies DMA ops in its
-> archdata.
+> commit 1577ecef766650a57fceb171acee2b13cbfaf1d3 ("netdev: Merge UCC
+> and gianfar MDIO bus drivers") introduced a regression so that UCC
+> MDIO buses no longer work.
+> 
+> This is because fsl_pq_mdio driver wrongly masks all non-TBI PHYs
+> for !fsl,gianfar-mdio buses, while it should do that only for
+> fsl,gianfar-tbi buses.
 > 
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
