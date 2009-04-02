@@ -1,17 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 910F6DDD0B
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 08:20:36 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n32LKW25010850
-	for <linuxppc-dev@ozlabs.org>; Thu, 2 Apr 2009 16:20:33 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/math-emu: Change types to work on ppc64
-Date: Thu,  2 Apr 2009 16:20:32 -0500
-Message-Id: <1238707232-22313-1-git-send-email-galak@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 5A721DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 08:57:04 +1100 (EST)
+Subject: Re: issue at the beginning of kernel booting
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20090402161209.GA19088@ld0162-tx32.am.freescale.net>
+References: <20090327083628.4C3E93EE530@mail2-203.sinamail.sina.com.cn>
+	<20090327161522.GA7809@ld0162-tx32.am.freescale.net>
+	<22840131.post@talk.nabble.com>
+	<20090402161209.GA19088@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain
+Date: Fri, 03 Apr 2009 08:54:55 +1100
+Message-Id: <1238709295.10752.8.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, "Sauce.Cheng" <chmhou@sina.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-While normally we don't use the math emulation code on ppc64 it can be
-useful for doing things like emulating the embedded FP instructions.
+On Thu, 2009-04-02 at 11:12 -0500, Scott Wood wrote:
+> On Wed, Apr 01, 2009 at 08:23:42PM -0700, Sauce.Cheng wrote:
+> > > I don't see where you set up a BAT that covers 0xf0000000.
+> > 
+> > if i have to set up a BAT that cover 0xF0000000. i had a debug with LEDs
+> > like that in u-boot code. everything is //normal. 0xF00000000 is the value
+> > of CFG_IMMR(CONFIG_SYS_IMMR) that memory map register, it is the phy address
+> > and //base //address of all internal regishters, isnt? you mean that if i
+> > set BATs, i should not get the phy address like in the //front ?
+> 
+> I don't quite follow the above, but what I meant is that you need to
+> put a mapping in place that covers your LED I/O once you have the MMU on.
+> 
+> Any mappings that U-boot made will be gone at that point.
 
-Since performance isn't critical in this scenario its easier to keep
-the sizes of the various math-emu the same as on ppc32.
+Also, f0000000 isn't a very good idea for a hard wired mapping, it will
+overlap some kernel stuffs. You should dynamically allocate the virtual
+address, or pick something above 0xfff00000 which should be unused iirc.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/include/asm/sfp-machine.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/sfp-machine.h b/arch/powerpc/include/asm/sfp-machine.h
-index 3d9f831..3a7a67a 100644
---- a/arch/powerpc/include/asm/sfp-machine.h
-+++ b/arch/powerpc/include/asm/sfp-machine.h
-@@ -29,9 +29,9 @@
- 
- /* basic word size definitions */
- #define _FP_W_TYPE_SIZE		32
--#define _FP_W_TYPE		unsigned long
--#define _FP_WS_TYPE		signed long
--#define _FP_I_TYPE		long
-+#define _FP_W_TYPE		unsigned int
-+#define _FP_WS_TYPE		signed int
-+#define _FP_I_TYPE		int
- 
- #define __ll_B			((UWtype) 1 << (W_TYPE_SIZE / 2))
- #define __ll_lowpart(t)		((UWtype) (t) & (__ll_B - 1))
--- 
-1.5.6.6
+Ben.
