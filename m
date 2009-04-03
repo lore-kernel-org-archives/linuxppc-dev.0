@@ -1,17 +1,15 @@
-Return-Path: <acrux@inwind.it>
-Received: from cp-out12.libero.it (cp-out12.libero.it [212.52.84.112])
-	by ozlabs.org (Postfix) with ESMTP id 8D871DDD1C
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 22:22:31 +1100 (EST)
-Received: from pegasos2 (62.98.45.80) by cp-out12.libero.it (8.5.016.1)
-	id 49C8ED4E00E83107 for linuxppc-dev@ozlabs.org;
-	Fri, 3 Apr 2009 13:16:58 +0200
-Date: Fri, 3 Apr 2009 13:16:54 +0200
-From: Nico Macrionitis <acrux@inwind.it>
-To: linuxppc-dev@ozlabs.org
-Subject: net/mv643xx fix: now rely on 6xx (for Pegasos2 Chrp)
-Message-Id: <20090403131654.f7225ca4.acrux@inwind.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <tiejun.china@gmail.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id EC896DDDA5
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 22:30:00 +1100 (EST)
+From: tiejun.china@gmail.com
+To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
+	akpm@linux-foundation.org, michael@ellerman.id.au
+Subject: [v1 PATCH 1/1] Fix 64bit Maple Host Bridge Address and Size Nodes
+Date: Fri,  3 Apr 2009 18:46:34 +0800
+Message-Id: <1238755594-18869-2-git-send-email-tiejun.china@gmail.com>
+In-Reply-To: <1238755594-18869-1-git-send-email-tiejun.china@gmail.com>
+References: <1238755594-18869-1-git-send-email-tiejun.china@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +19,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Testing 2.6.29-git9 on Pegasos2 Chrp machine equipped with Marvell Discovery II i was unable to see MV643xx gigabit nic option.
+In the DTB tree created by firmware on some Maple 64bit targets, such as ATCA6101, 
+these two properties, address&size, should be 2. But the actual corresponding values 
+of host bridge node are set 1 incorrectly by the firmware, we have to provide one 
+fixup function to fix that.
 
-32-bit platforms that relied on PPC32 && PPC_MULTIPLATFORM now rely
-on 6xx then this one must be updated too.
-
--N
-
+Signed-off-by: Tiejun Chen <tiejun.china@gmail.com>
 ---
- drivers/net/{Kconfig.orig => Kconfig} |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/prom_init.c |   51 ++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 50 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/Kconfig.orig b/drivers/net/Kconfig
-index f062b42..6f40f55 100644
---- a/drivers/net/Kconfig.orig
-+++ b/drivers/net/Kconfig
-@@ -2328,7 +2328,7 @@ config UGETH_TX_ON_DEMAND
-
- config MV643XX_ETH
-        tristate "Marvell Discovery (643XX) and Orion ethernet support"
--       depends on MV64360 || MV64X60 || (PPC_MULTIPLATFORM && PPC32) || PLAT_ORION
-+       depends on MV64360 || MV64X60 || 6xx || PLAT_ORION
-        select INET_LRO
-        select PHYLIB
-        help
-
-
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 2445945..7848b45 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -1907,14 +1907,63 @@ static void __init flatten_device_tree(void)
+ }
+ 
+ #ifdef CONFIG_PPC_MAPLE
++/* On ATCA6101 64bit target host bridge parent node has specified address and
++ * size properties to be 2. But the actual "cell" value for host bridge node 
++ * is 1 since early MOTLoad internal bug. */
++static void __init fixup_device_tree_atca6101(void)
++{
++	phandle hb;
++	u32 hb_ranges[4];
++	u32 size_cell, addr_cell;
++	struct prom_t *_prom = &RELOC(prom);
++	char *name;
++
++	name = "/hostbridge@f8000000";
++	hb = call_prom("finddevice", 1, 1, ADDR(name));
++	if (!PHANDLE_VALID(hb))
++		return;
++
++	if (prom_getproplen(hb, "reg") != 8)
++		return;
++
++	if (prom_getprop(hb, "reg", hb_ranges, (sizeof(hb_ranges))/2) 
++		== PROM_ERROR)
++		return;
++
++	prom_getprop(_prom->root, "#address-cells", &addr_cell, sizeof(addr_cell));
++	prom_getprop(_prom->root, "#size-cells", &size_cell, sizeof(size_cell));
++	
++	if ((addr_cell != 2) || (size_cell != 2) || 
++		(hb_ranges[0] != 0xf8000000))
++		return;
++
++	prom_printf("Fixing up bogus HOSTBRIDGE reg on ATCA6101...\n");
++
++	hb_ranges[3] = hb_ranges[1];
++	hb_ranges[1] = hb_ranges[0];
++	hb_ranges[0] = hb_ranges[2] = 0;
++	prom_setprop(hb, name, "reg",
++	hb_ranges, sizeof(hb_ranges));
++}
+ /* PIBS Version 1.05.0000 04/26/2005 has an incorrect /ht/isa/ranges property.
+- * The values are bad, and it doesn't even have the right number of cells. */
++ * The values are bad, and it doesn't even have the right number of cells. 
++ * Additionally, the early MOTLoad generate incorrect address&size cells on 
++ * some Maple platform such as ATCA6101. */ 
+ static void __init fixup_device_tree_maple(void)
+ {
+ 	phandle isa;
+ 	u32 rloc = 0x01002000; /* IO space; PCI device = 4 */
+ 	u32 isa_ranges[6];
+ 	char *name;
++	u32 node;
++	char prop[64];
++	int model;
++	
++	/*  FIXME: This may be used for more Maple targets not only ATCA6101. */
++	node = call_prom("finddevice", 1, 1, ADDR("/"));
++	model = prom_getprop(node, "model", prop, sizeof(prop));
++	if (model != PROM_ERROR && (strcmp(prop, "Motorola,ATCA-6101") == 0))
++                fixup_device_tree_atca6101();
+ 
+ 	name = "/ht@0/isa@4";
+ 	isa = call_prom("finddevice", 1, 1, ADDR(name));
 -- 
-GNU/Linux on Power Architecture
-CRUX PPC - http://cruxppc.crux.it/
+1.5.6
