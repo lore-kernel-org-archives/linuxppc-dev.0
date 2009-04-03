@@ -1,9 +1,11 @@
 Return-Path: <geert@sonycom.com>
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH] ps3vram: Fix error path (return -EIO) for short read/write
-Date: Fri,  3 Apr 2009 15:05:35 +0200
-Message-Id: <1238763938-7076-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH] ps3vram: Use proc_create_data() instead of proc_create()
+Date: Fri,  3 Apr 2009 15:05:36 +0200
+Message-Id: <1238763938-7076-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1238763938-7076-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+References: <1238763938-7076-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
@@ -17,22 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Use proc_create_data() to avoid race conditions.
+
+Reported-by: Alexey Dobriyan <adobriyan@gmail.com>
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/block/ps3vram.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/block/ps3vram.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index 8eddef3..2e79d2c 100644
+index 2e79d2c..6e73868 100644
 --- a/drivers/block/ps3vram.c
 +++ b/drivers/block/ps3vram.c
-@@ -585,6 +585,7 @@ static int ps3vram_make_request(struct request_queue *q, struct bio *bio)
+@@ -546,12 +546,10 @@ static void __devinit ps3vram_proc_init(struct ps3_system_bus_device *dev)
+ 	struct ps3vram_priv *priv = dev->core.driver_data;
+ 	struct proc_dir_entry *pde;
  
- 		if (retlen != len) {
- 			dev_err(&dev->core, "Short %s\n", op);
-+			error = -EIO;
- 			goto out;
- 		}
+-	pde = proc_create(DEVICE_NAME, 0444, NULL, &ps3vram_proc_fops);
+-	if (!pde) {
++	pde = proc_create_data(DEVICE_NAME, 0444, NULL, &ps3vram_proc_fops,
++			       priv);
++	if (!pde)
+ 		dev_warn(&dev->core, "failed to create /proc entry\n");
+-		return;
+-	}
+-	pde->data = priv;
+ }
  
+ static int ps3vram_make_request(struct request_queue *q, struct bio *bio)
 -- 
 1.6.0.4
