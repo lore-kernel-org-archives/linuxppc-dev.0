@@ -1,23 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 81C07DDDEE
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 21:58:00 +1100 (EST)
-Subject: Re: Interrupt ID number on mpc8347
-From: Michael Ellerman <michael@ellerman.id.au>
-To: yamazaki seiji <yamazaki.seiji@kk.jp.panasonic.com>
-In-Reply-To: <20090403163928.4679.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
-References: <20090403163928.4679.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-gSA1PcIUZXWoX9Zxer9X"
-Date: Fri, 03 Apr 2009 21:57:59 +1100
-Message-Id: <1238756279.9595.15.camel@localhost>
+Return-Path: <acrux@inwind.it>
+Received: from cp-out12.libero.it (cp-out12.libero.it [212.52.84.112])
+	by ozlabs.org (Postfix) with ESMTP id 8D871DDD1C
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 22:22:31 +1100 (EST)
+Received: from pegasos2 (62.98.45.80) by cp-out12.libero.it (8.5.016.1)
+	id 49C8ED4E00E83107 for linuxppc-dev@ozlabs.org;
+	Fri, 3 Apr 2009 13:16:58 +0200
+Date: Fri, 3 Apr 2009 13:16:54 +0200
+From: Nico Macrionitis <acrux@inwind.it>
+To: linuxppc-dev@ozlabs.org
+Subject: net/mv643xx fix: now rely on 6xx (for Pegasos2 Chrp)
+Message-Id: <20090403131654.f7225ca4.acrux@inwind.it>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,49 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Testing 2.6.29-git9 on Pegasos2 Chrp machine equipped with Marvell Discovery II i was unable to see MV643xx gigabit nic option.
 
---=-gSA1PcIUZXWoX9Zxer9X
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+32-bit platforms that relied on PPC32 && PPC_MULTIPLATFORM now rely
+on 6xx then this one must be updated too.
 
-On Fri, 2009-04-03 at 16:51 +0900, yamazaki seiji wrote:
-> I set the Interrupt ID number 17.
-> But kernel gives the Interrupt ID number 19.
->=20
-> I wont to know the reasen.
-> Please tell me.
+-N
 
-It's because the irqs are remapped by the kernel, the number in the
-device tree is a hardware irq number. The number you're printing out is
-a virtual irq number.
+---
+ drivers/net/{Kconfig.orig => Kconfig} |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-of_irq_to_resource() is doing the remapping for you.
+diff --git a/drivers/net/Kconfig.orig b/drivers/net/Kconfig
+index f062b42..6f40f55 100644
+--- a/drivers/net/Kconfig.orig
++++ b/drivers/net/Kconfig
+@@ -2328,7 +2328,7 @@ config UGETH_TX_ON_DEMAND
 
-You can turn on CONFIG_VIRQ_DEBUG and you'll get a file in debugfs that
-shows the mapping between hardware numbers and virtual numbers.
+ config MV643XX_ETH
+        tristate "Marvell Discovery (643XX) and Orion ethernet support"
+-       depends on MV64360 || MV64X60 || (PPC_MULTIPLATFORM && PPC32) || PLAT_ORION
++       depends on MV64360 || MV64X60 || 6xx || PLAT_ORION
+        select INET_LRO
+        select PHYLIB
+        help
 
-cheers
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-gSA1PcIUZXWoX9Zxer9X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknV67cACgkQdSjSd0sB4dJk/ACfcHo9Sw1TE9beaNzhzxHSCd2F
-VW4AmQGUabO9TAkzamM9/jtMvxNARtT+
-=VY6u
------END PGP SIGNATURE-----
-
---=-gSA1PcIUZXWoX9Zxer9X--
+-- 
+GNU/Linux on Power Architecture
+CRUX PPC - http://cruxppc.crux.it/
