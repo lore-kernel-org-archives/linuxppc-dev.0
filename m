@@ -1,14 +1,19 @@
-Return-Path: <yigal_gold@yahoo.com>
-Received: from web38901.mail.mud.yahoo.com (web38901.mail.mud.yahoo.com
-	[209.191.125.107]) by ozlabs.org (Postfix) with SMTP id A06EDDDDA2
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 07:12:39 +1100 (EST)
-Message-ID: <52907.72158.qm@web38901.mail.mud.yahoo.com>
-Date: Thu, 2 Apr 2009 13:05:58 -0700 (PDT)
-From: Yigal Goldberger <yigal_gold@yahoo.com>
-Subject: early kernel debugging
-To: linuxppc-dev@ozlabs.org
+Return-Path: <roland@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id ED768DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 11:45:01 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc ptrace block-step
+In-Reply-To: Benjamin Herrenschmidt's message of  Thursday,
+	2 April 2009 16:26:56 +1100 <1238650016.17330.193.camel@pasglop>
+References: <20090401215903.DE872FC3AB@magilla.sf.frob.com>
+	<1238650016.17330.193.camel@pasglop>
+Message-Id: <20090403004450.F2166FC3AB@magilla.sf.frob.com>
+Date: Thu,  2 Apr 2009 17:44:50 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org, utrace-devel@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,26 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> The patch only implements it for "server/classic" processors, not BookE,
+> thus it should probably only advertise it for these :-)
+>
+> Though it wouldn't be too hard to implement it for BookE using DBCR0:BRT
+> (Branch Taken debug event) though it might need some careful fixups such
+> as the one we have for single step regarding hitting exception entry
+> code.
 
-Hi All,
-I'm using u-boot to boot kernel 2.6.24.2 on a powerpc based board .
-I see that after uncompressing the kernel it hangs.
-I found a location (System.map) I think corresponds to the __log_buf (my SDRAM starts at physical address 0 (and u-boot performs -> Load Address: 00000000 Entry Point: 00000000) .
-So I just removed the leading C0xxxxxx from the address leaving xxxxxx .
-And that's where I looked . 
-I did see 2 error messages (though they were somewhat corrupt) the first designated a memory fault and the second a kernel oops at some address.
-I looked this address up on System.map and it's somewhere inside prom.c
-in of_scan_flat_dt( ) . 
+In that case, this code seems fairly mysterious:
 
-I have a few question at this point :
-A)Am I looking at the right memory location for __log_buf ?
-B)What is printed to the buffer (printk's of what verbose level ?)
-C)In a previous kernel version 2.6.14 I don't remember explicitly using a flat device tree or pointing at such a tree through the bootm command) , but I used the ARCH=ppc then as opposed to ARCH=powerpc Now .
-I see a lot of stuff regarding the need to provide such a data structure upon booting via bootm .Do I need to explicitly prepare such a data structure and provide a pointer to it via bootm ?
-Might this be the cause for this early hang ?
+> > +#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
+> > +		task->thread.dbcr0 = DBCR0_IDM | DBCR0_BT;
+> > +		regs->msr |= MSR_DE;
 
-Best Regards,
-Yigal Goldberger. 
+That doesn't already do whatever it is you described?
+
+Can we assume now that you or someone else who knows what all that means
+will take this up?
 
 
-      
+Thanks,
+Roland
