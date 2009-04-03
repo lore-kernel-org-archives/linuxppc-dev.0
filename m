@@ -1,22 +1,32 @@
-Return-Path: <Qingtao.Cao@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 83893DDDA0
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 18:19:03 +1100 (EST)
-Message-ID: <49D57FBA.3090508@windriver.com>
-Date: Fri, 03 Apr 2009 11:17:14 +0800
-From: Harry Ciao <qingtao.cao@windriver.com>
+Return-Path: <yamazaki.seiji@kk.jp.panasonic.com>
+Received: from smtp.mei.co.jp (smtp.mei.co.jp [133.183.100.20])
+	by ozlabs.org (Postfix) with ESMTP id 35E9FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2009 18:51:33 +1100 (EST)
+Received: from mail-gw.jp.panasonic.com ([157.8.1.145])
+	by smtp.mei.co.jp (8.12.11.20060614/3.7W/kc-maile13) with ESMTP id
+	n337pVmC015720
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Apr 2009 16:51:31 +0900 (JST)
+Received: by mail-gw.jp.panasonic.com (8.11.6p2/3.7W/somlb1) with ESMTP id
+	n337pVX13984
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Apr 2009 16:51:31 +0900 (JST)
+Received: from epochmail.jp.panasonic.com (localhost [127.0.0.1])
+	by mail.jp.panasonic.com (8.11.6p2/3.7W/kc-maili07) with ESMTP id
+	n337pYb19538
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Apr 2009 16:51:34 +0900 (JST)
+Received: by epochmail.jp.panasonic.com (8.12.11.20060308/3.7W/somla1) id
+	n337pVU5022483
+	for linuxppc-dev@ozlabs.org; Fri, 3 Apr 2009 16:51:31 +0900 (JST)
+Received: from [10.74.116.86]
+	by somla1.jp.panasonic.com (8.12.11.20060308/3.7W) with ESMTP id
+	n337pUoR022465
+	for <linuxppc-dev@ozlabs.org>; Fri, 3 Apr 2009 16:51:30 +0900 (JST)
+Date: Fri, 03 Apr 2009 16:51:30 +0900
+From: yamazaki seiji <yamazaki.seiji@kk.jp.panasonic.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Interrupt ID number on mpc8347
+Message-Id: <20090403163928.4679.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [v0 PATCH 5/5] EDAC: CPC925 MC platform device setup
-References: <1238652440-9224-1-git-send-email-qingtao.cao@windriver.com>
-	<1238652440-9224-5-git-send-email-qingtao.cao@windriver.com>
-	<1238652440-9224-6-git-send-email-qingtao.cao@windriver.com>
-	<200904021436.44822.arnd@arndb.de>
-In-Reply-To: <200904021436.44822.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, norsk5@yahoo.com, linux-kernel@vger.kernel.org,
-	bluesmoke-devel@lists.sourceforge.net
-Reply-To: qingtao.cao@windriver.com
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +36,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann 写道:
-> On Thursday 02 April 2009, Harry Ciao wrote:
->   
->> +#ifdef CONFIG_EDAC
->> +#define CPC925_MC_START                0xf8000000
->> +#define CPC925_MC_END          0xf8ffffff /* sizeof 16MB */
->> +/* Register a platform device for CPC925 memory controller */
->> +static int __init maple_cpc925_edac_setup(void)
->>     
->
-> It's not good to have these encoded as magic numbers.
-> Can't you find the addresses in the device tree? Maybe it's
-> even possible to make this an of_platform_driver if you
-> find a good node to bind to.
->
-> Does the driver also work on a G5 Mac, or is it limited
-> to the maple platform?
->
-> 	Arnd <><
->
->  
-Hi Arnd,
+Hi all,
 
-I did try to get resource information from its DTB node first, the 
-"hostbridge" node do can be found successfully, however, unfortunately, 
-as I put in the notes in that function, the #address-cells and 
-#size-cells specified by its parent node are both 2, but the cell number 
-used in its "reg" property is actually 1, as
+I am running the Linux kernel 2.6.28.7 on my PPC8347 BRD.
+I have another problem.
 
-reg = <0xf8000000 0x1000000>;
+I use many external Interrupts.
 
-which will make of_address_to_resource() failed with -EINVAL; that's why 
-I have to set it up from scratch manually.
+one of them ,I setup 
+	localbus@f0000000 {	//WDT,SW etc.k
+		reg = <0xf0000000 0x20>;
+		pci_inta@2{
+			interrupt-parent = <&ipic>;
+			interrupts = <17 0x8>;
+		};
+	};
+on dts file.
 
-Cheers,
+And I programmed
+	struct device_node *np;
+	struct resource irq_res;
+	int ret;
+	
+	char *irqs[]={
+		"pci_inta",
+		 NULL};
+	for(i=0;;i++){
+		if(irqs[i]==NULL){
+			break;
+		}
+		np = of_find_node_by_name(NULL, irqs[i]);
+		if (np == NULL) {
+			printk("No %s in DTB. Has it been eaten by wild dogs?\n",irqs[i]);
+			return -ENODEV;
+		}
+		if (!of_device_is_available(np)){
+			printk("No %s in DTB. of_device_is_availables?\n",irqs[i]);
+			return -ENODEV;
+		}
+		ret = of_irq_to_resource(np, 0, &irq_res);
+		if (ret == NO_IRQ)
+			irq_res.start = irq_res.end = 0;
+		else
+			irq_res.flags = 0;
+		printk("********************************* %s irq_res.start=%d,irq_res.end=%d\n",irqs[i],irq_res.start,irq_res.end);
+	}
 
-Harry
+printk result is
+
+********************************* pci_inta irq_res.start=19,irq_res.end=19
+
+
+I set the Interrupt ID number 17.
+But kernel gives the Interrupt ID number 19.
+
+I wont to know the reasen.
+Please tell me.
+
+-Seiji Yamazaki
+
+-- 
+yamazaki seiji <yamazaki.seiji@kk.jp.panasonic.com>
