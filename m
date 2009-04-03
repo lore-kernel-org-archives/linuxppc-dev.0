@@ -1,31 +1,21 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7ACC0DDD0C
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Apr 2009 02:00:23 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n33F0IvQ018789
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Apr 2009 08:00:19 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n33F0GVf011274
-	for <linuxppc-dev@ozlabs.org>; Fri, 3 Apr 2009 10:00:17 -0500 (CDT)
+Return-Path: <tmarri@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.73])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C7E1FDDDA2
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Apr 2009 03:04:41 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C9B46C.E5D6E4E9"
-Subject: Re: Interrupt ID number on mpc8347
-Date: Fri, 3 Apr 2009 23:00:16 +0800
-Message-ID: <D7CCA83BB0796C49BC0BB53B6AB12089136E78@zch01exm21.fsl.freescale.net>
-References: <20090403163928.4679.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
-	<1238756279.9595.15.camel@localhost>
-From: "Liu Dave-R63238" <DaveLiu@freescale.com>
-To: <michael@ellerman.id.au>,
-	"yamazaki seiji" <yamazaki.seiji@kk.jp.panasonic.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: early kernel debugging
+Date: Fri, 3 Apr 2009 09:04:37 -0700
+Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C071F4F26@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <52907.72158.qm@web38901.mail.mud.yahoo.com>
+References: <52907.72158.qm@web38901.mail.mud.yahoo.com>
+From: "Tirumala Reddy Marri" <tmarri@amcc.com>
+To: "Yigal Goldberger" <yigal_gold@yahoo.com>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,86 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+I am not sure if I understand correctly. But Looks like you are not
+passing the device tree along with kernel image and RAMDISK(you may not
+need it if  you are using NFS mount). You boot command should some what
+look like this "bootm kernel_addr ramdisk_addr devtree_addr" or "bootm
+kernel_addr - devtree_addr" . If you are already doing that I would
+check my bootargs for correct params.
 
-------_=_NextPart_001_01C9B46C.E5D6E4E9
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-
-> It's because the irqs are remapped by the kernel, the number in the
-> device tree is a hardware irq number. The number you're printing out =
-is
-> a virtual irq number.
-
-> of_irq_to_resource() is doing the remapping for you.
-
-> You can turn on CONFIG_VIRQ_DEBUG and you'll get a file in debugfs =
-that
-> shows the mapping between hardware numbers and virtual numbers.
-
-Guys,
-
-I notice many people happened same issue to use the interrupt in powerpc
-with DTS.
-Could somebody write one documentation for interrupt system on powerpc =
-arch,
- - how to remap irq
- - what is the virq? h/w irq.
- - show the mapping virt->h/w..
-etc..
-I think if have this docs, it will be helpful.
-
-Thanks, Dave
+-----Original Message-----
+From: linuxppc-dev-bounces+tmarri=3Damcc.com@ozlabs.org
+[mailto:linuxppc-dev-bounces+tmarri=3Damcc.com@ozlabs.org] On Behalf Of
+Yigal Goldberger
+Sent: Thursday, April 02, 2009 1:06 PM
+To: linuxppc-dev@ozlabs.org
+Subject: early kernel debugging
 
 
-------_=_NextPart_001_01C9B46C.E5D6E4E9
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+Hi All,
+I'm using u-boot to boot kernel 2.6.24.2 on a powerpc based board .
+I see that after uncompressing the kernel it hangs.
+I found a location (System.map) I think corresponds to the __log_buf (my
+SDRAM starts at physical address 0 (and u-boot performs -> Load Address:
+00000000 Entry Point: 00000000) .
+So I just removed the leading C0xxxxxx from the address leaving xxxxxx .
+And that's where I looked .=20
+I did see 2 error messages (though they were somewhat corrupt) the first
+designated a memory fault and the second a kernel oops at some address.
+I looked this address up on System.map and it's somewhere inside prom.c
+in of_scan_flat_dt( ) .=20
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dgb2312">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7654.12">
-<TITLE>Re: Interrupt ID number on mpc8347</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
+I have a few question at this point :
+A)Am I looking at the right memory location for __log_buf ?
+B)What is printed to the buffer (printk's of what verbose level ?)
+C)In a previous kernel version 2.6.14 I don't remember explicitly using
+a flat device tree or pointing at such a tree through the bootm command)
+, but I used the ARCH=3Dppc then as opposed to ARCH=3Dpowerpc Now .
+I see a lot of stuff regarding the need to provide such a data structure
+upon booting via bootm .Do I need to explicitly prepare such a data
+structure and provide a pointer to it via bootm ?
+Might this be the cause for this early hang ?
 
-<P><FONT SIZE=3D2>&gt; It's because the irqs are remapped by the kernel, =
-the number in the<BR>
-&gt; device tree is a hardware irq number. The number you're printing =
-out is<BR>
-&gt; a virtual irq number.<BR>
-<BR>
-&gt; of_irq_to_resource() is doing the remapping for you.<BR>
-<BR>
-&gt; You can turn on CONFIG_VIRQ_DEBUG and you'll get a file in debugfs =
-that<BR>
-&gt; shows the mapping between hardware numbers and virtual numbers.<BR>
-<BR>
-Guys,<BR>
-<BR>
-I notice many people happened same issue to use the interrupt in =
-powerpc<BR>
-with DTS.<BR>
-Could somebody write one documentation for interrupt system on powerpc =
-arch,<BR>
-&nbsp;- how to remap irq<BR>
-&nbsp;- what is the virq? h/w irq.<BR>
-&nbsp;- show the mapping virt-&gt;h/w..<BR>
-etc..<BR>
-I think if have this docs, it will be helpful.<BR>
-<BR>
-Thanks, Dave<BR>
-<BR>
-</FONT>
-</P>
+Best Regards,
+Yigal Goldberger.=20
 
-</BODY>
-</HTML>
-------_=_NextPart_001_01C9B46C.E5D6E4E9--
+
+     =20
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
