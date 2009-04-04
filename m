@@ -1,17 +1,16 @@
-Return-Path: <vijay.t.nikam@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.233])
-	by ozlabs.org (Postfix) with ESMTP id EBE2BDDD01
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Apr 2009 23:16:39 +1100 (EST)
-Received: by rv-out-0506.google.com with SMTP id g37so1262805rvb.1
-	for <linuxppc-dev@ozlabs.org>; Sat, 04 Apr 2009 05:16:38 -0700 (PDT)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id B142FDDD04
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Apr 2009 04:31:24 +1000 (EST)
+Date: Sat, 4 Apr 2009 22:31:20 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] fsl-diu-fb: Pass the proper device for dma mapping routines
+Message-ID: <20090404183120.GA21671@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Date: Sat, 4 Apr 2009 17:46:38 +0530
-Message-ID: <f234e2140904040516w7db57a5fsfaa6a8674d707bdd@mail.gmail.com>
-Subject: CONFIG_PREEMPT and High Resolution Timers problem
-From: Vijay Nikam <vijay.t.nikam@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Timur Tabi <timur@freescale.com>, Antonino Daplas <adaplas@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,73 +20,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello All,
-I have mpc8313erdb eval board with Linux-2.6.20 running on it.
-Recently I had a problem, I wrote a driver and from I am sending
-notification to user space application using fasync driver method
-(SIGIO signal). In user space applicaion process I have used
-posix-timers (timer_create and timer_settime), the timer is set for
-10ms. But in actual I checked on oscilloscope the expiration of timer
-or signal event generation varies between 10ms - 13ms. In kerenl
-driver when the interrupt occurs I am making a gpio pin high and on
-the signal event when timer expires I am making another gpio pin high,
-and the time between these measured varies between 10ms - 13ms i.e. it
-means the timer frequency is 250Hz, which was set by default for
-powerpc. So to achieve close to precise of 10ms I set the timer
-frequency to 1000Hz and then I got the resolution of 10ms -10.8ms.
-I would like to ask is the right approach of changing Timer Frequency
-to 1000Hz from 250Hz ? ? ?
-Because while searching some information regarding this I learned
-about High-Res Timers. In linux-2.6.20 x86 has this feature enabled
-rather you can enable it but not for powerpc arch, Right ? ? ? If yes
-then is there any way to add CONFIG_HIGH_RES_TIMERS feature to
-linux-2.6.20, any patch available ? ? ? =A0otherwise what could be the
-option ? ? ?
+The driver should pass a device that specifies internal DMA ops, but
+currently NULL pointers are passed, and thus following bug pops up:
 
-In Linux by default Preemption is not enabled, CONFIG_PREEMPT_NONE=3Dy
-so I tried to enabled CONFIG_PREEMPT=3Dy but when I boot the board with
-preemption enabled I got the scheduling with atomic error (please
-check the log below, thanks). I tried to debug and find some info but
-no luck. Could anyone please explain the reason for it and how I can
-fix it ? ? ?
+  Freescale DIU driver
+  ------------[ cut here ]------------
+  kernel BUG at arch/powerpc/include/asm/dma-mapping.h:237!
+  Oops: Exception in kernel mode, sig: 5 [#1]
+  ...
+  NIP [c01658b4] allocate_buf+0x0/0x8
+  LR [c0306554] fsl_diu_probe+0x2b4/0x518
+  Call Trace:
+  [df02be10] [c030638c] fsl_diu_probe+0xec/0x518 (unreliable)
+  [df02be60] [c020cdec] of_platform_device_probe+0x5c/0x84
+  [df02be80] [c018f5d0] really_probe+0x78/0x1a0
+  [df02bea0] [c018f7c0] __driver_attach+0xa4/0xa8
+  [df02bec0] [c018ea00] bus_for_each_dev+0x60/0x9c
+  [df02bef0] [c018f414] driver_attach+0x24/0x34
+  [df02bf00] [c018f168] bus_add_driver+0x12c/0x1cc
+  [df02bf20] [c018fbdc] driver_register+0x6c/0x110
+  [df02bf30] [c020ccb4] of_register_driver+0x54/0x70
+  [df02bf40] [c03d0a50] fsl_diu_init+0x70/0xa4
+  ...
 
-Kindly please acknowledge ... thank you ...
+This patch fixes the issue.
 
-Kind Regards,
-Vijay Nikam
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/video/fsl-diu-fb.c |   34 +++++++++++++++++++++-------------
+ 1 files changed, 21 insertions(+), 13 deletions(-)
 
-########################### Start #################################
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-BUG: scheduling while atomic: swapper/0x00000001/1
-Call Trace:
-[C07F5D50] [C0008938] =A0(unreliable)
-[C07F5D80] [C02933CC]
-[C07F5DD0] [C029472C]
-[C07F5E10] [C0201AF0]
-[C07F5E50] [C0201E08]
-[C07F5E90] [C01FEE14]
-[C07F5EB0] [C0202018]
-[C07F5F30] [C0017490]
-[C07F5F50] [C02FB4B0]
-[C07F5F90] [C0003960]
-[C07F5FF0] [C0010C74]
-BUG: scheduling while atomic: swapper/0x00000001/1
-########################## END ####################################
-########################## Start ####################################
-BUG: scheduling while atomic: jffs2_gcd_mtd4/0x00000004/719
-Call Trace:
-[C05BDBE0] [C0008938] =A0(unreliable)
-[C05BDC10] [C02933CC]
-[C05BDC60] [C029472C]
-[C05BDCA0] [C01D9F14]
-[C05BDCE0] [C01D5424]
-[C05BDD40] [C01D74D4]
-[C05BDD70] [C01C9330]
-[C05BDD80] [C0127F88]
-[C05BDDB0] [C011F26C]
-[C05BDE20] [C0120320]
-[C05BDE90] [C012327C]
---- Exception: 1[C05BDF50] [C0125F0C] =A0(unreliable)
-[C05BDFF0] [C0010C74]
-######################## END ########################################
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index fb51197..f153c58 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1352,14 +1352,15 @@ static int fsl_diu_resume(struct of_device *ofdev)
+ #endif				/* CONFIG_PM */
+ 
+ /* Align to 64-bit(8-byte), 32-byte, etc. */
+-static int allocate_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
++static int allocate_buf(struct device *dev, struct diu_addr *buf, u32 size,
++			u32 bytes_align)
+ {
+ 	u32 offset, ssize;
+ 	u32 mask;
+ 	dma_addr_t paddr = 0;
+ 
+ 	ssize = size + bytes_align;
+-	buf->vaddr = dma_alloc_coherent(NULL, ssize, &paddr, GFP_DMA |
++	buf->vaddr = dma_alloc_coherent(dev, ssize, &paddr, GFP_DMA |
+ 							     __GFP_ZERO);
+ 	if (!buf->vaddr)
+ 		return -ENOMEM;
+@@ -1376,9 +1377,10 @@ static int allocate_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
+ 	return 0;
+ }
+ 
+-static void free_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
++static void free_buf(struct device *dev, struct diu_addr *buf, u32 size,
++		     u32 bytes_align)
+ {
+-	dma_free_coherent(NULL, size + bytes_align,
++	dma_free_coherent(dev, size + bytes_align,
+ 				buf->vaddr, (buf->paddr - buf->offset));
+ 	return;
+ }
+@@ -1476,17 +1478,19 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 	machine_data->monitor_port = monitor_port;
+ 
+ 	/* Area descriptor memory pool aligns to 64-bit boundary */
+-	if (allocate_buf(&pool.ad, sizeof(struct diu_ad) * FSL_AOI_NUM, 8))
++	if (allocate_buf(&ofdev->dev, &pool.ad,
++			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8))
+ 		return -ENOMEM;
+ 
+ 	/* Get memory for Gamma Table  - 32-byte aligned memory */
+-	if (allocate_buf(&pool.gamma, 768, 32)) {
++	if (allocate_buf(&ofdev->dev, &pool.gamma, 768, 32)) {
+ 		ret = -ENOMEM;
+ 		goto error;
+ 	}
+ 
+ 	/* For performance, cursor bitmap buffer aligns to 32-byte boundary */
+-	if (allocate_buf(&pool.cursor, MAX_CURS * MAX_CURS * 2, 32)) {
++	if (allocate_buf(&ofdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
++			 32)) {
+ 		ret = -ENOMEM;
+ 		goto error;
+ 	}
+@@ -1554,11 +1558,13 @@ error:
+ 		i > 0; i--)
+ 		uninstall_fb(machine_data->fsl_diu_info[i - 1]);
+ 	if (pool.ad.vaddr)
+-		free_buf(&pool.ad, sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
++		free_buf(&ofdev->dev, &pool.ad,
++			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
+ 	if (pool.gamma.vaddr)
+-		free_buf(&pool.gamma, 768, 32);
++		free_buf(&ofdev->dev, &pool.gamma, 768, 32);
+ 	if (pool.cursor.vaddr)
+-		free_buf(&pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
++		free_buf(&ofdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
++			 32);
+ 	if (machine_data->dummy_aoi_virt)
+ 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
+ 	iounmap(dr.diu_reg);
+@@ -1584,11 +1590,13 @@ static int fsl_diu_remove(struct of_device *ofdev)
+ 	for (i = ARRAY_SIZE(machine_data->fsl_diu_info); i > 0; i--)
+ 		uninstall_fb(machine_data->fsl_diu_info[i - 1]);
+ 	if (pool.ad.vaddr)
+-		free_buf(&pool.ad, sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
++		free_buf(&ofdev->dev, &pool.ad,
++			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
+ 	if (pool.gamma.vaddr)
+-		free_buf(&pool.gamma, 768, 32);
++		free_buf(&ofdev->dev, &pool.gamma, 768, 32);
+ 	if (pool.cursor.vaddr)
+-		free_buf(&pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
++		free_buf(&ofdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
++			 32);
+ 	if (machine_data->dummy_aoi_virt)
+ 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
+ 	iounmap(dr.diu_reg);
+-- 
+1.5.6.5
