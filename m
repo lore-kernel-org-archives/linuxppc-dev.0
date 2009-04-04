@@ -1,16 +1,16 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id B142FDDD04
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Apr 2009 04:31:24 +1000 (EST)
-Date: Sat, 4 Apr 2009 22:31:20 +0400
+	by ozlabs.org (Postfix) with ESMTP id 87529DDDA0
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Apr 2009 04:33:20 +1000 (EST)
+Date: Sat, 4 Apr 2009 22:33:19 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] fsl-diu-fb: Pass the proper device for dma mapping routines
-Message-ID: <20090404183120.GA21671@oksana.dev.rtsoft.ru>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] ASoC: fsl_dma: Pass the proper device for dma mapping routines
+Message-ID: <20090404183319.GA22203@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Timur Tabi <timur@freescale.com>, Antonino Daplas <adaplas@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Liam Girdwood <lrg@slimlogic.co.uk>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,126 +21,91 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 The driver should pass a device that specifies internal DMA ops, but
-currently NULL pointers are passed, and thus following bug pops up:
+substream->pcm is just a logical device, and thus doesn't have arch-
+specific dma callbacks, therefore following bug appears:
 
-  Freescale DIU driver
+  Freescale Synchronous Serial Interface (SSI) ASoC Driver
   ------------[ cut here ]------------
   kernel BUG at arch/powerpc/include/asm/dma-mapping.h:237!
   Oops: Exception in kernel mode, sig: 5 [#1]
   ...
-  NIP [c01658b4] allocate_buf+0x0/0x8
-  LR [c0306554] fsl_diu_probe+0x2b4/0x518
+  NIP [c02259c4] snd_malloc_dev_pages+0x58/0xac
+  LR [c0225c74] snd_dma_alloc_pages+0xf8/0x108
   Call Trace:
-  [df02be10] [c030638c] fsl_diu_probe+0xec/0x518 (unreliable)
-  [df02be60] [c020cdec] of_platform_device_probe+0x5c/0x84
-  [df02be80] [c018f5d0] really_probe+0x78/0x1a0
-  [df02bea0] [c018f7c0] __driver_attach+0xa4/0xa8
-  [df02bec0] [c018ea00] bus_for_each_dev+0x60/0x9c
-  [df02bef0] [c018f414] driver_attach+0x24/0x34
-  [df02bf00] [c018f168] bus_add_driver+0x12c/0x1cc
-  [df02bf20] [c018fbdc] driver_register+0x6c/0x110
-  [df02bf30] [c020ccb4] of_register_driver+0x54/0x70
-  [df02bf40] [c03d0a50] fsl_diu_init+0x70/0xa4
+  [df02bde0] [df02be2c] 0xdf02be2c (unreliable)
+  [df02bdf0] [c0225c74] snd_dma_alloc_pages+0xf8/0x108
+  [df02be10] [c023a100] fsl_dma_new+0x68/0x124
+  [df02be20] [c02342ac] soc_new_pcm+0x1bc/0x234
+  [df02bea0] [c02343dc] snd_soc_new_pcms+0xb8/0x148
+  [df02bed0] [c023824c] cs4270_probe+0x34/0x124
+  [df02bef0] [c0232fe8] snd_soc_instantiate_card+0x1a4/0x2f4
+  [df02bf20] [c0233164] snd_soc_instantiate_cards+0x2c/0x68
+  [df02bf30] [c0234704] snd_soc_register_platform+0x60/0x80
+  [df02bf50] [c03d5664] fsl_soc_platform_init+0x18/0x28
   ...
 
-This patch fixes the issue.
+This patch fixes the issue by using card's device instead.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/video/fsl-diu-fb.c |   34 +++++++++++++++++++++-------------
- 1 files changed, 21 insertions(+), 13 deletions(-)
+ sound/soc/fsl/fsl_dma.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index fb51197..f153c58 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1352,14 +1352,15 @@ static int fsl_diu_resume(struct of_device *ofdev)
- #endif				/* CONFIG_PM */
+diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+index b3eb857..835e43c 100644
+--- a/sound/soc/fsl/fsl_dma.c
++++ b/sound/soc/fsl/fsl_dma.c
+@@ -300,7 +300,7 @@ static int fsl_dma_new(struct snd_card *card, struct snd_soc_dai *dai,
+ 	if (!card->dev->coherent_dma_mask)
+ 		card->dev->coherent_dma_mask = fsl_dma_dmamask;
  
- /* Align to 64-bit(8-byte), 32-byte, etc. */
--static int allocate_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
-+static int allocate_buf(struct device *dev, struct diu_addr *buf, u32 size,
-+			u32 bytes_align)
- {
- 	u32 offset, ssize;
- 	u32 mask;
- 	dma_addr_t paddr = 0;
- 
- 	ssize = size + bytes_align;
--	buf->vaddr = dma_alloc_coherent(NULL, ssize, &paddr, GFP_DMA |
-+	buf->vaddr = dma_alloc_coherent(dev, ssize, &paddr, GFP_DMA |
- 							     __GFP_ZERO);
- 	if (!buf->vaddr)
+-	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, pcm->dev,
++	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, card->dev,
+ 		fsl_dma_hardware.buffer_bytes_max,
+ 		&pcm->streams[0].substream->dma_buffer);
+ 	if (ret) {
+@@ -310,7 +310,7 @@ static int fsl_dma_new(struct snd_card *card, struct snd_soc_dai *dai,
  		return -ENOMEM;
-@@ -1376,9 +1377,10 @@ static int allocate_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
- 	return 0;
- }
- 
--static void free_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
-+static void free_buf(struct device *dev, struct diu_addr *buf, u32 size,
-+		     u32 bytes_align)
- {
--	dma_free_coherent(NULL, size + bytes_align,
-+	dma_free_coherent(dev, size + bytes_align,
- 				buf->vaddr, (buf->paddr - buf->offset));
- 	return;
- }
-@@ -1476,17 +1478,19 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
- 	machine_data->monitor_port = monitor_port;
- 
- 	/* Area descriptor memory pool aligns to 64-bit boundary */
--	if (allocate_buf(&pool.ad, sizeof(struct diu_ad) * FSL_AOI_NUM, 8))
-+	if (allocate_buf(&ofdev->dev, &pool.ad,
-+			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8))
- 		return -ENOMEM;
- 
- 	/* Get memory for Gamma Table  - 32-byte aligned memory */
--	if (allocate_buf(&pool.gamma, 768, 32)) {
-+	if (allocate_buf(&ofdev->dev, &pool.gamma, 768, 32)) {
- 		ret = -ENOMEM;
- 		goto error;
  	}
  
- 	/* For performance, cursor bitmap buffer aligns to 32-byte boundary */
--	if (allocate_buf(&pool.cursor, MAX_CURS * MAX_CURS * 2, 32)) {
-+	if (allocate_buf(&ofdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
-+			 32)) {
- 		ret = -ENOMEM;
- 		goto error;
+-	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, pcm->dev,
++	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, card->dev,
+ 		fsl_dma_hardware.buffer_bytes_max,
+ 		&pcm->streams[1].substream->dma_buffer);
+ 	if (ret) {
+@@ -418,7 +418,7 @@ static int fsl_dma_open(struct snd_pcm_substream *substream)
+ 		return -EBUSY;
  	}
-@@ -1554,11 +1558,13 @@ error:
- 		i > 0; i--)
- 		uninstall_fb(machine_data->fsl_diu_info[i - 1]);
- 	if (pool.ad.vaddr)
--		free_buf(&pool.ad, sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
-+		free_buf(&ofdev->dev, &pool.ad,
-+			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
- 	if (pool.gamma.vaddr)
--		free_buf(&pool.gamma, 768, 32);
-+		free_buf(&ofdev->dev, &pool.gamma, 768, 32);
- 	if (pool.cursor.vaddr)
--		free_buf(&pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
-+		free_buf(&ofdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
-+			 32);
- 	if (machine_data->dummy_aoi_virt)
- 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
- 	iounmap(dr.diu_reg);
-@@ -1584,11 +1590,13 @@ static int fsl_diu_remove(struct of_device *ofdev)
- 	for (i = ARRAY_SIZE(machine_data->fsl_diu_info); i > 0; i--)
- 		uninstall_fb(machine_data->fsl_diu_info[i - 1]);
- 	if (pool.ad.vaddr)
--		free_buf(&pool.ad, sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
-+		free_buf(&ofdev->dev, &pool.ad,
-+			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
- 	if (pool.gamma.vaddr)
--		free_buf(&pool.gamma, 768, 32);
-+		free_buf(&ofdev->dev, &pool.gamma, 768, 32);
- 	if (pool.cursor.vaddr)
--		free_buf(&pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
-+		free_buf(&ofdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
-+			 32);
- 	if (machine_data->dummy_aoi_virt)
- 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
- 	iounmap(dr.diu_reg);
+ 
+-	dma_private = dma_alloc_coherent(substream->pcm->dev,
++	dma_private = dma_alloc_coherent(substream->pcm->card->dev,
+ 		sizeof(struct fsl_dma_private), &ld_buf_phys, GFP_KERNEL);
+ 	if (!dma_private) {
+ 		dev_err(substream->pcm->card->dev,
+@@ -445,7 +445,7 @@ static int fsl_dma_open(struct snd_pcm_substream *substream)
+ 		dev_err(substream->pcm->card->dev,
+ 			"can't register ISR for IRQ %u (ret=%i)\n",
+ 			dma_private->irq, ret);
+-		dma_free_coherent(substream->pcm->dev,
++		dma_free_coherent(substream->pcm->card->dev,
+ 			sizeof(struct fsl_dma_private),
+ 			dma_private, dma_private->ld_buf_phys);
+ 		return ret;
+@@ -761,13 +761,13 @@ static int fsl_dma_close(struct snd_pcm_substream *substream)
+ 			free_irq(dma_private->irq, dma_private);
+ 
+ 		if (dma_private->ld_buf_phys) {
+-			dma_unmap_single(substream->pcm->dev,
++			dma_unmap_single(substream->pcm->card->dev,
+ 				dma_private->ld_buf_phys,
+ 				sizeof(dma_private->link), DMA_TO_DEVICE);
+ 		}
+ 
+ 		/* Deallocate the fsl_dma_private structure */
+-		dma_free_coherent(substream->pcm->dev,
++		dma_free_coherent(substream->pcm->card->dev,
+ 			sizeof(struct fsl_dma_private),
+ 			dma_private, dma_private->ld_buf_phys);
+ 		substream->runtime->private_data = NULL;
 -- 
 1.5.6.5
