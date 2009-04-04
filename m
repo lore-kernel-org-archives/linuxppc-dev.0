@@ -1,14 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 9E59EDDD1B
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Apr 2009 05:28:11 +1000 (EST)
-Date: Sat, 4 Apr 2009 23:28:10 +0400
+	by ozlabs.org (Postfix) with ESMTP id 43C34DDD1B
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Apr 2009 05:28:27 +1000 (EST)
+Date: Sat, 4 Apr 2009 23:28:26 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>,
 	David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 2/3] spi_mpc83xx: Quieten down the "Requested speed is too
-	low" message
-Message-ID: <20090404192810.GB12183@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/3] powerpc/86xx: Add MMC SPI support for MPC8610HPCD boards
+Message-ID: <20090404192826.GC12183@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
 Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -22,56 +21,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When a platform is running at high frequencies it's not always
-possible to scale-down a frequency to a requested value, and using
-mmc_spi driver this leads to the following printk flood during card
-polling:
+This patch adds spi and mmc-spi-slot nodes, plus a gpio-controller
+for PIXIS' sdcsr bank that is used for managing SPI chip-select and
+for reading card's states.
 
-  ...
-  mmc_spi spi32766.0: Requested speed is too low: 400000 Hz. Will use
-  520828 Hz instead.
-  mmc_spi spi32766.0: Requested speed is too low: 400000 Hz. Will use
-  520828 Hz instead.
-  ...
+Note that spi-max-frequency is lowered since at high frequencies SD
+cards don't work reliably (there is some problem with the chip select
+line, it's probably quite slow because it's routed via PIXIS).
 
-Fix this by using WARN_ONCE(), it's better than the flood, and also
-better than turning dev_err() into dev_dbg(), since we actually want
-to warn that some things may not work correctly.
+Previously there was a work around: we didn't use chip-select line
+at all, but some cards don't like that, so we'd better use the low
+frequency.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/spi/spi_mpc83xx.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts     |   32 ++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    4 +++
+ 2 files changed, 36 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-index f4573a9..08b49d2 100644
---- a/drivers/spi/spi_mpc83xx.c
-+++ b/drivers/spi/spi_mpc83xx.c
-@@ -14,6 +14,7 @@
- #include <linux/init.h>
- #include <linux/types.h>
- #include <linux/kernel.h>
-+#include <linux/bug.h>
- #include <linux/errno.h>
- #include <linux/err.h>
- #include <linux/completion.h>
-@@ -275,12 +276,12 @@ int mpc83xx_spi_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
- 	if ((mpc83xx_spi->spibrg / hz) > 64) {
- 		cs->hw_mode |= SPMODE_DIV16;
- 		pm = mpc83xx_spi->spibrg / (hz * 64);
--		if (pm > 16) {
--			dev_err(&spi->dev, "Requested speed is too "
--				"low: %d Hz. Will use %d Hz instead.\n",
--				hz, mpc83xx_spi->spibrg / 1024);
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 1bd3ebe..a18fa5c 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -100,8 +100,18 @@
+ 		};
+ 
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,fpga-pixis";
+ 			reg = <3 0 0x20>;
++			ranges = <0 3 0 0x20>;
 +
-+		WARN_ONCE(pm > 16, "%s: Requested speed is too low: %d Hz. "
-+			  "Will use %d Hz instead.\n", dev_name(&spi->dev),
-+			  hz, mpc83xx_spi->spibrg / 1024);
-+		if (pm > 16)
- 			pm = 16;
--		}
- 	} else
- 		pm = mpc83xx_spi->spibrg / (hz * 4);
- 	if (pm)
++			sdcsr_pio: gpio-controller@a {
++				#gpio-cells = <2>;
++				compatible = "fsl,fpga-pixis-gpio-bank";
++				reg = <0xa 1>;
++				gpio-controller;
++			};
+ 		};
+ 	};
+ 
+@@ -164,6 +174,28 @@
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 
++		spi@7000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc8610-spi", "fsl,spi";
++			reg = <0x7000 0x40>;
++			cell-index = <0>;
++			interrupts = <59 2>;
++			interrupt-parent = <&mpic>;
++			mode = "cpu";
++			gpios = <&sdcsr_pio 7 0>;
++
++			mmc-slot@0 {
++				compatible = "fsl,mpc8610hpcd-mmc-slot",
++					     "mmc-spi-slot";
++				reg = <0>;
++				gpios = <&sdcsr_pio 0 1   /* nCD */
++					 &sdcsr_pio 1 0>; /*  WP */
++				voltage-ranges = <3300 3300>;
++				spi-max-frequency = <6000000>;
++			};
++		};
++
+ 		display@2c000 {
+ 			compatible = "fsl,diu";
+ 			reg = <0x2c000 100>;
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 3f49a6f..ce64572 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -38,6 +38,7 @@
+ #include <linux/of_platform.h>
+ #include <sysdev/fsl_pci.h>
+ #include <sysdev/fsl_soc.h>
++#include <sysdev/simple_gpio.h>
+ 
+ #include "mpc86xx.h"
+ 
+@@ -52,6 +53,9 @@ static struct of_device_id __initdata mpc8610_ids[] = {
+ 
+ static int __init mpc8610_declare_of_platform_devices(void)
+ {
++	/* Firstly, register PIXIS GPIOs. */
++	simple_gpiochip_init("fsl,fpga-pixis-gpio-bank");
++
+ 	/* Without this call, the SSI device driver won't get probed. */
+ 	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+ 
 -- 
 1.5.6.5
