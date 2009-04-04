@@ -1,16 +1,17 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 87529DDDA0
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Apr 2009 04:33:20 +1000 (EST)
-Date: Sat, 4 Apr 2009 22:33:19 +0400
+	by ozlabs.org (Postfix) with ESMTP id 2A423DDD1B
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Apr 2009 05:28:04 +1000 (EST)
+Date: Sat, 4 Apr 2009 23:28:02 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] ASoC: fsl_dma: Pass the proper device for dma mapping routines
-Message-ID: <20090404183319.GA22203@oksana.dev.rtsoft.ru>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	David Brownell <dbrownell@users.sourceforge.net>
+Subject: [PATCH 1/3] spi_mpc83xx: Handles other Freescale processors
+Message-ID: <20090404192802.GA12183@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	Liam Girdwood <lrg@slimlogic.co.uk>, Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,92 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The driver should pass a device that specifies internal DMA ops, but
-substream->pcm is just a logical device, and thus doesn't have arch-
-specific dma callbacks, therefore following bug appears:
+With this patch we'll able to select spi_mpc83xx driver on the MPC86xx
+platforms. Let the driver depend on FSL_SOC, so we don't have to worry
+about Kconfig anymore.
 
-  Freescale Synchronous Serial Interface (SSI) ASoC Driver
-  ------------[ cut here ]------------
-  kernel BUG at arch/powerpc/include/asm/dma-mapping.h:237!
-  Oops: Exception in kernel mode, sig: 5 [#1]
-  ...
-  NIP [c02259c4] snd_malloc_dev_pages+0x58/0xac
-  LR [c0225c74] snd_dma_alloc_pages+0xf8/0x108
-  Call Trace:
-  [df02bde0] [df02be2c] 0xdf02be2c (unreliable)
-  [df02bdf0] [c0225c74] snd_dma_alloc_pages+0xf8/0x108
-  [df02be10] [c023a100] fsl_dma_new+0x68/0x124
-  [df02be20] [c02342ac] soc_new_pcm+0x1bc/0x234
-  [df02bea0] [c02343dc] snd_soc_new_pcms+0xb8/0x148
-  [df02bed0] [c023824c] cs4270_probe+0x34/0x124
-  [df02bef0] [c0232fe8] snd_soc_instantiate_card+0x1a4/0x2f4
-  [df02bf20] [c0233164] snd_soc_instantiate_cards+0x2c/0x68
-  [df02bf30] [c0234704] snd_soc_register_platform+0x60/0x80
-  [df02bf50] [c03d5664] fsl_soc_platform_init+0x18/0x28
-  ...
-
-This patch fixes the issue by using card's device instead.
+Also remove the "experimental" dependency, the driver has been tested
+to work on a various hardware, and surely not experimental anymore.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- sound/soc/fsl/fsl_dma.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/spi/Kconfig |   14 ++++++--------
+ 1 files changed, 6 insertions(+), 8 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
-index b3eb857..835e43c 100644
---- a/sound/soc/fsl/fsl_dma.c
-+++ b/sound/soc/fsl/fsl_dma.c
-@@ -300,7 +300,7 @@ static int fsl_dma_new(struct snd_card *card, struct snd_soc_dai *dai,
- 	if (!card->dev->coherent_dma_mask)
- 		card->dev->coherent_dma_mask = fsl_dma_dmamask;
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 83a185d..3c1845c 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -140,16 +140,14 @@ config SPI_MPC52xx_PSC
+ 	  Controller in master SPI mode.
  
--	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, pcm->dev,
-+	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, card->dev,
- 		fsl_dma_hardware.buffer_bytes_max,
- 		&pcm->streams[0].substream->dma_buffer);
- 	if (ret) {
-@@ -310,7 +310,7 @@ static int fsl_dma_new(struct snd_card *card, struct snd_soc_dai *dai,
- 		return -ENOMEM;
- 	}
+ config SPI_MPC83xx
+-	tristate "Freescale MPC83xx/QUICC Engine SPI controller"
+-	depends on (PPC_83xx || QUICC_ENGINE) && EXPERIMENTAL
++	tristate "Freescale MPC8xxx SPI controller"
++	depends on FSL_SOC
+ 	help
+-	  This enables using the Freescale MPC83xx and QUICC Engine SPI
+-	  controllers in master mode.
++	  This enables using the Freescale MPC8xxx SPI controllers in master
++	  mode.
  
--	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, pcm->dev,
-+	ret = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, card->dev,
- 		fsl_dma_hardware.buffer_bytes_max,
- 		&pcm->streams[1].substream->dma_buffer);
- 	if (ret) {
-@@ -418,7 +418,7 @@ static int fsl_dma_open(struct snd_pcm_substream *substream)
- 		return -EBUSY;
- 	}
+-	  Note, this driver uniquely supports the SPI controller on the MPC83xx
+-	  family of PowerPC processors, plus processors with QUICC Engine
+-	  technology. This driver uses a simple set of shift registers for data
+-	  (opposed to the CPM based descriptor model).
++	  This driver uses a simple set of shift registers for data (opposed
++	  to the CPM based descriptor model).
  
--	dma_private = dma_alloc_coherent(substream->pcm->dev,
-+	dma_private = dma_alloc_coherent(substream->pcm->card->dev,
- 		sizeof(struct fsl_dma_private), &ld_buf_phys, GFP_KERNEL);
- 	if (!dma_private) {
- 		dev_err(substream->pcm->card->dev,
-@@ -445,7 +445,7 @@ static int fsl_dma_open(struct snd_pcm_substream *substream)
- 		dev_err(substream->pcm->card->dev,
- 			"can't register ISR for IRQ %u (ret=%i)\n",
- 			dma_private->irq, ret);
--		dma_free_coherent(substream->pcm->dev,
-+		dma_free_coherent(substream->pcm->card->dev,
- 			sizeof(struct fsl_dma_private),
- 			dma_private, dma_private->ld_buf_phys);
- 		return ret;
-@@ -761,13 +761,13 @@ static int fsl_dma_close(struct snd_pcm_substream *substream)
- 			free_irq(dma_private->irq, dma_private);
- 
- 		if (dma_private->ld_buf_phys) {
--			dma_unmap_single(substream->pcm->dev,
-+			dma_unmap_single(substream->pcm->card->dev,
- 				dma_private->ld_buf_phys,
- 				sizeof(dma_private->link), DMA_TO_DEVICE);
- 		}
- 
- 		/* Deallocate the fsl_dma_private structure */
--		dma_free_coherent(substream->pcm->dev,
-+		dma_free_coherent(substream->pcm->card->dev,
- 			sizeof(struct fsl_dma_private),
- 			dma_private, dma_private->ld_buf_phys);
- 		substream->runtime->private_data = NULL;
+ config SPI_OMAP_UWIRE
+ 	tristate "OMAP1 MicroWire"
 -- 
 1.5.6.5
