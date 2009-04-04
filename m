@@ -1,23 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8A760DDDF9
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Apr 2009 15:37:29 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Keep track of emulated instructions
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <alpine.LRH.2.00.0904031404450.32353@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0904031404450.32353@vixen.sonytel.be>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-ObWiVvpIOZKKCwnsFX0v"
-Date: Sat, 04 Apr 2009 15:37:28 +1100
-Message-Id: <1238819848.9595.25.camel@localhost>
-Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <vijay.t.nikam@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.233])
+	by ozlabs.org (Postfix) with ESMTP id EBE2BDDD01
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Apr 2009 23:16:39 +1100 (EST)
+Received: by rv-out-0506.google.com with SMTP id g37so1262805rvb.1
+	for <linuxppc-dev@ozlabs.org>; Sat, 04 Apr 2009 05:16:38 -0700 (PDT)
+MIME-Version: 1.0
+Date: Sat, 4 Apr 2009 17:46:38 +0530
+Message-ID: <f234e2140904040516w7db57a5fsfaa6a8674d707bdd@mail.gmail.com>
+Subject: CONFIG_PREEMPT and High Resolution Timers problem
+From: Vijay Nikam <vijay.t.nikam@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,56 +21,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello All,
+I have mpc8313erdb eval board with Linux-2.6.20 running on it.
+Recently I had a problem, I wrote a driver and from I am sending
+notification to user space application using fasync driver method
+(SIGIO signal). In user space applicaion process I have used
+posix-timers (timer_create and timer_settime), the timer is set for
+10ms. But in actual I checked on oscilloscope the expiration of timer
+or signal event generation varies between 10ms - 13ms. In kerenl
+driver when the interrupt occurs I am making a gpio pin high and on
+the signal event when timer expires I am making another gpio pin high,
+and the time between these measured varies between 10ms - 13ms i.e. it
+means the timer frequency is 250Hz, which was set by default for
+powerpc. So to achieve close to precise of 10ms I set the timer
+frequency to 1000Hz and then I got the resolution of 10ms -10.8ms.
+I would like to ask is the right approach of changing Timer Frequency
+to 1000Hz from 250Hz ? ? ?
+Because while searching some information regarding this I learned
+about High-Res Timers. In linux-2.6.20 x86 has this feature enabled
+rather you can enable it but not for powerpc arch, Right ? ? ? If yes
+then is there any way to add CONFIG_HIGH_RES_TIMERS feature to
+linux-2.6.20, any patch available ? ? ? =A0otherwise what could be the
+option ? ? ?
 
---=-ObWiVvpIOZKKCwnsFX0v
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+In Linux by default Preemption is not enabled, CONFIG_PREEMPT_NONE=3Dy
+so I tried to enabled CONFIG_PREEMPT=3Dy but when I boot the board with
+preemption enabled I got the scheduling with atomic error (please
+check the log below, thanks). I tried to debug and find some info but
+no luck. Could anyone please explain the reason for it and how I can
+fix it ? ? ?
 
-On Fri, 2009-04-03 at 14:08 +0200, Geert Uytterhoeven wrote:
-> 	Hi Ben, Kumar,
->=20
-> Finally (after ca. 1.5 years), he're an updated version of my patch to ke=
-ep
-> track of emulated instructions.  In the light of Kumar's `Emulate enough =
-of SPE
-> instructions to make gcc happy' patch, he probably also wants to keep tra=
-ck of
-> the actual runtime overhead.
->=20
-> Changes since last version:
->   - arch/powerpc/kernel/sysfs.c is now compiled on ppc32, so we can provi=
-de
->     counters in sysfs on ppc32, too,
->   - WARN_EMULATED() is a no-op if CONFIG_SYSCTL is disabled,
->   - Add warnings for altivec,
->   - Add warnings for recently introduced emulation of vsx and isel
->     instructions.
+Kindly please acknowledge ... thank you ...
 
-You don't count instructions that fall through to the bottom of
-fix_alignment()?
+Kind Regards,
+Vijay Nikam
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-ObWiVvpIOZKKCwnsFX0v
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknW5AgACgkQdSjSd0sB4dJNMgCfSmv9SSFUEWa3Lelr7QZ7A/OP
-AgAAni1ZuGddzu1TLpXfIRD4EBJdc93B
-=J2d+
------END PGP SIGNATURE-----
-
---=-ObWiVvpIOZKKCwnsFX0v--
+########################### Start #################################
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+BUG: scheduling while atomic: swapper/0x00000001/1
+Call Trace:
+[C07F5D50] [C0008938] =A0(unreliable)
+[C07F5D80] [C02933CC]
+[C07F5DD0] [C029472C]
+[C07F5E10] [C0201AF0]
+[C07F5E50] [C0201E08]
+[C07F5E90] [C01FEE14]
+[C07F5EB0] [C0202018]
+[C07F5F30] [C0017490]
+[C07F5F50] [C02FB4B0]
+[C07F5F90] [C0003960]
+[C07F5FF0] [C0010C74]
+BUG: scheduling while atomic: swapper/0x00000001/1
+########################## END ####################################
+########################## Start ####################################
+BUG: scheduling while atomic: jffs2_gcd_mtd4/0x00000004/719
+Call Trace:
+[C05BDBE0] [C0008938] =A0(unreliable)
+[C05BDC10] [C02933CC]
+[C05BDC60] [C029472C]
+[C05BDCA0] [C01D9F14]
+[C05BDCE0] [C01D5424]
+[C05BDD40] [C01D74D4]
+[C05BDD70] [C01C9330]
+[C05BDD80] [C0127F88]
+[C05BDDB0] [C011F26C]
+[C05BDE20] [C0120320]
+[C05BDE90] [C012327C]
+--- Exception: 1[C05BDF50] [C0125F0C] =A0(unreliable)
+[C05BDFF0] [C0010C74]
+######################## END ########################################
