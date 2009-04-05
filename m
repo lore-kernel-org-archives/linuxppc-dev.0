@@ -1,26 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
+	[216.10.194.135])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 959D9DDE0D
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 01:01:45 +1000 (EST)
-Message-Id: <85829FCA-D181-4992-9889-640B3329D023@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40904050739g219a9143v7bbc8cd673e52f4e@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] ASoC: fsl_dma: Pass the proper device for dma mapping
-	routines
-Date: Sun, 5 Apr 2009 09:59:12 -0500
-References: <20090404183319.GA22203@oksana.dev.rtsoft.ru>
-	<fa686aa40904042259h4c69e632x47a9e82393e8faef@mail.gmail.com>
-	<20090405085243.GA16005@oksana.dev.rtsoft.ru>
-	<fa686aa40904050739g219a9143v7bbc8cd673e52f4e@mail.gmail.com>
-Cc: Becky Bruce <Becky.Bruce@freescale.com>, alsa-devel@alsa-project.org,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
-	Liam Girdwood <lrg@slimlogic.co.uk>
+	(Client CN "extu-mxob-2.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 23863DDE0A
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 04:52:15 +1000 (EST)
+Date: Sun, 5 Apr 2009 19:51:27 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
+In-Reply-To: <49D523FB.2020504@nortel.com>
+Message-ID: <Pine.LNX.4.64.0904051944100.27448@blonde.anvils>
+References: <49CA8501.1000000@nortel.com>  <49D3F662.4050100@nortel.com>
+	<1238659491.9041.133.camel@localhost>
+	<Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
+	<49D4FB89.4070101@nortel.com>
+	<Pine.LNX.4.64.0904021938270.25731@blonde.anvils>
+	<49D523FB.2020504@nortel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,30 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2 Apr 2009, Chris Friesen wrote:
+> Hugh Dickins wrote:
+> 
+> > This is a cosmetic matter, not worth more than a couple of lines of
+> > code: I suggested masking off the high bits in the display, but when
+> > KAMEZAWA-san suggested just showing 0, it was hard to argue against
+> > his brutal simplicity.
+> 
+> <snip>
+> 
+> > Consider this change a fix: it used to show 00000000 before 2.6.7.
+> > 
+> > See http://lkml.org/lkml/2009/1/13/331 for one of the threads
+> > on the subject - but you've not tempted me to reopen it!
+> 
+> Okay, fair enough.  I'll change my code to deal with it.  Thanks for the
+> explanation.
 
-On Apr 5, 2009, at 9:39 AM, Grant Likely wrote:
+Oh, I thought you were arguing hypotheticals.  This is more serious,
+that you have some userspace code which depended on the 2.6.8-2.6.29
+way of filling that field, and now we're about to break it.
 
-> On Sun, Apr 5, 2009 at 2:52 AM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
->> On Sat, Apr 04, 2009 at 11:59:39PM -0600, Grant Likely wrote:
->>> Becky & Kumar,
->>>
->>> Considering these fixups, would it be advisable for the dma  
->>> functions
->>> to climb up the dev->parent linkage when dma_ops are NULL?
->>
->> pcm->dev->parent doesn't point to the proper device, so
->> this won't work.
->
-> What does it point to then?  IIUC, following the ->parent links should
-> eventually get to a struct device that represents the platform or
-> of_platform device for purposes of power management.
->
-> BTW, I'm not NAKing your patch.  The patch looks fine to me.
->
-> g.
+Please, would you share what you were doing with the vm_pgoff of an
+anonymous area?  I won't pretend: I am indeed hoping to show that
+what you were doing before was already broken, so that we can safely
+go ahead and break it some more!
 
-No, I think we should just fix drivers.  There aren't that many SoC  
-drivers and once they are fixed this will resolve itself.
-
-- k
+Hugh
