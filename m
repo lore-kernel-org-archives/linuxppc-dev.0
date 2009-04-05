@@ -1,28 +1,27 @@
-Return-Path: <hugh@veritas.com>
-Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
-	[216.10.194.135])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-2.symantec.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 23863DDE0A
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 04:52:15 +1000 (EST)
-Date: Sun, 5 Apr 2009 19:51:27 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Chris Friesen <cfriesen@nortel.com>
-Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
-In-Reply-To: <49D523FB.2020504@nortel.com>
-Message-ID: <Pine.LNX.4.64.0904051944100.27448@blonde.anvils>
-References: <49CA8501.1000000@nortel.com>  <49D3F662.4050100@nortel.com>
-	<1238659491.9041.133.camel@localhost>
-	<Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
-	<49D4FB89.4070101@nortel.com>
-	<Pine.LNX.4.64.0904021938270.25731@blonde.anvils>
-	<49D523FB.2020504@nortel.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id A46ABDDD0B
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 05:25:15 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so1245613qwb.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 05 Apr 2009 12:25:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <85829FCA-D181-4992-9889-640B3329D023@kernel.crashing.org>
+References: <20090404183319.GA22203@oksana.dev.rtsoft.ru>
+	<fa686aa40904042259h4c69e632x47a9e82393e8faef@mail.gmail.com>
+	<20090405085243.GA16005@oksana.dev.rtsoft.ru>
+	<fa686aa40904050739g219a9143v7bbc8cd673e52f4e@mail.gmail.com>
+	<85829FCA-D181-4992-9889-640B3329D023@kernel.crashing.org>
+Date: Sun, 5 Apr 2009 14:18:20 -0500
+Message-ID: <ed82fe3e0904051218i60edfe42o879ee5f7063a2e4c@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_dma: Pass the proper device for dma mapping
+	routines
+From: Timur Tabi <timur@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Becky Bruce <Becky.Bruce@freescale.com>, alsa-devel@alsa-project.org,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	linuxppc-dev@ozlabs.org, Liam Girdwood <lrg@slimlogic.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,31 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2 Apr 2009, Chris Friesen wrote:
-> Hugh Dickins wrote:
-> 
-> > This is a cosmetic matter, not worth more than a couple of lines of
-> > code: I suggested masking off the high bits in the display, but when
-> > KAMEZAWA-san suggested just showing 0, it was hard to argue against
-> > his brutal simplicity.
-> 
-> <snip>
-> 
-> > Consider this change a fix: it used to show 00000000 before 2.6.7.
-> > 
-> > See http://lkml.org/lkml/2009/1/13/331 for one of the threads
-> > on the subject - but you've not tempted me to reopen it!
-> 
-> Okay, fair enough.  I'll change my code to deal with it.  Thanks for the
-> explanation.
+On Sun, Apr 5, 2009 at 9:59 AM, Kumar Gala <galak@kernel.crashing.org> wrot=
+e:
 
-Oh, I thought you were arguing hypotheticals.  This is more serious,
-that you have some userspace code which depended on the 2.6.8-2.6.29
-way of filling that field, and now we're about to break it.
+> No, I think we should just fix drivers. =A0There aren't that many SoC dri=
+vers
+> and once they are fixed this will resolve itself.
 
-Please, would you share what you were doing with the vm_pgoff of an
-anonymous area?  I won't pretend: I am indeed hoping to show that
-what you were doing before was already broken, so that we can safely
-go ahead and break it some more!
+I agree.  The only reason I passed NULL when I wrote the drivers was
+because I was too lazy to figure out what the right dev pointer was.
+ASoC is kinda screwy in that many fields are not initialized when you
+think they should be.  More than once I passed a pointer to a wrong
+object without realizing it, even though the code worked.
 
-Hugh
+I'll check out these two patches on Monday.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
