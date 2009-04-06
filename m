@@ -1,19 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 34A9BDDF78
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 22:33:26 +1000 (EST)
-Date: Mon, 6 Apr 2009 14:33:24 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Keep track of emulated instructions
-In-Reply-To: <3DA386C6-F26A-4929-8609-FE468DF01572@kernel.crashing.org>
-Message-ID: <alpine.LRH.2.00.0904061430090.11076@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0904031404450.32353@vixen.sonytel.be>
-	<3DA386C6-F26A-4929-8609-FE468DF01572@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 17C1EDDDFF
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 22:55:47 +1000 (EST)
+Message-Id: <C5D46884-D1BC-4E00-851B-7D13D150F837@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <b5c96a65499b27f0505523fb5b9dfae98a585ed1.1238991483.git.michael@ellerman.id.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
+Date: Mon, 6 Apr 2009 07:55:35 -0500
+References: <b5c96a65499b27f0505523fb5b9dfae98a585ed1.1238991483.git.michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,49 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 3 Apr 2009, Kumar Gala wrote:
-> On Apr 3, 2009, at 7:08 AM, Geert Uytterhoeven wrote:
-> >Finally (after ca. 1.5 years), he're an updated version of my patch to keep
-> >track of emulated instructions.  In the light of Kumar's `Emulate enough of
-> >SPE
-> >instructions to make gcc happy' patch, he probably also wants to keep track
-> >of
-> >the actual runtime overhead.
-> >
-> >Changes since last version:
-> > - arch/powerpc/kernel/sysfs.c is now compiled on ppc32, so we can provide
-> >   counters in sysfs on ppc32, too,
-> > - WARN_EMULATED() is a no-op if CONFIG_SYSCTL is disabled,
-> > - Add warnings for altivec,
-> > - Add warnings for recently introduced emulation of vsx and isel
-> >   instructions.
-> 
-> pretty cool.  Do we think counters should be sysfs or debugfs?
 
-What do you prefer?
+On Apr 5, 2009, at 11:18 PM, Michael Ellerman wrote:
 
-On MIPS, unaligned exception handling control is in debugfs.
+> diff --git a/arch/powerpc/math-emu/Makefile b/arch/powerpc/math-emu/ 
+> Makefile
+> index 0c16ab9..dcb2148 100644
+> --- a/arch/powerpc/math-emu/Makefile
+> +++ b/arch/powerpc/math-emu/Makefile
+> @@ -1,4 +1,8 @@
+>
+> +ifeq ($(CONFIG_PPC_WERROR),y)
+> +EXTRA_CFLAGS += -Werror
+> +endif
+> +
+> obj-$(CONFIG_MATH_EMULATION)	+= fabs.o fadd.o fadds.o fcmpo.o  
+> fcmpu.o \
+> 					fctiw.o fctiwz.o fdiv.o fdivs.o \
+> 					fmadd.o fmadds.o fmsub.o fmsubs.o \
 
-> Also it would be nice to be able to zero out the counters.
+We explicitly build math-emu with -w to not see the warnings from it.
 
-By writing to the individual counters, or by writing to a global `clear' file?
-
-BTW, should the individual counters be readable by everybody? Currently they're
-readable by root only.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+- k
