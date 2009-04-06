@@ -2,21 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 96CB9DDE1F
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 00:20:30 +1000 (EST)
-Message-Id: <4A6C5BFC-C079-4D19-A0FC-992DF2DCF6B4@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 3B7FBDDE9E
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 00:29:17 +1000 (EST)
+Date: Mon, 6 Apr 2009 09:29:12 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090404183120.GA21671@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] fsl-diu-fb: Pass the proper device for dma mapping
-	routines
-Date: Mon, 6 Apr 2009 09:16:00 -0500
-References: <20090404183120.GA21671@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Timur Tabi <timur@freescale.com>, Antonino Daplas <adaplas@gmail.com>,
-	linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'next' branch (for 2.6.30)
+Message-ID: <Pine.LNX.4.64.0904060928360.24957@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'next' branch of
 
-On Apr 4, 2009, at 1:31 PM, Anton Vorontsov wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
 
-> The driver should pass a device that specifies internal DMA ops, but
-> currently NULL pointers are passed, and thus following bug pops up:
->
->  Freescale DIU driver
->  ------------[ cut here ]------------
->  kernel BUG at arch/powerpc/include/asm/dma-mapping.h:237!
->  Oops: Exception in kernel mode, sig: 5 [#1]
->  ...
->  NIP [c01658b4] allocate_buf+0x0/0x8
->  LR [c0306554] fsl_diu_probe+0x2b4/0x518
->  Call Trace:
->  [df02be10] [c030638c] fsl_diu_probe+0xec/0x518 (unreliable)
->  [df02be60] [c020cdec] of_platform_device_probe+0x5c/0x84
->  [df02be80] [c018f5d0] really_probe+0x78/0x1a0
->  [df02bea0] [c018f7c0] __driver_attach+0xa4/0xa8
->  [df02bec0] [c018ea00] bus_for_each_dev+0x60/0x9c
->  [df02bef0] [c018f414] driver_attach+0x24/0x34
->  [df02bf00] [c018f168] bus_add_driver+0x12c/0x1cc
->  [df02bf20] [c018fbdc] driver_register+0x6c/0x110
->  [df02bf30] [c020ccb4] of_register_driver+0x54/0x70
->  [df02bf40] [c03d0a50] fsl_diu_init+0x70/0xa4
->  ...
->
-> This patch fixes the issue.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> drivers/video/fsl-diu-fb.c |   34 +++++++++++++++++++++-------------
-> 1 files changed, 21 insertions(+), 13 deletions(-)
+to receive the following updates:
 
-applied
+ arch/powerpc/Kconfig                    |    1
+ arch/powerpc/boot/dts/ksi8560.dts       |    4 +--
+ arch/powerpc/boot/dts/pq2fads.dts       |   20 +++++++++++++-----
+ arch/powerpc/boot/dts/sbc8548.dts       |    4 +--
+ arch/powerpc/boot/dts/sbc8560.dts       |    4 +--
+ arch/powerpc/boot/dts/socrates.dts      |    1
+ arch/powerpc/boot/dts/stx_gp3_8560.dts  |    4 +--
+ arch/powerpc/boot/dts/tqm8540.dts       |    4 +--
+ arch/powerpc/boot/dts/tqm8541.dts       |    4 +--
+ arch/powerpc/boot/dts/tqm8555.dts       |    4 +--
+ arch/powerpc/boot/dts/tqm8560.dts       |    4 +--
+ arch/powerpc/include/asm/mpic.h         |   12 +++++++++++
+ arch/powerpc/include/asm/reg.h          |   30 ++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/reg_booke.h    |   30 ----------------------------
+ arch/powerpc/include/asm/sfp-machine.h  |    6 ++---
+ arch/powerpc/sysdev/mpic.c              |   34 ++++++++++++++++++++++++++++++++
+ drivers/serial/cpm_uart/cpm_uart_core.c |   14 ++++++-------
+ drivers/video/fsl-diu-fb.c              |   34 +++++++++++++++++++-------------
+ include/linux/fsl_devices.h             |   22 --------------------
+ 19 files changed, 139 insertions(+), 97 deletions(-)
 
-- k
+Anton Vorontsov (1):
+      fsl-diu-fb: Pass the proper device for dma mapping routines
+
+Grant Likely (1):
+      powerpc: Remove unused symbols from fsl_devices.h
+
+Josh Boyer (1):
+      powerpc: Make LOWMEM_CAM_NUM depend on FSL_BOOKE
+
+Kumar Gala (4):
+      powerpc/85xx: Use fsl,mpc85.. as prefix for memory ctrl & l2-cache nodes
+      powerpc: Move SPEFSCR defines to common header
+      powerpc/math-emu: Change types to work on ppc64
+      powerpc: Add support for CoreInt delivery of interrupts on MPIC
+
+Scott Wood (3):
+      cpm_uart: Initialize port.dev before it's used.
+      cpm_uart: Disable CPM udbg when re-initing CPM uart, even if not the console.
+      powerpc/pq2fads: Update device tree for use with device-tree-aware u-boot.
+
+Wolfgang Grandegger (1):
+      powerpc/85xx: Re-add the device_type soc to socrates.dts
