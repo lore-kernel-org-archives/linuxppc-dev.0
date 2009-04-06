@@ -1,19 +1,19 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 6DFC0DDDEE
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 22:30:12 +1000 (EST)
-Date: Mon, 6 Apr 2009 14:30:01 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id A288BDDE1D
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 22:30:15 +1000 (EST)
+Date: Mon, 6 Apr 2009 14:30:06 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
 To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Print information about mapping hw irqs to
-	virtual irqs
-Message-ID: <20090406123001.GA3044@pengutronix.de>
-References: <b804a7950247ceb99706be8cadb9bf5da5f73b09.1238983497.git.michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Keep track of emulated instructions
+In-Reply-To: <1238819848.9595.25.camel@localhost>
+Message-ID: <alpine.LRH.2.00.0904061429370.11076@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0904031404450.32353@vixen.sonytel.be>
+	<1238819848.9595.25.camel@localhost>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
-In-Reply-To: <b804a7950247ceb99706be8cadb9bf5da5f73b09.1238983497.git.michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,76 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 4 Apr 2009, Michael Ellerman wrote:
+> On Fri, 2009-04-03 at 14:08 +0200, Geert Uytterhoeven wrote:
+> > Finally (after ca. 1.5 years), he're an updated version of my patch to keep
+> > track of emulated instructions.  In the light of Kumar's `Emulate enough of SPE
+> > instructions to make gcc happy' patch, he probably also wants to keep track of
+> > the actual runtime overhead.
+> > 
+> > Changes since last version:
+> >   - arch/powerpc/kernel/sysfs.c is now compiled on ppc32, so we can provide
+> >     counters in sysfs on ppc32, too,
+> >   - WARN_EMULATED() is a no-op if CONFIG_SYSCTL is disabled,
+> >   - Add warnings for altivec,
+> >   - Add warnings for recently introduced emulation of vsx and isel
+> >     instructions.
+> 
+> You don't count instructions that fall through to the bottom of
+> fix_alignment()?
 
---6TrnltStXW4iwmi0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks! I add a generic unaligned counter for the fall through case.
 
-On Mon, Apr 06, 2009 at 12:05:02PM +1000, Michael Ellerman wrote:
-> The irq remapping layer seems to cause some confusion when people
-> see a different irq number in /proc/interrupts vs the one they
-> request in their driver or DTS.
->=20
-> So have the irq remapping layer print out a message when we map an
-> irq. The message is only printed the first time the irq is mapped,
-> and it's KERN_DEBUG so most people won't see it.
->=20
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+With kind regards,
 
-I like the patch in general...
+Geert Uytterhoeven
+Software Architect
 
-> ---
->  arch/powerpc/kernel/irq.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 5576147..8c1a496 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -672,11 +672,13 @@ unsigned int irq_create_mapping(struct irq_host *ho=
-st,
->  			return NO_IRQ;
->  		}
->  	}
-> -	pr_debug("irq: -> obtained virq %d\n", virq);
-> =20
->  	if (irq_setup_virq(host, virq, hwirq))
->  		return NO_IRQ;
-> =20
-> +	printk(KERN_DEBUG "irq: irq %lu on host %s mapped to virtual irq %u\n",
-> +		hwirq, host->of_node ? host->of_node->full_name : "null", virq);
-> +
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Are you replacing the pr_debug because you want to drop the
-DEBUG-dependency?
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
->  	return virq;
->  }
->  EXPORT_SYMBOL_GPL(irq_create_mapping);
-> --=20
-> 1.6.1.2
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---6TrnltStXW4iwmi0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknZ9ckACgkQD27XaX1/VRvjrwCbBcnR9VYsq0MoEq+dztVb14ke
-lfAAn1mRCXgS3XBHrg9Wb0Zde2WJ4sUF
-=KrLE
------END PGP SIGNATURE-----
-
---6TrnltStXW4iwmi0--
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
