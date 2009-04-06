@@ -1,22 +1,24 @@
-Return-Path: <hugh@veritas.com>
-Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
-	[216.10.194.28])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-1.symantec.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id ABAB7DDECF
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 07:02:24 +1000 (EST)
-Date: Mon, 6 Apr 2009 22:01:15 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 3/3] powerpc: allow 256kB pages with SHMEM
-In-Reply-To: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
-Message-ID: <Pine.LNX.4.64.0904062156290.21044@blonde.anvils>
-References: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EAFE7DDED1
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 07:07:08 +1000 (EST)
+Message-ID: <49DA6ECE.4010900@freescale.com>
+Date: Mon, 06 Apr 2009 16:06:22 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: yanok@emcraft.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	prodyuth@gmail.com
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] ASoC: fsl_dma: Pass the proper device for dma mapping
+	routines
+References: <20090404183319.GA22203@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090404183319.GA22203@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	linuxppc-dev@ozlabs.org, Liam Girdwood <lrg@slimlogic.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that shmem's divisions by zero and SHMEM_MAX_BYTES are fixed,
-let powerpc 256kB pages coexist with CONFIG_SHMEM again.
+Anton Vorontsov wrote:
+> The driver should pass a device that specifies internal DMA ops, but
+> substream->pcm is just a logical device, and thus doesn't have arch-
+> specific dma callbacks, therefore following bug appears:
+> 
+>   Freescale Synchronous Serial Interface (SSI) ASoC Driver
+>   ------------[ cut here ]------------
+>   kernel BUG at arch/powerpc/include/asm/dma-mapping.h:237!
+>   Oops: Exception in kernel mode, sig: 5 [#1]
+>   ...
+>   NIP [c02259c4] snd_malloc_dev_pages+0x58/0xac
+>   LR [c0225c74] snd_dma_alloc_pages+0xf8/0x108
+>   Call Trace:
+>   [df02bde0] [df02be2c] 0xdf02be2c (unreliable)
+>   [df02bdf0] [c0225c74] snd_dma_alloc_pages+0xf8/0x108
+>   [df02be10] [c023a100] fsl_dma_new+0x68/0x124
+>   [df02be20] [c02342ac] soc_new_pcm+0x1bc/0x234
+>   [df02bea0] [c02343dc] snd_soc_new_pcms+0xb8/0x148
+>   [df02bed0] [c023824c] cs4270_probe+0x34/0x124
+>   [df02bef0] [c0232fe8] snd_soc_instantiate_card+0x1a4/0x2f4
+>   [df02bf20] [c0233164] snd_soc_instantiate_cards+0x2c/0x68
+>   [df02bf30] [c0234704] snd_soc_register_platform+0x60/0x80
+>   [df02bf50] [c03d5664] fsl_soc_platform_init+0x18/0x28
+>   ...
+> 
+> This patch fixes the issue by using card's device instead.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-Added linuxppc-dev and some other Cc's for this 3/3: sorry
-if you didn't see 1/3 and 2/3, they were just in mm/shmem.c.
+Acked-by: Timur Tabi <timur@freescale.com>
 
- arch/powerpc/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Mark and Takashi: this patch is a must-fix for 2.6.30
 
---- 2.6.29-git13/arch/powerpc/Kconfig	2009-04-06 11:47:57.000000000 +0100
-+++ linux/arch/powerpc/Kconfig	2009-04-06 18:18:47.000000000 +0100
-@@ -462,7 +462,7 @@ config PPC_64K_PAGES
- 
- config PPC_256K_PAGES
- 	bool "256k page size" if 44x
--	depends on !STDBINUTILS && (!SHMEM || BROKEN)
-+	depends on !STDBINUTILS
- 	help
- 	  Make the page size 256k.
- 
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
