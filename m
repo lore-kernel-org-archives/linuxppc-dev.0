@@ -1,25 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B6A50DDE9F
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 22:57:23 +1000 (EST)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
+	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id 88027DDE00
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 23:28:04 +1000 (EST)
+Received: by gxk1 with SMTP id 1so7197339gxk.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 06 Apr 2009 06:28:02 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <b804a7950247ceb99706be8cadb9bf5da5f73b09.1238983497.git.michael@ellerman.id.au>
+References: <b804a7950247ceb99706be8cadb9bf5da5f73b09.1238983497.git.michael@ellerman.id.au>
+Date: Mon, 6 Apr 2009 07:27:45 -0600
+Message-ID: <fa686aa40904060627w1797960eo113a68087a1391bb@mail.gmail.com>
 Subject: Re: [PATCH] powerpc: Print information about mapping hw irqs to
 	virtual irqs
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Wolfram Sang <w.sang@pengutronix.de>
-In-Reply-To: <20090406123001.GA3044@pengutronix.de>
-References: <b804a7950247ceb99706be8cadb9bf5da5f73b09.1238983497.git.michael@ellerman.id.au>
-	<20090406123001.GA3044@pengutronix.de>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-dGiOfVfA2htHEu0GGU9m"
-Date: Mon, 06 Apr 2009 22:57:22 +1000
-Message-Id: <1239022642.6643.2.camel@localhost>
-Mime-Version: 1.0
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Michael Ellerman <michael@ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,62 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, Apr 5, 2009 at 8:05 PM, Michael Ellerman <michael@ellerman.id.au> w=
+rote:
+> The irq remapping layer seems to cause some confusion when people
+> see a different irq number in /proc/interrupts vs the one they
+> request in their driver or DTS.
+>
+> So have the irq remapping layer print out a message when we map an
+> irq. The message is only printed the first time the irq is mapped,
+> and it's KERN_DEBUG so most people won't see it.
+>
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
---=-dGiOfVfA2htHEu0GGU9m
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-On Mon, 2009-04-06 at 14:30 +0200, Wolfram Sang wrote:
-> On Mon, Apr 06, 2009 at 12:05:02PM +1000, Michael Ellerman wrote:
-> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> > index 5576147..8c1a496 100644
-> > --- a/arch/powerpc/kernel/irq.c
-> > +++ b/arch/powerpc/kernel/irq.c
-> > @@ -672,11 +672,13 @@ unsigned int irq_create_mapping(struct irq_host *=
-host,
-> >  			return NO_IRQ;
-> >  		}
-> >  	}
-> > -	pr_debug("irq: -> obtained virq %d\n", virq);
-> > =20
-> >  	if (irq_setup_virq(host, virq, hwirq))
-> >  		return NO_IRQ;
-> > =20
-> > +	printk(KERN_DEBUG "irq: irq %lu on host %s mapped to virtual irq %u\n=
-",
-> > +		hwirq, host->of_node ? host->of_node->full_name : "null", virq);
-> > +
->=20
-> Are you replacing the pr_debug because you want to drop the
-> DEBUG-dependency?
+> ---
+> =A0arch/powerpc/kernel/irq.c | =A0 =A04 +++-
+> =A01 files changed, 3 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 5576147..8c1a496 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -672,11 +672,13 @@ unsigned int irq_create_mapping(struct irq_host *ho=
+st,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return NO_IRQ;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0}
+> - =A0 =A0 =A0 pr_debug("irq: -> obtained virq %d\n", virq);
+>
+> =A0 =A0 =A0 =A0if (irq_setup_virq(host, virq, hwirq))
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return NO_IRQ;
+>
+> + =A0 =A0 =A0 printk(KERN_DEBUG "irq: irq %lu on host %s mapped to virtua=
+l irq %u\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 hwirq, host->of_node ? host->of_node->full_=
+name : "null", virq);
+> +
+> =A0 =A0 =A0 =A0return virq;
+> =A0}
+> =A0EXPORT_SYMBOL_GPL(irq_create_mapping);
+> --
+> 1.6.1.2
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-Yes. Several people have been confused by the value in /proc/interrupts
-not matching what they expected - so I want there to be something in
-dmesg by default that will hopefully make it clear to people what's
-going on.
 
-cheers
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-dGiOfVfA2htHEu0GGU9m
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknZ/DIACgkQdSjSd0sB4dIe0wCfUVmQWAF1z1FD2OIDLiVnhHZx
-PB4AoLiytRJVxSUd+Nrie4zqUlZFuJLm
-=oweM
------END PGP SIGNATURE-----
-
---=-dGiOfVfA2htHEu0GGU9m--
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
