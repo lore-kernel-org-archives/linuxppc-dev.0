@@ -1,9 +1,13 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <db258c8de9d950c23d61abdcd121361a7bb40f75.1239028836.git.michael@ellerman.id.au>
+Message-Id: <e74b6f429f71479547bbae5871cdc87b7c6b78b5.1239028836.git.michael@ellerman.id.au>
+In-Reply-To: <db258c8de9d950c23d61abdcd121361a7bb40f75.1239028836.git.michael@ellerman.id.au>
+References: <db258c8de9d950c23d61abdcd121361a7bb40f75.1239028836.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/2] powerpc/ftrace: Fix #if that should be #ifdef
-Date: Tue,  7 Apr 2009 00:40:45 +1000 (EST)
+Subject: [PATCH 2/2] powerpc/ftrace: Fix printf format warning
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Date: Tue,  7 Apr 2009 00:40:46 +1000 (EST)
 Cc: srostedt@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -14,11 +18,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit bb7253403f7a4670a128e4c080fd8ea1bd4d5029 (powerpc64,
-ftrace: save toc only on modules for function graph), added a
+'tramp' is an unsigned long, so print it with %lx.
 
-Fixes the following warning on 32-bit builds:
- arch/powerpc/kernel/ftrace.c:562:5: error: "CONFIG_PPC64" is not defined
+Fixes the following build warning:
+arch/powerpc/kernel/ftrace.c:291: error: format ‘%x’ expects type ‘unsigned int’, but argument 2 has type ‘long unsigned int’
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
@@ -26,17 +29,17 @@ Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index e74f2dd..e9d9d38 100644
+index e9d9d38..e1edf5a 100644
 --- a/arch/powerpc/kernel/ftrace.c
 +++ b/arch/powerpc/kernel/ftrace.c
-@@ -559,7 +559,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 	if (unlikely(atomic_read(&current->tracing_graph_pause)))
- 		return;
+@@ -288,7 +288,7 @@ __ftrace_make_nop(struct module *mod,
+ 	if (tramp & 0x8000)
+ 		tramp -= 0x10000;
  
--#if CONFIG_PPC64
-+#ifdef CONFIG_PPC64
- 	/* non core kernel code needs to save and restore the TOC */
- 	if (REGION_ID(self_addr) != KERNEL_REGION_ID)
- 		return_hooker = (unsigned long)&mod_return_to_handler;
+-	pr_debug(" %x ", tramp);
++	pr_debug(" %lx ", tramp);
+ 
+ 	if (tramp != addr) {
+ 		printk(KERN_ERR
 -- 
 1.6.2.1
