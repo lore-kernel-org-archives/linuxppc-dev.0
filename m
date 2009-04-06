@@ -1,17 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
+	[216.10.194.28])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 95BE7DDED8
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 06:37:06 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n36KaxGO026706
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Apr 2009 15:37:00 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix tlbilx opcode
-Date: Mon,  6 Apr 2009 15:36:59 -0500
-Message-Id: <1239050219-4477-1-git-send-email-galak@kernel.crashing.org>
+	(Client CN "extu-mxob-1.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id ABAB7DDECF
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 07:02:24 +1000 (EST)
+Date: Mon, 6 Apr 2009 22:01:15 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 3/3] powerpc: allow 256kB pages with SHMEM
+In-Reply-To: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
+Message-ID: <Pine.LNX.4.64.0904062156290.21044@blonde.anvils>
+References: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: yanok@emcraft.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	prodyuth@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The tlbilx opcode was not matching the Power ISA 2.06 arch spec.
-The old opcode was an early suggested opcode that changed during the
-2.06 architecture process.
+Now that shmem's divisions by zero and SHMEM_MAX_BYTES are fixed,
+let powerpc 256kB pages coexist with CONFIG_SHMEM again.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 ---
- arch/powerpc/include/asm/ppc-opcode.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Added linuxppc-dev and some other Cc's for this 3/3: sorry
+if you didn't see 1/3 and 2/3, they were just in mm/shmem.c.
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index f4a4db8..640ccbb 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -43,7 +43,7 @@
+ arch/powerpc/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- 2.6.29-git13/arch/powerpc/Kconfig	2009-04-06 11:47:57.000000000 +0100
++++ linux/arch/powerpc/Kconfig	2009-04-06 18:18:47.000000000 +0100
+@@ -462,7 +462,7 @@ config PPC_64K_PAGES
  
- #define PPC_INST_STSWI			0x7c0005aa
- #define PPC_INST_STSWX			0x7c00052a
--#define PPC_INST_TLBILX			0x7c000626
-+#define PPC_INST_TLBILX			0x7c000024
- #define PPC_INST_WAIT			0x7c00007c
+ config PPC_256K_PAGES
+ 	bool "256k page size" if 44x
+-	depends on !STDBINUTILS && (!SHMEM || BROKEN)
++	depends on !STDBINUTILS
+ 	help
+ 	  Make the page size 256k.
  
- /* macros to insert fields into opcodes */
--- 
-1.6.0.6
