@@ -1,10 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <95c5ebd63992c64ad0b644f1204362aaf5e35eeb.1239025478.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc/oprofile: dump_pmcs() is not used
-Date: Mon,  6 Apr 2009 23:45:08 +1000 (EST)
-Cc: Kumar Gala <kumar.gala@freescale.com>, afleming@freescale.com
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 99312DDE1A
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2009 23:58:25 +1000 (EST)
+Date: Mon, 6 Apr 2009 15:58:20 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Print information about mapping hw irqs to
+	virtual irqs
+Message-ID: <20090406135820.GB3044@pengutronix.de>
+References: <b804a7950247ceb99706be8cadb9bf5da5f73b09.1238983497.git.michael@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="wzJLGUyc3ArbnUjN"
+In-Reply-To: <b804a7950247ceb99706be8cadb9bf5da5f73b09.1238983497.git.michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,32 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/oprofile/op_model_fsl_emb.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Or should we just remove it?
+--wzJLGUyc3ArbnUjN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/oprofile/op_model_fsl_emb.c b/arch/powerpc/oprofile/op_model_fsl_emb.c
-index 91596f6..4abd466 100644
---- a/arch/powerpc/oprofile/op_model_fsl_emb.c
-+++ b/arch/powerpc/oprofile/op_model_fsl_emb.c
-@@ -228,6 +228,7 @@ static void pmc_stop_ctrs(void)
- 	mtpmr(PMRN_PMGC0, pmgc0);
- }
- 
-+#if 0
- static void dump_pmcs(void)
- {
- 	printk("pmgc0: %x\n", mfpmr(PMRN_PMGC0));
-@@ -241,6 +242,7 @@ static void dump_pmcs(void)
- 	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC3),
- 			mfpmr(PMRN_PMLCA3), mfpmr(PMRN_PMLCB3));
- }
-+#endif
- 
- static int fsl_emb_cpu_setup(struct op_counter_config *ctr)
- {
--- 
-1.6.2.1
+On Mon, Apr 06, 2009 at 12:05:02PM +1000, Michael Ellerman wrote:
+> The irq remapping layer seems to cause some confusion when people
+> see a different irq number in /proc/interrupts vs the one they
+> request in their driver or DTS.
+>=20
+> So have the irq remapping layer print out a message when we map an
+> irq. The message is only printed the first time the irq is mapped,
+> and it's KERN_DEBUG so most people won't see it.
+>=20
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
+
+> ---
+>  arch/powerpc/kernel/irq.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 5576147..8c1a496 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -672,11 +672,13 @@ unsigned int irq_create_mapping(struct irq_host *ho=
+st,
+>  			return NO_IRQ;
+>  		}
+>  	}
+> -	pr_debug("irq: -> obtained virq %d\n", virq);
+> =20
+>  	if (irq_setup_virq(host, virq, hwirq))
+>  		return NO_IRQ;
+> =20
+> +	printk(KERN_DEBUG "irq: irq %lu on host %s mapped to virtual irq %u\n",
+> +		hwirq, host->of_node ? host->of_node->full_name : "null", virq);
+> +
+>  	return virq;
+>  }
+>  EXPORT_SYMBOL_GPL(irq_create_mapping);
+> --=20
+> 1.6.1.2
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--wzJLGUyc3ArbnUjN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknaCnwACgkQD27XaX1/VRs9IQCeJR5lIQrIzXSU6zFstgbj3dbv
+sP4AnRQEprPIYCwKY43YrQC8TSJIXHF7
+=eqm4
+-----END PGP SIGNATURE-----
+
+--wzJLGUyc3ArbnUjN--
