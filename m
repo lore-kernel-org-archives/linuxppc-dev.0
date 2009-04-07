@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CCCAADE09E
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 05:42:44 +1000 (EST)
-Message-ID: <49DBAC7C.5040405@freescale.com>
-Date: Tue, 07 Apr 2009 14:41:48 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: "Sauce.Cheng" <chmhou@sina.com>
-Subject: Re: issue at the beginning of kernel booting
-References: <20090327083628.4C3E93EE530@mail2-203.sinamail.sina.com.cn>	<20090327161522.GA7809@ld0162-tx32.am.freescale.net>	<22840131.post@talk.nabble.com>	<20090402161209.GA19088@ld0162-tx32.am.freescale.net>
-	<22930588.post@talk.nabble.com>
-In-Reply-To: <22930588.post@talk.nabble.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BDF79DE0C4
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 05:44:27 +1000 (EST)
+Message-Id: <AE9B4B27-F781-4C0B-9E17-79F3E7C78CF7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <771B1F79-194B-4C6A-A2AE-5E4BEF0A17D3@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc/oprofile: dump_pmcs() is not used
+Date: Tue, 7 Apr 2009 14:42:02 -0500
+References: <95c5ebd63992c64ad0b644f1204362aaf5e35eeb.1239025478.git.michael@ellerman.id.au>
+	<771B1F79-194B-4C6A-A2AE-5E4BEF0A17D3@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sauce.Cheng wrote:
->>> i tried 
->>> CONFIG_PPC_EARLY_DEBUG_CPM=y 
->>> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR=0xf00000008	
->>> how can i make sure CPM_ADDR, 0xf0000008 is default value 
-> 
->> Look at the u-boot source, or dump the memory and see if it looks like a
->> ring buffer.
-> 
-> sorry, i mean that CPM_ADDR is address of what? address of CPM registers or
-> something?
 
-It's the address of a transmit descriptor for the serial port.  It's 
-typically in DPRAM, but the exact position depends on where u-boot put 
-it.  Try 0xf0000088.
+On Apr 6, 2009, at 9:03 AM, Kumar Gala wrote:
 
->> This is a dts-v0 tree, which implies it's fairly old.
-> dose later dts be used in corresponding kernel version ?
+>
+> On Apr 6, 2009, at 8:45 AM, Michael Ellerman wrote:
+>
+>> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+>> ---
+>> arch/powerpc/oprofile/op_model_fsl_emb.c |    2 ++
+>> 1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> Or should we just remove it?
+>
+> I'm for removing it if Andy doesn't have any issues.  Someone can  
+> always add it back as debugfs code in the future if they want it.
 
-Yes, current kernels use dts-v1.
+I chatted w/Andy and we both agreed to just remove the code rather  
+than #if 0 it.  If you send me a patch with that I'll apply it.
 
-> in addition, there is one more question. 
-> my RAM size is 32MBytes, my "vmlinux" size is 30MBytes, "vmlinux.o" size is
-> 58MBytes. so , will there be something wrong at uncompressing time ?
-
-That's just debugging information; it won't end up in the uImage.  Use 
-the "size" utility in your toolchain to see how big the actual code and 
-data are.
-
--Scott
+- k
