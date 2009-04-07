@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2C95DDDFAF
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 16:44:42 +1000 (EST)
-Message-Id: <43350B71-1FBE-436E-81A7-E4043132E629@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 70C82DDF86
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 17:05:08 +1000 (EST)
+Message-Id: <789360B9-B0AD-4BE4-85FE-1151107B7E3A@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Vijay Nikam <vijay.t.nikam@gmail.com>
-In-Reply-To: <f234e2140904062329i48630711safdedf786ab7f0c6@mail.gmail.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1239086621.6565.25.camel@localhost>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Bug:scheduling while atomic
-Date: Tue, 7 Apr 2009 01:42:02 -0500
-References: <f234e2140904062329i48630711safdedf786ab7f0c6@mail.gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Add support for early tlbilx opcode
+Date: Tue, 7 Apr 2009 02:04:56 -0500
+References: <1239084821-10121-1-git-send-email-galak@kernel.crashing.org>
+	<1239086621.6565.25.camel@localhost>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +25,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 7, 2009, at 1:29 AM, Vijay Nikam wrote:
+On Apr 7, 2009, at 1:43 AM, Michael Ellerman wrote:
 
-> Hello All,
 >
-> I have mpc8313erb with linux kernel 2.6.20.
->
-> When I ported the kernel with CONFIG_PREEMPT=y (Enabled) I am getting
-> the 'scheduling while atomic'. Please check the following call trace,
-> thanks.
->
-> Could anyone please let me to the way to fix it ? ? ?
->
-> Kindly please acknowledge ... thank you ...
->
-> Kind Regards,
-> Vijay Nikam
+> You're actually going to ship those parts? :)
 
-Have you tried a newer kernel (like 2.6.29) and see if the issue still  
-exists.
+I hope not, but until someone tells me otherwise I want the fix in  
+(less headache for me).  We can easily revert this one commit if it  
+becomes clear that such parts "never really existed". ;)
+
+> It seems a pity to use up a feature bit.
+
+MMU feature bits are new so we have a slew of them :)
 
 - k
