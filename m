@@ -1,34 +1,30 @@
-Return-Path: <bergner@vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5C0FBDE08E
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 04:31:50 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e9.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n37ILwYa000874
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 14:21:58 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n37IVl8r153790
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 14:31:47 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n37IU8bR018992
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 14:30:09 -0400
-Subject: Re: [PATCH] powerpc: Fix tlbilx opcode
-From: Peter Bergner <bergner@vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <606D70D7-6F85-48DF-854F-18DAE01ACA95@kernel.crashing.org>
-References: <1239050219-4477-1-git-send-email-galak@kernel.crashing.org>
-	<1239125792.7557.7.camel@otta>
-	<606D70D7-6F85-48DF-854F-18DAE01ACA95@kernel.crashing.org>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 13:31:46 -0500
-Message-Id: <1239129106.7557.10.camel@otta>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Alan Modra <amodra@bigpond.net.au>,
-	"binutils@sourceware.org" <binutils@sourceware.org>,
-	Edmar Wienskoski-RA8797 <edmar@freescale.com>
+Return-Path: <sunijsur@cisco.com>
+Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-5.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 805BBDE090
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 04:29:51 +1000 (EST)
+Received: from sj-core-5.cisco.com (sj-core-5.cisco.com [171.71.177.238])
+	by sj-dkim-1.cisco.com (8.12.11/8.12.11) with ESMTP id n37II7JP019568
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 11:18:07 -0700
+Received: from sj-webmail-9.cisco.com (sj-webmail-9.cisco.com [171.71.183.158])
+	by sj-core-5.cisco.com (8.13.8/8.13.8) with ESMTP id n37II7hS013626
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 18:18:07 GMT
+Received: from sj-webmail-9.cisco.com (localhost.localdomain [127.0.0.1])
+	by sj-webmail-9.cisco.com (8.13.1/8.13.1) with ESMTP id n37II7Bx003084
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 11:18:07 -0700
+Received: from sj-webmail-9 (root@localhost)
+	by sj-webmail-9.cisco.com (8.13.1/8.13.1/Submit) with ESMTP id
+	n37II6L1003082
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 11:18:07 -0700
+Date: Tue, 7 Apr 2009 11:18:06 -0700
+From: Subodh Nijsure <sunijsur@cisco.com>
+To: <linuxppc-dev@ozlabs.org>
+Message-ID: <00ba01c9b7ad$32dae000$d151150a@cisco.com>
+Subject: Printk time stamp seems to be stuck.
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00BB_01C9B772.867C0800"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,80 +34,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-04-07 at 12:54 -0500, Kumar Gala wrote:
-> On Apr 7, 2009, at 12:36 PM, Peter Bergner wrote:
-> > How do you want to handle the current binutils code that implements tlbilx
-> > and its extended mnemonics?  Should they be changed to use secondary opcode
-> > 18 instead of 787 as per the ISA 2.06 doc?
-> 
-> YES ! :)
+------=_NextPart_000_00BB_01C9B772.867C0800
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Disposition: inline
 
-The ISA 2.06 documentation states the secondary opcode used by tlbilx and
-its extended mnemonics is 18 and not 787 which the current code uses.
-This patch fixes the typo, as well as reordering the extended mnemonics
-so they are listed in the opcodes table before the base tlbilx insn, so
-that objdump will attempt to use them before the base insn.
-
-This built and make checks fine, so I committed this as obvious.
-
-Peter
-
-
-opcodes/
-	* ppc-opc.c (powerpc_opcodes) <"tlbilxlpid", "tlbilxpid", "tlbilxva",
-	"tlbilx">: Use secondary opcode "18" as per the ISA 2.06 documentation.
-	Reorder entries so the extended mnemonics are listed before tlbilx.
-
-gas/testsuite/
-	* gas/ppc/e500mc.d: Update to match extended mnemonics.
-
-Index: gas/testsuite/gas/ppc/e500mc.d
-===================================================================
-RCS file: /cvs/src/src/gas/testsuite/gas/ppc/e500mc.d,v
-retrieving revision 1.3
-diff -u -p -r1.3 e500mc.d
---- gas/testsuite/gas/ppc/e500mc.d	26 Feb 2009 22:07:33 -0000	1.3
-+++ gas/testsuite/gas/ppc/e500mc.d	7 Apr 2009 18:15:23 -0000
-@@ -50,7 +50,8 @@ Disassembly of section \.text:
-   a0:	7c 64 29 fe 	dcbtstep r3,r4,r5
-   a4:	7c c7 42 7e 	dcbtep  r6,r7,r8
-   a8:	7c 0b 67 fe 	dcbzep  r11,r12
--  ac:	7c 00 06 26 	tlbilx  0,0,r0
--  b0:	7c 20 06 26 	tlbilx  1,0,r0
--  b4:	7c 62 1e 26 	tlbilx  3,r2,r3
--  b8:	7c 64 2e 26 	tlbilx  3,r4,r5
-+  ac:	7c 00 00 24 	tlbilxlpid
-+  b0:	7c 20 00 24 	tlbilxpid
-+  b4:	7c 62 18 24 	tlbilxva r2,r3
-+  b8:	7c 64 28 24 	tlbilxva r4,r5
-+
-Index: opcodes/ppc-opc.c
-===================================================================
-RCS file: /cvs/src/src/opcodes/ppc-opc.c,v
-retrieving revision 1.120
-diff -u -p -r1.120 ppc-opc.c
---- opcodes/ppc-opc.c	2 Apr 2009 13:30:56 -0000	1.120
-+++ opcodes/ppc-opc.c	7 Apr 2009 18:15:24 -0000
-@@ -3464,6 +3464,11 @@ const struct powerpc_opcode powerpc_opco
+I  am running PPC kernel (2.6.26) with .config that contains
+CONFIG_PRINTK_TIME=y also I am booting kernel with parameter printk.time=1. 
+I am also booting the kernel with option initcall_debug and I see following
+output after setup_vmstat() the printk timestamp feature stops working. 
+i.e. after call to setup_vmstat all printk messages have same timestamp...
  
- {"isellt",	X(31,15),	X_MASK,      PPCISEL,	PPCNONE,	{RT, RA, RB}},
  
-+{"tlbilxlpid",	XTO(31,18,0),	XTO_MASK,    E500MC,	PPCNONE,	{0}},
-+{"tlbilxpid",	XTO(31,18,1),	XTO_MASK,    E500MC,	PPCNONE,	{0}},
-+{"tlbilxva",	XTO(31,18,3),	XTO_MASK,    E500MC,	PPCNONE,	{RA0, RB}},
-+{"tlbilx",	X(31,18),	X_MASK,      E500MC,	PPCNONE,	{T, RA0, RB}},
-+
- {"mfcr",	XFXM(31,19,0,0), XFXFXM_MASK, POWER4,	PPCNONE,	{RT, FXM4}},
- {"mfcr",	XFXM(31,19,0,0), XRARB_MASK, COM,	POWER4,		{RT}},
- {"mfocrf",	XFXM(31,19,0,1), XFXFXM_MASK, COM,	PPCNONE,	{RT, FXM}},
-@@ -4551,10 +4556,6 @@ const struct powerpc_opcode powerpc_opco
- {"lxvw4x",	X(31,780),	XX1_MASK,    PPCVSX,	PPCNONE,	{XT6, RA, RB}},
+[    4.294855] calling  pdflush_init+0x0/0x28()
+[    4.294926] initcall pdflush_init+0x0/0x28() returned 0 after 0 msecs
+[    4.294931] calling  kswapd_init+0x0/0x2c()
+[    4.294962] initcall kswapd_init+0x0/0x2c() returned 0 after 0 msecs
+[    4.294966] calling  setup_vmstat+0x0/0x74()
+[    4.294966] initcall setup_vmstat+0x0/0x74() returned 0 after 0 msecs
+[    4.294966] calling  init_emergency_pool+0x0/0x84()
+[    4.294966] highmem bounce pool size: 64 pages
  
- {"tlbivax",	X(31,786),	XRT_MASK,    BOOKE,	PPCNONE,	{RA, RB}},
--{"tlbilx",	X(31,787),	X_MASK,      E500MC,	PPCNONE,	{T, RA0, RB}},
--{"tlbilxlpid",	XTO(31,787,0),	XTO_MASK,    E500MC,	PPCNONE,	{0}},
--{"tlbilxpid",	XTO(31,787,1),	XTO_MASK,    E500MC,	PPCNONE,	{0}},
--{"tlbilxva",	XTO(31,787,3),	XTO_MASK,    E500MC,	PPCNONE,	{RA0, RB}},
- 
- {"lwzcix",	X(31,789),	X_MASK,      POWER6,	PPCNONE,	{RT, RA0, RB}},
- 
+Has anybody else seen this or there is something odd with my kernel/board
+setup.
+
+
+/Subodh Nijsure
+
+------=_NextPart_000_00BB_01C9B772.867C0800
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii"=
+>
+<META content=3D"MSHTML 6.00.2900.3492" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D402371118-07042009>I&nbsp;=
+ am running=20
+PPC kernel (2.6.26) with .config that contains </SPAN></FONT><FONT face=3D=
+Arial=20
+size=3D2><SPAN class=3D402371118-07042009>CONFIG_PRINTK_TIME=3Dy also I a=
+m booting=20
+kernel with parameter  printk.time=3D1. </SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D402371118-07042009>I am al=
+so booting=20
+the kernel with option initcall_debug and I see following output after=20
+setup_vmstat() the printk timestamp feature stops </SPAN></FONT><FONT fac=
+e=3DArial=20
+size=3D2><SPAN class=3D402371118-07042009>working. </SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D402371118-07042009>i.e. af=
+ter call to=20
+setup_vmstat all printk messages have same timestamp...</SPAN></FONT></DI=
+V>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D402371118-07042009></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D402371118-07042009></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>[&nbsp;&nbsp;&nbsp; 4.294855] calling&nb=
+sp;=20
+pdflush_init+0x0/0x28()<BR>[&nbsp;&nbsp;&nbsp; 4.294926] initcall=20
+pdflush_init+0x0/0x28() returned 0 after 0 msecs<BR>[&nbsp;&nbsp;&nbsp;=20
+4.294931] calling&nbsp; kswapd_init+0x0/0x2c()<BR>[&nbsp;&nbsp;&nbsp; 4.2=
+94962]=20
+initcall kswapd_init+0x0/0x2c() returned 0 after 0 msecs<BR>[&nbsp;&nbsp;=
+&nbsp;=20
+4.294966] calling&nbsp; setup_vmstat+0x0/0x74()<BR>[&nbsp;&nbsp;&nbsp; 4.=
+294966]=20
+initcall setup_vmstat+0x0/0x74() returned 0 after 0 msecs<BR>[&nbsp;&nbsp=
+;&nbsp;=20
+4.294966] calling&nbsp; init_emergency_pool+0x0/0x84()<BR>[&nbsp;&nbsp;&n=
+bsp;=20
+4.294966] highmem bounce pool size: 64 pages</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><SPAN class=3D402371118-07042009><FONT face=3DArial size=3D2>Has any=
+body else=20
+seen this or there is something odd with my kernel/board=20
+setup.</FONT></SPAN></DIV>
+<DIV><FONT face=3DArial><BR><FONT size=3D2></FONT></FONT></DIV>
+<DIV><SPAN class=3D402371118-07042009><FONT face=3DArial size=3D2>/Subodh=
+=20
+Nijsure</FONT></SPAN></DIV></BODY></HTML>
+
+------=_NextPart_000_00BB_01C9B772.867C0800--
