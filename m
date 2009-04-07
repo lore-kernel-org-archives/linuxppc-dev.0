@@ -1,12 +1,16 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 9E27BDE007
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 01:31:21 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/4xx: Sequoia: Enable NAND support
-Date: Tue,  7 Apr 2009 17:31:05 +0200
-Message-Id: <1239118265-9276-1-git-send-email-sr@denx.de>
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+In-Reply-To: <20090407082231.500525932@denx.de>
+References: <20090407082052.477328750@denx.de>
+	<20090407082231.500525932@denx.de>
+Date: Tue, 7 Apr 2009 08:36:05 -0700
+Message-ID: <fa686aa40904070836g9e803c8o83b6799ed289c8d5@mail.gmail.com>
+Subject: Re: [PATCH v3 3/5] i2c: i2c-mpc: make I2C bus speed configurable
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,455 +20,425 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that the 4xx NAND driver is available again in arch/powerpc, let's
-enable it on Sequoia. This patch also disables the early debug messages
-(CONFIG_PPC_EARLY_DEBUG) in the Sequoia defconfig.
+On Tue, Apr 7, 2009 at 1:20 AM, Wolfgang Grandegger <wg@grandegger.com> wro=
+te:
+> This patch makes the I2C bus speed configurable by using the I2C node
+> property "clock-frequency". If the property is not defined, the old
+> fixed clock settings will be used for backward comptibility.
+>
+> The generic I2C clock properties, especially the CPU-specific source
+> clock pre-scaler are defined via the OF match table:
+>
+> =A0static const struct of_device_id mpc_i2c_of_match[] =3D {
+> =A0 =A0 =A0 =A0...
+> =A0 =A0 =A0 =A0{.compatible =3D "fsl,mpc8543-i2c",
+> =A0 =A0 =A0 =A0 .data =3D &(struct fsl_i2c_match_data) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.setclock =3D mpc_i2c_setc=
+lock_8xxx,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.prescaler =3D 2,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0},
+> =A0 =A0 =A0 =A0},
+>
+> The "data" field defines the relevant I2C setclock function and the
+> relevant pre-scaler for the I2C source clock frequency.
+>
+> It uses arch-specific tables and functions to determine resonable
+> Freqency Divider Register (fdr) values for MPC83xx, MPC85xx, MPC86xx,
+> MPC5200 and MPC5200B.
+>
+> The i2c->flags field and the corresponding FSL_I2C_DEV_* definitions
+> have been removed as they are obsolete.
+>
+> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- arch/powerpc/boot/dts/sequoia.dts          |   22 ++++++
- arch/powerpc/configs/44x/sequoia_defconfig |  109 ++++++++++++++++++----------
- 2 files changed, 94 insertions(+), 37 deletions(-)
+I haven't tested it, but it looks good and I trust Wolfgang.
 
-diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
-index 43cc68b..739dd0d 100644
---- a/arch/powerpc/boot/dts/sequoia.dts
-+++ b/arch/powerpc/boot/dts/sequoia.dts
-@@ -199,6 +199,28 @@
- 					};
- 				};
- 
-+				ndfc@3,0 {
-+					compatible = "ibm,ndfc";
-+					reg = <0x00000003 0x00000000 0x00002000>;
-+					ccr = <0x00001000>;
-+					bank-settings = <0x80002222>;
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+
-+					nand {
-+						#address-cells = <1>;
-+						#size-cells = <1>;
-+
-+						partition@0 {
-+							label = "u-boot";
-+							reg = <0x00000000 0x00084000>;
-+						};
-+						partition@84000 {
-+							label = "user";
-+							reg = <0x00000000 0x01f7c000>;
-+						};
-+					};
-+				};
- 			};
- 
- 			UART0: serial@ef600300 {
-diff --git a/arch/powerpc/configs/44x/sequoia_defconfig b/arch/powerpc/configs/44x/sequoia_defconfig
-index a921fe3..0dd7d3b 100644
---- a/arch/powerpc/configs/44x/sequoia_defconfig
-+++ b/arch/powerpc/configs/44x/sequoia_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.29-rc2
--# Tue Jan 20 08:22:45 2009
-+# Linux kernel version: 2.6.29
-+# Tue Apr  7 17:04:52 2009
- #
- # CONFIG_PPC64 is not set
- 
-@@ -57,6 +57,7 @@ CONFIG_GENERIC_BUG=y
- CONFIG_PPC_DCR_NATIVE=y
- # CONFIG_PPC_DCR_MMIO is not set
- CONFIG_PPC_DCR=y
-+CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
- CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
- 
- #
-@@ -74,6 +75,15 @@ CONFIG_POSIX_MQUEUE=y
- # CONFIG_BSD_PROCESS_ACCT is not set
- # CONFIG_TASKSTATS is not set
- # CONFIG_AUDIT is not set
-+
-+#
-+# RCU Subsystem
-+#
-+CONFIG_CLASSIC_RCU=y
-+# CONFIG_TREE_RCU is not set
-+# CONFIG_PREEMPT_RCU is not set
-+# CONFIG_TREE_RCU_TRACE is not set
-+# CONFIG_PREEMPT_RCU_TRACE is not set
- # CONFIG_IKCONFIG is not set
- CONFIG_LOG_BUF_SHIFT=14
- CONFIG_GROUP_SCHED=y
-@@ -88,8 +98,12 @@ CONFIG_SYSFS_DEPRECATED_V2=y
- # CONFIG_NAMESPACES is not set
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_INITRAMFS_SOURCE=""
-+CONFIG_RD_GZIP=y
-+# CONFIG_RD_BZIP2 is not set
-+# CONFIG_RD_LZMA is not set
- # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
- CONFIG_SYSCTL=y
-+CONFIG_ANON_INODES=y
- CONFIG_EMBEDDED=y
- CONFIG_SYSCTL_SYSCALL=y
- CONFIG_KALLSYMS=y
-@@ -99,10 +113,8 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
--CONFIG_ANON_INODES=y
- CONFIG_EPOLL=y
- CONFIG_SIGNALFD=y
- CONFIG_TIMERFD=y
-@@ -112,10 +124,12 @@ CONFIG_AIO=y
- CONFIG_VM_EVENT_COUNTERS=y
- CONFIG_PCI_QUIRKS=y
- CONFIG_SLUB_DEBUG=y
-+CONFIG_COMPAT_BRK=y
- # CONFIG_SLAB is not set
- CONFIG_SLUB=y
- # CONFIG_SLOB is not set
- # CONFIG_PROFILING is not set
-+# CONFIG_MARKERS is not set
- CONFIG_HAVE_OPROFILE=y
- # CONFIG_KPROBES is not set
- CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
-@@ -123,6 +137,7 @@ CONFIG_HAVE_IOREMAP_PROT=y
- CONFIG_HAVE_KPROBES=y
- CONFIG_HAVE_KRETPROBES=y
- CONFIG_HAVE_ARCH_TRACEHOOK=y
-+# CONFIG_SLOW_WORK is not set
- # CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
- CONFIG_SLABINFO=y
- CONFIG_RT_MUTEXES=y
-@@ -135,7 +150,6 @@ CONFIG_MODULE_UNLOAD=y
- # CONFIG_MODULE_SRCVERSION_ALL is not set
- CONFIG_BLOCK=y
- CONFIG_LBD=y
--# CONFIG_BLK_DEV_IO_TRACE is not set
- # CONFIG_BLK_DEV_BSG is not set
- # CONFIG_BLK_DEV_INTEGRITY is not set
- 
-@@ -151,11 +165,6 @@ CONFIG_DEFAULT_AS=y
- # CONFIG_DEFAULT_CFQ is not set
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="anticipatory"
--CONFIG_CLASSIC_RCU=y
--# CONFIG_TREE_RCU is not set
--# CONFIG_PREEMPT_RCU is not set
--# CONFIG_TREE_RCU_TRACE is not set
--# CONFIG_PREEMPT_RCU_TRACE is not set
- # CONFIG_FREEZER is not set
- # CONFIG_PPC4xx_PCI_EXPRESS is not set
- 
-@@ -176,6 +185,7 @@ CONFIG_SEQUOIA=y
- # CONFIG_ARCHES is not set
- # CONFIG_CANYONLANDS is not set
- # CONFIG_GLACIER is not set
-+# CONFIG_REDWOOD is not set
- # CONFIG_YOSEMITE is not set
- # CONFIG_XILINX_VIRTEX440_GENERIC_BOARD is not set
- CONFIG_PPC44x_SIMPLE=y
-@@ -238,9 +248,13 @@ CONFIG_ZONE_DMA_FLAG=1
- CONFIG_BOUNCE=y
- CONFIG_VIRT_TO_BUS=y
- CONFIG_UNEVICTABLE_LRU=y
-+CONFIG_HAVE_MLOCK=y
-+CONFIG_HAVE_MLOCKED_PAGE_BIT=y
-+CONFIG_STDBINUTILS=y
- CONFIG_PPC_4K_PAGES=y
- # CONFIG_PPC_16K_PAGES is not set
- # CONFIG_PPC_64K_PAGES is not set
-+# CONFIG_PPC_256K_PAGES is not set
- CONFIG_FORCE_MAX_ZONEORDER=11
- CONFIG_PROC_DEVICETREE=y
- CONFIG_CMDLINE_BOOL=y
-@@ -265,6 +279,7 @@ CONFIG_ARCH_SUPPORTS_MSI=y
- CONFIG_PCI_LEGACY=y
- # CONFIG_PCI_DEBUG is not set
- # CONFIG_PCI_STUB is not set
-+# CONFIG_PCI_IOV is not set
- # CONFIG_PCCARD is not set
- # CONFIG_HOTPLUG_PCI is not set
- # CONFIG_HAS_RAPIDIO is not set
-@@ -278,18 +293,16 @@ CONFIG_PCI_LEGACY=y
- # Default settings for advanced configuration options are used
- #
- CONFIG_LOWMEM_SIZE=0x30000000
-+CONFIG_LOWMEM_CAM_NUM=3
- CONFIG_PAGE_OFFSET=0xc0000000
- CONFIG_KERNEL_START=0xc0000000
- CONFIG_PHYSICAL_START=0x00000000
- CONFIG_TASK_SIZE=0xc0000000
--CONFIG_CONSISTENT_START=0xff100000
--CONFIG_CONSISTENT_SIZE=0x00200000
- CONFIG_NET=y
- 
- #
- # Networking options
- #
--CONFIG_COMPAT_NET_DEV_OPS=y
- CONFIG_PACKET=y
- # CONFIG_PACKET_MMAP is not set
- CONFIG_UNIX=y
-@@ -339,6 +352,7 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
- # CONFIG_LAPB is not set
- # CONFIG_ECONET is not set
- # CONFIG_WAN_ROUTER is not set
-+# CONFIG_PHONET is not set
- # CONFIG_NET_SCHED is not set
- # CONFIG_DCB is not set
- 
-@@ -351,7 +365,6 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
- # CONFIG_IRDA is not set
- # CONFIG_BT is not set
- # CONFIG_AF_RXRPC is not set
--# CONFIG_PHONET is not set
- # CONFIG_WIRELESS is not set
- # CONFIG_WIMAX is not set
- # CONFIG_RFKILL is not set
-@@ -448,14 +461,23 @@ CONFIG_MTD_PHYSMAP_OF=y
- # CONFIG_MTD_DOC2000 is not set
- # CONFIG_MTD_DOC2001 is not set
- # CONFIG_MTD_DOC2001PLUS is not set
--# CONFIG_MTD_NAND is not set
-+CONFIG_MTD_NAND=y
-+# CONFIG_MTD_NAND_VERIFY_WRITE is not set
-+CONFIG_MTD_NAND_ECC_SMC=y
-+# CONFIG_MTD_NAND_MUSEUM_IDS is not set
-+CONFIG_MTD_NAND_IDS=y
-+CONFIG_MTD_NAND_NDFC=y
-+# CONFIG_MTD_NAND_DISKONCHIP is not set
-+# CONFIG_MTD_NAND_CAFE is not set
-+# CONFIG_MTD_NAND_NANDSIM is not set
-+# CONFIG_MTD_NAND_PLATFORM is not set
-+# CONFIG_MTD_NAND_FSL_ELBC is not set
- # CONFIG_MTD_ONENAND is not set
- 
- #
- # LPDDR flash memory drivers
- #
- # CONFIG_MTD_LPDDR is not set
--# CONFIG_MTD_QINFO_PROBE is not set
- 
- #
- # UBI - Unsorted block images
-@@ -483,12 +505,16 @@ CONFIG_BLK_DEV_RAM_SIZE=35000
- # CONFIG_BLK_DEV_HD is not set
- CONFIG_MISC_DEVICES=y
- # CONFIG_PHANTOM is not set
--# CONFIG_EEPROM_93CX6 is not set
- # CONFIG_SGI_IOC4 is not set
- # CONFIG_TIFM_CORE is not set
- # CONFIG_ENCLOSURE_SERVICES is not set
- # CONFIG_HP_ILO is not set
- # CONFIG_C2PORT is not set
-+
-+#
-+# EEPROM support
-+#
-+# CONFIG_EEPROM_93CX6 is not set
- CONFIG_HAVE_IDE=y
- # CONFIG_IDE is not set
- 
-@@ -515,6 +541,7 @@ CONFIG_HAVE_IDE=y
- # CONFIG_I2O is not set
- # CONFIG_MACINTOSH_DRIVERS is not set
- CONFIG_NETDEVICES=y
-+CONFIG_COMPAT_NET_DEV_OPS=y
- # CONFIG_DUMMY is not set
- # CONFIG_BONDING is not set
- # CONFIG_MACVLAN is not set
-@@ -529,6 +556,8 @@ CONFIG_NET_ETHERNET=y
- # CONFIG_SUNGEM is not set
- # CONFIG_CASSINI is not set
- # CONFIG_NET_VENDOR_3COM is not set
-+# CONFIG_ETHOC is not set
-+# CONFIG_DNET is not set
- # CONFIG_NET_TULIP is not set
- # CONFIG_HP100 is not set
- CONFIG_IBM_NEW_EMAC=y
-@@ -568,6 +597,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_QLA3XXX is not set
- # CONFIG_ATL1 is not set
- # CONFIG_ATL1E is not set
-+# CONFIG_ATL1C is not set
- # CONFIG_JME is not set
- CONFIG_NETDEV_10000=y
- # CONFIG_CHELSIO_T1 is not set
-@@ -577,6 +607,7 @@ CONFIG_CHELSIO_T3_DEPENDS=y
- # CONFIG_IXGBE is not set
- # CONFIG_IXGB is not set
- # CONFIG_S2IO is not set
-+# CONFIG_VXGE is not set
- # CONFIG_MYRI10GE is not set
- # CONFIG_NETXEN_NIC is not set
- # CONFIG_NIU is not set
-@@ -586,6 +617,7 @@ CONFIG_CHELSIO_T3_DEPENDS=y
- # CONFIG_BNX2X is not set
- # CONFIG_QLGE is not set
- # CONFIG_SFC is not set
-+# CONFIG_BE2NET is not set
- # CONFIG_TR is not set
- 
- #
-@@ -593,7 +625,6 @@ CONFIG_CHELSIO_T3_DEPENDS=y
- #
- # CONFIG_WLAN_PRE80211 is not set
- # CONFIG_WLAN_80211 is not set
--# CONFIG_IWLWIFI_LEDS is not set
- 
- #
- # Enable WiMAX (Networking options) to see the WiMAX drivers
-@@ -734,7 +765,7 @@ CONFIG_USB_ARCH_HAS_EHCI=y
- #
- 
- #
--# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may also be needed;
-+# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
- #
- # CONFIG_USB_GADGET is not set
- 
-@@ -750,6 +781,7 @@ CONFIG_USB_ARCH_HAS_EHCI=y
- # CONFIG_EDAC is not set
- # CONFIG_RTC_CLASS is not set
- # CONFIG_DMADEVICES is not set
-+# CONFIG_AUXDISPLAY is not set
- # CONFIG_UIO is not set
- # CONFIG_STAGING is not set
- 
-@@ -778,6 +810,11 @@ CONFIG_INOTIFY_USER=y
- # CONFIG_FUSE_FS is not set
- 
- #
-+# Caches
-+#
-+# CONFIG_FSCACHE is not set
-+
-+#
- # CD-ROM/DVD Filesystems
- #
- # CONFIG_ISO9660_FS is not set
-@@ -842,7 +879,6 @@ CONFIG_LOCKD=y
- CONFIG_LOCKD_V4=y
- CONFIG_NFS_COMMON=y
- CONFIG_SUNRPC=y
--# CONFIG_SUNRPC_REGISTER_V4 is not set
- # CONFIG_RPCSEC_GSS_KRB5 is not set
- # CONFIG_RPCSEC_GSS_SPKM3 is not set
- # CONFIG_SMB_FS is not set
-@@ -858,6 +894,7 @@ CONFIG_SUNRPC=y
- CONFIG_MSDOS_PARTITION=y
- # CONFIG_NLS is not set
- # CONFIG_DLM is not set
-+# CONFIG_BINARY_PRINTF is not set
- 
- #
- # Library routines
-@@ -873,11 +910,12 @@ CONFIG_CRC32=y
- # CONFIG_LIBCRC32C is not set
- CONFIG_ZLIB_INFLATE=y
- CONFIG_ZLIB_DEFLATE=y
--CONFIG_PLIST=y
-+CONFIG_DECOMPRESS_GZIP=y
- CONFIG_HAS_IOMEM=y
- CONFIG_HAS_IOPORT=y
- CONFIG_HAS_DMA=y
- CONFIG_HAVE_LMB=y
-+CONFIG_NLATTR=y
- 
- #
- # Kernel hacking
-@@ -924,9 +962,12 @@ CONFIG_SCHED_DEBUG=y
- # CONFIG_FAULT_INJECTION is not set
- # CONFIG_LATENCYTOP is not set
- CONFIG_SYSCTL_SYSCALL_CHECK=y
-+# CONFIG_DEBUG_PAGEALLOC is not set
- CONFIG_HAVE_FUNCTION_TRACER=y
-+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
- CONFIG_HAVE_DYNAMIC_FTRACE=y
- CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-+CONFIG_TRACING_SUPPORT=y
- 
- #
- # Tracers
-@@ -934,17 +975,20 @@ CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
- # CONFIG_FUNCTION_TRACER is not set
- # CONFIG_SCHED_TRACER is not set
- # CONFIG_CONTEXT_SWITCH_TRACER is not set
-+# CONFIG_EVENT_TRACER is not set
- # CONFIG_BOOT_TRACER is not set
- # CONFIG_TRACE_BRANCH_PROFILING is not set
- # CONFIG_STACK_TRACER is not set
--# CONFIG_DYNAMIC_PRINTK_DEBUG is not set
-+# CONFIG_KMEMTRACE is not set
-+# CONFIG_WORKQUEUE_TRACER is not set
-+# CONFIG_BLK_DEV_IO_TRACE is not set
-+# CONFIG_DYNAMIC_DEBUG is not set
- # CONFIG_SAMPLES is not set
- CONFIG_HAVE_ARCH_KGDB=y
- # CONFIG_KGDB is not set
- CONFIG_PRINT_STACK_DEPTH=64
- # CONFIG_DEBUG_STACKOVERFLOW is not set
- # CONFIG_DEBUG_STACK_USAGE is not set
--# CONFIG_DEBUG_PAGEALLOC is not set
- # CONFIG_CODE_PATCHING_SELFTEST is not set
- # CONFIG_FTR_FIXUP_SELFTEST is not set
- # CONFIG_MSI_BITMAP_SELFTEST is not set
-@@ -952,20 +996,7 @@ CONFIG_PRINT_STACK_DEPTH=64
- # CONFIG_IRQSTACKS is not set
- # CONFIG_VIRQ_DEBUG is not set
- # CONFIG_BDI_SWITCH is not set
--CONFIG_PPC_EARLY_DEBUG=y
--# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
--# CONFIG_PPC_EARLY_DEBUG_G5 is not set
--# CONFIG_PPC_EARLY_DEBUG_RTAS_PANEL is not set
--# CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE is not set
--# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
--# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
--# CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE is not set
--# CONFIG_PPC_EARLY_DEBUG_BEAT is not set
--CONFIG_PPC_EARLY_DEBUG_44x=y
--# CONFIG_PPC_EARLY_DEBUG_40x is not set
--# CONFIG_PPC_EARLY_DEBUG_CPM is not set
--CONFIG_PPC_EARLY_DEBUG_44x_PHYSLOW=0xef600300
--CONFIG_PPC_EARLY_DEBUG_44x_PHYSHIGH=0x1
-+# CONFIG_PPC_EARLY_DEBUG is not set
- 
- #
- # Security options
-@@ -988,10 +1019,12 @@ CONFIG_CRYPTO_BLKCIPHER2=y
- CONFIG_CRYPTO_HASH=y
- CONFIG_CRYPTO_HASH2=y
- CONFIG_CRYPTO_RNG2=y
-+CONFIG_CRYPTO_PCOMP=y
- CONFIG_CRYPTO_MANAGER=y
- CONFIG_CRYPTO_MANAGER2=y
- # CONFIG_CRYPTO_GF128MUL is not set
- # CONFIG_CRYPTO_NULL is not set
-+CONFIG_CRYPTO_WORKQUEUE=y
- # CONFIG_CRYPTO_CRYPTD is not set
- # CONFIG_CRYPTO_AUTHENC is not set
- # CONFIG_CRYPTO_TEST is not set
-@@ -1060,6 +1093,7 @@ CONFIG_CRYPTO_DES=y
- # Compression
- #
- # CONFIG_CRYPTO_DEFLATE is not set
-+# CONFIG_CRYPTO_ZLIB is not set
- # CONFIG_CRYPTO_LZO is not set
- 
- #
-@@ -1068,5 +1102,6 @@ CONFIG_CRYPTO_DES=y
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
- CONFIG_CRYPTO_HW=y
- # CONFIG_CRYPTO_DEV_HIFN_795X is not set
-+# CONFIG_CRYPTO_DEV_PPC4XX is not set
- # CONFIG_PPC_CLOCK is not set
- # CONFIG_VIRTUALIZATION is not set
--- 
-1.6.2.2
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+> ---
+> =A0drivers/i2c/busses/i2c-mpc.c | =A0262 ++++++++++++++++++++++++++++++++=
++++++++----
+> =A01 file changed, 242 insertions(+), 20 deletions(-)
+>
+> Index: linux-2.6-galak/drivers/i2c/busses/i2c-mpc.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6-galak.orig/drivers/i2c/busses/i2c-mpc.c =A0 2009-04-07 10:0=
+9:14.012720756 +0200
+> +++ linux-2.6-galak/drivers/i2c/busses/i2c-mpc.c =A0 =A0 =A0 =A02009-04-0=
+7 10:09:14.581719146 +0200
+> @@ -26,6 +26,9 @@
+> =A0#include <linux/interrupt.h>
+> =A0#include <linux/delay.h>
+>
+> +#include <asm/mpc52xx.h>
+> +#include <sysdev/fsl_soc.h>
+> +
+> =A0#define DRV_NAME "mpc-i2c"
+>
+> =A0#define MPC_I2C_FDR =A0 0x04
+> @@ -56,7 +59,18 @@
+> =A0 =A0 =A0 =A0wait_queue_head_t queue;
+> =A0 =A0 =A0 =A0struct i2c_adapter adap;
+> =A0 =A0 =A0 =A0int irq;
+> - =A0 =A0 =A0 u32 flags;
+> +};
+> +
+> +struct mpc_i2c_divider {
+> + =A0 =A0 =A0 u16 divider;
+> + =A0 =A0 =A0 u16 fdr; =A0 =A0 =A0 =A0/* including dfsrr */
+> +};
+> +
+> +struct mpc_i2c_match_data {
+> + =A0 =A0 =A0 void (*setclock)(struct device_node *node,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct mpc_i2c *i2c,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0u32 clock, u32 prescaler=
+);
+> + =A0 =A0 =A0 u32 prescaler;
+> =A0};
+>
+> =A0static inline void writeccr(struct mpc_i2c *i2c, u32 x)
+> @@ -150,17 +164,180 @@
+> =A0 =A0 =A0 =A0return 0;
+> =A0}
+>
+> -static void mpc_i2c_setclock(struct mpc_i2c *i2c)
+> +#ifdef CONFIG_PPC_52xx
+> +static const struct mpc_i2c_divider mpc_i2c_dividers_52xx[] =3D {
+> + =A0 =A0 =A0 {20, 0x20}, {22, 0x21}, {24, 0x22}, {26, 0x23},
+> + =A0 =A0 =A0 {28, 0x24}, {30, 0x01}, {32, 0x25}, {34, 0x02},
+> + =A0 =A0 =A0 {36, 0x26}, {40, 0x27}, {44, 0x04}, {48, 0x28},
+> + =A0 =A0 =A0 {52, 0x63}, {56, 0x29}, {60, 0x41}, {64, 0x2a},
+> + =A0 =A0 =A0 {68, 0x07}, {72, 0x2b}, {80, 0x2c}, {88, 0x09},
+> + =A0 =A0 =A0 {96, 0x2d}, {104, 0x0a}, {112, 0x2e}, {120, 0x81},
+> + =A0 =A0 =A0 {128, 0x2f}, {136, 0x47}, {144, 0x0c}, {160, 0x30},
+> + =A0 =A0 =A0 {176, 0x49}, {192, 0x31}, {208, 0x4a}, {224, 0x32},
+> + =A0 =A0 =A0 {240, 0x0f}, {256, 0x33}, {272, 0x87}, {288, 0x10},
+> + =A0 =A0 =A0 {320, 0x34}, {352, 0x89}, {384, 0x35}, {416, 0x8a},
+> + =A0 =A0 =A0 {448, 0x36}, {480, 0x13}, {512, 0x37}, {576, 0x14},
+> + =A0 =A0 =A0 {640, 0x38}, {768, 0x39}, {896, 0x3a}, {960, 0x17},
+> + =A0 =A0 =A0 {1024, 0x3b}, {1152, 0x18}, {1280, 0x3c}, {1536, 0x3d},
+> + =A0 =A0 =A0 {1792, 0x3e}, {1920, 0x1b}, {2048, 0x3f}, {2304, 0x1c},
+> + =A0 =A0 =A0 {2560, 0x1d}, {3072, 0x1e}, {3584, 0x7e}, {3840, 0x1f},
+> + =A0 =A0 =A0 {4096, 0x7f}, {4608, 0x5c}, {5120, 0x5d}, {6144, 0x5e},
+> + =A0 =A0 =A0 {7168, 0xbe}, {7680, 0x5f}, {8192, 0xbf}, {9216, 0x9c},
+> + =A0 =A0 =A0 {10240, 0x9d}, {12288, 0x9e}, {15360, 0x9f}
+> +};
+> +
+> +int mpc_i2c_get_fdr_52xx(struct device_node *node, u32 clock, int presca=
+ler)
+> +{
+> + =A0 =A0 =A0 const struct mpc52xx_i2c_divider *div =3D NULL;
+> + =A0 =A0 =A0 unsigned int pvr =3D mfspr(SPRN_PVR);
+> + =A0 =A0 =A0 u32 divider;
+> + =A0 =A0 =A0 int i;
+> +
+> + =A0 =A0 =A0 if (!clock)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> + =A0 =A0 =A0 /* Determine divider value */
+> + =A0 =A0 =A0 divider =3D mpc52xx_find_ipb_freq(node) / clock;
+> +
+> + =A0 =A0 =A0 /*
+> + =A0 =A0 =A0 =A0* We want to choose an FDR/DFSR that generates an I2C bu=
+s speed that
+> + =A0 =A0 =A0 =A0* is equal to or lower than the requested speed.
+> + =A0 =A0 =A0 =A0*/
+> + =A0 =A0 =A0 for (i =3D 0; i < ARRAY_SIZE(mpc52xx_i2c_dividers); i++) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 div =3D &mpc_i2c_dividers_52xx[i];
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Old MPC5200 rev A CPUs do not support th=
+e high bits */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (div->fdr & 0xc0 && pvr =3D=3D 0x8082201=
+1)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (div->divider >=3D divider)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return div ? (int)div->fdr : -EINVAL;
+> +}
+> +
+> +static void mpc_i2c_setclock_52xx(struct device_node *node,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct =
+mpc_i2c *i2c,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 u32 clo=
+ck, u32 prescaler)
+> +{
+> + =A0 =A0 =A0 int fdr =3D mpc52xx_i2c_get_fdr(node, clock, prescaler);
+> +
+> + =A0 =A0 =A0 if (fdr < 0)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fdr =3D 0x3f; /* backward compatibility */
+> + =A0 =A0 =A0 writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
+> + =A0 =A0 =A0 dev_info(i2c->dev, "clock %d Hz (fdr=3D%d)\n", clock, fdr);
+> +}
+> +#else /* !CONFIG_PPC_52xx */
+> +static void mpc_i2c_setclock_52xx(struct device_node *node,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct =
+mpc_i2c *i2c,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 u32 clo=
+ck, u32 prescaler)
+> +{
+> +}
+> +#endif /* CONFIG_PPC_52xx*/
+> +
+> +#ifdef CONFIG_FSL_SOC
+> +static const struct mpc_i2c_divider mpc_i2c_dividers_8xxx[] =3D {
+> + =A0 =A0 =A0 {160, 0x0120}, {192, 0x0121}, {224, 0x0122}, {256, 0x0123},
+> + =A0 =A0 =A0 {288, 0x0100}, {320, 0x0101}, {352, 0x0601}, {384, 0x0102},
+> + =A0 =A0 =A0 {416, 0x0602}, {448, 0x0126}, {480, 0x0103}, {512, 0x0127},
+> + =A0 =A0 =A0 {544, 0x0b03}, {576, 0x0104}, {608, 0x1603}, {640, 0x0105},
+> + =A0 =A0 =A0 {672, 0x2003}, {704, 0x0b05}, {736, 0x2b03}, {768, 0x0106},
+> + =A0 =A0 =A0 {800, 0x3603}, {832, 0x0b06}, {896, 0x012a}, {960, 0x0107},
+> + =A0 =A0 =A0 {1024, 0x012b}, {1088, 0x1607}, {1152, 0x0108}, {1216, 0x2b=
+07},
+> + =A0 =A0 =A0 {1280, 0x0109}, {1408, 0x1609}, {1536, 0x010a}, {1664, 0x16=
+0a},
+> + =A0 =A0 =A0 {1792, 0x012e}, {1920, 0x010b}, {2048, 0x012f}, {2176, 0x2b=
+0b},
+> + =A0 =A0 =A0 {2304, 0x010c}, {2560, 0x010d}, {2816, 0x2b0d}, {3072, 0x01=
+0e},
+> + =A0 =A0 =A0 {3328, 0x2b0e}, {3584, 0x0132}, {3840, 0x010f}, {4096, 0x01=
+33},
+> + =A0 =A0 =A0 {4608, 0x0110}, {5120, 0x0111}, {6144, 0x0112}, {7168, 0x01=
+36},
+> + =A0 =A0 =A0 {7680, 0x0113}, {8192, 0x0137}, {9216, 0x0114}, {10240, 0x0=
+115},
+> + =A0 =A0 =A0 {12288, 0x0116}, {14336, 0x013a}, {15360, 0x0117}, {16384, =
+0x013b},
+> + =A0 =A0 =A0 {18432, 0x0118}, {20480, 0x0119}, {24576, 0x011a}, {28672, =
+0x013e},
+> + =A0 =A0 =A0 {30720, 0x011b}, {32768, 0x013f}, {36864, 0x011c}, {40960, =
+0x011d},
+> + =A0 =A0 =A0 {49152, 0x011e}, {61440, 0x011f}
+> +};
+> +
+> +u32 mpc_i2c_get_sec_cfg_8xxx(void)
+> +{
+> + =A0 =A0 =A0 struct device_node *node =3D NULL;
+> + =A0 =A0 =A0 u32 __iomem *reg;
+> + =A0 =A0 =A0 u32 val =3D 0;
+> +
+> + =A0 =A0 =A0 node =3D of_find_node_by_name(NULL, "global-utilities");
+> + =A0 =A0 =A0 if (node) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 const u32 *prop =3D of_get_property(node, "=
+reg", NULL);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (prop) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /*
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* Map and check POR Devi=
+ce Status Register 2
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* (PORDEVSR2) at 0xE0014
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D ioremap(get_immrbas=
+e() + *prop + 0x14, 0x4);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!reg)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN=
+_ERR
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0"Error: couldn't map PORDEVSR2\n");
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 val =3D in_=
+be32(reg) & 0x00000080; /* sec-cfg */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 iounmap(reg);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 if (node)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_node_put(node);
+> +
+> + =A0 =A0 =A0 return val;
+> +}
+> +
+> +int mpc_i2c_get_fdr_8xxx(struct device_node *node, u32 clock, u32 presca=
+ler)
+> +{
+> + =A0 =A0 =A0 const struct mpc_i2c_divider *div =3D NULL;
+> + =A0 =A0 =A0 u32 divider;
+> + =A0 =A0 =A0 int i;
+> +
+> + =A0 =A0 =A0 if (!clock)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> + =A0 =A0 =A0 /* Determine proper divider value */
+> + =A0 =A0 =A0 if (of_device_is_compatible(node, "fsl,mpc8544-i2c"))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 prescaler =3D mpc_i2c_get_sec_cfg_8xxx() ? =
+3 : 2;
+> + =A0 =A0 =A0 if (!prescaler)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 prescaler =3D 1;
+> +
+> + =A0 =A0 =A0 divider =3D fsl_get_sys_freq() / clock / prescaler;
+> +
+> + =A0 =A0 =A0 pr_debug("I2C: src_clock=3D%d clock=3D%d divider=3D%d\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0fsl_get_sys_freq(), clock, divider);
+> +
+> + =A0 =A0 =A0 /*
+> + =A0 =A0 =A0 =A0* We want to choose an FDR/DFSR that generates an I2C bu=
+s speed that
+> + =A0 =A0 =A0 =A0* is equal to or lower than the requested speed.
+> + =A0 =A0 =A0 =A0*/
+> + =A0 =A0 =A0 for (i =3D 0; i < ARRAY_SIZE(mpc_i2c_dividers_8xxx); i++) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 div =3D &mpc_i2c_dividers_8xxx[i];
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (div->divider >=3D divider)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 return div ? (int)div->fdr : -EINVAL;
+> +}
+> +
+> +static void mpc_i2c_setclock_8xxx(struct device_node *node,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct =
+mpc_i2c *i2c,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 u32 clo=
+ck, u32 prescaler)
+> +{
+> + =A0 =A0 =A0 int fdr =3D mpc_i2c_get_fdr_8xxx(node, clock, prescaler);
+> +
+> + =A0 =A0 =A0 if (fdr < 0)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fdr =3D 0x1031; /* backward compatibility *=
+/
+> + =A0 =A0 =A0 writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
+> + =A0 =A0 =A0 writeb((fdr >> 8) & 0xff, i2c->base + MPC_I2C_DFSRR);
+> + =A0 =A0 =A0 dev_info(i2c->dev, "clock %d Hz (dfsrr=3D%d fdr=3D%d)\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0clock, fdr >> 8, fdr & 0xff);
+> +}
+> +
+> +#else /* !CONFIG_FSL_SOC */
+> +static void mpc_i2c_setclock_8xxx(struct device_node *node,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct =
+mpc_i2c *i2c,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 u32 clo=
+ck, u32 prescaler)
+> =A0{
+> - =A0 =A0 =A0 /* Set clock and filters */
+> - =A0 =A0 =A0 if (i2c->flags & FSL_I2C_DEV_SEPARATE_DFSRR) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 writeb(0x31, i2c->base + MPC_I2C_FDR);
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 writeb(0x10, i2c->base + MPC_I2C_DFSRR);
+> - =A0 =A0 =A0 } else if (i2c->flags & FSL_I2C_DEV_CLOCK_5200)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 writeb(0x3f, i2c->base + MPC_I2C_FDR);
+> - =A0 =A0 =A0 else
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 writel(0x1031, i2c->base + MPC_I2C_FDR);
+> =A0}
+> +#endif /* CONFIG_FSL_SOC */
+>
+> =A0static void mpc_i2c_start(struct mpc_i2c *i2c)
+> =A0{
+> @@ -315,8 +492,11 @@
+> =A0static int __devinit fsl_i2c_probe(struct of_device *op,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 const=
+ struct of_device_id *match)
+> =A0{
+> - =A0 =A0 =A0 int result =3D 0;
+> =A0 =A0 =A0 =A0struct mpc_i2c *i2c;
+> + =A0 =A0 =A0 const u32 *prop;
+> + =A0 =A0 =A0 u32 clock =3D 0;
+> + =A0 =A0 =A0 int result =3D 0;
+> + =A0 =A0 =A0 int plen;
+>
+> =A0 =A0 =A0 =A0i2c =3D kzalloc(sizeof(*i2c), GFP_KERNEL);
+> =A0 =A0 =A0 =A0if (!i2c)
+> @@ -324,13 +504,6 @@
+>
+> =A0 =A0 =A0 =A0i2c->dev =3D &op->dev; /* for debug and error output */
+>
+> - =A0 =A0 =A0 if (of_get_property(op->node, "dfsrr", NULL))
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 i2c->flags |=3D FSL_I2C_DEV_SEPARATE_DFSRR;
+> -
+> - =A0 =A0 =A0 if (of_device_is_compatible(op->node, "fsl,mpc5200-i2c") ||
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_device_is_compatible(op-=
+>node, "mpc5200-i2c"))
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 i2c->flags |=3D FSL_I2C_DEV_CLOCK_5200;
+> -
+> =A0 =A0 =A0 =A0init_waitqueue_head(&i2c->queue);
+>
+> =A0 =A0 =A0 =A0i2c->base =3D of_iomap(op->node, 0);
+> @@ -350,7 +523,22 @@
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0}
+>
+> - =A0 =A0 =A0 mpc_i2c_setclock(i2c);
+> + =A0 =A0 =A0 if (!of_get_property(op->node, "fsl,preserve-clocking", NUL=
+L)) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 prop =3D of_get_property(op->node, "clock-f=
+requency", &plen);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (prop && plen =3D=3D sizeof(u32))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 clock =3D *prop;
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (match->data) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct mpc_i2c_match_data *=
+data =3D
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (struct mpc=
+_i2c_match_data *)match->data;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 data->setclock(op->node, i2=
+c, clock, data->prescaler);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Backwards compatibility =
+*/
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (of_get_property(op->nod=
+e, "dfsrr", NULL))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc_i2c_set=
+clock_8xxx(op->node, i2c,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 clock, 0);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> + =A0 =A0 =A0 }
+>
+> =A0 =A0 =A0 =A0dev_set_drvdata(&op->dev, i2c);
+>
+> @@ -395,9 +583,43 @@
+> =A0};
+>
+> =A0static const struct of_device_id mpc_i2c_of_match[] =3D {
+> - =A0 =A0 =A0 {.compatible =3D "fsl-i2c",},
+> + =A0 =A0 =A0 {.compatible =3D "mpc5200-i2c",
+> + =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_52xx,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> + =A0 =A0 =A0 },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc5200b-i2c",
+> + =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_52xx,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> + =A0 =A0 =A0 },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc5200-i2c",
+> + =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_52xx,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> + =A0 =A0 =A0 },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc8313-i2c",
+> + =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_8xxx,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> + =A0 =A0 =A0 },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc8543-i2c",
+> + =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_8xxx,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .prescaler =3D 2,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> + =A0 =A0 =A0 },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc8544-i2c",
+> + =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_8xxx,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .prescaler =3D 3,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> + =A0 =A0 =A0 /* Backward compatibility */
+> + =A0 =A0 =A0 },
+> + =A0 =A0 =A0 {.compatible =3D "fsl-i2c", },
+> =A0 =A0 =A0 =A0{},
+> =A0};
+> +
+> =A0MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
+>
+>
+>
+>
+
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
