@@ -3,20 +3,20 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B8B59DDF4B
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 13:28:48 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 4765CDDF58
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 15:19:38 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18906.51307.281300.189948@drongo.ozlabs.ibm.com>
-Date: Tue, 7 Apr 2009 13:28:43 +1000
+Content-Type: text/plain; charset=iso-2022-jp
+Message-ID: <18906.57833.843101.770634@drongo.ozlabs.ibm.com>
+Date: Tue, 7 Apr 2009 15:17:29 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 3/3] powerpc: allow 256kB pages with SHMEM
-In-Reply-To: <Pine.LNX.4.64.0904062156290.21044@blonde.anvils>
-References: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
-	<Pine.LNX.4.64.0904062156290.21044@blonde.anvils>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	prodyuth@gmail.com, linux-kernel@vger.kernel.org, yanok@emcraft.com
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: Move dtc and libfdt sources from arch/powerpc/boot to scripts/dtc
+In-Reply-To: <20090331044701.GD25418@yookeroo.seuss>
+References: <20090331044701.GD25418@yookeroo.seuss>
+Cc: Andrew Morton <akpm@osdl.org>, monstr@monstr.eu,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Linus Torvalds <torvalds@osdl.org>, Michal Simek <monstr@seznam.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hugh Dickins writes:
+David Gibson writes:
 
-> Now that shmem's divisions by zero and SHMEM_MAX_BYTES are fixed,
-> let powerpc 256kB pages coexist with CONFIG_SHMEM again.
-> 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> Added linuxppc-dev and some other Cc's for this 3/3: sorry
-> if you didn't see 1/3 and 2/3, they were just in mm/shmem.c.
+> The vast bulk of this patch is a literal move, the rest is adjusting
+> the various Makefiles to use dtc and libfdt correctly from their new
+> locations.
 
-Looks OK - what path are you using to get the series upstream?
-(I.e. should I be putting 3/3 in the powerpc tree or are you going to
-push it along with the others?)
+Did you test this with a separate object directory?  I get:
+
+$ make O=../test-64k V=1
+[snip]
+  gcc -Wp,-MD,scripts/dtc/.dtc-lexer.lex.o.d -Iscripts/dtc -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer  -I/home/paulus/kernel/powerpc/scripts/dtc/libfdt -Iscripts/dtc/libfdt -c -o scripts/dtc/dtc-lexer.lex.o scripts/dtc/dtc-lexer.lex.c
+dtc-lexer.l:37:17: error: dtc.h: No such file or directory
+dtc-lexer.l:38:20: error: srcpos.h: No such file or directory
+In file included from dtc-lexer.l:39:
+dtc-parser.y:42: error: expected specifier-qualifier-list before ,F!(Buint8_t,F"(B
+
+followed by lots more errors.
 
 Paul.
