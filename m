@@ -1,10 +1,9 @@
 Return-Path: <wg@denx.de>
-Message-Id: <20090407082231.646648985@denx.de>
-Date: Tue, 07 Apr 2009 10:20:56 +0200
+Message-Id: <20090407082231.177941706@denx.de>
+Date: Tue, 07 Apr 2009 10:20:53 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
 To: linux-i2c@vger.kernel.org
-Subject: [PATCH v3 4/5] powerpc: i2c-mpc: document new FSL I2C bindings and
-	cleanup
+Subject: [PATCH v3 1/5] i2c: i2c-mpc: various coding style fixes
 References: <20090407082052.477328750@denx.de>
 Cc: devicetree-discuss@ozlabs.org, linuxppc-dev@ozlabs.org,
 	Ben Dooks <ben-linux@fluff.org>
@@ -17,91 +16,128 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch documents the new bindings for the MPC I2C bus driver.
-Furthermore, it removes obsolete FSL device related definitions
-for I2C.
-It should go through the appropriate PowerPC maintainer(s) hands.
+Fix errors reported by checkpatch (indention, long lines, trailing
+white space, etc.).
 
 Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
 ---
- Documentation/powerpc/dts-bindings/fsl/i2c.txt |   46 ++++++++++++++++---------
- include/linux/fsl_devices.h                    |    4 --
- 2 files changed, 31 insertions(+), 19 deletions(-)
+ drivers/i2c/busses/i2c-mpc.c |   35 ++++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
 
-Index: linux-2.6-galak/Documentation/powerpc/dts-bindings/fsl/i2c.txt
+Index: linux-2.6-galak/drivers/i2c/busses/i2c-mpc.c
 ===================================================================
---- linux-2.6-galak.orig/Documentation/powerpc/dts-bindings/fsl/i2c.txt	2009-04-07 10:09:08.185721241 +0200
-+++ linux-2.6-galak/Documentation/powerpc/dts-bindings/fsl/i2c.txt	2009-04-07 10:09:15.413719535 +0200
-@@ -7,8 +7,10 @@
+--- linux-2.6-galak.orig/drivers/i2c/busses/i2c-mpc.c	2009-04-07 10:09:09.400719216 +0200
++++ linux-2.6-galak/drivers/i2c/busses/i2c-mpc.c	2009-04-07 10:09:13.271719088 +0200
+@@ -20,7 +20,7 @@
+ #include <linux/of_platform.h>
+ #include <linux/of_i2c.h>
  
- Recommended properties :
+-#include <asm/io.h>
++#include <linux/io.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+@@ -28,10 +28,10 @@
  
-- - compatible : Should be "fsl-i2c" for parts compatible with
--   Freescale I2C specifications.
-+ - compatible : compatibility list with 2 entries, the first should
-+   be "fsl,CHIP-i2c" where CHIP is the name of a compatible processor,
-+   e.g. mpc8313, mpc8543, mpc8544, mpc5200 or mpc5200b. The second one
-+   should be "fsl-i2c".
-  - interrupts : <a b> where a is the interrupt number and b is a
-    field that represents an encoding of the sense and level
-    information for the interrupt.  This should be encoded based on
-@@ -16,17 +18,31 @@
-    controller you have.
-  - interrupt-parent : the phandle for the interrupt controller that
-    services interrupts for this device.
-- - dfsrr : boolean; if defined, indicates that this I2C device has
--   a digital filter sampling rate register
-- - fsl5200-clocking : boolean; if defined, indicated that this device
--   uses the FSL 5200 clocking mechanism.
--
--Example :
--	i2c@3000 {
--		interrupt-parent = <40000>;
--		interrupts = <1b 3>;
--		reg = <3000 18>;
--		device_type = "i2c";
--		compatible  = "fsl-i2c";
--		dfsrr;
-+ - fsl,preserve-clocking : boolean; if defined, the clock settings
-+   from the bootloader are preserved (not touched).
-+ - clock-frequency : desired I2C bus clock frequency in Hz.
-+
-+Examples :
-+
-+	i2c@3d00 {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
-+		cell-index = <0>;
-+		reg = <0x3d00 0x40>;
-+		interrupts = <2 15 0>;
-+		interrupt-parent = <&mpc5200_pic>;
-+		fsl,preserve-clocking;
- 	};
-+
-+	i2c@3100 {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		cell-index = <1>;
-+		compatible = "fsl,mpc8544-i2c", "fsl-i2c";
-+		reg = <0x3100 0x100>;
-+		interrupts = <43 2>;
-+		interrupt-parent = <&mpic>;
-+		clock-frequency = <400000>;
-+	};
-+
-Index: linux-2.6-galak/include/linux/fsl_devices.h
-===================================================================
---- linux-2.6-galak.orig/include/linux/fsl_devices.h	2009-04-07 10:09:08.185721241 +0200
-+++ linux-2.6-galak/include/linux/fsl_devices.h	2009-04-07 10:09:15.414719119 +0200
-@@ -43,10 +43,6 @@
-  *
-  */
+ #define DRV_NAME "mpc-i2c"
  
--/* Flags related to I2C device features */
--#define FSL_I2C_DEV_SEPARATE_DFSRR	0x00000001
--#define FSL_I2C_DEV_CLOCK_5200		0x00000002
--
- enum fsl_usb2_operating_modes {
- 	FSL_USB2_MPH_HOST,
- 	FSL_USB2_DR_HOST,
+-#define MPC_I2C_FDR 	0x04
+-#define MPC_I2C_CR	0x08
+-#define MPC_I2C_SR	0x0c
+-#define MPC_I2C_DR	0x10
++#define MPC_I2C_FDR   0x04
++#define MPC_I2C_CR    0x08
++#define MPC_I2C_SR    0x0c
++#define MPC_I2C_DR    0x10
+ #define MPC_I2C_DFSRR 0x14
+ 
+ #define CCR_MEN  0x80
+@@ -58,7 +58,7 @@
+ 	u32 flags;
+ };
+ 
+-static __inline__ void writeccr(struct mpc_i2c *i2c, u32 x)
++static inline void writeccr(struct mpc_i2c *i2c, u32 x)
+ {
+ 	writeb(x, i2c->base + MPC_I2C_CR);
+ }
+@@ -100,8 +100,7 @@
+ 	u32 x;
+ 	int result = 0;
+ 
+-	if (i2c->irq == NO_IRQ)
+-	{
++	if (i2c->irq == NO_IRQ) {
+ 		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
+ 			schedule();
+ 			if (time_after(jiffies, orig_jiffies + timeout)) {
+@@ -176,7 +175,7 @@
+ }
+ 
+ static int mpc_write(struct mpc_i2c *i2c, int target,
+-		     const u8 * data, int length, int restart)
++		     const u8 *data, int length, int restart)
+ {
+ 	int i, result;
+ 	unsigned timeout = i2c->adap.timeout;
+@@ -207,7 +206,7 @@
+ }
+ 
+ static int mpc_read(struct mpc_i2c *i2c, int target,
+-		    u8 * data, int length, int restart)
++		    u8 *data, int length, int restart)
+ {
+ 	unsigned timeout = i2c->adap.timeout;
+ 	int i, result;
+@@ -311,7 +310,8 @@
+ 	.timeout = HZ,
+ };
+ 
+-static int __devinit fsl_i2c_probe(struct of_device *op, const struct of_device_id *match)
++static int __devinit fsl_i2c_probe(struct of_device *op,
++				   const struct of_device_id *match)
+ {
+ 	int result = 0;
+ 	struct mpc_i2c *i2c;
+@@ -341,11 +341,12 @@
+ 		result = request_irq(i2c->irq, mpc_i2c_isr,
+ 				     IRQF_SHARED, "i2c-mpc", i2c);
+ 		if (result < 0) {
+-			printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
++			printk(KERN_ERR
++			       "i2c-mpc - failed to attach interrupt\n");
+ 			goto fail_request;
+ 		}
+ 	}
+-	
++
+ 	mpc_i2c_setclock(i2c);
+ 
+ 	dev_set_drvdata(&op->dev, i2c);
+@@ -368,7 +369,7 @@
+ 	free_irq(i2c->irq, i2c);
+  fail_request:
+ 	irq_dispose_mapping(i2c->irq);
+- 	iounmap(i2c->base);
++	iounmap(i2c->base);
+  fail_map:
+ 	kfree(i2c);
+ 	return result;
+@@ -414,7 +415,7 @@
+ 
+ 	rv = of_register_platform_driver(&mpc_i2c_driver);
+ 	if (rv)
+-		printk(KERN_ERR DRV_NAME 
++		printk(KERN_ERR DRV_NAME
+ 		       " of_register_platform_driver failed (%i)\n", rv);
+ 	return rv;
+ }
+@@ -428,6 +429,6 @@
+ module_exit(fsl_i2c_exit);
+ 
+ MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
+-MODULE_DESCRIPTION
+-    ("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
++MODULE_DESCRIPTION("I2C-Bus adapter for MPC107 bridge and "
++		   "MPC824x/85xx/52xx processors");
+ MODULE_LICENSE("GPL");
