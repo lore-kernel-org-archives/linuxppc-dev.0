@@ -1,18 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 841AADDFE2
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 00:30:13 +1000 (EST)
-Date: Tue, 7 Apr 2009 18:30:11 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] powerpc: 85xx: Add PHY fixup to socrates board code
-Message-ID: <20090407143011.GA15727@oksana.dev.rtsoft.ru>
-References: <1239113988-4579-1-git-send-email-agust@denx.de>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 53FDEDDFDE
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 00:39:48 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LrCSm-0002sr-92
+	for linuxppc-dev@ozlabs.org; Tue, 07 Apr 2009 07:39:44 -0700
+Message-ID: <22930588.post@talk.nabble.com>
+Date: Tue, 7 Apr 2009 07:39:44 -0700 (PDT)
+From: "Sauce.Cheng" <chmhou@sina.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: issue at the beginning of kernel booting
+In-Reply-To: <20090402161209.GA19088@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1239113988-4579-1-git-send-email-agust@denx.de>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+References: <20090327083628.4C3E93EE530@mail2-203.sinamail.sina.com.cn>
+	<20090327161522.GA7809@ld0162-tx32.am.freescale.net>
+	<22840131.post@talk.nabble.com>
+	<20090402161209.GA19088@ld0162-tx32.am.freescale.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,79 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 07, 2009 at 04:19:48PM +0200, Anatolij Gustschin wrote:
-> If the firmware missed to initialize the PHY correctly,
-> Linux may hang up on socrates while eth0/eth1 interface
-> startup (caused by continuous unacknowledged PHY interrupt).
-> 
-> This patch adds PHY fixup to socrates platform code to
-> ensure the PHY is pre-initialized correctly. It is needed
-> to be compatible with older firmware.
 
-Is that really board-specific fixup, or can it be placed
-somewhere inside drivers/net/phy/marvell.c?
+thanks Scott 's following
 
-Has this fixup any effect after phy power down/up sequence?
-Otherwise you may encounter same problem after suspend/resume.
+> I don't quite follow the above, but what I meant is that you need to
+> put a mapping in place that covers your LED I/O once you have the MMU on.
+> Any mappings that U-boot made will be gone at that point.
 
-> Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> ---
->  arch/powerpc/platforms/85xx/socrates.c |   18 ++++++++++++++++++
->  1 files changed, 18 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/85xx/socrates.c b/arch/powerpc/platforms/85xx/socrates.c
-> index d0e8443..2275a39 100644
-> --- a/arch/powerpc/platforms/85xx/socrates.c
-> +++ b/arch/powerpc/platforms/85xx/socrates.c
-> @@ -28,6 +28,7 @@
->  #include <linux/delay.h>
->  #include <linux/seq_file.h>
->  #include <linux/of_platform.h>
-> +#include <linux/phy.h>
->  
->  #include <asm/system.h>
->  #include <asm/time.h>
-> @@ -78,6 +79,21 @@ static void __init socrates_pic_init(void)
->  	of_node_put(np);
->  }
->  
-> +static int socrates_m88e1121_fixup(struct phy_device *phydev)
-> +{
-> +	int err;
-> +
-> +	err = phy_write(phydev, 0x12, 0);
+i am sorry for my poor expression. i think i have got your meaning about
+that.
+the suggestion from others that the situation that external access will be
+disabled at early booting time. i guess that means like yours, sometimes I/O
+disabled due to cache operating or something.
 
-Do you know the proper names for 0x12 and 0x13 registers
-on that chip?
+certainly, if i have to turn LEDs at booting time, the way your said is the
+best. but i supposed i could operate LEDs after early booting time. 
 
-> +	if (err < 0)
-> +		return err;
-> +
-> +	err = phy_read(phydev, 0x13);
-> +	if (err < 0)
-> +		return err;
-> +
-> +	return 0;
-> +}
-> +
->  /*
->   * Setup the architecture
->   */
-> @@ -105,6 +121,8 @@ static struct of_device_id __initdata socrates_of_bus_ids[] = {
->  static void __init socrates_init(void)
->  {
->  	of_platform_bus_probe(NULL, socrates_of_bus_ids, NULL);
-> +	phy_register_fixup_for_uid(0x1410cb0, 0xffffff0,
-> +				   socrates_m88e1121_fixup);
->  }
->  
->  /*
-> -- 
-> 1.5.6.3
+>> i tried 
+>> CONFIG_PPC_EARLY_DEBUG_CPM=y 
+>> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR=0xf00000008	
+>> how can i make sure CPM_ADDR, 0xf0000008 is default value 
 
-Thanks,
+> Look at the u-boot source, or dump the memory and see if it looks like a
+> ring buffer.
 
+sorry, i mean that CPM_ADDR is address of what? address of CPM registers or
+something?
+
+> This is a dts-v0 tree, which implies it's fairly old.
+dose later dts be used in corresponding kernel version ?
+
+i guess i must read "booting-without-of.txt". many of contents in dts i have
+no idea.
+
+in addition, there is one more question. 
+my RAM size is 32MBytes, my "vmlinux" size is 30MBytes, "vmlinux.o" size is
+58MBytes. so , will there be something wrong at uncompressing time ?
+
+Sauce
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+View this message in context: http://www.nabble.com/issue-at-the-beginning-of-kernel-booting-tp22741532p22930588.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
