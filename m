@@ -2,10 +2,10 @@ Return-Path: <sr@denx.de>
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org,
 	linux-mtd@lists.infradead.org
-Subject: [PATCH 1/4 v2] mtd: physmap_of: Add multiple regions and
-	concatenation support
-Date: Tue,  7 Apr 2009 10:39:19 +0200
-Message-Id: <1239093559-12043-1-git-send-email-sr@denx.de>
+Subject: [PATCH 2/4 v2] mtd/powerpc: Factor out MTD physmap bindings into
+	mtd-physmap.txt
+Date: Tue,  7 Apr 2009 10:39:28 +0200
+Message-Id: <1239093568-12094-1-git-send-email-sr@denx.de>
 Cc: devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,318 +16,231 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support to handle multiple non-identical chips in one
-flash device tree node. It also adds concat support to physmap_of. This
-makes it possible to support e.g. the Intel P30 48F4400 chips which
-internally consists of 2 non-identical NOR chips on one die. Additionally
-partitions now can span over multiple chips.
-
-To describe such a chip's, multiple "reg" tuples are now supported in one
-flash device tree node. Here an dts example:
-
-        flash@f0000000,0 {
-                #address-cells = <1>;
-                #size-cells = <1>;
-                compatible = "cfi-flash";
-                reg = <0 0x00000000 0x02000000
-                       0 0x02000000 0x02000000>;
-                bank-width = <2>;
-                partition@0 {
-                        label = "test-part1";
-                        reg = <0 0x04000000>;
-                };
-        };
-
 Signed-off-by: Stefan Roese <sr@denx.de>
 CC: Grant Likely <grant.likely@secretlab.ca>
 ---
-Changes in ver2 (as suggested by Grant Likely):
-- Removed MAX_RESOURCES introduced in ver1. Now we don't have a hard limit
-  for "reg" tuples anymore.
-- Used of_n_addr_cells() and of_n_size_cells() to determine size of each tuple.
+ Documentation/powerpc/booting-without-of.txt       |   89 +++-----------------
+ Documentation/powerpc/dts-bindings/mtd-physmap.txt |   63 ++++++++++++++
+ 2 files changed, 75 insertions(+), 77 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/mtd-physmap.txt
 
- drivers/mtd/maps/physmap_of.c |  199 +++++++++++++++++++++++++++++------------
- 1 files changed, 143 insertions(+), 56 deletions(-)
-
-diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
-index c83a60f..6991aac 100644
---- a/drivers/mtd/maps/physmap_of.c
-+++ b/drivers/mtd/maps/physmap_of.c
-@@ -20,16 +20,23 @@
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/map.h>
- #include <linux/mtd/partitions.h>
-+#include <linux/mtd/concat.h>
- #include <linux/of.h>
- #include <linux/of_platform.h>
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 0ab0230..d16b7a1 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -43,12 +43,11 @@ Table of Contents
+     2) Representing devices without a current OF specification
+       a) PHY nodes
+       b) Interrupt controllers
+-      c) CFI or JEDEC memory-mapped NOR flash
+-      d) 4xx/Axon EMAC ethernet nodes
+-      e) Xilinx IP cores
+-      f) USB EHCI controllers
+-      g) MDIO on GPIOs
+-      h) SPI busses
++      c) 4xx/Axon EMAC ethernet nodes
++      d) Xilinx IP cores
++      e) USB EHCI controllers
++      f) MDIO on GPIOs
++      g) SPI busses
  
-+struct of_flash_list {
-+	struct mtd_info *mtd;
-+	struct map_info map;
-+	struct resource *res;
-+};
-+
- struct of_flash {
--	struct mtd_info		*mtd;
--	struct map_info		map;
--	struct resource		*res;
-+	struct mtd_info		*cmtd;
- #ifdef CONFIG_MTD_PARTITIONS
- 	struct mtd_partition	*parts;
- #endif
-+	int list_size; /* number of elements in of_flash_list */
-+	struct of_flash_list	list[0];
- };
+   VII - Marvell Discovery mv64[345]6x System Controller chips
+     1) The /system-controller node
+@@ -999,7 +998,7 @@ compatibility.
+       translation of SOC addresses for memory mapped SOC registers.
+     - bus-frequency: Contains the bus frequency for the SOC node.
+       Typically, the value of this field is filled in by the boot
+-      loader. 
++      loader.
  
- #ifdef CONFIG_MTD_PARTITIONS
-@@ -88,30 +95,44 @@ static int parse_obsolete_partitions(struct of_device *dev,
- static int of_flash_remove(struct of_device *dev)
- {
- 	struct of_flash *info;
-+	int i;
  
- 	info = dev_get_drvdata(&dev->dev);
- 	if (!info)
- 		return 0;
- 	dev_set_drvdata(&dev->dev, NULL);
+   Recommended properties:
+@@ -1287,71 +1286,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 		device_type = "open-pic";
+ 	};
  
--	if (info->mtd) {
-+#ifdef CONFIG_MTD_CONCAT
-+	if (info->cmtd != info->list[0].mtd) {
-+		del_mtd_device(info->cmtd);
-+		mtd_concat_destroy(info->cmtd);
-+	}
-+#endif
-+
-+	if (info->cmtd) {
- 		if (OF_FLASH_PARTS(info)) {
--			del_mtd_partitions(info->mtd);
-+			del_mtd_partitions(info->cmtd);
- 			kfree(OF_FLASH_PARTS(info));
- 		} else {
--			del_mtd_device(info->mtd);
-+			del_mtd_device(info->cmtd);
- 		}
--		map_destroy(info->mtd);
- 	}
- 
--	if (info->map.virt)
--		iounmap(info->map.virt);
-+	for (i = 0; i < info->list_size; i++) {
-+		if (info->list[i].mtd)
-+			map_destroy(info->list[i].mtd);
- 
--	if (info->res) {
--		release_resource(info->res);
--		kfree(info->res);
-+		if (info->list[i].map.virt)
-+			iounmap(info->list[i].map.virt);
-+
-+		if (info->list[i].res) {
-+			release_resource(info->list[i].res);
-+			kfree(info->list[i].res);
-+		}
- 	}
- 
-+	kfree(info);
-+
- 	return 0;
- }
- 
-@@ -164,68 +185,130 @@ static int __devinit of_flash_probe(struct of_device *dev,
- 	const char *probe_type = match->data;
- 	const u32 *width;
- 	int err;
+-   c) CFI or JEDEC memory-mapped NOR flash
 -
--	err = -ENXIO;
--	if (of_address_to_resource(dp, 0, &res)) {
--		dev_err(&dev->dev, "Can't get IO address from device tree\n");
-+	int i;
-+	int count;
-+	const u32 *p;
-+	int reg_tuple_size;
-+	struct mtd_info **mtd_list = NULL;
-+
-+	reg_tuple_size = (of_n_addr_cells(dp) + of_n_size_cells(dp)) * 4;
-+
-+	/*
-+	 * Get number of "reg" tuples. Scan for MTD devices on area's
-+	 * described by each "reg" region. This makes it possible (including
-+	 * the concat support) to support the Intel P30 48F4400 chips which
-+	 * consists internally of 2 non-identical NOR chips on one die.
-+	 */
-+	p = of_get_property(dp, "reg", &count);
-+	if (count % reg_tuple_size != 0) {
-+		dev_err(&dev->dev, "Malformed reg property on %s\n",
-+				dev->node->full_name);
-+		err = -EINVAL;
- 		goto err_out;
- 	}
+-    Flash chips (Memory Technology Devices) are often used for solid state
+-    file systems on embedded devices.
 -
--       	dev_dbg(&dev->dev, "of_flash device: %.8llx-%.8llx\n",
--		(unsigned long long)res.start, (unsigned long long)res.end);
-+	count /= reg_tuple_size;
+-     - compatible : should contain the specific model of flash chip(s)
+-       used, if known, followed by either "cfi-flash" or "jedec-flash"
+-     - reg : Address range of the flash chip
+-     - bank-width : Width (in bytes) of the flash bank.  Equal to the
+-       device width times the number of interleaved chips.
+-     - device-width : (optional) Width of a single flash chip.  If
+-       omitted, assumed to be equal to 'bank-width'.
+-     - #address-cells, #size-cells : Must be present if the flash has
+-       sub-nodes representing partitions (see below).  In this case
+-       both #address-cells and #size-cells must be equal to 1.
+-
+-    For JEDEC compatible devices, the following additional properties
+-    are defined:
+-
+-     - vendor-id : Contains the flash chip's vendor id (1 byte).
+-     - device-id : Contains the flash chip's device id (1 byte).
+-
+-    In addition to the information on the flash bank itself, the
+-    device tree may optionally contain additional information
+-    describing partitions of the flash address space.  This can be
+-    used on platforms which have strong conventions about which
+-    portions of the flash are used for what purposes, but which don't
+-    use an on-flash partition table such as RedBoot.
+-
+-    Each partition is represented as a sub-node of the flash device.
+-    Each node's name represents the name of the corresponding
+-    partition of the flash device.
+-
+-    Flash partitions
+-     - reg : The partition's offset and size within the flash bank.
+-     - label : (optional) The label / name for this flash partition.
+-       If omitted, the label is taken from the node name (excluding
+-       the unit address).
+-     - read-only : (optional) This parameter, if present, is a hint to
+-       Linux that this flash partition should only be mounted
+-       read-only.  This is usually used for flash partitions
+-       containing early-boot firmware images or data which should not
+-       be clobbered.
+-
+-    Example:
+-
+-	flash@ff000000 {
+-		compatible = "amd,am29lv128ml", "cfi-flash";
+-		reg = <ff000000 01000000>;
+-		bank-width = <4>;
+-		device-width = <1>;
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		fs@0 {
+-			label = "fs";
+-			reg = <0 f80000>;
+-		};
+-		firmware@f80000 {
+-			label ="firmware";
+-			reg = <f80000 80000>;
+-			read-only;
+-		};
+-	};
+-
+-    d) 4xx/Axon EMAC ethernet nodes
++    c) 4xx/Axon EMAC ethernet nodes
  
- 	err = -ENOMEM;
--	info = kzalloc(sizeof(*info), GFP_KERNEL);
-+	info = kzalloc(sizeof(struct of_flash) +
-+		       sizeof(struct of_flash_list) * count, GFP_KERNEL);
-+	if (!info)
-+		goto err_out;
+     The EMAC ethernet controller in IBM and AMCC 4xx chips, and also
+     the Axon bridge.  To operate this needs to interact with a ths
+@@ -1499,7 +1434,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 			   available.
+ 			   For Axon: 0x0000012a
+ 
+-   e) Xilinx IP cores
++   d) Xilinx IP cores
+ 
+    The Xilinx EDK toolchain ships with a set of IP cores (devices) for use
+    in Xilinx Spartan and Virtex FPGAs.  The devices cover the whole range
+@@ -1761,7 +1696,7 @@ platforms are moved over to use the flattened-device-tree model.
+       listed above, nodes for these devices should include a phy-handle
+       property, and may include other common network device properties
+       like local-mac-address.
+-      
 +
-+	mtd_list = kzalloc(sizeof(struct mtd_info) * count, GFP_KERNEL);
- 	if (!info)
- 		goto err_out;
+       iv) Xilinx Uartlite
  
- 	dev_set_drvdata(&dev->dev, info);
+       Xilinx uartlite devices are simple fixed speed serial ports.
+@@ -1793,7 +1728,7 @@ platforms are moved over to use the flattened-device-tree model.
+        - reg-offset : A value of 3 is required
+        - reg-shift : A value of 2 is required
  
--	err = -EBUSY;
--	info->res = request_mem_region(res.start, res.end - res.start + 1,
--				       dev_name(&dev->dev));
--	if (!info->res)
--		goto err_out;
-+	for (i = 0; i < count; i++) {
-+		err = -ENXIO;
-+		if (of_address_to_resource(dp, i, &res)) {
-+			dev_err(&dev->dev, "Can't get IO address from device"
-+				" tree\n");
-+			goto err_out;
-+		}
+-    f) USB EHCI controllers
++    e) USB EHCI controllers
  
--	err = -ENXIO;
--	width = of_get_property(dp, "bank-width", NULL);
--	if (!width) {
--		dev_err(&dev->dev, "Can't get bank width from device tree\n");
--		goto err_out;
--	}
-+		dev_dbg(&dev->dev, "of_flash device: %.8llx-%.8llx\n",
-+			(unsigned long long)res.start,
-+			(unsigned long long)res.end);
+     Required properties:
+       - compatible : should be "usb-ehci".
+@@ -1819,7 +1754,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 		   big-endian;
+ 	   };
+ 
+-   g) MDIO on GPIOs
++   f) MDIO on GPIOs
+ 
+    Currently defined compatibles:
+    - virtual,gpio-mdio
+@@ -1839,7 +1774,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 			 &qe_pio_c 6>;
+ 	};
+ 
+-    h) SPI (Serial Peripheral Interface) busses
++    g) SPI (Serial Peripheral Interface) busses
+ 
+     SPI busses can be described with a node for the SPI master device
+     and a set of child nodes for each SPI slave on the bus.  For this
+diff --git a/Documentation/powerpc/dts-bindings/mtd-physmap.txt b/Documentation/powerpc/dts-bindings/mtd-physmap.txt
+new file mode 100644
+index 0000000..cd474f9
+--- /dev/null
++++ b/Documentation/powerpc/dts-bindings/mtd-physmap.txt
+@@ -0,0 +1,63 @@
++CFI or JEDEC memory-mapped NOR flash
 +
-+		err = -EBUSY;
-+		info->list[i].res = request_mem_region(res.start, res.end -
-+						       res.start + 1,
-+						       dev_name(&dev->dev));
-+		if (!info->list[i].res)
-+			goto err_out;
++Flash chips (Memory Technology Devices) are often used for solid state
++file systems on embedded devices.
 +
-+		err = -ENXIO;
-+		width = of_get_property(dp, "bank-width", NULL);
-+		if (!width) {
-+			dev_err(&dev->dev, "Can't get bank width from device"
-+				" tree\n");
-+			goto err_out;
-+		}
- 
--	info->map.name = dev_name(&dev->dev);
--	info->map.phys = res.start;
--	info->map.size = res.end - res.start + 1;
--	info->map.bankwidth = *width;
-+		info->list[i].map.name = dev_name(&dev->dev);
-+		info->list[i].map.phys = res.start;
-+		info->list[i].map.size = res.end - res.start + 1;
-+		info->list[i].map.bankwidth = *width;
++ - compatible : should contain the specific model of flash chip(s)
++   used, if known, followed by either "cfi-flash" or "jedec-flash"
++ - reg : Address range of the flash chip
++ - bank-width : Width (in bytes) of the flash bank.  Equal to the
++   device width times the number of interleaved chips.
++ - device-width : (optional) Width of a single flash chip.  If
++   omitted, assumed to be equal to 'bank-width'.
++ - #address-cells, #size-cells : Must be present if the flash has
++   sub-nodes representing partitions (see below).  In this case
++   both #address-cells and #size-cells must be equal to 1.
 +
-+		err = -ENOMEM;
-+		info->list[i].map.virt = ioremap(info->list[i].map.phys,
-+						 info->list[i].map.size);
-+		if (!info->list[i].map.virt) {
-+			dev_err(&dev->dev, "Failed to ioremap() flash"
-+				" region\n");
-+			goto err_out;
-+		}
- 
--	err = -ENOMEM;
--	info->map.virt = ioremap(info->map.phys, info->map.size);
--	if (!info->map.virt) {
--		dev_err(&dev->dev, "Failed to ioremap() flash region\n");
--		goto err_out;
--	}
-+		simple_map_init(&info->list[i].map);
- 
--	simple_map_init(&info->map);
-+		if (probe_type) {
-+			info->list[i].mtd = do_map_probe(probe_type,
-+							 &info->list[i].map);
-+		} else {
-+			info->list[i].mtd = obsolete_probe(dev,
-+							   &info->list[i].map);
-+		}
-+		mtd_list[i] = info->list[i].mtd;
- 
--	if (probe_type)
--		info->mtd = do_map_probe(probe_type, &info->map);
--	else
--		info->mtd = obsolete_probe(dev, &info->map);
-+		err = -ENXIO;
-+		if (!info->list[i].mtd) {
-+			dev_err(&dev->dev, "do_map_probe() failed\n");
-+			goto err_out;
-+		} else {
-+			info->list_size++;
-+		}
-+		info->list[i].mtd->owner = THIS_MODULE;
-+		info->list[i].mtd->dev.parent = &dev->dev;
-+	}
- 
--	err = -ENXIO;
--	if (!info->mtd) {
--		dev_err(&dev->dev, "do_map_probe() failed\n");
--		goto err_out;
-+	err = 0;
-+	if (info->list_size == 1) {
-+		info->cmtd = info->list[0].mtd;
-+	} else if (info->list_size > 1) {
-+		/*
-+		 * We detected multiple devices. Concatenate them together.
-+		 */
-+#ifdef CONFIG_MTD_CONCAT
-+		info->cmtd = mtd_concat_create(mtd_list, info->list_size,
-+					       dev_name(&dev->dev));
-+		if (info->cmtd == NULL)
-+			err = -ENXIO;
-+#else
-+		printk(KERN_ERR "physmap_of: multiple devices "
-+		       "found but MTD concat support disabled.\n");
-+		err = -ENXIO;
-+#endif
- 	}
--	info->mtd->owner = THIS_MODULE;
--	info->mtd->dev.parent = &dev->dev;
-+	if (err)
-+		goto err_out;
- 
- #ifdef CONFIG_MTD_PARTITIONS
- 	/* First look for RedBoot table or partitions on the command
- 	 * line, these take precedence over device tree information */
--	err = parse_mtd_partitions(info->mtd, part_probe_types,
--	                           &info->parts, 0);
-+	err = parse_mtd_partitions(info->cmtd, part_probe_types,
-+				   &info->parts, 0);
- 	if (err < 0)
- 		return err;
- 
-@@ -244,15 +327,19 @@ static int __devinit of_flash_probe(struct of_device *dev,
- 	}
- 
- 	if (err > 0)
--		add_mtd_partitions(info->mtd, info->parts, err);
-+		add_mtd_partitions(info->cmtd, info->parts, err);
- 	else
- #endif
--		add_mtd_device(info->mtd);
-+		add_mtd_device(info->cmtd);
++For JEDEC compatible devices, the following additional properties
++are defined:
 +
-+	kfree(mtd_list);
- 
- 	return 0;
- 
- err_out:
-+	kfree(mtd_list);
- 	of_flash_remove(dev);
++ - vendor-id : Contains the flash chip's vendor id (1 byte).
++ - device-id : Contains the flash chip's device id (1 byte).
 +
- 	return err;
- }
- 
++In addition to the information on the flash bank itself, the
++device tree may optionally contain additional information
++describing partitions of the flash address space.  This can be
++used on platforms which have strong conventions about which
++portions of the flash are used for what purposes, but which don't
++use an on-flash partition table such as RedBoot.
++
++Each partition is represented as a sub-node of the flash device.
++Each node's name represents the name of the corresponding
++partition of the flash device.
++
++Flash partitions
++ - reg : The partition's offset and size within the flash bank.
++ - label : (optional) The label / name for this flash partition.
++   If omitted, the label is taken from the node name (excluding
++   the unit address).
++ - read-only : (optional) This parameter, if present, is a hint to
++   Linux that this flash partition should only be mounted
++   read-only.  This is usually used for flash partitions
++   containing early-boot firmware images or data which should not
++   be clobbered.
++
++Example:
++
++	flash@ff000000 {
++		compatible = "amd,am29lv128ml", "cfi-flash";
++		reg = <ff000000 01000000>;
++		bank-width = <4>;
++		device-width = <1>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		fs@0 {
++			label = "fs";
++			reg = <0 f80000>;
++		};
++		firmware@f80000 {
++			label ="firmware";
++			reg = <f80000 80000>;
++			read-only;
++		};
++	};
 -- 
 1.6.2.2
