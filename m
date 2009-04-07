@@ -1,18 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 0BF41DDFAE
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 22:19:02 +1000 (EST)
-Date: Tue, 7 Apr 2009 14:19:01 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Fix oops when loading modules
-In-Reply-To: <18906.50854.952483.793456@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.LRH.2.00.0904071418430.24773@vixen.sonytel.be>
-References: <18906.50854.952483.793456@drongo.ozlabs.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id D3435DDFD2
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 00:10:07 +1000 (EST)
+Date: Tue, 7 Apr 2009 09:11:54 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
+Message-ID: <20090407141154.GA30654@lixom.net>
+References: <b0b55030b7ba669cbdec74a8b89875096ea07622.1239069602.git.michael@ellerman.id.au>
+	<20090407022743.GA12174@lixom.net>
+	<1239073293.6565.18.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1239073293.6565.18.camel@localhost>
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 7 Apr 2009, Paul Mackerras wrote:
-> This fixes a problem reported by Sean MacLennan where loading any
-> module would cause an oops.  We weren't marking the pages containing
-> the module text as having hardware execute permission, due to a bug
-> introduced in commit 8d1cf34e ("powerpc/mm: Tweak PTE bit combination
-> definitions"), hence trying to execute the module text caused an
-> exception on processors that support hardware execute permission.
+On Tue, Apr 07, 2009 at 03:01:33AM +0000, Michael Ellerman wrote:
+> On Mon, 2009-04-06 at 21:27 -0500, Olof Johansson wrote:
+> > On Tue, Apr 07, 2009 at 12:00:41PM +1000, Michael Ellerman wrote:
+> > > Add an option, on by default, to build all code under arch/powerpc with
+> > > -Werror, which causes gcc to treat warnings as errors.
+> > > 
+> > > The intention is to make it harder for people to inadvertantly introduce
+> > > errors in the arch/powerpc code. It needs to be configurable so that
+> > > if a warning is introduced, people can easily work around it while it's
+> > > being fixed.
+> > 
+> > This looks useful at least for the automated builds to catch new warnings,
+> > but do similar options exist on other architectures, x86 in particular? I
+> > think a Cc to LKML of this could be useful.
+> > 
+> > This is really only beneficial if various people build for powerpc often
+> > enough. If major subsystem maintainers aren't going to hit the errors
+> > it's more of a hinderance for PPC than a global benefit, right?
 > 
-> This adds _PAGE_HWEXEC to the definitions of PAGE_KERNEL_X and
-> PAGE_KERNEL_ROX to fix this problem.
+> I don't think so. We're only enabling it for code under arch/powerpc -
+> and most modifications to that code should come through linuxppc.
+
+Good point.
+
+> It's still possible that random stuff will get merged, or that someone
+> will change code in a header that only causes warnings on powerpc, but
+> it's less likely.
 > 
-> Reported-by: Sean MacLennan <smaclennan@pikatech.com>
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> And that's why it's an option, if someone breaks the build we can work
+> around it until they're appropriately LARTed.
 
-Tested-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-(on Sequoia)
+Yeah, sounds good to me.
 
-With kind regards,
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+-Olof
