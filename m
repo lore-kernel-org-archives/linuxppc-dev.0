@@ -1,19 +1,13 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id D3435DDFD2
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 00:10:07 +1000 (EST)
-Date: Tue, 7 Apr 2009 09:11:54 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
-Message-ID: <20090407141154.GA30654@lixom.net>
-References: <b0b55030b7ba669cbdec74a8b89875096ea07622.1239069602.git.michael@ellerman.id.au>
-	<20090407022743.GA12174@lixom.net>
-	<1239073293.6565.18.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1239073293.6565.18.camel@localhost>
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 9CFD8DDFD6
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 00:19:50 +1000 (EST)
+From: Anatolij Gustschin <agust@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: 85xx: Add PHY fixup to socrates board code
+Date: Tue,  7 Apr 2009 16:19:48 +0200
+Message-Id: <1239113988-4579-1-git-send-email-agust@denx.de>
+Cc: Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +17,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 07, 2009 at 03:01:33AM +0000, Michael Ellerman wrote:
-> On Mon, 2009-04-06 at 21:27 -0500, Olof Johansson wrote:
-> > On Tue, Apr 07, 2009 at 12:00:41PM +1000, Michael Ellerman wrote:
-> > > Add an option, on by default, to build all code under arch/powerpc with
-> > > -Werror, which causes gcc to treat warnings as errors.
-> > > 
-> > > The intention is to make it harder for people to inadvertantly introduce
-> > > errors in the arch/powerpc code. It needs to be configurable so that
-> > > if a warning is introduced, people can easily work around it while it's
-> > > being fixed.
-> > 
-> > This looks useful at least for the automated builds to catch new warnings,
-> > but do similar options exist on other architectures, x86 in particular? I
-> > think a Cc to LKML of this could be useful.
-> > 
-> > This is really only beneficial if various people build for powerpc often
-> > enough. If major subsystem maintainers aren't going to hit the errors
-> > it's more of a hinderance for PPC than a global benefit, right?
-> 
-> I don't think so. We're only enabling it for code under arch/powerpc -
-> and most modifications to that code should come through linuxppc.
+If the firmware missed to initialize the PHY correctly,
+Linux may hang up on socrates while eth0/eth1 interface
+startup (caused by continuous unacknowledged PHY interrupt).
 
-Good point.
+This patch adds PHY fixup to socrates platform code to
+ensure the PHY is pre-initialized correctly. It is needed
+to be compatible with older firmware.
 
-> It's still possible that random stuff will get merged, or that someone
-> will change code in a header that only causes warnings on powerpc, but
-> it's less likely.
-> 
-> And that's why it's an option, if someone breaks the build we can work
-> around it until they're appropriately LARTed.
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ arch/powerpc/platforms/85xx/socrates.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-Yeah, sounds good to me.
-
-
--Olof
+diff --git a/arch/powerpc/platforms/85xx/socrates.c b/arch/powerpc/platforms/85xx/socrates.c
+index d0e8443..2275a39 100644
+--- a/arch/powerpc/platforms/85xx/socrates.c
++++ b/arch/powerpc/platforms/85xx/socrates.c
+@@ -28,6 +28,7 @@
+ #include <linux/delay.h>
+ #include <linux/seq_file.h>
+ #include <linux/of_platform.h>
++#include <linux/phy.h>
+ 
+ #include <asm/system.h>
+ #include <asm/time.h>
+@@ -78,6 +79,21 @@ static void __init socrates_pic_init(void)
+ 	of_node_put(np);
+ }
+ 
++static int socrates_m88e1121_fixup(struct phy_device *phydev)
++{
++	int err;
++
++	err = phy_write(phydev, 0x12, 0);
++	if (err < 0)
++		return err;
++
++	err = phy_read(phydev, 0x13);
++	if (err < 0)
++		return err;
++
++	return 0;
++}
++
+ /*
+  * Setup the architecture
+  */
+@@ -105,6 +121,8 @@ static struct of_device_id __initdata socrates_of_bus_ids[] = {
+ static void __init socrates_init(void)
+ {
+ 	of_platform_bus_probe(NULL, socrates_of_bus_ids, NULL);
++	phy_register_fixup_for_uid(0x1410cb0, 0xffffff0,
++				   socrates_m88e1121_fixup);
+ }
+ 
+ /*
+-- 
+1.5.6.3
