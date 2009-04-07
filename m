@@ -1,11 +1,35 @@
-Return-Path: <sr@denx.de>
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org
-Subject: [PATCH 4/4 v2] mtd/powerpc: Describe multiple "reg" tuples usage
-Date: Tue,  7 Apr 2009 10:39:43 +0200
-Message-Id: <1239093583-12201-1-git-send-email-sr@denx.de>
-Cc: devicetree-discuss@ozlabs.org
+Return-Path: <subrata@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1AD8CDDFB2
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 18:48:55 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n378oUMm004371
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 04:50:30 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n378mplW193624
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 04:48:51 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n378moHj021204
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 04:48:51 -0400
+Subject: Re: [LTP] [PATCH] powerpc: wire up preadv and pwritev
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Gerd Hoffmann <kraxel@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <49DB0628.70502@redhat.com>
+References: <20090407131950.9ab4430b.sfr@canb.auug.org.au>
+	<bb33bcf20904062351p63645851h9b33d47f57c57e7f@mail.gmail.com>
+	<49DB0628.70502@redhat.com>
+Content-Type: text/plain
+Date: Tue, 07 Apr 2009 14:18:47 +0530
+Message-Id: <1239094128.5300.13.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+Cc: ltp-list <ltp-list@lists.sf.net>, maknayak@in.ibm.com,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Subrata Modak <tosubrata@gmail.com>
+Reply-To: subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,46 +39,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Stefan Roese <sr@denx.de>
-CC: Grant Likely <grant.likely@secretlab.ca>
----
- Documentation/powerpc/dts-bindings/mtd-physmap.txt |   20 +++++++++++++++++++-
- 1 files changed, 19 insertions(+), 1 deletions(-)
+Thanks Gerd/Stephen,
 
-diff --git a/Documentation/powerpc/dts-bindings/mtd-physmap.txt b/Documentation/powerpc/dts-bindings/mtd-physmap.txt
-index ab1115e..a3fa9e0 100644
---- a/Documentation/powerpc/dts-bindings/mtd-physmap.txt
-+++ b/Documentation/powerpc/dts-bindings/mtd-physmap.txt
-@@ -5,7 +5,10 @@ file systems on embedded devices.
- 
-  - compatible : should contain the specific model of flash chip(s)
-    used, if known, followed by either "cfi-flash" or "jedec-flash"
-- - reg : Address range of the flash chip
-+ - reg : Address range(s) of the flash chip(s)
-+   It's possible to (optionally) define multiple "reg" tuples so that the
-+   Intel P30 48F4400 chip which consists internally of 2 non-identical
-+   NOR chips on one die can also be supported.
-  - bank-width : Width (in bytes) of the flash bank.  Equal to the
-    device width times the number of interleaved chips.
-  - #address-cells, #size-cells : Must be present if the flash has
-@@ -58,3 +61,18 @@ Example:
- 			read-only;
- 		};
- 	};
-+
-+Here an example with multiple "reg" tuples (e.g. Intel P30):
-+
-+	flash@f0000000,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0 0x00000000 0x02000000
-+		       0 0x02000000 0x02000000>;
-+		bank-width = <2>;
-+		partition@0 {
-+			label = "test-part1";
-+			reg = <0 0x04000000>;
-+		};
-+	};
--- 
-1.6.2.2
+On Tue, 2009-04-07 at 09:52 +0200, Gerd Hoffmann wrote:
+> Hi,
+> 
+> > How about contributing the above test to LTP(http://ltp.sourceforge.net/)
+> > under GPL ? If you agree, i would soon send you a Patch integrating the same
+> > to LTP.
+> 
+> Fine with me.  You probably want to remove the hard-coded syscall 
+> numbers and pickup them from unistd.h instead though.
+
+Sure. We will do some necessary changes, and you will shortly hear from
+us the Patch to integrate, and, retaining your Copyright on the test
+program.
+
+Regards--
+Subrata
+
+> 
+> cheers,
+>    Gerd
+> 
+> 
+> ------------------------------------------------------------------------------
+> This SF.net email is sponsored by:
+> High Quality Requirements in a Collaborative Environment.
+> Download a free trial of Rational Requirements Composer Now!
+> http://p.sf.net/sfu/www-ibm-com
+> _______________________________________________
+> Ltp-list mailing list
+> Ltp-list@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/ltp-list
