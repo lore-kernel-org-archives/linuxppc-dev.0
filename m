@@ -1,24 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 51712DDF31
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 13:01:34 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Add configurable -Werror for arch/powerpc
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20090407022743.GA12174@lixom.net>
-References: <b0b55030b7ba669cbdec74a8b89875096ea07622.1239069602.git.michael@ellerman.id.au>
-	<20090407022743.GA12174@lixom.net>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-ep/eygKHWn1XrDZptqCu"
-Date: Tue, 07 Apr 2009 03:01:33 +0000
-Message-Id: <1239073293.6565.18.camel@localhost>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 5C483DDF19
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 13:20:24 +1000 (EST)
+Date: Tue, 7 Apr 2009 13:19:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>
+Subject: [PATCH] powerpc: wire up preadv and pwritev
+Message-Id: <20090407131950.9ab4430b.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
+Cc: Gerd, LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Hoffmann <kraxel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+	Linus <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,62 +23,203 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-ep/eygKHWn1XrDZptqCu
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/include/asm/systbl.h |    2 ++
+ arch/powerpc/include/asm/unistd.h |    4 +++-
+ 2 files changed, 5 insertions(+), 1 deletions(-)
 
-On Mon, 2009-04-06 at 21:27 -0500, Olof Johansson wrote:
-> On Tue, Apr 07, 2009 at 12:00:41PM +1000, Michael Ellerman wrote:
-> > Add an option, on by default, to build all code under arch/powerpc with
-> > -Werror, which causes gcc to treat warnings as errors.
-> >=20
-> > The intention is to make it harder for people to inadvertantly introduc=
-e
-> > errors in the arch/powerpc code. It needs to be configurable so that
-> > if a warning is introduced, people can easily work around it while it's
-> > being fixed.
->=20
-> This looks useful at least for the automated builds to catch new warnings=
-,
-> but do similar options exist on other architectures, x86 in particular? I
-> think a Cc to LKML of this could be useful.
->=20
-> This is really only beneficial if various people build for powerpc often
-> enough. If major subsystem maintainers aren't going to hit the errors
-> it's more of a hinderance for PPC than a global benefit, right?
+Tested on pseries_defconfig (verified using strace{,64} and inspecting
+the files).  Test program (modified from the original because the API and
+ABI changed and I added a test with larger offsets):
 
-I don't think so. We're only enabling it for code under arch/powerpc -
-and most modifications to that code should come through linuxppc.
+#if 0
+set -x
+gcc -Wall -O2 -m32 -o preadv $0
+gcc -Wall -O2 -m32 -D_FILE_OFFSET_BITS=64 -DLARGE_TEST -o preadv32 $0
+gcc -Wall -O2 -m64 -DLARGE_TEST -o preadv64 $0
+./preadv
+./preadv32
+./preadv64
+exit 0
+#endif
+/*
+ * preadv demo / test
+ *
+ * (c) 2008 Gerd Hoffmann <kraxel@redhat.com>
+ * Modified for new ABI and large offset test by Stephen Rothwell
+ *
+ * build with "sh $thisfile"
+ */
 
-It's still possible that random stuff will get merged, or that someone
-will change code in a header that only causes warnings on powerpc, but
-it's less likely.
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <inttypes.h>
+#include <sys/uio.h>
 
-And that's why it's an option, if someone breaks the build we can work
-around it until they're appropriately LARTed.
+/* ----------------------------------------------------------------- */
+/* syscall windup                                                    */
 
-cheers
+#include <sys/syscall.h>
+#if 1
+/* WARNING: Be sure you know what you are doing if you enable this.
+ * linux syscall code isn't upstream yet, syscall numbers are subject
+ * to change */
+# ifndef __NR_preadv
+#  ifdef __i386__
+#   define __NR_preadv  333
+#   define __NR_pwritev 334
+#  endif
+#  ifdef __x86_64__
+#   define __NR_preadv  295
+#   define __NR_pwritev 296
+#  endif
+#  ifdef __powerpc__
+#   define __NR_preadv	319
+#   define __NR_pwritev	320
+#  endif
+# endif
+#endif
+#ifndef __NR_preadv
+# error preadv/pwritev syscall numbers are unknown
+#endif
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+#define HALF_BITS (sizeof(unsigned long)*4)
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+static ssize_t preadv(int fd, const struct iovec *iov, int iovcnt,
+		      off_t offset)
+{
+	return syscall(__NR_preadv, fd, iov, iovcnt,
+		       (unsigned long)offset,
+		       (unsigned long)((offset >> HALF_BITS) >> HALF_BITS));
+}
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+static ssize_t pwritev(int fd, const struct iovec *iov, int iovcnt,
+		       off_t offset)
+{
+	return syscall(__NR_pwritev, fd, iov, iovcnt,
+		       (unsigned long)offset,
+		       (unsigned long)((offset >> HALF_BITS) >> HALF_BITS));
+}
 
---=-ep/eygKHWn1XrDZptqCu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+/* ----------------------------------------------------------------- */
+/* demo/test app                                                     */
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+static char filename[] = "/tmp/preadv-XXXXXX";
+static char outbuf[11] = "0123456789";
+static char inbuf[11]  = "----------";
 
-iEYEABECAAYFAknawg0ACgkQdSjSd0sB4dIokwCcCmeItnZZotK2ShPJBC/qnIeZ
-Y0IAoKYVyJostAlUq4BUvoz29ORctZgh
-=5jp1
------END PGP SIGNATURE-----
+static struct iovec ovec[2] = {{
+		.iov_base = outbuf + 5,
+		.iov_len  = 5,
+	},{
+		.iov_base = outbuf + 0,
+		.iov_len  = 5,
+	}};
 
---=-ep/eygKHWn1XrDZptqCu--
+static struct iovec ivec[3] = {{
+		.iov_base = inbuf + 6,
+		.iov_len  = 2,
+	},{
+		.iov_base = inbuf + 4,
+		.iov_len  = 2,
+	},{
+		.iov_base = inbuf + 2,
+		.iov_len  = 2,
+	}};
+
+void cleanup(void)
+{
+	unlink(filename);
+}
+
+int main(int argc, char **argv)
+{
+	int fd, rc;
+
+	fd = mkstemp(filename);
+	if (-1 == fd) {
+		perror("mkstemp");
+		exit(1);
+	}
+	atexit(cleanup);
+
+	/* write to file: "56789-01234" */
+	rc = pwritev(fd, ovec, 2, 0);
+	if (rc < 0) {
+		perror("pwritev");
+		exit(1);
+	}
+
+	/* read from file: "78-90-12" */
+	rc = preadv(fd, ivec, 3, 2);
+	if (rc < 0) {
+		perror("preadv");
+		exit(1);
+	}
+
+	printf("result  : %s\n", inbuf);
+	printf("expected: %s\n", "--129078--");
+
+#ifdef LARGE_TEST
+
+	/* write to file: "56789-01234" */
+	rc = pwritev(fd, ovec, 2, 0x300000000ULL);
+	if (rc < 0) {
+		perror("pwritev");
+		exit(1);
+	}
+
+	/* read from file: "78-90-12" */
+	rc = preadv(fd, ivec, 3, 0x300000000ULL + 2);
+	if (rc < 0) {
+		perror("preadv");
+		exit(1);
+	}
+
+	printf("result  : %s\n", inbuf);
+	printf("expected: %s\n", "--129078--");
+
+#endif
+
+	exit(0);
+}
+
+
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index fe16649..3fb6d9e 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -322,3 +322,5 @@ SYSCALL_SPU(epoll_create1)
+ SYSCALL_SPU(dup3)
+ SYSCALL_SPU(pipe2)
+ SYSCALL(inotify_init1)
++COMPAT_SYS_SPU(preadv)
++COMPAT_SYS_SPU(pwritev)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index e07d0c7..7e03ebe 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -341,10 +341,12 @@
+ #define __NR_dup3		316
+ #define __NR_pipe2		317
+ #define __NR_inotify_init1	318
++#define __NR_preadv		319
++#define __NR_pwritev		320
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		319
++#define __NR_syscalls		321
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+-- 
+1.6.2.1
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
