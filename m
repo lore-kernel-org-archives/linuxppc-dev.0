@@ -1,21 +1,22 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 497FEDDFB6
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 17:26:32 +1000 (EST)
-Date: Tue, 7 Apr 2009 09:26:30 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] powerpc: Keep track of emulated instructions 
-In-Reply-To: <12794.1239057838@neuling.org>
-Message-ID: <alpine.LRH.2.00.0904070926001.17130@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0904031404450.32353@vixen.sonytel.be>
-	<3DA386C6-F26A-4929-8609-FE468DF01572@kernel.crashing.org>
-	<alpine.LRH.2.00.0904061430090.11076@vixen.sonytel.be>
-	<12794.1239057838@neuling.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4AA57DDFB4
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 17:30:17 +1000 (EST)
+Date: Tue, 7 Apr 2009 17:30:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Subrata Modak <tosubrata@gmail.com>
+Subject: Re: [PATCH] powerpc: wire up preadv and pwritev
+Message-Id: <20090407173003.1491e580.sfr@canb.auug.org.au>
+In-Reply-To: <bb33bcf20904062351p63645851h9b33d47f57c57e7f@mail.gmail.com>
+References: <20090407131950.9ab4430b.sfr@canb.auug.org.au>
+	<bb33bcf20904062351p63645851h9b33d47f57c57e7f@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__7_Apr_2009_17_30_03_+1000_SEVMIJzZp4v72qzE"
+Cc: ltp-list <ltp-list@lists.sf.net>, maknayak@in.ibm.com,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Gerd Hoffmann <kraxel@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,54 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 7 Apr 2009, Michael Neuling wrote:
-> In message <alpine.LRH.2.00.0904061430090.11076@vixen.sonytel.be> you wrote:
-> > On Fri, 3 Apr 2009, Kumar Gala wrote:
-> > > On Apr 3, 2009, at 7:08 AM, Geert Uytterhoeven wrote:
-> > > >Finally (after ca. 1.5 years), he're an updated version of my patch to k=
-> > eep
-> > > >track of emulated instructions.  In the light of Kumar's `Emulate enough=
-> >  of
-> > > >SPE
-> > > >instructions to make gcc happy' patch, he probably also wants to keep tr=
-> > ack
-> > > >of
-> > > >the actual runtime overhead.
-> > > >
-> > > >Changes since last version:
-> > > > - arch/powerpc/kernel/sysfs.c is now compiled on ppc32, so we can provi=
-> > de
-> > > >   counters in sysfs on ppc32, too,
-> > > > - WARN_EMULATED() is a no-op if CONFIG_SYSCTL is disabled,
-> > > > - Add warnings for altivec,
-> > > > - Add warnings for recently introduced emulation of vsx and isel
-> > > >   instructions.
-> > > =
-> > 
-> > > pretty cool.  Do we think counters should be sysfs or debugfs?
-> > 
-> > What do you prefer?
-> > 
-> > On MIPS, unaligned exception handling control is in debugfs.
-> 
-> Would per process counters be too hard?  Stick them in the thread_struct
-> and export them via /proc/<pid>/emulated. 
+--Signature=_Tue__7_Apr_2009_17_30_03_+1000_SEVMIJzZp4v72qzE
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But they go away as soon as the process exits, right?
+Hi Subrata,
 
-With kind regards,
+On Tue, 7 Apr 2009 12:21:18 +0530 Subrata Modak <tosubrata@gmail.com> wrote:
+>
+> How about contributing the above test to LTP(http://ltp.sourceforge.net/)
+> under GPL ? If you agree, i would soon send you a Patch integrating the s=
+ame
+> to LTP.
 
-Geert Uytterhoeven
-Software Architect
+I have no problem with that.  However, the test was originally written by
+Gerd Hoffmann and is essentially unchanged (i just updated some details),
+so I think that is where you should direct your request.
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+--Signature=_Tue__7_Apr_2009_17_30_03_+1000_SEVMIJzZp4v72qzE
+Content-Type: application/pgp-signature
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknbAPsACgkQjjKRsyhoI8w5iQCeJWQKbSS87I0eMLgXksFdm47Y
+oYsAn1/hQ2UNCZ2lSazydBc06+7hrAbZ
+=bDbb
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__7_Apr_2009_17_30_03_+1000_SEVMIJzZp4v72qzE--
