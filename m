@@ -2,16 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BA71CDDF77
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 16:13:47 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n376Dfb1029755
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 01:13:41 -0500
+	by ozlabs.org (Postfix) with ESMTPS id DEA3EDDF7C
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 16:18:49 +1000 (EST)
+Message-Id: <48390008-A237-49FB-AF8F-FC3E15D38108@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Add support for early tlbilx opcode
-Date: Tue,  7 Apr 2009 01:13:41 -0500
-Message-Id: <1239084821-10121-1-git-send-email-galak@kernel.crashing.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+In-Reply-To: <49BE143A.6020109@grandegger.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 1/3] PowerPC: MPC85xx: TQM85xx: correct address of LM75
+	I2C device nodes
+Date: Tue, 7 Apr 2009 01:18:40 -0500
+References: <49BE143A.6020109@grandegger.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,120 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-During the ISA 2.06 development the opcode for tlbilx changed and some
-early implementations used to old opcode.  Add support for a MMU_FTR
-fixup to deal with this.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/include/asm/mmu.h        |    6 ++++++
- arch/powerpc/include/asm/ppc-opcode.h |   11 ++++++++++-
- arch/powerpc/kernel/cputable.c        |    2 +-
- arch/powerpc/mm/tlb_nohash_low.S      |   14 +++++++++++++-
- 4 files changed, 30 insertions(+), 3 deletions(-)
+On Mar 16, 2009, at 3:56 AM, Wolfgang Grandegger wrote:
 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index cbf1543..86d2366 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -52,6 +52,12 @@
-  */
- #define MMU_FTR_NEED_DTLB_SW_LRU	ASM_CONST(0x00200000)
- 
-+/* This indicates that the processor uses the wrong opcode for tlbilx
-+ * instructions.  During the ISA 2.06 development the opcode for tlbilx
-+ * changed and some early implementations used to old opcode
-+ */
-+#define MMU_FTR_TLBILX_EARLY_OPCODE	ASM_CONST(0x00400000)
-+
- #ifndef __ASSEMBLY__
- #include <asm/cputable.h>
- 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 640ccbb..ef4da37 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -44,6 +44,7 @@
- #define PPC_INST_STSWI			0x7c0005aa
- #define PPC_INST_STSWX			0x7c00052a
- #define PPC_INST_TLBILX			0x7c000024
-+#define PPC_INST_TLBILX_EARLY		0x7c000626
- #define PPC_INST_WAIT			0x7c00007c
- 
- /* macros to insert fields into opcodes */
-@@ -63,10 +64,18 @@
- #define PPC_RFDI		stringify_in_c(.long PPC_INST_RFDI)
- #define PPC_RFMCI		stringify_in_c(.long PPC_INST_RFMCI)
- #define PPC_TLBILX(t, a, b)	stringify_in_c(.long PPC_INST_TLBILX | \
--					__PPC_T_TLB(t) | __PPC_RA(a) | __PPC_RB(b))
-+					__PPC_T_TLB(t) | \
-+					__PPC_RA(a) | __PPC_RB(b))
- #define PPC_TLBILX_ALL(a, b)	PPC_TLBILX(0, a, b)
- #define PPC_TLBILX_PID(a, b)	PPC_TLBILX(1, a, b)
- #define PPC_TLBILX_VA(a, b)	PPC_TLBILX(3, a, b)
-+
-+#define PPC_TLBILX_EARLY(t, a, b) stringify_in_c(.long PPC_INST_TLBILX_EARLY | \
-+						__PPC_T_TLB(t) | \
-+						__PPC_RA(a) | __PPC_RB(b))
-+#define PPC_TLBILX_ALL_EARLY(a, b)	PPC_TLBILX_EARLY(0, a, b)
-+#define PPC_TLBILX_PID_EARLY(a, b)	PPC_TLBILX_EARLY(1, a, b)
-+#define PPC_TLBILX_VA_EARLY(a, b)	PPC_TLBILX_EARLY(3, a, b)
- #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
- 					__PPC_WC(w))
- 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index cd1b687..57db50f 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1766,7 +1766,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_features		= CPU_FTRS_E500MC,
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
- 		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS |
--			MMU_FTR_USE_TLBILX,
-+			MMU_FTR_USE_TLBILX | MMU_FTR_TLBILX_EARLY_OPCODE,
- 		.icache_bsize		= 64,
- 		.dcache_bsize		= 64,
- 		.num_pmcs		= 4,
-diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
-index 788b87c..45fed36 100644
---- a/arch/powerpc/mm/tlb_nohash_low.S
-+++ b/arch/powerpc/mm/tlb_nohash_low.S
-@@ -138,7 +138,11 @@ BEGIN_MMU_FTR_SECTION
- 	andi.	r3,r3,MMUCSR0_TLBFI@l
- 	bne	1b
- MMU_FTR_SECTION_ELSE
--	PPC_TLBILX_ALL(0,0)
-+  BEGIN_MMU_FTR_SECTION_NESTED(96)
-+	PPC_TLBILX_ALL(0,r3)
-+  MMU_FTR_SECTION_ELSE_NESTED(96)
-+	PPC_TLBILX_ALL_EARLY(0,r3)
-+  ALT_MMU_FTR_SECTION_END_NESTED_IFCLR(MMU_FTR_TLBILX_EARLY_OPCODE, 96)
- ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
- 	msync
- 	isync
-@@ -151,7 +155,11 @@ BEGIN_MMU_FTR_SECTION
- 	wrteei	0
- 	mfspr	r4,SPRN_MAS6	/* save MAS6 */
- 	mtspr	SPRN_MAS6,r3
-+  BEGIN_MMU_FTR_SECTION_NESTED(96)
- 	PPC_TLBILX_PID(0,0)
-+  MMU_FTR_SECTION_ELSE_NESTED(96)
-+	PPC_TLBILX_PID_EARLY(0,0)
-+  ALT_MMU_FTR_SECTION_END_NESTED_IFCLR(MMU_FTR_TLBILX_EARLY_OPCODE, 96)
- 	mtspr	SPRN_MAS6,r4	/* restore MAS6 */
- 	wrtee	r10
- MMU_FTR_SECTION_ELSE
-@@ -185,7 +193,11 @@ BEGIN_MMU_FTR_SECTION
- 	mtspr	SPRN_MAS1,r4
- 	tlbwe
- MMU_FTR_SECTION_ELSE
-+  BEGIN_MMU_FTR_SECTION_NESTED(96)
- 	PPC_TLBILX_VA(0,r3)
-+  MMU_FTR_SECTION_ELSE_NESTED(96)
-+	PPC_TLBILX_VA_EARLY(0,r3)
-+  ALT_MMU_FTR_SECTION_END_NESTED_IFCLR(MMU_FTR_TLBILX_EARLY_OPCODE, 96)
- ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
- 	msync
- 	isync
--- 
-1.6.0.6
+> Commit 0f73a449a649acfca91404a98a35353a618b9555 added I2C device nodes
+> for the LM75 thermal sensor on the TQM85xx modules, unfortunately with
+> the wrong I2C address. The LM75s are located at address 0x48.
+>
+> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+> ---
+> arch/powerpc/boot/dts/tqm8540.dts          |    4 ++--
+> arch/powerpc/boot/dts/tqm8541.dts          |    4 ++--
+> arch/powerpc/boot/dts/tqm8548-bigflash.dts |    4 ++--
+> arch/powerpc/boot/dts/tqm8548.dts          |    4 ++--
+> arch/powerpc/boot/dts/tqm8555.dts          |    4 ++--
+> arch/powerpc/boot/dts/tqm8560.dts          |    4 ++--
+> 6 files changed, 12 insertions(+), 12 deletions(-)
+
+applied
+
+- k
