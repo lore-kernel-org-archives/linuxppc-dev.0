@@ -1,35 +1,19 @@
-Return-Path: <subrata@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1AD8CDDFB2
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 18:48:55 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n378oUMm004371
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 04:50:30 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n378mplW193624
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 04:48:51 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n378moHj021204
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 04:48:51 -0400
-Subject: Re: [LTP] [PATCH] powerpc: wire up preadv and pwritev
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Gerd Hoffmann <kraxel@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <49DB0628.70502@redhat.com>
-References: <20090407131950.9ab4430b.sfr@canb.auug.org.au>
-	<bb33bcf20904062351p63645851h9b33d47f57c57e7f@mail.gmail.com>
-	<49DB0628.70502@redhat.com>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 14:18:47 +0530
-Message-Id: <1239094128.5300.13.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-Cc: ltp-list <ltp-list@lists.sf.net>, maknayak@in.ibm.com,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Subrata Modak <tosubrata@gmail.com>
-Reply-To: subrata@linux.vnet.ibm.com
+Return-Path: <fredrik.arnerup@edgeware.tv>
+Received: from mail.edgeware.tv (mail.edgeware.tv [82.99.7.138])
+	by ozlabs.org (Postfix) with ESMTP id 08118DDF8C
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2009 19:09:56 +1000 (EST)
+From: "Fredrik Arnerup" <fredrik.arnerup@edgeware.tv>
+To: "'Scott Wood'" <scottwood@freescale.com>
+References: <1C9CDA9B925A4C77B150D492AFFD022F@edgeware.tv>
+	<20090406182650.GB4001@ld0162-tx32.am.freescale.net>
+Subject: RE: Recap: Kernel oops while duming user core.
+Date: Tue, 7 Apr 2009 11:09:54 +0200
+Message-ID: <52D4E83A99B840D78EE55C2BD1609F5F@edgeware.tv>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20090406182650.GB4001@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,36 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks Gerd/Stephen,
+> -----Original Message-----
+> From: Scott Wood [mailto:scottwood@freescale.com] 
+> Sent: Monday, April 06, 2009 8:27 PM
+> To: Fredrik Arnerup
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: Recap: Kernel oops while duming user core.
+>
+> On Mon, Apr 06, 2009 at 05:23:12PM +0200, Fredrik Arnerup wrote:
+> > Was the kernel oops when dumping core ever resolved?
+> > (http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051080.html,
+quoted
+> > below)
+> 
+> What was the cause? Is there a patch? A bug tracker ticket?
+>
+> It was fixed here:
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051350.html
+>
+> > Using ELDK here, so still running 2.6.24 ...
+>
+> Please consider upgrading.
+>
+> -Scott
 
-On Tue, 2009-04-07 at 09:52 +0200, Gerd Hoffmann wrote:
-> Hi,
-> 
-> > How about contributing the above test to LTP(http://ltp.sourceforge.net/)
-> > under GPL ? If you agree, i would soon send you a Patch integrating the same
-> > to LTP.
-> 
-> Fine with me.  You probably want to remove the hard-coded syscall 
-> numbers and pickup them from unistd.h instead though.
+Thanks! Works with the ppc arch too.
 
-Sure. We will do some necessary changes, and you will shortly hear from
-us the Patch to integrate, and, retaining your Copyright on the test
-program.
+/Fredrik
 
-Regards--
-Subrata
 
-> 
-> cheers,
->    Gerd
-> 
-> 
-> ------------------------------------------------------------------------------
-> This SF.net email is sponsored by:
-> High Quality Requirements in a Collaborative Environment.
-> Download a free trial of Rational Requirements Composer Now!
-> http://p.sf.net/sfu/www-ibm-com
-> _______________________________________________
-> Ltp-list mailing list
-> Ltp-list@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/ltp-list
+--- a/arch/ppc/mm/init.c
++++ b/arch/ppc/mm/init.c
+@@ -483,7 +483,12 @@ void update_mmu_cache(struct vm_area_struct *vma,
+unsigned long address,
+                 */
+                _tlbie(address, 0 /* 8xx doesn't care about PID */);
+ #endif
+-               if (!PageReserved(page)
++               /* The _PAGE_USER test should really be _PAGE_EXEC, but
++                * older glibc versions execute some code from no-exec
++                * pages, which for now we are supporting.  If exec-only
++                * pages are ever implemented, this will have to change.
++                */
++               if (!PageReserved(page) && (pte_val(pte) & _PAGE_USER)
+                    && !test_bit(PG_arch_1, &page->flags)) {
+                        if (vma->vm_mm == current->active_mm) {
+                                __flush_dcache_icache((void *) address);
