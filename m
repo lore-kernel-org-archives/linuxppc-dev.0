@@ -1,21 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id C2A37DDFCE
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 04:40:36 +1000 (EST)
-Date: Tue, 7 Apr 2009 22:40:34 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] powerpc: 85xx: Add PHY fixup to socrates board code
-Message-ID: <20090407184034.GA25760@oksana.dev.rtsoft.ru>
-References: <1239113988-4579-1-git-send-email-agust@denx.de>
-	<20090407143011.GA15727@oksana.dev.rtsoft.ru>
-	<49DB8C3C.5080306@denx.de>
-	<20090407180957.GA2831@oksana.dev.rtsoft.ru>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CCCAADE09E
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 05:42:44 +1000 (EST)
+Message-ID: <49DBAC7C.5040405@freescale.com>
+Date: Tue, 07 Apr 2009 14:41:48 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090407180957.GA2831@oksana.dev.rtsoft.ru>
+To: "Sauce.Cheng" <chmhou@sina.com>
+Subject: Re: issue at the beginning of kernel booting
+References: <20090327083628.4C3E93EE530@mail2-203.sinamail.sina.com.cn>	<20090327161522.GA7809@ld0162-tx32.am.freescale.net>	<22840131.post@talk.nabble.com>	<20090402161209.GA19088@ld0162-tx32.am.freescale.net>
+	<22930588.post@talk.nabble.com>
+In-Reply-To: <22930588.post@talk.nabble.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 07, 2009 at 10:09:57PM +0400, Anton Vorontsov wrote:
-[...]
-> Still, I think you shouldn't do this in a board-specific fixup.
-> Maybe I'm a bit naive, but shouldn't this work too?
+Sauce.Cheng wrote:
+>>> i tried 
+>>> CONFIG_PPC_EARLY_DEBUG_CPM=y 
+>>> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR=0xf00000008	
+>>> how can i make sure CPM_ADDR, 0xf0000008 is default value 
+> 
+>> Look at the u-boot source, or dump the memory and see if it looks like a
+>> ring buffer.
+> 
+> sorry, i mean that CPM_ADDR is address of what? address of CPM registers or
+> something?
 
-Yes, I'm naive. The phydev isn't yet bound to any driver, so we
-can't call phy_disable_interrupts().
+It's the address of a transmit descriptor for the serial port.  It's 
+typically in DPRAM, but the exact position depends on where u-boot put 
+it.  Try 0xf0000088.
 
-And I don't see any proper solution. :-( After all, it appears
-we'll have to live with the board fixup.
+>> This is a dts-v0 tree, which implies it's fairly old.
+> dose later dts be used in corresponding kernel version ?
 
-> diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-> index b754020..9052937 100644
-> --- a/drivers/net/phy/mdio_bus.c
-> +++ b/drivers/net/phy/mdio_bus.c
-> @@ -205,6 +205,16 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
->  
->  	phydev->bus = bus;
->  
-> +	/*
-> +	 * Some PHYs may have unmasked/pending interrupts, this might
-> +	 * cause troubles w/ shared IRQs. So try to put the PHYs into
-> +	 * some sane state.
-> +	 *
-> +	 * NOTE: This won't work if you have two PHYs w/ shared IRQs
-> +	 *       on different MDIO buses.
-> +	 */
-> +	phy_disable_interrupts(phydev);
-> +
->  	/* Run all of the fixups for this PHY */
->  	phy_scan_fixups(phydev);
->  
+Yes, current kernels use dts-v1.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> in addition, there is one more question. 
+> my RAM size is 32MBytes, my "vmlinux" size is 30MBytes, "vmlinux.o" size is
+> 58MBytes. so , will there be something wrong at uncompressing time ?
+
+That's just debugging information; it won't end up in the uImage.  Use 
+the "size" utility in your toolchain to see how big the actual code and 
+data are.
+
+-Scott
