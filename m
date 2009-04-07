@@ -1,13 +1,13 @@
 Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 53FDEDDFDE
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 00:39:48 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 3E775DDFDE
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 01:02:05 +1000 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1LrCSm-0002sr-92
-	for linuxppc-dev@ozlabs.org; Tue, 07 Apr 2009 07:39:44 -0700
-Message-ID: <22930588.post@talk.nabble.com>
-Date: Tue, 7 Apr 2009 07:39:44 -0700 (PDT)
+	(envelope-from <bounces@nabble.com>) id 1LrCoM-0003wy-LQ
+	for linuxppc-dev@ozlabs.org; Tue, 07 Apr 2009 08:02:02 -0700
+Message-ID: <22931181.post@talk.nabble.com>
+Date: Tue, 7 Apr 2009 08:02:02 -0700 (PDT)
 From: "Sauce.Cheng" <chmhou@sina.com>
 To: linuxppc-dev@ozlabs.org
 Subject: Re: issue at the beginning of kernel booting
@@ -28,43 +28,100 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-thanks Scott 's following
+evolution! kernel 2.6.11 has run on the board with u-boot 1.1.4, also, at
+early booting time LEDs are disabled due to MMU on and off. so i tried to
+turn LEDs on after start_kernel function, wow, blinking! that is before
+start_kernel will be done successfully. then i modified registers mapping in
+immap_cpm2.h and configure smc1 as serial. console worked normally.
+booting info as following
+U-Boot 1.1.4 (Apr  2 2009 - 20:05:19)
 
-> I don't quite follow the above, but what I meant is that you need to
-> put a mapping in place that covers your LED I/O once you have the MMU on.
-> Any mappings that U-boot made will be gone at that point.
+MPC8272 Reset Status: External Soft, External Hard
 
-i am sorry for my poor expression. i think i have got your meaning about
-that.
-the suggestion from others that the situation that external access will be
-disabled at early booting time. i guess that means like yours, sometimes I/O
-disabled due to cache operating or something.
+MPC8272 Clock Configuration
+ - Bus-to-Core Mult 4x, VCO Div 2, 60x Bus Freq  25-75 , Core Freq 100-300
+ - dfbrg 1, corecnf 0x1a, busdf 3, cpmdf 1, plldf 0, pllmf 3
+ - vco_out  400000000, scc_clk  100000000, brg_clk   25000000
+ - cpu_clk  400000000, cpm_clk  200000000, bus_clk  100000000
 
-certainly, if i have to turn LEDs at booting time, the way your said is the
-best. but i supposed i could operate LEDs after early booting time. 
+Board: Motorola MPC8272ADS
+DRAM:  32 MB
+FLASH: 512 kB
+In:    serial
+Out:   serial
+Err:   serial
+Net:   FCC1 ETHERNET
+Hit any key to stop autoboot:  0 
+Using FCC1 ETHERNET device
+TFTP from server 192.168.0.99; our IP address is 192.168.0.100
+Filename 'uImage'.
+Load address: 0x400000
+Loading: #################################################################
+	 #################################################################
+	 #######################
+done
+Bytes transferred = 781091 (beb23 hex)
+=> bootm
 
->> i tried 
->> CONFIG_PPC_EARLY_DEBUG_CPM=y 
->> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR=0xf00000008	
->> how can i make sure CPM_ADDR, 0xf0000008 is default value 
+## Booting image at 00400000 ...
+   Image Name:   Linux-2.6.11
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    781027 Bytes = 762.7 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+OK
+Linux version 2.6.11 (root@localhost.localdomain) (gcc version 4.0.0 (DENX
+ELDK 4.0 4.0.0)) #49 Tue Apr 7 04:11:56 EDT 2009
 
-> Look at the u-boot source, or dump the memory and see if it looks like a
-> ring buffer.
+Motorola PQ2 ADS PowerPC port
 
-sorry, i mean that CPM_ADDR is address of what? address of CPM registers or
-something?
+Built 1 zonelists
 
-> This is a dts-v0 tree, which implies it's fairly old.
-dose later dts be used in corresponding kernel version ?
+Kernel command line: mem=32M console=ttyCPM0,9600 root=/dev/mtdblock0 rw
+rootfstype=jffs2
 
-i guess i must read "booting-without-of.txt". many of contents in dts i have
-no idea.
+PID hash table entries: 256 (order: 8, 4096 bytes)
 
-in addition, there is one more question. 
-my RAM size is 32MBytes, my "vmlinux" size is 30MBytes, "vmlinux.o" size is
-58MBytes. so , will there be something wrong at uncompressing time ?
+Warning: real time clock seems stuck!
 
-Sauce
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+
+Memory: 30728k available (1304k kernel code, 276k data, 104k init, 0k
+highmem)
+
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+
+Chengmo : Here will enter rest_init()!
+
+NET: Registered protocol family 16
+
+PCI: Probing PCI hardware
+
+Generic RTC Driver v1.07
+
+Serial: CPM driver $Revision: 0.01 $
+
+ttyCPM0 at MMIO 0xf0011a80 (irq = 4) is a CPM UART
+
+io scheduler noop registered
+
+io scheduler anticipatory registered
+
+io scheduler deadline registered
+
+io scheduler cfq registered
+
+RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
+
+loop: loaded (max 8 devices)
+
+halt here~
+i have tried to build newer kernel and bootloader. but LEDs were not
+blinking at start_kernel, i guessed something wrong with dts, i should check
+OF doc and dts. 
 -- 
-View this message in context: http://www.nabble.com/issue-at-the-beginning-of-kernel-booting-tp22741532p22930588.html
+View this message in context: http://www.nabble.com/issue-at-the-beginning-of-kernel-booting-tp22741532p22931181.html
 Sent from the linuxppc-dev mailing list archive at Nabble.com.
