@@ -1,26 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4037ADE0D9
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 12:09:20 +1000 (EST)
-Subject: Re: "ahci: drop intx manipulation on msi enable" breaks ULI M1575
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
-References: <49DB6914.1030107@freescale.com> <49DBE858.9040004@kernel.org>
-	<ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-eyVJA3ce50KgS5GhPD2w"
-Date: Wed, 08 Apr 2009 12:09:19 +1000
-Message-Id: <1239156559.10104.7.camel@localhost>
-Mime-Version: 1.0
-Cc: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>,
-	Linux PPC Development <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 34DB8DE0C3
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 13:11:39 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n383BZB3020862
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Apr 2009 22:11:36 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/mm: Fix compile warning
+Date: Tue,  7 Apr 2009 22:11:35 -0500
+Message-Id: <1239160295-14314-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,51 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+arch/powerpc/mm/tlb_nohash.c: In function 'flush_tlb_mm':
+arch/powerpc/mm/tlb_nohash.c:128: warning: unused variable 'cpu_mask'
 
---=-eyVJA3ce50KgS5GhPD2w
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/mm/tlb_nohash.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-On Tue, 2009-04-07 at 19:36 -0500, Timur Tabi wrote:
-> On Tue, Apr 7, 2009 at 6:57 PM, Tejun Heo <tj@kernel.org> wrote:
->=20
-> > Hmmm... that means intx isn't set by default.  I'm not sure what is
-> > the right thing to do here.  I think it's something which should be
-> > handled by the PCI layer.  Oh well, maybe we should just revert the
-> > change and keep setting intx?
->=20
-> cc'ing linuxppc-dev
->=20
-> I really don't know what should be done.  It seems to make sense to
-> have the PCI layer enable interrupts.
->=20
-> This seems to be a powerpc-specific bug, but I don't know enough of
-> the PCI subsystem.
-
-Have you confirmed that INTX is disabled before that call?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-eyVJA3ce50KgS5GhPD2w
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkncB08ACgkQdSjSd0sB4dIOogCdHN5r2BUzzwDBoSPsmtRgj7B4
-MwQAoJXrCUcqEhqSRuB9EFs+TNmjIlWU
-=qbzu
------END PGP SIGNATURE-----
-
---=-eyVJA3ce50KgS5GhPD2w--
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index 7af7297..ad2eb4d 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -125,7 +125,6 @@ static void do_flush_tlb_page_ipi(void *param)
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
+-	cpumask_t cpu_mask;
+ 	unsigned int pid;
+ 
+ 	preempt_disable();
+-- 
+1.6.0.6
