@@ -1,18 +1,24 @@
-Return-Path: <eddie@embeddedarm.com>
-Received: from oz.embeddedARM.com (oz.embeddedarm.com [67.40.67.44])
-	by ozlabs.org (Postfix) with ESMTP id D5486DDF71
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 10:07:56 +1000 (EST)
-Message-ID: <49DBEB8F.2040307@embeddedarm.com>
-Date: Tue, 07 Apr 2009 17:10:55 -0700
-From: Eddie Dawydiuk <eddie@embeddedarm.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: AMCC 440EP phy detection
-References: <49DB8033.1090908@embeddedarm.com>
-	<fa686aa40904071011n22084931wc8900606fd62f167@mail.gmail.com>
-In-Reply-To: <fa686aa40904071011n22084931wc8900606fd62f167@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 405A4DE050
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 10:27:39 +1000 (EST)
+Subject: Re: Hotplug on PPC4xx
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sean MacLennan <smaclennan@pikatech.com>
+In-Reply-To: <20090407192728.7218eea9@lappy.seanm.ca>
+References: <20090406182023.0729073a@lappy.seanm.ca>
+	<20090407192728.7218eea9@lappy.seanm.ca>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-ejnM2/mXb/sMvolaFh4M"
+Date: Wed, 08 Apr 2009 10:27:38 +1000
+Message-Id: <1239150458.6848.2.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-Thanks for the suggestions :)
+--=-ejnM2/mXb/sMvolaFh4M
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I found the ibm_newemac driver(2.6.29) makes the assumption that the bootloader 
-has already configured the tx enable pin as it is a multiplexed pin. 
-Unfortuantley I am not using U-Boot and our minimal bootloader does not do this. 
-  After finding tx enable was never asserting for Eth0 a quick user space 
-program verified tx enable was configured as a GPIO pin.
+On Tue, 2009-04-07 at 19:27 -0400, Sean MacLennan wrote:
+> On Mon, 6 Apr 2009 18:20:23 -0400
+> "Sean MacLennan" <sean.maclennan@ottawa.kanatek.ca> wrote:
+>=20
+> > I am trying to run the /sbin/hotplug from the kernel and it doesn't
+> > work. Has anybody got it running?
+>=20
+> I looked into it some more. It turns out that the env pointers are
+> freed before they are copied.
 
-> On Tue, Apr 7, 2009 at 9:32 AM, Eddie Dawydiuk <eddie@embeddedarm.com> wrote:
->> Hello,
->>
->> I'm working on a board based on the Yosemite AMCC 440EP eval board. I'm
->> having some difficulty getting both network interfaces working. The first
->> problem I found is the ibm_newemac driver was detecting the two phys at
->> address 0 and 1 where we have them wired for addresses 1 and 3. As a result
->> I hardcoded the phy-address in the dts file. I then found I was able to
->> receive and send data on eth1(phy-address 3) without incident. Although I
->> found eth0 can receive data but I see no packets being transmitted(using a
->> packet sniffer) and I see no indication from a software standpoint of any
->> transmit failures. We are using Micrel KSZ8041FTL phys(RMII mode) where the
->> Yosemite board used Micrel KS8721BL phys.  I've reviewed the schematic and
->> it appears both phys are connected identically and I've seen this same
->> failure on multiple boards. I thought the fact that the driver detected a
->> phy at address 0 might be a clue, but I can't make much of the clue. So I
->> thought I'd post this info in the hopes someone else might have run into a
->> similar problem or have a suggestion.
-> 
-> Phy address 0 is the broadcast address.  All phys will usually respond
-> to address 0 accesses.  Off the top of my head, It sounds like one PHY
-> is responding to addresses 0 & 1, and the other phy isn't responding
-> at all.
-> 
-> g.
-> 
+That sounds like a bug?
 
+cheers
 
--- 
-Best Regards,
-________________________________________________________________
-  Eddie Dawydiuk, Technologic Systems | voice:  (480) 837-5200
-  16525 East Laser Drive 	     | fax:    (480) 837-5300
-  Fountain Hills, AZ 85268            | web: www.embeddedARM.com
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-ejnM2/mXb/sMvolaFh4M
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknb73oACgkQdSjSd0sB4dJhCACgwldKBNDHsMe5OUzFbNyNAdoE
+f+8AoJ/zizf2mOg8Z7gY0JzOpTaP/hZU
+=o87t
+-----END PGP SIGNATURE-----
+
+--=-ejnM2/mXb/sMvolaFh4M--
