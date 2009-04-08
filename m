@@ -1,17 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 3B2BFDDFBE
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 00:47:19 +1000 (EST)
-Date: Wed, 8 Apr 2009 09:48:45 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: any place to mark various compatible strings as deprecated?
-Message-ID: <20090408144845.GA29163@lixom.net>
-References: <84DDF2F3-F907-4131-8C41-A9156BD5ADB2@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <84DDF2F3-F907-4131-8C41-A9156BD5ADB2@kernel.crashing.org>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+In-Reply-To: <49DC4F4D.10803@grandegger.com>
+References: <20090407082052.477328750@denx.de>
+	<20090407082231.803193635@denx.de>
+	<fa686aa40904070843q248f3ae1l9c8ca0d5a65c8cc3@mail.gmail.com>
+	<49DC4F4D.10803@grandegger.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 8 Apr 2009 07:53:22 -0700
+Message-ID: <fa686aa40904080753p2b282338r9ba463c47f897fb@mail.gmail.com>
+Subject: Re: [PATCH v3 5/5] powerpc/85xx: i2c-mpc: use new I2C bindings for
+	the Socates board
+To: Wolfgang Grandegger <wg@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,12 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 08, 2009 at 09:23:22AM -0500, Kumar Gala wrote:
-> Do we have anywhere to list out compatible strings that are deprecated  
-> and warn if the kernel sees one?
+On Wed, Apr 8, 2009 at 12:16 AM, Wolfgang Grandegger <wg@grandegger.com> wr=
+ote:
+> Grant Likely wrote:
+>> On Tue, Apr 7, 2009 at 1:20 AM, Wolfgang Grandegger <wg@grandegger.com> =
+wrote:
+>>> Preserve I2C clock settings for the Socrates MPC8544 board.
+>>
+>> I had thought that the preserve-clocking property was intended for
+>> older boards that don't currently have any method of getting the clock
+>> setting out of u-boot. =A0Since Socrates is a new board, U-Boot should
+>> probably be made to fill in the real clock rate setting.
+>
+> I'm not sure if I understand what you mean. If an old version of U-Boot
+> on an old board sets the I2C clock, it can be used (inherited) by Linux
+> using the property "preserve-clocking".
+>
+> It is actually the customers choice to set the I2C clock in U-Boot and
+> re-use it by Linux.
 
-Wouldn't dtc be a better location for that? The kernel has to be backwards
-compatible anyway, I don't really see a reason to warn there.
+Setting it in the register !=3D recording the value in the device tree.
+I'm saying that since Socrates is a new board it should not use the
+preserve-clocking dirty trick (and it is a dirty trick) because the
+correct clocking data can be passed via the device tree.
+
+g.
 
 
--Olof
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
