@@ -1,16 +1,10 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id DCF77DE001
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 09:27:32 +1000 (EST)
-Date: Tue, 7 Apr 2009 19:27:28 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
-Subject: Re: Hotplug on PPC4xx
-Message-ID: <20090407192728.7218eea9@lappy.seanm.ca>
-In-Reply-To: <20090406182023.0729073a@lappy.seanm.ca>
-References: <20090406182023.0729073a@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <michael@ozlabs.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-Id: <fe6d8d0ac33f450da7db317eb7f785bed788fc21.1239148958.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc/oprofile: Remove unused dump_pmcs() in FSL oprofile
+Date: Wed,  8 Apr 2009 10:02:50 +1000 (EST)
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,23 +14,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 6 Apr 2009 18:20:23 -0400
-"Sean MacLennan" <sean.maclennan@ottawa.kanatek.ca> wrote:
+It's still in the git history if anyone wants it.
 
-> I am trying to run the /sbin/hotplug from the kernel and it doesn't
-> work. Has anybody got it running?
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/oprofile/op_model_fsl_emb.c |   14 --------------
+ 1 files changed, 0 insertions(+), 14 deletions(-)
 
-I looked into it some more. It turns out that the env pointers are
-freed before they are copied.
-
-In kobject_uevent_env() if I change the line that calls the helper from
-UMH_NO_WAIT to UMH_WAIT_EXEC, then it works... but probably at a loss
-of performance.
-
-		retval = call_usermodehelper(argv[0], argv,
-					     env->envp, UMH_WAIT_EXEC);
-
-Any other ideas?
-
-Cheers,
-   Sean
+diff --git a/arch/powerpc/oprofile/op_model_fsl_emb.c b/arch/powerpc/oprofile/op_model_fsl_emb.c
+index 91596f6..62312ab 100644
+--- a/arch/powerpc/oprofile/op_model_fsl_emb.c
++++ b/arch/powerpc/oprofile/op_model_fsl_emb.c
+@@ -228,20 +228,6 @@ static void pmc_stop_ctrs(void)
+ 	mtpmr(PMRN_PMGC0, pmgc0);
+ }
+ 
+-static void dump_pmcs(void)
+-{
+-	printk("pmgc0: %x\n", mfpmr(PMRN_PMGC0));
+-	printk("pmc\t\tpmlca\t\tpmlcb\n");
+-	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC0),
+-			mfpmr(PMRN_PMLCA0), mfpmr(PMRN_PMLCB0));
+-	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC1),
+-			mfpmr(PMRN_PMLCA1), mfpmr(PMRN_PMLCB1));
+-	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC2),
+-			mfpmr(PMRN_PMLCA2), mfpmr(PMRN_PMLCB2));
+-	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC3),
+-			mfpmr(PMRN_PMLCA3), mfpmr(PMRN_PMLCB3));
+-}
+-
+ static int fsl_emb_cpu_setup(struct op_counter_config *ctr)
+ {
+ 	int i;
+-- 
+1.6.2.1
