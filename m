@@ -1,27 +1,18 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-qy0-f110.google.com (mail-qy0-f110.google.com
-	[209.85.221.110]) by ozlabs.org (Postfix) with ESMTP id 786D3DE088
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 08:15:48 +1000 (EST)
-Received: by qyk8 with SMTP id 8so677684qyk.17
-	for <linuxppc-dev@ozlabs.org>; Wed, 08 Apr 2009 15:15:46 -0700 (PDT)
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 51CBCDDE23
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 08:04:11 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1LrfsO-0008GF-Ss
+	for linuxppc-dev@ozlabs.org; Wed, 08 Apr 2009 15:04:08 -0700
+Message-ID: <22960621.post@talk.nabble.com>
+Date: Wed, 8 Apr 2009 15:04:08 -0700 (PDT)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Xilinx board and NPTL support lockup
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <49DD17C3.7040607@kernel.org>
-References: <49DB6914.1030107@freescale.com> <49DBE858.9040004@kernel.org>
-	<ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
-	<1239156559.10104.7.camel@localhost>
-	<ed82fe3e0904080440w130b5dc5of6d5ed3051ed04e2@mail.gmail.com>
-	<49DD1154.3040106@kernel.org> <49DD11D1.7060105@freescale.com>
-	<49DD1375.8030400@kernel.org> <49DD1465.6070001@freescale.com>
-	<49DD17C3.7040607@kernel.org>
-Date: Wed, 8 Apr 2009 17:15:46 -0500
-Message-ID: <ed82fe3e0904081515k6e53de00g7d5256f9b61a03da@mail.gmail.com>
-Subject: Re: "ahci: drop intx manipulation on msi enable" breaks ULI M1575
-From: Timur Tabi <timur@freescale.com>
-To: Tejun Heo <tj@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	Linux PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,14 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 8, 2009 at 4:31 PM, Tejun Heo <tj@kernel.org> wrote:
-> Hmmm... for now,
-> I think it would be best to revert the original change. =A0Jeff, can you
-> please do that?
 
-Actually, give me a few days before you do that.  A colleague gave me
-some suggestions to debug this.
+Hi everyone,
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+I have a board similar to the ml410, its been running a linux kernel happily
+for about a year now, but now the firmware guys want NPTL threading instead
+of the linuxthread library.
+I recompiled my gcc 4.0.2 and glibc 2.3.6 library with the NPTL support, and
+recompiled my kernel with the new tools.
+
+Now my kernel gets stuck at the infamous "Now Booting the Kernel" message.
+
+Any thoughts on why this might be happening, or how to verify that my glibc
+and gcc are functional other than trying to compile things with them (I know
+this works).
+
+Thanks
+Kevin 
+-- 
+View this message in context: http://www.nabble.com/Xilinx-board-and-NPTL-support-lockup-tp22960621p22960621.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
