@@ -1,23 +1,18 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 103FFDDF7F
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 17:23:33 +1000 (EST)
-Message-ID: <49DC405E.5050005@garzik.org>
-Date: Wed, 08 Apr 2009 02:12:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <wg@grandegger.com>
+Message-ID: <49DC515F.3040100@grandegger.com>
+Date: Wed, 08 Apr 2009 09:25:19 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: "ahci: drop intx manipulation on msi enable" breaks ULI M1575
-References: <49DB6914.1030107@freescale.com> <49DBE858.9040004@kernel.org>	
-	<ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
-	<1239156559.10104.7.camel@localhost>
-In-Reply-To: <1239156559.10104.7.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
-	Timur Tabi <timur@freescale.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Linux PPC Development <linuxppc-dev@ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3 0/5] i2c: i2c-mpc: make I2C bus speed configurable
+References: <20090407082052.477328750@denx.de>
+	<53B42D49-C040-442E-8448-7BC3190220A5@kernel.crashing.org>
+	<F4E3E1FF-C544-460A-AC27-DB9501C13ED3@kernel.crashing.org>
+In-Reply-To: <F4E3E1FF-C544-460A-AC27-DB9501C13ED3@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss <devicetree-discuss@ozlabs.org>,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Tue, 2009-04-07 at 19:36 -0500, Timur Tabi wrote:
->> On Tue, Apr 7, 2009 at 6:57 PM, Tejun Heo <tj@kernel.org> wrote:
->>
->>> Hmmm... that means intx isn't set by default.  I'm not sure what is
->>> the right thing to do here.  I think it's something which should be
->>> handled by the PCI layer.  Oh well, maybe we should just revert the
->>> change and keep setting intx?
->> cc'ing linuxppc-dev
->>
->> I really don't know what should be done.  It seems to make sense to
->> have the PCI layer enable interrupts.
->>
->> This seems to be a powerpc-specific bug, but I don't know enough of
->> the PCI subsystem.
+Kumar Gala wrote:
 > 
-> Have you confirmed that INTX is disabled before that call?
+> On Apr 8, 2009, at 12:11 AM, Kumar Gala wrote:
+> 
+>>
+>> On Apr 7, 2009, at 3:20 AM, Wolfgang Grandegger wrote:
+>>
+>>> This patch series makes the I2C bus speed configurable by using the
+>>> I2C node property "clock-frequency". If the property is not defined,
+>>> the old fixed clock settings will be used for backward compatibility.
+>>> The property "fsl,preserve-clocking" allows to inherit the settings
+>>> from the bootloader. Furthermore, it does some cleanup and uses the
+>>> new bindings for the Socrates board:
+>>>
+>>> i2c: i2c-mpc: various coding style fixes
+>>> i2c: i2c-mpc: use dev based printout function
+>>> i2c: i2c-mpc: make I2C bus speed configurable
+>>
+>> It looks like Ben picked up these patches.
+>>
+>>> powerpc: i2c-mpc: document new FSL I2C bindings and cleanup
+>>> powerpc/85xx: i2c-mpc: use new I2C bindings for the Socates board
+>>
+>> I would have preferred these two go via me, but it looks like the
+>> board one got picked up by Ben.  I'll deal with the doc/binding update.
+>>>
+>>> Ben, could you please consider this patch series for inclusion into
+>>> 2.6.30
+> 
+> So I'm a bit concerned with the output we now get:
+> 
+> mpc-i2c fffe03000.i2c: clock 0 Hz (dfsrr=16 fdr=49)
+> 
+> why 0? is that right?
 
-The symptoms definitely indicate such, as well as his reversing that commit.
+This is the backward compatibility mode using hard-coded FDR values. The
+output is missleading, I agree.
 
-My guess is that this is a ULI M1575-specific bug, and the PCI layer 
-needs a quirk that knows this device does -not- disable INTX, when MSI 
-is enabled.
-
-But honestly, I never saw any harm in disabling INTX manually.  Indeed, 
-I wrote the code that disabled INTX out of now-substantiated paranoia 
-that some PCI devices would be too dumb to follow that particular MSI 
-rule...  and the cost of twiddling INTX seemed quite low in comparison 
-the potential problems created by the absence of INTX twiddling.
-
-	Jeff
+Wolfgang.
