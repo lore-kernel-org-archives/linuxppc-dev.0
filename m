@@ -1,19 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
-	by ozlabs.org (Postfix) with ESMTP id B6AF1DDFDC
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 04:19:22 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: AMCC 440EP phy detection
-Date: Wed, 8 Apr 2009 20:19:06 +0200
-References: <49DB8033.1090908@embeddedarm.com> <200904081801.27754.sr@denx.de>
-	<fa686aa40904081000x2dbdd417y149fe442b9fc55bf@mail.gmail.com>
-In-Reply-To: <fa686aa40904081000x2dbdd417y149fe442b9fc55bf@mail.gmail.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <49DCEC80.2050507@grandegger.com>
+Date: Wed, 08 Apr 2009 20:27:12 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200904082019.06889.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Eddie Dawydiuk <eddie@embeddedarm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 5/5] powerpc/85xx: i2c-mpc: use new I2C bindings for
+	the Socates board
+References: <20090407082052.477328750@denx.de>
+	<20090407082231.803193635@denx.de>
+	<fa686aa40904070843q248f3ae1l9c8ca0d5a65c8cc3@mail.gmail.com>
+	<49DC4F4D.10803@grandegger.com>
+	<fa686aa40904080753p2b282338r9ba463c47f897fb@mail.gmail.com>
+In-Reply-To: <fa686aa40904080753p2b282338r9ba463c47f897fb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 08 April 2009, Grant Likely wrote:
-> >> I would like to eventually submit our changes for upstream support.
-> >> Based on this would you recommend ensuring tx enable is configured
-> >> properly in the initialization of the ibm_newemac driver or the platform
-> >> initialization?
-> >
-> > This GPIO multiplexing configuration does not belong into the ibm_newemac
-> > driver since it is very platform/board specific. The platform code is
-> > definitely a better place.
->
-> Even better is the platform specific boot code (firmware or equivalent)
+Grant Likely wrote:
+> On Wed, Apr 8, 2009 at 12:16 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>> Grant Likely wrote:
+>>> On Tue, Apr 7, 2009 at 1:20 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>>>> Preserve I2C clock settings for the Socrates MPC8544 board.
+>>> I had thought that the preserve-clocking property was intended for
+>>> older boards that don't currently have any method of getting the clock
+>>> setting out of u-boot.  Since Socrates is a new board, U-Boot should
+>>> probably be made to fill in the real clock rate setting.
+>> I'm not sure if I understand what you mean. If an old version of U-Boot
+>> on an old board sets the I2C clock, it can be used (inherited) by Linux
+>> using the property "preserve-clocking".
+>>
+>> It is actually the customers choice to set the I2C clock in U-Boot and
+>> re-use it by Linux.
+> 
+> Setting it in the register != recording the value in the device tree.
+> I'm saying that since Socrates is a new board it should not use the
+> preserve-clocking dirty trick (and it is a dirty trick) because the
+> correct clocking data can be passed via the device tree.
 
-Ack. We usually do all this setup in U-Boot. But as I understand Eddie, he is 
-using a custom bootloader.
+Why should an old board then use it. "fsl, preserve-clocking" is a new
+feature, like using "clock-frequency" and you have the choice to
+explicitly set the clocking via device tree or inherit it from the boot
+loader. So far, a fixed FDR/DFRSS value (0x1031) was written to the
+registers by Linux.
 
-Eddie, btw: Why are you not using U-Boot?
-
-Best regards,
-Stefan
+Wolfgang.
