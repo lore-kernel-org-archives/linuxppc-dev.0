@@ -1,24 +1,26 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
-	by ozlabs.org (Postfix) with ESMTP id F0E34DE0B4
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 11:19:51 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so2057372qwb.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 07 Apr 2009 18:19:49 -0700 (PDT)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <1239151956.10104.1.camel@localhost>
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4037ADE0D9
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 12:09:20 +1000 (EST)
+Subject: Re: "ahci: drop intx manipulation on msi enable" breaks ULI M1575
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
 References: <49DB6914.1030107@freescale.com> <49DBE858.9040004@kernel.org>
 	<ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
-	<1239151956.10104.1.camel@localhost>
-Date: Tue, 7 Apr 2009 20:19:49 -0500
-Message-ID: <ed82fe3e0904071819r470afa2al9fd611571a53476b@mail.gmail.com>
-Subject: Re: "ahci: drop intx manipulation on msi enable" breaks ULI M1575
-From: Timur Tabi <timur@freescale.com>
-To: michael@ellerman.id.au
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-eyVJA3ce50KgS5GhPD2w"
+Date: Wed, 08 Apr 2009 12:09:19 +1000
+Message-Id: <1239156559.10104.7.camel@localhost>
+Mime-Version: 1.0
 Cc: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
 	Jeff Garzik <jeff@garzik.org>,
 	Linux PPC Development <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,12 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 7, 2009 at 7:52 PM, Michael Ellerman <michael@ellerman.id.au> wrote:
 
-> Can you post some more details, or point us at a thread?
+--=-eyVJA3ce50KgS5GhPD2w
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-http://marc.info/?t=123911652100006&r=1&w=2
+On Tue, 2009-04-07 at 19:36 -0500, Timur Tabi wrote:
+> On Tue, Apr 7, 2009 at 6:57 PM, Tejun Heo <tj@kernel.org> wrote:
+>=20
+> > Hmmm... that means intx isn't set by default.  I'm not sure what is
+> > the right thing to do here.  I think it's something which should be
+> > handled by the PCI layer.  Oh well, maybe we should just revert the
+> > change and keep setting intx?
+>=20
+> cc'ing linuxppc-dev
+>=20
+> I really don't know what should be done.  It seems to make sense to
+> have the PCI layer enable interrupts.
+>=20
+> This seems to be a powerpc-specific bug, but I don't know enough of
+> the PCI subsystem.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Have you confirmed that INTX is disabled before that call?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-eyVJA3ce50KgS5GhPD2w
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkncB08ACgkQdSjSd0sB4dIOogCdHN5r2BUzzwDBoSPsmtRgj7B4
+MwQAoJXrCUcqEhqSRuB9EFs+TNmjIlWU
+=qbzu
+-----END PGP SIGNATURE-----
+
+--=-eyVJA3ce50KgS5GhPD2w--
