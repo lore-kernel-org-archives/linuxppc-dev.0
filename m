@@ -1,21 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 18622DDFF7
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 03:00:47 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 9so123369ywe.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 08 Apr 2009 10:00:45 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <200904081801.27754.sr@denx.de>
-References: <49DB8033.1090908@embeddedarm.com>
-	<49DBEB8F.2040307@embeddedarm.com>
-	<49DCC6FA.1050708@embeddedarm.com> <200904081801.27754.sr@denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 8 Apr 2009 10:00:30 -0700
-Message-ID: <fa686aa40904081000x2dbdd417y149fe442b9fc55bf@mail.gmail.com>
-Subject: Re: AMCC 440EP phy detection
-To: Stefan Roese <sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Eddie Dawydiuk <eddie@embeddedarm.com>
+Return-Path: <scottwood@freescale.com>
+Date: Wed, 8 Apr 2009 12:03:49 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3 0/5] i2c: i2c-mpc: make I2C bus speed configurable
+Message-ID: <20090408170348.GA27578@ld0162-tx32.am.freescale.net>
+References: <20090407082052.477328750@denx.de>
+	<53B42D49-C040-442E-8448-7BC3190220A5@kernel.crashing.org>
+	<fa686aa40904072216m64b4fd83q9b52c89ae40cae11@mail.gmail.com>
+	<5FDB097C-7D71-41DF-A4F4-2DE34FD710C5@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5FDB097C-7D71-41DF-A4F4-2DE34FD710C5@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 8, 2009 at 9:01 AM, Stefan Roese <sr@denx.de> wrote:
-> On Wednesday 08 April 2009, Eddie Dawydiuk wrote:
->> > I found the ibm_newemac driver(2.6.29) makes the assumption that the
->> > bootloader has already configured the tx enable pin as it is a
->> > multiplexed pin. Unfortuantley I am not using U-Boot and our minimal
->> > bootloader does not do this. =A0After finding tx enable was never
->> > asserting for Eth0 a quick user space program verified tx enable was
->> > configured as a GPIO pin.
->>
->> I would like to eventually submit our changes for upstream support. Base=
-d
->> on this would you recommend ensuring tx enable is configured properly in
->> the initialization of the ibm_newemac driver or the platform
->> initialization?
->
-> This GPIO multiplexing configuration does not belong into the ibm_newemac
-> driver since it is very platform/board specific. The platform code is
-> definitely a better place.
+On Wed, Apr 08, 2009 at 12:22:29AM -0500, Kumar Gala wrote:
+> >hrummm.  As I mentioned in my reply, I'm not convinced that the board
+> >one is the right thing in this case.  I would have preferred it to be
+> >deferred.
+> 
+> which part?  I missed this whole thread as I had it forwarding to my  
+> devicetree-discuss folder which I don't normally look at.
 
-Even better is the platform specific boot code (firmware or equivalent)
+Can you reorder your filters to check for more frequently read lists
+first?
 
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Scott
