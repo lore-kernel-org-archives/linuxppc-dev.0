@@ -1,21 +1,26 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-qy0-f110.google.com (mail-qy0-f110.google.com
-	[209.85.221.110]) by ozlabs.org (Postfix) with ESMTP id 8B146DDFD5
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 10:36:26 +1000 (EST)
-Received: by qyk8 with SMTP id 8so6332463qyk.17
-	for <linuxppc-dev@ozlabs.org>; Tue, 07 Apr 2009 17:36:24 -0700 (PDT)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <49DBE858.9040004@kernel.org>
-References: <49DB6914.1030107@freescale.com> <49DBE858.9040004@kernel.org>
-Date: Tue, 7 Apr 2009 19:36:23 -0500
-Message-ID: <ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 418EADE09E
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 10:52:37 +1000 (EST)
 Subject: Re: "ahci: drop intx manipulation on msi enable" breaks ULI M1575
-From: Timur Tabi <timur@freescale.com>
-To: Tejun Heo <tj@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
+References: <49DB6914.1030107@freescale.com> <49DBE858.9040004@kernel.org>
+	<ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-b28A0KydJshxhCxHK37g"
+Date: Wed, 08 Apr 2009 10:52:36 +1000
+Message-Id: <1239151956.10104.1.camel@localhost>
+Mime-Version: 1.0
+Cc: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
+	Jeff Garzik <jeff@garzik.org>,
 	Linux PPC Development <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 7, 2009 at 6:57 PM, Tejun Heo <tj@kernel.org> wrote:
 
-> Hmmm... that means intx isn't set by default. =A0I'm not sure what is
-> the right thing to do here. =A0I think it's something which should be
-> handled by the PCI layer. =A0Oh well, maybe we should just revert the
-> change and keep setting intx?
+--=-b28A0KydJshxhCxHK37g
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-cc'ing linuxppc-dev
+On Tue, 2009-04-07 at 19:36 -0500, Timur Tabi wrote:
+> On Tue, Apr 7, 2009 at 6:57 PM, Tejun Heo <tj@kernel.org> wrote:
+>=20
+> > Hmmm... that means intx isn't set by default.  I'm not sure what is
+> > the right thing to do here.  I think it's something which should be
+> > handled by the PCI layer.  Oh well, maybe we should just revert the
+> > change and keep setting intx?
+>=20
+> cc'ing linuxppc-dev
+>=20
+> I really don't know what should be done.  It seems to make sense to
+> have the PCI layer enable interrupts.
+>=20
+> This seems to be a powerpc-specific bug, but I don't know enough of
+> the PCI subsystem.
 
-I really don't know what should be done.  It seems to make sense to
-have the PCI layer enable interrupts.
+Can you post some more details, or point us at a thread?
 
-This seems to be a powerpc-specific bug, but I don't know enough of
-the PCI subsystem.
+cheers
 
 --=20
-Timur Tabi
-Linux kernel developer at Freescale
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-b28A0KydJshxhCxHK37g
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknb9VQACgkQdSjSd0sB4dLKaACghkUDCnVPPYcb2zjhFSD3ACBl
+6JwAniHNg/U2lPh7hSLghAuGaZIfJIHw
+=AoRc
+-----END PGP SIGNATURE-----
+
+--=-b28A0KydJshxhCxHK37g--
