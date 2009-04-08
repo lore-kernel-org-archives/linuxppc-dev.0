@@ -1,19 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <893E128E-46D6-4E8A-9F0C-5EF67F3818D8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20090408170348.GA27578@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH v3 0/5] i2c: i2c-mpc: make I2C bus speed configurable
-Date: Wed, 8 Apr 2009 12:49:31 -0500
-References: <20090407082052.477328750@denx.de>
-	<53B42D49-C040-442E-8448-7BC3190220A5@kernel.crashing.org>
-	<fa686aa40904072216m64b4fd83q9b52c89ae40cae11@mail.gmail.com>
-	<5FDB097C-7D71-41DF-A4F4-2DE34FD710C5@kernel.crashing.org>
-	<20090408170348.GA27578@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
+	by ozlabs.org (Postfix) with ESMTP id B6AF1DDFDC
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 04:19:22 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: AMCC 440EP phy detection
+Date: Wed, 8 Apr 2009 20:19:06 +0200
+References: <49DB8033.1090908@embeddedarm.com> <200904081801.27754.sr@denx.de>
+	<fa686aa40904081000x2dbdd417y149fe442b9fc55bf@mail.gmail.com>
+In-Reply-To: <fa686aa40904081000x2dbdd417y149fe442b9fc55bf@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200904082019.06889.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Eddie Dawydiuk <eddie@embeddedarm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Apr 8, 2009, at 12:03 PM, Scott Wood wrote:
-
-> On Wed, Apr 08, 2009 at 12:22:29AM -0500, Kumar Gala wrote:
->>> hrummm.  As I mentioned in my reply, I'm not convinced that the  
->>> board
->>> one is the right thing in this case.  I would have preferred it to  
->>> be
->>> deferred.
->>
->> which part?  I missed this whole thread as I had it forwarding to my
->> devicetree-discuss folder which I don't normally look at.
+On Wednesday 08 April 2009, Grant Likely wrote:
+> >> I would like to eventually submit our changes for upstream support.
+> >> Based on this would you recommend ensuring tx enable is configured
+> >> properly in the initialization of the ibm_newemac driver or the platform
+> >> initialization?
+> >
+> > This GPIO multiplexing configuration does not belong into the ibm_newemac
+> > driver since it is very platform/board specific. The platform code is
+> > definitely a better place.
 >
-> Can you reorder your filters to check for more frequently read lists
-> first?
+> Even better is the platform specific boot code (firmware or equivalent)
 
-Yeah I did.
+Ack. We usually do all this setup in U-Boot. But as I understand Eddie, he is 
+using a custom bootloader.
 
-- k
+Eddie, btw: Why are you not using U-Boot?
+
+Best regards,
+Stefan
