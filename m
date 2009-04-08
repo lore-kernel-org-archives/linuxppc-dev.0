@@ -1,24 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 405A4DE050
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 10:27:39 +1000 (EST)
-Subject: Re: Hotplug on PPC4xx
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
-In-Reply-To: <20090407192728.7218eea9@lappy.seanm.ca>
-References: <20090406182023.0729073a@lappy.seanm.ca>
-	<20090407192728.7218eea9@lappy.seanm.ca>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-ejnM2/mXb/sMvolaFh4M"
-Date: Wed, 08 Apr 2009 10:27:38 +1000
-Message-Id: <1239150458.6848.2.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-qy0-f110.google.com (mail-qy0-f110.google.com
+	[209.85.221.110]) by ozlabs.org (Postfix) with ESMTP id 8B146DDFD5
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2009 10:36:26 +1000 (EST)
+Received: by qyk8 with SMTP id 8so6332463qyk.17
+	for <linuxppc-dev@ozlabs.org>; Tue, 07 Apr 2009 17:36:24 -0700 (PDT)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <49DBE858.9040004@kernel.org>
+References: <49DB6914.1030107@freescale.com> <49DBE858.9040004@kernel.org>
+Date: Tue, 7 Apr 2009 19:36:23 -0500
+Message-ID: <ed82fe3e0904071736w55dff582y8ac2681f6410865b@mail.gmail.com>
+Subject: Re: "ahci: drop intx manipulation on msi enable" breaks ULI M1575
+From: Timur Tabi <timur@freescale.com>
+To: Tejun Heo <tj@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+	Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,45 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Apr 7, 2009 at 6:57 PM, Tejun Heo <tj@kernel.org> wrote:
 
---=-ejnM2/mXb/sMvolaFh4M
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Hmmm... that means intx isn't set by default. =A0I'm not sure what is
+> the right thing to do here. =A0I think it's something which should be
+> handled by the PCI layer. =A0Oh well, maybe we should just revert the
+> change and keep setting intx?
 
-On Tue, 2009-04-07 at 19:27 -0400, Sean MacLennan wrote:
-> On Mon, 6 Apr 2009 18:20:23 -0400
-> "Sean MacLennan" <sean.maclennan@ottawa.kanatek.ca> wrote:
->=20
-> > I am trying to run the /sbin/hotplug from the kernel and it doesn't
-> > work. Has anybody got it running?
->=20
-> I looked into it some more. It turns out that the env pointers are
-> freed before they are copied.
+cc'ing linuxppc-dev
 
-That sounds like a bug?
+I really don't know what should be done.  It seems to make sense to
+have the PCI layer enable interrupts.
 
-cheers
+This seems to be a powerpc-specific bug, but I don't know enough of
+the PCI subsystem.
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-ejnM2/mXb/sMvolaFh4M
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknb73oACgkQdSjSd0sB4dJhCACgwldKBNDHsMe5OUzFbNyNAdoE
-f+8AoJ/zizf2mOg8Z7gY0JzOpTaP/hZU
-=o87t
------END PGP SIGNATURE-----
-
---=-ejnM2/mXb/sMvolaFh4M--
+Timur Tabi
+Linux kernel developer at Freescale
