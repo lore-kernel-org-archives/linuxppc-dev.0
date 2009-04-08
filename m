@@ -1,20 +1,19 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <49DCEC80.2050507@grandegger.com>
-Date: Wed, 08 Apr 2009 20:27:12 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <eddie@embeddedarm.com>
+Received: from oz.embeddedARM.com (oz.embeddedarm.com [67.40.67.44])
+	by ozlabs.org (Postfix) with ESMTP id D6E23DDECA
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 04:32:27 +1000 (EST)
+Message-ID: <49DCEE6B.7010704@embeddedarm.com>
+Date: Wed, 08 Apr 2009 11:35:23 -0700
+From: Eddie Dawydiuk <eddie@embeddedarm.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 5/5] powerpc/85xx: i2c-mpc: use new I2C bindings for
-	the Socates board
-References: <20090407082052.477328750@denx.de>
-	<20090407082231.803193635@denx.de>
-	<fa686aa40904070843q248f3ae1l9c8ca0d5a65c8cc3@mail.gmail.com>
-	<49DC4F4D.10803@grandegger.com>
-	<fa686aa40904080753p2b282338r9ba463c47f897fb@mail.gmail.com>
-In-Reply-To: <fa686aa40904080753p2b282338r9ba463c47f897fb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: AMCC 440EP phy detection
+References: <49DB8033.1090908@embeddedarm.com> <200904081801.27754.sr@denx.de>
+	<fa686aa40904081000x2dbdd417y149fe442b9fc55bf@mail.gmail.com>
+	<200904082019.06889.sr@denx.de>
+In-Reply-To: <200904082019.06889.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, Apr 8, 2009 at 12:16 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
->> Grant Likely wrote:
->>> On Tue, Apr 7, 2009 at 1:20 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
->>>> Preserve I2C clock settings for the Socrates MPC8544 board.
->>> I had thought that the preserve-clocking property was intended for
->>> older boards that don't currently have any method of getting the clock
->>> setting out of u-boot.  Since Socrates is a new board, U-Boot should
->>> probably be made to fill in the real clock rate setting.
->> I'm not sure if I understand what you mean. If an old version of U-Boot
->> on an old board sets the I2C clock, it can be used (inherited) by Linux
->> using the property "preserve-clocking".
->>
->> It is actually the customers choice to set the I2C clock in U-Boot and
->> re-use it by Linux.
-> 
-> Setting it in the register != recording the value in the device tree.
-> I'm saying that since Socrates is a new board it should not use the
-> preserve-clocking dirty trick (and it is a dirty trick) because the
-> correct clocking data can be passed via the device tree.
+Stefan,
 
-Why should an old board then use it. "fsl, preserve-clocking" is a new
-feature, like using "clock-frequency" and you have the choice to
-explicitly set the clocking via device tree or inherit it from the boot
-loader. So far, a fixed FDR/DFRSS value (0x1031) was written to the
-registers by Linux.
+> Ack. We usually do all this setup in U-Boot. But as I understand Eddie, he is 
+> using a custom bootloader.
 
-Wolfgang.
+Correct, I'll put this code in the platform initialization. Thanks for the 
+suggestions everyone.
+
+> Eddie, btw: Why are you not using U-Boot?
+
+At Technologic Systems, one of our design goals for all of our products is to 
+achieve a very quick boot time(under 2 seconds to a shell prompt). We then 
+provide a user space utility to boot another linux kernel, this allows our 
+customers to use Linux as a bootloader. We boot to an initial ramdisk then use a 
+linuxrc script as a replacement for a typical bootloader(e.g. U-Boot). In the 
+background we can then mount a large filesystem with Debian installed. In my 
+opinion it works out quite nicely in that one can use our boards as more of an 
+appliance(apply power and it's on, rather than waiting for a computer to boot).
+
+-- 
+Best Regards,
+________________________________________________________________
+  Eddie Dawydiuk, Technologic Systems | voice:  (480) 837-5200
+  16525 East Laser Drive 	     | fax:    (480) 837-5300
+  Fountain Hills, AZ 85268            | web: www.embeddedARM.com
