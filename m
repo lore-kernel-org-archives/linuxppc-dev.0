@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <grundler@lackof.org>
+Received: from complete.lackof.org (complete.lackof.org [198.49.126.79])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A0335DDFAF
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 16:21:38 +1000 (EST)
-Subject: Re: tracking of PCI address space
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	(Client CN "mail.lackof.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 65C77DDF94
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 17:04:50 +1000 (EST)
+Date: Thu, 9 Apr 2009 00:55:53 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <E942C580-7C39-44AB-B207-C65CDE0B5292@kernel.crashing.org>
+Subject: Re: tracking of PCI address space
+Message-ID: <20090409065553.GA14780@lackof.org>
 References: <E942C580-7C39-44AB-B207-C65CDE0B5292@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 09 Apr 2009 08:21:31 +0200
-Message-Id: <1239258091.7279.22.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org,
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E942C580-7C39-44AB-B207-C65CDE0B5292@kernel.crashing.org>
+Cc: linux-pci@vger.kernel.org, Benjamin Herrenschmidt <benh@au1.ibm.com>,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	Jesse Barnes <jbarnes@virtuousgeek.org>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>
@@ -26,27 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-04-08 at 15:53 -0500, Kumar Gala wrote:
-> I was wondering if we have anything that tracks regions associated  
-> with the "inbound" side of a pci_bus.
-> 
-> What I mean is on embedded PPC we have window/mapping registers for  
-> both inbound (accessing memory on the SoC) and outbound (access PCI  
-> device MMIO, IO etc).  The combination of the inbound & outbound  
-> convey what exists in the PCI address space vs CPU physical address  
-> space (and how to map from one to the other).  Today in the PPC land  
-> we only attach outbound windows to the pci_bus.  So technically the  
-> inbound side information (like what subset of physical memory is  
-> visible on the PCI bus) seems to be lost.
+On Wed, Apr 08, 2009 at 03:53:55PM -0500, Kumar Gala wrote:
+> I was wondering if we have anything that tracks regions associated with 
+> the "inbound" side of a pci_bus.
+>
+> What I mean is on embedded PPC we have window/mapping registers for both 
+> inbound (accessing memory on the SoC) and outbound (access PCI device 
+> MMIO, IO etc).  The combination of the inbound & outbound convey what 
+> exists in the PCI address space vs CPU physical address space (and how to 
+> map from one to the other).
 
-On powerpc, we do keep track of the offset, but that's about it.
+Most PCI Host bus controllers will negatively decode the outbound ranges
+for inbound traffic.
 
-Tracking inbound ranges is very platform specific though. You can have
-multiple inbound windows with different translations, in some cases some
-via iommu and some not, or windows aliasing the same target memory but
-with different attributes, etc...
+PARISC and IA64 have extra registers to play some games with that. But
+routing between PCI bus controllers to make them look like a single PCI
+segment was the main intent of that. I've not found any other uses
+to subvert that.
 
-I don't think there's that much interest in trying to create generic
-code to keep track.
+>  Today in the PPC land we only attach 
+> outbound windows to the pci_bus.  So technically the inbound side 
+> information (like what subset of physical memory is visible on the PCI 
+> bus) seems to be lost.
 
-Ben.
+What did you need inbound "routing map" for?
+
+thanks,
+grant
