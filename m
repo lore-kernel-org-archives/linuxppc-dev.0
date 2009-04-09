@@ -1,19 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <BE92FB74-1784-414B-B27F-8329185EB3AE@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: subrata@linux.vnet.ibm.com
-In-Reply-To: <1239285152.5188.66.camel@subratamodak.linux.ibm.com>
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [BUILD FAILURE 04] Next April 9 : PPC64 randconfig
-	[drivers/net/ibm_newemac/core.c]
-Date: Thu, 9 Apr 2009 09:28:23 -0500
-References: <1239285152.5188.66.camel@subratamodak.linux.ibm.com>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>, linux-net@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 16611DE144
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 00:30:32 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 9so392703ywe.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Apr 2009 07:30:30 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090409141651.72775AC0056@mail192-sin.bigfish.com>
+References: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
+	<20090409115147.5059493f.sfr@canb.auug.org.au>
+	<20090409141651.72775AC0056@mail192-sin.bigfish.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 9 Apr 2009 07:30:15 -0700
+Message-ID: <fa686aa40904090730g3d75254cp529ca85c7599ad99@mail.gmail.com>
+Subject: Re: [PATCH] Xilinx : Framebuffer Driver: Add PLB support (non-DCR)
+To: John Linn <John.Linn@xilinx.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+	Suneel Garapati <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org,
+	Suneel <"[mailto:suneel.garapati@xilinx.com]"@xilinx.com>,
+	akonovalov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Apr 9, 2009, at 8:52 AM, Subrata Modak wrote:
-
-> Observed the following build error:
+On Thu, Apr 9, 2009 at 7:16 AM, John Linn <John.Linn@xilinx.com> wrote:
+>> -----Original Message-----
+>> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]
+>> Sent: Wednesday, April 08, 2009 7:52 PM
+>> To: John Linn
+>> Cc: grant.likely@secretlab.ca; jwboyer@linux.vnet.ibm.com;
+>> linuxppc-dev@ozlabs.org;
+>> linux-fbdev-devel@lists.sourceforge.net;
+>> akonovalov@ru.mvista.com; adaplas@gmail.com; Suneel Garapati; Suneel
+>> Subject: Re: [PATCH] Xilinx : Framebuffer Driver: Add PLB
+>> support (non-DCR)
+>>
+>> Hi John,
+>>
+>> On Wed, 8 Apr 2009 15:11:25 -0600 John Linn
+>> <john.linn@xilinx.com> wrote:
+>> >
+>> > =A0 * 2002-2007 (c) MontaVista Software, Inc.
+>> > =A0 * 2007 (c) Secret Lab Technologies, Ltd.
+>> > + * 2009 (c) Xilinx Inc.
+>> > =A0 *
+>> > - * This file is licensed under the terms of the GNU
+>> General Public License
+>> > - * version 2. =A0This program is licensed "as is" without
+>> any warranty of any
+>> > - * kind, whether express or implied.
+>> > + * This program is free software; you can redistribute it
+>> > + * and/or modify it under the terms of the GNU General Public
+>> > + * License as published by the Free Software Foundation;
+>> > + * either version 2 of the License, or (at your option) any
+>> > + * later version.
+>> > + *
+>> > + * You should have received a copy of the GNU General Public
+>> > + * License along with this program; if not, write to the Free
+>> > + * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
+>> > + * 02139, USA.
+>>
+>> This changes the license for this file (from "GPLv2" to "GPLv2 or
+>> later"). =A0Have you asked the other copyright owners about that?
 >
-> CC      drivers/net/ibm_newemac/core.o
-> drivers/net/ibm_newemac/core.c: In function =91emac_probe=92:
-> drivers/net/ibm_newemac/core.c:2831: error: =91struct net_device=92 =
-has no
-> member named =91open=92
-> drivers/net/ibm_newemac/core.c:2834: error: =91struct net_device=92 =
-has no
-> member named =91tx_timeout=92
-> drivers/net/ibm_newemac/core.c:2836: error: =91struct net_device=92 =
-has no
-> member named =91stop=92
-> drivers/net/ibm_newemac/core.c:2837: error: =91struct net_device=92 =
-has no
-> member named =91get_stats=92
-> drivers/net/ibm_newemac/core.c:2838: error: =91struct net_device=92 =
-has no
-> member named =91set_multicast_list=92
-> drivers/net/ibm_newemac/core.c:2839: error: =91struct net_device=92 =
-has no
-> member named =91do_ioctl=92
-> drivers/net/ibm_newemac/core.c:2841: error: =91struct net_device=92 =
-has no
-> member named =91hard_start_xmit=92
-> drivers/net/ibm_newemac/core.c:2842: error: =91struct net_device=92 =
-has no
-> member named =91change_mtu=92
-> drivers/net/ibm_newemac/core.c:2845: error: =91struct net_device=92 =
-has no
-> member named =91hard_start_xmit=92
-> make[3]: *** [drivers/net/ibm_newemac/core.o] Error 1
-> make[2]: *** [drivers/net/ibm_newemac] Error 2
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
->
-> Regards--
-> Subrata
->
-> <randconfig4-ppc64-next20090409.txt>
+> Andrei was copied on the patch, we'll see if he has any thoughts about
+> it.
 
-This is because CONFIG_COMPAT_NET_DEV_OPS isnt set and needs to be for =20=
+I also hold copyright on this file and I want the license to stay GPLv2.
 
-this driver to build.  I've asked the netdev guys about either fixing =20=
+g.
 
-the driver or adding the proper thing to Kconfig to select =20
-CONFIG_COMPAT_NET_DEV_OPS.
 
-- k=
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
