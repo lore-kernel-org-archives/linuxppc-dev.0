@@ -1,21 +1,27 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Thu, 9 Apr 2009 16:51:35 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Subrata Modak <subrata@linux.vnet.ibm.com>
-Subject: Re: [BUILD FAILURE 05] Next April 9 : PPC64 randconfig
-	[drivers/net/wan/wanxlfw.inc]
-In-Reply-To: <1239285437.5188.68.camel@subratamodak.linux.ibm.com>
-Message-ID: <alpine.LRH.2.00.0904091650060.4839@vixen.sonytel.be>
-References: <1239285152.5188.66.camel@subratamodak.linux.ibm.com>
-	<1239285437.5188.68.camel@subratamodak.linux.ibm.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-qy0-f110.google.com (mail-qy0-f110.google.com
+	[209.85.221.110]) by ozlabs.org (Postfix) with ESMTP id 99D48DDF71
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 01:19:06 +1000 (EST)
+Received: by qyk8 with SMTP id 8so1259535qyk.17
+	for <linuxppc-dev@ozlabs.org>; Thu, 09 Apr 2009 08:19:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>, linux-net@vger.kernel.org
+Sender: timur.tabi@gmail.com
+In-Reply-To: <49DD8871.2030404@garzik.org>
+References: <49DB6914.1030107@freescale.com> <49DD11D1.7060105@freescale.com>
+	<49DD1375.8030400@kernel.org> <49DD1465.6070001@freescale.com>
+	<49DD17C3.7040607@kernel.org>
+	<ed82fe3e0904081515k6e53de00g7d5256f9b61a03da@mail.gmail.com>
+	<1239234793.6214.5.camel@localhost>
+	<E7CD85E9-BB6E-4598-A734-8D0E67090789@kernel.crashing.org>
+	<1239251928.22777.2.camel@localhost> <49DD8871.2030404@garzik.org>
+Date: Thu, 9 Apr 2009 10:19:04 -0500
+Message-ID: <ed82fe3e0904090819r53d23391qdb18482d4d43fc83@mail.gmail.com>
+Subject: Re: "ahci: drop intx manipulation on msi enable" breaks ULI M1575
+From: Timur Tabi <timur@freescale.com>
+To: Jeff Garzik <jeff@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Tejun Heo <tj@kernel.org>, Linux PPC Development <linuxppc-dev@ozlabs.org>,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 9 Apr 2009, Subrata Modak wrote:
-> Observed the following error:
-> 
-> BLD FW  drivers/net/wan/wanxlfw.inc
-> /bin/sh: as68k: command not found
-> make[3]: *** [drivers/net/wan/wanxlfw.inc] Error 127
-> make[2]: *** [drivers/net/wan] Error 2
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
+On Thu, Apr 9, 2009 at 12:32 AM, Jeff Garzik <jeff@garzik.org> wrote:
+> 3) As a result, Timur's 'ahci' is no longer receiving interrupts. Presuma=
+bly
+> this means that BOTH of the following conditions are true
+>
+> =A0 =A0 =A0 =A0a) INTX is disabled
+> =A0 =A0 =A0 =A0b) MSI is not available
+>
+> Today I am thinking we should either revert the libata commit
+> (a5bfc4714b3f01365aef89a92673f2ceb1ccf246), or poke PCI to twiddle INTX f=
+or
+> us at pci_enable_device() time, perhaps.
+>
+> I lean towards the former, but maybe the platform folks prefer a third
+> solution?
 
-Yeah, if you enable CONFIG_WANXL_BUILD_FIRMWARE without
-CONFIG_PREVENT_FIRMWARE_BUILD (the trick for allmodconfig?), you need the
-appropriate tools installed...
+Well, I was hoping that the latest U-Boot would fix this problem, but
+it doesn't.  Earlier U-Boot couldn't find my SATA drive, so I thought
+that was a clue.  The latest U-Boot does find the SATA drive, but the
+Linux driver still doesn't get interrupts.
 
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
