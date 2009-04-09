@@ -1,19 +1,19 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6BEB0DE14D
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 00:26:16 +1000 (EST)
-Message-Id: <C7C29031-E717-4D83-874A-DC0D1E12BA3D@kernel.crashing.org>
+Message-Id: <21BA9149-6948-42C0-9F76-033185BB5296@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>,
-	Stephen Hemminger <shemminger@vyatta.com>,
-	David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: subrata@linux.vnet.ibm.com
+In-Reply-To: <1239285022.5188.63.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: converting fs_enet to net_device_ops
-Date: Thu, 9 Apr 2009 09:26:08 -0500
-Cc: netdev@vger.kernel.org, Linux PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Re: [BUILD FAILURE 01] Next April 9 : PPC64 randconfig
+	[drivers/net/fs_enet/fs_enet-main.c]
+Date: Thu, 9 Apr 2009 09:28:13 -0500
+References: <1239285022.5188.63.camel@subratamodak.linux.ibm.com>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	linux-next <linux-next@vger.kernel.org>, linux-net@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Can someone look at converting drivers/net/fs_enet over to the new  
-net_device_ops.
 
-Dave,
+On Apr 9, 2009, at 8:50 AM, Subrata Modak wrote:
 
-Are you willing to take such a patch in for .30?  Otherwise we need to  
-add a select COMPAT_NET_DEV_OPS in Kconfig for this driver (and any  
-others that might not have been converted over).  drivers/net/ 
-ibm_newemac/ is another.
+> Observed the following build error:
+>
+> drivers/net/fs_enet/fs_enet-main.c: In function =91fs_enet_probe=92:
+> drivers/net/fs_enet/fs_enet-main.c:1096: error: =91struct net_device=92 =
+=20
+> has
+> no member named =91open=92
+> drivers/net/fs_enet/fs_enet-main.c:1097: error: =91struct net_device=92 =
+=20
+> has
+> no member named =91hard_start_xmit=92
+> drivers/net/fs_enet/fs_enet-main.c:1098: error: =91struct net_device=92 =
+=20
+> has
+> no member named =91tx_timeout=92
+> drivers/net/fs_enet/fs_enet-main.c:1100: error: =91struct net_device=92 =
+=20
+> has
+> no member named =91stop=92
+> drivers/net/fs_enet/fs_enet-main.c:1101: error: =91struct net_device=92 =
+=20
+> has
+> no member named =91get_stats=92
+> drivers/net/fs_enet/fs_enet-main.c:1102: error: =91struct net_device=92 =
+=20
+> has
+> no member named =91set_multicast_list=92
+> drivers/net/fs_enet/fs_enet-main.c:1111: error: =91struct net_device=92 =
+=20
+> has
+> no member named =91do_ioctl=92
+> make[3]: *** [drivers/net/fs_enet/fs_enet-main.o] Error 1
+> make[2]: *** [drivers/net/fs_enet] Error 2
+> make[1]: *** [drivers/net] Error 2
+> make: *** [drivers] Error 2
+>
+> Regards--
+> Subrata
+>
+> <randconfig1-ppc64-next20090409.txt>
 
-- k
+This is because CONFIG_COMPAT_NET_DEV_OPS isnt set and needs to be for =20=
+
+this driver to build.  I've asked the netdev guys about either fixing =20=
+
+the driver or adding the proper thing to Kconfig to select =20
+CONFIG_COMPAT_NET_DEV_OPS.
+
+- k=
