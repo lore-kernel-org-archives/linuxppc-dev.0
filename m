@@ -1,25 +1,24 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 0D0DBDDF48
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 17:16:48 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id 25C3829EC9
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 09:15:28 +0200 (CEST)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 26347-05 for <linuxppc-dev@ozlabs.org>;
-	Thu,  9 Apr 2009 09:15:27 +0200 (CEST)
-Received: from archvile.prtnl (archvile.prtnl [192.168.1.153])
-	by protonic.prtnl (Postfix) with ESMTP id C0BF429EBA
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 09:15:27 +0200 (CEST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-dev@ozlabs.org
-Subject: MPC5200 FEC driver crashing on 2.6.30-rc1....
-Date: Thu, 9 Apr 2009 09:19:44 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200904090919.44620.david.jander@protonic.nl>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EE892DE0F9
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 17:45:00 +1000 (EST)
+Subject: Re: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c drivers
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20090408224858.04cb6dc4@hyperion.delvare>
+References: <20090408150249.5a62a56c@hyperion.delvare>
+	<1239205899.16477.32.camel@johannes.local>
+	<20090408224858.04cb6dc4@hyperion.delvare>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-bcXH8uKV4RboVtu//2Qf"
+Date: Thu, 09 Apr 2009 09:44:49 +0200
+Message-Id: <1239263089.24548.30.camel@johannes.local>
+Mime-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,47 +29,146 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Hi all,
+--=-bcXH8uKV4RboVtu//2Qf
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Seems like there are some NAPI changes not being (correctly) applied to the 
-MPC5200 FEC driver...
+Hi Jean!
 
-[ 1319.265289] ------------[ cut here ]------------
-[ 1319.274699] kernel BUG at .../arch/powerpc/include/asm/dma-mapping.h:164!
-[ 1319.297488] Oops: Exception in kernel mode, sig: 5 [#1]
-[ 1319.308086] PREEMPT mpc5200-simple-platform
-[ 1319.316572] Modules linked in:
-[ 1319.322773] NIP: c01dbef8 LR: c01dbec8 CTR: 00000000
-[ 1319.332852] REGS: c3a9dc80 TRAP: 0700   Not tainted  (2.6.29-07103-gd0b70e8-dirty)
-[ 1319.348212] MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 42008448  XER: 20000000
-[ 1319.361684] TASK = c387acb0[1876] 'ifconfig' THREAD: c3a9c000
-[ 1319.372988] GPR00: 00000001 c3a9dd30 c387acb0 c3a13820 00000000 c3a13820 c3a13e11 c5000020
-[ 1319.389982] GPR08: 00000001 00000000 c5001000 00000008 22008444 100adabc 03fc1000 00000001
-[ 1319.406973] GPR16: ffffffff 00000000 007fff00 03fbb790 c3a9de08 ffff8914 c388410c c386b400
-[ 1319.423967] GPR24: c3884100 c394b640 c0400000 c386b5e8 c386b400 c5001000 c39c3600 c39bb3c0
-[ 1319.441359] NIP [c01dbef8] mpc52xx_fec_alloc_rx_buffers+0xac/0x1a8
-[ 1319.453914] LR [c01dbec8] mpc52xx_fec_alloc_rx_buffers+0x7c/0x1a8
-[ 1319.466276] Call Trace:
-[ 1319.471250] [c3a9dd30] [c01dbeb0] mpc52xx_fec_alloc_rx_buffers+0x64/0x1a8 (unreliable)
-[ 1319.487345] [c3a9dd60] [c01dc444] mpc52xx_fec_open+0x128/0x2d0
-[ 1319.499221] [c3a9dda0] [c02458f4] dev_open+0xc0/0x118
-[ 1319.509493] [c3a9ddc0] [c0244678] dev_change_flags+0x84/0x1ac
-[ 1319.521176] [c3a9dde0] [c028b1b8] devinet_ioctl+0x638/0x758
-[ 1319.532501] [c3a9de50] [c028bca8] inet_ioctl+0xcc/0xf8
-[ 1319.542956] [c3a9de60] [c02325a8] sock_ioctl+0x60/0x2e8
-[ 1319.553576] [c3a9de80] [c0096e44] vfs_ioctl+0x40/0xc0
-[ 1319.563840] [c3a9dea0] [c009728c] do_vfs_ioctl+0x3c8/0x748
-[ 1319.574986] [c3a9df10] [c009764c] sys_ioctl+0x40/0x74
-[ 1319.585284] [c3a9df40] [c0011878] ret_from_syscall+0x0/0x38
-[ 1319.596606] --- Exception: c01 at 0xfe8b6a4
-[ 1319.596622]     LR = 0xff0573c
-[ 1319.611264] Instruction dump:
-[ 1319.617281] a13f0018 380005f2 817f0020 815f000c 7d2959d6 7c09512e 7fa95214 80be0098
-[ 1319.633037] 41920104 813c0264 7d200034 5400d97e <0f000000> 801a5218 3c854000 7f63db78
-[ 1319.649160] ---[ end trace a3057d5e6d98e2c6 ]---
+> Yes, "probing" would be duplicated if we had to support more than one
+> bus. But as far as I can see, the onyx and tas devices can only be
+> found on i2c-powermac buses, so this shouldn't be an issue. And there
+> isn't really any probing going on, it's really only a matter of walking
+> a small subset of the device tree (the children of the I2C bus) and
+> instantiating I2C devices.
 
-Best regards,
+Right, it was just an unrelated thought, it's not related to this in
+particular.
 
--- 
-David Jander
-Protonic Holland.
+> > Now, aoa will currently automatically load from the layout fabric
+> > module, and then pull in the modules for the codecs it _knows_ to be
+> > present on the bus. Therefore, it seems that your patch makes things
+> > less efficient because you probe for all those codecs, and there's no
+> > machine that has all of them. The aoa fabric only loads the modules for
+> > those it knows to be present, and they then probe (and in reality the
+> > probing never fails because they really are there).
+>=20
+> Can you please point me to the layout fabric / aoa fabric? I'd like to
+> understand how it works. Then I may be able to rewrite my patch
+> completely differently.
+
+That's in sound/aoa/fabric/layout.c
+
+> There are basically two ways to instantiate I2C devices in the new
+> model. The first method is to declare the I2C devices as platform data
+> and let i2c-core instantiate them. The second method is to have the i2c
+> bus driver instantiate the clients. My patch uses the second method
+> because I didn't know how to use the first method. However using the
+> first method would solve the issues you raised. But I need some help
+> from someone more familiar with the powermac platform initialization
+> code to get it right.
+
+Interesting. Does it need to be _platform_ data, or could
+sound/aoa/fabric/layout.c declare the devices instead?
+
+> > Now, since aoa needs information on how the entire system is glued
+> > together (the fabric I was talking about with the line-in example), it
+> > has to infer that from platform data, in this case the device tree.
+> > Because I do not have any older machines, am lazy and snd-powermac work=
+s
+> > for the old machines, snd-powermac with its "tumbler" is a driver for
+> > the same tas3004 codec, but on a different, older, fabric.
+>=20
+> I think I've found that one by now (snd_pmac_detect in
+> sound/ppc/pmac.c, right?), thanks for the clarification.
+
+That's snd-powermac, yes.
+
+> BTW, that code doesn't seem significantly different from what my patch
+> is adding to i2c-powermac.
+
+That would be true, yes, with your patch I don't understand how to load
+snd-powermac _or_ snd-aoa based on the platform data (or in the case of
+snd-powermac, not load it automatically at all).
+
+> Hmm, OK, I expected the code I moved from the aoa drivers to
+> i2c-powermac to only match the subset of machines actually supported by
+> aoa. If that's not the case then indeed it is incorrect.
+
+Yeah, that's not the case, I think the 'deq' node will be present on
+older machines as well and you would load snd-aoa-codec-tas where
+snd-powermac should be loaded.
+
+> > Therefore, probing the codecs in i2c-powermac and automatically loading
+> > the corresponding aoa module will break sound on old machines.
+>=20
+> Does this mean that manually loading snd_aoa_codec_tas today on an old
+> system with a TAS would break sound too?
+
+Yes, I'm pretty sure it does on some systems. Actually, I'm not entirely
+sure, because I don't know whether the i2c core will prevent two drivers
+from talking to the same chip on the same bus, and if it doesn't then
+this might still work but it would at least be very strange wrt. suspend
+resume.
+
+> Anyway, the key point of my patch is to get rid of the legacy i2c
+> binding model, not efficiency.
+
+Yes, I understand :)
+
+> > Since I'm away from all machines I could test this with I have no data
+> > on any that or the module device table thing I pointed out for now.
+> >=20
+> > Anyway, some more technical comments on your patch:
+> >  * I realise you just copied things around but it would be nice to clea=
+n
+> >    up the coding style, especially comment style, a little while at it.
+> >    (yeah, it's my fault)
+>=20
+> I can fix anything you like, just tell me what :)
+
+I think CodingStyle wants
+ /*
+  * ...
+  * ...
+  */
+
+> >  * aoa_codec_* is the module name, I see no reason to use that as the
+> >    i2c name, that should be the codec's name instead (aka pcm3052 etc)
+>=20
+> The names are totally arbitrary and we can change them if you like.
+> Keep in mind though that we should avoid using mere chip names for
+> non-generic drivers. The aoa drivers are powermac-specific, we don't
+> want the names we pick to collide with another driver, that's why I
+> chose to keep the aoa prefix.
+
+Oh ok, that kinda ties in with my very first question about what happens
+if the same chip is known in different contexts, on different buses etc.
+Makes sense in that case I guess. But I still think that you shouldn't
+auto-load the aoa codec modules based on this anyway.
+
+johannes
+
+--=-bcXH8uKV4RboVtu//2Qf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJ3aduAAoJEKVg1VMiehFYMI4QAJ4mE6VIX3b8GsTCORhfnY5u
+I91JZUbD5HCt5NzZa1SlyZthFRxzz84da+z7KchU0FMIRabbDQqesdIx6/XsHBQ8
+XE4eIRPpZBmta5ESr5G0yLbRjfmOLiVO8BEcPuzmR0t5NpquL5qWVbqGBwfRMxsd
+Cawhk4yH3T+vn7wvOl8lRCgM3ucvLFkqhwQQE38/BlCKY/5irurGAnGstB3EiNE7
+BYIpxJ7ueYOl9bPcHlfiuurpm7OHm5U4BCYIIk2EUQxKruLbnukn70ymh38UiFZX
+S82IHnQgmxvVn6vNqptqAN6kXIl3E7oia14TenBVCq3RfJjA/uft5a4mwTl2DxU+
+IA7VZRoUcVBIEJcW98fCWSk8vk2wx8aUWDcVZ7/RFRSE4tbVCkR+URFQu+osuDuN
+tP9+YRXEzD2/UBUjLEdVO3BtzqNRoSEGFKnteCB9bl96RCRssNIrduq8XszVeQfO
+Mm9ESdhZWzsu9FVEHTqwydn5Yomgv8XQLM7h5Y0sGd1WsGw9FHa8lnVaVwYAAOx3
+bQapr3A/EocPNDdjaFsTBFIVlWhuXsBq59xh8WKl6n3mkwVnfg7B48rohjJe0Dvu
+L10cZCShVhoTi1o5beTv7+O+bOVgWNFHd3zyteI3A1pcmW20nqluG4T7nO6FQgEA
+aARwZxSEtmGhMVymPO7E
+=0lKx
+-----END PGP SIGNATURE-----
+
+--=-bcXH8uKV4RboVtu//2Qf--
