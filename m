@@ -1,22 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 1E258DDF39
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 11:52:00 +1000 (EST)
-Date: Thu, 9 Apr 2009 11:51:47 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: John Linn <john.linn@xilinx.com>
-Subject: Re: [PATCH] Xilinx : Framebuffer Driver: Add PLB support (non-DCR)
-Message-Id: <20090409115147.5059493f.sfr@canb.auug.org.au>
-In-Reply-To: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
-References: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 13115DE0D2
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 13:00:56 +1000 (EST)
+Subject: Re: [PATCH] mpic_find() was overloaded to do two things introduce
+	mpic_is_ipi() and simplify mpic_find()
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <8a6c1abce00c6f85d9714269d11bc3fac73a5402.1239164732.git.tony@bakeyournoodle.com>
+References: <8a6c1abce00c6f85d9714269d11bc3fac73a5402.1239164732.git.tony@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-lXyV6deYdHFk/z08FUr2"
+Date: Thu, 09 Apr 2009 13:00:54 +1000
+Message-Id: <1239246054.6214.46.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__9_Apr_2009_11_51_47_+1000_Ava8=csgefhKmact"
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org,
-	Suneel <"[mailto:suneel.garapati@xilinx.com]"@xilinx.com>,
-	akonovalov@ru.mvista.com
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,52 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__9_Apr_2009_11_51_47_+1000_Ava8=csgefhKmact
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-lXyV6deYdHFk/z08FUr2
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi John,
+On Wed, 2009-04-08 at 14:26 +1000, Tony Breeds wrote:
+> Also silences the warning:
+> arch/powerpc/sysdev/mpic.c: In function 'mpic_irq_set_priority':
+> arch/powerpc/sysdev/mpic.c:1382: warning: 'is_ipi' may be used uninitiali=
+zed in this function
+>=20
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> ---
+> Only compile tested.
 
-On Wed, 8 Apr 2009 15:11:25 -0600 John Linn <john.linn@xilinx.com> wrote:
->
->   * 2002-2007 (c) MontaVista Software, Inc.
->   * 2007 (c) Secret Lab Technologies, Ltd.
-> + * 2009 (c) Xilinx Inc.
->   *
-> - * This file is licensed under the terms of the GNU General Public Licen=
-se
-> - * version 2.  This program is licensed "as is" without any warranty of =
-any
-> - * kind, whether express or implied.
-> + * This program is free software; you can redistribute it
-> + * and/or modify it under the terms of the GNU General Public
-> + * License as published by the Free Software Foundation;
-> + * either version 2 of the License, or (at your option) any
-> + * later version.
-> + *
-> + * You should have received a copy of the GNU General Public
-> + * License along with this program; if not, write to the Free
-> + * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
-> + * 02139, USA.
+Not even compile tested, but looks good.
 
-This changes the license for this file (from "GPLv2" to "GPLv2 or
-later").  Have you asked the other copyright owners about that?
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
+
+cheers
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
---Signature=_Thu__9_Apr_2009_11_51_47_+1000_Ava8=csgefhKmact
-Content-Type: application/pgp-signature
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-lXyV6deYdHFk/z08FUr2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkndVLMACgkQjjKRsyhoI8xUJQCgriUo58In7VKOiLweWatZr6HD
-CqgAniUR7qh6EcKQp+4kR57V6vVMFOgK
-=mB6A
+iEYEABECAAYFAkndZOYACgkQdSjSd0sB4dKqIQCfUMiiZ8+6JZmtAHA9VpkYUZ/q
+E8sAn2d3nZKQI7fYugoy83PF5h9jLVbf
+=dw9T
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__9_Apr_2009_11_51_47_+1000_Ava8=csgefhKmact--
+--=-lXyV6deYdHFk/z08FUr2--
