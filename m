@@ -1,22 +1,35 @@
-Return-Path: <jwboyer@gmail.com>
-Sender: Josh Boyer <jwboyer@gmail.com>
-Date: Thu, 9 Apr 2009 10:31:12 -0400
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 388BDDE125
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 00:34:16 +1000 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e9.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n39EOKNk016600
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Apr 2009 10:24:20 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n39EYDA64763776
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Apr 2009 10:34:13 -0400
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n39EY9QY028664
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Apr 2009 08:34:09 -0600
+Date: Thu, 9 Apr 2009 10:33:19 -0400
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [BUILD FAILURE 04] Next April 9 : PPC64 randconfig
-	[drivers/net/ibm_newemac/core.c]
-Message-ID: <20090409143112.GA7538@yoda.jdub.homelinux.org>
-References: <1239285152.5188.66.camel@subratamodak.linux.ibm.com>
-	<BE92FB74-1784-414B-B27F-8329185EB3AE@kernel.crashing.org>
+To: Roderick Colenbrander <thunderbird2k@gmail.com>
+Subject: Re: [PATCH] Xilinx : Framebuffer Driver: Add PLB support (non-DCR)
+Message-ID: <20090409143319.GG18304@zod.rchland.ibm.com>
+References: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
+	<20090409124634.GF18304@zod.rchland.ibm.com>
+	<c8485d470904090706t4fd2893tdeaf3710b19bd0f1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <BE92FB74-1784-414B-B27F-8329185EB3AE@kernel.crashing.org>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>,
-	linux-net@vger.kernel.org, subrata@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c8485d470904090706t4fd2893tdeaf3710b19bd0f1@mail.gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+	Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org,
+	Suneel <"[mailto:suneel.garapati@xilinx.com]"@xilinx.com>,
+	akonovalov@ru.mvista.com, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 09, 2009 at 09:28:23AM -0500, Kumar Gala wrote:
->
-> On Apr 9, 2009, at 8:52 AM, Subrata Modak wrote:
->
->> Observed the following build error:
+On Thu, Apr 09, 2009 at 04:06:56PM +0200, Roderick Colenbrander wrote:
+>On Thu, Apr 9, 2009 at 2:46 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com>wrote:
+>> > #define NUM_REGS      2
+>> > #define REG_FB_ADDR   0
+>> >@@ -112,6 +123,11 @@ struct xilinxfb_drvdata {
+>> >
+>> >       struct fb_info  info;           /* FB driver info record */
+>> >
+>> >+      u32             regs_phys;      /* phys. address of the control
+>> >+                                              registers */
 >>
->> CC      drivers/net/ibm_newemac/core.o
->> drivers/net/ibm_newemac/core.c: In function ‘emac_probe’:
->> drivers/net/ibm_newemac/core.c:2831: error: ‘struct net_device’ has no
->> member named ‘open’
->> drivers/net/ibm_newemac/core.c:2834: error: ‘struct net_device’ has no
->> member named ‘tx_timeout’
->> drivers/net/ibm_newemac/core.c:2836: error: ‘struct net_device’ has no
->> member named ‘stop’
->> drivers/net/ibm_newemac/core.c:2837: error: ‘struct net_device’ has no
->> member named ‘get_stats’
->> drivers/net/ibm_newemac/core.c:2838: error: ‘struct net_device’ has no
->> member named ‘set_multicast_list’
->> drivers/net/ibm_newemac/core.c:2839: error: ‘struct net_device’ has no
->> member named ‘do_ioctl’
->> drivers/net/ibm_newemac/core.c:2841: error: ‘struct net_device’ has no
->> member named ‘hard_start_xmit’
->> drivers/net/ibm_newemac/core.c:2842: error: ‘struct net_device’ has no
->> member named ‘change_mtu’
->> drivers/net/ibm_newemac/core.c:2845: error: ‘struct net_device’ has no
->> member named ‘hard_start_xmit’
->> make[3]: *** [drivers/net/ibm_newemac/core.o] Error 1
->> make[2]: *** [drivers/net/ibm_newemac] Error 2
->> make[1]: *** [drivers/net] Error 2
->> make: *** [drivers] Error 2
+>> Is this driver usable on the 440 based Xilinx devices?  If so, is it
+>> possible
+>> to have the physical address of the registers above 4GiB, so is common with
+>> almost all the I/O on the other 440 boards?
 >>
->> Regards--
->> Subrata
 >>
->> <randconfig4-ppc64-next20090409.txt>
->
-> This is because CONFIG_COMPAT_NET_DEV_OPS isnt set and needs to be for  
-> this driver to build.  I've asked the netdev guys about either fixing  
-> the driver or adding the proper thing to Kconfig to select  
-> CONFIG_COMPAT_NET_DEV_OPS.
+>The driver works fine on 440 based Xilinx boards (the ML510 I use has a 440
+>core). It might be nice to move physical addresses above 4GB for devices but
+>in all Xilinx tools and reference designs addresses below 4GB are used for
+>periperhals and I think even below 2GB (or even below 1GB). It depends on
+>the design.
 
-Thanks!
-
-If someone has pointers on what needs to be done to fix it, let me know.
+Right.  The "depends on the design" part is what I'm worried about.  Perhaps
+using resource_size_t here is more appropriate, given that designs can change
+and put the regs above 4GiB.  That way you can set the Kconfig option
+appropriately for both cases.
 
 josh
