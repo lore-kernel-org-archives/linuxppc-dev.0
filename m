@@ -1,27 +1,34 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 89F5CDE120
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 22:34:55 +1000 (EST)
-Subject: Re: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c  
-	drivers
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20090409141945.116772e3@hyperion.delvare>
-References: <20090408150249.5a62a56c@hyperion.delvare>
-	<1239205899.16477.32.camel@johannes.local>
-	<20090408224858.04cb6dc4@hyperion.delvare>
-	<1239263089.24548.30.camel@johannes.local>
-	<20090409141945.116772e3@hyperion.delvare>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-sIWA1p4O9S9PaoFGgLgx"
-Date: Thu, 09 Apr 2009 14:34:44 +0200
-Message-Id: <1239280485.4953.6.camel@johannes.local>
-Mime-Version: 1.0
-Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E03A0DDF8C
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Apr 2009 22:47:28 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n39CgKKK031704
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Apr 2009 06:42:20 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n39ClMZo127706
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Apr 2009 06:47:22 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n39ClLjo021440
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Apr 2009 06:47:21 -0600
+Date: Thu, 9 Apr 2009 08:46:34 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] Xilinx : Framebuffer Driver: Add PLB support (non-DCR)
+Message-ID: <20090409124634.GF18304@zod.rchland.ibm.com>
+References: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+	Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org,
+	Suneel <"[mailto:suneel.garapati@xilinx.com]"@xilinx.com>,
+	akonovalov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,116 +38,423 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Apr 08, 2009 at 03:11:25PM -0600, John Linn wrote:
+>From: Suneel <[mailto:suneel.garapati@xilinx.com]>
+>
+>Added support for the new xps tft controller.
+>
+>The new core has PLB interface support in addition to existing
+>DCR interface.
+>
+>The driver has been modified to support this new core which
+>can be connected on PLB or DCR bus.
+>
+>Signed-off-by: Suneel <suneelg@xilinx.com>
+>Signed-off-by: John Linn <john.linn@xilinx.com>
+>---
+> drivers/video/xilinxfb.c |  227 ++++++++++++++++++++++++++++++++--------------
+> 1 files changed, 160 insertions(+), 67 deletions(-)
+>
+>diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+>index a82c530..a28a834 100644
+>--- a/drivers/video/xilinxfb.c
+>+++ b/drivers/video/xilinxfb.c
+>@@ -1,17 +1,24 @@
+> /*
+>- * xilinxfb.c
+>  *
+>- * Xilinx TFT LCD frame buffer driver
+>+ * Xilinx TFT frame buffer driver
+>  *
+>  * Author: MontaVista Software, Inc.
+>  *         source@mvista.com
+>  *
+>  * 2002-2007 (c) MontaVista Software, Inc.
+>  * 2007 (c) Secret Lab Technologies, Ltd.
+>+ * 2009 (c) Xilinx Inc.
+>  *
+>- * This file is licensed under the terms of the GNU General Public License
+>- * version 2.  This program is licensed "as is" without any warranty of any
+>- * kind, whether express or implied.
+>+ * This program is free software; you can redistribute it
+>+ * and/or modify it under the terms of the GNU General Public
+>+ * License as published by the Free Software Foundation;
+>+ * either version 2 of the License, or (at your option) any
+>+ * later version.
+>+ *
+>+ * You should have received a copy of the GNU General Public
+>+ * License along with this program; if not, write to the Free
+>+ * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
+>+ * 02139, USA.
+>  */
 
---=-sIWA1p4O9S9PaoFGgLgx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+What Stephen said.
 
-Hi Jean,
+> #define NUM_REGS	2
+> #define REG_FB_ADDR	0
+>@@ -112,6 +123,11 @@ struct xilinxfb_drvdata {
+>
+> 	struct fb_info	info;		/* FB driver info record */
+>
+>+	u32		regs_phys;	/* phys. address of the control
+>+						registers */
 
-> OK, I understand how it works now, thanks for pointing me to the
-> relevant piece of code. It's easier to modify the code when you
-> understand the current logic ;)
+Is this driver usable on the 440 based Xilinx devices?  If so, is it possible
+to have the physical address of the registers above 4GiB, so is common with
+almost all the I/O on the other 440 boards?
 
-:)
+>+	void __iomem	*regs;		/* virt. address of the control
+>+						registers */
+>+
+> 	dcr_host_t      dcr_host;
+> 	unsigned int    dcr_start;
+> 	unsigned int    dcr_len;
+>@@ -120,6 +136,10 @@ struct xilinxfb_drvdata {
+> 	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
+> 	int		fb_alloced;	/* Flag, was the fb memory alloced? */
+>
+>+	u32 		dcr_splb_slave_if;
+>+					/* True, if control interface is
+>+						connected through plb */
+>+
 
-> The idea is to assign fixed i2c bus numbers to the relevant i2c buses,
-> and declare the i2c devices connected to each bus by bus number and
-> device address. The i2c-powermac buses are created in
-> arch/powerpc/platforms/powermac/low_i2c.c, so you would have to
-> instantiate the i2c devices there too. That would basically mean
-> merging part of snd-aoa-fabric-layout into
-> arch/powerpc/platforms/powermac/low_i2c.c as I understand it, I don't
-> know if this sounds reasonable to you.
+Do you need a full 32-bit variable for a simple boolean?  It might be best for
+structure alignment, but you might want to look at using a flags variable or
+something that could be extended with feature bits in a single word.
 
-That doesn't sound too hot -- the fabric module is quite a lot of code
-and data.
+> 	u32		reg_ctrl_default;
+>
+> 	u32		pseudo_palette[PALETTE_ENTRIES_NO];
+>@@ -130,14 +150,19 @@ struct xilinxfb_drvdata {
+> 	container_of(_info, struct xilinxfb_drvdata, info)
+>
+> /*
+>- * The LCD controller has DCR interface to its registers, but all
+>- * the boards and configurations the driver has been tested with
+>- * use opb2dcr bridge. So the registers are seen as memory mapped.
+>- * This macro is to make it simple to add the direct DCR access
+>- * when it's needed.
+>+ * The XPS TFT Controller can be accessed through PLB or DCR interface.
+>+ * To perform the read/write on the registers we need to check on
+>+ * which bus its connected and call the appropriate write API.
+>  */
+>-#define xilinx_fb_out_be32(driverdata, offset, val) \
+>-	dcr_write(driverdata->dcr_host, offset, val)
+>+static void xilinx_fb_out_be32(struct xilinxfb_drvdata *drvdata, u32 offset,
+>+				u32 val)
+>+{
+>+	if (drvdata->dcr_splb_slave_if == 1)
+>+		out_be32(drvdata->regs + (offset << 2), val);
+>+	else
+>+		dcr_write(drvdata->dcr_host, offset, val);
+>+
+>+}
+>
+> static int
+> xilinx_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
+>@@ -175,7 +200,8 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
+> 	switch (blank_mode) {
+> 	case FB_BLANK_UNBLANK:
+> 		/* turn on panel */
+>-		xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
+>+		xilinx_fb_out_be32(drvdata, REG_CTRL,
+>+					drvdata->reg_ctrl_default);
+> 		break;
+>
+> 	case FB_BLANK_NORMAL:
+>@@ -191,8 +217,7 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
+> 	return 0; /* success */
+> }
+>
+>-static struct fb_ops xilinxfb_ops =
+>-{
+>+static struct fb_ops xilinxfb_ops = {
+> 	.owner			= THIS_MODULE,
+> 	.fb_setcolreg		= xilinx_fb_setcolreg,
+> 	.fb_blank		= xilinx_fb_blank,
+>@@ -205,25 +230,35 @@ static struct fb_ops xilinxfb_ops =
+>  * Bus independent setup/teardown
+>  */
+>
+>-static int xilinxfb_assign(struct device *dev, dcr_host_t dcr_host,
+>-			   unsigned int dcr_start, unsigned int dcr_len,
+>+static int xilinxfb_assign(struct device *dev,
+>+			   struct xilinxfb_drvdata *drvdata,
+>+			   unsigned long physaddr,
+> 			   struct xilinxfb_platform_data *pdata)
+> {
+>-	struct xilinxfb_drvdata *drvdata;
+> 	int rc;
+> 	int fbsize = pdata->xvirt * pdata->yvirt * BYTES_PER_PIXEL;
+>
+>-	/* Allocate the driver data region */
+>-	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+>-	if (!drvdata) {
+>-		dev_err(dev, "Couldn't allocate device private record\n");
+>-		return -ENOMEM;
+>+	if (drvdata->dcr_splb_slave_if) {
+>+		/*
+>+		 * Map the control registers in if the controller
+>+		 * is on direct PLB interface.
+>+		 */
+>+		if (!request_mem_region(physaddr, 8, DRIVER_NAME)) {
+>+			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
+>+				physaddr);
+>+			rc = -ENODEV;
+>+			goto err_region;
+>+		}
+>+
+>+		drvdata->regs_phys = physaddr;
+>+		drvdata->regs = ioremap(physaddr, 8);
+>+		if (!drvdata->regs) {
+>+			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
+>+				physaddr);
+>+			rc = -ENODEV;
+>+			goto err_map;
+>+		}
+> 	}
+>-	dev_set_drvdata(dev, drvdata);
+>-
+>-	drvdata->dcr_start = dcr_start;
+>-	drvdata->dcr_len = dcr_len;
+>-	drvdata->dcr_host = dcr_host;
+>
+> 	/* Allocate the framebuffer memory */
+> 	if (pdata->fb_phys) {
+>@@ -238,7 +273,10 @@ static int xilinxfb_assign(struct device *dev, dcr_host_t dcr_host,
+> 	if (!drvdata->fb_virt) {
+> 		dev_err(dev, "Could not allocate frame buffer memory\n");
+> 		rc = -ENOMEM;
+>-		goto err_region;
+>+		if (drvdata->dcr_splb_slave_if)
+>+			goto err_fbmem;
+>+		else
+>+			goto err_region;
+> 	}
+>
+> 	/* Clear (turn to black) the framebuffer */
+>@@ -251,7 +289,8 @@ static int xilinxfb_assign(struct device *dev, dcr_host_t dcr_host,
+> 	drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
+> 	if (pdata->rotate_screen)
+> 		drvdata->reg_ctrl_default |= REG_CTRL_ROTATE;
+>-	xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
+>+	xilinx_fb_out_be32(drvdata, REG_CTRL,
+>+					drvdata->reg_ctrl_default);
+>
+> 	/* Fill struct fb_info */
+> 	drvdata->info.device = dev;
+>@@ -287,9 +326,14 @@ static int xilinxfb_assign(struct device *dev, dcr_host_t dcr_host,
+> 		goto err_regfb;
+> 	}
+>
+>+	if (drvdata->dcr_splb_slave_if) {
+>+		/* Put a banner in the log (for DEBUG) */
+>+		dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr,
+>+					drvdata->regs);
+>+	}
+> 	/* Put a banner in the log (for DEBUG) */
+> 	dev_dbg(dev, "fb: phys=%p, virt=%p, size=%x\n",
+>-		(void*)drvdata->fb_phys, drvdata->fb_virt, fbsize);
+>+		(void *)drvdata->fb_phys, drvdata->fb_virt, fbsize);
+>
+> 	return 0;	/* success */
+>
+>@@ -300,9 +344,20 @@ err_cmap:
+> 	if (drvdata->fb_alloced)
+> 		dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
+> 			drvdata->fb_phys);
+>+	else
+>+		iounmap(drvdata->fb_virt);
+>+
+> 	/* Turn off the display */
+> 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
+>
+>+err_fbmem:
+>+	if (drvdata->dcr_splb_slave_if)
+>+		iounmap(drvdata->regs);
+>+
+>+err_map:
+>+	if (drvdata->dcr_splb_slave_if)
+>+		release_mem_region(physaddr, 8);
+>+
+> err_region:
+> 	kfree(drvdata);
+> 	dev_set_drvdata(dev, NULL);
+>@@ -325,11 +380,18 @@ static int xilinxfb_release(struct device *dev)
+> 	if (drvdata->fb_alloced)
+> 		dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
+> 				  drvdata->fb_virt, drvdata->fb_phys);
+>+	else
+>+		iounmap(drvdata->fb_virt);
+>
+> 	/* Turn off the display */
+> 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
+>
+>-	dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
+>+	/* Release the resources, as allocated based on interface */
+>+	if (drvdata->dcr_splb_slave_if) {
+>+		iounmap(drvdata->regs);
+>+		release_mem_region(drvdata->regs_phys, 8);
+>+	} else
+>+		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
+>
+> 	kfree(drvdata);
+> 	dev_set_drvdata(dev, NULL);
+>@@ -341,27 +403,54 @@ static int xilinxfb_release(struct device *dev)
+>  * OF bus binding
+>  */
+>
+>-#if defined(CONFIG_OF)
+> static int __devinit
+> xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
+> {
+> 	const u32 *prop;
+>+	u32 *p;
+>+	u32 tft_access;
+> 	struct xilinxfb_platform_data pdata;
+>+	struct resource res;
+> 	int size, rc;
+>-	int start, len;
+>+	int start = 0, len = 0;
+> 	dcr_host_t dcr_host;
+>+	struct xilinxfb_drvdata *drvdata;
+>
+> 	/* Copy with the default pdata (not a ptr reference!) */
+> 	pdata = xilinx_fb_default_pdata;
+>
+> 	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
+>
+>-	start = dcr_resource_start(op->node, 0);
+>-	len = dcr_resource_len(op->node, 0);
+>-	dcr_host = dcr_map(op->node, start, len);
+>-	if (!DCR_MAP_OK(dcr_host)) {
+>-		dev_err(&op->dev, "invalid address\n");
+>-		return -ENODEV;
+>+	/*
+>+	 * To check whether the core is connected directly to DCR or PLB
+>+	 * interface and initialize the tft_access accordingly.
+>+	 */
+>+	p = (u32 *)of_get_property(op->node, "xlnx,dcr-splb-slave-if", NULL);
+>+
+>+	if (p)
+>+		tft_access = *p;
+>+	else
+>+		tft_access = 0;		/* For backward compatibility */
+>+
+>+	/*
+>+	 * Fill the resource structure if its direct PLB interface
+>+	 * otherwise fill the dcr_host structure.
+>+	 */
+>+	if (tft_access) {
+>+		rc = of_address_to_resource(op->node, 0, &res);
+>+		if (rc) {
+>+			dev_err(&op->dev, "invalid address\n");
+>+			return -ENODEV;
+>+		}
+>+
+>+	} else {
+>+		start = dcr_resource_start(op->node, 0);
+>+		len = dcr_resource_len(op->node, 0);
+>+		dcr_host = dcr_map(op->node, start, len);
+>+		if (!DCR_MAP_OK(dcr_host)) {
+>+			dev_err(&op->dev, "invalid address\n");
+>+			return -ENODEV;
+>+		}
+> 	}
+>
+> 	prop = of_get_property(op->node, "phys-size", &size);
+>@@ -385,7 +474,26 @@ xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
+> 	if (of_find_property(op->node, "rotate-display", NULL))
+> 		pdata.rotate_screen = 1;
+>
+>-	return xilinxfb_assign(&op->dev, dcr_host, start, len, &pdata);
+>+	/* Allocate the driver data region */
+>+	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+>+	if (!drvdata) {
+>+		dev_err(&op->dev, "Couldn't allocate device private record\n");
+>+		return -ENOMEM;
+>+	}
+>+	dev_set_drvdata(&op->dev, drvdata);
+>+
+>+	/* Store the tft_access value into the driverdata structure member */
+>+	drvdata->dcr_splb_slave_if = tft_access;
+>+
+>+	/* Arguments are passed based on the interface */
+>+	if (drvdata->dcr_splb_slave_if == 1) {
+>+		return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
+>+	} else {
+>+		drvdata->dcr_start = start;
+>+		drvdata->dcr_len = len;
+>+		drvdata->dcr_host = dcr_host;
+>+		return xilinxfb_assign(&op->dev, drvdata, 0, &pdata);
+>+	}
+> }
+>
+> static int __devexit xilinxfb_of_remove(struct of_device *op)
+>@@ -395,6 +503,7 @@ static int __devexit xilinxfb_of_remove(struct of_device *op)
+>
+> /* Match table for of_platform binding */
+> static struct of_device_id xilinxfb_of_match[] __devinitdata = {
+>+	{ .compatible = "xlnx,xps-tft-1.00.a", },
+> 	{ .compatible = "xlnx,plb-tft-cntlr-ref-1.00.a", },
+> 	{ .compatible = "xlnx,plb-dvi-cntlr-ref-1.00.c", },
+> 	{},
+>@@ -412,22 +521,6 @@ static struct of_platform_driver xilinxfb_of_driver = {
+> 	},
+> };
+>
+>-/* Registration helpers to keep the number of #ifdefs to a minimum */
+>-static inline int __init xilinxfb_of_register(void)
+>-{
+>-	pr_debug("xilinxfb: calling of_register_platform_driver()\n");
+>-	return of_register_platform_driver(&xilinxfb_of_driver);
+>-}
+>-
+>-static inline void __exit xilinxfb_of_unregister(void)
+>-{
+>-	of_unregister_platform_driver(&xilinxfb_of_driver);
+>-}
+>-#else /* CONFIG_OF */
+>-/* CONFIG_OF not enabled; do nothing helpers */
+>-static inline int __init xilinxfb_of_register(void) { return 0; }
+>-static inline void __exit xilinxfb_of_unregister(void) { }
+>-#endif /* CONFIG_OF */
+>
+> /* ---------------------------------------------------------------------
+>  * Module setup and teardown
+>@@ -436,18 +529,18 @@ static inline void __exit xilinxfb_of_unregister(void) { }
+> static int __init
+> xilinxfb_init(void)
+> {
+>-	return xilinxfb_of_register();
+>+	return of_register_platform_driver(&xilinxfb_of_driver);
+> }
+>
+> static void __exit
+> xilinxfb_cleanup(void)
+> {
+>-	xilinxfb_of_unregister();
+>+	of_unregister_platform_driver(&xilinxfb_of_driver);
+> }
+>
+> module_init(xilinxfb_init);
+> module_exit(xilinxfb_cleanup);
+>
+>-MODULE_AUTHOR("MontaVista Software, Inc. <source@mvista.com>");
+>-MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
+>+MODULE_AUTHOR("Xilinx Inc.");
+>+MODULE_DESCRIPTION("Xilinx TFT frame buffer driver");
+> MODULE_LICENSE("GPL");
 
-> So I think we have two options: switch the powermac systems to fixed
-> i2c bus numbers and instantiate the i2c sound devices from
-> arch/powerpc/platforms/powermac/*, or find a way to obtain a reference
-> to the relevant i2c_adapter.
->=20
-> I think I have found a way to achieve the latter. This isn't exactly
-> how the new model was supposed to work, but it has the advantage to be
-> way less intrusive than my original proposal. It may require larger
-> changes in the future as the i2c-core cleanups go on, but this should
-> do for now.
+You changed the MODULE_AUTHOR here.  Is that really valid?
 
-Heh :)
+>-- 
+>1.6.2.1
+>
+>
+>This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+>
 
-> My new approach doesn't auto-load anything. Here we go, what you think?
-> This time there is no logic change, I'm really only turning legacy code
-> into new-style i2c code (basically calling i2c_new_device() instead of
-> i2c_attach_client()) and that's about it.
->=20
-> (Once again this is only build-tested and I would like people with the
-> hardware to give it a try.)
+This seems rather odd to be on a patch submission....
 
-Looks reasonable.
-
->  static int onyx_create(struct i2c_adapter *adapter,
->  		       struct device_node *node,
->  		       int addr)
->  {
-> +	struct i2c_board_info info;
-> +	struct i2c_client *client;
-> +
-> +	memset(&info, 0, sizeof(struct i2c_board_info));
-> +	strlcpy(info.type, "aoa_codec_onyx", I2C_NAME_SIZE);
-> +	if (node) {
-> +		info.addr =3D addr;
-> +		info.platform_data =3D node;
-> +		client =3D i2c_new_device(adapter, &info);
-> +	} else {
-> +		/* probe both possible addresses for the onyx chip */
-> +		unsigned short probe_onyx[] =3D {
-> +			0x46, 0x47, I2C_CLIENT_END
-> +		};
-> +
-> +		client =3D i2c_new_probed_device(adapter, &info, probe_onyx);
-> +	}
-> +	if (!client)
-> +		return -ENODEV;
-> +
-> +	list_add_tail(&client->detected, &client->driver->clients);
-
-That list_add looks a little hackish, and wouldn't it be racy?
-
-> +static const struct i2c_device_id onyx_i2c_id[] =3D {
-> +	{ "aoa_codec_onyx", 0 },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(i2c, onyx_i2c_id);
-
-Should it really export the device table?
-
-(same comments for tas)
-
-It'll be until mid next week that I can test anything.
-
-johannes
-
---=-sIWA1p4O9S9PaoFGgLgx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJ3etiAAoJEKVg1VMiehFY+mMP/0lhXlCmlkHdHK4e7dqOojA8
-ssZS/7SLl0jpnKWd68BrOg+Pcq7sww+cM6W/wxDQNoJx6A9E3y/ZCv9D+JZE+LTp
-A3lPA2DS4SCcL4z6EErUOiH58US3/j2LCup9pWJ02+Te5fdzchwGhr+FGkREAe40
-4L3CK028Lw/GRNQXev4kkq8tAFkDMEOPiLzsgkseA/KcKfVAZ84Rw0T/hdWY6NR0
-b//+i5MiGKy9Q9eW4dO85xBLHBWSnMjNdCcwlRpnaeAnm1/a4VpU9bdMjtcNLJ+m
-bhygGfUfD3PgHrkB0uzdpNcdGl4FtlsChGBLz77b4w85vAXwfvCJFfpTi/wWuJfh
-emsKpqej5ia0K0WAinx3UcBxNUkOfI32q8ZiQnVu8yjp8hctXCkaASR7AmmpRZms
-4b9MNjHmgllzyTGn3BCMnj4Yc6JMSPeu2OedSE0Ka6LGyKedRpVo2OcGpEb/d4yr
-dIRjKPAS72CooT37f5eoOP+hqbJTk6XsglOwTIQl/AX3lNmFfe103IG1RQM8GGVN
-ucTB18uVlsev/OboLk5nmvGHSBLHLZ8emnl5dMSsj1HqWu8zhHz5sDhzaPj0jwKg
-lAgpr6+eztkuLOkjczDrdBVrn354WIXk3YBweODVTwRDBZZFQIb/r/GrRXwf7KBb
-9ba0G6Yu8Ay5LkpgztLU
-=NSTg
------END PGP SIGNATURE-----
-
---=-sIWA1p4O9S9PaoFGgLgx--
+josh
