@@ -1,29 +1,21 @@
-Return-Path: <mmlnx@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 473B6DDFA1
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Apr 2009 04:57:09 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3AItcmx000585
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 12:55:38 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3AIv66P210704
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 12:57:06 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3AIv5ni029036
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 12:57:05 -0600
-Message-ID: <49DF967F.4000205@us.ibm.com>
-Date: Fri, 10 Apr 2009 11:57:03 -0700
-From: Mike Mason <mmlnx@us.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, linasvepstas@gmail.com,
-	paulus@samba.org
-Subject: [PATCH] Set error_state to pci_channel_io_normal in eeh_report_reset()
-Content-Type: text/plain; charset=windows-1252; format=flowed
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 63DBCDE240
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Apr 2009 06:27:44 +1000 (EST)
+In-Reply-To: <49DF933F.7030101@freescale.com>
+References: <2c4bcf8d1d7083ff53ce5b556765e96676a007fb.1239165378.git.tony@bakeyournoodle.com>	<1239167335.10104.26.camel@localhost>	<20090408055126.GG16602@bilbo.ozlabs.org>	<7ED93BB3-FE0E-4102-89FB-78950A533717@kernel.crashing.org>	<20090409224553.GO16602@bilbo.ozlabs.org>	<20090410091149.5068d8e1.sfr@canb.auug.org.au>	<1AAD5906-66FA-4850-8C62-8C030816E44E@kernel.crashing.org>	<49DF89F7.2070403@freescale.com>
+	<m2bpr4l5m0.fsf@igel.home> <49DF933F.7030101@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <63473184-83D7-44C0-80E0-35673075A7CD@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Quieten arch/powerpc in a allmodconfig build.
+Date: Fri, 10 Apr 2009 22:28:28 +0200
+To: Scott Wood <scottwood@freescale.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andreas Schwab <schwab@linux-m68k.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,89 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-While adding native EEH support to Emulex and Qlogic drivers, it was 
-discovered that dev->error_state was set to pci_io_channel_normal too 
-late in the recovery process. These drivers rely on error_state to 
-determine if they can access the device in their slot_reset callback, 
-thus error_state needs to be set to pci_io_channel_norm in 
-eeh_report_reset(). Below is a detailed explanation (courtesy of Richard 
-Lary) as to why this is necessary.
+>>> The problem is that GCC does not give an error (only a warning)  
+>>> even for
+>>> things like this where it should be trivial to detect that the  
+>>> usage *is*
+>>> uninitialized, not just might be:
+>>>
+>>> int foo(void)
+>>> {
+>>>    int a;
+>>>
+>>>    return a;
+>>> }
+>> The compiler must not reject this code, because the undefined  
+>> behavior
+>> only occurs if executed.  There is no constraint violated.
+>
+> Fine (though GCC could have something similar to -Werror but more  
+> limited in scope to the really serious stuff that *should* be  
+> illegal even if it isn't), but it should at least be a separate  
+> warning class.
+>
+> My point was to counter Segher's assertion that the compiler  
+> currently gives an error on the obvious stuff.
 
-Background:
-PCI MMIO or DMA accesses to a frozen slot generate additional EEH 
-errors. If the number of additional EEH errors exceeds EEH_MAX_FAILS the 
-adapter will be shutdown. To avoid triggering excessive EEH errors and 
-an undesirable adapter shutdown, some drivers use the 
-pci_channel_offline(dev) wrapper function to return a Boolean value 
-based on the value of pci_dev->error_state to determine if PCI MMIO or 
-DMA accesses are safe. If the wrapper returns TRUE, drivers must not 
-make PCI MMIO or DMA access to their hardware.
+I never said that, or didn't intend to anyway; what I was trying to say
+is that the compiler makes a difference between cases where it knows
+something is uninitialized vs. cases where it cannot prove either way:
 
-The pci_dev structure member error_state reflects one of three values, 
-1) pci_channel_io_normal, 2) pci_channel_io_frozen, 3) 
-pci_channel_io_perm_failure. Function pci_channel_offline(dev) returns 
-TRUE if error_state is pci_channel_io_frozen or pci_channel_io_perm_failure.
+$ cat mm.c
+int bork(void)
+{
+         int a;
 
-The EEH driver sets pci_dev->error_state to pci_channel_io_frozen at the 
-point where the PCI slot is frozen. Currently, the EEH driver restores 
-dev->error_state to pci_channel_io_normal in eeh_report_resume() before 
-calling the driver's resume callback. However, when the EEH driver calls 
-the driver's slot_reset callback() from eeh_report_reset(), it 
-incorrectly indicates the error state is still pci_channel_io_frozen.
+         return a;
+}
 
-Waiting until eeh_report_resume() to restore dev->error_state to 
-pci_channel_io_normal is too late for Emulex and QLogic FC drivers and 
-any other drivers which are designed to use common code paths in these 
-two cases: i) those called after the driver's slot_reset callback() and 
-ii) those called after the PCI slot is frozen but before the driver's 
-slot_reset callback is called. Case i) all driver paths executed to 
-reinitialize the hardware after a reset and case ii) all code paths 
-executed by driver kernel threads that run asynchronous to the main 
-driver thread, such as interrupt handlers and worker threads to process 
-driver work queues.
+int main(void)
+{
+         return bork();
+}
 
-Emulex and QLogic FC drivers are designed with common code paths which 
-require that pci_channel_offline(dev) reflect the true state of the 
-hardware. The state transitions that the hardware takes from Normal 
-Operations to Slot Frozen to Reset to Normal Operations are documented 
-in the Power Architecture™ Platform Requirements+ (PAPR+) in Table 75. 
-PE State Control.
+$ powerpc-linux-gcc -Wall -W -Os -c mm.c
+mm.c: In function 'bork':
+mm.c:5: warning: 'a' is used uninitialized in this function
 
-PAPR defines the following 3 states:
+Note: _is_ used uninitialized, not "may be" like in cases where the  
+compiler
+isn't sure.
 
-0 -- Not reset, Not EEH stopped, MMIO load/store allowed, DMA allowed 
-(Normal Operations)
-1 -- Reset, Not EEH stopped, MMIO load/store disabled, DMA disabled
-2 -- Not reset, EEH stopped, MMIO load/store disabled, DMA disabled 
-(Slot Frozen)
+I don't know why this isn't an error; perhaps GCC does not assume main 
+() to
+always be executed.  I don't think it could prove much anything to be
+executed in non-toy examples, anyway.
 
-An EEH error places the slot in state 2 (Frozen) and the adapter driver 
-is notified that an EEH error was detected. If the adapter driver 
-returns PCI_ERS_RESULT_NEED_RESET, the EEH driver calls 
-eeh_reset_device() to place the slot into state 1 (Reset) and 
-eeh_reset_device completes by placing the slot into State 0 (Normal 
-Operations). Upon return from eeh_reset_device(), the EEH driver calls 
-eeh_report_reset, which then calls the adapter's slot_reset callback. At 
-the time the adapter's slot_reset callback is called, the true state of 
-the hardware is Normal Operations and should be accurately reflected by 
-setting dev->error_state to pci_channel_io_normal.
 
-The current implementation of EEH driver does not do so and requires the 
-following patch to correct this deficiency.
-
-Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
-diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c 
-b/arch/powerpc/platforms/pseries/eeh_driver.c
-index 380420f..9a2a6e3 100644
---- a/arch/powerpc/platforms/pseries/eeh_driver.c
-+++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-@@ -182,6 +182,8 @@ static void eeh_report_reset(struct pci_dev *dev, 
-void *userdata)
-if (!driver)
-return;
-
-+ dev->error_state = pci_channel_io_normal;
-+
-eeh_enable_irq(dev);
-
-if (!driver->err_handler ||
+Segher
