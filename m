@@ -1,34 +1,24 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
+	[216.10.194.135])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 77B16DDF8E
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 16:40:07 +1000 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id n3A6dYxu002139
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 16:39:34 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3A6e6oZ1081448
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 16:40:06 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3A6e6k0028154
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 16:40:06 +1000
-Message-ID: <49DEE9C2.1040500@in.ibm.com>
-Date: Fri, 10 Apr 2009 12:10:02 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+	(Client CN "extu-mxob-2.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 29548DE1A7
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 19:07:49 +1000 (EST)
+Date: Fri, 10 Apr 2009 09:58:07 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/3] powerpc: allow 256kB pages with SHMEM
+In-Reply-To: <20090409163403.e82ec1c3.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0904100945270.2593@blonde.anvils>
+References: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
+	<Pine.LNX.4.64.0904062156290.21044@blonde.anvils>
+	<20090409163403.e82ec1c3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [CFQ/OOPS]  rb_erase with April 9 next tree
-References: <20090409163305.8c7a0371.sfr@canb.auug.org.au>
-	<49DE1969.1000709@in.ibm.com> <20090409172918.GE5178@kernel.dk>
-	<20090409174420.GG5178@kernel.dk>
-In-Reply-To: <20090409174420.GG5178@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: yanok@emcraft.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, prodyuth@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,33 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jens Axboe wrote:
->
-> Can you see if this fixes it for you?
->
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index e01b103..64de5c0 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -1654,6 +1654,7 @@ retry:
->  		}
->
->  		RB_CLEAR_NODE(&cfqq->rb_node);
-> +		RB_CLEAR_NODE(&cfqq->p_node);
->  		INIT_LIST_HEAD(&cfqq->fifo);
->
->  		atomic_set(&cfqq->ref, 0);
->   
-Yes. The above patch fixed this oops. Thanks
+On Thu, 9 Apr 2009, Andrew Morton wrote:
+> On Mon, 6 Apr 2009 22:01:15 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> 
+> > Now that shmem's divisions by zero and SHMEM_MAX_BYTES are fixed,
+> > let powerpc 256kB pages coexist with CONFIG_SHMEM again.
+> > 
+> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> > ---
+> > Added linuxppc-dev and some other Cc's for this 3/3: sorry
+> > if you didn't see 1/3 and 2/3, they were just in mm/shmem.c.
+> 
+> Do we think these patches should be in 2.6.30?
 
-Regards
--Sachin
+I think so - 2.6.30 will have the rest of Yuri's 256kB page support.
+But it would be nice to have an Ack from Yuri before sending these
+on through.  2/3 is a bugfix justified even without 256kB pages -
+I should have inverted the ordering.
 
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+Hugh
