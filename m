@@ -1,23 +1,22 @@
-Return-Path: <a.beregalov@gmail.com>
-Date: Fri, 10 Apr 2009 05:56:14 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [BUILD FAILURE 04] Next April 9 : PPC64 randconfig
-	[drivers/net/ibm_newemac/core.c]
-Message-ID: <20090410015614.GA5781@orion>
-References: <1239285152.5188.66.camel@subratamodak.linux.ibm.com>
-	<BE92FB74-1784-414B-B27F-8329185EB3AE@kernel.crashing.org>
-	<20090409143112.GA7538@yoda.jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090409143112.GA7538@yoda.jdub.homelinux.org>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>,
-	linux-net@vger.kernel.org, subrata@linux.vnet.ibm.com
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 3B5C3DE1DD
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 14:21:11 +1000 (EST)
+Date: Thu, 9 Apr 2009 23:21:04 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [PATCH] Quieten arch/powerpc in a allmodconfig build.
+Message-ID: <20090409232104.60d25d26@manatee.lan>
+In-Reply-To: <20090409000112.GI16602@bilbo.ozlabs.org>
+References: <2c4bcf8d1d7083ff53ce5b556765e96676a007fb.1239165378.git.tony@bakeyournoodle.com>
+	<1239167335.10104.26.camel@localhost>
+	<20090408055126.GG16602@bilbo.ozlabs.org>
+	<1239173283.10104.38.camel@localhost>
+	<20090408134736.682bd56d@manatee.lan>
+	<20090409000112.GI16602@bilbo.ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,125 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 09, 2009 at 10:31:12AM -0400, Josh Boyer wrote:
-> On Thu, Apr 09, 2009 at 09:28:23AM -0500, Kumar Gala wrote:
-> >
-> > On Apr 9, 2009, at 8:52 AM, Subrata Modak wrote:
-> >
-> >> Observed the following build error:
-> >>
-> >> CC      drivers/net/ibm_newemac/core.o
-> >> drivers/net/ibm_newemac/core.c: In function ???emac_probe???:
-> >> drivers/net/ibm_newemac/core.c:2831: error: ???struct net_device??? has no
-> >> member named ???open???
-> >> drivers/net/ibm_newemac/core.c:2834: error: ???struct net_device??? has no
-> >> member named ???tx_timeout???
-> >> drivers/net/ibm_newemac/core.c:2836: error: ???struct net_device??? has no
-> >> member named ???stop???
-> >> drivers/net/ibm_newemac/core.c:2837: error: ???struct net_device??? has no
-> >> member named ???get_stats???
-> >> drivers/net/ibm_newemac/core.c:2838: error: ???struct net_device??? has no
-> >> member named ???set_multicast_list???
-> >> drivers/net/ibm_newemac/core.c:2839: error: ???struct net_device??? has no
-> >> member named ???do_ioctl???
-> >> drivers/net/ibm_newemac/core.c:2841: error: ???struct net_device??? has no
-> >> member named ???hard_start_xmit???
-> >> drivers/net/ibm_newemac/core.c:2842: error: ???struct net_device??? has no
-> >> member named ???change_mtu???
-> >> drivers/net/ibm_newemac/core.c:2845: error: ???struct net_device??? has no
-> >> member named ???hard_start_xmit???
-> >> make[3]: *** [drivers/net/ibm_newemac/core.o] Error 1
-> >> make[2]: *** [drivers/net/ibm_newemac] Error 2
-> >> make[1]: *** [drivers/net] Error 2
-> >> make: *** [drivers] Error 2
-> >>
-> >> Regards--
-> >> Subrata
-> >>
-> >> <randconfig4-ppc64-next20090409.txt>
-> >
-> > This is because CONFIG_COMPAT_NET_DEV_OPS isnt set and needs to be for  
-> > this driver to build.  I've asked the netdev guys about either fixing  
-> > the driver or adding the proper thing to Kconfig to select  
-> > CONFIG_COMPAT_NET_DEV_OPS.
+Tony Breeds <tony@bakeyournoodle.com> wrote:
+
+> On Wed, Apr 08, 2009 at 01:47:36PM -0500, Nathan Lynch wrote:
 > 
-> Thanks!
+> > I think I had some reason for doing it this way, but I'm drawing a
+> > blank right now.
+> > 
+> > In the meantime, can someone post the warnings that gcc emits for
+> > cacheinfo.c, as well as the gcc version?  I can't reproduce them with
+> > 4.3.2 on Fedora.
 > 
-> If someone has pointers on what needs to be done to fix it, let me know.
-> 
+> ---
+> [tony@thor ~]$ egrep cacheinfo tmp/build.log 
+> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c: In function 'associativity_show':
+> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c:562: warning: 'associativity' may be used uninitialized in this function
+> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c: In function 'size_show':
+> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c:513: warning: 'size_kb' may be used uninitialized in this function
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH] ibm_newemac: convert to netdev_ops
+Thanks.
 
+So I think I've convinced myself that the warnings are incorrect and
+that uninitialized use is not possible.
 
-Reported-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
+But I find it odd that gcc gives warnings for these sites but not others
+in the file that use the same idiom (e.g. line_size_show,
+nr_sets_show).  I'd guess that inlining is implicated somehow.  Would I
+be justified in worrying that this version of gcc is generating
+incorrect code?
 
- drivers/net/ibm_newemac/core.c |   41 ++++++++++++++++++++++++++++-----------
- 1 files changed, 29 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-index 77e4b5b..806533c 100644
---- a/drivers/net/ibm_newemac/core.c
-+++ b/drivers/net/ibm_newemac/core.c
-@@ -2686,6 +2686,32 @@ static int __devinit emac_init_config(struct emac_instance *dev)
- 	return 0;
- }
- 
-+static const struct net_device_ops emac_netdev_ops = {
-+	.ndo_open		= emac_open,
-+	.ndo_stop		= emac_close,
-+	.ndo_get_stats		= emac_stats,
-+	.ndo_set_multicast_list	= emac_set_multicast_list,
-+	.ndo_do_ioctl		= emac_ioctl,
-+	.ndo_tx_timeout		= emac_tx_timeout,
-+	.ndo_validate_addr	= eth_validate_addr,
-+	.ndo_set_mac_address	= eth_mac_addr,
-+	.ndo_start_xmit		= emac_start_xmit,
-+	.ndo_change_mtu		= eth_change_mtu,
-+};
-+
-+static const struct net_device_ops emac_gige_netdev_ops = {
-+	.ndo_open		= emac_open,
-+	.ndo_stop		= emac_close,
-+	.ndo_get_stats		= emac_stats,
-+	.ndo_set_multicast_list	= emac_set_multicast_list,
-+	.ndo_do_ioctl		= emac_ioctl,
-+	.ndo_tx_timeout		= emac_tx_timeout,
-+	.ndo_validate_addr	= eth_validate_addr,
-+	.ndo_set_mac_address	= eth_mac_addr,
-+	.ndo_start_xmit		= emac_start_xmit_sg,
-+	.ndo_change_mtu		= emac_change_mtu,
-+};
-+
- static int __devinit emac_probe(struct of_device *ofdev,
- 				const struct of_device_id *match)
- {
-@@ -2827,23 +2853,14 @@ static int __devinit emac_probe(struct of_device *ofdev,
- 	if (err != 0)
- 		goto err_detach_tah;
- 
--	/* Fill in the driver function table */
--	ndev->open = &emac_open;
- 	if (dev->tah_dev)
- 		ndev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
--	ndev->tx_timeout = &emac_tx_timeout;
- 	ndev->watchdog_timeo = 5 * HZ;
--	ndev->stop = &emac_close;
--	ndev->get_stats = &emac_stats;
--	ndev->set_multicast_list = &emac_set_multicast_list;
--	ndev->do_ioctl = &emac_ioctl;
- 	if (emac_phy_supports_gige(dev->phy_mode)) {
--		ndev->hard_start_xmit = &emac_start_xmit_sg;
--		ndev->change_mtu = &emac_change_mtu;
-+		ndev->netdev_ops = &emac_gige_netdev_ops;
- 		dev->commac.ops = &emac_commac_sg_ops;
--	} else {
--		ndev->hard_start_xmit = &emac_start_xmit;
--	}
-+	} else
-+		ndev->netdev_ops = &emac_netdev_ops;
- 	SET_ETHTOOL_OPS(ndev, &emac_ethtool_ops);
- 
- 	netif_carrier_off(ndev);
+If not, then I'm fine with the uninitialized_var() changes, but do
+please include the warnings and the compiler version in the changelog.
