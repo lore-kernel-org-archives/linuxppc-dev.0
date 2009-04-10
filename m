@@ -1,21 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 72FB5DE194
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Apr 2009 06:43:46 +1000 (EST)
-In-Reply-To: <49DF89F7.2070403@freescale.com>
-References: <2c4bcf8d1d7083ff53ce5b556765e96676a007fb.1239165378.git.tony@bakeyournoodle.com>	<1239167335.10104.26.camel@localhost>	<20090408055126.GG16602@bilbo.ozlabs.org>	<7ED93BB3-FE0E-4102-89FB-78950A533717@kernel.crashing.org>	<20090409224553.GO16602@bilbo.ozlabs.org>	<20090410091149.5068d8e1.sfr@canb.auug.org.au>
-	<1AAD5906-66FA-4850-8C62-8C030816E44E@kernel.crashing.org>
-	<49DF89F7.2070403@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FECC6BB4-0505-4319-BCD5-81E8B1C825B5@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Quieten arch/powerpc in a allmodconfig build.
-Date: Fri, 10 Apr 2009 22:45:07 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE004.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 6CE97DE0C4
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Apr 2009 07:18:05 +1000 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: grant.likely@secretlab.ca, jwboyer@linux.vnet.ibm.com,
+	linux-fbdev-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	akonovalov@ru.mvista.com, adaplas@gmail.com
+Subject: [PATCH] [V2] Xilinx : Framebuffer Driver: Add PLB support (non-DCR)
+Date: Fri, 10 Apr 2009 15:17:50 -0600
+Message-ID: <20090410211754.1ECF9FC804E@mail107-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Suneel <suneelg@xilinx.com>, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +21,433 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> And further, there is no separation of warning classes into might- 
-> be-uninitialized and is-uninitialized-compiler-can-tell-for-sure.
+From: Suneel <suneelg@xilinx.com>
 
-Indeed.  Please file a bug report.
+Added support for the new xps tft controller.
+
+The new core has PLB interface support in addition to existing
+DCR interface.
+
+The driver has been modified to support this new core which
+can be connected on PLB or DCR bus.
+
+Signed-off-by: Suneel <suneelg@xilinx.com>
+Signed-off-by: John Linn <john.linn@xilinx.com>
+---
+
+V2 - Incorporated comments from Josh, Grant and others
+
+ drivers/video/xilinxfb.c |  213 ++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 150 insertions(+), 63 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index a82c530..d151237 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -1,13 +1,13 @@
+ /*
+- * xilinxfb.c
+  *
+- * Xilinx TFT LCD frame buffer driver
++ * Xilinx TFT frame buffer driver
+  *
+  * Author: MontaVista Software, Inc.
+  *         source@mvista.com
+  *
+  * 2002-2007 (c) MontaVista Software, Inc.
+  * 2007 (c) Secret Lab Technologies, Ltd.
++ * 2009 (c) Xilinx Inc.
+  *
+  * This file is licensed under the terms of the GNU General Public License
+  * version 2.  This program is licensed "as is" without any warranty of any
+@@ -31,27 +31,31 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/dma-mapping.h>
+-#if defined(CONFIG_OF)
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+-#endif
+-#include <asm/io.h>
++#include <linux/io.h>
+ #include <linux/xilinxfb.h>
+ #include <asm/dcr.h>
+ 
+ #define DRIVER_NAME		"xilinxfb"
+-#define DRIVER_DESCRIPTION	"Xilinx TFT LCD frame buffer driver"
++
+ 
+ /*
+  * Xilinx calls it "PLB TFT LCD Controller" though it can also be used for
+- * the VGA port on the Xilinx ML40x board. This is a hardware display controller
+- * for a 640x480 resolution TFT or VGA screen.
++ * the VGA port on the Xilinx ML40x board. This is a hardware display
++ * controller for a 640x480 resolution TFT or VGA screen.
+  *
+  * The interface to the framebuffer is nice and simple.  There are two
+  * control registers.  The first tells the LCD interface where in memory
+  * the frame buffer is (only the 11 most significant bits are used, so
+  * don't start thinking about scrolling).  The second allows the LCD to
+  * be turned on or off as well as rotated 180 degrees.
++ *
++ * In case of direct PLB access the second control register will be at
++ * an offset of 4 as compared to the DCR access where the offset is 1
++ * i.e. REG_CTRL. So this is taken care in the function
++ * xilinx_fb_out_be32 where it left shifts the offset 2 times in case of
++ * direct PLB access.
+  */
+ #define NUM_REGS	2
+ #define REG_FB_ADDR	0
+@@ -108,10 +112,18 @@ static struct fb_var_screeninfo xilinx_fb_var = {
+ 	.activate =	FB_ACTIVATE_NOW
+ };
+ 
++
++#define PLB_ACCESS_FLAG	0x1		/* 1 = PLB, 0 = DCR */
++
+ struct xilinxfb_drvdata {
+ 
+ 	struct fb_info	info;		/* FB driver info record */
+ 
++	phys_addr_t	regs_phys;	/* phys. address of the control
++						registers */
++	void __iomem	*regs;		/* virt. address of the control
++						registers */
++
+ 	dcr_host_t      dcr_host;
+ 	unsigned int    dcr_start;
+ 	unsigned int    dcr_len;
+@@ -120,6 +132,8 @@ struct xilinxfb_drvdata {
+ 	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
+ 	int		fb_alloced;	/* Flag, was the fb memory alloced? */
+ 
++	u8 		flags;		/* features of the driver */
++
+ 	u32		reg_ctrl_default;
+ 
+ 	u32		pseudo_palette[PALETTE_ENTRIES_NO];
+@@ -130,14 +144,19 @@ struct xilinxfb_drvdata {
+ 	container_of(_info, struct xilinxfb_drvdata, info)
+ 
+ /*
+- * The LCD controller has DCR interface to its registers, but all
+- * the boards and configurations the driver has been tested with
+- * use opb2dcr bridge. So the registers are seen as memory mapped.
+- * This macro is to make it simple to add the direct DCR access
+- * when it's needed.
++ * The XPS TFT Controller can be accessed through PLB or DCR interface.
++ * To perform the read/write on the registers we need to check on
++ * which bus its connected and call the appropriate write API.
+  */
+-#define xilinx_fb_out_be32(driverdata, offset, val) \
+-	dcr_write(driverdata->dcr_host, offset, val)
++static void xilinx_fb_out_be32(struct xilinxfb_drvdata *drvdata, u32 offset,
++				u32 val)
++{
++	if (drvdata->flags & PLB_ACCESS_FLAG)
++		out_be32(drvdata->regs + (offset << 2), val);
++	else
++		dcr_write(drvdata->dcr_host, offset, val);
++
++}
+ 
+ static int
+ xilinx_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
+@@ -175,7 +194,8 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
+ 	switch (blank_mode) {
+ 	case FB_BLANK_UNBLANK:
+ 		/* turn on panel */
+-		xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
++		xilinx_fb_out_be32(drvdata, REG_CTRL,
++					drvdata->reg_ctrl_default);
+ 		break;
+ 
+ 	case FB_BLANK_NORMAL:
+@@ -191,8 +211,7 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
+ 	return 0; /* success */
+ }
+ 
+-static struct fb_ops xilinxfb_ops =
+-{
++static struct fb_ops xilinxfb_ops = {
+ 	.owner			= THIS_MODULE,
+ 	.fb_setcolreg		= xilinx_fb_setcolreg,
+ 	.fb_blank		= xilinx_fb_blank,
+@@ -205,25 +224,35 @@ static struct fb_ops xilinxfb_ops =
+  * Bus independent setup/teardown
+  */
+ 
+-static int xilinxfb_assign(struct device *dev, dcr_host_t dcr_host,
+-			   unsigned int dcr_start, unsigned int dcr_len,
++static int xilinxfb_assign(struct device *dev,
++			   struct xilinxfb_drvdata *drvdata,
++			   unsigned long physaddr,
+ 			   struct xilinxfb_platform_data *pdata)
+ {
+-	struct xilinxfb_drvdata *drvdata;
+ 	int rc;
+ 	int fbsize = pdata->xvirt * pdata->yvirt * BYTES_PER_PIXEL;
+ 
+-	/* Allocate the driver data region */
+-	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+-	if (!drvdata) {
+-		dev_err(dev, "Couldn't allocate device private record\n");
+-		return -ENOMEM;
++	if (drvdata->flags & PLB_ACCESS_FLAG) {
++		/*
++		 * Map the control registers in if the controller
++		 * is on direct PLB interface.
++		 */
++		if (!request_mem_region(physaddr, 8, DRIVER_NAME)) {
++			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
++				physaddr);
++			rc = -ENODEV;
++			goto err_region;
++		}
++
++		drvdata->regs_phys = physaddr;
++		drvdata->regs = ioremap(physaddr, 8);
++		if (!drvdata->regs) {
++			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
++				physaddr);
++			rc = -ENODEV;
++			goto err_map;
++		}
+ 	}
+-	dev_set_drvdata(dev, drvdata);
+-
+-	drvdata->dcr_start = dcr_start;
+-	drvdata->dcr_len = dcr_len;
+-	drvdata->dcr_host = dcr_host;
+ 
+ 	/* Allocate the framebuffer memory */
+ 	if (pdata->fb_phys) {
+@@ -238,7 +267,10 @@ static int xilinxfb_assign(struct device *dev, dcr_host_t dcr_host,
+ 	if (!drvdata->fb_virt) {
+ 		dev_err(dev, "Could not allocate frame buffer memory\n");
+ 		rc = -ENOMEM;
+-		goto err_region;
++		if (drvdata->flags & PLB_ACCESS_FLAG)
++			goto err_fbmem;
++		else
++			goto err_region;
+ 	}
+ 
+ 	/* Clear (turn to black) the framebuffer */
+@@ -251,7 +283,8 @@ static int xilinxfb_assign(struct device *dev, dcr_host_t dcr_host,
+ 	drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
+ 	if (pdata->rotate_screen)
+ 		drvdata->reg_ctrl_default |= REG_CTRL_ROTATE;
+-	xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
++	xilinx_fb_out_be32(drvdata, REG_CTRL,
++					drvdata->reg_ctrl_default);
+ 
+ 	/* Fill struct fb_info */
+ 	drvdata->info.device = dev;
+@@ -287,9 +320,14 @@ static int xilinxfb_assign(struct device *dev, dcr_host_t dcr_host,
+ 		goto err_regfb;
+ 	}
+ 
++	if (drvdata->flags & PLB_ACCESS_FLAG) {
++		/* Put a banner in the log (for DEBUG) */
++		dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr,
++					drvdata->regs);
++	}
+ 	/* Put a banner in the log (for DEBUG) */
+ 	dev_dbg(dev, "fb: phys=%p, virt=%p, size=%x\n",
+-		(void*)drvdata->fb_phys, drvdata->fb_virt, fbsize);
++		(void *)drvdata->fb_phys, drvdata->fb_virt, fbsize);
+ 
+ 	return 0;	/* success */
+ 
+@@ -300,9 +338,20 @@ err_cmap:
+ 	if (drvdata->fb_alloced)
+ 		dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
+ 			drvdata->fb_phys);
++	else
++		iounmap(drvdata->fb_virt);
++
+ 	/* Turn off the display */
+ 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
+ 
++err_fbmem:
++	if (drvdata->flags & PLB_ACCESS_FLAG)
++		iounmap(drvdata->regs);
++
++err_map:
++	if (drvdata->flags & PLB_ACCESS_FLAG)
++		release_mem_region(physaddr, 8);
++
+ err_region:
+ 	kfree(drvdata);
+ 	dev_set_drvdata(dev, NULL);
+@@ -325,11 +374,18 @@ static int xilinxfb_release(struct device *dev)
+ 	if (drvdata->fb_alloced)
+ 		dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
+ 				  drvdata->fb_virt, drvdata->fb_phys);
++	else
++		iounmap(drvdata->fb_virt);
+ 
+ 	/* Turn off the display */
+ 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
+ 
+-	dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
++	/* Release the resources, as allocated based on interface */
++	if (drvdata->flags & PLB_ACCESS_FLAG) {
++		iounmap(drvdata->regs);
++		release_mem_region(drvdata->regs_phys, 8);
++	} else
++		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
+ 
+ 	kfree(drvdata);
+ 	dev_set_drvdata(dev, NULL);
+@@ -341,27 +397,54 @@ static int xilinxfb_release(struct device *dev)
+  * OF bus binding
+  */
+ 
+-#if defined(CONFIG_OF)
+ static int __devinit
+ xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
+ {
+ 	const u32 *prop;
++	u32 *p;
++	u32 tft_access;
+ 	struct xilinxfb_platform_data pdata;
++	struct resource res;
+ 	int size, rc;
+-	int start, len;
++	int start = 0, len = 0;
+ 	dcr_host_t dcr_host;
++	struct xilinxfb_drvdata *drvdata;
+ 
+ 	/* Copy with the default pdata (not a ptr reference!) */
+ 	pdata = xilinx_fb_default_pdata;
+ 
+ 	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
+ 
+-	start = dcr_resource_start(op->node, 0);
+-	len = dcr_resource_len(op->node, 0);
+-	dcr_host = dcr_map(op->node, start, len);
+-	if (!DCR_MAP_OK(dcr_host)) {
+-		dev_err(&op->dev, "invalid address\n");
+-		return -ENODEV;
++	/*
++	 * To check whether the core is connected directly to DCR or PLB
++	 * interface and initialize the tft_access accordingly.
++	 */
++	p = (u32 *)of_get_property(op->node, "xlnx,dcr-splb-slave-if", NULL);
++
++	if (p)
++		tft_access = *p;
++	else
++		tft_access = 0;		/* For backward compatibility */
++
++	/*
++	 * Fill the resource structure if its direct PLB interface
++	 * otherwise fill the dcr_host structure.
++	 */
++	if (tft_access) {
++		rc = of_address_to_resource(op->node, 0, &res);
++		if (rc) {
++			dev_err(&op->dev, "invalid address\n");
++			return -ENODEV;
++		}
++
++	} else {
++		start = dcr_resource_start(op->node, 0);
++		len = dcr_resource_len(op->node, 0);
++		dcr_host = dcr_map(op->node, start, len);
++		if (!DCR_MAP_OK(dcr_host)) {
++			dev_err(&op->dev, "invalid address\n");
++			return -ENODEV;
++		}
+ 	}
+ 
+ 	prop = of_get_property(op->node, "phys-size", &size);
+@@ -385,7 +468,26 @@ xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
+ 	if (of_find_property(op->node, "rotate-display", NULL))
+ 		pdata.rotate_screen = 1;
+ 
+-	return xilinxfb_assign(&op->dev, dcr_host, start, len, &pdata);
++	/* Allocate the driver data region */
++	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
++	if (!drvdata) {
++		dev_err(&op->dev, "Couldn't allocate device private record\n");
++		return -ENOMEM;
++	}
++	dev_set_drvdata(&op->dev, drvdata);
++
++	if (tft_access)
++		drvdata->flags |= PLB_ACCESS_FLAG;
++
++	/* Arguments are passed based on the interface */
++	if (drvdata->flags & PLB_ACCESS_FLAG) {
++		return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
++	} else {
++		drvdata->dcr_start = start;
++		drvdata->dcr_len = len;
++		drvdata->dcr_host = dcr_host;
++		return xilinxfb_assign(&op->dev, drvdata, 0, &pdata);
++	}
+ }
+ 
+ static int __devexit xilinxfb_of_remove(struct of_device *op)
+@@ -395,6 +497,7 @@ static int __devexit xilinxfb_of_remove(struct of_device *op)
+ 
+ /* Match table for of_platform binding */
+ static struct of_device_id xilinxfb_of_match[] __devinitdata = {
++	{ .compatible = "xlnx,xps-tft-1.00.a", },
+ 	{ .compatible = "xlnx,plb-tft-cntlr-ref-1.00.a", },
+ 	{ .compatible = "xlnx,plb-dvi-cntlr-ref-1.00.c", },
+ 	{},
+@@ -412,22 +515,6 @@ static struct of_platform_driver xilinxfb_of_driver = {
+ 	},
+ };
+ 
+-/* Registration helpers to keep the number of #ifdefs to a minimum */
+-static inline int __init xilinxfb_of_register(void)
+-{
+-	pr_debug("xilinxfb: calling of_register_platform_driver()\n");
+-	return of_register_platform_driver(&xilinxfb_of_driver);
+-}
+-
+-static inline void __exit xilinxfb_of_unregister(void)
+-{
+-	of_unregister_platform_driver(&xilinxfb_of_driver);
+-}
+-#else /* CONFIG_OF */
+-/* CONFIG_OF not enabled; do nothing helpers */
+-static inline int __init xilinxfb_of_register(void) { return 0; }
+-static inline void __exit xilinxfb_of_unregister(void) { }
+-#endif /* CONFIG_OF */
+ 
+ /* ---------------------------------------------------------------------
+  * Module setup and teardown
+@@ -436,18 +523,18 @@ static inline void __exit xilinxfb_of_unregister(void) { }
+ static int __init
+ xilinxfb_init(void)
+ {
+-	return xilinxfb_of_register();
++	return of_register_platform_driver(&xilinxfb_of_driver);
+ }
+ 
+ static void __exit
+ xilinxfb_cleanup(void)
+ {
+-	xilinxfb_of_unregister();
++	of_unregister_platform_driver(&xilinxfb_of_driver);
+ }
+ 
+ module_init(xilinxfb_init);
+ module_exit(xilinxfb_cleanup);
+ 
+ MODULE_AUTHOR("MontaVista Software, Inc. <source@mvista.com>");
+-MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
++MODULE_DESCRIPTION("Xilinx TFT frame buffer driver");
+ MODULE_LICENSE("GPL");
+-- 
+1.6.2.1
 
 
-Segher
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
