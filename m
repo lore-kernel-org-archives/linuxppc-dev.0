@@ -1,22 +1,34 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 3B5C3DE1DD
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 14:21:11 +1000 (EST)
-Date: Thu, 9 Apr 2009 23:21:04 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH] Quieten arch/powerpc in a allmodconfig build.
-Message-ID: <20090409232104.60d25d26@manatee.lan>
-In-Reply-To: <20090409000112.GI16602@bilbo.ozlabs.org>
-References: <2c4bcf8d1d7083ff53ce5b556765e96676a007fb.1239165378.git.tony@bakeyournoodle.com>
-	<1239167335.10104.26.camel@localhost>
-	<20090408055126.GG16602@bilbo.ozlabs.org>
-	<1239173283.10104.38.camel@localhost>
-	<20090408134736.682bd56d@manatee.lan>
-	<20090409000112.GI16602@bilbo.ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 77B16DDF8E
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 16:40:07 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id n3A6dYxu002139
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 16:39:34 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3A6e6oZ1081448
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 16:40:06 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3A6e6k0028154
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 16:40:06 +1000
+Message-ID: <49DEE9C2.1040500@in.ibm.com>
+Date: Fri, 10 Apr 2009 12:10:02 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [CFQ/OOPS]  rb_erase with April 9 next tree
+References: <20090409163305.8c7a0371.sfr@canb.auug.org.au>
+	<49DE1969.1000709@in.ibm.com> <20090409172918.GE5178@kernel.dk>
+	<20090409174420.GG5178@kernel.dk>
+In-Reply-To: <20090409174420.GG5178@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tony Breeds <tony@bakeyournoodle.com> wrote:
+Jens Axboe wrote:
+>
+> Can you see if this fixes it for you?
+>
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index e01b103..64de5c0 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1654,6 +1654,7 @@ retry:
+>  		}
+>
+>  		RB_CLEAR_NODE(&cfqq->rb_node);
+> +		RB_CLEAR_NODE(&cfqq->p_node);
+>  		INIT_LIST_HEAD(&cfqq->fifo);
+>
+>  		atomic_set(&cfqq->ref, 0);
+>   
+Yes. The above patch fixed this oops. Thanks
 
-> On Wed, Apr 08, 2009 at 01:47:36PM -0500, Nathan Lynch wrote:
-> 
-> > I think I had some reason for doing it this way, but I'm drawing a
-> > blank right now.
-> > 
-> > In the meantime, can someone post the warnings that gcc emits for
-> > cacheinfo.c, as well as the gcc version?  I can't reproduce them with
-> > 4.3.2 on Fedora.
-> 
-> ---
-> [tony@thor ~]$ egrep cacheinfo tmp/build.log 
-> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c: In function 'associativity_show':
-> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c:562: warning: 'associativity' may be used uninitialized in this function
-> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c: In function 'size_show':
-> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c:513: warning: 'size_kb' may be used uninitialized in this function
+Regards
+-Sachin
 
-Thanks.
+-- 
 
-So I think I've convinced myself that the warnings are incorrect and
-that uninitialized use is not possible.
-
-But I find it odd that gcc gives warnings for these sites but not others
-in the file that use the same idiom (e.g. line_size_show,
-nr_sets_show).  I'd guess that inlining is implicated somehow.  Would I
-be justified in worrying that this version of gcc is generating
-incorrect code?
-
-If not, then I'm fine with the uninitialized_var() changes, but do
-please include the warnings and the compiler version in the changelog.
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
