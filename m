@@ -1,18 +1,24 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BDF8DDE13E
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Apr 2009 01:10:04 +1000 (EST)
-Date: Fri, 10 Apr 2009 17:09:51 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: alsa-devel@alsa-project.org
-Subject: Re: [PATCH 1/2] keywest: Convert to new-style i2c driver
-Message-ID: <20090410170951.084e9b5c@hyperion.delvare>
-In-Reply-To: <20090410170726.3616b6d5@hyperion.delvare>
-References: <20090410170726.3616b6d5@hyperion.delvare>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	by ozlabs.org (Postfix) with ESMTPS id D0AD2DDFB1
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Apr 2009 03:16:30 +1000 (EST)
+In-Reply-To: <20090409232104.60d25d26@manatee.lan>
+References: <2c4bcf8d1d7083ff53ce5b556765e96676a007fb.1239165378.git.tony@bakeyournoodle.com>
+	<1239167335.10104.26.camel@localhost>
+	<20090408055126.GG16602@bilbo.ozlabs.org>
+	<1239173283.10104.38.camel@localhost>
+	<20090408134736.682bd56d@manatee.lan>
+	<20090409000112.GI16602@bilbo.ozlabs.org>
+	<20090409232104.60d25d26@manatee.lan>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4A5D7C01-B59C-47CB-A990-076A55CC8972@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Quieten arch/powerpc in a allmodconfig build.
+Date: Fri, 10 Apr 2009 19:19:45 +0200
+To: Nathan Lynch <ntl@pobox.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,139 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 10 Apr 2009 17:07:26 +0200, Jean Delvare wrote:
-> The legacy i2c binding model is going away soon, so convert the ppc
-> keywest sound driver to the new model or it will break.
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  sound/ppc/keywest.c |   81 +++++++++++++++++++++++++--------------------------
->  1 file changed, 40 insertions(+), 41 deletions(-)
+>> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c: In function  
+>> 'associativity_show':
+>> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c:562:  
+>> warning: 'associativity' may be used uninitialized in this function
+>> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c: In function  
+>> 'size_show':
+>> /scratch/tony/working/arch/powerpc/kernel/cacheinfo.c:513:  
+>> warning: 'size_kb' may be used uninitialized in this function
+>
+> Thanks.
+>
+> So I think I've convinced myself that the warnings are incorrect and
+> that uninitialized use is not possible.
 
-Ah, I forgot. You need the following patch applied before testing:
-ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-loosen-driver-check.patch
+Strictly speaking the warnings aren't incorrect: the variables
+"may be used uninitialized", they just never are.  I agree this
+isn't very helpful.
 
-> 
-> --- linux-2.6.30-rc1.orig/sound/ppc/keywest.c	2009-04-10 15:22:18.000000000 +0200
-> +++ linux-2.6.30-rc1/sound/ppc/keywest.c	2009-04-10 16:41:36.000000000 +0200
-> @@ -33,26 +33,25 @@
->  static struct pmac_keywest *keywest_ctx;
->  
->  
-> -static int keywest_attach_adapter(struct i2c_adapter *adapter);
-> -static int keywest_detach_client(struct i2c_client *client);
-> -
-> -struct i2c_driver keywest_driver = {  
-> -	.driver = {
-> -		.name = "PMac Keywest Audio",
-> -	},
-> -	.attach_adapter = &keywest_attach_adapter,
-> -	.detach_client = &keywest_detach_client,
-> -};
-> -
-> -
->  #ifndef i2c_device_name
->  #define i2c_device_name(x)	((x)->name)
->  #endif
->  
-> +static int keywest_probe(struct i2c_client *client,
-> +			 const struct i2c_device_id *id)
-> +{
-> +	i2c_set_clientdata(client, keywest_ctx);
-> +	return 0;
-> +}
-> +
-> +/*
-> + * This is kind of a hack, best would be to turn powermac to fixed i2c
-> + * bus numbers and declare the sound device as part of platform
-> + * initialization
-> + */
->  static int keywest_attach_adapter(struct i2c_adapter *adapter)
->  {
-> -	int err;
-> -	struct i2c_client *new_client;
-> +	struct i2c_board_info info;
->  
->  	if (! keywest_ctx)
->  		return -EINVAL;
-> @@ -60,46 +59,46 @@ static int keywest_attach_adapter(struct
->  	if (strncmp(i2c_device_name(adapter), "mac-io", 6))
->  		return 0; /* ignored */
->  
-> -	new_client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
-> -	if (! new_client)
-> -		return -ENOMEM;
-> -
-> -	new_client->addr = keywest_ctx->addr;
-> -	i2c_set_clientdata(new_client, keywest_ctx);
-> -	new_client->adapter = adapter;
-> -	new_client->driver = &keywest_driver;
-> -	new_client->flags = 0;
-> -
-> -	strcpy(i2c_device_name(new_client), keywest_ctx->name);
-> -	keywest_ctx->client = new_client;
-> +	memset(&info, 0, sizeof(struct i2c_board_info));
-> +	strlcpy(info.type, "keywest", I2C_NAME_SIZE);
-> +	info.addr = keywest_ctx->addr;
-> +	keywest_ctx->client = i2c_new_device(adapter, &info);
->  	
-> -	/* Tell the i2c layer a new client has arrived */
-> -	if (i2c_attach_client(new_client)) {
-> -		snd_printk(KERN_ERR "tumbler: cannot attach i2c client\n");
-> -		err = -ENODEV;
-> -		goto __err;
-> -	}
-> -
-> +	/*
-> +	 * Let i2c-core delete that device on driver removal.
-> +	 * This is safe because i2c-core holds the core_lock mutex for us.
-> +	 */
-> +	list_add_tail(&keywest_ctx->client->detected,
-> +		      &keywest_ctx->client->driver->clients);
->  	return 0;
-> -
-> - __err:
-> -	kfree(new_client);
-> -	keywest_ctx->client = NULL;
-> -	return err;
->  }
->  
-> -static int keywest_detach_client(struct i2c_client *client)
-> +static int keywest_remove(struct i2c_client *client)
->  {
->  	if (! keywest_ctx)
->  		return 0;
->  	if (client == keywest_ctx->client)
->  		keywest_ctx->client = NULL;
->  
-> -	i2c_detach_client(client);
-> -	kfree(client);
->  	return 0;
->  }
->  
-> +
-> +static const struct i2c_device_id keywest_i2c_id[] = {
-> +	{ "keywest", 0 },
-> +	{ }
-> +};
-> +
-> +struct i2c_driver keywest_driver = {
-> +	.driver = {
-> +		.name = "PMac Keywest Audio",
-> +	},
-> +	.attach_adapter = keywest_attach_adapter,
-> +	.probe = keywest_probe,
-> +	.remove = keywest_remove,
-> +	.id_table = keywest_i2c_id,
-> +};
-> +
->  /* exported */
->  void snd_pmac_keywest_cleanup(struct pmac_keywest *i2c)
->  {
-> 
-> 
+> But I find it odd that gcc gives warnings for these sites but not  
+> others
+> in the file that use the same idiom (e.g. line_size_show,
+> nr_sets_show).
+
+Yeah.
+
+> I'd guess that inlining is implicated somehow.  Would I
+> be justified in worrying that this version of gcc is generating
+> incorrect code?
+
+Not really.  Sub-optimal code perhaps, but not incorrect.
+
+> If not, then I'm fine with the uninitialized_var() changes, but do
+> please include the warnings and the compiler version in the changelog.
+
+If this happens with a non-ancient GCC version, can we have a bugreport
+please?
 
 
--- 
-Jean Delvare
+Segher
