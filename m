@@ -1,23 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7F102DDF3F
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2009 09:38:58 +1000 (EST)
-Date: Thu, 9 Apr 2009 16:34:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 3/3] powerpc: allow 256kB pages with SHMEM
-Message-Id: <20090409163403.e82ec1c3.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0904062156290.21044@blonde.anvils>
-References: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
-	<Pine.LNX.4.64.0904062156290.21044@blonde.anvils>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: yanok@emcraft.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	prodyuth@gmail.com
+Return-Path: <a.beregalov@gmail.com>
+Date: Fri, 10 Apr 2009 05:56:14 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [BUILD FAILURE 04] Next April 9 : PPC64 randconfig
+	[drivers/net/ibm_newemac/core.c]
+Message-ID: <20090410015614.GA5781@orion>
+References: <1239285152.5188.66.camel@subratamodak.linux.ibm.com>
+	<BE92FB74-1784-414B-B27F-8329185EB3AE@kernel.crashing.org>
+	<20090409143112.GA7538@yoda.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090409143112.GA7538@yoda.jdub.homelinux.org>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	linux-next <linux-next@vger.kernel.org>,
+	linux-net@vger.kernel.org, subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +27,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 6 Apr 2009 22:01:15 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
-
-> Now that shmem's divisions by zero and SHMEM_MAX_BYTES are fixed,
-> let powerpc 256kB pages coexist with CONFIG_SHMEM again.
+On Thu, Apr 09, 2009 at 10:31:12AM -0400, Josh Boyer wrote:
+> On Thu, Apr 09, 2009 at 09:28:23AM -0500, Kumar Gala wrote:
+> >
+> > On Apr 9, 2009, at 8:52 AM, Subrata Modak wrote:
+> >
+> >> Observed the following build error:
+> >>
+> >> CC      drivers/net/ibm_newemac/core.o
+> >> drivers/net/ibm_newemac/core.c: In function ???emac_probe???:
+> >> drivers/net/ibm_newemac/core.c:2831: error: ???struct net_device??? has no
+> >> member named ???open???
+> >> drivers/net/ibm_newemac/core.c:2834: error: ???struct net_device??? has no
+> >> member named ???tx_timeout???
+> >> drivers/net/ibm_newemac/core.c:2836: error: ???struct net_device??? has no
+> >> member named ???stop???
+> >> drivers/net/ibm_newemac/core.c:2837: error: ???struct net_device??? has no
+> >> member named ???get_stats???
+> >> drivers/net/ibm_newemac/core.c:2838: error: ???struct net_device??? has no
+> >> member named ???set_multicast_list???
+> >> drivers/net/ibm_newemac/core.c:2839: error: ???struct net_device??? has no
+> >> member named ???do_ioctl???
+> >> drivers/net/ibm_newemac/core.c:2841: error: ???struct net_device??? has no
+> >> member named ???hard_start_xmit???
+> >> drivers/net/ibm_newemac/core.c:2842: error: ???struct net_device??? has no
+> >> member named ???change_mtu???
+> >> drivers/net/ibm_newemac/core.c:2845: error: ???struct net_device??? has no
+> >> member named ???hard_start_xmit???
+> >> make[3]: *** [drivers/net/ibm_newemac/core.o] Error 1
+> >> make[2]: *** [drivers/net/ibm_newemac] Error 2
+> >> make[1]: *** [drivers/net] Error 2
+> >> make: *** [drivers] Error 2
+> >>
+> >> Regards--
+> >> Subrata
+> >>
+> >> <randconfig4-ppc64-next20090409.txt>
+> >
+> > This is because CONFIG_COMPAT_NET_DEV_OPS isnt set and needs to be for  
+> > this driver to build.  I've asked the netdev guys about either fixing  
+> > the driver or adding the proper thing to Kconfig to select  
+> > CONFIG_COMPAT_NET_DEV_OPS.
 > 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> Added linuxppc-dev and some other Cc's for this 3/3: sorry
-> if you didn't see 1/3 and 2/3, they were just in mm/shmem.c.
+> Thanks!
+> 
+> If someone has pointers on what needs to be done to fix it, let me know.
+> 
 
-Do we think these patches should be in 2.6.30?
+From: Alexander Beregalov <a.beregalov@gmail.com>
+Subject: [PATCH] ibm_newemac: convert to netdev_ops
+
+
+Reported-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+
+ drivers/net/ibm_newemac/core.c |   41 ++++++++++++++++++++++++++++-----------
+ 1 files changed, 29 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index 77e4b5b..806533c 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -2686,6 +2686,32 @@ static int __devinit emac_init_config(struct emac_instance *dev)
+ 	return 0;
+ }
+ 
++static const struct net_device_ops emac_netdev_ops = {
++	.ndo_open		= emac_open,
++	.ndo_stop		= emac_close,
++	.ndo_get_stats		= emac_stats,
++	.ndo_set_multicast_list	= emac_set_multicast_list,
++	.ndo_do_ioctl		= emac_ioctl,
++	.ndo_tx_timeout		= emac_tx_timeout,
++	.ndo_validate_addr	= eth_validate_addr,
++	.ndo_set_mac_address	= eth_mac_addr,
++	.ndo_start_xmit		= emac_start_xmit,
++	.ndo_change_mtu		= eth_change_mtu,
++};
++
++static const struct net_device_ops emac_gige_netdev_ops = {
++	.ndo_open		= emac_open,
++	.ndo_stop		= emac_close,
++	.ndo_get_stats		= emac_stats,
++	.ndo_set_multicast_list	= emac_set_multicast_list,
++	.ndo_do_ioctl		= emac_ioctl,
++	.ndo_tx_timeout		= emac_tx_timeout,
++	.ndo_validate_addr	= eth_validate_addr,
++	.ndo_set_mac_address	= eth_mac_addr,
++	.ndo_start_xmit		= emac_start_xmit_sg,
++	.ndo_change_mtu		= emac_change_mtu,
++};
++
+ static int __devinit emac_probe(struct of_device *ofdev,
+ 				const struct of_device_id *match)
+ {
+@@ -2827,23 +2853,14 @@ static int __devinit emac_probe(struct of_device *ofdev,
+ 	if (err != 0)
+ 		goto err_detach_tah;
+ 
+-	/* Fill in the driver function table */
+-	ndev->open = &emac_open;
+ 	if (dev->tah_dev)
+ 		ndev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
+-	ndev->tx_timeout = &emac_tx_timeout;
+ 	ndev->watchdog_timeo = 5 * HZ;
+-	ndev->stop = &emac_close;
+-	ndev->get_stats = &emac_stats;
+-	ndev->set_multicast_list = &emac_set_multicast_list;
+-	ndev->do_ioctl = &emac_ioctl;
+ 	if (emac_phy_supports_gige(dev->phy_mode)) {
+-		ndev->hard_start_xmit = &emac_start_xmit_sg;
+-		ndev->change_mtu = &emac_change_mtu;
++		ndev->netdev_ops = &emac_gige_netdev_ops;
+ 		dev->commac.ops = &emac_commac_sg_ops;
+-	} else {
+-		ndev->hard_start_xmit = &emac_start_xmit;
+-	}
++	} else
++		ndev->netdev_ops = &emac_netdev_ops;
+ 	SET_ETHTOOL_OPS(ndev, &emac_ethtool_ops);
+ 
+ 	netif_carrier_off(ndev);
