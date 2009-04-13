@@ -1,19 +1,21 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5C0BADDFAF
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 00:51:12 +1000 (EST)
-Date: Mon, 13 Apr 2009 16:51:00 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] therm_pm72: Convert to a new-style i2c driver
-Message-ID: <20090413165100.36b85c68@hyperion.delvare>
-In-Reply-To: <20090413160927.3b8675b8@hyperion.delvare>
-References: <20090413160927.3b8675b8@hyperion.delvare>
+Return-Path: <srostedt@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id C1A38DDE25
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 01:52:04 +1000 (EST)
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
+	select CONFIG_FRAME_POINTER
+From: Steven Rostedt <srostedt@redhat.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20090405210756.GG24374@uranus.ravnborg.org>
+References: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
+	<20090320164429.GA28037@oksana.dev.rtsoft.ru>
+	<20090405210756.GG24374@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Mon, 13 Apr 2009 11:51:25 -0400
+Message-Id: <1239637885.21121.41.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 13 Apr 2009 16:09:27 +0200, Jean Delvare wrote:
-> The legacy i2c binding model is going away soon, so convert the
-> macintosh therm_pm72 driver to the new model or it will break.
-> 
-> This is really a quick and dirty conversion, that should do the trick
-> for now, but no doubt that something cleaner can be done if anyone is
-> interested.
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> Can anyone please run-test this patch? I could only build-test it.
 
-Damn, I forgot once again. You need to apply the following patch
-beforehand:
-ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-loosen-driver-check.patch
+On Sun, 2009-04-05 at 23:07 +0200, Sam Ravnborg wrote:
 
-I'll push this patch to Linus now.
+> 4) The individual "HAVE_* members should be sorted alphabetically in the arch
+>    Kconfig file (which they seldomly are :-( )
 
--- 
-Jean Delvare
+Note, my first port of Ftrace to PPC sorted the Kconfig HAVE_* macros,
+which ended up being reverted :-/
+
+http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg21222.html
+
+As stated, I did the sort without reporting the change in the
+change-log, which I should have done.
+
+-- Steve
