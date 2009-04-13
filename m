@@ -1,17 +1,21 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2FC49DE0F6
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 00:09:42 +1000 (EST)
-Date: Mon, 13 Apr 2009 16:09:27 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] therm_pm72: Convert to a new-style i2c driver
-Message-ID: <20090413160927.3b8675b8@hyperion.delvare>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <John.Linn@xilinx.com>
+Received: from WA4EHSOBE006.bigfish.com (wa4ehsobe005.messaging.microsoft.com
+	[216.32.181.15]) by ozlabs.org (Postfix) with ESMTP id 989CADE12D
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 00:13:29 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Subject: RE: [PATCH] [V2] Xilinx : Framebuffer Driver: Add PLB support
+	(non-DCR)
+Date: Mon, 13 Apr 2009 08:13:19 -0600
+In-Reply-To: <fa686aa40904112315j172ef523xc35f7b0b7fa098db@mail.gmail.com>
+References: <20090410211754.1ECF9FC804E@mail107-sin.bigfish.com>
+	<fa686aa40904112315j172ef523xc35f7b0b7fa098db@mail.gmail.com>
+From: John Linn <John.Linn@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Message-ID: <20090413141322.1DA064E8054@mail158-wa4.bigfish.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+	Suneel Garapati <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org,
+	akonovalov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,211 +25,573 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The legacy i2c binding model is going away soon, so convert the
-macintosh therm_pm72 driver to the new model or it will break.
+I thought it was based on mainline, but I now see the weirdness you're talk=
+ing about.  I'll dig in on this and let you know more as I'm confused also.=
 
-This is really a quick and dirty conversion, that should do the trick
-for now, but no doubt that something cleaner can be done if anyone is
-interested.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-Can anyone please run-test this patch? I could only build-test it.
+-- John
 
- drivers/macintosh/therm_pm72.c |   95 +++++++++++++++++++---------------------
- 1 file changed, 47 insertions(+), 48 deletions(-)
+> -----Original Message-----
+> From: Grant Likely [mailto:grant.likely@secretlab.ca]
+> Sent: Sunday, April 12, 2009 12:15 AM
+> To: John Linn
+> Cc: jwboyer@linux.vnet.ibm.com; linux-fbdev-devel@lists.sourceforge.net; =
+linuxppc-dev@ozlabs.org;
+> akonovalov@ru.mvista.com; adaplas@gmail.com; Suneel Garapati
+> Subject: Re: [PATCH] [V2] Xilinx : Framebuffer Driver: Add PLB support (n=
+on-DCR)
+> =
 
---- linux-2.6.30-rc1.orig/drivers/macintosh/therm_pm72.c	2009-04-12 08:49:54.000000000 +0200
-+++ linux-2.6.30-rc1/drivers/macintosh/therm_pm72.c	2009-04-13 09:50:50.000000000 +0200
-@@ -287,22 +287,6 @@ struct fcu_fan_table	fcu_fans[] = {
- };
- 
- /*
-- * i2c_driver structure to attach to the host i2c controller
-- */
--
--static int therm_pm72_attach(struct i2c_adapter *adapter);
--static int therm_pm72_detach(struct i2c_adapter *adapter);
--
--static struct i2c_driver therm_pm72_driver =
--{
--	.driver = {
--		.name	= "therm_pm72",
--	},
--	.attach_adapter	= therm_pm72_attach,
--	.detach_adapter	= therm_pm72_detach,
--};
--
--/*
-  * Utility function to create an i2c_client structure and
-  * attach it to one of u3 adapters
-  */
-@@ -310,6 +294,7 @@ static struct i2c_client *attach_i2c_chi
+> What tree is this patch prepared against?  The version in mainline
+> already does PLB access, and doesn't support DCR at all.  It appears
+> that this driver is based on something that does the opposite.
+> =
+
+> g.
+> =
+
+> On Fri, Apr 10, 2009 at 3:17 PM, John Linn <john.linn@xilinx.com> wrote:
+> > From: Suneel <suneelg@xilinx.com>
+> >
+> > Added support for the new xps tft controller.
+> >
+> > The new core has PLB interface support in addition to existing
+> > DCR interface.
+> >
+> > The driver has been modified to support this new core which
+> > can be connected on PLB or DCR bus.
+> >
+> > Signed-off-by: Suneel <suneelg@xilinx.com>
+> > Signed-off-by: John Linn <john.linn@xilinx.com>
+> > ---
+> >
+> > V2 - Incorporated comments from Josh, Grant and others
+> >
+> > =A0drivers/video/xilinxfb.c | =A0213 ++++++++++++++++++++++++++++++++--=
+------------
+> > =A01 files changed, 150 insertions(+), 63 deletions(-)
+> >
+> > diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+> > index a82c530..d151237 100644
+> > --- a/drivers/video/xilinxfb.c
+> > +++ b/drivers/video/xilinxfb.c
+> > @@ -1,13 +1,13 @@
+> > =A0/*
+> > - * xilinxfb.c
+> > =A0*
+> > - * Xilinx TFT LCD frame buffer driver
+> > + * Xilinx TFT frame buffer driver
+> > =A0*
+> > =A0* Author: MontaVista Software, Inc.
+> > =A0* =A0 =A0 =A0 =A0 source@mvista.com
+> > =A0*
+> > =A0* 2002-2007 (c) MontaVista Software, Inc.
+> > =A0* 2007 (c) Secret Lab Technologies, Ltd.
+> > + * 2009 (c) Xilinx Inc.
+> > =A0*
+> > =A0* This file is licensed under the terms of the GNU General Public Li=
+cense
+> > =A0* version 2. =A0This program is licensed "as is" without any warrant=
+y of any
+> > @@ -31,27 +31,31 @@
+> > =A0#include <linux/fb.h>
+> > =A0#include <linux/init.h>
+> > =A0#include <linux/dma-mapping.h>
+> > -#if defined(CONFIG_OF)
+> > =A0#include <linux/of_device.h>
+> > =A0#include <linux/of_platform.h>
+> > -#endif
+> > -#include <asm/io.h>
+> > +#include <linux/io.h>
+> > =A0#include <linux/xilinxfb.h>
+> > =A0#include <asm/dcr.h>
+> >
+> > =A0#define DRIVER_NAME =A0 =A0 =A0 =A0 =A0 =A0"xilinxfb"
+> > -#define DRIVER_DESCRIPTION =A0 =A0 "Xilinx TFT LCD frame buffer driver=
+"
+> > +
+> >
+> > =A0/*
+> > =A0* Xilinx calls it "PLB TFT LCD Controller" though it can also be use=
+d for
+> > - * the VGA port on the Xilinx ML40x board. This is a hardware display =
+controller
+> > - * for a 640x480 resolution TFT or VGA screen.
+> > + * the VGA port on the Xilinx ML40x board. This is a hardware display
+> > + * controller for a 640x480 resolution TFT or VGA screen.
+> > =A0*
+> > =A0* The interface to the framebuffer is nice and simple. =A0There are =
+two
+> > =A0* control registers. =A0The first tells the LCD interface where in m=
+emory
+> > =A0* the frame buffer is (only the 11 most significant bits are used, s=
+o
+> > =A0* don't start thinking about scrolling). =A0The second allows the LC=
+D to
+> > =A0* be turned on or off as well as rotated 180 degrees.
+> > + *
+> > + * In case of direct PLB access the second control register will be at=
+
+> > + * an offset of 4 as compared to the DCR access where the offset is 1
+> > + * i.e. REG_CTRL. So this is taken care in the function
+> > + * xilinx_fb_out_be32 where it left shifts the offset 2 times in case =
+of
+> > + * direct PLB access.
+> > =A0*/
+> > =A0#define NUM_REGS =A0 =A0 =A0 2
+> > =A0#define REG_FB_ADDR =A0 =A00
+> > @@ -108,10 +112,18 @@ static struct fb_var_screeninfo xilinx_fb_var =3D=
  {
- 	struct i2c_client *clt;
- 	struct i2c_adapter *adap;
-+	struct i2c_board_info info;
- 
- 	if (id & 0x200)
- 		adap = k2;
-@@ -320,31 +305,21 @@ static struct i2c_client *attach_i2c_chi
- 	if (adap == NULL)
- 		return NULL;
- 
--	clt = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
--	if (clt == NULL)
--		return NULL;
--
--	clt->addr = (id >> 1) & 0x7f;
--	clt->adapter = adap;
--	clt->driver = &therm_pm72_driver;
--	strncpy(clt->name, name, I2C_NAME_SIZE-1);
--
--	if (i2c_attach_client(clt)) {
-+	memset(&info, 0, sizeof(struct i2c_board_info));
-+	info.addr = (id >> 1) & 0x7f;
-+	strlcpy(info.type, "therm_pm72", I2C_NAME_SIZE);
-+	clt = i2c_new_device(adap, &info);
-+	if (!clt) {
- 		printk(KERN_ERR "therm_pm72: Failed to attach to i2c ID 0x%x\n", id);
--		kfree(clt);
- 		return NULL;
- 	}
--	return clt;
--}
- 
--/*
-- * Utility function to get rid of the i2c_client structure
-- * (will also detach from the adapter hopepfully)
-- */
--static void detach_i2c_chip(struct i2c_client *clt)
--{
--	i2c_detach_client(clt);
--	kfree(clt);
-+	/*
-+	 * Let i2c-core delete that device on driver removal.
-+	 * This is safe because i2c-core holds the core_lock mutex for us.
-+	 */
-+	list_add_tail(&clt->detected, &clt->driver->clients);
-+	return clt;
- }
- 
- /*
-@@ -1203,8 +1178,6 @@ static int init_cpu_state(struct cpu_pid
- 
- 	return 0;
-  fail:
--	if (state->monitor)
--		detach_i2c_chip(state->monitor);
- 	state->monitor = NULL;
- 	
- 	return -ENODEV;
-@@ -1232,7 +1205,6 @@ static void dispose_cpu_state(struct cpu
- 		device_remove_file(&of_dev->dev, &dev_attr_cpu1_intake_fan_rpm);
- 	}
- 
--	detach_i2c_chip(state->monitor);
- 	state->monitor = NULL;
- }
- 
-@@ -1407,7 +1379,6 @@ static void dispose_backside_state(struc
- 	device_remove_file(&of_dev->dev, &dev_attr_backside_temperature);
- 	device_remove_file(&of_dev->dev, &dev_attr_backside_fan_pwm);
- 
--	detach_i2c_chip(state->monitor);
- 	state->monitor = NULL;
- }
-  
-@@ -1532,7 +1503,6 @@ static void dispose_drives_state(struct
- 	device_remove_file(&of_dev->dev, &dev_attr_drives_temperature);
- 	device_remove_file(&of_dev->dev, &dev_attr_drives_fan_rpm);
- 
--	detach_i2c_chip(state->monitor);
- 	state->monitor = NULL;
- }
- 
-@@ -1654,7 +1624,6 @@ static void dispose_dimms_state(struct d
- 
- 	device_remove_file(&of_dev->dev, &dev_attr_dimms_temperature);
- 
--	detach_i2c_chip(state->monitor);
- 	state->monitor = NULL;
- }
- 
-@@ -1779,7 +1748,6 @@ static void dispose_slots_state(struct s
- 	device_remove_file(&of_dev->dev, &dev_attr_slots_temperature);
- 	device_remove_file(&of_dev->dev, &dev_attr_slots_fan_pwm);
- 
--	detach_i2c_chip(state->monitor);
- 	state->monitor = NULL;
- }
- 
-@@ -2008,8 +1976,6 @@ static int attach_fcu(void)
-  */
- static void detach_fcu(void)
- {
--	if (fcu)
--		detach_i2c_chip(fcu);
- 	fcu = NULL;
- }
- 
-@@ -2060,12 +2026,21 @@ static int therm_pm72_attach(struct i2c_
- 	return 0;
- }
- 
-+static int therm_pm72_probe(struct i2c_client *client,
-+			    const struct i2c_device_id *id)
-+{
-+	/* Always succeed, the real work was done in therm_pm72_attach() */
-+	return 0;
-+}
-+
- /*
-- * Called on every adapter when the driver or the i2c controller
-+ * Called when any of the devices which participates into thermal management
-  * is going away.
-  */
--static int therm_pm72_detach(struct i2c_adapter *adapter)
-+static int therm_pm72_remove(struct i2c_client *client)
- {
-+	struct i2c_adapter *adapter = client->adapter;
-+
- 	mutex_lock(&driver_lock);
- 
- 	if (state != state_detached)
-@@ -2096,6 +2071,30 @@ static int therm_pm72_detach(struct i2c_
- 	return 0;
- }
- 
-+/*
-+ * i2c_driver structure to attach to the host i2c controller
-+ */
-+
-+static const struct i2c_device_id therm_pm72_id[] = {
-+	/*
-+	 * Fake device name, thermal management is done by several
-+	 * chips but we don't need to differentiate between them at
-+	 * this point.
-+	 */
-+	{ "therm_pm72", 0 },
-+	{ }
-+};
-+
-+static struct i2c_driver therm_pm72_driver = {
-+	.driver = {
-+		.name	= "therm_pm72",
-+	},
-+	.attach_adapter	= therm_pm72_attach,
-+	.probe		= therm_pm72_probe,
-+	.remove		= therm_pm72_remove,
-+	.id_table	= therm_pm72_id,
-+};
-+
- static int fan_check_loc_match(const char *loc, int fan)
- {
- 	char	tmp[64];
+> > =A0 =A0 =A0 =A0.activate =3D =A0 =A0 FB_ACTIVATE_NOW
+> > =A0};
+> >
+> > +
+> > +#define PLB_ACCESS_FLAG =A0 =A0 =A0 =A00x1 =A0 =A0 =A0 =A0 =A0 =A0 /* =
+1 =3D PLB, 0 =3D DCR */
+> > +
+> > =A0struct xilinxfb_drvdata {
+> >
+> > =A0 =A0 =A0 =A0struct fb_info =A0info; =A0 =A0 =A0 =A0 =A0 /* FB driver=
+ info record */
+> >
+> > + =A0 =A0 =A0 phys_addr_t =A0 =A0 regs_phys; =A0 =A0 =A0/* phys. addres=
+s of the control
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 registers */
+> > + =A0 =A0 =A0 void __iomem =A0 =A0*regs; =A0 =A0 =A0 =A0 =A0/* virt. ad=
+dress of the control
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 registers */
+> > +
+> > =A0 =A0 =A0 =A0dcr_host_t =A0 =A0 =A0dcr_host;
+> > =A0 =A0 =A0 =A0unsigned int =A0 =A0dcr_start;
+> > =A0 =A0 =A0 =A0unsigned int =A0 =A0dcr_len;
+> > @@ -120,6 +132,8 @@ struct xilinxfb_drvdata {
+> > =A0 =A0 =A0 =A0dma_addr_t =A0 =A0 =A0fb_phys; =A0 =A0 =A0 =A0/* phys. a=
+ddress of the frame buffer */
+> > =A0 =A0 =A0 =A0int =A0 =A0 =A0 =A0 =A0 =A0 fb_alloced; =A0 =A0 /* Flag,=
+ was the fb memory alloced? */
+> >
+> > + =A0 =A0 =A0 u8 =A0 =A0 =A0 =A0 =A0 =A0 =A0flags; =A0 =A0 =A0 =A0 =A0/=
+* features of the driver */
+> > +
+> > =A0 =A0 =A0 =A0u32 =A0 =A0 =A0 =A0 =A0 =A0 reg_ctrl_default;
+> >
+> > =A0 =A0 =A0 =A0u32 =A0 =A0 =A0 =A0 =A0 =A0 pseudo_palette[PALETTE_ENTRI=
+ES_NO];
+> > @@ -130,14 +144,19 @@ struct xilinxfb_drvdata {
+> > =A0 =A0 =A0 =A0container_of(_info, struct xilinxfb_drvdata, info)
+> >
+> > =A0/*
+> > - * The LCD controller has DCR interface to its registers, but all
+> > - * the boards and configurations the driver has been tested with
+> > - * use opb2dcr bridge. So the registers are seen as memory mapped.
+> > - * This macro is to make it simple to add the direct DCR access
+> > - * when it's needed.
+> > + * The XPS TFT Controller can be accessed through PLB or DCR interface=
+.
+> > + * To perform the read/write on the registers we need to check on
+> > + * which bus its connected and call the appropriate write API.
+> > =A0*/
+> > -#define xilinx_fb_out_be32(driverdata, offset, val) \
+> > - =A0 =A0 =A0 dcr_write(driverdata->dcr_host, offset, val)
+> > +static void xilinx_fb_out_be32(struct xilinxfb_drvdata *drvdata, u32 o=
+ffset,
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 u32 val)
+> > +{
+> > + =A0 =A0 =A0 if (drvdata->flags & PLB_ACCESS_FLAG)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(drvdata->regs + (offset << 2), v=
+al);
+> > + =A0 =A0 =A0 else
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dcr_write(drvdata->dcr_host, offset, val)=
+;
+> > +
+> > +}
+> >
+> > =A0static int
+> > =A0xilinx_fb_setcolreg(unsigned regno, unsigned red, unsigned green, un=
+signed blue,
+> > @@ -175,7 +194,8 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi=
+)
+> > =A0 =A0 =A0 =A0switch (blank_mode) {
+> > =A0 =A0 =A0 =A0case FB_BLANK_UNBLANK:
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* turn on panel */
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 xilinx_fb_out_be32(drvdata, REG_CTRL, drv=
+data->reg_ctrl_default);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 xilinx_fb_out_be32(drvdata, REG_CTRL,
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 drvdata->reg_ctrl_default);
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
+> >
+> > =A0 =A0 =A0 =A0case FB_BLANK_NORMAL:
+> > @@ -191,8 +211,7 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi=
+)
+> > =A0 =A0 =A0 =A0return 0; /* success */
+> > =A0}
+> >
+> > -static struct fb_ops xilinxfb_ops =3D
+> > -{
+> > +static struct fb_ops xilinxfb_ops =3D {
+> > =A0 =A0 =A0 =A0.owner =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D THIS_MODUL=
+E,
+> > =A0 =A0 =A0 =A0.fb_setcolreg =A0 =A0 =A0 =A0 =A0 =3D xilinx_fb_setcolre=
+g,
+> > =A0 =A0 =A0 =A0.fb_blank =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D xilinx_fb_blan=
+k,
+> > @@ -205,25 +224,35 @@ static struct fb_ops xilinxfb_ops =3D
+> > =A0* Bus independent setup/teardown
+> > =A0*/
+> >
+> > -static int xilinxfb_assign(struct device *dev, dcr_host_t dcr_host,
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unsigned int dcr_s=
+tart, unsigned int dcr_len,
+> > +static int xilinxfb_assign(struct device *dev,
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct xilinxfb_dr=
+vdata *drvdata,
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unsigned long phys=
+addr,
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct xilinxfb_pla=
+tform_data *pdata)
+> > =A0{
+> > - =A0 =A0 =A0 struct xilinxfb_drvdata *drvdata;
+> > =A0 =A0 =A0 =A0int rc;
+> > =A0 =A0 =A0 =A0int fbsize =3D pdata->xvirt * pdata->yvirt * BYTES_PER_P=
+IXEL;
+> >
+> > - =A0 =A0 =A0 /* Allocate the driver data region */
+> > - =A0 =A0 =A0 drvdata =3D kzalloc(sizeof(*drvdata), GFP_KERNEL);
+> > - =A0 =A0 =A0 if (!drvdata) {
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev, "Couldn't allocate device pr=
+ivate record\n");
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
+> > + =A0 =A0 =A0 if (drvdata->flags & PLB_ACCESS_FLAG) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /*
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* Map the control registers in if the =
+controller
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* is on direct PLB interface.
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!request_mem_region(physaddr, 8, DRIV=
+ER_NAME)) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev, "Couldn't lo=
+ck memory region at 0x%08lX\n",
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 physaddr)=
+;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 rc =3D -ENODEV;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_region;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> > +
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drvdata->regs_phys =3D physaddr;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drvdata->regs =3D ioremap(physaddr, 8);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!drvdata->regs) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev, "Couldn't lo=
+ck memory region at 0x%08lX\n",
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 physaddr)=
+;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 rc =3D -ENODEV;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_map;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> > =A0 =A0 =A0 =A0}
+> > - =A0 =A0 =A0 dev_set_drvdata(dev, drvdata);
+> > -
+> > - =A0 =A0 =A0 drvdata->dcr_start =3D dcr_start;
+> > - =A0 =A0 =A0 drvdata->dcr_len =3D dcr_len;
+> > - =A0 =A0 =A0 drvdata->dcr_host =3D dcr_host;
+> >
+> > =A0 =A0 =A0 =A0/* Allocate the framebuffer memory */
+> > =A0 =A0 =A0 =A0if (pdata->fb_phys) {
+> > @@ -238,7 +267,10 @@ static int xilinxfb_assign(struct device *dev, dcr=
+_host_t dcr_host,
+> > =A0 =A0 =A0 =A0if (!drvdata->fb_virt) {
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_err(dev, "Could not allocate frame b=
+uffer memory\n");
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0rc =3D -ENOMEM;
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_region;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drvdata->flags & PLB_ACCESS_FLAG)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_fbmem;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_region;
+> > =A0 =A0 =A0 =A0}
+> >
+> > =A0 =A0 =A0 =A0/* Clear (turn to black) the framebuffer */
+> > @@ -251,7 +283,8 @@ static int xilinxfb_assign(struct device *dev, dcr_=
+host_t dcr_host,
+> > =A0 =A0 =A0 =A0drvdata->reg_ctrl_default =3D REG_CTRL_ENABLE;
+> > =A0 =A0 =A0 =A0if (pdata->rotate_screen)
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0drvdata->reg_ctrl_default |=3D REG_CTRL_=
+ROTATE;
+> > - =A0 =A0 =A0 xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_d=
+efault);
+> > + =A0 =A0 =A0 xilinx_fb_out_be32(drvdata, REG_CTRL,
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 drvdata->reg_ctrl_default);
+> >
+> > =A0 =A0 =A0 =A0/* Fill struct fb_info */
+> > =A0 =A0 =A0 =A0drvdata->info.device =3D dev;
+> > @@ -287,9 +320,14 @@ static int xilinxfb_assign(struct device *dev, dcr=
+_host_t dcr_host,
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto err_regfb;
+> > =A0 =A0 =A0 =A0}
+> >
+> > + =A0 =A0 =A0 if (drvdata->flags & PLB_ACCESS_FLAG) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Put a banner in the log (for DEBUG) */=
+
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_dbg(dev, "regs: phys=3D%lx, virt=3D%p=
+\n", physaddr,
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 drvdata->regs);
+> > + =A0 =A0 =A0 }
+> > =A0 =A0 =A0 =A0/* Put a banner in the log (for DEBUG) */
+> > =A0 =A0 =A0 =A0dev_dbg(dev, "fb: phys=3D%p, virt=3D%p, size=3D%x\n",
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 (void*)drvdata->fb_phys, drvdata->fb_virt=
+, fbsize);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 (void *)drvdata->fb_phys, drvdata->fb_vir=
+t, fbsize);
+> >
+> > =A0 =A0 =A0 =A0return 0; =A0 =A0 =A0 /* success */
+> >
+> > @@ -300,9 +338,20 @@ err_cmap:
+> > =A0 =A0 =A0 =A0if (drvdata->fb_alloced)
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dma_free_coherent(dev, PAGE_ALIGN(fbsize=
+), drvdata->fb_virt,
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0drvdata->fb_phys);
+> > + =A0 =A0 =A0 else
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 iounmap(drvdata->fb_virt);
+> > +
+> > =A0 =A0 =A0 =A0/* Turn off the display */
+> > =A0 =A0 =A0 =A0xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
+> >
+> > +err_fbmem:
+> > + =A0 =A0 =A0 if (drvdata->flags & PLB_ACCESS_FLAG)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 iounmap(drvdata->regs);
+> > +
+> > +err_map:
+> > + =A0 =A0 =A0 if (drvdata->flags & PLB_ACCESS_FLAG)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 release_mem_region(physaddr, 8);
+> > +
+> > =A0err_region:
+> > =A0 =A0 =A0 =A0kfree(drvdata);
+> > =A0 =A0 =A0 =A0dev_set_drvdata(dev, NULL);
+> > @@ -325,11 +374,18 @@ static int xilinxfb_release(struct device *dev)
+> > =A0 =A0 =A0 =A0if (drvdata->fb_alloced)
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dma_free_coherent(dev, PAGE_ALIGN(drvdat=
+a->info.fix.smem_len),
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0drvd=
+ata->fb_virt, drvdata->fb_phys);
+> > + =A0 =A0 =A0 else
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 iounmap(drvdata->fb_virt);
+> >
+> > =A0 =A0 =A0 =A0/* Turn off the display */
+> > =A0 =A0 =A0 =A0xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
+> >
+> > - =A0 =A0 =A0 dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
+> > + =A0 =A0 =A0 /* Release the resources, as allocated based on interface=
+ */
+> > + =A0 =A0 =A0 if (drvdata->flags & PLB_ACCESS_FLAG) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 iounmap(drvdata->regs);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 release_mem_region(drvdata->regs_phys, 8)=
+;
+> > + =A0 =A0 =A0 } else
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dcr_unmap(drvdata->dcr_host, drvdata->dcr=
+_len);
+> >
+> > =A0 =A0 =A0 =A0kfree(drvdata);
+> > =A0 =A0 =A0 =A0dev_set_drvdata(dev, NULL);
+> > @@ -341,27 +397,54 @@ static int xilinxfb_release(struct device *dev)
+> > =A0* OF bus binding
+> > =A0*/
+> >
+> > -#if defined(CONFIG_OF)
+> > =A0static int __devinit
+> > =A0xilinxfb_of_probe(struct of_device *op, const struct of_device_id *m=
+atch)
+> > =A0{
+> > =A0 =A0 =A0 =A0const u32 *prop;
+> > + =A0 =A0 =A0 u32 *p;
+> > + =A0 =A0 =A0 u32 tft_access;
+> > =A0 =A0 =A0 =A0struct xilinxfb_platform_data pdata;
+> > + =A0 =A0 =A0 struct resource res;
+> > =A0 =A0 =A0 =A0int size, rc;
+> > - =A0 =A0 =A0 int start, len;
+> > + =A0 =A0 =A0 int start =3D 0, len =3D 0;
+> > =A0 =A0 =A0 =A0dcr_host_t dcr_host;
+> > + =A0 =A0 =A0 struct xilinxfb_drvdata *drvdata;
+> >
+> > =A0 =A0 =A0 =A0/* Copy with the default pdata (not a ptr reference!) */=
+
+> > =A0 =A0 =A0 =A0pdata =3D xilinx_fb_default_pdata;
+> >
+> > =A0 =A0 =A0 =A0dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, mat=
+ch);
+> >
+> > - =A0 =A0 =A0 start =3D dcr_resource_start(op->node, 0);
+> > - =A0 =A0 =A0 len =3D dcr_resource_len(op->node, 0);
+> > - =A0 =A0 =A0 dcr_host =3D dcr_map(op->node, start, len);
+> > - =A0 =A0 =A0 if (!DCR_MAP_OK(dcr_host)) {
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&op->dev, "invalid address\n");
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> > + =A0 =A0 =A0 /*
+> > + =A0 =A0 =A0 =A0* To check whether the core is connected directly to D=
+CR or PLB
+> > + =A0 =A0 =A0 =A0* interface and initialize the tft_access accordingly.=
+
+> > + =A0 =A0 =A0 =A0*/
+> > + =A0 =A0 =A0 p =3D (u32 *)of_get_property(op->node, "xlnx,dcr-splb-sla=
+ve-if", NULL);
+> > +
+> > + =A0 =A0 =A0 if (p)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 tft_access =3D *p;
+> > + =A0 =A0 =A0 else
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 tft_access =3D 0; =A0 =A0 =A0 =A0 /* For =
+backward compatibility */
+> > +
+> > + =A0 =A0 =A0 /*
+> > + =A0 =A0 =A0 =A0* Fill the resource structure if its direct PLB interf=
+ace
+> > + =A0 =A0 =A0 =A0* otherwise fill the dcr_host structure.
+> > + =A0 =A0 =A0 =A0*/
+> > + =A0 =A0 =A0 if (tft_access) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 rc =3D of_address_to_resource(op->node, 0=
+, &res);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (rc) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&op->dev, "invali=
+d address\n");
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> > +
+> > + =A0 =A0 =A0 } else {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 start =3D dcr_resource_start(op->node, 0)=
+;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 len =3D dcr_resource_len(op->node, 0);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dcr_host =3D dcr_map(op->node, start, len=
+);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!DCR_MAP_OK(dcr_host)) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&op->dev, "invali=
+d address\n");
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> > =A0 =A0 =A0 =A0}
+> >
+> > =A0 =A0 =A0 =A0prop =3D of_get_property(op->node, "phys-size", &size);
+> > @@ -385,7 +468,26 @@ xilinxfb_of_probe(struct of_device *op, const stru=
+ct of_device_id *match)
+> > =A0 =A0 =A0 =A0if (of_find_property(op->node, "rotate-display", NULL))
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pdata.rotate_screen =3D 1;
+> >
+> > - =A0 =A0 =A0 return xilinxfb_assign(&op->dev, dcr_host, start, len, &p=
+data);
+> > + =A0 =A0 =A0 /* Allocate the driver data region */
+> > + =A0 =A0 =A0 drvdata =3D kzalloc(sizeof(*drvdata), GFP_KERNEL);
+> > + =A0 =A0 =A0 if (!drvdata) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&op->dev, "Couldn't allocate devi=
+ce private record\n");
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
+> > + =A0 =A0 =A0 }
+> > + =A0 =A0 =A0 dev_set_drvdata(&op->dev, drvdata);
+> > +
+> > + =A0 =A0 =A0 if (tft_access)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drvdata->flags |=3D PLB_ACCESS_FLAG;
+> > +
+> > + =A0 =A0 =A0 /* Arguments are passed based on the interface */
+> > + =A0 =A0 =A0 if (drvdata->flags & PLB_ACCESS_FLAG) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return xilinxfb_assign(&op->dev, drvdata,=
+ res.start, &pdata);
+> > + =A0 =A0 =A0 } else {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drvdata->dcr_start =3D start;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drvdata->dcr_len =3D len;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drvdata->dcr_host =3D dcr_host;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return xilinxfb_assign(&op->dev, drvdata,=
+ 0, &pdata);
+> > + =A0 =A0 =A0 }
+> > =A0}
+> >
+> > =A0static int __devexit xilinxfb_of_remove(struct of_device *op)
+> > @@ -395,6 +497,7 @@ static int __devexit xilinxfb_of_remove(struct of_d=
+evice *op)
+> >
+> > =A0/* Match table for of_platform binding */
+> > =A0static struct of_device_id xilinxfb_of_match[] __devinitdata =3D {
+> > + =A0 =A0 =A0 { .compatible =3D "xlnx,xps-tft-1.00.a", },
+> > =A0 =A0 =A0 =A0{ .compatible =3D "xlnx,plb-tft-cntlr-ref-1.00.a", },
+> > =A0 =A0 =A0 =A0{ .compatible =3D "xlnx,plb-dvi-cntlr-ref-1.00.c", },
+> > =A0 =A0 =A0 =A0{},
+> > @@ -412,22 +515,6 @@ static struct of_platform_driver xilinxfb_of_drive=
+r =3D {
+> > =A0 =A0 =A0 =A0},
+> > =A0};
+> >
+> > -/* Registration helpers to keep the number of #ifdefs to a minimum */
+> > -static inline int __init xilinxfb_of_register(void)
+> > -{
+> > - =A0 =A0 =A0 pr_debug("xilinxfb: calling of_register_platform_driver()=
+\n");
+> > - =A0 =A0 =A0 return of_register_platform_driver(&xilinxfb_of_driver);
+> > -}
+> > -
+> > -static inline void __exit xilinxfb_of_unregister(void)
+> > -{
+> > - =A0 =A0 =A0 of_unregister_platform_driver(&xilinxfb_of_driver);
+> > -}
+> > -#else /* CONFIG_OF */
+> > -/* CONFIG_OF not enabled; do nothing helpers */
+> > -static inline int __init xilinxfb_of_register(void) { return 0; }
+> > -static inline void __exit xilinxfb_of_unregister(void) { }
+> > -#endif /* CONFIG_OF */
+> >
+> > =A0/* -----------------------------------------------------------------=
+----
+> > =A0* Module setup and teardown
+> > @@ -436,18 +523,18 @@ static inline void __exit xilinxfb_of_unregister(=
+void) { }
+> > =A0static int __init
+> > =A0xilinxfb_init(void)
+> > =A0{
+> > - =A0 =A0 =A0 return xilinxfb_of_register();
+> > + =A0 =A0 =A0 return of_register_platform_driver(&xilinxfb_of_driver);
+> > =A0}
+> >
+> > =A0static void __exit
+> > =A0xilinxfb_cleanup(void)
+> > =A0{
+> > - =A0 =A0 =A0 xilinxfb_of_unregister();
+> > + =A0 =A0 =A0 of_unregister_platform_driver(&xilinxfb_of_driver);
+> > =A0}
+> >
+> > =A0module_init(xilinxfb_init);
+> > =A0module_exit(xilinxfb_cleanup);
+> >
+> > =A0MODULE_AUTHOR("MontaVista Software, Inc. <source@mvista.com>");
+> > -MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
+> > +MODULE_DESCRIPTION("Xilinx TFT frame buffer driver");
+> > =A0MODULE_LICENSE("GPL");
+> > --
+> > 1.6.2.1
+> >
+> >
+> >
+> > This email and any attachments are intended for the sole use of the nam=
+ed recipient(s) and
+> contain(s) confidential information that may be proprietary, privileged o=
+r copyrighted under
+> applicable law. If you are not the intended recipient, do not read, copy,=
+ or forward this email
+> message or any attachments. Delete this email message and any attachments=
+ immediately.
+> >
+> >
+> >
+> =
+
+> =
+
+> =
+
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
 
 
--- 
-Jean Delvare
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
