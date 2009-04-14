@@ -1,18 +1,23 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
-	by ozlabs.org (Postfix) with ESMTP id CDDB5DDFAA
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 19:23:09 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Help!Some memory doesn't work on PPC405Ex based board!
-Date: Tue, 14 Apr 2009 11:23:02 +0200
-References: <BAY114-W121B40A28E203154BC9209AB7F0@phx.gbl>
-In-Reply-To: <BAY114-W121B40A28E203154BC9209AB7F0@phx.gbl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200904141123.02495.sr@denx.de>
-Cc: SunNeo <sunwx2001@hotmail.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 92807DDFBA
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 19:38:27 +1000 (EST)
+In-Reply-To: <49E39F3D.4060501@twiddle.net>
+References: <b4198de60904111755u5c2078c7xcc689dbd78aeb957@mail.gmail.com>
+	<49E39F3D.4060501@twiddle.net>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <AE456C27-B568-4835-8843-F2A2E2D8FC32@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: alpha: half done futex implementation
+Date: Tue, 14 Apr 2009 11:40:50 +0200
+To: Richard Henderson <rth@twiddle.net>
+Cc: Oliver Falk <oliver@linux-kernel.at>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	linux-alpha@vger.kernel.org, Matt Turner <mattst88@gmail.com>,
+	Jay Estabrook <jay.estabrook@hp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 13 April 2009, SunNeo wrote:
-> I'm porting Linux-2.6.29 on PPC405Ex based board, it's very similar to AMCC
-> "Kilauea" evb.
->
-> In my board, two 512MB DDRII memory is connected to 2 ranks of the 405Ex
-> CPU. This 1GB memory works well at U-Boot-2009.01, but when I boot
-> Linux-2.6.29, the kernel hangs somewhere.
+> Also, there's a bug in the powerpc implementation.  It appears that  
+> oparg is clobbered, and if stwcx fails the operation will be  
+> repeated with incorrect inputs.
 
-Does it just hang "somewhere", or always at the same location? A random hangup 
-could mean that you are having a memory problem (hardware, or wrong 
-initialization).
+If either the lwarx or the stwcx. faults, the routine returns -EFAULT
+and doesn't retry (label "3" is the end of the asm).
 
-> What interesting is, if I 
-> configured the system to use only 512MB memory at U-Boot, the Linux can
-> boot normally.
+If the stwcx. fails because the CPU lost the reservation, %1 isn't
+clobbered as far as I see?
 
-Are you using DIMM's on your platform? Or soldered chips? Which memory 
-initialization code are you using in U-Boot? And which autocalibration code?
 
-Did you do some intensive memory test?
-
-Best regards,
-Stefan
+Segher
