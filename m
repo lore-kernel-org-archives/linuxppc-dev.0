@@ -1,20 +1,31 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id E2D1CDDF9B
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 07:53:44 +1000 (EST)
-Date: Tue, 14 Apr 2009 14:53:42 -0700
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-Message-ID: <20090414215342.GB9877@ovro.caltech.edu>
-References: <20090224000002.GA578@ovro.caltech.edu>
-	<fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-	netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 80C1DDE03F
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 08:00:37 +1000 (EST)
+Subject: Re: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c   
+	drivers
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20090414214949.736597d9@hyperion.delvare>
+References: <20090408150249.5a62a56c@hyperion.delvare>
+	<1239205899.16477.32.camel@johannes.local>
+	<20090408224858.04cb6dc4@hyperion.delvare>
+	<1239263089.24548.30.camel@johannes.local>
+	<20090409141945.116772e3@hyperion.delvare>
+	<1239723613.24771.8.camel@johannes.local>
+	<1239724227.24771.9.camel@johannes.local>
+	<1239730915.24771.12.camel@johannes.local>
+	<20090414214949.736597d9@hyperion.delvare>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-6JVP1Ggw0mOQUSIbJ9Zf"
+Date: Tue, 14 Apr 2009 23:59:59 +0200
+Message-Id: <1239746399.4205.21.camel@johannes.local>
+Mime-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +35,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 14, 2009 at 02:28:26PM -0600, Grant Likely wrote:
-> On Mon, Feb 23, 2009 at 6:00 PM, Ira Snyder <iws@ovro.caltech.edu> wrote:
-> > This adds support to Linux for using virtio between two computers linked by
-> > a PCI interface. This allows the use of virtio_net to create a familiar,
-> > fast interface for communication. It should be possible to use other virtio
-> > devices in the future, but this has not been tested.
-> 
-> Hey Ira,
-> 
-> I like this a lot.  I need to do much the same thing on one of my
-> platforms, so I'm going to use your patch as my starting point.  Have
-> you made many changes since you posted this version of your patch?
-> I'd like to collaborate on the development and help to get it
-> mainlined.
-> 
 
-This would be great. I'd really appreciate the help. I haven't had time
-to make any changes since I last posted the patch. I started work on
-converting all of the usage of struct vop_loc_* to just use the on-wire
-structures, but I didn't get very far before other work got in the way.
+--=-6JVP1Ggw0mOQUSIbJ9Zf
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> In my case I've got an MPC5200 as the 'host' and a Xilinx Virtex
-> (ppc440) as the 'client'.  I intend set aside a region of the Xilinx
-> Virtex's memory space for the shared queues.  I'm starting work on it
-> now, and I'll provide you with feedback and/or patches as I make
-> progress.
-> 
+Hi Jean,
 
-I'm looking forward to seeing your implementation. If you have any
-questions, I'd be happy to attempt to answer them :)
+> Thanks for the quick test and sorry that it didn't work. I'll take a
+> look at the trace below and try to figure out what went wrong.
 
-Ira
+No worries, seems some error path is going wrong but I can't see what it
+is right now.
+
+> Did you remove the 2 MODULE_DEVICE_TABLE from my patch? If you didn't,
+> please pick the latest version of my patch which doesn't have them:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-=
+i2c/sound-aoa-codecs-convert-to-new-style.patch
+> I don't think they are the reason of the crash, but who knows...
+
+No, I didn't, but I was loading the modules manually so that didn't kick
+in.
+
+> Are you using a machine with onyx or tas? I guess onyx but I want to be
+> sure.
+
+onyx only.
+
+> > [   10.267137] snd-aoa-codec-onyx: found pcm3052
+> > [   10.267238] PM: Adding info for i2c:2-0046
+> > [   10.267926] snd-aoa-fabric-layout: platform-onyx-codec-ref doesn't m=
+atch!
+>=20
+> Does this error also happen without my patch? It would help to see the
+> logs without my patch to see where it starts diverging.
+
+Yes -- this happens normally.
+
+> > [   10.267930] snd-aoa: fabric didn't like codec onyx
+> > [   10.268041] aoa_codec_onyx: probe of 2-0046 failed with error -22
+>=20
+> Apparently aoa_codec_register failed in onyx_i2c_probe(), I have to
+> understand why.
+
+Because the device-tree is broken -- there are two nodes for the same
+device, and only one of them can be used. Then the fabric rejects the
+first instantiation from the broken node. Here's how it looks normally:
+
+...
+[   10.398296] snd-aoa-codec-onyx: found pcm3052
+[   10.398472] PM: Adding info for i2c:2-0046
+[   10.412189] snd-aoa-fabric-layout: platform-onyx-codec-ref doesn't match=
+!
+[   10.462593] snd-aoa: fabric didn't like codec onyx
+[   10.468030] PM: Removing info for i2c:2-0046
+[   10.473892] snd-aoa-codec-onyx: found pcm3052
+[   10.479317] PM: Adding info for i2c:3-0046
+[   10.485631] snd-aoa-fabric-layout: can use this codec
+...
+
+johannes
+
+--=-6JVP1Ggw0mOQUSIbJ9Zf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJ5QdcAAoJEKVg1VMiehFYX8gQAJSyv5CfQ6sujVv6m532v6Ao
+TA2DL/PkjFMF9q2uIWlvRTTDkTKDrBXJzRibLZ8FGxaPCc2WfsQ7a1dJ62MTMXbR
+3QXXDN2DFggIajq2NKA1KuXAljKAEZx7PLseAw/WSYiXdhGXq6uPoSmMLptYvBQe
+WJ5nc36fhQhEmVadELz9LLb57SM5g9/33/yX2ttnh9Rr2b874O6x/Dy21Up32ZEw
+c0IXH1Q+VfcgYTpvgZGq5kGhZmdptUp/mQcHw/4PzUGW4O5OM2IzBQ0vhbXhOXJz
+v+EJekuPYHbO/878X7x1+Vyc+XnHmRwuAEr3a0YSTUSUb0gaWIVv4zqCo8M++Smj
+MfvFrljqDBlA6AJ4kjyoSOqeluZ03MfXemfb/Pj4oQuBIjTNQBDfEp9HW41HtiMN
+HTH4gN8yAY8tdhSsLUmTrv9kEAff8fNleeAaZMRSs044kWQvYkaiZy2YO87NKdQh
+MydX5BXoAmGCPBFnK9O4qxyRbj7/o5dNDFc9gH6y1hfues/fEajZaFBTJOQ3qaM3
+qv4ZeixdfrRD641i4LmFWZduMoITMw9IsO50HkM0OYZ+EbK9YTro9iDVe1310nJQ
+qd96OugSNYPnEsd61doi2prgWn4L916ZQrtbRam7XBnVi48vE81rWKIEzLvVVjU4
+IqMtUxgZidxws3L4SVxN
+=ulXN
+-----END PGP SIGNATURE-----
+
+--=-6JVP1Ggw0mOQUSIbJ9Zf--
