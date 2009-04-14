@@ -1,20 +1,18 @@
 Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
-	by ozlabs.org (Postfix) with ESMTP id B3EC7DDFA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 22:20:10 +1000 (EST)
 From: Stefan Roese <sr@denx.de>
-To: SunNeo <sunwx2001@hotmail.com>
-Subject: Re: Help!Some memory doesn't work on PPC405Ex based board!
-Date: Tue, 14 Apr 2009 14:20:04 +0200
-References: <BAY114-W121B40A28E203154BC9209AB7F0@phx.gbl>
-	<200904141123.02495.sr@denx.de>
-	<BAY114-W4176A96E45AE37FB5FBE02AB7C0@phx.gbl>
-In-Reply-To: <BAY114-W4176A96E45AE37FB5FBE02AB7C0@phx.gbl>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/4 v2] mtd: physmap_of: Add multiple regions and
+	concatenation support
+Date: Tue, 14 Apr 2009 14:42:19 +0200
+References: <1239093559-12043-1-git-send-email-sr@denx.de>
+	<fa686aa40904112258n1cc23b48t80b135b7016e9760@mail.gmail.com>
+In-Reply-To: <fa686aa40904112258n1cc23b48t80b135b7016e9760@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200904141420.04478.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, U-Boot-Users <u-boot@lists.denx.de>
+  charset="iso-8859-1"
+Message-Id: <200904141442.19456.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Sun,
-
-On Tuesday 14 April 2009, SunNeo wrote:
-> My platform uses the MICRON MT47H256M8THN DDRII SDRAM and the DDRII SDRAM
-> is soldered on the board.
+On Sunday 12 April 2009, Grant Likely wrote:
+> On Tue, Apr 7, 2009 at 2:39 AM, Stefan Roese <sr@denx.de> wrote:
+> > This patch adds support to handle multiple non-identical chips in one
+> > flash device tree node. It also adds concat support to physmap_of. This
+> > makes it possible to support e.g. the Intel P30 48F4400 chips which
+> > internally consists of 2 non-identical NOR chips on one die. Additionally
+> > partitions now can span over multiple chips.
 >
-> As I said, my board was similar with "Kilauea" evb, so I created my
-> configuration header file from Kilauea's at U-Boot. In the configuration
-> file, register value for the DDR SDRAM controller is defined. But I have
-> removed DDR autocalibraton related configuration from the configuration
-> file, do you think this will cause any issues?
+> [...]
+>
+> > Signed-off-by: Stefan Roese <sr@denx.de>
+> > CC: Grant Likely <grant.likely@secretlab.ca>
+>
+> Looks good to me.  To comments below, but neither are enough to hold back
+> my:
+>
+> Reviewd-by: Grant Likely <grant.likely@secretlab.ca>
 
-Yes, this could definitely cause some SDRAM related problems. But this is 
-off-topic here. We should continue this discussion on the U-Boot mailing list 
-instead (on CC). So please when you reply to this mail, remove the 
-linuxppc-dev list from the recipients list.
+Thanks.
 
-Best regards,
+> However, I have not tested this.  I'd like to hear of some larger
+> field testing before it is merged.
+
+OK, I'll address your latest comments and resend a (hopefully) last version of 
+this patchset.
+
+Thanks.
+
 Stefan
