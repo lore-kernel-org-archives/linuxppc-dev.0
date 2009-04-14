@@ -1,17 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F1E24DE011
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 02:42:48 +1000 (EST)
-Date: Tue, 14 Apr 2009 11:42:44 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'merge' branch (for 2.6.30)
-Message-ID: <Pine.LNX.4.64.0904141142240.1013@localhost.localdomain>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 1A9E6DDF86
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 02:48:34 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c drivers
+References: <20090408150249.5a62a56c@hyperion.delvare>
+	<1239205899.16477.32.camel@johannes.local>
+	<20090408224858.04cb6dc4@hyperion.delvare>
+	<1239263089.24548.30.camel@johannes.local>
+	<20090409141945.116772e3@hyperion.delvare>
+	<1239723613.24771.8.camel@johannes.local>
+Date: Tue, 14 Apr 2009 18:48:28 +0200
+In-Reply-To: <1239723613.24771.8.camel@johannes.local> (Johannes Berg's
+	message of "Tue, 14 Apr 2009 17:40:13 +0200")
+Message-ID: <m2ws9n18rn.fsf@igel.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Jean Delvare <khali@linux-fr.org>, Takashi Iwai <tiwai@suse.de>,
+	alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'merge' branch of
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
+> So I went to test this, but for some reason aoa doesn't work for me at
+> all, neither with nor without this patch.
 
-to receive the following updates:
+That is already fixed by
+<http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver-core.current/driver-core-fix-driver_match_device.patch>
 
- Documentation/powerpc/dts-bindings/fsl/i2c.txt |   46 ++++---
- arch/powerpc/boot/dts/tqm8540.dts              |    4
- arch/powerpc/boot/dts/tqm8541.dts              |    4
- arch/powerpc/boot/dts/tqm8548-bigflash.dts     |    8 -
- arch/powerpc/boot/dts/tqm8548.dts              |    8 -
- arch/powerpc/boot/dts/tqm8555.dts              |    4
- arch/powerpc/boot/dts/tqm8560.dts              |    4
- arch/powerpc/configs/85xx/tqm8548_defconfig    |  164 +++++++------------------
- arch/powerpc/include/asm/mmu.h                 |    6
- arch/powerpc/include/asm/ppc-opcode.h          |   13 +
- arch/powerpc/kernel/cputable.c                 |    2
- arch/powerpc/mm/tlb_nohash.c                   |    1
- arch/powerpc/mm/tlb_nohash_low.S               |   14 +-
- include/linux/fsl_devices.h                    |    4
- 14 files changed, 126 insertions(+), 156 deletions(-)
+Andreas.
 
-Kumar Gala (3):
-      powerpc: Fix tlbilx opcode
-      powerpc: Add support for early tlbilx opcode
-      powerpc/mm: Fix compile warning
-
-Wolfgang Grandegger (4):
-      powerpc/85xx: TQM85xx: correct address of LM75 I2C device nodes
-      powerpc/85xx: TQM8548: use proper phy-handles for enet2 and enet3
-      powerpc/85xx: TQM8548: update defconfig
-      powerpc: Document new FSL I2C bindings and cleanup
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
