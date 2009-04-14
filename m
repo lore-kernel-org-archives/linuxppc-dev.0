@@ -1,20 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1B9D7DDE22
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 18:08:38 +1000 (EST)
-In-Reply-To: <1238755594-18869-2-git-send-email-tiejun.china@gmail.com>
-References: <1238755594-18869-1-git-send-email-tiejun.china@gmail.com>
-	<1238755594-18869-2-git-send-email-tiejun.china@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3C36E383-13A3-49E9-B87B-D22D966B6F79@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [v1 PATCH 1/1] Fix 64bit Maple Host Bridge Address and Size Nodes
-Date: Tue, 14 Apr 2009 10:11:02 +0200
-To: tiejun.china@gmail.com
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org
+	by ozlabs.org (Postfix) with ESMTPS id F2FA0DDFDC
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 18:33:06 +1000 (EST)
+Date: Tue, 14 Apr 2009 10:32:49 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] therm_pm72: Convert to a new-style i2c driver
+Message-ID: <20090414103249.08cb65d4@hyperion.delvare>
+In-Reply-To: <18915.50615.952282.915946@cargo.ozlabs.ibm.com>
+References: <20090413160927.3b8675b8@hyperion.delvare>
+	<18915.50615.952282.915946@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> In the DTB tree created by firmware on some Maple 64bit targets,  
-> such as ATCA6101,
-> these two properties, address&size, should be 2.
+Hi Paul,
 
-And they are.
+On Tue, 14 Apr 2009 09:07:35 +1000, Paul Mackerras wrote:
+> Jean Delvare writes:
+> 
+> > The legacy i2c binding model is going away soon, so convert the
+> > macintosh therm_pm72 driver to the new model or it will break.
+> > 
+> > This is really a quick and dirty conversion, that should do the trick
+> > for now, but no doubt that something cleaner can be done if anyone is
+> > interested.
+> > 
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> 
+> Seems to work fine on my powermac7,2 machine (dual 2.0GHz G5).
 
-> But the actual corresponding values
-> of host bridge node are set 1 incorrectly by the firmware, we have  
-> to provide one
-> fixup function to fix that.
+Excellent, thanks a lot for the fast testing!
 
-It is the "reg" property that is incorrectly encoded as-if
-#address-cells and #size-cells were 1.
+I'll try to convert the remaining powermac drivers by the end of the
+week, but I wouldn't mind if somebody with more knowledge of these
+drivers than me wants to help. Basically the remaining 5 drivers must
+be converted the same way I did for the therm_pm72 driver.
 
-Please fix the commit message (and subject line).
-
-> +	name = "/hostbridge@f8000000";
-> +	hb = call_prom("finddevice", 1, 1, ADDR(name));
-
-It's interesting that the firmware can find your node this way,
-it won't match the "reg"!  Looks like there is more than one
-bug in there.
-
-Code looks good,
-
-Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
-
-
-Segher
+-- 
+Jean Delvare
