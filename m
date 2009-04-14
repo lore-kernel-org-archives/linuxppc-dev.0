@@ -1,18 +1,29 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <rcjenn@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 38AD0DE08A
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 10:09:18 +1000 (EST)
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 813B3DDF7C
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 11:37:46 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3E1WWSV022463
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2009 19:32:32 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3E1bgPC232210
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2009 19:37:42 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3E1bgvH030442
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2009 19:37:42 -0600
+Date: Mon, 13 Apr 2009 20:37:41 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: VRM unused page hinting
+Message-ID: <20090414013741.GA8678@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18915.54309.632699.346771@cargo.ozlabs.ibm.com>
-Date: Tue, 14 Apr 2009 10:09:09 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix bug in __futex_atomic_op
-Cc: Richard Henderson <rth@twiddle.net>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,56 +33,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Richard Henderson pointed out that the powerpc __futex_atomic_op has a
-bug: it will write the wrong value if the stwcx. fails and it has to
-retry the lwarx/stwcx. loop, since 'oparg' will have been overwritten
-by the result from the first time around the loop.  This happens
-because it uses the same register for 'oparg' (an input) as it uses
-for the result.
+Adds support for the "unused" page hint which can be used in shared
+memory partitions to flag pages not in use, which will then be stolen
+before active pages by the hypervisor when memory needs to be moved to
+LPARs in need of additional memory.  Failure to mark pages as 'unused'
+makes the LPAR slower to give up unused memory to other partitions.
 
-This fixes it by using separate registers for 'oparg' and 'ret'.
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-Cc: stable@kernel.org
-Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
-Can anyone see any reason why the FUTEX_OP_SET case can't just do a
-__put_user?
 
-diff --git a/arch/powerpc/include/asm/futex.h b/arch/powerpc/include/asm/futex.h
-index 6d406c5..9696cc3 100644
---- a/arch/powerpc/include/asm/futex.h
-+++ b/arch/powerpc/include/asm/futex.h
-@@ -27,7 +27,7 @@
- 	PPC_LONG "1b,4b,2b,4b\n" \
- 	".previous" \
- 	: "=&r" (oldval), "=&r" (ret) \
--	: "b" (uaddr), "i" (-EFAULT), "1" (oparg) \
-+	: "b" (uaddr), "i" (-EFAULT), "r" (oparg) \
- 	: "cr0", "memory")
+ arch/powerpc/include/asm/page.h       |    5 +++
+ arch/powerpc/platforms/pseries/lpar.c |   52 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 57 insertions(+)
+
+Index: b/arch/powerpc/include/asm/page.h
+===================================================================
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -231,6 +231,11 @@ extern void copy_user_page(void *to, voi
+ 		struct page *p);
+ extern int page_is_ram(unsigned long pfn);
  
- static inline int futex_atomic_op_inuser (int encoded_op, int __user *uaddr)
-@@ -47,19 +47,19 @@ static inline int futex_atomic_op_inuser (int encoded_op, int __user *uaddr)
++#ifdef CONFIG_PPC_SMLPAR
++void arch_free_page(struct page *page, int order);
++#define HAVE_ARCH_FREE_PAGE
++#endif
++
+ struct vm_area_struct;
  
- 	switch (op) {
- 	case FUTEX_OP_SET:
--		__futex_atomic_op("", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("mr %1,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_ADD:
--		__futex_atomic_op("add %1,%0,%1\n", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("add %1,%0,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_OR:
--		__futex_atomic_op("or %1,%0,%1\n", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("or %1,%0,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_ANDN:
--		__futex_atomic_op("andc %1,%0,%1\n", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("andc %1,%0,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	case FUTEX_OP_XOR:
--		__futex_atomic_op("xor %1,%0,%1\n", ret, oldval, uaddr, oparg);
-+		__futex_atomic_op("xor %1,%0,%4\n", ret, oldval, uaddr, oparg);
- 		break;
- 	default:
- 		ret = -ENOSYS;
+ typedef struct page *pgtable_t;
+Index: b/arch/powerpc/platforms/pseries/lpar.c
+===================================================================
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -609,3 +609,55 @@ void __init hpte_init_lpar(void)
+ 	ppc_md.flush_hash_range	= pSeries_lpar_flush_hash_range;
+ 	ppc_md.hpte_clear_all   = pSeries_lpar_hptab_clear;
+ }
++
++#ifdef CONFIG_PPC_SMLPAR
++#define CMMA_DEFAULT 1
++static int cmma_flag = CMMA_DEFAULT;
++
++static int __init cmma(char *str)
++{
++	char *parm;
++	parm = strstrip(str);
++
++	if (strcasecmp(parm, "no") == 0 || strcasecmp(parm, "off") == 0) {
++		printk(KERN_INFO "cmma: page marking is not active.\n");
++		cmma_flag = 0;
++		return 1;
++	}
++
++	cmma_flag = 1;
++	printk(KERN_INFO "cmma: page marking is active.\n");
++
++	if (strcasecmp(parm, "yes") == 0 || strcasecmp(parm, "on") == 0)
++		return 1;
++
++	return 0;
++}
++
++__setup("cmma=", cmma);
++
++static void pSeries_set_page_state(struct page *page, int order,
++				   unsigned long state)
++{
++	int i, j;
++	unsigned long cmo_page_sz, addr;
++
++	cmo_page_sz = cmo_get_page_size();
++	addr = __pa((unsigned long)page_address(page));
++
++	for (i = 0; i < (1 << order); i++, addr += PAGE_SIZE) {
++		for (j = 0; j < PAGE_SIZE; j += cmo_page_sz)
++			plpar_hcall_norets(H_PAGE_INIT, state, addr + j, 0);
++	}
++}
++
++void arch_free_page(struct page *page, int order)
++{
++	if (!cmma_flag || !firmware_has_feature(FW_FEATURE_CMO))
++		return;
++
++	pSeries_set_page_state(page, order, H_PAGE_SET_UNUSED);
++}
++EXPORT_SYMBOL(arch_free_page);
++
++#endif
