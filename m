@@ -1,16 +1,15 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 869C4DE0C4
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 15:33:40 +1000 (EST)
-To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
-Message-Id: <aea82416ed6c6805412a2631fe8a8be6420c5c9d.1239687192.git.tony@bakeyournoodle.com>
-From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 1/1] Fix build failure drivers/parport/parport_pc.c for powerpc
-Date: Tue, 14 Apr 2009 15:33:40 +1000 (EST)
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <sjy1937@hotmail.com>
+Received: from bay0-omc1-s17.bay0.hotmail.com (bay0-omc1-s17.bay0.hotmail.com
+	[65.54.246.89]) by ozlabs.org (Postfix) with ESMTP id AD6A7DDFC3
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 17:56:25 +1000 (EST)
+Message-ID: <BAY112-W200D1650425A8B738616C9A37C0@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_e2fd3473-b36a-4a3b-bfc9-cf37d2058483_"
+From: =?ks_c_5601-1987?B?wOe/6yC9xQ==?= <sjy1937@hotmail.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Has anyone debugged kernel 2.6.27 using KGDB?
+Date: Tue, 14 Apr 2009 07:51:18 +0000
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +19,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In commit 51dcdfec6a274afc1c6fce180d582add9ff512c0 (parport: Use the PCI
-IRQ if offered) parport_pc_probe_port() gained an irqflags arg.  This
-isn't being supplied on powerpc.  This patch make powerpc fallback to
-the old behaviour, that is using "0" for irqflags.
+--_e2fd3473-b36a-4a3b-bfc9-cf37d2058483_
+Content-Type: text/plain; charset="ks_c_5601-1987"
+Content-Transfer-Encoding: 8bit
 
-Fixes build failure:
-In file included from drivers/parport/parport_pc.c:68:
-arch/powerpc/include/asm/parport.h: In function 'parport_pc_find_nonpci_ports':
-arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
-arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
-arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
-make[3]: *** [drivers/parport/parport_pc.o] Error 1
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
-Resend due to MUA badness
+Hi all.
 
- arch/powerpc/include/asm/parport.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Has anyone tried to debug kernel 2.6.27 using KGDB?
 
-diff --git a/arch/powerpc/include/asm/parport.h b/arch/powerpc/include/asm/parport.h
-index 414c50e..94942d6 100644
---- a/arch/powerpc/include/asm/parport.h
-+++ b/arch/powerpc/include/asm/parport.h
-@@ -29,7 +29,7 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
- 		prop = of_get_property(np, "interrupts", NULL);
- 		if (!prop)
- 			continue;
--		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL) != NULL)
-+		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL, 0) != NULL)
- 			count++;
- 	}
- 	return count;
--- 
-1.6.0.6
+I'm now trying to use KGDB but I can't use it at all.
+
+I already red documents in kernel source about KGDB and I also know that KGDB is merged since 2.6.26.
+
+Absoultely I'm already done what I have to do in menuconfig like
+
+ 
+
+enable KGDB option
+
+enable tty serial
+
+enabel compile with .. and so on..
+
+ 
+
+I have embedded board that is target (PXA270, v2.6.27 android kernel) and development PC that is host(2.6.23)
+
+ 
+
+Is that a problem that I use lower version kernel in host system?
+
+ 
+
+I attached boot parameter in menucofig as follow:
+
+kgdbwait kgdb8250=ttyS0,115200
+
+but When bootloader(BLOB) is loading kernel in embedded board, kernel never wait for host side' gdb signal.
+
+Is there something I missed?
+
+ 
+
+I'm now confused slightly. plz help me. o<-< 
+
+ 
+
+thanks in advance.
+
+ 
+
+Sincerely
+
+ 
+
+Shin Jaeyong.
+
+_________________________________________________________________
+Show them the way! Add maps and directions to your party invites. 
+http://www.microsoft.com/windows/windowslive/products/events.aspx
+--_e2fd3473-b36a-4a3b-bfc9-cf37d2058483_
+Content-Type: text/html; charset="ks_c_5601-1987"
+Content-Transfer-Encoding: 8bit
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt;
+font-family:Verdana
+}
+</style>
+</head>
+<body class='hmmessage'>
+Hi all.<BR>
+Has anyone tried to debug kernel 2.6.27 using KGDB?<BR>
+I'm now trying to use KGDB but I can't use it at all.<BR>
+I already red documents in kernel source about KGDB and I also know that KGDB is merged since 2.6.26.<BR>
+Absoultely I'm already done what I have to do in menuconfig like<BR>
+&nbsp;<BR>
+enable KGDB option<BR>
+enable tty serial<BR>
+enabel compile with .. and so on..<BR>
+&nbsp;<BR>
+I have embedded board that is target (PXA270, v2.6.27 android kernel) and development PC that is host(2.6.23)<BR>
+&nbsp;<BR>
+Is that a problem that I use lower version kernel in host system?<BR>
+&nbsp;<BR>
+I attached boot parameter in menucofig as follow:<BR>
+kgdbwait kgdb8250=ttyS0,115200<BR>
+but When bootloader(BLOB) is loading kernel in embedded board, kernel never wait for host side' gdb signal.<BR>
+Is there something I missed?<BR>
+&nbsp;<BR>
+I'm now confused slightly. plz help me. o&lt;-&lt; <BR>
+&nbsp;<BR>
+thanks in advance.<BR>
+&nbsp;<BR>
+Sincerely<BR>
+&nbsp;<BR>
+Shin Jaeyong.<BR><br /><hr />See all the ways you can stay connected <a href='http://www.microsoft.com/windows/windowslive/default.aspx' target='_new'>to friends and family</a></body>
+</html>
+--_e2fd3473-b36a-4a3b-bfc9-cf37d2058483_--
