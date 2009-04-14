@@ -1,16 +1,26 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE003.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 4F708DE136
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 06:33:24 +1000 (EST)
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.224])
+	by ozlabs.org (Postfix) with ESMTP id 36281DE136
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 08:16:50 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f9so3903740rvb.1
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 15:16:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C9BD40.3A999948"
-Subject: Question about DBCR0 initialization for 440
-Date: Tue, 14 Apr 2009 14:33:10 -0600
-From: John Linn <John.Linn@xilinx.com>
-To: <jwboyer@linux.vnet.ibm.com>, <grant.likely@secretlab.ca>,
-	<linuxppc-dev@ozlabs.org>
-Message-ID: <20090414203313.8D8F11BE8056@mail209-sin.bigfish.com>
+In-Reply-To: <49E505B3.5070005@ovro.caltech.edu>
+References: <20090224000002.GA578@ovro.caltech.edu>
+	<fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com>
+	<49E4FED0.1020003@ovro.caltech.edu>
+	<fa686aa40904141445x6a125e12r391e0853d89baf72@mail.gmail.com>
+	<49E505B3.5070005@ovro.caltech.edu>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 14 Apr 2009 16:16:34 -0600
+Message-ID: <fa686aa40904141516s1ca2965fted07bf2a6f5ce390@mail.gmail.com>
+Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
+To: David Hawkins <dwh@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ira Snyder <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,246 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------_=_NextPart_001_01C9BD40.3A999948
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-The kernel does not initialize the PPC440 DBCR0 register. This prevents
-(among other things) the use of software breakpoints with GDB.  I
-realize that boot loaders probably do initialize this but we run a lot
-without a boot loader and so do our customers.
-
- =
-
-
-The file, head_fsl_booke.S, does initialize the register for the
-freescale specific code (as shown at the end of the message).
-
- =
-
-
-We are needing this also for Xilinx.  What's the best method to
-incorporate this, is it possible to add to head_44x.S?
-
- =
-
-
-Thanks,
-
-John
-
- =
-
-
-#if !defined(CONFIG_BDI_SWITCH)
-
-            /*
-
-             * The Abatron BDI JTAG debugger does not tolerate others
-
-             * mucking with the debug registers.
-
-             */
-
-            lis     r2,DBCR0_IDM@h
-
-            mtspr   SPRN_DBCR0,r2
-
-            isync
-
-            /* clear any residual debug events */
-
-            li      r2,-1
-
-            mtspr   SPRN_DBSR,r2
-
-#endif
-
- =
-
-
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
-
-
-------_=_NextPart_001_01C9BD40.3A999948
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
-osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>The kernel does not initialize the PPC440 DBCR0 register=
-.
-This prevents (among other things) the use of software breakpoints with GDB=
-.&nbsp;
-I realize that boot loaders probably do initialize this but we run a lot
-without a boot loader and so do our customers.<o:p></o:p></span></font></p>=
-
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>The file, head_fsl_booke.S, does initialize the register=
- for
-the freescale specific code (as shown at the end of the message).<o:p></o:p=
-></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>We are needing this also for Xilinx.&nbsp; What&#8217;s =
-the
-best method to incorporate this, is it possible to add to head_44x.S?<o:p><=
-/o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>John<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>#if !defined(CONFIG_BDI_SWITCH)<o:p></o:p></span></font>=
-</p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; /*<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; &nbsp;*
-The Abatron BDI JTAG debugger does not tolerate others<o:p></o:p></span></f=
-ont></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; &nbsp;*
-mucking with the debug registers.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; &nbsp;*/<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; lis&nbsp;&nbsp;&nbsp;&nbsp;
-r2,DBCR0_IDM@h<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; mtspr&nbsp;&nbsp;
-SPRN_DBCR0,r2<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; isync<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; /*
-clear any residual debug events */<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; li&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-r2,-1<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp; mtspr&nbsp;&nbsp;
-SPRN_DBSR,r2<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'>#endif<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
-0.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-<br clear=3Dall> This email and any attachments are intended for the sole u=
-se of the named recipient(s) and contain(s) confidential information that m=
-ay be proprietary, privileged or copyrighted under applicable law. If you a=
-re not the intended recipient, do not read, copy, or forward this email mes=
-sage or any attachments. Delete this email message and any attachments imme=
-diately.
-</body>
-
-</html>
-
-
-------_=_NextPart_001_01C9BD40.3A999948--
+On Tue, Apr 14, 2009 at 3:52 PM, David Hawkins <dwh@ovro.caltech.edu> wrote=
+:
+> Hi Grant,
+>
+>> Thanks David. =A0I haven't looked closely at the xilinx pci data sheet
+>> yet, but I don't expect too many issues in this area. =A0As you say, it
+>> won't take much to code it up. =A0I'll be poking my VHDL engineer to
+>> make it do what I want it to. =A0:-)
+>
+> The key aspects of the core will be that it is Master/Target
+> so that it can take over the PCI bus, and that it has a
+> DMA engine that can take care of most of the work. In
+> your case, since you have a DMA controller on the host
+> (MPC5200) and the target (Xilinx), your driver might end
+> up having nicer symmetry than our application. The
+> most efficient implementation will be the one that
+> uses PCI writes, i.e., MPC5200 DMAs to the Xilinx core,
+> and the Xilinx core DMAs to the MPC5200.
+
+Hmmm, I hadn't thought about this.  I was intending to use the
+Virtex's memory region for all virtio, but if I can allocate memory
+regions on both sides of the PCI bus, then that may be best.
+
+> If you use
+> a PCI Target only core, then the MPC5200 DMA controller
+> will have to do all the work, and read transfers might
+> be slightly less efficient.
+
+I'll definitely intend to enable master mode on the Xilinx PCI controller.
+
+> Our target boards (PowerPC) live in compactPCI backplanes
+> and talk to x86 boards that do not have DMA controllers.
+> So the PCI target board DMA controllers are used to
+> transfer data efficiently to the x86 host (writes)
+> and less efficiently from the host to the boards
+> (reads). Our bandwidth requirements are 'to the host',
+> so we can live with the asymmetry in performance.
+
+Fortunately I don't have very high bandwidth requirements for the
+first spin, so I have some room to experiment.  :-)
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
