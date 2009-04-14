@@ -1,15 +1,20 @@
-Return-Path: <sjy1937@hotmail.com>
-Received: from bay0-omc1-s17.bay0.hotmail.com (bay0-omc1-s17.bay0.hotmail.com
-	[65.54.246.89]) by ozlabs.org (Postfix) with ESMTP id AD6A7DDFC3
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 17:56:25 +1000 (EST)
-Message-ID: <BAY112-W200D1650425A8B738616C9A37C0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_e2fd3473-b36a-4a3b-bfc9-cf37d2058483_"
-From: =?ks_c_5601-1987?B?wOe/6yC9xQ==?= <sjy1937@hotmail.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Has anyone debugged kernel 2.6.27 using KGDB?
-Date: Tue, 14 Apr 2009 07:51:18 +0000
-MIME-Version: 1.0
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1B9D7DDE22
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 18:08:38 +1000 (EST)
+In-Reply-To: <1238755594-18869-2-git-send-email-tiejun.china@gmail.com>
+References: <1238755594-18869-1-git-send-email-tiejun.china@gmail.com>
+	<1238755594-18869-2-git-send-email-tiejun.china@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3C36E383-13A3-49E9-B87B-D22D966B6F79@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [v1 PATCH 1/1] Fix 64bit Maple Host Bridge Address and Size Nodes
+Date: Tue, 14 Apr 2009 10:11:02 +0200
+To: tiejun.china@gmail.com
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,111 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---_e2fd3473-b36a-4a3b-bfc9-cf37d2058483_
-Content-Type: text/plain; charset="ks_c_5601-1987"
-Content-Transfer-Encoding: 8bit
+> In the DTB tree created by firmware on some Maple 64bit targets,  
+> such as ATCA6101,
+> these two properties, address&size, should be 2.
+
+And they are.
+
+> But the actual corresponding values
+> of host bridge node are set 1 incorrectly by the firmware, we have  
+> to provide one
+> fixup function to fix that.
+
+It is the "reg" property that is incorrectly encoded as-if
+#address-cells and #size-cells were 1.
+
+Please fix the commit message (and subject line).
+
+> +	name = "/hostbridge@f8000000";
+> +	hb = call_prom("finddevice", 1, 1, ADDR(name));
+
+It's interesting that the firmware can find your node this way,
+it won't match the "reg"!  Looks like there is more than one
+bug in there.
+
+Code looks good,
+
+Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
 
 
-Hi all.
-
-Has anyone tried to debug kernel 2.6.27 using KGDB?
-
-I'm now trying to use KGDB but I can't use it at all.
-
-I already red documents in kernel source about KGDB and I also know that KGDB is merged since 2.6.26.
-
-Absoultely I'm already done what I have to do in menuconfig like
-
- 
-
-enable KGDB option
-
-enable tty serial
-
-enabel compile with .. and so on..
-
- 
-
-I have embedded board that is target (PXA270, v2.6.27 android kernel) and development PC that is host(2.6.23)
-
- 
-
-Is that a problem that I use lower version kernel in host system?
-
- 
-
-I attached boot parameter in menucofig as follow:
-
-kgdbwait kgdb8250=ttyS0,115200
-
-but When bootloader(BLOB) is loading kernel in embedded board, kernel never wait for host side' gdb signal.
-
-Is there something I missed?
-
- 
-
-I'm now confused slightly. plz help me. o<-< 
-
- 
-
-thanks in advance.
-
- 
-
-Sincerely
-
- 
-
-Shin Jaeyong.
-
-_________________________________________________________________
-Show them the way! Add maps and directions to your party invites. 
-http://www.microsoft.com/windows/windowslive/products/events.aspx
---_e2fd3473-b36a-4a3b-bfc9-cf37d2058483_
-Content-Type: text/html; charset="ks_c_5601-1987"
-Content-Transfer-Encoding: 8bit
-
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt;
-font-family:Verdana
-}
-</style>
-</head>
-<body class='hmmessage'>
-Hi all.<BR>
-Has anyone tried to debug kernel 2.6.27 using KGDB?<BR>
-I'm now trying to use KGDB but I can't use it at all.<BR>
-I already red documents in kernel source about KGDB and I also know that KGDB is merged since 2.6.26.<BR>
-Absoultely I'm already done what I have to do in menuconfig like<BR>
-&nbsp;<BR>
-enable KGDB option<BR>
-enable tty serial<BR>
-enabel compile with .. and so on..<BR>
-&nbsp;<BR>
-I have embedded board that is target (PXA270, v2.6.27 android kernel) and development PC that is host(2.6.23)<BR>
-&nbsp;<BR>
-Is that a problem that I use lower version kernel in host system?<BR>
-&nbsp;<BR>
-I attached boot parameter in menucofig as follow:<BR>
-kgdbwait kgdb8250=ttyS0,115200<BR>
-but When bootloader(BLOB) is loading kernel in embedded board, kernel never wait for host side' gdb signal.<BR>
-Is there something I missed?<BR>
-&nbsp;<BR>
-I'm now confused slightly. plz help me. o&lt;-&lt; <BR>
-&nbsp;<BR>
-thanks in advance.<BR>
-&nbsp;<BR>
-Sincerely<BR>
-&nbsp;<BR>
-Shin Jaeyong.<BR><br /><hr />See all the ways you can stay connected <a href='http://www.microsoft.com/windows/windowslive/default.aspx' target='_new'>to friends and family</a></body>
-</html>
---_e2fd3473-b36a-4a3b-bfc9-cf37d2058483_--
+Segher
