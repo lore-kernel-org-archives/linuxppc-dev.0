@@ -1,29 +1,16 @@
-Return-Path: <rcjenn@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <tony@bakeyournoodle.com>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 813B3DDF7C
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 11:37:46 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3E1WWSV022463
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2009 19:32:32 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3E1bgPC232210
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2009 19:37:42 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3E1bgvH030442
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2009 19:37:42 -0600
-Date: Mon, 13 Apr 2009 20:37:41 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: VRM unused page hinting
-Message-ID: <20090414013741.GA8678@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 869C4DE0C4
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2009 15:33:40 +1000 (EST)
+To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
+Message-Id: <aea82416ed6c6805412a2631fe8a8be6420c5c9d.1239687192.git.tony@bakeyournoodle.com>
+From: Tony Breeds <tony@bakeyournoodle.com>
+Subject: [PATCH 1/1] Fix build failure drivers/parport/parport_pc.c for powerpc
+Date: Tue, 14 Apr 2009 15:33:40 +1000 (EST)
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,94 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adds support for the "unused" page hint which can be used in shared
-memory partitions to flag pages not in use, which will then be stolen
-before active pages by the hypervisor when memory needs to be moved to
-LPARs in need of additional memory.  Failure to mark pages as 'unused'
-makes the LPAR slower to give up unused memory to other partitions.
+In commit 51dcdfec6a274afc1c6fce180d582add9ff512c0 (parport: Use the PCI
+IRQ if offered) parport_pc_probe_port() gained an irqflags arg.  This
+isn't being supplied on powerpc.  This patch make powerpc fallback to
+the old behaviour, that is using "0" for irqflags.
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+Fixes build failure:
+In file included from drivers/parport/parport_pc.c:68:
+arch/powerpc/include/asm/parport.h: In function 'parport_pc_find_nonpci_ports':
+arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
+arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
+arch/powerpc/include/asm/parport.h:32: error: too few arguments to function 'parport_pc_probe_port'
+make[3]: *** [drivers/parport/parport_pc.o] Error 1
 
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 ---
+Resend due to MUA badness
 
- arch/powerpc/include/asm/page.h       |    5 +++
- arch/powerpc/platforms/pseries/lpar.c |   52 ++++++++++++++++++++++++++++++++++
- 2 files changed, 57 insertions(+)
+ arch/powerpc/include/asm/parport.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Index: b/arch/powerpc/include/asm/page.h
-===================================================================
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -231,6 +231,11 @@ extern void copy_user_page(void *to, voi
- 		struct page *p);
- extern int page_is_ram(unsigned long pfn);
- 
-+#ifdef CONFIG_PPC_SMLPAR
-+void arch_free_page(struct page *page, int order);
-+#define HAVE_ARCH_FREE_PAGE
-+#endif
-+
- struct vm_area_struct;
- 
- typedef struct page *pgtable_t;
-Index: b/arch/powerpc/platforms/pseries/lpar.c
-===================================================================
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -609,3 +609,55 @@ void __init hpte_init_lpar(void)
- 	ppc_md.flush_hash_range	= pSeries_lpar_flush_hash_range;
- 	ppc_md.hpte_clear_all   = pSeries_lpar_hptab_clear;
- }
-+
-+#ifdef CONFIG_PPC_SMLPAR
-+#define CMMA_DEFAULT 1
-+static int cmma_flag = CMMA_DEFAULT;
-+
-+static int __init cmma(char *str)
-+{
-+	char *parm;
-+	parm = strstrip(str);
-+
-+	if (strcasecmp(parm, "no") == 0 || strcasecmp(parm, "off") == 0) {
-+		printk(KERN_INFO "cmma: page marking is not active.\n");
-+		cmma_flag = 0;
-+		return 1;
-+	}
-+
-+	cmma_flag = 1;
-+	printk(KERN_INFO "cmma: page marking is active.\n");
-+
-+	if (strcasecmp(parm, "yes") == 0 || strcasecmp(parm, "on") == 0)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+__setup("cmma=", cmma);
-+
-+static void pSeries_set_page_state(struct page *page, int order,
-+				   unsigned long state)
-+{
-+	int i, j;
-+	unsigned long cmo_page_sz, addr;
-+
-+	cmo_page_sz = cmo_get_page_size();
-+	addr = __pa((unsigned long)page_address(page));
-+
-+	for (i = 0; i < (1 << order); i++, addr += PAGE_SIZE) {
-+		for (j = 0; j < PAGE_SIZE; j += cmo_page_sz)
-+			plpar_hcall_norets(H_PAGE_INIT, state, addr + j, 0);
-+	}
-+}
-+
-+void arch_free_page(struct page *page, int order)
-+{
-+	if (!cmma_flag || !firmware_has_feature(FW_FEATURE_CMO))
-+		return;
-+
-+	pSeries_set_page_state(page, order, H_PAGE_SET_UNUSED);
-+}
-+EXPORT_SYMBOL(arch_free_page);
-+
-+#endif
+diff --git a/arch/powerpc/include/asm/parport.h b/arch/powerpc/include/asm/parport.h
+index 414c50e..94942d6 100644
+--- a/arch/powerpc/include/asm/parport.h
++++ b/arch/powerpc/include/asm/parport.h
+@@ -29,7 +29,7 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
+ 		prop = of_get_property(np, "interrupts", NULL);
+ 		if (!prop)
+ 			continue;
+-		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL) != NULL)
++		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL, 0) != NULL)
+ 			count++;
+ 	}
+ 	return count;
+-- 
+1.6.0.6
