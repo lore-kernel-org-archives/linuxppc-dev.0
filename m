@@ -1,25 +1,28 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 472FFDE0D5
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 08:27:16 +1000 (EST)
-Message-ID: <49E50DC4.3080108@ovro.caltech.edu>
-Date: Tue, 14 Apr 2009 15:27:16 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 37E5ADDFDD
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 08:48:13 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c drivers
+References: <20090408150249.5a62a56c@hyperion.delvare>
+	<1239205899.16477.32.camel@johannes.local>
+	<20090408224858.04cb6dc4@hyperion.delvare>
+	<1239263089.24548.30.camel@johannes.local>
+	<20090409141945.116772e3@hyperion.delvare>
+	<1239723613.24771.8.camel@johannes.local>
+	<1239724227.24771.9.camel@johannes.local>
+	<1239730915.24771.12.camel@johannes.local>
+	<20090414214949.736597d9@hyperion.delvare>
+Date: Wed, 15 Apr 2009 00:48:08 +0200
+In-Reply-To: <20090414214949.736597d9@hyperion.delvare> (Jean Delvare's
+	message of "Tue, 14 Apr 2009 21:49:49 +0200")
+Message-ID: <m2prfe26on.fsf@igel.home>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC v2] virtio: add virtio-over-PCI driver
-References: <20090224000002.GA578@ovro.caltech.edu>
-	<fa686aa40904141328oa57fb1bsffd0549a52eca90@mail.gmail.com>
-	<49E4FED0.1020003@ovro.caltech.edu>
-	<fa686aa40904141445x6a125e12r391e0853d89baf72@mail.gmail.com>
-	<49E505B3.5070005@ovro.caltech.edu>
-	<fa686aa40904141516s1ca2965fted07bf2a6f5ce390@mail.gmail.com>
-In-Reply-To: <fa686aa40904141516s1ca2965fted07bf2a6f5ce390@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-	netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Ira Snyder <iws@ovro.caltech.edu>
+Content-Type: text/plain; charset=us-ascii
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+	Johannes Berg <johannes@sipsolutions.net>, Benjamin@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,38 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+Jean Delvare <khali@linux-fr.org> writes:
 
-> Hmmm, I hadn't thought about this.  I was intending to use the
-> Virtex's memory region for all virtio, but if I can allocate memory
-> regions on both sides of the PCI bus, then that may be best.
+> Hi Johannes,
+>
+> On Tue, 14 Apr 2009 19:41:55 +0200, Johannes Berg wrote:
+>> Alright, with the patch Andreas pointed out it loads, but segfaults, as
+>> below. Works fine without your patch.
+>
+> Thanks for the quick test and sorry that it didn't work. I'll take a
+> look at the trace below and try to figure out what went wrong.
+>
+> Did you remove the 2 MODULE_DEVICE_TABLE from my patch? If you didn't,
+> please pick the latest version of my patch which doesn't have them:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/sound-aoa-codecs-convert-to-new-style.patch
+> I don't think they are the reason of the crash, but who knows...
 
-Sounds like you can experiment and see what works best :)
+I tried with a tas-based iBook, and it works fine here.
 
->> If you use
->> a PCI Target only core, then the MPC5200 DMA controller
->> will have to do all the work, and read transfers might
->> be slightly less efficient.
-> 
-> I'll definitely intend to enable master mode on the Xilinx PCI controller.
+Andreas.
 
-Since you understand the lingo, you clearly understand
-there are core differences :)
-
->> Our target boards (PowerPC) live in compactPCI backplanes
->> and talk to x86 boards that do not have DMA controllers.
->> So the PCI target board DMA controllers are used to
->> transfer data efficiently to the x86 host (writes)
->> and less efficiently from the host to the boards
->> (reads). Our bandwidth requirements are 'to the host',
->> so we can live with the asymmetry in performance.
-> 
-> Fortunately I don't have very high bandwidth requirements for the
-> first spin, so I have some room to experiment.  :-)
-
-Yes, in theory you have enough bandwidth ... then a
-few features are added, the PCI core is not quite as
-fast as advertised, etc etc :)
-
-Cheers,
-Dave
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
