@@ -1,31 +1,16 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 80C1DDE03F
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 08:00:37 +1000 (EST)
-Subject: Re: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c   
-	drivers
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20090414214949.736597d9@hyperion.delvare>
-References: <20090408150249.5a62a56c@hyperion.delvare>
-	<1239205899.16477.32.camel@johannes.local>
-	<20090408224858.04cb6dc4@hyperion.delvare>
-	<1239263089.24548.30.camel@johannes.local>
-	<20090409141945.116772e3@hyperion.delvare>
-	<1239723613.24771.8.camel@johannes.local>
-	<1239724227.24771.9.camel@johannes.local>
-	<1239730915.24771.12.camel@johannes.local>
-	<20090414214949.736597d9@hyperion.delvare>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-6JVP1Ggw0mOQUSIbJ9Zf"
-Date: Tue, 14 Apr 2009 23:59:59 +0200
-Message-Id: <1239746399.4205.21.camel@johannes.local>
-Mime-Version: 1.0
-Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE003.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 4F708DE136
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 06:33:24 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C9BD40.3A999948"
+Subject: Question about DBCR0 initialization for 440
+Date: Tue, 14 Apr 2009 14:33:10 -0600
+From: John Linn <John.Linn@xilinx.com>
+To: <jwboyer@linux.vnet.ibm.com>, <grant.likely@secretlab.ca>,
+	<linuxppc-dev@ozlabs.org>
+Message-ID: <20090414203313.8D8F11BE8056@mail209-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,87 +20,246 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-6JVP1Ggw0mOQUSIbJ9Zf
-Content-Type: text/plain
+------_=_NextPart_001_01C9BD40.3A999948
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jean,
+The kernel does not initialize the PPC440 DBCR0 register. This prevents
+(among other things) the use of software breakpoints with GDB.  I
+realize that boot loaders probably do initialize this but we run a lot
+without a boot loader and so do our customers.
 
-> Thanks for the quick test and sorry that it didn't work. I'll take a
-> look at the trace below and try to figure out what went wrong.
+ =
 
-No worries, seems some error path is going wrong but I can't see what it
-is right now.
 
-> Did you remove the 2 MODULE_DEVICE_TABLE from my patch? If you didn't,
-> please pick the latest version of my patch which doesn't have them:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-=
-i2c/sound-aoa-codecs-convert-to-new-style.patch
-> I don't think they are the reason of the crash, but who knows...
+The file, head_fsl_booke.S, does initialize the register for the
+freescale specific code (as shown at the end of the message).
 
-No, I didn't, but I was loading the modules manually so that didn't kick
-in.
+ =
 
-> Are you using a machine with onyx or tas? I guess onyx but I want to be
-> sure.
 
-onyx only.
+We are needing this also for Xilinx.  What's the best method to
+incorporate this, is it possible to add to head_44x.S?
 
-> > [   10.267137] snd-aoa-codec-onyx: found pcm3052
-> > [   10.267238] PM: Adding info for i2c:2-0046
-> > [   10.267926] snd-aoa-fabric-layout: platform-onyx-codec-ref doesn't m=
-atch!
->=20
-> Does this error also happen without my patch? It would help to see the
-> logs without my patch to see where it starts diverging.
+ =
 
-Yes -- this happens normally.
 
-> > [   10.267930] snd-aoa: fabric didn't like codec onyx
-> > [   10.268041] aoa_codec_onyx: probe of 2-0046 failed with error -22
->=20
-> Apparently aoa_codec_register failed in onyx_i2c_probe(), I have to
-> understand why.
+Thanks,
 
-Because the device-tree is broken -- there are two nodes for the same
-device, and only one of them can be used. Then the fabric rejects the
-first instantiation from the broken node. Here's how it looks normally:
+John
 
-...
-[   10.398296] snd-aoa-codec-onyx: found pcm3052
-[   10.398472] PM: Adding info for i2c:2-0046
-[   10.412189] snd-aoa-fabric-layout: platform-onyx-codec-ref doesn't match=
-!
-[   10.462593] snd-aoa: fabric didn't like codec onyx
-[   10.468030] PM: Removing info for i2c:2-0046
-[   10.473892] snd-aoa-codec-onyx: found pcm3052
-[   10.479317] PM: Adding info for i2c:3-0046
-[   10.485631] snd-aoa-fabric-layout: can use this codec
-...
+ =
 
-johannes
 
---=-6JVP1Ggw0mOQUSIbJ9Zf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+#if !defined(CONFIG_BDI_SWITCH)
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+            /*
 
-iQIcBAABAgAGBQJJ5QdcAAoJEKVg1VMiehFYX8gQAJSyv5CfQ6sujVv6m532v6Ao
-TA2DL/PkjFMF9q2uIWlvRTTDkTKDrBXJzRibLZ8FGxaPCc2WfsQ7a1dJ62MTMXbR
-3QXXDN2DFggIajq2NKA1KuXAljKAEZx7PLseAw/WSYiXdhGXq6uPoSmMLptYvBQe
-WJ5nc36fhQhEmVadELz9LLb57SM5g9/33/yX2ttnh9Rr2b874O6x/Dy21Up32ZEw
-c0IXH1Q+VfcgYTpvgZGq5kGhZmdptUp/mQcHw/4PzUGW4O5OM2IzBQ0vhbXhOXJz
-v+EJekuPYHbO/878X7x1+Vyc+XnHmRwuAEr3a0YSTUSUb0gaWIVv4zqCo8M++Smj
-MfvFrljqDBlA6AJ4kjyoSOqeluZ03MfXemfb/Pj4oQuBIjTNQBDfEp9HW41HtiMN
-HTH4gN8yAY8tdhSsLUmTrv9kEAff8fNleeAaZMRSs044kWQvYkaiZy2YO87NKdQh
-MydX5BXoAmGCPBFnK9O4qxyRbj7/o5dNDFc9gH6y1hfues/fEajZaFBTJOQ3qaM3
-qv4ZeixdfrRD641i4LmFWZduMoITMw9IsO50HkM0OYZ+EbK9YTro9iDVe1310nJQ
-qd96OugSNYPnEsd61doi2prgWn4L916ZQrtbRam7XBnVi48vE81rWKIEzLvVVjU4
-IqMtUxgZidxws3L4SVxN
-=ulXN
------END PGP SIGNATURE-----
+             * The Abatron BDI JTAG debugger does not tolerate others
 
---=-6JVP1Ggw0mOQUSIbJ9Zf--
+             * mucking with the debug registers.
+
+             */
+
+            lis     r2,DBCR0_IDM@h
+
+            mtspr   SPRN_DBCR0,r2
+
+            isync
+
+            /* clear any residual debug events */
+
+            li      r2,-1
+
+            mtspr   SPRN_DBSR,r2
+
+#endif
+
+ =
+
+
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
+
+
+------_=_NextPart_001_01C9BD40.3A999948
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>The kernel does not initialize the PPC440 DBCR0 register=
+.
+This prevents (among other things) the use of software breakpoints with GDB=
+.&nbsp;
+I realize that boot loaders probably do initialize this but we run a lot
+without a boot loader and so do our customers.<o:p></o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>The file, head_fsl_booke.S, does initialize the register=
+ for
+the freescale specific code (as shown at the end of the message).<o:p></o:p=
+></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>We are needing this also for Xilinx.&nbsp; What&#8217;s =
+the
+best method to incorporate this, is it possible to add to head_44x.S?<o:p><=
+/o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>John<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>#if !defined(CONFIG_BDI_SWITCH)<o:p></o:p></span></font>=
+</p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; /*<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; &nbsp;*
+The Abatron BDI JTAG debugger does not tolerate others<o:p></o:p></span></f=
+ont></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; &nbsp;*
+mucking with the debug registers.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; &nbsp;*/<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; lis&nbsp;&nbsp;&nbsp;&nbsp;
+r2,DBCR0_IDM@h<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; mtspr&nbsp;&nbsp;
+SPRN_DBCR0,r2<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; isync<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; /*
+clear any residual debug events */<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; li&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+r2,-1<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp; mtspr&nbsp;&nbsp;
+SPRN_DBSR,r2<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>#endif<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+<br clear=3Dall> This email and any attachments are intended for the sole u=
+se of the named recipient(s) and contain(s) confidential information that m=
+ay be proprietary, privileged or copyrighted under applicable law. If you a=
+re not the intended recipient, do not read, copy, or forward this email mes=
+sage or any attachments. Delete this email message and any attachments imme=
+diately.
+</body>
+
+</html>
+
+
+------_=_NextPart_001_01C9BD40.3A999948--
