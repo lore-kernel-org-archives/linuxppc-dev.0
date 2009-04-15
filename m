@@ -1,19 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.225])
-	by ozlabs.org (Postfix) with ESMTP id 05D38DE130
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 01:42:46 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f9so2604538rvb.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 08:42:45 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1239810033-8213-1-git-send-email-galak@kernel.crashing.org>
-References: <1239810033-8213-1-git-send-email-galak@kernel.crashing.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 15 Apr 2009 09:42:29 -0600
-Message-ID: <fa686aa40904150842w3edb6767qcc6fa81f8b6c2e12@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/fsl: Remove cell-index from PCI nodes
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5B79FDE042
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 01:51:41 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/85xx: Add P2020DS board support
+Date: Wed, 15 Apr 2009 10:49:24 -0500
+Message-Id: <1239810564-8403-1-git-send-email-galak@kernel.crashing.org>
+Cc: Ted Peters <ted.peters@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,761 +19,861 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 15, 2009 at 9:40 AM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
-> The cell-index property isn't used on PCI nodes and is ill defined.
-> Remove it for now and if someone comes up with a good reason and
-> consistent definition for it we can add it back
->
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+From: Ted Peters <ted.peters@freescale.com>
 
-> ---
-> =A0arch/powerpc/boot/dts/mpc832x_mds.dts =A0 =A0 =A0 =A0 =A0| =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc832x_rdb.dts =A0 =A0 =A0 =A0 =A0| =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc8349emitx.dts =A0 =A0 =A0 =A0 | =A0 =A02 --
-> =A0arch/powerpc/boot/dts/mpc8349emitxgp.dts =A0 =A0 =A0 | =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc834x_mds.dts =A0 =A0 =A0 =A0 =A0| =A0 =A02 --
-> =A0arch/powerpc/boot/dts/mpc836x_mds.dts =A0 =A0 =A0 =A0 =A0| =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc8377_mds.dts =A0 =A0 =A0 =A0 =A0| =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc8378_mds.dts =A0 =A0 =A0 =A0 =A0| =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc8379_mds.dts =A0 =A0 =A0 =A0 =A0| =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc8536ds.dts =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A04 =
-----
-> =A0arch/powerpc/boot/dts/mpc8540ads.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc8541cds.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A02 --
-> =A0arch/powerpc/boot/dts/mpc8544ds.dts =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A04 =
-----
-> =A0arch/powerpc/boot/dts/mpc8548cds.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A03 --=
--
-> =A0arch/powerpc/boot/dts/mpc8555cds.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A02 --
-> =A0arch/powerpc/boot/dts/mpc8560ads.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc8568mds.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A02 --
-> =A0arch/powerpc/boot/dts/mpc8572ds.dts =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A03 =
+The P2020 is a dual e500v2 core based SOC with:
+* 3 PCIe controllers
+* 2 General purpose DMA controllers
+* 2 sRIO controllers
+* 3 eTSECS
+* USB 2.0
+* SDHC
+* SPI, I2C, DUART
+* enhanced localbus
+* and optional Security (P2020E) security w/XOR acceleration
+
+The p2020 DS reference board is pretty similar to the existing MPC85xx
+DS boards and has a ULI 1575 connected on one of the PCIe controllers.
+
+Signed-off-by: Ted Peters <Ted.Peters@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
-> =A0arch/powerpc/boot/dts/mpc8572ds_36b.dts =A0 =A0 =A0 =A0| =A0 =A03 ---
-> =A0arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts | =A0 =A02 --
-> =A0arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts | =A0 =A01 -
-> =A0arch/powerpc/boot/dts/mpc8610_hpcd.dts =A0 =A0 =A0 =A0 | =A0 =A02 --
-> =A0arch/powerpc/boot/dts/mpc8641_hpcn.dts =A0 =A0 =A0 =A0 | =A0 =A02 --
-> =A0arch/powerpc/boot/dts/sbc8349.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0=
-1 -
-> =A0arch/powerpc/boot/dts/sbc8548.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0=
-2 --
-> =A0arch/powerpc/boot/dts/sbc8560.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0=
-1 -
-> =A0arch/powerpc/boot/dts/sbc8641d.dts =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A02 =
---
-> =A0arch/powerpc/boot/dts/socrates.dts =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A01 =
--
-> =A0arch/powerpc/boot/dts/stx_gp3_8560.dts =A0 =A0 =A0 =A0 | =A0 =A01 -
-> =A0arch/powerpc/boot/dts/tqm8540.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0=
-1 -
-> =A0arch/powerpc/boot/dts/tqm8541.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0=
-1 -
-> =A0arch/powerpc/boot/dts/tqm8548-bigflash.dts =A0 =A0 | =A0 =A02 --
-> =A0arch/powerpc/boot/dts/tqm8548.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0=
-2 --
-> =A0arch/powerpc/boot/dts/tqm8555.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0=
-1 -
-> =A0arch/powerpc/boot/dts/tqm8560.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0=
-1 -
-> =A035 files changed, 0 insertions(+), 59 deletions(-)
->
-> diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dt=
-s/mpc832x_mds.dts
-> index 57c595b..6b319f5 100644
-> --- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-> @@ -369,7 +369,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008500 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0=
-x11 AD17 */
-> diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dt=
-s/mpc832x_rdb.dts
-> index 4319bd7..4c0c249 100644
-> --- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> @@ -327,7 +327,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008500 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0=
-x10 AD16 (USB) */
-> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/d=
-ts/mpc8349emitx.dts
-> index 1ae38f0..e3eeaed 100644
-> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-> @@ -278,7 +278,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008500 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0=
-x10 - SATA */
-> @@ -301,7 +300,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pci@e0008600 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0=
-x0E - MiniPCI Slot */
-> diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot=
-/dts/mpc8349emitxgp.dts
-> index 662abe1..eb73211 100644
-> --- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-> +++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-> @@ -227,7 +227,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008600 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0=
-x0F - PCI Slot */
-> diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dt=
-s/mpc834x_mds.dts
-> index d9f0a23..a2553a6 100644
-> --- a/arch/powerpc/boot/dts/mpc834x_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
-> @@ -286,7 +286,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008500 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> @@ -348,7 +347,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pci@e0008600 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dt=
-s/mpc836x_mds.dts
-> index 6e34f17..1207ec8 100644
-> --- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-> @@ -410,7 +410,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008500 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dt=
-s/mpc8377_mds.dts
-> index 9637080..67bb372 100644
-> --- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-> @@ -383,7 +383,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008500 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dt=
-s/mpc8378_mds.dts
-> index 651ff2f..a955a57 100644
-> --- a/arch/powerpc/boot/dts/mpc8378_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-> @@ -367,7 +367,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008500 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dt=
-s/mpc8379_mds.dts
-> index d6f208b..d266ddb 100644
-> --- a/arch/powerpc/boot/dts/mpc8379_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
-> @@ -397,7 +397,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008500 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/=
-mpc8536ds.dts
-> index b31c504..af8c64c 100644
-> --- a/arch/powerpc/boot/dts/mpc8536ds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8536ds.dts
-> @@ -321,7 +321,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@ffe08000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8540-pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> @@ -346,7 +345,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@ffe09000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -383,7 +381,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci2: pcie@ffe0a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -420,7 +417,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci3: pcie@ffe0b000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <3>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts=
-/mpc8540ads.dts
-> index ddd67be..de5535c 100644
-> --- a/arch/powerpc/boot/dts/mpc8540ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc8540ads.dts
-> @@ -258,7 +258,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc8541cds.dts b/arch/powerpc/boot/dts=
-/mpc8541cds.dts
-> index e45097f..d10f5d6 100644
-> --- a/arch/powerpc/boot/dts/mpc8541cds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8541cds.dts
-> @@ -272,7 +272,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0x1f800 0x0 0x0 0x=
-7>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> @@ -344,7 +343,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pci@e0009000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/=
-mpc8544ds.dts
-> index 7c6932b..3ae31d7 100644
-> --- a/arch/powerpc/boot/dts/mpc8544ds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8544ds.dts
-> @@ -274,7 +274,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8540-pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> @@ -306,7 +305,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@e0009000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -343,7 +341,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci2: pcie@e000a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -380,7 +377,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci3: pcie@e000b000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <3>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts=
-/mpc8548cds.dts
-> index 804e903..732c111 100644
-> --- a/arch/powerpc/boot/dts/mpc8548cds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8548cds.dts
-> @@ -328,7 +328,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0x4 (PCIX Slot 2)=
- */
-> @@ -478,7 +477,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pci@e0009000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> @@ -503,7 +501,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci2: pcie@e000a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc8555cds.dts b/arch/powerpc/boot/dts=
-/mpc8555cds.dts
-> index 9484f07..7f9e535 100644
-> --- a/arch/powerpc/boot/dts/mpc8555cds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8555cds.dts
-> @@ -272,7 +272,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0x1f800 0x0 0x0 0x=
-7>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> @@ -344,7 +343,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pci@e0009000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts=
-/mpc8560ads.dts
-> index cc2acf8..190d46b 100644
-> --- a/arch/powerpc/boot/dts/mpc8560ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc8560ads.dts
-> @@ -291,7 +291,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <3>;
-> diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts=
-/mpc8568mds.dts
-> index 9d52e3b..3330356 100644
-> --- a/arch/powerpc/boot/dts/mpc8568mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-> @@ -459,7 +459,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0x12 AD18 */
-> @@ -490,7 +489,6 @@
->
-> =A0 =A0 =A0 =A0/* PCI Express */
-> =A0 =A0 =A0 =A0pci1: pcie@e000a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/mpc8572ds.dts b/arch/powerpc/boot/dts/=
-mpc8572ds.dts
-> index 6e79a41..75fc30b 100644
-> --- a/arch/powerpc/boot/dts/mpc8572ds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8572ds.dts
-> @@ -514,7 +514,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pcie@ffe08000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -724,7 +723,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@ffe09000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -761,7 +759,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci2: pcie@ffe0a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> diff --git a/arch/powerpc/boot/dts/mpc8572ds_36b.dts b/arch/powerpc/boot/=
-dts/mpc8572ds_36b.dts
-> index dbd81a7..e2a1f75 100644
-> --- a/arch/powerpc/boot/dts/mpc8572ds_36b.dts
-> +++ b/arch/powerpc/boot/dts/mpc8572ds_36b.dts
-> @@ -514,7 +514,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pcie@fffe08000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -724,7 +723,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@fffe09000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -761,7 +759,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci2: pcie@fffe0a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts b/arch/powerp=
-c/boot/dts/mpc8572ds_camp_core0.dts
-> index 2bc0c71..45ca89e 100644
-> --- a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
-> +++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
-> @@ -238,7 +238,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pcie@ffe08000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -448,7 +447,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@ffe09000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts b/arch/powerp=
-c/boot/dts/mpc8572ds_camp_core1.dts
-> index 159cb3a..0ded4a6 100644
-> --- a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
-> +++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
-> @@ -196,7 +196,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci2: pcie@ffe0a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8548-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/d=
-ts/mpc8610_hpcd.dts
-> index 1bd3ebe..4f081bb 100644
-> --- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-> +++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-> @@ -316,7 +316,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8610-pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -346,7 +345,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@e000a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8641-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/d=
-ts/mpc8641_hpcn.dts
-> index d72beb1..51852e6 100644
-> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> @@ -357,7 +357,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pcie@ffe08000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8641-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -566,7 +565,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@ffe09000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8641-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> diff --git a/arch/powerpc/boot/dts/sbc8349.dts b/arch/powerpc/boot/dts/sb=
-c8349.dts
-> index a36dbbc..5fb6f66 100644
-> --- a/arch/powerpc/boot/dts/sbc8349.dts
-> +++ b/arch/powerpc/boot/dts/sbc8349.dts
-> @@ -278,7 +278,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008500 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/sbc8548.dts b/arch/powerpc/boot/dts/sb=
-c8548.dts
-> index b1f1416..196fcc1 100644
-> --- a/arch/powerpc/boot/dts/sbc8548.dts
-> +++ b/arch/powerpc/boot/dts/sbc8548.dts
-> @@ -350,7 +350,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0x01 (PCI-X slot)=
- @66MHz */
-> @@ -380,7 +379,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci2: pcie@e000a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/sbc8560.dts b/arch/powerpc/boot/dts/sb=
-c8560.dts
-> index c4564b8..813d731 100644
-> --- a/arch/powerpc/boot/dts/sbc8560.dts
-> +++ b/arch/powerpc/boot/dts/sbc8560.dts
-> @@ -296,7 +296,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@ff708000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <3>;
-> diff --git a/arch/powerpc/boot/dts/sbc8641d.dts b/arch/powerpc/boot/dts/s=
-bc8641d.dts
-> index e3e914e..cfd5782 100644
-> --- a/arch/powerpc/boot/dts/sbc8641d.dts
-> +++ b/arch/powerpc/boot/dts/sbc8641d.dts
-> @@ -371,7 +371,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pcie@f8008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8641-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> @@ -410,7 +409,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@f8009000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8641-pcie";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device_type =3D "pci";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> diff --git a/arch/powerpc/boot/dts/socrates.dts b/arch/powerpc/boot/dts/s=
-ocrates.dts
-> index 7a6ae75..e8f4e46 100644
-> --- a/arch/powerpc/boot/dts/socrates.dts
-> +++ b/arch/powerpc/boot/dts/socrates.dts
-> @@ -314,7 +314,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <3>;
-> diff --git a/arch/powerpc/boot/dts/stx_gp3_8560.dts b/arch/powerpc/boot/d=
-ts/stx_gp3_8560.dts
-> index ea6b151..8691dd3 100644
-> --- a/arch/powerpc/boot/dts/stx_gp3_8560.dts
-> +++ b/arch/powerpc/boot/dts/stx_gp3_8560.dts
-> @@ -251,7 +251,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@fdf08000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
->
-> diff --git a/arch/powerpc/boot/dts/tqm8540.dts b/arch/powerpc/boot/dts/tq=
-m8540.dts
-> index b6f1fc6..c8265b6 100644
-> --- a/arch/powerpc/boot/dts/tqm8540.dts
-> +++ b/arch/powerpc/boot/dts/tqm8540.dts
-> @@ -266,7 +266,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <3>;
-> diff --git a/arch/powerpc/boot/dts/tqm8541.dts b/arch/powerpc/boot/dts/tq=
-m8541.dts
-> index fa6a3d5..9080546 100644
-> --- a/arch/powerpc/boot/dts/tqm8541.dts
-> +++ b/arch/powerpc/boot/dts/tqm8541.dts
-> @@ -288,7 +288,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <3>;
-> diff --git a/arch/powerpc/boot/dts/tqm8548-bigflash.dts b/arch/powerpc/bo=
-ot/dts/tqm8548-bigflash.dts
-> index 00f7ed7..1139eb5 100644
-> --- a/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-> +++ b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-> @@ -419,7 +419,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@a0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <3>;
-> @@ -441,7 +440,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@a000a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0x0 (PEX) */
-> diff --git a/arch/powerpc/boot/dts/tqm8548.dts b/arch/powerpc/boot/dts/tq=
-m8548.dts
-> index 673e4a7..d337d83 100644
-> --- a/arch/powerpc/boot/dts/tqm8548.dts
-> +++ b/arch/powerpc/boot/dts/tqm8548.dts
-> @@ -419,7 +419,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <3>;
-> @@ -441,7 +440,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci1: pcie@e000a000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map-mask =3D <0xf800 0x0 0x0 0x7=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-map =3D <
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0x0 (PEX) */
-> diff --git a/arch/powerpc/boot/dts/tqm8555.dts b/arch/powerpc/boot/dts/tq=
-m8555.dts
-> index 6a99f1e..021039b 100644
-> --- a/arch/powerpc/boot/dts/tqm8555.dts
-> +++ b/arch/powerpc/boot/dts/tqm8555.dts
-> @@ -288,7 +288,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <3>;
-> diff --git a/arch/powerpc/boot/dts/tqm8560.dts b/arch/powerpc/boot/dts/tq=
-m8560.dts
-> index b6c2d71..cec84c2 100644
-> --- a/arch/powerpc/boot/dts/tqm8560.dts
-> +++ b/arch/powerpc/boot/dts/tqm8560.dts
-> @@ -359,7 +359,6 @@
-> =A0 =A0 =A0 =A0};
->
-> =A0 =A0 =A0 =A0pci0: pci@e0008000 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <3>;
-> --
-> 1.6.0.6
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+I'll post another version w/a defconfig update but that will be post 2.6.30-rc3 as
+I plan on reworking the 85xx defconfigs a bit for FSL boards to reduce the total
+number of defconfigs and introduce an SMP one.
 
+ arch/powerpc/boot/dts/p2020ds.dts        |  680 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c |   35 ++-
+ arch/powerpc/platforms/fsl_uli1575.c     |   10 +-
+ arch/powerpc/sysdev/fsl_pci.c            |    2 +
+ include/linux/pci_ids.h                  |    2 +
+ 5 files changed, 723 insertions(+), 6 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/p2020ds.dts
 
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/arch/powerpc/boot/dts/p2020ds.dts b/arch/powerpc/boot/dts/p2020ds.dts
+new file mode 100644
+index 0000000..4d27eb9
+--- /dev/null
++++ b/arch/powerpc/boot/dts/p2020ds.dts
+@@ -0,0 +1,680 @@
++/*
++ * P2020 DS Device Tree Source
++ *
++ * Copyright 2007-2009 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++/ {
++	model = "fsl,P2020";
++	compatible = "fsl,P2020DS";
++	#address-cells = <2>;
++	#size-cells = <2>;
++
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		ethernet2 = &enet2;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++		pci1 = &pci1;
++		pci2 = &pci2;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,P2020@0 {
++			device_type = "cpu";
++			reg = <0x0>;
++			next-level-cache = <&L2>;
++		};
++
++		PowerPC,P2020@1 {
++			device_type = "cpu";
++			reg = <0x1>;
++			next-level-cache = <&L2>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++	};
++
++	localbus@ffe05000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,p2020-elbc", "fsl,elbc", "simple-bus";
++		reg = <0 0xffe05000 0 0x1000>;
++		interrupts = <19 2>;
++		interrupt-parent = <&mpic>;
++
++		ranges = <0x0 0x0 0x0 0xe8000000 0x08000000
++			  0x1 0x0 0x0 0xe0000000 0x08000000
++			  0x2 0x0 0x0 0xffa00000 0x00040000
++			  0x3 0x0 0x0 0xffdf0000 0x00008000
++			  0x4 0x0 0x0 0xffa40000 0x00040000
++			  0x5 0x0 0x0 0xffa80000 0x00040000
++			  0x6 0x0 0x0 0xffac0000 0x00040000>;
++
++		nor@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x8000000>;
++			bank-width = <2>;
++			device-width = <1>;
++
++			ramdisk@0 {
++				reg = <0x0 0x03000000>;
++				read-only;
++			};
++
++			diagnostic@3000000 {
++				reg = <0x03000000 0x00e00000>;
++				read-only;
++			};
++
++			dink@3e00000 {
++				reg = <0x03e00000 0x00200000>;
++				read-only;
++			};
++
++			kernel@4000000 {
++				reg = <0x04000000 0x00400000>;
++				read-only;
++			};
++
++			jffs2@4400000 {
++				reg = <0x04400000 0x03b00000>;
++			};
++
++			dtb@7f00000 {
++				reg = <0x07f00000 0x00080000>;
++				read-only;
++			};
++
++			u-boot@7f80000 {
++				reg = <0x07f80000 0x00080000>;
++				read-only;
++			};
++		};
++
++		nand@2,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,p2020-fcm-nand",
++				     "fsl,elbc-fcm-nand";
++			reg = <0x2 0x0 0x40000>;
++
++			u-boot@0 {
++				reg = <0x0 0x02000000>;
++				read-only;
++			};
++
++			jffs2@2000000 {
++				reg = <0x02000000 0x10000000>;
++			};
++
++			ramdisk@12000000 {
++				reg = <0x12000000 0x08000000>;
++				read-only;
++			};
++
++			kernel@1a000000 {
++				reg = <0x1a000000 0x04000000>;
++			};
++
++			dtb@1e000000 {
++				reg = <0x1e000000 0x01000000>;
++				read-only;
++			};
++
++			empty@1f000000 {
++				reg = <0x1f000000 0x21000000>;
++			};
++		};
++
++		nand@4,0 {
++			compatible = "fsl,p2020-fcm-nand",
++				     "fsl,elbc-fcm-nand";
++			reg = <0x4 0x0 0x40000>;
++		};
++
++		nand@5,0 {
++			compatible = "fsl,p2020-fcm-nand",
++				     "fsl,elbc-fcm-nand";
++			reg = <0x5 0x0 0x40000>;
++		};
++
++		nand@6,0 {
++			compatible = "fsl,p2020-fcm-nand",
++				     "fsl,elbc-fcm-nand";
++			reg = <0x6 0x0 0x40000>;
++		};
++	};
++
++	soc@ffe00000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		compatible = "simple-bus";
++		ranges = <0x0 0 0xffe00000 0x100000>;
++		reg = <0 0xffe00000 0 0x1000>;	// CCSRBAR & soc regs, remove once parse code for immrbase fixed
++		bus-frequency = <0>;		// Filled out by uboot.
++
++		memory-controller@2000 {
++			compatible = "fsl,p2020-memory-controller";
++			reg = <0x2000 0x1000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <18 2>;
++		};
++
++		L2: l2-cache-controller@20000 {
++			compatible = "fsl,p2020-l2-cache-controller";
++			reg = <0x20000 0x1000>;
++			cache-line-size = <32>;	// 32 bytes
++			cache-size = <0x100000>; // L2, 1M
++			interrupt-parent = <&mpic>;
++			interrupts = <16 2>;
++		};
++
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <43 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
++
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <1>;
++			compatible = "fsl-i2c";
++			reg = <0x3100 0x100>;
++			interrupts = <43 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
++
++		dma@c300 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,p2020-dma", "fsl,eloplus-dma";
++			reg = <0xc300 0x4>;
++			ranges = <0x0 0xc100 0x200>;
++			cell-index = <1>;
++			dma-channel@0 {
++				compatible = "fsl,p2020-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x0 0x80>;
++				cell-index = <0>;
++				interrupt-parent = <&mpic>;
++				interrupts = <76 2>;
++			};
++			dma-channel@80 {
++				compatible = "fsl,p2020-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x80 0x80>;
++				cell-index = <1>;
++				interrupt-parent = <&mpic>;
++				interrupts = <77 2>;
++			};
++			dma-channel@100 {
++				compatible = "fsl,p2020-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x100 0x80>;
++				cell-index = <2>;
++				interrupt-parent = <&mpic>;
++				interrupts = <78 2>;
++			};
++			dma-channel@180 {
++				compatible = "fsl,p2020-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x180 0x80>;
++				cell-index = <3>;
++				interrupt-parent = <&mpic>;
++				interrupts = <79 2>;
++			};
++		};
++
++		dma@21300 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,p2020-dma", "fsl,eloplus-dma";
++			reg = <0x21300 0x4>;
++			ranges = <0x0 0x21100 0x200>;
++			cell-index = <0>;
++			dma-channel@0 {
++				compatible = "fsl,p2020-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x0 0x80>;
++				cell-index = <0>;
++				interrupt-parent = <&mpic>;
++				interrupts = <20 2>;
++			};
++			dma-channel@80 {
++				compatible = "fsl,p2020-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x80 0x80>;
++				cell-index = <1>;
++				interrupt-parent = <&mpic>;
++				interrupts = <21 2>;
++			};
++			dma-channel@100 {
++				compatible = "fsl,p2020-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x100 0x80>;
++				cell-index = <2>;
++				interrupt-parent = <&mpic>;
++				interrupts = <22 2>;
++			};
++			dma-channel@180 {
++				compatible = "fsl,p2020-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x180 0x80>;
++				cell-index = <3>;
++				interrupt-parent = <&mpic>;
++				interrupts = <23 2>;
++			};
++		};
++
++		usb@22000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,p2020-usb2-mph", "fsl-usb2-mph";
++			reg = <0x22000 0x1000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <28 0x2>;
++			phy_type = "ulpi";
++		};
++
++
++		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <29 2 30 2 34 2>;
++			interrupt-parent = <&mpic>;
++			tbi-handle = <&tbi0>;
++			phy-handle = <&phy0>;
++			phy-connection-type = "rgmii-id";
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy0: ethernet-phy@0 {
++					interrupt-parent = <&mpic>;
++					interrupts = <3 1>;
++					reg = <0x0>;
++				};
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&mpic>;
++					interrupts = <3 1>;
++					reg = <0x1>;
++				};
++				phy2: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <3 1>;
++					reg = <0x2>;
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
++		};
++
++		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <1>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <35 2 36 2 40 2>;
++			interrupt-parent = <&mpic>;
++			tbi-handle = <&tbi1>;
++			phy-handle = <&phy1>;
++			phy-connection-type = "rgmii-id";
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
++		};
++
++		enet2: ethernet@26000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <2>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x26000 0x1000>;
++			ranges = <0x0 0x26000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <31 2 32 2 33 2>;
++			interrupt-parent = <&mpic>;
++			tbi-handle = <&tbi2>;
++			phy-handle = <&phy2>;
++			phy-connection-type = "rgmii-id";
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi2: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
++		};
++
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>;
++			clock-frequency = <0>;
++			interrupts = <42 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;
++			clock-frequency = <0>;
++			interrupts = <42 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		global-utilities@e0000 {	//global utilities block
++			compatible = "fsl,p2020-guts";
++			reg = <0xe0000 0x1000>;
++			fsl,has-rstcr;
++		};
++
++		msi@41600 {
++			compatible = "fsl,p2020-msi", "fsl,mpic-msi";
++			reg = <0x41600 0x80>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <
++				0xe0 0
++				0xe1 0
++				0xe2 0
++				0xe3 0
++				0xe4 0
++				0xe5 0
++				0xe6 0
++				0xe7 0>;
++			interrupt-parent = <&mpic>;
++		};
++
++		crypto@30000 {
++			compatible = "fsl,sec3.0", "fsl,sec2.4", "fsl,sec2.2",
++				     "fsl,sec2.1", "fsl,sec2.0";
++			reg = <0x30000 0x10000>;
++			interrupts = <45 2 58 2>;
++			interrupt-parent = <&mpic>;
++			fsl,num-channels = <4>;
++			fsl,channel-fifo-len = <24>;
++			fsl,exec-units-mask = <0x9fe>;
++			fsl,descriptor-types-mask = <0x3ab0ebf>;
++		};
++
++		mpic: pic@40000 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x40000 0x40000>;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++		};
++	};
++
++	pci0: pcie@ffe08000 {
++		compatible = "fsl,mpc8548-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0 0xffe08000 0 0x1000>;
++		bus-range = <0 255>;
++		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupts = <24 2>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x8 0x1
++			0000 0x0 0x0 0x2 &mpic 0x9 0x1
++			0000 0x0 0x0 0x3 &mpic 0xa 0x1
++			0000 0x0 0x0 0x4 &mpic 0xb 0x1
++			>;
++		pcie@0 {
++			reg = <0x0 0x0 0x0 0x0 0x0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x2000000 0x0 0x80000000
++				  0x2000000 0x0 0x80000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x10000>;
++		};
++	};
++
++	pci1: pcie@ffe09000 {
++		compatible = "fsl,mpc8548-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0 0xffe09000 0 0x1000>;
++		bus-range = <0 255>;
++		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupts = <25 2>;
++		interrupt-map-mask = <0xff00 0x0 0x0 0x7>;
++		interrupt-map = <
++
++			// IDSEL 0x11 func 0 - PCI slot 1
++			0x8800 0x0 0x0 0x1 &i8259 0x9 0x2
++			0x8800 0x0 0x0 0x2 &i8259 0xa 0x2
++
++			// IDSEL 0x11 func 1 - PCI slot 1
++			0x8900 0x0 0x0 0x1 &i8259 0x9 0x2
++			0x8900 0x0 0x0 0x2 &i8259 0xa 0x2
++
++			// IDSEL 0x11 func 2 - PCI slot 1
++			0x8a00 0x0 0x0 0x1 &i8259 0x9 0x2
++			0x8a00 0x0 0x0 0x2 &i8259 0xa 0x2
++
++			// IDSEL 0x11 func 3 - PCI slot 1
++			0x8b00 0x0 0x0 0x1 &i8259 0x9 0x2
++			0x8b00 0x0 0x0 0x2 &i8259 0xa 0x2
++
++			// IDSEL 0x11 func 4 - PCI slot 1
++			0x8c00 0x0 0x0 0x1 &i8259 0x9 0x2
++			0x8c00 0x0 0x0 0x2 &i8259 0xa 0x2
++
++			// IDSEL 0x11 func 5 - PCI slot 1
++			0x8d00 0x0 0x0 0x1 &i8259 0x9 0x2
++			0x8d00 0x0 0x0 0x2 &i8259 0xa 0x2
++
++			// IDSEL 0x11 func 6 - PCI slot 1
++			0x8e00 0x0 0x0 0x1 &i8259 0x9 0x2
++			0x8e00 0x0 0x0 0x2 &i8259 0xa 0x2
++
++			// IDSEL 0x11 func 7 - PCI slot 1
++			0x8f00 0x0 0x0 0x1 &i8259 0x9 0x2
++			0x8f00 0x0 0x0 0x2 &i8259 0xa 0x2
++
++			// IDSEL 0x1d  Audio
++			0xe800 0x0 0x0 0x1 &i8259 0x6 0x2
++
++			// IDSEL 0x1e Legacy
++			0xf000 0x0 0x0 0x1 &i8259 0x7 0x2
++			0xf100 0x0 0x0 0x1 &i8259 0x7 0x2
++
++			// IDSEL 0x1f IDE/SATA
++			0xf800 0x0 0x0 0x1 &i8259 0xe 0x2
++			0xf900 0x0 0x0 0x1 &i8259 0x5 0x2
++			>;
++
++		pcie@0 {
++			reg = <0x0 0x0 0x0 0x0 0x0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x2000000 0x0 0xa0000000
++				  0x2000000 0x0 0xa0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x10000>;
++			uli1575@0 {
++				reg = <0x0 0x0 0x0 0x0 0x0>;
++				#size-cells = <2>;
++				#address-cells = <3>;
++				ranges = <0x2000000 0x0 0xa0000000
++					  0x2000000 0x0 0xa0000000
++					  0x0 0x20000000
++
++					  0x1000000 0x0 0x0
++					  0x1000000 0x0 0x0
++					  0x0 0x10000>;
++				isa@1e {
++					device_type = "isa";
++					#interrupt-cells = <2>;
++					#size-cells = <1>;
++					#address-cells = <2>;
++					reg = <0xf000 0x0 0x0 0x0 0x0>;
++					ranges = <0x1 0x0 0x1000000 0x0 0x0
++						  0x1000>;
++					interrupt-parent = <&i8259>;
++
++					i8259: interrupt-controller@20 {
++						reg = <0x1 0x20 0x2
++						       0x1 0xa0 0x2
++						       0x1 0x4d0 0x2>;
++						interrupt-controller;
++						device_type = "interrupt-controller";
++						#address-cells = <0>;
++						#interrupt-cells = <2>;
++						compatible = "chrp,iic";
++						interrupts = <4 1>;
++						interrupt-parent = <&mpic>;
++					};
++
++					i8042@60 {
++						#size-cells = <0>;
++						#address-cells = <1>;
++						reg = <0x1 0x60 0x1 0x1 0x64 0x1>;
++						interrupts = <1 3 12 3>;
++						interrupt-parent =
++							<&i8259>;
++
++						keyboard@0 {
++							reg = <0x0>;
++							compatible = "pnpPNP,303";
++						};
++
++						mouse@1 {
++							reg = <0x1>;
++							compatible = "pnpPNP,f03";
++						};
++					};
++
++					rtc@70 {
++						compatible = "pnpPNP,b00";
++						reg = <0x1 0x70 0x2>;
++					};
++
++					gpio@400 {
++						reg = <0x1 0x400 0x80>;
++					};
++				};
++			};
++		};
++
++	};
++
++	pci2: pcie@ffe0a000 {
++		compatible = "fsl,mpc8548-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0 0xffe0a000 0 0x1000>;
++		bus-range = <0 255>;
++		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupts = <26 2>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x0 0x1
++			0000 0x0 0x0 0x2 &mpic 0x1 0x1
++			0000 0x0 0x0 0x3 &mpic 0x2 0x1
++			0000 0x0 0x0 0x4 &mpic 0x3 0x1
++			>;
++		pcie@0 {
++			reg = <0x0 0x0 0x0 0x0 0x0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x2000000 0x0 0xc0000000
++				  0x2000000 0x0 0xc0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x10000>;
++		};
++	};
++};
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index de66de7..25f750c 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -163,7 +163,8 @@ static void __init mpc85xx_ds_setup_arch(void)
+ #ifdef CONFIG_PCI
+ 	for_each_node_by_type(np, "pci") {
+ 		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
++		    of_device_is_compatible(np, "fsl,mpc8548-pcie") ||
++		    of_device_is_compatible(np, "fsl,p2020-pcie")) {
+ 			struct resource rsrc;
+ 			of_address_to_resource(np, 0, &rsrc);
+ 			if ((rsrc.start & 0xfffff) == primary_phb_addr)
+@@ -214,6 +215,7 @@ static int __init mpc85xxds_publish_devices(void)
+ }
+ machine_device_initcall(mpc8544_ds, mpc85xxds_publish_devices);
+ machine_device_initcall(mpc8572_ds, mpc85xxds_publish_devices);
++machine_device_initcall(p2020_ds, mpc85xxds_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+@@ -232,6 +234,23 @@ static int __init mpc8572_ds_probe(void)
+ 	}
+ }
+ 
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++static int __init p2020_ds_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	if (of_flat_dt_is_compatible(root, "fsl,P2020DS")) {
++#ifdef CONFIG_PCI
++		primary_phb_addr = 0x9000;
++#endif
++		return 1;
++	} else {
++		return 0;
++	}
++}
++
+ define_machine(mpc8544_ds) {
+ 	.name			= "MPC8544 DS",
+ 	.probe			= mpc8544_ds_probe,
+@@ -259,3 +278,17 @@ define_machine(mpc8572_ds) {
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
++
++define_machine(p2020_ds) {
++	.name			= "P2020 DS",
++	.probe			= p2020_ds_probe,
++	.setup_arch		= mpc85xx_ds_setup_arch,
++	.init_IRQ		= mpc85xx_ds_pic_init,
++#ifdef CONFIG_PCI
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++#endif
++	.get_irq		= mpic_get_irq,
++	.restart		= fsl_rstcr_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
+diff --git a/arch/powerpc/platforms/fsl_uli1575.c b/arch/powerpc/platforms/fsl_uli1575.c
+index 1db6b9e..6adfedd 100644
+--- a/arch/powerpc/platforms/fsl_uli1575.c
++++ b/arch/powerpc/platforms/fsl_uli1575.c
+@@ -57,7 +57,7 @@ static void __devinit early_uli5249(struct pci_dev *dev)
+ 	unsigned char temp;
+ 
+ 	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
+-			!machine_is(mpc8572_ds))
++			!machine_is(mpc8572_ds) && !machine_is(p2020_ds))
+ 		return;
+ 
+ 	pci_write_config_word(dev, PCI_COMMAND, PCI_COMMAND_IO |
+@@ -81,7 +81,7 @@ static void __devinit quirk_uli1575(struct pci_dev *dev)
+ 	int i;
+ 
+ 	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
+-			!machine_is(mpc8572_ds))
++			!machine_is(mpc8572_ds) && !machine_is(p2020_ds))
+ 		return;
+ 
+ 	/*
+@@ -150,7 +150,7 @@ static void __devinit quirk_final_uli1575(struct pci_dev *dev)
+ 	 * IRQ 15: Edge
+ 	 */
+ 	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
+-			!machine_is(mpc8572_ds))
++			!machine_is(mpc8572_ds) && !machine_is(p2020_ds))
+ 		return;
+ 
+ 	outb(0xfa, 0x4d0);
+@@ -177,7 +177,7 @@ static void __devinit quirk_uli5288(struct pci_dev *dev)
+ 	unsigned int d;
+ 
+ 	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
+-			!machine_is(mpc8572_ds))
++			!machine_is(mpc8572_ds) && !machine_is(p2020_ds))
+ 		return;
+ 
+ 	/* read/write lock */
+@@ -202,7 +202,7 @@ static void __devinit quirk_uli5229(struct pci_dev *dev)
+ 	unsigned short temp;
+ 
+ 	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
+-			!machine_is(mpc8572_ds))
++			!machine_is(mpc8572_ds) && !machine_is(p2020_ds))
+ 		return;
+ 
+ 	pci_write_config_word(dev, PCI_COMMAND, PCI_COMMAND_INTX_DISABLE |
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 78021d8..36db7b3 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -296,6 +296,8 @@ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8536, quirk_fsl_pcie_header);
+ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8641, quirk_fsl_pcie_header);
+ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8641D, quirk_fsl_pcie_header);
+ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8610, quirk_fsl_pcie_header);
++DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_P2020E, quirk_fsl_pcie_header);
++DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_P2020, quirk_fsl_pcie_header);
+ #endif /* CONFIG_PPC_85xx || CONFIG_PPC_86xx */
+ 
+ #if defined(CONFIG_PPC_83xx) || defined(CONFIG_PPC_MPC512x)
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 170f8b1..5b3d240 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2260,6 +2260,8 @@
+ #define PCI_DEVICE_ID_MPC8572		0x0041
+ #define PCI_DEVICE_ID_MPC8536E		0x0050
+ #define PCI_DEVICE_ID_MPC8536		0x0051
++#define PCI_DEVICE_ID_P2020E		0x0070
++#define PCI_DEVICE_ID_P2020		0x0071
+ #define PCI_DEVICE_ID_MPC8641		0x7010
+ #define PCI_DEVICE_ID_MPC8641D		0x7011
+ #define PCI_DEVICE_ID_MPC8610		0x7018
+-- 
+1.6.0.6
