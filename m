@@ -1,24 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B157EDE454
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 08:32:32 +1000 (EST)
-Date: Wed, 15 Apr 2009 15:27:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Harry Ciao <qingtao.cao@windriver.com>
-Subject: Re: [v2 PATCH 2/3] EDAC: Add edac_device_alloc_index()
-Message-Id: <20090415152730.79d8053c.akpm@linux-foundation.org>
-In-Reply-To: <1239602716-18352-3-git-send-email-qingtao.cao@windriver.com>
-References: <1239602716-18352-1-git-send-email-qingtao.cao@windriver.com>
-	<1239602716-18352-2-git-send-email-qingtao.cao@windriver.com>
-	<1239602716-18352-3-git-send-email-qingtao.cao@windriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: norsk5@yahoo.com, bluesmoke-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 11BE8DE15A
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 09:02:24 +1000 (EST)
+Message-Id: <E3135C12-C512-43CF-B30D-B3AF7D7DE181@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20090331082730.1427.96418.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 09/14] net: Rework gianfar driver to use of_mdio
+	infrastructure.
+Date: Wed, 15 Apr 2009 18:01:17 -0500
+References: <20090331075537.1427.7819.stgit@localhost.localdomain>
+	<20090331082730.1427.96418.stgit@localhost.localdomain>
+Cc: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, olof@lixom.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,52 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 13 Apr 2009 14:05:15 +0800
-Harry Ciao <qingtao.cao@windriver.com> wrote:
 
-> Add edac_device_alloc_index(), because for MAPLE platform there may
-> exist several EDAC driver modules that could make use of
-> edac_device_ctl_info structure at the same time. The index allocation
-> for these structures should be taken care of by EDAC core.
-> 
+On Mar 31, 2009, at 3:27 AM, Grant Likely wrote:
 
-From: Andrew Morton <akpm@linux-foundation.org>
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> This patch simplifies the driver by making use of more common code.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+> drivers/net/gianfar.c |  103 +++++++++++++++++ 
+> +-------------------------------
+> drivers/net/gianfar.h |    3 +
+> 2 files changed, 40 insertions(+), 66 deletions(-)
+>
+>
+> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+> index 65f5587..c22eba9 100644
+> @@ -699,23 +657,38 @@ static int init_phy(struct net_device *dev)
+>
+>
+> +	if (priv->tbi_node) {
+> +		priv->tbiphy = of_phy_connect(dev, priv->tbi_node, &adjust_link,
+> +					      0, interface);
+> +		if (!priv->tbiphy) {
+> +			dev_err(&dev->dev, "error: Could not attach to TBI\n");
+> +			goto err_tbiphy;
+> +		}
+> +	}
 
-keep things neat.  Also avoids having global identifier device_index
-shadowed by local identifier device_index.
+I don't believe we need this.  Certainly, the current code doesn't do  
+anything like this.  The TBI node is a special internal PHY used to  
+manage SGMII/TBI links.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Doug Thompson <norsk5@yahoo.com>
-Cc: Harry Ciao <qingtao.cao@windriver.com>
-Cc: Kumar Gala <galak@gate.crashing.org>
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
 
- drivers/edac/edac_device.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff -puN drivers/edac/amd8111_edac.c~edac-add-edac_device_alloc_index-cleanup drivers/edac/amd8111_edac.c
-diff -puN drivers/edac/edac_core.h~edac-add-edac_device_alloc_index-cleanup drivers/edac/edac_core.h
-diff -puN drivers/edac/edac_device.c~edac-add-edac_device_alloc_index-cleanup drivers/edac/edac_device.c
---- a/drivers/edac/edac_device.c~edac-add-edac_device_alloc_index-cleanup
-+++ a/drivers/edac/edac_device.c
-@@ -37,7 +37,6 @@
-  */
- static DEFINE_MUTEX(device_ctls_mutex);
- static LIST_HEAD(edac_device_list);
--static atomic_t device_indexes = ATOMIC_INIT(0);
- 
- #ifdef CONFIG_EDAC_DEBUG
- static void edac_device_dump_device(struct edac_device_ctl_info *edac_dev)
-@@ -499,6 +498,8 @@ void edac_device_reset_delay_period(stru
-  */
- int edac_device_alloc_index(void)
- {
-+	static atomic_t device_indexes = ATOMIC_INIT(0);
-+
- 	return atomic_inc_return(&device_indexes) - 1;
- }
- EXPORT_SYMBOL_GPL(edac_device_alloc_index);
-_
+Andy
