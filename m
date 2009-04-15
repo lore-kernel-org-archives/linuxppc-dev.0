@@ -1,22 +1,24 @@
-Return-Path: <jk@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A2542DE13F
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 10:36:18 +1000 (EST)
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <greg@kroah.com>
+Date: Tue, 14 Apr 2009 18:06:45 -0700
+From: Greg KH <greg@kroah.com>
+To: reinette chatre <reinette.chatre@intel.com>
+Subject: Re: [Ipw2100-admin] [BUILD FAILURE 04/12] Next April 14 : PPC64
+	randconfig [drivers/staging/built-in.o]
+Message-ID: <20090415010645.GA10045@kroah.com>
+References: <1239733717.5344.76.camel@subratamodak.linux.ibm.com>
+	<1239735595.15115.60.camel@rc-desk>
 MIME-Version: 1.0
-Subject: [PATCH v2] powerpc: pseries/dtl.c should include asm/firmware.h
-Message-Id: <1239755755.553226.808801509343.1.gpush@pingu>
-In-Reply-To: <<49D3419E.7000005@in.ibm.com>>
-To: <linuxppc-dev@ozlabs.org>, <linux-next@vger.kernel.org>,
-	Paul Mackerras <paulus@samba.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 15 Apr 2009 10:35:55 +1000
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Michael Neuling <mikey@neuling.org>,
-	Subrata Modak <subrata@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1239735595.15115.60.camel@rc-desk>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andrea Merello <andreamrl@tiscali.it>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	linux-next <linux-next@vger.kernel.org>,
+	"subrata@linux.vnet.ibm.com" <subrata@linux.vnet.ibm.com>,
+	Alexander Beregalov <a.beregalov@gmail.com>,
+	"James P. Ketrenos" <ipw2100-admin@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Sachin Sant <sachinp@in.ibm.com>
+On Tue, Apr 14, 2009 at 11:59:55AM -0700, reinette chatre wrote:
+> Hi Subrata,
+> 
+> On Tue, 2009-04-14 at 11:28 -0700, Subrata Modak wrote:
+> > Observed the following build error:
+> > ---
+> > LD      drivers/built-in.o
+> > drivers/staging/built-in.o: In function `ieee80211_xmit':
+> > drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c:528: multiple
+> > definition of `ieee80211_xmit'
+> > drivers/net/built-in.o:drivers/net/wireless/ipw2x00/libipw_tx.c:256:
+> > first defined here
+> > make[1]: *** [drivers/built-in.o] Error 1
+> > make: *** [drivers] Error 2
+> 
+> Looks like the rtl8187se driver started with a copy of ipw2x00's
+> library. Errors like this can thus be expected and should be addressed
+> by rtl8187se as they are the ones who made the copy.
 
-A randconfig build on powerpc failed with:
+Yes, at this point in time, don't build the staging drivers into the
+kernel, it's not advised at all.
 
-dtl.c: In function 'dtl_init':
-dtl.c:238: error: implicit declaration of function 'firmware_has_feature'
-dtl.c:238: error: 'FW_FEATURE_SPLPAR' undeclared (first use in this function)
+thanks,
 
-- We need firmware.h for these definitions.
-
-Signed-off-by: Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
----
-v2: This time without the non-ascii quotes
-
----
- arch/powerpc/platforms/pseries/dtl.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
-index fafcaa0..ab69925 100644
---- a/arch/powerpc/platforms/pseries/dtl.c
-+++ b/arch/powerpc/platforms/pseries/dtl.c
-@@ -25,6 +25,7 @@
- #include <asm/smp.h>
- #include <asm/system.h>
- #include <asm/uaccess.h>
-+#include <asm/firmware.h>
- 
- #include "plpar_wrappers.h"
- 
+greg k-h
