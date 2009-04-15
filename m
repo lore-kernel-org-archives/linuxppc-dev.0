@@ -3,17 +3,17 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6C4D5DE12C
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 09:45:58 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id A2542DE13F
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 10:36:18 +1000 (EST)
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Subject: [PATCH] powerpc: pseries/dtl.c should include asm/firmware.h
-Message-Id: <1239752746.198193.893152536767.1.gpush@pingu>
+Subject: [PATCH v2] powerpc: pseries/dtl.c should include asm/firmware.h
+Message-Id: <1239755755.553226.808801509343.1.gpush@pingu>
 In-Reply-To: <<49D3419E.7000005@in.ibm.com>>
 To: <linuxppc-dev@ozlabs.org>, <linux-next@vger.kernel.org>,
 	Paul Mackerras <paulus@samba.org>
 From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 15 Apr 2009 09:45:46 +1000
+Date: Wed, 15 Apr 2009 10:35:55 +1000
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
 	Michael Neuling <mikey@neuling.org>,
 	Subrata Modak <subrata@linux.vnet.ibm.com>
@@ -30,14 +30,17 @@ From: Sachin Sant <sachinp@in.ibm.com>
 
 A randconfig build on powerpc failed with:
 
-dtl.c: In function ‘dtl_init’:
-dtl.c:238: error: implicit declaration of function ‘firmware_has_feature’
-dtl.c:238: error: ‘FW_FEATURE_SPLPAR’ undeclared (first use in this function)
+dtl.c: In function 'dtl_init':
+dtl.c:238: error: implicit declaration of function 'firmware_has_feature'
+dtl.c:238: error: 'FW_FEATURE_SPLPAR' undeclared (first use in this function)
 
 - We need firmware.h for these definitions.
 
 Signed-off-by: Sachin Sant <sachinp@in.ibm.com>
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+
+---
+v2: This time without the non-ascii quotes
 
 ---
  arch/powerpc/platforms/pseries/dtl.c |    1 +
