@@ -1,17 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 642B9DE198
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 05:37:28 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n3FJbOJh010276
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 14:37:25 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Refactor board check for quirk
-Date: Wed, 15 Apr 2009 14:37:24 -0500
-Message-Id: <1239824244-11443-1-git-send-email-galak@kernel.crashing.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B8DA7DE10D
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 07:11:00 +1000 (EST)
+Message-Id: <FD808CF0-C694-4388-BBBE-B92367663F54@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20090331082709.1427.48689.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 05/14] phylib: add *_direct() variants of phy_connect and
+	phy_attach functions
+Date: Wed, 15 Apr 2009 16:10:16 -0500
+References: <20090331075537.1427.7819.stgit@localhost.localdomain>
+	<20090331082709.1427.48689.stgit@localhost.localdomain>
+Cc: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, olof@lixom.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,80 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Refactor the check to determine if the quirk is applicable to the boards
-into one inline function so we only have to change one place to add more
-boards that the quirks might be applicable to.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/platforms/fsl_uli1575.c |   22 ++++++++++++----------
- 1 files changed, 12 insertions(+), 10 deletions(-)
+On Mar 31, 2009, at 3:27 AM, Grant Likely wrote:
 
-diff --git a/arch/powerpc/platforms/fsl_uli1575.c b/arch/powerpc/platforms/fsl_uli1575.c
-index 1db6b9e..4e5ae0a 100644
---- a/arch/powerpc/platforms/fsl_uli1575.c
-+++ b/arch/powerpc/platforms/fsl_uli1575.c
-@@ -51,13 +51,19 @@ u8 uli_pirq_to_irq[8] = {
- 	ULI_8259_NONE,		/* PIRQH */
- };
- 
-+static inline bool is_quirk_valid(void)
-+{
-+	return (machine_is(mpc86xx_hpcn) || 
-+		machine_is(mpc8544_ds) ||
-+		machine_is(mpc8572_ds))
-+}
-+
- /* Bridge */
- static void __devinit early_uli5249(struct pci_dev *dev)
- {
- 	unsigned char temp;
- 
--	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
--			!machine_is(mpc8572_ds))
-+	if (!is_quirk_valid())
- 		return;
- 
- 	pci_write_config_word(dev, PCI_COMMAND, PCI_COMMAND_IO |
-@@ -80,8 +86,7 @@ static void __devinit quirk_uli1575(struct pci_dev *dev)
- {
- 	int i;
- 
--	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
--			!machine_is(mpc8572_ds))
-+	if (!is_quirk_valid())
- 		return;
- 
- 	/*
-@@ -149,8 +154,7 @@ static void __devinit quirk_final_uli1575(struct pci_dev *dev)
- 	 * IRQ 14: Edge
- 	 * IRQ 15: Edge
- 	 */
--	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
--			!machine_is(mpc8572_ds))
-+	if (!is_quirk_valid())
- 		return;
- 
- 	outb(0xfa, 0x4d0);
-@@ -176,8 +180,7 @@ static void __devinit quirk_uli5288(struct pci_dev *dev)
- 	unsigned char c;
- 	unsigned int d;
- 
--	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
--			!machine_is(mpc8572_ds))
-+	if (!is_quirk_valid())
- 		return;
- 
- 	/* read/write lock */
-@@ -201,8 +204,7 @@ static void __devinit quirk_uli5229(struct pci_dev *dev)
- {
- 	unsigned short temp;
- 
--	if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
--			!machine_is(mpc8572_ds))
-+	if (!is_quirk_valid())
- 		return;
- 
- 	pci_write_config_word(dev, PCI_COMMAND, PCI_COMMAND_INTX_DISABLE |
--- 
-1.6.0.6
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> Add phy_connect_direct() and phy_attach_direct() functions so that
+> drivers can use a pointer to the phy_device instead of trying to  
+> determine
+> the phy's bus_id string.
+>
+> This patch is useful for OF device tree descriptions of phy devices  
+> where
+> the driver doesn't need or know what the bus_id value in order to  
+> get a
+> phy_device pointer.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> @@ -312,18 +339,21 @@ struct phy_device * phy_connect(struct  
+> net_device *dev, const char *bus_id,
+> 		phy_interface_t interface)
+> {
+> 	struct phy_device *phydev;
+> +	struct device *d;
+> +	int rc;
+>
+> -	phydev = phy_attach(dev, bus_id, flags, interface);
+> -
+> -	if (IS_ERR(phydev))
+> -		return phydev;
+> -
+> -	phy_prepare_link(phydev, handler);
+> -
+> -	phy_start_machine(phydev, NULL);
+> +	/* Search the list of PHY devices on the mdio bus for the
+> +	 * PHY with the requested name */
+> +	d = bus_find_device_by_name(&mdio_bus_type, NULL, bus_id);
+> +	if (!d) {
+> +		pr_err("PHY %s not found\n", bus_id);
+> +		return ERR_PTR(-ENODEV);
+> +	}
+> +	phydev = to_phy_device(d);
+>
+> -	if (phydev->irq > 0)
+> -		phy_start_interrupts(phydev);
+> +	rc = phy_attach_direct(dev, phydev, flags, interface);
+> +	if (rc)
+> +		return ERR_PTR(rc);
+
+
+Why not just invoke phy_attach(), here, and thereby avoid the  
+duplicate search code?
+
+Otherwise, looks good.
+
+Andy
