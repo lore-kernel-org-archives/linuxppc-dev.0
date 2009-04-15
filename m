@@ -2,29 +2,16 @@ Return-Path: <khali@linux-fr.org>
 Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2DA56DE147
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 22:15:45 +1000 (EST)
-Date: Wed, 15 Apr 2009 14:15:30 +0200
+	by ozlabs.org (Postfix) with ESMTPS id BA7BBDE159
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 22:22:37 +1000 (EST)
+Date: Wed, 15 Apr 2009 14:22:25 +0200
 From: Jean Delvare <khali@linux-fr.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c    
-	drivers
-Message-ID: <20090415141530.0d5e47fc@hyperion.delvare>
-In-Reply-To: <1239746399.4205.21.camel@johannes.local>
-References: <20090408150249.5a62a56c@hyperion.delvare>
-	<1239205899.16477.32.camel@johannes.local>
-	<20090408224858.04cb6dc4@hyperion.delvare>
-	<1239263089.24548.30.camel@johannes.local>
-	<20090409141945.116772e3@hyperion.delvare>
-	<1239723613.24771.8.camel@johannes.local>
-	<1239724227.24771.9.camel@johannes.local>
-	<1239730915.24771.12.camel@johannes.local>
-	<20090414214949.736597d9@hyperion.delvare>
-	<1239746399.4205.21.camel@johannes.local>
+To: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c drivers (v3)
+Message-ID: <20090415142225.2bfd37f6@hyperion.delvare>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Benjamin, linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	Takashi Iwai <tiwai@suse.de>
+Cc: Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,82 +21,317 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 14 Apr 2009 23:59:59 +0200, Johannes Berg wrote:
-> Hi Jean,
-> 
-> > Thanks for the quick test and sorry that it didn't work. I'll take a
-> > look at the trace below and try to figure out what went wrong.
-> 
-> No worries, seems some error path is going wrong but I can't see what it
-> is right now.
-> 
-> > Did you remove the 2 MODULE_DEVICE_TABLE from my patch? If you didn't,
-> > please pick the latest version of my patch which doesn't have them:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/sound-aoa-codecs-convert-to-new-style.patch
-> > I don't think they are the reason of the crash, but who knows...
-> 
-> No, I didn't, but I was loading the modules manually so that didn't kick
-> in.
-> 
-> > Are you using a machine with onyx or tas? I guess onyx but I want to be
-> > sure.
-> 
-> onyx only.
-> 
-> > > [   10.267137] snd-aoa-codec-onyx: found pcm3052
-> > > [   10.267238] PM: Adding info for i2c:2-0046
-> > > [   10.267926] snd-aoa-fabric-layout: platform-onyx-codec-ref doesn't match!
-> > 
-> > Does this error also happen without my patch? It would help to see the
-> > logs without my patch to see where it starts diverging.
-> 
-> Yes -- this happens normally.
+The legacy i2c binding model is going away soon, so convert the AOA
+codec drivers to the new model or they'll break.
 
-OK. I couldn't see how my patch would cause this error, so if it was
-already there before, it's good news.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Tested-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+Johannes, this is a reworked patch which assumes that the onyx codec
+probing can fail. It's not exactly clean but that's the easiest
+approach for now. Can you please give it a try? Thanks.
 
-> > > [   10.267930] snd-aoa: fabric didn't like codec onyx
-> > > [   10.268041] aoa_codec_onyx: probe of 2-0046 failed with error -22
-> > 
-> > Apparently aoa_codec_register failed in onyx_i2c_probe(), I have to
-> > understand why.
-> 
-> Because the device-tree is broken -- there are two nodes for the same
-> device, and only one of them can be used. Then the fabric rejects the
-> first instantiation from the broken node. Here's how it looks normally:
-> 
-> ...
-> [   10.398296] snd-aoa-codec-onyx: found pcm3052
-> [   10.398472] PM: Adding info for i2c:2-0046
-> [   10.412189] snd-aoa-fabric-layout: platform-onyx-codec-ref doesn't match!
-> [   10.462593] snd-aoa: fabric didn't like codec onyx
-> [   10.468030] PM: Removing info for i2c:2-0046
-> [   10.473892] snd-aoa-codec-onyx: found pcm3052
-> [   10.479317] PM: Adding info for i2c:3-0046
-> [   10.485631] snd-aoa-fabric-layout: can use this codec
-> ...
+ sound/aoa/codecs/onyx.c |   76 ++++++++++++++++++++++++++++++++---------------
+ sound/aoa/codecs/tas.c  |   66 +++++++++++++++++++++++++---------------
+ 2 files changed, 95 insertions(+), 47 deletions(-)
 
-OK, I understand better what is going on now. I do not understand the
-crash at the end though, but I suspect it isn't a bug in my code but
-simply a faulty error path which had never been taken before.
+--- linux-2.6.30-rc2.orig/sound/aoa/codecs/onyx.c	2009-04-15 09:55:20.000000000 +0200
++++ linux-2.6.30-rc2/sound/aoa/codecs/onyx.c	2009-04-15 14:07:50.000000000 +0200
+@@ -47,7 +47,7 @@ MODULE_DESCRIPTION("pcm3052 (onyx) codec
+ struct onyx {
+ 	/* cache registers 65 to 80, they are write-only! */
+ 	u8			cache[16];
+-	struct i2c_client	i2c;
++	struct i2c_client	*i2c;
+ 	struct aoa_codec	codec;
+ 	u32			initialised:1,
+ 				spdif_locked:1,
+@@ -72,7 +72,7 @@ static int onyx_read_register(struct ony
+ 		*value = onyx->cache[reg-FIRSTREGISTER];
+ 		return 0;
+ 	}
+-	v = i2c_smbus_read_byte_data(&onyx->i2c, reg);
++	v = i2c_smbus_read_byte_data(onyx->i2c, reg);
+ 	if (v < 0)
+ 		return -1;
+ 	*value = (u8)v;
+@@ -84,7 +84,7 @@ static int onyx_write_register(struct on
+ {
+ 	int result;
+ 
+-	result = i2c_smbus_write_byte_data(&onyx->i2c, reg, value);
++	result = i2c_smbus_write_byte_data(onyx->i2c, reg, value);
+ 	if (!result)
+ 		onyx->cache[reg-FIRSTREGISTER] = value;
+ 	return result;
+@@ -996,12 +996,45 @@ static void onyx_exit_codec(struct aoa_c
+ 	onyx->codec.soundbus_dev->detach_codec(onyx->codec.soundbus_dev, onyx);
+ }
+ 
+-static struct i2c_driver onyx_driver;
+-
+ static int onyx_create(struct i2c_adapter *adapter,
+ 		       struct device_node *node,
+ 		       int addr)
+ {
++	struct i2c_board_info info;
++	struct i2c_client *client;
++
++	memset(&info, 0, sizeof(struct i2c_board_info));
++	strlcpy(info.type, "aoa_codec_onyx", I2C_NAME_SIZE);
++	info.addr = addr;
++	info.platform_data = node;
++	client = i2c_new_device(adapter, &info);
++	if (!client)
++		return -ENODEV;
++
++	/*
++	 * We know the driver is already loaded, so the device should be
++	 * already bound. If not it means binding failed, which suggests
++	 * the device doesn't really exist and should be deleted.
++	 * Ideally this would be replaced by better checks _before_
++	 * instantiating the device.
++	 */
++	if (!client->driver) {
++		i2c_unregister_device(client);
++		return -ENODEV;
++	}
++
++	/*
++	 * Let i2c-core delete that device on driver removal.
++	 * This is safe because i2c-core holds the core_lock mutex for us.
++	 */
++	list_add_tail(&client->detected, &client->driver->clients);
++	return 0;
++}
++
++static int onyx_i2c_probe(struct i2c_client *client,
++			  const struct i2c_device_id *id)
++{
++	struct device_node *node = client->dev.platform_data;
+ 	struct onyx *onyx;
+ 	u8 dummy;
+ 
+@@ -1011,20 +1044,12 @@ static int onyx_create(struct i2c_adapte
+ 		return -ENOMEM;
+ 
+ 	mutex_init(&onyx->mutex);
+-	onyx->i2c.driver = &onyx_driver;
+-	onyx->i2c.adapter = adapter;
+-	onyx->i2c.addr = addr & 0x7f;
+-	strlcpy(onyx->i2c.name, "onyx audio codec", I2C_NAME_SIZE);
+-
+-	if (i2c_attach_client(&onyx->i2c)) {
+-		printk(KERN_ERR PFX "failed to attach to i2c\n");
+-		goto fail;
+-	}
++	onyx->i2c = client;
++	i2c_set_clientdata(client, onyx);
+ 
+ 	/* we try to read from register ONYX_REG_CONTROL
+ 	 * to check if the codec is present */
+ 	if (onyx_read_register(onyx, ONYX_REG_CONTROL, &dummy) != 0) {
+-		i2c_detach_client(&onyx->i2c);
+ 		printk(KERN_ERR PFX "failed to read control register\n");
+ 		goto fail;
+ 	}
+@@ -1036,14 +1061,14 @@ static int onyx_create(struct i2c_adapte
+ 	onyx->codec.node = of_node_get(node);
+ 
+ 	if (aoa_codec_register(&onyx->codec)) {
+-		i2c_detach_client(&onyx->i2c);
+ 		goto fail;
+ 	}
+ 	printk(KERN_DEBUG PFX "created and attached onyx instance\n");
+ 	return 0;
+  fail:
++	i2c_set_clientdata(client, NULL);
+ 	kfree(onyx);
+-	return -EINVAL;
++	return -ENODEV;
+ }
+ 
+ static int onyx_i2c_attach(struct i2c_adapter *adapter)
+@@ -1080,28 +1105,33 @@ static int onyx_i2c_attach(struct i2c_ad
+ 	return onyx_create(adapter, NULL, 0x47);
+ }
+ 
+-static int onyx_i2c_detach(struct i2c_client *client)
++static int onyx_i2c_remove(struct i2c_client *client)
+ {
+-	struct onyx *onyx = container_of(client, struct onyx, i2c);
+-	int err;
++	struct onyx *onyx = i2c_get_clientdata(client);
+ 
+-	if ((err = i2c_detach_client(client)))
+-		return err;
+ 	aoa_codec_unregister(&onyx->codec);
+ 	of_node_put(onyx->codec.node);
+ 	if (onyx->codec_info)
+ 		kfree(onyx->codec_info);
++	i2c_set_clientdata(client, onyx);
+ 	kfree(onyx);
+ 	return 0;
+ }
+ 
++static const struct i2c_device_id onyx_i2c_id[] = {
++	{ "aoa_codec_onyx", 0 },
++	{ }
++};
++
+ static struct i2c_driver onyx_driver = {
+ 	.driver = {
+ 		.name = "aoa_codec_onyx",
+ 		.owner = THIS_MODULE,
+ 	},
+ 	.attach_adapter = onyx_i2c_attach,
+-	.detach_client = onyx_i2c_detach,
++	.probe = onyx_i2c_probe,
++	.remove = onyx_i2c_remove,
++	.id_table = onyx_i2c_id,
+ };
+ 
+ static int __init onyx_init(void)
+--- linux-2.6.30-rc2.orig/sound/aoa/codecs/tas.c	2009-04-15 09:55:20.000000000 +0200
++++ linux-2.6.30-rc2/sound/aoa/codecs/tas.c	2009-04-15 09:56:39.000000000 +0200
+@@ -82,7 +82,7 @@ MODULE_DESCRIPTION("tas codec driver for
+ 
+ struct tas {
+ 	struct aoa_codec	codec;
+-	struct i2c_client	i2c;
++	struct i2c_client	*i2c;
+ 	u32			mute_l:1, mute_r:1 ,
+ 				controls_created:1 ,
+ 				drc_enabled:1,
+@@ -108,9 +108,9 @@ static struct tas *codec_to_tas(struct a
+ static inline int tas_write_reg(struct tas *tas, u8 reg, u8 len, u8 *data)
+ {
+ 	if (len == 1)
+-		return i2c_smbus_write_byte_data(&tas->i2c, reg, *data);
++		return i2c_smbus_write_byte_data(tas->i2c, reg, *data);
+ 	else
+-		return i2c_smbus_write_i2c_block_data(&tas->i2c, reg, len, data);
++		return i2c_smbus_write_i2c_block_data(tas->i2c, reg, len, data);
+ }
+ 
+ static void tas3004_set_drc(struct tas *tas)
+@@ -882,12 +882,34 @@ static void tas_exit_codec(struct aoa_co
+ }
+ 
+ 
+-static struct i2c_driver tas_driver;
+-
+ static int tas_create(struct i2c_adapter *adapter,
+ 		       struct device_node *node,
+ 		       int addr)
+ {
++	struct i2c_board_info info;
++	struct i2c_client *client;
++
++	memset(&info, 0, sizeof(struct i2c_board_info));
++	strlcpy(info.type, "aoa_codec_tas", I2C_NAME_SIZE);
++	info.addr = addr;
++	info.platform_data = node;
++
++	client = i2c_new_device(adapter, &info);
++	if (!client)
++		return -ENODEV;
++
++	/*
++	 * Let i2c-core delete that device on driver removal.
++	 * This is safe because i2c-core holds the core_lock mutex for us.
++	 */
++	list_add_tail(&client->detected, &client->driver->clients);
++	return 0;
++}
++
++static int tas_i2c_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id)
++{
++	struct device_node *node = client->dev.platform_data;
+ 	struct tas *tas;
+ 
+ 	tas = kzalloc(sizeof(struct tas), GFP_KERNEL);
+@@ -896,17 +918,11 @@ static int tas_create(struct i2c_adapter
+ 		return -ENOMEM;
+ 
+ 	mutex_init(&tas->mtx);
+-	tas->i2c.driver = &tas_driver;
+-	tas->i2c.adapter = adapter;
+-	tas->i2c.addr = addr;
++	tas->i2c = client;
++	i2c_set_clientdata(client, tas);
++
+ 	/* seems that half is a saner default */
+ 	tas->drc_range = TAS3004_DRC_MAX / 2;
+-	strlcpy(tas->i2c.name, "tas audio codec", I2C_NAME_SIZE);
+-
+-	if (i2c_attach_client(&tas->i2c)) {
+-		printk(KERN_ERR PFX "failed to attach to i2c\n");
+-		goto fail;
+-	}
+ 
+ 	strlcpy(tas->codec.name, "tas", MAX_CODEC_NAME_LEN);
+ 	tas->codec.owner = THIS_MODULE;
+@@ -915,14 +931,12 @@ static int tas_create(struct i2c_adapter
+ 	tas->codec.node = of_node_get(node);
+ 
+ 	if (aoa_codec_register(&tas->codec)) {
+-		goto detach;
++		goto fail;
+ 	}
+ 	printk(KERN_DEBUG
+ 	       "snd-aoa-codec-tas: tas found, addr 0x%02x on %s\n",
+-	       addr, node->full_name);
++	       (unsigned int)client->addr, node->full_name);
+ 	return 0;
+- detach:
+-	i2c_detach_client(&tas->i2c);
+  fail:
+ 	mutex_destroy(&tas->mtx);
+ 	kfree(tas);
+@@ -970,14 +984,11 @@ static int tas_i2c_attach(struct i2c_ada
+ 	return -ENODEV;
+ }
+ 
+-static int tas_i2c_detach(struct i2c_client *client)
++static int tas_i2c_remove(struct i2c_client *client)
+ {
+-	struct tas *tas = container_of(client, struct tas, i2c);
+-	int err;
++	struct tas *tas = i2c_get_clientdata(client);
+ 	u8 tmp = TAS_ACR_ANALOG_PDOWN;
+ 
+-	if ((err = i2c_detach_client(client)))
+-		return err;
+ 	aoa_codec_unregister(&tas->codec);
+ 	of_node_put(tas->codec.node);
+ 
+@@ -989,13 +1000,20 @@ static int tas_i2c_detach(struct i2c_cli
+ 	return 0;
+ }
+ 
++static const struct i2c_device_id tas_i2c_id[] = {
++	{ "aoa_codec_tas", 0 },
++	{ }
++};
++
+ static struct i2c_driver tas_driver = {
+ 	.driver = {
+ 		.name = "aoa_codec_tas",
+ 		.owner = THIS_MODULE,
+ 	},
+ 	.attach_adapter = tas_i2c_attach,
+-	.detach_client = tas_i2c_detach,
++	.probe = tas_i2c_probe,
++	.remove = tas_i2c_remove,
++	.id_table = tas_i2c_id,
+ };
+ 
+ static int __init tas_init(void)
 
-Now, the fact that there are two nodes, one right and one wrong, is
-quite a problem. My code expected the device tree to be trustworthy.
-The new i2c binding model cleanly separates the instantiation of
-devices and their binding to a driver. The codec check which fails,
-will cause the i2c device to not bind to its driver, but it will still
-be present, while there is no underlying physical I2C device if I
-understand properly. In the new i2c model, you have to ensure that an
-i2c device exists _before_ you instantiate it.
-
-Well, there is a dirty workaround, which I will apply for now, but...
-ideally the layout factory should be revisited so that the codec check
-happens earlier. Is this something you could help with?
-
-That's something which isn't too clear to me: is there a physical
-device at 2-0046 and 3-0046? The onyx codec is accepted for the latter,
-however it seems that the test of a device presence at 2-0046 succeeds
-as well...
 
 -- 
 Jean Delvare
