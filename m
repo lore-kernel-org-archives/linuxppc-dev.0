@@ -1,21 +1,20 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D8C4FDE08E
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 16:23:32 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18917.31205.828267.202889@drongo.ozlabs.ibm.com>
-Date: Wed, 15 Apr 2009 16:08:37 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Mike Mason <mmlnx@us.ibm.com>
-Subject: Re: [PATCH] Set error_state to pci_channel_io_normal in
-	eeh_report_reset()
-In-Reply-To: <49DF967F.4000205@us.ibm.com>
-References: <49DF967F.4000205@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linasvepstas@gmail.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BE728DE14C
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 17:21:13 +1000 (EST)
+Date: Wed, 15 Apr 2009 09:20:57 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/2] keywest: Convert to new-style i2c driver
+Message-ID: <20090415092057.52542464@hyperion.delvare>
+In-Reply-To: <18917.26938.10873.119892@drongo.ozlabs.ibm.com>
+References: <20090410170726.3616b6d5@hyperion.delvare>
+	<18917.26938.10873.119892@drongo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mike Mason writes:
+Hi Paul,
 
-> diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c 
-> b/arch/powerpc/platforms/pseries/eeh_driver.c
-> index 380420f..9a2a6e3 100644
-> --- a/arch/powerpc/platforms/pseries/eeh_driver.c
-> +++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-> @@ -182,6 +182,8 @@ static void eeh_report_reset(struct pci_dev *dev, 
-> void *userdata)
-> if (!driver)
-> return;
+On Wed, 15 Apr 2009 14:57:30 +1000, Paul Mackerras wrote:
+> Jean Delvare writes:
 > 
-> + dev->error_state = pci_channel_io_normal;
-> +
-> eeh_enable_irq(dev);
+> > The legacy i2c binding model is going away soon,
 > 
-> if (!driver->err_handler ||
+> But not before 2.6.30, right?
 
-Your mail client totally mangled the whitespace.  I fixed it up and
-applied it, since the patch was small, but in future please fix your
-mail client so it doesn't do that.
+Ideally, yes, before 2.6.30. This is what
+Documentation/feature-removal-schedule.txt says:
 
-It sounds like this patch needs to be applied to earlier kernel
-versions -- do you agree?
+---------------------------
 
-Paul.
+What:	i2c_attach_client(), i2c_detach_client(), i2c_driver->detach_client(),
+	i2c_adapter->client_register(), i2c_adapter->client_unregister
+When:	2.6.30
+Check:	i2c_attach_client i2c_detach_client
+Why:	Deprecated by the new (standard) device driver binding model. Use
+	i2c_driver->probe() and ->remove() instead.
+Who:	Jean Delvare <khali@linux-fr.org>
+
+---------------------------
+
+There are only 10 legacy i2c drivers remaining (not counting staging),
+9 of which are ppc drivers. My hope was that ppc developers would see
+the deprecation warning and convert the drivers themselves, but it did
+not happen. Which is why I am trying to do it myself now, admittedly
+quite late in the 2.6.30 development cycle.
+
+This seems doable to me if my patches get proper testing fast (which
+seems to be the case, thanks!) and positive results (not true for onyx,
+but tas and therm_pm72 are apparently OK). Now I know I have to be
+realistic, if problems arise and/or ppc people feel too bad about me
+pushing these patches at about rc3 time, I will refrain from doing so
+and wait for 2.6.31. But there are a number or i2c-core improvements
+other developers are asking for for quite some times now, which depend
+on the removal of the legacy model, so delaying this wound not make me
+happy at all.
+
+Thanks,
+-- 
+Jean Delvare
