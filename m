@@ -1,24 +1,23 @@
-Return-Path: <greg@kroah.com>
-Date: Tue, 14 Apr 2009 18:06:45 -0700
-From: Greg KH <greg@kroah.com>
-To: reinette chatre <reinette.chatre@intel.com>
-Subject: Re: [Ipw2100-admin] [BUILD FAILURE 04/12] Next April 14 : PPC64
-	randconfig [drivers/staging/built-in.o]
-Message-ID: <20090415010645.GA10045@kroah.com>
-References: <1239733717.5344.76.camel@subratamodak.linux.ibm.com>
-	<1239735595.15115.60.camel@rc-desk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1239735595.15115.60.camel@rc-desk>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [BUILD FAILURE 02/12] Next April 14 : PPC64 randconfig
+	[arch/powerpc/kernel/of_platform.c]
+From: Michael Ellerman <michael@ellerman.id.au>
+To: subrata@linux.vnet.ibm.com
+In-Reply-To: <1239733694.5344.74.camel@subratamodak.linux.ibm.com>
+References: <1239733694.5344.74.camel@subratamodak.linux.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-C56sA11F81bV6PHagl9g"
+Date: Wed, 15 Apr 2009 11:37:04 +1000
+Message-Id: <1239759424.6552.3.camel@localhost>
+Mime-Version: 1.0
 Cc: sachinp <sachinp@linux.vnet.ibm.com>,
 	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Andrea Merello <andreamrl@tiscali.it>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
 	"Rafael J. Wysocki" <rjw@sisk.pl>, Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
 	linux-next <linux-next@vger.kernel.org>,
-	"subrata@linux.vnet.ibm.com" <subrata@linux.vnet.ibm.com>,
-	Alexander Beregalov <a.beregalov@gmail.com>,
-	"James P. Ketrenos" <ipw2100-admin@linux.intel.com>
+	Alexander Beregalov <a.beregalov@gmail.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 14, 2009 at 11:59:55AM -0700, reinette chatre wrote:
-> Hi Subrata,
-> 
-> On Tue, 2009-04-14 at 11:28 -0700, Subrata Modak wrote:
-> > Observed the following build error:
-> > ---
-> > LD      drivers/built-in.o
-> > drivers/staging/built-in.o: In function `ieee80211_xmit':
-> > drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c:528: multiple
-> > definition of `ieee80211_xmit'
-> > drivers/net/built-in.o:drivers/net/wireless/ipw2x00/libipw_tx.c:256:
-> > first defined here
-> > make[1]: *** [drivers/built-in.o] Error 1
-> > make: *** [drivers] Error 2
-> 
-> Looks like the rtl8187se driver started with a copy of ipw2x00's
-> library. Errors like this can thus be expected and should be addressed
-> by rtl8187se as they are the ones who made the copy.
 
-Yes, at this point in time, don't build the staging drivers into the
-kernel, it's not advised at all.
+--=-C56sA11F81bV6PHagl9g
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
+On Tue, 2009-04-14 at 23:58 +0530, Subrata Modak wrote:
+> Observed the following build error:
+> ---
+> arch/powerpc/kernel/of_platform.c: In function =E2=80=98of_pci_phb_probe=
+=E2=80=99:
+> arch/powerpc/kernel/of_platform.c:270: error: implicit declaration of
+> function =E2=80=98pci_devs_phb_init_dynamic=E2=80=99
+> arch/powerpc/kernel/of_platform.c:279: error: implicit declaration of
+> function =E2=80=98scan_phb=E2=80=99
+> arch/powerpc/kernel/of_platform.c:295: error: implicit declaration of
+> function =E2=80=98pci_bus_add_devices=E2=80=99
+> make[1]: *** [arch/powerpc/kernel/of_platform.o] Error 1
+> make: *** [arch/powerpc/kernel] Error 2
+> ---
+>=20
+> I saw some discussion(s) happening last year, but could not find out if
+> some fixes are already available:
+> http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg26215.html,
 
-greg k-h
+It's a different problem.
+
+You have CONFIG_PPC_OF_PLATFORM_PCI=3Dy but CONFIG_PCI=3Dn.
+
+That's because PPC_CELL_NATIVE selects PLATFORM_PCI, without regard to
+whether PCI is enabled.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-C56sA11F81bV6PHagl9g
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknlOkAACgkQdSjSd0sB4dKdvwCeNza0BCxAlZpKDjbrB+WWjZsZ
++YcAnRH6DrWI+DhUvfBcj1N3kggIlsfj
+=tj4p
+-----END PGP SIGNATURE-----
+
+--=-C56sA11F81bV6PHagl9g--
