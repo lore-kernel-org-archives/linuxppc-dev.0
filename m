@@ -1,19 +1,23 @@
-Return-Path: <Joakim.Tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7A756DDFE1
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 22:55:03 +1000 (EST)
-Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
-	by gw1.transmode.se (Postfix) with ESMTP id 9CE214F168
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 14:54:57 +0200 (CEST)
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Subject: OF PCI howto?
-Message-ID: <OF2E7A8F65.EA7B7D26-ONC1257599.004624DB-C1257599.0046F2EB@transmode.se>
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Wed, 15 Apr 2009 14:54:57 +0200
-Content-Type: text/plain; charset="US-ASCII"
+	by ozlabs.org (Postfix) with ESMTPS id 174DCDDF8C
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 23:01:23 +1000 (EST)
+Subject: Re: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c
+	drivers (v3)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20090415142225.2bfd37f6@hyperion.delvare>
+References: <20090415142225.2bfd37f6@hyperion.delvare>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-w85SpofeRfo4bEvIEeNY"
+Date: Wed, 15 Apr 2009 15:00:44 +0200
+Message-Id: <1239800444.9071.5.camel@johannes.local>
+Mime-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,79 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have just started to add PCI support to our custom MPC832x board
-and I have a hard time figuring out how to describe this in the
-dts. Looking at mpc832x_mds.dts I see:
 
-        pci0: pci@e0008500 {
-                cell-index = <1>;
-                interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-                interrupt-map = <
-                                /* IDSEL 0x11 AD17 */
-                                 0x8800 0x0 0x0 0x1 &ipic 20 0x8
-                                 0x8800 0x0 0x0 0x2 &ipic 21 0x8
-                                 0x8800 0x0 0x0 0x3 &ipic 22 0x8
-                                 0x8800 0x0 0x0 0x4 &ipic 23 0x8
+--=-w85SpofeRfo4bEvIEeNY
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-                                /* IDSEL 0x12 AD18 */
-                                 0x9000 0x0 0x0 0x1 &ipic 22 0x8
-                                 0x9000 0x0 0x0 0x2 &ipic 23 0x8
-                                 0x9000 0x0 0x0 0x3 &ipic 20 0x8
-                                 0x9000 0x0 0x0 0x4 &ipic 21 0x8
+On Wed, 2009-04-15 at 14:22 +0200, Jean Delvare wrote:
+> The legacy i2c binding model is going away soon, so convert the AOA
+> codec drivers to the new model or they'll break.
+>=20
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Tested-by: Andreas Schwab <schwab@linux-m68k.org>
+> ---
+> Johannes, this is a reworked patch which assumes that the onyx codec
+> probing can fail. It's not exactly clean but that's the easiest
+> approach for now. Can you please give it a try? Thanks.
 
-                                /* IDSEL 0x13 AD19 */
-                                 0x9800 0x0 0x0 0x1 &ipic 23 0x8
-                                 0x9800 0x0 0x0 0x2 &ipic 20 0x8
-                                 0x9800 0x0 0x0 0x3 &ipic 21 0x8
-                                 0x9800 0x0 0x0 0x4 &ipic 22 0x8
+This works.
+Tested-by: Johannes Berg <johannes@sipsolutions.net> [quad G5]
 
-                                /* IDSEL 0x15 AD21*/
-                                 0xa800 0x0 0x0 0x1 &ipic 20 0x8
-                                 0xa800 0x0 0x0 0x2 &ipic 21 0x8
-                                 0xa800 0x0 0x0 0x3 &ipic 22 0x8
-                                 0xa800 0x0 0x0 0x4 &ipic 23 0x8
+johannes
 
-                                /* IDSEL 0x16 AD22*/
-                                 0xb000 0x0 0x0 0x1 &ipic 23 0x8
-                                 0xb000 0x0 0x0 0x2 &ipic 20 0x8
-                                 0xb000 0x0 0x0 0x3 &ipic 21 0x8
-                                 0xb000 0x0 0x0 0x4 &ipic 22 0x8
+--=-w85SpofeRfo4bEvIEeNY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-                                /* IDSEL 0x17 AD23*/
-                                 0xb800 0x0 0x0 0x1 &ipic 22 0x8
-                                 0xb800 0x0 0x0 0x2 &ipic 23 0x8
-                                 0xb800 0x0 0x0 0x3 &ipic 20 0x8
-                                 0xb800 0x0 0x0 0x4 &ipic 21 0x8
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-                                /* IDSEL 0x18 AD24*/
-                                 0xc000 0x0 0x0 0x1 &ipic 21 0x8
-                                 0xc000 0x0 0x0 0x2 &ipic 22 0x8
-                                 0xc000 0x0 0x0 0x3 &ipic 23 0x8
-                                 0xc000 0x0 0x0 0x4 &ipic 20 0x8>;
-                interrupt-parent = <&ipic>;
-                interrupts = <66 0x8>;
-                bus-range = <0x0 0x0>;
-                ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 
-0x10000000
-                          0x42000000 0x0 0x80000000 0x80000000 0x0 
-0x10000000
-                          0x01000000 0x0 0x00000000 0xd0000000 0x0 
-0x00100000>;
-                clock-frequency = <0>;
-                #interrupt-cells = <1>;
-                #size-cells = <2>;
-                #address-cells = <3>;
-                reg = <0xe0008500 0x100         /* internal registers */
-                       0xe0008300 0x8>;         /* config space access 
-registers */
-                compatible = "fsl,mpc8349-pci";
-                device_type = "pci";
-        };
+iQIcBAABAgAGBQJJ5dp6AAoJEKVg1VMiehFY08QP/1wZZeUbmRig8pLNDNJT0HVS
+NsV2M3aVHADncVNzJc+Npu+BT7j5yxmgOCxGVCg/YnODNa2agh0lm4djRJtrBwaw
+qrCYtyBwG+RWs/ERCBwjGV5rlgaZP6FqnvF47zByexzUyRWJ6YhFIYlQwx47uOyM
+3/EJSYi6Naitd2q4wEI2lFMXgYvTxZ7q0bvsz6c6Wh/kRqtcy+QdIpgtzjzmHfCK
+/RXggG2L/UGKfaaRrT+Now/XqAKWP6xCewN9NimKmeLKCohWGSHKk5uGdQwh4Xg3
+K39aXZUVJFNBzpfmHtftN7Xl9P5i9At6zs5GgORgQBj5MxY0ODwEQUDlHyfNga0n
++GzSvQLfyNGfvcaUFOutB9NuutnQ/+xqKcgt0RACHDiXgc3X6ji4pcI0NZiYssd+
+CoXtsQ40IO+gY8Mv1/hZ2np5tKseA8mnwHCN1qa913BfXpKOD7OmxXplabtEjM5b
+zjmMwBIVzti/Uy9i93doyXNIBKzb5oPBq3jf74MllpUp6BqwJRsMZTg49ul0e8Bu
+LPnooJbbj+Lpu2hFPQUsQ070RgkT+XtPFjewhO+j0wkbXu3SWy61Gubclp3OccTc
+jkKN7CTpggAD7WOkryjTXzg2ao8lpe1ajZX3vSVGvQqhp9Odge65LHX3ChGWa9xI
+Ayn+8g8EjM7Du0Z6oaXS
+=O4uf
+-----END PGP SIGNATURE-----
 
-But I can't figure out what all this mean.
-The board will have one PCI device connected directly to the CPU. Is the 
-above
-dts fragment correct for my setup? If not, is there a better example I can 
-look at?
-
-   Jocke
+--=-w85SpofeRfo4bEvIEeNY--
