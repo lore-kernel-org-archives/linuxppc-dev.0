@@ -3,18 +3,18 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 71760DE130
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 13:31:48 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id BE31CDE03B
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 14:47:04 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18917.21789.425744.170039@drongo.ozlabs.ibm.com>
-Date: Wed, 15 Apr 2009 13:31:41 +1000
+Message-ID: <18917.26295.736364.593691@drongo.ozlabs.ibm.com>
+Date: Wed, 15 Apr 2009 14:46:47 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from 'merge' branch (for 2.6.30)
-In-Reply-To: <Pine.LNX.4.64.0904141142240.1013@localhost.localdomain>
-References: <Pine.LNX.4.64.0904141142240.1013@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: VRM unused page hinting
+In-Reply-To: <20090414013741.GA8678@austin.ibm.com>
+References: <20090414013741.GA8678@austin.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+Robert Jennings writes:
 
-> Please pull from 'merge' branch of
-> 
-> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
+> Adds support for the "unused" page hint which can be used in shared
+> memory partitions to flag pages not in use, which will then be stolen
+> before active pages by the hypervisor when memory needs to be moved to
+> LPARs in need of additional memory.  Failure to mark pages as 'unused'
+> makes the LPAR slower to give up unused memory to other partitions.
 
-Thanks, pulled.  I'll collect up a few more patches for .30 and send
-Linus a pull request shortly.
-
-By the way, I'm not planning to run test or next branches while Ben is
-away.  He'll be back in plenty of time to collect the patches for .31
-before the next merge window.
+The patch also adds a kernel command line option.  That should be
+mentioned in the patch description and documented in
+Documentation/kernel-parameters.txt.  Also, I'd like you to choose a
+better name for the kernel command line option than "cmma", which is
+completely opaque to me -- it doesn't seem to be the name or even the
+initials of anything in the patch.  Presumably it's somehow related to
+CMO, but just how is not at all clear.
 
 Paul.
