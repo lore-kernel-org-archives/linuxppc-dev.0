@@ -1,18 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id C2A7CDE1B4
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 02:17:30 +1000 (EST)
-Date: Wed, 15 Apr 2009 20:17:28 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: fixed phy -- how do we decide to use this code?
-Message-ID: <20090415161728.GA5670@oksana.dev.rtsoft.ru>
-References: <B660E2DF-5F6A-4939-9D20-3AB8E7C69EDB@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <B660E2DF-5F6A-4939-9D20-3AB8E7C69EDB@kernel.crashing.org>
-Cc: netdev@vger.kernel.org, Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B13CFDDF04
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 02:19:24 +1000 (EST)
+Message-Id: <C18725A1-6933-4044-89AA-DAED16253325@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <ed82fe3e0904150859y3d8cea6dv9f9b88cc4939e9df@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc/85xx: Add P2020DS board support
+Date: Wed, 15 Apr 2009 11:17:17 -0500
+References: <1239810564-8403-1-git-send-email-galak@kernel.crashing.org>
+	<ed82fe3e0904150859y3d8cea6dv9f9b88cc4939e9df@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Ted Peters <ted.peters@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,17 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 15, 2009 at 10:54:40AM -0500, Kumar Gala wrote:
-> Vitaly, Anton
+
+On Apr 15, 2009, at 10:59 AM, Timur Tabi wrote:
+
+> On Wed, Apr 15, 2009 at 10:49 AM, Kumar Gala <galak@kernel.crashing.org 
+> > wrote:
 >
-> You guys have used this code.. I was wondering how we decide to used the 
-> fixed phy vs another phy.  Is this a runtime decision based on something 
-> in the device tree or purely at compile time?
+>> --- a/arch/powerpc/platforms/fsl_uli1575.c
+>> +++ b/arch/powerpc/platforms/fsl_uli1575.c
+>> @@ -57,7 +57,7 @@ static void __devinit early_uli5249(struct  
+>> pci_dev *dev)
+>>        unsigned char temp;
+>>
+>>        if (!machine_is(mpc86xx_hpcn) && !machine_is(mpc8544_ds) &&
+>> -                       !machine_is(mpc8572_ds))
+>> +                       !machine_is(mpc8572_ds) && ! 
+>> machine_is(p2020_ds))
+>>                return;
+>
+> Are we going to need to update this function every time we add a new
+> board that has an ULI 1575 on it?  Can't we define some property in
+> the device tree to handle this?
 
-It's specified via fixed-link property in the device tree.
-The bindings described in Documentation/powerpc/dts-bindings/fsl/tsec.txt.
+Seeing as I think this is the last board that will have the ULI 1575  
+from us I don't think its worth it.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
