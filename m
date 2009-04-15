@@ -1,33 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <Joakim.Tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C311DDDF95
-	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 22:52:56 +1000 (EST)
-Subject: Re: [PATCH] AOA: Convert onyx and tas codecs to new-style i2c    
-	drivers
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20090415141530.0d5e47fc@hyperion.delvare>
-References: <20090408150249.5a62a56c@hyperion.delvare>
-	<1239205899.16477.32.camel@johannes.local>
-	<20090408224858.04cb6dc4@hyperion.delvare>
-	<1239263089.24548.30.camel@johannes.local>
-	<20090409141945.116772e3@hyperion.delvare>
-	<1239723613.24771.8.camel@johannes.local>
-	<1239724227.24771.9.camel@johannes.local>
-	<1239730915.24771.12.camel@johannes.local>
-	<20090414214949.736597d9@hyperion.delvare>
-	<1239746399.4205.21.camel@johannes.local>
-	<20090415141530.0d5e47fc@hyperion.delvare>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-agO/F7mN9t5HbyAf2kWa"
-Date: Wed, 15 Apr 2009 14:52:14 +0200
-Message-Id: <1239799934.9071.4.camel@johannes.local>
-Mime-Version: 1.0
-Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org
+	by ozlabs.org (Postfix) with ESMTPS id 7A756DDFE1
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 22:55:03 +1000 (EST)
+Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
+	by gw1.transmode.se (Postfix) with ESMTP id 9CE214F168
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2009 14:54:57 +0200 (CEST)
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Subject: OF PCI howto?
+Message-ID: <OF2E7A8F65.EA7B7D26-ONC1257599.004624DB-C1257599.0046F2EB@transmode.se>
+From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Date: Wed, 15 Apr 2009 14:54:57 +0200
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,88 +23,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I have just started to add PCI support to our custom MPC832x board
+and I have a hard time figuring out how to describe this in the
+dts. Looking at mpc832x_mds.dts I see:
 
---=-agO/F7mN9t5HbyAf2kWa
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+        pci0: pci@e0008500 {
+                cell-index = <1>;
+                interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+                interrupt-map = <
+                                /* IDSEL 0x11 AD17 */
+                                 0x8800 0x0 0x0 0x1 &ipic 20 0x8
+                                 0x8800 0x0 0x0 0x2 &ipic 21 0x8
+                                 0x8800 0x0 0x0 0x3 &ipic 22 0x8
+                                 0x8800 0x0 0x0 0x4 &ipic 23 0x8
 
-Hi,
+                                /* IDSEL 0x12 AD18 */
+                                 0x9000 0x0 0x0 0x1 &ipic 22 0x8
+                                 0x9000 0x0 0x0 0x2 &ipic 23 0x8
+                                 0x9000 0x0 0x0 0x3 &ipic 20 0x8
+                                 0x9000 0x0 0x0 0x4 &ipic 21 0x8
 
-> > Because the device-tree is broken -- there are two nodes for the same
-> > device, and only one of them can be used. Then the fabric rejects the
-> > first instantiation from the broken node. Here's how it looks normally:
-> >=20
-> > ...
-> > [   10.398296] snd-aoa-codec-onyx: found pcm3052
-> > [   10.398472] PM: Adding info for i2c:2-0046
-> > [   10.412189] snd-aoa-fabric-layout: platform-onyx-codec-ref doesn't m=
-atch!
-> > [   10.462593] snd-aoa: fabric didn't like codec onyx
-> > [   10.468030] PM: Removing info for i2c:2-0046
-> > [   10.473892] snd-aoa-codec-onyx: found pcm3052
-> > [   10.479317] PM: Adding info for i2c:3-0046
-> > [   10.485631] snd-aoa-fabric-layout: can use this codec
-> > ...
->=20
-> OK, I understand better what is going on now. I do not understand the
-> crash at the end though, but I suspect it isn't a bug in my code but
-> simply a faulty error path which had never been taken before.
+                                /* IDSEL 0x13 AD19 */
+                                 0x9800 0x0 0x0 0x1 &ipic 23 0x8
+                                 0x9800 0x0 0x0 0x2 &ipic 20 0x8
+                                 0x9800 0x0 0x0 0x3 &ipic 21 0x8
+                                 0x9800 0x0 0x0 0x4 &ipic 22 0x8
 
-That would be weird -- the error path _has_ to be taken always in onyx.
-Unless you're talking about something in the i2c core or whatever?
+                                /* IDSEL 0x15 AD21*/
+                                 0xa800 0x0 0x0 0x1 &ipic 20 0x8
+                                 0xa800 0x0 0x0 0x2 &ipic 21 0x8
+                                 0xa800 0x0 0x0 0x3 &ipic 22 0x8
+                                 0xa800 0x0 0x0 0x4 &ipic 23 0x8
 
-> Now, the fact that there are two nodes, one right and one wrong, is
-> quite a problem. My code expected the device tree to be trustworthy.
+                                /* IDSEL 0x16 AD22*/
+                                 0xb000 0x0 0x0 0x1 &ipic 23 0x8
+                                 0xb000 0x0 0x0 0x2 &ipic 20 0x8
+                                 0xb000 0x0 0x0 0x3 &ipic 21 0x8
+                                 0xb000 0x0 0x0 0x4 &ipic 22 0x8
 
-No such luck.
+                                /* IDSEL 0x17 AD23*/
+                                 0xb800 0x0 0x0 0x1 &ipic 22 0x8
+                                 0xb800 0x0 0x0 0x2 &ipic 23 0x8
+                                 0xb800 0x0 0x0 0x3 &ipic 20 0x8
+                                 0xb800 0x0 0x0 0x4 &ipic 21 0x8
 
-> The new i2c binding model cleanly separates the instantiation of
-> devices and their binding to a driver. The codec check which fails,
-> will cause the i2c device to not bind to its driver, but it will still
-> be present, while there is no underlying physical I2C device if I
-> understand properly. In the new i2c model, you have to ensure that an
-> i2c device exists _before_ you instantiate it.
+                                /* IDSEL 0x18 AD24*/
+                                 0xc000 0x0 0x0 0x1 &ipic 21 0x8
+                                 0xc000 0x0 0x0 0x2 &ipic 22 0x8
+                                 0xc000 0x0 0x0 0x3 &ipic 23 0x8
+                                 0xc000 0x0 0x0 0x4 &ipic 20 0x8>;
+                interrupt-parent = <&ipic>;
+                interrupts = <66 0x8>;
+                bus-range = <0x0 0x0>;
+                ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 
+0x10000000
+                          0x42000000 0x0 0x80000000 0x80000000 0x0 
+0x10000000
+                          0x01000000 0x0 0x00000000 0xd0000000 0x0 
+0x00100000>;
+                clock-frequency = <0>;
+                #interrupt-cells = <1>;
+                #size-cells = <2>;
+                #address-cells = <3>;
+                reg = <0xe0008500 0x100         /* internal registers */
+                       0xe0008300 0x8>;         /* config space access 
+registers */
+                compatible = "fsl,mpc8349-pci";
+                device_type = "pci";
+        };
 
-Oh, no, there _is_ an underlying i2c device, the same one. The DT
-accidentally has two almost identical nodes for the same chip, but we
-can only use the one with the correct reference.
+But I can't figure out what all this mean.
+The board will have one PCI device connected directly to the CPU. Is the 
+above
+dts fragment correct for my setup? If not, is there a better example I can 
+look at?
 
-> Well, there is a dirty workaround, which I will apply for now, but...
-> ideally the layout factory should be revisited so that the codec check
-> happens earlier. Is this something you could help with?
-
-That's not really possible unless the factory post-processes the entire
-device-tree -- very ugly.
-
-> That's something which isn't too clear to me: is there a physical
-> device at 2-0046 and 3-0046? The onyx codec is accepted for the latter,
-> however it seems that the test of a device presence at 2-0046 succeeds
-> as well...
-
-It's the _same_ physical device.
-
-johannes
-
---=-agO/F7mN9t5HbyAf2kWa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJ5dh7AAoJEKVg1VMiehFYA8AP/jNTnIG42uoARmzw3UbmGQh6
-T2xG8UREcnUJgYmT/P6jgoSoSHGRK6Ew3KkIzRw7x4biObnIc5S0OVoNpA+i0bt/
-6i1KyRyIfZo8WrGT1vbpEcO9XEb5EQj9PLRKPdKTpK5F3rvxeaMWV/Zc61f15Lpt
-KQPhYE6WfZr6tHHoBaejdCa26e64YtIx/SF4roE3YYRHDw4oJfjs7ifCocMyEKvT
-ewFOxB4kRWeW9lDXf2cJ9vaYSQaj1JHBvNPAbN/Q6GJK4ZjmxdflXhMQJiM67Q91
-nd9JP/Q6c+D7Qwoh4BNWV+BHU7eUZ5H9lEdRqZAdYwF/nIdK/uoJHPf1S6zEp5jo
-OSP+Eq6Fa4/g++XBhPkzmxxQThoO4fgLATsHPhG3ycy1s+hx17yoVmR5g251h7AS
-NtxfJ5yf6fpcWtXaOoQNljoy7Q8vporoKsENbpjYBbD4uKhIu/8fC4Bgoi8AsOQS
-aaC3+lHS9maYAvA3iySjKE5gXVCNMfgR9IL24EsLVB+Q4eYtdvyAqsxfflhvX93n
-jyaaobMFdd6xoNYQqKpl9zBWJJbz177lmLTvzxHlOkSte+Ant8GZwuoslYiAhwRW
-B+HK2snA3/Fo7W5vobcTDMQhVgjxxVY6QgpL/jj3gzWgCuNj1e8lEDfnGlMHs63z
-K52cuEep1HgpEbZrt9oh
-=1CSo
------END PGP SIGNATURE-----
-
---=-agO/F7mN9t5HbyAf2kWa--
+   Jocke
