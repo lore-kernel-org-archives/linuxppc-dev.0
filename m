@@ -1,22 +1,15 @@
-Return-Path: <thunderbird2k@gmail.com>
-Received: from mail-bw0-f171.google.com (mail-bw0-f171.google.com
-	[209.85.218.171]) by ozlabs.org (Postfix) with ESMTP id 10942DDF55
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 19:11:18 +1000 (EST)
-Received: by bwz19 with SMTP id 19so170837bwz.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 02:11:16 -0700 (PDT)
+Return-Path: <jivkojj@uni-kassel.de>
+From: Zhivko Yordanov <jivkojj@uni-kassel.de>
+To: Roderick Colenbrander <thunderbird2k@gmail.com>, Linuxppc-dev@ozlabs.org
+Subject: Re: Looking for good supported South bridge for mpc6841d
+Date: Thu, 16 Apr 2009 11:20:01 +0200
+References: <200904151323.52505.jivkojj@uni-kassel.de>
+	<c8485d470904150517p2ed7f27dn9cfd589eb6b7a0a6@mail.gmail.com>
+In-Reply-To: <c8485d470904150517p2ed7f27dn9cfd589eb6b7a0a6@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <OF08A8F393.64CD0E94-ONC125759A.00276611-C125759A.002C76B2@transmode.se>
-References: <OF2E7A8F65.EA7B7D26-ONC1257599.004624DB-C1257599.0046F2EB@transmode.se>
-	<20090415130844.GB3301@pengutronix.de>
-	<8BE09C31-40E4-41C2-A6D8-EE9C7DA0B625@kernel.crashing.org>
-	<OF08A8F393.64CD0E94-ONC125759A.00276611-C125759A.002C76B2@transmode.se>
-Date: Thu, 16 Apr 2009 11:03:56 +0200
-Message-ID: <c8485d470904160203y66d456f7xd73692b177587822@mail.gmail.com>
-Subject: Re: OF PCI howto?
-From: Roderick Colenbrander <thunderbird2k@gmail.com>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200904161120.01319.jivkojj@uni-kassel.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,65 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 16, 2009 at 10:05 AM, Joakim Tjernlund
-<Joakim.Tjernlund@transmode.se> wrote:
-> Kumar Gala <galak@kernel.crashing.org> wrote on 15/04/2009 17:20:21:
->> On Apr 15, 2009, at 8:08 AM, Wolfram Sang wrote:
->>
->> > On Wed, Apr 15, 2009 at 02:54:57PM +0200, Joakim Tjernlund wrote:
->> >
->> >> dts fragment correct for my setup? If not, is there a better
->> >> example I can
->> >> look at?
->> >
->> > Maybe this message/thread can help you:
->> >
->> > http://ozlabs.org/pipermail/devicetree-discuss/2009-March/000597.html
->>
->> You may also want to take a look at ePAPR on the power.org site
+On Wednesday 15 April 2009 14:17:47 you wrote:
+> On Wed, Apr 15, 2009 at 1:23 PM, Zhivko Yordanov <jivkojj@uni-kassel.de>=
+=20
+wrote:
+> > Hello,
+> >
+> > I'm on designing of a new embedded board, based on mpc6841d and South
+> > Bridge ULi M1575. As =D0=B0 reference design, I use Freescale HPCN boar=
+d.
+> > However after consult with chip's distributor, it became clear that the
+> > M1575 is already discounted. Now I'm in looking of an another solution.
+> > Can somebody recommend me an alternative, good supported from u-boot and
+> > have SATA, USB, Audio on it? The chip must be connected with mpc6841d
+> > over PCI-Express.
+> >
+> > Best regarsds,
+> >
+> > Yordanov
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
 >
-> Thanks guys
+> I think the only alternatives you have are chips from Via and perhaps
+> Sis. It looks like Via has some nice south bridges which do what you
+> want, see:
+> http://www.via.com.tw/en/products/chipsets/south-bridges.jsp
 >
-> Looking in ePAPR I see I should read the IDSEL like this:
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0x11 AD17 */
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x8800 0x0 0x0 0x1 &ipic 20 0x8 /* INTA */
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x8800 0x0 0x0 0x2 &ipic 21 0x8 /* INTB */
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x8800 0x0 0x0 0x3 &ipic 22 0x8 /* INTC */
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x8800 0x0 0x0 0x4 &ipic 23 0x8 /* INTD */
->
-> grouping the first line into:
-> "0x8800 0x0 0x0" "0x1" "&ipic" "20 0x8" /* INTA */
->
-> "0x8800 0x0 0x0" =3D child unit address
-> "0x1" =3D child interrupt specifier =3D INTA
-> "&ipic" =3D interrupt parent
-> "20 0x8" =3D parent interrupt specifier
->
-> Questions:
-> =A0MPC832x appears to only have INTA so why are the INTB,INTC
-> =A0and INTD lines there?
->
-> =A0I don't understand how IDSEL values are decided. Are IDSEL 0x11-0x18
-> randomly
-> =A0selected or are they fixed for MPC832x?
+> Roderick
 
-The idsel values depend on how the pci slots are wired on your board.
-The 0x8800 value is
-in general a function of bus, device and function number. ( bus << 16
-| devfn << 8)
+Thank you for the anser!
 
-Further I would also watch out with the parent interrupt specifier
-e.g. '20 0x8'. The openfirmware spec
-normally suggests to use a value of '2' for interrupts which are
-active low. During parsing of the interrupt-map
-this value is normally translated using 'xlate' to linux kernel values
-(active low is defined as IRQ_TYPE_LEVEL_LOW      0x00000008 in the
-kernel).
-The ipic driver code and various dts files are evil and store the
-linux kernel value inside the DTS file, so they don't do any
-conversion whis is EVIL
-in my opinion. Watch out for that. (The corresponding DTS files and
-drivers should be updated).
+Unfortunately VIA and SIS uses own connection bus between North and Sout=20
+bridges - V-map and MuTiol.
+I found AMD's SB600 and SB7x0 bridges, that seems to connect through=20
+PCI-Express. Are they from u-boot spupported?
 
-Regards,
-Roderick Colenbrander
+Best regards
