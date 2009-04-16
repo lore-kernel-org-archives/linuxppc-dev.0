@@ -1,22 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <geoff@hera.kernel.org>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B04EEDE132
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 05:25:43 +1000 (EST)
-Message-ID: <49E78620.7070303@freescale.com>
-Date: Thu, 16 Apr 2009 14:25:20 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: issues w/init
-References: <680ABFDC-A67F-48BB-B46C-564CB5373FEB@kernel.crashing.org>
-	<88F07543-B7F6-4F27-B5FB-4780AD069D7E@kernel.crashing.org>
-In-Reply-To: <88F07543-B7F6-4F27-B5FB-4780AD069D7E@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B00A7DDE00
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 05:27:09 +1000 (EST)
+Message-Id: <20090416190536.684970903@am.sony.com>>
+References: <20090416190536.540992667@am.sony.com>>
+In-Reply-To: <20090416190536.540992667@am.sony.com>>
+Date: Thu, 16 Apr 2009 12:05:38 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [patch 2/4] powerpc/ps3: Fix no flash build warning
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> [root:~] cat /proc/1/maps
-> 00100000-00103000 r-xp 00100000 00:00 0          [vdso]
-> 0feab000-0ffbe000 r-xp 00000000 00:0d 7127086    /lib/libc-2.2.5.so
-> 0ffbe000-0ffcb000 ---p 00113000 00:0d 7127086    /lib/libc-2.2.5.so
-> 0ffcb000-0ffeb000 rw-p 00110000 00:0d 7127086    /lib/libc-2.2.5.so
+Fix build warnings like these when CONFIG_PS3_FLASH=n:
 
-IIRC, this libc is old enough to execute out of non-exec memory in some 
-cases.
+  arch/powerpc/platforms/ps3/os-area.c: warning: 'update_flash_db' defined but not used
 
--Scott
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ arch/powerpc/platforms/ps3/os-area.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/powerpc/platforms/ps3/os-area.c
++++ b/arch/powerpc/platforms/ps3/os-area.c
+@@ -578,7 +578,7 @@ static void os_area_db_init(struct os_ar
+  *
+  */
+ 
+-static void update_flash_db(void)
++static void __maybe_unused update_flash_db(void)
+ {
+ 	int result;
+ 	int file;
+
+-- 
