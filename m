@@ -1,30 +1,17 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A2607DE223
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 15:37:03 +1000 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id n3G5aRbn017389
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 15:36:27 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3G5atW1287046
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 15:37:00 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3G5as6H021090
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 15:36:54 +1000
-Message-ID: <49E6C3F4.4080801@in.ibm.com>
-Date: Thu, 16 Apr 2009 11:06:52 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [ppc64] 2.6.29-git7 : offlining a cpu causes an exception
-References: <49D1E21E.3090505@in.ibm.com> <1238539469.17330.70.camel@pasglop>
-	<49D30C48.4090902@in.ibm.com> <49D3547E.8030200@in.ibm.com>
-In-Reply-To: <49D3547E.8030200@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <Qingtao.Cao@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id F182CDE239
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 15:51:56 +1000 (EST)
+From: Harry Ciao <qingtao.cao@windriver.com>
+To: akpm@linux-foundation.org, michael@ellerman.id.au, galak@gate.crashing.org,
+	bluesmoke-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Subject: [v3 PATCH 3/3] EDAC: CPC925 MC platform device setup
+Date: Thu, 16 Apr 2009 13:51:03 +0800
+Message-Id: <1239861063-22837-2-git-send-email-qingtao.cao@windriver.com>
+In-Reply-To: <1239861063-22837-1-git-send-email-qingtao.cao@windriver.com>
+References: <>
+ <1239861063-22837-1-git-send-email-qingtao.cao@windriver.com>
+Cc: Harry Ciao <qingtao.cao@windriver.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,40 +21,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sachin Sant wrote:
-> Sachin Sant wrote:
->> Benjamin Herrenschmidt wrote:
->>> On Tue, 2009-03-31 at 14:57 +0530, Sachin Sant wrote:
->>>  
->>>> While executing CPU HotPlug[1] tests i observed that during
->>>> every cpu offline process an exception is thrown.
->>>>     
->>>
->>> Looks like a BUG_ON() to me... can you look at what other
->>> messages just before that ?  
->>
-> Ben, seems like the following patch is causing the cpu hotplug
-> test failure.
-> [PATCH 6/6] powerpc/mm: Introduce early_init_mmu() on 64-bit
->
-> http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069613.html
->
-> If i back out this patch, i am able to offline/online cpu's
-> without any issue.
-I can recreate this problem with 2.6.30-rc2-git1 as well. Same BUG_ON while
-running cpu hotplug tests.
+Fixup the number of cells for the values of CPC925 Memory Controller,
+and setup related platform device during system booting up, against 
+which CPC925 Memory Controller EDAC driver would be matched.
 
-Let me know if there is any thing i can help to find a fix for this.
+Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
+---
+ arch/powerpc/kernel/prom_init.c      |   40 +++++++++++++++++++++++
+ arch/powerpc/platforms/maple/setup.c |   59 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 99 insertions(+)
 
-Thanks
--Sachin
-
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -335,3 +335,62 @@ define_machine(maple) {
+ 	.progress		= maple_progress,
+ 	.power_save		= power4_idle,
+ };
++
++#ifdef CONFIG_EDAC
++/*
++ * Register a platform device for CPC925 memory controller on
++ * Motorola ATCA-6101 blade.
++ */
++#define MAPLE_CPC925_MODEL	"Motorola,ATCA-6101"
++static int __init maple_cpc925_edac_setup(void)
++{
++	struct platform_device *pdev;
++	struct device_node *np = NULL;
++	struct resource r;
++	const unsigned char *model;
++	int ret;
++
++	np = of_find_node_by_path("/");
++	if (!np) {
++		printk(KERN_ERR "%s: Unable to get root node\n", __func__);
++		return -ENODEV;
++	}
++
++	model = (const unsigned char *)of_get_property(np, "model", NULL);
++	if (!model) {
++		printk(KERN_ERR "%s: Unabel to get model info\n", __func__);
++		return -ENODEV;
++	}
++
++	ret = strcmp(model, MAPLE_CPC925_MODEL);
++	of_node_put(np);
++
++	if (ret != 0)
++		return 0;
++
++	np = of_find_node_by_type(NULL, "memory-controller");
++	if (!np) {
++		printk(KERN_ERR "%s: Unable to find memory-controller node\n",
++			__func__);
++		return -ENODEV;
++	}
++
++	ret = of_address_to_resource(np, 0, &r);
++	of_node_put(np);
++
++	if (ret < 0) {
++		printk(KERN_ERR "%s: Unable to get memory-controller reg\n",
++			__func__);
++		return -ENODEV;
++	}
++
++	pdev = platform_device_register_simple("cpc925_edac", 0, &r, 1);
++	if (IS_ERR(pdev))
++		return PTR_ERR(pdev);
++
++	printk(KERN_INFO "%s: CPC925 platform device created\n", __func__);
++
++	return 0;
++}
++machine_device_initcall(maple, maple_cpc925_edac_setup);
++#endif
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -1948,8 +1948,47 @@ static void __init fixup_device_tree_map
+ 	prom_setprop(isa, name, "ranges",
+ 			isa_ranges, sizeof(isa_ranges));
+ }
++
++#define CPC925_MC_START		0xf8000000
++#define CPC925_MC_LENGTH	0x1000000
++/* The values for memory-controller don't have right number of cells */
++static void __init fixup_device_tree_maple_memory_controller(void)
++{
++	phandle mc;
++	u32 mc_reg[4];
++	char *name = "/hostbridge@f8000000";
++	struct prom_t *_prom = &RELOC(prom);
++	u32 ac, sc;
++
++	mc = call_prom("finddevice", 1, 1, ADDR(name));
++	if (!PHANDLE_VALID(mc))
++		return;
++
++	if (prom_getproplen(mc, "reg") != 8)
++		return;
++
++	prom_getprop(_prom->root, "#address-cells", &ac, sizeof(ac));
++	prom_getprop(_prom->root, "#size-cells", &sc, sizeof(sc));
++	if ((ac != 2) || (sc != 2))
++		return;
++
++	if (prom_getprop(mc, "reg", mc_reg, sizeof(mc_reg)) == PROM_ERROR)
++		return;
++
++	if (mc_reg[0] != CPC925_MC_START || mc_reg[1] != CPC925_MC_LENGTH)
++		return;
++
++	prom_printf("Fixing up bogus hostbridge on Maple...\n");
++
++	mc_reg[0] = 0x0;
++	mc_reg[1] = CPC925_MC_START;
++	mc_reg[2] = 0x0;
++	mc_reg[3] = CPC925_MC_LENGTH;
++	prom_setprop(mc, name, "reg", mc_reg, sizeof(mc_reg));
++}
+ #else
+ #define fixup_device_tree_maple()
++#define fixup_device_tree_maple_memory_controller()
+ #endif
+ 
+ #ifdef CONFIG_PPC_CHRP
+@@ -2190,6 +2229,7 @@ static void __init fixup_device_tree_efi
+ static void __init fixup_device_tree(void)
+ {
+ 	fixup_device_tree_maple();
++	fixup_device_tree_maple_memory_controller();
+ 	fixup_device_tree_chrp();
+ 	fixup_device_tree_pmac();
+ 	fixup_device_tree_efika();
