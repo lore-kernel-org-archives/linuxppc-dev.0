@@ -2,16 +2,16 @@ Return-Path: <geoff@hera.kernel.org>
 Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 81617DE1C7
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 05:27:16 +1000 (EST)
-Message-Id: <20090416190536.799342076@am.sony.com>>
+	by ozlabs.org (Postfix) with ESMTPS id 4F6F8DE145
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 05:27:49 +1000 (EST)
+Message-Id: <20090416190536.739224983@am.sony.com>>
 References: <20090416190536.540992667@am.sony.com>>
 In-Reply-To: <20090416190536.540992667@am.sony.com>>
-Date: Thu, 16 Apr 2009 12:05:40 -0700
+Date: Thu, 16 Apr 2009 12:05:39 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [patch 4/4] maintainers: Fix PS3 patterns
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
+Subject: [patch 3/4] powerpc ps3: use smp_request_message_ipi
+Cc: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Correct the MAINTAINERS file patterns for PS3.  Removes some PS3
-patterns that were under 'CELL BROADBAND ENGINE ARCHITECTURE', and
-adds missing PS3 sound and RTC driver patterns.
+ps3 has 4 ipis per cpu and can use the new smp_request_message_ipi to
+reduce path length when receiving an ipi.
 
-CC: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
- MAINTAINERS |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+This has the side effect of setting IRQF_PERCPU.
 
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1280,12 +1280,9 @@ L:	cbe-oss-dev@ozlabs.org
- W:	http://www.ibm.com/developerworks/power/cell/
- S:	Supported
- F:	arch/powerpc/include/asm/cell*.h
--F:	arch/powerpc/include/asm/lv1call.h
--F:	arch/powerpc/include/asm/ps3*.h
- F:	arch/powerpc/include/asm/spu*.h
- F:	arch/powerpc/oprofile/*cell*
- F:	arch/powerpc/platforms/cell/
--F:	arch/powerpc/platforms/ps3/
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+
+Index: next.git/arch/powerpc/platforms/ps3/smp.c
+===================================================================
+--- next.git.orig/arch/powerpc/platforms/ps3/smp.c	2008-10-05 00:20:41.000000000 -0500
++++ next.git/arch/powerpc/platforms/ps3/smp.c	2008-10-05 00:22:50.000000000 -0500
+@@ -32,12 +32,6 @@
+ #define DBG pr_debug
+ #endif
  
- CERTIFIED WIRELESS USB (WUSB) SUBSYSTEM:
- P:	David Vrabel
-@@ -4434,7 +4431,9 @@ F:	arch/powerpc/include/asm/ps3*.h
- F:	arch/powerpc/platforms/ps3/
- F:	drivers/*/ps3*
- F:	drivers/ps3/
-+F:	drivers/rtc/rtc-ps3.c
- F:	drivers/usb/host/*ps3.c
-+F:	sound/ppc/snd_ps3*
+-static irqreturn_t ipi_function_handler(int irq, void *msg)
+-{
+-	smp_message_recv((int)(long)msg);
+-	return IRQ_HANDLED;
+-}
+-
+ /**
+   * ps3_ipi_virqs - a per cpu array of virqs for ipi use
+   */
+@@ -45,13 +39,6 @@ static irqreturn_t ipi_function_handler(
+ #define MSG_COUNT 4
+ static DEFINE_PER_CPU(unsigned int, ps3_ipi_virqs[MSG_COUNT]);
  
- PS3VRAM DRIVER
- P:	Jim Paris
+-static const char *names[MSG_COUNT] = {
+-	"ipi call",
+-	"ipi reschedule",
+-	"ipi migrate",
+-	"ipi debug brk"
+-};
+-
+ static void do_message_pass(int target, int msg)
+ {
+ 	int result;
+@@ -119,8 +106,7 @@ static void __init ps3_smp_setup_cpu(int
+ 		DBG("%s:%d: (%d, %d) => virq %u\n",
+ 			__func__, __LINE__, cpu, i, virqs[i]);
+ 
+-		result = request_irq(virqs[i], ipi_function_handler,
+-			IRQF_DISABLED, names[i], (void*)(long)i);
++		result = smp_request_message_ipi(virqs[i], i);
+ 
+ 		if (result)
+ 			virqs[i] = NO_IRQ;
 
 -- 
