@@ -1,18 +1,17 @@
-Return-Path: <linnj@xilinx.com>
-Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
-	[216.32.180.11]) by ozlabs.org (Postfix) with ESMTP id 2D874DE0AC
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 02:45:36 +1000 (EST)
-From: John Linn <john.linn@xilinx.com>
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-	linux-fbdev-devel@lists.sourceforge.net, akonovalov@ru.mvista.com,
-	adaplas@gmail.com, jwboyer@linux.vnet.ibm.com
-Subject: [PATCH] [V4] Xilinx : Framebuffer Driver: Add PLB support and cleanup
-	DCR
-Date: Thu, 16 Apr 2009 10:26:23 -0600
-Message-ID: <20090416163021.023DC770050@mail77-va3.bigfish.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Suneel <suneelg@xilinx.com>, John Linn <john.linn@xilinx.com>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C6641DE0AC
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 02:56:31 +1000 (EST)
+Date: Thu, 16 Apr 2009 18:56:15 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] windfarm: Convert to a new-style i2c drivers
+Message-ID: <20090416185615.2f7914ca@hyperion.delvare>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,506 +21,630 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Added support for the new xps tft controller. The new core
-has PLB interface support in addition to existing DCR interface.
+The legacy i2c binding model is going away soon, so convert the
+macintosh windfarm drivers to the new model or they will break.
 
-Removed platform device support as both MicroBlaze and PowerPC
-use device tree.
-
-Previously, the dcr interface was assumed to be used in mmio mode,
-and the register space of the dcr interface was precomputed and stuffed
-into the device tree. This driver now makes use of the new dcr
-infrastructure to represent the dcr interface. This enables the dcr
-interface to be connected directly to a native dcr interface in a clean
-way.
-
-Added compatibility for ml507 dvi core.
-
-Signed-off-by: Suneel <suneelg@xilinx.com>
-Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Signed-off-by: John Linn <john.linn@xilinx.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 ---
+Can someone please test this patch for me? I could only build-test it.
 
-V2 - cleanup based on review
-V3 - update to be based on top of tree rather than Xilinx tree, sorry for the
- confusion with this, update the name of the patch slightly to be more accurate
-V4 - update based on Grant's comments to simplify it, the binding wasn't changed
- as the conversation seemed to verify it's acceptable
+Remember that you need this patch applied:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=935298696f469c0e07c73be687bd055878074ce0
 
- drivers/video/xilinxfb.c |  282 +++++++++++++++++++++++-----------------------
- 1 files changed, 142 insertions(+), 140 deletions(-)
+Thanks.
 
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index 40a3a2a..ebb9d1c 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -1,13 +1,13 @@
- /*
-- * xilinxfb.c
-  *
-- * Xilinx TFT LCD frame buffer driver
-+ * Xilinx TFT frame buffer driver
-  *
-  * Author: MontaVista Software, Inc.
-  *         source@mvista.com
-  *
-  * 2002-2007 (c) MontaVista Software, Inc.
-  * 2007 (c) Secret Lab Technologies, Ltd.
-+ * 2009 (c) Xilinx Inc.
-  *
-  * This file is licensed under the terms of the GNU General Public License
-  * version 2.  This program is licensed "as is" without any warranty of any
-@@ -24,33 +24,38 @@
- #include <linux/device.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
-+#include <linux/version.h>
- #include <linux/errno.h>
- #include <linux/string.h>
- #include <linux/mm.h>
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/dma-mapping.h>
--#include <linux/platform_device.h>
--#if defined(CONFIG_OF)
- #include <linux/of_device.h>
- #include <linux/of_platform.h>
--#endif
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <linux/xilinxfb.h>
-+#include <asm/dcr.h>
+ drivers/macintosh/windfarm_lm75_sensor.c    |  131 +++++++++++++++------------
+ drivers/macintosh/windfarm_max6690_sensor.c |  103 ++++++++++++---------
+ drivers/macintosh/windfarm_smu_sat.c        |  109 ++++++++++++----------
+ 3 files changed, 198 insertions(+), 145 deletions(-)
+
+--- linux-2.6.30-rc2.orig/drivers/macintosh/windfarm_lm75_sensor.c	2009-04-16 11:15:00.000000000 +0200
++++ linux-2.6.30-rc2/drivers/macintosh/windfarm_lm75_sensor.c	2009-04-16 11:23:17.000000000 +0200
+@@ -37,34 +37,22 @@
+ struct wf_lm75_sensor {
+ 	int			ds1775 : 1;
+ 	int			inited : 1;
+-	struct 	i2c_client	i2c;
++	struct 	i2c_client	*i2c;
+ 	struct 	wf_sensor	sens;
+ };
+ #define wf_to_lm75(c) container_of(c, struct wf_lm75_sensor, sens)
+-#define i2c_to_lm75(c) container_of(c, struct wf_lm75_sensor, i2c)
+-
+-static int wf_lm75_attach(struct i2c_adapter *adapter);
+-static int wf_lm75_detach(struct i2c_client *client);
+-
+-static struct i2c_driver wf_lm75_driver = {
+-	.driver = {
+-		.name	= "wf_lm75",
+-	},
+-	.attach_adapter	= wf_lm75_attach,
+-	.detach_client	= wf_lm75_detach,
+-};
  
- #define DRIVER_NAME		"xilinxfb"
--#define DRIVER_DESCRIPTION	"Xilinx TFT LCD frame buffer driver"
-+
+ static int wf_lm75_get(struct wf_sensor *sr, s32 *value)
+ {
+ 	struct wf_lm75_sensor *lm = wf_to_lm75(sr);
+ 	s32 data;
  
- /*
-  * Xilinx calls it "PLB TFT LCD Controller" though it can also be used for
-- * the VGA port on the Xilinx ML40x board. This is a hardware display controller
-- * for a 640x480 resolution TFT or VGA screen.
-+ * the VGA port on the Xilinx ML40x board. This is a hardware display
-+ * controller for a TFT or VGA screen.
-  *
-  * The interface to the framebuffer is nice and simple.  There are two
-  * control registers.  The first tells the LCD interface where in memory
-  * the frame buffer is (only the 11 most significant bits are used, so
-  * don't start thinking about scrolling).  The second allows the LCD to
-  * be turned on or off as well as rotated 180 degrees.
-+ *
-+ * In case of direct PLB access the second control register will be at
-+ * an offset of 4 as compared to the DCR access where the offset is 1
-+ * i.e. REG_CTRL. So this is taken care in the function
-+ * xilinx_fb_out_be32 where it left shifts the offset 2 times in case of
-+ * direct PLB access.
-  */
- #define NUM_REGS	2
- #define REG_FB_ADDR	0
-@@ -107,12 +112,21 @@ static struct fb_var_screeninfo xilinx_fb_var = {
- 	.activate =	FB_ACTIVATE_NOW
+-	if (lm->i2c.adapter == NULL)
++	if (lm->i2c == NULL)
+ 		return -ENODEV;
+ 
+ 	/* Init chip if necessary */
+ 	if (!lm->inited) {
+-		u8 cfg_new, cfg = (u8)i2c_smbus_read_byte_data(&lm->i2c, 1);
++		u8 cfg_new, cfg = (u8)i2c_smbus_read_byte_data(lm->i2c, 1);
+ 
+ 		DBG("wf_lm75: Initializing %s, cfg was: %02x\n",
+ 		    sr->name, cfg);
+@@ -73,7 +61,7 @@ static int wf_lm75_get(struct wf_sensor
+ 		 * the firmware for now
+ 		 */
+ 		cfg_new = cfg & ~0x01;
+-		i2c_smbus_write_byte_data(&lm->i2c, 1, cfg_new);
++		i2c_smbus_write_byte_data(lm->i2c, 1, cfg_new);
+ 		lm->inited = 1;
+ 
+ 		/* If we just powered it up, let's wait 200 ms */
+@@ -81,7 +69,7 @@ static int wf_lm75_get(struct wf_sensor
+ 	}
+ 
+ 	/* Read temperature register */
+-	data = (s32)le16_to_cpu(i2c_smbus_read_word_data(&lm->i2c, 0));
++	data = (s32)le16_to_cpu(i2c_smbus_read_word_data(lm->i2c, 0));
+ 	data <<= 8;
+ 	*value = data;
+ 
+@@ -92,12 +80,6 @@ static void wf_lm75_release(struct wf_se
+ {
+ 	struct wf_lm75_sensor *lm = wf_to_lm75(sr);
+ 
+-	/* check if client is registered and detach from i2c */
+-	if (lm->i2c.adapter) {
+-		i2c_detach_client(&lm->i2c);
+-		lm->i2c.adapter = NULL;
+-	}
+-
+ 	kfree(lm);
+ }
+ 
+@@ -107,59 +89,77 @@ static struct wf_sensor_ops wf_lm75_ops
+ 	.owner		= THIS_MODULE,
  };
  
-+
-+#define PLB_ACCESS_FLAG	0x1		/* 1 = PLB, 0 = DCR */
-+
- struct xilinxfb_drvdata {
- 
- 	struct fb_info	info;		/* FB driver info record */
- 
--	u32		regs_phys;	/* phys. address of the control registers */
--	u32 __iomem	*regs;		/* virt. address of the control registers */
-+	phys_addr_t	regs_phys;	/* phys. address of the control
-+						registers */
-+	void __iomem	*regs;		/* virt. address of the control
-+						registers */
-+
-+	dcr_host_t      dcr_host;
-+	unsigned int    dcr_start;
-+	unsigned int    dcr_len;
- 
- 	void		*fb_virt;	/* virt. address of the frame buffer */
- 	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
-@@ -128,14 +142,18 @@ struct xilinxfb_drvdata {
- 	container_of(_info, struct xilinxfb_drvdata, info)
- 
- /*
-- * The LCD controller has DCR interface to its registers, but all
-- * the boards and configurations the driver has been tested with
-- * use opb2dcr bridge. So the registers are seen as memory mapped.
-- * This macro is to make it simple to add the direct DCR access
-- * when it's needed.
-+ * The XPS TFT Controller can be accessed through PLB or DCR interface.
-+ * To perform the read/write on the registers we need to check on
-+ * which bus its connected and call the appropriate write API.
-  */
--#define xilinx_fb_out_be32(driverdata, offset, val) \
--	out_be32(driverdata->regs + offset, val)
-+static void xilinx_fb_out_be32(struct xilinxfb_drvdata *drvdata, u32 offset,
-+				u32 val)
-+{
-+	if (drvdata->regs)
-+		out_be32(drvdata->regs + (offset << 2), val);
-+	else
-+		dcr_write(drvdata->dcr_host, offset, val);
-+}
- 
- static int
- xilinx_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
-@@ -173,7 +191,8 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
- 	switch (blank_mode) {
- 	case FB_BLANK_UNBLANK:
- 		/* turn on panel */
--		xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
-+		xilinx_fb_out_be32(drvdata, REG_CTRL,
-+					drvdata->reg_ctrl_default);
- 		break;
- 
- 	case FB_BLANK_NORMAL:
-@@ -189,8 +208,7 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
- 	return 0; /* success */
- }
- 
--static struct fb_ops xilinxfb_ops =
--{
-+static struct fb_ops xilinxfb_ops = {
- 	.owner			= THIS_MODULE,
- 	.fb_setcolreg		= xilinx_fb_setcolreg,
- 	.fb_blank		= xilinx_fb_blank,
-@@ -203,35 +221,34 @@ static struct fb_ops xilinxfb_ops =
-  * Bus independent setup/teardown
-  */
- 
--static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
-+static int xilinxfb_assign(struct device *dev,
-+			   struct xilinxfb_drvdata *drvdata,
-+			   unsigned long physaddr,
- 			   struct xilinxfb_platform_data *pdata)
+-static struct wf_lm75_sensor *wf_lm75_create(struct i2c_adapter *adapter,
+-					     u8 addr, int ds1775,
+-					     const char *loc)
++static int wf_lm75_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id)
  {
--	struct xilinxfb_drvdata *drvdata;
+ 	struct wf_lm75_sensor *lm;
  	int rc;
- 	int fbsize = pdata->xvirt * pdata->yvirt * BYTES_PER_PIXEL;
  
--	/* Allocate the driver data region */
--	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
--	if (!drvdata) {
--		dev_err(dev, "Couldn't allocate device private record\n");
--		return -ENOMEM;
--	}
--	dev_set_drvdata(dev, drvdata);
+-	DBG("wf_lm75: creating  %s device at address 0x%02x\n",
+-	    ds1775 ? "ds1775" : "lm75", addr);
 -
--	/* Map the control registers in */
--	if (!request_mem_region(physaddr, 8, DRIVER_NAME)) {
--		dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
--			physaddr);
--		rc = -ENODEV;
--		goto err_region;
--	}
--	drvdata->regs_phys = physaddr;
--	drvdata->regs = ioremap(physaddr, 8);
--	if (!drvdata->regs) {
--		dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
--			physaddr);
--		rc = -ENODEV;
--		goto err_map;
-+	if (physaddr) {
-+		/*
-+		 * Map the control registers in if the controller
-+		 * is on direct PLB interface.
-+		 */
-+		if (!request_mem_region(physaddr, 8, DRIVER_NAME)) {
-+			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
-+				physaddr);
-+			rc = -ENODEV;
-+			goto err_region;
-+		}
+ 	lm = kzalloc(sizeof(struct wf_lm75_sensor), GFP_KERNEL);
+ 	if (lm == NULL)
+-		return NULL;
++		return -ENODEV;
 +
-+		drvdata->regs_phys = physaddr;
-+		drvdata->regs = ioremap(physaddr, 8);
-+		if (!drvdata->regs) {
-+			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
-+				physaddr);
-+			rc = -ENODEV;
-+			goto err_map;
-+		}
- 	}
- 
- 	/* Allocate the framebuffer memory */
-@@ -260,7 +277,8 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
- 	drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
- 	if (pdata->rotate_screen)
- 		drvdata->reg_ctrl_default |= REG_CTRL_ROTATE;
--	xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
-+	xilinx_fb_out_be32(drvdata, REG_CTRL,
-+					drvdata->reg_ctrl_default);
- 
- 	/* Fill struct fb_info */
- 	drvdata->info.device = dev;
-@@ -296,11 +314,14 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
- 		goto err_regfb;
- 	}
- 
-+	if (drvdata->regs) {
-+		/* Put a banner in the log (for DEBUG) */
-+		dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr,
-+					drvdata->regs);
++	lm->inited = 0;
++	lm->ds1775 = id->driver_data;
++	lm->i2c = client;
++	lm->sens.name = client->dev.platform_data;
++	lm->sens.ops = &wf_lm75_ops;
++	i2c_set_clientdata(client, lm);
++
++	rc = wf_register_sensor(&lm->sens);
++	if (rc) {
++		i2c_set_clientdata(client, NULL);
++		kfree(lm);
 +	}
- 	/* Put a banner in the log (for DEBUG) */
--	dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr, drvdata->regs);
--	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
--		(unsigned long long) drvdata->fb_phys, drvdata->fb_virt,
--		fbsize);
-+	dev_dbg(dev, "fb: phys=%p, virt=%p, size=%x\n",
-+		(void *)drvdata->fb_phys, drvdata->fb_virt, fbsize);
- 
- 	return 0;	/* success */
- 
-@@ -311,14 +332,19 @@ err_cmap:
- 	if (drvdata->fb_alloced)
- 		dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
- 			drvdata->fb_phys);
-+	else
-+		iounmap(drvdata->fb_virt);
 +
- 	/* Turn off the display */
- 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
++	return rc;
++}
++
++static struct i2c_client *wf_lm75_create(struct i2c_adapter *adapter,
++					     u8 addr, int ds1775,
++					     const char *loc)
++{
++	struct i2c_board_info info;
++	struct i2c_client *client;
++	char *name;
++
++	DBG("wf_lm75: creating  %s device at address 0x%02x\n",
++	    ds1775 ? "ds1775" : "lm75", addr);
  
- err_fbmem:
--	iounmap(drvdata->regs);
-+	if (drvdata->regs)
-+		iounmap(drvdata->regs);
+ 	/* Usual rant about sensor names not beeing very consistent in
+ 	 * the device-tree, oh well ...
+ 	 * Add more entries below as you deal with more setups
+ 	 */
+ 	if (!strcmp(loc, "Hard drive") || !strcmp(loc, "DRIVE BAY"))
+-		lm->sens.name = "hd-temp";
++		name = "hd-temp";
+ 	else if (!strcmp(loc, "Incoming Air Temp"))
+-		lm->sens.name = "incoming-air-temp";
++		name = "incoming-air-temp";
+ 	else if (!strcmp(loc, "ODD Temp"))
+-		lm->sens.name = "optical-drive-temp";
++		name = "optical-drive-temp";
+ 	else if (!strcmp(loc, "HD Temp"))
+-		lm->sens.name = "hard-drive-temp";
++		name = "hard-drive-temp";
+ 	else
+ 		goto fail;
  
- err_map:
--	release_mem_region(physaddr, 8);
-+	if (physaddr)
-+		release_mem_region(physaddr, 8);
+-	lm->inited = 0;
+-	lm->sens.ops = &wf_lm75_ops;
+-	lm->ds1775 = ds1775;
+-	lm->i2c.addr = (addr >> 1) & 0x7f;
+-	lm->i2c.adapter = adapter;
+-	lm->i2c.driver = &wf_lm75_driver;
+-	strncpy(lm->i2c.name, lm->sens.name, I2C_NAME_SIZE-1);
+-
+-	rc = i2c_attach_client(&lm->i2c);
+-	if (rc) {
+-		printk(KERN_ERR "windfarm: failed to attach %s %s to i2c,"
+-		       " err %d\n", ds1775 ? "ds1775" : "lm75",
+-		       lm->i2c.name, rc);
+-		goto fail;
+-	}
+-
+-	if (wf_register_sensor(&lm->sens)) {
+-		i2c_detach_client(&lm->i2c);
++	memset(&info, 0, sizeof(struct i2c_board_info));
++	info.addr = (addr >> 1) & 0x7f;
++	info.platform_data = name;
++	strlcpy(info.type, ds1775 ? "wf_ds1775" : "wf_lm75", I2C_NAME_SIZE);
++
++	client = i2c_new_device(adapter, &info);
++	if (client == NULL) {
++		printk(KERN_ERR "windfarm: failed to attach %s %s to i2c\n",
++		       ds1775 ? "ds1775" : "lm75", name);
+ 		goto fail;
+ 	}
  
- err_region:
- 	kfree(drvdata);
-@@ -342,12 +368,18 @@ static int xilinxfb_release(struct device *dev)
- 	if (drvdata->fb_alloced)
- 		dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
- 				  drvdata->fb_virt, drvdata->fb_phys);
-+	else
-+		iounmap(drvdata->fb_virt);
- 
- 	/* Turn off the display */
- 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
--	iounmap(drvdata->regs);
- 
--	release_mem_region(drvdata->regs_phys, 8);
-+	/* Release the resources, as allocated based on interface */
-+	if (drvdata->regs) {
-+		iounmap(drvdata->regs);
-+		release_mem_region(drvdata->regs_phys, 8);
-+	} else
-+		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
- 
- 	kfree(drvdata);
- 	dev_set_drvdata(dev, NULL);
-@@ -356,77 +388,55 @@ static int xilinxfb_release(struct device *dev)
+-	return lm;
++	/*
++	 * Let i2c-core delete that device on driver removal.
++	 * This is safe because i2c-core holds the core_lock mutex for us.
++	 */
++	list_add_tail(&client->detected, &client->driver->clients);
++	return client;
+  fail:
+-	kfree(lm);
+ 	return NULL;
  }
  
- /* ---------------------------------------------------------------------
-- * Platform bus binding
-- */
--
--static int
--xilinxfb_platform_probe(struct platform_device *pdev)
--{
--	struct xilinxfb_platform_data *pdata;
--	struct resource *res;
--
--	/* Find the registers address */
--	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
--	if (!res) {
--		dev_err(&pdev->dev, "Couldn't get registers resource\n");
--		return -ENODEV;
--	}
--
--	/* If a pdata structure is provided, then extract the parameters */
--	pdata = &xilinx_fb_default_pdata;
--	if (pdev->dev.platform_data) {
--		pdata = pdev->dev.platform_data;
--		if (!pdata->xres)
--			pdata->xres = xilinx_fb_default_pdata.xres;
--		if (!pdata->yres)
--			pdata->yres = xilinx_fb_default_pdata.yres;
--		if (!pdata->xvirt)
--			pdata->xvirt = xilinx_fb_default_pdata.xvirt;
--		if (!pdata->yvirt)
--			pdata->yvirt = xilinx_fb_default_pdata.yvirt;
--	}
--
--	return xilinxfb_assign(&pdev->dev, res->start, pdata);
--}
--
--static int
--xilinxfb_platform_remove(struct platform_device *pdev)
--{
--	return xilinxfb_release(&pdev->dev);
--}
--
--
--static struct platform_driver xilinxfb_platform_driver = {
--	.probe		= xilinxfb_platform_probe,
--	.remove		= xilinxfb_platform_remove,
--	.driver = {
--		.owner = THIS_MODULE,
--		.name = DRIVER_NAME,
--	},
--};
--
--/* ---------------------------------------------------------------------
-  * OF bus binding
-  */
+@@ -202,21 +202,38 @@ static int wf_lm75_attach(struct i2c_ada
+ 	return 0;
+ }
  
--#if defined(CONFIG_OF)
- static int __devinit
- xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
+-static int wf_lm75_detach(struct i2c_client *client)
++static int wf_lm75_remove(struct i2c_client *client)
  {
--	struct resource res;
- 	const u32 *prop;
-+	u32 *p;
-+	u32 tft_access;
- 	struct xilinxfb_platform_data pdata;
-+	struct resource res;
- 	int size, rc;
-+	int start = 0, len = 0;
-+	dcr_host_t dcr_host;
-+	struct xilinxfb_drvdata *drvdata;
+-	struct wf_lm75_sensor *lm = i2c_to_lm75(client);
++	struct wf_lm75_sensor *lm = i2c_get_clientdata(client);
  
- 	/* Copy with the default pdata (not a ptr reference!) */
- 	pdata = xilinx_fb_default_pdata;
+ 	DBG("wf_lm75: i2c detatch called for %s\n", lm->sens.name);
  
- 	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
+ 	/* Mark client detached */
+-	lm->i2c.adapter = NULL;
++	lm->i2c = NULL;
  
--	rc = of_address_to_resource(op->node, 0, &res);
--	if (rc) {
--		dev_err(&op->dev, "invalid address\n");
--		return rc;
-+	/*
-+	 * Determine if the core is connected directly to DCR or PLB
-+	 * interface and initialize the tft_access accordingly keeping
-+	 * backward compatibility with DCR access.
-+	 */
-+	p = (u32 *)of_get_property(op->node, "xlnx,dcr-splb-slave-if", NULL);
+ 	/* release sensor */
+ 	wf_unregister_sensor(&lm->sens);
+ 
++	i2c_set_clientdata(client, NULL);
+ 	return 0;
+ }
+ 
++static const struct i2c_device_id wf_lm75_id[] = {
++	{ "wf_lm75", 0 },
++	{ "wf_ds1775", 1 },
++	{ }
++};
 +
-+	tft_access = p ? *p : 0;
++static struct i2c_driver wf_lm75_driver = {
++	.driver = {
++		.name	= "wf_lm75",
++	},
++	.attach_adapter	= wf_lm75_attach,
++	.probe		= wf_lm75_probe,
++	.remove		= wf_lm75_remove,
++	.id_table	= wf_lm75_id,
++};
 +
-+	/*
-+	 * Fill the resource structure if its direct PLB interface
-+	 * otherwise fill the dcr_host structure.
-+	 */
-+	if (tft_access) {
-+		rc = of_address_to_resource(op->node, 0, &res);
-+		if (rc) {
-+			dev_err(&op->dev, "invalid address\n");
-+			return -ENODEV;
-+		}
-+
-+	} else {
-+		start = dcr_resource_start(op->node, 0);
-+		len = dcr_resource_len(op->node, 0);
-+		dcr_host = dcr_map(op->node, start, len);
-+		if (!DCR_MAP_OK(dcr_host)) {
-+			dev_err(&op->dev, "invalid address\n");
-+			return -ENODEV;
-+		}
- 	}
+ static int __init wf_lm75_sensor_init(void)
+ {
+ 	/* Don't register on old machines that use therm_pm72 for now */
+--- linux-2.6.30-rc2.orig/drivers/macintosh/windfarm_max6690_sensor.c	2009-04-16 17:45:07.000000000 +0200
++++ linux-2.6.30-rc2/drivers/macintosh/windfarm_max6690_sensor.c	2009-04-16 17:45:13.000000000 +0200
+@@ -26,34 +26,22 @@
+ #define MAX6690_EXTERNAL_TEMP	1
  
- 	prop = of_get_property(op->node, "phys-size", &size);
-@@ -450,7 +460,23 @@ xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
- 	if (of_find_property(op->node, "rotate-display", NULL))
- 		pdata.rotate_screen = 1;
+ struct wf_6690_sensor {
+-	struct i2c_client	i2c;
++	struct i2c_client	*i2c;
+ 	struct wf_sensor	sens;
+ };
  
--	return xilinxfb_assign(&op->dev, res.start, &pdata);
-+	/* Allocate the driver data region */
-+	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
-+	if (!drvdata) {
-+		dev_err(&op->dev, "Couldn't allocate device private record\n");
+ #define wf_to_6690(x)	container_of((x), struct wf_6690_sensor, sens)
+-#define i2c_to_6690(x)	container_of((x), struct wf_6690_sensor, i2c)
+-
+-static int wf_max6690_attach(struct i2c_adapter *adapter);
+-static int wf_max6690_detach(struct i2c_client *client);
+-
+-static struct i2c_driver wf_max6690_driver = {
+-	.driver = {
+-		.name		= "wf_max6690",
+-	},
+-	.attach_adapter	= wf_max6690_attach,
+-	.detach_client	= wf_max6690_detach,
+-};
+ 
+ static int wf_max6690_get(struct wf_sensor *sr, s32 *value)
+ {
+ 	struct wf_6690_sensor *max = wf_to_6690(sr);
+ 	s32 data;
+ 
+-	if (max->i2c.adapter == NULL)
++	if (max->i2c == NULL)
+ 		return -ENODEV;
+ 
+ 	/* chip gets initialized by firmware */
+-	data = i2c_smbus_read_byte_data(&max->i2c, MAX6690_EXTERNAL_TEMP);
++	data = i2c_smbus_read_byte_data(max->i2c, MAX6690_EXTERNAL_TEMP);
+ 	if (data < 0)
+ 		return data;
+ 	*value = data << 16;
+@@ -64,10 +52,6 @@ static void wf_max6690_release(struct wf
+ {
+ 	struct wf_6690_sensor *max = wf_to_6690(sr);
+ 
+-	if (max->i2c.adapter) {
+-		i2c_detach_client(&max->i2c);
+-		max->i2c.adapter = NULL;
+-	}
+ 	kfree(max);
+ }
+ 
+@@ -77,19 +61,40 @@ static struct wf_sensor_ops wf_max6690_o
+ 	.owner		= THIS_MODULE,
+ };
+ 
+-static void wf_max6690_create(struct i2c_adapter *adapter, u8 addr,
+-			      const char *loc)
++static int wf_max6690_probe(struct i2c_client *client,
++			    const struct i2c_device_id *id)
+ {
+ 	struct wf_6690_sensor *max;
+-	char *name;
++	int rc;
+ 
+ 	max = kzalloc(sizeof(struct wf_6690_sensor), GFP_KERNEL);
+ 	if (max == NULL) {
+-		printk(KERN_ERR "windfarm: Couldn't create MAX6690 sensor %s: "
+-		       "no memory\n", loc);
+-		return;
++		printk(KERN_ERR "windfarm: Couldn't create MAX6690 sensor: "
++		       "no memory\n");
 +		return -ENOMEM;
 +	}
-+	dev_set_drvdata(&op->dev, drvdata);
 +
-+	/* Arguments are passed based on the interface */
-+	if (tft_access) {
-+		return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
-+	} else {
-+		drvdata->dcr_start = start;
-+		drvdata->dcr_len = len;
-+		drvdata->dcr_host = dcr_host;
-+		return xilinxfb_assign(&op->dev, drvdata, 0, &pdata);
++	max->i2c = client;
++	max->sens.name = client->dev.platform_data;
++	max->sens.ops = &wf_max6690_ops;
++	i2c_set_clientdata(client, max);
++
++	rc = wf_register_sensor(&max->sens);
++	if (rc) {
++		i2c_set_clientdata(client, NULL);
++		kfree(max);
+ 	}
+ 
++	return rc;
++}
++
++static struct i2c_client *wf_max6690_create(struct i2c_adapter *adapter,
++					    u8 addr, const char *loc)
++{
++	struct i2c_board_info info;
++	struct i2c_client *client;
++	char *name;
++
+ 	if (!strcmp(loc, "BACKSIDE"))
+ 		name = "backside-temp";
+ 	else if (!strcmp(loc, "NB Ambient"))
+@@ -99,27 +104,26 @@ static void wf_max6690_create(struct i2c
+ 	else
+ 		goto fail;
+ 
+-	max->sens.ops = &wf_max6690_ops;
+-	max->sens.name = name;
+-	max->i2c.addr = addr >> 1;
+-	max->i2c.adapter = adapter;
+-	max->i2c.driver = &wf_max6690_driver;
+-	strncpy(max->i2c.name, name, I2C_NAME_SIZE-1);
++	memset(&info, 0, sizeof(struct i2c_board_info));
++	info.addr = addr >> 1;
++	info.platform_data = name;
++	strlcpy(info.type, "wf_max6690", I2C_NAME_SIZE);
+ 
+-	if (i2c_attach_client(&max->i2c)) {
++	client = i2c_new_device(adapter, &info);
++	if (client == NULL) {
+ 		printk(KERN_ERR "windfarm: failed to attach MAX6690 sensor\n");
+ 		goto fail;
+ 	}
+ 
+-	if (wf_register_sensor(&max->sens)) {
+-		i2c_detach_client(&max->i2c);
+-		goto fail;
+-	}
+-
+-	return;
++	/*
++	 * Let i2c-core delete that device on driver removal.
++	 * This is safe because i2c-core holds the core_lock mutex for us.
++	 */
++	list_add_tail(&client->detected, &client->driver->clients);
++	return client;
+ 
+  fail:
+-	kfree(max);
++	return NULL;
+ }
+ 
+ static int wf_max6690_attach(struct i2c_adapter *adapter)
+@@ -154,16 +158,31 @@ static int wf_max6690_attach(struct i2c_
+ 	return 0;
+ }
+ 
+-static int wf_max6690_detach(struct i2c_client *client)
++static int wf_max6690_remove(struct i2c_client *client)
+ {
+-	struct wf_6690_sensor *max = i2c_to_6690(client);
++	struct wf_6690_sensor *max = i2c_get_clientdata(client);
+ 
+-	max->i2c.adapter = NULL;
++	max->i2c = NULL;
+ 	wf_unregister_sensor(&max->sens);
+ 
+ 	return 0;
+ }
+ 
++static const struct i2c_device_id wf_max6690_id[] = {
++	{ "wf_max6690", 0 },
++	{ }
++};
++
++static struct i2c_driver wf_max6690_driver = {
++	.driver = {
++		.name		= "wf_max6690",
++	},
++	.attach_adapter	= wf_max6690_attach,
++	.probe		= wf_max6690_probe,
++	.remove		= wf_max6690_remove,
++	.id_table	= wf_max6690_id,
++};
++
+ static int __init wf_max6690_sensor_init(void)
+ {
+ 	/* Don't register on old machines that use therm_pm72 for now */
+--- linux-2.6.30-rc2.orig/drivers/macintosh/windfarm_smu_sat.c	2009-04-16 17:45:06.000000000 +0200
++++ linux-2.6.30-rc2/drivers/macintosh/windfarm_smu_sat.c	2009-04-16 18:13:07.000000000 +0200
+@@ -39,7 +39,7 @@ struct wf_sat {
+ 	struct mutex		mutex;
+ 	unsigned long		last_read; /* jiffies when cache last updated */
+ 	u8			cache[16];
+-	struct i2c_client	i2c;
++	struct i2c_client	*i2c;
+ 	struct device_node	*node;
+ };
+ 
+@@ -54,18 +54,6 @@ struct wf_sat_sensor {
+ };
+ 
+ #define wf_to_sat(c)	container_of(c, struct wf_sat_sensor, sens)
+-#define i2c_to_sat(c)	container_of(c, struct wf_sat, i2c)
+-
+-static int wf_sat_attach(struct i2c_adapter *adapter);
+-static int wf_sat_detach(struct i2c_client *client);
+-
+-static struct i2c_driver wf_sat_driver = {
+-	.driver = {
+-		.name		= "wf_smu_sat",
+-	},
+-	.attach_adapter	= wf_sat_attach,
+-	.detach_client	= wf_sat_detach,
+-};
+ 
+ struct smu_sdbp_header *smu_sat_get_sdb_partition(unsigned int sat_id, int id,
+ 						  unsigned int *size)
+@@ -81,13 +69,13 @@ struct smu_sdbp_header *smu_sat_get_sdb_
+ 	if (sat_id > 1 || (sat = sats[sat_id]) == NULL)
+ 		return NULL;
+ 
+-	err = i2c_smbus_write_word_data(&sat->i2c, 8, id << 8);
++	err = i2c_smbus_write_word_data(sat->i2c, 8, id << 8);
+ 	if (err) {
+ 		printk(KERN_ERR "smu_sat_get_sdb_part wr error %d\n", err);
+ 		return NULL;
+ 	}
+ 
+-	err = i2c_smbus_read_word_data(&sat->i2c, 9);
++	err = i2c_smbus_read_word_data(sat->i2c, 9);
+ 	if (err < 0) {
+ 		printk(KERN_ERR "smu_sat_get_sdb_part rd len error\n");
+ 		return NULL;
+@@ -105,7 +93,7 @@ struct smu_sdbp_header *smu_sat_get_sdb_
+ 		return NULL;
+ 
+ 	for (i = 0; i < len; i += 4) {
+-		err = i2c_smbus_read_i2c_block_data(&sat->i2c, 0xa, 4, data);
++		err = i2c_smbus_read_i2c_block_data(sat->i2c, 0xa, 4, data);
+ 		if (err < 0) {
+ 			printk(KERN_ERR "smu_sat_get_sdb_part rd err %d\n",
+ 			       err);
+@@ -138,7 +126,7 @@ static int wf_sat_read_cache(struct wf_s
+ {
+ 	int err;
+ 
+-	err = i2c_smbus_read_i2c_block_data(&sat->i2c, 0x3f, 16, sat->cache);
++	err = i2c_smbus_read_i2c_block_data(sat->i2c, 0x3f, 16, sat->cache);
+ 	if (err < 0)
+ 		return err;
+ 	sat->last_read = jiffies;
+@@ -161,7 +149,7 @@ static int wf_sat_get(struct wf_sensor *
+ 	int i, err;
+ 	s32 val;
+ 
+-	if (sat->i2c.adapter == NULL)
++	if (sat->i2c == NULL)
+ 		return -ENODEV;
+ 
+ 	mutex_lock(&sat->mutex);
+@@ -193,10 +181,6 @@ static void wf_sat_release(struct wf_sen
+ 	struct wf_sat *sat = sens->sat;
+ 
+ 	if (atomic_dec_and_test(&sat->refcnt)) {
+-		if (sat->i2c.adapter) {
+-			i2c_detach_client(&sat->i2c);
+-			sat->i2c.adapter = NULL;
+-		}
+ 		if (sat->nr >= 0)
+ 			sats[sat->nr] = NULL;
+ 		kfree(sat);
+@@ -212,38 +196,58 @@ static struct wf_sensor_ops wf_sat_ops =
+ 
+ static void wf_sat_create(struct i2c_adapter *adapter, struct device_node *dev)
+ {
++	struct i2c_board_info info;
++	struct i2c_client *client;
++	const u32 *reg;
++	u8 addr;
++
++	reg = of_get_property(dev, "reg", NULL);
++	if (reg == NULL)
++		return;
++	addr = *reg;
++	DBG(KERN_DEBUG "wf_sat: creating sat at address %x\n", addr);
++
++	memset(&info, 0, sizeof(struct i2c_board_info));
++	info.addr = (addr >> 1) & 0x7f;
++	info.platform_data = dev;
++	strlcpy(info.type, "wf_sat", I2C_NAME_SIZE);
++
++	client = i2c_new_device(adapter, &info);
++	if (client == NULL) {
++		printk(KERN_ERR "windfarm: failed to attach smu-sat to i2c\n");
++		return;
 +	}
++
++	/*
++	 * Let i2c-core delete that device on driver removal.
++	 * This is safe because i2c-core holds the core_lock mutex for us.
++	 */
++	list_add_tail(&client->detected, &client->driver->clients);
++}
++
++static int wf_sat_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
++{
++	struct device_node *dev = client->dev.platform_data;
+ 	struct wf_sat *sat;
+ 	struct wf_sat_sensor *sens;
+ 	const u32 *reg;
+ 	const char *loc, *type;
+-	u8 addr, chip, core;
++	u8 chip, core;
+ 	struct device_node *child;
+ 	int shift, cpu, index;
+ 	char *name;
+ 	int vsens[2], isens[2];
+ 
+-	reg = of_get_property(dev, "reg", NULL);
+-	if (reg == NULL)
+-		return;
+-	addr = *reg;
+-	DBG(KERN_DEBUG "wf_sat: creating sat at address %x\n", addr);
+-
+ 	sat = kzalloc(sizeof(struct wf_sat), GFP_KERNEL);
+ 	if (sat == NULL)
+-		return;
++		return -ENOMEM;
+ 	sat->nr = -1;
+ 	sat->node = of_node_get(dev);
+ 	atomic_set(&sat->refcnt, 0);
+ 	mutex_init(&sat->mutex);
+-	sat->i2c.addr = (addr >> 1) & 0x7f;
+-	sat->i2c.adapter = adapter;
+-	sat->i2c.driver = &wf_sat_driver;
+-	strncpy(sat->i2c.name, "smu-sat", I2C_NAME_SIZE-1);
+-
+-	if (i2c_attach_client(&sat->i2c)) {
+-		printk(KERN_ERR "windfarm: failed to attach smu-sat to i2c\n");
+-		goto fail;
+-	}
++	sat->i2c = client;
++	i2c_set_clientdata(client, sat);
+ 
+ 	vsens[0] = vsens[1] = -1;
+ 	isens[0] = isens[1] = -1;
+@@ -344,10 +348,7 @@ static void wf_sat_create(struct i2c_ada
+ 	if (sat->nr >= 0)
+ 		sats[sat->nr] = sat;
+ 
+-	return;
+-
+- fail:
+-	kfree(sat);
++	return 0;
  }
  
- static int __devexit xilinxfb_of_remove(struct of_device *op)
-@@ -460,7 +486,9 @@ static int __devexit xilinxfb_of_remove(struct of_device *op)
+ static int wf_sat_attach(struct i2c_adapter *adapter)
+@@ -366,16 +367,32 @@ static int wf_sat_attach(struct i2c_adap
+ 	return 0;
+ }
  
- /* Match table for of_platform binding */
- static struct of_device_id xilinxfb_of_match[] __devinitdata = {
-+	{ .compatible = "xlnx,xps-tft-1.00.a", },
- 	{ .compatible = "xlnx,plb-tft-cntlr-ref-1.00.a", },
-+	{ .compatible = "xlnx,plb-dvi-cntlr-ref-1.00.c", },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, xilinxfb_of_match);
-@@ -476,22 +504,6 @@ static struct of_platform_driver xilinxfb_of_driver = {
- 	},
- };
- 
--/* Registration helpers to keep the number of #ifdefs to a minimum */
--static inline int __init xilinxfb_of_register(void)
--{
--	pr_debug("xilinxfb: calling of_register_platform_driver()\n");
--	return of_register_platform_driver(&xilinxfb_of_driver);
--}
--
--static inline void __exit xilinxfb_of_unregister(void)
--{
--	of_unregister_platform_driver(&xilinxfb_of_driver);
--}
--#else /* CONFIG_OF */
--/* CONFIG_OF not enabled; do nothing helpers */
--static inline int __init xilinxfb_of_register(void) { return 0; }
--static inline void __exit xilinxfb_of_unregister(void) { }
--#endif /* CONFIG_OF */
- 
- /* ---------------------------------------------------------------------
-  * Module setup and teardown
-@@ -500,28 +512,18 @@ static inline void __exit xilinxfb_of_unregister(void) { }
- static int __init
- xilinxfb_init(void)
+-static int wf_sat_detach(struct i2c_client *client)
++static int wf_sat_remove(struct i2c_client *client)
  {
--	int rc;
--	rc = xilinxfb_of_register();
--	if (rc)
--		return rc;
--
--	rc = platform_driver_register(&xilinxfb_platform_driver);
--	if (rc)
--		xilinxfb_of_unregister();
--
--	return rc;
-+	return of_register_platform_driver(&xilinxfb_of_driver);
+-	struct wf_sat *sat = i2c_to_sat(client);
++	struct wf_sat *sat = i2c_get_clientdata(client);
+ 
+ 	/* XXX TODO */
+ 
+-	sat->i2c.adapter = NULL;
++	sat->i2c = NULL;
++	i2c_set_clientdata(client, NULL);
+ 	return 0;
  }
  
- static void __exit
- xilinxfb_cleanup(void)
++static const struct i2c_device_id wf_sat_id[] = {
++	{ "wf_sat", 0 },
++	{ }
++};
++
++static struct i2c_driver wf_sat_driver = {
++	.driver = {
++		.name		= "wf_smu_sat",
++	},
++	.attach_adapter	= wf_sat_attach,
++	.probe		= wf_sat_probe,
++	.remove		= wf_sat_remove,
++	.id_table	= wf_sat_id,
++};
++
+ static int __init sat_sensors_init(void)
  {
--	platform_driver_unregister(&xilinxfb_platform_driver);
--	xilinxfb_of_unregister();
-+	of_unregister_platform_driver(&xilinxfb_of_driver);
- }
- 
- module_init(xilinxfb_init);
- module_exit(xilinxfb_cleanup);
- 
- MODULE_AUTHOR("MontaVista Software, Inc. <source@mvista.com>");
--MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
-+MODULE_DESCRIPTION("Xilinx TFT frame buffer driver");
- MODULE_LICENSE("GPL");
+ 	return i2c_add_driver(&wf_sat_driver);
+
+
 -- 
-1.6.2.1
-
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+Jean Delvare
