@@ -1,20 +1,19 @@
-Return-Path: <BATV+3c9b751f2666758eb622+2062+infradead.org+dwmw2@baythorne.srs.infradead.org>
-Date: Thu, 16 Apr 2009 19:38:26 +0100 (BST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Subject: Re: [PATCH 1/3 v3] mtd: physmap_of: Add multiple regions and
-	concatenation support
-In-Reply-To: <1239889899.3390.216.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904161936090.12608@baythorne.infradead.org>
-References: <1239883845-17804-1-git-send-email-sr@denx.de>
-	<fa686aa40904160626k118cea3cvc0db38a2277e45b8@mail.gmail.com>
-	<200904161537.59048.sr@denx.de>
-	<fa686aa40904160646v75a98e02s446fd89c08cfebae@mail.gmail.com>
-	<1239889899.3390.216.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	linux-mtd@lists.infradead.org, devicetree-discuss@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 327FEDE128
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 04:53:38 +1000 (EST)
+Message-Id: <88F07543-B7F6-4F27-B5FB-4780AD069D7E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <680ABFDC-A67F-48BB-B46C-564CB5373FEB@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: issues w/init
+Date: Thu, 16 Apr 2009 13:53:32 -0500
+References: <680ABFDC-A67F-48BB-B46C-564CB5373FEB@kernel.crashing.org>
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 16 Apr 2009, Artem Bityutskiy wrote:
 
-> On Thu, 2009-04-16 at 07:46 -0600, Grant Likely wrote:
->> On Thu, Apr 16, 2009 at 7:37 AM, Stefan Roese <sr@denx.de> wrote:
->>> On Thursday 16 April 2009, Grant Likely wrote:
->>>>> Signed-off-by: Stefan Roese <sr@denx.de>
->>>>> Reviewd-by: Grant Likely <grant.likely@secretlab.ca>
->>>>
->>>> Yup, still looks good to me.  What boards has this been tested on?
->>>
->>> I tested this version on PPC405EX Kilauea equipped only one "standard"
->>> Spansion S29GL512 NOR chip. And a slightly modified version on an MPC8360
->>> board (kmeter1) which is equipped with the Intel P30 part mentioned in the
->>> bindings description. Slightly modified since this board support is not yet
->>> pushed upstream and currently using v2.6.28 (physmap_of.c has received minor
->>> modifications after 2.6.28 release).
->>
->> Okay.  It will be good to get this one into -next for some testing
->> exposure.  Unless he asks me to do otherwise, I'll leave this one to
->> David to pick up.
+On Apr 16, 2009, at 1:21 PM, Kumar Gala wrote:
+
+> Ben,
 >
-> David usually picks up stuff just before or during merge window,
-> so if you want linux-next exposure, you need to have some extra
-> care.
+> The following patch is causing me issues w/init SEGV on boot.  This  
+> is a pretty old version of init and I'm wondering what the commit  
+> you had related to old ABI breakage:
+>
+> commit 8d30c14cab30d405a05f2aaceda1e9ad57800f36
+> Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date:   Tue Feb 10 16:02:37 2009 +0000
+>
+>    powerpc/mm: Rework I$/D$ coherency (v3)
+>
+>    This patch reworks the way we do I and D cache coherency on  
+> PowerPC.
+>
+>
+> ---
+>                /*
+>                 * Allow execution from readable areas if the MMU  
+> does not
+>                 * provide separate controls over reading and  
+> executing.
+> +                *
+> +                * Note: That code used to not be enabled for 4xx/ 
+> BookE.
+> +                * It is now as I/D cache coherency for these is  
+> done at
+> +                * set_pte_at() time and I see no reason why the test
+> +                * below wouldn't be valid on those processors. This  
+> -may-
+> +                * break programs compiled with a really old ABI  
+> though.
+>                 */
+>
+> - k
 
-I don't necessarily do that on purpose; it just works out that way when 
-I'm busy.
+A bit more debug info that might be helpful, I'm hitting this bad_area  
+fault :
 
--- 
-dwmw2
+                 if (!(vma->vm_flags & VM_EXEC) &&
+                     (cpu_has_feature(CPU_FTR_NOEXECUTE) ||
+                      !(vma->vm_flags & (VM_READ | VM_WRITE))))
+                         goto bad_area;
+
+bad_area 7 = 48024bf4 vm_flags:0810 0873
+SEGV 3 address:48024bf4 trap:400 error_code:0
+
+[root:~] cat /proc/1/maps
+00100000-00103000 r-xp 00100000 00:00 0          [vdso]
+0feab000-0ffbe000 r-xp 00000000 00:0d 7127086    /lib/libc-2.2.5.so
+0ffbe000-0ffcb000 ---p 00113000 00:0d 7127086    /lib/libc-2.2.5.so
+0ffcb000-0ffeb000 rw-p 00110000 00:0d 7127086    /lib/libc-2.2.5.so
+0ffeb000-0fff0000 rw-p 0ffeb000 00:00 0
+10000000-10008000 r-xp 00000000 00:0d 9093222    /sbin/init
+10017000-10018000 rw-p 00007000 00:0d 9093222    /sbin/init
+10018000-1001c000 rwxp 10018000 00:00 0          [heap]
+48000000-48013000 r-xp 00000000 00:0d 7127082    /lib/ld-2.2.5.so
+48022000-48026000 rw-p 00012000 00:0d 7127082    /lib/ld-2.2.5.so
+bfd0e000-bfd23000 rwxp bffeb000 00:00 0          [stack]
