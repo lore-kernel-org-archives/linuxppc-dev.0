@@ -1,22 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id D2F03DE132
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 05:01:58 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so519230qwb.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 12:01:57 -0700 (PDT)
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id CE266DE12A
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 05:21:45 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so529740qwb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 12:21:44 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20090416163021.023DC770050@mail77-va3.bigfish.com>
-References: <20090416163021.023DC770050@mail77-va3.bigfish.com>
+In-Reply-To: <c8485d470904160203y66d456f7xd73692b177587822@mail.gmail.com>
+References: <OF2E7A8F65.EA7B7D26-ONC1257599.004624DB-C1257599.0046F2EB@transmode.se>
+	<20090415130844.GB3301@pengutronix.de>
+	<8BE09C31-40E4-41C2-A6D8-EE9C7DA0B625@kernel.crashing.org>
+	<OF08A8F393.64CD0E94-ONC125759A.00276611-C125759A.002C76B2@transmode.se>
+	<c8485d470904160203y66d456f7xd73692b177587822@mail.gmail.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 16 Apr 2009 13:01:42 -0600
-Message-ID: <fa686aa40904161201i4c4a59alc68ca0fc75a6b316@mail.gmail.com>
-Subject: Re: [PATCH] [V4] Xilinx : Framebuffer Driver: Add PLB support and
-	cleanup DCR
-To: John Linn <john.linn@xilinx.com>
+Date: Thu, 16 Apr 2009 13:21:29 -0600
+Message-ID: <fa686aa40904161221t131fcdb6u665be2504df5353c@mail.gmail.com>
+Subject: Re: OF PCI howto?
+To: Roderick Colenbrander <thunderbird2k@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org,
-	akonovalov@ru.mvista.com
+Cc: linuxppc-dev@ozlabs.org, Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,54 +27,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 16, 2009 at 10:26 AM, John Linn <john.linn@xilinx.com> wrote:
-> Added support for the new xps tft controller. The new core
-> has PLB interface support in addition to existing DCR interface.
+On Thu, Apr 16, 2009 at 3:03 AM, Roderick Colenbrander
+<thunderbird2k@gmail.com> wrote:
+> On Thu, Apr 16, 2009 at 10:05 AM, Joakim Tjernlund
+> <Joakim.Tjernlund@transmode.se> wrote:
+>> Kumar Gala <galak@kernel.crashing.org> wrote on 15/04/2009 17:20:21:
+>>> On Apr 15, 2009, at 8:08 AM, Wolfram Sang wrote:
+>>>
+>>> > On Wed, Apr 15, 2009 at 02:54:57PM +0200, Joakim Tjernlund wrote:
+>>> >
+>>> >> dts fragment correct for my setup? If not, is there a better
+>>> >> example I can
+>>> >> look at?
+>>> >
+>>> > Maybe this message/thread can help you:
+>>> >
+>>> > http://ozlabs.org/pipermail/devicetree-discuss/2009-March/000597.html
+>>>
+>>> You may also want to take a look at ePAPR on the power.org site
+>>
+>> Thanks guys
+>>
+>> Looking in ePAPR I see I should read the IDSEL like this:
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* IDSEL 0x11 AD17 */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x8800 0x0 0x0 0x1 &ipic 20 0x8 /* INTA *=
+/
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x8800 0x0 0x0 0x2 &ipic 21 0x8 /* INTB *=
+/
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x8800 0x0 0x0 0x3 &ipic 22 0x8 /* INTC *=
+/
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00x8800 0x0 0x0 0x4 &ipic 23 0x8 /* INTD *=
+/
+>>
+>> grouping the first line into:
+>> "0x8800 0x0 0x0" "0x1" "&ipic" "20 0x8" /* INTA */
+>>
+>> "0x8800 0x0 0x0" =3D child unit address
+>> "0x1" =3D child interrupt specifier =3D INTA
+>> "&ipic" =3D interrupt parent
+>> "20 0x8" =3D parent interrupt specifier
+>>
+>> Questions:
+>> =A0MPC832x appears to only have INTA so why are the INTB,INTC
+>> =A0and INTD lines there?
+>>
+>> =A0I don't understand how IDSEL values are decided. Are IDSEL 0x11-0x18
+>> randomly
+>> =A0selected or are they fixed for MPC832x?
 >
-> Removed platform device support as both MicroBlaze and PowerPC
-> use device tree.
+> The idsel values depend on how the pci slots are wired on your board.
+> The 0x8800 value is
+> in general a function of bus, device and function number. ( bus << 16
+> | devfn << 8)
 >
-> Previously, the dcr interface was assumed to be used in mmio mode,
-> and the register space of the dcr interface was precomputed and stuffed
-> into the device tree. This driver now makes use of the new dcr
-> infrastructure to represent the dcr interface. This enables the dcr
-> interface to be connected directly to a native dcr interface in a clean
-> way.
->
-> Added compatibility for ml507 dvi core.
->
-> Signed-off-by: Suneel <suneelg@xilinx.com>
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> Signed-off-by: John Linn <john.linn@xilinx.com>
-> ---
->
-> V2 - cleanup based on review
-> V3 - update to be based on top of tree rather than Xilinx tree, sorry for=
- the
-> =A0confusion with this, update the name of the patch slightly to be more =
-accurate
-> V4 - update based on Grant's comments to simplify it, the binding wasn't =
-changed
-> =A0as the conversation seemed to verify it's acceptable
+> Further I would also watch out with the parent interrupt specifier
+> e.g. '20 0x8'. The openfirmware spec
+> normally suggests to use a value of '2' for interrupts which are
+> active low. During parsing of the interrupt-map
+> this value is normally translated using 'xlate' to linux kernel values
+> (active low is defined as IRQ_TYPE_LEVEL_LOW =A0 =A0 =A00x00000008 in the
+> kernel).
+> The ipic driver code and various dts files are evil and store the
+> linux kernel value inside the DTS file, so they don't do any
+> conversion whis is EVIL
+> in my opinion. Watch out for that.
 
-Actually Stephen and I agreed that the driver should *not* go looking
-for the xlnx,dcr-splb-slave-if property.  reg and dcr-reg are
-sufficient.  If a driver has both properties, then either method of
-access will work.
+They're just numbers and they are intended to by interrupt controller
+specific values.  Some IRQ controllers don't even have a 'flags' field
+for instance.  The binding author is free to choose values he or she
+deems suitable for the purpose as long as it is documented and
+reviewed.
+
+> (The corresponding DTS files and
+> drivers should be updated).
+
+No.  The binding is set.  We've made a commitment to not change
+bindings after they are defined and deployed.  In some cases it is not
+easy to update the device tree blob in deployed systems.
 
 
-> @@ -107,12 +112,21 @@ static struct fb_var_screeninfo xilinx_fb_var =3D {
-> =A0 =A0 =A0 =A0.activate =3D =A0 =A0 FB_ACTIVATE_NOW
-> =A0};
 >
-> +
-> +#define PLB_ACCESS_FLAG =A0 =A0 =A0 =A00x1 =A0 =A0 =A0 =A0 =A0 =A0 /* 1 =
-=3D PLB, 0 =3D DCR */
-> +
+> Regards,
+> Roderick Colenbrander
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-Also, this define is no longer required.
 
-g.
 
 --=20
 Grant Likely, B.Sc., P.Eng.
