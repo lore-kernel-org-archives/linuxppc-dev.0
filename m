@@ -1,17 +1,24 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 81527DE10B
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 07:01:11 +1000 (EST)
-Date: Thu, 16 Apr 2009 23:01:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] therm_windtunnel: Convert to a new-style i2c driver
-Message-ID: <20090416230101.37f3e84f@hyperion.delvare>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <thunderbird2k@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.189])
+	by ozlabs.org (Postfix) with ESMTP id C4DD8DE15D
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 07:27:36 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id f33so271970fkf.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 14:27:34 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090416205735.GA26519@oksana.dev.rtsoft.ru>
+References: <c8485d470904150202s1f5c8cd7p34f0eaf4872f3e17@mail.gmail.com>
+	<c8485d470904150734s47ce0f27y3ae984355e823d9f@mail.gmail.com>
+	<200904162130.01237.bzolnier@gmail.com>
+	<20090416205735.GA26519@oksana.dev.rtsoft.ru>
+Date: Thu, 16 Apr 2009 23:27:34 +0200
+Message-ID: <c8485d470904161427w31ff313dsb651aa1f53bbacea@mail.gmail.com>
+Subject: Re: RFC Patch: Use x86 init_hwif in the alim15x3 for x86-like PowerPC
+	systems
+From: Roderick Colenbrander <thunderbird2k@gmail.com>
+To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,211 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The legacy i2c binding model is going away soon, so convert the ppc
-therm_windtunnel driver to the new model or it will break.
+On Thu, Apr 16, 2009 at 10:57 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Apr 16, 2009 at 09:30:00PM +0200, Bartlomiej Zolnierkiewicz wrote=
+:
+>>
+>> Hi,
+>>
+>> On Wednesday 15 April 2009 16:34:22 Roderick Colenbrander wrote:
+>> > Hi,
+>> >
+>> > I'm using a Xilinx ML510 it features a PowerPC 440 cpu inside a
+>> > Virtex-5 FPGA. The board also contains a ALI M1533 south bridge
+>> > for IDE, USB and Audio. I did a lot of work to get the pci bus working
+>> > on this board and it works correctly but the default init code
+>> > of the alim15x3 driver doesn't work for me. The driver explicitly
+>> > disabled some initialization code for powerpc after uncommenting this
+>> > code it works properly. Benjamin Herrenschmidt and I think this
+>> > !CONFIG_PPC check should be removed because the system behaves
+>> > like a real 'x86' system (also the i8259 interrupt controller is used)=
+.
+>>
+>> Ben, I guess you are OK with the change and there are no longer other
+>> platforms requiring CONFIG_PPC check below? =A0[I don't see your ACK her=
+e]
+>
+> I'd like to nak this patch. It'll break MPC8610HPCD boards.
+>
+> See commit 6d1cee44361b8d06ccd1812e80448d86ae60dfe3
+>
+> I'm not sure how should we handle this for Xilinx PPC, MPC8610
+> PPC and Sparc all at the same time, but it's obvious that #ifdef
+> isn't enough any longer...
+>
+>
+>
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
----
-Can someone please test this patch for me? I could only build-test it.
+If it is really a board specific issue (in case of powerpc it appears
+to be one) we could also use the default_irq override in ppc_md. What
+do you think?
 
-Remember that you need this patch applied:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=935298696f469c0e07c73be687bd055878074ce0
-
-Thanks.
-
- drivers/macintosh/therm_windtunnel.c |  126 ++++++++++++++++------------------
- 1 file changed, 60 insertions(+), 66 deletions(-)
-
---- linux-2.6.30-rc2.orig/drivers/macintosh/therm_windtunnel.c	2009-03-24 13:40:47.000000000 +0100
-+++ linux-2.6.30-rc2/drivers/macintosh/therm_windtunnel.c	2009-04-16 22:56:39.000000000 +0200
-@@ -48,16 +48,6 @@
- 
- #define LOG_TEMP		0			/* continously log temperature */
- 
--static int 			do_probe( struct i2c_adapter *adapter, int addr, int kind);
--
--/* scan 0x48-0x4f (DS1775) and 0x2c-2x2f (ADM1030) */
--static const unsigned short	normal_i2c[] = { 0x48, 0x49, 0x4a, 0x4b,
--						 0x4c, 0x4d, 0x4e, 0x4f,
--						 0x2c, 0x2d, 0x2e, 0x2f,
--						 I2C_CLIENT_END };
--
--I2C_CLIENT_INSMOD;
--
- static struct {
- 	volatile int		running;
- 	struct task_struct	*poll_task;
-@@ -315,53 +305,54 @@ static int control_loop(void *dummy)
- static int
- do_attach( struct i2c_adapter *adapter )
- {
--	int ret = 0;
-+	/* scan 0x48-0x4f (DS1775) and 0x2c-2x2f (ADM1030) */
-+	static const unsigned short scan_ds1775[] = {
-+		0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
-+		I2C_CLIENT_END
-+	};
-+	static const unsigned short scan_adm1030[] = {
-+		0x2c, 0x2d, 0x2e, 0x2f,
-+		I2C_CLIENT_END
-+	};
- 
- 	if( strncmp(adapter->name, "uni-n", 5) )
- 		return 0;
- 
- 	if( !x.running ) {
--		ret = i2c_probe( adapter, &addr_data, &do_probe );
-+		struct i2c_board_info info;
-+
-+		memset(&info, 0, sizeof(struct i2c_board_info));
-+		strlcpy(info.type, "therm_ds1775", I2C_NAME_SIZE);
-+		i2c_new_probed_device(adapter, &info, scan_ds1775);
-+
-+		strlcpy(info.type, "therm_adm1030", I2C_NAME_SIZE);
-+		i2c_new_probed_device(adapter, &info, scan_adm1030);
-+
- 		if( x.thermostat && x.fan ) {
- 			x.running = 1;
- 			x.poll_task = kthread_run(control_loop, NULL, "g4fand");
- 		}
- 	}
--	return ret;
-+	return 0;
- }
- 
- static int
--do_detach( struct i2c_client *client )
-+do_remove(struct i2c_client *client)
- {
--	int err;
--
--	if( (err=i2c_detach_client(client)) )
--		printk(KERN_ERR "failed to detach thermostat client\n");
--	else {
--		if( x.running ) {
--			x.running = 0;
--			kthread_stop(x.poll_task);
--			x.poll_task = NULL;
--		}
--		if( client == x.thermostat )
--			x.thermostat = NULL;
--		else if( client == x.fan )
--			x.fan = NULL;
--		else {
--			printk(KERN_ERR "g4fan: bad client\n");
--		}
--		kfree( client );
-+	if (x.running) {
-+		x.running = 0;
-+		kthread_stop(x.poll_task);
-+		x.poll_task = NULL;
- 	}
--	return err;
--}
-+	if (client == x.thermostat)
-+		x.thermostat = NULL;
-+	else if (client == x.fan)
-+		x.fan = NULL;
-+	else
-+		printk(KERN_ERR "g4fan: bad client\n");
- 
--static struct i2c_driver g4fan_driver = {  
--	.driver = {
--		.name	= "therm_windtunnel",
--	},
--	.attach_adapter = do_attach,
--	.detach_client	= do_detach,
--};
-+	return 0;
-+}
- 
- static int
- attach_fan( struct i2c_client *cl )
-@@ -374,13 +365,8 @@ attach_fan( struct i2c_client *cl )
- 		goto out;
- 	printk("ADM1030 fan controller [@%02x]\n", cl->addr );
- 
--	strlcpy( cl->name, "ADM1030 fan controller", sizeof(cl->name) );
--
--	if( !i2c_attach_client(cl) )
--		x.fan = cl;
-+	x.fan = cl;
-  out:
--	if( cl != x.fan )
--		kfree( cl );
- 	return 0;
- }
- 
-@@ -412,39 +398,47 @@ attach_thermostat( struct i2c_client *cl
- 	x.temp = temp;
- 	x.overheat_temp = os_temp;
- 	x.overheat_hyst = hyst_temp;
--	
--	strlcpy( cl->name, "DS1775 thermostat", sizeof(cl->name) );
--
--	if( !i2c_attach_client(cl) )
--		x.thermostat = cl;
-+	x.thermostat = cl;
- out:
--	if( cl != x.thermostat )
--		kfree( cl );
- 	return 0;
- }
- 
-+enum chip { ds1775, adm1030 };
-+
-+static const struct i2c_device_id therm_windtunnel_id[] = {
-+	{ "therm_ds1775", ds1775 },
-+	{ "therm_adm1030", adm1030 },
-+	{ }
-+};
-+
- static int
--do_probe( struct i2c_adapter *adapter, int addr, int kind )
-+do_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- {
--	struct i2c_client *cl;
-+	struct i2c_adapter *adapter = cl->adapter;
- 
- 	if( !i2c_check_functionality(adapter, I2C_FUNC_SMBUS_WORD_DATA
- 				     | I2C_FUNC_SMBUS_WRITE_BYTE) )
- 		return 0;
- 
--	if( !(cl=kzalloc(sizeof(*cl), GFP_KERNEL)) )
--		return -ENOMEM;
--
--	cl->addr = addr;
--	cl->adapter = adapter;
--	cl->driver = &g4fan_driver;
--	cl->flags = 0;
--
--	if( addr < 0x48 )
-+	switch (id->driver_data) {
-+	case adm1030:
- 		return attach_fan( cl );
--	return attach_thermostat( cl );
-+	case ds1775:
-+		return attach_thermostat(cl);
-+	}
-+	return 0;
- }
- 
-+static struct i2c_driver g4fan_driver = {
-+	.driver = {
-+		.name	= "therm_windtunnel",
-+	},
-+	.attach_adapter = do_attach,
-+	.probe		= do_probe,
-+	.remove		= do_remove,
-+	.id_table	= therm_windtunnel_id,
-+};
-+
- 
- /************************************************************************/
- /*	initialization / cleanup					*/
-
-
--- 
-Jean Delvare
+Roderick
