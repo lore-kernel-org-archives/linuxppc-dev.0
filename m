@@ -1,11 +1,17 @@
-Return-Path: <sr@denx.de>
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org,
+Return-Path: <dedekind@infradead.org>
+Subject: Re: [PATCH 0/3 v3] mtd: physmap_of: Add multiple regions and
+	concatenation support
+From: Artem Bityutskiy <dedekind@infradead.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200904161405.04100.sr@denx.de>
+References: <200904161405.04100.sr@denx.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 16 Apr 2009 15:19:04 +0300
+Message-Id: <1239884344.3390.213.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss <devicetree-discuss@ozlabs.org>,
 	linux-mtd@lists.infradead.org
-Subject: [PATCH 3/3 v3] mtd/powerpc: Describe multiple "reg" tuples usage
-Date: Thu, 16 Apr 2009 14:11:05 +0200
-Message-Id: <1239883865-17915-1-git-send-email-sr@denx.de>
-Cc: devicetree-discuss@ozlabs.org
+Reply-To: dedekind@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,49 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Stefan Roese <sr@denx.de>
-CC: Grant Likely <grant.likely@secretlab.ca>
----
-Changes in ver3:
-- Removed reference to Intel P30 parts
-- Added exact chip compatible property for best practice.
+On Thu, 2009-04-16 at 14:05 +0200, Stefan Roese wrote:
+> This patchset adds support to handle multiple non-identical chips in one
+> flash device tree node. It also adds concat support to physmap_of. This
+> makes it possible to support e.g. the Intel P30 48F4400 chip which
+> internally consists of 2 non-identical NOR chips on one die. Additionally
+> partitions now can span over multiple chips:
+> 
+>     mtd: physmap_of: Add multiple regions and concatenation support
+>     mtd/powerpc: Factor out MTD physmap bindings into mtd-physmap.txt
+>     mtd/powerpc: Describe multiple "reg" tuples usage
+> 
+> v2 addresses all comments from Grant Likely, including factoring out the
+> MTD dts bindings documentation into a separate file.
+> 
+> v3 addresses all comments (again from Grant).
 
- Documentation/powerpc/dts-bindings/mtd-physmap.txt |   19 ++++++++++++++++++-
- 1 files changed, 18 insertions(+), 1 deletions(-)
+Sorry for my ignorance, but could you please explain why regions
+exists as an MTD concept? Why different regions could not be
+represented as different MTD devices? The benefit is - simplicity.
 
-diff --git a/Documentation/powerpc/dts-bindings/mtd-physmap.txt b/Documentation/powerpc/dts-bindings/mtd-physmap.txt
-index cd474f9..667c9bd 100644
---- a/Documentation/powerpc/dts-bindings/mtd-physmap.txt
-+++ b/Documentation/powerpc/dts-bindings/mtd-physmap.txt
-@@ -5,7 +5,9 @@ file systems on embedded devices.
- 
-  - compatible : should contain the specific model of flash chip(s)
-    used, if known, followed by either "cfi-flash" or "jedec-flash"
-- - reg : Address range of the flash chip
-+ - reg : Address range(s) of the flash chip(s)
-+   It's possible to (optionally) define multiple "reg" tuples so that
-+   non-identical NOR chips can be described in one flash node.
-  - bank-width : Width (in bytes) of the flash bank.  Equal to the
-    device width times the number of interleaved chips.
-  - device-width : (optional) Width of a single flash chip.  If
-@@ -61,3 +63,18 @@ Example:
- 			read-only;
- 		};
- 	};
-+
-+Here an example with multiple "reg" tuples:
-+
-+	flash@f0000000,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "intel,PC48F4400P0VB", "cfi-flash";
-+		reg = <0 0x00000000 0x02000000
-+		       0 0x02000000 0x02000000>;
-+		bank-width = <2>;
-+		partition@0 {
-+			label = "test-part1";
-+			reg = <0 0x04000000>;
-+		};
-+	};
+Thanks.
+
 -- 
-1.6.2.3
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
