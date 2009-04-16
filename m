@@ -1,23 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 56D7FDDDA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 18:25:07 +1000 (EST)
-Subject: Re: [ppc64] 2.6.29-git7 : offlining a cpu causes an exception
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Sachin Sant <sachinp@in.ibm.com>
-In-Reply-To: <49E6C3F4.4080801@in.ibm.com>
-References: <49D1E21E.3090505@in.ibm.com>
-	<1238539469.17330.70.camel@pasglop> <49D30C48.4090902@in.ibm.com>
-	<49D3547E.8030200@in.ibm.com>  <49E6C3F4.4080801@in.ibm.com>
-Content-Type: text/plain
-Date: Thu, 16 Apr 2009 18:25:06 +1000
-Message-Id: <1239870306.14642.181.camel@localhost>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 27D85DDDFA
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 18:52:32 +1000 (EST)
+Date: Thu, 16 Apr 2009 10:52:16 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>
+Subject: Question about windfarm drivers
+Message-ID: <20090416105216.27c3f715@hyperion.delvare>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,48 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-04-16 at 11:06 +0530, Sachin Sant wrote:
-> Sachin Sant wrote:
-> > Sachin Sant wrote:
-> >> Benjamin Herrenschmidt wrote:
-> >>> On Tue, 2009-03-31 at 14:57 +0530, Sachin Sant wrote:
-> >>>  
-> >>>> While executing CPU HotPlug[1] tests i observed that during
-> >>>> every cpu offline process an exception is thrown.
-> >>>>     
-> >>>
-> >>> Looks like a BUG_ON() to me... can you look at what other
-> >>> messages just before that ?  
-> >>
-> > Ben, seems like the following patch is causing the cpu hotplug
-> > test failure.
-> > [PATCH 6/6] powerpc/mm: Introduce early_init_mmu() on 64-bit
-> >
-> > http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069613.html
-> >
-> > If i back out this patch, i am able to offline/online cpu's
-> > without any issue.
-> I can recreate this problem with 2.6.30-rc2-git1 as well. Same BUG_ON while
-> running cpu hotplug tests.
-> 
-> Let me know if there is any thing i can help to find a fix for this.
+Hi Ben, hi Paul,
 
-Hi Sachin,
+As I am converting the windfarm drivers to the new i2c device binding
+model, I need to understand how these drivers work currently. There's
+one thing I do not understand so I'd appreciate if you could explain it
+to me.
 
-Does this patch, on top of Ben's patch, fix it?
+I am looking at function wf_lm75_detach() in windfarm_lm75_sensor.c.
+This function is called by i2c-core if either i2c-powermac or
+windfarm_lm75_sensor is unloaded. It sets lm->i2c.adapter to NULL and
+then calls wf_unregister_sensor(), which in turn calls wf_put_sensor(),
+which calls wf_sensor_release() is the reference count drops to 0,
+which in turns call the driver's .release() method, that is,
+wf_lm75_release() in our case.
 
-cheers
+In wf_lm75_release(), i2c_detach_client() is called if and only if
+lm->i2c.adapter is set, which is not the case, and then the data
+structure, including the i2c client, is freed from memory. This means
+that the freed i2c client is still registered with i2c-core, this looks
+wrong.
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index db556d2..1ade7eb 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -753,7 +753,7 @@ void __init early_init_mmu(void)
- }
- 
- #ifdef CONFIG_SMP
--void __init early_init_mmu_secondary(void)
-+void __cpuinit early_init_mmu_secondary(void)
- {
-        /* Initialize hash table for that CPU */
-        if (!firmware_has_feature(FW_FEATURE_LPAR))
+Am I missing something? Or is this clean-up path broken and nobody ever
+noticed?
+
+I am also curious why wf_unregister_sensor() calls wf_put_sensor()
+while wf_register_sensor() doesn't call wf_get_sensor().
+
+Thanks,
+-- 
+Jean Delvare
