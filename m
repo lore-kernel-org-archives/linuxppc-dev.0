@@ -1,22 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 7ED5CDE164
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 06:57:38 +1000 (EST)
-Date: Fri, 17 Apr 2009 00:57:35 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: RFC Patch: Use x86 init_hwif in the alim15x3 for x86-like
-	PowerPC systems
-Message-ID: <20090416205735.GA26519@oksana.dev.rtsoft.ru>
-References: <c8485d470904150202s1f5c8cd7p34f0eaf4872f3e17@mail.gmail.com>
-	<c8485d470904150734s47ce0f27y3ae984355e823d9f@mail.gmail.com>
-	<200904162130.01237.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200904162130.01237.bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, Roderick Colenbrander <thunderbird2k@gmail.com>,
-	linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CB778DE1E5
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 06:59:45 +1000 (EST)
+Date: Thu, 16 Apr 2009 22:59:27 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] therm_adt746x: Convert to a new-style i2c driver
+Message-ID: <20090416225927.4254efc5@hyperion.delvare>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,91 +21,205 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 16, 2009 at 09:30:00PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Wednesday 15 April 2009 16:34:22 Roderick Colenbrander wrote:
-> > Hi,
-> > 
-> > I'm using a Xilinx ML510 it features a PowerPC 440 cpu inside a
-> > Virtex-5 FPGA. The board also contains a ALI M1533 south bridge
-> > for IDE, USB and Audio. I did a lot of work to get the pci bus working
-> > on this board and it works correctly but the default init code
-> > of the alim15x3 driver doesn't work for me. The driver explicitly
-> > disabled some initialization code for powerpc after uncommenting this
-> > code it works properly. Benjamin Herrenschmidt and I think this
-> > !CONFIG_PPC check should be removed because the system behaves
-> > like a real 'x86' system (also the i8259 interrupt controller is used).
-> 
-> Ben, I guess you are OK with the change and there are no longer other
-> platforms requiring CONFIG_PPC check below?  [I don't see your ACK here]
+The legacy i2c binding model is going away soon, so convert the ppc
+therm_adt746x driver to the new model or it will break.
 
-I'd like to nak this patch. It'll break MPC8610HPCD boards.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+---
+Can someone please test this patch for me? I could only build-test it.
 
-See commit 6d1cee44361b8d06ccd1812e80448d86ae60dfe3
+Remember that you need this patch applied:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=935298696f469c0e07c73be687bd055878074ce0
 
-I'm not sure how should we handle this for Xilinx PPC, MPC8610
-PPC and Sparc all at the same time, but it's obvious that #ifdef
-isn't enough any longer...
+Thanks.
 
+ drivers/macintosh/therm_adt746x.c |   84 ++++++++++++++++++-------------------
+ 1 file changed, 42 insertions(+), 42 deletions(-)
 
-
-> > Regards,
-> > Roderick Colenbrander
-> > 
-> > 
-> > From 1c40c2f1485ecd3bc5ad7a3af537cb94de0877c3 Mon Sep 17 00:00:00 2001
-> > From: Roderick Colenbrander <thunderbird2k@gmail.com>
-> > Date: Wed, 15 Apr 2009 10:45:17 +0200
-> > Subject: [PATCH] Use the 'x86' init_hwif code in the alim15x3 for
-> > x86-like PowerPC boards like Xilinx ML310/410/510.
-> 
-> Roderick, please add your "Signed-off-by:" line
-> (per Documentation/SubmittingPatches).
-> 
-> Thanks.
-> 
-> > ---
-> >  drivers/ide/alim15x3.c |    9 +++++----
-> >  1 files changed, 5 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/drivers/ide/alim15x3.c b/drivers/ide/alim15x3.c
-> > index 537da1c..9176c0f 100644
-> > --- a/drivers/ide/alim15x3.c
-> > +++ b/drivers/ide/alim15x3.c
-> > @@ -402,14 +402,15 @@ static u8 ali_cable_detect(ide_hwif_t *hwif)
-> >      return cbl;
-> >  }
-> > 
-> > -#if !defined(CONFIG_SPARC64) && !defined(CONFIG_PPC)
-> > +#if !defined(CONFIG_SPARC64)
-> >  /**
-> >   *    init_hwif_ali15x3    -    Initialize the ALI IDE x86 stuff
-> >   *    @hwif: interface to configure
-> >   *
-> >   *    Obtain the IRQ tables for an ALi based IDE solution on the PC
-> > - *    class platforms. This part of the code isn't applicable to the
-> > - *    Sparc and PowerPC systems.
-> > + *    class platforms. This part of the code isn't applicable to
-> > + *    Sparc systems. It is usable on 'x86-like' PowerPC systems
-> > + *      which use a Ali M15x3 south bridge like e.g. Xilinx ML310/410/510.
-> >   */
-> > 
-> >  static void __devinit init_hwif_ali15x3 (ide_hwif_t *hwif)
-> > @@ -455,7 +456,7 @@ static void __devinit init_hwif_ali15x3 (ide_hwif_t *hwif)
-> >  }
-> >  #else
-> >  #define init_hwif_ali15x3 NULL
-> > -#endif /* !defined(CONFIG_SPARC64) && !defined(CONFIG_PPC) */
-> > +#endif /* !defined(CONFIG_SPARC64) */
-> > 
-> >  /**
-> >   *    init_dma_ali15x3    -    set up DMA on ALi15x3
-> > --
-> > 1.5.6.3
+--- linux-2.6.30-rc2.orig/drivers/macintosh/therm_adt746x.c	2009-04-16 21:06:31.000000000 +0200
++++ linux-2.6.30-rc2/drivers/macintosh/therm_adt746x.c	2009-04-16 21:37:05.000000000 +0200
+@@ -71,7 +71,7 @@ MODULE_PARM_DESC(verbose,"Verbose log op
+ 		 "(default 0)");
+ 
+ struct thermostat {
+-	struct i2c_client	clt;
++	struct i2c_client	*clt;
+ 	u8			temps[3];
+ 	u8			cached_temp[3];
+ 	u8			initial_limits[3];
+@@ -86,9 +86,6 @@ static struct of_device * of_dev;
+ static struct thermostat* thermostat;
+ static struct task_struct *thread_therm = NULL;
+ 
+-static int attach_one_thermostat(struct i2c_adapter *adapter, int addr,
+-				 int busno);
+-
+ static void write_both_fan_speed(struct thermostat *th, int speed);
+ static void write_fan_speed(struct thermostat *th, int speed, int fan);
+ 
+@@ -100,7 +97,7 @@ write_reg(struct thermostat* th, int reg
+ 	
+ 	tmp[0] = reg;
+ 	tmp[1] = data;
+-	rc = i2c_master_send(&th->clt, (const char *)tmp, 2);
++	rc = i2c_master_send(th->clt, (const char *)tmp, 2);
+ 	if (rc < 0)
+ 		return rc;
+ 	if (rc != 2)
+@@ -115,12 +112,12 @@ read_reg(struct thermostat* th, int reg)
+ 	int rc;
+ 
+ 	reg_addr = (u8)reg;
+-	rc = i2c_master_send(&th->clt, &reg_addr, 1);
++	rc = i2c_master_send(th->clt, &reg_addr, 1);
+ 	if (rc < 0)
+ 		return rc;
+ 	if (rc != 1)
+ 		return -ENODEV;
+-	rc = i2c_master_recv(&th->clt, (char *)&data, 1);
++	rc = i2c_master_recv(th->clt, (char *)&data, 1);
+ 	if (rc < 0)
+ 		return rc;
+ 	return data;
+@@ -130,26 +127,36 @@ static int
+ attach_thermostat(struct i2c_adapter *adapter)
+ {
+ 	unsigned long bus_no;
++	struct i2c_board_info info;
++	struct i2c_client *client;
+ 
+ 	if (strncmp(adapter->name, "uni-n", 5))
+ 		return -ENODEV;
+ 	bus_no = simple_strtoul(adapter->name + 6, NULL, 10);
+ 	if (bus_no != therm_bus)
+ 		return -ENODEV;
+-	return attach_one_thermostat(adapter, therm_address, bus_no);
++
++	memset(&info, 0, sizeof(struct i2c_board_info));
++	strlcpy(info.type, "therm_adt746x", I2C_NAME_SIZE);
++	info.addr = therm_address;
++	client = i2c_new_device(adapter, &info);
++	if (!client)
++		return -ENODEV;
++
++	/*
++	 * Let i2c-core delete that device on driver removal.
++	 * This is safe because i2c-core holds the core_lock mutex for us.
++	 */
++	list_add_tail(&client->detected, &client->driver->clients);
++	return 0;
+ }
+ 
+ static int
+-detach_thermostat(struct i2c_adapter *adapter)
++remove_thermostat(struct i2c_client *client)
+ {
+-	struct thermostat* th;
++	struct thermostat *th = i2c_get_clientdata(client);
+ 	int i;
+ 	
+-	if (thermostat == NULL)
+-		return 0;
+-
+-	th = thermostat;
+-
+ 	if (thread_therm != NULL) {
+ 		kthread_stop(thread_therm);
+ 	}
+@@ -165,8 +172,6 @@ detach_thermostat(struct i2c_adapter *ad
+ 
+ 	write_both_fan_speed(th, -1);
+ 
+-	i2c_detach_client(&th->clt);
+-
+ 	thermostat = NULL;
+ 
+ 	kfree(th);
+@@ -174,14 +179,6 @@ detach_thermostat(struct i2c_adapter *ad
+ 	return 0;
+ }
+ 
+-static struct i2c_driver thermostat_driver = {  
+-	.driver = {
+-		.name	= "therm_adt746x",
+-	},
+-	.attach_adapter	= attach_thermostat,
+-	.detach_adapter	= detach_thermostat,
+-};
+-
+ static int read_fan_speed(struct thermostat *th, u8 addr)
+ {
+ 	u8 tmp[2];
+@@ -369,8 +366,8 @@ static void set_limit(struct thermostat
+ 		th->limits[i] = default_limits_local[i] + limit_adjust;
+ }
+ 
+-static int attach_one_thermostat(struct i2c_adapter *adapter, int addr,
+-				 int busno)
++static int probe_thermostat(struct i2c_client *client,
++			    const struct i2c_device_id *id)
+ {
+ 	struct thermostat* th;
+ 	int rc;
+@@ -383,16 +380,12 @@ static int attach_one_thermostat(struct
+ 	if (!th)
+ 		return -ENOMEM;
+ 
+-	th->clt.addr = addr;
+-	th->clt.adapter = adapter;
+-	th->clt.driver = &thermostat_driver;
+-	strcpy(th->clt.name, "thermostat");
++	i2c_set_clientdata(client, th);
++	th->clt = client;
+ 
+ 	rc = read_reg(th, 0);
+ 	if (rc < 0) {
+-		printk(KERN_ERR "adt746x: Thermostat failed to read config "
+-				"from bus %d !\n",
+-				busno);
++		dev_err(&client->dev, "Thermostat failed to read config!\n");
+ 		kfree(th);
+ 		return -ENODEV;
+ 	}
+@@ -421,14 +414,6 @@ static int attach_one_thermostat(struct
+ 
+ 	thermostat = th;
+ 
+-	if (i2c_attach_client(&th->clt)) {
+-		printk(KERN_INFO "adt746x: Thermostat failed to attach "
+-				 "client !\n");
+-		thermostat = NULL;
+-		kfree(th);
+-		return -ENODEV;
+-	}
+-
+ 	/* be sure to really write fan speed the first time */
+ 	th->last_speed[0] = -2;
+ 	th->last_speed[1] = -2;
+@@ -454,6 +439,21 @@ static int attach_one_thermostat(struct
+ 	return 0;
+ }
+ 
++static const struct i2c_device_id therm_adt746x_id[] = {
++	{ "therm_adt746x", 0 },
++	{ }
++};
++
++static struct i2c_driver thermostat_driver = {
++	.driver = {
++		.name	= "therm_adt746x",
++	},
++	.attach_adapter	= attach_thermostat,
++	.probe = probe_thermostat,
++	.remove = remove_thermostat,
++	.id_table = therm_adt746x_id,
++};
++
+ /* 
+  * Now, unfortunately, sysfs doesn't give us a nice void * we could
+  * pass around to the attribute functions, so we don't really have
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Jean Delvare
