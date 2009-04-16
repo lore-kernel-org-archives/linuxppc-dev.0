@@ -1,24 +1,30 @@
-Return-Path: <Qingtao.Cao@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id BB5A5DE0C1
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 13:41:51 +1000 (EST)
-Message-ID: <49E6A8CA.90601@windriver.com>
-Date: Thu, 16 Apr 2009 11:40:58 +0800
-From: Harry Ciao <qingtao.cao@windriver.com>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A2607DE223
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 15:37:03 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id n3G5aRbn017389
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 15:36:27 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3G5atW1287046
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 15:37:00 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3G5as6H021090
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 15:36:54 +1000
+Message-ID: <49E6C3F4.4080801@in.ibm.com>
+Date: Thu, 16 Apr 2009 11:06:52 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: + edac-cpc925-mc-platform-device-setup.patch added to -mm tree
-References: <200904152227.n3FMRmdm007192@imap1.linux-foundation.org>	
-	<98F905BD-B447-4FAA-A7FE-9FCD025A9079@kernel.crashing.org>	
-	<49E69098.6040903@windriver.com>
-	<1239848054.6572.20.camel@localhost>
-In-Reply-To: <1239848054.6572.20.camel@localhost>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [ppc64] 2.6.29-git7 : offlining a cpu causes an exception
+References: <49D1E21E.3090505@in.ibm.com> <1238539469.17330.70.camel@pasglop>
+	<49D30C48.4090902@in.ibm.com> <49D3547E.8030200@in.ibm.com>
+In-Reply-To: <49D3547E.8030200@in.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: mm-commits@vger.kernel.org,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@gate.crashing.org>,
-	Doug Thompson <norsk5@yahoo.com>, akpm@linux-foundation.org
-Reply-To: qingtao.cao@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,91 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Thu, 2009-04-16 at 09:57 +0800, Harry Ciao wrote:
->   
->> Kumar Gala wrote:
->>     
->>> On Apr 15, 2009, at 5:27 PM, akpm@linux-foundation.org wrote:
->>>       
->>>> arch/powerpc/kernel/prom_init.c      |   33 +++++++++++++
->>>> arch/powerpc/platforms/maple/setup.c |   59 +++++++++++++++++++++++++
->>>> 2 files changed, 92 insertions(+)
->>>>
->>>> diff -puN 
->>>> arch/powerpc/kernel/prom_init.c~edac-cpc925-mc-platform-device-setup 
->>>> arch/powerpc/kernel/prom_init.c
->>>> --- 
->>>> a/arch/powerpc/kernel/prom_init.c~edac-cpc925-mc-platform-device-setup
->>>> +++ a/arch/powerpc/kernel/prom_init.c
->>>> @@ -1947,8 +1947,40 @@ static void __init fixup_device_tree_map
->>>>     prom_setprop(isa, name, "ranges",
->>>>             isa_ranges, sizeof(isa_ranges));
->>>> }
->>>> +
->>>> +#define CPC925_MC_START        0xf8000000
->>>> +#define CPC925_MC_LENGTH    0x1000000
->>>> +/* The values for memory-controller don't have right number of cells */
->>>> +static void __init fixup_device_tree_maple_memory_controller(void)
->>>> +{
->>>>         
->>> I don't see why this cant be part of the existing 
->>> fixup_device_tree_maple().
+Sachin Sant wrote:
+> Sachin Sant wrote:
+>> Benjamin Herrenschmidt wrote:
+>>> On Tue, 2009-03-31 at 14:57 +0530, Sachin Sant wrote:
+>>>  
+>>>> While executing CPU HotPlug[1] tests i observed that during
+>>>> every cpu offline process an exception is thrown.
+>>>>     
 >>>
->>> I also find it odd we don't ensure we are running on a maple before we 
->>> apply this fixup.
->>>       
->
->   
->> Hi Kumar,
+>>> Looks like a BUG_ON() to me... can you look at what other
+>>> messages just before that ?  
 >>
->> Thanks a lot for your concern.
->>
->> This newly added fixup for memory controller on Maple will be placed 
->> right after fixup_device_tree_maple(), both of them will be controlled 
->> by CONFIG_PPC_MAPLE, so there is no worry that it will be applied 
->> against anything other than Maple.
->>     
+> Ben, seems like the following patch is causing the cpu hotplug
+> test failure.
+> [PATCH 6/6] powerpc/mm: Introduce early_init_mmu() on 64-bit
 >
-> Hi Harry,
+> http://ozlabs.org/pipermail/linuxppc-dev/2009-March/069613.html
 >
-> We regularly build a single kernel with multiple platforms enabled, so
-> just having it controlled by a CONFIG symbol is not sufficient. Someone
-> might build a kernel for MAPLE & PSERIES & ISERIES & CELL, so the maple
-> fixup needs to be careful it doesn't break the other platforms.
->
-> The existing maple fixup doesn't check if it's on a maple either, but it
-> is a bit more discerning about what it finds before it fixes things up.
->
-> Your code already checks that "reg" is 8 bytes long to start with, I
-> think if it also checks that #address-cells and #size-cells are == 2,
-> then it's pretty safe. Because at that point we know we have a node with
-> the right name, the reg property has a known value, and reg is short WRT
-> #cells.
->
->   
-Many thanks Michael!
+> If i back out this patch, i am able to offline/online cpu's
+> without any issue.
+I can recreate this problem with 2.6.30-rc2-git1 as well. Same BUG_ON while
+running cpu hotplug tests.
 
-That makes a lot of sense to me :) I will integrate the check if both 
-its parent #address-cells and #size-cells equal to 2 before fixing 
-anything up. The fact that the reg length == 8 bytes whereas parent's 
-cells are 2 validate our fixup is necessary.
+Let me know if there is any thing i can help to find a fix for this.
 
-Best regards,
-
-Harry
+Thanks
+-Sachin
 
 
->> Meanwhile, it aims at fixup bad cell numbers for the memory controller, 
->> whereas the original fixup_device_tree_maple() aiming at fixing up the 
->> ISA controller on HT channel, we'd better separate them in different 
->> function IMHO.
->>     
->
-> I think I agree it's better as a separate routine. We could have a
-> firmware that doesn't need the original maple fixup (and so exits from
-> that routine early) but does need this one.
->
-> cheers
->
->   
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
