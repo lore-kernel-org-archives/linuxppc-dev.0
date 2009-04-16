@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0FEAC5F109
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 05:29:31 +1000 (EST)
-Message-Id: <C17084D8-19F7-48D2-8E7E-2DE561108A90@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <49E78620.7070303@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: issues w/init
-Date: Thu, 16 Apr 2009 14:27:18 -0500
-References: <680ABFDC-A67F-48BB-B46C-564CB5373FEB@kernel.crashing.org>
-	<88F07543-B7F6-4F27-B5FB-4780AD069D7E@kernel.crashing.org>
-	<49E78620.7070303@freescale.com>
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <49E787DC.2050800@am.sony.com>
+Date: Thu, 16 Apr 2009 12:32:44 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: subrata@linux.vnet.ibm.com
+Subject: Re: [BUILD FAILURE 03/12] Next April 14 : PPC64
+	randconfig	[arch/powerpc/platforms/ps3/setup.c]
+References: <1239733704.5344.75.camel@subratamodak.linux.ibm.com>
+In-Reply-To: <1239733704.5344.75.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	linux-next <linux-next@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Alexander Beregalov <a.beregalov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 04/14/2009 11:28 AM, Subrata Modak wrote:
+> Observed the following build error:
+> ---
+> arch/powerpc/platforms/ps3/setup.c:49: error: redefinition of
+> =E2=80=98smp_send_stop=E2=80=99
+> include/linux/smp.h:125: error: previous definition of =E2=80=98smp_sen=
+d_stop=E2=80=99
+> was here
 
-On Apr 16, 2009, at 2:25 PM, Scott Wood wrote:
+Hi Subrata,
 
-> Kumar Gala wrote:
->> [root:~] cat /proc/1/maps
->> 00100000-00103000 r-xp 00100000 00:00 0          [vdso]
->> 0feab000-0ffbe000 r-xp 00000000 00:0d 7127086    /lib/libc-2.2.5.so
->> 0ffbe000-0ffcb000 ---p 00113000 00:0d 7127086    /lib/libc-2.2.5.so
->> 0ffcb000-0ffeb000 rw-p 00110000 00:0d 7127086    /lib/libc-2.2.5.so
->
-> IIRC, this libc is old enough to execute out of non-exec memory in  
-> some cases.
+Thanks for the report.  I submitted a fix to the powerpc ML:
 
-Yeah, I'm going to that realization.  The question is are we ok with  
-breaking older versions of libc like this.
+ http://patchwork.ozlabs.org/patch/26084/
 
-- k
+-Geoff
