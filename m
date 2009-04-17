@@ -1,23 +1,25 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 9C43DDE090
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 03:22:39 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 31so107048yxl.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 10:22:38 -0700 (PDT)
-MIME-Version: 1.0
-Sender: jwboyer@gmail.com
-In-Reply-To: <20090417154628.43F859D0055@mail178-wa4.bigfish.com>
-References: <20090414203313.8D8F11BE8056@mail209-sin.bigfish.com>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C0729E57E@SDCEXCHANGE01.ad.amcc.com>
-	<20090417154628.43F859D0055@mail178-wa4.bigfish.com>
-Date: Fri, 17 Apr 2009 13:22:37 -0400
-Message-ID: <625fc13d0904171022u4d7d5d8cve0ccfb74cc31f554@mail.gmail.com>
-Subject: Re: Question about DBCR0 initialization for 440
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: John Linn <John.Linn@xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, hollisb@us.ibm.com,
-	Tirumala Reddy Marri <tmarri@amcc.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5A3B2DE0AC
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 03:39:05 +1000 (EST)
+Message-Id: <87783420-F027-486A-8ABD-3708DE5E21BA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1239987912.7210.17.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: pci32 code - early_*config*
+Date: Fri, 17 Apr 2009 12:38:56 -0500
+References: <8393884A-D1B0-4081-980C-CF464A38FD6C@kernel.crashing.org>
+	<1239953159.7443.33.camel@pasglop>
+	<c8485d470904170103g35e331b0g95d83613ed4bc1f4@mail.gmail.com>
+	<1239957182.7443.58.camel@pasglop>
+	<5A611DAC-A7E2-4E96-A087-B9BFD8DF59F9@kernel.crashing.org>
+	<1239987912.7210.17.camel@pasglop>
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Roderick Colenbrander <thunderbird2k@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 17, 2009 at 11:46 AM, John Linn <John.Linn@xilinx.com> wrote:
-> Josh, any thoughts on putting this into head_44x.S?
 
-The code in the fsl file looks like the right solution.  I do have an
-odd question though, in that it's hard for the
-kernel to really know if something like a BDI is running.  Namely,
-that config option doesn't cover RiscWatch in an obvious manner.
+On Apr 17, 2009, at 12:05 PM, Benjamin Herrenschmidt wrote:
 
-I also wonder if it's possible to have a host system be setting those
-registers in a guest KVM system so the guest could be debugged with
-gdb...  Hollis, any idea on that?
+> On Fri, 2009-04-17 at 09:08 -0500, Kumar Gala wrote:
+>> The problem is that the "normal" PCI config access routines need a
+>> pci_bus.  However we don't have one yet and we need to do PCI config
+>> cycles to the PHB before we call the remainder of the setup code to
+>> get one.
+>>
+>> We could all call our own ops directly and provide a fake bus but
+>> this
+>> is pretty much what the early routines do for us in a common way.
+>
+> Ah right, slipped out of my mind. Oh well, easy to make the code
+> common, move it to pci-common.c
 
-josh
+Right, I can do that... In doing so I was wondering two things w/ 
+regards to fake_pci_bus:
+
+1. can we drop the hose == 0 check, it looks like there are 3 users of  
+the early pci ops code (fsl, 4xx, pmac).  The FSL one I can say passes  
+a valid hose in and it looks like 4xx does as well.  The pmac code is  
+always a bit more trick so I figured you might know
+
+2. Do we believe those hose->ops is always valid -- again FSL & 4xx it  
+is, pmac??
+
+static struct pci_bus *
+fake_pci_bus(struct pci_controller *hose, int busnr)
+{
+         static struct pci_bus bus;
+
+         if (hose == 0) {
+                 hose = pci_bus_to_hose(busnr);
+                 if (hose == 0)
+                         printk(KERN_ERR "Can't find hose for PCI bus  
+%d!\n", busnr);
+         }
+         bus.number = busnr;
+         bus.sysdata = hose;
+         bus.ops = hose? hose->ops: &null_pci_ops;
+         return &bus;
+}
