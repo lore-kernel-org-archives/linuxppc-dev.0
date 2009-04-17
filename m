@@ -1,19 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id EC00EDE1A0
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 15:59:18 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so769975qwb.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 22:59:14 -0700 (PDT)
+Return-Path: <monstr@monstr.eu>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.156])
+	by ozlabs.org (Postfix) with ESMTP id 026CFDE1A5
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 16:08:48 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id e21so316675fga.16
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 23:08:46 -0700 (PDT)
+Message-ID: <49E81CED.1000704@monstr.eu>
+Date: Fri, 17 Apr 2009 08:08:45 +0200
+From: Michal Simek <monstr@monstr.eu>
 MIME-Version: 1.0
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 16 Apr 2009 23:58:59 -0600
-Message-ID: <fa686aa40904162258i450c86e9k303933d41405c89b@mail.gmail.com>
-Subject: Please pull merge branch from git.secretlab.ca
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Proposed prom parse fix + moving.
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stefan Roese <sr@denx.de>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Subrata Modak <subrata@linux.vnet.ibm.com>
+Cc: ilpo.jarvinen@helsinki.fi, Arnd Bergmann <arnd@arndb.de>
+Reply-To: monstr@monstr.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +22,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben/Paul,
+Hi All,
 
-Here are some fixups and documentation updates for 2.6.30
+I have got email from Ilpo about prom_parse file.
+I take this file from powerpc. Who did write prom_parse file and take care about?
 
-The following changes since commit 0882e8dd3aad33eca41696d463bb896e6c8817eb:
-  Linus Torvalds (1):
-        Linux 2.6.30-rc2
+BTW: What about to move prom_parse file to any generic location as we discussed in past?
+Any volunteer?
 
-are available in the git repository at:
+Thanks,
+Michal
 
-  git://git.secretlab.ca/git/linux-2.6 merge
 
-Anton Vorontsov (1):
-      powerpc/5200: Bring the legacy fsl_spi_platform_data hooks back
+-------- Original Message --------
+Subject: [RFC!] [PATCH] microblaze: fix bug in error handling
+Date: Thu, 16 Apr 2009 23:05:53 +0300 (EEST)
+From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+To: monstr@monstr.eu
+CC: microblaze-uclinux@itee.uq.edu.au
 
-Grant Likely (1):
-      powerpc/5200: Add FLASH nodes to lite5200 device tree
+While some version of the patches were on the lkml I read
+some part of the code briefly through but my feedback got
+stuck into postponed emails, so here's one correctness
+related issue I might have found (the rest were just
+cosmetic things).
 
-Stefan Roese (2):
-      powerpc/of-device-tree: Factor MTD physmap bindings out of
-booting-without-of
-      powerpc/device-tree: Document MTD nodes with multiple "reg" tuples
+I'm not sure if the latter return needs the of_node_put or not
+but it seems more likely than not.
 
- Documentation/powerpc/booting-without-of.txt       |   89 +++-----------------
- Documentation/powerpc/dts-bindings/mtd-physmap.txt |   80 ++++++++++++++++++
- arch/powerpc/boot/dts/lite5200b.dts                |   39 +++++++++
- include/linux/fsl_devices.h                        |    4 +
- 4 files changed, 135 insertions(+), 77 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/mtd-physmap.txt
+Not even compile tested.
+
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ arch/microblaze/kernel/prom_parse.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/arch/microblaze/kernel/prom_parse.c b/arch/microblaze/kernel/prom_parse.c
+index ae0352e..d1174bc 100644
+--- a/arch/microblaze/kernel/prom_parse.c
++++ b/arch/microblaze/kernel/prom_parse.c
+@@ -927,20 +927,23 @@ int of_irq_map_one(struct device_node *device,
+ 	/* Get size of interrupt specifier */
+ 	tmp = of_get_property(p, "#interrupt-cells", NULL);
+ 	if (tmp == NULL) {
+-		of_node_put(p);
+-		return -EINVAL;
++		res = -EINVAL;
++		goto out;
+ 	}
+ 	intsize = *tmp;
+
+ 	pr_debug(" intsize=%d intlen=%d\n", intsize, intlen);
+
+ 	/* Check index */
+-	if ((index + 1) * intsize > intlen)
+-		return -EINVAL;
++	if ((index + 1) * intsize > intlen) {
++		res = -EINVAL;
++		goto out;
++	}
+
+ 	/* Get new specifier and map it */
+ 	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
+ 				addr, out_irq);
++out:
+ 	of_node_put(p);
+ 	return res;
+ }
+-- 
+1.5.6.5
 
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
