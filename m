@@ -1,17 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 31F55DE0EE
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 08:03:51 +1000 (EST)
-Date: Sat, 18 Apr 2009 02:03:48 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH] ucc_geth: Move freeing of TX packets to NAPI context
-Message-ID: <20090417220348.GA5429@oksana.dev.rtsoft.ru>
+Return-Path: <ilpo.jarvinen@helsinki.fi>
+Received: from mail.cs.helsinki.fi (courier.cs.helsinki.fi [128.214.9.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 10D91DE128
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 08:07:49 +1000 (EST)
+Date: Sat, 18 Apr 2009 01:07:43 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+To: benh@kernel.crashing.org
+Subject: Re: Proposed prom parse fix + moving.
+In-Reply-To: <Pine.LNX.4.64.0904171601020.10088@wrl-59.cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0904180057290.2522@wrl-59.cs.helsinki.fi>
+References: <49E81CED.1000704@monstr.eu>
+	<fa686aa40904162344y67115e50lf48c174501120b30@mail.gmail.com>
+	<49E87D25.8090001@monstr.eu>
+	<Pine.LNX.4.64.0904171601020.10088@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	Andy Fleming <afleming@freescale.com>,
-	Joakim Tjernlund <Joakim.Tjernlund@transmode.se>, linuxppc-dev@ozlabs.org
+Content-Type: MULTIPART/Mixed; boundary="-696208474-14043735-1239973323=:10088"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michal Simek <monstr@monstr.eu>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,109 +27,161 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This will make the system alot more responsive while ping flooding the
-ucc_geth ethernet interface.
+---696208474-14043735-1239973323=:10088
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0904180057292.2522@wrl-59.cs.helsinki.fi>
 
-Also set NAPI weight to 64 as this is a common value.
+On Fri, 17 Apr 2009, Ilpo Järvinen wrote:
 
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> On Fri, 17 Apr 2009, Michal Simek wrote:
+> 
+> > Grant Likely wrote:
+> > > On Fri, Apr 17, 2009 at 12:08 AM, Michal Simek <monstr@monstr.eu> wrote:
+> > >> Hi All,
+> > >>
+> > >> I have got email from Ilpo about prom_parse file.
+> > >> I take this file from powerpc. Who did write prom_parse file and take care about?
+> > > 
+> > > Posting to the linuxppc-dev list is sufficient to start.  There are
+> > > several people who may be interested.
+> > > 
+> > >> BTW: What about to move prom_parse file to any generic location as we discussed in past?
+> > >> Any volunteer?
+> > > 
+> > > I'm kind of working on it.  More specifically, I'm looking at
+> > > factoring out fdt stuff into common code (drivers/of/of_fdt.c). But I
+> > > haven't made a whole lot of progress yet.
+> > > 
+> > >> -------- Original Message --------
+> > >> Subject: [RFC!] [PATCH] microblaze: fix bug in error handling
+> > >> Date: Thu, 16 Apr 2009 23:05:53 +0300 (EEST)
+> > >> From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> > >> To: monstr@monstr.eu
+> > >> CC: microblaze-uclinux@itee.uq.edu.au
+> > >>
+> > >> While some version of the patches were on the lkml I read
+> > >> some part of the code briefly through but my feedback got
+> > >> stuck into postponed emails, so here's one correctness
+> > >> related issue I might have found (the rest were just
+> > >> cosmetic things).
+> > >>
+> > >> I'm not sure if the latter return needs the of_node_put or not
+> > >> but it seems more likely than not.
+> > > 
+> > > Yes, it does.  This change is applicable to
+> > > arch/powerpc/kernel/prom_parse.c too.
+> > 
+> > ok.
+> > Ilpo: Can you create patch for both architectures?
+> 
+> Sure, but tomorrow as today is a deadline day :-).
+
+Ok, here's combined patch for both. I came up with slightly
+shorter and (IMHO) nicer variant for -EINVAL assignment than
+in the first version.
+
+--
+[PATCH] powerpc & microblaze: add missing of_node_put to error handling
+
+While reviewing some microblaze patches a while ago, I noticed
+a suspicious error handling in of_irq_map_one(), which turned
+out to be a copy from arch/powerpc. Grant Likely
+<grant.likely@secretlab.ca> confirmed that this is a real bug.
+
+Merge error handling paths using goto with the normal return
+path.
+
+Powerppc compile tested.
+
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 ---
- drivers/net/ucc_geth.c |   31 +++++++++++--------------------
- drivers/net/ucc_geth.h |    1 -
- 2 files changed, 11 insertions(+), 21 deletions(-)
+ arch/microblaze/kernel/prom_parse.c |   11 +++++------
+ arch/powerpc/kernel/prom_parse.c    |   11 +++++------
+ 2 files changed, 10 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index d3f39e8..98f961e 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -3216,7 +3216,7 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
- 		dev->stats.tx_packets++;
+diff --git a/arch/microblaze/kernel/prom_parse.c b/arch/microblaze/kernel/prom_parse.c
+index ae0352e..d16c32f 100644
+--- a/arch/microblaze/kernel/prom_parse.c
++++ b/arch/microblaze/kernel/prom_parse.c
+@@ -903,7 +903,7 @@ int of_irq_map_one(struct device_node *device,
+ 	struct device_node *p;
+ 	const u32 *intspec, *tmp, *addr;
+ 	u32 intsize, intlen;
+-	int res;
++	int res = -EINVAL;
  
- 		/* Free the sk buffer associated with this TxBD */
--		dev_kfree_skb_irq(ugeth->
-+		dev_kfree_skb(ugeth->
- 				  tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]]);
- 		ugeth->tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]] = NULL;
- 		ugeth->skb_dirtytx[txQ] =
-@@ -3250,9 +3250,15 @@ static int ucc_geth_poll(struct napi_struct *napi, int budget)
- 	for (i = 0; i < ug_info->numQueuesRx; i++)
- 		howmany += ucc_geth_rx(ugeth, i, budget - howmany);
+ 	pr_debug("of_irq_map_one: dev=%s, index=%d\n",
+ 			device->full_name, index);
+@@ -926,21 +926,20 @@ int of_irq_map_one(struct device_node *device,
  
-+	/* Tx event processing */
-+	spin_lock(&ugeth->lock);
-+	for (i = 0; i < ug_info->numQueuesTx; i++)
-+		ucc_geth_tx(ugeth->ndev, i);
-+	spin_unlock(&ugeth->lock);
-+
- 	if (howmany < budget) {
- 		napi_complete(napi);
--		setbits32(ugeth->uccf->p_uccm, UCCE_RX_EVENTS);
-+		setbits32(ugeth->uccf->p_uccm, UCCE_RX_EVENTS | UCCE_TX_EVENTS);
- 	}
- 
- 	return howmany;
-@@ -3266,8 +3272,6 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
- 	struct ucc_geth_info *ug_info;
- 	register u32 ucce;
- 	register u32 uccm;
--	register u32 tx_mask;
--	u8 i;
- 
- 	ugeth_vdbg("%s: IN", __func__);
- 
-@@ -3281,27 +3285,14 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
- 	out_be32(uccf->p_ucce, ucce);
- 
- 	/* check for receive events that require processing */
--	if (ucce & UCCE_RX_EVENTS) {
-+	if (ucce & (UCCE_RX_EVENTS | UCCE_TX_EVENTS)) {
- 		if (napi_schedule_prep(&ugeth->napi)) {
--			uccm &= ~UCCE_RX_EVENTS;
-+			uccm &= ~(UCCE_RX_EVENTS | UCCE_TX_EVENTS);
- 			out_be32(uccf->p_uccm, uccm);
- 			__napi_schedule(&ugeth->napi);
- 		}
- 	}
- 
--	/* Tx event processing */
--	if (ucce & UCCE_TX_EVENTS) {
--		spin_lock(&ugeth->lock);
--		tx_mask = UCC_GETH_UCCE_TXB0;
--		for (i = 0; i < ug_info->numQueuesTx; i++) {
--			if (ucce & tx_mask)
--				ucc_geth_tx(dev, i);
--			ucce &= ~tx_mask;
--			tx_mask <<= 1;
--		}
--		spin_unlock(&ugeth->lock);
+ 	/* Get size of interrupt specifier */
+ 	tmp = of_get_property(p, "#interrupt-cells", NULL);
+-	if (tmp == NULL) {
+-		of_node_put(p);
+-		return -EINVAL;
 -	}
--
- 	/* Errors and other events */
- 	if (ucce & UCCE_OTHER) {
- 		if (ucce & UCC_GETH_UCCE_BSY)
-@@ -3734,7 +3725,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 	dev->netdev_ops = &ucc_geth_netdev_ops;
- 	dev->watchdog_timeo = TX_TIMEOUT;
- 	INIT_WORK(&ugeth->timeout_work, ucc_geth_timeout_work);
--	netif_napi_add(dev, &ugeth->napi, ucc_geth_poll, UCC_GETH_DEV_WEIGHT);
-+	netif_napi_add(dev, &ugeth->napi, ucc_geth_poll, 64);
- 	dev->mtu = 1500;
++	if (tmp == NULL)
++		goto out;
+ 	intsize = *tmp;
  
- 	ugeth->msg_enable = netif_msg_init(debug.msg_enable, UGETH_MSG_DEFAULT);
-diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
-index 2f8ee7c..6027647 100644
---- a/drivers/net/ucc_geth.h
-+++ b/drivers/net/ucc_geth.h
-@@ -852,7 +852,6 @@ struct ucc_geth_hardware_statistics {
- /* Driver definitions */
- #define TX_BD_RING_LEN                          0x10
- #define RX_BD_RING_LEN                          0x10
--#define UCC_GETH_DEV_WEIGHT                     TX_BD_RING_LEN
+ 	pr_debug(" intsize=%d intlen=%d\n", intsize, intlen);
  
- #define TX_RING_MOD_MASK(size)                  (size-1)
- #define RX_RING_MOD_MASK(size)                  (size-1)
+ 	/* Check index */
+ 	if ((index + 1) * intsize > intlen)
+-		return -EINVAL;
++		goto out;
+ 
+ 	/* Get new specifier and map it */
+ 	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
+ 				addr, out_irq);
++out:
+ 	of_node_put(p);
+ 	return res;
+ }
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index 8f0856f..8362620 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -971,7 +971,7 @@ int of_irq_map_one(struct device_node *device, int index, struct of_irq *out_irq
+ 	struct device_node *p;
+ 	const u32 *intspec, *tmp, *addr;
+ 	u32 intsize, intlen;
+-	int res;
++	int res = -EINVAL;
+ 
+ 	DBG("of_irq_map_one: dev=%s, index=%d\n", device->full_name, index);
+ 
+@@ -995,21 +995,20 @@ int of_irq_map_one(struct device_node *device, int index, struct of_irq *out_irq
+ 
+ 	/* Get size of interrupt specifier */
+ 	tmp = of_get_property(p, "#interrupt-cells", NULL);
+-	if (tmp == NULL) {
+-		of_node_put(p);
+-		return -EINVAL;
+-	}
++	if (tmp == NULL)
++		goto out;
+ 	intsize = *tmp;
+ 
+ 	DBG(" intsize=%d intlen=%d\n", intsize, intlen);
+ 
+ 	/* Check index */
+ 	if ((index + 1) * intsize > intlen)
+-		return -EINVAL;
++		goto out;
+ 
+ 	/* Get new specifier and map it */
+ 	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
+ 			     addr, out_irq);
++out:
+ 	of_node_put(p);
+ 	return res;
+ }
 -- 
-1.6.2.2
+1.5.6.5
+
+---696208474-14043735-1239973323=:10088--
