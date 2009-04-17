@@ -1,25 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C4D38DE0CD
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 20:44:22 +1000 (EST)
-Subject: Re: issues w/init
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18920.21593.737132.732053@cargo.ozlabs.ibm.com>
-References: <680ABFDC-A67F-48BB-B46C-564CB5373FEB@kernel.crashing.org>
-	<88F07543-B7F6-4F27-B5FB-4780AD069D7E@kernel.crashing.org>
-	<49E78620.7070303@freescale.com>
-	<C17084D8-19F7-48D2-8E7E-2DE561108A90@kernel.crashing.org>
-	<1239953907.7443.45.camel@pasglop>
-	<18920.21593.737132.732053@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 12:41:00 +0200
-Message-Id: <1239964860.7443.65.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 57323DE0B6
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 22:24:02 +1000 (EST)
+Date: Fri, 17 Apr 2009 16:23:59 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [PATCH 6/6] powerpc/fsl_soc: Isolate legacy fsl_spi support to
+	mpc832x_rdb boards
+Message-ID: <20090417122359.GA6707@oksana.dev.rtsoft.ru>
+References: <20090123195041.GF21237@oksana.dev.rtsoft.ru>
+	<20090123194958.GA17355@oksana.dev.rtsoft.ru>
+	<87bpr71p1o.fsf_-_@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <87bpr71p1o.fsf_-_@macbook.be.48ers.dk>
+Cc: spi-devel-general@lists.sourceforge.net,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +28,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2009-04-17 at 20:05 +1000, Paul Mackerras wrote:
-> Benjamin Herrenschmidt writes:
+Hi Peter,
+
+Sorry for the late response (and don't hesitate to ping me if I
+don't answer, some things get lost in my inbox traffic, sorry).
+
+On Wed, Apr 08, 2009 at 11:18:43AM +0200, Peter Korsgaard wrote:
+> >>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
 > 
-> > I'm pretty sure they are broken already when running off a 64-bit
-> > kernel,
+> Hi,
 > 
-> Maybe not... for 64-bit kernels we have our definition of
-> elf_read_implies_exec in arch/powerpc/include/asm/elf.h, which IIRC
-> sets the read-implies-exec personality thing on old 32-bit binaries.
+>  Anton> The advantages of this:
+>  Anton> - Don't encourage legacy support;
+>  Anton> - Less external symbols, less code to compile-in for !MPC832x_RDB
+>  Anton>   platforms.
+> 
+> It's nice with your cleanups, but I wonder how to handle more
+> complicated chip select handling than simply toggling a single gpio.
+> 
+> I have a board (or 2 actually, but they are similar in this regard)
+> with a mpc8347 using SPI to a number of addon boards. For signal
+> integrity reasons the SPI signals are routed to a MUX, so the chip
+> select logic has to set the MUX in addition to controlling the CS line
+> of the device.
 
-Ok, so looking at that more closely, if that had worked, we would
-have had PROT_EXEC, and thus VM_EXEC added to the vma by mmap... which
-apparently didn't occur.
+So that's just a bit complicated GPIO controller. I believe you
+should describe it in the device tree and use it's muxed lines as
+usual GPIOs.
 
-I think what may be happening is that the binary he's running has the
-PT_GNU_STACK but his libc doesn't ... the kernel will set the
-personality flag based on the binary you are trying to run, not any
-library it uses...
+Something ling
 
-Kumar, can you try to instrument that a bit and tell us ? What the
-personality flag gets set to and whether mmap sets PROT_EXEC ?
+muxed_pio: gpio-controller@.. {
+	#gpio-cells = <2>;
+	compatible = "..,<board>-muxed-gpios";
+	reg = <...>;
+	gpios = <...>; <- specify pure BLK1, BLK2, OPT1, OPT2 GPIOs
+	gpio-controller;
+};
 
-Cheers,
-Ben.
+And then,
+
+> I've been using code like this since late 2007, but this patch
+> ofcourse breaks it:
+> 
+> static void thinx_spi_activate_cs(u8 cs, u8 polarity)
+> {
+> 	static u8 old_cs = 255;
+> 
+> 	if (cs != old_cs) {
+> 		/* mux setup (cs 2:1)*/
+> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_NOE, 1);
+> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_SEL0, cs&2);
+> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_SEL1, cs&4);
+> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_NOE, 0);
+> 		old_cs = cs;
+> 	}
+> 
+> 	switch (cs) {
+> 	case 0: gpio_set_value(gpio1 + GPIO_SPI_CS_BKL1, polarity); break;
+> 	case 1: gpio_set_value(gpio1 + GPIO_SPI_CS_BKL2, polarity); break;
+> 	case 2: gpio_set_value(gpio1 + GPIO_SPI_CS_OPT1, polarity); break;
+> 	case 3: gpio_set_value(gpio1 + GPIO_SPI_CS_OPT2, polarity); break;
+> 	}
+> }
+
+^^^ Put this logic into the "<board>-muxed-gpios" GPIO controller
+driver.
+
+Then spi node would look like this:
+
+spi-controller@.. {
+	...
+	gpios = <&muxed_pio cs1 0   /* muxed CS_BLK1 */
+		 &muxed_pio cs2 0   /* muxed CS_BLK2 */
+		 &muxed_pio cs3 0   /* muxed CS_OPT1 */
+		 &muxed_pio cs4 0>; /* muxed CS_OPT2 */
+};
+
+Hope this helps,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
