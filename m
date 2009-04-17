@@ -1,21 +1,27 @@
-Return-Path: <ilpo.jarvinen@helsinki.fi>
-Received: from mail.cs.helsinki.fi (courier.cs.helsinki.fi [128.214.9.1])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10C73DDDF0
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 23:07:19 +1000 (EST)
-Date: Fri, 17 Apr 2009 16:02:03 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-To: Michal Simek <monstr@monstr.eu>
-Subject: Re: Proposed prom parse fix + moving.
-In-Reply-To: <49E87D25.8090001@monstr.eu>
-Message-ID: <Pine.LNX.4.64.0904171601020.10088@wrl-59.cs.helsinki.fi>
-References: <49E81CED.1000704@monstr.eu>
-	<fa686aa40904162344y67115e50lf48c174501120b30@mail.gmail.com>
-	<49E87D25.8090001@monstr.eu>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-14043735-1239973323=:10088"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTPS id 874DBDDF81
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 23:25:28 +1000 (EST)
+Message-Id: <087C29B1-39CA-4A32-81E6-533FAD21A2BC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1239964860.7443.65.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: issues w/init
+Date: Fri, 17 Apr 2009 08:23:17 -0500
+References: <680ABFDC-A67F-48BB-B46C-564CB5373FEB@kernel.crashing.org>
+	<88F07543-B7F6-4F27-B5FB-4780AD069D7E@kernel.crashing.org>
+	<49E78620.7070303@freescale.com>
+	<C17084D8-19F7-48D2-8E7E-2DE561108A90@kernel.crashing.org>
+	<1239953907.7443.45.camel@pasglop>
+	<18920.21593.737132.732053@cargo.ozlabs.ibm.com>
+	<1239964860.7443.65.camel@pasglop>
+Cc: Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,56 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----696208474-14043735-1239973323=:10088
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+On Apr 17, 2009, at 5:41 AM, Benjamin Herrenschmidt wrote:
 
-On Fri, 17 Apr 2009, Michal Simek wrote:
+> On Fri, 2009-04-17 at 20:05 +1000, Paul Mackerras wrote:
+>> Benjamin Herrenschmidt writes:
+>>
+>>> I'm pretty sure they are broken already when running off a 64-bit
+>>> kernel,
+>>
+>> Maybe not... for 64-bit kernels we have our definition of
+>> elf_read_implies_exec in arch/powerpc/include/asm/elf.h, which IIRC
+>> sets the read-implies-exec personality thing on old 32-bit binaries.
+>
+> Ok, so looking at that more closely, if that had worked, we would
+> have had PROT_EXEC, and thus VM_EXEC added to the vma by mmap... which
+> apparently didn't occur.
+>
+> I think what may be happening is that the binary he's running has the
+> PT_GNU_STACK but his libc doesn't ... the kernel will set the
+> personality flag based on the binary you are trying to run, not any
+> library it uses...
+>
+> Kumar, can you try to instrument that a bit and tell us ? What the
+> personality flag gets set to and whether mmap sets PROT_EXEC ?
 
-> Grant Likely wrote:
-> > On Fri, Apr 17, 2009 at 12:08 AM, Michal Simek <monstr@monstr.eu> wrote:
-> >> Hi All,
-> >>
-> >> I have got email from Ilpo about prom_parse file.
-> >> I take this file from powerpc. Who did write prom_parse file and take care about?
-> > 
-> > Posting to the linuxppc-dev list is sufficient to start.  There are
-> > several people who may be interested.
-> > 
-> >> BTW: What about to move prom_parse file to any generic location as we discussed in past?
-> >> Any volunteer?
-> > 
-> > I'm kind of working on it.  More specifically, I'm looking at
-> > factoring out fdt stuff into common code (drivers/of/of_fdt.c). But I
-> > haven't made a whole lot of progress yet.
-> > 
-> >> -------- Original Message --------
-> >> Subject: [RFC!] [PATCH] microblaze: fix bug in error handling
-> >> Date: Thu, 16 Apr 2009 23:05:53 +0300 (EEST)
-> >> From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> >> To: monstr@monstr.eu
-> >> CC: microblaze-uclinux@itee.uq.edu.au
-> >>
-> >> While some version of the patches were on the lkml I read
-> >> some part of the code briefly through but my feedback got
-> >> stuck into postponed emails, so here's one correctness
-> >> related issue I might have found (the rest were just
-> >> cosmetic things).
-> >>
-> >> I'm not sure if the latter return needs the of_node_put or not
-> >> but it seems more likely than not.
-> > 
-> > Yes, it does.  This change is applicable to
-> > arch/powerpc/kernel/prom_parse.c too.
-> 
-> ok.
-> Ilpo: Can you create patch for both architectures?
+I can and might have already done this, need to double check.  But  
+what I was seeing from elf_map is that we don't get PROT_EXEC set for  
+this PHDR, but get VM_MAY_EXEC.  I'm not clear on what VM_MAY_EXEC is  
+intended for.
 
-Sure, but tomorrow as today is a deadline day :-).
-
--- 
- i.
----696208474-14043735-1239973323=:10088--
+- k
