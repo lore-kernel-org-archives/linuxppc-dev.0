@@ -1,20 +1,22 @@
-Return-Path: <thunderbird2k@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
-	by ozlabs.org (Postfix) with ESMTP id 83887DDE17
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 18:03:54 +1000 (EST)
-Received: by fk-out-0910.google.com with SMTP id f33so332361fkf.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 01:03:52 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1239953159.7443.33.camel@pasglop>
-References: <8393884A-D1B0-4081-980C-CF464A38FD6C@kernel.crashing.org>
-	<1239953159.7443.33.camel@pasglop>
-Date: Fri, 17 Apr 2009 10:03:52 +0200
-Message-ID: <c8485d470904170103g35e331b0g95d83613ed4bc1f4@mail.gmail.com>
-Subject: Re: pci32 code - early_*config*
-From: Roderick Colenbrander <thunderbird2k@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <dedekind@infradead.org>
+Subject: Re: [PATCH 1/3 v3] mtd: physmap_of: Add multiple regions and
+	concatenation support
+From: Artem Bityutskiy <dedekind@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0904161936090.12608@baythorne.infradead.org>
+References: <1239883845-17804-1-git-send-email-sr@denx.de>
+	<fa686aa40904160626k118cea3cvc0db38a2277e45b8@mail.gmail.com>
+	<200904161537.59048.sr@denx.de>
+	<fa686aa40904160646v75a98e02s446fd89c08cfebae@mail.gmail.com>
+	<1239889899.3390.216.camel@localhost.localdomain>
+	<alpine.LFD.2.00.0904161936090.12608@baythorne.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 17 Apr 2009 11:26:18 +0300
+Message-Id: <1239956778.3390.262.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	linux-mtd@lists.infradead.org, devicetree-discuss@ozlabs.org
+Reply-To: dedekind@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 17, 2009 at 9:25 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2009-04-15 at 01:17 -0500, Kumar Gala wrote:
->> Ben,
->>
->> I was looking at what I need to get some additional bits of PCI code
->> building w/your ppc64 booke patches. =A0One thing it looks like we need
->> is the early config cycle code. =A0The question I have is do we think we
->> still need the null_ops support? =A0Also do we think we every get called
->> with a NULL hose?
->>
->> This is fake_pci_bus() in arch/powerpc/kernel/pci_32.c
->
-> Hrm.
->
-> I'm not fan of the early config stuff, remind me why we need it ?
->
-> Ben.
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+On Thu, 2009-04-16 at 19:38 +0100, David Woodhouse wrote:
+> On Thu, 16 Apr 2009, Artem Bityutskiy wrote:
+> 
+> > On Thu, 2009-04-16 at 07:46 -0600, Grant Likely wrote:
+> >> On Thu, Apr 16, 2009 at 7:37 AM, Stefan Roese <sr@denx.de> wrote:
+> >>> On Thursday 16 April 2009, Grant Likely wrote:
+> >>>>> Signed-off-by: Stefan Roese <sr@denx.de>
+> >>>>> Reviewd-by: Grant Likely <grant.likely@secretlab.ca>
+> >>>>
+> >>>> Yup, still looks good to me.  What boards has this been tested on?
+> >>>
+> >>> I tested this version on PPC405EX Kilauea equipped only one "standard"
+> >>> Spansion S29GL512 NOR chip. And a slightly modified version on an MPC8360
+> >>> board (kmeter1) which is equipped with the Intel P30 part mentioned in the
+> >>> bindings description. Slightly modified since this board support is not yet
+> >>> pushed upstream and currently using v2.6.28 (physmap_of.c has received minor
+> >>> modifications after 2.6.28 release).
+> >>
+> >> Okay.  It will be good to get this one into -next for some testing
+> >> exposure.  Unless he asks me to do otherwise, I'll leave this one to
+> >> David to pick up.
+> >
+> > David usually picks up stuff just before or during merge window,
+> > so if you want linux-next exposure, you need to have some extra
+> > care.
+> 
+> I don't necessarily do that on purpose; it just works out that way when 
+> I'm busy.
 
-There are cases when it is really needed (or you would have to access
-the address and data bus by hand). In my case I'm using a Xilinx PLB
-soft-core and if certain options in the configuration header aren't
-set (which aren't set by default) the soft-core is basically disabled.
-Cases like this look like valid cases in which early config should be
-used.
+Yeah, not that I try to blame you, but I think we need to expose stuff
+to linux-next. And people who send patches are frustrated when their
+stuff gets no attention for very long time.
 
-Roderick Colenbrander
+I understand that MTD tree maintenance is a burden, and you are very
+busy, and no one pays you for this job. Thanks for doing it!
+
+I'm going to try to help you. I've just created a git tree where
+I'll push patches I consider OK and I approve. Here it is:
+git://git.infradead.org/users/dedekind/l2-mtd-2.6.git
+
+My hope is that you would look at that tree from time to time
+and pull it. At least you may be sure I looked at the patches and
+did some validation. This should save your time and help MTD
+users.
+
+Thanks.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
