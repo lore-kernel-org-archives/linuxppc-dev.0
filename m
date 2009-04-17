@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5013FDE1B5
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 17:43:47 +1000 (EST)
-Subject: Re: Proposed prom parse fix + moving.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: monstr@monstr.eu
-In-Reply-To: <49E81CED.1000704@monstr.eu>
-References: <49E81CED.1000704@monstr.eu>
-Content-Type: text/plain
-Date: Fri, 17 Apr 2009 09:43:24 +0200
-Message-Id: <1239954204.7443.50.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
-	ilpo.jarvinen@helsinki.fi
+Return-Path: <daniel.ng1234@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.229])
+	by ozlabs.org (Postfix) with ESMTP id A7070DE202
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 17:47:39 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f9so691251rvb.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 00:47:37 -0700 (PDT)
+MIME-Version: 1.0
+Date: Fri, 17 Apr 2009 17:47:37 +1000
+Message-ID: <547eba1b0904170047ob37e918j74db791442a0b1f6@mail.gmail.com>
+Subject: PPP over Synchronous HDLC in the Linux Kernel
+From: Daniel Ng <daniel.ng1234@gmail.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +20,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2009-04-17 at 08:08 +0200, Michal Simek wrote:
-> Hi All,
-> 
-> I have got email from Ilpo about prom_parse file.
-> I take this file from powerpc. Who did write prom_parse file and take care about?
+Hi,
 
-I wrote it :-)
+Is there a way to integrate PPP over Synchronous HDLC using the
+existing kernel code? We are currently using 2.6.27 on an 8272 ppc
+board.
 
-> BTW: What about to move prom_parse file to any generic location as we discussed in past?
-> Any volunteer?
+In the past, we have had this working on 2.6.14 by porting across Dan
+Eble's PPC kernel patches, detailed below.
 
-Well.. it relies on some bits and pieces that are rather powerpc
-specific afaik such as our irq mapping scheme. I suppose we could split
-those bits and move them to a separate file though.
+However, it seems these patches were never integrated into the kernel main line.
 
-Off hand the patch looks ok but I'll have to look more closely when
-I get back from vacation.
+So, is it possible to implement PPP over Synchronous HDLC using the
+current kernel code, without having to use these patches?
 
 Cheers,
-Ben.
+Daniel
+
+
+Dan Eble's "Generic PPP for Generic HDLC" patches originally for a
+2.4.21 kernel (PPC).
+
+Patch details found at:
+
+Kernel patches:
+
+http://marc.theaimsgroup.com/?l=linux-net&m=105525978800615&w=2
+http://marc.theaimsgroup.com/?l=linux-net&m=105526005200965&w=2
+http://marc.theaimsgroup.com/?l=linux-net&m=105526034801396&w=2
+
+PPP daemon patches:
+
+http://marc.theaimsgroup.com/?l=linux-ppp&m=105526128502635&w=2
+http://marc.theaimsgroup.com/?l=linux-ppp&m=105613926625787&w=2
