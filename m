@@ -1,18 +1,18 @@
-Return-Path: <thunderbird2k@gmail.com>
-Received: from mail-bw0-f171.google.com (mail-bw0-f171.google.com
-	[209.85.218.171]) by ozlabs.org (Postfix) with ESMTP id 6EA56DE0E2
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 07:31:33 +1000 (EST)
-Received: by bwz19 with SMTP id 19so937834bwz.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 14:31:30 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <49E8F2D7.3050603@embeddedarm.com>
-References: <49E8F2D7.3050603@embeddedarm.com>
-Date: Fri, 17 Apr 2009 23:31:30 +0200
-Message-ID: <c8485d470904171431r274e9974p4aff7ccaa3a3b274@mail.gmail.com>
-Subject: Re: PowerPC iotable_init equivalent?
-From: Roderick Colenbrander <thunderbird2k@gmail.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 99587DDF9E
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 07:32:38 +1000 (EST)
+Message-Id: <2FE62872-EB54-41DE-8D3F-5C75E03AE2AD@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Eddie Dawydiuk <eddie@embeddedarm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <49E8F2D7.3050603@embeddedarm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: PowerPC iotable_init equivalent?
+Date: Fri, 17 Apr 2009 16:32:29 -0500
+References: <49E8F2D7.3050603@embeddedarm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,59 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 17, 2009 at 11:21 PM, Eddie Dawydiuk <eddie@embeddedarm.com> wr=
-ote:
+
+On Apr 17, 2009, at 4:21 PM, Eddie Dawydiuk wrote:
+
 > Hello,
 >
-> In the past I've worked with ARM architectures where I could setup virtua=
-l /
-> physical address mappings so I don't have to ioremap then pass around
-> pointers. Does PowerPC have an equivalent abstraction? If not whats the
-> recommended approach?
+> In the past I've worked with ARM architectures where I could setup  
+> virtual / physical address mappings so I don't have to ioremap then  
+> pass around pointers. Does PowerPC have an equivalent abstraction?  
+> If not whats the recommended approach?
 >
 > That is, is there a better approach to the following...
 >
-> volatile static unsigned char *my_reg =3D NULL;
+> volatile static unsigned char *my_reg = NULL;
 >
 > static inline void read_func() {
 >
-> =A0 =A0 =A0 =A0if (!my_reg)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0my_reg =3D (unsigned char *)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ioremap(REG_PHYS_BASE, REG=
-_SIZE);
+> 	if (!my_reg)
+>        	my_reg = (unsigned char *)
+> 			ioremap(REG_PHYS_BASE, REG_SIZE);
 > //do something with the reg
 > }
 >
 >
 > static inline void write_func() {
 >
-> =A0 =A0 =A0 =A0if (!my_reg)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0my_reg =3D (unsigned char *)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ioremap(REG_PHYS_BASE, REG=
-_SIZE);
+> 	if (!my_reg)
+>        	my_reg = (unsigned char *)
+> 			ioremap(REG_PHYS_BASE, REG_SIZE);
 > //do something with the reg
 > }
->
-> --
-> Best Regards,
-> ________________________________________________________________
-> =A0Eddie Dawydiuk, Technologic Systems | voice: =A0(480) 837-5200
-> =A016525 East Laser Drive =A0 =A0 =A0 =A0 =A0 =A0 =A0| fax: =A0 =A0(480) =
-837-5300
-> =A0Fountain Hills, AZ 85268 =A0 =A0 =A0 =A0 =A0 =A0| web: www.embeddedARM=
-.com
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
 
-In general you set devices up a dts file. You can reach its contents
-using openfirmware functions (of_*). In general you use an of_*
-function to look up your periperhal in the device tree. Once you have
-its node you would able to do e.g. of_iomap (which uses ioremap with
-the right offsets behind its back) to map the device. So you don't
-hard code physical addresses anymore in the code.
+Yes have a struct that keeps track of the virt addr and do the mapping  
+once at init time.  This is what most drivers do.
 
-Regards,
-Roderick Colenbrander
+- k
