@@ -2,8 +2,8 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9049DDDF9E
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 20:44:19 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id C4D38DE0CD
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 20:44:22 +1000 (EST)
 Subject: Re: issues w/init
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
@@ -15,8 +15,8 @@ References: <680ABFDC-A67F-48BB-B46C-564CB5373FEB@kernel.crashing.org>
 	<1239953907.7443.45.camel@pasglop>
 	<18920.21593.737132.732053@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Fri, 17 Apr 2009 12:33:45 +0200
-Message-Id: <1239964425.7443.61.camel@pasglop>
+Date: Fri, 17 Apr 2009 12:41:00 +0200
+Message-Id: <1239964860.7443.65.camel@pasglop>
 Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>,
 	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
@@ -39,8 +39,17 @@ On Fri, 2009-04-17 at 20:05 +1000, Paul Mackerras wrote:
 > elf_read_implies_exec in arch/powerpc/include/asm/elf.h, which IIRC
 > sets the read-implies-exec personality thing on old 32-bit binaries.
 
-All or old ? ie. can we differenciate the broken from the "good" ones ? 
-In which case we can just fix that up here too.
+Ok, so looking at that more closely, if that had worked, we would
+have had PROT_EXEC, and thus VM_EXEC added to the vma by mmap... which
+apparently didn't occur.
+
+I think what may be happening is that the binary he's running has the
+PT_GNU_STACK but his libc doesn't ... the kernel will set the
+personality flag based on the binary you are trying to run, not any
+library it uses...
+
+Kumar, can you try to instrument that a bit and tell us ? What the
+personality flag gets set to and whether mmap sets PROT_EXEC ?
 
 Cheers,
 Ben.
