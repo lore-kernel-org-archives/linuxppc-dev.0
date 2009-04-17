@@ -1,34 +1,24 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EEC62DDFAF
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 04:07:53 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3HI4D94004009
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 14:04:13 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3HI7noR198080
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 14:07:49 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3HI66WR018604
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 14:06:06 -0400
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: Question about DBCR0 initialization for 440
-Date: Fri, 17 Apr 2009 13:07:46 -0500
-References: <20090414203313.8D8F11BE8056@mail209-sin.bigfish.com>
-	<20090417154628.43F859D0055@mail178-wa4.bigfish.com>
-	<625fc13d0904171022u4d7d5d8cve0ccfb74cc31f554@mail.gmail.com>
-In-Reply-To: <625fc13d0904171022u4d7d5d8cve0ccfb74cc31f554@mail.gmail.com>
+Return-Path: <bzolnier@gmail.com>
+Received: from mail-bw0-f171.google.com (mail-bw0-f171.google.com
+	[209.85.218.171]) by ozlabs.org (Postfix) with ESMTP id A8BC7DE0CC
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 04:15:07 +1000 (EST)
+Received: by bwz19 with SMTP id 19so878041bwz.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 11:15:05 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: RFC Patch: Use x86 init_hwif in the alim15x3 for x86-like PowerPC
+	systems
+Date: Fri, 17 Apr 2009 20:17:18 +0200
+References: <c8485d470904150202s1f5c8cd7p34f0eaf4872f3e17@mail.gmail.com>
+	<20090417124014.GA8944@oksana.dev.rtsoft.ru>
+	<1239986984.7210.9.camel@pasglop>
+In-Reply-To: <1239986984.7210.9.camel@pasglop>
 MIME-Version: 1.0
+Message-Id: <200904172017.18486.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200904171307.47734.hollisb@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, John Linn <John.Linn@xilinx.com>,
-	Tirumala Reddy Marri <tmarri@amcc.com>
+  charset="iso-8859-15"
+Cc: linux-ide@vger.kernel.org, Roderick Colenbrander <thunderbird2k@gmail.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,40 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 17 April 2009 12:22:37 Josh Boyer wrote:
-> On Fri, Apr 17, 2009 at 11:46 AM, John Linn <John.Linn@xilinx.com> wrote:
-> > Josh, any thoughts on putting this into head_44x.S?
+On Friday 17 April 2009 18:49:44 Benjamin Herrenschmidt wrote:
+> > But they don't. On MPC8610HPCD we have IDE interrupt directly
+> > connected to the MPIC line (through PCI sideband interrupt), and
+> > i8259 is _completely_ disabled in the bridge.
 > 
-> The code in the fsl file looks like the right solution.  I do have an
-> odd question though, in that it's hard for the
-> kernel to really know if something like a BDI is running.  Namely,
-> that config option doesn't cover RiscWatch in an obvious manner.
+> Hrm why did you do that ? :-)
+> 
+> Just kidding... if what you want is the PCI interrupt, then it should
+> be in native mode, not legacy mode... Maybe the driver can figure out
+> how the chip is configured by reading said configuration and use
+> either the legacy interrupts or the PCI one...
+> 
+> > See this commit:
+> > 
+> >   commit 6d1cee44361b8d06ccd1812e80448d86ae60dfe3
+> >   Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+> >   Date:   Tue Apr 29 22:57:38 2008 +0200
+> >   
+> >       alim15x3: disable init_hwif_ali15x3 for PowerPC
+> > 
+> > > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > If the patch applied, MPC8610HPCD will be broken.
+> > 
+> > We need at least some machine_is() check.
+> 
+> That sucks. That's an endless problems with IDE and those on-board
+> chipsets though. The interrupts should pretty much -always- be provided
+> by the arch code, but for some reason, that got removed in favor of
+> various hacks in the drivers themselves...
 
-Yeah, setting DBCR0 would interfere with all JTAG probes. The ifdef meands you 
-can't support both a JTAG debugger and hardware breakpoints in the same 
-binary? Now that's an annoying restriction.
+Previous PPC IRQ hacks combined with IDE IRQ hacks were a real nightmare
+from maintenance perspective -- one could just never tell what is going
+on and whether it is correct.
 
-> I also wonder if it's possible to have a host system be setting those
-> registers in a guest KVM system so the guest could be debugged with
-> gdb...  Hollis, any idea on that?
+IDE host driver specific hacks were just a necessary temporary step into
+solving this problem and most of them got removed in this merge window
+during more general rework of IRQ setup code.
 
-You mean is KVM currently doing that, and would this patch conflict with that 
-behavior?
+Nowadays IDE PCI layer just consistently uses arch specific (+ non-IDE
+specific so libata gets benefits too) pci_get_legacy_ide_irq() helper
+for legacy IRQs, please see ide_pci_init_one():
 
-Right now KVM (on 440) context switches the necessary DB* registers for out-
-of-band debugging. That is, qemu sends a "set breakpoint in guest" ioctl to 
-KVM, and then when switching from host to guest mode, KVM will save the old 
-DB* values, put in some new ones, and swap them back again when re-entering 
-the host. So I *think* the answer to your question is "yes, KVM messes with 
-these registers to enable software breakpoints when debugging a guest with 
-gdb." That code path isn't heavily tested, but the values put into DB* by 
-other host code shouldn't matter.
+...
+        /* fixup IRQ */
+        if (ide_pci_is_in_compatibility_mode(dev)) {
+                hw[0].irq = pci_get_legacy_ide_irq(dev, 0);
+                hw[1].irq = pci_get_legacy_ide_irq(dev, 1);
+        } else
+                hw[1].irq = hw[0].irq = ret;
+...
 
-However, KVM doesn't support in-band breakpoints, i.e. it doesn't emulate the 
-setting of those registers from within the guest. It's basically a no-op. So 
-whether the kernel sets them or not, in-band debugging won't work with the 
-current KVM code.
+That's all!  No PPC-specific IRQ overrides, IDE-specific IRQ overrides
+and IDE host driver ones needed! :)
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+There is still some legacy code (like the one in alim15x3 host driver)
+needing fixing but the infrastructure allowing it should be all there.
+
+Hmm, it looks like this historical IRQ override in init_hwif_ali15x3():
+
+        if (dev->device == PCI_DEVICE_ID_AL_M5229)
+                hwif->irq = hwif->channel ? 15 : 14;
+
+should be just removed nowadays.
+
+Seems like this should allow MPC8610HPCD to work with Roderick's patch
+if the IDE controller is set to native mode and ALI south-bridge SIRQ
+tables are correctly set (or if this is not ALI's south-bridge).  Anton?
+
+Thanks,
+Bart
