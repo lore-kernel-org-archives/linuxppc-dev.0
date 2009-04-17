@@ -2,16 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 874DBDDF81
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 23:25:28 +1000 (EST)
-Message-Id: <087C29B1-39CA-4A32-81E6-533FAD21A2BC@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 5C0D7DDEE2
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 00:01:29 +1000 (EST)
+Message-Id: <B6C2A84E-7481-47D3-A85A-C2D8218354A4@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 In-Reply-To: <1239964860.7443.65.camel@pasglop>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
 Subject: Re: issues w/init
-Date: Fri, 17 Apr 2009 08:23:17 -0500
+Date: Fri, 17 Apr 2009 08:59:17 -0500
 References: <680ABFDC-A67F-48BB-B46C-564CB5373FEB@kernel.crashing.org>
 	<88F07543-B7F6-4F27-B5FB-4780AD069D7E@kernel.crashing.org>
 	<49E78620.7070303@freescale.com>
@@ -56,9 +56,28 @@ On Apr 17, 2009, at 5:41 AM, Benjamin Herrenschmidt wrote:
 > Kumar, can you try to instrument that a bit and tell us ? What the
 > personality flag gets set to and whether mmap sets PROT_EXEC ?
 
-I can and might have already done this, need to double check.  But  
-what I was seeing from elf_map is that we don't get PROT_EXEC set for  
-this PHDR, but get VM_MAY_EXEC.  I'm not clear on what VM_MAY_EXEC is  
-intended for.
+On ppc32 personality is clearly set to 0.  On ppc64 the  
+elf_read_implies_exec does work around the issue (ie I implemented  
+elf_read_implies_exec as (exec_stk != EXSTACK_DISABLE_X) on ppc32).   
+However I think its just masking it.
+
+Hear are the PHDRs for the version of init I'm running:
+
+Program Headers:
+   Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg  
+Align
+   PHDR           0x000034 0x10000034 0x10000034 0x000e0 0x000e0 R E 0x4
+   INTERP         0x000114 0x10000114 0x10000114 0x0000d 0x0000d R   0x1
+       [Requesting program interpreter: /lib/ld.so.1]
+   LOAD           0x000000 0x10000000 0x10000000 0x072a0 0x072a0 R E  
+0x10000
+   LOAD           0x0072a0 0x100172a0 0x100172a0 0x00358 0x00988 RW   
+0x10000
+   DYNAMIC        0x0074bc 0x100174bc 0x100174bc 0x000c8 0x000c8 RW  0x4
+   NOTE           0x000130 0x10000130 0x10000130 0x00020 0x00020 R    
+0x10
+
+I don't think elf_read_implies_exec() is the right solution on ppc32.   
+As I asked before, can VM_MAYEXEC be of any use to us?
 
 - k
