@@ -1,23 +1,32 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from IE1EHSOBE003.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id AB465DDF0F
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 05:14:11 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Subject: RE: Question about DBCR0 initialization for 440
-Date: Fri, 17 Apr 2009 12:58:49 -0600
-In-Reply-To: <fa686aa40904171157x207d6493v9a37e2d8c61113d3@mail.gmail.com>
-References: <20090414203313.8D8F11BE8056@mail209-sin.bigfish.com>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C0729E57E@SDCEXCHANGE01.ad.amcc.com>
-	<20090417154628.43F859D0055@mail178-wa4.bigfish.com>
-	<625fc13d0904171022u4d7d5d8cve0ccfb74cc31f554@mail.gmail.com>
-	<fa686aa40904171157x207d6493v9a37e2d8c61113d3@mail.gmail.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Message-ID: <20090417185854.EEA13308057@mail91-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, hollisb@us.ibm.com,
-	Tirumala Reddy Marri <tmarri@amcc.com>
+Return-Path: <mjw@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4E15CDDFB7
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 05:48:06 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3HJhdRF018487
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 15:43:39 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3HJm2bD195188
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 15:48:02 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3HJkJrE002443
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 15:46:19 -0400
+Received: from [9.10.86.86] (9-10-86-86.rchland.ibm.com [9.10.86.86])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	n3HJkIgO002396
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 15:46:18 -0400
+Subject: [PATCH] powerpc: adjust oprofile_cpu_type
+From: Mike Wolf <mjw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Fri, 17 Apr 2009 14:48:01 -0500
+Message-Id: <1239997681.12337.4.camel@mx3>
+Mime-Version: 1.0
+Reply-To: mjw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,62 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks everyone, will do.
+Oprofile is changing the naming it is using for the compatibility modes.
+Instead of having compat-power<x>, oprofile will go to family naming
+convention and use compat-v<x>.  Currently only compat-v1 will be
+defined.
 
-> -----Original Message-----
-> From: Grant Likely [mailto:grant.likely@secretlab.ca]
-> Sent: Friday, April 17, 2009 12:58 PM
-> To: Josh Boyer
-> Cc: John Linn; Tirumala Reddy Marri; linuxppc-dev@ozlabs.org; hollisb@us.=
-ibm.com
-> Subject: Re: Question about DBCR0 initialization for 440
-> =
-
-> Hey John
-> =
-
-> We just discussed this on IRC.  Go ahead and generate a patch to
-> unconditionally turn on DBCR0[IDM] in head_44x.S.  Don't even bother
-> wrapping it in an #ifdef CONFIG_somthing block.  It should be safe,
-> but we'll throw it into -next and see if anyone complains.  If it does
-> cause problems, then it can be reworked to something a wee bit more
-> conservative.
-> =
-
-> g.
-> =
-
-> On Fri, Apr 17, 2009 at 11:22 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com>=
- wrote:
-> > On Fri, Apr 17, 2009 at 11:46 AM, John Linn <John.Linn@xilinx.com> wrot=
-e:
-> >> Josh, any thoughts on putting this into head_44x.S?
-> >
-> > The code in the fsl file looks like the right solution. =A0I do have an=
-
-> > odd question though, in that it's hard for the
-> > kernel to really know if something like a BDI is running. =A0Namely,
-> > that config option doesn't cover RiscWatch in an obvious manner.
-> >
-> > I also wonder if it's possible to have a host system be setting those
-> > registers in a guest KVM system so the guest could be debugged with
-> > gdb... =A0Hollis, any idea on that?
-> >
-> > josh
-> >
-> =
-
-> =
-
-> =
-
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+Signed off by: Mike Wolf <mjw@linux.vnet.ibm.com>
+---
+--- mainline.orig/arch/powerpc/kernel/cputable.c	2009-04-16
+09:47:49.000000000 -0500
++++ mainline/arch/powerpc/kernel/cputable.c	2009-04-16
+14:28:28.000000000 -0500
+@@ -382,7 +382,8 @@
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.machine_check		= machine_check_generic,
+-		.oprofile_cpu_type	= "ppc64/compat-power5+",
++		.oprofile_cpu_type	= "ppc64/compat-v1",
++		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.platform		= "power5+",
+ 	},
+ 	{	/* Power6 */
+@@ -416,7 +417,8 @@
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.machine_check		= machine_check_generic,
+-		.oprofile_cpu_type	= "ppc64/compat-power6",
++		.oprofile_cpu_type	= "ppc64/compat-v1",
++		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.platform		= "power6",
+ 	},
+ 	{	/* 2.06-compliant processor, i.e. Power7 "architected" mode */
+@@ -429,7 +431,8 @@
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.machine_check		= machine_check_generic,
+-		.oprofile_cpu_type	= "ppc64/compat-power7",
++		.oprofile_type		= PPC_OPROFILE_POWER4,
++		.oprofile_cpu_type	= "ppc64/compat-v1",
+ 		.platform		= "power7",
+ 	},
+ 	{	/* Power7 */
+@@ -1833,8 +1836,10 @@
+ 		 * and, in that case, keep the current value for
+ 		 * oprofile_cpu_type.
+ 		 */
+-		if (old.oprofile_cpu_type == NULL)
++		if (old.oprofile_cpu_type == NULL) {
+ 			t->oprofile_cpu_type = s->oprofile_cpu_type;
++			t->oprofile_type = s->oprofile_type;
++		}
+ 	}
+ 
+ 	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
