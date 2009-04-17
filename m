@@ -1,15 +1,27 @@
-Return-Path: <Lixin.Yao@HSTX.com>
-Received: from mail.hstx.com (mail.hstx.com [64.95.133.106])
-	by ozlabs.org (Postfix) with ESMTP id 47B25DE1AE
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 06:37:33 +1000 (EST)
+Return-Path: <jacmet@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
+	by ozlabs.org (Postfix) with ESMTP id CFC51DE18B
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 15:22:15 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so50103fga.16
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2009 22:22:13 -0700 (PDT)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 6/6] powerpc/fsl_soc: Isolate legacy fsl_spi support to
+	mpc832x_rdb boards
+References: <20090123195041.GF21237@oksana.dev.rtsoft.ru>
+	<20090123194958.GA17355@oksana.dev.rtsoft.ru>
+	<87bpr71p1o.fsf_-_@macbook.be.48ers.dk>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Fri, 17 Apr 2009 07:13:54 +0200
+In-Reply-To: <87bpr71p1o.fsf_-_@macbook.be.48ers.dk> (Peter Korsgaard's
+	message of "Wed\, 08 Apr 2009 11\:18\:43 +0200")
+Message-ID: <87k55jamlp.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C9BED1.2FF61426"
-Subject: powerpc-linux-gcc vs ppx_8xx-gcc and ppc_6xx-gcc
-Date: Thu, 16 Apr 2009 13:23:21 -0700
-Message-ID: <03D77CA4AC7F4D48A6AB5DA3F1001B3FB5BAC7@exchtxus2.HSTX.global.vpn>
-From: "Lixin Yao" <Lixin.Yao@HSTX.com>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: spi-devel-general@lists.sourceforge.net,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,89 +31,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+>>>>> "Peter" == Peter Korsgaard <jacmet@sunsite.dk> writes:
 
-------_=_NextPart_001_01C9BED1.2FF61426
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Anyone? I've locally reverted the commit, but most likely I'm not the
+only one using the spi_mpc83xx driver without direct gpio controlled
+chip select handling.
 
-Hello, All,
+ Anton> The advantages of this:
+ Anton> - Don't encourage legacy support;
+ Anton> - Less external symbols, less code to compile-in for !MPC832x_RDB
+ Anton> platforms.
 
-I use ELDK 4.2 to work on platforms, one with MPC860 and the other with
-MPC8248.
+ Peter> It's nice with your cleanups, but I wonder how to handle more
+ Peter> complicated chip select handling than simply toggling a single gpio.
 
-In installation, I see links:
-ppc_8xx-gcc -> ppc-linux-gcc
-ppc_6xx-gcc -> ppc-linux-gcc
-ppc-linux-gcc -> powerpc-linux-gcc
+ Peter> I have a board (or 2 actually, but they are similar in this regard)
+ Peter> with a mpc8347 using SPI to a number of addon boards. For signal
+ Peter> integrity reasons the SPI signals are routed to a MUX, so the chip
+ Peter> select logic has to set the MUX in addition to controlling the CS line
+ Peter> of the device.
 
-I understand ppc_8xx-gcc needs to be used for MPC860 and ppc_6xx-gcc
-needs to be used for MPC8248. But both point to the same
-"powerpc-linux-gcc".=20
+ Peter> I've been using code like this since late 2007, but this patch
+ Peter> ofcourse breaks it:
 
-What are the differences between powerpc-linux-gcc, ppx_8xx-gcc and
-ppc_6xx-gcc? What's the default target processorr of powerpc-linux-gcc?
+ Peter> static void thinx_spi_activate_cs(u8 cs, u8 polarity)
+ Peter> {
+ Peter> 	static u8 old_cs = 255;
 
-Thanks.
+ Peter> 	if (cs != old_cs) {
+ Peter> 		/* mux setup (cs 2:1)*/
+ Peter> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_NOE, 1);
+ Peter> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_SEL0, cs&2);
+ Peter> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_SEL1, cs&4);
+ Peter> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_NOE, 0);
+ Peter> 		old_cs = cs;
+ Peter> 	}
 
-Lixin Yao
-Harris Strate Networks Inc.
-RTP, North Carolina
+ Peter> 	switch (cs) {
+ Peter> 	case 0: gpio_set_value(gpio1 + GPIO_SPI_CS_BKL1, polarity); break;
+ Peter> 	case 1: gpio_set_value(gpio1 + GPIO_SPI_CS_BKL2, polarity); break;
+ Peter> 	case 2: gpio_set_value(gpio1 + GPIO_SPI_CS_OPT1, polarity); break;
+ Peter> 	case 3: gpio_set_value(gpio1 + GPIO_SPI_CS_OPT2, polarity); break;
+ Peter> 	}
+ Peter> }
 
+ Peter> static void thinx_spi_deactivate_cs(u8 cs, u8 polarity)
+ Peter> {
+ Peter> 	switch (cs) {
+ Peter> 	case 0: gpio_set_value(gpio1 + GPIO_SPI_CS_BKL1, !polarity); break;
+ Peter> 	case 1: gpio_set_value(gpio1 + GPIO_SPI_CS_BKL2, !polarity); break;
+ Peter> 	case 2: gpio_set_value(gpio1 + GPIO_SPI_CS_OPT1, !polarity); break;
+ Peter> 	case 3: gpio_set_value(gpio1 + GPIO_SPI_CS_OPT2, !polarity); break;
+ Peter> 	}
+ Peter> }
 
-------_=_NextPart_001_01C9BED1.2FF61426
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ Peter> static __init int thinx_spi_init(void)
+ Peter> {
+ Peter> 	struct device_node *np;
+ Peter> 	struct of_gpio_chip *gc;
+ Peter> 	static const int gpios[] = {
+ Peter> 		GPIO_SPI_CS_BKL1,
+ Peter> 		GPIO_SPI_CS_BKL2,
+ Peter> 		GPIO_SPI_CS_OPT1,
+ Peter> 		GPIO_SPI_CS_OPT2,
+ Peter> 		GPIO_SPI_MUX_NOE,
+ Peter> 		GPIO_SPI_MUX_SEL0,
+ Peter> 		GPIO_SPI_MUX_SEL1
+ Peter> 	};
+ Peter> 	int i;
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7651.59">
-<TITLE>powerpc-linux-gcc vs ppx_8xx-gcc and ppc_6xx-gcc</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
+ Peter> 	np = of_find_node_by_name(NULL, "gpio-controller");
+ Peter> 	if (!np || !np->data) {
+ Peter> 		printk(KERN_ERR
+ Peter> 		       "gpio1 node not found or controller not registerred\n");
+ Peter> 		return -ENODEV;
+ Peter> 	}
+ Peter> 	gc = np->data;
+ Peter> 	gpio1 = gc->gc.base;
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">Hello, All,</FONT>
-</P>
+ Peter> 	for (i=0; i<ARRAY_SIZE(gpios); i++) {
+ Peter> 		gpio_request(gpio1 + gpios[i], "spi");
+ Peter> 		gpio_direction_output(gpio1 + gpios[i], 1);
+ Peter> 	}
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">I use ELDK 4.2 to work on platforms, =
-one with MPC860 and the other with MPC8248.</FONT>
-</P>
+ Peter> 	fsl_spi_init(thinx_spi_boardinfo, ARRAY_SIZE(thinx_spi_boardinfo),
+ Peter> 		     thinx_spi_activate_cs, thinx_spi_deactivate_cs);
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">In installation, I see links:</FONT>
+ Peter> 	return 0;
+ Peter> }
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">ppc_8xx-gcc -&gt; ppc-linux-gcc</FONT>
+ Peter> Now, I don't quite see how to handle this with the new OF bindings -
+ Peter> Any ideas?
 
-<BR><FONT SIZE=3D2 FACE=3D"Arial">ppc_6xx-gcc -&gt; ppc-linux-gcc</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">ppc-linux-gcc -&gt; =
-powerpc-linux-gcc</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">I understand ppc_8xx-gcc needs to be =
-used for MPC860 and ppc_6xx-gcc needs to be used for MPC8248. But both =
-point to the same &quot;powerpc-linux-gcc&quot;. </FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">What are the differences between =
-powerpc-linux-gcc, ppx_8xx-gcc and ppc_6xx-gcc? What's the default =
-target processorr of powerpc-linux-gcc?</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Lixin Yao</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Harris Strate Networks Inc.</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">RTP, North Carolina</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C9BED1.2FF61426--
+-- 
+Bye, Peter Korsgaard
