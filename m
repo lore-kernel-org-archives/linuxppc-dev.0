@@ -1,23 +1,22 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 57323DE0B6
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 22:24:02 +1000 (EST)
-Date: Fri, 17 Apr 2009 16:23:59 +0400
+	by ozlabs.org (Postfix) with ESMTP id E047CDDE0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 22:40:17 +1000 (EST)
+Date: Fri, 17 Apr 2009 16:40:14 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH 6/6] powerpc/fsl_soc: Isolate legacy fsl_spi support to
-	mpc832x_rdb boards
-Message-ID: <20090417122359.GA6707@oksana.dev.rtsoft.ru>
-References: <20090123195041.GF21237@oksana.dev.rtsoft.ru>
-	<20090123194958.GA17355@oksana.dev.rtsoft.ru>
-	<87bpr71p1o.fsf_-_@macbook.be.48ers.dk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: RFC Patch: Use x86 init_hwif in the alim15x3 for x86-like
+	PowerPC systems
+Message-ID: <20090417124014.GA8944@oksana.dev.rtsoft.ru>
+References: <c8485d470904150202s1f5c8cd7p34f0eaf4872f3e17@mail.gmail.com>
+	<c8485d470904150734s47ce0f27y3ae984355e823d9f@mail.gmail.com>
+	<200904162130.01237.bzolnier@gmail.com>
+	<1239954019.7443.47.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <87bpr71p1o.fsf_-_@macbook.be.48ers.dk>
-Cc: spi-devel-general@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <1239954019.7443.47.camel@pasglop>
+Cc: linux-ide@vger.kernel.org, Roderick Colenbrander <thunderbird2k@gmail.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,84 +27,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Peter,
-
-Sorry for the late response (and don't hesitate to ping me if I
-don't answer, some things get lost in my inbox traffic, sorry).
-
-On Wed, Apr 08, 2009 at 11:18:43AM +0200, Peter Korsgaard wrote:
-> >>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
+On Fri, Apr 17, 2009 at 09:40:19AM +0200, Benjamin Herrenschmidt wrote:
+> On Thu, 2009-04-16 at 21:30 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > Hi,
+> > 
+> > On Wednesday 15 April 2009 16:34:22 Roderick Colenbrander wrote:
+> > > Hi,
+> > > 
+> > > I'm using a Xilinx ML510 it features a PowerPC 440 cpu inside a
+> > > Virtex-5 FPGA. The board also contains a ALI M1533 south bridge
+> > > for IDE, USB and Audio. I did a lot of work to get the pci bus working
+> > > on this board and it works correctly but the default init code
+> > > of the alim15x3 driver doesn't work for me. The driver explicitly
+> > > disabled some initialization code for powerpc after uncommenting this
+> > > code it works properly. Benjamin Herrenschmidt and I think this
+> > > !CONFIG_PPC check should be removed because the system behaves
+> > > like a real 'x86' system (also the i8259 interrupt controller is used).
+> > 
+> > Ben, I guess you are OK with the change and there are no longer other
+> > platforms requiring CONFIG_PPC check below?  [I don't see your ACK here]
 > 
-> Hi,
+> Yup. I don't see a case where the hack would be of any use, so I'm
+> happy to remove us from the test. Whenever a 8259 is present we
+> assign it the legacy interrupts 1...15 with a virtual==physical mapping
+> so all those x86-ish things should run just fine.
+
+But they don't. On MPC8610HPCD we have IDE interrupt directly
+connected to the MPIC line (through PCI sideband interrupt), and
+i8259 is _completely_ disabled in the bridge.
+
+See this commit:
+
+  commit 6d1cee44361b8d06ccd1812e80448d86ae60dfe3
+  Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+  Date:   Tue Apr 29 22:57:38 2008 +0200
+  
+      alim15x3: disable init_hwif_ali15x3 for PowerPC
+
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+If the patch applied, MPC8610HPCD will be broken.
+
+We need at least some machine_is() check.
+
+> > > Regards,
+> > > Roderick Colenbrander
+> > > 
+> > > 
+> > > From 1c40c2f1485ecd3bc5ad7a3af537cb94de0877c3 Mon Sep 17 00:00:00 2001
+> > > From: Roderick Colenbrander <thunderbird2k@gmail.com>
+> > > Date: Wed, 15 Apr 2009 10:45:17 +0200
+> > > Subject: [PATCH] Use the 'x86' init_hwif code in the alim15x3 for
+> > > x86-like PowerPC boards like Xilinx ML310/410/510.
+> > 
+> > Roderick, please add your "Signed-off-by:" line
+> > (per Documentation/SubmittingPatches).
+> > 
+> > Thanks.
+> > 
+> > > ---
+> > >  drivers/ide/alim15x3.c |    9 +++++----
+> > >  1 files changed, 5 insertions(+), 4 deletions(-)
+> > > 
+> > > diff --git a/drivers/ide/alim15x3.c b/drivers/ide/alim15x3.c
+> > > index 537da1c..9176c0f 100644
+> > > --- a/drivers/ide/alim15x3.c
+> > > +++ b/drivers/ide/alim15x3.c
+> > > @@ -402,14 +402,15 @@ static u8 ali_cable_detect(ide_hwif_t *hwif)
+> > >      return cbl;
+> > >  }
+> > > 
+> > > -#if !defined(CONFIG_SPARC64) && !defined(CONFIG_PPC)
+> > > +#if !defined(CONFIG_SPARC64)
+> > >  /**
+> > >   *    init_hwif_ali15x3    -    Initialize the ALI IDE x86 stuff
+> > >   *    @hwif: interface to configure
+> > >   *
+> > >   *    Obtain the IRQ tables for an ALi based IDE solution on the PC
+> > > - *    class platforms. This part of the code isn't applicable to the
+> > > - *    Sparc and PowerPC systems.
+> > > + *    class platforms. This part of the code isn't applicable to
+> > > + *    Sparc systems. It is usable on 'x86-like' PowerPC systems
+> > > + *      which use a Ali M15x3 south bridge like e.g. Xilinx ML310/410/510.
+> > >   */
+> > > 
+> > >  static void __devinit init_hwif_ali15x3 (ide_hwif_t *hwif)
+> > > @@ -455,7 +456,7 @@ static void __devinit init_hwif_ali15x3 (ide_hwif_t *hwif)
+> > >  }
+> > >  #else
+> > >  #define init_hwif_ali15x3 NULL
+> > > -#endif /* !defined(CONFIG_SPARC64) && !defined(CONFIG_PPC) */
+> > > +#endif /* !defined(CONFIG_SPARC64) */
+> > > 
+> > >  /**
+> > >   *    init_dma_ali15x3    -    set up DMA on ALi15x3
+> > > --
+> > > 1.5.6.3
 > 
->  Anton> The advantages of this:
->  Anton> - Don't encourage legacy support;
->  Anton> - Less external symbols, less code to compile-in for !MPC832x_RDB
->  Anton>   platforms.
-> 
-> It's nice with your cleanups, but I wonder how to handle more
-> complicated chip select handling than simply toggling a single gpio.
-> 
-> I have a board (or 2 actually, but they are similar in this regard)
-> with a mpc8347 using SPI to a number of addon boards. For signal
-> integrity reasons the SPI signals are routed to a MUX, so the chip
-> select logic has to set the MUX in addition to controlling the CS line
-> of the device.
-
-So that's just a bit complicated GPIO controller. I believe you
-should describe it in the device tree and use it's muxed lines as
-usual GPIOs.
-
-Something ling
-
-muxed_pio: gpio-controller@.. {
-	#gpio-cells = <2>;
-	compatible = "..,<board>-muxed-gpios";
-	reg = <...>;
-	gpios = <...>; <- specify pure BLK1, BLK2, OPT1, OPT2 GPIOs
-	gpio-controller;
-};
-
-And then,
-
-> I've been using code like this since late 2007, but this patch
-> ofcourse breaks it:
-> 
-> static void thinx_spi_activate_cs(u8 cs, u8 polarity)
-> {
-> 	static u8 old_cs = 255;
-> 
-> 	if (cs != old_cs) {
-> 		/* mux setup (cs 2:1)*/
-> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_NOE, 1);
-> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_SEL0, cs&2);
-> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_SEL1, cs&4);
-> 		gpio_set_value(gpio1 + GPIO_SPI_MUX_NOE, 0);
-> 		old_cs = cs;
-> 	}
-> 
-> 	switch (cs) {
-> 	case 0: gpio_set_value(gpio1 + GPIO_SPI_CS_BKL1, polarity); break;
-> 	case 1: gpio_set_value(gpio1 + GPIO_SPI_CS_BKL2, polarity); break;
-> 	case 2: gpio_set_value(gpio1 + GPIO_SPI_CS_OPT1, polarity); break;
-> 	case 3: gpio_set_value(gpio1 + GPIO_SPI_CS_OPT2, polarity); break;
-> 	}
-> }
-
-^^^ Put this logic into the "<board>-muxed-gpios" GPIO controller
-driver.
-
-Then spi node would look like this:
-
-spi-controller@.. {
-	...
-	gpios = <&muxed_pio cs1 0   /* muxed CS_BLK1 */
-		 &muxed_pio cs2 0   /* muxed CS_BLK2 */
-		 &muxed_pio cs3 0   /* muxed CS_OPT1 */
-		 &muxed_pio cs4 0>; /* muxed CS_OPT2 */
-};
-
-Hope this helps,
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
 -- 
 Anton Vorontsov
