@@ -1,23 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f157.google.com (mail-gx0-f157.google.com
-	[209.85.217.157]) by ozlabs.org (Postfix) with ESMTP id CC1E3DE18A
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 16:34:21 +1000 (EST)
-Received: by gxk1 with SMTP id 1so2475682gxk.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2009 23:34:20 -0700 (PDT)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 497D0DE0D3
+	for <linuxppc-dev@ozlabs.org>; Sun, 19 Apr 2009 03:48:54 +1000 (EST)
+Date: Sat, 18 Apr 2009 21:48:52 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] fsl_rio: Pass the proper device to dma mapping routines
+Message-ID: <20090418174852.GA28955@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-In-Reply-To: <E3135C12-C512-43CF-B30D-B3AF7D7DE181@freescale.com>
-References: <20090331075537.1427.7819.stgit@localhost.localdomain>
-	<20090331082730.1427.96418.stgit@localhost.localdomain>
-	<E3135C12-C512-43CF-B30D-B3AF7D7DE181@freescale.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 18 Apr 2009 00:34:05 -0600
-Message-ID: <fa686aa40904172334g2c989765u3ae9c3e50b7ad5c4@mail.gmail.com>
-Subject: Re: [PATCH 09/14] net: Rework gianfar driver to use of_mdio
-	infrastructure.
-To: Andy Fleming <afleming@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, olof@lixom.net
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,59 +19,155 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 15, 2009 at 5:01 PM, Andy Fleming <afleming@freescale.com> wrot=
-e:
->
-> On Mar 31, 2009, at 3:27 AM, Grant Likely wrote:
->
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->> This patch simplifies the driver by making use of more common code.
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> ---
->>
->> drivers/net/gianfar.c | =A0103
->> ++++++++++++++++++-------------------------------
->> drivers/net/gianfar.h | =A0 =A03 +
->> 2 files changed, 40 insertions(+), 66 deletions(-)
->>
->>
->> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
->> index 65f5587..c22eba9 100644
->> @@ -699,23 +657,38 @@ static int init_phy(struct net_device *dev)
->>
->>
->> + =A0 =A0 =A0 if (priv->tbi_node) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 priv->tbiphy =3D of_phy_connect(dev, priv-=
->tbi_node,
->> &adjust_link,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 0, interface);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!priv->tbiphy) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&dev->dev, "error:=
- Could not attach to
->> TBI\n");
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_tbiphy;
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
->> + =A0 =A0 =A0 }
->
-> I don't believe we need this. =A0Certainly, the current code doesn't do
-> anything like this. =A0The TBI node is a special internal PHY used to man=
-age
-> SGMII/TBI links.
+The driver should pass a device that specifies internal DMA ops, but
+currently NULL pointer is passed, therefore following bug appears
+during boot up:
 
-Actually, it does.  gianfar_of_init() used to parse the tbi-handle,
-and I've replaced that code with a call to of_parse_phandle() in init
-and an of_phy_connect() in init_phy() to get a pointer to the TBI
-phy_device.  However, you are completely right that calling
-of_phy_connect() is entirely the wrong thing to do on the TBI phy.  It
-should be retrieving the pointer to the phydevice without actually
-connecting to it (which forces the phy_driver probe and starts the
-state machine).  I need to fix this.
+  ------------[ cut here ]------------
+  Kernel BUG at c0018a7c [verbose debug info unavailable]
+  Oops: Exception in kernel mode, sig: 5 [#1]
+  [...]
+  NIP [c0018a7c] fsl_rio_doorbell_init+0x34/0x60
+  LR [c0018a70] fsl_rio_doorbell_init+0x28/0x60
+  Call Trace:
+  [ef82bda0] [c0018a70] fsl_rio_doorbell_init+0x28/0x60 (unreliable)
+  [ef82bdc0] [c0019160] fsl_rio_setup+0x6b8/0x84c
+  [ef82be20] [c02d28ac] fsl_of_rio_rpn_probe+0x30/0x50
+  [ef82be40] [c0234f20] of_platform_device_probe+0x5c/0x84
+  [...]
+  ---[ end trace 561bb236c800851f ]---
 
-g.
+This patch fixes the issue.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/sysdev/fsl_rio.c |   28 +++++++++++++++++-----------
+ 1 files changed, 17 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index a0fa4eb..abdb124 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -18,6 +18,7 @@
+ #include <linux/types.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/interrupt.h>
++#include <linux/device.h>
+ #include <linux/rio.h>
+ #include <linux/rio_drv.h>
+ #include <linux/of_platform.h>
+@@ -159,6 +160,7 @@ struct rio_msg_rx_ring {
+ };
+ 
+ struct rio_priv {
++	struct device *dev;
+ 	void __iomem *regs_win;
+ 	struct rio_atmu_regs __iomem *atmu_regs;
+ 	struct rio_atmu_regs __iomem *maint_atmu_regs;
+@@ -484,13 +486,13 @@ int rio_open_outb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entr
+ 
+ 	for (i = 0; i < priv->msg_tx_ring.size; i++) {
+ 		priv->msg_tx_ring.virt_buffer[i] =
+-			dma_alloc_coherent(NULL, RIO_MSG_BUFFER_SIZE,
++			dma_alloc_coherent(priv->dev, RIO_MSG_BUFFER_SIZE,
+ 				&priv->msg_tx_ring.phys_buffer[i], GFP_KERNEL);
+ 		if (!priv->msg_tx_ring.virt_buffer[i]) {
+ 			rc = -ENOMEM;
+ 			for (j = 0; j < priv->msg_tx_ring.size; j++)
+ 				if (priv->msg_tx_ring.virt_buffer[j])
+-					dma_free_coherent(NULL,
++					dma_free_coherent(priv->dev,
+ 							RIO_MSG_BUFFER_SIZE,
+ 							priv->msg_tx_ring.
+ 							virt_buffer[j],
+@@ -501,7 +503,7 @@ int rio_open_outb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entr
+ 	}
+ 
+ 	/* Initialize outbound message descriptor ring */
+-	priv->msg_tx_ring.virt = dma_alloc_coherent(NULL,
++	priv->msg_tx_ring.virt = dma_alloc_coherent(priv->dev,
+ 				priv->msg_tx_ring.size * RIO_MSG_DESC_SIZE,
+ 				&priv->msg_tx_ring.phys, GFP_KERNEL);
+ 	if (!priv->msg_tx_ring.virt) {
+@@ -549,12 +551,13 @@ int rio_open_outb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entr
+ 	return rc;
+ 
+       out_irq:
+-	dma_free_coherent(NULL, priv->msg_tx_ring.size * RIO_MSG_DESC_SIZE,
++	dma_free_coherent(priv->dev,
++			  priv->msg_tx_ring.size * RIO_MSG_DESC_SIZE,
+ 			  priv->msg_tx_ring.virt, priv->msg_tx_ring.phys);
+ 
+       out_dma:
+ 	for (i = 0; i < priv->msg_tx_ring.size; i++)
+-		dma_free_coherent(NULL, RIO_MSG_BUFFER_SIZE,
++		dma_free_coherent(priv->dev, RIO_MSG_BUFFER_SIZE,
+ 				  priv->msg_tx_ring.virt_buffer[i],
+ 				  priv->msg_tx_ring.phys_buffer[i]);
+ 
+@@ -576,7 +579,8 @@ void rio_close_outb_mbox(struct rio_mport *mport, int mbox)
+ 	out_be32(&priv->msg_regs->omr, 0);
+ 
+ 	/* Free ring */
+-	dma_free_coherent(NULL, priv->msg_tx_ring.size * RIO_MSG_DESC_SIZE,
++	dma_free_coherent(priv->dev,
++			  priv->msg_tx_ring.size * RIO_MSG_DESC_SIZE,
+ 			  priv->msg_tx_ring.virt, priv->msg_tx_ring.phys);
+ 
+ 	/* Free interrupt */
+@@ -654,7 +658,7 @@ int rio_open_inb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entri
+ 		priv->msg_rx_ring.virt_buffer[i] = NULL;
+ 
+ 	/* Initialize inbound message ring */
+-	priv->msg_rx_ring.virt = dma_alloc_coherent(NULL,
++	priv->msg_rx_ring.virt = dma_alloc_coherent(priv->dev,
+ 				priv->msg_rx_ring.size * RIO_MAX_MSG_SIZE,
+ 				&priv->msg_rx_ring.phys, GFP_KERNEL);
+ 	if (!priv->msg_rx_ring.virt) {
+@@ -673,7 +677,7 @@ int rio_open_inb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entri
+ 	rc = request_irq(IRQ_RIO_RX(mport), fsl_rio_rx_handler, 0,
+ 			 "msg_rx", (void *)mport);
+ 	if (rc < 0) {
+-		dma_free_coherent(NULL, RIO_MSG_BUFFER_SIZE,
++		dma_free_coherent(priv->dev, RIO_MSG_BUFFER_SIZE,
+ 				  priv->msg_tx_ring.virt_buffer[i],
+ 				  priv->msg_tx_ring.phys_buffer[i]);
+ 		goto out;
+@@ -713,7 +717,7 @@ void rio_close_inb_mbox(struct rio_mport *mport, int mbox)
+ 	out_be32(&priv->msg_regs->imr, 0);
+ 
+ 	/* Free ring */
+-	dma_free_coherent(NULL, priv->msg_rx_ring.size * RIO_MAX_MSG_SIZE,
++	dma_free_coherent(priv->dev, priv->msg_rx_ring.size * RIO_MAX_MSG_SIZE,
+ 			  priv->msg_rx_ring.virt, priv->msg_rx_ring.phys);
+ 
+ 	/* Free interrupt */
+@@ -890,7 +894,7 @@ static int fsl_rio_doorbell_init(struct rio_mport *mport)
+ 	}
+ 
+ 	/* Initialize inbound doorbells */
+-	priv->dbell_ring.virt = dma_alloc_coherent(NULL, 512 *
++	priv->dbell_ring.virt = dma_alloc_coherent(priv->dev, 512 *
+ 		    DOORBELL_MESSAGE_SIZE, &priv->dbell_ring.phys, GFP_KERNEL);
+ 	if (!priv->dbell_ring.virt) {
+ 		printk(KERN_ERR "RIO: unable allocate inbound doorbell ring\n");
+@@ -911,7 +915,7 @@ static int fsl_rio_doorbell_init(struct rio_mport *mport)
+ 			 "dbell_rx", (void *)mport);
+ 	if (rc < 0) {
+ 		iounmap(priv->dbell_win);
+-		dma_free_coherent(NULL, 512 * DOORBELL_MESSAGE_SIZE,
++		dma_free_coherent(priv->dev, 512 * DOORBELL_MESSAGE_SIZE,
+ 				  priv->dbell_ring.virt, priv->dbell_ring.phys);
+ 		printk(KERN_ERR
+ 		       "MPC85xx RIO: unable to request inbound doorbell irq");
+@@ -1087,6 +1091,8 @@ int fsl_rio_setup(struct of_device *dev)
+ 	rio_init_mbox_res(&port->riores[RIO_OUTB_MBOX_RESOURCE], 0, 0);
+ 	strcpy(port->name, "RIO0 mport");
+ 
++	priv->dev = &dev->dev;
++
+ 	port->ops = ops;
+ 	port->host_deviceid = fsl_rio_get_hdid(port->id);
+ 
+-- 
+1.6.2.2
