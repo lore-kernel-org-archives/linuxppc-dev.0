@@ -1,23 +1,17 @@
-Return-Path: <ilpo.jarvinen@helsinki.fi>
-Received: from mail.cs.helsinki.fi (courier.cs.helsinki.fi [128.214.9.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10D91DE128
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 08:07:49 +1000 (EST)
-Date: Sat, 18 Apr 2009 01:07:43 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-To: benh@kernel.crashing.org
-Subject: Re: Proposed prom parse fix + moving.
-In-Reply-To: <Pine.LNX.4.64.0904171601020.10088@wrl-59.cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0904180057290.2522@wrl-59.cs.helsinki.fi>
-References: <49E81CED.1000704@monstr.eu>
-	<fa686aa40904162344y67115e50lf48c174501120b30@mail.gmail.com>
-	<49E87D25.8090001@monstr.eu>
-	<Pine.LNX.4.64.0904171601020.10088@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: MULTIPART/Mixed; boundary="-696208474-14043735-1239973323=:10088"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michal Simek <monstr@monstr.eu>,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C3597DDFD2
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2009 10:36:04 +1000 (EST)
+Date: Fri, 17 Apr 2009 20:36:00 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: ben-linux@fluff.org
+Subject: Re: [PATCH] i2c: i2c-ibm_iic message can be confusing
+Message-ID: <20090417203600.1d0c5cf0@lappy.seanm.ca>
+In-Reply-To: <20090202120159.2478d7af@lappy.seanm.ca>
+References: <20090202120159.2478d7af@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,161 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Any update on the status of this patch? This patch was acked by Jean.
 
----696208474-14043735-1239973323=:10088
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0904180057292.2522@wrl-59.cs.helsinki.fi>
+The patchwork entry is http://patchwork.ozlabs.org/patch/21576/ and the
+original patch message is below.
 
-On Fri, 17 Apr 2009, Ilpo Järvinen wrote:
+Cheers,
+   Sean
 
-> On Fri, 17 Apr 2009, Michal Simek wrote:
+On Mon, 2 Feb 2009 12:01:59 -0500
+Sean MacLennan <smaclennan@pikatech.com> wrote:
+
+> This is a trivial patch that does not need to be in 2.6.29. While
+> tracking down an EEPROM problem, I found the messages confusing... it
+> looked like the EEPROM was being started before the I2C driver!
 > 
-> > Grant Likely wrote:
-> > > On Fri, Apr 17, 2009 at 12:08 AM, Michal Simek <monstr@monstr.eu> wrote:
-> > >> Hi All,
-> > >>
-> > >> I have got email from Ilpo about prom_parse file.
-> > >> I take this file from powerpc. Who did write prom_parse file and take care about?
-> > > 
-> > > Posting to the linuxppc-dev list is sufficient to start.  There are
-> > > several people who may be interested.
-> > > 
-> > >> BTW: What about to move prom_parse file to any generic location as we discussed in past?
-> > >> Any volunteer?
-> > > 
-> > > I'm kind of working on it.  More specifically, I'm looking at
-> > > factoring out fdt stuff into common code (drivers/of/of_fdt.c). But I
-> > > haven't made a whole lot of progress yet.
-> > > 
-> > >> -------- Original Message --------
-> > >> Subject: [RFC!] [PATCH] microblaze: fix bug in error handling
-> > >> Date: Thu, 16 Apr 2009 23:05:53 +0300 (EEST)
-> > >> From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> > >> To: monstr@monstr.eu
-> > >> CC: microblaze-uclinux@itee.uq.edu.au
-> > >>
-> > >> While some version of the patches were on the lkml I read
-> > >> some part of the code briefly through but my feedback got
-> > >> stuck into postponed emails, so here's one correctness
-> > >> related issue I might have found (the rest were just
-> > >> cosmetic things).
-> > >>
-> > >> I'm not sure if the latter return needs the of_node_put or not
-> > >> but it seems more likely than not.
-> > > 
-> > > Yes, it does.  This change is applicable to
-> > > arch/powerpc/kernel/prom_parse.c too.
-> > 
-> > ok.
-> > Ilpo: Can you create patch for both architectures?
+> Here is an example:
 > 
-> Sure, but tomorrow as today is a deadline day :-).
-
-Ok, here's combined patch for both. I came up with slightly
-shorter and (IMHO) nicer variant for -EINVAL assignment than
-in the first version.
-
---
-[PATCH] powerpc & microblaze: add missing of_node_put to error handling
-
-While reviewing some microblaze patches a while ago, I noticed
-a suspicious error handling in of_irq_map_one(), which turned
-out to be a copy from arch/powerpc. Grant Likely
-<grant.likely@secretlab.ca> confirmed that this is a real bug.
-
-Merge error handling paths using goto with the normal return
-path.
-
-Powerppc compile tested.
-
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- arch/microblaze/kernel/prom_parse.c |   11 +++++------
- arch/powerpc/kernel/prom_parse.c    |   11 +++++------
- 2 files changed, 10 insertions(+), 12 deletions(-)
-
-diff --git a/arch/microblaze/kernel/prom_parse.c b/arch/microblaze/kernel/prom_parse.c
-index ae0352e..d16c32f 100644
---- a/arch/microblaze/kernel/prom_parse.c
-+++ b/arch/microblaze/kernel/prom_parse.c
-@@ -903,7 +903,7 @@ int of_irq_map_one(struct device_node *device,
- 	struct device_node *p;
- 	const u32 *intspec, *tmp, *addr;
- 	u32 intsize, intlen;
--	int res;
-+	int res = -EINVAL;
- 
- 	pr_debug("of_irq_map_one: dev=%s, index=%d\n",
- 			device->full_name, index);
-@@ -926,21 +926,20 @@ int of_irq_map_one(struct device_node *device,
- 
- 	/* Get size of interrupt specifier */
- 	tmp = of_get_property(p, "#interrupt-cells", NULL);
--	if (tmp == NULL) {
--		of_node_put(p);
--		return -EINVAL;
--	}
-+	if (tmp == NULL)
-+		goto out;
- 	intsize = *tmp;
- 
- 	pr_debug(" intsize=%d intlen=%d\n", intsize, intlen);
- 
- 	/* Check index */
- 	if ((index + 1) * intsize > intlen)
--		return -EINVAL;
-+		goto out;
- 
- 	/* Get new specifier and map it */
- 	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
- 				addr, out_irq);
-+out:
- 	of_node_put(p);
- 	return res;
- }
-diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
-index 8f0856f..8362620 100644
---- a/arch/powerpc/kernel/prom_parse.c
-+++ b/arch/powerpc/kernel/prom_parse.c
-@@ -971,7 +971,7 @@ int of_irq_map_one(struct device_node *device, int index, struct of_irq *out_irq
- 	struct device_node *p;
- 	const u32 *intspec, *tmp, *addr;
- 	u32 intsize, intlen;
--	int res;
-+	int res = -EINVAL;
- 
- 	DBG("of_irq_map_one: dev=%s, index=%d\n", device->full_name, index);
- 
-@@ -995,21 +995,20 @@ int of_irq_map_one(struct device_node *device, int index, struct of_irq *out_irq
- 
- 	/* Get size of interrupt specifier */
- 	tmp = of_get_property(p, "#interrupt-cells", NULL);
--	if (tmp == NULL) {
--		of_node_put(p);
--		return -EINVAL;
--	}
-+	if (tmp == NULL)
-+		goto out;
- 	intsize = *tmp;
- 
- 	DBG(" intsize=%d intlen=%d\n", intsize, intlen);
- 
- 	/* Check index */
- 	if ((index + 1) * intsize > intlen)
--		return -EINVAL;
-+		goto out;
- 
- 	/* Get new specifier and map it */
- 	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
- 			     addr, out_irq);
-+out:
- 	of_node_put(p);
- 	return res;
- }
--- 
-1.5.6.5
-
----696208474-14043735-1239973323=:10088--
+> at24 0-0052: 512 byte 24c04 EEPROM (writable)
+> ibm-iic ef600700.i2c: using standard (100 kHz) mode
+> ad7414 0-004a: chip found
+> 
+> It looks like the at24 starts first, then the i2c driver, then the
+> ad7414. By moving the message to after the of scan, we always get the
+> driver, then the devices.
+> 
+> Cheers,
+>    Sean
+> 
+> Print the i2c driver message before scanning for devices so that the
+> logs show the driver, then the devices. Currently you can get
+> device(s), driver, device(s).
+> 
+> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> ---
+> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c
+> b/drivers/i2c/busses/i2c-ibm_iic.c index 88f0db7..7fc0729 100644
+> --- a/drivers/i2c/busses/i2c-ibm_iic.c
+> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
+> @@ -756,12 +756,12 @@ static int __devinit iic_probe(struct of_device
+> *ofdev, goto error_cleanup;
+>  	}
+>  
+> -	/* Now register all the child nodes */
+> -	of_register_i2c_devices(adap, np);
+> -
+>  	dev_info(&ofdev->dev, "using %s mode\n",
+>  		 dev->fast_mode ? "fast (400 kHz)" : "standard (100
+> kHz)"); 
+> +	/* Now register all the child nodes */
+> +	of_register_i2c_devices(adap, np);
+> +
+>  	return 0;
+>  
+>  error_cleanup:
+>  
