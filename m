@@ -1,32 +1,25 @@
-Return-Path: <Yu.Liu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 50FC1DDF94
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 17:41:15 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n3K7f54Z011322
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 00:41:12 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n3K7f3s5012932
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 02:41:04 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: who know's what is "TestFloat cases" and how to test this feature
-	onthe Freescale MPC8536DS board
-Date: Mon, 20 Apr 2009 15:41:02 +0800
-Message-ID: <0A1FE637C2C7E148B9573BB60CC630E520FC0A@zch01exm26.fsl.freescale.net>
-In-Reply-To: <003001c9c0d0$c6919510$53b4bf30$@com>
-References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>	<74c0088dfda1816c21914c0a8da0c42908526c5e.1239874968.git.monstr@monstr.eu>	<20090417170707.B6C95C4004F@mail150-wa4.bigfish.com><fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com>
+Return-Path: <zhengxiang9@163.com>
+Received: from m13-46.163.com (m13-46.163.com [220.181.13.46])
+	by ozlabs.org (Postfix) with SMTP id 92C74DDF70
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 15:44:48 +1000 (EST)
+Date: Mon, 20 Apr 2009 13:29:31 +0800 (CST)
+From: zhengxiang9 <zhengxiang9@163.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Message-ID: <9151318.479751240205371775.JavaMail.coremail@bj163app46.163.com>
+In-Reply-To: <2B3EB2F4-7F33-4243-B39D-F9331D3E08D6@kernel.crashing.org>
+References: <2B3EB2F4-7F33-4243-B39D-F9331D3E08D6@kernel.crashing.org>
+	<764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>
+	<74c0088dfda1816c21914c0a8da0c42908526c5e.1239874968.git.monstr@monstr.eu>
+	<20090417170707.B6C95C4004F@mail150-wa4.bigfish.com>
+	<fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com>
 	<003001c9c0d0$c6919510$53b4bf30$@com>
-From: "Liu Yu-B13201" <Yu.Liu@freescale.com>
-To: "derekzheng" <zhengxiang9@163.com>,
-	"linuxppc-dev" <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: Re:Re: who know's what is "TestFloat cases" and how to test this
+	feature on the Freescale MPC8536DS board
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_128851_21053170.1240205371773"
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	linux-kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,22 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_128851_21053170.1240205371773
+Content-Type: text/plain; charset=gbk
+Content-Transfer-Encoding: quoted-printable
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+b13201=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+b13201=3Dfreescale.com@ozlabs.org]=20
-> On Behalf Of derekzheng
-> Sent: Sunday, April 19, 2009 5:25 PM
-> To: 'linuxppc-dev'; microblaze-uclinux@itee.uq.edu.au;=20
-> linux-kernel@vger.kernel.org
-> Subject: who know's what is "TestFloat cases" and how to test=20
-> this feature onthe Freescale MPC8536DS board
->=20
-> Hi all guys:
->=20
-> The Freescale MPC8536DS board Integrated TestFloat cases, and=20
-> I do not know how to test this feature on this board.
-> Please tell me how to test it if you known
->=20
+thanks for you help.
+i am sorry,i make a mistake , i can not update my mail list
 
-You can find the user manual "E500v2 SPE Floating Point" in BSP iso.
+derek  zheng=20
+
+
+
+
+
+
+
+
+=D4=DA2009-04-20=A3=AC"Kumar Gala" <galak@kernel.crashing.org> =D0=B4=B5=C0=
+=A3=BA
+>
+>On Apr 19, 2009, at 4:25 AM, derekzheng wrote:
+>
+>> Hi all guys:
+>>
+>> The Freescale MPC8536DS board Integrated TestFloat cases, and I do =20
+>> not know how to test this feature on this board.
+>> Please tell me how to test it if you known
+>
+>1. why are you CC' the microblaze list on this question?
+>2. I assume you are talking about the FSL BSP for MPC8536DS
+>3. testfloat is a set of tests.  Its not clear what your question is.  =20
+>You build testfloat and run it and it reports pass/fails.
+>
+>- k
+
+------=_Part_128851_21053170.1240205371773
+Content-Type: text/html; charset=gbk
+Content-Transfer-Encoding: quoted-printable
+
+<div>thanks for you help.<br>i am sorry,i make a mistake , i can not update=
+ my mail list<br><br>derek&nbsp; zheng <br><br></div><div><br><br><br></div=
+><br><pre>=D4=DA2009-04-20=A3=AC"Kumar Gala" &lt;galak@kernel.crashing.org&=
+gt; =D0=B4=B5=C0=A3=BA
+&gt;
+&gt;On Apr 19, 2009, at 4:25 AM, derekzheng wrote:
+&gt;
+&gt;&gt; Hi all guys:
+&gt;&gt;
+&gt;&gt; The Freescale MPC8536DS board Integrated TestFloat cases, and I do=
+ =20
+&gt;&gt; not know how to test this feature on this board.
+&gt;&gt; Please tell me how to test it if you known
+&gt;
+&gt;1. why are you CC' the microblaze list on this question?
+&gt;2. I assume you are talking about the FSL BSP for MPC8536DS
+&gt;3. testfloat is a set of tests.  Its not clear what your question is.  =
+=20
+&gt;You build testfloat and run it and it reports pass/fails.
+&gt;
+&gt;- k
+</pre><br><!-- footer --><br><span title=3D"neteasefooter"/><hr/>
+<a href=3D"http://email.163.com">=CD=F8=D2=D7=D3=CA=CF=E4=A3=AC=D6=D0=B9=FA=
+=B5=DA=D2=BB=B4=F3=B5=E7=D7=D3=D3=CA=BC=FE=B7=FE=CE=F1=C9=CC</a>
+</span>
+------=_Part_128851_21053170.1240205371773--
