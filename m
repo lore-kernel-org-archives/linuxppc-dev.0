@@ -1,32 +1,32 @@
-Return-Path: <yamazaki.seiji@kk.jp.panasonic.com>
-Received: from smtp.mei.co.jp (smtp.mei.co.jp [133.183.100.20])
-	by ozlabs.org (Postfix) with ESMTP id 74040DDF48
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 16:49:41 +1000 (EST)
-Received: from mail-gw.jp.panasonic.com ([157.8.1.145])
-	by smtp.mei.co.jp (8.12.11.20060614/3.7W/kc-maile13) with ESMTP id
-	n3K6ndan020802
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 15:49:39 +0900 (JST)
-Received: by mail-gw.jp.panasonic.com (8.11.6p2/3.7W/somlb1) with ESMTP id
-	n3K6ndT26763
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 15:49:39 +0900 (JST)
-Received: from epochmail.jp.panasonic.com (localhost [127.0.0.1])
-	by mail.jp.panasonic.com (8.11.6p2/3.7W/kc-maili05) with ESMTP id
-	n3K6ncB18547
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 15:49:38 +0900 (JST)
-Received: by epochmail.jp.panasonic.com (8.12.11.20060308/3.7W/somla1) id
-	n3K6ndmT019665
-	for linuxppc-dev@ozlabs.org; Mon, 20 Apr 2009 15:49:39 +0900 (JST)
-Received: from [10.74.116.94]
-	by somla1.jp.panasonic.com (8.12.11.20060308/3.7W) with ESMTP id
-	n3K6ncN4019611
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 15:49:38 +0900 (JST)
-Date: Mon, 20 Apr 2009 15:49:36 +0900
-From: yamazaki seiji <yamazaki.seiji@kk.jp.panasonic.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: eth1 on nfsboot problem
-Message-Id: <20090420153304.B8E7.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
+Return-Path: <Yu.Liu@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 50FC1DDF94
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 17:41:15 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n3K7f54Z011322
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 00:41:12 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n3K7f3s5012932
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 02:41:04 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: who know's what is "TestFloat cases" and how to test this feature
+	onthe Freescale MPC8536DS board
+Date: Mon, 20 Apr 2009 15:41:02 +0800
+Message-ID: <0A1FE637C2C7E148B9573BB60CC630E520FC0A@zch01exm26.fsl.freescale.net>
+In-Reply-To: <003001c9c0d0$c6919510$53b4bf30$@com>
+References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>	<74c0088dfda1816c21914c0a8da0c42908526c5e.1239874968.git.monstr@monstr.eu>	<20090417170707.B6C95C4004F@mail150-wa4.bigfish.com><fa686aa40904172249m5e261492w48c8d9d8446600e0@mail.gmail.com>
+	<003001c9c0d0$c6919510$53b4bf30$@com>
+From: "Liu Yu-B13201" <Yu.Liu@freescale.com>
+To: "derekzheng" <zhengxiang9@163.com>,
+	"linuxppc-dev" <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,60 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
 
-I am running the Linux kernel 2.6.28.7 on my PPC8347 BRD.
-I have a problem.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+b13201=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+b13201=3Dfreescale.com@ozlabs.org]=20
+> On Behalf Of derekzheng
+> Sent: Sunday, April 19, 2009 5:25 PM
+> To: 'linuxppc-dev'; microblaze-uclinux@itee.uq.edu.au;=20
+> linux-kernel@vger.kernel.org
+> Subject: who know's what is "TestFloat cases" and how to test=20
+> this feature onthe Freescale MPC8536DS board
+>=20
+> Hi all guys:
+>=20
+> The Freescale MPC8536DS board Integrated TestFloat cases, and=20
+> I do not know how to test this feature on this board.
+> Please tell me how to test it if you known
+>=20
 
-nfsboot is succeeded,but eth1 fail to ifup like following message.
-
-IP-Config: Complete:
-     device=eth0, addr=192.168.0.131, mask=255.255.255.0, gw=192.168.0.1,
-     host=mpc8347TPRO, domain=, nis-domain=(none),
-     bootserver=192.168.0.123, rootserver=192.168.0.123, rootpath=
-md: Waiting for all devices to be available before autodetect
-md: If you don't use raid, use raid=noautodetect
-md: Autodetecting RAID arrays.
-md: Scanned 0 and added 0 devices.
-md: autorun ...
-md: ... autorun DONE.
-Looking up port of RPC 100003/2 on 192.168.0.123
-PHY: 24520:01 - Link is Up - 100/Full
-Looking up port of RPC 100005/1 on 192.168.0.123
-VFS: Mounted root (nfs filesystem).
-Freeing unused kernel memory: 184k init
-INIT: version 2.86 booting
-Starting the hotplug events dispatcher: udevd.
-Synthesizing the initial hotplug events...done.
-Waiting for /dev to be fully populated...done.
-Activating swap...done.
-Remounting root filesystem...done.
-mount: according to mtab, /dev/root is already mounted on /
-
-Calculating module dependencies
-Loading modules:
-Starting checking all file systems: fsck
-fsck 1.40 (29-Jun-2007)
-Starting mounting local filesystems: mount /dev/mtdblock1 on /mnt/flash type jffs2 (rw)
-/dev/mtdblock2 on /mnt/flash2 type jffs2 (rw)
-umount.nfs: /dev/root: not found or not mounted
-Setting up networking ....
-/etc/network/options is deprecated.
-Setting up IP spoofing protection: rp_filter done.
-Disabling TCP/IP SYN cookies: done.
-Disabling IPv4 packet forwarding: done.
-Disabling TCP/IP Explicit Congestion Notification: done.
-Starting network interfaces: SIOCADDRT: File exists
-Failed to bring up eth0.
-SIOCSIFADDR: No such device
-eth1: ERROR while getting interface flags: No such device
-SIOCSIFNETMASK: No such device
-eth1: ERROR while getting interface flags: No such device
-Failed to bring up eth1.
-done.
-
-but on ramboot,eth1 succeed to ifup.
-What is the difference between nfsboot and ramboot?
-
--- 
-yamazaki seiji <yamazaki.seiji@kk.jp.panasonic.com>
+You can find the user manual "E500v2 SPE Floating Point" in BSP iso.
