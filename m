@@ -1,22 +1,22 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id E3505DE042
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 22:29:26 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so79392yxb.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 05:29:24 -0700 (PDT)
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Sender: jwboyer@gmail.com
-In-Reply-To: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
-References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
-Date: Mon, 20 Apr 2009 08:29:24 -0400
-Message-ID: <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
-Subject: Re: Porting the ibm_newemac driver to use phylib (and other PHY/MAC
-	questions)
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kyle Moffett <kyle@moffetthome.net>
+In-Reply-To: <49EC39D6.8020404@grandegger.com>
+References: <20090407082052.477328750@denx.de>
+	<53B42D49-C040-442E-8448-7BC3190220A5@kernel.crashing.org>
+	<F4E3E1FF-C544-460A-AC27-DB9501C13ED3@kernel.crashing.org>
+	<49DC515F.3040100@grandegger.com>
+	<E9E24C93-F147-49F0-9FBE-FCE4883D11BF@kernel.crashing.org>
+	<49DD0144.7050902@grandegger.com> <49DDC718.8000706@grandegger.com>
+	<49EC39D6.8020404@grandegger.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 20 Apr 2009 07:26:14 -0600
+Message-ID: <fa686aa40904200626s71e2891u6148471c6682d08e@mail.gmail.com>
+Subject: Re: [PATCH v3 0/5] i2c: i2c-mpc: make I2C bus speed configurable
+To: Wolfgang Grandegger <wg@grandegger.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, netdev <netdev@vger.kernel.org>,
-	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	devicetree-discuss <devicetree-discuss@ozlabs.org>,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 17, 2009 at 8:32 PM, Kyle Moffett <kyle@moffetthome.net> wrote:
-> Hello,
+On Mon, Apr 20, 2009 at 3:01 AM, Wolfgang Grandegger <wg@grandegger.com> wr=
+ote:
+> Hi Ben,
 >
-> I'm currently fiddling with a custom embedded prototype board using
-> the ibm_newemac driver with some currently-unsupported PHYs. =A0Those
-> PHYs *are* supported by phylib, but the emac driver seems to have its
-> own PHY layer cribbed from the sungem driver. =A0I'm curious if there's
-> some particular reason it hasn't been ported (aside from "nobody has
-> bothered yet").
+> Wolfgang Grandegger wrote:
+>> Wolfgang Grandegger wrote:
+>>> Kumar Gala wrote:
+>>>> On Apr 8, 2009, at 2:25 AM, Wolfgang Grandegger wrote:
+>>>>
+>>>>>> So I'm a bit concerned with the output we now get:
+>>>>>>
+>>>>>> mpc-i2c fffe03000.i2c: clock 0 Hz (dfsrr=3D16 fdr=3D49)
+>>>>>>
+>>>>>> why 0? is that right?
+>>>>> This is the backward compatibility mode using hard-coded FDR values. =
+The
+>>>>> output is missleading, I agree.
+>>>>>
+>>>>> Wolfgang.
+>>>> Can the output be fixed. =A00 Hz seemed bad to me.
+>>> Of course. No info message will be printed for the legacy case
+>>> like it was with the old driver version. I just realized a bug in the
+>>> MPC52xx part. Will send patches tomorrow, after some more thorough test=
+ing.
+>>
+>> The patch below fixes both issues. Ben, could you please apply it. Sorry=
+ for
+>> the inconvenience caused.
+>>
+>> Thanks,
+>>
+>> Wolfgang.
+>>
+>>
+>>
+>> [PATCH] i2c: i2c-mpc: bug fix for MPC52xx clock setting and printout
+>>
+>> The clock setting did not work for the MPC52xx due to a stupid bug.
+>> Furthermore, the dev info output "clock=3D0" for old device trees was
+>> misleading. This patch fixes both issues.
+>>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>
+> Could you please apply this bug-fix for the MPC driver for 2.6.30.
 
-IIRC, Ben had some issues with how phylib and the EMAC would need to
-interact.  Not sure if he has those written down somewhere or not.
-(CC'd).
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-> I've temporarily hacked a PHY driver together for the moment, but it
-> would be much easier for us to maintain and update our board if the
-> PHY drivers were integrated. =A0As a result I'm also interested in how
-> complicated it might be to port the driver (and possibly sungem as
-> well) over to phylib, if that is indeed feasible. =A0Also, if I end up
-> going that route, are there others available with other hardware
-> variants who would be willing to test my patches on their boards?
+>
+> =A0http://marc.info/?l=3Dlinux-i2c&m=3D123927120910293&w=3D2
+>
+> Thanks,
+>
+> Wolfgang.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-I have a large variety of boards that I can test with since the entire
-4xx line relies on this driver for on-board network.
 
-josh
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
