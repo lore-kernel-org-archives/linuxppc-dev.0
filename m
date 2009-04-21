@@ -1,14 +1,32 @@
-Return-Path: <mware@elphinstone.net>
-Received: from ipmail05.adl2.internode.on.net (ipmail05.adl2.internode.on.net
-	[203.16.214.145]) by ozlabs.org (Postfix) with ESMTP id 2F1FEDDFC2
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 22:49:14 +1000 (EST)
-Message-ID: <49EDC0BE.7040505@elphinstone.net>
-Date: Tue, 21 Apr 2009 22:49:02 +1000
-From: Mark Ware <mware@elphinstone.net>
+Return-Path: <ossrosch@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 52C05DDF55
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 01:15:40 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3LFHRGm027078
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 11:17:27 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3LFFYor185216
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 11:15:34 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3LFFY6J016409
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 11:15:34 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>, "OF-EWG" <ewg@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>
+Subject: [PATCH 0/3] IB/ehca: Perfomance improvment for creation of queue pairs
+Date: Tue, 21 Apr 2009 17:15:32 +0200
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
-Subject: [PATCH] i2c-cpm: Pass dev ptr to dma_*_coherent rather than NULL
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200904211715.32625.ossrosch@linux.vnet.ibm.com>
+Cc: fenkes@de.ibm.com, alexschm@de.ibm.com, raisch@de.ibm.com,
+	stefan.roscher@qde.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,69 +36,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Recent DMA changes result in a BUG() when NULL is passed to
-dma_alloc_coherent in place of a device.
+This patchset contains performance improvments for ehca driver.
+It will skip code which is not necessary for userspace queue pairs
+and will replace vmalloc() calls with kmalloc().
+Because of this fundamental code change we will also increment the version number.
 
-Signed-off-by: Mark Ware <mware@elphinstone.net>
----
+They should apply cleanly against 2.6.30 git tree.
 
-This patch fixes the BUG() during boot that has appeared during the
-2.6.30 window. It has been tested and appears correct on my 8280 based
-board.
-Sent to both linuxppc-dev and linux-i2c, since I'm not sure where it belongs.
-
-
-  drivers/i2c/busses/i2c-cpm.c |   14 ++++++++------
-  1 files changed, 8 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
-index 3fcf78e..83276d2 100644
---- a/drivers/i2c/busses/i2c-cpm.c
-+++ b/drivers/i2c/busses/i2c-cpm.c
-@@ -532,7 +532,8 @@ static int __devinit cpm_i2c_setup(struct cpm_i2c *cpm)
-
-  	for (i = 0; i < CPM_MAXBD; i++) {
-  		cpm->rxbuf[i] = dma_alloc_coherent(
--			NULL, CPM_MAX_READ + 1, &cpm->rxdma[i], GFP_KERNEL);
-+			&cpm->ofdev->dev, CPM_MAX_READ + 1, &cpm->rxdma[i],
-+			GFP_KERNEL);
-  		if (!cpm->rxbuf[i]) {
-  			ret = -ENOMEM;
-  			goto out_muram;
-@@ -540,7 +541,8 @@ static int __devinit cpm_i2c_setup(struct cpm_i2c *cpm)
-  		out_be32(&rbdf[i].cbd_bufaddr, ((cpm->rxdma[i] + 1) & ~1));
-
-  		cpm->txbuf[i] = (unsigned char *)dma_alloc_coherent(
--			NULL, CPM_MAX_READ + 1, &cpm->txdma[i], GFP_KERNEL);
-+			&cpm->ofdev->dev, CPM_MAX_READ + 1, &cpm->txdma[i],
-+			GFP_KERNEL);
-  		if (!cpm->txbuf[i]) {
-  			ret = -ENOMEM;
-  			goto out_muram;
-@@ -585,10 +587,10 @@ static int __devinit cpm_i2c_setup(struct cpm_i2c *cpm)
-  out_muram:
-  	for (i = 0; i < CPM_MAXBD; i++) {
-  		if (cpm->rxbuf[i])
--			dma_free_coherent(NULL, CPM_MAX_READ + 1,
-+			dma_free_coherent(&cpm->ofdev->dev, CPM_MAX_READ + 1,
-  				cpm->rxbuf[i], cpm->rxdma[i]);
-  		if (cpm->txbuf[i])
--			dma_free_coherent(NULL, CPM_MAX_READ + 1,
-+			dma_free_coherent(&cpm->ofdev->dev, CPM_MAX_READ + 1,
-  				cpm->txbuf[i], cpm->txdma[i]);
-  	}
-  	cpm_muram_free(cpm->dp_addr);
-@@ -619,9 +621,9 @@ static void cpm_i2c_shutdown(struct cpm_i2c *cpm)
-
-  	/* Free all memory */
-  	for (i = 0; i < CPM_MAXBD; i++) {
--		dma_free_coherent(NULL, CPM_MAX_READ + 1,
-+		dma_free_coherent(&cpm->ofdev->dev, CPM_MAX_READ + 1,
-  			cpm->rxbuf[i], cpm->rxdma[i]);
--		dma_free_coherent(NULL, CPM_MAX_READ + 1,
-+		dma_free_coherent(&cpm->ofdev->dev, CPM_MAX_READ + 1,
-  			cpm->txbuf[i], cpm->txdma[i]);
-  	}
-
--- 
-1.5.6.5
+Thanks
+Stefan
