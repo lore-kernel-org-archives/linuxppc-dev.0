@@ -1,21 +1,17 @@
 Return-Path: <galak@kernel.crashing.org>
-Message-Id: <5A202317-5104-4784-845B-B8C46E0A3C48@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B139DDE034
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 07:38:29 +1000 (EST)
+Date: Tue, 21 Apr 2009 16:38:24 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: David Brownell <david-b@pacbell.net>
-In-Reply-To: <200904211203.36969.david-b@pacbell.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [BUILD FAILURE 11/12] Next April 21 : PPC64 randconfig
-	[drivers/usb/host/ohci-hcd.o]
-Date: Tue, 21 Apr 2009 16:37:10 -0500
-References: <1240340081.9110.144.camel@subratamodak.linux.ibm.com>
-	<200904211203.36969.david-b@pacbell.net>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-usb@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>, subrata@linux.vnet.ibm.com,
-	Alexander Beregalov <a.beregalov@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'merge' branch for 2.6.30
+Message-ID: <Pine.LNX.4.64.0904211638001.13898@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'merge' branch of
 
-On Apr 21, 2009, at 2:03 PM, David Brownell wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-> On Tuesday 21 April 2009, Subrata Modak wrote:
->> Observing this for the first time:
->>
->> CC      drivers/usb/host/ohci-hcd.o
->> In file included from drivers/usb/host/ohci-hcd.c:1060:
->> drivers/usb/host/ohci-ppc-of.c:242:2: error: #error "No endianess
->
-> Hmm, scripts/get_maintainer.pl doesn't report
-> the PPC folk who maintain that file and its
-> kbuild infrastructure.
->
-> Can we have some PPC folk look at (and fix) this?
+to receive the following updates:
 
-The problem is in the drivers/usb/host/Kconfig:
+ arch/powerpc/configs/85xx/mpc8536_ds_defconfig | 1802 ------------------------
+ arch/powerpc/configs/85xx/mpc8544_ds_defconfig | 1802 ------------------------
+ arch/powerpc/configs/85xx/mpc8568mds_defconfig | 1309 -----------------
+ arch/powerpc/configs/85xx/mpc8572_ds_defconfig | 1794 ------------------------
+ arch/powerpc/configs/mpc85xx_defconfig         |  252 +--
+ arch/powerpc/configs/mpc85xx_smp_defconfig     | 1829 +++++++++++++++++++++++++
+ arch/powerpc/platforms/fsl_uli1575.c           |    5
+ arch/powerpc/sysdev/fsl_rio.c                  |   28
+ 8 files changed, 1959 insertions(+), 6862 deletions(-)
 
-config USB_OHCI_HCD_PPC_OF_BE
-         bool "Support big endian HC"
-         depends on USB_OHCI_HCD_PPC_OF
-         default y
-         select USB_OHCI_BIG_ENDIAN_DESC
-         select USB_OHCI_BIG_ENDIAN_MMIO
+Anton Vorontsov (1):
+      fsl_rio: Pass the proper device to dma mapping routines
 
-config USB_OHCI_HCD_PPC_OF_LE
-         bool "Support little endian HC"
-         depends on USB_OHCI_HCD_PPC_OF
-         default n
-         select USB_OHCI_LITTLE_ENDIAN
+Kumar Gala (4):
+      powerpc/85xx: Updated generic mpc85xx_defconfig
+      powerpc/85xx: Enabled a bunch of FSL specific drivers/options
+      powerpc/85xx: Added SMP defconfig
+      powerpc/85xx: Remove defconfigs that mpc85xx_{smp_}defconfig cover
 
-Since its feasible to say 'n' to both we get the compile error.  How  
-do we enforce having at least one set?
-
-- k
+Timur Tabi (1):
+      powerpc: don't disable SATA interrupts on Freescale MPC8610 HPCD
