@@ -1,32 +1,20 @@
-Return-Path: <ossrosch@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7EF61DDFC9
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 01:16:56 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3LFCG4a031374
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 11:12:16 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3LFGkCm186400
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 11:16:47 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3LFGkSK007213
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 11:16:46 -0400
-From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>, "OF-EWG" <ewg@lists.openfabrics.org>,
-	Roland Dreier <rolandd@cisco.com>
-Subject: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
-Date: Tue, 21 Apr 2009 17:16:44 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200904211716.45245.ossrosch@linux.vnet.ibm.com>
-Cc: alexschm@de.ibm.com, fenkes@de.ibm.com, stefan.roscher@de.ibm.com,
-	raisch@de.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 631E9DE2E5
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 01:17:10 +1000 (EST)
+Message-Id: <E2205842-8019-4CE4-812B-64ABD76F36F4@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Ben Dooks <ben-linux@fluff.org>
+In-Reply-To: <49EDC0BE.7040505@elphinstone.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] i2c-cpm: Pass dev ptr to dma_*_coherent rather than NULL
+Date: Tue, 21 Apr 2009 10:11:51 -0500
+References: <49EDC0BE.7040505@elphinstone.net>
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	linux-i2c@vger.kernel.org, Mark Ware <mware@elphinstone.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,46 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <antonb at au1.ibm.com>
 
-To improve performance of driver ressource allocation,
-replace the vmalloc() call with kmalloc().
+On Apr 21, 2009, at 7:49 AM, Mark Ware wrote:
 
-Signed-off-by: Stefan Roscher <stefan.roscher at de.ibm.com>
----
- drivers/infiniband/hw/ehca/ipz_pt_fn.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+> Recent DMA changes result in a BUG() when NULL is passed to
+> dma_alloc_coherent in place of a device.
+>
+> Signed-off-by: Mark Ware <mware@elphinstone.net>
+> ---
+>
+> This patch fixes the BUG() during boot that has appeared during the
+> 2.6.30 window. It has been tested and appears correct on my 8280 based
+> board.
+> Sent to both linuxppc-dev and linux-i2c, since I'm not sure where it  
+> belongs.
+>
+>
+> drivers/i2c/busses/i2c-cpm.c |   14 ++++++++------
+> 1 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ipz_pt_fn.c b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-index c3a3284..a260559 100644
---- a/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-+++ b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-@@ -220,7 +220,7 @@ int ipz_queue_ctor(struct ehca_pd *pd, struct ipz_queue *queue,
- 	queue->small_page = NULL;
- 
- 	/* allocate queue page pointers */
--	queue->queue_pages = vmalloc(nr_of_pages * sizeof(void *));
-+	queue->queue_pages = kmalloc(nr_of_pages * sizeof(void *), GFP_KERNEL);
- 	if (!queue->queue_pages) {
- 		ehca_gen_err("Couldn't allocate queue page list");
- 		return 0;
-@@ -240,7 +240,7 @@ int ipz_queue_ctor(struct ehca_pd *pd, struct ipz_queue *queue,
- ipz_queue_ctor_exit0:
- 	ehca_gen_err("Couldn't alloc pages queue=%p "
- 		 "nr_of_pages=%x",  queue, nr_of_pages);
--	vfree(queue->queue_pages);
-+	kfree(queue->queue_pages);
- 
- 	return 0;
- }
-@@ -262,7 +262,7 @@ int ipz_queue_dtor(struct ehca_pd *pd, struct ipz_queue *queue)
- 			free_page((unsigned long)queue->queue_pages[i]);
- 	}
- 
--	vfree(queue->queue_pages);
-+	kfree(queue->queue_pages);
- 
- 	return 1;
- }
--- 
-1.5.5
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
+
+Ben, I'm expecting you to pick this up unless you tell me otherwise.
+
+- k
