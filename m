@@ -2,17 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 55E5CDE0A2
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 06:35:09 +1000 (EST)
-Message-Id: <2CFF27D3-1C31-4035-AC98-82F6F48EA32D@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id C278ADE0A0
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 06:37:16 +1000 (EST)
+Message-Id: <DD3EF5A2-E154-4E31-8729-1FB630BB9B25@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090418174852.GA28955@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1240242875-3247-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] fsl_rio: Pass the proper device to dma mapping routines
-Date: Tue, 21 Apr 2009 15:35:01 -0500
-References: <20090418174852.GA28955@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH] powerpc: don't disable SATA interrupts on Freescale
+	MPC8610 HPCD
+Date: Tue, 21 Apr 2009 15:35:09 -0500
+References: <1240242875-3247-1-git-send-email-timur@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,32 +25,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 18, 2009, at 12:48 PM, Anton Vorontsov wrote:
+On Apr 20, 2009, at 10:54 AM, Timur Tabi wrote:
 
-> The driver should pass a device that specifies internal DMA ops, but
-> currently NULL pointer is passed, therefore following bug appears
-> during boot up:
+> The ULI 1575 PCI quirk function for the Freescale MPC8610 HPCD was  
+> disabling
+> the SATA INTx interrupt, even when SATA support was enabled.  This  
+> was safe,
+> because the SATA driver re-enabled it.  But with commit a5bfc471  
+> ("ahci: drop
+> intx manipulation on msi enable"), the driver no longer does this,  
+> and so SATA
+> support on the 8610 HPCD is broken.
 >
->  ------------[ cut here ]------------
->  Kernel BUG at c0018a7c [verbose debug info unavailable]
->  Oops: Exception in kernel mode, sig: 5 [#1]
->  [...]
->  NIP [c0018a7c] fsl_rio_doorbell_init+0x34/0x60
->  LR [c0018a70] fsl_rio_doorbell_init+0x28/0x60
->  Call Trace:
->  [ef82bda0] [c0018a70] fsl_rio_doorbell_init+0x28/0x60 (unreliable)
->  [ef82bdc0] [c0019160] fsl_rio_setup+0x6b8/0x84c
->  [ef82be20] [c02d28ac] fsl_of_rio_rpn_probe+0x30/0x50
->  [ef82be40] [c0234f20] of_platform_device_probe+0x5c/0x84
->  [...]
->  ---[ end trace 561bb236c800851f ]---
+> The original quirk function disabled INTx because it caused some other
+> interrupt problem during early development on this board, but no one  
+> remembers
+> any more what that problem was, and it doesn't seem to occur any more.
 >
-> This patch fixes the issue.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/sysdev/fsl_rio.c |   28 +++++++++++++++++-----------
-> 1 files changed, 17 insertions(+), 11 deletions(-)
+> arch/powerpc/platforms/fsl_uli1575.c |    5 -----
+> 1 files changed, 0 insertions(+), 5 deletions(-)
+
 
 applied to merge.
 
