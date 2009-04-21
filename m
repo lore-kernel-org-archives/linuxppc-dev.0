@@ -1,22 +1,22 @@
-Return-Path: <kyle@moffetthome.net>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id D1E38DE046
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 10:10:08 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c2so556240anc.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 17:10:05 -0700 (PDT)
+Return-Path: <dgibson@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0618ADDFD2
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 15:20:28 +1000 (EST)
+Date: Tue, 21 Apr 2009 15:17:51 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Move dtc and libfdt sources from arch/powerpc/boot to scripts/dtc
+Message-ID: <20090421051751.GA23934@yookeroo.seuss>
+References: <18906.57833.843101.770634@drongo.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
-References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
-	<625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
-Date: Mon, 20 Apr 2009 20:10:05 -0400
-Message-ID: <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
-Subject: Re: Porting the ibm_newemac driver to use phylib (and other PHY/MAC
-	questions)
-From: Kyle Moffett <kyle@moffetthome.net>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, netdev <netdev@vger.kernel.org>,
-	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18906.57833.843101.770634@drongo.ozlabs.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, monstr@monstr.eu,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Linus Torvalds <torvalds@osdl.org>, Michal Simek <monstr@seznam.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 20, 2009 at 8:29 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wr=
-ote:
-> On Fri, Apr 17, 2009 at 8:32 PM, Kyle Moffett <kyle@moffetthome.net> wrot=
-e:
->> Hello,
->>
->> I'm currently fiddling with a custom embedded prototype board using
->> the ibm_newemac driver with some currently-unsupported PHYs. =C2=A0Those
->> PHYs *are* supported by phylib, but the emac driver seems to have its
->> own PHY layer cribbed from the sungem driver. =C2=A0I'm curious if there=
-'s
->> some particular reason it hasn't been ported (aside from "nobody has
->> bothered yet").
->
-> IIRC, Ben had some issues with how phylib and the EMAC would need to
-> interact. =C2=A0Not sure if he has those written down somewhere or not.
-> (CC'd).
+On Tue, Apr 07, 2009 at 03:17:29PM +1000, Paul Mackerras wrote:
+> David Gibson writes:
+> 
+> > The vast bulk of this patch is a literal move, the rest is adjusting
+> > the various Makefiles to use dtc and libfdt correctly from their new
+> > locations.
+> 
+> Did you test this with a separate object directory?  I get:
 
-Hmm, yeah, I'd be interested to see those.  There's enough similar
-between phylib and the EMAC and sungem drivers that I'm considering a
-series of somewhat-mechanical patches to make EMAC and sungem use the
-"struct phy_device" and "struct mii_bus" from phylib, possibly
-abstracting out some helper functions along the way.
+Ugh.  Obviously not.  New patch coming.
 
->> Also, if I end up
->> going that route, are there others available with other hardware
->> variants who would be willing to test my patches on their boards?
->
-> I have a large variety of boards that I can test with since the entire
-> 4xx line relies on this driver for on-board network.
-
-Wonderful!  If/when I hack together a patch series I'll make sure to
-put you on the CC list.  Thanks!
-
-Cheers,
-Kyle Moffett
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
