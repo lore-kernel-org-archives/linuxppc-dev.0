@@ -1,21 +1,22 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 170E2DDFD2
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 12:45:30 +1000 (EST)
-Date: Tue, 21 Apr 2009 11:39:20 +0900
-To: beckyb@kernel.crashing.org
-Subject: Re: [PATCH 4/5] powerpc: Add support for swiotlb on 32-bit
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <519AC89C-88A5-418A-AD91-488EC13E8387@kernel.crashing.org>
-References: <1240244810-32193-7-git-send-email-beckyb@kernel.crashing.org>
-	<9A5921B1-48D8-49B1-8D10-5DF68DEBF5D3@kernel.crashing.org>
-	<519AC89C-88A5-418A-AD91-488EC13E8387@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20090421113934X.fujita.tomonori@lab.ntt.co.jp>
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org
+Return-Path: <kyle@moffetthome.net>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id D1E38DE046
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 10:10:08 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c2so556240anc.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2009 17:10:05 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
+References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
+	<625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
+Date: Mon, 20 Apr 2009 20:10:05 -0400
+Message-ID: <f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
+Subject: Re: Porting the ibm_newemac driver to use phylib (and other PHY/MAC
+	questions)
+From: Kyle Moffett <kyle@moffetthome.net>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, netdev <netdev@vger.kernel.org>,
+	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,115 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 20 Apr 2009 13:03:20 -0500
-Becky Bruce <beckyb@kernel.crashing.org> wrote:
+On Mon, Apr 20, 2009 at 8:29 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wr=
+ote:
+> On Fri, Apr 17, 2009 at 8:32 PM, Kyle Moffett <kyle@moffetthome.net> wrot=
+e:
+>> Hello,
+>>
+>> I'm currently fiddling with a custom embedded prototype board using
+>> the ibm_newemac driver with some currently-unsupported PHYs. =C2=A0Those
+>> PHYs *are* supported by phylib, but the emac driver seems to have its
+>> own PHY layer cribbed from the sungem driver. =C2=A0I'm curious if there=
+'s
+>> some particular reason it hasn't been ported (aside from "nobody has
+>> bothered yet").
+>
+> IIRC, Ben had some issues with how phylib and the EMAC would need to
+> interact. =C2=A0Not sure if he has those written down somewhere or not.
+> (CC'd).
 
-> 
-> On Apr 20, 2009, at 11:57 AM, Kumar Gala wrote:
-> 
-> >
-> > On Apr 20, 2009, at 11:26 AM, Becky Bruce wrote:
-> >
-> >> This patch includes the basic infrastructure to use swiotlb
-> >> bounce buffering on 32-bit powerpc.  It is not yet enabled on
-> >> any platforms.
-> >>
-> >> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
-> >> ---
-> >> arch/powerpc/Kconfig                   |    2 +-
-> >> arch/powerpc/include/asm/dma-mapping.h |   11 ++
-> >> arch/powerpc/include/asm/swiotlb.h     |   24 +++++
-> >> arch/powerpc/kernel/Makefile           |    1 +
-> >> arch/powerpc/kernel/dma-swiotlb.c      |  161 ++++++++++++++++++++++ 
-> >> ++++++++++
-> >> arch/powerpc/kernel/dma.c              |    2 +-
-> >> arch/powerpc/kernel/setup_32.c         |    4 +
-> >> 7 files changed, 203 insertions(+), 2 deletions(-)
-> >> create mode 100644 arch/powerpc/include/asm/swiotlb.h
-> >> create mode 100644 arch/powerpc/kernel/dma-swiotlb.c
-> >>
-> >> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> >> index 5b50e1a..197f6a3 100644
-> >> --- a/arch/powerpc/Kconfig
-> >> +++ b/arch/powerpc/Kconfig
-> >> @@ -294,7 +294,7 @@ config IOMMU_HELPER
-> >>
-> >> config PPC_NEED_DMA_SYNC_OPS
-> >> 	def_bool y
-> >> -	depends on NOT_COHERENT_CACHE
-> >> +	depends on (NOT_COHERENT_CACHE || SWIOTLB)
-> >
-> > This isn't right, since you haven't introduced the SWIOTLB Kconfig.
-> >
-> >
-> > Why don't we just put the SWIOTLB Kconfig option in here and default  
-> > it no (and remove the dep on 86xx).
-> 
-> Sure.  I'll probably add a comment or something though so people don't  
-> think they can just enable it on anything and expect it to work.  Too  
-> many people seem to read the config files and decide things are  
-> possible that actually aren't :)
-> 
-> >
-> >
-> >> config HOTPLUG_CPU
-> >> 	bool "Support for enabling/disabling CPUs"
-> >
-> >
-> >> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/ 
-> >> kernel/dma-swiotlb.c
-> >> new file mode 100644
-> >> index 0000000..29a68e6
-> >> --- /dev/null
-> >> +++ b/arch/powerpc/kernel/dma-swiotlb.c
-> >> @@ -0,0 +1,161 @@
-> >> +/*
-> >> + * Contains routines needed to support swiotlb for ppc.
-> >> + *
-> >> + * Copyright (C) 2009 Becky Bruce, Freescale Semiconductor
-> >> + *
-> >> + * This program is free software; you can redistribute  it and/or  
-> >> modify it
-> >> + * under  the terms of  the GNU General  Public License as  
-> >> published by the
-> >> + * Free Software Foundation;  either version 2 of the  License, or  
-> >> (at your
-> >> + * option) any later version.
-> >> + *
-> >> + */
-> >
-> > [snip]
-> >
-> >>
-> >> +
-> >> +static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
-> >> +				  unsigned long action, void *data)
-> >> +{
-> >> +	struct device *dev = data;
-> >> +
-> >> +	/* We are only intereted in device addition */
-> >> +	if (action != BUS_NOTIFY_ADD_DEVICE)
-> >> +		return 0;
-> >> +
-> >> +	if (dma_get_mask(dev) < DMA_BIT_MASK(36))
-> >> +		set_dma_ops(dev, &swiotlb_dma_ops);
-> >> +
-> >
-> > this isn't right.  Isn't possible for a PCI dev to have a  
-> > DMA_BIT_MASK(64) but us still not be able to dma to it?  Also, I  
-> > dont like the assumption of 36-bit physical here.
-> 
-> You're right - this is just handling the basic case and for now I'm  
-> assuming that we don't bounce 64-bit devices (or any device that can  
-> handle 36 bits).   We'll need to talk in more detail about a solution  
-> to that problem, because knowing if a 64b dev *might* need to bounce  
-> (which is all this is really saying) requires more information.   We  
-> also don't really have infrastructure to deal with holes in the  
-> visible dev memory, and I don't know if we want to handle that as  
-> well. I don't want to set the dma_ops to swiotlb unless we have to  
-> because there's a slight perf hit in running all the checks to see if  
-> an address needs to be bounced.
+Hmm, yeah, I'd be interested to see those.  There's enough similar
+between phylib and the EMAC and sungem drivers that I'm considering a
+series of somewhat-mechanical patches to make EMAC and sungem use the
+"struct phy_device" and "struct mii_bus" from phylib, possibly
+abstracting out some helper functions along the way.
 
-I think that you always just set the dma_ops to swiotlb. It's the
-cleanest solution. Do you really see the performance drop due to the
-checking?
+>> Also, if I end up
+>> going that route, are there others available with other hardware
+>> variants who would be willing to test my patches on their boards?
+>
+> I have a large variety of boards that I can test with since the entire
+> 4xx line relies on this driver for on-board network.
+
+Wonderful!  If/when I hack together a patch series I'll make sure to
+put you on the CC list.  Thanks!
+
+Cheers,
+Kyle Moffett
