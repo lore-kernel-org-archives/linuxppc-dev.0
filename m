@@ -1,34 +1,19 @@
-Return-Path: <mmlnx@us.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BAFBBDE03F
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 04:55:57 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3LIoRZ9014581
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 12:50:27 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3LItpLX077592
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 12:55:51 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3LItonh013546
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 12:55:51 -0600
-Message-ID: <49EE16B4.4000504@us.ibm.com>
-Date: Tue, 21 Apr 2009 11:55:48 -0700
-From: Mike Mason <mmlnx@us.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Set error_state to pci_channel_io_normal in
-	eeh_report_reset()
-References: <49DF967F.4000205@us.ibm.com>
-	<18917.31205.828267.202889@drongo.ozlabs.ibm.com>
-In-Reply-To: <18917.31205.828267.202889@drongo.ozlabs.ibm.com>
-Content-Type: text/html; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	Richard Lary <rlary@us.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C61F5DDFAF
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 06:01:46 +1000 (EST)
+Message-Id: <01A4AE51-D835-4F15-8735-DE537B2F6FF3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Subodh Nijsure <sunijsur@cisco.com>
+In-Reply-To: <000001c9c299$bf50d3e0$f272150a@cisco.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: Performance differences with IRQ_ALL_CPUS
+Date: Tue, 21 Apr 2009 15:01:38 -0500
+References: <000001c9c299$bf50d3e0$f272150a@cisco.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,61 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Paul Mackerras wrote:
-<blockquote cite="mid:18917.31205.828267.202889@drongo.ozlabs.ibm.com"
- type="cite">
-  <pre wrap="">Mike Mason writes:
 
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c 
-b/arch/powerpc/platforms/pseries/eeh_driver.c
-index 380420f..9a2a6e3 100644
---- a/arch/powerpc/platforms/pseries/eeh_driver.c
-+++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-@@ -182,6 +182,8 @@ static void eeh_report_reset(struct pci_dev *dev, 
-void *userdata)
-if (!driver)
-return;
+On Apr 21, 2009, at 10:56 AM, Subodh Nijsure wrote:
 
-+ dev-&gt;error_state = pci_channel_io_normal;
-+
-eeh_enable_irq(dev);
+> Hi,
+>
+>
+> I have board with MPC8572E (dual core PPC). I have one board running  
+> kernel
+> with IRQ_ALL_CPUS set to Y and another with that option turned off.   
+> Kernel
+> version #2.6.26
+>
+>
+> With IRQ_ALL_CPUS turned off
+> ( Here interrupts all go to CPU0 )
+>
+> hdparm -tT /dev/hda
+> /dev/hda:
+> Timing cached reads:   3048 MB in  2.00 seconds = 1523.79 MB/sec
+> Timing buffered disk reads:   10 MB in  3.07 seconds =   3.25 MB/sec
+>
+> cat /proc/interrupts
+>           CPU0       CPU1
+> 18:    1394100          0   OpenPIC   Edge      ide0
+>
+> With IRQ_ALL_CPUS turned on I see
+> (Here interrupts go to CPU0 and CPU1 )
+>
+> hdparm -tT /dev/hda
+>
+> /dev/hda:
+> Timing cached reads:   1076 MB in  2.00 seconds = 538.01 MB/sec
+> Timing buffered disk reads:   10 MB in  3.08 seconds =   3.25 MB/sec
+>
+> cat /proc/interrupts
+>           CPU0       CPU1
+> 18:      44951      54765   OpenPIC   Edge      ide0
+>
+> I "expected" that with IRQ_ALL_CPUS -- interrupt sharing I would be  
+> able to
+> get higher througput but I see things otherway around.
+>
+> Would someone care to enlighten me as to why when I set IRQ_ALL_CPUS  
+> disk
+> I/O performance goes down so much?  Under what circumstances should  
+> one then
+> turn on IRQ_ALL_CPUS option on PPC platform?
+>
+> Regards,
+> /Subodh
 
-if (!driver-&gt;err_handler ||
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Your mail client totally mangled the whitespace.  I fixed it up and
-applied it, since the patch was small, but in future please fix your
-mail client so it doesn't do that.
-  </pre>
-</blockquote>
-Sorry about that.<br>
-<blockquote cite="mid:18917.31205.828267.202889@drongo.ozlabs.ibm.com"
- type="cite">
-  <pre wrap="">
-It sounds like this patch needs to be applied to earlier kernel
-versions -- do you agree?
-  </pre>
-</blockquote>
-Maybe.&nbsp; The only drivers that care at this point are the emulex and
-qlogic drivers with native eeh support.&nbsp; How far back would you
-typically apply a patch like this?&nbsp; I'm submitting it for inclusion in
-SLES 10 &amp; 11 and RHEL 5.<br>
-<br>
-Mike<br>
-<blockquote cite="mid:18917.31205.828267.202889@drongo.ozlabs.ibm.com"
- type="cite">
-  <pre wrap="">
-Paul.
-  </pre>
-</blockquote>
-</body>
-</html>
+This is probably because you are getting ill defined behavior on  
+8572.  The 8572 (and any FSL MPIC) doesn't actually support having the  
+PIC distribute interrupts to the different CPUs.  Its technically  
+"illegal" to set more than one destination processor.
+
+If you want to try and distribute interrupts than I suggest looking at  
+irqbalance.
+
+I'll look at a patch to deal with IRQ_ALL_CPUS to not setup the insane  
+HW scenario.
+
+- k
