@@ -1,22 +1,21 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id A6627DDEEC
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 19:56:19 +1000 (EST)
-Date: Tue, 21 Apr 2009 11:56:04 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] keywest: Convert to new-style i2c driver
-Message-ID: <20090421095604.GC3100@pengutronix.de>
-References: <20090420225659.7b92a184@hyperion.delvare>
-	<18924.63578.495727.152443@cargo.ozlabs.ibm.com>
-	<s5hzleah5x4.wl%tiwai@suse.de>
-	<20090421114853.7a9d82c1@hyperion.delvare>
+Return-Path: <pku.leo@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 816EDDDE28
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 20:51:13 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c2so663758anc.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2009 03:51:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7qSK/uQB79J36Y4o"
-In-Reply-To: <20090421114853.7a9d82c1@hyperion.delvare>
-Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, Paul Mackerras <paulus@samba.org>
+Sender: pku.leo@gmail.com
+In-Reply-To: <49ED859B.30904@denx.de>
+References: <49ED859B.30904@denx.de>
+Date: Tue, 21 Apr 2009 18:51:11 +0800
+Message-ID: <2a27d3730904210351s870f015gb896a4b874b3024b@mail.gmail.com>
+Subject: Re: [PATCH] [net, 83xx] ucc_geth.c: Fix upsmr setting in RMII mode
+From: Li Yang <leoli@freescale.com>
+To: hs@denx.de
+Content-Type: text/plain; charset=UTF-8
+Cc: Shlomi Gridish <gridish@freescale.com>, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,48 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Apr 21, 2009 at 4:36 PM, Heiko Schocher <hs@denx.de> wrote:
+> If using the UCC on a MPC8360 in RMII mode, don;t set
+> UCC_GETH_UPSMR_RPM bit in the upsmr register.
+>
+> Signed-off-by: Heiko Schocher <hs@denx.de>
 
---7qSK/uQB79J36Y4o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Li Yang <leoli@freescale.com>
 
-> Not removing it now has a high risk of developers continuing to ignore
-> the deprecation warnings and adding new legacy drivers, which I then
-> must convert to the new model. This never ends.
->=20
-> I know my behavior may seem a bit rude, but apparently this is the only
-> way to get things to actually happen. I've been waiting for over a year
-> already!
->=20
-> I don't think the risk is that high, at least not for sound drivers.
-> The conversions are fairly easy and if something really went wrong,
-> fixing it is a matter of minutes.
->=20
-> Please note that the removal of the legacy model isn't my goal per se.
-> The fact is that the legacy model needs to be removed for further
-> developments of i2c-core to happen, in particular the support of i2C
-> bus multiplexers. There are patches waiting for inclusion since early
-> February, which I can't take as long as the legacy i2c model is in.
-> This is why I am pushing.
-
-Full ACK!
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---7qSK/uQB79J36Y4o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkntmDQACgkQD27XaX1/VRvN7ACguh9w2d9l9wLw6o6t1XI15Hqa
-CN8AniHkFvxCZ91/ZcB8C6xPDXsJpC6m
-=dk3S
------END PGP SIGNATURE-----
-
---7qSK/uQB79J36Y4o--
+> ---
+> =C2=A0drivers/net/ucc_geth.c | =C2=A0 =C2=A03 ++-
+> =C2=A01 files changed, 2 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index d3f39e8..44f8392 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -1394,7 +1394,8 @@ static int adjust_enet_interface(struct ucc_geth_pr=
+ivate *ugeth)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0(ugeth->phy_interface =3D=3D PHY=
+_INTERFACE_MODE_RGMII_RXID) ||
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0(ugeth->phy_interface =3D=3D PHY=
+_INTERFACE_MODE_RGMII_TXID) ||
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0(ugeth->phy_interface =3D=3D PHY=
+_INTERFACE_MODE_RTBI)) {
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 upsmr |=3D UCC_GETH_UP=
+SMR_RPM;
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (ugeth->phy_interfa=
+ce !=3D PHY_INTERFACE_MODE_RMII)
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 upsmr |=3D UCC_GETH_UPSMR_RPM;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0switch (ugeth->max=
+_speed) {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0case SPEED_10:
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0upsmr |=3D UCC_GETH_UPSMR_R10M;
