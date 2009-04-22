@@ -1,23 +1,29 @@
-Return-Path: <michael@evidence.eu.com>
-Received: from panicking.kicks-ass.org (unknown [77.224.194.88])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A65E0DE9B3
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 02:17:35 +1000 (EST)
-Message-ID: <49EF4201.9030606@evidence.eu.com>
-Date: Wed, 22 Apr 2009 18:12:49 +0200
-From: michael <michael@evidence.eu.com>
-MIME-Version: 1.0
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
-References: <200904211716.45245.ossrosch@linux.vnet.ibm.com>	<200904221602.29028.ossrosch@linux.vnet.ibm.com>	<49EF254A.6020106@evidence.eu.com>
-	<200904221800.41399.ossrosch@linux.vnet.ibm.com>
-In-Reply-To: <200904221800.41399.ossrosch@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Roland Dreier <rdreier@cisco.com>, fenkes@de.ibm.com,
-	LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
-	alexschm@de.ibm.com, stefan.roscher@de.ibm.com
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 60895DE055
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 02:44:21 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n3MGi2QK026778
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 09:44:12 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n3MGi1Cf009344
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:44:01 -0500 (CDT)
+Date: Wed, 22 Apr 2009 11:44:00 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3] powerpc/85xx: Add P2020DS board support
+Message-ID: <20090422164400.GA9592@ld0162-tx32.am.freescale.net>
+References: <1240371105-18400-1-git-send-email-galak@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1240371105-18400-1-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, Apr 21, 2009 at 10:31:45PM -0500, Kumar Gala wrote:
+> +	localbus@ffe05000 {
+> +		#address-cells = <2>;
+> +		#size-cells = <1>;
+> +		compatible = "fsl,elbc", "simple-bus";
 
-Stefan Roscher wrote:
-> On Wednesday 22 April 2009 04:10:18 pm michael wrote:
->   
->> Hi,
->>
->>     
->
->   
->> I don't take the point, if it is not import use the vmalloc. Why you try 
->> with a kmalloc
->> alloc first? and why do not use kzalloc?
->>     
->
-> Because kmalloc() is faster than vmalloc() causing a huge performance win
-> when someone allocates a large number of queue pairs. We fall back to
-> vmalloc() only if kmalloc() can't deliver the memory chunk.
->   
-Sorry I catch later the performace issue.
-> We don't need kzalloc because we fill the list right after the alloc.
->
-> regards Stefan
->   
-Regards Michael
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
->   
+If this has an elbc more recent than 1.0 (looks like it), we should
+indicate that here.
+
+> +		reg = <0 0xffe00000 0 0x1000>;	// CCSRBAR & soc regs, remove once parse code for immrbase fixed
+
+The immrbase code was fixed a long time ago -- this can go away.
+
+> +static int __init p2020_ds_probe(void)
+> +{
+> +	unsigned long root = of_get_flat_dt_root();
+> +
+> +	if (of_flat_dt_is_compatible(root, "fsl,P2020DS")) {
+> +#ifdef CONFIG_PCI
+> +		primary_phb_addr = 0x9000;
+> +#endif
+> +		return 1;
+> +	} else {
+> +		return 0;
+> +	}
+> +}
+
+Unnecessary "else".
+
+-Scott
