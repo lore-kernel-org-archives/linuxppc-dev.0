@@ -1,22 +1,22 @@
 Return-Path: <ricardo.ribalda@gmail.com>
 Received: from mail-fx0-f174.google.com (mail-fx0-f174.google.com
-	[209.85.220.174]) by ozlabs.org (Postfix) with ESMTP id 19FBEDE012
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 03:56:56 +1000 (EST)
-Received: by fxm22 with SMTP id 22so151181fxm.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 10:56:54 -0700 (PDT)
+	[209.85.220.174]) by ozlabs.org (Postfix) with ESMTP id 16AB5DE012
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 03:59:24 +1000 (EST)
+Received: by fxm22 with SMTP id 22so153835fxm.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 10:59:23 -0700 (PDT)
 MIME-Version: 1.0
 Sender: ricardo.ribalda@gmail.com
-In-Reply-To: <49EF5391.9050404@freescale.com>
+In-Reply-To: <20090422171030.GH14906@codiert.org>
 References: <874owhoxce.fsf@macbook.be.48ers.dk>
+	<1240415535-10939-1-git-send-email-ricardo.ribalda@uam.es>
 	<20090422171030.GH14906@codiert.org>
-	<49EF5391.9050404@freescale.com>
 From: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
-Date: Wed, 22 Apr 2009 19:56:39 +0200
-Message-ID: <aa76a2be0904221056v7c7357abk52e9b31bb3f7b143@mail.gmail.com>
+Date: Wed, 22 Apr 2009 19:59:08 +0200
+Message-ID: <aa76a2be0904221059h59f3bea5w18f9a7f40c3e9551@mail.gmail.com>
 Subject: Re: ofpart: Partitions at same address cannot have the same name
-To: Scott Wood <scottwood@freescale.com>
+To: Benjamin Krill <ben@codiert.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, David.Woodhouse@intel.com
+Cc: David.Woodhouse@intel.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott
+Hello Benjamin
 
-> Perhaps "compatible" should be used instead?
+> Hi Recardo,
+>
+> I would suggest to do:
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (strcmp(partname, "partition") <=3D 0) =
+{
 
-What do you mean?
+Anything alfabetically higher than partition (like "zzzzz" will pass
+the test :S)
 
-if (strcmp(partname, "partition") || strcmp(partname, "compatible") )
+Regards
 
-I can't see the advantages.
 
 
 >
->> Hi Recardo,
->>
->> I would suggest to do:
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (strcmp(partname, "partition") <=3D 0)=
- {
+> cheers
+> =A0ben
 >
-> Check whether it sorts alphabetically before "partition"? =A0Why?
->
-> -Scott
 >
 
 
