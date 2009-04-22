@@ -1,27 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 59093DE0E1
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 03:38:29 +1000 (EST)
-Message-ID: <49EF560F.90208@freescale.com>
-Date: Wed, 22 Apr 2009 12:38:23 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp4.netcologne.de (smtp4.netcologne.de [194.8.194.137])
+	by ozlabs.org (Postfix) with ESMTP id 284D5DDFC7
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 03:43:05 +1000 (EST)
+Received: from antares (xdsl-84-44-252-246.netcologne.de [84.44.252.246])
+	by smtp4.netcologne.de (Postfix) with ESMTP id 8E45CDA918
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 19:43:02 +0200 (CEST)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id 62419BA04B
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 19:43:02 +0200 (CEST)
+Date: Wed, 22 Apr 2009 19:42:55 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: [OT] Lite5200B w/ nfs root hangs after some time
+To: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Message-Id: <1240422181.5492.0@antares>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3] powerpc/85xx: Add P2020DS board support
-References: <1240371105-18400-1-git-send-email-galak@kernel.crashing.org>
-	<20090422164400.GA9592@ld0162-tx32.am.freescale.net>
-	<6EC8B59D-62C8-4D9B-B548-4833A06F13AB@kernel.crashing.org>
-	<49EF4E27.9020203@freescale.com>
-	<95BA4C47-8B99-4E94-9855-4333BB4A751C@kernel.crashing.org>
-	<49EF50EC.1040608@freescale.com>
-	<E25C4315-A3BA-42DF-B2D2-B1CD2D76A03F@kernel.crashing.org>
-In-Reply-To: <E25C4315-A3BA-42DF-B2D2-B1CD2D76A03F@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-VzMvo1SKumBo9NLAog9C"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,43 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Apr 22, 2009, at 12:16 PM, Scott Wood wrote:
-> 
->> Kumar Gala wrote:
->>> On Apr 22, 2009, at 12:04 PM, Scott Wood wrote:
->>>> Kumar Gala wrote:
->>>>>> If this has an elbc more recent than 1.0 (looks like it), we should
->>>>>> indicate that here.
->>>>> that might be the case, but I leave it to u-boot to do that.
->>>>
->>>> Why?  There's no p2020 with an older eLBC, and there's no block 
->>>> version register.
->>> But there might be a p2020 w/a newer eLBC version in the future.
->>
->> At which point we can add something to u-boot -- but magic SVR tables 
->> seem a step backward from the dts except where needed to avoid the 
->> creation of extra dts files.
-> 
-> I don't see the value of complicating u-boot
+--=-VzMvo1SKumBo9NLAog9C
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But complicating u-boot is just what you're suggesting.  Put it in the 
-dts, and u-boot has *zero* code to deal with this unless we find 
-ourselves wanting to share the dts with another board rev with a newer 
-chip with a newer elbc.
+Hi,
 
-> to have to parse and 
-> "fixup" the compatible instead of just having to prepend to it.  
-> Especially since I don't believe there is anything specific we care 
-> about in the 1.2 version of elbc at this point.
+this question is maybe off-topic on this list...
 
-If the new elbc is compatible with the current one, then you will still 
-just be prepending.  If it is not, then it very likely isn't compatible 
-with 1.0 either, so you'll have to remove fsl,elbc anyway.
+I use the Lite5200B board with stock kernel 2.6.29, and boot with the =20
+root fs on nfs on an Ubuntu 8.10 PC.  Both the Lite5200B and the Ubuntu =20
+PC are part of a corporate network.  On the root fs, I have busybox and =20
+everything else needed.  Being connected with minicom to the serial =20
+console, after some time I always see a message like
 
-What "we care about" at this point is irrelevant, given the PITA it 
-would be to change the device trees (or u-boot) that are already in use 
-once we do begin to care.
+[ 4912.350855] nfs: server 10.16.10.29 not responding, still trying
 
--Scott
+an the the system is *completely* dead, i.e. it doesn't respond to =20
+<ctrl>-<c>, it doesn't (as a desktop pc sometimes does) print more than =20
+one of these or any other kernel messages, and it doesn't recover from =20
+this condition.  Apparently it doesn't matter if just the busybox shell =20
+is waiting or if an application is running.
+
+Any idea what goes wrong here, and how I could fix it?
+
+Thanks, Albrecht.
+
+--=-VzMvo1SKumBo9NLAog9C
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQBJ71cln/9unNAn/9ERAjQ9AKCFkrM/M+98KtGDGeJEig1NVh/6AgCfbn4C
+jVvnYqzxPNACyPQXZ5N/GpQ=
+=OGMZ
+-----END PGP SIGNATURE-----
+
+--=-VzMvo1SKumBo9NLAog9C--
