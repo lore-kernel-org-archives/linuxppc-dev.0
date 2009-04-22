@@ -1,29 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EECD8DE31C
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 04:16:35 +1000 (EST)
-Message-ID: <49EF5EFE.2040608@freescale.com>
-Date: Wed, 22 Apr 2009 13:16:30 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3] powerpc/85xx: Add P2020DS board support
-References: <1240371105-18400-1-git-send-email-galak@kernel.crashing.org>
-	<20090422164400.GA9592@ld0162-tx32.am.freescale.net>
-	<6EC8B59D-62C8-4D9B-B548-4833A06F13AB@kernel.crashing.org>
-	<49EF4E27.9020203@freescale.com>
-	<95BA4C47-8B99-4E94-9855-4333BB4A751C@kernel.crashing.org>
-	<49EF50EC.1040608@freescale.com>
-	<E25C4315-A3BA-42DF-B2D2-B1CD2D76A03F@kernel.crashing.org>
-	<49EF560F.90208@freescale.com>
-	<FA468435-A799-4EB9-8DA1-EC8F3B58EAEB@kernel.crashing.org>
-In-Reply-To: <FA468435-A799-4EB9-8DA1-EC8F3B58EAEB@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 95B05DDED8
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 04:19:37 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n3MIJWk8025595
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 13:19:33 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/fsl: use of_iomap() for rstcr mapping
+Date: Wed, 22 Apr 2009 13:19:32 -0500
+Message-Id: <1240424372-11461-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,23 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->> What "we care about" at this point is irrelevant, given the PITA it 
->> would be to change the device trees (or u-boot) that are already in 
->> use once we do begin to care.
-> 
-> Which is exactly why I didn't put it in the .dts right now.
+The rstcr register mapping code was written sometime ago before
+of_iomap() existed.  We can use it and clean up the code a bit
+and get rid of one user of get_immrbase() in the process.
 
-???
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/fsl_soc.c |   14 ++++----------
+ 1 files changed, 4 insertions(+), 10 deletions(-)
 
-> Today we know NO code exists that cares about "fsl,elbc-1.2". Once someone adds 
-> such code they can also update the .dts to match it.
-
-DTS files and firmware are *MUCH* harder to update once they're out 
-there than the kernel.  Why such opposition to using an appropriate 
-compatible?
-
-Is there anything in the p2020ds u-boot patches to set the elbc version, 
-or was that just a brush-off?
-
--Scott
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index afe8dbc..bd1b74d 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -425,16 +425,10 @@ static int __init setup_rstcr(void)
+ 	struct device_node *np;
+ 	np = of_find_node_by_name(NULL, "global-utilities");
+ 	if ((np && of_get_property(np, "fsl,has-rstcr", NULL))) {
+-		const u32 *prop = of_get_property(np, "reg", NULL);
+-		if (prop) {
+-			/* map reset control register
+-			 * 0xE00B0 is offset of reset control register
+-			 */
+-			rstcr = ioremap(get_immrbase() + *prop + 0xB0, 0xff);
+-			if (!rstcr)
+-				printk (KERN_EMERG "Error: reset control "
+-						"register not mapped!\n");
+-		}
++		rstcr = of_iomap(np, 0) + 0xb0;
++		if (!rstcr)
++			printk (KERN_EMERG "Error: reset control register "
++					"not mapped!\n");
+ 	} else
+ 		printk (KERN_INFO "rstcr compatible register does not exist!\n");
+ 	if (np)
+-- 
+1.6.0.6
