@@ -1,22 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 726A4DE034
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 07:31:17 +1000 (EST)
-Message-ID: <49EF8C92.8050403@freescale.com>
-Date: Wed, 22 Apr 2009 16:30:58 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] fs_enet: Remove dead code
-References: <1240435170-5183-1-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1240435170-5183-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-	linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C5E2DDE137
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 07:33:21 +1000 (EST)
+Message-Id: <282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <49EF7B1C.2080105@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: removing get_immrbase()??
+Date: Wed, 22 Apr 2009 16:31:10 -0500
+References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
+	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> @@ -318,32 +314,6 @@ static void restart(struct net_device *dev)
->  	/*
->  	 * adjust to speed (only for DUET & RMII)
->  	 */
-> -#ifdef CONFIG_DUET
-> -	if (fpi->use_rmii) {
 
-Please remove the comment that goes with the code being removed.
+On Apr 22, 2009, at 3:16 PM, Timur Tabi wrote:
 
-Otherwise, ACK.
+> Scott Wood wrote:
+>> Timur Tabi wrote:
+>>>>       these two are related and seem like we could look for  
+>>>> "fsl,cpm2"
+>>> That's okay, as long as you don't break compatibility with older
+>>> device trees that don't have that property, unless you can  
+>>> demonstrate
+>>> that these trees would never work with the current kernel anyway.
+>>
+>> All CPM2 device trees should have fsl,cpm2 listed in the compatible  
+>> of
+>> the CPM node.
+>
+> Yes, but did they always have that compatible field?  I'm concerned
+> about situations where someone updates his kernel but not his device
+> tree.  This is a scenerio that we always need to try to support.
 
--Scott
+I disagree.  If you update your kernel you should update your device  
+tree (thus we have .dts in the kernel tree and not somewhere else).
+
+- k
