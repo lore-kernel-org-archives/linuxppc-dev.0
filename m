@@ -1,23 +1,20 @@
-Return-Path: <ricardo.ribalda@gmail.com>
-Received: from mail-fx0-f174.google.com (mail-fx0-f174.google.com
-	[209.85.220.174]) by ozlabs.org (Postfix) with ESMTP id A0172DDF77
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 04:59:16 +1000 (EST)
-Received: by fxm22 with SMTP id 22so218963fxm.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:59:14 -0700 (PDT)
+Return-Path: <timur.tabi@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
+	by ozlabs.org (Postfix) with ESMTP id BB598DE0E0
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 05:35:30 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so121162qwe.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 12:35:28 -0700 (PDT)
 MIME-Version: 1.0
-Sender: ricardo.ribalda@gmail.com
-In-Reply-To: <49EF5DDF.8050208@freescale.com>
-References: <874owhoxce.fsf@macbook.be.48ers.dk>
-	<49EF5391.9050404@freescale.com>
-	<aa76a2be0904221056v7c7357abk52e9b31bb3f7b143@mail.gmail.com>
-	<49EF5DDF.8050208@freescale.com>
-From: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
-Date: Wed, 22 Apr 2009 20:58:59 +0200
-Message-ID: <aa76a2be0904221158w79911596meee977c3e90c2284@mail.gmail.com>
-Subject: Re: ofpart: Partitions at same address cannot have the same name
-To: Scott Wood <scottwood@freescale.com>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+Date: Wed, 22 Apr 2009 14:35:24 -0500
+Message-ID: <ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
+Subject: Re: removing get_immrbase()??
+From: Timur Tabi <timur@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, David.Woodhouse@intel.com
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Scott
-
-It is definitively more elegant...
-
-  Let me send tomorrow a patch
-
-On Wed, Apr 22, 2009 at 20:11, Scott Wood <scottwood@freescale.com> wrote:
-> Ricardo Ribalda Delgado wrote:
->>
->> Hi Scott
->>
->>> Perhaps "compatible" should be used instead?
->>
->> What do you mean?
->>
->> if (strcmp(partname, "partition") || strcmp(partname, "compatible") )
->>
->> I can't see the advantages.
+On Wed, Apr 22, 2009 at 1:38 PM, Kumar Gala <galak@kernel.crashing.org> wro=
+te:
+> I'm not sure if we can actually get away with completely removing
+> get_immrbase() but I figured I'd give everyone something to flame me abou=
+t.
+> =A0The current users are:
 >
-> No, I mean:
->
-> foo {
-> =A0 =A0 =A0 =A0compatible =3D "partition";
-> =A0 =A0 =A0 =A0...
-> };
->
-> -Scott
->
+> CPM/QE related users.
 
+I'm okay with doing this for QE, but I don't see it used in any QE code.
 
+> arch/powerpc/include/asm/cpm2.h:#define CPM_MAP_ADDR (get_immrbase() +
+> 0x80000)
+> arch/powerpc/sysdev/cpm2.c: =A0 =A0 cpm2_immr =3D ioremap(get_immrbase(),
+> CPM_MAP_SIZE);
+> =A0 =A0 =A0 =A0these two are related and seem like we could look for "fsl=
+,cpm2"
+
+That's okay, as long as you don't break compatibility with older
+device trees that don't have that property, unless you can demonstrate
+that these trees would never work with the current kernel anyway.
+
+I think this is a good idea, but it looks like we'll need to define a
+whole bunch of new structures to replace all of the "+ offset" usages.
 
 --=20
-Ricardo Ribalda
-http://www.eps.uam.es/~rribalda/
+Timur Tabi
+Linux kernel developer at Freescale
