@@ -1,22 +1,18 @@
-Return-Path: <ricardo.ribalda@gmail.com>
-Received: from mail-fx0-f174.google.com (mail-fx0-f174.google.com
-	[209.85.220.174]) by ozlabs.org (Postfix) with ESMTP id 16AB5DE012
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 03:59:24 +1000 (EST)
-Received: by fxm22 with SMTP id 22so153835fxm.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 10:59:23 -0700 (PDT)
+Return-Path: <eddie@embeddedarm.com>
+Received: from oz.embeddedARM.com (oz.embeddedarm.com [67.40.67.44])
+	by ozlabs.org (Postfix) with ESMTP id 9C870DE052
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 04:01:44 +1000 (EST)
+Message-ID: <49EF5C4D.6040402@embeddedarm.com>
+Date: Wed, 22 Apr 2009 11:05:01 -0700
+From: Eddie Dawydiuk <eddie@embeddedarm.com>
 MIME-Version: 1.0
-Sender: ricardo.ribalda@gmail.com
-In-Reply-To: <20090422171030.GH14906@codiert.org>
-References: <874owhoxce.fsf@macbook.be.48ers.dk>
-	<1240415535-10939-1-git-send-email-ricardo.ribalda@uam.es>
-	<20090422171030.GH14906@codiert.org>
-From: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
-Date: Wed, 22 Apr 2009 19:59:08 +0200
-Message-ID: <aa76a2be0904221059h59f3bea5w18f9a7f40c3e9551@mail.gmail.com>
-Subject: Re: ofpart: Partitions at same address cannot have the same name
-To: Benjamin Krill <ben@codiert.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: David.Woodhouse@intel.com, linuxppc-dev@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: FPGA IRQ design question
+References: <49EF2E82.9080905@embeddedarm.com>
+	<fa686aa40904220757u1bcf1693oc2329c67209249ac@mail.gmail.com>
+In-Reply-To: <fa686aa40904220757u1bcf1693oc2329c67209249ac@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Benjamin
+Grant,
 
-> Hi Recardo,
->
-> I would suggest to do:
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (strcmp(partname, "partition") <=3D 0) =
-{
+> However, if you're writing one-off custom drivers and there is no
+> common coded needed for acking irqs, then I would probably just use
+> the external IRQ.
 
-Anything alfabetically higher than partition (like "zzzzz" will pass
-the test :S)
+Thanks for the suggestions I think going to just use the external IRQ. As a 
+result I've been reading through a few different dts files to try to understand 
+how/where to specify this in the dts file. I see in the Yosemite dts file the 
+PCI bus device node has an interrupt-map-mask and an interrupt-map.
 
-Regards
+e.g.
 
+PCI0: pci@ec000000 {
+       device_type = "pci";
+...
+       /* Bamboo has all 4 IRQ pins tied together per slot */
+       interrupt-map-mask = <0xf800 0x0 0x0 0x0>;
+       interrupt-map = <
+            /* IDSEL 1 */
+            0x800 0x0 0x0 0x0 &UIC0 0x1c 0x8
+...
+};
 
+As far as I can tell this appears to be the proper location to specify that the 
+PCI device(FPGA) connects an the IRQ to an external IRQ on the AMCC 440EP. I see 
+where the interrupt controller(e.g. &UIC0), the interrupt number(0x1C), and the 
+sense(0x8) of the external interrupt is specified. But I'm a bit puzzled by some 
+of the other information.
 
->
-> cheers
-> =A0ben
->
->
+Is this the proper place in the dts file to specify that the FPGA connects and 
+external interrupt to the SoC? Can you point me to a document explaining the 
+interrupt-map-mask and interrupt-map arguments?
 
+Thanks for any pointers.
 
-
---=20
-Ricardo Ribalda
-http://www.eps.uam.es/~rribalda/
+-- 
+Best Regards,
+________________________________________________________________
+  Eddie Dawydiuk, Technologic Systems | voice:  (480) 837-5200
+  16525 East Laser Drive 	     | fax:    (480) 837-5300
+  Fountain Hills, AZ 85268            | web: www.embeddedARM.com
