@@ -1,24 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH][BUILD FAILURE 03/12] Re: Next April 21 : PPC64
-	randconfig [arch/powerpc/kernel/of_platform.o]
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Subrata Modak <subrata@linux.vnet.ibm.com>
-In-Reply-To: <20090422161648.9231.76057.sendpatchset@subratamodak.linux.ibm.com>
-References: <20090422161648.9231.76057.sendpatchset@subratamodak.linux.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-B1o7FI5dQRf/Am4VzBbR"
-Date: Thu, 23 Apr 2009 10:43:40 +1000
-Message-Id: <1240447420.6689.13.camel@localhost>
-Mime-Version: 1.0
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-	Alexander Beregalov <a.beregalov@gmail.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <ben@trinity.fluff.org>
+Received: from trinity.fluff.org (trinity.fluff.org [89.16.178.74])
+	by ozlabs.org (Postfix) with ESMTP id 237E6DDF8F
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 11:02:45 +1000 (EST)
+Date: Wed, 22 Apr 2009 22:56:46 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] i2c-cpm: Pass dev ptr to dma_*_coherent rather than NULL
+Message-ID: <20090422215646.GA19997@trinity.fluff.org>
+References: <49EDC0BE.7040505@elphinstone.net>
+	<E2205842-8019-4CE4-812B-64ABD76F36F4@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E2205842-8019-4CE4-812B-64ABD76F36F4@kernel.crashing.org>
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>,
+	Mark Ware <mware@elphinstone.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,52 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Apr 21, 2009 at 10:11:51AM -0500, Kumar Gala wrote:
+> 
+> On Apr 21, 2009, at 7:49 AM, Mark Ware wrote:
+> 
+> >Recent DMA changes result in a BUG() when NULL is passed to
+> >dma_alloc_coherent in place of a device.
+> >
+> >Signed-off-by: Mark Ware <mware@elphinstone.net>
+> >---
+> >
+> >This patch fixes the BUG() during boot that has appeared during the
+> >2.6.30 window. It has been tested and appears correct on my 8280 based
+> >board.
+> >Sent to both linuxppc-dev and linux-i2c, since I'm not sure where it  
+> >belongs.
+> >
+> >
+> >drivers/i2c/busses/i2c-cpm.c |   14 ++++++++------
+> >1 files changed, 8 insertions(+), 6 deletions(-)
+> 
+> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> 
+> Ben, I'm expecting you to pick this up unless you tell me otherwise.
 
---=-B1o7FI5dQRf/Am4VzBbR
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yes.
 
-On Wed, 2009-04-22 at 21:46 +0530, Subrata Modak wrote:
-> On Wed, 2009-04-22 at 00:20 +0530, Subrata Modak wrote:
-> > Reported this earlier on 14th April 2009:
-> > http://lkml.org/lkml/2009/4/14/480,
-> >=20
-> > Michael,
-> >=20
-> > Any fix in sight ?
-> > http://lkml.org/lkml/2009/4/14/676,
-> >=20
-> > CC      arch/powerpc/kernel/of_platform.o
-> > arch/powerpc/kernel/of_platform.c: In function 'of_pci_phb_probe':
-> > arch/powerpc/kernel/of_platform.c:270: error: implicit declaration of
-> > function 'pci_devs_phb_init_dynamic'
-> > arch/powerpc/kernel/of_platform.c:279: error: implicit declaration of
-> > function 'scan_phb'
-> > arch/powerpc/kernel/of_platform.c:295: error: implicit declaration of
-> > function 'pci_bus_add_devices'
-> > make[1]: *** [arch/powerpc/kernel/of_platform.o] Error 1
-> > make: *** [arch/powerpc/kernel] Error 2
-> > ---
+-- 
+Ben
 
-The problem above is as I said before, that the Cell Kconfig forces on
-PPC_OF_PLATFORM_PCI even if PCI is disabled. I think the proper fix is
-just to have CELL_NATIVE force on PCI.
-
-I don't know how you got the other errors, both pci_dn.c and pci_dlpar.c
-are only built if CONFIG_PCI is enabled, see the Makefiles.
-
-cheers
-
---=-B1o7FI5dQRf/Am4VzBbR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknvubwACgkQdSjSd0sB4dK05ACeJQN9C83Xbvm+4tBevpwZMA7u
-304An3h2zIqTV87H4Q6IeiPNGnfEVsBq
-=WXoj
------END PGP SIGNATURE-----
-
---=-B1o7FI5dQRf/Am4VzBbR--
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
