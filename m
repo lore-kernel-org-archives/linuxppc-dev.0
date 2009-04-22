@@ -1,23 +1,36 @@
-Return-Path: <ricardo.ribalda@gmail.com>
-Received: from mail-bw0-f171.google.com (mail-bw0-f171.google.com
-	[209.85.218.171]) by ozlabs.org (Postfix) with ESMTP id 145FDDE0B9
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 01:57:29 +1000 (EST)
-Received: by bwz19 with SMTP id 19so50354bwz.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 08:57:27 -0700 (PDT)
+Return-Path: <ossrosch@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EC981DE0C1
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 02:00:49 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3MFvFn0031404
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:57:15 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3MG0kUW170944
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 12:00:46 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3MG0hBW019953
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 12:00:45 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: michael <michael@evidence.eu.com>
+Subject: Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
+Date: Wed, 22 Apr 2009 18:00:41 +0200
+References: <200904211716.45245.ossrosch@linux.vnet.ibm.com>
+	<200904221602.29028.ossrosch@linux.vnet.ibm.com>
+	<49EF254A.6020106@evidence.eu.com>
+In-Reply-To: <49EF254A.6020106@evidence.eu.com>
 MIME-Version: 1.0
-Sender: ricardo.ribalda@gmail.com
-In-Reply-To: <874owhoxce.fsf@macbook.be.48ers.dk>
-References: <1240387541-16594-1-git-send-email-ricardo.ribalda@uam.es>
-	<874owhoxce.fsf@macbook.be.48ers.dk>
-From: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
-Date: Wed, 22 Apr 2009 17:34:29 +0200
-Message-ID: <aa76a2be0904220834x48fe3d97i1086595f1fd63701@mail.gmail.com>
-Subject: Re: [MTD] ofpart: Partitions at same address cannot have the same
-	name
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, David.Woodhouse@intel.com,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200904221800.41399.ossrosch@linux.vnet.ibm.com>
+Cc: Roland Dreier <rdreier@cisco.com>, fenkes@de.ibm.com,
+	LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+	alexschm@de.ibm.com, stefan.roscher@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,52 +40,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello
-
-You are right, remove the -1. I thought that strlen gives the #of
-chars + 1 ('\0').
-
-
-  Thanks
-
-
-
-On Wed, Apr 22, 2009 at 11:24, Peter Korsgaard <jacmet@sunsite.dk> wrote:
->>>>>> "Ricardo" =3D=3D Ricardo Ribalda Delgado <ricardo.ribalda@uam.es> wr=
-ites:
->
+On Wednesday 22 April 2009 04:10:18 pm michael wrote:
 > Hi,
->
-> =A0Ricardo> Sometimes, an special partition is included in the device
-> =A0Ricardo> tree including all the partitions. Like in:
->
-> =A0Ricardo> =A0drivers/mtd/ofpart.c | =A0 =A03 ++-
-> =A0Ricardo> =A01 files changed, 2 insertions(+), 1 deletions(-)
->
-> =A0Ricardo> diff --git a/drivers/mtd/ofpart.c b/drivers/mtd/ofpart.c
-> =A0Ricardo> index 3e164f0..0af3b07 100644
-> =A0Ricardo> --- a/drivers/mtd/ofpart.c
-> =A0Ricardo> +++ b/drivers/mtd/ofpart.c
-> =A0Ricardo> @@ -48,7 +48,8 @@ int __devinit of_mtd_parse_partitions(struc=
-t device *dev,
->
-> =A0Ricardo> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* check if this is a partition n=
-ode */
-> =A0Ricardo> =A0 =A0 =A0 =A0 =A0 =A0 =A0 partname =3D of_get_property(pp, =
-"name", &len);
-> =A0Ricardo> - =A0 =A0 =A0 =A0 =A0 =A0 if (strcmp(partname, "partition") !=
-=3D 0) {
-> =A0Ricardo> + =A0 =A0 =A0 =A0 =A0 =A0 if (strncmp(partname, "partition", =
-strlen("partition")-1)
->
-> Why strlen() - 1 ?
->
-> --
-> Bye, Peter Korsgaard
->
+> 
 
+> I don't take the point, if it is not import use the vmalloc. Why you try 
+> with a kmalloc
+> alloc first? and why do not use kzalloc?
 
+Because kmalloc() is faster than vmalloc() causing a huge performance win
+when someone allocates a large number of queue pairs. We fall back to
+vmalloc() only if kmalloc() can't deliver the memory chunk.
+We don't need kzalloc because we fill the list right after the alloc.
 
---=20
-Ricardo Ribalda
-http://www.eps.uam.es/~rribalda/
+regards Stefan
