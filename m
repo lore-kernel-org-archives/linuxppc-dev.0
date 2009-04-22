@@ -1,41 +1,40 @@
-Return-Path: <nicolas.lavocat@fr.thalesgroup.com>
-Received: from thsmsgxrt13p.thalesgroup.com (thsmsgxrt13p.thalesgroup.com
-	[192.54.144.136]) by ozlabs.org (Postfix) with ESMTP id 1B278DDEDA
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 19:10:53 +1000 (EST)
-Received: from thsmsgirt26p.corp.thales (unknown [10.33.231.4])
-	by thsmsgxrt13p.thalesgroup.com (Postfix) with ESMTP id 71C54360D7E
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:10:50 +0200 (CEST)
-Received: from thsmsgiav11p.corp.thales (10.33.231.31) by
-	thsmsgirt26p.corp.thales (8.5.103)
-	id 4991986400746A8C for linuxppc-dev@ozlabs.org;
-	Wed, 22 Apr 2009 11:10:50 +0200
-Received: from vpsms001.fr.thav.thales (unknown [10.33.12.35])
-	by thsmsgirt11p.corp.thales (Postfix) with ESMTP id 48C09598052
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:10:50 +0200 (CEST)
-Received: from vpspms02.val.fr.thav.thales (128.1.6.82) by
-	vpsms001.fr.thav.thales (NPlex 6.5.026)
-	id 49EBDED400025BAE for linuxppc-dev@ozlabs.org;
-	Wed, 22 Apr 2009 11:10:50 +0200
-Received: from vpspms02.val.fr.thav.thales (localhost.localdomain [127.0.0.1])
-	by localhost (Postfix) with SMTP id 30FA5807E
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:10:50 +0200 (CEST)
-Received: from xbdxuspmail.bdx.fr.thav.thales (xbdxuspmail.bdx.fr.thav.thales
-	[128.1.62.154])
-	by vpspms02.val.fr.thav.thales (Postfix) with ESMTP id E3EBD8091
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:10:49 +0200 (CEST)
-Message-ID: <49EEDF17.9010109@fr.thalesgroup.com>
-Date: Wed, 22 Apr 2009 11:10:47 +0200
-From: Nicolas Lavocat <nicolas.lavocat@fr.thalesgroup.com>
+Return-Path: <stefan.roscher@de.ibm.com>
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 85D3CDDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 19:11:13 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate7.de.ibm.com (8.14.3/8.13.8) with ESMTP id n3M9B70b535354
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 09:11:07 GMT
+Received: from d12av06.megacenter.de.ibm.com (d12av06.megacenter.de.ibm.com
+	[9.149.165.230])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.2) with
+	ESMTP id n3M9B7LA3301400
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:11:07 +0200
+Received: from d12av06.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av06.megacenter.de.ibm.com (8.13.1/8.13.3) with ESMTP id
+	n3M9B6Ec032134
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:11:07 +0200
+In-Reply-To: <adaws9dvrkp.fsf@cisco.com>
+References: <200904211716.45245.ossrosch@linux.vnet.ibm.com>
+	<adaws9dvrkp.fsf@cisco.com>
+To: Roland Dreier <rdreier@cisco.com>
 MIME-Version: 1.0
-To: Liu Dave-R63238 <DaveLiu@freescale.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: freeze when reading a PCI bridge register
-References: <49EECF8D.9000808@fr.thalesgroup.com>
-	<D7CCA83BB0796C49BC0BB53B6AB1208928C4DB@zch01exm21.fsl.freescale.net>
-	<49EED5EB.7050005@fr.thalesgroup.com>
-	<D7CCA83BB0796C49BC0BB53B6AB1208928C4DD@zch01exm21.fsl.freescale.net>
-In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208928C4DD@zch01exm21.fsl.freescale.net>
-Content-Type: text/html; charset=ISO-8859-1
+Subject: Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
+From: Stefan Roscher <stefan.roscher@de.ibm.com>
+Message-ID: <OFBD0C452F.7D324196-ONC12575A0.002FE221-C12575A0.0032741F@de.ibm.com>
+Date: Wed, 22 Apr 2009 11:11:04 +0200
+Content-Type: multipart/alternative;
+	boundary="=_alternative 00312AD7C12575A0_="
+Cc: Joachim Fenkes <FENKES@de.ibm.com>, OF-EWG <ewg@lists.openfabrics.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <RAISCH@de.ibm.com>,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+	Alexander Schmidt1 <ALEXSCHM@de.ibm.com>,
+	Stefan Roscher <ossrosch@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -45,111 +44,162 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Hum... It is a proprietary bridge... I don't know how works the marvel,
-but it is not like tundra (TSI108)... But&nbsp; it seems that this bridge
-works like X86 bridges.&nbsp; I 'm goigng to read documentations about
-Marvel bridges! <br>
+This is a multipart message in MIME format.
+--=_alternative 00312AD7C12575A0_=
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Hi Roland,=20
+thanks for the quick review. I was hoping you could apply these changes=20
+for 2.6.30 because this will be the codebase for the next OFED release.
+The patch is well tested in HPC environment and we haven't seen any=20
+issues.
+Regarding Antons patch you are right. If a user allocates an=20
+unrealistically large queue pair it could happen that kmalloc() is not=20
+able to allocate the memory. In this case we will return ENOMEM to the=20
+user so the kernel will not be affected at all. We plan to add vmalloc()=20
+call in case kmalloc() fails for the next kernel release.
+=20
+Mit freundlichen Gr=FC=DFen / Kind regards
+=20
+Stefan Roscher
+=20
+eHCA/eHEA Linux Driver Development
+IBM Systems &Technology Group, Systems Software Development / FW I/O=20
+Firmware Entwicklung 2
+---------------------------------------------------------------------------=
+----------------------------------------------------------------
+IBM Deutschland
+Schoenaicher Str. 220
+71032 Boeblingen
+Phone: +49-7031-16-2015
+E-Mail: stefan.roscher@de.ibm.com
+---------------------------------------------------------------------------=
+----------------------------------------------------------------
+IBM Deutschland Research & Development GmbH / Vorsitzender des=20
+Aufsichtsrats: Martin Jetter
+Gesch=E4ftsf=FChrung: Herbert Kircher
+Sitz der Gesellschaft: B=F6blingen / Registergericht: Amtsgericht Stuttgart=
+,=20
+HRB 243294
+
+
+
+From:
+Roland Dreier <rdreier@cisco.com>
+To:
+Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Cc:
+"LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>, LKML=20
+<linux-kernel@vger.kernel.org>, "OF-EWG" <ewg@lists.openfabrics.org>,=20
+Roland Dreier <rolandd@cisco.com>, Joachim Fenkes/Germany/IBM@IBMDE,=20
+Christoph Raisch/Germany/IBM@IBMDE, Alexander Schmidt1/Germany/IBM@IBMDE,=20
+Stefan Roscher/Germany/IBM@IBMDE, Hoang-Nam Nguyen/Germany/IBM@IBMDE
+Date:
+21.04.2009 19:34
+Subject:
+Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
+
+
+
+ > +             queue->queue=5Fpages =3D kmalloc(nr=5Fof=5Fpages * sizeof(=
+void=20
+*), GFP=5FKERNEL);
+
+How big might this buffer be?  Any chance of allocation failure due to
+memory fragmentation?
+
+ - R.
+
+
+
+--=_alternative 00312AD7C12575A0_=
+Content-Type: text/html; charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+
+<br><font size=3D2 face=3D"sans-serif">Hi Roland, </font>
+<br><font size=3D2 face=3D"sans-serif">thanks for the quick review. I was h=
+oping
+you could apply these changes for 2.6.30 because this will be the codebase
+for the next OFED release.</font>
+<br><font size=3D2 face=3D"sans-serif">The patch is well tested in HPC envi=
+ronment
+and we haven't seen any issues.</font>
+<br><font size=3D2 face=3D"sans-serif">Regarding Antons patch you are right.
+If a user allocates an unrealistically large queue pair it could happen
+that kmalloc() is not able to allocate the memory. In this case we will
+return ENOMEM to the user so the kernel will not be affected at all. We
+plan to add vmalloc() call in case kmalloc() fails for the next kernel
+release.</font>
+<br><font size=3D2 face=3D"sans-serif">&nbsp;</font>
+<br><font size=3D2 face=3D"sans-serif">Mit freundlichen Gr=FC=DFen / Kind r=
+egards<br>
+ <br>
+Stefan Roscher<br>
+ <br>
+eHCA/eHEA Linux Driver Development<br>
+IBM Systems &amp;Technology Group, Systems Software Development / FW I/O
+Firmware Entwicklung 2<br>
+---------------------------------------------------------------------------=
+----------------------------------------------------------------<br>
+IBM Deutschland<br>
+Schoenaicher Str. 220<br>
+71032 Boeblingen<br>
+Phone: +49-7031-16-2015<br>
+E-Mail: stefan.roscher@de.ibm.com<br>
+---------------------------------------------------------------------------=
+----------------------------------------------------------------<br>
+IBM Deutschland Research &amp; Development GmbH / Vorsitzender des Aufsicht=
+srats:
+Martin Jetter<br>
+Gesch=E4ftsf=FChrung: Herbert Kircher<br>
+Sitz der Gesellschaft: B=F6blingen / Registergericht: Amtsgericht Stuttgart,
+HRB 243294</font>
 <br>
-Nicolas Lavocat <br>
 <br>
-Liu Dave-R63238 a &eacute;crit&nbsp;:
-<blockquote
- cite="midD7CCA83BB0796C49BC0BB53B6AB1208928C4DD@zch01exm21.fsl.freescale.net"
- type="cite">
-  <meta http-equiv="Content-Type" content="text/html; ">
-  <meta content="MSHTML 6.00.2900.3492" name="GENERATOR">
-  <div dir="ltr" align="left"><span class="549463208-22042009"><font
- color="#0000ff" face="Arial" size="2">So the host bridge is important,
-what is the bridge?</font></span></div>
-  <div dir="ltr" align="left"><span class="549463208-22042009"><font
- color="#0000ff" face="Arial" size="2">Marvell or Tundra chipset?</font></span></div>
-  <div dir="ltr" align="left"><span class="549463208-22042009"></span>&nbsp;</div>
-  <br>
-  <blockquote dir="ltr"
- style="border-left: 2px solid rgb(0, 0, 255); padding-left: 5px; margin-left: 5px; margin-right: 0px;">
-    <div class="OutlookMessageHeader" dir="ltr" align="left"
- lang="en-us">
-    <hr tabindex="-1"> <font face="Tahoma" size="2"><b>From:</b>
-Nicolas Lavocat [<a class="moz-txt-link-freetext" href="mailto:nicolas.lavocat@fr.thalesgroup.com">mailto:nicolas.lavocat@fr.thalesgroup.com</a>] <br>
-    <b>Sent:</b> Wednesday, April 22, 2009 4:32 PM<br>
-    <b>To:</b> Liu Dave-R63238<br>
-    <b>Cc:</b> linuxppc-dev<br>
-    <b>Subject:</b> Re: freeze when reading a PCI bridge register<br>
-    </font><br>
-    </div>
-a 7448<br>
-    <br>
-Liu Dave-R63238 a &eacute;crit&nbsp;:
-    <blockquote
- cite="midD7CCA83BB0796C49BC0BB53B6AB1208928C4DB@zch01exm21.fsl.freescale.net"
- type="cite">
-      <blockquote type="cite">
-        <pre wrap="">I' am trying to configure a PCI bridge on a private board, with a 
-powerpc . In a first time, I tried to get informations about PCI 
-devices, in order to be sure  that  my read  and write methods work ( 
-using 2 configuration registers, like on an x86 architecture.) . 2 
-configuration registers  are used, for example we  write  an encoded 
-address (it is a request to a PCI device) in the first and 
-the answer of 
-the PCI device can be read in the second register (it is a 
-configuration 
-cycle)
-Firstly, I did it by JTAG: it works. Then, under uboot, it is ok.
-
-For example, the code used under u-boot:
-
-volatile u32* addr;
-u32 vendor_device_ID;
-
-puts("PCI1 reading PCI VENDOR and DEVICE ID\n");
-addr=CFG_ADDR_PCI1;
-*addr=0x80007800;
-
-addr= CFG_DATA_PCI1;
-vendor_device_ID= *addr;
-printf("PCI1: PCI1_VENDOR_DEVICE_ID= %08x  \n" ,vendor_device_ID);
-
-
-Therefore, when I do the same thing under Linux, the system 
-crash when I 
-try to read the second register...
-Linux is frozen, and there is no error message.
-Under Linux, I made an ioremap before use the registers and access to 
-these registers thanks to  functions  "in_be32" and "out_be32".
-I tried with different endianness to avoid an error of this type.
-
-If I understand, the main difference between u-boot and Linux (about 
-registers access) is the activation of the MMU.
-So I thought that  problem could come from it. 
-I think the problem could came from the configuration of DBAT 
-and IBATS 
-registers of the MMU, but I didn't found any information 
-about the MMU 
-configuration under Linux.
-So after this novel, I have some questions:
-
--Is the MMU configuration generic under Linux?
--Does somebody think that the problem doesn't come from MMU?
--How does work ioremap? Is it a fully software function, or does it 
-speaks to MMU to get the effective address from physical address?
--Does somebody have an idea, or a documentation about MMU 
-configuration 
-under linux?
--Do you think that my MMU is under the control of an evil spirit? ^^
-
-    </pre>
-      </blockquote>
-      <pre wrap=""><!---->What is the PowerPC you are using?
-
-  </pre>
-    </blockquote>
-  </blockquote>
-</blockquote>
-</body>
-</html>
+<br>
+<table width=3D100%>
+<tr valign=3Dtop>
+<td><font size=3D1 color=3D#5f5f5f face=3D"sans-serif">From:</font>
+<td><font size=3D1 face=3D"sans-serif">Roland Dreier &lt;rdreier@cisco.com&=
+gt;</font>
+<tr valign=3Dtop>
+<td><font size=3D1 color=3D#5f5f5f face=3D"sans-serif">To:</font>
+<td><font size=3D1 face=3D"sans-serif">Stefan Roscher &lt;ossrosch@linux.vn=
+et.ibm.com&gt;</font>
+<tr>
+<td valign=3Dtop><font size=3D1 color=3D#5f5f5f face=3D"sans-serif">Cc:</fo=
+nt>
+<td><font size=3D1 face=3D"sans-serif">&quot;LinuxPPC-Dev&quot; &lt;linuxpp=
+c-dev@ozlabs.org&gt;,
+LKML &lt;linux-kernel@vger.kernel.org&gt;, &quot;OF-EWG&quot; &lt;ewg@lists=
+.openfabrics.org&gt;,
+Roland Dreier &lt;rolandd@cisco.com&gt;, Joachim Fenkes/Germany/IBM@IBMDE,
+Christoph Raisch/Germany/IBM@IBMDE, Alexander Schmidt1/Germany/IBM@IBMDE,
+Stefan Roscher/Germany/IBM@IBMDE, Hoang-Nam Nguyen/Germany/IBM@IBMDE</font>
+<tr valign=3Dtop>
+<td><font size=3D1 color=3D#5f5f5f face=3D"sans-serif">Date:</font>
+<td><font size=3D1 face=3D"sans-serif">21.04.2009 19:34</font>
+<tr valign=3Dtop>
+<td><font size=3D1 color=3D#5f5f5f face=3D"sans-serif">Subject:</font>
+<td><font size=3D1 face=3D"sans-serif">Re: [PATCH 1/3] IB/ehca: Replace vma=
+lloc
+with kmalloc</font></table>
+<br>
+<hr noshade>
+<br>
+<br>
+<br><tt><font size=3D2>&nbsp;&gt; + &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; queue-&gt;queue=5Fpages =3D kmalloc(nr=5Fof=5Fpages
+* sizeof(void *), GFP=5FKERNEL);<br>
+<br>
+How big might this buffer be? &nbsp;Any chance of allocation failure due
+to<br>
+memory fragmentation?<br>
+<br>
+ - R.<br>
+</font></tt>
+<br>
+<br>
+--=_alternative 00312AD7C12575A0_=--
