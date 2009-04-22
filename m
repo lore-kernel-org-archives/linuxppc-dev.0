@@ -1,26 +1,36 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <ossrosch@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 57510DDFC6
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 22:56:57 +1000 (EST)
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EB9C2DE0A2
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 00:02:48 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3ME0JbL017827
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 08:00:19 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3ME2Wxx029316
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 08:02:33 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3ME2U08029908
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 08:02:31 -0600
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
+Date: Wed, 22 Apr 2009 16:02:28 +0200
+References: <200904211716.45245.ossrosch@linux.vnet.ibm.com>
+	<adaws9dvrkp.fsf@cisco.com>
+In-Reply-To: <adaws9dvrkp.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18927.5140.888171.141615@cargo.ozlabs.ibm.com>
-Date: Wed, 22 Apr 2009 22:56:52 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] keywest: Convert to new-style i2c driver
-In-Reply-To: <20090422140401.04a402e9@hyperion.delvare>
-References: <20090420225659.7b92a184@hyperion.delvare>
-	<18924.63578.495727.152443@cargo.ozlabs.ibm.com>
-	<s5hzleah5x4.wl%tiwai@suse.de>
-	<20090421114853.7a9d82c1@hyperion.delvare>
-	<18926.58544.374626.696097@cargo.ozlabs.ibm.com>
-	<20090422140401.04a402e9@hyperion.delvare>
-Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200904221602.29028.ossrosch@linux.vnet.ibm.com>
+Cc: fenkes@de.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+	OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+	alexschm@de.ibm.com, stefan.roscher@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,66 +40,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jean Delvare writes:
+In case of large queue pairs there is the possibillity of allocation failures 
+due to memory fragmentationo with kmalloc().To ensure the memory is allocated even
+if kmalloc() can not find chunks which are big enough, we try to allocate the memory
+with vmalloc().
 
-> > I sympathize, but throwing disruptive changes into Linus' tree when
-> > we're past -rc3 is not the way to solve the problem.
+Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+---
+
+On Tuesday 21 April 2009 07:34:30 pm Roland Dreier wrote:
+>  > +	queue->queue_pages = kmalloc(nr_of_pages * sizeof(void *), GFP_KERNEL);
 > 
-> We're past -rc3 because people discuss instead of testing my patches.
-> Otherwise everything would be merged already.
-
-Well, no.  The first conversion patch that I saw was posted after the
-merge window had already closed, on 8 April.
-
-> And really, these changes (sound drivers) don't qualify as disruptive.
-> You might argue about the thermal management driver changes if you
-> want. But sound drivers, nothing bad will happen if they accidentally
-> break.
-
-That's what we call a "regression". :)
-
-> But linux-next will only build-test the code. That I have already done,
-> so it really doesn't buy my anything. Developers (including me) don't
-> look at warnings in linux-next, and I don't think linux-next gets a lot
-> of testing.
-
-If you remove the legacy interfaces then even a build test will point
-out the drivers that still need to be converted. :)
-
-> Also, I can't push all untested patches to linux-next. In particular
-> the 4 patches that touch thermal management on powermac, need to be
-> tested successfully by at least one person before I can push them. You
-> did test the therm_pm72 patch, and I thank you for that, so that one is
-> in linux-next, but the other 3 ones need testing.
+> How big might this buffer be?  Any chance of allocation failure due to
+> memory fragmentation?
 > 
-> So, really, you're trying to solve the wrong problem. Whether the
-> patches go to Linus now or in the next merge window, doesn't really
-> matter.
+>  - R.
+Hey Roland, 
+yes you are right and here is the patch to circumvent the described problem.
+It will apply on top of the patchset.
+regards Stefan
 
-It does matter, actually.
 
-> And 2.6.31 isn't the kernel to remove an interface which was scheduled
-> for removal in 2.6.29 and then 2.6.30 and which is blocking the
-> development of features people need badly.
+ 
+ drivers/infiniband/hw/ehca/ipz_pt_fn.c |   17 +++++++++++++----
+ 1 files changed, 13 insertions(+), 4 deletions(-)
 
-What's so special about 2.6.30 that it matters whether the legacy
-interfaces are still there or not?
-
-As for blocking development, you can remove the legacy interfaces
-today in your next branch and get on with development immediately.  So
-the "blocking development" argument has zero relevance to what goes
-into Linus' tree for 2.6.30.  Even if you got the legacy interfaces
-removed for 2.6.30 you still wouldn't be able to get any new features
-based on that into 2.6.30.
-
-And this is a particularly bad time to be hastily trying to get
-powermac driver changes upstream, since Ben H. is on vacation.
-
-> So, once again, can powermac developers/users please test my patches?
-
-Can we compromise on this?  I'll do everything I reasonably can to
-help you get the powermac driver patches tested and working before the
-2.6.31 merge window, if you agree to leave the drivers and interfaces
-in Linus' tree as they are for 2.6.30.
-
-Paul.
+diff --git a/drivers/infiniband/hw/ehca/ipz_pt_fn.c b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
+index a260559..1227c59 100644
+--- a/drivers/infiniband/hw/ehca/ipz_pt_fn.c
++++ b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
+@@ -222,8 +222,11 @@ int ipz_queue_ctor(struct ehca_pd *pd, struct ipz_queue *queue,
+ 	/* allocate queue page pointers */
+ 	queue->queue_pages = kmalloc(nr_of_pages * sizeof(void *), GFP_KERNEL);
+ 	if (!queue->queue_pages) {
+-		ehca_gen_err("Couldn't allocate queue page list");
+-		return 0;
++		queue->queue_pages = vmalloc(nr_of_pages * sizeof(void *));
++		if (!queue->queue_pages) {
++			ehca_gen_err("Couldn't allocate queue page list");
++			return 0;
++		}
+ 	}
+ 	memset(queue->queue_pages, 0, nr_of_pages * sizeof(void *));
+ 
+@@ -240,7 +243,10 @@ int ipz_queue_ctor(struct ehca_pd *pd, struct ipz_queue *queue,
+ ipz_queue_ctor_exit0:
+ 	ehca_gen_err("Couldn't alloc pages queue=%p "
+ 		 "nr_of_pages=%x",  queue, nr_of_pages);
+-	kfree(queue->queue_pages);
++	if (is_vmalloc_addr(queue->queue_pages))
++		vfree(queue->queue_pages);
++	else
++		kfree(queue->queue_pages);
+ 
+ 	return 0;
+ }
+@@ -262,7 +268,10 @@ int ipz_queue_dtor(struct ehca_pd *pd, struct ipz_queue *queue)
+ 			free_page((unsigned long)queue->queue_pages[i]);
+ 	}
+ 
+-	kfree(queue->queue_pages);
++	if (is_vmalloc_addr(queue->queue_pages))
++		vfree(queue->queue_pages);
++	else
++		kfree(queue->queue_pages);
+ 
+ 	return 1;
+ }
+-- 
+1.5.5
