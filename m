@@ -1,22 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5AEA7DDFA1
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 06:30:08 +1000 (EST)
-Message-ID: <49EF7E49.6060003@freescale.com>
-Date: Wed, 22 Apr 2009 15:30:01 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: removing get_immrbase()??
-References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
-	<49EF7394.30606@freescale.com>
-In-Reply-To: <49EF7394.30606@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F1E3ADE0A0
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 07:19:37 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH] fs_enet: Remove dead code
+Date: Wed, 22 Apr 2009 16:19:30 -0500
+Message-Id: <1240435170-5183-1-git-send-email-galak@kernel.crashing.org>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +19,139 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
->> arch/powerpc/include/asm/cpm2.h:#define CPM_MAP_ADDR (get_immrbase() + 
->> 0x80000)
->> arch/powerpc/sysdev/cpm2.c:    cpm2_immr = ioremap(get_immrbase(), 
->> CPM_MAP_SIZE);
->>     these two are related and seem like we could look for "fsl,cpm2"
-> 
-> And do what with it that wouldn't be a reimplementation of get_immrbase()?
+CONFIG_DUET doesn't exist anymore, remove all the code that exists to
+support it.
 
-Sorry, I missed that you're referring to the CPM node rather than the 
-IMMR node.  The CPM node's address points specifically to some CPM 
-control registers, not to the start of a CPM "region" of IMMR/CCSR -- it 
-has an empty ranges property to bypass address translation.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/net/fs_enet/fs_enet-main.c |   35 +----------------------------------
+ drivers/net/fs_enet/fs_enet.h      |    5 -----
+ drivers/net/fs_enet/mac-fec.c      |   30 ------------------------------
+ 3 files changed, 1 insertions(+), 69 deletions(-)
 
-I think this needs more careful untangling, and some new device tree 
-nodes (sorry Timur) if we want to get rid of the magic offsets and huge 
-multiple-block-spanning structures.  I'm not sure it's worth it given 
-the microscopic odds of a new CPM2 chip coming out, unless it's part of 
-a CPM/QE merge.
-
--Scott
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index a9cbc31..76cd206 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -938,30 +938,6 @@ extern void fs_mii_disconnect(struct net_device *dev);
+ 
+ /**************************************************************************************/
+ 
+-/* handy pointer to the immap */
+-void __iomem *fs_enet_immap = NULL;
+-
+-static int setup_immap(void)
+-{
+-#ifdef CONFIG_CPM1
+-	fs_enet_immap = ioremap(IMAP_ADDR, 0x4000);
+-	WARN_ON(!fs_enet_immap);
+-#elif defined(CONFIG_CPM2)
+-	fs_enet_immap = cpm2_immr;
+-#endif
+-
+-	return 0;
+-}
+-
+-static void cleanup_immap(void)
+-{
+-#if defined(CONFIG_CPM1)
+-	iounmap(fs_enet_immap);
+-#endif
+-}
+-
+-/**************************************************************************************/
+-
+ static int __devinit find_phy(struct device_node *np,
+                               struct fs_platform_info *fpi)
+ {
+@@ -1191,25 +1167,16 @@ static struct of_platform_driver fs_enet_driver = {
+ 
+ static int __init fs_init(void)
+ {
+-	int r = setup_immap();
++	int r = of_register_platform_driver(&fs_enet_driver);
+ 	if (r != 0)
+ 		return r;
+ 
+-	r = of_register_platform_driver(&fs_enet_driver);
+-	if (r != 0)
+-		goto out;
+-
+ 	return 0;
+-
+-out:
+-	cleanup_immap();
+-	return r;
+ }
+ 
+ static void __exit fs_cleanup(void)
+ {
+ 	of_unregister_platform_driver(&fs_enet_driver);
+-	cleanup_immap();
+ }
+ 
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
+index 85a4bab..ef01e09 100644
+--- a/drivers/net/fs_enet/fs_enet.h
++++ b/drivers/net/fs_enet/fs_enet.h
+@@ -194,9 +194,4 @@ extern const struct fs_ops fs_scc_ops;
+ 
+ /*******************************************************************/
+ 
+-/* handy pointer to the immap */
+-extern void __iomem *fs_enet_immap;
+-
+-/*******************************************************************/
+-
+ #endif
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index 14e5753..7abe1fd 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -245,10 +245,6 @@ static void set_multicast_list(struct net_device *dev)
+ 
+ static void restart(struct net_device *dev)
+ {
+-#ifdef CONFIG_DUET
+-	immap_t *immap = fs_enet_immap;
+-	u32 cptr;
+-#endif
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+ 	fec_t __iomem *fecp = fep->fec.fecp;
+ 	const struct fs_platform_info *fpi = fep->fpi;
+@@ -318,32 +314,6 @@ static void restart(struct net_device *dev)
+ 	/*
+ 	 * adjust to speed (only for DUET & RMII)
+ 	 */
+-#ifdef CONFIG_DUET
+-	if (fpi->use_rmii) {
+-		cptr = in_be32(&immap->im_cpm.cp_cptr);
+-		switch (fs_get_fec_index(fpi->fs_no)) {
+-		case 0:
+-			cptr |= 0x100;
+-			if (fep->speed == 10)
+-				cptr |= 0x0000010;
+-			else if (fep->speed == 100)
+-				cptr &= ~0x0000010;
+-			break;
+-		case 1:
+-			cptr |= 0x80;
+-			if (fep->speed == 10)
+-				cptr |= 0x0000008;
+-			else if (fep->speed == 100)
+-				cptr &= ~0x0000008;
+-			break;
+-		default:
+-			BUG();	/* should never happen */
+-			break;
+-		}
+-		out_be32(&immap->im_cpm.cp_cptr, cptr);
+-	}
+-#endif
+-
+ 
+ 	FW(fecp, r_cntrl, FEC_RCNTRL_MII_MODE);	/* MII enable */
+ 	/*
+-- 
+1.6.0.6
