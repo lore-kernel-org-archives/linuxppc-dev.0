@@ -1,20 +1,26 @@
-Return-Path: <dgibson@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 752C3DE088
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 11:45:30 +1000 (EST)
-Date: Wed, 22 Apr 2009 11:32:06 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc/85xx: Add P2020DS board support
-Message-ID: <20090422013206.GB12003@yookeroo.seuss>
-References: <1240348762-13581-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <david-b@pacbell.net>
+Received: from n12.bullet.mail.mud.yahoo.com (n12.bullet.mail.mud.yahoo.com
+	[209.191.125.209]) by ozlabs.org (Postfix) with SMTP id B1D62DDF0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 12:25:43 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [BUILD FAILURE 11/12] Next April 21 : PPC64 randconfig
+	[drivers/usb/host/ohci-hcd.o]
+Date: Tue, 21 Apr 2009 19:19:37 -0700
+References: <1240340081.9110.144.camel@subratamodak.linux.ibm.com>
+	<5A202317-5104-4784-845B-B8C46E0A3C48@kernel.crashing.org>
+	<49EE4341.50701@oracle.com>
+In-Reply-To: <49EE4341.50701@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1240348762-13581-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200904211919.38104.david-b@pacbell.net>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-usb@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	linux-next <linux-next@vger.kernel.org>, subrata@linux.vnet.ibm.com,
+	Alexander Beregalov <a.beregalov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 21, 2009 at 04:19:22PM -0500, Kumar Gala wrote:
-> The P2020 is a dual e500v2 core based SOC with:
-> * 3 PCIe controllers
-> * 2 General purpose DMA controllers
-> * 2 sRIO controllers
-> * 3 eTSECS
-> * USB 2.0
-> * SDHC
-> * SPI, I2C, DUART
-> * enhanced localbus
-> * and optional Security (P2020E) security w/XOR acceleration
+On Tuesday 21 April 2009, Randy Dunlap wrote:
 > 
-> The p2020 DS reference board is pretty similar to the existing MPC85xx
-> DS boards and has a ULI 1575 connected on one of the PCIe
-> controllers.
+> > Since its feasible to say 'n' to both we get the compile error.  How do
+> > we enforce having at least one set?
+> 
+> Looks like using "choice" without "optional" would do it.
+> See Documentation/kbuild/kconfig-language.txt and various examples
+> in Kconfig* files.
 
-[snip]
-> +	soc@ffe00000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		device_type = "soc";
-> +		compatible = "simple-bus";
+That won't quite work ... "at least one" includes "two"
+(i.e. a PCI card in little-endian, a native controller
+in big-endian).  Real-world systems need such configs,
+or so I'm told, and that's why their supported.
 
-If I understood the description correctly, this one doesn't have the
-excuse of being a copy of an already broken device tree.  There needs
-to be a soc-variant specific string in the compatible property here.
+Is there maybe a way to force Kconfig to just reject
+such illegal configs -- neither option set -- rather
+than trying some how to fix it?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Or maybe ... if neither one is set, have the header
+force both on, and issue a warning.
