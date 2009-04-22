@@ -1,23 +1,19 @@
-Return-Path: <randy.dunlap@oracle.com>
-Message-ID: <49EF336B.5070807@oracle.com>
-Date: Wed, 22 Apr 2009 08:10:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [BUILD FAILURE 09/12] Next April 21 : PPC64 randconfig
-	[drivers/staging/comedi/drivers.o]
-References: <1240340029.9110.142.camel@subratamodak.linux.ibm.com>
-	<1240358910.6571.6.camel@localhost>
-	<alpine.LRH.2.00.0904220942430.6852@vixen.sonytel.be>
-In-Reply-To: <alpine.LRH.2.00.0904220942430.6852@vixen.sonytel.be>
-Content-Type: text/plain; charset=windows-1252
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Greg KH <greg@kroah.com>, "David A. Schleef" <ds@schleef.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>, subrata@linux.vnet.ibm.com,
-	Alexander Beregalov <a.beregalov@gmail.com>
+Return-Path: <ricardo.ribalda@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id A05FBDE06B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 01:51:40 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 9so17328ywe.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 08:51:38 -0700 (PDT)
+Sender: Ricardo <ricardo.ribalda@gmail.com>
+From: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
+To: Peter Korsgaard <jacmet@sunsite.dk>, linuxppc-dev@ozlabs.org,
+	ben@codiert.org, David.Woodhouse@intel.com
+Subject: ofpart:  Partitions at same address cannot have the same name
+Date: Wed, 22 Apr 2009 17:52:15 +0200
+Message-Id: <1240415535-10939-1-git-send-email-ricardo.ribalda@uam.es>
+In-Reply-To: <874owhoxce.fsf@macbook.be.48ers.dk>
+References: <874owhoxce.fsf@macbook.be.48ers.dk>
+Cc: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geert Uytterhoeven wrote:
-> On Wed, 22 Apr 2009, Michael Ellerman wrote:
->> On Wed, 2009-04-22 at 00:23 +0530, Subrata Modak wrote:
->>> Reported this error on 14th April:
->>> http://lkml.org/lkml/2009/4/14/488,
->>>
->>> CC [M]  drivers/staging/comedi/drivers.o 
->>> drivers/staging/comedi/drivers.c: In function ‘comedi_buf_alloc’:
->>> drivers/staging/comedi/drivers.c:496: error: ‘PAGE_KERNEL_NOCACHE’
->>> undeclared (first use in this function)
->>> drivers/staging/comedi/drivers.c:496: error: (Each undeclared identifier
->>> is reported only once
->>> drivers/staging/comedi/drivers.c:496: error: for each function it
->>> appears in.)
->>> make[3]: *** [drivers/staging/comedi/drivers.o] Error 1
->>> make[2]: *** [drivers/staging/comedi] Error 2
->>> make[1]: *** [drivers/staging] Error 2
->>> make: *** [drivers] Error 2
->> Subrata, unless someone says otherwise, please do not send randconfig
->> failures for drivers in staging - those drivers have bigger problems
->> than randconfig failures.
-> 
-> Indeed, in particular this one http://lkml.org/lkml/2009/3/9/349.
-> 
->> To avoid them, do this:
->>
->> # make randconfig
->> # sed -i -e 's/^\(CONFIG_STAGING\)=y/# \1 is not set/' .config
->                                        ^^^^^^^^^^^^^^^
-> Recently I discovered that `n' actually works, too!
+Sometimes, an special partition is included in the device tree including all the
+partitions. Like in:
 
-Yes, I've been using =n for quite awhile to disable a config symbol.
+partition@ff000000 {
+       reg = < 0x000000 0x800000 >;
+       label = "Root File System";
+};
+partition@ff800000 {
+       reg = < 0x800000 0x1a0000 >;
+       label = "Bitstream";
+};
+...
+partitionAll@ff000000 {
+       reg = < 0x000000 0x1000000 >;
+       label = "Full FLASH";
+};
 
->> # make oldconfig
+Because two nodes of a device tree cannot have the same name, but all the
+partitions must be named "partition", this special partition is invalid.
+
+This patch makes ofpart.c only check for the firt part of the name, and
+ignore the rest, allowing this special partition.
 
 
+---
+
+The extra partition is quite useful while formating the full firmware from linux
+
+v2, removes the -1 <Peter Korsgaard>
+
+ drivers/mtd/ofpart.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mtd/ofpart.c b/drivers/mtd/ofpart.c
+index 3e164f0..0af3b07 100644
+--- a/drivers/mtd/ofpart.c
++++ b/drivers/mtd/ofpart.c
+@@ -48,7 +48,7 @@ int __devinit of_mtd_parse_partitions(struct device *dev,
+ 
+ 		/* check if this is a partition node */
+ 		partname = of_get_property(pp, "name", &len);
+-		if (strcmp(partname, "partition") != 0) {
++		if (strncmp(partname, "partition", strlen("partition") != 0) {
+ 			nr_parts--;
+ 			continue;
+ 		}
 -- 
-~Randy
+1.6.2.4
