@@ -1,21 +1,25 @@
-Return-Path: <jacmet@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 7344BDDEF3
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 19:24:07 +1000 (EST)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-To: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
-Subject: Re: [MTD] ofpart: Partitions at same address cannot have the same name
-References: <1240387541-16594-1-git-send-email-ricardo.ribalda@uam.es>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 22 Apr 2009 11:24:01 +0200
-In-Reply-To: <1240387541-16594-1-git-send-email-ricardo.ribalda@uam.es>
-	(Ricardo Ribalda Delgado's message of "Wed\,
-	22 Apr 2009 10\:05\:41 +0200")
-Message-ID: <874owhoxce.fsf@macbook.be.48ers.dk>
+Return-Path: <bzolnier@gmail.com>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [BUILD FAILURE 05/12] Next April 21 : PPC64 randconfig
+	[drivers/macintosh/mediabay.o]
+Date: Wed, 22 Apr 2009 11:34:17 +0200
+References: <1240339875.9110.137.camel@subratamodak.linux.ibm.com>
+	<200904212104.14665.bzolnier@gmail.com>
+	<18926.38431.910952.630575@cargo.ozlabs.ibm.com>
+In-Reply-To: <18926.38431.910952.630575@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, David.Woodhouse@intel.com,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200904221134.18163.bzolnier@gmail.com>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, Adrian Bunk <bunk@kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Stefan Bader <stefan.bader@canonical.com>,
+	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	linux-next <linux-next@vger.kernel.org>,
+	Marcelo Tosatti <marcelo@conectiva.com.br>, subrata@linux.vnet.ibm.com,
+	Alexander Beregalov <a.beregalov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Ricardo" == Ricardo Ribalda Delgado <ricardo.ribalda@uam.es> writes:
+On Wednesday 22 April 2009 05:59:27 Paul Mackerras wrote:
+> Bartlomiej Zolnierkiewicz writes:
+> 
+> > mediabay shouldn't include <linux/ide.h> unconditionally so
+> > remove the superfluous include from mediabay.c (<asm/mediabay.h>
+> > will pull <linux/ide.h> in for CONFIG_BLK_DEV_IDE_PMAC=y).
+> 
+> I don't like relying on second-hand imports like that.  I prefer the
+> previous patch, that made mediabay depend on CONFIG_BLOCK.
 
-Hi,
+I missed it somehow...
 
- Ricardo> Sometimes, an special partition is included in the device
- Ricardo> tree including all the partitions. Like in:
+OK, I found it now and it should fix the problem as well.
 
- Ricardo>  drivers/mtd/ofpart.c |    3 ++-
- Ricardo>  1 files changed, 2 insertions(+), 1 deletions(-)
+> BTW, if including <linux/ide.h> causes an error when CONFIG_BLOCK=n,
+> then there is a bug in <linux/ide.h>, IMO.
 
- Ricardo> diff --git a/drivers/mtd/ofpart.c b/drivers/mtd/ofpart.c
- Ricardo> index 3e164f0..0af3b07 100644
- Ricardo> --- a/drivers/mtd/ofpart.c
- Ricardo> +++ b/drivers/mtd/ofpart.c
- Ricardo> @@ -48,7 +48,8 @@ int __devinit of_mtd_parse_partitions(struct device *dev,
- 
- Ricardo>  		/* check if this is a partition node */
- Ricardo>  		partname = of_get_property(pp, "name", &len);
- Ricardo> -		if (strcmp(partname, "partition") != 0) {
- Ricardo> +		if (strncmp(partname, "partition", strlen("partition")-1)
+<linux/ide.h> is for drivers/ide only.  mediabay lacks proper abstraction
+layer and is probably the only abuser left.
 
-Why strlen() - 1 ?
+Besides being a build fix my patch is a right step in cleaning this mess
+so I'm going to apply it through ide tree.
 
--- 
-Bye, Peter Korsgaard
+Thanks,
+Bart
