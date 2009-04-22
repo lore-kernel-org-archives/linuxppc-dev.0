@@ -1,10 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC][PATCH] powerpc/86xx: Add binding for LAWs and MCM
-Date: Wed, 22 Apr 2009 13:15:53 -0500
-Message-Id: <1240424153-11339-1-git-send-email-galak@kernel.crashing.org>
-Cc: devicetree-discuss@ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EECD8DE31C
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 04:16:35 +1000 (EST)
+Message-ID: <49EF5EFE.2040608@freescale.com>
+Date: Wed, 22 Apr 2009 13:16:30 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3] powerpc/85xx: Add P2020DS board support
+References: <1240371105-18400-1-git-send-email-galak@kernel.crashing.org>
+	<20090422164400.GA9592@ld0162-tx32.am.freescale.net>
+	<6EC8B59D-62C8-4D9B-B548-4833A06F13AB@kernel.crashing.org>
+	<49EF4E27.9020203@freescale.com>
+	<95BA4C47-8B99-4E94-9855-4333BB4A751C@kernel.crashing.org>
+	<49EF50EC.1040608@freescale.com>
+	<E25C4315-A3BA-42DF-B2D2-B1CD2D76A03F@kernel.crashing.org>
+	<49EF560F.90208@freescale.com>
+	<FA468435-A799-4EB9-8DA1-EC8F3B58EAEB@kernel.crashing.org>
+In-Reply-To: <FA468435-A799-4EB9-8DA1-EC8F3B58EAEB@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,116 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The first 4k region of CCSR space is well defined for local access
-windows, CCSRBAR, etc.  The second 4k region is well defined as
-register for configuring and getting errors for the MPX coherency
-module.
+Kumar Gala wrote:
+>> What "we care about" at this point is irrelevant, given the PITA it 
+>> would be to change the device trees (or u-boot) that are already in 
+>> use once we do begin to care.
+> 
+> Which is exactly why I didn't put it in the .dts right now.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-Please review.  Once we close on this I intend to mimic this for the 85xx based
-chips.
+???
 
-- k
+> Today we know NO code exists that cares about "fsl,elbc-1.2". Once someone adds 
+> such code they can also update the .dts to match it.
 
- Documentation/powerpc/dts-bindings/fsl/mcm.txt |   64 ++++++++++++++++++++++++
- arch/powerpc/boot/dts/mpc8641_hpcn.dts         |   13 +++++
- 2 files changed, 77 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/fsl/mcm.txt
+DTS files and firmware are *MUCH* harder to update once they're out 
+there than the kernel.  Why such opposition to using an appropriate 
+compatible?
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/mcm.txt b/Documentation/powerpc/dts-bindings/fsl/mcm.txt
-new file mode 100644
-index 0000000..4ceda9b
---- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/fsl/mcm.txt
-@@ -0,0 +1,64 @@
-+=====================================================================
-+MPX LAW & Coherency Module Device Tree Binding
-+Copyright (C) 2009 Freescale Semiconductor Inc.
-+=====================================================================
-+
-+Local Access Window (LAW) Node
-+
-+The LAW node represents the region of CCSR space where local access
-+windows are configured.  For MCM based devices this is the first 4k
-+of CCSR space that includes CCSRBAR, ALTCBAR, ALTCAR, BPTR, and some
-+number of local access windows as specified by fsl,num-laws.
-+
-+PROPERTIES
-+
-+  - compatible
-+      Usage: required
-+      Value type: <string>
-+      Definition: Must include "fsl,mcm-law"
-+
-+  - reg
-+      Usage: required
-+      Value type: <prop-encoded-array>
-+      Definition: A standard property.  The value specifies the
-+          physical address offset and length of the CCSR space
-+          registers.
-+
-+  - fsl,num-laws
-+      Usage: required
-+      Value type: <u32>
-+      Definition: The value specifies the number of local access
-+          windows for this device.
-+
-+=====================================================================
-+
-+MPX Coherency Module Node
-+
-+The MPX LAW node represents the region of CCSR space where MCM config
-+and error reporting registers exist, this is the second 4k (0x1000)
-+of CCSR space.
-+
-+PROPERTIES
-+
-+  - compatible
-+      Usage: required
-+      Value type: <string>
-+      Definition: Must include "fsl,CHIP-mcm", "fsl,mcm" where
-+      CHIP is the processor (mpc8641, mpc8610, etc.)
-+
-+  - reg
-+      Usage: required
-+      Value type: <prop-encoded-array>
-+      Definition: A standard property.  The value specifies the
-+          physical address offset and length of the CCSR space
-+          registers.
-+
-+   - interrupts
-+      Usage: required
-+      Value type: <prop-encoded-array>
-+
-+   - interrupt-parent
-+      Usage: required
-+      Value type: <phandle>
-+
-+=====================================================================
-diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-index 51852e6..8bcccd7 100644
---- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-+++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-@@ -117,6 +117,19 @@
- 		reg = <0xffe00000 0x00001000>;	// CCSRBAR
- 		bus-frequency = <0>;
- 
-+		mcm-law@0 {
-+			compatible = "fsl,mcm-law";
-+			reg = <0x0 0x1000>;
-+			fsl,num-laws = <10>;
-+		};
-+
-+		mcm@1000 {
-+			compatible = "fsl,mpc8641-mcm", "fsl,mcm";
-+			reg = <0x1000 0x1000>;
-+			interrupts = <17 2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
- 		i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--- 
-1.6.0.6
+Is there anything in the p2020ds u-boot patches to set the elbc version, 
+or was that just a brush-off?
+
+-Scott
