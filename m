@@ -1,21 +1,22 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp4.netcologne.de (smtp4.netcologne.de [194.8.194.137])
-	by ozlabs.org (Postfix) with ESMTP id 284D5DDFC7
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 03:43:05 +1000 (EST)
-Received: from antares (xdsl-84-44-252-246.netcologne.de [84.44.252.246])
-	by smtp4.netcologne.de (Postfix) with ESMTP id 8E45CDA918
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 19:43:02 +0200 (CEST)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id 62419BA04B
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 19:43:02 +0200 (CEST)
-Date: Wed, 22 Apr 2009 19:42:55 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: [OT] Lite5200B w/ nfs root hangs after some time
-To: Linux PPC Development <linuxppc-dev@ozlabs.org>
-Message-Id: <1240422181.5492.0@antares>
+Return-Path: <ricardo.ribalda@gmail.com>
+Received: from mail-fx0-f174.google.com (mail-fx0-f174.google.com
+	[209.85.220.174]) by ozlabs.org (Postfix) with ESMTP id 19FBEDE012
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 03:56:56 +1000 (EST)
+Received: by fxm22 with SMTP id 22so151181fxm.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 10:56:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-VzMvo1SKumBo9NLAog9C"
+Sender: ricardo.ribalda@gmail.com
+In-Reply-To: <49EF5391.9050404@freescale.com>
+References: <874owhoxce.fsf@macbook.be.48ers.dk>
+	<20090422171030.GH14906@codiert.org>
+	<49EF5391.9050404@freescale.com>
+From: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
+Date: Wed, 22 Apr 2009 19:56:39 +0200
+Message-ID: <aa76a2be0904221056v7c7357abk52e9b31bb3f7b143@mail.gmail.com>
+Subject: Re: ofpart: Partitions at same address cannot have the same name
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, David.Woodhouse@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---=-VzMvo1SKumBo9NLAog9C
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Scott
 
-Hi,
+> Perhaps "compatible" should be used instead?
 
-this question is maybe off-topic on this list...
+What do you mean?
 
-I use the Lite5200B board with stock kernel 2.6.29, and boot with the =20
-root fs on nfs on an Ubuntu 8.10 PC.  Both the Lite5200B and the Ubuntu =20
-PC are part of a corporate network.  On the root fs, I have busybox and =20
-everything else needed.  Being connected with minicom to the serial =20
-console, after some time I always see a message like
+if (strcmp(partname, "partition") || strcmp(partname, "compatible") )
 
-[ 4912.350855] nfs: server 10.16.10.29 not responding, still trying
+I can't see the advantages.
 
-an the the system is *completely* dead, i.e. it doesn't respond to =20
-<ctrl>-<c>, it doesn't (as a desktop pc sometimes does) print more than =20
-one of these or any other kernel messages, and it doesn't recover from =20
-this condition.  Apparently it doesn't matter if just the busybox shell =20
-is waiting or if an application is running.
 
-Any idea what goes wrong here, and how I could fix it?
+>
+>> Hi Recardo,
+>>
+>> I would suggest to do:
+>>
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (strcmp(partname, "partition") <=3D 0)=
+ {
+>
+> Check whether it sorts alphabetically before "partition"? =A0Why?
+>
+> -Scott
+>
 
-Thanks, Albrecht.
 
---=-VzMvo1SKumBo9NLAog9C
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBJ71cln/9unNAn/9ERAjQ9AKCFkrM/M+98KtGDGeJEig1NVh/6AgCfbn4C
-jVvnYqzxPNACyPQXZ5N/GpQ=
-=OGMZ
------END PGP SIGNATURE-----
-
---=-VzMvo1SKumBo9NLAog9C--
+--=20
+Ricardo Ribalda
+http://www.eps.uam.es/~rribalda/
