@@ -2,18 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 755A6DE0A6
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 04:38:18 +1000 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n3MIcCu2026768
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 13:38:12 -0500
-Message-Id: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 2886BDE0A2
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 04:45:56 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n3MIjrrq027258
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 13:45:53 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: removing get_immrbase()??
-Date: Wed, 22 Apr 2009 13:38:12 -0500
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/cpm: Remove some cruft code and defines
+Date: Wed, 22 Apr 2009 13:45:53 -0500
+Message-Id: <1240425953-27650-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,57 +21,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm not sure if we can actually get away with completely removing  
-get_immrbase() but I figured I'd give everyone something to flame me  
-about.  The current users are:
+Kill of some old defines and macros that we no longer use like
+CPM_MAP_ADDR and CPM_IRQ_OFFSET.
 
-CPM/QE related users.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/cpm2.h        |    4 ----
+ arch/powerpc/platforms/82xx/pq2ads.h   |   13 -------------
+ arch/powerpc/platforms/8xx/mpc885ads.h |    4 ----
+ arch/powerpc/sysdev/cpm2.c             |    2 +-
+ 4 files changed, 1 insertions(+), 22 deletions(-)
 
-arch/powerpc/include/asm/cpm1.h:#define IMAP_ADDR		(get_immrbase())
-
-	only used drivers/net/fs_enet/fs_enet-main.c which seems evil.
-
-arch/powerpc/platforms/8xx/mpc885ads.h:#define CPM_MAP_ADDR		 
-(get_immrbase() + MPC8xx_CPM_OFFSET)
-	not used
-
-arch/powerpc/sysdev/cpm1.c:	mpc8xx_immr = ioremap(get_immrbase(),  
-0x4000);
-	not sure? ideas?
-
-arch/powerpc/include/asm/cpm2.h:#define CPM_MAP_ADDR (get_immrbase() +  
-0x80000)
-arch/powerpc/sysdev/cpm2.c:	cpm2_immr = ioremap(get_immrbase(),  
-CPM_MAP_SIZE);
-	these two are related and seem like we could look for "fsl,cpm2"
-
-arch/powerpc/platforms/83xx/misc.c:	restart_reg_base =  
-ioremap(get_immrbase() + 0x900, 0xff);
-arch/powerpc/platforms/83xx/misc.c:	__be32 __iomem *spcr =  
-ioremap(get_immrbase() + SPCR_OFFSET, 4);
-arch/powerpc/platforms/83xx/mpc836x_mds.c:			immap =  
-ioremap(get_immrbase() + 0x14a8, 8);
-arch/powerpc/platforms/83xx/suspend.c:	rcw_regs =  
-ioremap(get_immrbase() + IMMR_RCW_OFFSET,
-arch/powerpc/platforms/83xx/suspend.c:	immrbase = get_immrbase();
-arch/powerpc/platforms/83xx/usb.c:	immap = ioremap(get_immrbase(),  
-0x1000);
-arch/powerpc/platforms/83xx/usb.c:	immap = ioremap(get_immrbase(),  
-0x1000);
-arch/powerpc/platforms/83xx/usb.c:	immap = ioremap(get_immrbase(),  
-0x1000);
-	83xx cruft -- needs more investigation:
-
-
-arch/powerpc/platforms/86xx/mpc8610_hpcd.c:	clkdvdr =  
-ioremap(get_immrbase() + 0xe0800, sizeof(u32));
-arch/powerpc/platforms/86xx/mpc86xx_smp.c:	mcm_vaddr =  
-ioremap(get_immrbase() + MPC86xx_MCM_OFFSET,
-	86xx: the first can be fixed to use guts, the second can be fixed to  
-use the new "fsl,mcm" that I proposed:
-
-arch/powerpc/sysdev/fsl_pci.c:	immr_base = get_immrbase();
-	This one is a bit more problematic but can use the new "fsl,mcm-law",  
-"fsl,ecm-law"
-
-- k
+diff --git a/arch/powerpc/include/asm/cpm2.h b/arch/powerpc/include/asm/cpm2.h
+index 0f5e8ff..990ff19 100644
+--- a/arch/powerpc/include/asm/cpm2.h
++++ b/arch/powerpc/include/asm/cpm2.h
+@@ -14,10 +14,6 @@
+ #include <asm/cpm.h>
+ #include <sysdev/fsl_soc.h>
+ 
+-#ifdef CONFIG_PPC_85xx
+-#define CPM_MAP_ADDR (get_immrbase() + 0x80000)
+-#endif
+-
+ /* CPM Command register.
+ */
+ #define CPM_CR_RST	((uint)0x80000000)
+diff --git a/arch/powerpc/platforms/82xx/pq2ads.h b/arch/powerpc/platforms/82xx/pq2ads.h
+index 984db42..6cf0f97 100644
+--- a/arch/powerpc/platforms/82xx/pq2ads.h
++++ b/arch/powerpc/platforms/82xx/pq2ads.h
+@@ -24,10 +24,6 @@
+ 
+ #include <linux/seq_file.h>
+ 
+-/* Backword-compatibility stuff for the drivers */
+-#define CPM_MAP_ADDR		((uint)0xf0000000)
+-#define CPM_IRQ_OFFSET 0
+-
+ /* The ADS8260 has 16, 32-bit wide control/status registers, accessed
+  * only on word boundaries.
+  * Not all are used (yet), or are interesting to us (yet).
+@@ -44,14 +40,5 @@
+ #define BCSR3_FETHIEN2		((uint)0x10000000)      /* 0 == enable*/
+ #define BCSR3_FETH2_RST		((uint)0x80000000)      /* 0 == reset */
+ 
+-/* cpm serial driver works with constants below */
+-
+-#define SIU_INT_SMC1		((uint)0x04+CPM_IRQ_OFFSET)
+-#define SIU_INT_SMC2		((uint)0x05+CPM_IRQ_OFFSET)
+-#define SIU_INT_SCC1		((uint)0x28+CPM_IRQ_OFFSET)
+-#define SIU_INT_SCC2		((uint)0x29+CPM_IRQ_OFFSET)
+-#define SIU_INT_SCC3		((uint)0x2a+CPM_IRQ_OFFSET)
+-#define SIU_INT_SCC4		((uint)0x2b+CPM_IRQ_OFFSET)
+-
+ #endif /* __MACH_ADS8260_DEFS */
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/platforms/8xx/mpc885ads.h b/arch/powerpc/platforms/8xx/mpc885ads.h
+index a507666..19412f7 100644
+--- a/arch/powerpc/platforms/8xx/mpc885ads.h
++++ b/arch/powerpc/platforms/8xx/mpc885ads.h
+@@ -17,10 +17,6 @@
+ 
+ #include <sysdev/fsl_soc.h>
+ 
+-#define MPC8xx_CPM_OFFSET	(0x9c0)
+-#define CPM_MAP_ADDR		(get_immrbase() + MPC8xx_CPM_OFFSET)
+-#define CPM_IRQ_OFFSET		16     // for compability with cpm_uart driver
+-
+ /* Bits of interest in the BCSRs.
+  */
+ #define BCSR1_ETHEN		((uint)0x20000000)
+diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
+index fd969f0..eb59272 100644
+--- a/arch/powerpc/sysdev/cpm2.c
++++ b/arch/powerpc/sysdev/cpm2.c
+@@ -61,7 +61,7 @@ EXPORT_SYMBOL(cpm2_immr);
+ void __init cpm2_reset(void)
+ {
+ #ifdef CONFIG_PPC_85xx
+-	cpm2_immr = ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
++	cpm2_immr = ioremap(get_immrbase() + 0x80000, CPM_MAP_SIZE);
+ #else
+ 	cpm2_immr = ioremap(get_immrbase(), CPM_MAP_SIZE);
+ #endif
+-- 
+1.6.0.6
