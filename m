@@ -1,39 +1,26 @@
-Return-Path: <nicolas.lavocat@fr.thalesgroup.com>
-Received: from thsmsgxrt12p.thalesgroup.com (thsmsgxrt12p.thalesgroup.com
-	[192.54.144.135]) by ozlabs.org (Postfix) with ESMTP id 1D926DDFAD
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 22:28:41 +1000 (EST)
-Received: from thsmsgirt21p.corp.thales (unknown [10.33.231.5])
-	by thsmsgxrt12p.thalesgroup.com (Postfix) with ESMTP id 6808C41CB28
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 14:28:39 +0200 (CEST)
-Received: from thsmsgiav11p.corp.thales (10.33.231.31) by
-	thsmsgirt21p.corp.thales (8.5.103)
-	id 49D612C0001BE628 for linuxppc-dev@ozlabs.org;
-	Wed, 22 Apr 2009 14:28:39 +0200
-Received: from vpsms001.fr.thav.thales (unknown [10.33.12.35])
-	by thsmsgirt12p.corp.thales (Postfix) with ESMTP id 27C5C391BCB
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 14:28:39 +0200 (CEST)
-Received: from vpspms02.val.fr.thav.thales (128.1.6.82) by
-	vpsms001.fr.thav.thales (NPlex 6.5.026)
-	id 49EBDED400029016 for linuxppc-dev@ozlabs.org;
-	Wed, 22 Apr 2009 14:28:39 +0200
-Received: from vpspms02.val.fr.thav.thales (localhost.localdomain [127.0.0.1])
-	by localhost (Postfix) with SMTP id 110AA807E
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 14:28:39 +0200 (CEST)
-Received: from xbdxuspmail.bdx.fr.thav.thales (xbdxuspmail.bdx.fr.thav.thales
-	[128.1.62.154])
-	by vpspms02.val.fr.thav.thales (Postfix) with ESMTP id F0F88808F
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 14:28:38 +0200 (CEST)
-Message-ID: <49EF0D74.9000005@fr.thalesgroup.com>
-Date: Wed, 22 Apr 2009 14:28:36 +0200
-From: Nicolas Lavocat <nicolas.lavocat@fr.thalesgroup.com>
+Return-Path: <paulus@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 57510DDFC6
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 22:56:57 +1000 (EST)
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: freeze when reading a PCI bridge register
-References: <49EECF8D.9000808@fr.thalesgroup.com>
-	<20090422110327.GA9997@iram.es>
-In-Reply-To: <20090422110327.GA9997@iram.es>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18927.5140.888171.141615@cargo.ozlabs.ibm.com>
+Date: Wed, 22 Apr 2009 22:56:52 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] keywest: Convert to new-style i2c driver
+In-Reply-To: <20090422140401.04a402e9@hyperion.delvare>
+References: <20090420225659.7b92a184@hyperion.delvare>
+	<18924.63578.495727.152443@cargo.ozlabs.ibm.com>
+	<s5hzleah5x4.wl%tiwai@suse.de>
+	<20090421114853.7a9d82c1@hyperion.delvare>
+	<18926.58544.374626.696097@cargo.ozlabs.ibm.com>
+	<20090422140401.04a402e9@hyperion.delvare>
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,59 +30,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thank you for your advices! I try it as soon as possible! (the board is=20
-not often available...)
+Jean Delvare writes:
 
-Nicolas Lavocat
+> > I sympathize, but throwing disruptive changes into Linus' tree when
+> > we're past -rc3 is not the way to solve the problem.
+> 
+> We're past -rc3 because people discuss instead of testing my patches.
+> Otherwise everything would be merged already.
 
-Gabriel Paubert a =E9crit :
-> On Wed, Apr 22, 2009 at 10:04:29AM +0200, Nicolas Lavocat wrote:
->  =20
->> Hi everybody!
->>
->> I' am trying to configure a PCI bridge on a private board, with a =20
->> powerpc . In a first time, I tried to get informations about PCI =20
->> devices, in order to be sure  that  my read  and write methods work ( =
-=20
->> using 2 configuration registers, like on an x86 architecture.) . 2 =20
->> configuration registers  are used, for example we  write  an encoded =20
->> address (it is a request to a PCI device) in the first and the answer =
-of =20
->> the PCI device can be read in the second register (it is a configurati=
-on =20
->> cycle)
->> Firstly, I did it by JTAG: it works. Then, under uboot, it is ok.
->>    =20
->
-> JTAG is probably a completely different hardware path, so it
-> does not really count. uboot testing is ok.
->  =20
->> For example, the code used under u-boot:
->>
->> volatile u32* addr;
->> u32 vendor_device_ID;
->>
->> puts("PCI1 reading PCI VENDOR and DEVICE ID\n");
->> addr=3DCFG_ADDR_PCI1;
->> *addr=3D0x80007800;
->>
->> addr=3D CFG_DATA_PCI1;
->> vendor_device_ID=3D *addr;
->> printf("PCI1: PCI1_VENDOR_DEVICE_ID=3D %08x  \n" ,vendor_device_ID);
->>    =20
->
-> 2 possibilities:
-> - your I/O is not marked uncacheable (should be with ioremap)
-> - the PPC is reordering and issuing the read before the write,
->   you should use accessors. A simple test is inserting
->   an asm volatile("eieio") before the read.
->
-> About your other mails, please avoid HTML mail.
->
-> 	Gabriel
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
->  =20
+Well, no.  The first conversion patch that I saw was posted after the
+merge window had already closed, on 8 April.
+
+> And really, these changes (sound drivers) don't qualify as disruptive.
+> You might argue about the thermal management driver changes if you
+> want. But sound drivers, nothing bad will happen if they accidentally
+> break.
+
+That's what we call a "regression". :)
+
+> But linux-next will only build-test the code. That I have already done,
+> so it really doesn't buy my anything. Developers (including me) don't
+> look at warnings in linux-next, and I don't think linux-next gets a lot
+> of testing.
+
+If you remove the legacy interfaces then even a build test will point
+out the drivers that still need to be converted. :)
+
+> Also, I can't push all untested patches to linux-next. In particular
+> the 4 patches that touch thermal management on powermac, need to be
+> tested successfully by at least one person before I can push them. You
+> did test the therm_pm72 patch, and I thank you for that, so that one is
+> in linux-next, but the other 3 ones need testing.
+> 
+> So, really, you're trying to solve the wrong problem. Whether the
+> patches go to Linus now or in the next merge window, doesn't really
+> matter.
+
+It does matter, actually.
+
+> And 2.6.31 isn't the kernel to remove an interface which was scheduled
+> for removal in 2.6.29 and then 2.6.30 and which is blocking the
+> development of features people need badly.
+
+What's so special about 2.6.30 that it matters whether the legacy
+interfaces are still there or not?
+
+As for blocking development, you can remove the legacy interfaces
+today in your next branch and get on with development immediately.  So
+the "blocking development" argument has zero relevance to what goes
+into Linus' tree for 2.6.30.  Even if you got the legacy interfaces
+removed for 2.6.30 you still wouldn't be able to get any new features
+based on that into 2.6.30.
+
+And this is a particularly bad time to be hastily trying to get
+powermac driver changes upstream, since Ben H. is on vacation.
+
+> So, once again, can powermac developers/users please test my patches?
+
+Can we compromise on this?  I'll do everything I reasonably can to
+help you get the powermac driver patches tested and working before the
+2.6.31 merge window, if you agree to leave the drivers and interfaces
+in Linus' tree as they are for 2.6.30.
+
+Paul.
