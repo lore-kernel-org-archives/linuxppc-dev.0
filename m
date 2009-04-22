@@ -1,23 +1,20 @@
-Return-Path: <david-b@pacbell.net>
-Received: from n12.bullet.mail.mud.yahoo.com (n12.bullet.mail.mud.yahoo.com
-	[209.191.125.209]) by ozlabs.org (Postfix) with SMTP id B1D62DDF0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 12:25:43 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
+Return-Path: <randy.dunlap@oracle.com>
+Message-ID: <49EE8855.1080306@oracle.com>
+Date: Tue, 21 Apr 2009 20:00:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+MIME-Version: 1.0
+To: David Brownell <david-b@pacbell.net>
 Subject: Re: [BUILD FAILURE 11/12] Next April 21 : PPC64 randconfig
 	[drivers/usb/host/ohci-hcd.o]
-Date: Tue, 21 Apr 2009 19:19:37 -0700
 References: <1240340081.9110.144.camel@subratamodak.linux.ibm.com>
 	<5A202317-5104-4784-845B-B8C46E0A3C48@kernel.crashing.org>
 	<49EE4341.50701@oracle.com>
-In-Reply-To: <49EE4341.50701@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200904211919.38104.david-b@pacbell.net>
+	<200904211919.38104.david-b@pacbell.net>
+In-Reply-To: <200904211919.38104.david-b@pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: sachinp <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-usb@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, samr <sam@ravnborg.org>,
+	linux-usb@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
 	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
 	linux-next <linux-next@vger.kernel.org>, subrata@linux.vnet.ibm.com,
 	Alexander Beregalov <a.beregalov@gmail.com>
@@ -30,23 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 21 April 2009, Randy Dunlap wrote:
+David Brownell wrote:
+> On Tuesday 21 April 2009, Randy Dunlap wrote:
+>>> Since its feasible to say 'n' to both we get the compile error.  How do
+>>> we enforce having at least one set?
+>> Looks like using "choice" without "optional" would do it.
+>> See Documentation/kbuild/kconfig-language.txt and various examples
+>> in Kconfig* files.
 > 
-> > Since its feasible to say 'n' to both we get the compile error.  How do
-> > we enforce having at least one set?
-> 
-> Looks like using "choice" without "optional" would do it.
-> See Documentation/kbuild/kconfig-language.txt and various examples
-> in Kconfig* files.
+> That won't quite work ... "at least one" includes "two"
+> (i.e. a PCI card in little-endian, a native controller
+> in big-endian).  Real-world systems need such configs,
+> or so I'm told, and that's why their supported.
 
-That won't quite work ... "at least one" includes "two"
-(i.e. a PCI card in little-endian, a native controller
-in big-endian).  Real-world systems need such configs,
-or so I'm told, and that's why their supported.
+Yes, I see.
 
-Is there maybe a way to force Kconfig to just reject
-such illegal configs -- neither option set -- rather
-than trying some how to fix it?
+> Is there maybe a way to force Kconfig to just reject
+> such illegal configs -- neither option set -- rather
+> than trying some how to fix it?
 
-Or maybe ... if neither one is set, have the header
-force both on, and issue a warning.
+Not that I know of.  cc-ing Sam.
+
+> Or maybe ... if neither one is set, have the header
+> force both on, and issue a warning.
+
+That should be doable.  We'd prefer to catch it via Kconfig,
+but that doesn't look promising just now.
+
+-- 
+~Randy
