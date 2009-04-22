@@ -1,25 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6E67BDDF05
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 07:38:08 +1000 (EST)
-Message-ID: <49EF8E3A.4060304@freescale.com>
-Date: Wed, 22 Apr 2009 16:38:02 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9244FDDFC8
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 07:41:53 +1000 (EST)
+Message-Id: <DC91BA72-AF10-41DD-B610-EDEFD106A811@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <49EF8D42.7010104@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
 Subject: Re: removing get_immrbase()??
+Date: Wed, 22 Apr 2009 16:39:46 -0500
 References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
 	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
 	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
 	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-In-Reply-To: <282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
+	<49EF8D42.7010104@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> I disagree.  If you update your kernel you should update your device 
-> tree (thus we have .dts in the kernel tree and not somewhere else).
 
-No.  The device tree is a means to pass information from the firmware to 
-the kernel.  It is part of the firmware.  That the repository of trees 
-is in the Linux kernel for any boards which are not including the tree 
-inside a bootwrapper is a historical accident.
+On Apr 22, 2009, at 4:33 PM, Timur Tabi wrote:
 
-Updating the dtb with the kernel just shifts the risk of incompatibility 
-to interactions between the firmware and the dtb.  The same backwards 
-compatibility considerations when making kernel changes that depend on 
-firmware changes should be made when making kernel changes that depend 
-on dts changes.
+> Kumar Gala wrote:
+>
+>> I disagree.  If you update your kernel you should update your device
+>> tree (thus we have .dts in the kernel tree and not somewhere else).
+>
+> Is this a new policy?  I was under the impression that supporting  
+> older
+> device trees, if not too inconvenient, is desirable.  I've nack'd
+> patches before that broke backwards compatibility unnecessarily.
 
--Scott
+The specific issue I'm talking about is the addition of new nodes that  
+might break old device trees.  I have no desire to try and say that I  
+can't add new nodes and code related to them just because old device  
+tree's didn't have them.
+
+- k
