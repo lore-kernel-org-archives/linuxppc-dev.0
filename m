@@ -1,24 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9244FDDFC8
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 07:41:53 +1000 (EST)
-Message-Id: <DC91BA72-AF10-41DD-B610-EDEFD106A811@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <49EF8D42.7010104@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: removing get_immrbase()??
-Date: Wed, 22 Apr 2009 16:39:46 -0500
-References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
-	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
-	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8D42.7010104@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 0BD41DE052
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 07:44:42 +1000 (EST)
+Message-ID: <49EF8FC5.7080602@harris.com>
+Date: Wed, 22 Apr 2009 17:44:37 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [Question] PPC440EPx SMII ethernet
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,22 +18,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+We have built a new board based on the PPC440EPx.  We are
+using an SMII-mode phy for the ethernet.
 
-On Apr 22, 2009, at 4:33 PM, Timur Tabi wrote:
+The .dts file started as the one for Sequoia, and I have
+changed the phy specifier to phy-mode = "smii" - I've also
+removed the has-mdio property from RGMII0.  The ethernet
+is working in U-Boot, but when Linux tries to start the
+emac I get:
 
-> Kumar Gala wrote:
->
->> I disagree.  If you update your kernel you should update your device
->> tree (thus we have .dts in the kernel tree and not somewhere else).
->
-> Is this a new policy?  I was under the impression that supporting  
-> older
-> device trees, if not too inconvenient, is desirable.  I've nack'd
-> patches before that broke backwards compatibility unnecessarily.
+PPC 4xx OCP EMAC driver, version 3.54
+MAL v2 /plb/mcmal, 2 TX channels, 2 RX channels
+ZMII /plb/opb/emac-zmii@ef600d00 initialized
+RGMII /plb/opb/emac-rgmii@ef601000 initialized without MDIO support
+/plb/opb/emac-zmii@ef600d00: bridge in SMII mode
+/plb/opb/emac-rgmii@ef601000: unsupported settings !
+/plb/opb/emac-rgmii@ef601000: unsupported settings !
 
-The specific issue I'm talking about is the addition of new nodes that  
-might break old device trees.  I have no desire to try and say that I  
-can't add new nodes and code related to them just because old device  
-tree's didn't have them.
+and the ethernet is not functional.  I don't see any
+example .dts files for smii mode.  If anyone can tell me
+what the .dts settings should be for this configuration,
+I'd appreciate it.
 
-- k
+The kernel version is 2.6.28.7 - I know that is a bit old
+now, but hopefully I can still make progress with it.
+
+Here is the whole .dts section for reference:
+
+	ZMII0: emac-zmii@ef600d00 {
+		compatible = "ibm,zmii-440epx", "ibm,zmii";
+		reg = <0xef600d00 0x0000000c>;
+	};
+
+	RGMII0: emac-rgmii@ef601000 {
+		compatible = "ibm,rgmii-440epx", "ibm,rgmii";
+		reg = <0xef601000 0x00000008>;
+		/* has-mdio; */
+	};
+
+	EMAC0: ethernet@ef600e00 {
+		device_type = "network";
+		compatible = "ibm,emac-440epx", "ibm,emac4";
+		interrupt-parent = <&EMAC0>;
+		interrupts = <0x0 0x1>;
+		#interrupt-cells = <1>;
+		#address-cells = <0>;
+		#size-cells = <0>;
+		interrupt-map = </*Status*/ 0x0 &UIC0 0x18 0x4
+				/*Wake*/  0x1 &UIC1 0x1d 0x4>;
+		reg = <0xef600e00 0x00000074>;
+		local-mac-address = [000000000000];
+		mal-device = <&MAL0>;
+		mal-tx-channel = <0>;
+		mal-rx-channel = <0>;
+		cell-index = <0>;
+		max-frame-size = <9000>;
+		rx-fifo-size = <4096>;
+		tx-fifo-size = <2048>;
+		phy-mode = "smii";
+		phy-map = <0x00000000>;
+		zmii-device = <&ZMII0>;
+		zmii-channel = <0>;
+		rgmii-device = <&RGMII0>;
+		rgmii-channel = <0>;
+		has-inverted-stacr-oc;
+		has-new-stacr-staopc;
+	};
