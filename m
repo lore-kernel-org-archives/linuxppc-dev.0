@@ -1,23 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Wed, 22 Apr 2009 09:43:31 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [BUILD FAILURE 09/12] Next April 21 : PPC64 randconfig
-	[drivers/staging/comedi/drivers.o]
-In-Reply-To: <1240358910.6571.6.camel@localhost>
-Message-ID: <alpine.LRH.2.00.0904220942430.6852@vixen.sonytel.be>
-References: <1240340029.9110.142.camel@subratamodak.linux.ibm.com>
-	<1240358910.6571.6.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Cc: sachinp <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Greg KH <greg@kroah.com>, "David A. Schleef" <ds@schleef.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>, subrata@linux.vnet.ibm.com,
-	Alexander Beregalov <a.beregalov@gmail.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 6CA1EDDF77
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 17:47:02 +1000 (EST)
+Date: Wed, 22 Apr 2009 00:46:53 -0700 (PDT)
+Message-Id: <20090422.004653.250792561.davem@davemloft.net>
+To: leoli@freescale.com
+Subject: Re: [PATCH] [net, 83xx] ucc_geth.c: Fix upsmr setting in RMII mode
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <2a27d3730904210351s870f015gb896a4b874b3024b@mail.gmail.com>
+References: <49ED859B.30904@denx.de>
+	<2a27d3730904210351s870f015gb896a4b874b3024b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: gridish@freescale.com, netdev@vger.kernel.org, hs@denx.de,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,53 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 22 Apr 2009, Michael Ellerman wrote:
-> On Wed, 2009-04-22 at 00:23 +0530, Subrata Modak wrote:
-> > Reported this error on 14th April:
-> > http://lkml.org/lkml/2009/4/14/488,
-> > 
-> > CC [M]  drivers/staging/comedi/drivers.o 
-> > drivers/staging/comedi/drivers.c: In function ‘comedi_buf_alloc’:
-> > drivers/staging/comedi/drivers.c:496: error: ‘PAGE_KERNEL_NOCACHE’
-> > undeclared (first use in this function)
-> > drivers/staging/comedi/drivers.c:496: error: (Each undeclared identifier
-> > is reported only once
-> > drivers/staging/comedi/drivers.c:496: error: for each function it
-> > appears in.)
-> > make[3]: *** [drivers/staging/comedi/drivers.o] Error 1
-> > make[2]: *** [drivers/staging/comedi] Error 2
-> > make[1]: *** [drivers/staging] Error 2
-> > make: *** [drivers] Error 2
+From: Li Yang <leoli@freescale.com>
+Date: Tue, 21 Apr 2009 18:51:11 +0800
+
+> On Tue, Apr 21, 2009 at 4:36 PM, Heiko Schocher <hs@denx.de> wrote:
+>> If using the UCC on a MPC8360 in RMII mode, don;t set
+>> UCC_GETH_UPSMR_RPM bit in the upsmr register.
+>>
+>> Signed-off-by: Heiko Schocher <hs@denx.de>
 > 
-> Subrata, unless someone says otherwise, please do not send randconfig
-> failures for drivers in staging - those drivers have bigger problems
-> than randconfig failures.
+> Acked-by: Li Yang <leoli@freescale.com>
 
-Indeed, in particular this one http://lkml.org/lkml/2009/3/9/349.
-
-> To avoid them, do this:
-> 
-> # make randconfig
-> # sed -i -e 's/^\(CONFIG_STAGING\)=y/# \1 is not set/' .config
-                                       ^^^^^^^^^^^^^^^
-Recently I discovered that `n' actually works, too!
-
-> # make oldconfig
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+Applied, thanks.
