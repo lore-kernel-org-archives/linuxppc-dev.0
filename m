@@ -1,17 +1,18 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id 73FECDE14D
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 00:24:45 +1000 (EST)
-Message-ID: <49F07A15.9010006@mlbassoc.com>
-Date: Thu, 23 Apr 2009 08:24:21 -0600
-From: Gary Thomas <gary@mlbassoc.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: PCI changes 2.6.26 => 2.6.28
-References: <49EDF333.4000200@mlbassoc.com>	<49EE2CD8.7010700@mlbassoc.com>	<29EEEBDE-B87C-4073-9967-E1DA7EFB0B0B@kernel.crashing.org>	<49EE306D.3000401@mlbassoc.com>	<49EE4729.3000100@mlbassoc.com>	<612CEF05-3EFB-4947-B5FC-B35C1F9568D7@kernel.crashing.org>	<46B035C0-624F-41E4-BFDD-C16479CF8FC8@kernel.crashing.org>	<49EE5021.4020703@mlbassoc.com>	<306F293D-44CD-4238-ADA9-BB7436C7004C@kernel.crashing.org>	<49EE5A80.4030209@mlbassoc.com>
-	<B869D8DC-2A3B-4B53-8BFD-15D403CE20D4@kernel.crashing.org>
-In-Reply-To: <B869D8DC-2A3B-4B53-8BFD-15D403CE20D4@kernel.crashing.org>
-Content-Type: multipart/mixed; boundary="------------000604020806060603060703"
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 56A9EDE152
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 00:25:39 +1000 (EST)
+Message-Id: <6B76A454-649E-408C-A8DF-AAEEE6011929@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: hs@denx.de
+In-Reply-To: <49F00605.1080605@denx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] 83xx: add support for the kmeter1 board.
+Date: Thu, 23 Apr 2009 09:25:13 -0500
+References: <49F00605.1080605@denx.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,201 +23,622 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------000604020806060603060703
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+>
+> diff --git a/arch/powerpc/boot/dts/kmeter1.dts b/arch/powerpc/boot/ 
+> dts/kmeter1.dts
+> new file mode 100644
+> index 0000000..4f343ca
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/kmeter1.dts
+> @@ -0,0 +1,518 @@
+> +/*
+> + * Keymile KMETER1 Device Tree Source
+> + *
+> + * 2008 DENX Software Engineering GmbH
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + */
+> +
+> +
+> +/*
+> +/memreserve/	00000000 1000000;
+> +*/
 
-Kumar Gala wrote:
-> 
-> On Apr 21, 2009, at 6:45 PM, Gary Thomas wrote:
-> 
->> Kumar Gala wrote:
->>>
->>> On Apr 21, 2009, at 6:00 PM, Gary Thomas wrote:
->>>
->>>>
->>>> I found the difference - in 2.6.28 the inbound/outbound windows
->>>> don't seem to be set up at all.  In 2.6.26, the function
->>>> 'fsl_add_bridge'
->>>> was common among architectures and ended up calling 'setup_pci_atmu'
->>>> which created those mappings.  In 2.6.28, the 83xx PCI setup code
->>>> has been refactored.  It uses 'mpc83xx_add_bridge' instead of
->>>> 'fsl_add_bridge' and 'setup_pci_atmu' is not called at all :-(
->>>>
->>>> I'm sure this is the problem.
->>>
->>> Looking at a diff between 2.6.26 and .28 I don't see the 83xx pci code
->>> calling setup_pci_atmu().
->>
->> It did not directly; it called 'fsl_add_bridge' which in turn called
->> 'setup_pci_atmu'
-> 
-> Don't ever see 83xx boards calling fsl_add_bridge -- that is 85xx/86xx
-> only in 83xx.
+is this needed for something?
 
-Sorry, you're correct.  I got lost looking through the code :-(
-No matter, none of that code seems to be relevant to the change
-in behaviour.
+>
+> +
+> +/dts-v1/;
+> +
+> +/ {
+> +	model = "KMETER1";
+> +	compatible = "keymile,KMETER1";
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +
+> +	aliases {
+> +		ethernet0 = &enet_piggy2;
+> +		ethernet1 = &enet_estar1;
+> +		ethernet2 = &enet_estar2;
+> +		ethernet3 = &enet_eth1;
+> +		ethernet4 = &enet_eth2;
+> +		ethernet5 = &enet_eth3;
+> +		ethernet6 = &enet_eth4;
+> +		serial0 = &serial0;
+> +	};
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,8360@0 {
+> +			device_type = "cpu";
+> +			reg = <0x0>;
+> +			d-cache-line-size = <32>;	// 32 bytes
+> +			i-cache-line-size = <32>;	// 32 bytes
+> +			d-cache-size = <32768>;		// L1, 32K
+> +			i-cache-size = <32768>;		// L1, 32K
+> +			timebase-frequency = <66000000>;
+> +			bus-frequency = <264000000>;
+> +			clock-frequency = <528000000>;
 
->> I modified the 2.6.28 driver to also call this function.  Now the
->> inbound/outbound windows are set up, but the bridge still has
->> no allocations, so the problem remains.
->>
->> I need to move on; I may just live with sliding the PCI space
->> up for now (doesn't really hurt anything, just seems like a hack)
-> 
-> It is and you are glossing over a real bug.
+is the board running at a fixed frequency that isn't possible to change?
 
-I have found the culprit - in arch/powerpc/kernel/pci_32.c
+> +		};
+> +	};
+> +
+> +	memory {
+> +		device_type = "memory";
+> +		reg = <0x00000000 0x10000000>;
+> +	};
 
-static void
-fixup_hide_host_resource_fsl(struct pci_dev *dev)
-{
-	int i, class = dev->class >> 8;
+does u-boot not set this?  Also is the amount of memory fixed?
 
-#if 0
-	if ((class == PCI_CLASS_PROCESSOR_POWERPC ||
-	     class == PCI_CLASS_BRIDGE_OTHER) &&
-#else
-        if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
-#endif
-		(dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
-		(dev->bus->parent == NULL)) {
-		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-			dev->resource[i].start = 0;
-			dev->resource[i].end = 0;
-			dev->resource[i].flags = 0;
-		}
-	}
-}
-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+> +
+> +	soc8360@e0000000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "soc";
+> +		compatible = "simple-bus";
+> +		ranges = <0x0 0xe0000000 0x00100000>;
+> +		reg = <0xe0000000 0x00000200>;
+> +		bus-frequency = <264000000>;
+> +
+> +		i2c@3000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			cell-index = <0>;
+> +			compatible = "fsl-i2c";
+> +			reg = <0x3000 0x100>;
+> +			interrupts = <14 0x8>;
+> +			interrupt-parent = <&ipic>;
+> +			dfsrr;
+> +		};
+> +
+> +		serial0: serial@4500 {
+> +			cell-index = <0>;
+> +			device_type = "serial";
+> +			compatible = "ns16550";
+> +			reg = <0x4500 0x100>;
+> +			clock-frequency = <264000000>;
+> +			interrupts = <9 0x8>;
+> +			interrupt-parent = <&ipic>;
+> +		};
+> +
+> +		dma@82a8 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "fsl,mpc8360-dma", "fsl,elo-dma";
+> +			reg = <0x82a8 4>;
+> +			ranges = <0 0x8100 0x1a8>;
+> +			interrupt-parent = <&ipic>;
+> +			interrupts = <71 8>;
+> +			cell-index = <0>;
+> +			dma-channel@0 {
+> +				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+> +				reg = <0 0x80>;
+> +				interrupt-parent = <&ipic>;
+> +				interrupts = <71 8>;
+> +			};
+> +			dma-channel@80 {
+> +				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+> +				reg = <0x80 0x80>;
+> +				interrupt-parent = <&ipic>;
+> +				interrupts = <71 8>;
+> +			};
+> +			dma-channel@100 {
+> +				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+> +				reg = <0x100 0x80>;
+> +				interrupt-parent = <&ipic>;
+> +				interrupts = <71 8>;
+> +			};
+> +			dma-channel@180 {
+> +				compatible = "fsl,mpc8360-dma-channel", "fsl,elo-dma-channel";
+> +				reg = <0x180 0x28>;
+> +				interrupt-parent = <&ipic>;
+> +				interrupts = <71 8>;
+> +			};
+> +		};
+> +
+> +		ipic: pic@700 {
+> +			#address-cells = <0>;
+> +			#interrupt-cells = <2>;
+> +			compatible = "fsl,pq2pro-pic", "fsl,ipic";
+> +			interrupt-controller;
+> +			reg = <0x700 0x100>;
+> +			device_type = "ipic";
+> +		};
+> +
+> +		par_io@1400 {
+> +			reg = <0x1400 0x100>;
+> +			device_type = "par_io";
+> +			num-ports = <7>;
+> +
+> +			pio_ucc1: ucc_pin@00 {
+> +				pio-map = <
+> +					/* port pin dir open_drain assignment has_irq */
+> +					0   1  3  0  2  0	/* MDIO   */
+> +					0   2  1  0  1  0	/* MDC    */
+> +
+> +					0   3  1  0  1  0	/* TxD0   */
+> +					0   4  1  0  1  0	/* TxD1   */
+> +					0   5  1  0  1  0	/* TxD2   */
+> +					0   6  1  0  1  0	/* TxD3   */
+> +					0   9  2  0  1  0	/* RxD0   */
+> +					0  10  2  0  1  0	/* RxD1   */
+> +					0  11  2  0  1  0	/* RxD2   */
+> +					0  12  2  0  1  0	/* RxD3   */
+> +					0   7  1  0  1  0	/* TX_EN  */
+> +					0   8  1  0  1  0	/* TX_ER  */
+> +					0  15  2  0  1  0	/* RX_DV  */
+> +					0  16  2  0  1  0	/* RX_ER  */
+> +					0   0  2  0  1  0	/* RX_CLK */
+> +					2   9  1  0  3  0	/* GTX_CLK - CLK10 */
+> +					2   8  2  0  1  0	/* GTX125  - CLK9  */
+> +				>;
+> +			};
+> +
+> +			pio_ucc2: ucc_pin@01 {
+> +				pio-map = <
+> +					/* port pin dir open_drain assignment has_irq */
+> +					0   1  3  0  2  0	/* MDIO   */
+> +					0   2  1  0  1  0	/* MDC    */
+> +
+> +					0  17  1  0  1  0	/* TxD0   */
+> +					0  18  1  0  1  0	/* TxD1   */
+> +					0  19  1  0  1  0	/* TxD2   */
+> +					0  20  1  0  1  0	/* TxD3   */
+> +					0  23  2  0  1  0	/* RxD0   */
+> +					0  24  2  0  1  0	/* RxD1   */
+> +					0  25  2  0  1  0	/* RxD2   */
+> +					0  26  2  0  1  0	/* RxD3   */
+> +					0  21  1  0  1  0	/* TX_EN  */
+> +					0  22  1  0  1  0	/* TX_ER  */
+> +					0  29  2  0  1  0	/* RX_DV  */
+> +					0  30  2  0  1  0	/* RX_ER  */
+> +					0  31  2  0  1  0	/* RX_CLK */
+> +					2  2   1  0  2  0	/* GTX_CLK - CLK3  */
+> +					2  3   2  0  1  0	/* GTX125  - CLK4  */
+> +				>;
+> +			};
+> +
+> +			pio_ucc4: ucc_pin@03 {
+> +				pio-map = <
+> +					/* port pin dir open_drain assignment has_irq */
+> +					0   1  3  0  2  0	/* MDIO */
+> +					0   2  1  0  1  0	/* MDC  */
+> +
+> +					1  14  1  0  1  0	/* TxD0   (PB14, out, f1) */
+> +					1  15  1  0  1  0	/* TxD1   (PB15, out, f1) */
+> +					1  20  2  0  1  0	/* RxD0   (PB20, in,  f1) */
+> +					1  21  2  0  1  0	/* RxD1   (PB21, in,  f1) */
+> +					1  18  1  0  1  0	/* TX_EN  (PB18, out, f1) */
+> +					1  26  2  0  1  0	/* RX_DV  (PB26, in,  f1) */
+> +					1  27  2  0  1  0	/* RX_ER  (PB27, in,  f1) */
+> +
+> +					2  16  2  0  1  0	/* UCC4_RMII_CLK (CLK17) */
+> +				>;
+> +			};
+> +
+> +			pio_ucc5: ucc_pin@04 {
+> +				pio-map = <
+> +					/* port pin dir open_drain assignment has_irq */
+> +					0   1  3  0  2  0	/* MDIO */
+> +					0   2  1  0  1  0	/* MDC  */
+> +
+> +					3   0  1  0  1  0	/* TxD0  (PD0,  out, f1) */
+> +					3   1  1  0  1  0	/* TxD1  (PD1,  out, f1) */
+> +					3   6  2  0  1  0	/* RxD0  (PD6,   in, f1) */
+> +					3   7  2  0  1  0	/* RxD1  (PD7,   in, f1) */
+> +					3   4  1  0  1  0	/* TX_EN (PD4,  out, f1) */
+> +					3  12  2  0  1  0	/* RX_DV (PD12,  in, f1) */
+> +					3  13  2  0  1  0	/* RX_ER (PD13,  in, f1) */
+> +				>;
+> +			};
+> +
+> +			pio_ucc6: ucc_pin@05 {
+> +				pio-map = <
+> +					/* port pin dir open_drain assignment has_irq */
+> +					0   1  3  0  2  0	/* MDIO */
+> +					0   2  1  0  1  0	/* MDC  */
+> +
+> +					3  14  1  0  1  0	/* TxD0   (PD14, out, f1) */
+> +					3  15  1  0  1  0	/* TxD1   (PD15, out, f1) */
+> +					3  20  2  0  1  0	/* RxD0   (PD20, in,  f1) */
+> +					3  21  2  0  1  0	/* RxD1   (PD21, in,  f1) */
+> +					3  18  1  0  1  0	/* TX_EN  (PD18, out, f1) */
+> +					3  26  2  0  1  0	/* RX_DV  (PD26, in,  f1) */
+> +					3  27  2  0  1  0	/* RX_ER  (PD27, in,  f1) */
+> +				>;
+> +			};
+> +
+> +			pio_ucc7: ucc_pin@06 {
+> +				pio-map = <
+> +					/* port pin dir open_drain assignment has_irq */
+> +					0   1  3  0  2  0	/* MDIO */
+> +					0   2  1  0  1  0	/* MDC  */
+> +
+> +					4   0  1  0  1  0	/* TxD0   (PE0,  out, f1) */
+> +					4   1  1  0  1  0	/* TxD1   (PE1,  out, f1) */
+> +					4   6  2  0  1  0	/* RxD0   (PE6,   in, f1) */
+> +					4   7  2  0  1  0	/* RxD1   (PE7,   in, f1) */
+> +					4   4  1  0  1  0	/* TX_EN  (PE4,  out, f1) */
+> +					4  12  2  0  1  0	/* RX_DV  (PE12,  in, f1) */
+> +					4  13  2  0  1  0	/* RX_ER  (PE13,  in, f1) */
+> +				>;
+> +			};
+> +
+> +			pio_ucc8: ucc_pin@07 {
+> +				pio-map = <
+> +					/* port pin dir open_drain assignment has_irq */
+> +					0   1  3  0  2  0	/* MDIO */
+> +					0   2  1  0  1  0	/* MDC  */
+> +
+> +					4  14  1  0  2  0	/* TxD0   (PE14, out, f2) */
+> +					4  15  1  0  1  0	/* TxD1   (PE15, out, f1) */
+> +					4  20  2  0  1  0	/* RxD0   (PE20, in,  f1) */
+> +					4  21  2  0  1  0	/* RxD1   (PE21, in,  f1) */
+> +					4  18  1  0  1  0	/* TX_EN  (PE18, out, f1) */
+> +					4  26  2  0  1  0	/* RX_DV  (PE26, in,  f1) */
+> +					4  27  2  0  1  0	/* RX_ER  (PE27, in,  f1) */
+> +
+> +					2  15  2  0  1  0	/* UCCx_RMII_CLK (CLK16) */
+> +				>;
+> +			};
+> +
+> +		};
+> +	};
+> +
+> +	qe@e0100000 {
 
-This function is now (the #if 0 case is in 2.6.28) tossing out
-the memory resources used by the PCI bridge itself.  This makes
-everything fall over, at least on my 834x platform.
+why isn't this under the SOC?
 
-This change was applied 2008-10-08, but it seems incorrect on the 834x.
+>
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "qe";
+> +		compatible = "fsl,qe";
+> +		ranges = <0x0 0xe0100000 0x00100000>;
+> +		reg = <0xe0100000 0x480>;
+> +		brg-frequency = <0>;
+> +		bus-frequency = <396000000>;
+> +
+> +		muram@10000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "fsl,qe-muram", "fsl,cpm-muram";
+> +			ranges = <0x0 0x00010000 0x0000c000>;
+> +
+> +			data-only@0 {
+> +				compatible = "fsl,qe-muram-data",
+> +					     "fsl,cpm-muram-data";
+> +				reg = <0x0 0xc000>;
+> +			};
+> +		};
+> +
+> +		/* ESTAR-1 (UCC1, MDIO 0x10, RGMII) */
+> +		enet_estar1: ucc@2000 {
+> +			device_type = "network";
+> +			compatible = "ucc_geth";
+> +			cell-index = <1>;
+> +			reg = <0x2000 0x200>;
+> +			interrupts = <32>;
+> +			interrupt-parent = <&qeic>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			rx-clock-name = "none";
+> +			tx-clock-name = "clk9";
+> +			phy-handle = <&phy_estar1>;
+> +			phy-connection-type = "rgmii-id";
+> +			pio-handle = <&pio_ucc1>;
+> +		};
+> +
+> +		/* ESTAR-2 (UCC2, MDIO 0x11, RGMII) */
+> +		enet_estar2: ucc@3000 {
+> +			device_type = "network";
+> +			compatible = "ucc_geth";
+> +			cell-index = <2>;
+> +			reg = <0x3000 0x200>;
+> +			interrupts = <33>;
+> +			interrupt-parent = <&qeic>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			rx-clock-name = "none";
+> +			tx-clock-name = "clk4";
+> +			phy-handle = <&phy_estar2>;
+> +			phy-connection-type = "rgmii-id";
+> +			pio-handle = <&pio_ucc2>;
+> +		};
+> +
+> +		/* Piggy2 (UCC4, MDIO 0x00, RMII) */
+> +		enet_piggy2: ucc@3200 {
+> +			device_type = "network";
+> +			compatible = "ucc_geth";
+> +			cell-index = <4>;
+> +			reg = <0x3200 0x200>;
+> +			interrupts = <35>;
+> +			interrupt-parent = <&qeic>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			rx-clock-name = "none";
+> +			tx-clock-name = "clk17";
+> +			phy-handle = <&phy_piggy2>;
+> +			phy-connection-type = "rmii";
+> +			pio-handle = <&pio_ucc4>;
+> +		};
+> +
+> +		/* Eth-1 (UCC5, MDIO 0x08, RMII) */
+> +		enet_eth1: ucc@2400 {
+> +			device_type = "network";
+> +			compatible = "ucc_geth";
+> +			cell-index = <5>;
+> +			reg = <0x2400 0x200>;
+> +			interrupts = <40>;
+> +			interrupt-parent = <&qeic>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			rx-clock-name = "none";
+> +			tx-clock-name = "clk16";
+> +			phy-handle = <&phy_eth1>;
+> +			phy-connection-type = "rmii";
+> +			pio-handle = <&pio_ucc5>;
+> +		};
+> +
+> +		/* Eth-2 (UCC6, MDIO 0x09, RMII) */
+> +		enet_eth2: ucc@3400 {
+> +			device_type = "network";
+> +			compatible = "ucc_geth";
+> +			cell-index = <6>;
+> +			reg = <0x3400 0x200>;
+> +			interrupts = <41>;
+> +			interrupt-parent = <&qeic>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			rx-clock-name = "none";
+> +			tx-clock-name = "clk16";
+> +			phy-handle = <&phy_eth2>;
+> +			phy-connection-type = "rmii";
+> +			pio-handle = <&pio_ucc6>;
+> +		};
+> +
+> +		/* Eth-3 (UCC7, MDIO 0x0a, RMII) */
+> +		enet_eth3: ucc@2600 {
+> +			device_type = "network";
+> +			compatible = "ucc_geth";
+> +			cell-index = <7>;
+> +			reg = <0x2600 0x200>;
+> +			interrupts = <42>;
+> +			interrupt-parent = <&qeic>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			rx-clock-name = "none";
+> +			tx-clock-name = "clk16";
+> +			phy-handle = <&phy_eth3>;
+> +			phy-connection-type = "rmii";
+> +			pio-handle = <&pio_ucc7>;
+> +		};
+> +
+> +		/* Eth-4 (UCC8, MDIO 0x0b, RMII) */
+> +		enet_eth4: ucc@3600 {
+> +			device_type = "network";
+> +			compatible = "ucc_geth";
+> +			cell-index = <8>;
+> +			reg = <0x3600 0x200>;
+> +			interrupts = <43>;
+> +			interrupt-parent = <&qeic>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			rx-clock-name = "none";
+> +			tx-clock-name = "clk16";
+> +			phy-handle = <&phy_eth4>;
+> +			phy-connection-type = "rmii";
+> +			pio-handle = <&pio_ucc8>;
+> +		};
+> +
+> +		mdio@3320 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0x3320 0x18>;
+> +			compatible = "fsl,ucc-mdio";
+> +
+> +			/* Piggy2 (UCC4, MDIO 0x00, RMII) */
+> +			phy_piggy2: ethernet-phy@00 {
+> +				reg = <0x0>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +
+> +			/* Eth-1 (UCC5, MDIO 0x08, RMII) */
+> +			phy_eth1: ethernet-phy@08 {
+> +				reg = <0x08>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +
+> +			/* Eth-2 (UCC6, MDIO 0x09, RMII) */
+> +			phy_eth2: ethernet-phy@09 {
+> +				reg = <0x09>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +
+> +			/* Eth-3 (UCC7, MDIO 0x0a, RMII) */
+> +			phy_eth3: ethernet-phy@0a {
+> +				reg = <0x0a>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +
+> +			/* Eth-4 (UCC8, MDIO 0x0b, RMII) */
+> +			phy_eth4: ethernet-phy@0b {
+> +				reg = <0x0b>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +
+> +			/* ESTAR-1 (UCC1, MDIO 0x10, RGMII) */
+> +			phy_estar1: ethernet-phy@10 {
+> +				interrupt-parent = <&ipic>;
+> +				interrupts = <17 0x8>;
+> +				reg = <0x10>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +
+> +			/* ESTAR-2 (UCC2, MDIO 0x11, RGMII) */
+> +			phy_estar2: ethernet-phy@11 {
+> +				interrupt-parent = <&ipic>;
+> +				interrupts = <18 0x8>;
+> +				reg = <0x11>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +		};
+> +
+> +		qeic: interrupt-controller@80 {
+> +			interrupt-controller;
+> +			compatible = "fsl,qe-ic";
+> +			#address-cells = <0>;
+> +			#interrupt-cells = <1>;
+> +			reg = <0x80 0x80>;
+> +			big-endian;
 
-> Are you using u-boot to boot?  If so is the board port public?
+seems unnecessary .. the qe is only big-endian.
 
-My systems use RedBoot (I'm the original author of RedBoot, so one would
-expect that).  At this moment, the code isn't public, sorry.
+> +			interrupts = <32 8 33 8>;
+> +			interrupt-parent = <&ipic>;
+> +		};
+> +	};
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
 
---------------000604020806060603060703
-Content-Type: message/rfc822;
- name="Attached Message"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="Attached Message"
+> diff --git a/arch/powerpc/platforms/83xx/kmeter1.c b/arch/powerpc/ 
+> platforms/83xx/kmeter1.c
+> new file mode 100644
+> index 0000000..99cf5c6
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/83xx/kmeter1.c
+> @@ -0,0 +1,170 @@
+> +/*
+> + * Copyright 2008 DENX Software Engineering GmbH
+> + * Author: Heiko Schocher <hs@denx.de>
+> + *
+> + * Description:
+> + * Keymile KMETER1 board specific routines.
+> + *
+> + * This program is free software; you can redistribute it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/stddef.h>
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/errno.h>
+> +#include <linux/reboot.h>
+> +#include <linux/pci.h>
+> +#include <linux/kdev_t.h>
+> +#include <linux/major.h>
+> +#include <linux/console.h>
+> +#include <linux/delay.h>
+> +#include <linux/seq_file.h>
+> +#include <linux/root_dev.h>
+> +#include <linux/initrd.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/of_device.h>
+> +
+> +#include <asm/system.h>
+> +#include <asm/atomic.h>
+> +#include <asm/time.h>
+> +#include <asm/io.h>
+> +#include <asm/machdep.h>
+> +#include <asm/ipic.h>
+> +#include <asm/irq.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <sysdev/fsl_soc.h>
+> +#include <sysdev/fsl_pci.h>
+> +#include <asm/qe.h>
+> +#include <asm/qe_ic.h>
+> +
+> +#include "mpc83xx.h"
+> +
+> +/*  
+> ************************************************************************
+> + *
+> + * Setup the architecture
+> + *
+> + */
+> +static void __init kmeter1_setup_arch(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	if (ppc_md.progress)
+> +		ppc_md.progress("kmeter1_setup_arch()", 0);
+> +
+> +#ifdef CONFIG_PCI
+> +	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
+> +		mpc83xx_add_bridge(np);
+> +#endif
+> +
+> +#ifdef CONFIG_QUICC_ENGINE
+> +	qe_reset();
+> +
+> +	np = of_find_node_by_name(NULL, "par_io");
+> +	if (np != NULL) {
+> +		par_io_init(np);
+> +		of_node_put(np);
+> +
+> +		for (np = NULL; (np = of_find_node_by_name(np, "ucc")) != NULL;)
+> +			par_io_of_config(np);
+> +	}
+> +
+> +	np = of_find_compatible_node(NULL, "network", "ucc_geth");
+> +	if (np != NULL) {
+> +		uint svid;
+> +
+> +		/* handle mpc8360ea rev.2.1 erratum 2: RGMII Timing */
+> +		svid = mfspr(SPRN_SVR);
+> +		if (svid == 0x80480021) {
+> +			void __iomem *immap;
+> +
+> +			immap = ioremap(get_immrbase() + 0x14a8, 8);
 
-Return-Path: <linuxppc-dev-bounces+gary=mlbassoc.com@ozlabs.org>
-X-Original-To: gary@mlbassoc.com
-Delivered-To: gary@mlbassoc.com
-Received: from localhost.localdomain [127.0.0.1]
-	by hermes.chez-thomas.org with POP3 (fetchmail-6.3.8)
-	for <gthomas@localhost> (single-drop); Tue, 07 Oct 2008 13:02:01 -0600 (MDT)
-Received: by mail.chez-thomas.org (Postfix, from userid 999)
-	id B4A9F3B5264B; Tue,  7 Oct 2008 13:01:30 -0600 (MDT)
-X-Spam-Checker-Version: SpamAssassin 3.2.5 (2008-06-10) on
-	hermes.chez-thomas.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=BAYES_00 autolearn=ham
-	version=3.2.5
-Received: from ozlabs.org (ozlabs.org [203.10.76.45])
-	by mail.chez-thomas.org (Postfix) with ESMTP id EFC1C3B52624
-	for <gary@mlbassoc.com>; Tue,  7 Oct 2008 13:01:29 -0600 (MDT)
-Received: from ozlabs.org (localhost [127.0.0.1])
-	by ozlabs.org (Postfix) with ESMTP id 2F81FDE342
-	for <gary@mlbassoc.com>; Wed,  8 Oct 2008 06:01:23 +1100 (EST)
-X-Original-To: linuxppc-dev@ozlabs.org
-Delivered-To: linuxppc-dev@ozlabs.org
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B1139DE07C
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 06:01:08 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m97J0cRZ004505
-	for <linuxppc-dev@ozlabs.org>; Tue, 7 Oct 2008 12:00:41 -0700 (MST)
-Received: from localhost.localdomain (mvp-10-214-72-244.am.freescale.net
-	[10.214.72.244])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m97J0Lci020784;
-	Tue, 7 Oct 2008 14:00:23 -0500 (CDT)
-From: John Rigby <jrigby@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc: pci: 5121: Hide pci bridge.
-Date: Tue,  7 Oct 2008 13:00:20 -0600
-Message-Id: <1223406020-12278-4-git-send-email-jrigby@freescale.com>
-X-Mailer: git-send-email 1.5.6.2.255.gbed62
-In-Reply-To: <1223406020-12278-3-git-send-email-jrigby@freescale.com>
-References: <1223406020-12278-1-git-send-email-jrigby@freescale.com>
-	<1223406020-12278-2-git-send-email-jrigby@freescale.com>
-	<1223406020-12278-3-git-send-email-jrigby@freescale.com>
-Cc: John Rigby <jrigby@freescale.com>
-X-BeenThere: linuxppc-dev@ozlabs.org
-X-Mailman-Version: 2.1.11
-Precedence: list
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Sender: linuxppc-dev-bounces+gary=mlbassoc.com@ozlabs.org
-Errors-To: linuxppc-dev-bounces+gary=mlbassoc.com@ozlabs.org
+we should add a proper device node to cover whatever register space  
+this is.
 
-The class of the MPC5121 pci host bridge is PCI_CLASS_BRIDGE_OTHER
-while other freescale host bridges have class set to
-PCI_CLASS_PROCESSOR_POWERPC.
-
-This patch makes fixup_hide_host_resource_fsl match
-PCI_CLASS_BRIDGE_OTHER in addition to PCI_CLASS_PROCESSOR_POWERPC.
-
-Signed-off-by: John Rigby <jrigby@freescale.com>
----
- arch/powerpc/kernel/pci_32.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 174b77e..a848c63 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -54,11 +54,12 @@ LIST_HEAD(hose_list);
- static int pci_bus_count;
- 
- static void
--fixup_hide_host_resource_fsl(struct pci_dev* dev)
-+fixup_hide_host_resource_fsl(struct pci_dev *dev)
- {
- 	int i, class = dev->class >> 8;
- 
--	if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
-+	if ((class == PCI_CLASS_PROCESSOR_POWERPC ||
-+	     class == PCI_CLASS_BRIDGE_OTHER) &&
- 		(dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
- 		(dev->bus->parent == NULL)) {
- 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--- 
-1.5.6.2.255.gbed62
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
---------------000604020806060603060703--
+>
+> +
+> +			/*
+> +			 * IMMR + 0x14A8[4:5] = 11 (clk delay for UCC 2)
+> +			 * IMMR + 0x14A8[18:19] = 11 (clk delay for UCC 1)
+> +			 */
+> +			setbits32(immap, 0x0c003000);
+> +
+> +			/*
+> +			 * IMMR + 0x14AC[20:27] = 10101010
+> +			 * (data delay for both UCC's)
+> +			 */
+> +			clrsetbits_be32(immap + 4, 0xff0, 0xaa0);
+> +			iounmap(immap);
+> +		}
+> +		of_node_put(np);
+> +	}
+> +#endif				/* CONFIG_QUICC_ENGINE */
+> +}
+> +
