@@ -1,12 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <676ebae6738ddcd5c36971a0e420ebbd3391ac8c.1240450296.git.michael@ellerman.id.au>
+Message-Id: <1172bff338316019112e982bafe61e862d1847a2.1240450296.git.michael@ellerman.id.au>
 In-Reply-To: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
 References: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 2/6] powerpc: Move stack overflow check into a separate
-	function
-Date: Thu, 23 Apr 2009 11:31:37 +1000 (EST)
+Subject: [PATCH 3/6] powerpc: Move get_irq() comment into header
+Date: Thu, 23 Apr 2009 11:31:38 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,61 +15,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Makes do_IRQ() shorter and clearer.
+The guts of do_IRQ() isn't really the right place to be documenting
+the ppc_md.get_irq() interface. So move the comment into machdep.h
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/irq.c |   31 +++++++++++++++++--------------
- 1 files changed, 17 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/machdep.h |    4 ++++
+ arch/powerpc/kernel/irq.c          |    7 -------
+ 2 files changed, 4 insertions(+), 7 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 0efdb1d..11d1fc3 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -110,6 +110,10 @@ struct machdep_calls {
+ 	void		(*show_percpuinfo)(struct seq_file *m, int i);
+ 
+ 	void		(*init_IRQ)(void);
++
++	/* Return an irq, or NO_IRQ to indicate there are none pending.
++	 * If for some reason there is no irq, but the interrupt
++	 * shouldn't be counted as spurious, return NO_IRQ_IGNORE. */
+ 	unsigned int	(*get_irq)(void);
+ #ifdef CONFIG_KEXEC
+ 	void		(*kexec_cpu_down)(int crash_shutdown, int secondary);
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index bc08827..f725610 100644
+index f725610..b8f09bd 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -301,6 +301,22 @@ static inline void handle_one_irq(unsigned int irq)
- }
- #endif
+@@ -326,13 +326,6 @@ void do_IRQ(struct pt_regs *regs)
  
-+static inline void check_stack_overflow(void)
-+{
-+#ifdef CONFIG_DEBUG_STACKOVERFLOW
-+	long sp;
-+
-+	sp = __get_SP() & (THREAD_SIZE-1);
-+
-+	/* check for stack overflow: is there less than 2KB free? */
-+	if (unlikely(sp < (sizeof(struct thread_info) + 2048))) {
-+		printk("do_IRQ: stack overflow: %ld\n",
-+			sp - sizeof(struct thread_info));
-+		dump_stack();
-+	}
-+#endif
-+}
-+
- void do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
-@@ -308,20 +324,7 @@ void do_IRQ(struct pt_regs *regs)
+ 	check_stack_overflow();
  
- 	irq_enter();
+-	/*
+-	 * Every platform is required to implement ppc_md.get_irq.
+-	 * This function will either return an irq number or NO_IRQ to
+-	 * indicate there are no more pending.
+-	 * The value NO_IRQ_IGNORE is for buggy hardware and means that this
+-	 * IRQ has already been handled. -- Tom
+-	 */
+ 	irq = ppc_md.get_irq();
  
--#ifdef CONFIG_DEBUG_STACKOVERFLOW
--	/* Debugging check for stack overflow: is there less than 2KB free? */
--	{
--		long sp;
--
--		sp = __get_SP() & (THREAD_SIZE-1);
--
--		if (unlikely(sp < (sizeof(struct thread_info) + 2048))) {
--			printk("do_IRQ: stack overflow: %ld\n",
--				sp - sizeof(struct thread_info));
--			dump_stack();
--		}
--	}
--#endif
-+	check_stack_overflow();
- 
- 	/*
- 	 * Every platform is required to implement ppc_md.get_irq.
+ 	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE)
 -- 
 1.6.2.1
