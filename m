@@ -1,14 +1,30 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 5D386DDE98
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:36:16 +1000 (EST)
-Message-ID: <49F06ECC.7030904@harris.com>
-Date: Thu, 23 Apr 2009 09:36:12 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5290CDE010
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:46:48 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3NDgweb024101
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 09:42:58 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3NDkgCD182110
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 09:46:42 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3NDisYJ023925
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 09:44:55 -0400
+Date: Thu, 23 Apr 2009 09:45:38 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: [PATCH] PPC440EPx SDRAM width
+Message-ID: <20090423134538.GB3825@zod.rchland.ibm.com>
+References: <49F06ECC.7030904@harris.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] PPC440EPx SDRAM width
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49F06ECC.7030904@harris.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, sr@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,45 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is an error in the way ibm4xx_denali_fixup_memsize calculates
-memory size.  When testing the DDR_REDUC bit, the polarity is
-backwards.  A "1" implies 32-bit wide memory while a "0" implies
-64-bit wide memory.
+On Thu, Apr 23, 2009 at 09:36:12AM -0400, Steven A. Falco wrote:
+>There is an error in the way ibm4xx_denali_fixup_memsize calculates
+>memory size.  When testing the DDR_REDUC bit, the polarity is
+>backwards.  A "1" implies 32-bit wide memory while a "0" implies
+>64-bit wide memory.
+>
+>For a 32-bit wide system, this bug causes twice the memory to be
+>reported, leading to boot failure.
+>
+>Signed-off-by: Steven A. Falco <sfalco@harris.com>
 
-For a 32-bit wide system, this bug causes twice the memory to be
-reported, leading to boot failure.
+So we had a previous patch for this, and a very long discussion on what the
+right solution was.  Either we never came to a resolution, or I have just
+forgotten what it was.
 
-Signed-off-by: Steven A. Falco <sfalco@harris.com>
----
+Stefan, Valentine, do either of you remember?  IIRC, it wasn't something that
+effected Sequoia or Rainier, but it could (and obviously does) effect custom
+boards.  I don't remember what we agreed on for the proper fix.
 
-Here is a partial log showing what happens in the
-ibm4xx_denali_fixup_memsize routine.  This board has
-128 Mbytes of RAM in a 32-bit wide configuration, but
-the REDUC bug causes the path width to report as "8",
-and the memory size to be doubled to 255 MB.  Once I
-applied my patch, the memory correctly reported as
-127 MB.
-
-max_cs=00000002 max_col=0000000c max_row=0000000e
-cs 00000001
-path width 00000008
-row=0000000d col=0000000a bank=00000004
-ibm4xx_denali_fixup_memsize 10000000
-Memory <- <0x0 0x0 0xffff000> (255MB)
-
-diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-index 5c87843..3595c0a 100644
---- a/arch/powerpc/boot/4xx.c
-+++ b/arch/powerpc/boot/4xx.c
-@@ -193,9 +193,9 @@ void ibm4xx_denali_fixup_memsize(void)
-        val = SDRAM0_READ(DDR0_14);
-
-        if (DDR_GET_VAL(val, DDR_REDUC, DDR_REDUC_SHIFT))
--               dpath = 8; /* 64 bits */
--       else
-                dpath = 4; /* 32 bits */
-+       else
-+               dpath = 8; /* 64 bits */
-
-        /* get address pins (rows) */
-        val = SDRAM0_READ(DDR0_42);
+josh
