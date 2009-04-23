@@ -1,19 +1,26 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [93.92.193.118])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 69CE6DDF48
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 03:20:11 +1000 (EST)
-Date: Thu, 23 Apr 2009 21:12:22 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp4.netcologne.de (smtp4.netcologne.de [194.8.194.137])
+	by ozlabs.org (Postfix) with ESMTP id 8AEAFDE160
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 03:23:19 +1000 (EST)
+Received: from antares (xdsl-78-34-249-56.netcologne.de [78.34.249.56])
+	by smtp4.netcologne.de (Postfix) with ESMTP id 220CBDA594
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 19:23:17 +0200 (CEST)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id 0B491BA04B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 19:23:17 +0200 (CEST)
+Date: Thu, 23 Apr 2009 19:23:09 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: [OT] Lite5200B w/ nfs root hangs after some time
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PowerPC: 440EPx/GRx Sequoia/Rainier U-Boot incorrect
-	chipselect number workaround
-Message-ID: <20090423171222.GA32326@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49F09082.1040505@harris.com>
-Cc: sr@denx.de
+References: <1240422181.5492.0@antares>
+	<20090422181059.7510A83420E8@gemini.denx.de>
+	<fa686aa40904221705r24f8093bn74d336ddc2b8edaf@mail.gmail.com>
+In-Reply-To: <fa686aa40904221705r24f8093bn74d336ddc2b8edaf@mail.gmail.com>
+	(from grant.likely@secretlab.ca on Thu Apr 23 02:05:40 2009)
+Message-Id: <1240507396.5213.0@antares>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-AePmGIf6ErjLFNKIeoWh"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,89 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some U-Boot versions incorrectly set the number of chipselects to two
-for Sequoia/Rainier boards while they only have one chipselect hardwired.
-This patch adds a workaround for this, hardcoding the number of chipselects
-to one for sequioa/rainer board models and reading the actual value from
-the memory controller register DDR0_10 otherwise.
+--=-AePmGIf6ErjLFNKIeoWh
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/boot/4xx.c |   52 +++++++++++++++++++++++++++++++++++++----------
- 1 files changed, 41 insertions(+), 11 deletions(-)
+Am 23.04.09 02:05 schrieb(en) Grant Likely:
+>> http://patchwork.ozlabs.org/patch/24487/
 
-diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-index 5c87843..6196067 100644
---- a/arch/powerpc/boot/4xx.c
-+++ b/arch/powerpc/boot/4xx.c
-@@ -158,21 +158,33 @@ void ibm440spe_fixup_memsize(void)
- 
- #define DDR_GET_VAL(val, mask, shift)	(((val) >> (shift)) & (mask))
- 
--void ibm4xx_denali_fixup_memsize(void)
-+/*
-+ * Some U-Boot versions set the number of chipselects to two
-+ * for Sequoia/Rainier boards while they only have one chipselect
-+ * hardwired. Hardcode the number of chipselects to one 
-+ * for sequioa/rainer board models or read the actual value
-+ * from the memory controller register DDR0_10 otherwise.
-+ */
-+static inline u32 ibm4xx_denali_get_cs(void)
- {
--	u32 val, max_cs, max_col, max_row;
--	u32 cs, col, row, bank, dpath;
--	unsigned long memsize;
-+	void *devp;
-+	char model[64];
-+	u32 val, cs;
- 
--	val = SDRAM0_READ(DDR0_02);
--	if (!DDR_GET_VAL(val, DDR_START, DDR_START_SHIFT))
--		fatal("DDR controller is not initialized\n");
-+	devp = finddevice("/");
-+	if (!devp)
-+		goto read_cs;
- 
--	/* get maximum cs col and row values */
--	max_cs  = DDR_GET_VAL(val, DDR_MAX_CS_REG, DDR_MAX_CS_REG_SHIFT);
--	max_col = DDR_GET_VAL(val, DDR_MAX_COL_REG, DDR_MAX_COL_REG_SHIFT);
--	max_row = DDR_GET_VAL(val, DDR_MAX_ROW_REG, DDR_MAX_ROW_REG_SHIFT);
-+	if (getprop(devp, "model", model, sizeof(model)) <= 0)
-+		goto read_cs;
- 
-+	model[sizeof(model)-1] = 0;
-+
-+	if (!strcmp(model, "amcc,sequoia") ||
-+	    !strcmp(model, "amcc,rainier"))
-+		return 1;
-+
-+read_cs:
- 	/* get CS value */
- 	val = SDRAM0_READ(DDR0_10);
- 
-@@ -183,7 +195,25 @@ void ibm4xx_denali_fixup_memsize(void)
- 			cs++;
- 		val = val >> 1;
- 	}
-+	return cs;
-+}
-+
-+void ibm4xx_denali_fixup_memsize(void)
-+{
-+	u32 val, max_cs, max_col, max_row;
-+	u32 cs, col, row, bank, dpath;
-+	unsigned long memsize;
-+
-+	val = SDRAM0_READ(DDR0_02);
-+	if (!DDR_GET_VAL(val, DDR_START, DDR_START_SHIFT))
-+		fatal("DDR controller is not initialized\n");
-+
-+	/* get maximum cs col and row values */
-+	max_cs  = DDR_GET_VAL(val, DDR_MAX_CS_REG, DDR_MAX_CS_REG_SHIFT);
-+	max_col = DDR_GET_VAL(val, DDR_MAX_COL_REG, DDR_MAX_COL_REG_SHIFT);
-+	max_row = DDR_GET_VAL(val, DDR_MAX_ROW_REG, DDR_MAX_ROW_REG_SHIFT);
- 
-+	cs = ibm4xx_denali_get_cs();
- 	if (!cs)
- 		fatal("No memory installed\n");
- 	if (cs > max_cs)
+That patch is already included in 2.6.29...
+
+> No, that's not the problem in this case.  2.6.29 networking is broken =20
+> for a lot of platforms, not just mpc5200.  Use 2.6.29.1 instead.
+
+...and with 2.6.29.1, everything works flawlessly again!
+
+Thanks a lot for your help,
+Cheers, Albrecht.
+
+--=-AePmGIf6ErjLFNKIeoWh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQBJ8KQEn/9unNAn/9ERAiUBAJoC9LMxBntbdGmrJ1xsFjb6s9jxZwCgq/i8
+bwr4XDmfembh4hMVnq/DNg4=
+=2lF6
+-----END PGP SIGNATURE-----
+
+--=-AePmGIf6ErjLFNKIeoWh--
