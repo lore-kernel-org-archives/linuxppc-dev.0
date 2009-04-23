@@ -1,26 +1,11 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Thu, 23 Apr 2009 09:25:30 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH][BUILD FAILURE 03/12] Re: Next April 21 : PPC64 randconfig
-	[arch/powerpc/kernel/of_platform.o]
-In-Reply-To: <1240460606.6689.32.camel@localhost>
-Message-ID: <alpine.LRH.2.00.0904230924490.2313@vixen.sonytel.be>
-References: <20090422161648.9231.76057.sendpatchset@subratamodak.linux.ibm.com>
-	<1240447420.6689.13.camel@localhost> <49EFDD66.3060407@oracle.com>
-	<1240460606.6689.32.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-	Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-	Subrata Modak <subrata@linux.vnet.ibm.com>,
-	Alexander Beregalov <a.beregalov@gmail.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <cf386cee8d45e3aac21cfc8af3dc17c5335c516b.1240476177.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc/cell: Select PCI for IBM_CELL_BLADE AND CELLEB
+Date: Thu, 23 Apr 2009 18:43:03 +1000 (EST)
+Cc: Geert.Uytterhoeven@sonycom.com, randy.dunlap@oracle.com,
+	subrata@linux.vnet.ibm.com, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,68 +15,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 23 Apr 2009, Michael Ellerman wrote:
-> On Wed, 2009-04-22 at 20:15 -0700, Randy Dunlap wrote:
-> > Michael Ellerman wrote:
-> > > On Wed, 2009-04-22 at 21:46 +0530, Subrata Modak wrote:
-> > >> On Wed, 2009-04-22 at 00:20 +0530, Subrata Modak wrote:
-> > >>> Reported this earlier on 14th April 2009:
-> > >>> http://lkml.org/lkml/2009/4/14/480,
-> > >>>
-> > >>> Michael,
-> > >>>
-> > >>> Any fix in sight ?
-> > >>> http://lkml.org/lkml/2009/4/14/676,
-> > >>>
-> > >>> CC      arch/powerpc/kernel/of_platform.o
-> > >>> arch/powerpc/kernel/of_platform.c: In function 'of_pci_phb_probe':
-> > >>> arch/powerpc/kernel/of_platform.c:270: error: implicit declaration of
-> > >>> function 'pci_devs_phb_init_dynamic'
-> > >>> arch/powerpc/kernel/of_platform.c:279: error: implicit declaration of
-> > >>> function 'scan_phb'
-> > >>> arch/powerpc/kernel/of_platform.c:295: error: implicit declaration of
-> > >>> function 'pci_bus_add_devices'
-> > >>> make[1]: *** [arch/powerpc/kernel/of_platform.o] Error 1
-> > >>> make: *** [arch/powerpc/kernel] Error 2
-> > >>> ---
-> > > 
-> > > The problem above is as I said before, that the Cell Kconfig forces on
-> > > PPC_OF_PLATFORM_PCI even if PCI is disabled. I think the proper fix is
-> > > just to have CELL_NATIVE force on PCI.
-> > > 
-> > > I don't know how you got the other errors, both pci_dn.c and pci_dlpar.c
-> > > are only built if CONFIG_PCI is enabled, see the Makefiles.
-> > 
-> > 
-> > The Kconfig could be more like this:
-> > config PPC_CELL_NATIVE
-> > 	bool
-> > 	select PPC_CELL_COMMON
-> > -	select PPC_OF_PLATFORM_PCI
-> > +	select PPC_OF_PLATFORM_PCI if PCI
-> 
-> That might be better. Although I think in truth the Cell code won't
-> build without PCI, but we could fix that. As I said in my patch I think
-> we do want PCI on Cell native, so we should just select it too.
-> 
-> http://patchwork.ozlabs.org/patch/26338/
+Currently PPC_CELL_NATIVE selects PPC_OF_PLATFORM_PCI, but does not
+select PCI. This can lead to a config with the former and the latter
+disabled, which does not build.
 
-Last time this came up, it was mentioned that QPACE doesn't have PCI.
+To fix this PPC_CELL_NATIVE should select PCI. However, that would
+force PCI on for QPACE, which also selects PPC_CELL_NATIVE. So
+instead move the select of PPC_OF_PLATFORM_PCI and PCI under both
+IBM_CELL_BLADE and CELLEB.
 
-With kind regards,
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/cell/Kconfig |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+index 40e24c3..50f17bd 100644
+--- a/arch/powerpc/platforms/cell/Kconfig
++++ b/arch/powerpc/platforms/cell/Kconfig
+@@ -13,7 +13,6 @@ config PPC_CELL_COMMON
+ config PPC_CELL_NATIVE
+ 	bool
+ 	select PPC_CELL_COMMON
+-	select PPC_OF_PLATFORM_PCI
+ 	select MPIC
+ 	select IBM_NEW_EMAC_EMAC4
+ 	select IBM_NEW_EMAC_RGMII
+@@ -25,6 +24,8 @@ config PPC_IBM_CELL_BLADE
+ 	bool "IBM Cell Blade"
+ 	depends on PPC64 && PPC_BOOK3S
+ 	select PPC_CELL_NATIVE
++	select PPC_OF_PLATFORM_PCI
++	select PCI
+ 	select MMIO_NVRAM
+ 	select PPC_UDBG_16550
+ 	select UDBG_RTAS_CONSOLE
+@@ -33,6 +34,8 @@ config PPC_CELLEB
+ 	bool "Toshiba's Cell Reference Set 'Celleb' Architecture"
+ 	depends on PPC64 && PPC_BOOK3S
+ 	select PPC_CELL_NATIVE
++	select PPC_OF_PLATFORM_PCI
++	select PCI
+ 	select HAS_TXX9_SERIAL
+ 	select PPC_UDBG_BEAT
+ 	select USB_OHCI_BIG_ENDIAN_MMIO
+-- 
+1.6.2.1
