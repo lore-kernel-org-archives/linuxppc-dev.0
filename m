@@ -1,38 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5F7EEDE0AA
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 01:56:33 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n3NFuTsC025796
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 08:56:29 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n3NFuRIJ012719
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 10:56:28 -0500 (CDT)
-Date: Thu, 23 Apr 2009 10:56:27 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: removing get_immrbase()??
-Message-ID: <20090423155627.GB19717@ld0162-tx32.am.freescale.net>
-References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
-	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
-	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8E3A.4060304@freescale.com>
-	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
-	<20090423022610.GA19376@yookeroo.seuss>
-	<80CA86D4-3DA5-4C28-AE7A-C03CE5758774@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <80CA86D4-3DA5-4C28-AE7A-C03CE5758774@kernel.crashing.org>
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id BAC9EDE13D
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 02:00:11 +1000 (EST)
+Message-ID: <49F09082.1040505@harris.com>
+Date: Thu, 23 Apr 2009 12:00:02 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
+MIME-Version: 1.0
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH] PPC440EPx SDRAM width
+References: <49F06ECC.7030904@harris.com>	<20090423134538.GB3825@zod.rchland.ibm.com>	<200904231605.22912.sr@denx.de>
+	<49F07DF0.5020207@ru.mvista.com>	<20090423145915.GC3825@zod.rchland.ibm.com>
+	<49F08636.3080007@ru.mvista.com>
+In-Reply-To: <49F08636.3080007@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,14 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 22, 2009 at 10:36:36PM -0500, Kumar Gala wrote:
-> I think this all sounds great in theory but in reality the vast  
-> majority (I'd say over 80-90%) we are talking about embedded reference  
-> boards.
+Valentine Barshak wrote:
+> 
+> Josh Boyer wrote:
+>> On Thu, Apr 23, 2009 at 06:40:48PM +0400, Valentine Barshak wrote:
+>>> Stefan Roese wrote:
+>>>> On Thursday 23 April 2009, Josh Boyer wrote:
+>>>>> On Thu, Apr 23, 2009 at 09:36:12AM -0400, Steven A. Falco wrote:
+>>>>>> There is an error in the way ibm4xx_denali_fixup_memsize calculates
+>>>>>> memory size.  When testing the DDR_REDUC bit, the polarity is
+>>>>>> backwards.  A "1" implies 32-bit wide memory while a "0" implies
+>>>>>> 64-bit wide memory.
+>>>>>>
+>>>>>> For a 32-bit wide system, this bug causes twice the memory to be
+>>>>>> reported, leading to boot failure.
+>>>>>>
+>>>>>> Signed-off-by: Steven A. Falco <sfalco@harris.com>
+>>>>> So we had a previous patch for this, and a very long discussion on
+>>>>> what the
+>>>>> right solution was.  Either we never came to a resolution, or I
+>>>>> have just
+>>>>> forgotten what it was.
+>>>>>
+>>>>> Stefan, Valentine, do either of you remember?
+>>> The patch will break sequia/rainier since u-boot doesn't set the
+>>> number  of chipselects correctly for them. 
 
-I've handled plenty of support e-mails from people using custom 82xx
-boards with device trees that have already forked from what's in the
-kernel.  I'm not looking forward to another round of "why doesn't this
-work?" unless there's something significant to be gained from it.
+I had wondered about that.  I was surprised that sequoia uboot
+enabled both cs bits - now I know why it worked.  Two wrongs
+sometimes do make a right. :-)
 
--Scott
+>>> IIRC, the last
+>>> conversation didn't  come to any conclusion. We sort of wanted to fix
+>>> that regardless of  whether we had corrected u-boot or not.
+
+That would have saved me a bit of grief.  It will probably
+help someone else someday too.
+
+>>> Could we use a "model" property to distinguish between the "real" 
+>>> sequoia/rainier and other custom boards?
+>>> If yes, we could add a workaround the ibm4xx_denali_fixup_memsize to 
+>>> hardcode the chipselect number to 1 for sequoia/rainier.
+>>
+>> We could do that perhaps, yes.  In cases where the board has a newer
+>> U-Boot
+>> with the fix already, it shouldn't really cause any harm, correct?
+> 
+> Yes, that's correct.
+
+Not sure if you want me to do something further in my patch.
+Are you suggesting testing for model = "amcc,sequoia" and
+forcing cs to 1, or is there more to it?
+
+	Steve
+
+> 
+> Thanks,
+> Val
+> 
+>>
+>> josh
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
