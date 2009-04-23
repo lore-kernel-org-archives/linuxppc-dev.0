@@ -1,8 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
+Message-Id: <676ebae6738ddcd5c36971a0e420ebbd3391ac8c.1240450296.git.michael@ellerman.id.au>
+In-Reply-To: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
+References: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/6] powerpc: Move #ifdef'ed body of do_IRQ() into a separate
+Subject: [PATCH 2/6] powerpc: Move stack overflow check into a separate
 	function
 Date: Thu, 23 Apr 2009 11:31:37 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -14,132 +16,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rather than a giant ifdef in the body of do_IRQ(), including a
-dangling else, move the irq stack logic into a separate routine and
-do the ifdef there.
+Makes do_IRQ() shorter and clearer.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/irq.c |   96 ++++++++++++++++++++++++++-------------------
- 1 files changed, 56 insertions(+), 40 deletions(-)
+ arch/powerpc/kernel/irq.c |   31 +++++++++++++++++--------------
+ 1 files changed, 17 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 8c1a496..bc08827 100644
+index bc08827..f725610 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -248,13 +248,63 @@ void fixup_irqs(cpumask_t map)
+@@ -301,6 +301,22 @@ static inline void handle_one_irq(unsigned int irq)
  }
  #endif
  
-+#ifdef CONFIG_IRQSTACKS
-+static inline void handle_one_irq(unsigned int irq)
++static inline void check_stack_overflow(void)
 +{
-+	struct thread_info *curtp, *irqtp;
-+	unsigned long saved_sp_limit;
-+	struct irq_desc *desc;
-+	void *handler;
++#ifdef CONFIG_DEBUG_STACKOVERFLOW
++	long sp;
 +
-+	/* Switch to the irq stack to handle this */
-+	curtp = current_thread_info();
-+	irqtp = hardirq_ctx[smp_processor_id()];
++	sp = __get_SP() & (THREAD_SIZE-1);
 +
-+	if (curtp == irqtp) {
-+		/* We're already on the irq stack, just handle it */
-+		generic_handle_irq(irq);
-+		return;
++	/* check for stack overflow: is there less than 2KB free? */
++	if (unlikely(sp < (sizeof(struct thread_info) + 2048))) {
++		printk("do_IRQ: stack overflow: %ld\n",
++			sp - sizeof(struct thread_info));
++		dump_stack();
 +	}
-+
-+	desc = irq_desc + irq;
-+	saved_sp_limit = current->thread.ksp_limit;
-+
-+	handler = desc->handler;
-+	if (handler == NULL)
-+		handler = &__do_IRQ;
-+
-+	irqtp->task = curtp->task;
-+	irqtp->flags = 0;
-+
-+	/* Copy the softirq bits in preempt_count so that the
-+	 * softirq checks work in the hardirq context. */
-+	irqtp->preempt_count = (irqtp->preempt_count & ~SOFTIRQ_MASK) |
-+			       (curtp->preempt_count & SOFTIRQ_MASK);
-+
-+	current->thread.ksp_limit = (unsigned long)irqtp +
-+		_ALIGN_UP(sizeof(struct thread_info), 16);
-+
-+	call_handle_irq(irq, desc, irqtp, handler);
-+	current->thread.ksp_limit = saved_sp_limit;
-+	irqtp->task = NULL;
-+
-+	/* Set any flag that may have been set on the
-+	 * alternate stack
-+	 */
-+	if (irqtp->flags)
-+		set_bits(irqtp->flags, &curtp->flags);
-+}
-+#else
-+static inline void handle_one_irq(unsigned int irq)
-+{
-+	generic_handle_irq(irq);
-+}
 +#endif
++}
 +
  void do_IRQ(struct pt_regs *regs)
  {
  	struct pt_regs *old_regs = set_irq_regs(regs);
- 	unsigned int irq;
--#ifdef CONFIG_IRQSTACKS
--	struct thread_info *curtp, *irqtp;
--#endif
+@@ -308,20 +324,7 @@ void do_IRQ(struct pt_regs *regs)
  
  	irq_enter();
  
-@@ -282,43 +332,9 @@ void do_IRQ(struct pt_regs *regs)
- 	 */
- 	irq = ppc_md.get_irq();
- 
--	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE) {
--#ifdef CONFIG_IRQSTACKS
--		/* Switch to the irq stack to handle this */
--		curtp = current_thread_info();
--		irqtp = hardirq_ctx[smp_processor_id()];
--		if (curtp != irqtp) {
--			struct irq_desc *desc = irq_desc + irq;
--			void *handler = desc->handle_irq;
--			unsigned long saved_sp_limit = current->thread.ksp_limit;
--			if (handler == NULL)
--				handler = &__do_IRQ;
--			irqtp->task = curtp->task;
--			irqtp->flags = 0;
+-#ifdef CONFIG_DEBUG_STACKOVERFLOW
+-	/* Debugging check for stack overflow: is there less than 2KB free? */
+-	{
+-		long sp;
 -
--			/* Copy the softirq bits in preempt_count so that the
--			 * softirq checks work in the hardirq context.
--			 */
--			irqtp->preempt_count =
--				(irqtp->preempt_count & ~SOFTIRQ_MASK) |
--				(curtp->preempt_count & SOFTIRQ_MASK);
+-		sp = __get_SP() & (THREAD_SIZE-1);
 -
--			current->thread.ksp_limit = (unsigned long)irqtp +
--				_ALIGN_UP(sizeof(struct thread_info), 16);
--			call_handle_irq(irq, desc, irqtp, handler);
--			current->thread.ksp_limit = saved_sp_limit;
--			irqtp->task = NULL;
--
--
--			/* Set any flag that may have been set on the
--			 * alternate stack
--			 */
--			if (irqtp->flags)
--				set_bits(irqtp->flags, &curtp->flags);
--		} else
+-		if (unlikely(sp < (sizeof(struct thread_info) + 2048))) {
+-			printk("do_IRQ: stack overflow: %ld\n",
+-				sp - sizeof(struct thread_info));
+-			dump_stack();
+-		}
+-	}
 -#endif
--			generic_handle_irq(irq);
--	} else if (irq != NO_IRQ_IGNORE)
-+	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE)
-+		handle_one_irq(irq);
-+	else if (irq != NO_IRQ_IGNORE)
- 		/* That's not SMP safe ... but who cares ? */
- 		ppc_spurious_interrupts++;
++	check_stack_overflow();
  
+ 	/*
+ 	 * Every platform is required to implement ppc_md.get_irq.
 -- 
 1.6.2.1
