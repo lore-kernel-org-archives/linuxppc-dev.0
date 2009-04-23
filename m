@@ -1,18 +1,29 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 6B084DE133
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 00:05:50 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] PPC440EPx SDRAM width
-Date: Thu, 23 Apr 2009 16:05:22 +0200
-References: <49F06ECC.7030904@harris.com>
-	<20090423134538.GB3825@zod.rchland.ibm.com>
-In-Reply-To: <20090423134538.GB3825@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200904231605.22912.sr@denx.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6A982DE11F
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 00:08:35 +1000 (EST)
+Message-Id: <76E4F93E-F75F-4CDC-A281-F4703275BEC1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <49F07509.8030603@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: removing get_immrbase()??
+Date: Thu, 23 Apr 2009 09:06:04 -0500
+References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
+	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
+	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
+	<49EF8E3A.4060304@freescale.com>
+	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
+	<20090423022610.GA19376@yookeroo.seuss>
+	<49F066DC.402@freescale.com>
+	<20090423135005.GA18462@oksana.dev.rtsoft.ru>
+	<49F07509.8030603@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +33,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 23 April 2009, Josh Boyer wrote:
-> On Thu, Apr 23, 2009 at 09:36:12AM -0400, Steven A. Falco wrote:
-> >There is an error in the way ibm4xx_denali_fixup_memsize calculates
-> >memory size.  When testing the DDR_REDUC bit, the polarity is
-> >backwards.  A "1" implies 32-bit wide memory while a "0" implies
-> >64-bit wide memory.
-> >
-> >For a 32-bit wide system, this bug causes twice the memory to be
-> >reported, leading to boot failure.
-> >
-> >Signed-off-by: Steven A. Falco <sfalco@harris.com>
->
-> So we had a previous patch for this, and a very long discussion on what the
-> right solution was.  Either we never came to a resolution, or I have just
-> forgotten what it was.
->
-> Stefan, Valentine, do either of you remember?
 
-Not really, sorry. Must be longer than 2 weeks ago, so it's already flushed 
-from my cache. :)
+On Apr 23, 2009, at 9:02 AM, Timur Tabi wrote:
 
-> IIRC, it wasn't something 
-> that effected Sequoia or Rainier, but it could (and obviously does) effect
-> custom boards.  I don't remember what we agreed on for the proper fix.
+> We've run into plenty of situations where customers will update the
+> kernel, but insist that U-Boot and the device tree remain unchanged.
 
-It would effect all 32-bit wide 440EPx/GRx boards using the boot wrapper. I 
-never used the wrapper on those platforms though. Sorry, I don't remember the 
-outcome of the discussion either.
+when?  I'm not aware of any significant # of cases that customer is  
+willing to update kernel & not dts.  Usually if they are willing to  
+update kernel they tend to be willing to update everything.
 
-Thanks,
-Stefan
+- k
