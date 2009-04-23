@@ -1,27 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id EBCDADE14C
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 00:13:52 +1000 (EST)
-Date: Thu, 23 Apr 2009 18:13:47 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Timur Tabi <timur@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 285F9DE13D
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:54:20 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
 Subject: Re: removing get_immrbase()??
-Message-ID: <20090423141347.GA25351@oksana.dev.rtsoft.ru>
-References: <ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
-	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8E3A.4060304@freescale.com>
-	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
-	<20090423022610.GA19376@yookeroo.seuss>
-	<49F066DC.402@freescale.com>
-	<20090423135005.GA18462@oksana.dev.rtsoft.ru>
-	<49F07509.8030603@freescale.com>
+Date: Thu, 23 Apr 2009 15:53:55 +0200
+References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+In-Reply-To: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <49F07509.8030603@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
-Reply-To: avorontsov@ru.mvista.com
+Message-Id: <200904231553.56464.arnd@arndb.de>
+Content-Type: multipart/alternative; boundary="Boundary-00=_0LH8JFzC5XDbHj5"
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,51 +21,203 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 23, 2009 at 09:02:49AM -0500, Timur Tabi wrote:
-> Anton Vorontsov wrote:
-> 
-> > And note that most developers are using up-to-date firmwares
-> > (U-Boots), device trees, and kernels. 
-> 
-> Developers? Yes.
-> End-users? No.
+--Boundary-00=_0LH8JFzC5XDbHj5
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-If end-users upgraded the kernel on some FSL board, then there
-should be no technical problem upgrading device tree too.
+On Wednesday 22 April 2009, Kumar Gala wrote:
 
-> Updating U-Boot itself is often unacceptable for end-users.  There's
-> also a strong connection between U-Boot and the device tree.  That
-> connection gets stronger with every release, as U-Boot makes more and
-> more changes to the device tree before passing it to the kernel.  This
-> means that if you cannot update U-Boot, you might not be able to update
-> your device tree either.
+=46irst of all, thanks for bringing this up, I'd love to see get_immrbase()=
+ gone.
 
-As I said, this case is a separate matter. Just as device_type = "soc",
-yes we should avoid removing it. But if we 100% sure that our device
-tree changes won't break compatibility with officially supported
-firmware, then IMO we should just go ahead with the changes.
+> arch/powerpc/sysdev/cpm1.c:     mpc8xx_immr =3D ioremap(get_immrbase(), =
+=20
+> 0x4000);
+>         not sure? ideas?
 
-> We've run into plenty of situations where customers will update the
-> kernel, but insist that U-Boot
+Nobody has commented on this, so I've taken a brief look at it.
 
-That I can understand.
+I'd suggest moving the logic up one step at a time. im_cpm, im_siu_conf and
+im_ioport could be defined locally in sysdev/cpm1.c rather than through
+mpc8xx_immr, all you need for this is to export accessor functions from cpm=
+1 for
+iop_pcso and cp_cptr:
 
-> and the device tree remain unchanged.
+void cpm1_set_iop_pcso(u16 pcso)
+{
+	setbits16(cpm1_ioport.iop_pcso, pcso);
+}
+void cpm1_clear_iop_pcso(u16 pcso)
+{
+	clearbits16(cpm1_ioport.iop_pcso, pcso);
+}
+=2E..
 
-That I can't. I wonder what was the rationale behind this.
+im_sit, im_sitk, im_clkrst and im_clkrstk should be defined locally in m8xx=
+_setup.c,
+which is the only place that they are used in. Fortunately, the are all con=
+tiguous
+in the address sapce, so they can be moved into one new data structure with=
+=20
+a single static pointer to it in m8xx_setup.c:
 
-> > And that means that old
-> > device-tree + new kernel combination is left untested for years.
-> > And untested stuff is broken stuff, by definition.
-> 
-> I'm not saying that should officially support it.  I'm saying we should
-> make an effort to minimize the problem.
+static struct {
+	struct=AD sys_int_timers sit;
+	struct clk_and_reset clkrst;
+	struct sitk sitk;
+	struct cark clkrstk;
+} *m8xx_setup_regs;
 
-That doesn't work in practice. I bet if I'll try booting recent Linux
-with FSL-provided device-tree on, say, MPC8323E-RDB it simply won't
-boot.
+When this is done, 8xx_immap.h along with all the unused stuff therein can =
+be removed.
+In the last step, the device trees can be cleaned up so that you can of_iom=
+ap
+the regions in those two files directly.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+	Arnd <><
+
+
+--Boundary-00=_0LH8JFzC5XDbHj5
+Content-Type: text/html;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-=
+html40/strict.dtd">
+<html><head><meta name=3D"qrichtext" content=3D"1" /><style type=3D"text/cs=
+s">
+p, li { white-space: pre-wrap; }
+</style></head><body style=3D" font-family:'DejaVu Sans Light'; font-size:8=
+pt; font-weight:200; font-style:normal;">
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Wednesda=
+y 22 April 2009, Kumar Gala wrote:</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">First of al=
+l, thanks for bringing this up, I'd love to see get_immrbase() gone.</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; arch/p=
+owerpc/sysdev/cpm1.c:=A0=A0=A0=A0=A0mpc8xx_immr =3D ioremap(get_immrbase(),=
+ =A0</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; 0x4000=
+);</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; =A0=A0=
+=A0=A0=A0=A0=A0=A0not sure? ideas?</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Nobody has =
+commented on this, so I've taken a brief look at it.</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">I'd suggest=
+ moving the logic up one step at a time. im_cpm, im_siu_conf and</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">im_ioport c=
+ould be defined locally in sysdev/cpm1.c rather than through</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">mpc8xx_immr=
+, all you need for this is to export accessor functions from cpm1 for</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">iop_pcso an=
+d cp_cptr:</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">void cpm1_s=
+et_iop_pcso(u16 pcso)</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">{</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	setbits16(=
+cpm1_ioport.iop_pcso, pcso);</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">}</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">void cpm1_c=
+lear_iop_pcso(u16 pcso)</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">{</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	clearbits1=
+6(cpm1_ioport.iop_pcso, pcso);</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">}</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">...</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">im_sit, im_=
+sitk, im_clkrst and im_clkrstk should be defined locally in m8xx_setup.c,</=
+p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">which is th=
+e only place that they are used in. Fortunately, the are all contiguous</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">in the addr=
+ess sapce, so they can be moved into one new data structure with </p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">a single st=
+atic pointer to it in m8xx_setup.c:</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">static stru=
+ct {</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	struct=AD =
+sys_int_timers sit;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	struct clk=
+_and_reset clkrst;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	struct sit=
+k sitk;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	struct car=
+k clkrstk;</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">} *m8xx_set=
+up_regs;</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">When this i=
+s done, 8xx_immap.h along with all the unused stuff therein can be removed.=
+</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">In the last=
+ step, the device trees can be cleaned up so that you can of_iomap</p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">the regions=
+ in those two files directly.</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
+ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	Arnd &lt;&=
+gt;&lt;</p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p>
+<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
+rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
+ser-state:0;"></p></body></html>
+--Boundary-00=_0LH8JFzC5XDbHj5--
