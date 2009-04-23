@@ -1,18 +1,31 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [93.92.193.118])
+Return-Path: <mjw@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B51B2DDFAD
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 06:54:33 +1000 (EST)
-Date: Fri, 24 Apr 2009 00:55:06 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PowerPC 44x: ibm4xx_denali_fixup_memsize fix
-Message-ID: <20090423205506.GA2962@ru.mvista.com>
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4BB7EDE124
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 07:57:05 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e8.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3NLloVb003670
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 17:47:50 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3NLv1q9193926
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 17:57:01 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3NLv1X3019901
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 17:57:01 -0400
+Subject: Re: [PATCH] powerpc: adjust oprofile_cpu_type
+From: Mike Wolf <mjw@linux.vnet.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20090423175210.GB4732@lixom.net>
+References: <1240443612.27209.2.camel@mx3> <20090423175210.GB4732@lixom.net>
+Content-Type: text/plain
+Date: Thu, 23 Apr 2009 16:56:56 -0500
+Message-Id: <1240523816.12000.2.camel@mx3>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49F0CBC6.4050805@harris.com>
-Cc: sr@denx.de
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: mjw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,106 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some U-Boot versions incorrectly set the number of chipselects to two
-for Sequoia/Rainier boards while they only have one chipselect hardwired.
-This patch adds a workaround for this, hardcoding the number of chipselects
-to one for sequioa/rainer board models and reading the actual value from
-the memory controller register DDR0_10 otherwise.
-It also fixes another error in the way ibm4xx_denali_fixup_memsize
-calculates memory size. When testing the DDR_REDUC bit, the polarity is
-backwards.  A "1" implies 32-bit wide memory while a "0" implies 64-bit
-wide memory.
+On Thu, 2009-04-23 at 12:52 -0500, Olof Johansson wrote:
+> On Wed, Apr 22, 2009 at 06:40:12PM -0500, Mike Wolf wrote:
+> > Resending.  the patch was munged last time.
+> > 
+> > 
+> > Oprofile is changing the naming it is using for the compatibility modes.
+> > Instead of having compat-power<x>, oprofile will go to family naming
+> > convention and use compat-v<x>.  Currently only compat-v1 will be
+> > defined.
+> 
+> Compat V1 of what? powerpc64? IBM powerpc64 PMC? 
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-Signed-off-by: Steven A. Falco <sfalco@harris.com>
----
- arch/powerpc/boot/4xx.c |   56 ++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 43 insertions(+), 13 deletions(-)
+IBM powerpc PMC
 
-diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-index 5c87843..325b310 100644
---- a/arch/powerpc/boot/4xx.c
-+++ b/arch/powerpc/boot/4xx.c
-@@ -158,21 +158,33 @@ void ibm440spe_fixup_memsize(void)
- 
- #define DDR_GET_VAL(val, mask, shift)	(((val) >> (shift)) & (mask))
- 
--void ibm4xx_denali_fixup_memsize(void)
-+/*
-+ * Some U-Boot versions set the number of chipselects to two
-+ * for Sequoia/Rainier boards while they only have one chipselect
-+ * hardwired. Hardcode the number of chipselects to one
-+ * for sequioa/rainer board models or read the actual value
-+ * from the memory controller register DDR0_10 otherwise.
-+ */
-+static inline u32 ibm4xx_denali_get_cs(void)
- {
--	u32 val, max_cs, max_col, max_row;
--	u32 cs, col, row, bank, dpath;
--	unsigned long memsize;
-+	void *devp;
-+	char model[64];
-+	u32 val, cs;
- 
--	val = SDRAM0_READ(DDR0_02);
--	if (!DDR_GET_VAL(val, DDR_START, DDR_START_SHIFT))
--		fatal("DDR controller is not initialized\n");
-+	devp = finddevice("/");
-+	if (!devp)
-+		goto read_cs;
- 
--	/* get maximum cs col and row values */
--	max_cs  = DDR_GET_VAL(val, DDR_MAX_CS_REG, DDR_MAX_CS_REG_SHIFT);
--	max_col = DDR_GET_VAL(val, DDR_MAX_COL_REG, DDR_MAX_COL_REG_SHIFT);
--	max_row = DDR_GET_VAL(val, DDR_MAX_ROW_REG, DDR_MAX_ROW_REG_SHIFT);
-+	if (getprop(devp, "model", model, sizeof(model)) <= 0)
-+		goto read_cs;
- 
-+	model[sizeof(model)-1] = 0;
-+
-+	if (!strcmp(model, "amcc,sequoia") ||
-+	    !strcmp(model, "amcc,rainier"))
-+		return 1;
-+
-+read_cs:
- 	/* get CS value */
- 	val = SDRAM0_READ(DDR0_10);
- 
-@@ -183,7 +195,25 @@ void ibm4xx_denali_fixup_memsize(void)
- 			cs++;
- 		val = val >> 1;
- 	}
-+	return cs;
-+}
-+
-+void ibm4xx_denali_fixup_memsize(void)
-+{
-+	u32 val, max_cs, max_col, max_row;
-+	u32 cs, col, row, bank, dpath;
-+	unsigned long memsize;
-+
-+	val = SDRAM0_READ(DDR0_02);
-+	if (!DDR_GET_VAL(val, DDR_START, DDR_START_SHIFT))
-+		fatal("DDR controller is not initialized\n");
- 
-+	/* get maximum cs col and row values */
-+	max_cs  = DDR_GET_VAL(val, DDR_MAX_CS_REG, DDR_MAX_CS_REG_SHIFT);
-+	max_col = DDR_GET_VAL(val, DDR_MAX_COL_REG, DDR_MAX_COL_REG_SHIFT);
-+	max_row = DDR_GET_VAL(val, DDR_MAX_ROW_REG, DDR_MAX_ROW_REG_SHIFT);
-+
-+	cs = ibm4xx_denali_get_cs();
- 	if (!cs)
- 		fatal("No memory installed\n");
- 	if (cs > max_cs)
-@@ -193,9 +223,9 @@ void ibm4xx_denali_fixup_memsize(void)
- 	val = SDRAM0_READ(DDR0_14);
- 
- 	if (DDR_GET_VAL(val, DDR_REDUC, DDR_REDUC_SHIFT))
--		dpath = 8; /* 64 bits */
--	else
- 		dpath = 4; /* 32 bits */
-+	else
-+		dpath = 8; /* 64 bits */
- 
- 	/* get address pins (rows) */
-  	val = SDRAM0_READ(DDR0_42);
+>  The performance
+> monitors are not architected, to give them a version number without
+> vendor information seems weird.
+The current ones all fall into one family and they may be architected in
+the future.
+> 
+> Also, doesn't this break compatibility with existing userspace tools?
+AFAIK there is nothing else that uses these.  Oprofile patch was
+rejected and this new naming was suggested from that community.
+
+Mike
