@@ -1,26 +1,29 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH][BUILD FAILURE 03/12] Re: Next April 21 : PPC64
-	randconfig [arch/powerpc/kernel/of_platform.o]
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <49EFDD66.3060407@oracle.com>
-References: <20090422161648.9231.76057.sendpatchset@subratamodak.linux.ibm.com>
-	<1240447420.6689.13.camel@localhost>  <49EFDD66.3060407@oracle.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-V9pFvoiHkxB3zTZOxmLf"
-Date: Thu, 23 Apr 2009 14:23:26 +1000
-Message-Id: <1240460606.6689.32.camel@localhost>
-Mime-Version: 1.0
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	linux-next <linux-next@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-	Subrata Modak <subrata@linux.vnet.ibm.com>,
-	Alexander Beregalov <a.beregalov@gmail.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AA259DE0FB
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 14:43:58 +1000 (EST)
+Message-Id: <49668C6D-3A6A-499E-A8AD-85B8E808F6CF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20090423040642.GG19376@yookeroo.seuss>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: removing get_immrbase()??
+Date: Wed, 22 Apr 2009 23:41:31 -0500
+References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
+	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
+	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
+	<49EF8E3A.4060304@freescale.com>
+	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
+	<20090423022610.GA19376@yookeroo.seuss>
+	<80CA86D4-3DA5-4C28-AE7A-C03CE5758774@kernel.crashing.org>
+	<20090423040642.GG19376@yookeroo.seuss>
+Cc: Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,68 +34,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-V9pFvoiHkxB3zTZOxmLf
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Apr 22, 2009, at 11:06 PM, David Gibson wrote:
 
-On Wed, 2009-04-22 at 20:15 -0700, Randy Dunlap wrote:
-> Michael Ellerman wrote:
-> > On Wed, 2009-04-22 at 21:46 +0530, Subrata Modak wrote:
-> >> On Wed, 2009-04-22 at 00:20 +0530, Subrata Modak wrote:
-> >>> Reported this earlier on 14th April 2009:
-> >>> http://lkml.org/lkml/2009/4/14/480,
-> >>>
-> >>> Michael,
-> >>>
-> >>> Any fix in sight ?
-> >>> http://lkml.org/lkml/2009/4/14/676,
-> >>>
-> >>> CC      arch/powerpc/kernel/of_platform.o
-> >>> arch/powerpc/kernel/of_platform.c: In function 'of_pci_phb_probe':
-> >>> arch/powerpc/kernel/of_platform.c:270: error: implicit declaration of
-> >>> function 'pci_devs_phb_init_dynamic'
-> >>> arch/powerpc/kernel/of_platform.c:279: error: implicit declaration of
-> >>> function 'scan_phb'
-> >>> arch/powerpc/kernel/of_platform.c:295: error: implicit declaration of
-> >>> function 'pci_bus_add_devices'
-> >>> make[1]: *** [arch/powerpc/kernel/of_platform.o] Error 1
-> >>> make: *** [arch/powerpc/kernel] Error 2
-> >>> ---
-> >=20
-> > The problem above is as I said before, that the Cell Kconfig forces on
-> > PPC_OF_PLATFORM_PCI even if PCI is disabled. I think the proper fix is
-> > just to have CELL_NATIVE force on PCI.
-> >=20
-> > I don't know how you got the other errors, both pci_dn.c and pci_dlpar.=
-c
-> > are only built if CONFIG_PCI is enabled, see the Makefiles.
->=20
->=20
-> The Kconfig could be more like this:
-> config PPC_CELL_NATIVE
-> 	bool
-> 	select PPC_CELL_COMMON
-> -	select PPC_OF_PLATFORM_PCI
-> +	select PPC_OF_PLATFORM_PCI if PCI
+> Well, yes, I guess I agree.  How immutable you consider the device
+> tree blob to be is a judgement call based on the specific details of
+> platform/board in question.  If it is indeed a reference platform, in
+> the early stages of development where it's reasonably easy to change
+> the dtb, then it's probably best to change the dtb in sync with the
+> kernel to reduce long-term cruft build-up.  But once the board is
+> sufficiently widely deployed, you want to stop doing that and include
+> backwards compatibility workarounds in the kernel to cope with the
+> widely deployed broken trees.
 
-That might be better. Although I think in truth the Cell code won't
-build without PCI, but we could fix that. As I said in my patch I think
-we do want PCI on Cell native, so we should just select it too.
+I disagree with the point about providing workarounds to cope w/ 
+deployed device trees (at least for the problems I'm thinking off in  
+which nodes didn't exist).  This just sounds like double work and is a  
+disincentive to actually making such changes.
 
-http://patchwork.ozlabs.org/patch/26338/
+Lets say I had an error driver for our MCM (core to soc coherency  
+module).  It was getting the base address by using get_immrbase().   
+Today I proposed a proper device node for the MCM block as it doesn't  
+exist in .dts today.  We add such a node into .dts and I can clean up  
+my error driver to use proper device node information.  However I've  
+just broken any old .dts that didn't have this node.  You are saying I  
+need to add code into the kernel to create this new node and we have  
+to keep that code around for ever in the kernel.. why would I ever  
+bother to actually changing anything than.
 
-cheers
-
---=-V9pFvoiHkxB3zTZOxmLf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknv7T4ACgkQdSjSd0sB4dKkTgCeINJlWGZ+mo4jOcjn66aeJFDf
-YrcAnRZ34fZ9jlFE262qS9ngWUNn9fxy
-=SqMe
------END PGP SIGNATURE-----
-
---=-V9pFvoiHkxB3zTZOxmLf--
+- k
