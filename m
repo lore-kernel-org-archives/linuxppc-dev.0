@@ -1,29 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AA259DE0FB
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 14:43:58 +1000 (EST)
-Message-Id: <49668C6D-3A6A-499E-A8AD-85B8E808F6CF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20090423040642.GG19376@yookeroo.seuss>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: removing get_immrbase()??
-Date: Wed, 22 Apr 2009 23:41:31 -0500
-References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
-	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
-	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8E3A.4060304@freescale.com>
-	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
-	<20090423022610.GA19376@yookeroo.seuss>
-	<80CA86D4-3DA5-4C28-AE7A-C03CE5758774@kernel.crashing.org>
-	<20090423040642.GG19376@yookeroo.seuss>
-Cc: Scott Wood <scottwood@freescale.com>,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4EB19DE0F1
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 16:07:06 +1000 (EST)
+Date: Thu, 23 Apr 2009 16:06:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>
+Subject: linux-next: upstream tree build failure
+Message-Id: <20090423160656.fac84e3f.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,32 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-On Apr 22, 2009, at 11:06 PM, David Gibson wrote:
+[I am now using gcc version 4.4.0 ...]
 
-> Well, yes, I guess I agree.  How immutable you consider the device
-> tree blob to be is a judgement call based on the specific details of
-> platform/board in question.  If it is indeed a reference platform, in
-> the early stages of development where it's reasonably easy to change
-> the dtb, then it's probably best to change the dtb in sync with the
-> kernel to reduce long-term cruft build-up.  But once the board is
-> sufficiently widely deployed, you want to stop doing that and include
-> backwards compatibility workarounds in the kernel to cope with the
-> widely deployed broken trees.
+Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
 
-I disagree with the point about providing workarounds to cope w/ 
-deployed device trees (at least for the problems I'm thinking off in  
-which nodes didn't exist).  This just sounds like double work and is a  
-disincentive to actually making such changes.
+arch/powerpc/mm/tlb_nohash_low.S:206:6: error: #elif with no expression
 
-Lets say I had an error driver for our MCM (core to soc coherency  
-module).  It was getting the base address by using get_immrbase().   
-Today I proposed a proper device node for the MCM block as it doesn't  
-exist in .dts today.  We add such a node into .dts and I can clean up  
-my error driver to use proper device node information.  However I've  
-just broken any old .dts that didn't have this node.  You are saying I  
-need to add code into the kernel to create this new node and we have  
-to keep that code around for ever in the kernel.. why would I ever  
-bother to actually changing anything than.
+Previous gcc versions didn't notice this because one of the preceding
+#ifs always evaluated to true.  I have applied the following patch for today.
 
-- k
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 23 Apr 2009 16:00:47 +1000
+Subject: [PATCH] powerpc: fix for long standing bug noticed by gcc 4.4.0
+
+Previous gcc versions didn't notice this because one of the preceding
+
+gcc 4.4.0 produced this error:
+
+arch/powerpc/mm/tlb_nohash_low.S:206:6: error: #elif with no expression
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/mm/tlb_nohash_low.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
+index 45fed36..21e1b9a 100644
+--- a/arch/powerpc/mm/tlb_nohash_low.S
++++ b/arch/powerpc/mm/tlb_nohash_low.S
+@@ -203,6 +203,6 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
+ 	isync
+ 1:	wrtee	r10
+ 	blr
+-#elif
++#else
+ #error Unsupported processor type !
+ #endif
+-- 
+1.6.2.3
