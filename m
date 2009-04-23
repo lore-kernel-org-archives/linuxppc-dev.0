@@ -1,24 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 4856EDE5B8
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 00:03:29 +1000 (EST)
-Date: Thu, 23 Apr 2009 18:03:23 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: removing get_immrbase()??
-Message-ID: <20090423140323.GA24671@oksana.dev.rtsoft.ru>
-References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
-	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
-	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<fa686aa40904230653j6855f8bai5248b250eb3ef515@mail.gmail.com>
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.180])
+	by ozlabs.org (Postfix) with ESMTP id 6B084DE133
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 00:05:50 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] PPC440EPx SDRAM width
+Date: Thu, 23 Apr 2009 16:05:22 +0200
+References: <49F06ECC.7030904@harris.com>
+	<20090423134538.GB3825@zod.rchland.ibm.com>
+In-Reply-To: <20090423134538.GB3825@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <fa686aa40904230653j6855f8bai5248b250eb3ef515@mail.gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200904231605.22912.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,41 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 23, 2009 at 07:53:11AM -0600, Grant Likely wrote:
-> On Wed, Apr 22, 2009 at 3:31 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
+On Thursday 23 April 2009, Josh Boyer wrote:
+> On Thu, Apr 23, 2009 at 09:36:12AM -0400, Steven A. Falco wrote:
+> >There is an error in the way ibm4xx_denali_fixup_memsize calculates
+> >memory size.  When testing the DDR_REDUC bit, the polarity is
+> >backwards.  A "1" implies 32-bit wide memory while a "0" implies
+> >64-bit wide memory.
 > >
-> > On Apr 22, 2009, at 3:16 PM, Timur Tabi wrote:
+> >For a 32-bit wide system, this bug causes twice the memory to be
+> >reported, leading to boot failure.
 > >
-> >> Scott Wood wrote:
-> >>>
-> >>> Timur Tabi wrote:
-> >>>>>
-> >>>>>      these two are related and seem like we could look for "fsl,cpm2"
-> >>>>
-> >>>> That's okay, as long as you don't break compatibility with older
-> >>>> device trees that don't have that property, unless you can demonstrate
-> >>>> that these trees would never work with the current kernel anyway.
-> >>>
-> >>> All CPM2 device trees should have fsl,cpm2 listed in the compatible of
-> >>> the CPM node.
-> >>
-> >> Yes, but did they always have that compatible field?  I'm concerned
-> >> about situations where someone updates his kernel but not his device
-> >> tree.  This is a scenerio that we always need to try to support.
-> >
-> > I disagree.  If you update your kernel you should update your device tree
-> > (thus we have .dts in the kernel tree and not somewhere else).
-> 
-> Not always possible.  The device tree may be 'softer' than firmware,
-> and easier to update, but it is still firmer than the kernel.  That is
-> why so much effort has been spent to not break compatibility with
-> older device trees.
+> >Signed-off-by: Steven A. Falco <sfalco@harris.com>
+>
+> So we had a previous patch for this, and a very long discussion on what the
+> right solution was.  Either we never came to a resolution, or I have just
+> forgotten what it was.
+>
+> Stefan, Valentine, do either of you remember?
 
-I'd suggest to deal with this on case-by-case basis. In every MPC8xx
-and MPC8xxx boards I've seen from Freescale there is absolutely no
-difference in upgrading kernel or device-tree blob.
+Not really, sorry. Must be longer than 2 weeks ago, so it's already flushed 
+from my cache. :)
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> IIRC, it wasn't something 
+> that effected Sequoia or Rainier, but it could (and obviously does) effect
+> custom boards.  I don't remember what we agreed on for the proper fix.
+
+It would effect all 32-bit wide 440EPx/GRx boards using the boot wrapper. I 
+never used the wrapper on those platforms though. Sorry, I don't remember the 
+outcome of the discussion either.
+
+Thanks,
+Stefan
