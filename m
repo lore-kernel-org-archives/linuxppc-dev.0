@@ -1,26 +1,28 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp4.netcologne.de (smtp4.netcologne.de [194.8.194.137])
-	by ozlabs.org (Postfix) with ESMTP id 8AEAFDE160
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 03:23:19 +1000 (EST)
-Received: from antares (xdsl-78-34-249-56.netcologne.de [78.34.249.56])
-	by smtp4.netcologne.de (Postfix) with ESMTP id 220CBDA594
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 19:23:17 +0200 (CEST)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id 0B491BA04B
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 19:23:17 +0200 (CEST)
-Date: Thu, 23 Apr 2009 19:23:09 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [OT] Lite5200B w/ nfs root hangs after some time
-To: linuxppc-dev@ozlabs.org
-References: <1240422181.5492.0@antares>
-	<20090422181059.7510A83420E8@gemini.denx.de>
-	<fa686aa40904221705r24f8093bn74d336ddc2b8edaf@mail.gmail.com>
-In-Reply-To: <fa686aa40904221705r24f8093bn74d336ddc2b8edaf@mail.gmail.com>
-	(from grant.likely@secretlab.ca on Thu Apr 23 02:05:40 2009)
-Message-Id: <1240507396.5213.0@antares>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id A16E2DDEEC
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 03:26:34 +1000 (EST)
+Date: Thu, 23 Apr 2009 21:26:33 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: removing get_immrbase()??
+Message-ID: <20090423172633.GA16375@oksana.dev.rtsoft.ru>
+References: <49EF7B1C.2080105@freescale.com>
+	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
+	<49EF8E3A.4060304@freescale.com>
+	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
+	<20090423022610.GA19376@yookeroo.seuss>
+	<49F066DC.402@freescale.com>
+	<20090423135005.GA18462@oksana.dev.rtsoft.ru>
+	<20090423160048.GC19717@ld0162-tx32.am.freescale.net>
+	<20090423165430.GA8355@oksana.dev.rtsoft.ru>
+	<49F09F4A.8090506@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-AePmGIf6ErjLFNKIeoWh"
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <49F09F4A.8090506@freescale.com>
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,33 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---=-AePmGIf6ErjLFNKIeoWh
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Apr 23, 2009 at 12:03:06PM -0500, Scott Wood wrote:
+> Anton Vorontsov wrote:
+>> On Thu, Apr 23, 2009 at 11:00:48AM -0500, Scott Wood wrote:
+>>> Even if the given change may not break the firmware, it could force an
+>>> update in which a prior change breaks the firmware.
+>>
+>> I'm not sure I'm following here. Could you give an example?
+>
+[...]
+> Device tree Z2 goes in kernel Y2. It 
+> will break when used with u-boot X1,
 
-Am 23.04.09 02:05 schrieb(en) Grant Likely:
->> http://patchwork.ozlabs.org/patch/24487/
+This is exactly what we should try to avoid. We should not accept
+any changes that might break older firmwares. That is, keep the
+device tree workable with X1 and X2, by any means.
 
-That patch is already included in 2.6.29...
+For example, if X1 looks for "/soc8323@..." name instead of
+compatible entry, we'll have to live with the name forever,
+but we should be free to switch Linux so that it'll use only the
+"compatible" property matching.
 
-> No, that's not the problem in this case.  2.6.29 networking is broken =20
-> for a lot of platforms, not just mpc5200.  Use 2.6.29.1 instead.
+If X1 looks for "/soc8323@..."  and X2 looks for "/soc@...", so that
+Z1 and Z2 aren't compatible at all, then we're in trouble. But we're
+in trouble regardless of what Linux is doing, no?
 
-...and with 2.6.29.1, everything works flawlessly again!
-
-Thanks a lot for your help,
-Cheers, Albrecht.
-
---=-AePmGIf6ErjLFNKIeoWh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBJ8KQEn/9unNAn/9ERAiUBAJoC9LMxBntbdGmrJ1xsFjb6s9jxZwCgq/i8
-bwr4XDmfembh4hMVnq/DNg4=
-=2lF6
------END PGP SIGNATURE-----
-
---=-AePmGIf6ErjLFNKIeoWh--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
