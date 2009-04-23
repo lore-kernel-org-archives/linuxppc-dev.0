@@ -1,28 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id A16E2DDEEC
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 03:26:34 +1000 (EST)
-Date: Thu, 23 Apr 2009 21:26:33 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: removing get_immrbase()??
-Message-ID: <20090423172633.GA16375@oksana.dev.rtsoft.ru>
-References: <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8E3A.4060304@freescale.com>
-	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
-	<20090423022610.GA19376@yookeroo.seuss>
-	<49F066DC.402@freescale.com>
-	<20090423135005.GA18462@oksana.dev.rtsoft.ru>
-	<20090423160048.GC19717@ld0162-tx32.am.freescale.net>
-	<20090423165430.GA8355@oksana.dev.rtsoft.ru>
-	<49F09F4A.8090506@freescale.com>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 273C5DE111
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 03:46:04 +1000 (EST)
+Message-ID: <49F0A957.5080508@harris.com>
+Date: Thu, 23 Apr 2009 13:45:59 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <49F09F4A.8090506@freescale.com>
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH] PowerPC: 440EPx/GRx Sequoia/Rainier U-Boot incorrect
+	chipselect number workaround
+References: <20090423171222.GA32326@ru.mvista.com>
+In-Reply-To: <20090423171222.GA32326@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,32 +22,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 23, 2009 at 12:03:06PM -0500, Scott Wood wrote:
-> Anton Vorontsov wrote:
->> On Thu, Apr 23, 2009 at 11:00:48AM -0500, Scott Wood wrote:
->>> Even if the given change may not break the firmware, it could force an
->>> update in which a prior change breaks the firmware.
->>
->> I'm not sure I'm following here. Could you give an example?
->
-[...]
-> Device tree Z2 goes in kernel Y2. It 
-> will break when used with u-boot X1,
+Valentine Barshak wrote:
+> Some U-Boot versions incorrectly set the number of chipselects to two
+> for Sequoia/Rainier boards while they only have one chipselect hardwired.
+> This patch adds a workaround for this, hardcoding the number of chipselects
+> to one for sequioa/rainer board models and reading the actual value from
+> the memory controller register DDR0_10 otherwise.
+> 
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> ---
+>  arch/powerpc/boot/4xx.c |   52 +++++++++++++++++++++++++++++++++++++----------
+>  1 files changed, 41 insertions(+), 11 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+> index 5c87843..6196067 100644
+> --- a/arch/powerpc/boot/4xx.c
+> +++ b/arch/powerpc/boot/4xx.c
+> @@ -158,21 +158,33 @@ void ibm440spe_fixup_memsize(void)
+>  
+>  #define DDR_GET_VAL(val, mask, shift)	(((val) >> (shift)) & (mask))
+>  
+> -void ibm4xx_denali_fixup_memsize(void)
+> +/*
+> + * Some U-Boot versions set the number of chipselects to two
+> + * for Sequoia/Rainier boards while they only have one chipselect
+> + * hardwired. Hardcode the number of chipselects to one 
+> + * for sequioa/rainer board models or read the actual value
+> + * from the memory controller register DDR0_10 otherwise.
+> + */
+> +static inline u32 ibm4xx_denali_get_cs(void)
+>  {
+> -	u32 val, max_cs, max_col, max_row;
+> -	u32 cs, col, row, bank, dpath;
+> -	unsigned long memsize;
+> +	void *devp;
+> +	char model[64];
+> +	u32 val, cs;
+>  
+> -	val = SDRAM0_READ(DDR0_02);
+> -	if (!DDR_GET_VAL(val, DDR_START, DDR_START_SHIFT))
+> -		fatal("DDR controller is not initialized\n");
+> +	devp = finddevice("/");
+> +	if (!devp)
+> +		goto read_cs;
+>  
+> -	/* get maximum cs col and row values */
+> -	max_cs  = DDR_GET_VAL(val, DDR_MAX_CS_REG, DDR_MAX_CS_REG_SHIFT);
+> -	max_col = DDR_GET_VAL(val, DDR_MAX_COL_REG, DDR_MAX_COL_REG_SHIFT);
+> -	max_row = DDR_GET_VAL(val, DDR_MAX_ROW_REG, DDR_MAX_ROW_REG_SHIFT);
+> +	if (getprop(devp, "model", model, sizeof(model)) <= 0)
+> +		goto read_cs;
+>  
+> +	model[sizeof(model)-1] = 0;
+> +
+> +	if (!strcmp(model, "amcc,sequoia") ||
+> +	    !strcmp(model, "amcc,rainier"))
+> +		return 1;
+> +
+> +read_cs:
+>  	/* get CS value */
+>  	val = SDRAM0_READ(DDR0_10);
+>  
+> @@ -183,7 +195,25 @@ void ibm4xx_denali_fixup_memsize(void)
+>  			cs++;
+>  		val = val >> 1;
+>  	}
+> +	return cs;
+> +}
+> +
+> +void ibm4xx_denali_fixup_memsize(void)
+> +{
+> +	u32 val, max_cs, max_col, max_row;
+> +	u32 cs, col, row, bank, dpath;
+> +	unsigned long memsize;
+> +
+> +	val = SDRAM0_READ(DDR0_02);
+> +	if (!DDR_GET_VAL(val, DDR_START, DDR_START_SHIFT))
+> +		fatal("DDR controller is not initialized\n");
+> +
+> +	/* get maximum cs col and row values */
+> +	max_cs  = DDR_GET_VAL(val, DDR_MAX_CS_REG, DDR_MAX_CS_REG_SHIFT);
+> +	max_col = DDR_GET_VAL(val, DDR_MAX_COL_REG, DDR_MAX_COL_REG_SHIFT);
+> +	max_row = DDR_GET_VAL(val, DDR_MAX_ROW_REG, DDR_MAX_ROW_REG_SHIFT);
+>  
+> +	cs = ibm4xx_denali_get_cs();
+>  	if (!cs)
+>  		fatal("No memory installed\n");
+>  	if (cs > max_cs)
+> 
 
-This is exactly what we should try to avoid. We should not accept
-any changes that might break older firmwares. That is, keep the
-device tree workable with X1 and X2, by any means.
+Thanks for doing this so quickly!
 
-For example, if X1 looks for "/soc8323@..." name instead of
-compatible entry, we'll have to live with the name forever,
-but we should be free to switch Linux so that it'll use only the
-"compatible" property matching.
+I applied your patch plus my patch - my custom board reports
+the correct memory size.  Therefore,
 
-If X1 looks for "/soc8323@..."  and X2 looks for "/soc@...", so that
-Z1 and Z2 aren't compatible at all, then we're in trouble. But we're
-in trouble regardless of what Linux is doing, no?
+Acked-by: Steven A. Falco <sfalco@harris.com>
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Clearly, both your and my patches must be applied together or
+"bad things will happen".
+
+BTW, I got a whitespace warning when applying your patch:
+
+Applying: PowerPC: 440EPx/GRx Sequoia/Rainier U-Boot incorrect chipselect number workaround
+/proj/hydra/sw/sfalco/linux-2.6-denx/.git/rebase-apply/patch:17: trailing whitespace.
+ * hardwired. Hardcode the number of chipselects to one
+warning: 1 line adds whitespace errors.
+
+	Steve
