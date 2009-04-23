@@ -1,32 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 109A0DE0D2
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 04:00:17 +1000 (EST)
-Message-ID: <49F0AC9C.7060905@freescale.com>
-Date: Thu, 23 Apr 2009 12:59:56 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: removing get_immrbase()??
-References: <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8E3A.4060304@freescale.com>
-	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
-	<20090423022610.GA19376@yookeroo.seuss>
-	<49F066DC.402@freescale.com>
-	<20090423135005.GA18462@oksana.dev.rtsoft.ru>
-	<20090423160048.GC19717@ld0162-tx32.am.freescale.net>
-	<20090423165430.GA8355@oksana.dev.rtsoft.ru>
-	<49F09F4A.8090506@freescale.com>
-	<20090423172633.GA16375@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090423172633.GA16375@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 59EF8DDFDD
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 04:42:27 +1000 (EST)
+Message-Id: <5FCD7AA1-1A27-46C4-99E0-6C37BB21DD31@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <49F064EB.5030109@gefanuc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc/86xx: clean up smp init code
+Date: Thu, 23 Apr 2009 13:42:17 -0500
+References: <1240421691-10193-1-git-send-email-galak@kernel.crashing.org>
+	<49F064EB.5030109@gefanuc.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,19 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> This is exactly what we should try to avoid. We should not accept
-> any changes that might break older firmwares. That is, keep the
-> device tree workable with X1 and X2, by any means.
 
-I think that's a much bigger restriction than trying to keep the kernel 
-compatible with older device trees.  Consider changes in the physical 
-memory map, etc.
+On Apr 23, 2009, at 7:54 AM, Martyn Welch wrote:
 
-> If X1 looks for "/soc8323@..."  and X2 looks for "/soc@...", so that
-> Z1 and Z2 aren't compatible at all, then we're in trouble. But we're
-> in trouble regardless of what Linux is doing, no?
+> Kumar Gala wrote:
+>> Removed the need for asm/mpc86xx.h as it was only used in  
+>> mpc86xx_smp.c
+>> and just moved the defines it cared about into there.  Also fixed up
+>> the ioremap to only map the one 4k page we need access to and to  
+>> iounmap
+>> when we are done.
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>> arch/powerpc/include/asm/mpc86xx.h         |   33  
+>> ----------------------------
+>> arch/powerpc/platforms/86xx/gef_ppc9a.c    |    1 -
+>> arch/powerpc/platforms/86xx/gef_sbc310.c   |    1 -
+>> arch/powerpc/platforms/86xx/gef_sbc610.c   |    1 -
+>> arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    1 -
+>> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 -
+>> arch/powerpc/platforms/86xx/mpc86xx_smp.c  |    8 ++++++-
+>> arch/powerpc/platforms/86xx/sbc8641d.c     |    1 -
+>> 8 files changed, 7 insertions(+), 40 deletions(-)
+>> delete mode 100644 arch/powerpc/include/asm/mpc86xx.h
+>>
+>>
+> I assume this patch relies on one of the other patches posted?
+>
+> Just applying this patch to my development tree (based on your main  
+> branch) resulted in the following on a PPC9A:
 
-Not if Linux can continue to deal with X1 and Z1.
+Darn, this should have been a simple change.  I'll try it out on  
+mpc8641 to see if its happening there.
 
--Scott
+- k
