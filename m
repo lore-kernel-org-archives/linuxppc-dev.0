@@ -1,20 +1,28 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7F256DE067
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 22:56:12 +1000 (EST)
-Date: Thu, 23 Apr 2009 22:56:11 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
-	<paulus@samba.org>
-Subject: [PATCH v2] powerpc: fix for long standing bug noticed by gcc 4.4.0
-Message-Id: <20090423225611.d569764c.sfr@canb.auug.org.au>
-In-Reply-To: <20090423103336.GA3825@zod.rchland.ibm.com>
-References: <20090423160656.fac84e3f.sfr@canb.auug.org.au>
-	<20090423103336.GA3825@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 166D8DE099
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:02:31 +1000 (EST)
+Message-ID: <49F066DC.402@freescale.com>
+Date: Thu, 23 Apr 2009 08:02:20 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>,
+	Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Subject: Re: removing get_immrbase()??
+References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
+	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
+	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
+	<49EF8E3A.4060304@freescale.com>
+	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
+	<20090423022610.GA19376@yookeroo.seuss>
+In-Reply-To: <20090423022610.GA19376@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Previous gcc versions didn't notice this because one of the preceding
-#ifs always evaluated to true.
+David Gibson wrote:
 
-gcc 4.4.0 produced this error:
+> It's not so much point of view as situation.  Putting the device tree
+> in the firmware and putting the device tree in the kernel are both
+> valid choices, with their own distinct advantages and drawbacks. 
 
-arch/powerpc/mm/tlb_nohash_low.S:206:6: error: #elif with no expression
+I was under the impression that the reason we put the device trees in
+the kernel is because we didn't have a better place to put them.
+Keeping them in the kernel repository was just convenient.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
----
- arch/powerpc/mm/tlb_nohash_low.S |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-v2: fixed up commit message, added Josh'd Ack.
-
-diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
-index 45fed36..21e1b9a 100644
---- a/arch/powerpc/mm/tlb_nohash_low.S
-+++ b/arch/powerpc/mm/tlb_nohash_low.S
-@@ -203,6 +203,6 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
- 	isync
- 1:	wrtee	r10
- 	blr
--#elif
-+#else
- #error Unsupported processor type !
- #endif
--- 
-1.6.2.3
-
+So I personally don't consider the *location* of the DTS files to be a
+basis for deciding what they really mean.
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Timur Tabi
+Linux kernel developer at Freescale
