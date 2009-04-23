@@ -1,26 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 18AD9DE010
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:50:08 +1000 (EST)
-Date: Thu, 23 Apr 2009 17:50:05 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: removing get_immrbase()??
-Message-ID: <20090423135005.GA18462@oksana.dev.rtsoft.ru>
-References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
-	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
-	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8E3A.4060304@freescale.com>
-	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
-	<20090423022610.GA19376@yookeroo.seuss>
-	<49F066DC.402@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <49F066DC.402@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F1198DE10E
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:53:17 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n3NDrEWP001837
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 08:53:14 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Revert "powerpc: Add support for early tlbilx opcode"
+Date: Thu, 23 Apr 2009 08:53:13 -0500
+Message-Id: <1240494793-17015-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,57 +21,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 23, 2009 at 08:02:20AM -0500, Timur Tabi wrote:
-> David Gibson wrote:
-> 
-> > It's not so much point of view as situation.  Putting the device tree
-> > in the firmware and putting the device tree in the kernel are both
-> > valid choices, with their own distinct advantages and drawbacks. 
-> 
-> I was under the impression that the reason we put the device trees in
-> the kernel is because we didn't have a better place to put them.
-> Keeping them in the kernel repository was just convenient.
-> 
-> So I personally don't consider the *location* of the DTS files to be a
-> basis for deciding what they really mean.
+This reverts commit e9965577406a2148ade97b5e0ce7c448b4ba4ef6.  Our HW
+guys were able to fix this so it never sees the light of day.
 
-I'm not sure why are we trying to make things harder for ourselves?
-x86 has a long history fighting with bogus bioses/dmi/acpi tables,
-up to the point where they completely ignore any information that
-BIOS provides, because that information is unreliable or hard to
-deal with.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/mmu.h        |    6 ------
+ arch/powerpc/include/asm/ppc-opcode.h |   11 +----------
+ arch/powerpc/kernel/cputable.c        |    2 +-
+ arch/powerpc/mm/tlb_nohash_low.S      |   14 +-------------
+ 4 files changed, 3 insertions(+), 30 deletions(-)
 
-With FDT (i.e. not hard-coded OF), we have a great opportunity to
-keep both device tree and Linux code legacyjunk-free.
-
-All we have to do is to declare one simple thing: don't put
-device-tree into the read-only memory. Upgrading device tree blob
-in the rewritable NOR/NAND flashes is safe in overwhelming cases,
-just as safe as upgrading kernel image in the NOR/NAND.
-
-And for those who didn't listen our pleases, i.e. for those
-who put device-tree blob into some kind of ROM or dangerous-
-to-upgrade memory or region of memory, we can always provide
-boot wrappers, and thus isolate the legacy stuff. I mean isolate
-it in their small legacy world, if anyone actually cares about
-these cases.
-
-As for Freescale parts, all the reference board I've seen were
-very friendly wrt upgrading their device-trees, i.e. none of
-the boards were shipping with device-tree soldered into the
-firmware.
-
-And note that most developers are using up-to-date firmwares
-(U-Boots), device trees, and kernels. And that means that old
-device-tree + new kernel combination is left untested for years.
-And untested stuff is broken stuff, by definition.
-
-Sure, there is a completely different story wrt device-tree
-changes that might break firmwares. And that I believe we'd
-better avoid. For example device_type = "soc", if removed,
-most firmwares would not fix-up {clock,bus}-frequency properties.
-
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 86d2366..cbf1543 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -52,12 +52,6 @@
+  */
+ #define MMU_FTR_NEED_DTLB_SW_LRU	ASM_CONST(0x00200000)
+ 
+-/* This indicates that the processor uses the wrong opcode for tlbilx
+- * instructions.  During the ISA 2.06 development the opcode for tlbilx
+- * changed and some early implementations used to old opcode
+- */
+-#define MMU_FTR_TLBILX_EARLY_OPCODE	ASM_CONST(0x00400000)
+-
+ #ifndef __ASSEMBLY__
+ #include <asm/cputable.h>
+ 
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index ef4da37..640ccbb 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -44,7 +44,6 @@
+ #define PPC_INST_STSWI			0x7c0005aa
+ #define PPC_INST_STSWX			0x7c00052a
+ #define PPC_INST_TLBILX			0x7c000024
+-#define PPC_INST_TLBILX_EARLY		0x7c000626
+ #define PPC_INST_WAIT			0x7c00007c
+ 
+ /* macros to insert fields into opcodes */
+@@ -64,18 +63,10 @@
+ #define PPC_RFDI		stringify_in_c(.long PPC_INST_RFDI)
+ #define PPC_RFMCI		stringify_in_c(.long PPC_INST_RFMCI)
+ #define PPC_TLBILX(t, a, b)	stringify_in_c(.long PPC_INST_TLBILX | \
+-					__PPC_T_TLB(t) | \
+-					__PPC_RA(a) | __PPC_RB(b))
++					__PPC_T_TLB(t) | __PPC_RA(a) | __PPC_RB(b))
+ #define PPC_TLBILX_ALL(a, b)	PPC_TLBILX(0, a, b)
+ #define PPC_TLBILX_PID(a, b)	PPC_TLBILX(1, a, b)
+ #define PPC_TLBILX_VA(a, b)	PPC_TLBILX(3, a, b)
+-
+-#define PPC_TLBILX_EARLY(t, a, b) stringify_in_c(.long PPC_INST_TLBILX_EARLY | \
+-						__PPC_T_TLB(t) | \
+-						__PPC_RA(a) | __PPC_RB(b))
+-#define PPC_TLBILX_ALL_EARLY(a, b)	PPC_TLBILX_EARLY(0, a, b)
+-#define PPC_TLBILX_PID_EARLY(a, b)	PPC_TLBILX_EARLY(1, a, b)
+-#define PPC_TLBILX_VA_EARLY(a, b)	PPC_TLBILX_EARLY(3, a, b)
+ #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
+ 					__PPC_WC(w))
+ 
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 57db50f..cd1b687 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1766,7 +1766,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.cpu_features		= CPU_FTRS_E500MC,
+ 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+ 		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS |
+-			MMU_FTR_USE_TLBILX | MMU_FTR_TLBILX_EARLY_OPCODE,
++			MMU_FTR_USE_TLBILX,
+ 		.icache_bsize		= 64,
+ 		.dcache_bsize		= 64,
+ 		.num_pmcs		= 4,
+diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
+index 45fed36..788b87c 100644
+--- a/arch/powerpc/mm/tlb_nohash_low.S
++++ b/arch/powerpc/mm/tlb_nohash_low.S
+@@ -138,11 +138,7 @@ BEGIN_MMU_FTR_SECTION
+ 	andi.	r3,r3,MMUCSR0_TLBFI@l
+ 	bne	1b
+ MMU_FTR_SECTION_ELSE
+-  BEGIN_MMU_FTR_SECTION_NESTED(96)
+-	PPC_TLBILX_ALL(0,r3)
+-  MMU_FTR_SECTION_ELSE_NESTED(96)
+-	PPC_TLBILX_ALL_EARLY(0,r3)
+-  ALT_MMU_FTR_SECTION_END_NESTED_IFCLR(MMU_FTR_TLBILX_EARLY_OPCODE, 96)
++	PPC_TLBILX_ALL(0,0)
+ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
+ 	msync
+ 	isync
+@@ -155,11 +151,7 @@ BEGIN_MMU_FTR_SECTION
+ 	wrteei	0
+ 	mfspr	r4,SPRN_MAS6	/* save MAS6 */
+ 	mtspr	SPRN_MAS6,r3
+-  BEGIN_MMU_FTR_SECTION_NESTED(96)
+ 	PPC_TLBILX_PID(0,0)
+-  MMU_FTR_SECTION_ELSE_NESTED(96)
+-	PPC_TLBILX_PID_EARLY(0,0)
+-  ALT_MMU_FTR_SECTION_END_NESTED_IFCLR(MMU_FTR_TLBILX_EARLY_OPCODE, 96)
+ 	mtspr	SPRN_MAS6,r4	/* restore MAS6 */
+ 	wrtee	r10
+ MMU_FTR_SECTION_ELSE
+@@ -193,11 +185,7 @@ BEGIN_MMU_FTR_SECTION
+ 	mtspr	SPRN_MAS1,r4
+ 	tlbwe
+ MMU_FTR_SECTION_ELSE
+-  BEGIN_MMU_FTR_SECTION_NESTED(96)
+ 	PPC_TLBILX_VA(0,r3)
+-  MMU_FTR_SECTION_ELSE_NESTED(96)
+-	PPC_TLBILX_VA_EARLY(0,r3)
+-  ALT_MMU_FTR_SECTION_END_NESTED_IFCLR(MMU_FTR_TLBILX_EARLY_OPCODE, 96)
+ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
+ 	msync
+ 	isync
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.0.6
