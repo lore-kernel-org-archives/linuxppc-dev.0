@@ -1,26 +1,21 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id B5445DDF86
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 10:03:40 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so219592qwe.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 17:03:39 -0700 (PDT)
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 10866DDF96
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 10:05:56 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so164339yxb.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2009 17:05:55 -0700 (PDT)
 MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <49EF9B50.7010904@freescale.com>
-References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
-	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
-	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8E3A.4060304@freescale.com>
-	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
-	<49EF9B50.7010904@freescale.com>
-Date: Wed, 22 Apr 2009 19:03:39 -0500
-Message-ID: <ed82fe3e0904221703p44caec8es9467861790473a9a@mail.gmail.com>
-Subject: Re: removing get_immrbase()??
-From: Timur Tabi <timur@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20090422181059.7510A83420E8@gemini.denx.de>
+References: <1240422181.5492.0@antares>
+	<20090422181059.7510A83420E8@gemini.denx.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 22 Apr 2009 18:05:40 -0600
+Message-ID: <fa686aa40904221705r24f8093bn74d336ddc2b8edaf@mail.gmail.com>
+Subject: Re: [OT] Lite5200B w/ nfs root hangs after some time
+To: Wolfgang Denk <wd@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Cc: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>,
+	Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,13 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 22, 2009 at 5:33 PM, Scott Wood <scottwood@freescale.com> wrote:
+On Wed, Apr 22, 2009 at 12:10 PM, Wolfgang Denk <wd@denx.de> wrote:
+> In message <1240422181.5492.0@antares> you wrote:
+>> Any idea what goes wrong here, and how I could fix it?
+>
+> Apply this patch:
+>
+> http://patchwork.ozlabs.org/patch/24487/
 
-> All I'm asking is that we treat a mandatory dts upgrade as seriously as a
-> mandatory firmware upgrade.
+No, that's not the problem in this case.  2.6.29 networking is broken
+for a lot of platforms, not just mpc5200.  Use 2.6.29.1 instead.
 
-I agree with this statement 100%.
+g.
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
