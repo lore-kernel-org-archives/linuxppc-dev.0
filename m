@@ -1,17 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EA1A5DE616
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:55:31 +1000 (EST)
-Date: Thu, 23 Apr 2009 08:55:23 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'merge' branch for 2.6.30
-Message-ID: <Pine.LNX.4.64.0904230854310.17039@localhost.localdomain>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 51901DE133
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 00:03:02 +1000 (EST)
+Message-ID: <49F07509.8030603@freescale.com>
+Date: Thu, 23 Apr 2009 09:02:49 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: avorontsov@ru.mvista.com
+Subject: Re: removing get_immrbase()??
+References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
+	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
+	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
+	<49EF8E3A.4060304@freescale.com>
+	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
+	<20090423022610.GA19376@yookeroo.seuss>
+	<49F066DC.402@freescale.com>
+	<20090423135005.GA18462@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090423135005.GA18462@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'merge' branch of
+Anton Vorontsov wrote:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
+> And note that most developers are using up-to-date firmwares
+> (U-Boots), device trees, and kernels. 
 
-to receive the following updates:
+Developers? Yes.
+End-users? No.
 
- arch/powerpc/include/asm/mmu.h        |    6 ------
- arch/powerpc/include/asm/ppc-opcode.h |   11 +----------
- arch/powerpc/kernel/cputable.c        |    2 +-
- arch/powerpc/mm/tlb_nohash_low.S      |   16 ++--------------
- 4 files changed, 4 insertions(+), 31 deletions(-)
+Updating U-Boot itself is often unacceptable for end-users.  There's
+also a strong connection between U-Boot and the device tree.  That
+connection gets stronger with every release, as U-Boot makes more and
+more changes to the device tree before passing it to the kernel.  This
+means that if you cannot update U-Boot, you might not be able to update
+your device tree either.
 
-Kumar Gala (1):
-      Revert "powerpc: Add support for early tlbilx opcode"
+We've run into plenty of situations where customers will update the
+kernel, but insist that U-Boot and the device tree remain unchanged.
 
-Stephen Rothwell (1):
-      powerpc: fix for long standing bug noticed by gcc 4.4.0
+> And that means that old
+> device-tree + new kernel combination is left untested for years.
+> And untested stuff is broken stuff, by definition.
+
+I'm not saying that should officially support it.  I'm saying we should
+make an effort to minimize the problem.  Adding a few isolated lines of
+code to maintain that compatibility, and running a few tests, is not a
+bad idea and can save headaches for some people in the future.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
