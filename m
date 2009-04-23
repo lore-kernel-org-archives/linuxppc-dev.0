@@ -1,18 +1,29 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id 73135DE144
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 08:28:07 +1000 (EST)
-Message-ID: <49F0EB6A.40000@mlbassoc.com>
-Date: Thu, 23 Apr 2009 16:27:54 -0600
-From: Gary Thomas <gary@mlbassoc.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: PCI changes 2.6.26 => 2.6.28
-References: <49EDF333.4000200@mlbassoc.com>	<49EE2CD8.7010700@mlbassoc.com>	<29EEEBDE-B87C-4073-9967-E1DA7EFB0B0B@kernel.crashing.org>	<49EE306D.3000401@mlbassoc.com>	<49EE4729.3000100@mlbassoc.com>	<612CEF05-3EFB-4947-B5FC-B35C1F9568D7@kernel.crashing.org>	<46B035C0-624F-41E4-BFDD-C16479CF8FC8@kernel.crashing.org>	<49EE5021.4020703@mlbassoc.com>	<306F293D-44CD-4238-ADA9-BB7436C7004C@kernel.crashing.org>	<49EE5A80.4030209@mlbassoc.com>	<B869D8DC-2A3B-4B53-8BFD-15D403CE20D4@kernel.crashing.org>	<49F07A15.9010006@mlbassoc.com>
-	<97DF2A19-563D-404A-AD3D-039D5989E489@kernel.crashing.org>
-In-Reply-To: <97DF2A19-563D-404A-AD3D-039D5989E489@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <amarquez@edgeaccess.net>
+Received: from [209.168.173.179] (unknown [209.168.173.179])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "firewall.edgeaccess.net",
+	Issuer "firewall.edgeaccess.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id E20DFDE0E0
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 10:20:39 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by firewall.edgeaccess.net (Postfix) with ESMTP id 4B7C6274053
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 19:52:54 -0400 (EDT)
+Received: from mail.edgeaccess.net (unknown [192.168.10.99])
+	by firewall.edgeaccess.net (Postfix) with ESMTP id 51B4027402B
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 19:52:53 -0400 (EDT)
+Received: from mail.edgeaccess.net (localhost.localdomain [127.0.0.1])
+	by mail.edgeaccess.net (8.13.8/8.13.8) with ESMTP id n3NNPagI016138
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 19:25:37 -0400
+Date: Thu, 23 Apr 2009 19:50:25 -0400
+From: Andres F Marquez <amarquez@edgeaccess.net>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1240530625.31311.20.camel@localhost.localdomain>
+Subject: Enable Serial Management Controller (SMC) in MPC8265
+Mime-Version: 1.0
+Content-Type: text/plain
+Cc: Nirmala Kakkuppi <nkakkuppi@edgeaccess.net>,
+	Haysam Rachid <hrachid@edgeaccess.net>
+Reply-To: Andres Marquez <amarquez@edgeaccess.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,109 +33,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Apr 23, 2009, at 9:24 AM, Gary Thomas wrote:
-> 
->> I have found the culprit - in arch/powerpc/kernel/pci_32.c
->>
->> static void
->> fixup_hide_host_resource_fsl(struct pci_dev *dev)
->> {
->>     int i, class = dev->class >> 8;
->>
->> #if 0
->>     if ((class == PCI_CLASS_PROCESSOR_POWERPC ||
->>          class == PCI_CLASS_BRIDGE_OTHER) &&
->> #else
->>        if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
->> #endif
->>         (dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
->>         (dev->bus->parent == NULL)) {
->>         for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
->>             dev->resource[i].start = 0;
->>             dev->resource[i].end = 0;
->>             dev->resource[i].flags = 0;
->>         }
->>     }
->> }
->> DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID,
->> fixup_hide_host_resource_fsl);
->> DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID,
->> fixup_hide_host_resource_fsl);
->>
->> This function is now (the #if 0 case is in 2.6.28) tossing out
->> the memory resources used by the PCI bridge itself.  This makes
->> everything fall over, at least on my 834x platform.
->>
->> This change was applied 2008-10-08, but it seems incorrect on the 834x.
-> 
-> Its not.  The PCI subsystem shouldn't be allocating or seeing the PHBs
-> resources.
-> 
->>> Are you using u-boot to boot?  If so is the board port public?
->>
->> My systems use RedBoot (I'm the original author of RedBoot, so one would
->> expect that).  At this moment, the code isn't public, sorry.
-> 
-> Ok.  Not sure if RedBoot has a simple memory dump command, but if you
-> can dump the IMMR registers for PCI (0x8400 - IOS and 0x8500 - PCI1). 
-> (I'm assuming PCI1 is the one you are using).  From IOS I wanted the
+Hello,
 
-I don't think any of this matters.  It turns out that even
-the 2.6.26 kernel fails on an identical board with a newer
-revision of the 8347 chip.  I'm sure that the problem is
-that the Coral-P fails when mapped to 0 (PCI relative).
+     I am working with a MPC8265 processor for which I am compiling a
+Kernel using LTIB. I just came to a point in my project in which I need
+an additional serial port to interface my CPU with a FPGA. Since my
+UTOPIA interface is using several serial ports -pins, the only option
+that I find available is to use a Serial Management Controller (SMC)
+port (SMC1 or SMC2).
 
-I couldn't find another reliable way to get the Coral-P assigned
-an address other than 0, so I'm happy accepting the work around
-of allowing the kernel to map those windows, even if it's not
-necessary.
+      I enabled SCC1 (for the console) and SMC2 through the Kernel
+(2.6.25) configuration tool using LTIB. I am able to run my system and
+execute minicom to try to configure the needed serial port. I have not
+been able to find the tty port that refers to either one of the two SMC
+ports. I have tried all the tty's that I get when I do ls /dev/tty* but
+none of them seem to work. Below, I provide the list of tty's that I am
+getting. ttyCPM0 is being used for the console. ttyCPM1 is the only one
+that I am allowed to configure through minicom (for the rest it says
+device not found). But even after configuring ttyCPM1 I don't see
+anything through the serial lines.
 
-For completeness, here are the values you asked for:
-pcilawbar0     : 0xc0000000  -1073741824
-pcilawar       : 0x8000001b  -2147483621
-pcilawbar1     : 0xb8000000  -1207959552
-pcilawar1      : 0x80000013  -2147483629
+-sh-2.05b# ls /dev/tty*
+Using fallback suid method
+/dev/tty      /dev/tty7     /dev/ttyP1    /dev/ttyPSC5  /dev/ttyp3
+/dev/tty0     /dev/ttyAM0   /dev/ttyP2    /dev/ttyS0    /dev/ttyp4
+/dev/tty1     /dev/ttyAM1   /dev/ttyP3    /dev/ttyS1    /dev/ttyp5
+/dev/tty2     /dev/ttyAM2   /dev/ttyPSC0  /dev/ttyS2    /dev/ttyp6
+/dev/tty3     /dev/ttyAM3   /dev/ttyPSC1  /dev/ttyS3    /dev/ttyp7
+/dev/tty4     /dev/ttyCPM0  /dev/ttyPSC2  /dev/ttyp0    /dev/ttyp8
+/dev/tty5     /dev/ttyCPM1  /dev/ttyPSC3  /dev/ttyp1    /dev/ttyp9
+/dev/tty6     /dev/ttyP0    /dev/ttyPSC4  /dev/ttyp2
+-sh-2.05b# 
 
-8347>md 0xff008400
-ff008400 : 00000000 00000000 000c0000 00000000  ................
-ff008410 : 800f0000 00000000 00000000 00000000  ................
-ff008420 : 000b8000 00000000 c00fff00 00000000  ................
-ff008430 : 00000000 00000000 00000000 00000000  ................
-ff008440 : 00000000 00000000 00000000 00000000  ................
-ff008450 : 00000000 00000000 00000000 00000000  ................
-ff008460 : 00000000 00000000 00000000 00000000  ................
-ff008470 : 00000000 00000000 00000000 00000000  ................
-ff008480 : 00000000 00000000 00000000 00000000  ................
-ff008490 : 00000000 00000000 00000000 00000000  ................
-ff0084a0 : 00000000 00000000 00000000 00000000  ................
-ff0084b0 : 00000000 00000000 00000000 00000000  ................
-ff0084c0 : 00000000 00000000 00000000 00000000  ................
-ff0084d0 : 00000000 00000000 00000000 00000000  ................
-ff0084e0 : 00000000 00000000 00000000 00000000  ................
-ff0084f0 : 00000001 00010006 00000000 00000000  ................
+   I am not sure how to know which one of them belongs to the SMC serial
+controllers. 
 
-8347>md 0xff008500
-ff008500 : 00000000 00000000 00000000 00000000  ................
-ff008510 : 00000000 00000000 00000000 00000000  ................
-ff008520 : 00000001 00000000 00000001 00000000  ................
-ff008530 : 00000000 00000000 00000000 00000000  ................
-ff008540 : 00000000 00000000 00000000 00000000  ................
-ff008550 : 00000000 00000000 00000000 00000000  ................
-ff008560 : a005501a 00000000 00000000 00000000  ..P.............
-ff008570 : 00000000 00000000 00000000 00000000  ................
-ff008580 : 00000000 00000000 00000000 00000000  ................
-ff008590 : 00000000 00000000 00000000 00000000  ................
-ff0085a0 : 00000000 00000000 00000000 00000000  ................
-ff0085b0 : 00000000 00000000 00000000 00000000  ................
-ff0085c0 : 00000000 00000000 00000000 00000000  ................
-ff0085d0 : 00000000 00000000 00000000 00000000  ................
-ff0085e0 : 00000000 00000000 00000000 00000000  ................
-ff0085f0 : 00000000 00000000 00000000 00000000  ................
+     After doing some research online, I added an entry in my
+mpc8272ads.dts file for the smc serial controller. Below, I provide the
+entries for the serial ports (one SCC1 and one SMC2):
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+                        serial@11a00 {
+                                device_type = "serial";
+                                compatible = "fsl,mpc8280-scc-uart",
+                                             "fsl,cpm2-scc-uart";
+                                reg = <11a00 20 8000 100>;
+                                interrupts = <28 8>;
+                                interrupt-parent = <&PIC>;
+                                fsl,cpm-brg = <2>;
+                                fsl,cpm-command = <00800000>;
+                        };
+
+                        serial@11a92 {
+                                device_type = "serial";
+                                compatible = "fsl,mpc8280-smc-uart",
+                                                "fsl,cpm2-smc-uart";
+                                reg = <11a92 20 88fc 2>;
+                                interrupts = <5 8>;
+                                interrupt-parent = <&PIC>;
+                                fsl,cpm-brg = <2>;
+                                fsl,cpm-command = <21200000>;
+                        };
+
+     I am kind of confused about what I could be missing in order to use
+the SMC. I don't even need it to be UART. I just need a serial interface
+for a FPGA which I am programming. One thing in which I was successful
+was in configuring in uboot the console to run in the SMC2 port -instead
+of the default which is SCC1 (I was able to boot uboot and the kernel
+through the SMC2 serial port -using NFS). However, I need in my system
+both enable (SCC1 and SMC2). I have not been able to do that. I am not
+sure if it is possible or not. I have made a lot of changes in the .dts
+file but have not been successful. For some reason in uboot, it seems
+like the configurations for SCC1 and SMC2 are exclusive. They depend on
+where the console is configured (SCC1 or SMC2). Either one can be
+configured, but not both at the same time (at least based on uboot
+configuration definitions. They are within if's and elif's...). As I
+said before, both of them are able to run the console.
+
+Thank you in advance for any help.
+
+Bye.
+
+
+ANDRES
