@@ -1,20 +1,10 @@
-Return-Path: <ben@trinity.fluff.org>
-Received: from trinity.fluff.org (trinity.fluff.org [89.16.178.74])
-	by ozlabs.org (Postfix) with ESMTP id 237E6DDF8F
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 11:02:45 +1000 (EST)
-Date: Wed, 22 Apr 2009 22:56:46 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] i2c-cpm: Pass dev ptr to dma_*_coherent rather than NULL
-Message-ID: <20090422215646.GA19997@trinity.fluff.org>
-References: <49EDC0BE.7040505@elphinstone.net>
-	<E2205842-8019-4CE4-812B-64ABD76F36F4@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E2205842-8019-4CE4-812B-64ABD76F36F4@kernel.crashing.org>
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>,
-	Mark Ware <mware@elphinstone.net>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/6] powerpc: Move #ifdef'ed body of do_IRQ() into a separate
+	function
+Date: Thu, 23 Apr 2009 11:31:37 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +14,132 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 21, 2009 at 10:11:51AM -0500, Kumar Gala wrote:
-> 
-> On Apr 21, 2009, at 7:49 AM, Mark Ware wrote:
-> 
-> >Recent DMA changes result in a BUG() when NULL is passed to
-> >dma_alloc_coherent in place of a device.
-> >
-> >Signed-off-by: Mark Ware <mware@elphinstone.net>
-> >---
-> >
-> >This patch fixes the BUG() during boot that has appeared during the
-> >2.6.30 window. It has been tested and appears correct on my 8280 based
-> >board.
-> >Sent to both linuxppc-dev and linux-i2c, since I'm not sure where it  
-> >belongs.
-> >
-> >
-> >drivers/i2c/busses/i2c-cpm.c |   14 ++++++++------
-> >1 files changed, 8 insertions(+), 6 deletions(-)
-> 
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
-> 
-> Ben, I'm expecting you to pick this up unless you tell me otherwise.
+Rather than a giant ifdef in the body of do_IRQ(), including a
+dangling else, move the irq stack logic into a separate routine and
+do the ifdef there.
 
-Yes.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/kernel/irq.c |   96 ++++++++++++++++++++++++++-------------------
+ 1 files changed, 56 insertions(+), 40 deletions(-)
 
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 8c1a496..bc08827 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -248,13 +248,63 @@ void fixup_irqs(cpumask_t map)
+ }
+ #endif
+ 
++#ifdef CONFIG_IRQSTACKS
++static inline void handle_one_irq(unsigned int irq)
++{
++	struct thread_info *curtp, *irqtp;
++	unsigned long saved_sp_limit;
++	struct irq_desc *desc;
++	void *handler;
++
++	/* Switch to the irq stack to handle this */
++	curtp = current_thread_info();
++	irqtp = hardirq_ctx[smp_processor_id()];
++
++	if (curtp == irqtp) {
++		/* We're already on the irq stack, just handle it */
++		generic_handle_irq(irq);
++		return;
++	}
++
++	desc = irq_desc + irq;
++	saved_sp_limit = current->thread.ksp_limit;
++
++	handler = desc->handler;
++	if (handler == NULL)
++		handler = &__do_IRQ;
++
++	irqtp->task = curtp->task;
++	irqtp->flags = 0;
++
++	/* Copy the softirq bits in preempt_count so that the
++	 * softirq checks work in the hardirq context. */
++	irqtp->preempt_count = (irqtp->preempt_count & ~SOFTIRQ_MASK) |
++			       (curtp->preempt_count & SOFTIRQ_MASK);
++
++	current->thread.ksp_limit = (unsigned long)irqtp +
++		_ALIGN_UP(sizeof(struct thread_info), 16);
++
++	call_handle_irq(irq, desc, irqtp, handler);
++	current->thread.ksp_limit = saved_sp_limit;
++	irqtp->task = NULL;
++
++	/* Set any flag that may have been set on the
++	 * alternate stack
++	 */
++	if (irqtp->flags)
++		set_bits(irqtp->flags, &curtp->flags);
++}
++#else
++static inline void handle_one_irq(unsigned int irq)
++{
++	generic_handle_irq(irq);
++}
++#endif
++
+ void do_IRQ(struct pt_regs *regs)
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
+ 	unsigned int irq;
+-#ifdef CONFIG_IRQSTACKS
+-	struct thread_info *curtp, *irqtp;
+-#endif
+ 
+ 	irq_enter();
+ 
+@@ -282,43 +332,9 @@ void do_IRQ(struct pt_regs *regs)
+ 	 */
+ 	irq = ppc_md.get_irq();
+ 
+-	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE) {
+-#ifdef CONFIG_IRQSTACKS
+-		/* Switch to the irq stack to handle this */
+-		curtp = current_thread_info();
+-		irqtp = hardirq_ctx[smp_processor_id()];
+-		if (curtp != irqtp) {
+-			struct irq_desc *desc = irq_desc + irq;
+-			void *handler = desc->handle_irq;
+-			unsigned long saved_sp_limit = current->thread.ksp_limit;
+-			if (handler == NULL)
+-				handler = &__do_IRQ;
+-			irqtp->task = curtp->task;
+-			irqtp->flags = 0;
+-
+-			/* Copy the softirq bits in preempt_count so that the
+-			 * softirq checks work in the hardirq context.
+-			 */
+-			irqtp->preempt_count =
+-				(irqtp->preempt_count & ~SOFTIRQ_MASK) |
+-				(curtp->preempt_count & SOFTIRQ_MASK);
+-
+-			current->thread.ksp_limit = (unsigned long)irqtp +
+-				_ALIGN_UP(sizeof(struct thread_info), 16);
+-			call_handle_irq(irq, desc, irqtp, handler);
+-			current->thread.ksp_limit = saved_sp_limit;
+-			irqtp->task = NULL;
+-
+-
+-			/* Set any flag that may have been set on the
+-			 * alternate stack
+-			 */
+-			if (irqtp->flags)
+-				set_bits(irqtp->flags, &curtp->flags);
+-		} else
+-#endif
+-			generic_handle_irq(irq);
+-	} else if (irq != NO_IRQ_IGNORE)
++	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE)
++		handle_one_irq(irq);
++	else if (irq != NO_IRQ_IGNORE)
+ 		/* That's not SMP safe ... but who cares ? */
+ 		ppc_spurious_interrupts++;
+ 
 -- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+1.6.2.1
