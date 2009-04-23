@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <1172bff338316019112e982bafe61e862d1847a2.1240450296.git.michael@ellerman.id.au>
+Message-Id: <f2b2aa06b5713b0c2bc5f4933f502be9bef5750d.1240450296.git.michael@ellerman.id.au>
 In-Reply-To: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
 References: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 3/6] powerpc: Move get_irq() comment into header
-Date: Thu, 23 Apr 2009 11:31:38 +1000 (EST)
+Subject: [PATCH 4/6] powerpc: Remove fallback to __do_IRQ()
+Date: Thu, 23 Apr 2009 11:31:43 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,47 +15,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The guts of do_IRQ() isn't really the right place to be documenting
-the ppc_md.get_irq() interface. So move the comment into machdep.h
+We should no longer have any irq code that needs __do_IRQ(), so
+remove the fallback to __do_IRQ().
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/include/asm/machdep.h |    4 ++++
- arch/powerpc/kernel/irq.c          |    7 -------
- 2 files changed, 4 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/irq.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 0efdb1d..11d1fc3 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -110,6 +110,10 @@ struct machdep_calls {
- 	void		(*show_percpuinfo)(struct seq_file *m, int i);
- 
- 	void		(*init_IRQ)(void);
-+
-+	/* Return an irq, or NO_IRQ to indicate there are none pending.
-+	 * If for some reason there is no irq, but the interrupt
-+	 * shouldn't be counted as spurious, return NO_IRQ_IGNORE. */
- 	unsigned int	(*get_irq)(void);
- #ifdef CONFIG_KEXEC
- 	void		(*kexec_cpu_down)(int crash_shutdown, int secondary);
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index f725610..b8f09bd 100644
+index b8f09bd..7d46e5d 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -326,13 +326,6 @@ void do_IRQ(struct pt_regs *regs)
+@@ -254,7 +254,6 @@ static inline void handle_one_irq(unsigned int irq)
+ 	struct thread_info *curtp, *irqtp;
+ 	unsigned long saved_sp_limit;
+ 	struct irq_desc *desc;
+-	void *handler;
  
- 	check_stack_overflow();
+ 	/* Switch to the irq stack to handle this */
+ 	curtp = current_thread_info();
+@@ -269,10 +268,6 @@ static inline void handle_one_irq(unsigned int irq)
+ 	desc = irq_desc + irq;
+ 	saved_sp_limit = current->thread.ksp_limit;
  
--	/*
--	 * Every platform is required to implement ppc_md.get_irq.
--	 * This function will either return an irq number or NO_IRQ to
--	 * indicate there are no more pending.
--	 * The value NO_IRQ_IGNORE is for buggy hardware and means that this
--	 * IRQ has already been handled. -- Tom
--	 */
- 	irq = ppc_md.get_irq();
+-	handler = desc->handler;
+-	if (handler == NULL)
+-		handler = &__do_IRQ;
+-
+ 	irqtp->task = curtp->task;
+ 	irqtp->flags = 0;
  
- 	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE)
+@@ -284,7 +279,7 @@ static inline void handle_one_irq(unsigned int irq)
+ 	current->thread.ksp_limit = (unsigned long)irqtp +
+ 		_ALIGN_UP(sizeof(struct thread_info), 16);
+ 
+-	call_handle_irq(irq, desc, irqtp, handler);
++	call_handle_irq(irq, desc, irqtp, desc->handle_irq);
+ 	current->thread.ksp_limit = saved_sp_limit;
+ 	irqtp->task = NULL;
+ 
 -- 
 1.6.2.1
