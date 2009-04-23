@@ -1,17 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 285F9DE13D
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:54:20 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: removing get_immrbase()??
-Date: Thu, 23 Apr 2009 15:53:55 +0200
-References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
-In-Reply-To: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
+	by ozlabs.org (Postfix) with ESMTP id 73FECDE14D
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 00:24:45 +1000 (EST)
+Message-ID: <49F07A15.9010006@mlbassoc.com>
+Date: Thu, 23 Apr 2009 08:24:21 -0600
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-Message-Id: <200904231553.56464.arnd@arndb.de>
-Content-Type: multipart/alternative; boundary="Boundary-00=_0LH8JFzC5XDbHj5"
-Cc: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: PCI changes 2.6.26 => 2.6.28
+References: <49EDF333.4000200@mlbassoc.com>	<49EE2CD8.7010700@mlbassoc.com>	<29EEEBDE-B87C-4073-9967-E1DA7EFB0B0B@kernel.crashing.org>	<49EE306D.3000401@mlbassoc.com>	<49EE4729.3000100@mlbassoc.com>	<612CEF05-3EFB-4947-B5FC-B35C1F9568D7@kernel.crashing.org>	<46B035C0-624F-41E4-BFDD-C16479CF8FC8@kernel.crashing.org>	<49EE5021.4020703@mlbassoc.com>	<306F293D-44CD-4238-ADA9-BB7436C7004C@kernel.crashing.org>	<49EE5A80.4030209@mlbassoc.com>
+	<B869D8DC-2A3B-4B53-8BFD-15D403CE20D4@kernel.crashing.org>
+In-Reply-To: <B869D8DC-2A3B-4B53-8BFD-15D403CE20D4@kernel.crashing.org>
+Content-Type: multipart/mixed; boundary="------------000604020806060603060703"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,203 +22,201 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_0LH8JFzC5XDbHj5
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+This is a multi-part message in MIME format.
+--------------000604020806060603060703
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Wednesday 22 April 2009, Kumar Gala wrote:
+Kumar Gala wrote:
+> 
+> On Apr 21, 2009, at 6:45 PM, Gary Thomas wrote:
+> 
+>> Kumar Gala wrote:
+>>>
+>>> On Apr 21, 2009, at 6:00 PM, Gary Thomas wrote:
+>>>
+>>>>
+>>>> I found the difference - in 2.6.28 the inbound/outbound windows
+>>>> don't seem to be set up at all.  In 2.6.26, the function
+>>>> 'fsl_add_bridge'
+>>>> was common among architectures and ended up calling 'setup_pci_atmu'
+>>>> which created those mappings.  In 2.6.28, the 83xx PCI setup code
+>>>> has been refactored.  It uses 'mpc83xx_add_bridge' instead of
+>>>> 'fsl_add_bridge' and 'setup_pci_atmu' is not called at all :-(
+>>>>
+>>>> I'm sure this is the problem.
+>>>
+>>> Looking at a diff between 2.6.26 and .28 I don't see the 83xx pci code
+>>> calling setup_pci_atmu().
+>>
+>> It did not directly; it called 'fsl_add_bridge' which in turn called
+>> 'setup_pci_atmu'
+> 
+> Don't ever see 83xx boards calling fsl_add_bridge -- that is 85xx/86xx
+> only in 83xx.
 
-=46irst of all, thanks for bringing this up, I'd love to see get_immrbase()=
- gone.
+Sorry, you're correct.  I got lost looking through the code :-(
+No matter, none of that code seems to be relevant to the change
+in behaviour.
 
-> arch/powerpc/sysdev/cpm1.c:     mpc8xx_immr =3D ioremap(get_immrbase(), =
-=20
-> 0x4000);
->         not sure? ideas?
+>> I modified the 2.6.28 driver to also call this function.  Now the
+>> inbound/outbound windows are set up, but the bridge still has
+>> no allocations, so the problem remains.
+>>
+>> I need to move on; I may just live with sliding the PCI space
+>> up for now (doesn't really hurt anything, just seems like a hack)
+> 
+> It is and you are glossing over a real bug.
 
-Nobody has commented on this, so I've taken a brief look at it.
+I have found the culprit - in arch/powerpc/kernel/pci_32.c
 
-I'd suggest moving the logic up one step at a time. im_cpm, im_siu_conf and
-im_ioport could be defined locally in sysdev/cpm1.c rather than through
-mpc8xx_immr, all you need for this is to export accessor functions from cpm=
-1 for
-iop_pcso and cp_cptr:
-
-void cpm1_set_iop_pcso(u16 pcso)
+static void
+fixup_hide_host_resource_fsl(struct pci_dev *dev)
 {
-	setbits16(cpm1_ioport.iop_pcso, pcso);
+	int i, class = dev->class >> 8;
+
+#if 0
+	if ((class == PCI_CLASS_PROCESSOR_POWERPC ||
+	     class == PCI_CLASS_BRIDGE_OTHER) &&
+#else
+        if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
+#endif
+		(dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
+		(dev->bus->parent == NULL)) {
+		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+			dev->resource[i].start = 0;
+			dev->resource[i].end = 0;
+			dev->resource[i].flags = 0;
+		}
+	}
 }
-void cpm1_clear_iop_pcso(u16 pcso)
-{
-	clearbits16(cpm1_ioport.iop_pcso, pcso);
-}
-=2E..
+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
 
-im_sit, im_sitk, im_clkrst and im_clkrstk should be defined locally in m8xx=
-_setup.c,
-which is the only place that they are used in. Fortunately, the are all con=
-tiguous
-in the address sapce, so they can be moved into one new data structure with=
-=20
-a single static pointer to it in m8xx_setup.c:
+This function is now (the #if 0 case is in 2.6.28) tossing out
+the memory resources used by the PCI bridge itself.  This makes
+everything fall over, at least on my 834x platform.
 
-static struct {
-	struct=AD sys_int_timers sit;
-	struct clk_and_reset clkrst;
-	struct sitk sitk;
-	struct cark clkrstk;
-} *m8xx_setup_regs;
+This change was applied 2008-10-08, but it seems incorrect on the 834x.
 
-When this is done, 8xx_immap.h along with all the unused stuff therein can =
-be removed.
-In the last step, the device trees can be cleaned up so that you can of_iom=
-ap
-the regions in those two files directly.
+> Are you using u-boot to boot?  If so is the board port public?
 
-	Arnd <><
+My systems use RedBoot (I'm the original author of RedBoot, so one would
+expect that).  At this moment, the code isn't public, sorry.
 
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
 
---Boundary-00=_0LH8JFzC5XDbHj5
-Content-Type: text/html;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+--------------000604020806060603060703
+Content-Type: message/rfc822;
+ name="Attached Message"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="Attached Message"
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-=
-html40/strict.dtd">
-<html><head><meta name=3D"qrichtext" content=3D"1" /><style type=3D"text/cs=
-s">
-p, li { white-space: pre-wrap; }
-</style></head><body style=3D" font-family:'DejaVu Sans Light'; font-size:8=
-pt; font-weight:200; font-style:normal;">
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Wednesda=
-y 22 April 2009, Kumar Gala wrote:</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">First of al=
-l, thanks for bringing this up, I'd love to see get_immrbase() gone.</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; arch/p=
-owerpc/sysdev/cpm1.c:=A0=A0=A0=A0=A0mpc8xx_immr =3D ioremap(get_immrbase(),=
- =A0</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; 0x4000=
-);</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; =A0=A0=
-=A0=A0=A0=A0=A0=A0not sure? ideas?</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Nobody has =
-commented on this, so I've taken a brief look at it.</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">I'd suggest=
- moving the logic up one step at a time. im_cpm, im_siu_conf and</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">im_ioport c=
-ould be defined locally in sysdev/cpm1.c rather than through</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">mpc8xx_immr=
-, all you need for this is to export accessor functions from cpm1 for</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">iop_pcso an=
-d cp_cptr:</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">void cpm1_s=
-et_iop_pcso(u16 pcso)</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">{</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	setbits16(=
-cpm1_ioport.iop_pcso, pcso);</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">}</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">void cpm1_c=
-lear_iop_pcso(u16 pcso)</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">{</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	clearbits1=
-6(cpm1_ioport.iop_pcso, pcso);</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">}</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">...</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">im_sit, im_=
-sitk, im_clkrst and im_clkrstk should be defined locally in m8xx_setup.c,</=
-p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">which is th=
-e only place that they are used in. Fortunately, the are all contiguous</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">in the addr=
-ess sapce, so they can be moved into one new data structure with </p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">a single st=
-atic pointer to it in m8xx_setup.c:</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">static stru=
-ct {</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	struct=AD =
-sys_int_timers sit;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	struct clk=
-_and_reset clkrst;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	struct sit=
-k sitk;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	struct car=
-k clkrstk;</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">} *m8xx_set=
-up_regs;</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">When this i=
-s done, 8xx_immap.h along with all the unused stuff therein can be removed.=
-</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">In the last=
- step, the device trees can be cleaned up so that you can of_iomap</p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">the regions=
- in those two files directly.</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-rig=
-ht:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	Arnd &lt;&=
-gt;&lt;</p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p>
-<p style=3D"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; ma=
-rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-u=
-ser-state:0;"></p></body></html>
---Boundary-00=_0LH8JFzC5XDbHj5--
+Return-Path: <linuxppc-dev-bounces+gary=mlbassoc.com@ozlabs.org>
+X-Original-To: gary@mlbassoc.com
+Delivered-To: gary@mlbassoc.com
+Received: from localhost.localdomain [127.0.0.1]
+	by hermes.chez-thomas.org with POP3 (fetchmail-6.3.8)
+	for <gthomas@localhost> (single-drop); Tue, 07 Oct 2008 13:02:01 -0600 (MDT)
+Received: by mail.chez-thomas.org (Postfix, from userid 999)
+	id B4A9F3B5264B; Tue,  7 Oct 2008 13:01:30 -0600 (MDT)
+X-Spam-Checker-Version: SpamAssassin 3.2.5 (2008-06-10) on
+	hermes.chez-thomas.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.6 required=3.0 tests=BAYES_00 autolearn=ham
+	version=3.2.5
+Received: from ozlabs.org (ozlabs.org [203.10.76.45])
+	by mail.chez-thomas.org (Postfix) with ESMTP id EFC1C3B52624
+	for <gary@mlbassoc.com>; Tue,  7 Oct 2008 13:01:29 -0600 (MDT)
+Received: from ozlabs.org (localhost [127.0.0.1])
+	by ozlabs.org (Postfix) with ESMTP id 2F81FDE342
+	for <gary@mlbassoc.com>; Wed,  8 Oct 2008 06:01:23 +1100 (EST)
+X-Original-To: linuxppc-dev@ozlabs.org
+Delivered-To: linuxppc-dev@ozlabs.org
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B1139DE07C
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Oct 2008 06:01:08 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m97J0cRZ004505
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Oct 2008 12:00:41 -0700 (MST)
+Received: from localhost.localdomain (mvp-10-214-72-244.am.freescale.net
+	[10.214.72.244])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m97J0Lci020784;
+	Tue, 7 Oct 2008 14:00:23 -0500 (CDT)
+From: John Rigby <jrigby@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 3/3] powerpc: pci: 5121: Hide pci bridge.
+Date: Tue,  7 Oct 2008 13:00:20 -0600
+Message-Id: <1223406020-12278-4-git-send-email-jrigby@freescale.com>
+X-Mailer: git-send-email 1.5.6.2.255.gbed62
+In-Reply-To: <1223406020-12278-3-git-send-email-jrigby@freescale.com>
+References: <1223406020-12278-1-git-send-email-jrigby@freescale.com>
+	<1223406020-12278-2-git-send-email-jrigby@freescale.com>
+	<1223406020-12278-3-git-send-email-jrigby@freescale.com>
+Cc: John Rigby <jrigby@freescale.com>
+X-BeenThere: linuxppc-dev@ozlabs.org
+X-Mailman-Version: 2.1.11
+Precedence: list
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Sender: linuxppc-dev-bounces+gary=mlbassoc.com@ozlabs.org
+Errors-To: linuxppc-dev-bounces+gary=mlbassoc.com@ozlabs.org
+
+The class of the MPC5121 pci host bridge is PCI_CLASS_BRIDGE_OTHER
+while other freescale host bridges have class set to
+PCI_CLASS_PROCESSOR_POWERPC.
+
+This patch makes fixup_hide_host_resource_fsl match
+PCI_CLASS_BRIDGE_OTHER in addition to PCI_CLASS_PROCESSOR_POWERPC.
+
+Signed-off-by: John Rigby <jrigby@freescale.com>
+---
+ arch/powerpc/kernel/pci_32.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index 174b77e..a848c63 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -54,11 +54,12 @@ LIST_HEAD(hose_list);
+ static int pci_bus_count;
+ 
+ static void
+-fixup_hide_host_resource_fsl(struct pci_dev* dev)
++fixup_hide_host_resource_fsl(struct pci_dev *dev)
+ {
+ 	int i, class = dev->class >> 8;
+ 
+-	if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
++	if ((class == PCI_CLASS_PROCESSOR_POWERPC ||
++	     class == PCI_CLASS_BRIDGE_OTHER) &&
+ 		(dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
+ 		(dev->bus->parent == NULL)) {
+ 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+-- 
+1.5.6.2.255.gbed62
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+--------------000604020806060603060703--
