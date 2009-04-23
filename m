@@ -1,30 +1,26 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5290CDE010
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:46:48 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3NDgweb024101
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 09:42:58 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3NDkgCD182110
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 09:46:42 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3NDisYJ023925
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 09:44:55 -0400
-Date: Thu, 23 Apr 2009 09:45:38 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: [PATCH] PPC440EPx SDRAM width
-Message-ID: <20090423134538.GB3825@zod.rchland.ibm.com>
-References: <49F06ECC.7030904@harris.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 18AD9DE010
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2009 23:50:08 +1000 (EST)
+Date: Thu, 23 Apr 2009 17:50:05 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: removing get_immrbase()??
+Message-ID: <20090423135005.GA18462@oksana.dev.rtsoft.ru>
+References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org>
+	<ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
+	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
+	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
+	<49EF8E3A.4060304@freescale.com>
+	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
+	<20090423022610.GA19376@yookeroo.seuss>
+	<49F066DC.402@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49F06ECC.7030904@harris.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, sr@denx.de
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <49F066DC.402@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,23 +30,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 23, 2009 at 09:36:12AM -0400, Steven A. Falco wrote:
->There is an error in the way ibm4xx_denali_fixup_memsize calculates
->memory size.  When testing the DDR_REDUC bit, the polarity is
->backwards.  A "1" implies 32-bit wide memory while a "0" implies
->64-bit wide memory.
->
->For a 32-bit wide system, this bug causes twice the memory to be
->reported, leading to boot failure.
->
->Signed-off-by: Steven A. Falco <sfalco@harris.com>
+On Thu, Apr 23, 2009 at 08:02:20AM -0500, Timur Tabi wrote:
+> David Gibson wrote:
+> 
+> > It's not so much point of view as situation.  Putting the device tree
+> > in the firmware and putting the device tree in the kernel are both
+> > valid choices, with their own distinct advantages and drawbacks. 
+> 
+> I was under the impression that the reason we put the device trees in
+> the kernel is because we didn't have a better place to put them.
+> Keeping them in the kernel repository was just convenient.
+> 
+> So I personally don't consider the *location* of the DTS files to be a
+> basis for deciding what they really mean.
 
-So we had a previous patch for this, and a very long discussion on what the
-right solution was.  Either we never came to a resolution, or I have just
-forgotten what it was.
+I'm not sure why are we trying to make things harder for ourselves?
+x86 has a long history fighting with bogus bioses/dmi/acpi tables,
+up to the point where they completely ignore any information that
+BIOS provides, because that information is unreliable or hard to
+deal with.
 
-Stefan, Valentine, do either of you remember?  IIRC, it wasn't something that
-effected Sequoia or Rainier, but it could (and obviously does) effect custom
-boards.  I don't remember what we agreed on for the proper fix.
+With FDT (i.e. not hard-coded OF), we have a great opportunity to
+keep both device tree and Linux code legacyjunk-free.
 
-josh
+All we have to do is to declare one simple thing: don't put
+device-tree into the read-only memory. Upgrading device tree blob
+in the rewritable NOR/NAND flashes is safe in overwhelming cases,
+just as safe as upgrading kernel image in the NOR/NAND.
+
+And for those who didn't listen our pleases, i.e. for those
+who put device-tree blob into some kind of ROM or dangerous-
+to-upgrade memory or region of memory, we can always provide
+boot wrappers, and thus isolate the legacy stuff. I mean isolate
+it in their small legacy world, if anyone actually cares about
+these cases.
+
+As for Freescale parts, all the reference board I've seen were
+very friendly wrt upgrading their device-trees, i.e. none of
+the boards were shipping with device-tree soldered into the
+firmware.
+
+And note that most developers are using up-to-date firmwares
+(U-Boots), device trees, and kernels. And that means that old
+device-tree + new kernel combination is left untested for years.
+And untested stuff is broken stuff, by definition.
+
+Sure, there is a completely different story wrt device-tree
+changes that might break firmwares. And that I believe we'd
+better avoid. For example device_type = "soc", if removed,
+most firmwares would not fix-up {clock,bus}-frequency properties.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
