@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 59EF8DDFDD
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 04:42:27 +1000 (EST)
-Message-Id: <5FCD7AA1-1A27-46C4-99E0-6C37BB21DD31@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 970C7DE0E7
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 04:47:24 +1000 (EST)
+Message-Id: <97DF2A19-563D-404A-AD3D-039D5989E489@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <49F064EB.5030109@gefanuc.com>
+To: Gary Thomas <gary@mlbassoc.com>
+In-Reply-To: <49F07A15.9010006@mlbassoc.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] powerpc/86xx: clean up smp init code
-Date: Thu, 23 Apr 2009 13:42:17 -0500
-References: <1240421691-10193-1-git-send-email-galak@kernel.crashing.org>
-	<49F064EB.5030109@gefanuc.com>
+Subject: Re: PCI changes 2.6.26 => 2.6.28
+Date: Thu, 23 Apr 2009 13:47:15 -0500
+References: <49EDF333.4000200@mlbassoc.com>	<49EE2CD8.7010700@mlbassoc.com>	<29EEEBDE-B87C-4073-9967-E1DA7EFB0B0B@kernel.crashing.org>	<49EE306D.3000401@mlbassoc.com>	<49EE4729.3000100@mlbassoc.com>	<612CEF05-3EFB-4947-B5FC-B35C1F9568D7@kernel.crashing.org>	<46B035C0-624F-41E4-BFDD-C16479CF8FC8@kernel.crashing.org>	<49EE5021.4020703@mlbassoc.com>	<306F293D-44CD-4238-ADA9-BB7436C7004C@kernel.crashing.org>	<49EE5A80.4030209@mlbassoc.com>
+	<B869D8DC-2A3B-4B53-8BFD-15D403CE20D4@kernel.crashing.org>
+	<49F07A15.9010006@mlbassoc.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,37 +26,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 23, 2009, at 7:54 AM, Martyn Welch wrote:
+On Apr 23, 2009, at 9:24 AM, Gary Thomas wrote:
 
-> Kumar Gala wrote:
->> Removed the need for asm/mpc86xx.h as it was only used in  
->> mpc86xx_smp.c
->> and just moved the defines it cared about into there.  Also fixed up
->> the ioremap to only map the one 4k page we need access to and to  
->> iounmap
->> when we are done.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> arch/powerpc/include/asm/mpc86xx.h         |   33  
->> ----------------------------
->> arch/powerpc/platforms/86xx/gef_ppc9a.c    |    1 -
->> arch/powerpc/platforms/86xx/gef_sbc310.c   |    1 -
->> arch/powerpc/platforms/86xx/gef_sbc610.c   |    1 -
->> arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    1 -
->> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 -
->> arch/powerpc/platforms/86xx/mpc86xx_smp.c  |    8 ++++++-
->> arch/powerpc/platforms/86xx/sbc8641d.c     |    1 -
->> 8 files changed, 7 insertions(+), 40 deletions(-)
->> delete mode 100644 arch/powerpc/include/asm/mpc86xx.h
->>
->>
-> I assume this patch relies on one of the other patches posted?
+> I have found the culprit - in arch/powerpc/kernel/pci_32.c
 >
-> Just applying this patch to my development tree (based on your main  
-> branch) resulted in the following on a PPC9A:
+> static void
+> fixup_hide_host_resource_fsl(struct pci_dev *dev)
+> {
+> 	int i, class = dev->class >> 8;
+>
+> #if 0
+> 	if ((class == PCI_CLASS_PROCESSOR_POWERPC ||
+> 	     class == PCI_CLASS_BRIDGE_OTHER) &&
+> #else
+>        if ((class == PCI_CLASS_PROCESSOR_POWERPC) &&
+> #endif
+> 		(dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
+> 		(dev->bus->parent == NULL)) {
+> 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+> 			dev->resource[i].start = 0;
+> 			dev->resource[i].end = 0;
+> 			dev->resource[i].flags = 0;
+> 		}
+> 	}
+> }
+> DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID,  
+> fixup_hide_host_resource_fsl);
+> DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID,  
+> fixup_hide_host_resource_fsl);
+>
+> This function is now (the #if 0 case is in 2.6.28) tossing out
+> the memory resources used by the PCI bridge itself.  This makes
+> everything fall over, at least on my 834x platform.
+>
+> This change was applied 2008-10-08, but it seems incorrect on the  
+> 834x.
 
-Darn, this should have been a simple change.  I'll try it out on  
-mpc8641 to see if its happening there.
+Its not.  The PCI subsystem shouldn't be allocating or seeing the PHBs  
+resources.
+
+>> Are you using u-boot to boot?  If so is the board port public?
+>
+> My systems use RedBoot (I'm the original author of RedBoot, so one  
+> would
+> expect that).  At this moment, the code isn't public, sorry.
+
+Ok.  Not sure if RedBoot has a simple memory dump command, but if you  
+can dump the IMMR registers for PCI (0x8400 - IOS and 0x8500 - PCI1).   
+(I'm assuming PCI1 is the one you are using).  From IOS I wanted the  
+outbound registers, for PCI1 the inbound ATU registers.
 
 - k
