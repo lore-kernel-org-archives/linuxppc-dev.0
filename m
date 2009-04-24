@@ -1,22 +1,20 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 97504DDF07
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 20:50:15 +1000 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id C9DD9DDF6B
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 21:04:33 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [microblaze-uclinux] [PATCH 11/11] microblaze: Kconfig: Enable
-	drivers for Microblaze
-Date: Fri, 24 Apr 2009 12:49:48 +0200
-References: <764365e7af2e476e43cd674738e51f13b306979b.1239874968.git.monstr@monstr.eu>
-	<fa686aa40904200748t4fc0b623naf7fd8c34a743733@mail.gmail.com>
-	<1d3f23370904201924n4ab592cdq49a4a4c8ec78d1df@mail.gmail.com>
-In-Reply-To: <1d3f23370904201924n4ab592cdq49a4a4c8ec78d1df@mail.gmail.com>
+Subject: Re: [PATCH] [V5] Xilinx : Framebuffer Driver: Add PLB support and
+	cleanup DCR
+Date: Fri, 24 Apr 2009 13:01:58 +0200
+References: <20090417205119.3D35660055@mail16-sin.bigfish.com>
+In-Reply-To: <20090417205119.3D35660055@mail16-sin.bigfish.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="Boundary-00=_NlZ8Jr6788VPglS"
-Message-Id: <200904241249.49870.arnd@arndb.de>
-Cc: Stephen Neuendorffer <stephenn@xilinx.com>, linux-kernel@vger.kernel.org,
-	microblaze-uclinux@itee.uq.edu.au, John Linn <John.Linn@xilinx.com>,
-	John Williams <john.williams@petalogix.com>
+Content-Type: multipart/alternative; boundary="Boundary-00=_nwZ8JJ0oEqOGvRk"
+Message-Id: <200904241301.59775.arnd@arndb.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+	Suneel <suneelg@xilinx.com>, akonovalov@ru.mvista.com,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_NlZ8Jr6788VPglS
+--Boundary-00=_nwZ8JJ0oEqOGvRk
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tuesday 21 April 2009, John Williams wrote:
-> Some (most?) of the Xilinx drivers currently have this construct:
+On Friday 17 April 2009, John Linn wrote:
+> Added support for the new xps tft controller. The new core
+> has PLB interface support in addition to existing DCR interface.
 > 
-> #ifdef CONFIG_OF
-> 
-> // probe using OF
-> 
-> #else
+> Removed platform device support as both MicroBlaze and PowerPC
+> use device tree.
 
-If there are multiple ways of detecting the device, then
-the driver should be compilable on any system that allows
-either one.
+I just said in another email thread that we would need a CONFIG_DCR
+option that DCR using drivers should depend on, if it ever happened
+outside of powerpc.
 
-At the very least, it should be restricted to CONFIG_HAS_IOMEM,
-which is probably required for any of these, but not provided
-on stuff like UML or s390.
+Well, apparently this happened earlier than I expected.
 
-Drivers that use of_* functions unconditionally need to
-depend on CONFIG_OF.
-
-Also, some of the xilinx drivers apparantly use DCR, which in turn is
-only defined when you have CONFIG_PPC_DCR, and these
-have so far only been used on powerpc. If other architectures
-start using DCR (I hope that never happens), we will need a
-global CONFIG_DCR option.
+Converting the driver to use the generic DCR interface
+makes it possible to use in any system that provides this
+interface, including those that use a hard CPU core with xilinx_fb
+on an FPGA, so it makes sense to just change the dependency
+in Kconfig and provide CONFIG_DCR in microblaze (unconditionally)
+as well as in powerpc instead of the existing CONFIG_PPC_DCR.
 
 	Arnd <><
 
---Boundary-00=_NlZ8Jr6788VPglS
+--Boundary-00=_nwZ8JJ0oEqOGvRk
 Content-Type: text/html;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -68,31 +60,25 @@ Content-Transfer-Encoding: 7bit
 <html><head><meta name="qrichtext" content="1" /><style type="text/css">
 p, li { white-space: pre-wrap; }
 </style></head><body style=" font-family:'DejaVu Sans Light'; font-size:8pt; font-weight:200; font-style:normal;">
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Tuesday 21 April 2009, John Williams wrote:</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Some (most?) of the Xilinx drivers currently have this construct:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Friday 17 April 2009, John Linn wrote:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Added support for the new xps tft controller. The new core</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; has PLB interface support in addition to existing DCR interface.</p>
 <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; #ifdef CONFIG_OF</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; // probe using OF</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; #else</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Removed platform device support as both MicroBlaze and PowerPC</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; use device tree.</p>
 <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"></p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">If there are multiple ways of detecting the device, then</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">the driver should be compilable on any system that allows</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">either one.</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">I just said in another email thread that we would need a CONFIG_DCR</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">option that DCR using drivers should depend on, if it ever happened</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">outside of powerpc.</p>
 <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"></p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">At the very least, it should be restricted to CONFIG_HAS_IOMEM,</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">which is probably required for any of these, but not provided</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">on stuff like UML or s390.</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Well, apparently this happened earlier than I expected.</p>
 <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"></p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Drivers that use of_* functions unconditionally need to</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">depend on CONFIG_OF.</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"></p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Also, some of the xilinx drivers apparantly use DCR, which in turn is</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">only defined when you have CONFIG_PPC_DCR, and these</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">have so far only been used on powerpc. If other architectures</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">start using DCR (I hope that never happens), we will need a</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">global CONFIG_DCR option.</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Converting the driver to use the generic DCR interface</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">makes it possible to use in any system that provides this</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">interface, including those that use a hard CPU core with xilinx_fb</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">on an FPGA, so it makes sense to just change the dependency</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">in Kconfig and provide CONFIG_DCR in microblaze (unconditionally)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">as well as in powerpc instead of the existing CONFIG_PPC_DCR.</p>
 <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"></p>
 <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	Arnd &lt;&gt;&lt;</p></body></html>
---Boundary-00=_NlZ8Jr6788VPglS--
+--Boundary-00=_nwZ8JJ0oEqOGvRk--
