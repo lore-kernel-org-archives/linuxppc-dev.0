@@ -1,26 +1,32 @@
-Return-Path: <hugh@veritas.com>
-Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
-	[216.10.194.28])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-1.symantec.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 83963DDF2A
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 21:56:09 +1000 (EST)
-Date: Fri, 24 Apr 2009 12:55:44 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Next April 24 : BUG: lock held at task exit time!
-In-Reply-To: <20090424175509.561c96ad.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0904241249180.20196@blonde.anvils>
-References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-	<49F1626D.6080102@in.ibm.com>
-	<20090424175509.561c96ad.sfr@canb.auug.org.au>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69EBCDE180
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 23:11:30 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3OD6oRg031851
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 09:06:50 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n3ODBQnk175738
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 09:11:26 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n3ODBPpO021151
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 09:11:26 -0400
+Date: Fri, 24 Apr 2009 09:10:23 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] i2c: i2c-ibm_iic message can be confusing
+Message-ID: <20090424131023.GK3825@zod.rchland.ibm.com>
+References: <20090202120159.2478d7af@lappy.seanm.ca>
+	<20090417203600.1d0c5cf0@lappy.seanm.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
-	Ingo Molnar <mingo@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090417203600.1d0c5cf0@lappy.seanm.ca>
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	ben-linux@fluff.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,66 +36,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 24 Apr 2009, Stephen Rothwell wrote:
-> On Fri, 24 Apr 2009 12:25:41 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
-> >
-> > While booting today's next tree on a powerpc box [ power 6 blade]
-> > observed the following :
-> > 
-> > khelper used greatest stack depth: 10176 bytes left
-> > 
-> > =====================================
-> > [ BUG: lock held at task exit time! ]
-> > -------------------------------------
-> > khelper/21 is exiting with locks still held!
-> > 2 locks held by khelper/21:
-> >  #0:  (rcu_read_lock){.+.+.+}, at: [<c0000000001382fc>] 
-> > .check_unsafe_exec+0x44/0x148
-> >  #1:  (rcu_read_lock){.+.+.+}, at: [<c000000000138368>] 
-> > .check_unsafe_exec+0xb0/0x148
-> > 
-> > stack backtrace:
-> > Call Trace:
-> > [c000000044483cf0] [c000000000011a54] .show_stack+0x6c/0x16c (unreliable)
-> > [c000000044483da0] [c00000000009ae14] .debug_check_no_locks_held+0x98/0xb4
-> > [c000000044483e20] [c000000000073b1c] .do_exit+0x758/0x7b0
-> > [c000000044483f00] [c0000000000853d8] .____call_usermodehelper+0x170/0x174
-> > [c000000044483f90] [c00000000002bd8c] .kernel_thread+0x54/0x70
-> > net_namespace: 2000 bytes
-> > 
-> > Complete dmesg attached. Let me know if you need any other info. I will 
-> > try yesterday's next
-> > tree to check if this problem can be recreated.
-> 
-> Almost certainly commit 874a9e18f25c86dbc199ad32ddd9ca44d25290e8
-> ("check_unsafe_exec: s/lock_task_sighand/rcu_read_lock/") which has a
-> typo (two locks instead of lock/unlock) as pointed out by Hugh Dickins
-> (<Pine.LNX.4.64.0904240526080.15735@blonde.anvils> on LKML).
+On Fri, Apr 17, 2009 at 08:36:00PM -0400, Sean MacLennan wrote:
+>Any update on the status of this patch? This patch was acked by Jean.
+>
+>The patchwork entry is http://patchwork.ozlabs.org/patch/21576/ and the
+>original patch message is below.
 
-Indeed, thanks for the headsup Stephen.  My own config gives, not
-Sachin's message (or not still visibly on screen anyway), but an
-outright panic.  Shame that leaked out into the big world, we'd
-all have preferred a quiet fixup!  Here's a patch, which I'll
-also send as reply to the relevant thread.
+Yeah, that's a bit annoying.  A case of too many trees again.
 
-[PATCH] check_unsafe_exec: rcu_read_unlock
+Ben,
 
-Fix typo in previous commit: second rcu_read_lock should be rcu_read_unlock.
+Do you want to take this through your tree or should I take it through the
+powerpc tree?  I'll be up-front and say silence will translate to 'powerpc tree'
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
+josh
 
- fs/exec.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- 2.6.30-rc3-next-20090424/fs/exec.c	2009-04-24 12:23:43.000000000 +0100
-+++ linux/fs/exec.c	2009-04-24 12:26:10.000000000 +0100
-@@ -1043,7 +1043,7 @@ int check_unsafe_exec(struct linux_binpr
- 		if (t->fs == p->fs)
- 			n_fs++;
- 	}
--	rcu_read_lock();
-+	rcu_read_unlock();
- 
- 	if (p->fs->users > n_fs) {
- 		bprm->unsafe |= LSM_UNSAFE_SHARE;
+>
+>Cheers,
+>   Sean
+>
+>On Mon, 2 Feb 2009 12:01:59 -0500
+>Sean MacLennan <smaclennan@pikatech.com> wrote:
+>
+>> This is a trivial patch that does not need to be in 2.6.29. While
+>> tracking down an EEPROM problem, I found the messages confusing... it
+>> looked like the EEPROM was being started before the I2C driver!
+>> 
+>> Here is an example:
+>> 
+>> at24 0-0052: 512 byte 24c04 EEPROM (writable)
+>> ibm-iic ef600700.i2c: using standard (100 kHz) mode
+>> ad7414 0-004a: chip found
+>> 
+>> It looks like the at24 starts first, then the i2c driver, then the
+>> ad7414. By moving the message to after the of scan, we always get the
+>> driver, then the devices.
+>> 
+>> Cheers,
+>>    Sean
+>> 
+>> Print the i2c driver message before scanning for devices so that the
+>> logs show the driver, then the devices. Currently you can get
+>> device(s), driver, device(s).
+>> 
+>> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+>> ---
+>> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c
+>> b/drivers/i2c/busses/i2c-ibm_iic.c index 88f0db7..7fc0729 100644
+>> --- a/drivers/i2c/busses/i2c-ibm_iic.c
+>> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
+>> @@ -756,12 +756,12 @@ static int __devinit iic_probe(struct of_device
+>> *ofdev, goto error_cleanup;
+>>  	}
+>>  
+>> -	/* Now register all the child nodes */
+>> -	of_register_i2c_devices(adap, np);
+>> -
+>>  	dev_info(&ofdev->dev, "using %s mode\n",
+>>  		 dev->fast_mode ? "fast (400 kHz)" : "standard (100
+>> kHz)"); 
+>> +	/* Now register all the child nodes */
+>> +	of_register_i2c_devices(adap, np);
+>> +
+>>  	return 0;
+>>  
+>>  error_cleanup:
+>>  
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-dev
