@@ -1,17 +1,26 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
-	by ozlabs.org (Postfix) with ESMTP id A9E7FDE1BF
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 23:27:14 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so842754qwe.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 06:27:12 -0700 (PDT)
-Date: Fri, 24 Apr 2009 09:21:32 -0400
-From: Josh Boyer <jwboyer@gmail.com>
-To: paulus@samba.org, benh@kernel.crashing.org
-Subject: Please pull 'merge' branch of the 4xx tree
-Message-ID: <20090424132132.GC2953@yoda.jdub.homelinux.org>
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 06896DE106
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 00:05:01 +1000 (EST)
+Date: Fri, 24 Apr 2009 15:04:45 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: Next April 24 : BUG: lock held at task exit time!
+Message-ID: <20090424140445.GL8633@ZenIV.linux.org.uk>
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
+	<49F1626D.6080102@in.ibm.com>
+	<20090424175509.561c96ad.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0904241249180.20196@blonde.anvils>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <Pine.LNX.4.64.0904241249180.20196@blonde.anvils>
+Sender: Al Viro <viro@ftp.linux.org.uk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, peterz@infradead.org,
+	LKML <linux-kernel@vger.kernel.org>,
+	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+On Fri, Apr 24, 2009 at 12:55:44PM +0100, Hugh Dickins wrote:
 
-Please pull the following two commits for 2.6.30.  One is a
-trivial MAINTAINERS fix, the other fixes a bug that computes
-the memory size of some 4xx boards incorrectly.
+> Indeed, thanks for the headsup Stephen.  My own config gives, not
+> Sachin's message (or not still visibly on screen anyway), but an
+> outright panic.  Shame that leaked out into the big world, we'd
+> all have preferred a quiet fixup!  Here's a patch, which I'll
+> also send as reply to the relevant thread.
 
-The following changes since commit 6329db8bd60fbc0832f30c350b0181b8d865573e:
-  Bartlomiej Zolnierkiewicz (1):
-        powerpc: Fix modular build of ide-pmac when mediabay is built in
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
-
-Josh Boyer (1):
-      maintainers: Fix PowerPC 4xx git tree
-
-Valentine Barshak (1):
-      powerpc/44x: Correct memory size calculation for denali-based boards
-
- MAINTAINERS             |    2 +-
- arch/powerpc/boot/4xx.c |   56 ++++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 44 insertions(+), 14 deletions(-)
-
-
-josh
+Applied, will fold on reorder (since Ingo is asking for what will amount
+to reorder anyway).
