@@ -1,20 +1,16 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id A2A25DE114
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 04:27:42 +1000 (EST)
-Message-ID: <49F203B1.6040508@nortel.com>
-Date: Fri, 24 Apr 2009 12:23:45 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id AE157DDEE8
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 04:35:20 +1000 (EST)
+Date: Fri, 24 Apr 2009 11:35:18 -0700
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fsldma: use PCI Read Multiple command
+Message-ID: <20090424183517.GB23140@ovro.caltech.edu>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: help with inline assembly code?
-References: <49F1F56C.8000708@nortel.com> <49F1F841.8080507@freescale.com>
-	<49F1FF98.1000100@nortel.com> <49F20181.10206@freescale.com>
-In-Reply-To: <49F20181.10206@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+	Li Yang <leoli@freescale.com>, Zhang Wei <wei.zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +20,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Chris Friesen wrote:
->> Scott Wood wrote:
->>> Is the compiler assigning r0 to addr?  That will be treated as a 
->>> literal zero instead.  Try changing "r" (addr) to "b" (addr), or use 
->>> stwx.
->> Bingo!  Is there a constraint to tell the compiler to not use r0 for addr?
-> 
-> Yes, "b".
+By default, the Freescale 83xx DMA controller uses the PCI Read Line
+command when reading data over the PCI bus. Setting the controller to use
+the PCI Read Multiple command instead allows the controller to read much
+larger bursts of data, which provides a drastic speed increase.
 
-Doh.  Sorry, apparently I can't read today.  Both of those fixes seem to 
-work.
+The slowdown due to using PCI Read Line was only observed when a PCI-to-PCI
+bridge was between the devices trying to communicate.
 
-Much appreciated.
+A simple test driver showed an increase from 4MB/sec to 116MB/sec when
+performing DMA over the PCI bus. Using DMA to transfer between blocks of
+local SDRAM showed no change in performance with this patch. The dmatest
+driver was also used to verify the correctness of the transfers, and showed
+no errors.
 
-Chris
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+---
+ drivers/dma/fsldma.c |    5 +++--
+ drivers/dma/fsldma.h |    1 +
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index da8a8ed..638d00e 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -49,9 +49,10 @@ static void dma_init(struct fsl_dma_chan *fsl_chan)
+ 	case FSL_DMA_IP_83XX:
+ 		/* Set the channel to below modes:
+ 		 * EOTIE - End-of-transfer interrupt enable
++		 * PRC_RM - PCI read multiple
+ 		 */
+-		DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr, FSL_DMA_MR_EOTIE,
+-				32);
++		DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr, FSL_DMA_MR_EOTIE
++				| FSL_DMA_MR_PRC_RM, 32);
+ 		break;
+ 	}
+ 
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index 4f21a51..dc7f268 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -38,6 +38,7 @@
+ 
+ /* Special MR definition for MPC8349 */
+ #define FSL_DMA_MR_EOTIE	0x00000080
++#define FSL_DMA_MR_PRC_RM	0x00000800
+ 
+ #define FSL_DMA_SR_CH		0x00000020
+ #define FSL_DMA_SR_PE		0x00000010
+-- 
+1.5.4.3
