@@ -1,26 +1,34 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 24AB5DE1D8
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 00:12:04 +1000 (EST)
-Date: Sat, 25 Apr 2009 00:11:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: Next April 24 : BUG: lock held at task exit time!
-Message-Id: <20090425001156.04781613.sfr@canb.auug.org.au>
-In-Reply-To: <20090424140445.GL8633@ZenIV.linux.org.uk>
-References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-	<49F1626D.6080102@in.ibm.com>
-	<20090424175509.561c96ad.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0904241249180.20196@blonde.anvils>
-	<20090424140445.GL8633@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__25_Apr_2009_00_11_56_+1000_20Mo0V88ywKEUH1j"
-Cc: peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-	Ingo Molnar <mingo@redhat.com>
+Return-Path: <Heinz.Wrobel@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 93FB3DE1BC
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 00:40:43 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n3OEecIV008447
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 07:40:38 -0700 (MST)
+Received: from zuk35exm20.fsl.freescale.net (zuk35exm20.ea.freescale.net
+	[10.210.1.54])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n3OEeaDI021911
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 09:40:37 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: removing get_immrbase()??
+Date: Fri, 24 Apr 2009 15:40:34 +0100
+Message-ID: <AAE514D00E55E6438B7F5186462A54520226355D@zuk35exm20.fsl.freescale.net>
+In-Reply-To: <76E4F93E-F75F-4CDC-A281-F4703275BEC1@kernel.crashing.org>
+References: <A6732FD8-FBC6-420F-9318-CC111D266993@kernel.crashing.org><ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com><49EF7B11.2000006@freescale.com>
+	<49EF7B1C.2080105@freescale.com><282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org><49EF8E3A.4060304@freescale.com><5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org><20090423022610.GA19376@yookeroo.seuss><49F066DC.402@freescale.com><20090423135005.GA18462@oksana.dev.rtsoft.ru><49F07509.8030603@freescale.com>
+	<76E4F93E-F75F-4CDC-A281-F4703275BEC1@kernel.crashing.org>
+From: "Wrobel Heinz-R39252" <Heinz.Wrobel@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+	"Tabi Timur-B04825" <timur@freescale.com>
+Cc: Wood Scott-B07421 <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,34 +38,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__25_Apr_2009_00_11_56_+1000_20Mo0V88ywKEUH1j
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > We've run into plenty of situations where customers will update the=20
+> > kernel, but insist that U-Boot and the device tree remain unchanged.
+>=20
+> when?  I'm not aware of any significant # of cases that=20
+> customer is willing to update kernel & not dts.  Usually if=20
+> they are willing to update kernel they tend to be willing to=20
+> update everything.
 
-Hi Al,
+I recently fried a U-Boot flash on a machine at home when upgrading and
+the machine sits there and is dead of course. Luckily that machine
+doesn't have to be up 24x7, so I can wait until I have time to fix the
+situation ... and I can either pull the socketed flash or hook up a JTAG
+debugger.
 
-On Fri, 24 Apr 2009 15:04:45 +0100 Al Viro <viro@ZenIV.linux.org.uk> wrote:
->
-> Applied, will fold on reorder (since Ingo is asking for what will amount
-> to reorder anyway).
+But Freescale or other eval(!) boards or isolated Power Architecture
+based home use machines like my fried one should not be a reference for
+this kind of discussion.
 
-Thanks.
+I see a very common scenario with Telecom/Networking customers. They
+have a boot flash with firmware and basic startup/BIST SW which they do
+not really ever want to touch at all even if they should after it
+shipped. If a remote upgrade on just a few out of <n> installed systems
+fails, they can send technicians to Mars to pull the board(s), and
+service guarantees, and profit, are out the window then. That makes
+U-Boot and/or subsequent ultra-low-level startup/BIST SW from the same
+boot source *very* firm. If a device-tree is served from there for
+whichever reason, then you have a *very* firm device-tree, too.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Then these customers either have a second flash with a filesystem or
+more volatile images in the sense that they see that other flash as
+upgradable (if they have to), or a physical link to some remote fs that
+serves them the kernel and application load. They still do not like
+upgrades too much as any upgrade can have service impact. But they do
+them when necessary because they know they have a way to revert to
+previous or fixed releases remotely as they can always depend on the
+original boot loader to be there.
 
---Signature=_Sat__25_Apr_2009_00_11_56_+1000_20Mo0V88ywKEUH1j
-Content-Type: application/pgp-signature
+It would not be smart to prohibit any change ever, but we also shouldn't
+cause device-tree changes a lot just because we felt like it today. Both
+seems a bit extreme.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+There must be some middle ground, err'ing towards the conservative side.
+A change affecting "lower" levels than the kernel should be very well
+thought through, and if it is necessary, we should strive to keep
+compatibility to a level that makes sense and possibly eases a
+transition over some time.
 
-iEYEARECAAYFAknxyKwACgkQjjKRsyhoI8zrOQCeKftgvHyAwioSUsPqttVFONXA
-UnIAnRvQjpbBX6SCdzoTe9QEe18DVpSV
-=EEhI
------END PGP SIGNATURE-----
+If a few clearly marked code lines (with a possibly marked planned max
+lifetime) ease compatibility and transition, they should be considered.
 
---Signature=_Sat__25_Apr_2009_00_11_56_+1000_20Mo0V88ywKEUH1j--
+Hope this helps
+
+Heinz
