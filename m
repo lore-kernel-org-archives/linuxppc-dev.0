@@ -1,20 +1,26 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id C9DD9DDF6B
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 21:04:33 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [V5] Xilinx : Framebuffer Driver: Add PLB support and
-	cleanup DCR
-Date: Fri, 24 Apr 2009 13:01:58 +0200
-References: <20090417205119.3D35660055@mail16-sin.bigfish.com>
-In-Reply-To: <20090417205119.3D35660055@mail16-sin.bigfish.com>
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
+	[216.10.194.28])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "extu-mxob-1.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 83963DDF2A
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 21:56:09 +1000 (EST)
+Date: Fri, 24 Apr 2009 12:55:44 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Next April 24 : BUG: lock held at task exit time!
+In-Reply-To: <20090424175509.561c96ad.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0904241249180.20196@blonde.anvils>
+References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
+	<49F1626D.6080102@in.ibm.com>
+	<20090424175509.561c96ad.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="Boundary-00=_nwZ8JJ0oEqOGvRk"
-Message-Id: <200904241301.59775.arnd@arndb.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	Suneel <suneelg@xilinx.com>, akonovalov@ru.mvista.com,
-	John Linn <john.linn@xilinx.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
+	Ingo Molnar <mingo@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,61 +30,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_nwZ8JJ0oEqOGvRk
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-On Friday 17 April 2009, John Linn wrote:
-> Added support for the new xps tft controller. The new core
-> has PLB interface support in addition to existing DCR interface.
+On Fri, 24 Apr 2009, Stephen Rothwell wrote:
+> On Fri, 24 Apr 2009 12:25:41 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
+> >
+> > While booting today's next tree on a powerpc box [ power 6 blade]
+> > observed the following :
+> > 
+> > khelper used greatest stack depth: 10176 bytes left
+> > 
+> > =====================================
+> > [ BUG: lock held at task exit time! ]
+> > -------------------------------------
+> > khelper/21 is exiting with locks still held!
+> > 2 locks held by khelper/21:
+> >  #0:  (rcu_read_lock){.+.+.+}, at: [<c0000000001382fc>] 
+> > .check_unsafe_exec+0x44/0x148
+> >  #1:  (rcu_read_lock){.+.+.+}, at: [<c000000000138368>] 
+> > .check_unsafe_exec+0xb0/0x148
+> > 
+> > stack backtrace:
+> > Call Trace:
+> > [c000000044483cf0] [c000000000011a54] .show_stack+0x6c/0x16c (unreliable)
+> > [c000000044483da0] [c00000000009ae14] .debug_check_no_locks_held+0x98/0xb4
+> > [c000000044483e20] [c000000000073b1c] .do_exit+0x758/0x7b0
+> > [c000000044483f00] [c0000000000853d8] .____call_usermodehelper+0x170/0x174
+> > [c000000044483f90] [c00000000002bd8c] .kernel_thread+0x54/0x70
+> > net_namespace: 2000 bytes
+> > 
+> > Complete dmesg attached. Let me know if you need any other info. I will 
+> > try yesterday's next
+> > tree to check if this problem can be recreated.
 > 
-> Removed platform device support as both MicroBlaze and PowerPC
-> use device tree.
+> Almost certainly commit 874a9e18f25c86dbc199ad32ddd9ca44d25290e8
+> ("check_unsafe_exec: s/lock_task_sighand/rcu_read_lock/") which has a
+> typo (two locks instead of lock/unlock) as pointed out by Hugh Dickins
+> (<Pine.LNX.4.64.0904240526080.15735@blonde.anvils> on LKML).
 
-I just said in another email thread that we would need a CONFIG_DCR
-option that DCR using drivers should depend on, if it ever happened
-outside of powerpc.
+Indeed, thanks for the headsup Stephen.  My own config gives, not
+Sachin's message (or not still visibly on screen anyway), but an
+outright panic.  Shame that leaked out into the big world, we'd
+all have preferred a quiet fixup!  Here's a patch, which I'll
+also send as reply to the relevant thread.
 
-Well, apparently this happened earlier than I expected.
+[PATCH] check_unsafe_exec: rcu_read_unlock
 
-Converting the driver to use the generic DCR interface
-makes it possible to use in any system that provides this
-interface, including those that use a hard CPU core with xilinx_fb
-on an FPGA, so it makes sense to just change the dependency
-in Kconfig and provide CONFIG_DCR in microblaze (unconditionally)
-as well as in powerpc instead of the existing CONFIG_PPC_DCR.
+Fix typo in previous commit: second rcu_read_lock should be rcu_read_unlock.
 
-	Arnd <><
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
---Boundary-00=_nwZ8JJ0oEqOGvRk
-Content-Type: text/html;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ fs/exec.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
-<html><head><meta name="qrichtext" content="1" /><style type="text/css">
-p, li { white-space: pre-wrap; }
-</style></head><body style=" font-family:'DejaVu Sans Light'; font-size:8pt; font-weight:200; font-style:normal;">
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Friday 17 April 2009, John Linn wrote:</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Added support for the new xps tft controller. The new core</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; has PLB interface support in addition to existing DCR interface.</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Removed platform device support as both MicroBlaze and PowerPC</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; use device tree.</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"></p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">I just said in another email thread that we would need a CONFIG_DCR</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">option that DCR using drivers should depend on, if it ever happened</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">outside of powerpc.</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"></p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Well, apparently this happened earlier than I expected.</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"></p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Converting the driver to use the generic DCR interface</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">makes it possible to use in any system that provides this</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">interface, including those that use a hard CPU core with xilinx_fb</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">on an FPGA, so it makes sense to just change the dependency</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">in Kconfig and provide CONFIG_DCR in microblaze (unconditionally)</p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">as well as in powerpc instead of the existing CONFIG_PPC_DCR.</p>
-<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"></p>
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">	Arnd &lt;&gt;&lt;</p></body></html>
---Boundary-00=_nwZ8JJ0oEqOGvRk--
+--- 2.6.30-rc3-next-20090424/fs/exec.c	2009-04-24 12:23:43.000000000 +0100
++++ linux/fs/exec.c	2009-04-24 12:26:10.000000000 +0100
+@@ -1043,7 +1043,7 @@ int check_unsafe_exec(struct linux_binpr
+ 		if (t->fs == p->fs)
+ 			n_fs++;
+ 	}
+-	rcu_read_lock();
++	rcu_read_unlock();
+ 
+ 	if (p->fs->users > n_fs) {
+ 		bprm->unsafe |= LSM_UNSAFE_SHARE;
