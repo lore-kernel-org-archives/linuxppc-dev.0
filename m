@@ -1,21 +1,18 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp116.sbc.mail.sp1.yahoo.com (smtp116.sbc.mail.sp1.yahoo.com
-	[69.147.64.89]) by ozlabs.org (Postfix) with SMTP id 1EED3DE161
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 16:20:34 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Arnav Das <arnavdas29@gmail.com>
-Subject: Re: general SPI question (WAS: [PATCH v6] spi: Add PPC4xx SPI driver)
-Date: Thu, 23 Apr 2009 23:20:30 -0700
-References: <1231411250-25380-1-git-send-email-sr@denx.de>
-	<200904221300.39747.david-b@pacbell.net>
-	<8ee9e87c0904232032sc7ef5e7ibf058618fca8c1a0@mail.gmail.com>
-In-Reply-To: <8ee9e87c0904232032sc7ef5e7ibf058618fca8c1a0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200904232320.30609.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	spi-devel-general@lists.sourceforge.net
+Return-Path: <mikey@neuling.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 38317DE055
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 16:24:32 +1000 (EST)
+To: Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Michael Neuling <mikey@neuling.org>
+Date: Fri, 24 Apr 2009 16:24:31 +1000
+Subject: [PATCH 1/2] powerpc: Enable CPU feature sections for inline asm
+In-Reply-To: <1240554271.668632.486641775152.qpush@pale>
+Message-Id: <20090424062431.C2FD8120E6@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 23 April 2009, Arnav Das wrote:
-> i am a newbie
+From: Milton Miller <miltonm@bga.com>
 
-Lesson #1:  make sure your Subject: lines match the message
-topic (I did a partial repair) and don't post to the wrong
-list (e.g. PPC lists for OMAP questions).
+powerpc: Enable CPU feature sections for inline asm
 
+This adds the ability to do CPU feature sections for inline asm.
 
-> and am doing a project on beagle board(running 
-> omap3530). i am interfacing an adc(ads7886) to the beagleboard via
-> spi. need to know how the spi works
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
 
-Read the ads7886 data sheet, in this case.  It uses
-a subset of SPI ... no input commands, just a 12-bit
-sample returned each time chipselect pulses.
+ arch/powerpc/include/asm/feature-fixups.h |   25 ++++++++++++++++++++-----
+ 1 file changed, 20 insertions(+), 5 deletions(-)
 
-
-> and how a module can access the 
-> spi registers of the omap. if someones already made an adc driver can
-> they mail me?
-
-Use drivers/spi/omap2_mcspi.c on OMAP3 boards, at
-least to start with.  If you want streaming conversions
-you may want to use different modes than are currently
-supported by that driver.
-
-- Dave
+Index: linux-2.6-ozlabs/arch/powerpc/include/asm/feature-fixups.h
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/feature-fixups.h
++++ linux-2.6-ozlabs/arch/powerpc/include/asm/feature-fixups.h
+@@ -8,8 +8,6 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
+-#ifdef __ASSEMBLY__
+-
+ /*
+  * Feature section common macros
+  *
+@@ -23,10 +21,12 @@
+ /* 64 bits kernel, 32 bits code (ie. vdso32) */
+ #define FTR_ENTRY_LONG		.llong
+ #define FTR_ENTRY_OFFSET	.long 0xffffffff; .long
++#elif defined(CONFIG_PPC64)
++#define FTR_ENTRY_LONG		.llong
++#define FTR_ENTRY_OFFSET	.llong
+ #else
+-/* 64 bit kernel 64 bit code, or 32 bit kernel 32 bit code */
+-#define FTR_ENTRY_LONG		PPC_LONG
+-#define FTR_ENTRY_OFFSET	PPC_LONG
++#define FTR_ENTRY_LONG		.long
++#define FTR_ENTRY_OFFSET	.long
+ #endif
+ 
+ #define START_FTR_SECTION(label)	label##1:
+@@ -141,6 +141,21 @@ label##5:					       	\
+ #define ALT_FW_FTR_SECTION_END_IFCLR(msk)	\
+ 	ALT_FW_FTR_SECTION_END_NESTED_IFCLR(msk, 97)
+ 
++#ifndef __ASSEMBLY__
++
++#define ASM_FTR_IF_X(string, estring, msk, val)			\
++	stringify_in_c(BEGIN_FTR_SECTION)			\
++	string "; "						\
++	stringify_in_c(FTR_SECTION_ELSE)			\
++	estring "; "						\
++	stringify_in_c(ALT_FTR_SECTION_END((msk), (val)))
++
++#define ASM_FTR_IFSET(string, estring, msk)			\
++	ASM_FTR_IF_X(string, estring, (msk), (msk))
++
++#define ASM_FTR_IFCLR(string, estring, msk)			\
++	ASM_FTR_IF_X(string, estring, (msk), 0)
++
+ #endif /* __ASSEMBLY__ */
+ 
+ /* LWSYNC feature sections */
