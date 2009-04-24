@@ -1,20 +1,24 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <lhthanh@kobekara.com>
+Received: from phobos.lunarpages.com (phobos.lunarpages.com [67.210.120.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AD277DE163
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 15:05:11 +1000 (EST)
-Date: Fri, 24 Apr 2009 15:05:11 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Freeman Wiser <wiser@operamail.com>
-Subject: Re: Fedora on the ibm power 275
-Message-ID: <20090424050511.GJ16602@bilbo.ozlabs.org>
-References: <20090424000453.C92837BD5A@ws5-10.us4.outblaze.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 10EA0DDEF3
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 16:15:01 +1000 (EST)
+Message-ID: <49F15831.9080507@kobekara.com>
+Date: Fri, 24 Apr 2009 13:12:01 +0700
+From: lhthanh <lhthanh@kobekara.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090424000453.C92837BD5A@ws5-10.us4.outblaze.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: MPC8349E's DMA controller like ISA controller but with more
+	feature?
+References: <49EC6CB5.2020300@kobekara.com>
+	<20090420155511.GA25470@ld0162-tx32.am.freescale.net>
+	<49EFEA26.2010602@kobekara.com>
+	<20090423154311.GA19717@ld0162-tx32.am.freescale.net>
+	<49F08FBC.9010903@freescale.com>
+In-Reply-To: <49F08FBC.9010903@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 24, 2009 at 01:04:53AM +0100, Freeman Wiser wrote:
-> Hey I saw that Jim installed Fedora on the 275, can you tell me how?  I just
-> bought one of the 275s and am not really ibm savvy, and was going to sell it
-> when I came across Jim's post here:
-> 
-> http://lists.infradead.org/pipermail/fedora-ppc/2008-November/001114.html
-
-Hmm didn't know that list existed.
-
-Basially grabbibng the DVD or boot.iso for Fedora-10 should "just work".
-having said that I haven't tried it.
-
-Yours Tony
+Thank Scott and Timur!  
+> Scott Wood wrote:
+>   
+>> Timur Tabi (CCed) has written an audio
+>> driver that does something very similar; he could probably tell you more
+>> about how to do that (this is why such discussions should be kept on the
+>> mailing list rather than taken to private e-mail).
+>>     
+>
+> The code in drivers/dma cannot be used to send a buffer of data to a
+> single I/O port.  That code is just an elaborate version of memcpy that
+> uses the DMA engine to copy data in the background.
+>
+>   
+Thanks for your explaination! So if I want to transfer a buffer of data 
+from a single I/O port,  will not DMA framework
+also be able ? Have I to write aother driver?
+> If you want to transfer a buffer to a single I/O port, you will need to
+> write your own DMA driver, similar to what I've done in
+> sound/soc/fsl/fsl_dma.c.  This is not trivial.  You will need to
+> understand the DMA hardware programming model to determine whether you
+> can use direct mode or if you need to create link descriptors.
+>
+>   
+Actually, I don't want write all because there are  serveral DMA code at 
+hand. I only want to use a framework instead of re-writing.
+And I afraid that I can not write code which assure sharing DMA channels.
+ 
+Regards!
