@@ -1,26 +1,23 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <rpjday@crashcourse.ca>
+Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
+	[64.235.106.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F1376DE447
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 00:41:11 +1000 (EST)
-Message-ID: <49F1CF7B.2080703@freescale.com>
-Date: Fri, 24 Apr 2009 09:40:59 -0500
-From: Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 96BD1DE16A
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 01:14:16 +1000 (EST)
+Received: from cpe001d60ad7267-cm001225dbafb6.cpe.net.cable.rogers.com
+	([99.236.111.22] helo=crashcourse.ca)
+	by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
+	(Exim 4.69) (envelope-from <rpjday@crashcourse.ca>)
+	id 1LxLso-0002CO-HX
+	for linuxppc-dev@ozlabs.org; Fri, 24 Apr 2009 09:56:02 -0400
+Date: Fri, 24 Apr 2009 09:55:06 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
+Subject: where to simplify code using is_power_of_2() function
+Message-ID: <alpine.LFD.2.00.0904240953120.17180@localhost.localdomain>
 MIME-Version: 1.0
-To: lhthanh <lhthanh@kobekara.com>
-Subject: Re: MPC8349E's DMA controller like ISA controller but with more
-	feature?
-References: <49EC6CB5.2020300@kobekara.com>
-	<20090420155511.GA25470@ld0162-tx32.am.freescale.net>
-	<49EFEA26.2010602@kobekara.com>
-	<20090423154311.GA19717@ld0162-tx32.am.freescale.net>
-	<49F08FBC.9010903@freescale.com> <49F15831.9080507@kobekara.com>
-In-Reply-To: <49F15831.9080507@kobekara.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,36 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-lhthanh wrote:
 
-> Thanks for your explaination! So if I want to transfer a buffer of data 
-> from a single I/O port,  will not DMA framework
-> also be able ?
+  just an observation that you can aesthetically simplify some ppc
+code using the boolean is_power_of_2() routine from
+include/linux/log2.h if you were so inclined:
 
-No.
+arch/powerpc/sysdev/ppc4xx_pci.c:171:	if ((size & (size - 1)) != 0  ||
+arch/powerpc/mm/ppc_mmu_32.c:216:	if (n_hpteg & (n_hpteg - 1)) {
+arch/powerpc/boot/cuboot-pq2.c:176:	if (mem->size[1] & (mem->size[1] - 1))
+arch/powerpc/boot/cuboot-pq2.c:178:	if (io->size[1] & (io->size[1] - 1))
+arch/powerpc/lib/rheap.c:258:	if ((alignment & (alignment - 1)) != 0)
+arch/powerpc/lib/rheap.c:307:	if ((alignment & (alignment - 1)) != 0)
+arch/powerpc/lib/rheap.c:450:	if (size <= 0 || (alignment & (alignment - 1)) != 0)
 
-> Have I to write aother driver?
+rday
+--
 
-Yes.
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-> Actually, I don't want write all because there are  serveral DMA code at 
-> hand. I only want to use a framework instead of re-writing.
+        Linux Consulting, Training and Annoying Kernel Pedantry.
 
-There is no framework for what you want to do.  There is only one other
-driver that does what you want (sound/soc/fsl/fsl_dma.c), and that is a
-complicated driver that does many things besides transferring data to an
-I/O port.
-
-> And I afraid that I can not write code which assure sharing DMA channels.
-
-Look at arch/powerpc/boot/dts/mpc8610_hpcd.dts.  The DMA channels that
-are needed by the 8610 audio driver have a different 'compatible'
-property.  This is how you prevent the generic DMA driver from using a
-channel that you want.
-
-I'm afraid that you're going to have to study the DMA programming model,
-and my device driver, and write a brand new driver from scratch.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
