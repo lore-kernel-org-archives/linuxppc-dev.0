@@ -1,26 +1,18 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 06896DE106
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 00:05:01 +1000 (EST)
-Date: Fri, 24 Apr 2009 15:04:45 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: Next April 24 : BUG: lock held at task exit time!
-Message-ID: <20090424140445.GL8633@ZenIV.linux.org.uk>
-References: <20090424150456.ff35e4ea.sfr@canb.auug.org.au>
-	<49F1626D.6080102@in.ibm.com>
-	<20090424175509.561c96ad.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0904241249180.20196@blonde.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0904241249180.20196@blonde.anvils>
-Sender: Al Viro <viro@ftp.linux.org.uk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, peterz@infradead.org,
-	LKML <linux-kernel@vger.kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
+Return-Path: <ricardo.ribalda@gmail.com>
+Received: from mail-ew0-f167.google.com (mail-ew0-f167.google.com
+	[209.85.219.167]) by ozlabs.org (Postfix) with ESMTP id 6EC56DE1DE
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 00:07:27 +1000 (EST)
+Received: by ewy11 with SMTP id 11so984039ewy.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2009 07:07:25 -0700 (PDT)
+Sender: Ricardo <ricardo.ribalda@gmail.com>
+From: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
+To: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	David.Woodhouse@intel.com, ben@codiert.org
+Subject: [PATCH] [MTD] ofpart: Partitions at same address cannot have the same
+	name v3
+Date: Fri, 24 Apr 2009 16:01:55 +0200
+Message-Id: <1240581715-25926-1-git-send-email-ricardo.ribalda@uam.es>
+Cc: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,13 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 24, 2009 at 12:55:44PM +0100, Hugh Dickins wrote:
+Sometimes, an special partition is included in the device tree including all the
+partitions. Like in:
 
-> Indeed, thanks for the headsup Stephen.  My own config gives, not
-> Sachin's message (or not still visibly on screen anyway), but an
-> outright panic.  Shame that leaked out into the big world, we'd
-> all have preferred a quiet fixup!  Here's a patch, which I'll
-> also send as reply to the relevant thread.
+partition@ff000000 {
+       reg = < 0x000000 0x800000 >;
+       label = "Root File System";
+};
+partition@ff800000 {
+       reg = < 0x800000 0x1a0000 >;
+       label = "Bitstream";
+};
+...
+full@ff000000 {
+       compatible = "partition";
+       reg = < 0x000000 0x1000000 >;
+       label = "Full FLASH";
+};
 
-Applied, will fold on reorder (since Ingo is asking for what will amount
-to reorder anyway).
+Because two nodes of a device tree cannot have the same name, but all the
+partitions must be named "partition", this special partition is invalid.
+
+This patch makes ofpart.c accept spetial partitions compatible with
+"partition" but not named partition.
+
+These spetial partitions are very useful for flashing the full firmware
+of a device from linux
+---
+This v3 includes feedback from Scott Wood, Peter Korsgaard & Benjamin Kril
+
+v3: Use the compatible propierty
+v2: buggy implementation, strlen-1 instead of strlen
+v1: Just check the firt part of the name
+
+
+ drivers/mtd/ofpart.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mtd/ofpart.c b/drivers/mtd/ofpart.c
+index 3e164f0..59c1e4a 100644
+--- a/drivers/mtd/ofpart.c
++++ b/drivers/mtd/ofpart.c
+@@ -48,7 +48,9 @@ int __devinit of_mtd_parse_partitions(struct device *dev,
+ 
+ 		/* check if this is a partition node */
+ 		partname = of_get_property(pp, "name", &len);
+-		if (strcmp(partname, "partition") != 0) {
++		if ((strcmp(partname, "partition") != 0) &&
++			(of_device_is_compatible(pp, "partition") != 1))
++		{
+ 			nr_parts--;
+ 			continue;
+ 		}
+-- 
+1.6.2.4
