@@ -1,20 +1,19 @@
-Return-Path: <hch@lst.de>
-Received: from verein.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8A3D5DDF58
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Apr 2009 04:27:37 +1000 (EST)
-Date: Sat, 25 Apr 2009 20:18:23 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/6] powerpc: Move #ifdef'ed body of do_IRQ() into a
-	separate function
-Message-ID: <20090425181823.GA10481@lst.de>
-References: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.236])
+	by ozlabs.org (Postfix) with ESMTP id 7F60FDDEF7
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Apr 2009 08:52:40 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f9so1259631rvb.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2009 15:52:39 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 00/13] OF device tree handling of PHY drivers
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Andy Fleming <afleming@freescale.com>, David Miller <davem@davemloft.net>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sat, 25 Apr 2009 16:52:34 -0600
+Message-ID: <20090425224458.32392.31296.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,10 +23,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 23, 2009 at 11:31:37AM +1000, Michael Ellerman wrote:
-> +#ifdef CONFIG_IRQSTACKS
+This series adds common code for reading PHY connection data out of
+the OpenFirmware device tree.  This simplifies the network drivers
+which use the device tree and which currently implement their own
+solutions for reading the PHY data out of the device tree directly.
 
-Wasn't there a plan to make CONFIG_IRQSTACKS the unconditional default?
+I would like to see this series, or at least the core changes (1-4)
+plus the tested drivers (5-8 & 12, but #12 is a new driver and it
+may need more review), go into -next for 2.6.31.
+
+Due to dependencies, I think it is easiest if all of them go in via the
+same tree.  David, are you willing to merge them via yours?  Four of the
+patches are outside of drivers/net (patches 1 and 4 touch drivers/of/,
+and patches 9 & 10 touch arch/powerpc), but I personally have no issues
+if those changes go through you.  I just need to double check with BenH.
+
+For those who are interested, I've pushed these changes out to my git
+server.
+
+The following changes since commit 9f5a691253924fd033a58c6b1fed57bb0a4eccf4:
+  Linus Torvalds (1):
+        Merge branch 'fixes-for-linus' of git://git.monstr.eu/linux-2.6-microblaze
+
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6 next-net
+
+Grant Likely (13):
+      of: add of_parse_phandle() helper for parsing phandle properties
+      phylib: rework to prepare for OF registration of PHYs
+      phylib: add *_direct() variants of phy_connect and phy_attach functions
+      openfirmware: Add OF phylib support code
+      net: Rework mpc5200 fec driver to use of_mdio infrastructure.
+      net: rework fsl_pq_mdio driver to use of_mdio infrastructure
+      net: Rework gianfar driver to use of_mdio infrastructure.
+      net: Rework pasemi_mac driver to use of_mdio infrastructure
+      net: Rework ucc_geth driver to use of_mdio infrastructure
+      powerpc/82xx: Rework Embedded Planet ep8248e platform to use of_mdio
+      net: Rework fs_enet driver to use of_mdio infrastructure
+      net: add Xilinx ll_temac device driver
+      net: fix fsl_pq_mdio driver to use module_init()
+
+ arch/powerpc/platforms/82xx/ep8248e.c     |    9 +-
+ arch/powerpc/platforms/pasemi/gpio_mdio.c |   32 +-
+ drivers/net/Kconfig                       |    8 +
+ drivers/net/Makefile                      |    2 +
+ drivers/net/fec_mpc52xx.c                 |  180 ++----
+ drivers/net/fec_mpc52xx_phy.c             |   26 +-
+ drivers/net/fs_enet/fs_enet-main.c        |   69 +--
+ drivers/net/fs_enet/mii-bitbang.c         |   29 +-
+ drivers/net/fs_enet/mii-fec.c             |   26 +-
+ drivers/net/fsl_pq_mdio.c                 |   53 +--
+ drivers/net/gianfar.c                     |  109 ++---
+ drivers/net/gianfar.h                     |    4 +-
+ drivers/net/ll_temac.h                    |  374 +++++++++++
+ drivers/net/ll_temac_main.c               |  969 +++++++++++++++++++++++++++++
+ drivers/net/ll_temac_mdio.c               |  120 ++++
+ drivers/net/pasemi_mac.c                  |   28 +-
+ drivers/net/pasemi_mac.h                  |    1 -
+ drivers/net/phy/mdio_bus.c                |   29 +-
+ drivers/net/phy/phy_device.c              |  163 ++++--
+ drivers/net/ucc_geth.c                    |   47 +-
+ drivers/net/ucc_geth.h                    |    2 +-
+ drivers/of/Kconfig                        |    6 +
+ drivers/of/Makefile                       |    1 +
+ drivers/of/base.c                         |   24 +
+ drivers/of/of_mdio.c                      |  139 ++++
+ include/linux/fs_enet_pd.h                |    6 +-
+ include/linux/of.h                        |    3 +
+ include/linux/of_mdio.h                   |   22 +
+ include/linux/phy.h                       |    6 +
+ 29 files changed, 1946 insertions(+), 541 deletions(-)
+ create mode 100644 drivers/net/ll_temac.h
+ create mode 100644 drivers/net/ll_temac_main.c
+ create mode 100644 drivers/net/ll_temac_mdio.c
+ create mode 100644 drivers/of/of_mdio.c
+ create mode 100644 include/linux/of_mdio.h
 
 
-The actual patch looks good to me.
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
