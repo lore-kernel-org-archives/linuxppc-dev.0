@@ -1,26 +1,16 @@
-Return-Path: <rbrito@ime.usp.br>
-Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F0A2FDDD1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 01:58:15 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 390DE1E6E5D
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Apr 2009 12:57:44 -0300 (BRT)
-Received: from smtp.gru.flash.tv.br ([127.0.0.1])
-	by localhost (smtp.gru.flash.tv.br [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id NyzUrgPsGAva for <linuxppc-dev@ozlabs.org>;
-	Sun, 26 Apr 2009 12:57:30 -0300 (BRT)
-Received: from chagas.nectar.ath.cx (unknown [187.22.248.170])
-	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id 88E0A1E6D20
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Apr 2009 12:57:25 -0300 (BRT)
-Date: Sun, 26 Apr 2009 12:57:09 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [2.6.30-rc3] powerpc: compilation error of mace module
-Message-ID: <20090426155708.GA23159@ime.usp.br>
+Return-Path: <jonsmirl@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id 57EE3DDE31
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 05:53:05 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c2so1169244anc.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Apr 2009 12:53:03 -0700 (PDT)
+Subject: [PATCH V1 0/3] Split the DMA core out from mpc5200_psc_i2s.c
+To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org
+From: Jon Smirl <jonsmirl@gmail.com>
+Date: Sun, 26 Apr 2009 15:53:00 -0400
+Message-ID: <20090426195215.4648.62017.stgit@terra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,32 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi there, people.
+Patch series to separate out the mpc5200 core DMA routines from
+mpc5200_psc_i2s.c into a standalone mpc5200_dma.c. No intention
+to change how anything works, this is just a code reorg needed for
+later patches to build on.
 
-I am attempting to compile a new kernel for my OldWorld ppc box and I'm
-having some problems. The first one that appears to happen is the following:
+---
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  CC [M]  drivers/net/mace.o
-drivers/net/mace.c: In function ‘mace_probe’:
-drivers/net/mace.c:210: error: ‘struct net_device’ has no member named ‘open’
-drivers/net/mace.c:211: error: ‘struct net_device’ has no member named ‘stop’
-drivers/net/mace.c:212: error: ‘struct net_device’ has no member named ‘hard_start_xmit’
-drivers/net/mace.c:213: error: ‘struct net_device’ has no member named ‘set_multicast_list’
-drivers/net/mace.c:214: error: ‘struct net_device’ has no member named ‘set_mac_address’
-make[3]: *** [drivers/net/mace.o] Error 1
-make[2]: *** [drivers/net] Error 2
-make[1]: *** [drivers] Error 2
-make[1]: Leaving directory `/usr/local/media/cross-compile/linux'
-make: *** [debian/stamp/build/kernel] Error 2
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-Any help is appreciated.
+Jon Smirl (3):
+      Rename exports in mpc5200_dma.c
+      Rename the PSC functions to DMA
+      Basic split of mpc5200 DMA code out from mpc5200_psc_i2s
 
 
-Thanks, Rogério Brito.
+ sound/soc/fsl/Kconfig           |    4
+ sound/soc/fsl/Makefile          |    2
+ sound/soc/fsl/mpc5200_dma.c     |  463 ++++++++++++++++++++++++++++
+ sound/soc/fsl/mpc5200_dma.h     |   81 +++++
+ sound/soc/fsl/mpc5200_psc_i2s.c |  644 +++++----------------------------------
+ 5 files changed, 632 insertions(+), 562 deletions(-)
+ create mode 100644 sound/soc/fsl/mpc5200_dma.c
+ create mode 100644 sound/soc/fsl/mpc5200_dma.h
 
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+--
+Jon Smirl
+jonsmirl@gmail.com
