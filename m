@@ -1,17 +1,20 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D1ACFDDE19
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 23:06:24 +1000 (EST)
-Message-ID: <49F5A4FC.5070604@embedded-sol.com>
-Date: Mon, 27 Apr 2009 15:28:44 +0300
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 24536DDE1A
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 23:07:23 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so1296664yxb.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 06:07:22 -0700 (PDT)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>,
-	linux-mtd@lists.infradead.org
-Subject: Machine check in 4xx NAND driver
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090427.025436.68188155.davem@davemloft.net>
+References: <20090425224458.32392.31296.stgit@localhost.localdomain>
+	<20090427.025436.68188155.davem@davemloft.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 27 Apr 2009 07:07:07 -0600
+Message-ID: <fa686aa40904270607k77c38efasee194a61bfa3de04@mail.gmail.com>
+Subject: Re: [PATCH 00/13] OF device tree handling of PHY drivers
+To: David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,57 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, Apr 27, 2009 at 3:54 AM, David Miller <davem@davemloft.net> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Sat, 25 Apr 2009 16:52:34 -0600
+>
+>> This series adds common code for reading PHY connection data out of
+>> the OpenFirmware device tree. =A0This simplifies the network drivers
+>> which use the device tree and which currently implement their own
+>> solutions for reading the PHY data out of the device tree directly.
+>>
+>> I would like to see this series, or at least the core changes (1-4)
+>> plus the tested drivers (5-8 & 12, but #12 is a new driver and it
+>> may need more review), go into -next for 2.6.31.
+>>
+>> Due to dependencies, I think it is easiest if all of them go in via the
+>> same tree. =A0David, are you willing to merge them via yours? =A0Four of=
+ the
+>> patches are outside of drivers/net (patches 1 and 4 touch drivers/of/,
+>> and patches 9 & 10 touch arch/powerpc), but I personally have no issues
+>> if those changes go through you. =A0I just need to double check with Ben=
+H.
+>
+> I've applied all of these patches to net-next-2.6, thanks.
+>
+>> =A0 git://git.secretlab.ca/git/linux-2.6 next-net
+>
+> You know, if you had actually based this tree on net-next-2.6
+> I could have pulled from it. =A0I actually tried, and I got a
+> lot of upstream stuff I wasn't ready to get in that tree just
+> yet :-/
 
-I've got the following error on custom board based on AMCC 405EXr
-running 2.6.27 kernel, with ndfc driver back ported from 2.6.29 (to support
-OF partitions on NAND).  This happened once, right after reboot. I was
-unable to reproduce this. The NAND device is Samsung K9K8G08U0B,
-1GB with 2k page.
+I know, but the tree I based it on was what I actually tested against.
+ When it came to publishing, I wasn't going to rebase and push out
+something untested.  I hadn't expected it to get pulled so quickly!
+Thanks!
 
-Oops: Machine check, sig: 7 [#1]
+g.
 
-Modules linked in:
-NIP: c0155bd0 LR: c014ff30 CTR: 0000003b
-REGS: dfffdf50 TRAP: 0202   Not tainted  (2.6.27)
-MSR: 00029030 <EE,ME,IR,DR>  CR: 44024084  XER: 00000000
-TASK = df82c000[1] 'swapper' THREAD: df82a000
-GPR00: 82bfe51c df82bb90 df82c000 c02c7ae0 dfade884 000000fc 000001fe 0000006b 
-GPR08: 00000000 e1018000 c02c7ad8 00000040 00000000 ffffffef c024c3b0 00000000 
-GPR16: 00000000 00000000 00000000 0000003f 00000000 dfade870 c02aa7f4 00000003 
-GPR24: df824040 df824000 00000100 00000008 c02c7ae0 df824000 c02c7b9c dfade870 
-NIP [c0155bd0] ndfc_read_buf+0x30/0x5c
-LR [c014ff30] nand_read_page_hwecc+0x70/0x174
-Call Trace:
-[df82bb90] [c014fff8] nand_read_page_hwecc+0x138/0x174 (unreliable)
-[df82bbd0] [c0152e74] nand_do_read_ops+0x15c/0x3dc
-[df82bc30] [c01534bc] nand_read+0xa8/0xe4
-[df82bc60] [c014800c] part_read+0x5c/0xe4
-[df82bc70] [c00f2154] jffs2_flash_read+0x68/0x258
-[df82bca0] [c00ebbc0] jffs2_fill_scan_buf+0x34/0x64
-[df82bcc0] [c00ec0a0] jffs2_scan_medium+0x4b0/0x1204
-[df82bd40] [c00eed00] jffs2_do_mount_fs+0x178/0x6c8
-[df82bd80] [c00f11f8] jffs2_do_fill_super+0xc4/0x258
-[df82bda0] [c00f18a0] jffs2_fill_super+0xc0/0xd4
-[df82bdc0] [c0147128] get_sb_mtd_aux+0xa0/0xf0
-[df82bdf0] [c0147280] get_sb_mtd+0x84/0x1c8
-[df82be30] [c00f1670] jffs2_get_sb+0x1c/0x2c
-[df82be40] [c0072230] vfs_kern_mount+0x58/0xe0
-[df82be60] [c0072308] do_kern_mount+0x40/0xf8
-[df82be80] [c008b740] do_new_mount+0x88/0xb8
-[df82bea0] [c008b8f4] do_mount+0x184/0x1d4
-[df82bf20] [c008b9d4] sys_mount+0x90/0xe0
-[df82bf50] [c0274a04] do_mount_root+0x30/0xb8
-[df82bf60] [c0274c78] mount_block_root+0xac/0x244
-[df82bfb0] [c02750ac] prepare_namespace+0x18c/0x218
-[df82bfd0] [c02741bc] kernel_init+0xc8/0xf4
-[df82bff0] [c000dd5c] kernel_thread+0x44/0x60
-Instruction dump:
-7cab2b79 4c810020 38a5fffc 396bffff 2f85fffd 556bf0be 3d20c02c 396b0001 
-39497ad8 7d6903a6 419c0028 812a0004 <7c0004ac> 80090008 0c000000 4c00012c 
+>
 
-Any hints what could be the problem are much appreciated.
 
-Thanks.
 
-Felix.
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
