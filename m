@@ -2,16 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4F533DDDA5
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 05:31:05 +1000 (EST)
-Message-Id: <535FF889-D311-4C96-9427-DBEF7404A17F@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id AB82FDDDA1
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 05:31:55 +1000 (EST)
+Message-Id: <439723CB-6615-428B-9A7F-C6CBA5EB7CBE@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Michael Neuling <mikey@neuling.org>
 In-Reply-To: <20090424062431.D3803120E7@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
 Subject: Re: [PATCH 2/2] powerpc: Add 2.06 tlbie mnemonics
-Date: Mon, 27 Apr 2009 14:30:40 -0500
+Date: Mon, 27 Apr 2009 14:31:44 -0500
 References: <20090424062431.D3803120E7@localhost.localdomain>
 Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
 	linuxppc-dev@ozlabs.org
@@ -27,18 +27,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Apr 24, 2009, at 1:24 AM, Michael Neuling wrote:
 
-> Index: linux-2.6-ozlabs/arch/powerpc/mm/hash_native_64.c
+> Index: linux-2.6-ozlabs/arch/powerpc/include/asm/cputable.h
 > ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/mm/hash_native_64.c
-> +++ linux-2.6-ozlabs/arch/powerpc/mm/hash_native_64.c
-> @@ -38,6 +38,9 @@
+> --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/cputable.h
+> +++ linux-2.6-ozlabs/arch/powerpc/include/asm/cputable.h
+> @@ -195,6 +195,7 @@ extern const char *powerpc_base_platform
+> #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
+> #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
+> #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
+> +#define CPU_FTR_TLBIE_206		LONG_ASM_CONST(0x0100000000000000)
 >
-> static DEFINE_SPINLOCK(native_tlbie_lock);
+> #ifndef __ASSEMBLY__
 >
-> +#define TLBIE(lp,a) \
-> +	stringify_in_c(.long 0x7c000264 | ((a) << 11) | ((lp) << 21))
-> +
+> @@ -409,7 +410,7 @@ extern const char *powerpc_base_platform
+> 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+> 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+> -	    CPU_FTR_DSCR | CPU_FTR_SAO)
+> +	    CPU_FTR_DSCR | CPU_FTR_SAO | CPU_FTR_TLBIE_206)
+> #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+> 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+> 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
 
-Put this ppc-opcode.h now that we have it.
+I think our preference is to use MMU features for such things now  
+instead of burning a cpu feature for it.
 
 - k
