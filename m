@@ -1,22 +1,17 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id CEEE1DDE25
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 06:12:56 +1000 (EST)
-Message-ID: <49F611C4.2030704@ovro.caltech.edu>
-Date: Mon, 27 Apr 2009 13:12:52 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5E96EDDE2A
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 06:16:06 +1000 (EST)
+Date: Mon, 27 Apr 2009 15:16:02 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'merge' branch for 2.6.30 (updated)
+Message-ID: <Pine.LNX.4.64.0904271457180.27068@localhost.localdomain>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>	<ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>	<49F608B7.9080409@ovro.caltech.edu>	<49F60A3A.4060402@freescale.com>	<49F60BF8.8040404@ovro.caltech.edu>
-	<46B638E2-885C-4281-81EA-CB685264E143@kernel.crashing.org>
-	<49F60EC9.2050501@ovro.caltech.edu>
-	<9B86B565-1A28-46CD-8C30-DECB3EBF0763@kernel.crashing.org>
-In-Reply-To: <9B86B565-1A28-46CD-8C30-DECB3EBF0763@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Ira Snyder <iws@ovro.caltech.edu>, Liu Dave-R63238 <DaveLiu@freescale.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Dan Williams <dan.j.williams@intel.com>, Timur Tabi <timur@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,38 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Paul,
 
->>>> Can you give me an example of non-PCI memory that would be
->>>> non-prefetchable that you'd like us to try? We can see if our
->>>> host CPUs have an area like that ... we just need to know
->>>> what device to look for first :)
->>> You can mark the pci inbound window on the 83xx as non-prefetchable 
->>> (assuming 83xx is host). On a x86 host I doubt there is any easy way 
->>> to get non-prefetchable memory.
->>
->> Yep, we were going to do that, but chose to use the
->> 1MB region already setup for the IMMRs since its already
->> marked as non-prefetchable. We were only doing reads, so
->> it wasn't going to hurt anything.
->>
->> I doubt that marking one of the other BAR regions
->> as non-prefetchable will give a different result.
->> However, we're more than happy to double-check if
->> you'd like.
-> 
-> Its possible you'll get a different result since IMMR is a register 
-> space internal and thats normally a completely different bus than memory 
-> would be (internal to the 83xx).  I'd suggest double-checking w/a BAR 
-> marked non-prefetch pointing to real memory.
+Can we possibly get this and the other pull requests dealt with and sent
+to Linus so we might get such fixes in before he tags a -rc4.
 
-We had a 4k BAR1 setup to point to DDR memory.
+thanks
 
-With prefetchable set, a 36-byte transfer generated a
-burst-of-8 32-bit words followed by a single transaction.
+- k
 
-With non-prefetchable set, the transfers were all single.
+Please pull from 'merge' branch of
 
-So it works like we'd expect.
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-Cheers,
-Dave
+to receive the following updates:
+
+ arch/powerpc/boot/dts/gef_ppc9a.dts   |    1 +
+ arch/powerpc/include/asm/mmu.h        |    6 ------
+ arch/powerpc/include/asm/ppc-opcode.h |   11 +----------
+ arch/powerpc/kernel/cputable.c        |    2 +-
+ arch/powerpc/mm/tlb_nohash_low.S      |   16 ++--------------
+ 5 files changed, 5 insertions(+), 31 deletions(-)
+
+Kumar Gala (1):
+      Revert "powerpc: Add support for early tlbilx opcode"
+
+Martyn Welch (1):
+      powerpc/86xx: Add device_type entry to soc for ppc9a
+
+Stephen Rothwell (1):
+      powerpc: fix for long standing bug noticed by gcc 4.4.0
