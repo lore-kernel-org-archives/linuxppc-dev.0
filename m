@@ -1,31 +1,17 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B1D2DDDE1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 19:09:19 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n3R99F3d012173
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 02:09:16 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n3R99DAT029659
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 04:09:14 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] fsldma: use PCI Read Multiple command
-Date: Mon, 27 Apr 2009 17:09:13 +0800
-Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>
-In-Reply-To: <20090424183517.GB23140@ovro.caltech.edu>
-References: <20090424183517.GB23140@ovro.caltech.edu>
-From: "Liu Dave-R63238" <DaveLiu@freescale.com>
-To: "Ira Snyder" <iws@ovro.caltech.edu>, <linux-kernel@vger.kernel.org>
-Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
-	Zhang Wei <wei.zhang@freescale.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 7708FDDD1C
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 19:54:46 +1000 (EST)
+Date: Mon, 27 Apr 2009 02:54:36 -0700 (PDT)
+Message-Id: <20090427.025436.68188155.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Subject: Re: [PATCH 00/13] OF device tree handling of PHY drivers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090425224458.32392.31296.stgit@localhost.localdomain>
+References: <20090425224458.32392.31296.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,27 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> By default, the Freescale 83xx DMA controller uses the PCI Read Line
-> command when reading data over the PCI bus. Setting the=20
-> controller to use the PCI Read Multiple command instead allows the
-> controller to read much larger bursts of data, which provides a
-drastic
-> speed increase.
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 25 Apr 2009 16:52:34 -0600
 
-IIRC, the default for 83xx DMA controller uses the PCI mem read
-command, not mem read line.
+> This series adds common code for reading PHY connection data out of
+> the OpenFirmware device tree.  This simplifies the network drivers
+> which use the device tree and which currently implement their own
+> solutions for reading the PHY data out of the device tree directly.
+> 
+> I would like to see this series, or at least the core changes (1-4)
+> plus the tested drivers (5-8 & 12, but #12 is a new driver and it
+> may need more review), go into -next for 2.6.31.
+> 
+> Due to dependencies, I think it is easiest if all of them go in via the
+> same tree.  David, are you willing to merge them via yours?  Four of the
+> patches are outside of drivers/net (patches 1 and 4 touch drivers/of/,
+> and patches 9 & 10 touch arch/powerpc), but I personally have no issues
+> if those changes go through you.  I just need to double check with BenH.
 
-You are assuming the PCI memory space is prefetchable( no side effect)
-for DMA.
-Is it possible that DMA is from non-prefetchable memory space?
+I've applied all of these patches to net-next-2.6, thanks.
 
-> The slowdown due to using PCI Read Line was only observed=20
-> when a PCI-to-PCI bridge was between the devices trying to
-communicate.
->=20
-> A simple test driver showed an increase from 4MB/sec to 116MB/sec when
-> performing DMA over the PCI bus. Using DMA to transfer between blocks
-> of local SDRAM showed no change in performance with this patch.=20
-> The dmatest driver was also used to verify the correctness of the
-transfers,
-> and showed no errors.
+>   git://git.secretlab.ca/git/linux-2.6 next-net
+
+You know, if you had actually based this tree on net-next-2.6
+I could have pulled from it.  I actually tried, and I got a
+lot of upstream stuff I wasn't ready to get in that tree just
+yet :-/
