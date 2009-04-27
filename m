@@ -1,21 +1,23 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id B7E8DDDDA5
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 05:34:18 +1000 (EST)
-Message-ID: <49F608B7.9080409@ovro.caltech.edu>
-Date: Mon, 27 Apr 2009 12:34:15 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>
-	<ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>
-In-Reply-To: <ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Ira Snyder <iws@ovro.caltech.edu>, Liu Dave-R63238 <DaveLiu@freescale.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Dan Williams <dan.j.williams@intel.com>,
-	Zhang Wei <wei.zhang@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8016BDDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 05:36:24 +1000 (EST)
+Message-Id: <2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+In-Reply-To: <20090424223355.GB7858@ime.usp.br>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc: minimizing the configuration of
+	linkstation_defconfig
+Date: Mon, 27 Apr 2009 14:29:52 -0500
+References: <20090424065816.GA15525@ime.usp.br>
+	<Pine.LNX.4.64.0904242158210.8309@axis700.grange>
+	<20090424223355.GB7858@ime.usp.br>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,84 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
 
->> You are assuming the PCI memory space is prefetchable( no side effect)
->> for DMA. Is it possible that DMA is from non-prefetchable memory space?
-> 
-> This should be a safe assumption for this driver.  Remember, this
-> driver just does offload memcpy, from one region to another.  So the
-> PCI memory that you are reading from should be just a buffer of data,
-> and there should be side-effect of reading it.
-> 
-> However, I would like to see a comment at the top of the file warning
-> people that copying from PCI memory will result in prefetched reads.
-> 
+On Apr 24, 2009, at 5:33 PM, Rog=E9rio Brito wrote:
 
-Here's a few results from DMA tests between two
-MPC8349EA boards housed in a CPCI chassis.
+> This patch addresses the following issues:
+>
+>
+> 01. makes CFQ the default scheduler, to be in line with the rest of =20=
 
-1. DMA mode register (DMAMRn)
-    PCI read command (PRC, bits 11:10)
+> the kernel.
+>
+> 02. since linkstations are meant to store files, enable large blk =20
+> devices.
+>
+> 03. disable CONFIG_MIGRATION in in such low memory devices.
+>
+> 04. disable CONFIG_BLK_DEV_RAM.
 
-    a) DMAMRn[PRC] = 00 = PCI Read
+do we not allow booting a ramdisk?
 
-       The PCI read command is 6h on the PCI bus.
-       For DMA lengths of less than 1 cache line (32-bytes)
-       the DMA controller will generate a PCI 6h command.
-       However, for lengths of 32-bytes and higher, the
-       DMA controller actually generates a PCI Read Line (Eh)
-       command.
+> 05. disable CONFIG_SCSI_LOWLEVEL, as no device under that tree is =20
+> used.
+>
+> 06. idem for CONFIG_NETDEV_10000.
+>
+> 07. idem for CONFIG_WIRELESS.
+>
+> 08. idem for CONFIG_HWMON.
+>
+> 09. idem for CONFIG_CRYPTO_HW.
+>
+> 10. disable CONFIG_VIDEO_OUTPUT_CONTROL.
+>
+> 11. keep consistency and disable extended attributes in CIFS, ext3, =20=
 
-       Freescale indicated that this 'change of PCI command code'
-       functionality is an undocumented 'feature', there to
-       improve performance for longer read lengths.
+> and NFS.
+>
+> 12. enable CONFIG_PRINTK_TIME.
+>
+> Signed-off-by: Rog=E9rio Brito <rbrito@ime.usp.br>
+>
+> ---
+>
+> Dear Kumar, please, apply this one.
+>
+> I have another patch regarding one regression regarding MTD &
+> PHYSMAP_COMPAT that I plan to send on top of this one.
+>
+> Thanks.
 
-    b) DMAMRn[PRC] = 01 = PCI Read Line
+Ok, can we look at just specifying such info in the linkstation device =20=
 
-       Generated the PCI command code for PCI read line (Eh),
-       regardless of DMA length.
+tree.
 
-    c) DMAMRn[PRC] = 10 = PCI Read Multiple
+Also, can you break this defconfig update into two patches.  1. that =20
+just updates to 2.6.30-rc3 (or latest) and 2. that makes the various =20
+changes you've listed above.
 
-       Generated the PCI command code for PCI Read Multiple (Ch),
-       regardless of DMA length.
-
-2. DMA from areas marked as non-prefetchable.
-
-    We setup two test cases:
-
-    a) Two boards in the same PCI segment with no intervening
-       bridges.
-
-    b) Two boards in separate PCI segments with intervening
-       bridges (in this case, there was two bridges on SBS
-       CPCI-to-CPI backplane bridging cards).
-
-    The PCI window to the IMMR registers on the boards is marked
-    as non-prefetchable. DMA from that area (reads) appeared on the
-    PCI bus as single 32-bit read transactions, i.e., the target
-    device effectively ignores the PCI read command, and the target
-    returns read data as single reads, i.e., the target acts as
-    as non-prefetchable memory.
-
-    We tested with the PCI Read Multiple command, and no data
-    was ever prefetched from the target. The bridges did not
-    prefetch and discard data, eg. we tried 36-bytes, and there
-    were 9 separate 4-byte transactions (we were using a 32-bit
-    PCI host for this test). Hence, at least for this example
-    target device, there are no side effects to using PCI
-    read multiple on the bus master, to a target PCI memory
-    region marked as non-prefetchable.
-
-    So even though the bridges were seeing transactions that
-    indicated read multiple, only single read cycles were
-    seen to be used.
-
-Would you like some sort of summary of this info for a commit
-message?
-
-Would you like us to check any other transaction/register combos?
-
-Cheers,
-Dave
+- k=
