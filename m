@@ -1,23 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 896E6DDE0D
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 01:20:26 +1000 (EST)
-Message-ID: <49F5CD10.9010801@freescale.com>
-Date: Mon, 27 Apr 2009 10:19:44 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.236])
+	by ozlabs.org (Postfix) with ESMTP id BF5FCDDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 01:36:17 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f9so1638029rvb.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 08:36:16 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] net: Fix ucc_geth.c handling of phy 'interface' property.
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>,
+	Andy Fleming <afleming@freescale.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org
+Date: Mon, 27 Apr 2009 09:36:13 -0600
+Message-ID: <20090427153612.5108.10877.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Andres Marquez <amarquez@edgeaccess.net>
-Subject: Re: Enable Serial Management Controller (SMC) in MPC8265
-References: <1240530625.31311.20.camel@localhost.localdomain>
-	<1240839625.3643.19.camel@localhost.localdomain>
-In-Reply-To: <1240839625.3643.19.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Nirmala Kakkuppi <nkakkuppi@edgeaccess.net>, linuxppc-dev@ozlabs.org,
-	Haysam Rachid <hrachid@edgeaccess.net>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andres F Marquez wrote:
->      After struggling for several days with this issue we have finally
-> taken a different approach to solve our problem. We wanted to interface
-> our CPU (MPC8265) with a FPGA through a serial connection. Now, we are
-> using a parallel interface through the data bus (defining a new memory
-> region in uboot -an additional chip select).
+From: Grant Likely <grant.likely@secretlab.ca>
 
-That sounds much better.
+Previous rework to ucc_geth.c to add of_mdio support (net: Rework
+ucc_geth driver to use of_mdio infrastructure) added a block of
+code which broke older openfirmware device trees which use an
+'interface' property in the phy node to describe the connection
+between the MAC and the PHY.  This patch removes the offending blurb.
 
->      We tried enabling SCC's and SMC's through the kernel configuration
-> in ltib,
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-LTIB doesn't alter device trees AFAIK...  Unless you have more than two 
-CPM serial nodes, you won't get more than ttyCPM0 and ttyCPM1.
+ drivers/net/ucc_geth.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-> but we were always getting the same tty devices device under
-> "/dev". No matter how many SCC's or SMC's we enable we were always
-> getting only /dev/ttyCPM0 and /dev/ttyCPM1. 
 
-Do you have a static /dev, or are you running mdev or udev?  If the 
-latter, then any changes in the kernel or device tree are not going to 
-automatically show up in /dev.
-
--Scott
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 195b490..d805d60 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3639,9 +3639,6 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	prop = of_get_property(np, "phy-connection-type", NULL);
+ 	if (!prop) {
+ 		/* handle interface property present in old trees */
+-		if (!phy)
+-			return -ENODEV;
+-
+ 		prop = of_get_property(phy, "interface", NULL);
+ 		if (prop != NULL) {
+ 			phy_interface = enet_to_phy_interface[*prop];
