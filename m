@@ -1,27 +1,10 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 98740DDDA2
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 06:26:44 +1000 (EST)
-Message-ID: <49F614FC.70000@freescale.com>
-Date: Mon, 27 Apr 2009 15:26:36 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: David Hawkins <dwh@ovro.caltech.edu>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>
-	<ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>
-	<49F608B7.9080409@ovro.caltech.edu>
-	<49F60A3A.4060402@freescale.com>
-	<49F61416.8040501@ovro.caltech.edu>
-In-Reply-To: <49F61416.8040501@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
-	Liu Dave-R63238 <DaveLiu@freescale.com>,
-	linux-kernel@vger.kernel.org, Ira Snyder <iws@ovro.caltech.edu>
+Return-Path: <galak@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc/85xx: Add binding for LAWs and MCM
+Date: Mon, 27 Apr 2009 15:38:44 -0500
+Message-Id: <1240864725-29003-1-git-send-email-galak@kernel.crashing.org>
+Cc: devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,25 +14,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Hawkins wrote:
+The first 4k region of CCSR space is well defined for local access
+windows, CCSRBAR, etc.  The second 4k region is well defined as
+register for configuring and getting errors for the ECM coherency
+module.
 
-> PRC_RM - PCI read multiple
->    The default PCI read command used by the DMA controller is
->    PCI Read (PCI command 6h). When the burst length is 32-bytes
->    or longer, PCI Read Line (PCI command Eh) is used (undocumented
->    feature of the controller). Using PCI read multiple
->    (PCI command Ch) results in high-performance across PCI
->    bridges. DMA transfers to non-prefetchable PCI registers
->    should not result in prefetched reads, even when using
->    the PCI read multiple command.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ Documentation/powerpc/dts-bindings/ecm.txt |   64 ++++++++++++++++++++++++++++
+ 1 files changed, 64 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/ecm.txt
 
-I was thinking more along the lines of:
-
-"This driver tells the DMA controller to use the PCI Read Multiple
-command, instead of the PCI Read Line command, for PCI read operations.
- Please be aware that this setting may result in read pre-fetching on
-some platforms."
-
+diff --git a/Documentation/powerpc/dts-bindings/ecm.txt b/Documentation/powerpc/dts-bindings/ecm.txt
+new file mode 100644
+index 0000000..f514f29
+--- /dev/null
++++ b/Documentation/powerpc/dts-bindings/ecm.txt
+@@ -0,0 +1,64 @@
++=====================================================================
++E500 LAW & Coherency Module Device Tree Binding
++Copyright (C) 2009 Freescale Semiconductor Inc.
++=====================================================================
++
++Local Access Window (LAW) Node
++
++The LAW node represents the region of CCSR space where local access
++windows are configured.  For ECM based devices this is the first 4k
++of CCSR space that includes CCSRBAR, ALTCBAR, ALTCAR, BPTR, and some
++number of local access windows as specified by fsl,num-laws.
++
++PROPERTIES
++
++  - compatible
++      Usage: required
++      Value type: <string>
++      Definition: Must include "fsl,ecm-law"
++
++  - reg
++      Usage: required
++      Value type: <prop-encoded-array>
++      Definition: A standard property.  The value specifies the
++          physical address offset and length of the CCSR space
++          registers.
++
++  - fsl,num-laws
++      Usage: required
++      Value type: <u32>
++      Definition: The value specifies the number of local access
++          windows for this device.
++
++=====================================================================
++
++E500 Coherency Module Node
++
++The E500 LAW node represents the region of CCSR space where ECM config
++and error reporting registers exist, this is the second 4k (0x1000)
++of CCSR space.
++
++PROPERTIES
++
++  - compatible
++      Usage: required
++      Value type: <string>
++      Definition: Must include "fsl,CHIP-ecm", "fsl,ecm" where
++      CHIP is the processor (mpc8572, mpc8544, etc.)
++
++  - reg
++      Usage: required
++      Value type: <prop-encoded-array>
++      Definition: A standard property.  The value specifies the
++          physical address offset and length of the CCSR space
++          registers.
++
++   - interrupts
++      Usage: required
++      Value type: <prop-encoded-array>
++
++   - interrupt-parent
++      Usage: required
++      Value type: <phandle>
++
++=====================================================================
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.6.0.6
