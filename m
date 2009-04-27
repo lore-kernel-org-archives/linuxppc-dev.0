@@ -1,21 +1,21 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id 7C925DDDF6
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 17:48:24 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c2so1283402anc.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 00:48:21 -0700 (PDT)
-MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <20090424183517.GB23140@ovro.caltech.edu>
-References: <20090424183517.GB23140@ovro.caltech.edu>
-Date: Mon, 27 Apr 2009 15:48:21 +0800
-Message-ID: <2a27d3730904270048g1e247797s6a25f9e28d664214@mail.gmail.com>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-From: Li Yang <leoli@freescale.com>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
-	linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 415FCDDE41
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 18:17:23 +1000 (EST)
+Subject: Re: [BUG] 2.6.30-rc3: BUG triggered on some hugepage usages
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <20090424095116.GB14283@csn.ul.ie>
+References: <alpine.LFD.2.00.0904212014170.3101@localhost.localdomain>
+	<20090424095116.GB14283@csn.ul.ie>
+Content-Type: text/plain
+Date: Mon, 27 Apr 2009 18:15:38 +1000
+Message-Id: <1240820138.7169.10.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Apr 25, 2009 at 2:35 AM, Ira Snyder <iws@ovro.caltech.edu> wrote:
-> By default, the Freescale 83xx DMA controller uses the PCI Read Line
-> command when reading data over the PCI bus. Setting the controller to use
-> the PCI Read Multiple command instead allows the controller to read much
-> larger bursts of data, which provides a drastic speed increase.
->
-> The slowdown due to using PCI Read Line was only observed when a PCI-to-PCI
-> bridge was between the devices trying to communicate.
->
-> A simple test driver showed an increase from 4MB/sec to 116MB/sec when
-> performing DMA over the PCI bus. Using DMA to transfer between blocks of
-> local SDRAM showed no change in performance with this patch. The dmatest
-> driver was also used to verify the correctness of the transfers, and showed
-> no errors.
->
-> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+On Fri, 2009-04-24 at 10:51 +0100, Mel Gorman wrote:
+> I'm seeing some tests with sysbench+postgres+large pages fail on ppc64
+> although a very clear pattern is not forming as to what exactly is
+> causing it. However, the libhugetlbfs regression tests (make && make
+> func) are triggering the following oops when calling mlock() and so
+> are
+> likely related.
 
-Acked-by: Li Yang <leoli@freescale.com>
+This would be a spurrious WARN_ON().. the test I added in there should
+not apply to huge pages. However, I don't see that causing a functional
+problem with sysbench+postgres
 
-Thanks,
-Leo
+Ben.
