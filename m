@@ -1,33 +1,17 @@
-Return-Path: <mjw@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from exprod5og109.obsmtp.com (exprod5og109.obsmtp.com [64.18.0.188])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A92ABDDE2A
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 02:18:00 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3RGERSX022210
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 12:14:27 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3RGHtUe081260
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 12:17:55 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3RGG77N008212
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 12:16:07 -0400
-Received: from [9.10.86.126] (dandaleyt60.rchland.ibm.com [9.10.86.126] (may
-	be forged))
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	n3RGG6HX008160
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 12:16:06 -0400
-Subject: [PATCH] powerpc adjust oprofile_cpu_type version 3
-From: Mike Wolf <mjw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Mon, 27 Apr 2009 11:17:54 -0500
-Message-Id: <1240849074.10947.4.camel@mx3>
-Mime-Version: 1.0
-Reply-To: mjw@linux.vnet.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 89C5CDDE98
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 02:24:35 +1000 (EST)
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH] powerpc/86xx: Add device_type entry to soc for ppc9a
+To: galak@kernel.crashing.org
+Date: Mon, 27 Apr 2009 17:24:28 +0100
+Message-ID: <20090427162428.8133.23523.stgit@ubuntu8041.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,58 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Oprofile is changing the naming it is using for the compatibility modes.
-Instead of having compat-power<x>, oprofile will go to family naming
-convention and use ibm-compat-v<x>.  Currently only ibm-compat-v1 will
-be defined.
-The notion of compatibility events just started with POWER6. So there is
-no way that any other tool could exist that is using these
-oprofile_cpu_type strings we want to change.
+The 'device_type = "soc";' line *is* needed in the DTS for get_immrbase()
+to return the correct address.
 
-Signed-off-by: Mike Wolf <mjw@linux.vnet.ibm.com>
-
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 ---
---- mainline.orig/arch/powerpc/kernel/cputable.c	2009-04-16 09:47:49.000000000 -0500
-+++ mainline/arch/powerpc/kernel/cputable.c	2009-04-27 10:28:03.000000000 -0500
-@@ -382,7 +382,8 @@
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
--		.oprofile_cpu_type	= "ppc64/compat-power5+",
-+		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
-+		.oprofile_type		= PPC_OPROFILE_POWER4,
- 		.platform		= "power5+",
- 	},
- 	{	/* Power6 */
-@@ -416,7 +417,8 @@
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
--		.oprofile_cpu_type	= "ppc64/compat-power6",
-+		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
-+		.oprofile_type		= PPC_OPROFILE_POWER4,
- 		.platform		= "power6",
- 	},
- 	{	/* 2.06-compliant processor, i.e. Power7 "architected" mode */
-@@ -429,7 +431,8 @@
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
--		.oprofile_cpu_type	= "ppc64/compat-power7",
-+		.oprofile_type		= PPC_OPROFILE_POWER4,
-+		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
- 		.platform		= "power7",
- 	},
- 	{	/* Power7 */
-@@ -1833,8 +1836,10 @@
- 		 * and, in that case, keep the current value for
- 		 * oprofile_cpu_type.
- 		 */
--		if (old.oprofile_cpu_type == NULL)
-+		if (old.oprofile_cpu_type == NULL) {
- 			t->oprofile_cpu_type = s->oprofile_cpu_type;
-+			t->oprofile_type = s->oprofile_type;
-+		}
- 	}
- 
- 	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
+
+ arch/powerpc/boot/dts/gef_ppc9a.dts |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/gef_ppc9a.dts b/arch/powerpc/boot/dts/gef_ppc9a.dts
+index d47ad07..53a7a62 100644
+--- a/arch/powerpc/boot/dts/gef_ppc9a.dts
++++ b/arch/powerpc/boot/dts/gef_ppc9a.dts
+@@ -161,6 +161,7 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		#interrupt-cells = <2>;
++		device_type = "soc";
+ 		compatible = "fsl,mpc8641-soc", "simple-bus";
+ 		ranges = <0x0 0xfef00000 0x00100000>;
+ 		reg = <0xfef00000 0x100000>;	// CCSRBAR 1M
