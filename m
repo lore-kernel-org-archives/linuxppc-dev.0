@@ -1,21 +1,21 @@
-Return-Path: <ben@codiert.org>
-Received: from cursor.subgra.de (cursor.subgra.de [78.46.252.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "cursor.subgra.de", Issuer "cursor.subgra.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id F371FDDDB2
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 17:09:49 +1000 (EST)
-Date: Mon, 27 Apr 2009 09:09:32 +0200
-From: Benjamin Krill <ben@codiert.org>
-To: Ricardo Ribalda Delgado <ricardo.ribalda@uam.es>
-Subject: Re: [PATCH] [MTD] ofpart: Partitions at same address cannot have the
-	same name v3
-Message-ID: <20090427070932.GK14906@codiert.org>
-References: <1240581715-25926-1-git-send-email-ricardo.ribalda@uam.es>
+Return-Path: <pku.leo@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id 7C925DDDF6
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 17:48:24 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c2so1283402anc.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 00:48:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1240581715-25926-1-git-send-email-ricardo.ribalda@uam.es>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	David.Woodhouse@intel.com
+Sender: pku.leo@gmail.com
+In-Reply-To: <20090424183517.GB23140@ovro.caltech.edu>
+References: <20090424183517.GB23140@ovro.caltech.edu>
+Date: Mon, 27 Apr 2009 15:48:21 +0800
+Message-ID: <2a27d3730904270048g1e247797s6a25f9e28d664214@mail.gmail.com>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+From: Li Yang <leoli@freescale.com>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->--- a/drivers/mtd/ofpart.c
->+++ b/drivers/mtd/ofpart.c
->@@ -48,7 +48,9 @@ int __devinit of_mtd_parse_partitions(struct device *dev,
-> 
-> 		/* check if this is a partition node */
-> 		partname = of_get_property(pp, "name", &len);
->-		if (strcmp(partname, "partition") != 0) {
->+		if ((strcmp(partname, "partition") != 0) &&
->+			(of_device_is_compatible(pp, "partition") != 1))
->+		{
-> 			nr_parts--;
-> 			continue;
-> 		}
+On Sat, Apr 25, 2009 at 2:35 AM, Ira Snyder <iws@ovro.caltech.edu> wrote:
+> By default, the Freescale 83xx DMA controller uses the PCI Read Line
+> command when reading data over the PCI bus. Setting the controller to use
+> the PCI Read Multiple command instead allows the controller to read much
+> larger bursts of data, which provides a drastic speed increase.
+>
+> The slowdown due to using PCI Read Line was only observed when a PCI-to-PCI
+> bridge was between the devices trying to communicate.
+>
+> A simple test driver showed an increase from 4MB/sec to 116MB/sec when
+> performing DMA over the PCI bus. Using DMA to transfer between blocks of
+> local SDRAM showed no change in performance with this patch. The dmatest
+> driver was also used to verify the correctness of the transfers, and showed
+> no errors.
+>
+> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
 
-If this is the way, how to go, you get my ack.
+Acked-by: Li Yang <leoli@freescale.com>
 
-Acked-by: Benjamin Krill <ben@codiert.org>
+Thanks,
+Leo
