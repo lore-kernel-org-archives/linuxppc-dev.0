@@ -1,19 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id EC240DDE1F
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 03:37:15 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so26957yxb.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 10:37:13 -0700 (PDT)
+Received: from mail-gx0-f172.google.com (mail-gx0-f172.google.com
+	[209.85.217.172]) by ozlabs.org (Postfix) with ESMTP id C09F6DDEE8
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 03:50:38 +1000 (EST)
+Received: by gxk20 with SMTP id 20so108843gxk.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 10:50:37 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1240852719.3495.0@antares>
-References: <1240852719.3495.0@antares>
+In-Reply-To: <20090427173606.GA10292@ld0162-tx32.am.freescale.net>
+References: <20090427153612.5108.10877.stgit@localhost.localdomain>
+	<20090427173606.GA10292@ld0162-tx32.am.freescale.net>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 27 Apr 2009 11:36:58 -0600
-Message-ID: <fa686aa40904271036n5c610fdehe1c7906fff2b893b@mail.gmail.com>
-Subject: Re: How to use Localbus on 5200B w/ 2.6.29.1
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Date: Mon, 27 Apr 2009 11:50:20 -0600
+Message-ID: <fa686aa40904271050kb3159cbw52c0c1dba3076f3e@mail.gmail.com>
+Subject: Re: [PATCH] net: Fix ucc_geth.c handling of phy 'interface' property.
+To: Scott Wood <scottwood@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Cc: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>, linuxppc-dev@ozlabs.org,
+	Andy Fleming <afleming@freescale.com>, netdev@vger.kernel.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,69 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 27, 2009 at 11:18 AM, Albrecht Dre=DF <albrecht.dress@arcor.de>=
- wrote:
-> Hi all,
+On Mon, Apr 27, 2009 at 11:36 AM, Scott Wood <scottwood@freescale.com> wrot=
+e:
+> On Mon, Apr 27, 2009 at 09:36:13AM -0600, Grant Likely wrote:
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> Previous rework to ucc_geth.c to add of_mdio support (net: Rework
+>> ucc_geth driver to use of_mdio infrastructure) added a block of
+>> code which broke older openfirmware device trees which use an
+>> 'interface' property in the phy node to describe the connection
+>> between the MAC and the PHY. =A0This patch removes the offending blurb.
+> [snip]
+>> =A0 =A0 =A0 prop =3D of_get_property(np, "phy-connection-type", NULL);
+>> =A0 =A0 =A0 if (!prop) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* handle interface property present in old =
+trees */
+>> - =A0 =A0 =A0 =A0 =A0 =A0 if (!phy)
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+>> -
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 prop =3D of_get_property(phy, "interface", N=
+ULL);
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (prop !=3D NULL) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy_interface =3D enet_to_ph=
+y_interface[*prop];
 >
-> I have a question about the definition of the localbus on the Freescale
-> 5200B (I'm testing with the Lite5200B board) with Kernel 2.6.29.1 which I
-> could not figure out with the docs and the list archives...
->
-> When I use 'compatible =3D "fsl,mpc5200b-lpb";' in the dts file, the loca=
-lbus
-> and any nodes below it don't show up in /sys/devices.
+> The above test only makes a difference when there is no phy node -- so I
+> don't see how it was breaking device trees that had a phy node (with or
+> without an "interface" property). =A0I can see it breaking fixed link
+> device trees, though.
 
-For completeness use: compatible =3D
-"fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus";  Then it will work.
-
-The kernel doesn't currently bind on the 'b' string, but we put it in
-the list anyway to completely describe the hardware, just in case it
-ever becomes important in the future.
-
-
-[...]
-> =A0 =A0 =A0 =A0mydev@3,0 {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "mydev";
-
-"mydev" should be in the form: "<vendor>,<device>".
-
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0 0x0 0x100>; =A0 =A0 =A0 =A0 =A0=
- =A0// 256 Bytes, 32 used
-
-If this is on CS3, then reg should be:
-               reg =3D <3 0x0 0x100>;            // 256 Bytes, 32 used
-
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts =3D <1 3 2>; =A0 =A0 =A0 =A0 =
-=A0 // todo - level?
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-parent =3D <&mpc5200_pic>;
-> =A0 =A0 =A0 =A0};
-> };
-> # ls -al /sys/devices/f0000300.localbus/
-> drwxr-xr-x =A0 =A04 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
-=A01 00:00 .
-> drwxr-xr-x =A0 =A07 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
-=A01 00:00 ..
-> -r--r--r-- =A0 =A01 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A04096 Jan =
-=A01 00:00 devspec
-> drwxr-xr-x =A0 =A02 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
-=A01 00:00 fc000000.flash
-> drwxr-xr-x =A0 =A02 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
-=A01 00:00 fc000000.mydev
-> -r--r--r-- =A0 =A01 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A04096 Jan =
-=A01 00:00 modalias
-> -r--r--r-- =A0 =A01 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A04096 Jan =
-=A01 00:00 name
-> lrwxrwxrwx =A0 =A01 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 Jan =
-=A01 00:00 subsystem ->
-> ../../bus/of_platform
-> -rw-r--r-- =A0 =A01 0 =A0 =A0 =A0 =A00 =A0 =A0 =A0 =A0 =A0 =A04096 Jan =
-=A01 00:00 uevent
-> </snip>
->
-> which is also confusing, as both devices appear to have the same address?
-> =A0Any idea what goes wrong here?
-
-Because the reg property for mydev is wrong (see above).
+Sorry, you're right.  I got myself confused when I was writing the
+description.  This patch fixes breakage when using a fixed-link and
+there is no phy-connection-type property.
 
 g.
 
