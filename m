@@ -1,22 +1,13 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f172.google.com (mail-gx0-f172.google.com
-	[209.85.217.172]) by ozlabs.org (Postfix) with ESMTP id C09F6DDEE8
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 03:50:38 +1000 (EST)
-Received: by gxk20 with SMTP id 20so108843gxk.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 10:50:37 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090427173606.GA10292@ld0162-tx32.am.freescale.net>
-References: <20090427153612.5108.10877.stgit@localhost.localdomain>
-	<20090427173606.GA10292@ld0162-tx32.am.freescale.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 27 Apr 2009 11:50:20 -0600
-Message-ID: <fa686aa40904271050kb3159cbw52c0c1dba3076f3e@mail.gmail.com>
-Subject: Re: [PATCH] net: Fix ucc_geth.c handling of phy 'interface' property.
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>, linuxppc-dev@ozlabs.org,
-	Andy Fleming <afleming@freescale.com>, netdev@vger.kernel.org,
-	David Miller <davem@davemloft.net>
+Return-Path: <galak@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 2/2] powerpc/86xx: Add new LAW & MCM device tree nodes for all
+	86xx systems
+Date: Mon, 27 Apr 2009 12:59:48 -0500
+Message-Id: <1240855188-24879-2-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1240855188-24879-1-git-send-email-galak@kernel.crashing.org>
+References: <1240855188-24879-1-git-send-email-galak@kernel.crashing.org>
+Cc: devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,41 +17,184 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 27, 2009 at 11:36 AM, Scott Wood <scottwood@freescale.com> wrot=
-e:
-> On Mon, Apr 27, 2009 at 09:36:13AM -0600, Grant Likely wrote:
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->> Previous rework to ucc_geth.c to add of_mdio support (net: Rework
->> ucc_geth driver to use of_mdio infrastructure) added a block of
->> code which broke older openfirmware device trees which use an
->> 'interface' property in the phy node to describe the connection
->> between the MAC and the PHY. =A0This patch removes the offending blurb.
-> [snip]
->> =A0 =A0 =A0 prop =3D of_get_property(np, "phy-connection-type", NULL);
->> =A0 =A0 =A0 if (!prop) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* handle interface property present in old =
-trees */
->> - =A0 =A0 =A0 =A0 =A0 =A0 if (!phy)
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
->> -
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 prop =3D of_get_property(phy, "interface", N=
-ULL);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (prop !=3D NULL) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy_interface =3D enet_to_ph=
-y_interface[*prop];
->
-> The above test only makes a difference when there is no phy node -- so I
-> don't see how it was breaking device trees that had a phy node (with or
-> without an "interface" property). =A0I can see it breaking fixed link
-> device trees, though.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/boot/dts/gef_ppc9a.dts        |   13 +++++++++++++
+ arch/powerpc/boot/dts/gef_sbc310.dts       |   13 +++++++++++++
+ arch/powerpc/boot/dts/gef_sbc610.dts       |   13 +++++++++++++
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts     |   13 +++++++++++++
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts     |   13 +++++++++++++
+ arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts |   13 +++++++++++++
+ arch/powerpc/boot/dts/sbc8641d.dts         |   13 +++++++++++++
+ 7 files changed, 91 insertions(+), 0 deletions(-)
 
-Sorry, you're right.  I got myself confused when I was writing the
-description.  This patch fixes breakage when using a fixed-link and
-there is no phy-connection-type property.
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/arch/powerpc/boot/dts/gef_ppc9a.dts b/arch/powerpc/boot/dts/gef_ppc9a.dts
+index d47ad07..cbf135c 100644
+--- a/arch/powerpc/boot/dts/gef_ppc9a.dts
++++ b/arch/powerpc/boot/dts/gef_ppc9a.dts
+@@ -166,6 +166,19 @@
+ 		reg = <0xfef00000 0x100000>;	// CCSRBAR 1M
+ 		bus-frequency = <33333333>;
+ 
++		mcm-law@0 {
++			compatible = "fsl,mcm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <10>;
++		};
++
++		mcm@1000 {
++			compatible = "fsl,mpc8641-mcm", "fsl,mcm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
+ 		i2c1: i2c@3000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+diff --git a/arch/powerpc/boot/dts/gef_sbc310.dts b/arch/powerpc/boot/dts/gef_sbc310.dts
+index 1569117..155776c 100644
+--- a/arch/powerpc/boot/dts/gef_sbc310.dts
++++ b/arch/powerpc/boot/dts/gef_sbc310.dts
+@@ -166,6 +166,19 @@
+ 		reg = <0xfef00000 0x100000>;	// CCSRBAR 1M
+ 		bus-frequency = <33333333>;
+ 
++		mcm-law@0 {
++			compatible = "fsl,mcm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <10>;
++		};
++
++		mcm@1000 {
++			compatible = "fsl,mpc8641-mcm", "fsl,mcm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
+ 		i2c1: i2c@3000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/gef_sbc610.dts
+index 6582dbd..6898d7e 100644
+--- a/arch/powerpc/boot/dts/gef_sbc610.dts
++++ b/arch/powerpc/boot/dts/gef_sbc610.dts
+@@ -131,6 +131,19 @@
+ 		reg = <0xfef00000 0x100000>;	// CCSRBAR 1M
+ 		bus-frequency = <33333333>;
+ 
++		mcm-law@0 {
++			compatible = "fsl,mcm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <10>;
++		};
++
++		mcm@1000 {
++			compatible = "fsl,mpc8641-mcm", "fsl,mcm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
+ 		i2c1: i2c@3000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 4f081bb..252db6e 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -115,6 +115,19 @@
+ 		reg = <0xe0000000 0x1000>;
+ 		bus-frequency = <0>;
+ 
++		mcm-law@0 {
++			compatible = "fsl,mcm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <10>;
++		};
++
++		mcm@1000 {
++			compatible = "fsl,mpc8610-mcm", "fsl,mcm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+index 51852e6..8bcccd7 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -117,6 +117,19 @@
+ 		reg = <0xffe00000 0x00001000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 
++		mcm-law@0 {
++			compatible = "fsl,mcm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <10>;
++		};
++
++		mcm@1000 {
++			compatible = "fsl,mpc8641-mcm", "fsl,mcm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts b/arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts
+index b5dc942..d4c909d 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts
+@@ -110,6 +110,19 @@
+ 		reg = <0x0f 0xffe00000 0x0 0x00001000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 
++		mcm-law@0 {
++			compatible = "fsl,mcm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <10>;
++		};
++
++		mcm@1000 {
++			compatible = "fsl,mpc8641-mcm", "fsl,mcm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+diff --git a/arch/powerpc/boot/dts/sbc8641d.dts b/arch/powerpc/boot/dts/sbc8641d.dts
+index cfd5782..aa8f931 100644
+--- a/arch/powerpc/boot/dts/sbc8641d.dts
++++ b/arch/powerpc/boot/dts/sbc8641d.dts
+@@ -129,6 +129,19 @@
+ 		reg = <0xf8000000 0x00001000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 
++		mcm-law@0 {
++			compatible = "fsl,mcm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <10>;
++		};
++
++		mcm@1000 {
++			compatible = "fsl,mpc8641-mcm", "fsl,mcm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
+ 		i2c@3000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+-- 
+1.6.0.6
