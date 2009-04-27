@@ -1,21 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id A9AF1DDECF
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 23:48:38 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so1159126ywt.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 06:48:36 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <9e4733910904262127k27db6ed1l5540e66ed65872a0@mail.gmail.com>
-References: <20090426195215.4648.62017.stgit@terra>
-	<20090426195307.4648.53704.stgit@terra>
-	<fa686aa40904262108i75acde81s829fa20ffcbdcad1@mail.gmail.com>
-	<9e4733910904262127k27db6ed1l5540e66ed65872a0@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 27 Apr 2009 07:48:19 -0600
-Message-ID: <fa686aa40904270648y558959d1i975ef4c5989dfb0d@mail.gmail.com>
-Subject: Re: [PATCH V1 3/3] Rename exports in mpc5200_dma.c
-To: Jon Smirl <jonsmirl@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 921C7DDECF
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 23:59:23 +1000 (EST)
+Message-Id: <8AE021A6-CA3A-462E-B3AF-61A7F7D0CBA8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <49F064EB.5030109@gefanuc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc/86xx: clean up smp init code
+Date: Mon, 27 Apr 2009 08:59:09 -0500
+References: <1240421691-10193-1-git-send-email-galak@kernel.crashing.org>
+	<49F064EB.5030109@gefanuc.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,238 +24,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Apr 26, 2009 at 10:27 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On Mon, Apr 27, 2009 at 12:08 AM, Grant Likely
-> <grant.likely@secretlab.ca> wrote:
->> On Sun, Apr 26, 2009 at 1:53 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->>> Rename the public DMA exports into the global name space so that the DM=
-A code can be built as a module.
->>>
->>> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
->>
->> Nack. =A0mpc5200_dma is too generic for the global namespace... (in
->> fact, I should also relook at the previous patch; I might need to nack
->> my ack). =A0Some variant of 'mpc5200_psc_snd_dma' would be more
->> appropriate. =A0Even mpc5200_psc_dma is too generic because other
->> non-sound PSC modes can use DMA also.
->
-> I'll change it to mpc5200_audio_dma and resend this to the series to
-> the alsa list.
->
-> Does your stuff still work with these patches? I want to get these
-> mechanical changes in so we can focus on the real changes in my later
-> patches.
 
-The project changed and I haven't fired up my target in quite a long time. =
- :-(
+On Apr 23, 2009, at 7:54 AM, Martyn Welch wrote:
 
-g.
+> Kumar Gala wrote:
+>> Removed the need for asm/mpc86xx.h as it was only used in  
+>> mpc86xx_smp.c
+>> and just moved the defines it cared about into there.  Also fixed up
+>> the ioremap to only map the one 4k page we need access to and to  
+>> iounmap
+>> when we are done.
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>> arch/powerpc/include/asm/mpc86xx.h         |   33  
+>> ----------------------------
+>> arch/powerpc/platforms/86xx/gef_ppc9a.c    |    1 -
+>> arch/powerpc/platforms/86xx/gef_sbc310.c   |    1 -
+>> arch/powerpc/platforms/86xx/gef_sbc610.c   |    1 -
+>> arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    1 -
+>> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 -
+>> arch/powerpc/platforms/86xx/mpc86xx_smp.c  |    8 ++++++-
+>> arch/powerpc/platforms/86xx/sbc8641d.c     |    1 -
+>> 8 files changed, 7 insertions(+), 40 deletions(-)
+>> delete mode 100644 arch/powerpc/include/asm/mpc86xx.h
+>>
+>>
+> I assume this patch relies on one of the other patches posted?
+>
+> Just applying this patch to my development tree (based on your main  
+> branch) resulted in the following on a PPC9A:
+>
+> mpic: requesting IPIs ...
+> __ioremap(): phys addr 0x0 is RAM lr c041e5c8
+> Unable to handle kernel paging request for data at address 0x00000010
+> Faulting instruction address: 0xc041e5cc
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> PREEMPT SMP NR_CPUS=2 GE Fanuc PPC9A
+> Modules linked in:
+> NIP: c041e5cc LR: c041e5c8 CTR: c0013d90
+> REGS: ef841ea0 TRAP: 0300   Not tainted  (2.6.30-rc3-00016-gabae74f)
+> MSR: 00001032 <ME,IR,DR>  CR: 24000022  XER: 00000000
+> DAR: 00000010, DSISR: 40000000
+> TASK = ef83f980[1] 'swapper' THREAD: ef840000 CPU: 0
+> GPR00: c041e5c8 ef841f50 ef83f980 00000000 00001032 ffffffff  
+> c0480000 00004000
+> GPR08: c0441a4c 00000000 ef840000 c0440000 22000042 ffffdfff  
+> 0ff50d00 00000001
+> GPR16: ffffffff 00000000 c0440000 c0480000 c0480000 c0468000  
+> c0440000 c0442838
+> GPR24: 00000002 c0480000 c0480000 7d5043a6 00009032 00000004  
+> 00000001 0000c350
+> NIP [c041e5cc] smp_86xx_kick_cpu+0x70/0x11c
+> LR [c041e5c8] smp_86xx_kick_cpu+0x6c/0x11c
+> Call Trace:
+> [ef841f50] [c041e5c8] smp_86xx_kick_cpu+0x6c/0x11c (unreliable)
+>
+> [ef841f70] [c0435010] __cpu_up+0xa4/0x1b0
+> [ef841f90] [c04355ec] cpu_up+0x104/0x1cc
+> [ef841fd0] [c0412368] kernel_init+0x1d8/0x1f0
+> [ef841ff0] [c0012cb8] kernel_thread+0x4c/0x68
+> Instruction dump:
+> 3c80c000 61290100 38a00001 7d234b78 38843464 83690000 4bbfa7f9  
+> 4bbfcb21
+> 38801000 38631000 4bbf91ad 7c0004ac <81230010> 0c090000 4c00012c  
+> 38000001
+> ---[ end trace 31fd0ba7d8756001 ]---
+> Kernel panic - not syncing: Attempted to kill init!
+> Rebooting in 180 seconds..
 
->
->>
->> g.
->>
->>> ---
->>> =A0sound/soc/fsl/mpc5200_dma.c =A0 =A0 | =A0 18 ++++++++++++------
->>> =A0sound/soc/fsl/mpc5200_dma.h =A0 =A0 | =A0 10 +++++-----
->>> =A0sound/soc/fsl/mpc5200_psc_i2s.c | =A0 14 +++++++-------
->>> =A03 files changed, 24 insertions(+), 18 deletions(-)
->>>
->>> diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
->>> index c82ef75..df73755 100644
->>> --- a/sound/soc/fsl/mpc5200_dma.c
->>> +++ b/sound/soc/fsl/mpc5200_dma.c
->>> @@ -113,7 +113,7 @@ static irqreturn_t psc_dma_bcom_irq(int irq, void *=
-_psc_dma_stream)
->>> =A0* If this is the first stream open, then grab the IRQ and program mo=
-st of
->>> =A0* the PSC registers.
->>> =A0*/
->>> -int psc_dma_startup(struct snd_pcm_substream *substream,
->>> +int mpc5200_dma_startup(struct snd_pcm_substream *substream,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct snd_soc_dai =
-*dai)
->>> =A0{
->>> =A0 =A0 =A0 =A0struct snd_soc_pcm_runtime *rtd =3D substream->private_d=
-ata;
->>> @@ -145,13 +145,16 @@ int psc_dma_startup(struct snd_pcm_substream *sub=
-stream,
->>>
->>> =A0 =A0 =A0 =A0return 0;
->>> =A0}
->>> +EXPORT_SYMBOL_GPL(mpc5200_dma_startup);
->>>
->>> -int psc_dma_hw_free(struct snd_pcm_substream *substream,
->>> +int mpc5200_dma_hw_free(struct snd_pcm_substream *substream,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct snd_soc_dai =
-*dai)
->>> =A0{
->>> =A0 =A0 =A0 =A0snd_pcm_set_runtime_buffer(substream, NULL);
->>> =A0 =A0 =A0 =A0return 0;
->>> =A0}
->>> +EXPORT_SYMBOL_GPL(mpc5200_dma_hw_free);
->>> +
->>>
->>> =A0/**
->>> =A0* psc_dma_trigger: start and stop the DMA transfer.
->>> @@ -159,7 +162,7 @@ int psc_dma_hw_free(struct snd_pcm_substream *subst=
-ream,
->>> =A0* This function is called by ALSA to start, stop, pause, and resume =
-the DMA
->>> =A0* transfer of data.
->>> =A0*/
->>> -int psc_dma_trigger(struct snd_pcm_substream *substream, int cmd,
->>> +int mpc5200_dma_trigger(struct snd_pcm_substream *substream, int cmd,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct snd_soc_dai =
-*dai)
->>> =A0{
->>> =A0 =A0 =A0 =A0struct snd_soc_pcm_runtime *rtd =3D substream->private_d=
-ata;
->>> @@ -269,13 +272,15 @@ int psc_dma_trigger(struct snd_pcm_substream *sub=
-stream, int cmd,
->>>
->>> =A0 =A0 =A0 =A0return 0;
->>> =A0}
->>> +EXPORT_SYMBOL_GPL(mpc5200_dma_trigger);
->>> +
->>>
->>> =A0/**
->>> =A0* psc_dma_shutdown: shutdown the data transfer on a stream
->>> =A0*
->>> =A0* Shutdown the PSC if there are no other substreams open.
->>> =A0*/
->>> -void psc_dma_shutdown(struct snd_pcm_substream *substream,
->>> +void mpc5200_dma_shutdown(struct snd_pcm_substream *substream,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct snd_soc_=
-dai *dai)
->>> =A0{
->>> =A0 =A0 =A0 =A0struct snd_soc_pcm_runtime *rtd =3D substream->private_d=
-ata;
->>> @@ -303,6 +308,7 @@ void psc_dma_shutdown(struct snd_pcm_substream *sub=
-stream,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0free_irq(psc_dma->playback.irq, &psc_dma=
-->playback);
->>> =A0 =A0 =A0 =A0}
->>> =A0}
->>> +EXPORT_SYMBOL_GPL(mpc5200_dma_shutdown);
->>>
->>> =A0/* -----------------------------------------------------------------=
-----
->>> =A0* The PSC DMA 'ASoC platform' driver
->>> @@ -448,10 +454,10 @@ static void psc_dma_pcm_free(struct snd_pcm *pcm)
->>> =A0 =A0 =A0 =A0}
->>> =A0}
->>>
->>> -struct snd_soc_platform psc_dma_pcm_soc_platform =3D {
->>> +struct snd_soc_platform mpc5200_dma_platform =3D {
->>> =A0 =A0 =A0 =A0.name =A0 =A0 =A0 =A0 =A0 =3D "mpc5200-psc-audio",
->>> =A0 =A0 =A0 =A0.pcm_ops =A0 =A0 =A0 =A0=3D &psc_dma_pcm_ops,
->>> =A0 =A0 =A0 =A0.pcm_new =A0 =A0 =A0 =A0=3D &psc_dma_pcm_new,
->>> =A0 =A0 =A0 =A0.pcm_free =A0 =A0 =A0 =3D &psc_dma_pcm_free,
->>> =A0};
->>> -
->>> +EXPORT_SYMBOL_GPL(mpc5200_dma_platform);
->>> diff --git a/sound/soc/fsl/mpc5200_dma.h b/sound/soc/fsl/mpc5200_dma.h
->>> index a33232c..e52b90e 100644
->>> --- a/sound/soc/fsl/mpc5200_dma.h
->>> +++ b/sound/soc/fsl/mpc5200_dma.h
->>> @@ -64,18 +64,18 @@ struct psc_dma {
->>> =A0};
->>>
->>>
->>> -int psc_dma_startup(struct snd_pcm_substream *substream,
->>> +int mpc5200_dma_startup(struct snd_pcm_substream *substream,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct snd_soc_dai =
-*dai);
->>>
->>> -int psc_dma_hw_free(struct snd_pcm_substream *substream,
->>> +int mpc5200_dma_hw_free(struct snd_pcm_substream *substream,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct snd_soc_dai =
-*dai);
->>>
->>> -void psc_dma_shutdown(struct snd_pcm_substream *substream,
->>> +void mpc5200_dma_shutdown(struct snd_pcm_substream *substream,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct snd_soc_=
-dai *dai);
->>>
->>> -int psc_dma_trigger(struct snd_pcm_substream *substream, int cmd,
->>> +int mpc5200_dma_trigger(struct snd_pcm_substream *substream, int cmd,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct snd_soc_dai =
-*dai);
->>>
->>> -extern struct snd_soc_platform psc_dma_pcm_soc_platform;
->>> +extern struct snd_soc_platform mpc5200_dma_platform;
->>>
->>> =A0#endif /* __SOUND_SOC_FSL_MPC5200_DMA_H__ */
->>> diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_ps=
-c_i2s.c
->>> index 12a7917..a4a439c 100644
->>> --- a/sound/soc/fsl/mpc5200_psc_i2s.c
->>> +++ b/sound/soc/fsl/mpc5200_psc_i2s.c
->>> @@ -140,11 +140,11 @@ static int psc_i2s_set_fmt(struct snd_soc_dai *cp=
-u_dai, unsigned int format)
->>> =A0* psc_i2s_dai_template: template CPU Digital Audio Interface
->>> =A0*/
->>> =A0static struct snd_soc_dai_ops psc_i2s_dai_ops =3D {
->>> - =A0 =A0 =A0 .startup =A0 =A0 =A0 =A0=3D psc_dma_startup,
->>> + =A0 =A0 =A0 .startup =A0 =A0 =A0 =A0=3D mpc5200_dma_startup,
->>> =A0 =A0 =A0 =A0.hw_params =A0 =A0 =A0=3D psc_i2s_hw_params,
->>> - =A0 =A0 =A0 .hw_free =A0 =A0 =A0 =A0=3D psc_dma_hw_free,
->>> - =A0 =A0 =A0 .shutdown =A0 =A0 =A0 =3D psc_dma_shutdown,
->>> - =A0 =A0 =A0 .trigger =A0 =A0 =A0 =A0=3D psc_dma_trigger,
->>> + =A0 =A0 =A0 .hw_free =A0 =A0 =A0 =A0=3D mpc5200_dma_hw_free,
->>> + =A0 =A0 =A0 .shutdown =A0 =A0 =A0 =3D mpc5200_dma_shutdown,
->>> + =A0 =A0 =A0 .trigger =A0 =A0 =A0 =A0=3D mpc5200_dma_trigger,
->>> =A0 =A0 =A0 =A0.set_sysclk =A0 =A0 =3D psc_i2s_set_sysclk,
->>> =A0 =A0 =A0 =A0.set_fmt =A0 =A0 =A0 =A0=3D psc_i2s_set_fmt,
->>> =A0};
->>> @@ -350,10 +350,10 @@ static int __devinit psc_i2s_of_probe(struct of_d=
-evice *op,
->>> =A0 =A0 =A0 =A0if (rc)
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_info(psc_dma->dev, "error creating s=
-ysfs files\n");
->>>
->>> - =A0 =A0 =A0 snd_soc_register_platform(&psc_dma_pcm_soc_platform);
->>> + =A0 =A0 =A0 snd_soc_register_platform(&mpc5200_dma_platform);
->>>
->>> =A0 =A0 =A0 =A0/* Tell the ASoC OF helpers about it */
->>> - =A0 =A0 =A0 of_snd_soc_register_platform(&psc_dma_pcm_soc_platform, o=
-p->node,
->>> + =A0 =A0 =A0 of_snd_soc_register_platform(&mpc5200_dma_platform, op->n=
-ode,
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- &psc_dma->dai);
->>>
->>> =A0 =A0 =A0 =A0return 0;
->>> @@ -365,7 +365,7 @@ static int __devexit psc_i2s_of_remove(struct of_de=
-vice *op)
->>>
->>> =A0 =A0 =A0 =A0dev_dbg(&op->dev, "psc_i2s_remove()\n");
->>>
->>> - =A0 =A0 =A0 snd_soc_unregister_platform(&psc_dma_pcm_soc_platform);
->>> + =A0 =A0 =A0 snd_soc_unregister_platform(&mpc5200_dma_platform);
->>>
->>> =A0 =A0 =A0 =A0bcom_gen_bd_rx_release(psc_dma->capture.bcom_task);
->>> =A0 =A0 =A0 =A0bcom_gen_bd_tx_release(psc_dma->playback.bcom_task);
->>>
->>>
->>
->>
->>
->> --
->> Grant Likely, B.Sc., P.Eng.
->> Secret Lab Technologies Ltd.
->>
->
->
->
-> --
-> Jon Smirl
-> jonsmirl@gmail.com
->
+I'm not able to reproduce this failure.  It seems like either ioremap  
+is returning 0 or you are getting 0 from get_immrbase().. either way I  
+don't see how my change would cause what you are seeing on your board.
 
+Are you running w/CONFIG_PHYS_64BIT=y?
 
+- k
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+- k
