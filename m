@@ -1,20 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <rbrito@ime.usp.br>
+Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 921C7DDECF
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 23:59:23 +1000 (EST)
-Message-Id: <8AE021A6-CA3A-462E-B3AF-61A7F7D0CBA8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@gefanuc.com>
-In-Reply-To: <49F064EB.5030109@gefanuc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] powerpc/86xx: clean up smp init code
-Date: Mon, 27 Apr 2009 08:59:09 -0500
-References: <1240421691-10193-1-git-send-email-galak@kernel.crashing.org>
-	<49F064EB.5030109@gefanuc.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 1B984DDDA2
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 00:21:10 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 4E0E31E6B07
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 11:20:50 -0300 (BRT)
+Received: from smtp.gru.flash.tv.br ([127.0.0.1])
+	by localhost (smtp.gru.flash.tv.br [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP id dkPE02fWg7xC for <linuxppc-dev@ozlabs.org>;
+	Mon, 27 Apr 2009 11:20:48 -0300 (BRT)
+Received: from chagas.nectar.ath.cx (unknown [187.22.248.170])
+	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id 11C5F1E6C51
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 11:20:41 -0300 (BRT)
+Date: Mon, 27 Apr 2009 11:20:25 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] powerpc: convert mace to netdev_ops
+Message-ID: <20090427142024.GC29608@ime.usp.br>
+References: <20090426155708.GA23159@ime.usp.br>
+	<20090426.230648.254087966.davem@davemloft.net>
+	<20090427121633.GA29608@ime.usp.br>
+	<20090427.054258.16622932.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090427.054258.16622932.davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,81 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi, Dave.
 
-On Apr 23, 2009, at 7:54 AM, Martyn Welch wrote:
+On Apr 27 2009, David Miller wrote:
+> You can fix the mace_set_timeout() function arguments by having a
+> helper function that simply wraps around it and provides the second
+> expection of argument types.
 
-> Kumar Gala wrote:
->> Removed the need for asm/mpc86xx.h as it was only used in  
->> mpc86xx_smp.c
->> and just moved the defines it cared about into there.  Also fixed up
->> the ioremap to only map the one 4k page we need access to and to  
->> iounmap
->> when we are done.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> arch/powerpc/include/asm/mpc86xx.h         |   33  
->> ----------------------------
->> arch/powerpc/platforms/86xx/gef_ppc9a.c    |    1 -
->> arch/powerpc/platforms/86xx/gef_sbc310.c   |    1 -
->> arch/powerpc/platforms/86xx/gef_sbc610.c   |    1 -
->> arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    1 -
->> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 -
->> arch/powerpc/platforms/86xx/mpc86xx_smp.c  |    8 ++++++-
->> arch/powerpc/platforms/86xx/sbc8641d.c     |    1 -
->> 8 files changed, 7 insertions(+), 40 deletions(-)
->> delete mode 100644 arch/powerpc/include/asm/mpc86xx.h
->>
->>
-> I assume this patch relies on one of the other patches posted?
->
-> Just applying this patch to my development tree (based on your main  
-> branch) resulted in the following on a PPC9A:
->
-> mpic: requesting IPIs ...
-> __ioremap(): phys addr 0x0 is RAM lr c041e5c8
-> Unable to handle kernel paging request for data at address 0x00000010
-> Faulting instruction address: 0xc041e5cc
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> PREEMPT SMP NR_CPUS=2 GE Fanuc PPC9A
-> Modules linked in:
-> NIP: c041e5cc LR: c041e5c8 CTR: c0013d90
-> REGS: ef841ea0 TRAP: 0300   Not tainted  (2.6.30-rc3-00016-gabae74f)
-> MSR: 00001032 <ME,IR,DR>  CR: 24000022  XER: 00000000
-> DAR: 00000010, DSISR: 40000000
-> TASK = ef83f980[1] 'swapper' THREAD: ef840000 CPU: 0
-> GPR00: c041e5c8 ef841f50 ef83f980 00000000 00001032 ffffffff  
-> c0480000 00004000
-> GPR08: c0441a4c 00000000 ef840000 c0440000 22000042 ffffdfff  
-> 0ff50d00 00000001
-> GPR16: ffffffff 00000000 c0440000 c0480000 c0480000 c0468000  
-> c0440000 c0442838
-> GPR24: 00000002 c0480000 c0480000 7d5043a6 00009032 00000004  
-> 00000001 0000c350
-> NIP [c041e5cc] smp_86xx_kick_cpu+0x70/0x11c
-> LR [c041e5c8] smp_86xx_kick_cpu+0x6c/0x11c
-> Call Trace:
-> [ef841f50] [c041e5c8] smp_86xx_kick_cpu+0x6c/0x11c (unreliable)
->
-> [ef841f70] [c0435010] __cpu_up+0xa4/0x1b0
-> [ef841f90] [c04355ec] cpu_up+0x104/0x1cc
-> [ef841fd0] [c0412368] kernel_init+0x1d8/0x1f0
-> [ef841ff0] [c0012cb8] kernel_thread+0x4c/0x68
-> Instruction dump:
-> 3c80c000 61290100 38a00001 7d234b78 38843464 83690000 4bbfa7f9  
-> 4bbfcb21
-> 38801000 38631000 4bbf91ad 7c0004ac <81230010> 0c090000 4c00012c  
-> 38000001
-> ---[ end trace 31fd0ba7d8756001 ]---
-> Kernel panic - not syncing: Attempted to kill init!
-> Rebooting in 180 seconds..
+Hummm, this means that I'm not that bad... The wrapper function was the
+first thing that came to my mind, but I just wanted to be as least
+disruptive as possible.
 
-I'm not able to reproduce this failure.  It seems like either ioremap  
-is returning 0 or you are getting 0 from get_immrbase().. either way I  
-don't see how my change would cause what you are seeing on your board.
+> Your patch is also wrong, it's missing a lot of netdev_ops
+> entries that are implicitly obtained via alloc_etherdev(),
+> namely:
 
-Are you running w/CONFIG_PHYS_64BIT=y?
+Thanks for pointing those out. I didn't find the documentation about
+netdev_ops under Documentation (a simple grep didn't turn any results).
 
-- k
+> 	.ndo_change_mtu		= eth_change_mtu,
+> 	.ndo_set_mac_address 	= eth_mac_addr,
+> 	.ndo_validate_addr	= eth_validate_addr,
 
-- k
+Nice. I will incorporate such things.
+
+
+Thanks, Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
