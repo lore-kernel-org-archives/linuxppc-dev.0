@@ -1,19 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-In-Reply-To: <OFD90DF3E8.3B40B9BF-ONC12575A4.0030C830-C12575A4.00317AE2@transmode.se>
-References: <20090425224458.32392.31296.stgit@localhost.localdomain>
-	<20090425225323.32392.1254.stgit@localhost.localdomain>
-	<OFD90DF3E8.3B40B9BF-ONC12575A4.0030C830-C12575A4.00317AE2@transmode.se>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 27 Apr 2009 09:36:07 -0600
-Message-ID: <fa686aa40904270836v352b7d24sb5798ca95d71ccd@mail.gmail.com>
-Subject: Re: [PATCH v3 09/13] net: Rework ucc_geth driver to use of_mdio
-	infrastructure
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Andy Fleming <afleming@freescale.com>,
-	netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-	linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 70EC7DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 01:51:25 +1000 (EST)
+Message-Id: <DBB0FDB3-6932-4732-8A98-D0A13FC02F7C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+In-Reply-To: <49F5CA09.7090607@gefanuc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc/86xx: clean up smp init code
+Date: Mon, 27 Apr 2009 10:51:16 -0500
+References: <1240421691-10193-1-git-send-email-galak@kernel.crashing.org>
+	<49F064EB.5030109@gefanuc.com>
+	<8AE021A6-CA3A-462E-B3AF-61A7F7D0CBA8@kernel.crashing.org>
+	<49F5CA09.7090607@gefanuc.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,163 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Apr 26, 2009 at 3:00 AM, Joakim Tjernlund
-<Joakim.Tjernlund@transmode.se> wrote:
-> Change in fixed link case, see inline.
->
->>
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->> This patch simplifies the driver by making use of more common code.
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> Acked-by: Andy Fleming <afleming@freescale.com>
->> ---
->>
->> =A0drivers/net/ucc_geth.c | =A0 47
-> ++++++++++++-----------------------------------
->> =A0drivers/net/ucc_geth.h | =A0 =A02 +-
->> =A02 files changed, 13 insertions(+), 36 deletions(-)
->>
->>
->> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
->> index d3f39e8..195b490 100644
->> --- a/drivers/net/ucc_geth.c
->> +++ b/drivers/net/ucc_geth.c
->> @@ -27,6 +27,7 @@
->> =A0#include <linux/mii.h>
->> =A0#include <linux/phy.h>
->> =A0#include <linux/workqueue.h>
->> +#include <linux/of_mdio.h>
->> =A0#include <linux/of_platform.h>
->>
->> =A0#include <asm/uaccess.h>
->> @@ -1542,12 +1543,14 @@ static int init_phy(struct net_device *dev)
->> =A0 =A0 priv->oldspeed =3D 0;
->> =A0 =A0 priv->oldduplex =3D -1;
->>
->> - =A0 phydev =3D phy_connect(dev, ug_info->phy_bus_id, &adjust_link, 0,
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0priv->phy_interface);
->> + =A0 if (!ug_info->phy_node)
->> + =A0 =A0 =A0return 0;
->>
->> - =A0 if (IS_ERR(phydev)) {
->> + =A0 phydev =3D of_phy_connect(dev, ug_info->phy_node, &adjust_link, 0,
->> + =A0 =A0 =A0 =A0 =A0 =A0priv->phy_interface);
->> + =A0 if (!phydev) {
->> =A0 =A0 =A0 =A0printk("%s: Could not attach to PHY\n", dev->name);
->> - =A0 =A0 =A0return PTR_ERR(phydev);
->> + =A0 =A0 =A0return -ENODEV;
->> =A0 =A0 }
->>
->> =A0 =A0 phydev->supported &=3D (ADVERTISED_10baseT_Half |
->> @@ -3519,14 +3522,12 @@ static int ucc_geth_probe(struct of_device*
-> ofdev, const struct of_device_id *ma
->> =A0{
->> =A0 =A0 struct device *device =3D &ofdev->dev;
->> =A0 =A0 struct device_node *np =3D ofdev->node;
->> - =A0 struct device_node *mdio;
->> =A0 =A0 struct net_device *dev =3D NULL;
->> =A0 =A0 struct ucc_geth_private *ugeth =3D NULL;
->> =A0 =A0 struct ucc_geth_info *ug_info;
->> =A0 =A0 struct resource res;
->> =A0 =A0 struct device_node *phy;
->> =A0 =A0 int err, ucc_num, max_speed =3D 0;
->> - =A0 const phandle *ph;
->> =A0 =A0 const u32 *fixed_link;
->> =A0 =A0 const unsigned int *prop;
->> =A0 =A0 const char *sprop;
->> @@ -3626,45 +3627,21 @@ static int ucc_geth_probe(struct of_device*
-> ofdev, const struct of_device_id *ma
->> =A0 =A0 ug_info->uf_info.irq =3D irq_of_parse_and_map(np, 0);
->> =A0 =A0 fixed_link =3D of_get_property(np, "fixed-link", NULL);
->> =A0 =A0 if (fixed_link) {
->> - =A0 =A0 =A0snprintf(ug_info->phy_bus_id, sizeof(ug_info->phy_bus_id),
->> - =A0 =A0 =A0 =A0 =A0PHY_ID_FMT, "0", fixed_link[0]);
->> =A0 =A0 =A0 =A0phy =3D NULL;
->
-> phy assigned to NULL ...
->
->> =A0 =A0 } else {
->> - =A0 =A0 =A0char bus_name[MII_BUS_ID_SIZE];
->> -
->> - =A0 =A0 =A0ph =3D of_get_property(np, "phy-handle", NULL);
->> - =A0 =A0 =A0phy =3D of_find_node_by_phandle(*ph);
->> -
->> + =A0 =A0 =A0phy =3D of_parse_phandle(np, "phy-handle", 0);
->> =A0 =A0 =A0 =A0if (phy =3D=3D NULL)
->> =A0 =A0 =A0 =A0 =A0 return -ENODEV;
->> -
->> - =A0 =A0 =A0/* set the PHY address */
->> - =A0 =A0 =A0prop =3D of_get_property(phy, "reg", NULL);
->> - =A0 =A0 =A0if (prop =3D=3D NULL)
->> - =A0 =A0 =A0 =A0 return -1;
->> -
->> - =A0 =A0 =A0/* Set the bus id */
->> - =A0 =A0 =A0mdio =3D of_get_parent(phy);
->> -
->> - =A0 =A0 =A0if (mdio =3D=3D NULL)
->> - =A0 =A0 =A0 =A0 return -ENODEV;
->> -
->> - =A0 =A0 =A0err =3D of_address_to_resource(mdio, 0, &res);
->> -
->> - =A0 =A0 =A0if (err) {
->> - =A0 =A0 =A0 =A0 of_node_put(mdio);
->> - =A0 =A0 =A0 =A0 return err;
->> - =A0 =A0 =A0}
->> - =A0 =A0 =A0fsl_pq_mdio_bus_name(bus_name, mdio);
->> - =A0 =A0 =A0of_node_put(mdio);
->> - =A0 =A0 =A0snprintf(ug_info->phy_bus_id, sizeof(ug_info->phy_bus_id),
->> - =A0 =A0 =A0 =A0 "%s:%02x", bus_name, *prop);
->> =A0 =A0 }
->> + =A0 ug_info->phy_node =3D phy;
->>
->> =A0 =A0 /* get the phy interface type, or default to MII */
->> =A0 =A0 prop =3D of_get_property(np, "phy-connection-type", NULL);
->> =A0 =A0 if (!prop) {
->> =A0 =A0 =A0 =A0/* handle interface property present in old trees */
->> + =A0 =A0 =A0if (!phy)
->> + =A0 =A0 =A0 =A0 return -ENODEV;
->
-> .. here an error is returned. Is this intentional?
 
-Yes, I did that intentionally because it looked like a bug to me
-because of_get_property() is passed the phy value.  However, I suppose
-that if phy is null then of_get_property will just return NULL, so I
-think I made a mistake.  I'll post a patch to remove these two lines.
+On Apr 27, 2009, at 10:06 AM, Martyn Welch wrote:
 
-g.
-
+> I am using the config in the kernel ("arch/powerpc/configs/68xx/ 
+> gef_ppc9a_defconfig") as is, ditto for the DTS.
 >
->> +
->> =A0 =A0 =A0 =A0prop =3D of_get_property(phy, "interface", NULL);
->> =A0 =A0 =A0 =A0if (prop !=3D NULL) {
->> =A0 =A0 =A0 =A0 =A0 phy_interface =3D enet_to_phy_interface[*prop];
->> diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
->> index 2f8ee7c..bc31975 100644
->> --- a/drivers/net/ucc_geth.h
->> +++ b/drivers/net/ucc_geth.h
->> @@ -1100,7 +1100,7 @@ struct ucc_geth_info {
->> =A0 =A0 u32 eventRegMask;
->> =A0 =A0 u16 pausePeriod;
->> =A0 =A0 u16 extensionField;
->> - =A0 char phy_bus_id[BUS_ID_SIZE];
->> + =A0 struct device_node *phy_node;
->> =A0 =A0 u8 weightfactor[NUM_TX_QUEUES];
->> =A0 =A0 u8 interruptcoalescingmaxvalue[NUM_RX_QUEUES];
->> =A0 =A0 u8 l2qt[UCC_GETH_VLAN_PRIORITY_MAX];
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
->>
+> CONFIG_PHYS_64BIT is not set.
 >
+> However, looking into it a bit further 'device_type = "soc";' is  
+> missing from the DTS file, so I assume get_immrbase() is returning  
+> "-1".
 >
+> That might explain some other weird errors I recently noticed that I  
+> haven't managed to find the time to track down yet...
 
+I'm amazed this ever worked.  If you want to send me a patch for  
+the .dts to add device_type = "soc" for your various .dts I'll get  
+that into 2.6.30
 
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+- k
