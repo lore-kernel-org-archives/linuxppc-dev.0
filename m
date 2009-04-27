@@ -1,17 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5E96EDDE2A
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 06:16:06 +1000 (EST)
-Date: Mon, 27 Apr 2009 15:16:02 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'merge' branch for 2.6.30 (updated)
-Message-ID: <Pine.LNX.4.64.0904271457180.27068@localhost.localdomain>
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 6A02ADDE11
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 06:22:50 +1000 (EST)
+Message-ID: <49F61416.8040501@ovro.caltech.edu>
+Date: Mon, 27 Apr 2009 13:22:46 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>
+	<ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>
+	<49F608B7.9080409@ovro.caltech.edu>
+	<49F60A3A.4060402@freescale.com>
+In-Reply-To: <49F60A3A.4060402@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+	Liu Dave-R63238 <DaveLiu@freescale.com>,
+	linux-kernel@vger.kernel.org, Ira Snyder <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+Hi Timur,
 
-Can we possibly get this and the other pull requests dealt with and sent
-to Linus so we might get such fixes in before he tags a -rc4.
+>> Would you like some sort of summary of this info for a commit
+>> message?
+> 
+> That's probably overkill.  I just want a sentence or two that tells
+> someone looking at the code casually that the behavior of reading PCI
+> memory might be different than what they expect.
 
-thanks
+Could you help us with the wording you'd like to see in the code.
+Did you want to see something in the header comments, or something
+near the register settings?
 
-- k
+How about something like this in place of the existing PCI_RM
+comment:
 
-Please pull from 'merge' branch of
+PRC_RM - PCI read multiple
+   The default PCI read command used by the DMA controller is
+   PCI Read (PCI command 6h). When the burst length is 32-bytes
+   or longer, PCI Read Line (PCI command Eh) is used (undocumented
+   feature of the controller). Using PCI read multiple
+   (PCI command Ch) results in high-performance across PCI
+   bridges. DMA transfers to non-prefetchable PCI registers
+   should not result in prefetched reads, even when using
+   the PCI read multiple command.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-to receive the following updates:
-
- arch/powerpc/boot/dts/gef_ppc9a.dts   |    1 +
- arch/powerpc/include/asm/mmu.h        |    6 ------
- arch/powerpc/include/asm/ppc-opcode.h |   11 +----------
- arch/powerpc/kernel/cputable.c        |    2 +-
- arch/powerpc/mm/tlb_nohash_low.S      |   16 ++--------------
- 5 files changed, 5 insertions(+), 31 deletions(-)
-
-Kumar Gala (1):
-      Revert "powerpc: Add support for early tlbilx opcode"
-
-Martyn Welch (1):
-      powerpc/86xx: Add device_type entry to soc for ppc9a
-
-Stephen Rothwell (1):
-      powerpc: fix for long standing bug noticed by gcc 4.4.0
+Cheers,
+Dave
