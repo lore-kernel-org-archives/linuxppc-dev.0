@@ -1,17 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 7708FDDD1C
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 19:54:46 +1000 (EST)
-Date: Mon, 27 Apr 2009 02:54:36 -0700 (PDT)
-Message-Id: <20090427.025436.68188155.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 00/13] OF device tree handling of PHY drivers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090425224458.32392.31296.stgit@localhost.localdomain>
-References: <20090425224458.32392.31296.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
+Return-Path: <pku.leo@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id E1433DDDF6
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 20:16:21 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so1260676yxb.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 03:16:19 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>
+References: <20090424183517.GB23140@ovro.caltech.edu>
+	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>
+Date: Mon, 27 Apr 2009 18:16:19 +0800
+Message-ID: <2a27d3730904270316u6c06eafeja75f6e9e5c83ed29@mail.gmail.com>
+Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
+From: Li Yang <leoli@freescale.com>
+To: Liu Dave-R63238 <DaveLiu@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+	linux-kernel@vger.kernel.org, Ira Snyder <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 25 Apr 2009 16:52:34 -0600
+On Mon, Apr 27, 2009 at 5:09 PM, Liu Dave-R63238 <DaveLiu@freescale.com> wrote:
+>> By default, the Freescale 83xx DMA controller uses the PCI Read Line
+>> command when reading data over the PCI bus. Setting the
+>> controller to use the PCI Read Multiple command instead allows the
+>> controller to read much larger bursts of data, which provides a
+> drastic
+>> speed increase.
+>
+> IIRC, the default for 83xx DMA controller uses the PCI mem read
+> command, not mem read line.
+>
+> You are assuming the PCI memory space is prefetchable( no side effect)
+> for DMA.
+> Is it possible that DMA is from non-prefetchable memory space?
 
-> This series adds common code for reading PHY connection data out of
-> the OpenFirmware device tree.  This simplifies the network drivers
-> which use the device tree and which currently implement their own
-> solutions for reading the PHY data out of the device tree directly.
-> 
-> I would like to see this series, or at least the core changes (1-4)
-> plus the tested drivers (5-8 & 12, but #12 is a new driver and it
-> may need more review), go into -next for 2.6.31.
-> 
-> Due to dependencies, I think it is easiest if all of them go in via the
-> same tree.  David, are you willing to merge them via yours?  Four of the
-> patches are outside of drivers/net (patches 1 and 4 touch drivers/of/,
-> and patches 9 & 10 touch arch/powerpc), but I personally have no issues
-> if those changes go through you.  I just need to double check with BenH.
+I guess it's not reasonable to use DMA from non-prefetchable memory.
+So it's up to the driver which uses the DMA engine to prevent from
+using DMA API on non-prefetchable memory.
 
-I've applied all of these patches to net-next-2.6, thanks.
-
->   git://git.secretlab.ca/git/linux-2.6 next-net
-
-You know, if you had actually based this tree on net-next-2.6
-I could have pulled from it.  I actually tried, and I got a
-lot of upstream stuff I wasn't ready to get in that tree just
-yet :-/
+- Leo
