@@ -1,20 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 55036DDE06
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 22:43:07 +1000 (EST)
-Date: Mon, 27 Apr 2009 05:42:58 -0700 (PDT)
-Message-Id: <20090427.054258.16622932.davem@davemloft.net>
-To: rbrito@ime.usp.br
-Subject: Re: [PATCH] powerpc: convert mace to netdev_ops
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090427121633.GA29608@ime.usp.br>
-References: <20090426155708.GA23159@ime.usp.br>
-	<20090426.230648.254087966.davem@davemloft.net>
-	<20090427121633.GA29608@ime.usp.br>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C98C4DDE19
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 22:58:32 +1000 (EST)
+Subject: Re: [PATCH] [V5] Xilinx : Framebuffer Driver: Add PLB support and
+	cleanup DCR
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200904241301.59775.arnd@arndb.de>
+References: <20090417205119.3D35660055@mail16-sin.bigfish.com>
+	<200904241301.59775.arnd@arndb.de>
+Content-Type: text/plain
+Date: Mon, 27 Apr 2009 22:58:07 +1000
+Message-Id: <1240837087.7169.11.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+	Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org,
+	akonovalov@ru.mvista.com, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Rog=E9rio Brito <rbrito@ime.usp.br>
-Date: Mon, 27 Apr 2009 09:16:33 -0300
+On Fri, 2009-04-24 at 13:01 +0200, Arnd Bergmann wrote:
 
-> Is this anything close to what needs to be done? It's not without
-> failures, because the function mace_set_timeout receives a pointer to=
- a
-> struct net_device, but is marked inline and is used by mace_tx_timeou=
-t,
-> which receives an unsigned long (which calls mace_set_timeout).
-> =
+> I just said in another email thread that we would need a CONFIG_DCR
+> option that DCR using drivers should depend on, if it ever happened
+> outside of powerpc.
+>
+> Well, apparently this happened earlier than I expected.
 
-> Perhaps it would be a case of removing the inline hint to the compile=
-r?
-> I guess that BenH or Paul could comment here better...
-> =
+Sadly...
 
-> Signed-off-by: Rog=E9rio Brito <rbrito@ime.usp.br>
-
-You can fix the mace_set_timeout() function arguments by having
-a helper function that simply wraps around it and provides the
-second expection of argument types.
-
-Your patch is also wrong, it's missing a lot of netdev_ops
-entries that are implicitly obtained via alloc_etherdev(),
-namely:
-
-	.ndo_change_mtu		=3D eth_change_mtu,
-	.ndo_set_mac_address 	=3D eth_mac_addr,
-	.ndo_validate_addr	=3D eth_validate_addr,
+Cheers,
+Ben.
