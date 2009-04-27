@@ -1,10 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] powerpc/86xx: Add binding for LAWs and MCM
-Date: Mon, 27 Apr 2009 12:59:47 -0500
-Message-Id: <1240855188-24879-1-git-send-email-galak@kernel.crashing.org>
-Cc: devicetree-discuss@ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 80EC7DDF07
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 04:05:07 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n3RI5463027934
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 11:05:04 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n3RI53E3012079
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 13:05:03 -0500 (CDT)
+Date: Mon, 27 Apr 2009 13:05:03 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH] 83xx: add support for the kmeter1 board.
+Message-ID: <20090427180503.GB10292@ld0162-tx32.am.freescale.net>
+References: <49F00605.1080605@denx.de>
+	<6B76A454-649E-408C-A8DF-AAEEE6011929@kernel.crashing.org>
+	<49F544DE.1010307@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49F544DE.1010307@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,86 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The first 4k region of CCSR space is well defined for local access
-windows, CCSRBAR, etc.  The second 4k region is well defined as
-register for configuring and getting errors for the MPX coherency
-module.
+On Mon, Apr 27, 2009 at 07:38:38AM +0200, Heiko Schocher wrote:
+> 1) add in the soc node an "errata" node and in this "errata" node
+>    we can add all CPU specific errata as an example the qe_enet10
+>    errata, which above code covers:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- Documentation/powerpc/dts-bindings/fsl/mcm.txt |   64 ++++++++++++++++++++++++
- 1 files changed, 64 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/fsl/mcm.txt
+What about errata discovered after the device tree is deployed?
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/mcm.txt b/Documentation/powerpc/dts-bindings/fsl/mcm.txt
-new file mode 100644
-index 0000000..4ceda9b
---- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/fsl/mcm.txt
-@@ -0,0 +1,64 @@
-+=====================================================================
-+MPX LAW & Coherency Module Device Tree Binding
-+Copyright (C) 2009 Freescale Semiconductor Inc.
-+=====================================================================
-+
-+Local Access Window (LAW) Node
-+
-+The LAW node represents the region of CCSR space where local access
-+windows are configured.  For MCM based devices this is the first 4k
-+of CCSR space that includes CCSRBAR, ALTCBAR, ALTCAR, BPTR, and some
-+number of local access windows as specified by fsl,num-laws.
-+
-+PROPERTIES
-+
-+  - compatible
-+      Usage: required
-+      Value type: <string>
-+      Definition: Must include "fsl,mcm-law"
-+
-+  - reg
-+      Usage: required
-+      Value type: <prop-encoded-array>
-+      Definition: A standard property.  The value specifies the
-+          physical address offset and length of the CCSR space
-+          registers.
-+
-+  - fsl,num-laws
-+      Usage: required
-+      Value type: <u32>
-+      Definition: The value specifies the number of local access
-+          windows for this device.
-+
-+=====================================================================
-+
-+MPX Coherency Module Node
-+
-+The MPX LAW node represents the region of CCSR space where MCM config
-+and error reporting registers exist, this is the second 4k (0x1000)
-+of CCSR space.
-+
-+PROPERTIES
-+
-+  - compatible
-+      Usage: required
-+      Value type: <string>
-+      Definition: Must include "fsl,CHIP-mcm", "fsl,mcm" where
-+      CHIP is the processor (mpc8641, mpc8610, etc.)
-+
-+  - reg
-+      Usage: required
-+      Value type: <prop-encoded-array>
-+      Definition: A standard property.  The value specifies the
-+          physical address offset and length of the CCSR space
-+          registers.
-+
-+   - interrupts
-+      Usage: required
-+      Value type: <prop-encoded-array>
-+
-+   - interrupt-parent
-+      Usage: required
-+      Value type: <phandle>
-+
-+=====================================================================
--- 
-1.6.0.6
+>         soc8360@e0000000 {
+> 	[...]
+>                 errata {
+>                         device_type = "errata";
+
+device_type is deprecated except for a couple of legacy uses.  Please do
+not add new ones.
+
+>                         compatible = "fsl,mpc83xx_errata";
+
+To be bound to by an "errata driver"? :-P
+
+>                         #address-cells = <1>;
+>                         #size-cells = <1>;
+> 
+>                         qe_enet10@14a8 {
+>                                 device_type = "errata";
+>                                 compatible = "fsl,mpc83xx_errata_qe_enet10";
+>                                 reg = <0x14a8 0x08>;
+
+But that register is part of the "QE parallel I/O port" block (even if it
+happens to be undocumented within that block), not part of the "QE ENET10
+erratum" block.  The device tree describes the hardware, not what you
+want to do with it.
+
+The presence of the erratum itself is indicated by the presence of the
+buggy device, possibly in conjunction with SVR if the device tree is not
+specific enough.
+
+-Scott
