@@ -1,20 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 24536DDE1A
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 23:07:23 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1296664yxb.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 06:07:22 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090427.025436.68188155.davem@davemloft.net>
-References: <20090425224458.32392.31296.stgit@localhost.localdomain>
-	<20090427.025436.68188155.davem@davemloft.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 27 Apr 2009 07:07:07 -0600
-Message-ID: <fa686aa40904270607k77c38efasee194a61bfa3de04@mail.gmail.com>
-Subject: Re: [PATCH 00/13] OF device tree handling of PHY drivers
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com, netdev@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D4718DDE22
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2009 23:17:50 +1000 (EST)
+Subject: Re: PCI changes 2.6.26 => 2.6.28
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gary Thomas <gary@mlbassoc.com>
+In-Reply-To: <49F0EB6A.40000@mlbassoc.com>
+References: <49EDF333.4000200@mlbassoc.com>	<49EE2CD8.7010700@mlbassoc.com>
+	<29EEEBDE-B87C-4073-9967-E1DA7EFB0B0B@kernel.crashing.org>
+	<49EE306D.3000401@mlbassoc.com>	<49EE4729.3000100@mlbassoc.com>
+	<612CEF05-3EFB-4947-B5FC-B35C1F9568D7@kernel.crashing.org>
+	<46B035C0-624F-41E4-BFDD-C16479CF8FC8@kernel.crashing.org>
+	<49EE5021.4020703@mlbassoc.com>
+	<306F293D-44CD-4238-ADA9-BB7436C7004C@kernel.crashing.org>
+	<49EE5A80.4030209@mlbassoc.com>
+	<B869D8DC-2A3B-4B53-8BFD-15D403CE20D4@kernel.crashing.org>
+	<49F07A15.9010006@mlbassoc.com>
+	<97DF2A19-563D-404A-AD3D-039D5989E489@kernel.crashing.org>
+	<49F0EB6A.40000@mlbassoc.com>
+Content-Type: text/plain
+Date: Mon, 27 Apr 2009 23:17:32 +1000
+Message-Id: <1240838253.7169.12.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 27, 2009 at 3:54 AM, David Miller <davem@davemloft.net> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Sat, 25 Apr 2009 16:52:34 -0600
->
->> This series adds common code for reading PHY connection data out of
->> the OpenFirmware device tree. =A0This simplifies the network drivers
->> which use the device tree and which currently implement their own
->> solutions for reading the PHY data out of the device tree directly.
->>
->> I would like to see this series, or at least the core changes (1-4)
->> plus the tested drivers (5-8 & 12, but #12 is a new driver and it
->> may need more review), go into -next for 2.6.31.
->>
->> Due to dependencies, I think it is easiest if all of them go in via the
->> same tree. =A0David, are you willing to merge them via yours? =A0Four of=
- the
->> patches are outside of drivers/net (patches 1 and 4 touch drivers/of/,
->> and patches 9 & 10 touch arch/powerpc), but I personally have no issues
->> if those changes go through you. =A0I just need to double check with Ben=
-H.
->
-> I've applied all of these patches to net-next-2.6, thanks.
->
->> =A0 git://git.secretlab.ca/git/linux-2.6 next-net
->
-> You know, if you had actually based this tree on net-next-2.6
-> I could have pulled from it. =A0I actually tried, and I got a
-> lot of upstream stuff I wasn't ready to get in that tree just
-> yet :-/
+On Thu, 2009-04-23 at 16:27 -0600, Gary Thomas wrote:
 
-I know, but the tree I based it on was what I actually tested against.
- When it came to publishing, I wasn't going to rebase and push out
-something untested.  I hadn't expected it to get pulled so quickly!
-Thanks!
+> I don't think any of this matters.  It turns out that even
+> the 2.6.26 kernel fails on an identical board with a newer
+> revision of the 8347 chip.  I'm sure that the problem is
+> that the Coral-P fails when mapped to 0 (PCI relative).
 
-g.
+There are macro that the PCI code uses to define the min address to
+assign to devices but it's broken for us as it doesn't account
+for the kind of remapping we do... I've been wanting to fix those
+for some time but didn't get a chance yet, that would sort this out.
 
->
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Ben.
