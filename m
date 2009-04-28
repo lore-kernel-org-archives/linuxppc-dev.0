@@ -1,20 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id B56F9DDDF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 19:12:11 +1000 (EST)
-Date: Tue, 28 Apr 2009 02:12:03 -0700 (PDT)
-Message-Id: <20090428.021203.74435054.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH] net: Fix ucc_geth.c handling of phy 'interface' property.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <fa686aa40904271050kb3159cbw52c0c1dba3076f3e@mail.gmail.com>
-References: <20090427153612.5108.10877.stgit@localhost.localdomain>
-	<20090427173606.GA10292@ld0162-tx32.am.freescale.net>
-	<fa686aa40904271050kb3159cbw52c0c1dba3076f3e@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: Joakim.Tjernlund@transmode.se, linuxppc-dev@ozlabs.org,
-	afleming@freescale.com, netdev@vger.kernel.org, scottwood@freescale.com
+Return-Path: <martyn.welch@gefanuc.com>
+Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2652FDDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 19:19:51 +1000 (EST)
+Message-ID: <49F6CA36.3040403@gefanuc.com>
+Date: Tue, 28 Apr 2009 10:19:50 +0100
+From: Martyn Welch <martyn.welch@gefanuc.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc/86xx: Add new LAW & MCM device tree nodes
+	for all	86xx systems
+References: <1240855188-24879-1-git-send-email-galak@kernel.crashing.org>
+	<1240855188-24879-2-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1240855188-24879-2-git-send-email-galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 27 Apr 2009 11:50:20 -0600
+Kumar Gala wrote:
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  arch/powerpc/boot/dts/gef_ppc9a.dts        |   13 +++++++++++++
+>  arch/powerpc/boot/dts/gef_sbc310.dts       |   13 +++++++++++++
+>  arch/powerpc/boot/dts/gef_sbc610.dts       |   13 +++++++++++++
+>  arch/powerpc/boot/dts/mpc8610_hpcd.dts     |   13 +++++++++++++
+>  arch/powerpc/boot/dts/mpc8641_hpcn.dts     |   13 +++++++++++++
+>  arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts |   13 +++++++++++++
+>  arch/powerpc/boot/dts/sbc8641d.dts         |   13 +++++++++++++
+>  7 files changed, 91 insertions(+), 0 deletions(-)
+>   
+Am I right in thinking that this patch doesn't (as yet) enable any added 
+functionality, or have I missed something?
 
-> On Mon, Apr 27, 2009 at 11:36 AM, Scott Wood <scottwood@freescale.com=
-> wrote:
->> On Mon, Apr 27, 2009 at 09:36:13AM -0600, Grant Likely wrote:
->>> From: Grant Likely <grant.likely@secretlab.ca>
->>>
->>> Previous rework to ucc_geth.c to add of_mdio support (net: Rework
->>> ucc_geth driver to use of_mdio infrastructure) added a block of
->>> code which broke older openfirmware device trees which use an
->>> 'interface' property in the phy node to describe the connection
->>> between the MAC and the PHY. =A0This patch removes the offending bl=
-urb.
->> [snip]
->>> =A0 =A0 =A0 prop =3D of_get_property(np, "phy-connection-type", NUL=
-L);
->>> =A0 =A0 =A0 if (!prop) {
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* handle interface property present in=
- old trees */
->>> - =A0 =A0 =A0 =A0 =A0 =A0 if (!phy)
->>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
->>> -
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 prop =3D of_get_property(phy, "interfac=
-e", NULL);
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (prop !=3D NULL) {
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy_interface =3D enet_=
-to_phy_interface[*prop];
->>
->> The above test only makes a difference when there is no phy node -- =
-so I
->> don't see how it was breaking device trees that had a phy node (with=
- or
->> without an "interface" property). =A0I can see it breaking fixed lin=
-k
->> device trees, though.
-> =
+I assume this is destined for next (as it relies on Becky's 
+"powerpc/86xx: Add 36-bit device tree for mpc8641hpcn"), assuming this, 
+fwiw, seems good to me.
 
-> Sorry, you're right.  I got myself confused when I was writing the
-> description.  This patch fixes breakage when using a fixed-link and
-> there is no phy-connection-type property.
+Martyn
 
-Patch applied with commit message fixed up.
+-- 
+Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
+GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
+Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
+Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
