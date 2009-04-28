@@ -1,20 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.233])
-	by ozlabs.org (Postfix) with ESMTP id 2CCDADDEEF
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 04:10:28 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f9so517384rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 11:10:27 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1240941326.3710.0@antares>
-References: <fa686aa40904271036n5c610fdehe1c7906fff2b893b@mail.gmail.com>
-	<1240941326.3710.0@antares>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 28 Apr 2009 12:10:07 -0600
-Message-ID: <fa686aa40904281110v58040801l9f08173e86342889@mail.gmail.com>
-Subject: Re: How to use Localbus on 5200B w/ 2.6.29.1
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B4B7BDDE9E
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 06:53:17 +1000 (EST)
+Subject: Re: Please revert edada399 and 9203fc9c
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20090428083528.GA17622@uranus.ravnborg.org>
+References: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
+	<20090428083528.GA17622@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Wed, 29 Apr 2009 06:52:27 +1000
+Message-Id: <1240951947.15263.5.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+	Tim Abbott <tabbott@MIT.EDU>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 28, 2009 at 11:55 AM, Albrecht Dre=DF <albrecht.dress@arcor.de>=
- wrote:
-> Hi Grant:
->
-> Am 27.04.09 19:36 schrieb(en) Grant Likely:
->>
->> For completeness use: compatible =3D
->> "fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus"; =A0Then it will work.
->
-> I doesn't. =A0I had to add "fsl,lpb", without no localbus nodes show up. =
-=A0The
-> file arch/powerpc/platforms/52xx/mpc52xx_common.c lists only "fsl,lpb" =
-=A0as
-> "compatible". =A0Or did I miss something here?
+On Tue, 2009-04-28 at 10:35 +0200, Sam Ravnborg wrote:
 
-Ah, I guess I didn't merge that fix until 2.6.30.  fsl,lpb works for
-now.  What I wrote about is the recommended value for .30 and later,
-just because it is clearer.
+> This is partly my fault :-(
+> I acked them as I did not see the issue with conditional branches.
+> Could I ask you to add a comment to the lds file about this.
 
-g.
+I'm back :-)
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Not a huge deal per-se, it's just that the patches were merged in Linus
+tree only a few hours after being initially submitted it seems, which
+doesn't leave much chance for anybody to test, to hit -next, or anything
+like that... that was a little bit too trigger happy .
+
+Cheers,
+Ben.
