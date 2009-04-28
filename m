@@ -1,22 +1,17 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 91847DDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 19:01:19 +1000 (EST)
-Date: Tue, 28 Apr 2009 02:01:09 -0700 (PDT)
-Message-Id: <20090428.020109.216217114.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: "leds: Add openfirmware platform device support" breaks sparc
+	by ozlabs.org (Postfix) with ESMTP id 7E20DDDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 19:06:47 +1000 (EST)
+Date: Tue, 28 Apr 2009 02:06:39 -0700 (PDT)
+Message-Id: <20090428.020639.161031049.davem@davemloft.net>
+To: galak@kernel.crashing.org
+Subject: Re: [PATCH v2] fs_enet: Remove dead code
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <fa686aa40904272059q604d61c5u1fe584a2166545f1@mail.gmail.com>
-References: <20090303.163713.131742043.davem@davemloft.net>
-	<20090427152051.5067e888.akpm@linux-foundation.org>
-	<fa686aa40904272059q604d61c5u1fe584a2166545f1@mail.gmail.com>
+In-Reply-To: <1240436148-5456-1-git-send-email-galak@kernel.crashing.org>
+References: <1240436148-5456-1-git-send-email-galak@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: monstr@monstr.eu, linuxppc-dev@ozlabs.org, rpurdie@linux.intel.com,
-	smaclennan@pikatech.com, sparclinux@vger.kernel.org,
-	akpm@linux-foundation.org, tpiepho@freescale.com,
-	john.williams@petalogix.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +21,168 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 27 Apr 2009 21:59:39 -0600
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 22 Apr 2009 16:35:48 -0500
 
->     of: make of_(un)register_platform_driver common code.
+> CONFIG_DUET doesn't exist anymore, remove all the code that exists to
+> support it.
 > 
->     Some drivers using of_register_platform_driver() wrapper break on sparc
->     because the wrapper isn't in the header file.  This patch moves it from
->     Microblaze and PowerPC implementations and makes it common code.
-> 
->     Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-Looks great:
+I took the liberty of simplifying fs_init() even further
+when applying this.  It had become:
 
-Acked-by: David S. Miller <davem@davemloft.net>
+	int r = foo();
+	if (r != 0)
+		return r;
+	return 0;
+
+which is just plain:
+
+	return foo();
+
+fs_enet: Remove dead code
+
+CONFIG_DUET doesn't exist anymore, remove all the code that exists to
+support it.
+
+[ Simplify fs_init() even further -DaveM ]
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ drivers/net/fs_enet/fs_enet-main.c |   39 +-----------------------------------
+ drivers/net/fs_enet/fs_enet.h      |    5 ----
+ drivers/net/fs_enet/mac-fec.c      |   34 -------------------------------
+ 3 files changed, 1 insertions(+), 77 deletions(-)
+
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index 9604aae..b892c3a 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -941,30 +941,6 @@ extern void fs_mii_disconnect(struct net_device *dev);
+ 
+ /**************************************************************************************/
+ 
+-/* handy pointer to the immap */
+-void __iomem *fs_enet_immap = NULL;
+-
+-static int setup_immap(void)
+-{
+-#ifdef CONFIG_CPM1
+-	fs_enet_immap = ioremap(IMAP_ADDR, 0x4000);
+-	WARN_ON(!fs_enet_immap);
+-#elif defined(CONFIG_CPM2)
+-	fs_enet_immap = cpm2_immr;
+-#endif
+-
+-	return 0;
+-}
+-
+-static void cleanup_immap(void)
+-{
+-#if defined(CONFIG_CPM1)
+-	iounmap(fs_enet_immap);
+-#endif
+-}
+-
+-/**************************************************************************************/
+-
+ #ifdef CONFIG_FS_ENET_HAS_FEC
+ #define IS_FEC(match) ((match)->data == &fs_fec_ops)
+ #else
+@@ -1144,25 +1120,12 @@ static struct of_platform_driver fs_enet_driver = {
+ 
+ static int __init fs_init(void)
+ {
+-	int r = setup_immap();
+-	if (r != 0)
+-		return r;
+-
+-	r = of_register_platform_driver(&fs_enet_driver);
+-	if (r != 0)
+-		goto out;
+-
+-	return 0;
+-
+-out:
+-	cleanup_immap();
+-	return r;
++	return of_register_platform_driver(&fs_enet_driver);
+ }
+ 
+ static void __exit fs_cleanup(void)
+ {
+ 	of_unregister_platform_driver(&fs_enet_driver);
+-	cleanup_immap();
+ }
+ 
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
+index 85a4bab..ef01e09 100644
+--- a/drivers/net/fs_enet/fs_enet.h
++++ b/drivers/net/fs_enet/fs_enet.h
+@@ -194,9 +194,4 @@ extern const struct fs_ops fs_scc_ops;
+ 
+ /*******************************************************************/
+ 
+-/* handy pointer to the immap */
+-extern void __iomem *fs_enet_immap;
+-
+-/*******************************************************************/
+-
+ #endif
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index 14e5753..ca7bcb8 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -245,10 +245,6 @@ static void set_multicast_list(struct net_device *dev)
+ 
+ static void restart(struct net_device *dev)
+ {
+-#ifdef CONFIG_DUET
+-	immap_t *immap = fs_enet_immap;
+-	u32 cptr;
+-#endif
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+ 	fec_t __iomem *fecp = fep->fec.fecp;
+ 	const struct fs_platform_info *fpi = fep->fpi;
+@@ -315,36 +311,6 @@ static void restart(struct net_device *dev)
+ 	FW(fecp, ievent, 0xffc0);
+ 	FW(fecp, ivec, (virq_to_hw(fep->interrupt) / 2) << 29);
+ 
+-	/*
+-	 * adjust to speed (only for DUET & RMII)
+-	 */
+-#ifdef CONFIG_DUET
+-	if (fpi->use_rmii) {
+-		cptr = in_be32(&immap->im_cpm.cp_cptr);
+-		switch (fs_get_fec_index(fpi->fs_no)) {
+-		case 0:
+-			cptr |= 0x100;
+-			if (fep->speed == 10)
+-				cptr |= 0x0000010;
+-			else if (fep->speed == 100)
+-				cptr &= ~0x0000010;
+-			break;
+-		case 1:
+-			cptr |= 0x80;
+-			if (fep->speed == 10)
+-				cptr |= 0x0000008;
+-			else if (fep->speed == 100)
+-				cptr &= ~0x0000008;
+-			break;
+-		default:
+-			BUG();	/* should never happen */
+-			break;
+-		}
+-		out_be32(&immap->im_cpm.cp_cptr, cptr);
+-	}
+-#endif
+-
+-
+ 	FW(fecp, r_cntrl, FEC_RCNTRL_MII_MODE);	/* MII enable */
+ 	/*
+ 	 * adjust to duplex mode
+-- 
+1.6.2.4
