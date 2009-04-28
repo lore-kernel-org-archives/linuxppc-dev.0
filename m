@@ -3,36 +3,19 @@ Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
 	[18.7.7.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 20DF7DDEDA
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 01:23:19 +1000 (EST)
-Date: Tue, 28 Apr 2009 11:13:48 -0400 (EDT)
+	by ozlabs.org (Postfix) with ESMTPS id 30B6FDDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 01:48:06 +1000 (EST)
+Date: Tue, 28 Apr 2009 11:47:15 -0400 (EDT)
 From: Tim Abbott <tabbott@MIT.EDU>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 11/14] powerpc: Use macros for .data.page_aligned section.
-In-Reply-To: <20090429010753.851e0f59.sfr@canb.auug.org.au>
-Message-ID: <alpine.DEB.1.10.0904281110350.15450@vinegar-pot.mit.edu>
-References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-2-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-3-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-4-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-5-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-6-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-7-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-8-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-9-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-10-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-11-git-send-email-tabbott@mit.edu>
-	<1240864388-26315-12-git-send-email-tabbott@mit.edu>
-	<20090429010753.851e0f59.sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please revert edada399 and 9203fc9c
+In-Reply-To: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
+Message-ID: <alpine.DEB.1.10.0904281126550.15450@vinegar-pot.mit.edu>
+References: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Denys Vlasenko <vda.linux@googlemail.com>, Sam Ravnborg <sam@ravnborg.org>,
-	Jeff Arnold <jbarnold@mit.edu>,
-	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-	Anders Kaseorg <andersk@mit.edu>, linuxppc-dev@ozlabs.org,
-	Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Waseem Daher <wdaher@mit.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,13 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 29 Apr 2009, Stephen Rothwell wrote:
+> Please revert commits edada399 ("powerpc: Use TEXT_TEXT macro in
+> linker script.") and 9203fc9c ("powerpc: Use __REF macro instead of
+> old .text.init.refok."), which depends on edada399.
 
-> This moves the page_aligned section from a common part of the
-> vmlinux.lds to a 32 bit only part.  Was that intentional?
+Paul,
 
-No.  See my reply to this patch from last night 
-<http://lkml.org/lkml/2009/4/28/16> and the revised pair of patches in 
-reply to that message that replace PATCH 11/14.
+Sorry for breaking the build.  I will be sure to CC you and 
+linuxppc-dev@ozlabs.org on future powerpc patches in this section name 
+cleanup project.
+
+I think just reverting commits edada399 and 9203fc9c will cause a section 
+mismatch warning since commit 27b18332 removed the support code for the 
+.text.init.refok section.  The following patch I believe should fix this 
+by effectively reverting just commit edada399.  Can someone who has a 
+64-bit powerpc machine confirm?
 
 	-Tim Abbott
+
+--
+
+powerpc: Revert switch to TEXT_TEXT in linker script
+
+Commit edada399 broke the build on 64-bit powerpc because it moved the
+__ftr_alt_* sections of a file away from the .text section, causing
+link failures due to relative conditional branch targets being too far
+away from the branch instructions.  This happens on pretty much all
+64-bit powerpc configs.
+
+This change reverts commit edada399 while preserving the update from
+the *.refok sections to .ref.text that has happened since.
+
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+---
+ arch/powerpc/kernel/vmlinux.lds.S |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 433ae11..a047a6c 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -54,8 +54,8 @@ SECTIONS
+ 		ALIGN_FUNCTION();
+ 		HEAD_TEXT
+ 		_text = .;
+-		TEXT_TEXT
+-		*(.fixup __ftr_alt_*)
++		/* careful! __ftr_alt_* sections need to be close to .text */
++		*(.text .fixup __ftr_alt_* .ref.text)
+ 		SCHED_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+-- 
+1.6.2.1
