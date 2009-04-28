@@ -2,16 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 14888DDEDA
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 23:08:47 +1000 (EST)
-Date: Tue, 28 Apr 2009 08:08:40 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id E8B59DDED6
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 23:21:53 +1000 (EST)
+Message-Id: <1530CE92-A052-487F-B5D1-643E166068B6@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Fix up elf_read_implies_exec() usage
-Message-ID: <Pine.LNX.4.64.0904280808220.8094@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20090428124503.70AF1123B3@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 2/2] powerpc: Add 2.06 tlbie mnemonics
+Date: Tue, 28 Apr 2009 08:21:26 -0500
+References: <20090428124503.70AF1123B3@localhost.localdomain>
+Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,42 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On ppc64 we implemented elf_read_implies_exec() for 32-bit binaries
-because old toolchains had bugs with regards to marking PHDRs as
-executable that needed to be.  For some reason we didn't do this on
-ppc32 builds.  This hadn't been an issue until recent changes to I$/D$
-handling that impacted the per-page exec handling on embedded PPC.
 
-Additionally we believe if a toolchain supported PT_GNU_STACK that it
-sets the proper PHDR permissions so we only have elf_read_implies_exec()
-true if we don't see PT_GNU_STACK set.
+On Apr 28, 2009, at 7:45 AM, Michael Neuling wrote:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+> Index: linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/mmu.h
+> +++ linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
+> @@ -58,6 +58,11 @@
+>  */
+> #define MMU_FTR_TLBILX_EARLY_OPCODE	ASM_CONST(0x00400000)
+>
+> +/* This indicates that the processor uses the ISA 2.06 server tlbie
+> + * mnemonics
+> + */
+> +#define MMU_FTR_TLBIE_206		ASM_CONST(0x00800000)
+> +
+> #ifndef __ASSEMBLY__
+> #include <asm/cputable.h>
 
-Paul, please pick this up for 2.6.30 and send onto linus.
+You aren't going to like me, but I just got rid of  
+MMU_FTR_TLBILX_EARLY_OPCODE and thus freed up 0x00400000.  So a) patch  
+will probably bitch when being applied by Ben b) we should use  
+0x00400000.
+
+(suggest pulling in paulus/merge as that has the "revert" patch that  
+removes MMU_FTR_TLBILX_EARLY_OPCODE - and paul's sent a pull request  
+to linus for it.)
 
 - k
-
- arch/powerpc/include/asm/elf.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index 087c22f..014a624 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -256,10 +256,11 @@ do {								\
-  * even if we have an executable stack.
-  */
- # define elf_read_implies_exec(ex, exec_stk) (test_thread_flag(TIF_32BIT) ? \
--		(exec_stk != EXSTACK_DISABLE_X) : 0)
-+		(exec_stk == EXSTACK_DEFAULT) : 0)
- #else
- # define SET_PERSONALITY(ex) \
-   set_personality(PER_LINUX | (current->personality & (~PER_MASK)))
-+# define elf_read_implies_exec(ex, exec_stk) (exec_stk == EXSTACK_DEFAULT)
- #endif /* __powerpc64__ */
-
- extern int dcache_bsize;
--- 
-1.6.0.6
