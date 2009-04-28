@@ -1,18 +1,33 @@
-Return-Path: <mikey@neuling.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <rbrito@ime.usp.br>
+Received: from smtp.gru.flash.tv.br (smtp.flash.net.br [201.46.240.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3FABADDE25
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 22:45:04 +1000 (EST)
-To: Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Michael Neuling <mikey@neuling.org>
-Date: Tue, 28 Apr 2009 22:45:03 +1000
-Subject: [PATCH 2/2] powerpc: Add 2.06 tlbie mnemonics
-In-Reply-To: <1240922702.557324.191572776427.qpush@pale>
-Message-Id: <20090428124503.70AF1123B3@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B3EA8DDE31
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 23:04:43 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by smtp.gru.flash.tv.br (Postfix) with ESMTP id 230F51E6D20
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 10:04:23 -0300 (BRT)
+Received: from smtp.gru.flash.tv.br ([127.0.0.1])
+	by localhost (smtp.gru.flash.tv.br [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP id D+oogiOY7JcZ for <linuxppc-dev@ozlabs.org>;
+	Tue, 28 Apr 2009 10:04:20 -0300 (BRT)
+Received: from chagas.nectar.ath.cx (unknown [187.22.248.170])
+	by smtp.gru.flash.tv.br (Postfix) with ESMTPA id 013151E6D1C
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 10:04:14 -0300 (BRT)
+Date: Tue, 28 Apr 2009 10:03:58 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc: updating the linkstation_defconfig
+Message-ID: <20090428130357.GA12828@ime.usp.br>
+References: <20090424065816.GA15525@ime.usp.br>
+	<Pine.LNX.4.64.0904242158210.8309@axis700.grange>
+	<20090424223355.GB7858@ime.usp.br>
+	<2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,129 +37,523 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Milton Miller <miltonm@bga.com>
+Simple update of the linkstation_defconfig file for the 2.6.30-rc3 tree.
 
-This adds the PowerPC 2.06 tlbie mnemonics and keeps backwards
-compatibilty for CPUs before 2.06.
-
-Only useful for bare metal systems.  
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
 ---
 
- arch/powerpc/include/asm/mmu.h        |    5 +++++
- arch/powerpc/include/asm/ppc-opcode.h |    4 ++++
- arch/powerpc/kernel/cputable.c        |    6 ++++--
- arch/powerpc/mm/hash_native_64.c      |   13 +++++++++++--
- 4 files changed, 24 insertions(+), 4 deletions(-)
+As asked, Kumar, here is a vanilla update.
 
-Index: linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/mmu.h
-+++ linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
-@@ -58,6 +58,11 @@
-  */
- #define MMU_FTR_TLBILX_EARLY_OPCODE	ASM_CONST(0x00400000)
+--- a/arch/powerpc/configs/linkstation_defconfig	2009-04-26 11:55:06.000000000 -0300
++++ b/arch/powerpc/configs/linkstation_defconfig	2009-04-28 09:53:38.000000000 -0300
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.29-rc6
+-# Fri Mar  6 00:07:38 2009
++# Linux kernel version: 2.6.30-rc3
++# Tue Apr 28 09:53:38 2009
+ #
+ # CONFIG_PPC64 is not set
  
-+/* This indicates that the processor uses the ISA 2.06 server tlbie
-+ * mnemonics
-+ */
-+#define MMU_FTR_TLBIE_206		ASM_CONST(0x00800000)
+@@ -14,6 +14,7 @@ CONFIG_6xx=y
+ # CONFIG_40x is not set
+ # CONFIG_44x is not set
+ # CONFIG_E200 is not set
++CONFIG_PPC_BOOK3S=y
+ CONFIG_PPC_FPU=y
+ # CONFIG_ALTIVEC is not set
+ CONFIG_PPC_STD_MMU=y
+@@ -54,6 +55,7 @@ CONFIG_GENERIC_BUG=y
+ CONFIG_DEFAULT_UIMAGE=y
+ # CONFIG_PPC_DCR_NATIVE is not set
+ # CONFIG_PPC_DCR_MMIO is not set
++CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
+ CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+ 
+ #
+@@ -68,6 +70,7 @@ CONFIG_SWAP=y
+ CONFIG_SYSVIPC=y
+ CONFIG_SYSVIPC_SYSCTL=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_POSIX_MQUEUE_SYSCTL=y
+ # CONFIG_BSD_PROCESS_ACCT is not set
+ # CONFIG_TASKSTATS is not set
+ # CONFIG_AUDIT is not set
+@@ -100,21 +103,24 @@ CONFIG_NAMESPACES=y
+ # CONFIG_NET_NS is not set
+ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_INITRAMFS_SOURCE=""
++CONFIG_RD_GZIP=y
++CONFIG_RD_BZIP2=y
++CONFIG_RD_LZMA=y
+ CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+ CONFIG_SYSCTL=y
++CONFIG_ANON_INODES=y
+ # CONFIG_EMBEDDED is not set
+ CONFIG_SYSCTL_SYSCALL=y
+ CONFIG_KALLSYMS=y
+ # CONFIG_KALLSYMS_ALL is not set
+ # CONFIG_KALLSYMS_EXTRA_PASS is not set
++# CONFIG_STRIP_ASM_SYMS is not set
+ CONFIG_HOTPLUG=y
+ CONFIG_PRINTK=y
+ CONFIG_BUG=y
+ CONFIG_ELF_CORE=y
+-# CONFIG_COMPAT_BRK is not set
+ CONFIG_BASE_FULL=y
+ CONFIG_FUTEX=y
+-CONFIG_ANON_INODES=y
+ CONFIG_EPOLL=y
+ CONFIG_SIGNALFD=y
+ CONFIG_TIMERFD=y
+@@ -124,10 +130,12 @@ CONFIG_AIO=y
+ CONFIG_VM_EVENT_COUNTERS=y
+ CONFIG_PCI_QUIRKS=y
+ CONFIG_SLUB_DEBUG=y
++# CONFIG_COMPAT_BRK is not set
+ # CONFIG_SLAB is not set
+ CONFIG_SLUB=y
+ # CONFIG_SLOB is not set
+ # CONFIG_PROFILING is not set
++# CONFIG_MARKERS is not set
+ CONFIG_HAVE_OPROFILE=y
+ # CONFIG_KPROBES is not set
+ CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
+@@ -135,6 +143,7 @@ CONFIG_HAVE_IOREMAP_PROT=y
+ CONFIG_HAVE_KPROBES=y
+ CONFIG_HAVE_KRETPROBES=y
+ CONFIG_HAVE_ARCH_TRACEHOOK=y
++# CONFIG_SLOW_WORK is not set
+ # CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
+ CONFIG_SLABINFO=y
+ CONFIG_RT_MUTEXES=y
+@@ -147,7 +156,6 @@ CONFIG_MODULE_UNLOAD=y
+ # CONFIG_MODULE_SRCVERSION_ALL is not set
+ CONFIG_BLOCK=y
+ # CONFIG_LBD is not set
+-# CONFIG_BLK_DEV_IO_TRACE is not set
+ # CONFIG_BLK_DEV_BSG is not set
+ # CONFIG_BLK_DEV_INTEGRITY is not set
+ 
+@@ -168,8 +176,6 @@ CONFIG_DEFAULT_IOSCHED="anticipatory"
+ #
+ # Platform support
+ #
+-CONFIG_PPC_MULTIPLATFORM=y
+-CONFIG_CLASSIC32=y
+ # CONFIG_PPC_CHRP is not set
+ # CONFIG_MPC5121_ADS is not set
+ # CONFIG_MPC5121_GENERIC is not set
+@@ -191,6 +197,8 @@ CONFIG_LINKSTATION=y
+ CONFIG_MPC10X_BRIDGE=y
+ CONFIG_MPC10X_OPENPIC=y
+ # CONFIG_MPC10X_STORE_GATHERING is not set
++# CONFIG_AMIGAONE is not set
++CONFIG_PPC_OF_BOOT_TRAMPOLINE=y
+ # CONFIG_IPIC is not set
+ CONFIG_MPIC=y
+ # CONFIG_MPIC_WEIRD is not set
+@@ -250,9 +258,12 @@ CONFIG_ZONE_DMA_FLAG=1
+ CONFIG_BOUNCE=y
+ CONFIG_VIRT_TO_BUS=y
+ CONFIG_UNEVICTABLE_LRU=y
++CONFIG_HAVE_MLOCK=y
++CONFIG_HAVE_MLOCKED_PAGE_BIT=y
+ CONFIG_PPC_4K_PAGES=y
+ # CONFIG_PPC_16K_PAGES is not set
+ # CONFIG_PPC_64K_PAGES is not set
++# CONFIG_PPC_256K_PAGES is not set
+ CONFIG_FORCE_MAX_ZONEORDER=11
+ CONFIG_PROC_DEVICETREE=y
+ # CONFIG_CMDLINE_BOOL is not set
+@@ -277,6 +288,7 @@ CONFIG_ARCH_SUPPORTS_MSI=y
+ # CONFIG_PCI_LEGACY is not set
+ # CONFIG_PCI_DEBUG is not set
+ # CONFIG_PCI_STUB is not set
++# CONFIG_PCI_IOV is not set
+ # CONFIG_PCCARD is not set
+ # CONFIG_HOTPLUG_PCI is not set
+ # CONFIG_HAS_RAPIDIO is not set
+@@ -299,7 +311,6 @@ CONFIG_NET=y
+ #
+ # Networking options
+ #
+-CONFIG_COMPAT_NET_DEV_OPS=y
+ CONFIG_PACKET=y
+ CONFIG_PACKET_MMAP=y
+ CONFIG_UNIX=y
+@@ -371,6 +382,7 @@ CONFIG_NETFILTER_XTABLES=m
+ # CONFIG_NETFILTER_XT_TARGET_CLASSIFY is not set
+ # CONFIG_NETFILTER_XT_TARGET_CONNMARK is not set
+ # CONFIG_NETFILTER_XT_TARGET_DSCP is not set
++CONFIG_NETFILTER_XT_TARGET_HL=m
+ # CONFIG_NETFILTER_XT_TARGET_MARK is not set
+ # CONFIG_NETFILTER_XT_TARGET_NFLOG is not set
+ # CONFIG_NETFILTER_XT_TARGET_NFQUEUE is not set
+@@ -379,6 +391,7 @@ CONFIG_NETFILTER_XTABLES=m
+ # CONFIG_NETFILTER_XT_TARGET_TRACE is not set
+ # CONFIG_NETFILTER_XT_TARGET_TCPMSS is not set
+ # CONFIG_NETFILTER_XT_TARGET_TCPOPTSTRIP is not set
++# CONFIG_NETFILTER_XT_MATCH_CLUSTER is not set
+ # CONFIG_NETFILTER_XT_MATCH_COMMENT is not set
+ # CONFIG_NETFILTER_XT_MATCH_CONNBYTES is not set
+ # CONFIG_NETFILTER_XT_MATCH_CONNLIMIT is not set
+@@ -389,6 +402,7 @@ CONFIG_NETFILTER_XTABLES=m
+ # CONFIG_NETFILTER_XT_MATCH_ESP is not set
+ # CONFIG_NETFILTER_XT_MATCH_HASHLIMIT is not set
+ # CONFIG_NETFILTER_XT_MATCH_HELPER is not set
++# CONFIG_NETFILTER_XT_MATCH_HL is not set
+ # CONFIG_NETFILTER_XT_MATCH_IPRANGE is not set
+ # CONFIG_NETFILTER_XT_MATCH_LENGTH is not set
+ # CONFIG_NETFILTER_XT_MATCH_LIMIT is not set
+@@ -465,6 +479,7 @@ CONFIG_IP_NF_ARP_MANGLE=m
+ # CONFIG_LAPB is not set
+ # CONFIG_ECONET is not set
+ # CONFIG_WAN_ROUTER is not set
++# CONFIG_PHONET is not set
+ # CONFIG_NET_SCHED is not set
+ # CONFIG_DCB is not set
+ 
+@@ -477,7 +492,6 @@ CONFIG_IP_NF_ARP_MANGLE=m
+ # CONFIG_IRDA is not set
+ # CONFIG_BT is not set
+ # CONFIG_AF_RXRPC is not set
+-# CONFIG_PHONET is not set
+ CONFIG_WIRELESS=y
+ # CONFIG_CFG80211 is not set
+ CONFIG_WIRELESS_OLD_REGULATORY=y
+@@ -625,6 +639,7 @@ CONFIG_MISC_DEVICES=y
+ # CONFIG_ICS932S401 is not set
+ # CONFIG_ENCLOSURE_SERVICES is not set
+ # CONFIG_HP_ILO is not set
++# CONFIG_ISL29003 is not set
+ # CONFIG_C2PORT is not set
+ 
+ #
+@@ -690,9 +705,11 @@ CONFIG_SCSI_LOWLEVEL=y
+ # CONFIG_MEGARAID_NEWGEN is not set
+ # CONFIG_MEGARAID_LEGACY is not set
+ # CONFIG_MEGARAID_SAS is not set
++# CONFIG_SCSI_MPT2SAS is not set
+ # CONFIG_SCSI_HPTIOP is not set
+ # CONFIG_SCSI_BUSLOGIC is not set
+ # CONFIG_LIBFC is not set
++# CONFIG_LIBFCOE is not set
+ # CONFIG_FCOE is not set
+ # CONFIG_SCSI_DMX3191D is not set
+ # CONFIG_SCSI_EATA is not set
+@@ -715,6 +732,7 @@ CONFIG_SCSI_LOWLEVEL=y
+ # CONFIG_SCSI_DEBUG is not set
+ # CONFIG_SCSI_SRP is not set
+ # CONFIG_SCSI_DH is not set
++# CONFIG_SCSI_OSD_INITIATOR is not set
+ CONFIG_ATA=y
+ # CONFIG_ATA_NONSTANDARD is not set
+ CONFIG_SATA_PMP=y
+@@ -791,6 +809,7 @@ CONFIG_PATA_SIL680=y
+ # CONFIG_I2O is not set
+ # CONFIG_MACINTOSH_DRIVERS is not set
+ CONFIG_NETDEVICES=y
++CONFIG_COMPAT_NET_DEV_OPS=y
+ # CONFIG_DUMMY is not set
+ # CONFIG_BONDING is not set
+ # CONFIG_MACVLAN is not set
+@@ -805,6 +824,8 @@ CONFIG_MII=y
+ # CONFIG_SUNGEM is not set
+ # CONFIG_CASSINI is not set
+ # CONFIG_NET_VENDOR_3COM is not set
++# CONFIG_ETHOC is not set
++# CONFIG_DNET is not set
+ CONFIG_NET_TULIP=y
+ # CONFIG_DE2104X is not set
+ CONFIG_TULIP=y
+@@ -833,6 +854,7 @@ CONFIG_NETDEV_1000=y
+ # CONFIG_E1000E is not set
+ # CONFIG_IP1000 is not set
+ # CONFIG_IGB is not set
++# CONFIG_IGBVF is not set
+ # CONFIG_NS83820 is not set
+ # CONFIG_HAMACHI is not set
+ # CONFIG_YELLOWFIN is not set
+@@ -843,8 +865,8 @@ CONFIG_R8169=y
+ # CONFIG_VIA_VELOCITY is not set
+ # CONFIG_TIGON3 is not set
+ # CONFIG_BNX2 is not set
++# CONFIG_FSL_PQ_MDIO is not set
+ # CONFIG_GIANFAR is not set
+-# CONFIG_MV643XX_ETH is not set
+ # CONFIG_QLA3XXX is not set
+ # CONFIG_ATL1 is not set
+ # CONFIG_ATL1E is not set
+@@ -858,6 +880,7 @@ CONFIG_CHELSIO_T3_DEPENDS=y
+ # CONFIG_IXGBE is not set
+ # CONFIG_IXGB is not set
+ # CONFIG_S2IO is not set
++# CONFIG_VXGE is not set
+ # CONFIG_MYRI10GE is not set
+ # CONFIG_NETXEN_NIC is not set
+ # CONFIG_NIU is not set
+@@ -867,6 +890,7 @@ CONFIG_CHELSIO_T3_DEPENDS=y
+ # CONFIG_BNX2X is not set
+ # CONFIG_QLGE is not set
+ # CONFIG_SFC is not set
++# CONFIG_BE2NET is not set
+ # CONFIG_TR is not set
+ 
+ #
+@@ -874,7 +898,6 @@ CONFIG_CHELSIO_T3_DEPENDS=y
+ #
+ # CONFIG_WLAN_PRE80211 is not set
+ # CONFIG_WLAN_80211 is not set
+-# CONFIG_IWLWIFI_LEDS is not set
+ 
+ #
+ # Enable WiMAX (Networking options) to see the WiMAX drivers
+@@ -985,6 +1008,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_HVC_UDBG is not set
+ # CONFIG_IPMI_HANDLER is not set
+ CONFIG_HW_RANDOM=y
++CONFIG_HW_RANDOM_TIMERIOMEM=y
+ # CONFIG_NVRAM is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+@@ -1050,7 +1074,6 @@ CONFIG_I2C_MPC=y
+ # CONFIG_SENSORS_PCF8574 is not set
+ # CONFIG_PCF8575 is not set
+ # CONFIG_SENSORS_PCA9539 is not set
+-# CONFIG_SENSORS_PCF8591 is not set
+ # CONFIG_SENSORS_MAX6875 is not set
+ # CONFIG_SENSORS_TSL2550 is not set
+ # CONFIG_I2C_DEBUG_CORE is not set
+@@ -1082,6 +1105,7 @@ CONFIG_HWMON=y
+ # CONFIG_SENSORS_F71805F is not set
+ # CONFIG_SENSORS_F71882FG is not set
+ # CONFIG_SENSORS_F75375S is not set
++# CONFIG_SENSORS_G760A is not set
+ # CONFIG_SENSORS_GL518SM is not set
+ # CONFIG_SENSORS_GL520SM is not set
+ # CONFIG_SENSORS_IT87 is not set
+@@ -1096,11 +1120,14 @@ CONFIG_HWMON=y
+ # CONFIG_SENSORS_LM90 is not set
+ # CONFIG_SENSORS_LM92 is not set
+ # CONFIG_SENSORS_LM93 is not set
++# CONFIG_SENSORS_LTC4215 is not set
+ # CONFIG_SENSORS_LTC4245 is not set
++# CONFIG_SENSORS_LM95241 is not set
+ # CONFIG_SENSORS_MAX1619 is not set
+ # CONFIG_SENSORS_MAX6650 is not set
+ # CONFIG_SENSORS_PC87360 is not set
+ # CONFIG_SENSORS_PC87427 is not set
++# CONFIG_SENSORS_PCF8591 is not set
+ # CONFIG_SENSORS_SIS5595 is not set
+ # CONFIG_SENSORS_DME1737 is not set
+ # CONFIG_SENSORS_SMSC47M1 is not set
+@@ -1195,7 +1222,6 @@ CONFIG_HID=m
+ #
+ # Special HID drivers
+ #
+-CONFIG_HID_COMPAT=y
+ CONFIG_USB_SUPPORT=y
+ CONFIG_USB_ARCH_HAS_HCD=y
+ CONFIG_USB_ARCH_HAS_OHCI=y
+@@ -1250,11 +1276,11 @@ CONFIG_USB_PRINTER=m
+ # CONFIG_USB_TMC is not set
+ 
+ #
+-# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may also be needed;
++# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
+ #
+ 
+ #
+-# see USB_STORAGE Help for more information
++# also be needed; see USB_STORAGE Help for more info
+ #
+ CONFIG_USB_STORAGE=m
+ # CONFIG_USB_STORAGE_DEBUG is not set
+@@ -1290,7 +1316,7 @@ CONFIG_USB_SERIAL_CONSOLE=y
+ # CONFIG_USB_SERIAL_CH341 is not set
+ # CONFIG_USB_SERIAL_WHITEHEAT is not set
+ # CONFIG_USB_SERIAL_DIGI_ACCELEPORT is not set
+-# CONFIG_USB_SERIAL_CP2101 is not set
++# CONFIG_USB_SERIAL_CP210X is not set
+ # CONFIG_USB_SERIAL_CYPRESS_M8 is not set
+ # CONFIG_USB_SERIAL_EMPEG is not set
+ CONFIG_USB_SERIAL_FTDI_SIO=y
+@@ -1314,11 +1340,13 @@ CONFIG_USB_SERIAL_FTDI_SIO=y
+ # CONFIG_USB_SERIAL_NAVMAN is not set
+ # CONFIG_USB_SERIAL_PL2303 is not set
+ # CONFIG_USB_SERIAL_OTI6858 is not set
++# CONFIG_USB_SERIAL_QUALCOMM is not set
+ # CONFIG_USB_SERIAL_SPCP8X5 is not set
+ # CONFIG_USB_SERIAL_HP4X is not set
+ # CONFIG_USB_SERIAL_SAFE is not set
+ # CONFIG_USB_SERIAL_SIEMENS_MPI is not set
+ # CONFIG_USB_SERIAL_SIERRAWIRELESS is not set
++# CONFIG_USB_SERIAL_SYMBOL is not set
+ # CONFIG_USB_SERIAL_TI is not set
+ # CONFIG_USB_SERIAL_CYBERJACK is not set
+ # CONFIG_USB_SERIAL_XIRCOM is not set
+@@ -1341,7 +1369,6 @@ CONFIG_USB_SERIAL_FTDI_SIO=y
+ # CONFIG_USB_LED is not set
+ # CONFIG_USB_CYPRESS_CY7C63 is not set
+ # CONFIG_USB_CYTHERM is not set
+-# CONFIG_USB_PHIDGET is not set
+ # CONFIG_USB_IDMOUSE is not set
+ # CONFIG_USB_FTDI_ELAN is not set
+ # CONFIG_USB_APPLEDISPLAY is not set
+@@ -1357,6 +1384,7 @@ CONFIG_USB_SERIAL_FTDI_SIO=y
+ #
+ # OTG and related infrastructure
+ #
++# CONFIG_NOP_USB_XCEIV is not set
+ # CONFIG_UWB is not set
+ # CONFIG_MMC is not set
+ # CONFIG_MEMSTICK is not set
+@@ -1418,8 +1446,9 @@ CONFIG_RTC_DRV_RS5C372=y
+ #
+ # on-CPU RTC drivers
+ #
+-# CONFIG_RTC_DRV_PPC is not set
++# CONFIG_RTC_DRV_GENERIC is not set
+ # CONFIG_DMADEVICES is not set
++# CONFIG_AUXDISPLAY is not set
+ # CONFIG_UIO is not set
+ # CONFIG_STAGING is not set
+ 
+@@ -1430,6 +1459,7 @@ CONFIG_EXT2_FS=y
+ # CONFIG_EXT2_FS_XATTR is not set
+ # CONFIG_EXT2_FS_XIP is not set
+ CONFIG_EXT3_FS=y
++CONFIG_EXT3_DEFAULTS_TO_ORDERED=y
+ CONFIG_EXT3_FS_XATTR=y
+ # CONFIG_EXT3_FS_POSIX_ACL is not set
+ # CONFIG_EXT3_FS_SECURITY is not set
+@@ -1456,6 +1486,11 @@ CONFIG_INOTIFY_USER=y
+ # CONFIG_FUSE_FS is not set
+ 
+ #
++# Caches
++#
++# CONFIG_FSCACHE is not set
 +
- #ifndef __ASSEMBLY__
- #include <asm/cputable.h>
++#
+ # CD-ROM/DVD Filesystems
+ #
+ CONFIG_ISO9660_FS=m
+@@ -1507,6 +1542,7 @@ CONFIG_MISC_FILESYSTEMS=y
+ # CONFIG_ROMFS_FS is not set
+ # CONFIG_SYSV_FS is not set
+ # CONFIG_UFS_FS is not set
++# CONFIG_NILFS2_FS is not set
+ CONFIG_NETWORK_FILESYSTEMS=y
+ CONFIG_NFS_FS=y
+ CONFIG_NFS_V3=y
+@@ -1524,7 +1560,6 @@ CONFIG_NFS_ACL_SUPPORT=y
+ CONFIG_NFS_COMMON=y
+ CONFIG_SUNRPC=y
+ CONFIG_SUNRPC_GSS=y
+-# CONFIG_SUNRPC_REGISTER_V4 is not set
+ CONFIG_RPCSEC_GSS_KRB5=y
+ # CONFIG_RPCSEC_GSS_SPKM3 is not set
+ # CONFIG_SMB_FS is not set
+@@ -1584,6 +1619,7 @@ CONFIG_NLS_ISO8859_1=m
+ # CONFIG_NLS_KOI8_U is not set
+ CONFIG_NLS_UTF8=m
+ # CONFIG_DLM is not set
++# CONFIG_BINARY_PRINTF is not set
  
-Index: linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/ppc-opcode.h
-+++ linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-@@ -46,10 +46,12 @@
- #define PPC_INST_TLBILX			0x7c000024
- #define PPC_INST_TLBILX_EARLY		0x7c000626
- #define PPC_INST_WAIT			0x7c00007c
-+#define PPC_INST_TLBIE			0x7c000264
+ #
+ # Library routines
+@@ -1597,15 +1633,18 @@ CONFIG_CRC_ITU_T=m
+ CONFIG_CRC32=y
+ # CONFIG_CRC7 is not set
+ CONFIG_LIBCRC32C=m
+-CONFIG_ZLIB_INFLATE=m
++CONFIG_ZLIB_INFLATE=y
+ CONFIG_ZLIB_DEFLATE=m
++CONFIG_DECOMPRESS_GZIP=y
++CONFIG_DECOMPRESS_BZIP2=y
++CONFIG_DECOMPRESS_LZMA=y
+ CONFIG_TEXTSEARCH=y
+ CONFIG_TEXTSEARCH_KMP=m
+-CONFIG_PLIST=y
+ CONFIG_HAS_IOMEM=y
+ CONFIG_HAS_IOPORT=y
+ CONFIG_HAS_DMA=y
+ CONFIG_HAVE_LMB=y
++CONFIG_NLATTR=y
  
- /* macros to insert fields into opcodes */
- #define __PPC_RA(a)	((a & 0x1f) << 16)
- #define __PPC_RB(b)	((b & 0x1f) << 11)
-+#define __PPC_RS(s)	((s & 0x1f) << 21)
- #define __PPC_T_TLB(t)	((t & 0x3) << 21)
- #define __PPC_WC(w)	((w & 0x3) << 21)
+ #
+ # Kernel hacking
+@@ -1623,6 +1662,9 @@ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DETECT_SOFTLOCKUP=y
+ # CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
+ CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
++CONFIG_DETECT_HUNG_TASK=y
++# CONFIG_BOOTPARAM_HUNG_TASK_PANIC is not set
++CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
+ CONFIG_SCHED_DEBUG=y
+ # CONFIG_SCHEDSTATS is not set
+ # CONFIG_TIMER_STATS is not set
+@@ -1652,9 +1694,12 @@ CONFIG_DEBUG_MEMORY_INIT=y
+ # CONFIG_FAULT_INJECTION is not set
+ # CONFIG_LATENCYTOP is not set
+ CONFIG_SYSCTL_SYSCALL_CHECK=y
++# CONFIG_DEBUG_PAGEALLOC is not set
+ CONFIG_HAVE_FUNCTION_TRACER=y
++CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+ CONFIG_HAVE_DYNAMIC_FTRACE=y
+ CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
++CONFIG_TRACING_SUPPORT=y
  
-@@ -78,5 +80,7 @@
- #define PPC_TLBILX_VA_EARLY(a, b)	PPC_TLBILX_EARLY(3, a, b)
- #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
- 					__PPC_WC(w))
-+#define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
-+					       __PPC_RB(a) | __PPC_RS(lp))
+ #
+ # Tracers
+@@ -1662,17 +1707,19 @@ CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+ # CONFIG_FUNCTION_TRACER is not set
+ # CONFIG_SCHED_TRACER is not set
+ # CONFIG_CONTEXT_SWITCH_TRACER is not set
++# CONFIG_EVENT_TRACER is not set
+ # CONFIG_BOOT_TRACER is not set
+ # CONFIG_TRACE_BRANCH_PROFILING is not set
+ # CONFIG_STACK_TRACER is not set
+-# CONFIG_DYNAMIC_PRINTK_DEBUG is not set
++# CONFIG_KMEMTRACE is not set
++# CONFIG_WORKQUEUE_TRACER is not set
++# CONFIG_BLK_DEV_IO_TRACE is not set
+ # CONFIG_SAMPLES is not set
+ CONFIG_HAVE_ARCH_KGDB=y
+ # CONFIG_KGDB is not set
+ CONFIG_PRINT_STACK_DEPTH=64
+ # CONFIG_DEBUG_STACKOVERFLOW is not set
+ # CONFIG_DEBUG_STACK_USAGE is not set
+-# CONFIG_DEBUG_PAGEALLOC is not set
+ # CONFIG_CODE_PATCHING_SELFTEST is not set
+ # CONFIG_FTR_FIXUP_SELFTEST is not set
+ # CONFIG_MSI_BITMAP_SELFTEST is not set
+@@ -1703,10 +1750,12 @@ CONFIG_CRYPTO_BLKCIPHER2=y
+ CONFIG_CRYPTO_HASH=y
+ CONFIG_CRYPTO_HASH2=y
+ CONFIG_CRYPTO_RNG2=y
++CONFIG_CRYPTO_PCOMP=y
+ CONFIG_CRYPTO_MANAGER=y
+ CONFIG_CRYPTO_MANAGER2=y
+ # CONFIG_CRYPTO_GF128MUL is not set
+ # CONFIG_CRYPTO_NULL is not set
++CONFIG_CRYPTO_WORKQUEUE=y
+ # CONFIG_CRYPTO_CRYPTD is not set
+ # CONFIG_CRYPTO_AUTHENC is not set
+ # CONFIG_CRYPTO_TEST is not set
+@@ -1776,6 +1825,7 @@ CONFIG_CRYPTO_TWOFISH_COMMON=m
+ # Compression
+ #
+ CONFIG_CRYPTO_DEFLATE=m
++# CONFIG_CRYPTO_ZLIB is not set
+ # CONFIG_CRYPTO_LZO is not set
  
- #endif /* _ASM_POWERPC_PPC_OPCODE_H */
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/cputable.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/cputable.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/cputable.c
-@@ -425,7 +425,8 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER7 (architected)",
- 		.cpu_features		= CPU_FTRS_POWER7,
- 		.cpu_user_features	= COMMON_USER_POWER7,
--		.mmu_features		= MMU_FTR_HPTE_TABLE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE |
-+			MMU_FTR_TLBIE_206,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
-@@ -438,7 +439,8 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_name		= "POWER7 (raw)",
- 		.cpu_features		= CPU_FTRS_POWER7,
- 		.cpu_user_features	= COMMON_USER_POWER7,
--		.mmu_features		= MMU_FTR_HPTE_TABLE,
-+		.mmu_features		= MMU_FTR_HPTE_TABLE |
-+			MMU_FTR_TLBIE_206,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 6,
-Index: linux-2.6-ozlabs/arch/powerpc/mm/hash_native_64.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/mm/hash_native_64.c
-+++ linux-2.6-ozlabs/arch/powerpc/mm/hash_native_64.c
-@@ -27,6 +27,7 @@
- #include <asm/cputable.h>
- #include <asm/udbg.h>
- #include <asm/kexec.h>
-+#include <asm/ppc-opcode.h>
- 
- #ifdef DEBUG_LOW
- #define DBG_LOW(fmt...) udbg_printf(fmt)
-@@ -49,14 +50,21 @@ static inline void __tlbie(unsigned long
- 	case MMU_PAGE_4K:
- 		va &= ~0xffful;
- 		va |= ssize << 8;
--		asm volatile("tlbie %0,0" : : "r" (va) : "memory");
-+ 		asm volatile(ASM_MMU_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0),
-+					       %2)
-+			     : : "r" (va), "r"(0), "i" (MMU_FTR_TLBIE_206)
-+			     : "memory");
- 		break;
- 	default:
- 		penc = mmu_psize_defs[psize].penc;
- 		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
- 		va |= penc << 12;
- 		va |= ssize << 8;
--		asm volatile("tlbie %0,1" : : "r" (va) : "memory");
-+		va |= 1; /* L */
-+ 		asm volatile(ASM_MMU_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0),
-+					       %2)
-+			     : : "r" (va), "r"(0), "i" (MMU_FTR_TLBIE_206)
-+			     : "memory");
- 		break;
- 	}
- }
-@@ -80,6 +88,7 @@ static inline void __tlbiel(unsigned lon
- 		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
- 		va |= penc << 12;
- 		va |= ssize << 8;
-+		va |= 1; /* L */
- 		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
- 			     : : "r"(va) : "memory");
- 		break;
+ #
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
