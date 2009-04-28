@@ -1,21 +1,17 @@
-Return-Path: <tabbott@MIT.EDU>
-Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
-	[18.7.7.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 30B6FDDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 01:48:06 +1000 (EST)
-Date: Tue, 28 Apr 2009 11:47:15 -0400 (EDT)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please revert edada399 and 9203fc9c
-In-Reply-To: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0904281126550.15450@vinegar-pot.mit.edu>
-References: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
+	by ozlabs.org (Postfix) with ESMTP id A080CDDEDF
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 01:50:26 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so245097waf.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 08:50:25 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/virtex: Add uImage to the default images list
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Date: Tue, 28 Apr 2009 09:50:23 -0600
+Message-ID: <20090428155023.19405.44274.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,56 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Please revert commits edada399 ("powerpc: Use TEXT_TEXT macro in
-> linker script.") and 9203fc9c ("powerpc: Use __REF macro instead of
-> old .text.init.refok."), which depends on edada399.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Paul,
+It is common to use U-Boot on Xilinx Virtex platforms.  This patch
+ensures that CONFIG_DEFAULT_UIMAGE is selected for virtex
 
-Sorry for breaking the build.  I will be sure to CC you and 
-linuxppc-dev@ozlabs.org on future powerpc patches in this section name 
-cleanup project.
-
-I think just reverting commits edada399 and 9203fc9c will cause a section 
-mismatch warning since commit 27b18332 removed the support code for the 
-.text.init.refok section.  The following patch I believe should fix this 
-by effectively reverting just commit edada399.  Can someone who has a 
-64-bit powerpc machine confirm?
-
-	-Tim Abbott
-
---
-
-powerpc: Revert switch to TEXT_TEXT in linker script
-
-Commit edada399 broke the build on 64-bit powerpc because it moved the
-__ftr_alt_* sections of a file away from the .text section, causing
-link failures due to relative conditional branch targets being too far
-away from the branch instructions.  This happens on pretty much all
-64-bit powerpc configs.
-
-This change reverts commit edada399 while preserving the update from
-the *.refok sections to .ref.text that has happened since.
-
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/kernel/vmlinux.lds.S |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 433ae11..a047a6c 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -54,8 +54,8 @@ SECTIONS
- 		ALIGN_FUNCTION();
- 		HEAD_TEXT
- 		_text = .;
--		TEXT_TEXT
--		*(.fixup __ftr_alt_*)
-+		/* careful! __ftr_alt_* sections need to be close to .text */
-+		*(.text .fixup __ftr_alt_* .ref.text)
- 		SCHED_TEXT
- 		LOCK_TEXT
- 		KPROBES_TEXT
--- 
-1.6.2.1
+ arch/powerpc/platforms/40x/Kconfig |    1 +
+ arch/powerpc/platforms/44x/Kconfig |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+
+
+diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+index 14e027f..f39c953 100644
+--- a/arch/powerpc/platforms/40x/Kconfig
++++ b/arch/powerpc/platforms/40x/Kconfig
+@@ -153,6 +153,7 @@ config 405GPR
+ 
+ config XILINX_VIRTEX
+ 	bool
++	select DEFAULT_UIMAGE
+ 
+ config XILINX_VIRTEX_II_PRO
+ 	bool
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index bf5c7ff..0d83a6a 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -246,6 +246,7 @@ config IBM440EP_ERR42
+ # Xilinx specific config options.
+ config XILINX_VIRTEX
+ 	bool
++	select DEFAULT_UIMAGE
+ 
+ # Xilinx Virtex 5 FXT FPGA architecture, selected by a Xilinx board above
+ config XILINX_VIRTEX_5_FXT
