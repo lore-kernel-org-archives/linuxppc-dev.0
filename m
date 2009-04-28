@@ -1,31 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CDC8CDDF1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 23:50:20 +1000 (EST)
-Message-ID: <49F7093F.1000500@freescale.com>
-Date: Tue, 28 Apr 2009 08:48:47 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.237])
+	by ozlabs.org (Postfix) with ESMTP id A1A71DDF09
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 23:58:30 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f9so1802604rvb.1
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 06:58:28 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] of: make of_(un)register_platform_driver common code.
+To: akpm@linux-foundation.org, sparclinux@vger.kernel.org, davem@davemloft.net,
+	linuxppc-dev@ozlabs.org, rpurdie@linux.intel.com,
+	smaclennan@pikatech.com, monstr@monstr.eu, john.williams@petalogix.com
+Date: Tue, 28 Apr 2009 07:58:26 -0600
+Message-ID: <20090428135821.8530.85153.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>,
-	Scott Wood <scottwood@freescale.com>,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
-Subject: Re: removing get_immrbase()??
-References: <ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
-	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8E3A.4060304@freescale.com>
-	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
-	<20090423022610.GA19376@yookeroo.seuss>
-	<80CA86D4-3DA5-4C28-AE7A-C03CE5758774@kernel.crashing.org>
-	<20090423040642.GG19376@yookeroo.seuss>
-	<49668C6D-3A6A-499E-A8AD-85B8E808F6CF@kernel.crashing.org>
-	<20090428041257.GC11265@yookeroo.seuss>
-In-Reply-To: <20090428041257.GC11265@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,31 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Wed, Apr 22, 2009 at 11:41:31PM -0500, Kumar Gala wrote:
->> Lets say I had an error driver for our MCM (core to soc coherency  
->> module).  It was getting the base address by using get_immrbase().   
->> Today I proposed a proper device node for the MCM block as it doesn't  
->> exist in .dts today.  We add such a node into .dts and I can clean up my 
->> error driver to use proper device node information.  However I've just 
->> broken any old .dts that didn't have this node.  You are saying I need to 
->> add code into the kernel to create this new node and we have to keep that 
->> code around for ever in the kernel.. why would I ever bother to actually 
->> changing anything than.
-> 
-> Well, again.  It's a judgement call, balancing the pain of having to
-> update the dts files (which depends on how widely deployed the
-> platform is) versus the pain of having to keep the bacwards
-> compatibility shim in the kernel.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-I agree with this sentiment.  I'm only asking for a reasonable attempt
-at adding backwards compatibility via an isolated code block.  Sprinkle
-in a few comments, and that should be enough.  It won't always be
-possible to add such code, but at the very least, I expect the
-driver/kernel to clearly indicate what's missing from the device tree.
-In Kumar's example above, I expect the kernel to say that the MCM node
-is missing.
+Some drivers using of_register_platform_driver() wrapper break on sparc
+because the wrapper isn't in the header file.  This patch moves it from
+Microblaze and PowerPC implementations and makes it common code.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: David S. Miller <davem@davemloft.net>
+---
+
+ arch/microblaze/include/asm/of_platform.h |   10 ----------
+ arch/powerpc/include/asm/of_platform.h    |   10 ----------
+ include/linux/of_platform.h               |   10 ++++++++++
+ 3 files changed, 10 insertions(+), 20 deletions(-)
+
+
+diff --git a/arch/microblaze/include/asm/of_platform.h b/arch/microblaze/include/asm/of_platform.h
+index 187c0ee..3749127 100644
+--- a/arch/microblaze/include/asm/of_platform.h
++++ b/arch/microblaze/include/asm/of_platform.h
+@@ -36,16 +36,6 @@ static const struct of_device_id of_default_bus_ids[] = {
+ 	{},
+ };
+ 
+-/* Platform drivers register/unregister */
+-static inline int of_register_platform_driver(struct of_platform_driver *drv)
+-{
+-	return of_register_driver(drv, &of_platform_bus_type);
+-}
+-static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
+-{
+-	of_unregister_driver(drv);
+-}
+-
+ /* Platform devices and busses creation */
+ extern struct of_device *of_platform_device_create(struct device_node *np,
+ 						const char *bus_id,
+diff --git a/arch/powerpc/include/asm/of_platform.h b/arch/powerpc/include/asm/of_platform.h
+index 53b4650..d4aaa34 100644
+--- a/arch/powerpc/include/asm/of_platform.h
++++ b/arch/powerpc/include/asm/of_platform.h
+@@ -11,16 +11,6 @@
+  *
+  */
+ 
+-/* Platform drivers register/unregister */
+-static inline int of_register_platform_driver(struct of_platform_driver *drv)
+-{
+-	return of_register_driver(drv, &of_platform_bus_type);
+-}
+-static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
+-{
+-	of_unregister_driver(drv);
+-}
+-
+ /* Platform devices and busses creation */
+ extern struct of_device *of_platform_device_create(struct device_node *np,
+ 						   const char *bus_id,
+diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
+index 3d327b6..9084066 100644
+--- a/include/linux/of_platform.h
++++ b/include/linux/of_platform.h
+@@ -51,6 +51,16 @@ extern int of_register_driver(struct of_platform_driver *drv,
+ 			      struct bus_type *bus);
+ extern void of_unregister_driver(struct of_platform_driver *drv);
+ 
++/* Platform drivers register/unregister */
++static inline int of_register_platform_driver(struct of_platform_driver *drv)
++{
++	return of_register_driver(drv, &of_platform_bus_type);
++}
++static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
++{
++	of_unregister_driver(drv);
++}
++
+ #include <asm/of_platform.h>
+ 
+ extern struct of_device *of_find_device_by_node(struct device_node *np);
