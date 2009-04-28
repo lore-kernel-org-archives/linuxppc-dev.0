@@ -1,19 +1,40 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.237])
-	by ozlabs.org (Postfix) with ESMTP id A1A71DDF09
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 23:58:30 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f9so1802604rvb.1
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 06:58:28 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] of: make of_(un)register_platform_driver common code.
-To: akpm@linux-foundation.org, sparclinux@vger.kernel.org, davem@davemloft.net,
-	linuxppc-dev@ozlabs.org, rpurdie@linux.intel.com,
-	smaclennan@pikatech.com, monstr@monstr.eu, john.williams@petalogix.com
-Date: Tue, 28 Apr 2009 07:58:26 -0600
-Message-ID: <20090428135821.8530.85153.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <alexs@linux.vnet.ibm.com>
+Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [194.196.100.162])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D1DAFDDF1E
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 00:13:50 +1000 (EST)
+Received: from d06nrmr1707.portsmouth.uk.ibm.com
+	(d06nrmr1707.portsmouth.uk.ibm.com [9.149.39.225])
+	by mtagate2.uk.ibm.com (8.13.1/8.13.1) with ESMTP id n3SEDjPh028484
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 14:13:45 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1707.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.2) with
+	ESMTP id n3SEDjK61323174
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 15:13:45 +0100
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id n3SEDhlW015414
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 15:13:44 +0100
+Date: Tue, 28 Apr 2009 16:13:42 +0200
+From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [ewg] Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
+Message-ID: <20090428161342.2037c8fc@BL3D1974.boeblingen.de.ibm.com>
+In-Reply-To: <adabpqgx4g3.fsf@cisco.com>
+References: <200904211716.45245.ossrosch@linux.vnet.ibm.com>
+	<adaws9dvrkp.fsf@cisco.com>
+	<200904221602.29028.ossrosch@linux.vnet.ibm.com>
+	<20090428150736.1ea143f0@BL3D1974.boeblingen.de.ibm.com>
+	<adabpqgx4g3.fsf@cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: fenkes@de.ibm.com, OF-EWG <ewg@lists.openfabrics.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+	alexschm@de.ibm.com, Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
+	stefan.roscher@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,82 +44,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Tue, 28 Apr 2009 07:01:32 -0700
+Roland Dreier <rdreier@cisco.com> wrote:
 
-Some drivers using of_register_platform_driver() wrapper break on sparc
-because the wrapper isn't in the header file.  This patch moves it from
-Microblaze and PowerPC implementations and makes it common code.
+>  > did you have a chance to take a look at the patchset and will you apply it, or
+>  > are there any outstanding issues we need to address?
+> 
+> I guess it's OK, but definitely 2.6.31 material.  I guess I'll stick it
+> linux-next soon.
+> 
+>  - R.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Acked-by: David S. Miller <davem@davemloft.net>
----
+Okay with us, thank you very much!
 
- arch/microblaze/include/asm/of_platform.h |   10 ----------
- arch/powerpc/include/asm/of_platform.h    |   10 ----------
- include/linux/of_platform.h               |   10 ++++++++++
- 3 files changed, 10 insertions(+), 20 deletions(-)
-
-
-diff --git a/arch/microblaze/include/asm/of_platform.h b/arch/microblaze/include/asm/of_platform.h
-index 187c0ee..3749127 100644
---- a/arch/microblaze/include/asm/of_platform.h
-+++ b/arch/microblaze/include/asm/of_platform.h
-@@ -36,16 +36,6 @@ static const struct of_device_id of_default_bus_ids[] = {
- 	{},
- };
- 
--/* Platform drivers register/unregister */
--static inline int of_register_platform_driver(struct of_platform_driver *drv)
--{
--	return of_register_driver(drv, &of_platform_bus_type);
--}
--static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
--{
--	of_unregister_driver(drv);
--}
--
- /* Platform devices and busses creation */
- extern struct of_device *of_platform_device_create(struct device_node *np,
- 						const char *bus_id,
-diff --git a/arch/powerpc/include/asm/of_platform.h b/arch/powerpc/include/asm/of_platform.h
-index 53b4650..d4aaa34 100644
---- a/arch/powerpc/include/asm/of_platform.h
-+++ b/arch/powerpc/include/asm/of_platform.h
-@@ -11,16 +11,6 @@
-  *
-  */
- 
--/* Platform drivers register/unregister */
--static inline int of_register_platform_driver(struct of_platform_driver *drv)
--{
--	return of_register_driver(drv, &of_platform_bus_type);
--}
--static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
--{
--	of_unregister_driver(drv);
--}
--
- /* Platform devices and busses creation */
- extern struct of_device *of_platform_device_create(struct device_node *np,
- 						   const char *bus_id,
-diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-index 3d327b6..9084066 100644
---- a/include/linux/of_platform.h
-+++ b/include/linux/of_platform.h
-@@ -51,6 +51,16 @@ extern int of_register_driver(struct of_platform_driver *drv,
- 			      struct bus_type *bus);
- extern void of_unregister_driver(struct of_platform_driver *drv);
- 
-+/* Platform drivers register/unregister */
-+static inline int of_register_platform_driver(struct of_platform_driver *drv)
-+{
-+	return of_register_driver(drv, &of_platform_bus_type);
-+}
-+static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
-+{
-+	of_unregister_driver(drv);
-+}
-+
- #include <asm/of_platform.h>
- 
- extern struct of_device *of_find_device_by_node(struct device_node *np);
+Alex
