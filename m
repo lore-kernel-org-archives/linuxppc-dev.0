@@ -3,28 +3,21 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 273B0DDDF3
+	by ozlabs.org (Postfix) with ESMTPS id 26C06DDD04
 	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 15:00:56 +1000 (EST)
-Date: Tue, 28 Apr 2009 14:12:57 +1000
+Date: Tue, 28 Apr 2009 14:10:28 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: removing get_immrbase()??
-Message-ID: <20090428041257.GC11265@yookeroo.seuss>
-References: <ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
-	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
-	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
-	<49EF8E3A.4060304@freescale.com>
-	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
-	<20090423022610.GA19376@yookeroo.seuss>
-	<80CA86D4-3DA5-4C28-AE7A-C03CE5758774@kernel.crashing.org>
-	<20090423040642.GG19376@yookeroo.seuss>
-	<49668C6D-3A6A-499E-A8AD-85B8E808F6CF@kernel.crashing.org>
+To: John Williams <john.williams@petalogix.com>
+Subject: Re: microblaze: Statically linking device tree blobs into the kernel
+Message-ID: <20090428041028.GB11265@yookeroo.seuss>
+References: <1d3f23370904262124l444bc30dmf4178930f4a2b82f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <49668C6D-3A6A-499E-A8AD-85B8E808F6CF@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>,
-	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
+In-Reply-To: <1d3f23370904262124l444bc30dmf4178930f4a2b82f@mail.gmail.com>
+Cc: Michal Simek <michal.simek@petalogix.com>,
+	microblaze-uclinux@itee.uq.edu.au,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, John Linn <John.Linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,39 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 22, 2009 at 11:41:31PM -0500, Kumar Gala wrote:
->
-> On Apr 22, 2009, at 11:06 PM, David Gibson wrote:
->
->> Well, yes, I guess I agree.  How immutable you consider the device
->> tree blob to be is a judgement call based on the specific details of
->> platform/board in question.  If it is indeed a reference platform, in
->> the early stages of development where it's reasonably easy to change
->> the dtb, then it's probably best to change the dtb in sync with the
->> kernel to reduce long-term cruft build-up.  But once the board is
->> sufficiently widely deployed, you want to stop doing that and include
->> backwards compatibility workarounds in the kernel to cope with the
->> widely deployed broken trees.
->
-> I disagree with the point about providing workarounds to cope w/deployed 
-> device trees (at least for the problems I'm thinking off in which nodes 
-> didn't exist).  This just sounds like double work and is a disincentive 
-> to actually making such changes.
->
-> Lets say I had an error driver for our MCM (core to soc coherency  
-> module).  It was getting the base address by using get_immrbase().   
-> Today I proposed a proper device node for the MCM block as it doesn't  
-> exist in .dts today.  We add such a node into .dts and I can clean up my 
-> error driver to use proper device node information.  However I've just 
-> broken any old .dts that didn't have this node.  You are saying I need to 
-> add code into the kernel to create this new node and we have to keep that 
-> code around for ever in the kernel.. why would I ever bother to actually 
-> changing anything than.
+On Mon, Apr 27, 2009 at 02:24:42PM +1000, John Williams wrote:
+> To MicroBlazers and other interested parties:
+> 
+> Currently the MicroBlaze kernel boot-time ABI requires r7 to point to
+> a valid DTB, whereupon in early kernel setup the DTB is copied to a
+> statically allocated 16k memory region inside the kernel. From there
+> it is later queried by the platform startup code.
+> 
+> For simple boot scenarios the ability to statically bind a DTB into
+> the kernel image would clearly be useful.  In PPC land, this is
+> achieved through the simpleboot bootloader that lives in
+> arch/powerpc/boot.  The DTB becomes part of the simpleboot payload,
+> and is passed to the kernel through the normal means.
+> 
+> I'm not convinced duplicating this for MicroBlaze is a good idea, I
+> think it would be overkill.  However, the make syntax that PPC uses to
+> achieve DTB binding is quite nice:
+> 
+> $ make simpleImage.<board>
+> 
+> which binds arch/powerpc/boot/dts/<board>.dts into the boot payload.
+> 
+> My feeling is that we should make use of the fact that the DTB region
+> is statically allocated in the MicroBlaze kernel anyway.  From
+> arch/microblaze/kernel/vmlinux.lds.S:
+> 
+>         . = ALIGN (4) ;
+>        _fdt_start = . ; /* place for fdt blob */
+>        . = . + 0x4000;
+>        _fdt_end = . ;
+> 
+> and in head.S, the DTB at r7 is copied into place at _fdt_start
+> 
+> /* save fdt to kernel location */
+> /* r7 stores pointer to fdt blob */
+>         beqi    r7, no_fdt_arg
+>         or      r11, r0, r0 /* incremment */
+>         ori     r4, r0, TOPHYS(_fdt_start) /* save bram context */
+>         ori     r3, r0, (0x4000 - 4)
+> _copy_fdt:
+>        <simple copy loop>
+> no_fdt_arg:
+> 
+> Since this memory is already allocated in the kernel image but is
+> normally just zeros, to bind a DTB to the kernel we could just store
+> it in-situ.  This way, if a non-zero r7 is passed in at boot time,
+> head.S will naturally overwrite (and thus override) the "default" DTB
+> that was inside the kernel image.
+> 
+> What I'm not so sure about is how best to achieve this in the kbuild
+> sequence.  I see two options:
+> 
+>  (a) use .incbin in a .S file, similar to how the initramfs gets
+> linked in in /usr/Makefile etc, or
 
-Well, again.  It's a judgement call, balancing the pain of having to
-update the dts files (which depends on how widely deployed the
-platform is) versus the pain of having to keep the bacwards
-compatibility shim in the kernel.
+Or you could build the .dts directly into a .S file (which dtc
+supports) and #include or link that in.  It's possible the dtc asm
+output mode would need some work, but that's easily enough done.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
