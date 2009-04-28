@@ -1,33 +1,37 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 16118DDEDD
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 01:13:04 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3SFF0HS023557
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 11:15:00 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3SFD07O090212
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 11:13:00 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3SFB9bv028583
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 11:11:11 -0400
-Subject: Re: [PATCH 1/3] IB/ehca: Replace vmalloc with kmalloc
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-In-Reply-To: <200904211716.45245.ossrosch@linux.vnet.ibm.com>
-References: <200904211716.45245.ossrosch@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 28 Apr 2009 08:12:51 -0700
-Message-Id: <1240931572.29485.77.camel@nimitz>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 18F0DDDEEF
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 01:18:05 +1000 (EST)
+Date: Wed, 29 Apr 2009 01:17:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tim Abbott <tabbott@MIT.EDU>
+Subject: Re: [PATCH 11/14] powerpc: Use macros for .data.page_aligned section.
+Message-Id: <20090429011756.6cccbc7d.sfr@canb.auug.org.au>
+In-Reply-To: <20090429010753.851e0f59.sfr@canb.auug.org.au>
+References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-2-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-3-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-4-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-5-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-6-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-7-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-8-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-9-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-10-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-11-git-send-email-tabbott@mit.edu>
+	<1240864388-26315-12-git-send-email-tabbott@mit.edu>
+	<20090429010753.851e0f59.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: fenkes@de.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-	OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
-	alexschm@de.ibm.com, stefan.roscher@de.ibm.com
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT"
+Cc: Jeff, Denys Vlasenko <vda.linux@googlemail.com>,
+	Sam Ravnborg <sam@ravnborg.org>, Waseem,
+	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+	Arnold <jbarnold@mit.edu>, Anders Kaseorg <andersk@mit.edu>,
+	linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>,
+	Tim Abbott <tabbott@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>, Daher <wdaher@mit.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,13 +41,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-04-21 at 17:16 +0200, Stefan Roscher wrote:
-> From: Anton Blanchard <antonb at au1.ibm.com>
-> 
-> To improve performance of driver ressource allocation,
-> replace the vmalloc() call with kmalloc().
+--Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Just curious, but how big are these allocations?  Why was vmalloc() even
-ever used if we know they'll be small?
+On Wed, 29 Apr 2009 01:07:53 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> This moves the page_aligned section from a common part of the
+> vmlinux.lds to a 32 bit only part.  Was that intentional?
 
--- Dave
+Just saw your later patches, so ignore this.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkn3HiQACgkQjjKRsyhoI8wYnQCgtVLjC0ymSa8ExUYejFYABlnq
+xh4AnjxqlGPU3jrnx6yxubkifNykP7IJ
+=eakv
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT--
