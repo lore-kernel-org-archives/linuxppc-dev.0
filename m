@@ -4,22 +4,28 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 53D74DDEFA
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 23:45:00 +1000 (EST)
-Message-ID: <49F707FA.7070603@freescale.com>
-Date: Tue, 28 Apr 2009 08:43:22 -0500
+	by ozlabs.org (Postfix) with ESMTPS id CDC8CDDF1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 23:50:20 +1000 (EST)
+Message-ID: <49F7093F.1000500@freescale.com>
+Date: Tue, 28 Apr 2009 08:48:47 -0500
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: David Hawkins <dwh@ovro.caltech.edu>
-Subject: Re: [PATCH] fsldma: use PCI Read Multiple command
-References: <20090424183517.GB23140@ovro.caltech.edu>	<D7CCA83BB0796C49BC0BB53B6AB1208928CA1D@zch01exm21.fsl.freescale.net>	<ed82fe3e0904270731g2d2519a7mc12e4152c716c0a9@mail.gmail.com>
-	<D7CCA83BB0796C49BC0BB53B6AB1208928CAB2@zch01exm21.fsl.freescale.net>
-	<49F65DBA.2090702@ovro.caltech.edu>
-In-Reply-To: <49F65DBA.2090702@ovro.caltech.edu>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	Scott Wood <scottwood@freescale.com>,
+	Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Subject: Re: removing get_immrbase()??
+References: <ed82fe3e0904221235i51fb75dap44b1fad09a10ea91@mail.gmail.com>
+	<49EF7B11.2000006@freescale.com> <49EF7B1C.2080105@freescale.com>
+	<282847E1-AE1A-44EF-9D18-AF2884105FA5@kernel.crashing.org>
+	<49EF8E3A.4060304@freescale.com>
+	<5D0145E3-0A98-429E-8D53-1A8DF4216462@kernel.crashing.org>
+	<20090423022610.GA19376@yookeroo.seuss>
+	<80CA86D4-3DA5-4C28-AE7A-C03CE5758774@kernel.crashing.org>
+	<20090423040642.GG19376@yookeroo.seuss>
+	<49668C6D-3A6A-499E-A8AD-85B8E808F6CF@kernel.crashing.org>
+	<20090428041257.GC11265@yookeroo.seuss>
+In-Reply-To: <20090428041257.GC11265@yookeroo.seuss>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
-	Liu Dave-R63238 <DaveLiu@freescale.com>,
-	linux-kernel@vger.kernel.org, Ira Snyder <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,18 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Hawkins wrote:
->> How about FIFO RAM case?
+David Gibson wrote:
+> On Wed, Apr 22, 2009 at 11:41:31PM -0500, Kumar Gala wrote:
+>> Lets say I had an error driver for our MCM (core to soc coherency  
+>> module).  It was getting the base address by using get_immrbase().   
+>> Today I proposed a proper device node for the MCM block as it doesn't  
+>> exist in .dts today.  We add such a node into .dts and I can clean up my 
+>> error driver to use proper device node information.  However I've just 
+>> broken any old .dts that didn't have this node.  You are saying I need to 
+>> add code into the kernel to create this new node and we have to keep that 
+>> code around for ever in the kernel.. why would I ever bother to actually 
+>> changing anything than.
 > 
-> If the FIFO has a fixed address, then according to
-> the user guide, the DMA controller won't generate
-> a burst transaction to it.
-> 
-> We can try confirming this if you'd like.
+> Well, again.  It's a judgement call, balancing the pain of having to
+> update the dts files (which depends on how widely deployed the
+> platform is) versus the pain of having to keep the bacwards
+> compatibility shim in the kernel.
 
-Like I said earlier, this driver does not support copying data to/from a
-single register address.  It's just a off-loaded memcpy.  So we don't
-need to worry about what happens to a fixed address.
+I agree with this sentiment.  I'm only asking for a reasonable attempt
+at adding backwards compatibility via an isolated code block.  Sprinkle
+in a few comments, and that should be enough.  It won't always be
+possible to add such code, but at the very least, I expect the
+driver/kernel to clearly indicate what's missing from the device tree.
+In Kumar's example above, I expect the kernel to say that the MCM node
+is missing.
 
 -- 
 Timur Tabi
