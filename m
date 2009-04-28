@@ -1,22 +1,19 @@
-Return-Path: <rbrito@ime.usp.br>
-Received: from hope.ime.usp.br (hope.ime.usp.br [143.107.45.8])
-	by ozlabs.org (Postfix) with SMTP id 1505BDDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 12:33:55 +1000 (EST)
-Date: Mon, 27 Apr 2009 23:27:11 -0300
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: minimizing the configuration of
-	linkstation_defconfig
-Message-ID: <20090428022711.GA30538@ime.usp.br>
-References: <20090424065816.GA15525@ime.usp.br>
-	<Pine.LNX.4.64.0904242158210.8309@axis700.grange>
-	<20090424223355.GB7858@ime.usp.br>
-	<2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id D3B65DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 13:52:07 +1000 (EST)
+Date: Tue, 28 Apr 2009 13:52:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: drivers/video/logo/logo_linux_mono.c build error
+Message-Id: <20090428135202.9c9bbadb.sfr@canb.auug.org.au>
+In-Reply-To: <20090427145031.99d4e0ac.akpm@linux-foundation.org>
+References: <20090427145031.99d4e0ac.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__28_Apr_2009_13_52_02_+1000_EYFjHkyClVVtNj3u"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Kumar.
+--Signature=_Tue__28_Apr_2009_13_52_02_+1000_EYFjHkyClVVtNj3u
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Apr 27 2009, Kumar Gala wrote:
+Hi Andrew,
+
+On Mon, 27 Apr 2009 14:50:31 -0700 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
 >
-> On Apr 24, 2009, at 5:33 PM, Rogério Brito wrote:
->> 04. disable CONFIG_BLK_DEV_RAM.
->
-> do we not allow booting a ramdisk?
+> powerpc allmodconfig, current mainline:
+>=20
+> drivers/video/logo/logo_linux_mono.c:11: error: logo_linux_mono_data caus=
+es a section type conflict
+>=20
+> switching it from __initconst to __initdata "fixes" it.
 
-Well, do we need a block device in ram to use initramfs?
+Interesting.  The program that generates the .c file above produces
+__initdata for me ...
 
-(...)
->> Dear Kumar, please, apply this one.
->>
->> I have another patch regarding one regression regarding MTD &
->> PHYSMAP_COMPAT that I plan to send on top of this one.
->
-> Ok, can we look at just specifying such info in the linkstation device  
-> tree.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks. The MTD & PHYMAP_COMPAT are the things that have been bugging me
-and my main reason to keep with the bleeding edge kernels is to get things
-whey they were (regarding mtd) as in kernel 2.6.28.
+--Signature=_Tue__28_Apr_2009_13_52_02_+1000_EYFjHkyClVVtNj3u
+Content-Type: application/pgp-signature
 
-As I have no experience with MTD devices, I would appreciate a reference to
-their workings... All that I know is that all my /dev/mtd* devices are gone
-if I boot a 2.6.29* kernel.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Of course, I can do a git bisect process (since the MTD subsystem doesn't
-work as it did in the past even if I enable PHYMAP_COMPAT and put the same
-settings there, quite unfortunately).
+iEYEARECAAYFAkn2fWIACgkQjjKRsyhoI8xcvACfeUQWp1Hu5Vw1U2SThftyDp7P
+CHYAnjvwL9UdUvyVXsr+9VsPddi84tpb
+=w57Q
+-----END PGP SIGNATURE-----
 
-> Also, can you break this defconfig update into two patches.  1. that  
-> just updates to 2.6.30-rc3 (or latest) and 2. that makes the various  
-> changes you've listed above.
-
-No problems with that. I will do that ASAP. Thanks for your kind comments.
-
-
-Regards, Rogério Brito.
-
-P.S.: Guennadi, did you see any regressions with your linkstation/kurobox
-HG or whatever device you have?
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+--Signature=_Tue__28_Apr_2009_13_52_02_+1000_EYFjHkyClVVtNj3u--
