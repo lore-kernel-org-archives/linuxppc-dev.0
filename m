@@ -1,35 +1,23 @@
-Return-Path: <tabbott@MIT.EDU>
-Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
-	[18.7.7.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DD0B0DDEDD
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 03:06:29 +1000 (EST)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH v2 11/15] powerpc: share .data output section definition
-	between 32 and 64 bits.
-Date: Tue, 28 Apr 2009 13:00:58 -0400
-Message-Id: <1240938062-3264-12-git-send-email-tabbott@mit.edu>
-In-Reply-To: <1240938062-3264-11-git-send-email-tabbott@mit.edu>
-References: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-2-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-3-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-4-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-5-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-6-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-7-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-8-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-9-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-10-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-11-git-send-email-tabbott@mit.edu>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>, Jeff Arnold <jbarnold@mit.edu>,
-	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-	Anders Kaseorg <andersk@mit.edu>, linuxppc-dev@ozlabs.org,
-	Paul Mundt <lethal@linux-sh.org>,
-	Paul Mackerras <paulus@samba.org>, Tim Abbott <tabbott@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Waseem Daher <wdaher@mit.edu>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp2.netcologne.de (smtp2.netcologne.de [194.8.194.112])
+	by ozlabs.org (Postfix) with ESMTP id A1727DDEF1
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 03:55:34 +1000 (EST)
+Received: from antares (xdsl-87-79-53-95.netcologne.de [87.79.53.95])
+	by smtp2.netcologne.de (Postfix) with ESMTP id EE3FB4224
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 19:55:27 +0200 (MEST)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id D4F23BA03B
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 19:55:27 +0200 (CEST)
+Date: Tue, 28 Apr 2009 19:55:17 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: How to use Localbus on 5200B w/ 2.6.29.1
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <fa686aa40904271036n5c610fdehe1c7906fff2b893b@mail.gmail.com>
+	(from grant.likely@secretlab.ca on Mon Apr 27 19:36:58 2009)
+Message-Id: <1240941326.3710.0@antares>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-7BMs2DyjpFCNq7gi4CLL"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,45 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since upcoming changes will add several more common pieces of code
-between the 32-bit and 64-bit powerpc architectures, it seems best to
-unify these two blocks.
+--=-7BMs2DyjpFCNq7gi4CLL
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
----
- arch/powerpc/kernel/vmlinux.lds.S |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+Hi Grant:
 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index a047a6c..47899b0 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -220,20 +220,19 @@ SECTIONS
- 	. = ALIGN(PAGE_SIZE);
- 	_sdata = .;
- 
--#ifdef CONFIG_PPC32
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
- 		DATA_DATA
-+#ifdef CONFIG_PPC32
- 		*(.sdata)
- 		*(.got.plt) *(.got)
--	}
- #else
--	.data : AT(ADDR(.data) - LOAD_OFFSET) {
--		DATA_DATA
- 		*(.data.rel*)
- 		*(.toc1)
- 		*(.branch_lt)
-+#endif
- 	}
- 
-+#ifndef CONFIG_PPC32
- 	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
- 		*(.opd)
- 	}
--- 
-1.6.2.1
+Am 27.04.09 19:36 schrieb(en) Grant Likely:
+> For completeness use: compatible =3D =20
+> "fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus";  Then it will work.
+
+I doesn't.  I had to add "fsl,lpb", without no localbus nodes show up.  =20
+The file arch/powerpc/platforms/52xx/mpc52xx_common.c lists only =20
+"fsl,lpb"  as "compatible".  Or did I miss something here?
+
+> If this is on CS3, then reg should be:
+>                reg =3D <3 0x0 0x100>;            // 256 Bytes, 32 used
+
+Ouch.  Sorry, that was the error.  Works perfectly now...
+
+Thanks a lot for your help,
+Albrecht.
+
+--=-7BMs2DyjpFCNq7gi4CLL
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQBJ90MOn/9unNAn/9ERAp5vAKC45bnaBRr2OGnzj7hxHy2NgRMEqACdGAcp
+N0cpIFBQpxkRf4HO4Cb98FM=
+=+0d7
+-----END PGP SIGNATURE-----
+
+--=-7BMs2DyjpFCNq7gi4CLL--
