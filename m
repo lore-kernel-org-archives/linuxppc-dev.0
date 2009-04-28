@@ -1,17 +1,33 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.234])
-	by ozlabs.org (Postfix) with ESMTP id D850FDDDA2
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 02:50:19 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f9so481050rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 09:50:18 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc: Update MPC5xxx and Xilinx Virtex maintainer entries
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, tnt@246tNt.com
-Date: Tue, 28 Apr 2009 10:50:15 -0600
-Message-ID: <20090428165015.1410.47926.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <tabbott@MIT.EDU>
+Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
+	[18.7.7.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 30D26DDEE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 03:01:23 +1000 (EST)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH v2 10/15] powerpc: Remove unused __page_aligned macro.
+Date: Tue, 28 Apr 2009 13:00:57 -0400
+Message-Id: <1240938062-3264-11-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1240938062-3264-10-git-send-email-tabbott@mit.edu>
+References: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
+	<1240938062-3264-2-git-send-email-tabbott@mit.edu>
+	<1240938062-3264-3-git-send-email-tabbott@mit.edu>
+	<1240938062-3264-4-git-send-email-tabbott@mit.edu>
+	<1240938062-3264-5-git-send-email-tabbott@mit.edu>
+	<1240938062-3264-6-git-send-email-tabbott@mit.edu>
+	<1240938062-3264-7-git-send-email-tabbott@mit.edu>
+	<1240938062-3264-8-git-send-email-tabbott@mit.edu>
+	<1240938062-3264-9-git-send-email-tabbott@mit.edu>
+	<1240938062-3264-10-git-send-email-tabbott@mit.edu>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, Jeff Arnold <jbarnold@mit.edu>,
+	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+	Anders Kaseorg <andersk@mit.edu>, linuxppc-dev@ozlabs.org,
+	Paul Mundt <lethal@linux-sh.org>,
+	Paul Mackerras <paulus@samba.org>, Tim Abbott <tabbott@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Waseem Daher <wdaher@mit.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,41 +37,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-
-- Add git tree URLs
-- Drop Sylvain from the 5xxx maintainers list.  He hasn't been active
-  for a while now.
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 ---
+ arch/powerpc/include/asm/page_64.h |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
- MAINTAINERS |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ef03abe..4a8d367 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3434,11 +3434,10 @@ L:	linuxppc-dev@ozlabs.org
- S:	Maintained
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index 043bfdf..20f9c74 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -152,14 +152,6 @@ do {						\
  
- LINUX FOR POWERPC EMBEDDED MPC5XXX
--P:	Sylvain Munaut
--M:	tnt@246tNt.com
- P:	Grant Likely
- M:	grant.likely@secretlab.ca
- L:	linuxppc-dev@ozlabs.org
-+T:	git git://git.secretlab.ca/git/linux-2.6.git
- S:	Maintained
+ #endif /* !CONFIG_HUGETLB_PAGE */
  
- LINUX FOR POWERPC EMBEDDED PPC4XX
-@@ -3456,6 +3455,7 @@ P:	Grant Likely
- M:	grant.likely@secretlab.ca
- W:	http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
- L:	linuxppc-dev@ozlabs.org
-+T:	git git://git.secretlab.ca/git/linux-2.6.git
- S:	Maintained
- 
- LINUX FOR POWERPC EMBEDDED PPC8XX
+-#ifdef MODULE
+-#define __page_aligned __attribute__((__aligned__(PAGE_SIZE)))
+-#else
+-#define __page_aligned \
+-	__attribute__((__aligned__(PAGE_SIZE), \
+-		__section__(".data.page_aligned")))
+-#endif
+-
+ #define VM_DATA_DEFAULT_FLAGS \
+ 	(test_thread_flag(TIF_32BIT) ? \
+ 	 VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
+-- 
+1.6.2.1
