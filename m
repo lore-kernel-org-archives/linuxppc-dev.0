@@ -1,19 +1,21 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 85D1CDDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 15:55:22 +1000 (EST)
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id AB25FDDDFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 15:59:44 +1000 (EST)
+Message-ID: <49F68943.3090800@denx.de>
+Date: Tue, 28 Apr 2009 06:42:43 +0200
+From: Heiko Schocher <hs@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18934.39491.9616.529066@cargo.ozlabs.ibm.com>
-Date: Tue, 28 Apr 2009 15:55:15 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] 83xx: add support for the kmeter1 board.
+References: <49F00605.1080605@denx.de>
+	<6B76A454-649E-408C-A8DF-AAEEE6011929@kernel.crashing.org>
+	<49F544DE.1010307@denx.de>
+	<20090427180503.GB10292@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20090427180503.GB10292@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Hello Scott,
 
-Please pull from the 'merge' branch of
+Scott Wood wrote:
+> On Mon, Apr 27, 2009 at 07:38:38AM +0200, Heiko Schocher wrote:
+>> 1) add in the soc node an "errata" node and in this "errata" node
+>>    we can add all CPU specific errata as an example the qe_enet10
+>>    errata, which above code covers:
+> 
+> What about errata discovered after the device tree is deployed?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Didn;t know that there are such errata. Ok, this is a problem.
 
-to get a collection of bug fixes for powerpc.
+>>         soc8360@e0000000 {
+>> 	[...]
+>>                 errata {
+>>                         device_type = "errata";
+> 
+> device_type is deprecated except for a couple of legacy uses.  Please do
+> not add new ones.
 
-Thanks,
-Paul.
+Ok.
 
- MAINTAINERS                           |    2 +
- arch/powerpc/boot/4xx.c               |   56 +++++++++++++++++++++++++--------
- arch/powerpc/boot/dts/gef_ppc9a.dts   |    1 +
- arch/powerpc/include/asm/elf.h        |    1 +
- arch/powerpc/include/asm/mmu.h        |    6 ----
- arch/powerpc/include/asm/ppc-opcode.h |   11 +-----
- arch/powerpc/kernel/cputable.c        |    2 +
- arch/powerpc/mm/tlb_nohash_low.S      |   16 +--------
- arch/powerpc/platforms/cell/Kconfig   |    5 ++-
- arch/powerpc/platforms/ps3/setup.c    |    4 --
- 10 files changed, 54 insertions(+), 50 deletions(-)
+>>                         compatible = "fsl,mpc83xx_errata";
+> 
+> To be bound to by an "errata driver"? :-P
 
-Geoff Levand (1):
-      powerpc/ps3: Fix build error on UP
+Why not ;-) ?
 
-Josh Boyer (1):
-      maintainers: Fix PowerPC 4xx git tree
+>>                         #address-cells = <1>;
+>>                         #size-cells = <1>;
+>>
+>>                         qe_enet10@14a8 {
+>>                                 device_type = "errata";
+>>                                 compatible = "fsl,mpc83xx_errata_qe_enet10";
+>>                                 reg = <0x14a8 0x08>;
+> 
+> But that register is part of the "QE parallel I/O port" block (even if it
+> happens to be undocumented within that block), not part of the "QE ENET10
+> erratum" block.  The device tree describes the hardware, not what you
+> want to do with it.
 
-Kumar Gala (2):
-      Revert "powerpc: Add support for early tlbilx opcode"
-      powerpc: ppc32 needs elf_read_implies_exec()
+Hmm.. isn;t this an errata for a buggy hardware? Why not describing this
+in the dts?
 
-Martyn Welch (1):
-      powerpc/86xx: Add device_type entry to soc for ppc9a
+> The presence of the erratum itself is indicated by the presence of the
+> buggy device, possibly in conjunction with SVR if the device tree is not
+> specific enough.
 
-Michael Ellerman (1):
-      powerpc/cell: Select PCI for IBM_CELL_BLADE AND CELLEB
+Ah, Ok, that was just an idea ... so, where and how to solve the qe_enet10
+errata without using get_immrbase() (and I vote not to solve it as it
+actuall is in board specific code, maybe as i proposed in an earlier mail
+in the ucc_geth.c driver?)?
 
-Stephen Rothwell (1):
-      powerpc: fix for long standing bug noticed by gcc 4.4.0
-
-Valentine Barshak (1):
-      powerpc/44x: Correct memory size calculation for denali-based boards
+bye
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
