@@ -1,18 +1,22 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id A07ABDDDF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 18:33:22 +1000 (EST)
-Date: Tue, 28 Apr 2009 10:35:28 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please revert edada399 and 9203fc9c
-Message-ID: <20090428083528.GA17622@uranus.ravnborg.org>
-References: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 91847DDD1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 19:01:19 +1000 (EST)
+Date: Tue, 28 Apr 2009 02:01:09 -0700 (PDT)
+Message-Id: <20090428.020109.216217114.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Subject: Re: "leds: Add openfirmware platform device support" breaks sparc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <fa686aa40904272059q604d61c5u1fe584a2166545f1@mail.gmail.com>
+References: <20090303.163713.131742043.davem@davemloft.net>
+	<20090427152051.5067e888.akpm@linux-foundation.org>
+	<fa686aa40904272059q604d61c5u1fe584a2166545f1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Tim Abbott <tabbott@MIT.EDU>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: monstr@monstr.eu, linuxppc-dev@ozlabs.org, rpurdie@linux.intel.com,
+	smaclennan@pikatech.com, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, tpiepho@freescale.com,
+	john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 28, 2009 at 02:56:33PM +1000, Paul Mackerras wrote:
-> Linus,
-> 
-> Please revert commits edada399 ("powerpc: Use TEXT_TEXT macro in
-> linker script.") and 9203fc9c ("powerpc: Use __REF macro instead of
-> old .text.init.refok."), which depends on edada399.
-> 
-> Commit edada399 breaks the build because it moves the __ftr_alt_*
-> sections of a file away from the .text section, causing link failures
-> due to relative conditional branch targets being too far away from the
-> branch instructions.  This happens on pretty much all 64-bit powerpc
-> configs.
-> 
-> Clearly these patches were never even build-tested.  They were never
-> acked by the powerpc maintainer (Ben) - because he was on vacation -
-> and they weren't sent to the deputy maintainer (me) or the relevant
-> mailing list (linuxppc-dev).
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 27 Apr 2009 21:59:39 -0600
 
-This is partly my fault :-(
-I acked them as I did not see the issue with conditional branches.
-Could I ask you to add a comment to the lds file about this.
+>     of: make of_(un)register_platform_driver common code.
+> 
+>     Some drivers using of_register_platform_driver() wrapper break on sparc
+>     because the wrapper isn't in the header file.  This patch moves it from
+>     Microblaze and PowerPC implementations and makes it common code.
+> 
+>     Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-	Sam
+Looks great:
+
+Acked-by: David S. Miller <davem@davemloft.net>
