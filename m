@@ -3,14 +3,15 @@ Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
 	[18.7.7.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 78E80DDEEA
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 03:04:17 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id DD0B0DDEDD
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 03:06:29 +1000 (EST)
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH v2 12/15] powerpc: Use macros for .data.page_aligned section.
-Date: Tue, 28 Apr 2009 13:00:59 -0400
-Message-Id: <1240938062-3264-13-git-send-email-tabbott@mit.edu>
-In-Reply-To: <1240938062-3264-12-git-send-email-tabbott@mit.edu>
+Subject: [PATCH v2 11/15] powerpc: share .data output section definition
+	between 32 and 64 bits.
+Date: Tue, 28 Apr 2009 13:00:58 -0400
+Message-Id: <1240938062-3264-12-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1240938062-3264-11-git-send-email-tabbott@mit.edu>
 References: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
 	<1240938062-3264-2-git-send-email-tabbott@mit.edu>
 	<1240938062-3264-3-git-send-email-tabbott@mit.edu>
@@ -22,7 +23,6 @@ References: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
 	<1240938062-3264-9-git-send-email-tabbott@mit.edu>
 	<1240938062-3264-10-git-send-email-tabbott@mit.edu>
 	<1240938062-3264-11-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-12-git-send-email-tabbott@mit.edu>
 Cc: Denys Vlasenko <vda.linux@googlemail.com>, Jeff Arnold <jbarnold@mit.edu>,
 	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
 	Anders Kaseorg <andersk@mit.edu>, linuxppc-dev@ozlabs.org,
@@ -39,90 +39,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-.data.page_aligned should not need a separate output section, so as
-part of this cleanup I moved into the .data output section in the
-linker scripts in order to eliminate unnecessary references to the
-section name.
-
-Note that this change moves the page-aligned data inside _edata.
-Since it _is_ data, I suspect having page-aligned data outside _edata
-was a bug.  Please comment if it is not.
+Since upcoming changes will add several more common pieces of code
+between the 32-bit and 64-bit powerpc architectures, it seems best to
+unify these two blocks.
 
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@ozlabs.org
 ---
- arch/powerpc/kernel/vdso.c                  |    2 +-
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
- arch/powerpc/kernel/vmlinux.lds.S           |    6 +-----
- 4 files changed, 6 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/vmlinux.lds.S |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index ad06d5c..841910a 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -74,7 +74,7 @@ static int vdso_ready;
- static union {
- 	struct vdso_data	data;
- 	u8			page[PAGE_SIZE];
--} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-+} vdso_data_store __page_aligned_data
- struct vdso_data *vdso_data = &vdso_data_store.data;
- 
- /* Format of the patch table */
-diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-index 556f0ca..6e8f507 100644
---- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso32_start, vdso32_end
- 	.balign PAGE_SIZE
-diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-index 0529cb9..b8553d6 100644
---- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso64_start, vdso64_end
- 	.balign PAGE_SIZE
 diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 47899b0..d3dcea0 100644
+index a047a6c..47899b0 100644
 --- a/arch/powerpc/kernel/vmlinux.lds.S
 +++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -221,6 +221,7 @@ SECTIONS
+@@ -220,20 +220,19 @@ SECTIONS
+ 	. = ALIGN(PAGE_SIZE);
  	_sdata = .;
  
+-#ifdef CONFIG_PPC32
  	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-+		PAGE_ALIGNED_DATA
  		DATA_DATA
- #ifdef CONFIG_PPC32
++#ifdef CONFIG_PPC32
  		*(.sdata)
-@@ -258,11 +259,6 @@ SECTIONS
- 		*(.data.init_task)
+ 		*(.got.plt) *(.got)
+-	}
+ #else
+-	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+-		DATA_DATA
+ 		*(.data.rel*)
+ 		*(.toc1)
+ 		*(.branch_lt)
++#endif
  	}
  
--	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--		*(.data.page_aligned)
--	}
--
- 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
- 		*(.data.cacheline_aligned)
++#ifndef CONFIG_PPC32
+ 	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
+ 		*(.opd)
  	}
 -- 
 1.6.2.1
