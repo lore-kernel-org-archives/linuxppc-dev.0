@@ -3,18 +3,16 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1C9D6DDE0A
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 22:40:34 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 70EFDDDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 22:45:03 +1000 (EST)
+To: Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Neuling <mikey@neuling.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc: Add 2.06 tlbie mnemonics 
-In-reply-to: <B5DD5BF4-8EFF-472F-9D96-DE2941AAD70B@kernel.crashing.org> 
-References: <20090428050338.221EF1EA0F4@localhost.localdomain>
-	<B5DD5BF4-8EFF-472F-9D96-DE2941AAD70B@kernel.crashing.org>
-Date: Tue, 28 Apr 2009 22:40:30 +1000
-Message-ID: <30284.1240922430@neuling.org>
-Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org
+Date: Tue, 28 Apr 2009 22:45:02 +1000
+Subject: [PATCH 0/2] powerpc: tlbie implementation for PowerPC ISA 2.06
+In-Reply-To: <B5DD5BF4-8EFF-472F-9D96-DE2941AAD70B@kernel.crashing.org>
+Message-Id: <1240922702.557324.191572776427.qpush@pale>
+Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +22,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar,
+These patches implement the PowerPC ISA 2.06 tlbie mnemonics
 
-> > From: Milton Miller <miltonm@bga.com>
-> >
-> > This adds the PowerPC 2.06 tlbie mnemonics and keeps backwards
-> > compatibilty for CPUs before 2.06.
-> >
-> > Only useful for bare metal systems.
-> >
-> > Signed-off-by: Milton Miller <miltonm@bga.com>
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> >
-> > arch/powerpc/include/asm/ppc-opcode.h |    3 +++
-> > arch/powerpc/kernel/cputable.c        |    6 ++++--
-> > arch/powerpc/mm/hash_native_64.c      |   11 +++++++++--
-> 
-> did you miss the update to mmu.h to add MMU_FTR_TLBIE_206?
-
-Yep a missing quilt add.  Thanks
-
-> 
-> > 3 files changed, 16 insertions(+), 4 deletions(-)
-> >
-> > Index: linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-> > ===================================================================
-> > --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/ppc-opcode.h
-> > +++ linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-> > @@ -79,4 +79,7 @@
-> > #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
-> > 					__PPC_WC(w))
-> >
-> > +#define TLBIE(lp,a) \
-> > +	stringify_in_c(.long 0x7c000264 | ((a) << 11) | ((lp) << 21))
-> > +
-> 
-> Can you match the format of the file and define a PPC_INST_TLBIE
-
-Sorry, I obviously just stuck my crap in there without looking at the
-nice macros I could use.
-
-Repost coming.
-
-Mikey
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+--- 
+This version attempts to address issues raised by Kumar.
+- Add missing mmu.h
+- Follow the bouncing ball in ppc-opcode.h for #define PPC_TLBIE 
