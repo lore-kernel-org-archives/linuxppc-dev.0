@@ -1,27 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2EB57DDED7
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 02:06:01 +1000 (EST)
-Message-Id: <982CAD05-5F4A-4A33-B991-16162CFFE1D8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-In-Reply-To: <20090428144814.GA14926@ime.usp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] powerpc: minimizing the configuration of
-	linkstation_defconfig
-Date: Tue, 28 Apr 2009 09:54:27 -0500
-References: <20090424065816.GA15525@ime.usp.br>
-	<Pine.LNX.4.64.0904242158210.8309@axis700.grange>
-	<20090424223355.GB7858@ime.usp.br>
-	<2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org>
-	<20090428022711.GA30538@ime.usp.br>
-	<F78629F9-59D2-4974-8461-06B7FAC2625D@kernel.crashing.org>
-	<20090428144814.GA14926@ime.usp.br>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D4B65DDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 02:36:01 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n3SGZeQB018514
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 09:35:51 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n3SGZeCQ029977
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 11:35:40 -0500 (CDT)
+Date: Tue, 28 Apr 2009 11:35:40 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH] 83xx: add support for the kmeter1 board.
+Message-ID: <20090428163540.GA2193@ld0162-tx32.am.freescale.net>
+References: <49F00605.1080605@denx.de>
+	<6B76A454-649E-408C-A8DF-AAEEE6011929@kernel.crashing.org>
+	<49F544DE.1010307@denx.de>
+	<20090427180503.GB10292@ld0162-tx32.am.freescale.net>
+	<49F68943.3090800@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49F68943.3090800@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,19 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Apr 28, 2009 at 06:42:43AM +0200, Heiko Schocher wrote:
+> Scott Wood wrote:
+> > On Mon, Apr 27, 2009 at 07:38:38AM +0200, Heiko Schocher wrote:
+> >> 1) add in the soc node an "errata" node and in this "errata" node
+> >>    we can add all CPU specific errata as an example the qe_enet10
+> >>    errata, which above code covers:
+> > 
+> > What about errata discovered after the device tree is deployed?
+> 
+> Didn;t know that there are such errata. Ok, this is a problem.
 
-On Apr 28, 2009, at 9:48 AM, Rog=E9rio Brito wrote:
+Bugs can be discovered at any point in time.
 
-> On Apr 28 2009, Kumar Gala wrote:
->> I'm pretty sure we need this for old initrd style ramdisks so I'd =20
->> prefer
->> we leave it enabled.
->
-> Oh, for oldstyle it is needed. You're right. It is better to keep it =20=
+> > The presence of the erratum itself is indicated by the presence of the
+> > buggy device, possibly in conjunction with SVR if the device tree is not
+> > specific enough.
+> 
+> Ah, Ok, that was just an idea ... so, where and how to solve the qe_enet10
+> errata without using get_immrbase()
 
-> in
-> the defconfig. Just drop the hunk from the patch that I sent you.
+Get the register block address from the par_io node.
 
-just send a new patch w/this fixed.
-
-- k=
+-Scott
