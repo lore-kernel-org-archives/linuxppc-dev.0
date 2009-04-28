@@ -1,13 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 18F0DDDEEF
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 01:18:05 +1000 (EST)
-Date: Wed, 29 Apr 2009 01:17:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tim Abbott <tabbott@MIT.EDU>
+Return-Path: <tabbott@MIT.EDU>
+Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
+	[18.7.7.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 20DF7DDEDA
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 01:23:19 +1000 (EST)
+Date: Tue, 28 Apr 2009 11:13:48 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: [PATCH 11/14] powerpc: Use macros for .data.page_aligned section.
-Message-Id: <20090429011756.6cccbc7d.sfr@canb.auug.org.au>
 In-Reply-To: <20090429010753.851e0f59.sfr@canb.auug.org.au>
+Message-ID: <alpine.DEB.1.10.0904281110350.15450@vinegar-pot.mit.edu>
 References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
 	<1240864388-26315-2-git-send-email-tabbott@mit.edu>
 	<1240864388-26315-3-git-send-email-tabbott@mit.edu>
@@ -21,17 +24,15 @@ References: <1240864388-26315-1-git-send-email-tabbott@mit.edu>
 	<1240864388-26315-11-git-send-email-tabbott@mit.edu>
 	<1240864388-26315-12-git-send-email-tabbott@mit.edu>
 	<20090429010753.851e0f59.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT"
-Cc: Jeff, Denys Vlasenko <vda.linux@googlemail.com>,
-	Sam Ravnborg <sam@ravnborg.org>, Waseem,
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, Sam Ravnborg <sam@ravnborg.org>,
+	Jeff Arnold <jbarnold@mit.edu>,
 	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-	Arnold <jbarnold@mit.edu>, Anders Kaseorg <andersk@mit.edu>,
-	linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>,
-	Tim Abbott <tabbott@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>, Daher <wdaher@mit.edu>
+	Anders Kaseorg <andersk@mit.edu>, linuxppc-dev@ozlabs.org,
+	Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Waseem Daher <wdaher@mit.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,33 +42,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 29 Apr 2009, Stephen Rothwell wrote:
 
-On Wed, 29 Apr 2009 01:07:53 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
 > This moves the page_aligned section from a common part of the
 > vmlinux.lds to a 32 bit only part.  Was that intentional?
 
-Just saw your later patches, so ignore this.
+No.  See my reply to this patch from last night 
+<http://lkml.org/lkml/2009/4/28/16> and the revised pair of patches in 
+reply to that message that replace PATCH 11/14.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkn3HiQACgkQjjKRsyhoI8wYnQCgtVLjC0ymSa8ExUYejFYABlnq
-xh4AnjxqlGPU3jrnx6yxubkifNykP7IJ
-=eakv
------END PGP SIGNATURE-----
-
---Signature=_Wed__29_Apr_2009_01_17_56_+1000_7t_2EKfvSxU9SVmT--
+	-Tim Abbott
