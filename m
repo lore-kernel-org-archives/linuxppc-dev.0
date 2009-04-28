@@ -3,15 +3,15 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F1E89DDE0E
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 22:45:03 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 3FABADDE25
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2009 22:45:04 +1000 (EST)
 To: Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Neuling <mikey@neuling.org>
-Date: Tue, 28 Apr 2009 22:45:02 +1000
-Subject: [PATCH 1/2] powerpc: Enable MMU feature sections for inline asm
+Date: Tue, 28 Apr 2009 22:45:03 +1000
+Subject: [PATCH 2/2] powerpc: Add 2.06 tlbie mnemonics
 In-Reply-To: <1240922702.557324.191572776427.qpush@pale>
-Message-Id: <20090428124503.508D8123B2@localhost.localdomain>
+Message-Id: <20090428124503.70AF1123B3@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,65 +24,127 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Milton Miller <miltonm@bga.com>
 
-powerpc: Enable MMU feature sections for inline asm
+This adds the PowerPC 2.06 tlbie mnemonics and keeps backwards
+compatibilty for CPUs before 2.06.
 
-This adds the ability to do MMU feature sections for inline asm.
+Only useful for bare metal systems.  
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/include/asm/feature-fixups.h |   25 ++++++++++++++++++++-----
- 1 file changed, 20 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/mmu.h        |    5 +++++
+ arch/powerpc/include/asm/ppc-opcode.h |    4 ++++
+ arch/powerpc/kernel/cputable.c        |    6 ++++--
+ arch/powerpc/mm/hash_native_64.c      |   13 +++++++++++--
+ 4 files changed, 24 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/include/asm/feature-fixups.h
+Index: linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/feature-fixups.h
-+++ linux-2.6-ozlabs/arch/powerpc/include/asm/feature-fixups.h
-@@ -8,8 +8,6 @@
-  * 2 of the License, or (at your option) any later version.
+--- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/mmu.h
++++ linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
+@@ -58,6 +58,11 @@
   */
+ #define MMU_FTR_TLBILX_EARLY_OPCODE	ASM_CONST(0x00400000)
  
--#ifdef __ASSEMBLY__
--
- /*
-  * Feature section common macros
-  *
-@@ -23,10 +21,12 @@
- /* 64 bits kernel, 32 bits code (ie. vdso32) */
- #define FTR_ENTRY_LONG		.llong
- #define FTR_ENTRY_OFFSET	.long 0xffffffff; .long
-+#elif defined(CONFIG_PPC64)
-+#define FTR_ENTRY_LONG		.llong
-+#define FTR_ENTRY_OFFSET	.llong
- #else
--/* 64 bit kernel 64 bit code, or 32 bit kernel 32 bit code */
--#define FTR_ENTRY_LONG		PPC_LONG
--#define FTR_ENTRY_OFFSET	PPC_LONG
-+#define FTR_ENTRY_LONG		.long
-+#define FTR_ENTRY_OFFSET	.long
- #endif
++/* This indicates that the processor uses the ISA 2.06 server tlbie
++ * mnemonics
++ */
++#define MMU_FTR_TLBIE_206		ASM_CONST(0x00800000)
++
+ #ifndef __ASSEMBLY__
+ #include <asm/cputable.h>
  
- #define START_FTR_SECTION(label)	label##1:
-@@ -141,6 +141,21 @@ label##5:					       	\
- #define ALT_FW_FTR_SECTION_END_IFCLR(msk)	\
- 	ALT_FW_FTR_SECTION_END_NESTED_IFCLR(msk, 97)
+Index: linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/ppc-opcode.h
++++ linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
+@@ -46,10 +46,12 @@
+ #define PPC_INST_TLBILX			0x7c000024
+ #define PPC_INST_TLBILX_EARLY		0x7c000626
+ #define PPC_INST_WAIT			0x7c00007c
++#define PPC_INST_TLBIE			0x7c000264
  
-+#ifndef __ASSEMBLY__
-+
-+#define ASM_MMU_FTR_IF_X(string, estring, msk, val)		\
-+	stringify_in_c(BEGIN_MMU_FTR_SECTION)			\
-+	string "; "						\
-+	stringify_in_c(MMU_FTR_SECTION_ELSE)			\
-+	estring "; "						\
-+	stringify_in_c(ALT_MMU_FTR_SECTION_END((msk), (val)))
-+
-+#define ASM_MMU_FTR_IFSET(string, estring, msk)			\
-+	ASM_MMU_FTR_IF_X(string, estring, (msk), (msk))
-+
-+#define ASM_MMU_FTR_IFCLR(string, estring, msk)			\
-+	ASM_MMU_FTR_IF_X(string, estring, (msk), 0)
-+
- #endif /* __ASSEMBLY__ */
+ /* macros to insert fields into opcodes */
+ #define __PPC_RA(a)	((a & 0x1f) << 16)
+ #define __PPC_RB(b)	((b & 0x1f) << 11)
++#define __PPC_RS(s)	((s & 0x1f) << 21)
+ #define __PPC_T_TLB(t)	((t & 0x3) << 21)
+ #define __PPC_WC(w)	((w & 0x3) << 21)
  
- /* LWSYNC feature sections */
+@@ -78,5 +80,7 @@
+ #define PPC_TLBILX_VA_EARLY(a, b)	PPC_TLBILX_EARLY(3, a, b)
+ #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
+ 					__PPC_WC(w))
++#define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
++					       __PPC_RB(a) | __PPC_RS(lp))
+ 
+ #endif /* _ASM_POWERPC_PPC_OPCODE_H */
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/cputable.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/cputable.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/cputable.c
+@@ -425,7 +425,8 @@ static struct cpu_spec __initdata cpu_sp
+ 		.cpu_name		= "POWER7 (architected)",
+ 		.cpu_features		= CPU_FTRS_POWER7,
+ 		.cpu_user_features	= COMMON_USER_POWER7,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE,
++		.mmu_features		= MMU_FTR_HPTE_TABLE |
++			MMU_FTR_TLBIE_206,
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.machine_check		= machine_check_generic,
+@@ -438,7 +439,8 @@ static struct cpu_spec __initdata cpu_sp
+ 		.cpu_name		= "POWER7 (raw)",
+ 		.cpu_features		= CPU_FTRS_POWER7,
+ 		.cpu_user_features	= COMMON_USER_POWER7,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE,
++		.mmu_features		= MMU_FTR_HPTE_TABLE |
++			MMU_FTR_TLBIE_206,
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
+Index: linux-2.6-ozlabs/arch/powerpc/mm/hash_native_64.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/hash_native_64.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/hash_native_64.c
+@@ -27,6 +27,7 @@
+ #include <asm/cputable.h>
+ #include <asm/udbg.h>
+ #include <asm/kexec.h>
++#include <asm/ppc-opcode.h>
+ 
+ #ifdef DEBUG_LOW
+ #define DBG_LOW(fmt...) udbg_printf(fmt)
+@@ -49,14 +50,21 @@ static inline void __tlbie(unsigned long
+ 	case MMU_PAGE_4K:
+ 		va &= ~0xffful;
+ 		va |= ssize << 8;
+-		asm volatile("tlbie %0,0" : : "r" (va) : "memory");
++ 		asm volatile(ASM_MMU_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0),
++					       %2)
++			     : : "r" (va), "r"(0), "i" (MMU_FTR_TLBIE_206)
++			     : "memory");
+ 		break;
+ 	default:
+ 		penc = mmu_psize_defs[psize].penc;
+ 		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
+ 		va |= penc << 12;
+ 		va |= ssize << 8;
+-		asm volatile("tlbie %0,1" : : "r" (va) : "memory");
++		va |= 1; /* L */
++ 		asm volatile(ASM_MMU_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0),
++					       %2)
++			     : : "r" (va), "r"(0), "i" (MMU_FTR_TLBIE_206)
++			     : "memory");
+ 		break;
+ 	}
+ }
+@@ -80,6 +88,7 @@ static inline void __tlbiel(unsigned lon
+ 		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
+ 		va |= penc << 12;
+ 		va |= ssize << 8;
++		va |= 1; /* L */
+ 		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
+ 			     : : "r"(va) : "memory");
+ 		break;
