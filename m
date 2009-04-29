@@ -1,39 +1,20 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
+Return-Path: <mikey@neuling.org>
 Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D3E6DDDED9
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 08:52:17 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18935.34966.533224.549662@cargo.ozlabs.ibm.com>
-Date: Wed, 29 Apr 2009 08:52:06 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Tim Abbott <tabbott@MIT.EDU>
-Subject: Re: [PATCH v2 12/15] powerpc: Use macros for .data.page_aligned
-	section.
-In-Reply-To: <1240938062-3264-13-git-send-email-tabbott@mit.edu>
-References: <1240938062-3264-1-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-2-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-3-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-4-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-5-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-6-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-7-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-8-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-9-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-10-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-11-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-12-git-send-email-tabbott@mit.edu>
-	<1240938062-3264-13-git-send-email-tabbott@mit.edu>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>, Sam Ravnborg <sam@ravnborg.org>,
-	Jeff Arnold <jbarnold@mit.edu>,
-	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-	Anders Kaseorg <andersk@mit.edu>, linuxppc-dev@ozlabs.org,
-	Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Waseem Daher <wdaher@mit.edu>
+	by ozlabs.org (Postfix) with ESMTPS id 7AF09DDEE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 10:16:16 +1000 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc: Add 2.06 tlbie mnemonics 
+In-reply-to: <1530CE92-A052-487F-B5D1-643E166068B6@kernel.crashing.org> 
+References: <20090428124503.70AF1123B3@localhost.localdomain>
+	<1530CE92-A052-487F-B5D1-643E166068B6@kernel.crashing.org>
+Date: Wed, 29 Apr 2009 10:16:15 +1000
+Message-ID: <11622.1240964175@neuling.org>
+Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,19 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tim Abbott writes:
+> > Index: linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
+> > ===================================================================
+> > --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/mmu.h
+> > +++ linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
+> > @@ -58,6 +58,11 @@
+> >  */
+> > #define MMU_FTR_TLBILX_EARLY_OPCODE	ASM_CONST(0x00400000)
+> >
+> > +/* This indicates that the processor uses the ISA 2.06 server tlbie
+> > + * mnemonics
+> > + */
+> > +#define MMU_FTR_TLBIE_206		ASM_CONST(0x00800000)
+> > +
+> > #ifndef __ASSEMBLY__
+> > #include <asm/cputable.h>
+> 
+> You aren't going to like me, but I just got rid of  
+> MMU_FTR_TLBILX_EARLY_OPCODE and thus freed up 0x00400000.  So a) patch  
+> will probably bitch when being applied by Ben b) we should use  
+> 0x00400000.
 
-> diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-> index ad06d5c..841910a 100644
-> --- a/arch/powerpc/kernel/vdso.c
-> +++ b/arch/powerpc/kernel/vdso.c
-> @@ -74,7 +74,7 @@ static int vdso_ready;
->  static union {
->  	struct vdso_data	data;
->  	u8			page[PAGE_SIZE];
-> -} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-> +} vdso_data_store __page_aligned_data
-                                        ^
-Surely we need a semicolon here? -------|
+Kuuuuumaaaaar!!!! :-)
 
-Paul.
+> (suggest pulling in paulus/merge as that has the "revert" patch that  
+> removes MMU_FTR_TLBILX_EARLY_OPCODE - and paul's sent a pull request  
+> to linus for it.)
+
+OK, new patches coming.
+
+Mikey
