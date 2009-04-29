@@ -1,20 +1,22 @@
-Return-Path: <mikey@neuling.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7AF09DDEE9
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 10:16:16 +1000 (EST)
-From: Michael Neuling <mikey@neuling.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc: Add 2.06 tlbie mnemonics 
-In-reply-to: <1530CE92-A052-487F-B5D1-643E166068B6@kernel.crashing.org> 
-References: <20090428124503.70AF1123B3@localhost.localdomain>
-	<1530CE92-A052-487F-B5D1-643E166068B6@kernel.crashing.org>
-Date: Wed, 29 Apr 2009 10:16:15 +1000
-Message-ID: <11622.1240964175@neuling.org>
-Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A2D62DDEEC
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 10:25:51 +1000 (EST)
+Date: Tue, 28 Apr 2009 17:22:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please revert edada399 and 9203fc9c
+In-Reply-To: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
+Message-ID: <alpine.LFD.2.00.0904281722180.22156@localhost.localdomain>
+References: <18934.35969.872225.70725@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Tim Abbott <tabbott@MIT.EDU>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > Index: linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
-> > ===================================================================
-> > --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/mmu.h
-> > +++ linux-2.6-ozlabs/arch/powerpc/include/asm/mmu.h
-> > @@ -58,6 +58,11 @@
-> >  */
-> > #define MMU_FTR_TLBILX_EARLY_OPCODE	ASM_CONST(0x00400000)
-> >
-> > +/* This indicates that the processor uses the ISA 2.06 server tlbie
-> > + * mnemonics
-> > + */
-> > +#define MMU_FTR_TLBIE_206		ASM_CONST(0x00800000)
-> > +
-> > #ifndef __ASSEMBLY__
-> > #include <asm/cputable.h>
+
+
+On Tue, 28 Apr 2009, Paul Mackerras wrote:
 > 
-> You aren't going to like me, but I just got rid of  
-> MMU_FTR_TLBILX_EARLY_OPCODE and thus freed up 0x00400000.  So a) patch  
-> will probably bitch when being applied by Ben b) we should use  
-> 0x00400000.
+> And they are clearly not fixes for regressions or serious bugs, so why
+> are these patches going in after -rc3 anyway?
 
-Kuuuuumaaaaar!!!! :-)
+Yeah, my bad. They looked so obviously trivial, but obviously weren't.
 
-> (suggest pulling in paulus/merge as that has the "revert" patch that  
-> removes MMU_FTR_TLBILX_EARLY_OPCODE - and paul's sent a pull request  
-> to linus for it.)
+I'm not taking any more of them.
 
-OK, new patches coming.
-
-Mikey
+		Linus
