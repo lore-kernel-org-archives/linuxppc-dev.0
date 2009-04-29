@@ -1,21 +1,17 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-qy0-f123.google.com (mail-qy0-f123.google.com
-	[209.85.221.123]) by ozlabs.org (Postfix) with ESMTP id 391C7DDE22
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 08:48:36 +1000 (EST)
-Received: by qyk29 with SMTP id 29so3741238qyk.17
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 15:48:35 -0700 (PDT)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <1240859144-20893-1-git-send-email-timur@freescale.com>
-References: <1240859144-20893-1-git-send-email-timur@freescale.com>
-Date: Wed, 29 Apr 2009 17:48:34 -0500
-Message-ID: <ed82fe3e0904291548g88c2ebdo903c179725aa7047@mail.gmail.com>
-Subject: Re: [PATCH v6] introduce macro spin_event_timeout()
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-	benh@kernel.crashing.org, jwboyer@linux.vnet.ibm.com,
-	scottwood@freescale.com
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id CB6D7DDE23
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 09:28:23 +1000 (EST)
+To: Feng Kan <fkan@amcc.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 1/2] Add support for Designware SATA controller driver
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <1241042419-19774-1-git-send-email-fkan@amcc.com>
+References: <1241042419-19774-1-git-send-email-fkan@amcc.com>
+Date: Thu, 30 Apr 2009 01:28:18 +0200
+Message-Id: <20090429232818.A15B683420EE@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +21,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 27, 2009 at 2:05 PM, Timur Tabi <timur@freescale.com> wrote:
-> The macro spin_event_timeout() takes a condition and timeout value
-> (in microseconds) as parameters. =A0It spins until either the condition i=
-s true
-> or the timeout expires. =A0It returns the result of the condition when th=
-e loop
-> was terminated.
->
-> This primary purpose of this macro is to poll on a hardware register unti=
-l a
-> status bit changes. =A0The timeout ensures that the loop still terminates=
- if the
-> bit doesn't change as expected. =A0This macro makes it easier for driver
-> developers to perform this kind of operation properly.
+Dear Feng Kan,
 
-Any comments on this patch?  I'd like to see this macro added to 2.6.31.
+In message <1241042419-19774-1-git-send-email-fkan@amcc.com> you wrote:
+> Signed-off-by: Feng Kan <fkan@amcc.com>
+> ---
+>  drivers/ata/Kconfig    |   76 +-
+>  drivers/ata/Makefile   |    1 +
+>  drivers/ata/sata_dwc.c | 2047 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 2091 insertions(+), 33 deletions(-)
+>  create mode 100644 drivers/ata/sata_dwc.c
+> 
+> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+> index 0bcf264..5321e47 100644
+> --- a/drivers/ata/Kconfig
+> +++ b/drivers/ata/Kconfig
+> @@ -72,56 +72,66 @@ config SATA_FSL
+>  
+>  	  If unsure, say N.
+>  
+> -config ATA_SFF
+> -	bool "ATA SFF support"
+> -	default y
+> +config SATA_DWC
+> +	tristate "DesignWare Cores SATA support"
+> +	depends on 460EX
+>  	help
+> -	  This option adds support for ATA controllers with SFF
+> -	  compliant or similar programming interface.
+> +	  This option enables support for the Synopsys DesignWare Cores SATA
+> +	  controller.
+> +	  It can be found on the AMCC 460EX.
+>  
+> -	  SFF is the legacy IDE interface that has been around since
+> -	  the dawn of time.  Almost all PATA controllers have an
+> -	  SFF interface.  Many SATA controllers have an SFF interface
+> -	  when configured into a legacy compatibility mode.
+> +	  If unsure, say N.
+>  
+> -	  For users with exclusively modern controllers like AHCI,
+> -	  Silicon Image 3124, or Marvell 6440, you may choose to
+> -	  disable this uneeded SFF support.
+> +config ATA_SFF
+> +bool "ATA SFF support"
+> +default y
+> +help
+> +  This option adds support for ATA controllers with SFF
+> +  compliant or similar programming interface.
+>  
+> -	  If unsure, say Y.
+> +  SFF is the legacy IDE interface that has been around since
+> +  the dawn of time.  Almost all PATA controllers have an
+> +  SFF interface.  Many SATA controllers have an SFF interface
+> +  when configured into a legacy compatibility mode.
+> +
+> +  For users with exclusively modern controllers like AHCI,
+> +  Silicon Image 3124, or Marvell 6440, you may choose to
+> +  disable this uneeded SFF support.
+> +
+> +  If unsure, say Y.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+Why are you reformatting exiting, correct help text, into brokenness?
+
+...
+> +static irqreturn_t sata_dwc_isr(int irq, void *dev_instance)
+> +{
+...
+> +		dev_dbg(ap->dev, "%s non-NCQ cmd interrupt, protocol: %s\n",
+> +			__func__, prot_2_txt(qc->tf.protocol));
+> +DRVSTILLBUSY:
+^^^^^^^^^^^^^^^^
+...
+> +PROCESS:  /* process completed commands */
+^^^^^^^^^^^
+
+...
+> +STILLBUSY:
+^^^^^^^^^^^^^
+...
+> +DONE:
+^^^^^^^^
+
+etc.  Please do not use all-caps identifier names (not even for
+labels).
+
+...
+> +/*******************************************************************************
+> + * Function : sata_dwc_port_start
+> + * arguments : struct ata_ioports *port
+> + * Return value : returns 0 if success, error code otherwise
+> + * This function allocates the scatter gather LLI table for AHB DMA
+> + ******************************************************************************/
+
+Here and elsewhere: incorrect multiline comment style.
+
+...
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Mark Miesfeld <mmiesfeld@amcc.com>");
+
+Should not Mark add his Signed-off-by: line, too?
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Conscious is when you are aware of something, and conscience is  when
+you wish you weren't.
