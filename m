@@ -3,15 +3,15 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9A2F5DDF04
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 17:20:41 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 6284ADDDF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 17:27:04 +1000 (EST)
 To: Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Neuling <mikey@neuling.org>
-Date: Wed, 29 Apr 2009 17:20:40 +1000
-Subject: [PATCH 1/2] powerpc: Cleanup macros in ppc-opcode.h
+Date: Wed, 29 Apr 2009 17:27:03 +1000
+Subject: [PATCH 0/2] powerpc: tlbie implementation for PowerPC ISA 2.06
 In-Reply-To: <1240989640.548113.69052602556.qpush@pale>
-Message-Id: <20090429072040.976A41222C@localhost.localdomain>
+Message-Id: <1240990023.559815.441622408876.qpush@pale>
 Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,30 +22,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Macros need to be more braces happy
+These patches implement the PowerPC ISA 2.06 tlbie mnemonics
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-
- arch/powerpc/include/asm/ppc-opcode.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/ppc-opcode.h
-+++ linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-@@ -47,10 +47,10 @@
- #define PPC_INST_WAIT			0x7c00007c
- 
- /* macros to insert fields into opcodes */
--#define __PPC_RA(a)	((a & 0x1f) << 16)
--#define __PPC_RB(b)	((b & 0x1f) << 11)
--#define __PPC_T_TLB(t)	((t & 0x3) << 21)
--#define __PPC_WC(w)	((w & 0x3) << 21)
-+#define __PPC_RA(a)	(((a) & 0x1f) << 16)
-+#define __PPC_RB(b)	(((b) & 0x1f) << 11)
-+#define __PPC_T_TLB(t)	(((t) & 0x3) << 21)
-+#define __PPC_WC(w)	(((w) & 0x3) << 21)
- 
- /* Deal with instructions that older assemblers aren't aware of */
- #define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_INST_DCBAL | \
+--- 
+Built ontop of ppc-opcode cleanup patches
+Renamed somethings to be more logical based on comments from mpe.
