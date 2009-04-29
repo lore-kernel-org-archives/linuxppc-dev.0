@@ -4,13 +4,27 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 53720DDE23
+	by ozlabs.org (Postfix) with ESMTPS id C75D9DDE28
 	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 04:14:29 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n3TIEMh9006697
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 11:14:23 -0700 (MST)
+Received: from r54964-12.am.freescale.net (R54964-12.am.freescale.net
+	[10.29.201.229])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n3TIEKuT018912
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 13:14:22 -0500 (CDT)
 From: Haiying Wang <Haiying.Wang@freescale.com>
 To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
-Subject: [PATCH 1/6] powerpc/85xx: clean up for mpc8568_mds name
-Date: Wed, 29 Apr 2009 14:14:33 -0400
-Message-Id: <1241028878175-git-send-email-Haiying.Wang@freescale.com>
+Subject: [PATCH 6/6] powerpc/85xx: Add MPC8569MDS board support
+Date: Wed, 29 Apr 2009 14:14:38 -0400
+Message-Id: <12410288862240-git-send-email-Haiying.Wang@freescale.com>
+In-Reply-To: <1241028884406-git-send-email-Haiying.Wang@freescale.com>
+References: <1241028878175-git-send-email-Haiying.Wang@freescale.com>
+	<12410288792524-git-send-email-Haiying.Wang@freescale.com>
+	<12410288811793-git-send-email-Haiying.Wang@freescale.com>
+	<1241028883630-git-send-email-Haiying.Wang@freescale.com>
+	<1241028884406-git-send-email-Haiying.Wang@freescale.com>
 Cc: Haiying Wang <Haiying.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,82 +35,577 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Keep an unique machine def for the MPC8568 MDS board to handle some
-subtle differences between the future MDS board. Also set the bcsrs in
-setup_arch() only for mpc8568_mds because other mds has different bcsr settings.
-
 Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |   29 +++++++++++++++--------------
- 1 files changed, 15 insertions(+), 14 deletions(-)
+ arch/powerpc/boot/dts/mpc8569mds.dts      |  514 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |   23 ++
+ 2 files changed, 537 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc8569mds.dts
 
+diff --git a/arch/powerpc/boot/dts/mpc8569mds.dts b/arch/powerpc/boot/dts/mpc8569mds.dts
+new file mode 100644
+index 0000000..3ddd8c3
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8569mds.dts
+@@ -0,0 +1,514 @@
++/*
++ * MPC8569E MDS Device Tree Source
++ *
++ * Copyright (C) 2009 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	model = "MPC8569EMDS";
++	compatible = "fsl,MPC8569EMDS";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	aliases {
++		serial0 = &serial0;
++		serial1 = &serial1;
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		ethernet2 = &enet2;
++		ethernet3 = &enet3;
++		pci1 = &pci1;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,8569@0 {
++			device_type = "cpu";
++			reg = <0x0>;
++			d-cache-line-size = <32>;	// 32 bytes
++			i-cache-line-size = <32>;	// 32 bytes
++			d-cache-size = <0x8000>;		// L1, 32K
++			i-cache-size = <0x8000>;		// L1, 32K
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
++			next-level-cache = <&L2>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++	};
++
++	localbus@e0005000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8569-elbc", "fsl,elbc", "simple-bus";
++		reg = <0 0xe0005000 0 0x1000>;
++		interrupt = <19 2>;
++		interrupt-parent = <&mpic>;
++
++		ranges = <0x0 0x0 0xfe000000 0x02000000
++			  0x1 0x0 0xf8000000 0x00008000
++			  0x2 0x0 0xf0000000 0x04000000
++			  0x4 0x0 0xf8008000 0x00008000
++			  0x5 0x0 0xf8010000 0x00008000>;
++
++		nor@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x02000000>;
++			bank-width = <2>;
++			device-width = <1>;
++		};
++
++		bcsr@1,0 {
++			compatible = "fsl,mpc8569mds-bcsr";
++			reg = <1 0 0x8000>;
++		};
++
++		pib@4,0 {
++			compatible = "fsl,mpc8569mds-pib";
++			reg = <4 0 0x8000>;
++		};
++
++		pib@5,0 {
++			compatible = "fsl,mpc8569mds-pib";
++			reg = <5 0 0x8000>;
++		};
++	};
++
++	soc@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		compatible = "fsl,mpc8569-immr", "simple-bus";
++		ranges = <0x0 0xe0000000 0x100000>;
++		reg = <0xe0000000 0x1000>;
++		bus-frequency = <0>;
++
++		ecm-law@0 {
++			compatible = "fsl,ecm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <10>;
++		};
++
++		ecm@1000 {
++			compatible = "fsl,mpc8569-ecm", "fsl,ecm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		memory-controller@2000 {
++			compatible = "fsl,mpc8569-memory-controller";
++			reg = <0x2000 0x1000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <18 2>;
++		};
++
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <43 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++
++			rtc@68 {
++				compatible = "dallas,ds1374";
++				reg = <0x68>;
++			};
++		};
++
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <1>;
++			compatible = "fsl-i2c";
++			reg = <0x3100 0x100>;
++			interrupts = <43 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
++
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>;
++			clock-frequency = <0>;
++			interrupts = <42 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;
++			clock-frequency = <0>;
++			interrupts = <42 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		L2: l2-cache-controller@20000 {
++			compatible = "fsl,mpc8569-l2-cache-controller";
++			reg = <0x20000 0x1000>;
++			cache-line-size = <32>;	// 32 bytes
++			cache-size = <0x80000>;	// L2, 512K
++			interrupt-parent = <&mpic>;
++			interrupts = <16 2>;
++		};
++
++		dma@21300 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8569-dma", "fsl,eloplus-dma";
++			reg = <0x21300 0x4>;
++			ranges = <0x0 0x21100 0x200>;
++			cell-index = <0>;
++			dma-channel@0 {
++				compatible = "fsl,mpc8569-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x0 0x80>;
++				cell-index = <0>;
++				interrupt-parent = <&mpic>;
++				interrupts = <20 2>;
++			};
++			dma-channel@80 {
++				compatible = "fsl,mpc8569-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x80 0x80>;
++				cell-index = <1>;
++				interrupt-parent = <&mpic>;
++				interrupts = <21 2>;
++			};
++			dma-channel@100 {
++				compatible = "fsl,mpc8569-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x100 0x80>;
++				cell-index = <2>;
++				interrupt-parent = <&mpic>;
++				interrupts = <22 2>;
++			};
++			dma-channel@180 {
++				compatible = "fsl,mpc8569-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x180 0x80>;
++				cell-index = <3>;
++				interrupt-parent = <&mpic>;
++				interrupts = <23 2>;
++			};
++		};
++
++		crypto@30000 {
++			compatible = "fsl,sec3.1", "fsl,sec3.0", "fsl,sec2.4",
++				"fsl,sec2.2", "fsl,sec2.1", "fsl,sec2.0";
++			reg = <0x30000 0x10000>;
++			interrupts = <45 2 58 2>;
++			interrupt-parent = <&mpic>;
++			fsl,num-channels = <4>;
++			fsl,channel-fifo-len = <24>;
++			fsl,exec-units-mask = <0x9fe>;
++			fsl,descriptor-types-mask = <0x3ab0ebf>;
++		};
++
++		mpic: pic@40000 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x40000 0x40000>;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++		};
++
++		global-utilities@e0000 {
++			compatible = "fsl,mpc8569-guts";
++			reg = <0xe0000 0x1000>;
++			fsl,has-rstcr;
++		};
++
++		par_io@e0100 {
++			reg = <0xe0100 0x100>;
++			device_type = "par_io";
++			num-ports = <7>;
++
++			pio1: ucc_pin@01 {
++				pio-map = <
++			/* port  pin  dir  open_drain  assignment  has_irq */
++					0x2  0x1f 0x1  0x0  0x1  0x0	/* QE_MUX_MDC */
++					0x2  0x1e 0x3  0x0  0x2  0x0	/* QE_MUX_MDIO */
++					0x2  0x0b 0x2  0x0  0x1  0x0	/* CLK12*/
++					0x0  0x0  0x1  0x0  0x3  0x0	/* ENET1_TXD0_SER1_TXD0 */
++					0x0  0x1  0x1  0x0  0x3  0x0	/* ENET1_TXD1_SER1_TXD1 */
++					0x0  0x2  0x1  0x0  0x1  0x0	/* ENET1_TXD2_SER1_TXD2 */
++					0x0  0x3  0x1  0x0  0x2  0x0	/* ENET1_TXD3_SER1_TXD3 */
++					0x0  0x6  0x2  0x0  0x3  0x0	/* ENET1_RXD0_SER1_RXD0	*/
++					0x0  0x7  0x2  0x0  0x1  0x0	/* ENET1_RXD1_SER1_RXD1	*/
++					0x0  0x8  0x2  0x0  0x2  0x0	/* ENET1_RXD2_SER1_RXD2	*/
++					0x0  0x9  0x2  0x0  0x2  0x0	/* ENET1_RXD3_SER1_RXD3	*/
++					0x0  0x4  0x1  0x0  0x2  0x0	/* ENET1_TX_EN_SER1_RTS_B */
++					0x0  0xc  0x2  0x0  0x3  0x0	/* ENET1_RX_DV_SER1_CTS_B */
++					0x2  0x8  0x2  0x0  0x1  0x0	/* ENET1_GRXCLK	*/
++					0x2  0x14 0x1  0x0  0x2  0x0>;	/* ENET1_GTXCLK	*/
++			};
++
++			pio2: ucc_pin@02 {
++				pio-map = <
++			/* port  pin  dir  open_drain  assignment  has_irq */
++					0x2  0x1f 0x1  0x0  0x1  0x0	/* QE_MUX_MDC */
++					0x2  0x1e 0x3  0x0  0x2  0x0	/* QE_MUX_MDIO */
++					0x2  0x10 0x2  0x0  0x3  0x0	/* CLK17 */
++					0x0  0xe  0x1  0x0  0x2  0x0	/* ENET2_TXD0_SER2_TXD0 */
++					0x0  0xf  0x1  0x0  0x2  0x0	/* ENET2_TXD1_SER2_TXD1 */
++					0x0  0x10 0x1  0x0  0x1  0x0	/* ENET2_TXD2_SER2_TXD2 */
++					0x0  0x11 0x1  0x0  0x1  0x0	/* ENET2_TXD3_SER2_TXD3 */
++					0x0  0x14 0x2  0x0  0x2  0x0	/* ENET2_RXD0_SER2_RXD0	*/
++					0x0  0x15 0x2  0x0  0x1  0x0	/* ENET2_RXD1_SER2_RXD1	*/
++					0x0  0x16 0x2  0x0  0x1  0x0	/* ENET2_RXD2_SER2_RXD2	*/
++					0x0  0x17 0x2  0x0  0x1  0x0	/* ENET2_RXD3_SER2_RXD3	*/
++					0x0  0x12 0x1  0x0  0x2  0x0	/* ENET2_TX_EN_SER2_RTS_B */
++					0x0  0x1a 0x2  0x0  0x3  0x0	/* ENET2_RX_DV_SER2_CTS_B */
++					0x2  0x3  0x2  0x0  0x1  0x0	/* ENET2_GRXCLK	*/
++					0x2  0x2 0x1  0x0  0x2  0x0>;	/* ENET2_GTXCLK	*/
++			};
++
++			pio3: ucc_pin@03 {
++				pio-map = <
++			/* port  pin  dir  open_drain  assignment  has_irq */
++					0x2  0x1f 0x1  0x0  0x1  0x0	/* QE_MUX_MDC */
++					0x2  0x1e 0x3  0x0  0x2  0x0	/* QE_MUX_MDIO */
++					0x2  0x0b 0x2  0x0  0x1  0x0	/* CLK12*/
++					0x0  0x1d 0x1  0x0  0x2  0x0	/* ENET3_TXD0_SER3_TXD0 */
++					0x0  0x1e 0x1  0x0  0x3  0x0	/* ENET3_TXD1_SER3_TXD1 */
++					0x0  0x1f 0x1  0x0  0x2  0x0	/* ENET3_TXD2_SER3_TXD2 */
++					0x1  0x0  0x1  0x0  0x3  0x0	/* ENET3_TXD3_SER3_TXD3 */
++					0x1  0x3  0x2  0x0  0x3  0x0	/* ENET3_RXD0_SER3_RXD0	*/
++					0x1  0x4  0x2  0x0  0x1  0x0	/* ENET3_RXD1_SER3_RXD1	*/
++					0x1  0x5  0x2  0x0  0x2  0x0	/* ENET3_RXD2_SER3_RXD2	*/
++					0x1  0x6  0x2  0x0  0x3  0x0	/* ENET3_RXD3_SER3_RXD3	*/
++					0x1  0x1  0x1  0x0  0x1  0x0	/* ENET3_TX_EN_SER3_RTS_B */
++					0x1  0x9  0x2  0x0  0x3  0x0	/* ENET3_RX_DV_SER3_CTS_B */
++					0x2  0x9  0x2  0x0  0x2  0x0	/* ENET3_GRXCLK	*/
++					0x2  0x19 0x1  0x0  0x2  0x0>;	/* ENET3_GTXCLK	*/
++			};
++
++			pio4: ucc_pin@04 {
++				pio-map = <
++			/* port  pin  dir  open_drain  assignment  has_irq */
++					0x2  0x1f 0x1  0x0  0x1  0x0	/* QE_MUX_MDC */
++					0x2  0x1e 0x3  0x0  0x2  0x0	/* QE_MUX_MDIO */
++					0x2  0x10 0x2  0x0  0x3  0x0	/* CLK17 */
++					0x1  0xc  0x1  0x0  0x2  0x0	/* ENET4_TXD0_SER4_TXD0 */
++					0x1  0xd  0x1  0x0  0x2  0x0	/* ENET4_TXD1_SER4_TXD1 */
++					0x1  0xe  0x1  0x0  0x1  0x0	/* ENET4_TXD2_SER4_TXD2 */
++					0x1  0xf  0x1  0x0  0x2  0x0	/* ENET4_TXD3_SER4_TXD3 */
++					0x1  0x12 0x2  0x0  0x2  0x0	/* ENET4_RXD0_SER4_RXD0	*/
++					0x1  0x13 0x2  0x0  0x1  0x0	/* ENET4_RXD1_SER4_RXD1	*/
++					0x1  0x14 0x2  0x0  0x1  0x0	/* ENET4_RXD2_SER4_RXD2	*/
++					0x1  0x15 0x2  0x0  0x2  0x0	/* ENET4_RXD3_SER4_RXD3	*/
++					0x1  0x10 0x1  0x0  0x2  0x0	/* ENET4_TX_EN_SER4_RTS_B */
++					0x1  0x18 0x2  0x0  0x3  0x0	/* ENET4_RX_DV_SER4_CTS_B */
++					0x2  0x11 0x2  0x0  0x2  0x0	/* ENET4_GRXCLK	*/
++					0x2  0x18 0x1  0x0  0x2  0x0>;	/* ENET4_GTXCLK	*/
++			};
++		};
++	};
++
++	qe@e0080000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "qe";
++		compatible = "fsl,qe";
++		ranges = <0x0 0xe0080000 0x40000>;
++		reg = <0xe0080000 0x480>;
++		brg-frequency = <0>;
++		bus-frequency = <0>;
++		num-riscs = <4>;
++		num-snums = <46>;
++
++		qeic: interrupt-controller@80 {
++			interrupt-controller;
++			compatible = "fsl,qe-ic";
++			#address-cells = <0>;
++			#interrupt-cells = <1>;
++			reg = <0x80 0x80>;
++			interrupts = <46 2 46 2>; //high:30 low:30
++			interrupt-parent = <&mpic>;
++		};
++
++		spi@4c0 {
++			cell-index = <0>;
++			compatible = "fsl,spi";
++			reg = <0x4c0 0x40>;
++			interrupts = <2>;
++			interrupt-parent = <&qeic>;
++			mode = "cpu";
++		};
++
++		spi@500 {
++			cell-index = <1>;
++			compatible = "fsl,spi";
++			reg = <0x500 0x40>;
++			interrupts = <1>;
++			interrupt-parent = <&qeic>;
++			mode = "cpu";
++		};
++
++		enet0: ucc@2000 {
++			device_type = "network";
++			compatible = "ucc_geth";
++			cell-index = <1>;
++			reg = <0x2000 0x200>;
++			interrupts = <32>;
++			interrupt-parent = <&qeic>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			rx-clock-name = "none";
++			tx-clock-name = "clk12";
++			pio-handle = <&pio1>;
++			phy-handle = <&qe_phy0>;
++			phy-connection-type = "rgmii-id";
++		};
++
++		mdio@2120 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x2120 0x18>;
++			compatible = "fsl,ucc-mdio";
++
++			qe_phy0: ethernet-phy@07 {
++				interrupt-parent = <&mpic>;
++				interrupts = <1 1>;
++				reg = <0x7>;
++				device_type = "ethernet-phy";
++			};
++			qe_phy1: ethernet-phy@01 {
++				interrupt-parent = <&mpic>;
++				interrupts = <2 1>;
++				reg = <0x1>;
++				device_type = "ethernet-phy";
++			};
++			qe_phy2: ethernet-phy@02 {
++				interrupt-parent = <&mpic>;
++				interrupts = <3 1>;
++				reg = <0x2>;
++				device_type = "ethernet-phy";
++			};
++			qe_phy3: ethernet-phy@03 {
++				interrupt-parent = <&mpic>;
++				interrupts = <4 1>;
++				reg = <0x3>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		enet2: ucc@2200 {
++			device_type = "network";
++			compatible = "ucc_geth";
++			cell-index = <3>;
++			reg = <0x2200 0x200>;
++			interrupts = <34>;
++			interrupt-parent = <&qeic>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			rx-clock-name = "none";
++			tx-clock-name = "clk12";
++			pio-handle = <&pio3>;
++			phy-handle = <&qe_phy2>;
++			phy-connection-type = "rgmii-id";
++		};
++
++		enet1: ucc@3000 {
++			device_type = "network";
++			compatible = "ucc_geth";
++			cell-index = <2>;
++			reg = <0x3000 0x200>;
++			interrupts = <33>;
++			interrupt-parent = <&qeic>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			rx-clock-name = "none";
++			tx-clock-name = "clk17";
++			pio-handle = <&pio2>;
++			phy-handle = <&qe_phy1>;
++			phy-connection-type = "rgmii-id";
++		};
++
++		enet3: ucc@3200 {
++			device_type = "network";
++			compatible = "ucc_geth";
++			cell-index = <4>;
++			reg = <0x3200 0x200>;
++			interrupts = <35>;
++			interrupt-parent = <&qeic>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			rx-clock-name = "none";
++			tx-clock-name = "clk17";
++			pio-handle = <&pio4>;
++			phy-handle = <&qe_phy3>;
++			phy-connection-type = "rgmii-id";
++		};
++
++		muram@10000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,qe-muram", "fsl,cpm-muram";
++			ranges = <0x0 0x10000 0x20000>;
++
++			data-only@0 {
++				compatible = "fsl,qe-muram-data",
++					     "fsl,cpm-muram-data";
++				reg = <0x0 0x20000>;
++			};
++		};
++
++	};
++
++	/* PCI Express */
++	pci1: pcie@e000a000 {
++		compatible = "fsl,mpc8548-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xe000a000 0x1000>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++			/* IDSEL 0x0 (PEX) */
++			00000 0x0 0x0 0x1 &mpic 0x0 0x1
++			00000 0x0 0x0 0x2 &mpic 0x1 0x1
++			00000 0x0 0x0 0x3 &mpic 0x2 0x1
++			00000 0x0 0x0 0x4 &mpic 0x3 0x1>;
++
++		interrupt-parent = <&mpic>;
++		interrupts = <26 2>;
++		bus-range = <0 255>;
++		ranges = <0x2000000 0x0 0xa0000000 0xa0000000 0x0 0x10000000
++			  0x1000000 0x0 0x00000000 0xe2800000 0x0 0x00800000>;
++		clock-frequency = <33333333>;
++		pcie@0 {
++			reg = <0x0 0x0 0x0 0x0 0x0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x2000000 0x0 0xa0000000
++				  0x2000000 0x0 0xa0000000
++				  0x0 0x10000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x800000>;
++		};
++	};
++};
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 7dd0290..d34d29a 100644
+index d34d29a..b2c0a43 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -206,23 +206,24 @@ static void __init mpc85xx_mds_setup_arch(void)
- 	}
- 
- 	if (bcsr_regs) {
-+		if (machine_is(mpc8568_mds)) {
- #define BCSR_UCC1_GETH_EN	(0x1 << 7)
- #define BCSR_UCC2_GETH_EN	(0x1 << 7)
- #define BCSR_UCC1_MODE_MSK	(0x3 << 4)
- #define BCSR_UCC2_MODE_MSK	(0x3 << 0)
- 
--		/* Turn off UCC1 & UCC2 */
--		clrbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
--		clrbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
-+			/* Turn off UCC1 & UCC2 */
-+			clrbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
-+			clrbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
- 
--		/* Mode is RGMII, all bits clear */
--		clrbits8(&bcsr_regs[11], BCSR_UCC1_MODE_MSK |
--					 BCSR_UCC2_MODE_MSK);
--
--		/* Turn UCC1 & UCC2 on */
--		setbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
--		setbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
-+			/* Mode is RGMII, all bits clear */
-+			clrbits8(&bcsr_regs[11], BCSR_UCC1_MODE_MSK |
-+						 BCSR_UCC2_MODE_MSK);
- 
-+			/* Turn UCC1 & UCC2 on */
-+			setbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
-+			setbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
-+		}
- 		iounmap(bcsr_regs);
- 	}
- #endif	/* CONFIG_QUICC_ENGINE */
-@@ -257,7 +258,7 @@ static int __init board_fixups(void)
- 
+@@ -259,6 +259,7 @@ static int __init board_fixups(void)
  	return 0;
  }
--machine_arch_initcall(mpc85xx_mds, board_fixups);
-+machine_arch_initcall(mpc8568_mds, board_fixups);
+ machine_arch_initcall(mpc8568_mds, board_fixups);
++machine_arch_initcall(mpc8569_mds, board_fixups);
  
  static struct of_device_id mpc85xx_ids[] = {
  	{ .type = "soc", },
-@@ -276,7 +277,7 @@ static int __init mpc85xx_publish_devices(void)
- 
+@@ -278,6 +279,7 @@ static int __init mpc85xx_publish_devices(void)
  	return 0;
  }
--machine_device_initcall(mpc85xx_mds, mpc85xx_publish_devices);
-+machine_device_initcall(mpc8568_mds, mpc85xx_publish_devices);
+ machine_device_initcall(mpc8568_mds, mpc85xx_publish_devices);
++machine_device_initcall(mpc8569_mds, mpc85xx_publish_devices);
  
  static void __init mpc85xx_mds_pic_init(void)
  {
-@@ -321,8 +322,8 @@ static int __init mpc85xx_mds_probe(void)
-         return of_flat_dt_is_compatible(root, "MPC85xxMDS");
- }
- 
--define_machine(mpc85xx_mds) {
--	.name		= "MPC85xx MDS",
-+define_machine(mpc8568_mds) {
-+	.name		= "MPC8568 MDS",
- 	.probe		= mpc85xx_mds_probe,
- 	.setup_arch	= mpc85xx_mds_setup_arch,
- 	.init_IRQ	= mpc85xx_mds_pic_init,
+@@ -335,3 +337,24 @@ define_machine(mpc8568_mds) {
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ #endif
+ };
++
++static int __init mpc8569_mds_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "fsl,MPC8569EMDS");
++}
++
++define_machine(mpc8569_mds) {
++	.name		= "MPC8569 MDS",
++	.probe		= mpc8569_mds_probe,
++	.setup_arch	= mpc85xx_mds_setup_arch,
++	.init_IRQ	= mpc85xx_mds_pic_init,
++	.get_irq	= mpic_get_irq,
++	.restart	= fsl_rstcr_restart,
++	.calibrate_decr	= generic_calibrate_decr,
++	.progress	= udbg_progress,
++#ifdef CONFIG_PCI
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++#endif
++};
 -- 
 1.6.0.2
