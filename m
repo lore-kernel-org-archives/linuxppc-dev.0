@@ -1,20 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DA2E2DDF2E
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 22:39:17 +1000 (EST)
-Message-Id: <1271A9EB-6489-4A72-B3A0-0C36AEE554CB@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <20090429072040.A3C761222D@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 2/2] powerpc: Move VSX load/stores into ppc-opcode.h
-Date: Wed, 29 Apr 2009 07:38:41 -0500
-References: <20090429072040.A3C761222D@localhost.localdomain>
-Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 304F7DDF48
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 22:43:51 +1000 (EST)
+Date: Wed, 29 Apr 2009 14:43:49 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Keep track of emulated instructions
+In-Reply-To: <alpine.LRH.2.00.0904061430090.11076@vixen.sonytel.be>
+Message-ID: <alpine.LRH.2.00.0904291440580.10036@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0904031404450.32353@vixen.sonytel.be>
+	<3DA386C6-F26A-4929-8609-FE468DF01572@kernel.crashing.org>
+	<alpine.LRH.2.00.0904061430090.11076@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 6 Apr 2009, Geert Uytterhoeven wrote:
+> On Fri, 3 Apr 2009, Kumar Gala wrote:
+> > On Apr 3, 2009, at 7:08 AM, Geert Uytterhoeven wrote:
+> > >Finally (after ca. 1.5 years), he're an updated version of my patch to keep
+> > >track of emulated instructions.  In the light of Kumar's `Emulate enough of
+> > >SPE
+> > >instructions to make gcc happy' patch, he probably also wants to keep track
+> > >of
+> > >the actual runtime overhead.
+> > >
+> > >Changes since last version:
+> > > - arch/powerpc/kernel/sysfs.c is now compiled on ppc32, so we can provide
+> > >   counters in sysfs on ppc32, too,
+> > > - WARN_EMULATED() is a no-op if CONFIG_SYSCTL is disabled,
+> > > - Add warnings for altivec,
+> > > - Add warnings for recently introduced emulation of vsx and isel
+> > >   instructions.
+> > 
+> > pretty cool.  Do we think counters should be sysfs or debugfs?
+> 
+> What do you prefer?
+> 
+> On MIPS, unaligned exception handling control is in debugfs.
 
-On Apr 29, 2009, at 2:20 AM, Michael Neuling wrote:
+And probably debugfs is better, so it's disabled on production systems.
+But I would drop the per-CPU counters, and keep global counters only, for
+simplicity.
 
-> Index: linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/ppc-opcode.h
-> +++ linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-> @@ -49,6 +49,7 @@
-> /* macros to insert fields into opcodes */
-> #define __PPC_RA(a)	(((a) & 0x1f) << 16)
-> #define __PPC_RB(b)	(((b) & 0x1f) << 11)
-> +#define __PPC_XS(s)	((((s) & 0x1f) << 21) | (((s) & 0x20) >> 5))
-> #define __PPC_T_TLB(t)	(((t) & 0x3) << 21)
-> #define __PPC_WC(w)	(((w) & 0x3) << 21)
->
-> @@ -70,4 +71,12 @@
-> #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
-> 					__PPC_WC(w))
->
-> +/*
-> + * Define what the VSX XX1 form instructions will look like, then add
-> + * the 128 bit load store instructions based on that.
-> + */
-> +#define VSX_XX1(s, a, b)	(__PPC_XS(s) | __PPC_RA(a) | __PPC_RB(b))
-> +#define STXVD2X(s, a, b)	.long (0x7c000798 | VSX_XX1((s), (a), (b)))
-> +#define LXVD2X(s, a, b)		.long (0x7c000698 | VSX_XX1((s), (a), (b)))
-> +
+> > Also it would be nice to be able to zero out the counters.
+> 
+> By writing to the individual counters, or by writing to a global `clear' file?
 
-previous gripe of matching style of file for the .long 0x7c000798
+With debugfs, it's quite easy to make them writable, so you can easily clear
+them by writing zeroes to the virtual files.
 
-- k
+If people agree, I'll find a time hole and start updating the code...
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
+
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
