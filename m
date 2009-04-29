@@ -1,33 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <tony@bakeyournoodle.com>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 606F9DDF07
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 14:58:48 +1000 (EST)
-Date: Tue, 28 Apr 2009 21:50:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 5/5] proc: export more page flags in /proc/kpageflags
-Message-Id: <20090428215050.67b7b4db.akpm@linux-foundation.org>
-In-Reply-To: <m38wlkxe9b.fsf@pobox.com>
-References: <20090428010907.912554629@intel.com>
-	<20090428014920.769723618@intel.com>
-	<20090428143244.4e424d36.akpm@linux-foundation.org>
-	<20090429023842.GA10266@localhost> <m38wlkxe9b.fsf@pobox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Helge,
-	Seetharaman <sekharan@us.ibm.com>,
-	Deller <deller@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	"andi@firstfloor.org" <andi@firstfloor.org>, Chandra,
-	"kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-	"mpm@selenic.com" <mpm@selenic.com>, Olof Johansson <olof@lixom.net>,
-	Wu Fengguang <fengguang.wu@intel.com>,
-	"adobriyan@gmail.com" <adobriyan@gmail.com>
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C70C0DDEEC
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 15:42:34 +1000 (EST)
+Date: Wed, 29 Apr 2009 15:42:34 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: drivers/video/logo/logo_linux_mono.c build error
+Message-ID: <20090429054234.GN16602@bilbo.ozlabs.org>
+References: <20090427145031.99d4e0ac.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20090427145031.99d4e0ac.akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,23 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 28 Apr 2009 23:41:52 -0500 Nathan Lynch <ntl@pobox.com> wrote:
+On Mon, Apr 27, 2009 at 02:50:31PM -0700, Andrew Morton wrote:
+> 
+> powerpc allmodconfig, current mainline:
+> 
+> drivers/video/logo/logo_linux_mono.c:11: error: logo_linux_mono_data causes a section type conflict
+> 
+> switching it from __initconst to __initdata "fixes" it.
+> 
+> I'm (illegally) using gcc-4.1.0.
 
-> > CONFIG_DEBUG_KERNEL being enabled in distro kernels effectively means 
-> >
-> >         #ifdef CONFIG_DEBUG_KERNEL == #if 1
-> >
-> > as the following patch demos. Now it becomes obviously silly.
-> 
-> Sure, #if 1 is usually silly.  But if the point is that DEBUG_KERNEL is
-> not supposed to directly affect code generation, then I see two options
-> for powerpc:
-> 
-> - remove the #ifdef CONFIG_DEBUG_KERNEL guards from
->   arch/powerpc/kernel/sysfs.c, unconditionally enabling the hid/ima
->   sysfs attributes, or
-> 
-> - define a new config symbol which governs whether those attributes are
->   enabled, and make it depend on DEBUG_KERNEL
+You could use the compilers at:
+	http://bakeyournoodle.com/cross/
 
-yup.
+Currently x86_64 hosted only, but i686  hosted compilers are building now :)
+ 
+Yours Tony
