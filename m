@@ -1,29 +1,17 @@
-Return-Path: <mjw@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0BD0FDDE19
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 06:47:27 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n3TKhU62010103
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 16:43:30 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3TKlMw8051632
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 16:47:22 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3TKlLZo005108
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 16:47:21 -0400
-Subject: [PATCH] powerpc adjust oprofile_cpu_type version 3  resend
-From: Mike Wolf <mjw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 29 Apr 2009 15:47:16 -0500
-Message-Id: <1241038036.2902.3.camel@mx3>
-Mime-Version: 1.0
-Cc: paulus@samba.org
-Reply-To: mjw@linux.vnet.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EDEE9DDE26
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 06:49:16 +1000 (EST)
+Date: Wed, 29 Apr 2009 15:49:12 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [RFC][PATCH] powerpc/pci: Pull ppc32 code we need in ppc64
+Message-ID: <Pine.LNX.4.64.0904291546130.19681@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,58 +21,277 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Oprofile is changing the naming it is using for the compatibility modes.
-Instead of having compat-power<x>, oprofile will go to family naming
-convention and use ibm-compat-v<x>.  Currently only ibm-compat-v1 will
-be defined.
-The notion of compatibility events just started with POWER6. So there is
-no way that any other tool could exist that is using these
-oprofile_cpu_type strings we want to change.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-Signed-off-by: Mike Wolf <mjw@linux.vnet.ibm.com>
+Ben,
 
-----
---- mainline.orig/arch/powerpc/kernel/cputable.c	2009-04-16 09:47:49.000000000 -0500
-+++ mainline/arch/powerpc/kernel/cputable.c	2009-04-27 10:28:03.000000000 -0500
-@@ -382,7 +382,8 @@
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
--		.oprofile_cpu_type	= "ppc64/compat-power5+",
-+		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
-+		.oprofile_type		= PPC_OPROFILE_POWER4,
- 		.platform		= "power5+",
- 	},
- 	{	/* Power6 */
-@@ -416,7 +417,8 @@
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
--		.oprofile_cpu_type	= "ppc64/compat-power6",
-+		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
-+		.oprofile_type		= PPC_OPROFILE_POWER4,
- 		.platform		= "power6",
- 	},
- 	{	/* 2.06-compliant processor, i.e. Power7 "architected" mode */
-@@ -429,7 +431,8 @@
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.machine_check		= machine_check_generic,
--		.oprofile_cpu_type	= "ppc64/compat-power7",
-+		.oprofile_type		= PPC_OPROFILE_POWER4,
-+		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
- 		.platform		= "power7",
- 	},
- 	{	/* Power7 */
-@@ -1833,8 +1836,10 @@
- 		 * and, in that case, keep the current value for
- 		 * oprofile_cpu_type.
- 		 */
--		if (old.oprofile_cpu_type == NULL)
-+		if (old.oprofile_cpu_type == NULL) {
- 			t->oprofile_cpu_type = s->oprofile_cpu_type;
-+			t->oprofile_type = s->oprofile_type;
-+		}
- 	}
- 
- 	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
+My question is if we think fake_pci_bus will always get a valid hose().
+The users of EARLY_PCI_OP are fsl/8xxx, 4xx, and pmac.  I verified that
+fsl/8xxx & 4xx pass a valid hose.  Do we think pmac does?
+
+- k
+
+ arch/powerpc/include/asm/machdep.h    |    6 +-
+ arch/powerpc/include/asm/pci-bridge.h |   35 +++++++---------
+ arch/powerpc/kernel/pci-common.c      |   70 ++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/pci_32.c          |   71 ---------------------------------
+ 4 files changed, 89 insertions(+), 93 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 0efdb1d..1b389ff 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -205,14 +205,14 @@ struct machdep_calls {
+ 	/*
+ 	 * optional PCI "hooks"
+ 	 */
+-	/* Called in indirect_* to avoid touching devices */
+-	int (*pci_exclude_device)(struct pci_controller *, unsigned char, unsigned char);
+-
+ 	/* Called at then very end of pcibios_init() */
+ 	void (*pcibios_after_init)(void);
+
+ #endif /* CONFIG_PPC32 */
+
++	/* Called in indirect_* to avoid touching devices */
++	int (*pci_exclude_device)(struct pci_controller *, unsigned char, unsigned char);
++
+ 	/* Called after PPC generic resource fixup to perform
+ 	   machine specific fixups */
+ 	void (*pcibios_fixup_resources)(struct pci_dev *);
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 48f58aa..8b371df 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -77,9 +77,7 @@ struct pci_controller {
+
+ 	int first_busno;
+ 	int last_busno;
+-#ifndef CONFIG_PPC64
+ 	int self_busno;
+-#endif
+
+ 	void __iomem *io_base_virt;
+ #ifdef CONFIG_PPC64
+@@ -104,7 +102,6 @@ struct pci_controller {
+ 	unsigned int __iomem *cfg_addr;
+ 	void __iomem *cfg_data;
+
+-#ifndef CONFIG_PPC64
+ 	/*
+ 	 * Used for variants of PCI indirect handling and possible quirks:
+ 	 *  SET_CFG_TYPE - used on 4xx or any PHB that does explicit type0/1
+@@ -128,7 +125,6 @@ struct pci_controller {
+ #define PPC_INDIRECT_TYPE_BIG_ENDIAN		0x00000010
+ #define PPC_INDIRECT_TYPE_BROKEN_MRM		0x00000020
+ 	u32 indirect_type;
+-#endif	/* !CONFIG_PPC64 */
+ 	/* Currently, we limit ourselves to 1 IO range and 3 mem
+ 	 * ranges since the common pci_bus structure can't handle more
+ 	 */
+@@ -146,21 +142,6 @@ struct pci_controller {
+ #endif	/* CONFIG_PPC64 */
+ };
+
+-#ifndef CONFIG_PPC64
+-
+-static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
+-{
+-	return bus->sysdata;
+-}
+-
+-static inline int isa_vaddr_is_ioport(void __iomem *address)
+-{
+-	/* No specific ISA handling on ppc32 at this stage, it
+-	 * all goes through PCI
+-	 */
+-	return 0;
+-}
+-
+ /* These are used for config access before all the PCI probing
+    has been done. */
+ extern int early_read_config_byte(struct pci_controller *hose, int bus,
+@@ -182,6 +163,22 @@ extern int early_find_capability(struct pci_controller *hose, int bus,
+ extern void setup_indirect_pci(struct pci_controller* hose,
+ 			       resource_size_t cfg_addr,
+ 			       resource_size_t cfg_data, u32 flags);
++
++#ifndef CONFIG_PPC64
++
++static inline struct pci_controller *pci_bus_to_host(const struct pci_bus *bus)
++{
++	return bus->sysdata;
++}
++
++static inline int isa_vaddr_is_ioport(void __iomem *address)
++{
++	/* No specific ISA handling on ppc32 at this stage, it
++	 * all goes through PCI
++	 */
++	return 0;
++}
++
+ #else	/* CONFIG_PPC64 */
+
+ /*
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 9c69e7e..cae4ee1 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1620,3 +1620,73 @@ void __devinit pcibios_setup_phb_resources(struct pci_controller *hose)
+
+ }
+
++/*
++ * Null PCI config access functions, for the case when we can't
++ * find a hose.
++ */
++#define NULL_PCI_OP(rw, size, type)					\
++static int								\
++null_##rw##_config_##size(struct pci_dev *dev, int offset, type val)	\
++{									\
++	return PCIBIOS_DEVICE_NOT_FOUND;    				\
++}
++
++static int
++null_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
++		 int len, u32 *val)
++{
++	return PCIBIOS_DEVICE_NOT_FOUND;
++}
++
++static int
++null_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
++		  int len, u32 val)
++{
++	return PCIBIOS_DEVICE_NOT_FOUND;
++}
++
++static struct pci_ops null_pci_ops =
++{
++	.read = null_read_config,
++	.write = null_write_config,
++};
++
++/*
++ * These functions are used early on before PCI scanning is done
++ * and all of the pci_dev and pci_bus structures have been created.
++ */
++static struct pci_bus *
++fake_pci_bus(struct pci_controller *hose, int busnr)
++{
++	static struct pci_bus bus;
++
++	if (hose == 0) {
++		printk(KERN_ERR "Can't find hose for PCI bus %d!\n", busnr);
++	}
++	bus.number = busnr;
++	bus.sysdata = hose;
++	bus.ops = hose? hose->ops: &null_pci_ops;
++	return &bus;
++}
++
++#define EARLY_PCI_OP(rw, size, type)					\
++int early_##rw##_config_##size(struct pci_controller *hose, int bus,	\
++			       int devfn, int offset, type value)	\
++{									\
++	return pci_bus_##rw##_config_##size(fake_pci_bus(hose, bus),	\
++					    devfn, offset, value);	\
++}
++
++EARLY_PCI_OP(read, byte, u8 *)
++EARLY_PCI_OP(read, word, u16 *)
++EARLY_PCI_OP(read, dword, u32 *)
++EARLY_PCI_OP(write, byte, u8)
++EARLY_PCI_OP(write, word, u16)
++EARLY_PCI_OP(write, dword, u32)
++
++extern int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
++int early_find_capability(struct pci_controller *hose, int bus, int devfn,
++			  int cap)
++{
++	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);
++}
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index d473634..32fbadb 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -497,75 +497,4 @@ long sys_pciconfig_iobase(long which, unsigned long bus, unsigned long devfn)
+ 	return result;
+ }
+
+-/*
+- * Null PCI config access functions, for the case when we can't
+- * find a hose.
+- */
+-#define NULL_PCI_OP(rw, size, type)					\
+-static int								\
+-null_##rw##_config_##size(struct pci_dev *dev, int offset, type val)	\
+-{									\
+-	return PCIBIOS_DEVICE_NOT_FOUND;    				\
+-}
+-
+-static int
+-null_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+-		 int len, u32 *val)
+-{
+-	return PCIBIOS_DEVICE_NOT_FOUND;
+-}
+-
+-static int
+-null_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
+-		  int len, u32 val)
+-{
+-	return PCIBIOS_DEVICE_NOT_FOUND;
+-}
+-
+-static struct pci_ops null_pci_ops =
+-{
+-	.read = null_read_config,
+-	.write = null_write_config,
+-};
+
+-/*
+- * These functions are used early on before PCI scanning is done
+- * and all of the pci_dev and pci_bus structures have been created.
+- */
+-static struct pci_bus *
+-fake_pci_bus(struct pci_controller *hose, int busnr)
+-{
+-	static struct pci_bus bus;
+-
+-	if (hose == 0) {
+-		hose = pci_bus_to_hose(busnr);
+-		if (hose == 0)
+-			printk(KERN_ERR "Can't find hose for PCI bus %d!\n", busnr);
+-	}
+-	bus.number = busnr;
+-	bus.sysdata = hose;
+-	bus.ops = hose? hose->ops: &null_pci_ops;
+-	return &bus;
+-}
+-
+-#define EARLY_PCI_OP(rw, size, type)					\
+-int early_##rw##_config_##size(struct pci_controller *hose, int bus,	\
+-			       int devfn, int offset, type value)	\
+-{									\
+-	return pci_bus_##rw##_config_##size(fake_pci_bus(hose, bus),	\
+-					    devfn, offset, value);	\
+-}
+-
+-EARLY_PCI_OP(read, byte, u8 *)
+-EARLY_PCI_OP(read, word, u16 *)
+-EARLY_PCI_OP(read, dword, u32 *)
+-EARLY_PCI_OP(write, byte, u8)
+-EARLY_PCI_OP(write, word, u16)
+-EARLY_PCI_OP(write, dword, u32)
+-
+-extern int pci_bus_find_capability (struct pci_bus *bus, unsigned int devfn, int cap);
+-int early_find_capability(struct pci_controller *hose, int bus, int devfn,
+-			  int cap)
+-{
+-	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);
+-}
+-- 
+1.6.0.6
