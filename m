@@ -1,20 +1,23 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 304F7DDF48
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 22:43:51 +1000 (EST)
-Date: Wed, 29 Apr 2009 14:43:49 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Keep track of emulated instructions
-In-Reply-To: <alpine.LRH.2.00.0904061430090.11076@vixen.sonytel.be>
-Message-ID: <alpine.LRH.2.00.0904291440580.10036@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0904031404450.32353@vixen.sonytel.be>
-	<3DA386C6-F26A-4929-8609-FE468DF01572@kernel.crashing.org>
-	<alpine.LRH.2.00.0904061430090.11076@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EA219DDF4E
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 22:47:36 +1000 (EST)
+Message-Id: <66D3881A-A16D-4051-9073-1FF28C4F4742@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090429003704.1c37d6e1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: bug in drivers/edac/mpc85xx_edac.c:mpc85xx_mc_check()
+Date: Wed, 29 Apr 2009 07:46:37 -0500
+References: <57AC2FA1761300418C7AB8F3EA493C9702E319DB@HQ-EXCH-5.corp.brocade.com>
+	<20090429003704.1c37d6e1.akpm@linux-foundation.org>
+Cc: Jeff Haran <jharan@Brocade.COM>, linux-kernel@vger.kernel.org,
+	Dave Jiang <djiang@mvista.com>, linuxppc-dev@ozlabs.org,
+	Doug Thompson <dougthompson@xmission.com>,
+	Kumar Gala <galak@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 6 Apr 2009, Geert Uytterhoeven wrote:
-> On Fri, 3 Apr 2009, Kumar Gala wrote:
-> > On Apr 3, 2009, at 7:08 AM, Geert Uytterhoeven wrote:
-> > >Finally (after ca. 1.5 years), he're an updated version of my patch to keep
-> > >track of emulated instructions.  In the light of Kumar's `Emulate enough of
-> > >SPE
-> > >instructions to make gcc happy' patch, he probably also wants to keep track
-> > >of
-> > >the actual runtime overhead.
-> > >
-> > >Changes since last version:
-> > > - arch/powerpc/kernel/sysfs.c is now compiled on ppc32, so we can provide
-> > >   counters in sysfs on ppc32, too,
-> > > - WARN_EMULATED() is a no-op if CONFIG_SYSCTL is disabled,
-> > > - Add warnings for altivec,
-> > > - Add warnings for recently introduced emulation of vsx and isel
-> > >   instructions.
-> > 
-> > pretty cool.  Do we think counters should be sysfs or debugfs?
-> 
-> What do you prefer?
-> 
-> On MIPS, unaligned exception handling control is in debugfs.
 
-And probably debugfs is better, so it's disabled on production systems.
-But I would drop the per-CPU counters, and keep global counters only, for
-simplicity.
+On Apr 29, 2009, at 2:37 AM, Andrew Morton wrote:
 
-> > Also it would be nice to be able to zero out the counters.
-> 
-> By writing to the individual counters, or by writing to a global `clear' file?
+> Let's cc the suitable people.
+>
+> On Tue, 28 Apr 2009 18:23:42 -0700 "Jeff Haran" <jharan@Brocade.COM>  
+> wrote:
+>
+>> Hi,
+>>
+>> Recent versions of this function contain the following snippets:
+>>
+>>    if (err_detect & DDR_EDE_SBE)
+>>        edac_mc_handle_ce(mci, pfn, err_addr & PAGE_MASK,
+>>                  syndrome, row_index, 0, mci->ctl_name);
+>>
+>>    if (err_detect & DDR_EDE_MBE)
+>>        edac_mc_handle_ue(mci, pfn, err_addr & PAGE_MASK,
+>>                  row_index, mci->ctl_name);
+>>
+>> I am pretty sure the references to PAGE_MASK should be proceeded by a
+>> tilda, as in:
+>>
+>>    if (err_detect & DDR_EDE_SBE)
+>>        edac_mc_handle_ce(mci, pfn, err_addr & ~PAGE_MASK,
+>>                  syndrome, row_index, 0, mci->ctl_name);
+>>
+>>    if (err_detect & DDR_EDE_MBE)
+>>        edac_mc_handle_ue(mci, pfn, err_addr & ~PAGE_MASK,
+>>                  row_index, mci->ctl_name);
+>>
+>
+> Could well be.  PAGE_MASK is very easy to get wrong.  I've _never_
+> trusted my own memory of it and I always have to go back to the
+> definition when reviewing code :(
 
-With debugfs, it's quite easy to make them writable, so you can easily clear
-them by writing zeroes to the virtual files.
+This should ~PAGE_MASK to get the offset into the page.
 
-If people agree, I'll find a time hole and start updating the code...
+>> Much as I would like to submit a tested patch like the rest of the
+>> world, I find myself in the situation where the only Freescale target
+>> system I have to test on is running a 3 year old kernel (2.6.14),  
+>> which
+>> preceeds the introduction of EDAC driver support, at least for
+>> Freescale. So the best I can do is borrow from the new EDAC driver  
+>> and
+>> backport it to the old kernel.
+>>
+>> But I have learned a few things in this process and can thus share  
+>> what
+>> I've learned as it may be of help to the EDAC driver developers:
+>>
+>> 1) Before you read the Freescale 8548 CAPTURE_ADDRESS register, you  
+>> want
+>> to read CAPTURE_ATTRIBUTES first and make sure the VLD bit (least
+>> significant bit in the register) is set or else the data in
+>> CAPTURE_ADDRESS may not be yet valid.
+>>
+>> 2) When you are done scrubbing the memory with the single bit  
+>> error, you
+>> want to write 0 to CAPTURE_ATTRIBUTES so as to clear VLD and thus  
+>> setup
+>> the ECC capture logic to capture the next single bit error.
 
-With kind regards,
+This is a correct description based on how FSL error HW works.
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+- k
