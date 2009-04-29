@@ -1,24 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 67B3DDDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 05:58:52 +1000 (EST)
-Subject: Re: [PATCH 1/6] powerpc: Move #ifdef'ed body of do_IRQ() into a
-	separate function
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <C9C597A9-3096-4BF1-8559-15FADFB2AEAD@kernel.crashing.org>
-References: <c3e0e417a708c5d76d9f4130e5f2b0398a1e0c3e.1240450296.git.michael@ellerman.id.au>
-	<20090425181823.GA10481@lst.de> <1240879747.11027.2.camel@localhost>
-	<20090429114448.GA13129@lst.de>
-	<C9C597A9-3096-4BF1-8559-15FADFB2AEAD@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 30 Apr 2009 05:58:36 +1000
-Message-Id: <1241035116.16444.2.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Christoph Hellwig <hch@lst.de>
+	by ozlabs.org (Postfix) with ESMTPS id E8ACBDDE17
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 06:25:30 +1000 (EST)
+Message-Id: <F640C411-797C-4A4D-BD1B-9A20114C57C3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <12410288811793-git-send-email-Haiying.Wang@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 3/6] net/ucc_geth: update riscTx and riscRx in ucc_geth
+Date: Wed, 29 Apr 2009 15:23:21 -0500
+References: <1241028878175-git-send-email-Haiying.Wang@freescale.com>
+	<12410288792524-git-send-email-Haiying.Wang@freescale.com>
+	<12410288811793-git-send-email-Haiying.Wang@freescale.com>
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Netdev <netdev@vger.kernel.org>, Haiying Wang <Haiying.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,12 +26,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-04-29 at 07:48 -0500, Kumar Gala wrote:
-> 
-> I think Ben, Paul and I had discussed just universally enabling it.   
-> Can't remember why Ben hadn't done that yet.
 
-Slipped between the cracks. Patch welcome.
+On Apr 29, 2009, at 1:14 PM, Haiying Wang wrote:
 
-Cheers,
-Ben.
+> Change the definition of riscTx and riscRx to unsigned integer  
+> instead of enum,
+> and change their values to support 4 risc allocation if the qe has 4  
+> RISC
+> engines.
+>
+> Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+> ---
+
+Dave, if you can ack this it is probably easier if this goes via the  
+powerpc tree as it had some dependancies.
+
+- k
+
+>
+> drivers/net/ucc_geth.c |   14 +++++++++++---
+> drivers/net/ucc_geth.h |    4 ++--
+> 2 files changed, 13 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index d3f39e8..3e003fe 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -270,7 +270,7 @@ static int fill_init_enet_entries(struct  
+> ucc_geth_private *ugeth,
+> 				  u8 num_entries,
+> 				  u32 thread_size,
+> 				  u32 thread_alignment,
+> -				  enum qe_risc_allocation risc,
+> +				  unsigned int risc,
+> 				  int skip_page_for_first_entry)
+> {
+> 	u32 init_enet_offset;
+> @@ -307,7 +307,7 @@ static int fill_init_enet_entries(struct  
+> ucc_geth_private *ugeth,
+> static int return_init_enet_entries(struct ucc_geth_private *ugeth,
+> 				    u32 *p_start,
+> 				    u8 num_entries,
+> -				    enum qe_risc_allocation risc,
+> +				    unsigned int risc,
+> 				    int skip_page_for_first_entry)
+> {
+> 	u32 init_enet_offset;
+> @@ -342,7 +342,7 @@ static int dump_init_enet_entries(struct  
+> ucc_geth_private *ugeth,
+> 				  u32 __iomem *p_start,
+> 				  u8 num_entries,
+> 				  u32 thread_size,
+> -				  enum qe_risc_allocation risc,
+> +				  unsigned int risc,
+> 				  int skip_page_for_first_entry)
+> {
+> 	u32 init_enet_offset;
+> @@ -2134,6 +2134,14 @@ static int ucc_struct_init(struct  
+> ucc_geth_private *ugeth)
+> 		return -ENOMEM;
+> 	}
+>
+> +	/* read the number of risc engines, update the riscTx and riscRx
+> +	 * if there are 4 riscs in QE
+> +	 */
+> +	if (qe_get_num_of_risc() == 4) {
+> +		ug_info->riscTx = QE_RISC_ALLOCATION_FOUR_RISCS;
+> +		ug_info->riscRx = QE_RISC_ALLOCATION_FOUR_RISCS;
+> +	}
+> +
+> 	ugeth->ug_regs = ioremap(uf_info->regs, sizeof(*ugeth->ug_regs));
+> 	if (!ugeth->ug_regs) {
+> 		if (netif_msg_probe(ugeth))
+> diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
+> index 2f8ee7c..46bb1d2 100644
+> --- a/drivers/net/ucc_geth.h
+> +++ b/drivers/net/ucc_geth.h
+> @@ -1120,8 +1120,8 @@ struct ucc_geth_info {
+> 	enum ucc_geth_maccfg2_pad_and_crc_mode padAndCrc;
+> 	enum ucc_geth_num_of_threads numThreadsTx;
+> 	enum ucc_geth_num_of_threads numThreadsRx;
+> -	enum qe_risc_allocation riscTx;
+> -	enum qe_risc_allocation riscRx;
+> +	unsigned int riscTx;
+> +	unsigned int riscRx;
+> };
+>
+> /* structure representing UCC GETH */
+> -- 
+> 1.6.0.2
