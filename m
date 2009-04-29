@@ -1,19 +1,20 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44AD6DDF1E
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 22:25:51 +1000 (EST)
-Date: Wed, 29 Apr 2009 14:25:37 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] therm_windtunnel: Convert to a new-style i2c driver
-Message-ID: <20090429142537.40d0157a@hyperion.delvare>
-In-Reply-To: <20090416230101.37f3e84f@hyperion.delvare>
-References: <20090416230101.37f3e84f@hyperion.delvare>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id DA2E2DDF2E
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 22:39:17 +1000 (EST)
+Message-Id: <1271A9EB-6489-4A72-B3A0-0C36AEE554CB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20090429072040.A3C761222D@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 2/2] powerpc: Move VSX load/stores into ppc-opcode.h
+Date: Wed, 29 Apr 2009 07:38:41 -0500
+References: <20090429072040.A3C761222D@localhost.localdomain>
+Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,216 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 16 Apr 2009 23:01:01 +0200, Jean Delvare wrote:
-> The legacy i2c binding model is going away soon, so convert the ppc
-> therm_windtunnel driver to the new model or it will break.
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> ---
-> Can someone please test this patch for me? I could only build-test it.
-> 
-> Remember that you need this patch applied:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=935298696f469c0e07c73be687bd055878074ce0
 
-Paul, any progress on this?
+On Apr 29, 2009, at 2:20 AM, Michael Neuling wrote:
 
-> Thanks.
-> 
->  drivers/macintosh/therm_windtunnel.c |  126 ++++++++++++++++------------------
->  1 file changed, 60 insertions(+), 66 deletions(-)
-> 
-> --- linux-2.6.30-rc2.orig/drivers/macintosh/therm_windtunnel.c	2009-03-24 13:40:47.000000000 +0100
-> +++ linux-2.6.30-rc2/drivers/macintosh/therm_windtunnel.c	2009-04-16 22:56:39.000000000 +0200
-> @@ -48,16 +48,6 @@
->  
->  #define LOG_TEMP		0			/* continously log temperature */
->  
-> -static int 			do_probe( struct i2c_adapter *adapter, int addr, int kind);
-> -
-> -/* scan 0x48-0x4f (DS1775) and 0x2c-2x2f (ADM1030) */
-> -static const unsigned short	normal_i2c[] = { 0x48, 0x49, 0x4a, 0x4b,
-> -						 0x4c, 0x4d, 0x4e, 0x4f,
-> -						 0x2c, 0x2d, 0x2e, 0x2f,
-> -						 I2C_CLIENT_END };
-> -
-> -I2C_CLIENT_INSMOD;
-> -
->  static struct {
->  	volatile int		running;
->  	struct task_struct	*poll_task;
-> @@ -315,53 +305,54 @@ static int control_loop(void *dummy)
->  static int
->  do_attach( struct i2c_adapter *adapter )
->  {
-> -	int ret = 0;
-> +	/* scan 0x48-0x4f (DS1775) and 0x2c-2x2f (ADM1030) */
-> +	static const unsigned short scan_ds1775[] = {
-> +		0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
-> +		I2C_CLIENT_END
-> +	};
-> +	static const unsigned short scan_adm1030[] = {
-> +		0x2c, 0x2d, 0x2e, 0x2f,
-> +		I2C_CLIENT_END
-> +	};
->  
->  	if( strncmp(adapter->name, "uni-n", 5) )
->  		return 0;
->  
->  	if( !x.running ) {
-> -		ret = i2c_probe( adapter, &addr_data, &do_probe );
-> +		struct i2c_board_info info;
+> Index: linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/ppc-opcode.h
+> +++ linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
+> @@ -49,6 +49,7 @@
+> /* macros to insert fields into opcodes */
+> #define __PPC_RA(a)	(((a) & 0x1f) << 16)
+> #define __PPC_RB(b)	(((b) & 0x1f) << 11)
+> +#define __PPC_XS(s)	((((s) & 0x1f) << 21) | (((s) & 0x20) >> 5))
+> #define __PPC_T_TLB(t)	(((t) & 0x3) << 21)
+> #define __PPC_WC(w)	(((w) & 0x3) << 21)
+>
+> @@ -70,4 +71,12 @@
+> #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
+> 					__PPC_WC(w))
+>
+> +/*
+> + * Define what the VSX XX1 form instructions will look like, then add
+> + * the 128 bit load store instructions based on that.
+> + */
+> +#define VSX_XX1(s, a, b)	(__PPC_XS(s) | __PPC_RA(a) | __PPC_RB(b))
+> +#define STXVD2X(s, a, b)	.long (0x7c000798 | VSX_XX1((s), (a), (b)))
+> +#define LXVD2X(s, a, b)		.long (0x7c000698 | VSX_XX1((s), (a), (b)))
 > +
-> +		memset(&info, 0, sizeof(struct i2c_board_info));
-> +		strlcpy(info.type, "therm_ds1775", I2C_NAME_SIZE);
-> +		i2c_new_probed_device(adapter, &info, scan_ds1775);
-> +
-> +		strlcpy(info.type, "therm_adm1030", I2C_NAME_SIZE);
-> +		i2c_new_probed_device(adapter, &info, scan_adm1030);
-> +
->  		if( x.thermostat && x.fan ) {
->  			x.running = 1;
->  			x.poll_task = kthread_run(control_loop, NULL, "g4fand");
->  		}
->  	}
-> -	return ret;
-> +	return 0;
->  }
->  
->  static int
-> -do_detach( struct i2c_client *client )
-> +do_remove(struct i2c_client *client)
->  {
-> -	int err;
-> -
-> -	if( (err=i2c_detach_client(client)) )
-> -		printk(KERN_ERR "failed to detach thermostat client\n");
-> -	else {
-> -		if( x.running ) {
-> -			x.running = 0;
-> -			kthread_stop(x.poll_task);
-> -			x.poll_task = NULL;
-> -		}
-> -		if( client == x.thermostat )
-> -			x.thermostat = NULL;
-> -		else if( client == x.fan )
-> -			x.fan = NULL;
-> -		else {
-> -			printk(KERN_ERR "g4fan: bad client\n");
-> -		}
-> -		kfree( client );
-> +	if (x.running) {
-> +		x.running = 0;
-> +		kthread_stop(x.poll_task);
-> +		x.poll_task = NULL;
->  	}
-> -	return err;
-> -}
-> +	if (client == x.thermostat)
-> +		x.thermostat = NULL;
-> +	else if (client == x.fan)
-> +		x.fan = NULL;
-> +	else
-> +		printk(KERN_ERR "g4fan: bad client\n");
->  
-> -static struct i2c_driver g4fan_driver = {  
-> -	.driver = {
-> -		.name	= "therm_windtunnel",
-> -	},
-> -	.attach_adapter = do_attach,
-> -	.detach_client	= do_detach,
-> -};
-> +	return 0;
-> +}
->  
->  static int
->  attach_fan( struct i2c_client *cl )
-> @@ -374,13 +365,8 @@ attach_fan( struct i2c_client *cl )
->  		goto out;
->  	printk("ADM1030 fan controller [@%02x]\n", cl->addr );
->  
-> -	strlcpy( cl->name, "ADM1030 fan controller", sizeof(cl->name) );
-> -
-> -	if( !i2c_attach_client(cl) )
-> -		x.fan = cl;
-> +	x.fan = cl;
->   out:
-> -	if( cl != x.fan )
-> -		kfree( cl );
->  	return 0;
->  }
->  
-> @@ -412,39 +398,47 @@ attach_thermostat( struct i2c_client *cl
->  	x.temp = temp;
->  	x.overheat_temp = os_temp;
->  	x.overheat_hyst = hyst_temp;
-> -	
-> -	strlcpy( cl->name, "DS1775 thermostat", sizeof(cl->name) );
-> -
-> -	if( !i2c_attach_client(cl) )
-> -		x.thermostat = cl;
-> +	x.thermostat = cl;
->  out:
-> -	if( cl != x.thermostat )
-> -		kfree( cl );
->  	return 0;
->  }
->  
-> +enum chip { ds1775, adm1030 };
-> +
-> +static const struct i2c_device_id therm_windtunnel_id[] = {
-> +	{ "therm_ds1775", ds1775 },
-> +	{ "therm_adm1030", adm1030 },
-> +	{ }
-> +};
-> +
->  static int
-> -do_probe( struct i2c_adapter *adapter, int addr, int kind )
-> +do_probe(struct i2c_client *cl, const struct i2c_device_id *id)
->  {
-> -	struct i2c_client *cl;
-> +	struct i2c_adapter *adapter = cl->adapter;
->  
->  	if( !i2c_check_functionality(adapter, I2C_FUNC_SMBUS_WORD_DATA
->  				     | I2C_FUNC_SMBUS_WRITE_BYTE) )
->  		return 0;
->  
-> -	if( !(cl=kzalloc(sizeof(*cl), GFP_KERNEL)) )
-> -		return -ENOMEM;
-> -
-> -	cl->addr = addr;
-> -	cl->adapter = adapter;
-> -	cl->driver = &g4fan_driver;
-> -	cl->flags = 0;
-> -
-> -	if( addr < 0x48 )
-> +	switch (id->driver_data) {
-> +	case adm1030:
->  		return attach_fan( cl );
-> -	return attach_thermostat( cl );
-> +	case ds1775:
-> +		return attach_thermostat(cl);
-> +	}
-> +	return 0;
->  }
->  
-> +static struct i2c_driver g4fan_driver = {
-> +	.driver = {
-> +		.name	= "therm_windtunnel",
-> +	},
-> +	.attach_adapter = do_attach,
-> +	.probe		= do_probe,
-> +	.remove		= do_remove,
-> +	.id_table	= therm_windtunnel_id,
-> +};
-> +
->  
->  /************************************************************************/
->  /*	initialization / cleanup					*/
-> 
-> 
 
+previous gripe of matching style of file for the .long 0x7c000798
 
--- 
-Jean Delvare
+- k
