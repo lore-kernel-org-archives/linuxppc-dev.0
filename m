@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id DFACFDF46F
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 09:48:27 +1000 (EST)
-Date: Fri, 1 May 2009 03:48:26 +0400
+	by ozlabs.org (Postfix) with ESMTP id 59A05DF47E
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 09:48:29 +1000 (EST)
+Date: Fri, 1 May 2009 03:48:27 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 4/9] powerpc/86xx: Add MMC SPI support for MPC8610HPCD boards
-Message-ID: <20090430234826.GD7901@oksana.dev.rtsoft.ru>
+Subject: [PATCH 5/9] spi_mpc83xx: Fix checkpatch issues
+Message-ID: <20090430234827.GE7901@oksana.dev.rtsoft.ru>
 References: <20090430234739.GA27709@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -23,89 +23,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds spi and mmc-spi-slot nodes, plus a gpio-controller
-for PIXIS' sdcsr bank that is used for managing SPI chip-select and
-for reading card's states.
+Checkpatch is spitting errors when seeing the rename patch, so fix
+the errors prior to moving.
+
+Following errors and warnings were fixed:
+
+WARNING: Use #include <linux/io.h> instead of <asm/io.h>
+#1027: FILE: drivers/spi/spi_mpc8xxx.c:37:
++#include <asm/io.h>
+
+ERROR: "foo * bar" should be "foo *bar"
+#1111: FILE: drivers/spi/spi_mpc8xxx.c:121:
++static inline void mpc83xx_spi_write_reg(__be32 __iomem * reg, u32 val)
+
+ERROR: "foo * bar" should be "foo *bar"
+#1116: FILE: drivers/spi/spi_mpc8xxx.c:126:
++static inline u32 mpc83xx_spi_read_reg(__be32 __iomem * reg)
+
+ERROR: "foo * bar" should be "foo *bar"
+#1125: FILE: drivers/spi/spi_mpc8xxx.c:135:
++       type * rx = mpc83xx_spi->rx;                                      \
+
+ERROR: "foo * bar" should be "foo *bar"
+#1135: FILE: drivers/spi/spi_mpc8xxx.c:145:
++       const type * tx = mpc83xx_spi->tx;                      \
+
+WARNING: suspect code indent for conditional statements (16, 25)
+#1504: FILE: drivers/spi/spi_mpc8xxx.c:514:
++               while (((event =
+[...]
++                        cpu_relax();
+
+Following warnings were left over, since fixing them will
+hurt the readability. We'd better fix them by lowering
+the indentation level by splitting mpc83xx_spi_work function
+into two parts.
+
+WARNING: line over 80 characters
+#1371: FILE: drivers/spi/spi_mpc8xxx.c:381:
++                                       status = mpc83xx_spi_setup_transfer(spi, t);
+
+WARNING: line over 80 characters
+#1392: FILE: drivers/spi/spi_mpc8xxx.c:402:
++                               mpc83xx_spi_chipselect(spi, BITBANG_CS_INACTIVE);
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/mpc8610_hpcd.dts     |   32 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    4 +++
- 2 files changed, 36 insertions(+), 0 deletions(-)
+ drivers/spi/spi_mpc83xx.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-index 1bd3ebe..dbb80f7 100644
---- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-+++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-@@ -100,8 +100,18 @@
- 		};
+diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
+index d378d5e..40f7448 100644
+--- a/drivers/spi/spi_mpc83xx.c
++++ b/drivers/spi/spi_mpc83xx.c
+@@ -17,6 +17,7 @@
+ #include <linux/bug.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
++#include <linux/io.h>
+ #include <linux/completion.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+@@ -34,7 +35,6 @@
  
- 		board-control@3,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			compatible = "fsl,fpga-pixis";
- 			reg = <3 0 0x20>;
-+			ranges = <0 3 0 0x20>;
-+
-+			sdcsr_pio: gpio-controller@a {
-+				#gpio-cells = <2>;
-+				compatible = "fsl,fpga-pixis-gpio-bank";
-+				reg = <0xa 1>;
-+				gpio-controller;
-+			};
- 		};
- 	};
- 
-@@ -164,6 +174,28 @@
- 			interrupt-parent = <&mpic>;
- 		};
- 
-+		spi@7000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc8610-spi", "fsl,spi";
-+			reg = <0x7000 0x40>;
-+			cell-index = <0>;
-+			interrupts = <59 2>;
-+			interrupt-parent = <&mpic>;
-+			mode = "cpu";
-+			gpios = <&sdcsr_pio 7 0>;
-+
-+			mmc-slot@0 {
-+				compatible = "fsl,mpc8610hpcd-mmc-slot",
-+					     "mmc-spi-slot";
-+				reg = <0>;
-+				gpios = <&sdcsr_pio 0 1   /* nCD */
-+					 &sdcsr_pio 1 0>; /*  WP */
-+				voltage-ranges = <3300 3300>;
-+				spi-max-frequency = <50000000>;
-+			};
-+		};
-+
- 		display@2c000 {
- 			compatible = "fsl,diu";
- 			reg = <0x2c000 100>;
-diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index 3f49a6f..ce64572 100644
---- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-+++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -38,6 +38,7 @@
- #include <linux/of_platform.h>
- #include <sysdev/fsl_pci.h>
  #include <sysdev/fsl_soc.h>
-+#include <sysdev/simple_gpio.h>
+ #include <asm/irq.h>
+-#include <asm/io.h>
  
- #include "mpc86xx.h"
+ /* SPI Controller registers */
+ struct mpc83xx_spi_reg {
+@@ -118,12 +118,12 @@ struct spi_mpc83xx_cs {
+ 	u32 hw_mode;		/* Holds HW mode register settings */
+ };
  
-@@ -52,6 +53,9 @@ static struct of_device_id __initdata mpc8610_ids[] = {
- 
- static int __init mpc8610_declare_of_platform_devices(void)
+-static inline void mpc83xx_spi_write_reg(__be32 __iomem * reg, u32 val)
++static inline void mpc83xx_spi_write_reg(__be32 __iomem *reg, u32 val)
  {
-+	/* Firstly, register PIXIS GPIOs. */
-+	simple_gpiochip_init("fsl,fpga-pixis-gpio-bank");
-+
- 	/* Without this call, the SSI device driver won't get probed. */
- 	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+ 	out_be32(reg, val);
+ }
  
+-static inline u32 mpc83xx_spi_read_reg(__be32 __iomem * reg)
++static inline u32 mpc83xx_spi_read_reg(__be32 __iomem *reg)
+ {
+ 	return in_be32(reg);
+ }
+@@ -132,7 +132,7 @@ static inline u32 mpc83xx_spi_read_reg(__be32 __iomem * reg)
+ static									  \
+ void mpc83xx_spi_rx_buf_##type(u32 data, struct mpc83xx_spi *mpc83xx_spi) \
+ {									  \
+-	type * rx = mpc83xx_spi->rx;					  \
++	type *rx = mpc83xx_spi->rx;					  \
+ 	*rx++ = (type)(data >> mpc83xx_spi->rx_shift);			  \
+ 	mpc83xx_spi->rx = rx;						  \
+ }
+@@ -142,7 +142,7 @@ static								\
+ u32 mpc83xx_spi_tx_buf_##type(struct mpc83xx_spi *mpc83xx_spi)	\
+ {								\
+ 	u32 data;						\
+-	const type * tx = mpc83xx_spi->tx;			\
++	const type *tx = mpc83xx_spi->tx;			\
+ 	if (!tx)						\
+ 		return 0;					\
+ 	data = *tx++ << mpc83xx_spi->tx_shift;			\
+@@ -516,7 +516,7 @@ static irqreturn_t mpc83xx_spi_irq(s32 irq, void *context_data)
+ 		while (((event =
+ 			 mpc83xx_spi_read_reg(&mpc83xx_spi->base->event)) &
+ 						SPIE_NF) == 0)
+-			 cpu_relax();
++			cpu_relax();
+ 
+ 	mpc83xx_spi->count -= 1;
+ 	if (mpc83xx_spi->count) {
 -- 
 1.6.2.2
