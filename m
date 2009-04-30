@@ -1,23 +1,31 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0F29ADDFA4
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 23:49:27 +1000 (EST)
-Subject: Re: [PATCH 0/9] powerpc/pci: clean up direct access to sysdata
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1241096999-11164-1-git-send-email-galak@kernel.crashing.org>
-References: <1241096999-11164-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-v5rkVP74EnTt2mZCc96A"
-Date: Thu, 30 Apr 2009 23:49:26 +1000
-Message-Id: <1241099366.7356.4.camel@concordia>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id D5F29DE072
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 00:00:39 +1000 (EST)
+Date: Fri, 1 May 2009 00:00:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: Next April 28: boot failure on PowerPC with SLQB
+Message-Id: <20090501000033.ecce9ed8.sfr@canb.auug.org.au>
+In-Reply-To: <20090430130542.GF6900@wotan.suse.de>
+References: <49F87FAB.9050408@in.ibm.com>
+	<20090430041146.GB23746@wotan.suse.de>
+	<49F938E4.2030703@in.ibm.com>
+	<20090430064127.GF23746@wotan.suse.de>
+	<49F973A0.8070106@in.ibm.com> <20090430103528.GA6900@wotan.suse.de>
+	<1241087884.19252.5.camel@penberg-laptop>
+	<20090430210004.05a61841.sfr@canb.auug.org.au>
+	<20090430111825.GC6900@wotan.suse.de>
+	<1241090429.19252.7.camel@penberg-laptop>
+	<20090430130542.GF6900@wotan.suse.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__1_May_2009_00_00_33_+1000_b1.w3E9Nx9.XD32p"
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,45 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-v5rkVP74EnTt2mZCc96A
-Content-Type: text/plain
+--Signature=_Fri__1_May_2009_00_00_33_+1000_b1.w3E9Nx9.XD32p
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2009-04-30 at 08:09 -0500, Kumar Gala wrote:
-> We shouldn't be accessing sysdata directly.  In the future we might have
-> sysdata be a device_node on ppc32 to match ppc64.  Direct access would ma=
-ke that
-> a bit difficult.
->=20
-> If someone can look at the iseries code I would appreciate that:
->=20
-> arch/powerpc/platforms/iseries/pci.c:           iomm_table[current_iomm_t=
-able_entry] =3D dev->sysdata;
-> arch/powerpc/platforms/iseries/pci.c:                   iseries_ds_addr(d=
-ev->sysdata) | (bar_num << 24);
-> arch/powerpc/platforms/iseries/pci.c:   pdev->sysdata =3D node;
+Hi Nick,
 
-It looks like it's basically doing the same logic as
-pci_device_to_OF_node(), and fetch_dev_dn(), but there's probably some
-reason why it's not using those.
+On Thu, 30 Apr 2009 15:05:42 +0200 Nick Piggin <npiggin@suse.de> wrote:
+>
+> Hmm, this might do it. The following code now passes some stress testing
+> in a userspace harness wheras before it did not (and was obviously wrong).
 
-Given how much new iseries hardware there is, I think we'd probably
-rather leave the code as is. It's a device node anyway, so it doesn't
-block your plans RE ppc32.
+Indeed that allows it to boot fine.  Thanks.
 
-cheers
+Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
---=-v5rkVP74EnTt2mZCc96A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__1_May_2009_00_00_33_+1000_b1.w3E9Nx9.XD32p
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkn5rGYACgkQdSjSd0sB4dIzzgCgwATpbDl+2Ub+oBNXEIyfv/BB
-lEAAoMtcjaOFRRxy2Le9j12c8FscP+IQ
-=1XN9
+iEYEARECAAYFAkn5rwEACgkQjjKRsyhoI8woLQCdGwS2GUl8IbCKZM3gzyUPBLpX
+kvQAoJjzbTKu9gu/pWQuzcGIQmqw4eSz
+=DVrA
 -----END PGP SIGNATURE-----
 
---=-v5rkVP74EnTt2mZCc96A--
+--Signature=_Fri__1_May_2009_00_00_33_+1000_b1.w3E9Nx9.XD32p--
