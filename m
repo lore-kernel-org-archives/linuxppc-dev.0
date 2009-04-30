@@ -1,20 +1,16 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
-	by ozlabs.org (Postfix) with ESMTP id E11B0DDF8F
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 05:17:46 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f9so2945718rvb.1
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 12:17:45 -0700 (PDT)
-Date: Thu, 30 Apr 2009 15:17:08 -0400
-From: Josh Boyer <jwboyer@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Need a patch tested on a windtunnel powermac
-Message-ID: <20090430191707.GB2424@yoda.jdub.homelinux.org>
-References: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
-	<20090430002448.GA5208@hansolo.jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090430002448.GA5208@hansolo.jdub.homelinux.org>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 08551DDFA9
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 05:26:25 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/pci: Move pseries code into pseries platform
+	specific area
+Date: Thu, 30 Apr 2009 14:26:21 -0500
+Message-Id: <1241119581-23733-1-git-send-email-galak@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +20,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 29, 2009 at 08:24:48PM -0400, Josh Boyer wrote:
->On Thu, Apr 30, 2009 at 09:30:59AM +1000, Paul Mackerras wrote:
->>Does anyone here still have a "windtunnel" powermac (PowerMac3,6)
->>machine running Linux?  We need someone to test Jean Delvare's patch
->>to the therm_windtunnel driver.  The patch is at:
->>
->>http://patchwork.ozlabs.org/patch/26095/
->>
->>I don't have a windtunnel machine myself - I have a PowerMac3,5 but
->>not a PowerMac3,6.
->
->I might have one.  I'll pull the G4 I have out of it's box and check tomorrow.
+There doesn't appear to be any specific reason that we need to setup the
+pseries specific notifier in generic arch pci code.  Move it into pseries
+land.
 
-Amazingly enough, I do.  It's running some crusty-arse gentoo install from
-2005, so I need to install something newer on it.  Hopefully that goes smoothly
-today...
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/pci-bridge.h  |    1 +
+ arch/powerpc/kernel/pci_dn.c           |   28 +---------------------------
+ arch/powerpc/platforms/pseries/setup.c |   25 +++++++++++++++++++++++++
+ 3 files changed, 27 insertions(+), 27 deletions(-)
 
-josh
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 84007af..90fcfc4 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -221,6 +221,7 @@ struct pci_dn {
+ #define PCI_DN(dn)	((struct pci_dn *) (dn)->data)
+ 
+ extern struct device_node *fetch_dev_dn(struct pci_dev *dev);
++extern void * update_dn_pci_info(struct device_node *dn, void *data);
+ 
+ /* Get a device_node from a pci_dev.  This code must be fast except
+  * in the case where the sysdata is incorrect and needs to be fixed
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index 1c67de5..d5e36e5 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -27,7 +27,6 @@
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+-#include <asm/pSeries_reconfig.h>
+ #include <asm/ppc-pci.h>
+ #include <asm/firmware.h>
+ 
+@@ -35,7 +34,7 @@
+  * Traverse_func that inits the PCI fields of the device node.
+  * NOTE: this *must* be done before read/write config to the device.
+  */
+-static void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
++void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
+ {
+ 	struct pci_controller *phb = data;
+ 	const int *type =
+@@ -184,29 +183,6 @@ struct device_node *fetch_dev_dn(struct pci_dev *dev)
+ }
+ EXPORT_SYMBOL(fetch_dev_dn);
+ 
+-static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
+-{
+-	struct device_node *np = node;
+-	struct pci_dn *pci = NULL;
+-	int err = NOTIFY_OK;
+-
+-	switch (action) {
+-	case PSERIES_RECONFIG_ADD:
+-		pci = np->parent->data;
+-		if (pci)
+-			update_dn_pci_info(np, pci->phb);
+-		break;
+-	default:
+-		err = NOTIFY_DONE;
+-		break;
+-	}
+-	return err;
+-}
+-
+-static struct notifier_block pci_dn_reconfig_nb = {
+-	.notifier_call = pci_dn_reconfig_notifier,
+-};
+-
+ /** 
+  * pci_devs_phb_init - Initialize phbs and pci devs under them.
+  * 
+@@ -223,6 +199,4 @@ void __init pci_devs_phb_init(void)
+ 	/* This must be done first so the device nodes have valid pci info! */
+ 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
+ 		pci_devs_phb_init_dynamic(phb);
+-
+-	pSeries_reconfig_notifier_register(&pci_dn_reconfig_nb);
+ }
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index ec34170..8d75ea2 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -63,6 +63,7 @@
+ #include <asm/smp.h>
+ #include <asm/firmware.h>
+ #include <asm/eeh.h>
++#include <asm/pSeries_reconfig.h>
+ 
+ #include "plpar_wrappers.h"
+ #include "pseries.h"
+@@ -254,6 +255,29 @@ static void __init pseries_discover_pic(void)
+ 	       " interrupt-controller\n");
+ }
+ 
++static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
++{
++	struct device_node *np = node;
++	struct pci_dn *pci = NULL;
++	int err = NOTIFY_OK;
++
++	switch (action) {
++	case PSERIES_RECONFIG_ADD:
++		pci = np->parent->data;
++		if (pci)
++			update_dn_pci_info(np, pci->phb);
++		break;
++	default:
++		err = NOTIFY_DONE;
++		break;
++	}
++	return err;
++}
++
++static struct notifier_block pci_dn_reconfig_nb = {
++	.notifier_call = pci_dn_reconfig_notifier,
++};
++
+ static void __init pSeries_setup_arch(void)
+ {
+ 	/* Discover PIC type and setup ppc_md accordingly */
+@@ -271,6 +295,7 @@ static void __init pSeries_setup_arch(void)
+ 	/* Find and initialize PCI host bridges */
+ 	init_pci_config_tokens();
+ 	find_and_init_phbs();
++	pSeries_reconfig_notifier_register(&pci_dn_reconfig_nb);
+ 	eeh_init();
+ 
+ 	pSeries_nvram_init();
+-- 
+1.6.0.6
