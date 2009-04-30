@@ -2,19 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2866FDDF8C
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 21:28:19 +1000 (EST)
-Message-Id: <9DA79671-710B-4626-B424-AED985FCAFBD@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id B5EAEDDF7F
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 21:34:43 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n3UBYbn8028617
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 06:34:37 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <20090430065801.A57921222D@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 2/4] powerpc: Move VSX load/stores into ppc-opcode.h
-Date: Thu, 30 Apr 2009 06:28:03 -0500
-References: <20090430065801.A57921222D@localhost.localdomain>
-Cc: Paul Mackerras <paulus@samba.org>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/cpm: Remove some cruft code and defines
+Date: Thu, 30 Apr 2009 06:34:37 -0500
+Message-Id: <1241091277-9339-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,87 +21,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kill of some old defines and macros that we no longer use like
+CPM_MAP_ADDR, IMAP_ADDR and CPM_IRQ_OFFSET.
 
-On Apr 30, 2009, at 1:58 AM, Michael Neuling wrote:
-
-> Cleans up the VSX load/store instructions by moving them into
-> ppc-opcode.h.
->
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
->
-
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+* Removed IMAP_ADDR since we killed its one user in the net-next tree
 
 - k
 
+ arch/powerpc/include/asm/cpm1.h        |    2 --
+ arch/powerpc/include/asm/cpm2.h        |    4 ----
+ arch/powerpc/platforms/82xx/pq2ads.h   |   13 -------------
+ arch/powerpc/platforms/8xx/mpc885ads.h |    4 ----
+ arch/powerpc/sysdev/cpm2.c             |    2 +-
+ 5 files changed, 1 insertions(+), 24 deletions(-)
 
-> arch/powerpc/include/asm/ppc-opcode.h |   13 +++++++++++++
-> arch/powerpc/include/asm/ppc_asm.h    |   10 ----------
-> 2 files changed, 13 insertions(+), 10 deletions(-)
->
-> Index: linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/ppc-opcode.h
-> +++ linux-2.6-ozlabs/arch/powerpc/include/asm/ppc-opcode.h
-> @@ -25,6 +25,7 @@
-> #define PPC_INST_LSWI			0x7c0004aa
-> #define PPC_INST_LSWX			0x7c00042a
-> #define PPC_INST_LWSYNC			0x7c2004ac
-> +#define PPC_INST_LXVD2X			0x7c000698
-> #define PPC_INST_MCRXR			0x7c000400
-> #define PPC_INST_MCRXR_MASK		0xfc0007fe
-> #define PPC_INST_MFSPR_PVR		0x7c1f42a6
-> @@ -43,12 +44,14 @@
->
-> #define PPC_INST_STSWI			0x7c0005aa
-> #define PPC_INST_STSWX			0x7c00052a
-> +#define PPC_INST_STXVD2X		0x7c000798
-> #define PPC_INST_TLBILX			0x7c000024
-> #define PPC_INST_WAIT			0x7c00007c
->
-> /* macros to insert fields into opcodes */
-> #define __PPC_RA(a)	(((a) & 0x1f) << 16)
-> #define __PPC_RB(b)	(((b) & 0x1f) << 11)
-> +#define __PPC_XS(s)	((((s) & 0x1f) << 21) | (((s) & 0x20) >> 5))
-> #define __PPC_T_TLB(t)	(((t) & 0x3) << 21)
-> #define __PPC_WC(w)	(((w) & 0x3) << 21)
->
-> @@ -70,4 +73,14 @@
-> #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
-> 					__PPC_WC(w))
->
-> +/*
-> + * Define what the VSX XX1 form instructions will look like, then add
-> + * the 128 bit load store instructions based on that.
-> + */
-> +#define VSX_XX1(s, a, b)	(__PPC_XS(s) | __PPC_RA(a) | __PPC_RB(b))
-> +#define STXVD2X(s, a, b)	stringify_in_c(.long PPC_INST_STXVD2X | \
-> +					       VSX_XX1((s), (a), (b)))
-> +#define LXVD2X(s, a, b)		stringify_in_c(.long PPC_INST_LXVD2X | \
-> +					       VSX_XX1((s), (a), (b)))
-> +
-> #endif /* _ASM_POWERPC_PPC_OPCODE_H */
-> Index: linux-2.6-ozlabs/arch/powerpc/include/asm/ppc_asm.h
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/ppc_asm.h
-> +++ linux-2.6-ozlabs/arch/powerpc/include/asm/ppc_asm.h
-> @@ -76,16 +76,6 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);				
-> 				REST_10GPRS(22, base)
-> #endif
->
-> -/*
-> - * Define what the VSX XX1 form instructions will look like, then add
-> - * the 128 bit load store instructions based on that.
-> - */
-> -#define VSX_XX1(xs, ra, rb)	(((xs) & 0x1f) << 21 | ((ra) << 16) |  \
-> -				 ((rb) << 11) | (((xs) >> 5)))
-> -
-> -#define STXVD2X(xs, ra, rb)	.long (0x7c000798 | VSX_XX1((xs), (ra),  
-> (rb)))
-> -#define LXVD2X(xs, ra, rb)	.long (0x7c000698 | VSX_XX1((xs), (ra),  
-> (rb)))
-> -
-> #define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
-> #define SAVE_4GPRS(n, base)	SAVE_2GPRS(n, base); SAVE_2GPRS(n+2, base)
-> #define SAVE_8GPRS(n, base)	SAVE_4GPRS(n, base); SAVE_4GPRS(n+4, base)
+diff --git a/arch/powerpc/include/asm/cpm1.h b/arch/powerpc/include/asm/cpm1.h
+index 2ff7987..7685ffd 100644
+--- a/arch/powerpc/include/asm/cpm1.h
++++ b/arch/powerpc/include/asm/cpm1.h
+@@ -598,8 +598,6 @@ typedef struct risc_timer_pram {
+ #define CICR_IEN		((uint)0x00000080)	/* Int. enable */
+ #define CICR_SPS		((uint)0x00000001)	/* SCC Spread */
+ 
+-#define IMAP_ADDR		(get_immrbase())
+-
+ #define CPM_PIN_INPUT     0
+ #define CPM_PIN_OUTPUT    1
+ #define CPM_PIN_PRIMARY   0
+diff --git a/arch/powerpc/include/asm/cpm2.h b/arch/powerpc/include/asm/cpm2.h
+index 0f5e8ff..990ff19 100644
+--- a/arch/powerpc/include/asm/cpm2.h
++++ b/arch/powerpc/include/asm/cpm2.h
+@@ -14,10 +14,6 @@
+ #include <asm/cpm.h>
+ #include <sysdev/fsl_soc.h>
+ 
+-#ifdef CONFIG_PPC_85xx
+-#define CPM_MAP_ADDR (get_immrbase() + 0x80000)
+-#endif
+-
+ /* CPM Command register.
+ */
+ #define CPM_CR_RST	((uint)0x80000000)
+diff --git a/arch/powerpc/platforms/82xx/pq2ads.h b/arch/powerpc/platforms/82xx/pq2ads.h
+index 984db42..6cf0f97 100644
+--- a/arch/powerpc/platforms/82xx/pq2ads.h
++++ b/arch/powerpc/platforms/82xx/pq2ads.h
+@@ -24,10 +24,6 @@
+ 
+ #include <linux/seq_file.h>
+ 
+-/* Backword-compatibility stuff for the drivers */
+-#define CPM_MAP_ADDR		((uint)0xf0000000)
+-#define CPM_IRQ_OFFSET 0
+-
+ /* The ADS8260 has 16, 32-bit wide control/status registers, accessed
+  * only on word boundaries.
+  * Not all are used (yet), or are interesting to us (yet).
+@@ -44,14 +40,5 @@
+ #define BCSR3_FETHIEN2		((uint)0x10000000)      /* 0 == enable*/
+ #define BCSR3_FETH2_RST		((uint)0x80000000)      /* 0 == reset */
+ 
+-/* cpm serial driver works with constants below */
+-
+-#define SIU_INT_SMC1		((uint)0x04+CPM_IRQ_OFFSET)
+-#define SIU_INT_SMC2		((uint)0x05+CPM_IRQ_OFFSET)
+-#define SIU_INT_SCC1		((uint)0x28+CPM_IRQ_OFFSET)
+-#define SIU_INT_SCC2		((uint)0x29+CPM_IRQ_OFFSET)
+-#define SIU_INT_SCC3		((uint)0x2a+CPM_IRQ_OFFSET)
+-#define SIU_INT_SCC4		((uint)0x2b+CPM_IRQ_OFFSET)
+-
+ #endif /* __MACH_ADS8260_DEFS */
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/platforms/8xx/mpc885ads.h b/arch/powerpc/platforms/8xx/mpc885ads.h
+index a507666..19412f7 100644
+--- a/arch/powerpc/platforms/8xx/mpc885ads.h
++++ b/arch/powerpc/platforms/8xx/mpc885ads.h
+@@ -17,10 +17,6 @@
+ 
+ #include <sysdev/fsl_soc.h>
+ 
+-#define MPC8xx_CPM_OFFSET	(0x9c0)
+-#define CPM_MAP_ADDR		(get_immrbase() + MPC8xx_CPM_OFFSET)
+-#define CPM_IRQ_OFFSET		16     // for compability with cpm_uart driver
+-
+ /* Bits of interest in the BCSRs.
+  */
+ #define BCSR1_ETHEN		((uint)0x20000000)
+diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
+index fd969f0..eb59272 100644
+--- a/arch/powerpc/sysdev/cpm2.c
++++ b/arch/powerpc/sysdev/cpm2.c
+@@ -61,7 +61,7 @@ EXPORT_SYMBOL(cpm2_immr);
+ void __init cpm2_reset(void)
+ {
+ #ifdef CONFIG_PPC_85xx
+-	cpm2_immr = ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
++	cpm2_immr = ioremap(get_immrbase() + 0x80000, CPM_MAP_SIZE);
+ #else
+ 	cpm2_immr = ioremap(get_immrbase(), CPM_MAP_SIZE);
+ #endif
+-- 
+1.6.0.6
