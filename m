@@ -1,27 +1,15 @@
-Return-Path: <kyle@moffetthome.net>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id A6AA3DDDA2
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 08:21:20 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c2so1201574anc.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 15:21:18 -0700 (PDT)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id AA299DDD1B
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 08:27:47 +1000 (EST)
+Date: Fri, 1 May 2009 02:27:45 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/fsl_soc: Remove mpc83xx_wdt_init, again
+Message-ID: <20090430222745.GA10985@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-In-Reply-To: <1241126291.29501.41.camel@pasglop>
-References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
-	<625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
-	<f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
-	<1240388476.17445.10.camel@pasglop>
-	<f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
-	<1241126291.29501.41.camel@pasglop>
-Date: Thu, 30 Apr 2009 18:21:18 -0400
-Message-ID: <f73f7ab80904301521x16effa0ar2d4756daceada122@mail.gmail.com>
-Subject: Re: Porting the ibm_newemac driver to use phylib (and other PHY/MAC
-	questions)
-From: Kyle Moffett <kyle@moffetthome.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: netdev <netdev@vger.kernel.org>,
-	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,60 +19,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 30, 2009 at 5:18 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> Well... GPCS is indeed some kind of internal PHY if you like but it's
-> not MDIO controlled and I don't really see a need to move it to the
-> phylib as it's so specific to the NIC itself. But if you think it cleans
-> the code up significantly... There are also some subtle differences in
-> how the NIC is programmed when using GPCS vs. xMII
+commit b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4 ("gianfar: Convert
+gianfar to an of_platform_driver"), possibly due merge issues,
+reintroduced completely unneded mpc83xx_wdt_init call, which
+I removed some time ago in commit 20d38e01d48019c578ab0ec1464454c0
+("powerpc/fsl_soc: remove mpc83xx_wdt code").
 
-Ok, thanks, that's helpful information.  Mainly I was trying to puzzle
-out why the driver sometimes resets the GPCS and other times resets
-the real PHY.  It seems to be rather inconsistent when it resets
-different devices.  For instance, one of the Marvell PHY's init()
-helper resets the PHY, which was getting in the way of me ensuring
-that the init() helpers are called after every PHY reset (because I
-need to reinitialize the state that just got erased by the reset).
+Remove it once again.
 
-The challenge is working out which of the implicit ordering is
-required for correct operation and which is simply an artifact of the
-current implementation.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/sysdev/fsl_soc.c |   46 -----------------------------------------
+ 1 files changed, 0 insertions(+), 46 deletions(-)
 
-
->> I'm also curious about the intent of the "mdio_instance" pointer (IE:
->> the "mdio-device" property). =C2=A0Is that used when all the PHY devices
->> are attached to the MDIO bus of only one of the (multiple) emac
->> devices?
->
-> It's common especially on older SoCs using EMAC to have only one of
-> the EMAC instance with an MDIO bus for configuring the PHYs. This is one
-> of the reasons why I have the mutex in the low level MDIO access
-> routines since 2 EMACs can try to talk to the same MDIO, and this is the
-> problem I had with phylib back then which was doing everything in atomic
-> contexts.
-
-Ok, good, the current mdiobus code seems to make handling this a good
-deal easier.
-
-
->> What keeps the emac_instance pointed
->> to by the "mdio_instance" from going away while the other emac chipset
->> is using it?
->
-> Nothing other than those are all in a SoC and so generally don't do
-> hotplug, but I suppose that with things like kvm which could potentially
-> hotplug devices between partitions, one would have to get a bit more
-> careful.
-
-Yeah, I was experimenting with fiddling with the bind/unbind files in
-sysfs and determined that the device-removal code is completely
-broken.  As far as I can tell, any attempts to unregister one of the
-emac devices cause an OOPS, even if it isn't used by another emac for
-MDIO.  I may just start by nuking the broken device-removal code
-entirely, and re-implement it properly once the rework is done.
-
-Thanks for the info!
-
-Cheers,
-Kyle Moffett
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index afe8dbc..5c64ccd 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -208,52 +208,6 @@ static int __init of_add_fixed_phys(void)
+ arch_initcall(of_add_fixed_phys);
+ #endif /* CONFIG_FIXED_PHY */
+ 
+-#ifdef CONFIG_PPC_83xx
+-static int __init mpc83xx_wdt_init(void)
+-{
+-	struct resource r;
+-	struct device_node *np;
+-	struct platform_device *dev;
+-	u32 freq = fsl_get_sys_freq();
+-	int ret;
+-
+-	np = of_find_compatible_node(NULL, "watchdog", "mpc83xx_wdt");
+-
+-	if (!np) {
+-		ret = -ENODEV;
+-		goto nodev;
+-	}
+-
+-	memset(&r, 0, sizeof(r));
+-
+-	ret = of_address_to_resource(np, 0, &r);
+-	if (ret)
+-		goto err;
+-
+-	dev = platform_device_register_simple("mpc83xx_wdt", 0, &r, 1);
+-	if (IS_ERR(dev)) {
+-		ret = PTR_ERR(dev);
+-		goto err;
+-	}
+-
+-	ret = platform_device_add_data(dev, &freq, sizeof(freq));
+-	if (ret)
+-		goto unreg;
+-
+-	of_node_put(np);
+-	return 0;
+-
+-unreg:
+-	platform_device_unregister(dev);
+-err:
+-	of_node_put(np);
+-nodev:
+-	return ret;
+-}
+-
+-arch_initcall(mpc83xx_wdt_init);
+-#endif
+-
+ static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
+ {
+ 	if (!phy_type)
+-- 
+1.6.2.2
