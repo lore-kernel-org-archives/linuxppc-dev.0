@@ -3,16 +3,19 @@ Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
 	[18.7.7.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 955DBDDF59
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 05:36:15 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 37DC1DDF59
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 05:36:46 +1000 (EST)
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 2/6] Add new NOSAVE_DATA linker script macro.
-Date: Thu, 30 Apr 2009 15:32:32 -0400
-Message-Id: <1241119956-31453-3-git-send-email-tabbott@mit.edu>
-In-Reply-To: <1241119956-31453-2-git-send-email-tabbott@mit.edu>
+Subject: [PATCH 5/6] Add new READ_MOSTLY_DATA(align) linker script macro.
+Date: Thu, 30 Apr 2009 15:32:35 -0400
+Message-Id: <1241119956-31453-6-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241119956-31453-5-git-send-email-tabbott@mit.edu>
 References: <1241119956-31453-1-git-send-email-tabbott@mit.edu>
 	<1241119956-31453-2-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-3-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-4-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-5-git-send-email-tabbott@mit.edu>
 Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
 	Denys Vlasenko <vda.linux@googlemail.com>,
@@ -54,8 +57,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch is preparation for replacing most ".data.nosave" in the
-kernel with macros, so that the section name can later be changed
+This patch is preparation for replacing most ".data.read_mostly" in
+the kernel with macros, so that the section name can later be changed
 without having to touch a lot of the kernel.
 
 The long-term goal here is to be able to change the kernel's magic
@@ -66,23 +69,20 @@ of the form ".data.foo".
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
 Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- include/asm-generic/vmlinux.lds.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ include/asm-generic/vmlinux.lds.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 3d88c87..f5ebd2b 100644
+index 4b020e8..a4b4f4a 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
-@@ -124,6 +124,13 @@
- 	. = ALIGN(PAGE_SIZE);						\
- 	*(.bss.page_aligned)
+@@ -139,6 +139,10 @@
+ 	. = ALIGN(alignment);						\
+ 	*(.data.init_task)
  
-+#define NOSAVE_DATA							\
-+	. = ALIGN(PAGE_SIZE);						\
-+	__nosave_begin = .;						\
-+	*(.data.nosave)							\
-+	. = ALIGN(PAGE_SIZE);						\
-+	__nosave_end = .;
++#define READ_MOSTLY_DATA(alignment)					\
++	. = ALIGN(alignment);						\
++	*(.data.read_mostly)
 +
  #define RO_DATA(align)							\
  	. = ALIGN((align));						\
