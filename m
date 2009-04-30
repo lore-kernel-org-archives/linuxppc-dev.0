@@ -3,19 +3,17 @@ Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
 	[18.7.7.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 37DC1DDF59
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 05:36:46 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 51C0DDDF96
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 05:37:42 +1000 (EST)
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 5/6] Add new READ_MOSTLY_DATA(align) linker script macro.
-Date: Thu, 30 Apr 2009 15:32:35 -0400
-Message-Id: <1241119956-31453-6-git-send-email-tabbott@mit.edu>
-In-Reply-To: <1241119956-31453-5-git-send-email-tabbott@mit.edu>
+Subject: [PATCH 3/6] Add new CACHELINE_ALIGNED_DATA linker script macro.
+Date: Thu, 30 Apr 2009 15:32:33 -0400
+Message-Id: <1241119956-31453-4-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241119956-31453-3-git-send-email-tabbott@mit.edu>
 References: <1241119956-31453-1-git-send-email-tabbott@mit.edu>
 	<1241119956-31453-2-git-send-email-tabbott@mit.edu>
 	<1241119956-31453-3-git-send-email-tabbott@mit.edu>
-	<1241119956-31453-4-git-send-email-tabbott@mit.edu>
-	<1241119956-31453-5-git-send-email-tabbott@mit.edu>
 Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
 	Denys Vlasenko <vda.linux@googlemail.com>,
@@ -57,9 +55,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch is preparation for replacing most ".data.read_mostly" in
-the kernel with macros, so that the section name can later be changed
-without having to touch a lot of the kernel.
+This patch is preparation for replacing most ".data.cacheline_aligned"
+in the kernel with macros, so that the section name can later be
+changed without having to touch a lot of the kernel.
 
 The long-term goal here is to be able to change the kernel's magic
 section names to those that are compatible with -ffunction-sections
@@ -73,16 +71,16 @@ Cc: Sam Ravnborg <sam@ravnborg.org>
  1 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 4b020e8..a4b4f4a 100644
+index f5ebd2b..fa7801b 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
-@@ -139,6 +139,10 @@
- 	. = ALIGN(alignment);						\
- 	*(.data.init_task)
+@@ -131,6 +131,10 @@
+ 	. = ALIGN(PAGE_SIZE);						\
+ 	__nosave_end = .;
  
-+#define READ_MOSTLY_DATA(alignment)					\
++#define CACHELINE_ALIGNED_DATA(alignment)				\
 +	. = ALIGN(alignment);						\
-+	*(.data.read_mostly)
++	*(.data.cacheline_aligned)
 +
  #define RO_DATA(align)							\
  	. = ALIGN((align));						\
