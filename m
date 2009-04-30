@@ -1,9 +1,28 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 30 Apr 2009 15:39:38 +1000
-Subject: [PATCH] powerpc: Fix setting of oprofile cpu type
-Message-Id: <20090430053943.93CF7DDED6@ozlabs.org>
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 828A9DDE1A
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:03:09 +1000 (EST)
+Date: Thu, 30 Apr 2009 08:03:00 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: Next April 28: boot failure on PowerPC with SLQB
+Message-ID: <20090430060300.GD23746@wotan.suse.de>
+References: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
+	<49F6E421.401@in.ibm.com>
+	<84144f020904280422s6a9a277fjc4619c904f37e5ca@mail.gmail.com>
+	<20090429113604.GE3398@wotan.suse.de> <49F87FAB.9050408@in.ibm.com>
+	<20090430041146.GB23746@wotan.suse.de>
+	<49F938E4.2030703@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49F938E4.2030703@in.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,34 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-commit 2657dd4e301d4841ed67a4fac7d145ad8f3e1b28 introduced a
-bug where we would now always override the "real" oprofile CPU
-type with the "compatible" one provided by a pseudo-PVR in the
-device-tree which is incorrect and breaks oprofile on all current
-configs since the "compatible" ones aren't yet recognized.
+On Thu, Apr 30, 2009 at 11:06:36AM +0530, Sachin Sant wrote:
+> Nick Piggin wrote:
+> >Well kmalloc is failing. It should not be though, even if the
+> >current node is offline, it should be able to fall back to other
+> >nodes. Stephen's trace indicates the same thing.
+> >
+> >Could you try the following patch please, and capture the output
+> >it generates?
+> With this patch i don't get any extra information other that what is 
+> already reported.
+> Have attached the boot log captured using loglevel=8 mminit_loglevel=4 
+> options.
 
-This fixes it.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-Bug hit 2.6.29 too. I'll send this to Linus and Greg tomorrow unless
-somebody thinks it's wrong. I've tested on POWER6 and verified the
-bug and the fix.
-
- arch/powerpc/kernel/cputable.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- linux-work.orig/arch/powerpc/kernel/cputable.c	2009-04-30 14:22:30.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/cputable.c	2009-04-30 14:22:41.000000000 +1000
-@@ -1833,8 +1833,8 @@ static void __init setup_cpu_spec(unsign
- 		 * and, in that case, keep the current value for
- 		 * oprofile_cpu_type.
- 		 */
--		if (old.oprofile_cpu_type == NULL)
--			t->oprofile_cpu_type = s->oprofile_cpu_type;
-+		if (old.oprofile_cpu_type != NULL)
-+			t->oprofile_cpu_type = old.oprofile_cpu_type;
- 	}
- 
- 	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
+Hmm, OK. Can you post the disassembly of your pidmap_init please?
