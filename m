@@ -3,16 +3,15 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DB07FDDE23
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:58:01 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 1E5C0DDED6
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:58:02 +1000 (EST)
 To: Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Neuling <mikey@neuling.org>
 Date: Thu, 30 Apr 2009 16:58:01 +1000
-Subject: [PATCH 0/4] powerpc: tlbie implementation for PowerPC ISA 2.06 and
-	cleanups for ppc-opcode.h
-In-Reply-To: <23749.1241051084@neuling.org>
-Message-Id: <1241074681.528764.881549582503.qpush@pale>
+Subject: [PATCH 3/4] powerpc: Enable MMU feature sections for inline asm
+In-Reply-To: <1241074681.528764.881549582503.qpush@pale>
+Message-Id: <20090430065801.B1D9712230@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,9 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These patches implement the tlbie instruction for PowerPC ISA 2.06 and a few cleanups for ppc-opcode.h
+From: Milton Miller <miltonm@bga.com>
 
+powerpc: Enable MMU feature sections for inline asm
+
+This adds the ability to do MMU feature sections for inline asm.
+
+Signed-off-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
---- 
-Fixed coding style for moved VSX instructions.  
-Correctly alphabetized the newly added instructions.
+---
+
+ arch/powerpc/include/asm/feature-fixups.h |   25 ++++++++++++++++++++-----
+ 1 file changed, 20 insertions(+), 5 deletions(-)
+
+Index: linux-2.6-ozlabs/arch/powerpc/include/asm/feature-fixups.h
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/feature-fixups.h
++++ linux-2.6-ozlabs/arch/powerpc/include/asm/feature-fixups.h
+@@ -8,8 +8,6 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
+-#ifdef __ASSEMBLY__
+-
+ /*
+  * Feature section common macros
+  *
+@@ -23,10 +21,12 @@
+ /* 64 bits kernel, 32 bits code (ie. vdso32) */
+ #define FTR_ENTRY_LONG		.llong
+ #define FTR_ENTRY_OFFSET	.long 0xffffffff; .long
++#elif defined(CONFIG_PPC64)
++#define FTR_ENTRY_LONG		.llong
++#define FTR_ENTRY_OFFSET	.llong
+ #else
+-/* 64 bit kernel 64 bit code, or 32 bit kernel 32 bit code */
+-#define FTR_ENTRY_LONG		PPC_LONG
+-#define FTR_ENTRY_OFFSET	PPC_LONG
++#define FTR_ENTRY_LONG		.long
++#define FTR_ENTRY_OFFSET	.long
+ #endif
+ 
+ #define START_FTR_SECTION(label)	label##1:
+@@ -141,6 +141,21 @@ label##5:					       	\
+ #define ALT_FW_FTR_SECTION_END_IFCLR(msk)	\
+ 	ALT_FW_FTR_SECTION_END_NESTED_IFCLR(msk, 97)
+ 
++#ifndef __ASSEMBLY__
++
++#define ASM_MMU_FTR_IF(section_if, section_else, msk, val)	\
++	stringify_in_c(BEGIN_MMU_FTR_SECTION)			\
++	section_if "; "						\
++	stringify_in_c(MMU_FTR_SECTION_ELSE)			\
++	section_else "; "					\
++	stringify_in_c(ALT_MMU_FTR_SECTION_END((msk), (val)))
++
++#define ASM_MMU_FTR_IFSET(section_if, section_else, msk)	\
++	ASM_MMU_FTR_IF(section_if, section_else, (msk), (msk))
++
++#define ASM_MMU_FTR_IFCLR(section_if, section_else, msk)	\
++	ASM_MMU_FTR_IF(section_if, section_else, (msk), 0)
++
+ #endif /* __ASSEMBLY__ */
+ 
+ /* LWSYNC feature sections */
