@@ -1,40 +1,27 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B3142DDE98
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:42:22 +1000 (EST)
-Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id n3U6eBHA004674
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:40:11 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n3U6gK2K1355966
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:42:20 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n3U6gJT2001585
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:42:20 +1000
-Message-ID: <49F9484E.1020105@in.ibm.com>
-Date: Thu, 30 Apr 2009 12:12:22 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+Return-Path: <dgaur@cdotd.ernet.in>
+Received: from sandesh.cdotd.ernet.in (sandesh.cdotd.ernet.in [196.1.105.47])
+	by ozlabs.org (Postfix) with ESMTP id D7BAEDDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:43:47 +1000 (EST)
+Received: from sandesh.cdotd.ernet.in (localhost [127.0.0.1])
+	by localhost.cdotd.ernet.in (Postfix) with ESMTP id 40250CFD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 12:11:55 +0530 (IST)
+Received: from mail1.cdotd.ernet.in (mail1.cdotd.ernet.in [196.1.105.196])by
+	sandesh.cdotd.ernet.in (Postfix) with ESMTP id 130EDCFCFBfor
+	<linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 12:11:55 +0530 (IST)
+Received: from cdotd.ernet.in (localhost.localdomain [127.0.0.1])by
+	mail1.cdotd.ernet.in (8.12.5/8.12.5) with ESMTP id n3U6pgSL025825for
+	<linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 12:21:42 +0530
+From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
+To: linuxppc-dev@ozlabs.org
+Subject: [2.6.29] MPC8560 Powerpc Port linux-2.6.29 
+Date: Thu, 30 Apr 2009 12:21:42 +0530
+Message-Id: <20090430065054.M32339@cdotd.ernet.in>
+In-Reply-To: <20090430032937.M98987@cdotd.ernet.in>
+References: <20090429110648.M98089@cdotd.ernet.in>
+	<20090430032937.M98987@cdotd.ernet.in>
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: Next April 28: boot failure on PowerPC with SLQB
-References: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
-	<49F6E421.401@in.ibm.com>
-	<84144f020904280422s6a9a277fjc4619c904f37e5ca@mail.gmail.com>
-	<20090429113604.GE3398@wotan.suse.de> <49F87FAB.9050408@in.ibm.com>
-	<20090430041146.GB23746@wotan.suse.de>
-	<49F938E4.2030703@in.ibm.com>
-	<20090430060300.GD23746@wotan.suse.de>
-In-Reply-To: <20090430060300.GD23746@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Christoph Lameter <cl@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	linux-next@vger.kernel.org
+Content-Type: text/plain;
+	charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,113 +31,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nick Piggin wrote:
-> On Thu, Apr 30, 2009 at 11:06:36AM +0530, Sachin Sant wrote:
->   
-> Hmm, OK. Can you post the disassembly of your pidmap_init please?
->   
-Here is the information.
+Hello all
 
-Unable to handle kernel paging request for data at address 0x00000010
-Faulting instruction address: 0xc0000000007d0404
-cpu 0x0: Vector: 300 (Data Access) at [c000000000a23bd0]
-    pc: c0000000007d0404: .pidmap_init+0x28/0x88
-    lr: c0000000007b0bbc: .start_kernel+0x458/0x51c
-    sp: c000000000a23e50
-   msr: 8000000000009032
-   dar: 10
- dsisr: 40000000
-  current = 0xc000000000955fc0
-  paca    = 0xc000000000af2400
-    pid   = 0, comm = swapper
-enter ? for help
-[c000000000a23ee0] c0000000007b0bbc .start_kernel+0x458/0x51c
-[c000000000a23f90] c0000000000083d8 .start_here_common+0x1c/0x44
-0:mon> ls .pidmap_init
-.pidmap_init: c0000000007d03dc
-0:mon> di c0000000007d03dc
-c0000000007d03dc  fbc1fff0      std     r30,-16(r1)
-c0000000007d03e0  ebc2b1a8      ld      r30,-20056(r2)
-c0000000007d03e4  39200010      li      r9,16
-c0000000007d03e8  7c0802a6      mflr    r0
-c0000000007d03ec  fba1ffe8      std     r29,-24(r1)
-c0000000007d03f0  f8010010      std     r0,16(r1)
-c0000000007d03f4  38000001      li      r0,1
-c0000000007d03f8  ebbe8008      ld      r29,-32760(r30)
-c0000000007d03fc  f821ff71      stdu    r1,-144(r1)
-c0000000007d0400  f93d0010      std     r9,16(r29)
-c0000000007d0404  7d6048a8      ldarx   r11,0,r9
-c0000000007d0408  7d6b0378      or      r11,r11,r0
-c0000000007d040c  7d6049ad      stdcx.  r11,0,r9
-c0000000007d0410  40c2fff4      bne-    c0000000007d0404        # .pidmap_init+0x28/0x88
-c0000000007d0414  381d0008      addi    r0,r29,8
-c0000000007d0418  7d200028      lwarx   r9,0,r0
-0:mon>
-c0000000007d041c  3129ffff      addic   r9,r9,-1
-c0000000007d0420  7d20012d      stwcx.  r9,0,r0
-c0000000007d0424  40c2fff4      bne-    c0000000007d0418        # .pidmap_init+0x3c/0x88
-c0000000007d0428  3cc00004      lis     r6,4
-c0000000007d042c  e87e8010      ld      r3,-32752(r30)
-c0000000007d0430  38800050      li      r4,80
-c0000000007d0434  60c62000      ori     r6,r6,8192
-c0000000007d0438  38a00008      li      r5,8
-c0000000007d043c  38e00000      li      r7,0
-c0000000007d0440  4b9716d9      bl      c000000000141b18        # .kmem_cache_create+0x0/0x2a0
-c0000000007d0444  60000000      nop
-c0000000007d0448  38210090      addi    r1,r1,144
-c0000000007d044c  f87d0098      std     r3,152(r29)
-c0000000007d0450  e8010010      ld      r0,16(r1)
-c0000000007d0454  eba1ffe8      ld      r29,-24(r1)
-c0000000007d0458  7c0803a6      mtlr    r0
-0:mon> r
-R00 = 0000000000000001   R16 = 00000000014f3150
-R01 = c000000000a23e50   R17 = 0000000000000000
-R02 = c000000000a17690   R18 = c0000000007f3150
-R03 = 000000000000001f   R19 = 0000000002f1fc90
-R04 = 0000000000000000   R20 = c0000000007f3168
-R05 = ffffffffffffffff   R21 = c000000000725e2f
-R06 = 00000000007974d4   R22 = 00000000007bb977
-R07 = 800000000c9b2cc0   R23 = 0000000002f1fc90
-R08 = 0000000000000000   R24 = 0000000002f1fc90
-R09 = 0000000000000010   R25 = c0000000007f3208
-R10 = 0000000000000000   R26 = 0000000000d00000
-R11 = c00000000095b0f8   R27 = c000000000b73b10
-R12 = 0000000028000082   R28 = c0000000007f0458
-R13 = c000000000af2400   R29 = c00000000095db00
-R14 = c0000000007f3218   R30 = c00000000098d5f0
-R15 = c000000000705c32   R31 = 0000000003c90000
-pc  = c0000000007d0404 .pidmap_init+0x28/0x88
-lr  = c0000000007b0bbc .start_kernel+0x458/0x51c
-msr = 8000000000009032   cr  = 28000084
-ctr = 0000000000136f8c   xer = 0000000000000010   trap =  300
-dar = 0000000000000010   dsisr = 40000000
-0:mon> di %pc
-c0000000007d0404  7d6048a8      ldarx   r11,0,r9
-c0000000007d0408  7d6b0378      or      r11,r11,r0
-c0000000007d040c  7d6049ad      stdcx.  r11,0,r9
-c0000000007d0410  40c2fff4      bne-    c0000000007d0404        # .pidmap_init+0x28/0x88
-c0000000007d0414  381d0008      addi    r0,r29,8
-c0000000007d0418  7d200028      lwarx   r9,0,r0
-c0000000007d041c  3129ffff      addic   r9,r9,-1
-c0000000007d0420  7d20012d      stwcx.  r9,0,r0
-c0000000007d0424  40c2fff4      bne-    c0000000007d0418        # .pidmap_init+0x3c/0x88
-c0000000007d0428  3cc00004      lis     r6,4
-c0000000007d042c  e87e8010      ld      r3,-32752(r30)
-c0000000007d0430  38800050      li      r4,80
-c0000000007d0434  60c62000      ori     r6,r6,8192
-c0000000007d0438  38a00008      li      r5,8
-c0000000007d043c  38e00000      li      r7,0
-c0000000007d0440  4b9716d9      bl      c000000000141b18        # .kmem_cache_create+0x0/0x2a0
-0:mon>
+I have a custom board with MPC8560 and 1GB DDR SDRAM. I am trying to port linux - 2.6.29
+on this board. The U-BOOT is already ported on the board and is working.
 
-Thanks
--Sachin
+The OS uImage is stored in code flash at address 0xe0000000 and OS is booted by U-BOOT 
+While OS do boot but after some prints weired errors start showing up. Rootfile system
+is NFS based . I have checked the register values with Hardware person using Trace32
+emulator and they are as expected.
 
--- 
+----------------------------------------------------------------------------------------
+FLASH: 32.5 MB
+L2:    256 KB enabled
+In:    serial
+Out:   serial
+Err:   serial
+Net:   TSEC1, TSEC2
+Hit any key to stop autoboot:  0
+WARNING: adjusting available memory to 30000000
+## Booting kernel from Legacy Image at e0000000 ...
+   Image Name:   Linux-2.6.29
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1451400 Bytes =  1.4 MB
+   Load Address: 00400000
+   Entry Point:  004005a8
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Using MPC85xx ADS machine description
+Memory CAM mapping: CAM0=256Mb, CAM1=256Mb, CAM2=256Mb residual: 256Mb
+Linux version 2.6.29 (deepak@Localhost) (gcc version 3.4.3 (MontaVista
+3.4.3-25.0.96.0600665 2006-05-179Found FSL PCI host bridge at 0x00000000a0008000.
+Firmware bus number: 0->0
+PCI host bridge /pci@a0008000 (primary) ranges:
+ MEM 0x0000000080000000..0x000000009fffffff -> 0x0000000080000000
+  IO 0x00000000a2000000..0x00000000a2ffffff -> 0x0000000000000000
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00030000
+  Normal   0x00030000 -> 0x00030000
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0: 0x00000000 -> 0x00030000
+MMU: Allocated 1088 bytes of context maps for 255 contexts
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 195072
+Kernel command line: console=ttyCPM0,9600 root=/dev/nfs rw nfsroot=rootpath ip=dhcp
+mpic: Setting up MPIC " OpenPIC  " version 1.2 at a0040000, max 1 CPUs
+mpic: ISU size: 56, shift: 6, mask: 3f
+mpic: Initializing for 56 sources
+PID hash table entries: 4096 (order: 12, 16384 bytes)
+clocksource: timebase mult[79364d9] shift[22] registered
+console [ttyCPM0] enabled
+Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+BUG: Bad page state in process swapper  pfn:2fc69
+page:c0d0ed20 flags:(null) count:0 mapcount:-524288 mapping:(null) index:0
+Call Trace:
+[c02dbef0] [c0007a84] show_stack+0x48/0x174 (unreliable)
+[c02dbf20] [c006fa14] bad_page+0x9c/0x160
+[c02dbf40] [c0071564] __free_pages_ok+0x2c8/0x3a8
+[c02dbf70] [c02a9788] free_all_bootmem_core+0x1a4/0x240
+[c02dbfa0] [c02a4544] mem_init+0x64/0x178
+[c02dbfc0] [c029a67c] start_kernel+0x1d0/0x2a8
+[c02dbff0] [c00003b4] skpinv+0x2dc/0x318
+BUG: Bad page state in process swapper  pfn:2fc8f
+page:c0d0f1e0 flags:(null) count:0 mapcount:7799008 mapping:(null) index:0
+Call Trace:
+[c02dbef0] [c0007a84] show_stack+0x48/0x174 (unreliable)
+[c02dbf20] [c006fa14] bad_page+0x9c/0x160
+[c02dbf40] [c0071564] __free_pages_ok+0x2c8/0x3a8
+[c02dbf70] [c02a9788] free_all_bootmem_core+0x1a4/0x240
+[c02dbfa0] [c02a4544] mem_init+0x64/0x178
+[c02dbfc0] [c029a67c] start_kernel+0x1d0/0x2a8
+[c02dbff0] [c00003b4] skpinv+0x2dc/0x318
+BUG: Bad page state in process swapper  pfn:2fcc4
+page:c0d0f880 flags:(null) count:0 mapcount:7799040 mapping:(null) index:0
+Call Trace:
+[c02dbef0] [c0007a84] show_stack+0x48/0x174 (unreliable)
+[c02dbf20] [c006fa14] bad_page+0x9c/0x160
+[c02dbf40] [c0071564] __free_pages_ok+0x2c8/0x3a8
+[c02dbf70] [c02a9788] free_all_bootmem_core+0x1a4/0x240
+[c02dbfa0] [c02a4544] mem_init+0x64/0x178
+[c02dbfc0] [c029a67c] start_kernel+0x1d0/0x2a8
+[c02dbff0] [c00003b4] skpinv+0x2dc/0x318
+BUG: Bad page state in process swapper  pfn:2fce8
+--------------------------------------------------------------------------------------
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+Can anyone kindly help me in understanding the issue.
+
+with regards,
+
+Deepak Gaur
+------- End of Forwarded Message -------
+
+
+Deepak Gaur
