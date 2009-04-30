@@ -1,22 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D5D12DDE28
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 14:37:54 +1000 (EST)
-Message-Id: <E3621358-6929-4746-88AC-F6CE7B79DF58@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Haiying Wang <Haiying.Wang@freescale.com>
-In-Reply-To: <1241028883630-git-send-email-Haiying.Wang@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 4/6] powerpc/qe: update QE Serial Number
-Date: Wed, 29 Apr 2009 23:35:43 -0500
-References: <1241028878175-git-send-email-Haiying.Wang@freescale.com>
-	<12410288792524-git-send-email-Haiying.Wang@freescale.com>
-	<12410288811793-git-send-email-Haiying.Wang@freescale.com>
-	<1241028883630-git-send-email-Haiying.Wang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <pku.leo@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 0DAB2DDE26
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 15:10:55 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so916656ywt.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 22:10:53 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <20090428.043929.171852977.davem@davemloft.net>
+References: <2a27d3730904280316l7049bddbie914907b16ccfff6@mail.gmail.com>
+	<1240913737-23773-1-git-send-email-leoli@freescale.com>
+	<20090428.043929.171852977.davem@davemloft.net>
+Date: Thu, 30 Apr 2009 13:10:53 +0800
+Message-ID: <2a27d3730904292210q67e18274nf6676a054b780639@mail.gmail.com>
+Subject: Re: [PATCH] rapidio: add common mapping APIs for RapidIO memory
+	access
+From: Li Yang <leoli@freescale.com>
+To: David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: zw@zh-kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Apr 29, 2009, at 1:14 PM, Haiying Wang wrote:
-
-> The latest QE chip may have more Serial Number(SNUM)s of thread to  
-> use. We will
-> get the number of SNUMs from device tree by reading the new property  
-> "num-snums"
-> , and set 28 as the default number of SNUMs so that it is compatible  
-> with the
-> old QE chips' device trees  which don't have this new property.
-> The macro QE_NUM_OF_SNUM is defined as the maximum number in QE snum  
-> table which
-> is 256.
-> Also we update the snum_init[] array with 18 more new SNUMs which are
-> confirmed to be useful on new chip.
+On Tue, Apr 28, 2009 at 7:39 PM, David Miller <davem@davemloft.net> wrote:
 >
-> Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
-> ---
-> .../powerpc/dts-bindings/fsl/cpm_qe/qe.txt         |    1 +
-> arch/powerpc/include/asm/qe.h                      |    3 +-
-> arch/powerpc/sysdev/qe_lib/qe.c                    |   47 +++++++++++ 
-> +++++++--
-> 3 files changed, 46 insertions(+), 5 deletions(-)
+> Please number your patches. :-/
+>
+> There is no way for anyone to be able to tell in what order
+> your changes should be applied.
 
-how about updating the existing .dts for this as well.  (One patch w/ 
-this and # riscs is fine).
+Sorry for that.  I thought I have added -n when doing the
+git-format-patch, but it turns out not the case. :(  Will double check
+next time.
 
-- k
+- Leo
