@@ -2,23 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7B9BEDDF7A
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 21:48:25 +1000 (EST)
-Message-Id: <88682934-D308-457B-9715-6950C225ACE1@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 85964DDF92
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 21:50:22 +1000 (EST)
+Message-Id: <81C5EBA4-87B0-4132-B527-3CC35962B668@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <2a27d3730904292210q67e18274nf6676a054b780639@mail.gmail.com>
+To: Haiying Wang <Haiying.Wang@freescale.com>
+In-Reply-To: <12410288792524-git-send-email-Haiying.Wang@freescale.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] rapidio: add common mapping APIs for RapidIO memory access
-Date: Thu, 30 Apr 2009 06:45:18 -0500
-References: <2a27d3730904280316l7049bddbie914907b16ccfff6@mail.gmail.com>
-	<1240913737-23773-1-git-send-email-leoli@freescale.com>
-	<20090428.043929.171852977.davem@davemloft.net>
-	<2a27d3730904292210q67e18274nf6676a054b780639@mail.gmail.com>
-Cc: zw@zh-kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org
+Subject: Re: [PATCH 2/6] powerpc/qe: update risc allocation for QE
+Date: Thu, 30 Apr 2009 06:48:11 -0500
+References: <1241028878175-git-send-email-Haiying.Wang@freescale.com>
+	<12410288792524-git-send-email-Haiying.Wang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +25,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 30, 2009, at 12:10 AM, Li Yang wrote:
+On Apr 29, 2009, at 1:14 PM, Haiying Wang wrote:
 
-> On Tue, Apr 28, 2009 at 7:39 PM, David Miller <davem@davemloft.net>  
-> wrote:
->>
->> Please number your patches. :-/
->>
->> There is no way for anyone to be able to tell in what order
->> your changes should be applied.
+> Change the RISC allocation to macros instead of enum, add function  
+> to read the
+> number of risc engines from the new property "num-riscs" under qe  
+> node in dts.
+> Add new property "num-riscs" description in qe.txt
 >
-> Sorry for that.  I thought I have added -n when doing the
-> git-format-patch, but it turns out not the case. :(  Will double check
-> next time.
->
-> - Leo
+> Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+> ---
+> .../powerpc/dts-bindings/fsl/cpm_qe/qe.txt         |    1 +
+> arch/powerpc/include/asm/qe.h                      |   18 ++++++++----
+> arch/powerpc/sysdev/qe_lib/qe.c                    |   28 +++++++++++ 
+> +++++++++
+> 3 files changed, 41 insertions(+), 6 deletions(-)
 
-Do you plan on reposting them?
+I'm wondering if these should be fsl,num-riscs or fsl,qe-num-riscs  
+since its a new property.  Ditto for num-snums.
+
+Also, shouldn't both of these be in the Required section of the binding.
 
 - k
