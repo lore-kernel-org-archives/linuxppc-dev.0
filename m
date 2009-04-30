@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 9046EDF45A
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 09:48:26 +1000 (EST)
-Date: Fri, 1 May 2009 03:48:24 +0400
+	by ozlabs.org (Postfix) with ESMTP id DFACFDF46F
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 09:48:27 +1000 (EST)
+Date: Fri, 1 May 2009 03:48:26 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/9] spi_mpc83xx: Add small delay after asserting
-	chip-select line
-Message-ID: <20090430234824.GC7901@oksana.dev.rtsoft.ru>
+Subject: [PATCH 4/9] powerpc/86xx: Add MMC SPI support for MPC8610HPCD boards
+Message-ID: <20090430234826.GD7901@oksana.dev.rtsoft.ru>
 References: <20090430234739.GA27709@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,32 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is needed for some underlaying GPIO controllers that may be
-a bit slow, or if chip-select signal need some time to stabilize.
-
-For what it's worth, we already have the similar delay for
-chip-select de-assertion case.
+This patch adds spi and mmc-spi-slot nodes, plus a gpio-controller
+for PIXIS' sdcsr bank that is used for managing SPI chip-select and
+for reading card's states.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/spi/spi_mpc83xx.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts     |   32 ++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    4 +++
+ 2 files changed, 36 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-index 08b49d2..d378d5e 100644
---- a/drivers/spi/spi_mpc83xx.c
-+++ b/drivers/spi/spi_mpc83xx.c
-@@ -383,8 +383,10 @@ static void mpc83xx_spi_work(struct work_struct *work)
- 					break;
- 			}
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 1bd3ebe..dbb80f7 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -100,8 +100,18 @@
+ 		};
  
--			if (cs_change)
-+			if (cs_change) {
- 				mpc83xx_spi_chipselect(spi, BITBANG_CS_ACTIVE);
-+				ndelay(nsecs);
-+			}
- 			cs_change = t->cs_change;
- 			if (t->len)
- 				status = mpc83xx_spi_bufs(spi, t);
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,fpga-pixis";
+ 			reg = <3 0 0x20>;
++			ranges = <0 3 0 0x20>;
++
++			sdcsr_pio: gpio-controller@a {
++				#gpio-cells = <2>;
++				compatible = "fsl,fpga-pixis-gpio-bank";
++				reg = <0xa 1>;
++				gpio-controller;
++			};
+ 		};
+ 	};
+ 
+@@ -164,6 +174,28 @@
+ 			interrupt-parent = <&mpic>;
+ 		};
+ 
++		spi@7000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc8610-spi", "fsl,spi";
++			reg = <0x7000 0x40>;
++			cell-index = <0>;
++			interrupts = <59 2>;
++			interrupt-parent = <&mpic>;
++			mode = "cpu";
++			gpios = <&sdcsr_pio 7 0>;
++
++			mmc-slot@0 {
++				compatible = "fsl,mpc8610hpcd-mmc-slot",
++					     "mmc-spi-slot";
++				reg = <0>;
++				gpios = <&sdcsr_pio 0 1   /* nCD */
++					 &sdcsr_pio 1 0>; /*  WP */
++				voltage-ranges = <3300 3300>;
++				spi-max-frequency = <50000000>;
++			};
++		};
++
+ 		display@2c000 {
+ 			compatible = "fsl,diu";
+ 			reg = <0x2c000 100>;
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 3f49a6f..ce64572 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -38,6 +38,7 @@
+ #include <linux/of_platform.h>
+ #include <sysdev/fsl_pci.h>
+ #include <sysdev/fsl_soc.h>
++#include <sysdev/simple_gpio.h>
+ 
+ #include "mpc86xx.h"
+ 
+@@ -52,6 +53,9 @@ static struct of_device_id __initdata mpc8610_ids[] = {
+ 
+ static int __init mpc8610_declare_of_platform_devices(void)
+ {
++	/* Firstly, register PIXIS GPIOs. */
++	simple_gpiochip_init("fsl,fpga-pixis-gpio-bank");
++
+ 	/* Without this call, the SSI device driver won't get probed. */
+ 	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+ 
 -- 
 1.6.2.2
