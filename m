@@ -1,26 +1,27 @@
-Return-Path: <penberg@cs.helsinki.fi>
-Received: from mail.cs.helsinki.fi (courier.cs.helsinki.fi [128.214.9.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B781DDDED9
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 20:44:05 +1000 (EST)
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id AA0EFDDF00
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 21:00:11 +1000 (EST)
+Date: Thu, 30 Apr 2009 21:00:04 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
 Subject: Re: Next April 28: boot failure on PowerPC with SLQB
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20090430103528.GA6900@wotan.suse.de>
+Message-Id: <20090430210004.05a61841.sfr@canb.auug.org.au>
+In-Reply-To: <1241087884.19252.5.camel@penberg-laptop>
 References: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
 	<49F6E421.401@in.ibm.com>
 	<84144f020904280422s6a9a277fjc4619c904f37e5ca@mail.gmail.com>
 	<20090429113604.GE3398@wotan.suse.de> <49F87FAB.9050408@in.ibm.com>
-	<20090430041146.GB23746@wotan.suse.de> <49F938E4.2030703@in.ibm.com>
-	<20090430064127.GF23746@wotan.suse.de> <49F973A0.8070106@in.ibm.com>
-	<20090430103528.GA6900@wotan.suse.de>
-Date: Thu, 30 Apr 2009 13:38:04 +0300
-Message-Id: <1241087884.19252.5.camel@penberg-laptop>
+	<20090430041146.GB23746@wotan.suse.de>
+	<49F938E4.2030703@in.ibm.com>
+	<20090430064127.GF23746@wotan.suse.de>
+	<49F973A0.8070106@in.ibm.com> <20090430103528.GA6900@wotan.suse.de>
+	<1241087884.19252.5.camel@penberg-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Christoph Lameter <cl@linux-foundation.org>,
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__30_Apr_2009_21_00_04_+1000_8SIvc0NdE37EwO69"
+Cc: Nick Piggin <npiggin@suse.de>, Christoph Lameter <cl@linux-foundation.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
 	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -32,53 +33,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-04-30 at 12:35 +0200, Nick Piggin wrote:
-> On Thu, Apr 30, 2009 at 03:17:12PM +0530, Sachin Sant wrote:
-> > Nick Piggin wrote:
-> > >Hmm, forget that. Actually my last patch had a silly mistake because I
-> > >forgot MAX_ORDER shift is applied to PAGE_SIZE, rather than 1. So
-> > >kmalloc(PAGE_SIZE) was failing as too large.
-> > >
-> > >This patch should do the trick I hope.
-> > >  
-> > Yes this patch fixed the issue for me. Thanks Nick.
-> 
-> Thanks very much for reporting and testing.
-> 
-> Pekka, can you apply this patch please?
+--Signature=_Thu__30_Apr_2009_21_00_04_+1000_8SIvc0NdE37EwO69
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sure. Sachin, can I add a "Reported-by" and "Tested-by" tags from you to
-the patch description?
+Hi Pekka, Nick,
 
-Stephen, does this patch fix all the boot problems for you as well?
+On Thu, 30 Apr 2009 13:38:04 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wr=
+ote:
+>
+> Stephen, does this patch fix all the boot problems for you as well?
 
-> --
-> SLQB: fix slab calculation
-> 
-> SLQB didn't consider MAX_ORDER when defining which sizes of kmalloc
-> slabs to create. It panics at boot if it tries to create a cache
-> which exceeds MAX_ORDER-1.
+Unfortunately not, I am still getting this:
 
-Nit: this _really_ needs a pointer to the discussion or bit more details
-on the issue. But I can fix that when I merge the patch.
+Memory: 1967708k/2097152k available (9836k kernel code, 129444k reserved, 1=
+440k data, 8422k bss, 2092k init)
+Calibrating delay loop... 1021.95 BogoMIPS (lpj=3D2043904)
+Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
+Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
+Mount-cache hash table entries: 256
+Unable to handle kernel paging request for data at address 0x00000008
+Faulting instruction address: 0xc00000000010ea18
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=3D128 NUMA pSeries
+Modules linked in:
+NIP: c00000000010ea18 LR: c00000000010e9e8 CTR: 0000000000000001
+REGS: c000000000b07690 TRAP: 0300   Not tainted  (2.6.30-rc3-autokern1)
+MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 48000082  XER: 00000005
+DAR: 0000000000000008, DSISR: 0000000042000000
+TASK =3D c0000000009d55d0[0] 'swapper' THREAD: c000000000b04000 CPU: 0
+GPR00: c00000007e001030 c000000000b07910 c000000000b05588 c000000000b4a680=
+=20
+GPR04: c00000007e001000 c0000000009d5f18 0000000000000002 c0000000009d5f18=
+=20
+GPR08: 000000000000001a 0000000000000001 0000000000000000 0000000000000001=
+=20
+GPR12: 0000000088000084 c000000000b53280 0000000000000000 0000000003500000=
+=20
+GPR16: c0000000006c8f70 c0000000006c76e8 0000000000000000 00000000003d8800=
+=20
+GPR20: 0000000003cc7d90 c0000000007c7d90 0000000000000010 0000000000000000=
+=20
+GPR24: c000000000b656f0 f000000003347488 c000000000b4a680 f000000003347488=
+=20
+GPR28: c00000007e001180 c00000007e001000 c000000000a6f010 f0000000033474a8=
+=20
+NIP [c00000000010ea18] .__slab_alloc_page+0x380/0x3dc
+LR [c00000000010e9e8] .__slab_alloc_page+0x350/0x3dc
+Call Trace:
+[c000000000b07910] [c00000000010e9e8] .__slab_alloc_page+0x350/0x3dc (unrel=
+iable)
+[c000000000b079d0] [c00000000010f408] .__remote_slab_alloc+0x60/0x138
+[c000000000b07a80] [c000000000110d40] .__kmalloc_track_caller+0xb4/0x23c
+[c000000000b07b30] [c0000000000ec6e8] .kstrdup+0x4c/0x8c
+[c000000000b07bd0] [c000000000136f88] .alloc_vfsmnt+0xb0/0x178
+[c000000000b07c70] [c00000000011cb80] .vfs_kern_mount+0x40/0xf8
+[c000000000b07d10] [c0000000007ae460] .sysfs_init+0x90/0x108
+[c000000000b07db0] [c0000000007ad058] .mnt_init+0xbc/0x254
+[c000000000b07e50] [c0000000007aca00] .vfs_caches_init+0x150/0x184
+[c000000000b07ee0] [c000000000790a30] .start_kernel+0x418/0x484
+[c000000000b07f90] [c000000000008368] .start_here_common+0x1c/0x34
+Instruction dump:
+60000000 e93d0040 e97d0028 381d0030 7fa4eb78 e95d0030 7f43d378 39290001=20
+396b0001 f93d0040 f97d0028 f95b0020 <fbea0008> fbfd0030 f81f0008 4bfffb59=20
+---[ end trace 31fd0ba7d8756001 ]---
 
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> ---
->  include/linux/slqb_def.h |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/slqb_def.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/slqb_def.h
-> +++ linux-2.6/include/linux/slqb_def.h
-> @@ -172,7 +172,8 @@ struct kmem_cache {
->  #endif
->  
->  #define KMALLOC_SHIFT_LOW ilog2(KMALLOC_MIN_SIZE)
-> -#define KMALLOC_SHIFT_SLQB_HIGH (PAGE_SHIFT + 9)
-> +#define KMALLOC_SHIFT_SLQB_HIGH (PAGE_SHIFT + 			\
-> +				 ((9 <= (MAX_ORDER - 1)) ? 9 : (MAX_ORDER - 1)))
->  
->  extern struct kmem_cache kmalloc_caches[KMALLOC_SHIFT_SLQB_HIGH + 1];
->  extern struct kmem_cache kmalloc_caches_dma[KMALLOC_SHIFT_SLQB_HIGH + 1];
+This is back to what I got before Nick's first patch.
+
+This partition has 2G of memory on node 1 (nothing in node 0) starting at
+address 0.  The kernel is using 64k pages.
+
+Let me now if I can tell you anything else or try something.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__30_Apr_2009_21_00_04_+1000_8SIvc0NdE37EwO69
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkn5hLQACgkQjjKRsyhoI8wqOgCgjAuRx41fI8NtYCfgNFISkILN
+rwsAoLJbogZb4M2C6J1OS76w1JYChTnd
+=6bGH
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__30_Apr_2009_21_00_04_+1000_8SIvc0NdE37EwO69--
