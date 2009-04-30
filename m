@@ -3,18 +3,21 @@ Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
 	[18.7.7.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E08A8DDED4
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 10:05:32 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id F345F4FDB9
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 10:05:38 +1000 (EST)
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 4/8] powerpc: use NOSAVE_DATA macro for .data.nosave section.
-Date: Thu, 30 Apr 2009 19:56:13 -0400
-Message-Id: <1241135777-9462-5-git-send-email-tabbott@mit.edu>
-In-Reply-To: <1241135777-9462-4-git-send-email-tabbott@mit.edu>
+Subject: [PATCH 7/8] powerpc: use new macro for .data.read_mostly section.
+Date: Thu, 30 Apr 2009 19:56:16 -0400
+Message-Id: <1241135777-9462-8-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241135777-9462-7-git-send-email-tabbott@mit.edu>
 References: <1241135777-9462-1-git-send-email-tabbott@mit.edu>
 	<1241135777-9462-2-git-send-email-tabbott@mit.edu>
 	<1241135777-9462-3-git-send-email-tabbott@mit.edu>
 	<1241135777-9462-4-git-send-email-tabbott@mit.edu>
+	<1241135777-9462-5-git-send-email-tabbott@mit.edu>
+	<1241135777-9462-6-git-send-email-tabbott@mit.edu>
+	<1241135777-9462-7-git-send-email-tabbott@mit.edu>
 Cc: Denys Vlasenko <vda.linux@googlemail.com>, Jeff Arnold <jbarnold@mit.edu>,
 	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
 	Anders Kaseorg <andersk@mit.edu>, linuxppc-dev@ozlabs.org,
@@ -29,39 +32,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-.data.nosave should not need a separate output section; this change
-moves it into the .data section.
+.data.read_mostly should not need a separate output section; this
+change moves it into the .data section.
 
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@ozlabs.org
 ---
- arch/powerpc/kernel/vmlinux.lds.S |    9 +--------
- 1 files changed, 1 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/vmlinux.lds.S |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index d3dcea0..4223892 100644
+index f91d7c1..c982827 100644
 --- a/arch/powerpc/kernel/vmlinux.lds.S
 +++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -222,6 +222,7 @@ SECTIONS
- 
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+@@ -1,3 +1,4 @@
++
+ #ifdef CONFIG_PPC64
+ #define PROVIDE32(x)	PROVIDE(__unused__##x)
+ #else
+@@ -227,6 +228,7 @@ SECTIONS
  		PAGE_ALIGNED_DATA
-+		NOSAVE_DATA
+ 		NOSAVE_DATA
+ 		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
++		READ_MOSTLY_DATA(L1_CACHE_BYTES)
  		DATA_DATA
  #ifdef CONFIG_PPC32
  		*(.sdata)
-@@ -268,14 +269,6 @@ SECTIONS
- 		*(.data.read_mostly)
- 	}
+@@ -254,11 +256,6 @@ SECTIONS
+ 	_edata  =  .;
+ 	PROVIDE32 (edata = .);
  
--	. = ALIGN(PAGE_SIZE);
--	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
+-	. = ALIGN(L1_CACHE_BYTES);
+-	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
+-		*(.data.read_mostly)
 -	}
 -
  /*
