@@ -1,19 +1,31 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.168])
-	by ozlabs.org (Postfix) with ESMTP id 9B2E2DE13C
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 10:24:57 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so1055290wfg.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 17:24:56 -0700 (PDT)
-Date: Wed, 29 Apr 2009 20:24:48 -0400
-From: Josh Boyer <jwboyer@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Need a patch tested on a windtunnel powermac
-Message-ID: <20090430002448.GA5208@hansolo.jdub.homelinux.org>
-References: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B4EC1DDDFA
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 13:07:22 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n3U371mi011310
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 20:07:12 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id n3U370AL024858
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Apr 2009 22:07:01 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: USB does not work on mpc8347
+Date: Thu, 30 Apr 2009 11:06:59 +0800
+Message-ID: <3A45394FD742FA419B760BB8D398F9ED3CB529@zch01exm26.fsl.freescale.net>
+In-Reply-To: <200904300112.AA00771@cj3020122-b.jcom.home.ne.jp>
+References: <3A45394FD742FA419B760BB8D398F9ED2FAE0B@zch01exm26.fsl.freescale.net>
+	<200904300112.AA00771@cj3020122-b.jcom.home.ne.jp>
+From: "Li Yang-R58472" <LeoLi@freescale.com>
+To: "yamazaki" <yamazaki-seiji@jcom.home.ne.jp>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +35,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 30, 2009 at 09:30:59AM +1000, Paul Mackerras wrote:
->Does anyone here still have a "windtunnel" powermac (PowerMac3,6)
->machine running Linux?  We need someone to test Jean Delvare's patch
->to the therm_windtunnel driver.  The patch is at:
+>Hi Leo
 >
->http://patchwork.ozlabs.org/patch/26095/
+>USB work on mpc8347 now.
+>Thank you for your help.
+>The cause was Clock signal was not connected to USB.
 >
->I don't have a windtunnel machine myself - I have a PowerMac3,5 but
->not a PowerMac3,6.
+>And I have the other problem.
+>I need to java run time environment on mpc8347.
+>I do not know where i can get it.
+>Could you tell me if you know.
 
-I might have one.  I'll pull the G4 I have out of it's box and check tomorrow.
+I have no particular knowledge about installing JRE on Linux.  Google
+leads me to this link which might be helpful: http://openjdk.java.net/
 
-josh
+- Leo
