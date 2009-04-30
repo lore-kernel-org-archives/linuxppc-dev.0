@@ -1,19 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D8B04DDED1
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:05:19 +1000 (EST)
-Subject: Re: [PATCH 1/2] Add support for Designware SATA controller driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Feng Kan <fkan@amcc.com>
-In-Reply-To: <1241041345-19479-1-git-send-email-fkan@amcc.com>
-References: <1241041345-19479-1-git-send-email-fkan@amcc.com>
-Content-Type: text/plain
-Date: Thu, 30 Apr 2009 16:05:11 +1000
-Message-Id: <1241071511.29501.14.camel@pasglop>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3616DDDE0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 16:41:35 +1000 (EST)
+Date: Thu, 30 Apr 2009 08:41:27 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: Next April 28: boot failure on PowerPC with SLQB
+Message-ID: <20090430064127.GF23746@wotan.suse.de>
+References: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
+	<49F6E421.401@in.ibm.com>
+	<84144f020904280422s6a9a277fjc4619c904f37e5ca@mail.gmail.com>
+	<20090429113604.GE3398@wotan.suse.de> <49F87FAB.9050408@in.ibm.com>
+	<20090430041146.GB23746@wotan.suse.de>
+	<49F938E4.2030703@in.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49F938E4.2030703@in.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-04-29 at 14:42 -0700, Feng Kan wrote:
-> Signed-off-by: Feng Kan <fkan@amcc.com>
-> ---
->  drivers/ata/Kconfig    |   76 +-
->  drivers/ata/Makefile   |    1 +
->  drivers/ata/sata_dwc.c | 2047 ++++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 2091 insertions(+), 33 deletions(-)
->  create mode 100644 drivers/ata/sata_dwc.c
-> 
-> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-> index 0bcf264..5321e47 100644
-> --- a/drivers/ata/Kconfig
-> +++ b/drivers/ata/Kconfig
-> @@ -72,56 +72,66 @@ config SATA_FSL
->  
->  	  If unsure, say N.
->  
-> -config ATA_SFF
-> -	bool "ATA SFF support"
-> -	default y
+On Thu, Apr 30, 2009 at 11:06:36AM +0530, Sachin Sant wrote:
+> Nick Piggin wrote:
+> >Well kmalloc is failing. It should not be though, even if the
+> >current node is offline, it should be able to fall back to other
+> >nodes. Stephen's trace indicates the same thing.
+> >
+> >Could you try the following patch please, and capture the output
+> >it generates?
+> With this patch i don't get any extra information other that what is 
+> already reported.
+> Have attached the boot log captured using loglevel=8 mminit_loglevel=4 
+> options.
 
-Hi Feng !
+Hmm, forget that. Actually my last patch had a silly mistake because I
+forgot MAX_ORDER shift is applied to PAGE_SIZE, rather than 1. So
+kmalloc(PAGE_SIZE) was failing as too large.
 
-Nice to see this driver finally submitted !
+This patch should do the trick I hope.
 
-However, it should be sent to the linux-ide mailing list in order to be
-reviewed by the right people (though you should keep linuxppc-dev on
-CC).
+Thanks,
+Nick
+---
+ include/linux/slqb_def.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Also, I think you want to avoid that Kconfig churn, just add your option
-as a drop-in, don't re-arrange half of the file while at it :-)
-
-Cheers,
-Ben.
+Index: linux-2.6/include/linux/slqb_def.h
+===================================================================
+--- linux-2.6.orig/include/linux/slqb_def.h
++++ linux-2.6/include/linux/slqb_def.h
+@@ -172,7 +172,8 @@ struct kmem_cache {
+ #endif
+ 
+ #define KMALLOC_SHIFT_LOW ilog2(KMALLOC_MIN_SIZE)
+-#define KMALLOC_SHIFT_SLQB_HIGH (PAGE_SHIFT + 9)
++#define KMALLOC_SHIFT_SLQB_HIGH (PAGE_SHIFT + 			\
++				 ((9 <= (MAX_ORDER - 1)) ? 9 : (MAX_ORDER - 1)))
+ 
+ extern struct kmem_cache kmalloc_caches[KMALLOC_SHIFT_SLQB_HIGH + 1];
+ extern struct kmem_cache kmalloc_caches_dma[KMALLOC_SHIFT_SLQB_HIGH + 1];
