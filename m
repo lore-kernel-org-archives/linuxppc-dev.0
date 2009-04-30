@@ -2,15 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7DAA7DE089
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 00:14:13 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id D4F59DDF4A
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 00:18:24 +1000 (EST)
+Message-Id: <EAC6B615-35F2-4CD9-A7E8-FAAD4B9D9DF3@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/pci: Move pseries code into pseries platform specific
-	area
-Date: Thu, 30 Apr 2009 09:14:06 -0500
-Message-Id: <1241100846-14216-1-git-send-email-galak@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1241099366.7356.4.camel@concordia>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 0/9] powerpc/pci: clean up direct access to sysdata
+Date: Thu, 30 Apr 2009 09:18:11 -0500
+References: <1241096999-11164-1-git-send-email-galak@kernel.crashing.org>
+	<1241099366.7356.4.camel@concordia>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,125 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There doesn't appear to be any specific reason that we need to setup the
-pseries specific notifier in generic arch pci code.  Move it into pseries
-land.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/pci_dn.c           |   28 +---------------------------
- arch/powerpc/platforms/pseries/setup.c |   27 +++++++++++++++++++++++++++
- 2 files changed, 28 insertions(+), 27 deletions(-)
+On Apr 30, 2009, at 8:49 AM, Michael Ellerman wrote:
 
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 1c67de5..d5e36e5 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -27,7 +27,6 @@
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/pci-bridge.h>
--#include <asm/pSeries_reconfig.h>
- #include <asm/ppc-pci.h>
- #include <asm/firmware.h>
- 
-@@ -35,7 +34,7 @@
-  * Traverse_func that inits the PCI fields of the device node.
-  * NOTE: this *must* be done before read/write config to the device.
-  */
--static void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
-+void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
- {
- 	struct pci_controller *phb = data;
- 	const int *type =
-@@ -184,29 +183,6 @@ struct device_node *fetch_dev_dn(struct pci_dev *dev)
- }
- EXPORT_SYMBOL(fetch_dev_dn);
- 
--static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
--{
--	struct device_node *np = node;
--	struct pci_dn *pci = NULL;
--	int err = NOTIFY_OK;
--
--	switch (action) {
--	case PSERIES_RECONFIG_ADD:
--		pci = np->parent->data;
--		if (pci)
--			update_dn_pci_info(np, pci->phb);
--		break;
--	default:
--		err = NOTIFY_DONE;
--		break;
--	}
--	return err;
--}
--
--static struct notifier_block pci_dn_reconfig_nb = {
--	.notifier_call = pci_dn_reconfig_notifier,
--};
--
- /** 
-  * pci_devs_phb_init - Initialize phbs and pci devs under them.
-  * 
-@@ -223,6 +199,4 @@ void __init pci_devs_phb_init(void)
- 	/* This must be done first so the device nodes have valid pci info! */
- 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
- 		pci_devs_phb_init_dynamic(phb);
--
--	pSeries_reconfig_notifier_register(&pci_dn_reconfig_nb);
- }
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index ec34170..096ea1b 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -63,6 +63,7 @@
- #include <asm/smp.h>
- #include <asm/firmware.h>
- #include <asm/eeh.h>
-+#include <asm/pSeries_reconfig.h>
- 
- #include "plpar_wrappers.h"
- #include "pseries.h"
-@@ -254,6 +255,31 @@ static void __init pseries_discover_pic(void)
- 	       " interrupt-controller\n");
- }
- 
-+extern void * update_dn_pci_info(struct device_node *dn, void *data);
-+
-+static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
-+{
-+	struct device_node *np = node;
-+	struct pci_dn *pci = NULL;
-+	int err = NOTIFY_OK;
-+
-+	switch (action) {
-+	case PSERIES_RECONFIG_ADD:
-+		pci = np->parent->data;
-+		if (pci)
-+			update_dn_pci_info(np, pci->phb);
-+		break;
-+	default:
-+		err = NOTIFY_DONE;
-+		break;
-+	}
-+	return err;
-+}
-+
-+static struct notifier_block pci_dn_reconfig_nb = {
-+	.notifier_call = pci_dn_reconfig_notifier,
-+};
-+
- static void __init pSeries_setup_arch(void)
- {
- 	/* Discover PIC type and setup ppc_md accordingly */
-@@ -271,6 +297,7 @@ static void __init pSeries_setup_arch(void)
- 	/* Find and initialize PCI host bridges */
- 	init_pci_config_tokens();
- 	find_and_init_phbs();
-+	pSeries_reconfig_notifier_register(&pci_dn_reconfig_nb);
- 	eeh_init();
- 
- 	pSeries_nvram_init();
--- 
-1.6.0.6
+> On Thu, 2009-04-30 at 08:09 -0500, Kumar Gala wrote:
+>> We shouldn't be accessing sysdata directly.  In the future we might  
+>> have
+>> sysdata be a device_node on ppc32 to match ppc64.  Direct access  
+>> would make that
+>> a bit difficult.
+>>
+>> If someone can look at the iseries code I would appreciate that:
+>>
+>> arch/powerpc/platforms/iseries/pci.c:            
+>> iomm_table[current_iomm_table_entry] = dev->sysdata;
+>> arch/powerpc/platforms/iseries/pci.c:                    
+>> iseries_ds_addr(dev->sysdata) | (bar_num << 24);
+>> arch/powerpc/platforms/iseries/pci.c:   pdev->sysdata = node;
+>
+> It looks like it's basically doing the same logic as
+> pci_device_to_OF_node(), and fetch_dev_dn(), but there's probably some
+> reason why it's not using those.
+>
+> Given how much new iseries hardware there is, I think we'd probably
+> rather leave the code as is. It's a device node anyway, so it doesn't
+> block your plans RE ppc32.
+>
+> cheers
+
+I was already thinking along those lines, but figured I see if anyone  
+is really "maintaining" iseries code :)
+
+- k
