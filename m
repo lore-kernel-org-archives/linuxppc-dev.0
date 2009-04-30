@@ -2,19 +2,25 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 82B32DDE1D
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 07:09:26 +1000 (EST)
-Subject: Re: why does ppc64 require boards to call pci_devs_phb_init()?
+	by ozlabs.org (Postfix) with ESMTPS id 164B2DDE0A
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 07:18:27 +1000 (EST)
+Subject: Re: Porting the ibm_newemac driver to use phylib (and other
+	PHY/MAC questions)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <547963B5-28FB-4075-B39A-C99B28554E3F@kernel.crashing.org>
-References: <33403DE1-6AC2-49E9-9539-C520E4944D77@kernel.crashing.org>
-	<547963B5-28FB-4075-B39A-C99B28554E3F@kernel.crashing.org>
+To: Kyle Moffett <kyle@moffetthome.net>
+In-Reply-To: <f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
+References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
+	<625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
+	<f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
+	<1240388476.17445.10.camel@pasglop>
+	<f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 01 May 2009 07:09:14 +1000
-Message-Id: <1241125754.29501.36.camel@pasglop>
+Date: Fri, 01 May 2009 07:18:11 +1000
+Message-Id: <1241126291.29501.41.camel@pasglop>
 Mime-Version: 1.0
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Cc: netdev <netdev@vger.kernel.org>,
+	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-04-30 at 13:04 -0500, Kumar Gala wrote:
-> On Apr 30, 2009, at 10:37 AM, Kumar Gala wrote:
-> 
-> > looking at merging this in w/ppc32 and wondering why board code has  
-> > to call pci_devs_phb_init() and not do it via pcibios_init()
-> >
-> > - k
-> 
-> As I look at this a bit more, I'm thinking why don't we do:
-> 
-> pci_devs_phb_init_dynamic() in pcibios_alloc_controller
-> 
-> An add some code into pci_devs_phb_init_dynamic so we don't re-do  
-> update_dn_pci_info if dn->data is already set.
-> 
-> I am not sure what impact this has ppc64 systems that call  
-> pci_devs_phb_init()
 
-That would probably work, remains the reconfig notifier thing but that
-can probably be moved to pseries platform.
+> Ok, I've made some progress in the port, but right now I'm trying to
+> puzzle out what the "gpcs" bits in the code are.  From the few
+> publicly available docs and some mailing list posts, the gpcs address
+> appears to be some kind of integrated virtual PHY used when 460GT-ish
+> chips are communicating via an SGMII bus.  My current plan of action
+> is to separate the "gpcs" out into a separate PHY device controlled by
+> the emac code.
+
+Well... GPCS is indeed some kind of internal PHY if you like but it's
+not MDIO controlled and I don't really see a need to move it to the
+phylib as it's so specific to the NIC itself. But if you think it cleans
+the code up significantly... There are also some subtle differences in
+how the NIC is programmed when using GPCS vs. xMII
+
+> I'm also curious about the intent of the "mdio_instance" pointer (IE:
+> the "mdio-device" property).  Is that used when all the PHY devices
+> are attached to the MDIO bus of only one of the (multiple) emac
+> devices? 
+
+It's common especially on older SoCs using EMAC to have only one of
+the EMAC instance with an MDIO bus for configuring the PHYs. This is one
+of the reasons why I have the mutex in the low level MDIO access
+routines since 2 EMACs can try to talk to the same MDIO, and this is the
+problem I had with phylib back then which was doing everything in atomic
+contexts.
+
+> What keeps the emac_instance pointed
+> to by the "mdio_instance" from going away while the other emac chipset
+> is using it?
+
+Nothing other than those are all in a SoC and so generally don't do
+hotplug, but I suppose that with things like kvm which could potentially
+hotplug devices between partitions, one would have to get a bit more
+careful.
+ 
+> In either case, I plan to have the device actually holding the MDIO
+> bus run the mdiobus_alloc() and mdiobus_register() functions, then the
+> other emac instance will simply take a reference to that MDIO bus
+> (which would also pin down the emac instance that owns it).
+
+Sounds good at first.
 
 Cheers,
 Ben.
