@@ -1,25 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 54727DDDB2
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 13:21:30 +1000 (EST)
-Date: Thu, 30 Apr 2009 13:21:18 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: Next April 28: boot failure on PowerPC with SLQB
-Message-Id: <20090430132118.4a36f737.sfr@canb.auug.org.au>
-In-Reply-To: <49F87FAB.9050408@in.ibm.com>
-References: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
-	<49F6E421.401@in.ibm.com>
-	<84144f020904280422s6a9a277fjc4619c904f37e5ca@mail.gmail.com>
-	<20090429113604.GE3398@wotan.suse.de> <49F87FAB.9050408@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__30_Apr_2009_13_21_18_+1000_TjY63O6d0bqFvAh9"
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	linux-next@vger.kernel.org
+Return-Path: <dgaur@cdotd.ernet.in>
+Received: from sandesh.cdotd.ernet.in (sandesh.cdotd.ernet.in [196.1.105.47])
+	by ozlabs.org (Postfix) with ESMTP id 734D1DDE0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 13:52:20 +1000 (EST)
+Received: from sandesh.cdotd.ernet.in (localhost [127.0.0.1])
+	by localhost.cdotd.ernet.in (Postfix) with ESMTP id A9BFECFCE2
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 08:50:43 +0530 (IST)
+Received: from mail1.cdotd.ernet.in (mail1.cdotd.ernet.in [196.1.105.196])by
+	sandesh.cdotd.ernet.in (Postfix) with ESMTP id 79C1BCFCDDfor
+	<linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 08:50:43 +0530 (IST)
+Received: from cdotd.ernet.in (localhost.localdomain [127.0.0.1])by
+	mail1.cdotd.ernet.in (8.12.5/8.12.5) with ESMTP id n3U3USSL000370for
+	<linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 09:00:28 +0530
+From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
+To: linuxppc-dev@ozlabs.org
+Subject: Powerpc Port linux-2.6.29 
+Date: Thu, 30 Apr 2009 09:00:28 +0530
+Message-Id: <20090430032937.M98987@cdotd.ernet.in>
+In-Reply-To: <20090429110648.M98089@cdotd.ernet.in>
+References: <20090429110648.M98089@cdotd.ernet.in>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,99 +30,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__30_Apr_2009_13_21_18_+1000_TjY63O6d0bqFvAh9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello all
 
-Hi Nick,
+I have a custom board with MPC8560 and 1GB DDR SDRAM. I am trying to port linux - 2.6.29
+on this board. The U-BOOT is already ported on the board and is working.
 
-On Wed, 29 Apr 2009 21:56:19 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
->
-> Nick Piggin wrote:
-> > Does this help?
-> > ---
-> With the patch the machine boots past the failure point, but panics
-> immediately with the following trace...
+The OS uImage is stored in code flash at address 0xe0000000 and OS is booted by U-BOOT 
+While OS do boot but after some prints weired errors start showing up. Rootfile system
+is NFS based . I have checked the register values with Hardware person using Trace32
+emulator and they are as expected.
 
-That patch also changes the behaviour of my machine.  I now get:
-
-calling  .init_trace_printk+0x0/0x34 @ 1
-initcall .init_trace_printk+0x0/0x34 returned 0 after 0 usecs
-Unable to handle kernel paging request for data at address 0x00000030
-Faulting instruction address: 0xc00000000008ae7c
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=3D128 NUMA pSeries
-Modules linked in:
-NIP: c00000000008ae7c LR: c0000000002b0cb8 CTR: 0000000000000000
-REGS: c0000000d6357910 TRAP: 0300   Not tainted  (2.6.30-rc3-autokern1)
-MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 28000084  XER: 0000000f
-DAR: 0000000000000030, DSISR: 0000000042000000
-TASK =3D c0000000fe368000[1] 'swapper' THREAD: c0000000d6354000 CPU: 0
-GPR00: 0000000000000000 c0000000d6357b90 c000000000b04410 0000000000000028=
-=20
-GPR04: c0000000006d7bd0 c000000000b95400 0000000000000000 c0000000fe368980=
-=20
-GPR08: 000000000000004c 0000000000000291 0000000000000002 c0000000012bfd5c=
-=20
-GPR12: 0000000048000088 c000000000b53280 0000000000000000 0000000002100000=
-=20
-GPR16: c0000000006c8f50 c0000000006c76c8 0000000000000000 00000000003d8800=
-=20
-GPR20: 00000000028c6bb0 c0000000007c6bb0 00000000028c6e20 c0000000007c6e20=
-=20
-GPR24: c0000000006c89b8 0000000000000028 0000000000000003 c000000000b95400=
-=20
-GPR28: c0000000006d7bd0 0000000000000010 c000000000a68708 0000000000000010=
-=20
-NIP [c00000000008ae7c] .lockdep_init_map+0x3c/0x57c
-LR [c0000000002b0cb8] .__spin_lock_init+0x44/0x90
+----------------------------------------------------------------------------------------
+FLASH: 32.5 MB
+L2:    256 KB enabled
+In:    serial
+Out:   serial
+Err:   serial
+Net:   TSEC1, TSEC2
+Hit any key to stop autoboot:  0
+WARNING: adjusting available memory to 30000000
+## Booting kernel from Legacy Image at e0000000 ...
+   Image Name:   Linux-2.6.29
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1451400 Bytes =  1.4 MB
+   Load Address: 00400000
+   Entry Point:  004005a8
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Using MPC85xx ADS machine description
+Memory CAM mapping: CAM0=256Mb, CAM1=256Mb, CAM2=256Mb residual: 256Mb
+Linux version 2.6.29 (deepak@Localhost) (gcc version 3.4.3 (MontaVista
+3.4.3-25.0.96.0600665 2006-05-179Found FSL PCI host bridge at 0x00000000a0008000.
+Firmware bus number: 0->0
+PCI host bridge /pci@a0008000 (primary) ranges:
+ MEM 0x0000000080000000..0x000000009fffffff -> 0x0000000080000000
+  IO 0x00000000a2000000..0x00000000a2ffffff -> 0x0000000000000000
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00030000
+  Normal   0x00030000 -> 0x00030000
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0: 0x00000000 -> 0x00030000
+MMU: Allocated 1088 bytes of context maps for 255 contexts
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 195072
+Kernel command line: console=ttyCPM0,9600 root=/dev/nfs rw nfsroot=rootpath ip=dhcp
+mpic: Setting up MPIC " OpenPIC  " version 1.2 at a0040000, max 1 CPUs
+mpic: ISU size: 56, shift: 6, mask: 3f
+mpic: Initializing for 56 sources
+PID hash table entries: 4096 (order: 12, 16384 bytes)
+clocksource: timebase mult[79364d9] shift[22] registered
+console [ttyCPM0] enabled
+Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+BUG: Bad page state in process swapper  pfn:2fc69
+page:c0d0ed20 flags:(null) count:0 mapcount:-524288 mapping:(null) index:0
 Call Trace:
-[c0000000d6357b90] [c000000000a68708] klist_remove_waiters+0xe210/0x2e2e0 (=
-unreliable)
-[c0000000d6357c50] [c0000000002b0cb8] .__spin_lock_init+0x44/0x90
-[c0000000d6357d00] [c00000000054552c] .timer_cpu_notify+0xec/0x2c4
-[c0000000d6357db0] [c000000000540bc0] .notifier_call_chain+0x5c/0xcc
-[c0000000d6357e50] [c000000000544ee0] .cpu_up+0xe8/0x1c4
-[c0000000d6357f00] [c00000000078fb94] .kernel_init+0xf8/0x220
-[c0000000d6357f90] [c0000000000262b8] .kernel_thread+0x54/0x70
-Instruction dump:
-fbc1fff0 fbe1fff8 fae1ffb8 fb01ffc0 f8010010 fb41ffd0 fb61ffd8 fb81ffe0=20
-f821ff41 ebc2b160 38000000 7c791b78 <f8030008> 7cbf2b78 7cdd3378 e93e8138=20
----[ end trace 31fd0ba7d8756001 ]---
-Kernel panic - not syncing: Attempted to kill init!
+[c02dbef0] [c0007a84] show_stack+0x48/0x174 (unreliable)
+[c02dbf20] [c006fa14] bad_page+0x9c/0x160
+[c02dbf40] [c0071564] __free_pages_ok+0x2c8/0x3a8
+[c02dbf70] [c02a9788] free_all_bootmem_core+0x1a4/0x240
+[c02dbfa0] [c02a4544] mem_init+0x64/0x178
+[c02dbfc0] [c029a67c] start_kernel+0x1d0/0x2a8
+[c02dbff0] [c00003b4] skpinv+0x2dc/0x318
+BUG: Bad page state in process swapper  pfn:2fc8f
+page:c0d0f1e0 flags:(null) count:0 mapcount:7799008 mapping:(null) index:0
 Call Trace:
-[c0000000d6357570] [c00000000000fd58] .show_stack+0x70/0x184 (unreliable)
-[c0000000d6357620] [c00000000005ed34] .panic+0x80/0x1b4
-[c0000000d63576c0] [c00000000006337c] .do_exit+0x84/0x6f0
-[c0000000d6357780] [c000000000024350] .die+0x24c/0x27c
-[c0000000d6357820] [c00000000002c1f4] .bad_page_fault+0xb8/0xd4
-[c0000000d63578a0] [c00000000000534c] handle_page_fault+0x3c/0x5c
---- Exception: 300 at .lockdep_init_map+0x3c/0x57c
-    LR =3D .__spin_lock_init+0x44/0x90
-[c0000000d6357b90] [c000000000a68708] klist_remove_waiters+0xe210/0x2e2e0 (=
-unreliable)
-[c0000000d6357c50] [c0000000002b0cb8] .__spin_lock_init+0x44/0x90
-[c0000000d6357d00] [c00000000054552c] .timer_cpu_notify+0xec/0x2c4
-[c0000000d6357db0] [c000000000540bc0] .notifier_call_chain+0x5c/0xcc
-[c0000000d6357e50] [c000000000544ee0] .cpu_up+0xe8/0x1c4
-[c0000000d6357f00] [c00000000078fb94] .kernel_init+0xf8/0x220
-[c0000000d6357f90] [c0000000000262b8] .kernel_thread+0x54/0x70
+[c02dbef0] [c0007a84] show_stack+0x48/0x174 (unreliable)
+[c02dbf20] [c006fa14] bad_page+0x9c/0x160
+[c02dbf40] [c0071564] __free_pages_ok+0x2c8/0x3a8
+[c02dbf70] [c02a9788] free_all_bootmem_core+0x1a4/0x240
+[c02dbfa0] [c02a4544] mem_init+0x64/0x178
+[c02dbfc0] [c029a67c] start_kernel+0x1d0/0x2a8
+[c02dbff0] [c00003b4] skpinv+0x2dc/0x318
+BUG: Bad page state in process swapper  pfn:2fcc4
+page:c0d0f880 flags:(null) count:0 mapcount:7799040 mapping:(null) index:0
+Call Trace:
+[c02dbef0] [c0007a84] show_stack+0x48/0x174 (unreliable)
+[c02dbf20] [c006fa14] bad_page+0x9c/0x160
+[c02dbf40] [c0071564] __free_pages_ok+0x2c8/0x3a8
+[c02dbf70] [c02a9788] free_all_bootmem_core+0x1a4/0x240
+[c02dbfa0] [c02a4544] mem_init+0x64/0x178
+[c02dbfc0] [c029a67c] start_kernel+0x1d0/0x2a8
+[c02dbff0] [c00003b4] skpinv+0x2dc/0x318
+BUG: Bad page state in process swapper  pfn:2fce8
+--------------------------------------------------------------------------------------
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Can anyone kindly help me in understanding the issue.
 
---Signature=_Thu__30_Apr_2009_13_21_18_+1000_TjY63O6d0bqFvAh9
-Content-Type: application/pgp-signature
+with regards,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkn5GS4ACgkQjjKRsyhoI8zBNwCfTCMhsweqoqJQILgXYu8ipEO2
-s1oAn22dNsVw91rOZ/AKy4T8N1C8mYvI
-=ere6
------END PGP SIGNATURE-----
-
---Signature=_Thu__30_Apr_2009_13_21_18_+1000_TjY63O6d0bqFvAh9--
+Deepak Gaur
