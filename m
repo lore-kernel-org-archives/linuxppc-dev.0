@@ -1,26 +1,53 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <tabbott@MIT.EDU>
+Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
+	[18.7.7.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E5B6DDDDF3
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 08:52:59 +1000 (EST)
-Subject: Re: [PATCH] powerpc/pci: Move pseries code into pseries platform
-	specific area
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <41163AE2-5EE9-4273-B2F2-373034AE4DC4@kernel.crashing.org>
-References: <1241100846-14216-1-git-send-email-galak@kernel.crashing.org>
-	<1241102965.7356.7.camel@concordia>
-	<41163AE2-5EE9-4273-B2F2-373034AE4DC4@kernel.crashing.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-84zEvm9FNjA/Bjt+rbmJ"
-Date: Fri, 01 May 2009 08:52:58 +1000
-Message-Id: <1241131978.6928.0.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 90CC8DDFC3
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 05:36:02 +1000 (EST)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 6/6] Add support for __read_mostly to linux/cache.h
+Date: Thu, 30 Apr 2009 15:32:36 -0400
+Message-Id: <1241119956-31453-7-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241119956-31453-6-git-send-email-tabbott@mit.edu>
+References: <1241119956-31453-1-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-2-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-3-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-4-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-5-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-6-git-send-email-tabbott@mit.edu>
+Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
+	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+	Denys Vlasenko <vda.linux@googlemail.com>,
+	Greg Ungerer <gerg@uclinux.org>, Jeff Arnold <jbarnold@mit.edu>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Waseem Daher <wdaher@mit.edu>, linux-arm-kernel@lists.arm.linux.org.uk,
+	linux-s390@vger.kernel.org, Jesper Nilsson <jesper.nilsson@axis.com>,
+	linux-am33-list@redhat.com, Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Helge Deller <deller@gmx.de>, Ingo Molnar <mingo@redhat.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	microblaze-uclinux@itee.uq.edu.au,
+	Russell King <rmk+kernel@arm.linux.org.uk>,
+	user-mode-linux-devel@lists.sourceforge.net,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Jeff Dike <jdike@addtoit.com>, dev-etrax@axis.com,
+	Mikael Starvik <starvik@axis.com>,
+	Tony Luck <tony.luck@intel.com>, Tim Abbott <tabbott@mit.edu>,
+	Cyrill Gorcunov <gorcunov@openvz.org>, Michal Simek <monstr@monstr.eu>,
+	Richard Henderson <rth@twiddle.net>,
+	Chris Zankel <chris@zankel.net>, Bryan Wu <cooloney@kernel.org>,
+	linux-m32r@ml.linux-m32r.org, linux-parisc@vger.kernel.org,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Hirokazu Takata <takata@linux-m32r.org>,
+	Ralf Baechle <ralf@linux-mips.org>, Anders Kaseorg <andersk@mit.edu>,
+	Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
+	Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	uclinux-dist-devel@blackfin.uclinux.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,57 +57,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
+---
+ include/linux/cache.h |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
---=-84zEvm9FNjA/Bjt+rbmJ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2009-04-30 at 10:35 -0500, Kumar Gala wrote:
-> On Apr 30, 2009, at 9:49 AM, Michael Ellerman wrote:
->=20
-> > On Thu, 2009-04-30 at 09:14 -0500, Kumar Gala wrote:
-> >> There doesn't appear to be any specific reason that we need to =20
-> >> setup the
-> >> pseries specific notifier in generic arch pci code.  Move it into =20
-> >> pseries
-> >> land.
-> >
-> > Yeah I guess. Although if some other platform ever wants to do PCI
-> > hotplug it probably wants to call update_dn_pci_info() also.
->=20
-> when that happens we can worry about, also the code I moved is pretty =20
-> pseries specific  (seeing as the event is called PSERIES_RECONFIG_ADD)
-
-Yeah I agree.
-
-> >> --- a/arch/powerpc/platforms/pseries/setup.c
-> >> +++ b/arch/powerpc/platforms/pseries/setup.c
-> >> @@ -254,6 +255,31 @@ static void __init pseries_discover_pic(void)
-> >>               " interrupt-controller\n");
-> >> }
-> >>
-> >> +extern void * update_dn_pci_info(struct device_node *dn, void =20
-> >> *data);
-> >
-> > Ahem :)
->=20
-> Yeah, was being lazy.  I'll move it into asm/pci-bridge.h
-
-Please do :)
-
-cheers
-
-
---=-84zEvm9FNjA/Bjt+rbmJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkn6K8oACgkQdSjSd0sB4dKOQgCggKJcV3/Hjfevg6/8HZtymJr5
-fScAnRZEeBBEy0uxTIZsMARiQrpYKiUS
-=9CkW
------END PGP SIGNATURE-----
-
---=-84zEvm9FNjA/Bjt+rbmJ--
+diff --git a/include/linux/cache.h b/include/linux/cache.h
+index 97e2488..99d8a6f 100644
+--- a/include/linux/cache.h
++++ b/include/linux/cache.h
+@@ -13,7 +13,13 @@
+ #endif
+ 
+ #ifndef __read_mostly
++#ifdef CONFIG_HAVE_READ_MOSTLY_DATA
++#define __read_mostly __attribute__((__section__(".data.read_mostly")))
++#define __READ_MOSTLY .section ".data.read_mostly", "aw"
++#else
+ #define __read_mostly
++#define __READ_MOSTLY
++#endif /* CONFIG_HAVE_READ_MOSTLY_DATA */
+ #endif
+ 
+ #ifndef ____cacheline_aligned
+-- 
+1.6.2.1
