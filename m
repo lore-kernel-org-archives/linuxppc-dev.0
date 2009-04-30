@@ -1,16 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 08551DDFA9
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 05:26:25 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc/pci: Move pseries code into pseries platform
-	specific area
-Date: Thu, 30 Apr 2009 14:26:21 -0500
-Message-Id: <1241119581-23733-1-git-send-email-galak@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id AF1C2DDF03
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 06:51:03 +1000 (EST)
+Date: Fri, 1 May 2009 00:51:01 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 3/3] powerpc/86xx: Add MMC SPI support for MPC8610HPCD
+	boards
+Message-ID: <20090430205101.GA14902@oksana.dev.rtsoft.ru>
+References: <20090404192826.GC12183@oksana.dev.rtsoft.ru>
+	<49D7FD94.2040001@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <49D7FD94.2040001@zytor.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,136 +26,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There doesn't appear to be any specific reason that we need to setup the
-pseries specific notifier in generic arch pci code.  Move it into pseries
-land.
+Sorry for the late response,
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/include/asm/pci-bridge.h  |    1 +
- arch/powerpc/kernel/pci_dn.c           |   28 +---------------------------
- arch/powerpc/platforms/pseries/setup.c |   25 +++++++++++++++++++++++++
- 3 files changed, 27 insertions(+), 27 deletions(-)
+On Sat, Apr 04, 2009 at 05:38:44PM -0700, H. Peter Anvin wrote:
+> Anton Vorontsov wrote:
+> > This patch adds spi and mmc-spi-slot nodes, plus a gpio-controller
+> > for PIXIS' sdcsr bank that is used for managing SPI chip-select and
+> > for reading card's states.
+> > 
+> > Note that spi-max-frequency is lowered since at high frequencies SD
+> > cards don't work reliably (there is some problem with the chip select
+> > line, it's probably quite slow because it's routed via PIXIS).
+> > 
+> > Previously there was a work around: we didn't use chip-select line
+> > at all, but some cards don't like that, so we'd better use the low
+> > frequency.
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> 
+> I have to admit being somewhat confused.  The CS# line is pulled low and
+> stays low for the duration of a command, so it shouldn't affect the SPI
+> frequency, only the delay between commands.
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 84007af..90fcfc4 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -221,6 +221,7 @@ struct pci_dn {
- #define PCI_DN(dn)	((struct pci_dn *) (dn)->data)
- 
- extern struct device_node *fetch_dev_dn(struct pci_dev *dev);
-+extern void * update_dn_pci_info(struct device_node *dn, void *data);
- 
- /* Get a device_node from a pci_dev.  This code must be fast except
-  * in the case where the sysdata is incorrect and needs to be fixed
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 1c67de5..d5e36e5 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -27,7 +27,6 @@
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/pci-bridge.h>
--#include <asm/pSeries_reconfig.h>
- #include <asm/ppc-pci.h>
- #include <asm/firmware.h>
- 
-@@ -35,7 +34,7 @@
-  * Traverse_func that inits the PCI fields of the device node.
-  * NOTE: this *must* be done before read/write config to the device.
-  */
--static void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
-+void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
- {
- 	struct pci_controller *phb = data;
- 	const int *type =
-@@ -184,29 +183,6 @@ struct device_node *fetch_dev_dn(struct pci_dev *dev)
- }
- EXPORT_SYMBOL(fetch_dev_dn);
- 
--static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
--{
--	struct device_node *np = node;
--	struct pci_dn *pci = NULL;
--	int err = NOTIFY_OK;
--
--	switch (action) {
--	case PSERIES_RECONFIG_ADD:
--		pci = np->parent->data;
--		if (pci)
--			update_dn_pci_info(np, pci->phb);
--		break;
--	default:
--		err = NOTIFY_DONE;
--		break;
--	}
--	return err;
--}
--
--static struct notifier_block pci_dn_reconfig_nb = {
--	.notifier_call = pci_dn_reconfig_notifier,
--};
--
- /** 
-  * pci_devs_phb_init - Initialize phbs and pci devs under them.
-  * 
-@@ -223,6 +199,4 @@ void __init pci_devs_phb_init(void)
- 	/* This must be done first so the device nodes have valid pci info! */
- 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
- 		pci_devs_phb_init_dynamic(phb);
--
--	pSeries_reconfig_notifier_register(&pci_dn_reconfig_nb);
- }
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index ec34170..8d75ea2 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -63,6 +63,7 @@
- #include <asm/smp.h>
- #include <asm/firmware.h>
- #include <asm/eeh.h>
-+#include <asm/pSeries_reconfig.h>
- 
- #include "plpar_wrappers.h"
- #include "pseries.h"
-@@ -254,6 +255,29 @@ static void __init pseries_discover_pic(void)
- 	       " interrupt-controller\n");
- }
- 
-+static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long action, void *node)
-+{
-+	struct device_node *np = node;
-+	struct pci_dn *pci = NULL;
-+	int err = NOTIFY_OK;
-+
-+	switch (action) {
-+	case PSERIES_RECONFIG_ADD:
-+		pci = np->parent->data;
-+		if (pci)
-+			update_dn_pci_info(np, pci->phb);
-+		break;
-+	default:
-+		err = NOTIFY_DONE;
-+		break;
-+	}
-+	return err;
-+}
-+
-+static struct notifier_block pci_dn_reconfig_nb = {
-+	.notifier_call = pci_dn_reconfig_notifier,
-+};
-+
- static void __init pSeries_setup_arch(void)
- {
- 	/* Discover PIC type and setup ppc_md accordingly */
-@@ -271,6 +295,7 @@ static void __init pSeries_setup_arch(void)
- 	/* Find and initialize PCI host bridges */
- 	init_pci_config_tokens();
- 	find_and_init_phbs();
-+	pSeries_reconfig_notifier_register(&pci_dn_reconfig_nb);
- 	eeh_init();
- 
- 	pSeries_nvram_init();
+Yes. Regarding delay between commands, inserting a 50 ns delay after
+asserting CS makes the things work, so proves that PIXIS GPIO lines
+are a bit slow and that causes SD malfunctions.
+
+> You're saying "some cards don't like not using the CS# line" ... in
+> particular, I know there are hardware devices which toggle the clock at
+> low frequency (< 400 kHz) for a while (I think the minimum is 88 clocks
+> or so) and then permanently assert the CS# line
+
+Yes, but before that, CS should be de-asserted, otherwise things
+won't work, like this:
+
+mmc_spi spi32766.0: mmc_spi: power up (21)
+mmc0: clock 400000Hz busmode 2 powermode 2 cs 1 Vdd 21 width 0 timing 0
+mmc_spi spi32766.0: mmc_spi: power on (21)
+mmc0: starting CMD0 arg 00000000 flags 000000c0
+mmc_spi spi32766.0:   mmc_spi: CMD0, resp R1
+mmc0: req done (CMD0): 0: 00000001 00000000 00000000 00000000
+mmc0: starting CMD8 arg 000001aa flags 000002f5
+mmc_spi spi32766.0:   mmc_spi: CMD8, resp R3/R4/R7
+mmc_spi spi32766.0:   ... CMD8 response SPI_R3/R4/R: resp 0017 ffffffff
+mmc0: req done (CMD8): -22: 00000017 ffffffff 00000000 00000000
+mmc0: starting CMD5 arg 00000000 flags 000002e1
+mmc_spi spi32766.0:   mmc_spi: CMD5, resp R3/R4/R7
+mmc_spi spi32766.0:   ... CMD5 response SPI_R3/R4/R: resp 0017 ffffffff
+mmc0: req done (CMD5): -22: 00000017 ffffffff 00000000 00000000
+mmc0: starting CMD55 arg 00000000 flags 000000f5
+mmc_spi spi32766.0:   mmc_spi: CMD55, resp R1
+mmc_spi spi32766.0:   ... CMD55 response SPI_R1: resp 0007 00000000
+
+So we can't just assert the CS line, inserte SD card and expect
+to work.
+
+> before giving the
+> starting CMD0.  Even so, the CMD0 is supposed to be sent at < 400 kHz
+> since the card will still be in open drain mode at that point.
+
+> Does that disagree with your observations?  If so, I'd be really
+> interested to find out what you have seen in more detail, as it adds to
+> the understanding of MMC/SD cards in the field.
+
+With CS toggling enabled and without 50 ns delay after CS
+assertion, everything is fine until we switch to high frequency:
+
+mmc0: clock 25000000Hz busmode 2 powermode 2 cs 1 Vdd 20 width 0 timing 0
+mmc_spi spi32766.0: mmc_spi:  clock to 25000000 Hz, 0
+mmc0: new SD card on SPI
+mmc0: starting CMD16 arg 00000200 flags 00000095
+mmc_spi spi32766.0:   mmc_spi: CMD16, resp R1
+mmc0: req done (CMD16): 0: 00000000 00000000 00000000 00000000
+mmcblk0: mmc0:0000 SD01G 982 MiB
+ mmcblk0:<7>mmc0: starting CMD18 arg 00000000 flags 000000b5
+mmc0:     blksz 512 blocks 8 flags 00000200 tsac 100 ms nsac 0
+mmc0:     CMD12 arg 00000000 flags 0000049d
+mmc_spi spi32766.0:   mmc_spi: CMD18, resp R1
+mmc_spi spi32766.0:     mmc_spi: read block, 512 bytes
+mmc_spi spi32766.0:     mmc_spi: read block, 512 bytes
+mmc_spi spi32766.0: read - crc error: crc_val=0x00ff, computed=0x0000 len=512
+mmc_spi spi32766.0: read status -84
+mmc_spi spi32766.0:   mmc_spi: CMD12, resp R1B
+
+
+Thanks,
+
 -- 
-1.6.0.6
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
