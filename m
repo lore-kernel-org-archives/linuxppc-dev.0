@@ -1,26 +1,26 @@
-Return-Path: <dgaur@cdotd.ernet.in>
-Received: from sandesh.cdotd.ernet.in (sandesh.cdotd.ernet.in [196.1.105.47])
-	by ozlabs.org (Postfix) with ESMTP id 734D1DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 13:52:20 +1000 (EST)
-Received: from sandesh.cdotd.ernet.in (localhost [127.0.0.1])
-	by localhost.cdotd.ernet.in (Postfix) with ESMTP id A9BFECFCE2
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 08:50:43 +0530 (IST)
-Received: from mail1.cdotd.ernet.in (mail1.cdotd.ernet.in [196.1.105.196])by
-	sandesh.cdotd.ernet.in (Postfix) with ESMTP id 79C1BCFCDDfor
-	<linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 08:50:43 +0530 (IST)
-Received: from cdotd.ernet.in (localhost.localdomain [127.0.0.1])by
-	mail1.cdotd.ernet.in (8.12.5/8.12.5) with ESMTP id n3U3USSL000370for
-	<linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 09:00:28 +0530
-From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
-To: linuxppc-dev@ozlabs.org
-Subject: Powerpc Port linux-2.6.29 
-Date: Thu, 30 Apr 2009 09:00:28 +0530
-Message-Id: <20090430032937.M98987@cdotd.ernet.in>
-In-Reply-To: <20090429110648.M98089@cdotd.ernet.in>
-References: <20090429110648.M98089@cdotd.ernet.in>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F0E6CDDDB6
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 14:11:54 +1000 (EST)
+Date: Thu, 30 Apr 2009 06:11:46 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: Next April 28: boot failure on PowerPC with SLQB
+Message-ID: <20090430041146.GB23746@wotan.suse.de>
+References: <20090428165343.2e357d7a.sfr@canb.auug.org.au>
+	<49F6E421.401@in.ibm.com>
+	<84144f020904280422s6a9a277fjc4619c904f37e5ca@mail.gmail.com>
+	<20090429113604.GE3398@wotan.suse.de> <49F87FAB.9050408@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49F87FAB.9050408@in.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,93 +30,153 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello all
+On Wed, Apr 29, 2009 at 09:56:19PM +0530, Sachin Sant wrote:
+> Nick Piggin wrote:
+> >Does this help?
+> >---
+> With the patch the machine boots past the failure point, but panics
+> immediately with the following trace...
 
-I have a custom board with MPC8560 and 1GB DDR SDRAM. I am trying to port linux - 2.6.29
-on this board. The U-BOOT is already ported on the board and is working.
+OK good, that solves one problem.
 
-The OS uImage is stored in code flash at address 0xe0000000 and OS is booted by U-BOOT 
-While OS do boot but after some prints weired errors start showing up. Rootfile system
-is NFS based . I have checked the register values with Hardware person using Trace32
-emulator and they are as expected.
+ 
+> Unable to handle kernel paging request for data at address 0x00000010
+> Faulting instruction address: 0xc0000000007d03ec
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> SMP NR_CPUS=1024 DEBUG_PAGEALLOC NUMA pSeries
+> Modules linked in:
+> NIP: c0000000007d03ec LR: c0000000007b0bbc CTR: 0000000000136f8c
+> REGS: c000000000a23bd0 TRAP: 0300   Not tainted  (2.6.30-rc3-next-20090429)
+> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 28000084  XER: 00000010
+> DAR: 0000000000000010, DSISR: 0000000040000000
+> TASK = c000000000955fc0[0] 'swapper' THREAD: c000000000a20000 CPU: 0
+> GPR00: 0000000000000001 c000000000a23e50 c000000000a17650 000000000000001f
+> GPR04: 0000000000000000 ffffffffffffffff 000000000077a4b9 800000000c9b2cc0
+> GPR08: 0000000000000000 0000000000000010 0000000000000000 c00000000095b0f8
+> GPR12: 0000000028000082 c000000000af2400 c0000000007f3200 c000000000705c32
+> GPR16: 00000000014f3138 0000000000000000 c0000000007f3138 0000000002f1fc90
+> GPR20: c0000000007f3150 c000000000725d11 00000000007bb8e4 0000000002f1fc90
+> GPR24: 0000000002f1fc90 c0000000007f31f0 0000000000d00000 c000000000b73b10
+> GPR28: c0000000007f0440 c00000000095db00 c00000000098d5f0 0000000003c90000
+> NIP [c0000000007d03ec] .pidmap_init+0x28/0x88
 
-----------------------------------------------------------------------------------------
-FLASH: 32.5 MB
-L2:    256 KB enabled
-In:    serial
-Out:   serial
-Err:   serial
-Net:   TSEC1, TSEC2
-Hit any key to stop autoboot:  0
-WARNING: adjusting available memory to 30000000
-## Booting kernel from Legacy Image at e0000000 ...
-   Image Name:   Linux-2.6.29
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1451400 Bytes =  1.4 MB
-   Load Address: 00400000
-   Entry Point:  004005a8
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-Using MPC85xx ADS machine description
-Memory CAM mapping: CAM0=256Mb, CAM1=256Mb, CAM2=256Mb residual: 256Mb
-Linux version 2.6.29 (deepak@Localhost) (gcc version 3.4.3 (MontaVista
-3.4.3-25.0.96.0600665 2006-05-179Found FSL PCI host bridge at 0x00000000a0008000.
-Firmware bus number: 0->0
-PCI host bridge /pci@a0008000 (primary) ranges:
- MEM 0x0000000080000000..0x000000009fffffff -> 0x0000000080000000
-  IO 0x00000000a2000000..0x00000000a2ffffff -> 0x0000000000000000
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00030000
-  Normal   0x00030000 -> 0x00030000
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0: 0x00000000 -> 0x00030000
-MMU: Allocated 1088 bytes of context maps for 255 contexts
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 195072
-Kernel command line: console=ttyCPM0,9600 root=/dev/nfs rw nfsroot=rootpath ip=dhcp
-mpic: Setting up MPIC " OpenPIC  " version 1.2 at a0040000, max 1 CPUs
-mpic: ISU size: 56, shift: 6, mask: 3f
-mpic: Initializing for 56 sources
-PID hash table entries: 4096 (order: 12, 16384 bytes)
-clocksource: timebase mult[79364d9] shift[22] registered
-console [ttyCPM0] enabled
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-BUG: Bad page state in process swapper  pfn:2fc69
-page:c0d0ed20 flags:(null) count:0 mapcount:-524288 mapping:(null) index:0
-Call Trace:
-[c02dbef0] [c0007a84] show_stack+0x48/0x174 (unreliable)
-[c02dbf20] [c006fa14] bad_page+0x9c/0x160
-[c02dbf40] [c0071564] __free_pages_ok+0x2c8/0x3a8
-[c02dbf70] [c02a9788] free_all_bootmem_core+0x1a4/0x240
-[c02dbfa0] [c02a4544] mem_init+0x64/0x178
-[c02dbfc0] [c029a67c] start_kernel+0x1d0/0x2a8
-[c02dbff0] [c00003b4] skpinv+0x2dc/0x318
-BUG: Bad page state in process swapper  pfn:2fc8f
-page:c0d0f1e0 flags:(null) count:0 mapcount:7799008 mapping:(null) index:0
-Call Trace:
-[c02dbef0] [c0007a84] show_stack+0x48/0x174 (unreliable)
-[c02dbf20] [c006fa14] bad_page+0x9c/0x160
-[c02dbf40] [c0071564] __free_pages_ok+0x2c8/0x3a8
-[c02dbf70] [c02a9788] free_all_bootmem_core+0x1a4/0x240
-[c02dbfa0] [c02a4544] mem_init+0x64/0x178
-[c02dbfc0] [c029a67c] start_kernel+0x1d0/0x2a8
-[c02dbff0] [c00003b4] skpinv+0x2dc/0x318
-BUG: Bad page state in process swapper  pfn:2fcc4
-page:c0d0f880 flags:(null) count:0 mapcount:7799040 mapping:(null) index:0
-Call Trace:
-[c02dbef0] [c0007a84] show_stack+0x48/0x174 (unreliable)
-[c02dbf20] [c006fa14] bad_page+0x9c/0x160
-[c02dbf40] [c0071564] __free_pages_ok+0x2c8/0x3a8
-[c02dbf70] [c02a9788] free_all_bootmem_core+0x1a4/0x240
-[c02dbfa0] [c02a4544] mem_init+0x64/0x178
-[c02dbfc0] [c029a67c] start_kernel+0x1d0/0x2a8
-[c02dbff0] [c00003b4] skpinv+0x2dc/0x318
-BUG: Bad page state in process swapper  pfn:2fce8
---------------------------------------------------------------------------------------
+Well kmalloc is failing. It should not be though, even if the
+current node is offline, it should be able to fall back to other
+nodes. Stephen's trace indicates the same thing.
 
-Can anyone kindly help me in understanding the issue.
+Could you try the following patch please, and capture the output
+it generates?
 
-with regards,
+Thanks,
+Nick
+---
+ mm/slqb.c |   40 ++++++++++++++++++++++++++++++++++------
+ 1 file changed, 34 insertions(+), 6 deletions(-)
 
-Deepak Gaur
+Index: linux-2.6/mm/slqb.c
+===================================================================
+--- linux-2.6.orig/mm/slqb.c
++++ linux-2.6/mm/slqb.c
+@@ -1456,7 +1456,7 @@ static void *__remote_slab_alloc_node(st
+ }
+ 
+ static noinline void *__remote_slab_alloc(struct kmem_cache *s,
+-				gfp_t gfpflags, int node)
++				gfp_t gfpflags, int node, int trace)
+ {
+ 	void *object;
+ 	struct zonelist *zonelist;
+@@ -1465,19 +1465,32 @@ static noinline void *__remote_slab_allo
+ 	enum zone_type high_zoneidx = gfp_zone(gfpflags);
+ 
+ 	object = __remote_slab_alloc_node(s, gfpflags, node);
++	if (trace && !object)
++		printk("__remote_slab_alloc_node(node:%d) failed\n", node);
+ 	if (likely(object || (gfpflags & __GFP_THISNODE)))
+ 		return object;
+ 
+-	zonelist = node_zonelist(slab_node(current->mempolicy), gfpflags);
++	node = slab_node(current->mempolicy);
++	if (trace)
++		printk("slab_node(current->mempolicy) = %d\n", node);
++
++	zonelist = node_zonelist(node, gfpflags);
+ 	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
+-		if (!cpuset_zone_allowed_hardwall(zone, gfpflags))
++		if (!cpuset_zone_allowed_hardwall(zone, gfpflags)) {
++			if (trace)
++				printk("cpuset not allowed node:%d\n", zone_to_nid(zone));
+ 			continue;
++		}
+ 
+ 		node = zone_to_nid(zone);
+ 		object = __remote_slab_alloc_node(s, gfpflags, node);
+ 		if (likely(object))
+ 			return object;
++		if (trace)
++			printk("__remote_slab_alloc_node(node:%d) failed\n", node);
+ 	}
++	if (trace)
++		printk("__remote_slab_alloc failed\n");
+ 	return NULL;
+ }
+ #endif
+@@ -1488,7 +1501,7 @@ static noinline void *__remote_slab_allo
+  * Must be called with interrupts disabled.
+  */
+ static __always_inline void *__slab_alloc(struct kmem_cache *s,
+-				gfp_t gfpflags, int node)
++				gfp_t gfpflags, int node, int trace)
+ {
+ 	void *object;
+ 	struct kmem_cache_cpu *c;
+@@ -1497,7 +1510,7 @@ static __always_inline void *__slab_allo
+ #ifdef CONFIG_NUMA
+ 	if (unlikely(node != -1) && unlikely(node != numa_node_id())) {
+ try_remote:
+-		return __remote_slab_alloc(s, gfpflags, node);
++		return __remote_slab_alloc(s, gfpflags, node, trace);
+ 	}
+ #endif
+ 
+@@ -1509,6 +1522,8 @@ try_remote:
+ 		object = cache_list_get_page(s, l);
+ 		if (unlikely(!object)) {
+ 			object = __slab_alloc_page(s, gfpflags, node);
++			if (trace && !object)
++				printk("__slab_alloc_page(node:%d) failed\n", node);
+ #ifdef CONFIG_NUMA
+ 			if (unlikely(!object)) {
+ 				node = numa_node_id();
+@@ -1532,10 +1547,11 @@ static __always_inline void *slab_alloc(
+ {
+ 	void *object;
+ 	unsigned long flags;
++	int trace = 0;
+ 
+ again:
+ 	local_irq_save(flags);
+-	object = __slab_alloc(s, gfpflags, node);
++	object = __slab_alloc(s, gfpflags, node, trace);
+ 	local_irq_restore(flags);
+ 
+ 	if (unlikely(slab_debug(s)) && likely(object)) {
+@@ -1546,6 +1562,18 @@ again:
+ 	if (unlikely(gfpflags & __GFP_ZERO) && likely(object))
+ 		memset(object, 0, s->objsize);
+ 
++	if (!object && !trace) {
++		trace = 1;
++		dump_stack();
++		printk("slab_alloc allocation failed\n");
++		printk("slab:%s flags:%x node:%d\n", s->name, gfpflags, node);
++		goto again;
++	}
++	if (trace) {
++		if (object)
++			printk("slab_alloc allocation worked when being traced, bugger\n");
++	}
++
+ 	return object;
+ }
+ 
