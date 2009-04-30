@@ -1,46 +1,19 @@
-Return-Path: <tabbott@MIT.EDU>
-Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
-	[18.7.7.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1341BDDEE3
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 06:14:14 +1000 (EST)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH v2 0/6] macros for section name cleanup
-Date: Thu, 30 Apr 2009 15:54:07 -0400
-Message-Id: <1241121253-32341-1-git-send-email-tabbott@mit.edu>
-Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
-	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
-	Denys Vlasenko <vda.linux@googlemail.com>,
-	Greg Ungerer <gerg@uclinux.org>, Jeff Arnold <jbarnold@mit.edu>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Waseem Daher <wdaher@mit.edu>, linux-s390@vger.kernel.org,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Helge Deller <deller@gmx.de>, Ingo Molnar <mingo@redhat.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	microblaze-uclinux@itee.uq.edu.au,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
-	user-mode-linux-devel@lists.sourceforge.net,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Jeff Dike <jdike@addtoit.com>, dev-etrax@axis.com,
-	Mikael Starvik <starvik@axis.com>, Tim Abbott <tabbott@mit.edu>,
-	Cyrill Gorcunov <gorcunov@openvz.org>, Michal Simek <monstr@monstr.eu>,
-	Richard Henderson <rth@twiddle.net>,
-	Chris Zankel <chris@zankel.net>, Bryan Wu <cooloney@kernel.org>,
-	Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
-	Haavard Skinnemoen <hskinnemoen@atmel.com>,
-	Hirokazu Takata <takata@linux-m32r.org>,
-	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-	Ralf Baechle <ralf@linux-mips.org>, Anders Kaseorg <andersk@mit.edu>,
-	Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	uclinux-dist-devel@blackfin.uclinux.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 3411BDE5E5
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 09:47:41 +1000 (EST)
+Date: Fri, 1 May 2009 03:47:39 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 0/9] Some work for spi_mpc83xx driver, spi-mmc support for
+	MPC8610HPCD
+Message-ID: <20090430234739.GA27709@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -50,55 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(this patch series differs from v1 only in the CC list; some of the
-architecture lists I sent the previous one to are moderated against
-non-members; all replies should go to this version).
+Hi all,
 
-Here are the architecture-independent macro definitions needed for
-to clean up the kernel's section names.  The overall diffstat from
-this section name cleanup project is:
+Here are few patches that are needed to support spi-mmc slot on
+MPC8610HPCD PowerPC boards:
 
- 96 files changed, 261 insertions(+), 503 deletions(-)
+[1/9] spi_mpc83xx: Handles other Freescale processors
+[2/9] spi_mpc83xx: Quieten down the "Requested speed is too low" message
+[3/9] spi_mpc83xx: Add small delay after asserting chip-select line
+[4/9] powerpc/86xx: Add MMC SPI support for MPC8610HPCD boards
 
-The decrease results from removing a lot of redundancy in the linker
-scripts.
+The rest are cleanups, initially Kumar suggested to rename
+spi_mpc83xx.c to spi_mpc8xxx.c, but checkpatch told me to fix
+some other issues. So the following cleanups were prepared:
 
-The long-term goal here is to add support for building the kernel with
--ffunction-sections -fdata-sections.  This requires renaming all the
-magic section names in the kernel of the form .text.foo, .data.foo,
-.bss.foo, and .rodata.foo to not have collisions with sections
-generated for code like:
+[5/9] spi_mpc83xx: Fix checkpatch issues
+[6/9] spi_mpc83xx: Split mpc83xx_spi_work() into two routines
+[7/9] spi_mpc83xx: Remove dead code
+[8/9] spi_mpc83xx: Rename spi_83xx.c to spi_8xxx.c
+[9/9] spi_mpc8xxx: s/83xx/8xxx/g
 
-static int nosave = 0; /* -fdata-sections places in .data.nosave */
-static void head(); /* -ffunction-sections places in .text.head */
+Thanks,
 
-Sam Ravnborg proposed that rather than just renaming all the sections
-outright, we should start by first getting more control over the
-section names used in the kernel so that we can later rename sections
-without touching too many files.  These patch series implement that
-cleanup.  Later, there will be another patch series to actually rename
-the sections.
-
-I'm hoping we can get just these macro definitions into 2.6.30 so that
-the arch maintainers don't have to grab the macro definitions for
-their trees while reviewing the patches for 2.6.31.
-
-Shortly, I'm going to send one patch series for each of the
-architectures updating those architectures to use these new macros
-(and otherwise cleaning up section names on those architectures).
-
-	-Tim Abbott
-
-Tim Abbott (6):
-  Add new macros for page-aligned data and bss sections.
-  Add new NOSAVE_DATA linker script macro.
-  Add new CACHELINE_ALIGNED_DATA linker script macro.
-  Add new INIT_TASK_DATA() linker script macro.
-  Add new READ_MOSTLY_DATA(align) linker script macro.
-  Add support for __read_mostly to linux/cache.h
-
- include/asm-generic/vmlinux.lds.h |   27 +++++++++++++++++++++++++++
- include/linux/cache.h             |    6 ++++++
- include/linux/init_task.h         |    3 +++
- include/linux/linkage.h           |    9 +++++++++
- 4 files changed, 45 insertions(+), 0 deletions(-)
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
