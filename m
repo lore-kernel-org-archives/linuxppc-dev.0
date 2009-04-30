@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A432DDF8A
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 04:05:05 +1000 (EST)
-Message-Id: <547963B5-28FB-4075-B39A-C99B28554E3F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <33403DE1-6AC2-49E9-9539-C520E4944D77@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: why does ppc64 require boards to call pci_devs_phb_init()?
-Date: Thu, 30 Apr 2009 13:04:58 -0500
-References: <33403DE1-6AC2-49E9-9539-C520E4944D77@kernel.crashing.org>
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <jwboyer@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.228])
+	by ozlabs.org (Postfix) with ESMTP id E11B0DDF8F
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 05:17:46 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f9so2945718rvb.1
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2009 12:17:45 -0700 (PDT)
+Date: Thu, 30 Apr 2009 15:17:08 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Need a patch tested on a windtunnel powermac
+Message-ID: <20090430191707.GB2424@yoda.jdub.homelinux.org>
+References: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
+	<20090430002448.GA5208@hansolo.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090430002448.GA5208@hansolo.jdub.homelinux.org>
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Apr 30, 2009, at 10:37 AM, Kumar Gala wrote:
-
-> looking at merging this in w/ppc32 and wondering why board code has  
-> to call pci_devs_phb_init() and not do it via pcibios_init()
+On Wed, Apr 29, 2009 at 08:24:48PM -0400, Josh Boyer wrote:
+>On Thu, Apr 30, 2009 at 09:30:59AM +1000, Paul Mackerras wrote:
+>>Does anyone here still have a "windtunnel" powermac (PowerMac3,6)
+>>machine running Linux?  We need someone to test Jean Delvare's patch
+>>to the therm_windtunnel driver.  The patch is at:
+>>
+>>http://patchwork.ozlabs.org/patch/26095/
+>>
+>>I don't have a windtunnel machine myself - I have a PowerMac3,5 but
+>>not a PowerMac3,6.
 >
-> - k
+>I might have one.  I'll pull the G4 I have out of it's box and check tomorrow.
 
-As I look at this a bit more, I'm thinking why don't we do:
+Amazingly enough, I do.  It's running some crusty-arse gentoo install from
+2005, so I need to install something newer on it.  Hopefully that goes smoothly
+today...
 
-pci_devs_phb_init_dynamic() in pcibios_alloc_controller
-
-An add some code into pci_devs_phb_init_dynamic so we don't re-do  
-update_dn_pci_info if dn->data is already set.
-
-I am not sure what impact this has ppc64 systems that call  
-pci_devs_phb_init()
-
-- k
+josh
