@@ -1,22 +1,16 @@
-Return-Path: <tabbott@MIT.EDU>
-Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
-	[18.7.7.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DA69FDDD1B
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 00:01:38 +1000 (EST)
-Date: Fri, 1 May 2009 09:54:34 -0400 (EDT)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v2 1/6] Add new macros for page-aligned data and bss
-	sections.
-In-Reply-To: <20090501091848.GB18326@uranus.ravnborg.org>
-Message-ID: <alpine.DEB.1.10.0905010951100.3955@vinegar-pot.mit.edu>
+Return-Path: <sam@ravnborg.org>
+Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
+	by ozlabs.org (Postfix) with ESMTP id 08901DDDA9
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 00:19:08 +1000 (EST)
+Date: Fri, 1 May 2009 16:21:10 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Abbott <tabbott@MIT.EDU>
+Subject: Re: [PATCH v2 0/6] macros for section name cleanup
+Message-ID: <20090501142110.GA25236@uranus.ravnborg.org>
 References: <1241121253-32341-1-git-send-email-tabbott@mit.edu>
-	<1241121253-32341-2-git-send-email-tabbott@mit.edu>
-	<20090501091848.GB18326@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1241121253-32341-1-git-send-email-tabbott@mit.edu>
 Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
 	Denys Vlasenko <vda.linux@googlemail.com>,
@@ -56,16 +50,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 1 May 2009, Sam Ravnborg wrote:
-
-> On Thu, Apr 30, 2009 at 03:54:08PM -0400, Tim Abbott wrote:
-> > +#define __PAGE_ALIGNED_DATA	.section ".data.page_aligned", "aw", @progbits
-> > +#define __PAGE_ALIGNED_BSS	.section ".bss.page_aligned", "aw", @nobits
+On Thu, Apr 30, 2009 at 03:54:07PM -0400, Tim Abbott wrote:
+> (this patch series differs from v1 only in the CC list; some of the
+> architecture lists I sent the previous one to are moderated against
+> non-members; all replies should go to this version).
 > 
-> It is my understanding that the linker will automatically
-> assume nobits for section names starting with .bss and likewise
-> progbits for section names starting with .data - so we can leave them out?
+> Here are the architecture-independent macro definitions needed for
+> to clean up the kernel's section names.  The overall diffstat from
+> this section name cleanup project is:
+> 
+>  96 files changed, 261 insertions(+), 503 deletions(-)
+> 
+> The decrease results from removing a lot of redundancy in the linker
+> scripts.
+> 
+> The long-term goal here is to add support for building the kernel with
+> -ffunction-sections -fdata-sections.  This requires renaming all the
+> magic section names in the kernel of the form .text.foo, .data.foo,
+> .bss.foo, and .rodata.foo to not have collisions with sections
+> generated for code like:
+> 
+> static int nosave = 0; /* -fdata-sections places in .data.nosave */
+> static void head(); /* -ffunction-sections places in .text.head */
+> 
+> Sam Ravnborg proposed that rather than just renaming all the sections
+> outright, we should start by first getting more control over the
+> section names used in the kernel so that we can later rename sections
+> without touching too many files.  These patch series implement that
+> cleanup.  Later, there will be another patch series to actually rename
+> the sections.
+> 
+> I'm hoping we can get just these macro definitions into 2.6.30 so that
+> the arch maintainers don't have to grab the macro definitions for
+> their trees while reviewing the patches for 2.6.31.
+> 
+> Shortly, I'm going to send one patch series for each of the
+> architectures updating those architectures to use these new macros
+> (and otherwise cleaning up section names on those architectures).
+> 
+> 	-Tim Abbott
+> 
+> Tim Abbott (6):
+>   Add new macros for page-aligned data and bss sections.
+>   Add new NOSAVE_DATA linker script macro.
+>   Add new CACHELINE_ALIGNED_DATA linker script macro.
+>   Add new INIT_TASK_DATA() linker script macro.
+>   Add new READ_MOSTLY_DATA(align) linker script macro.
 
-I believe that is correct.
+I am about to apply this part of your patches.
+I am doing some additional modifications and
+will most likely apply them as one patch.
 
-	-Tim Abbott
+Will post to linux-arch for review when it is ready.
+
+	Sam
