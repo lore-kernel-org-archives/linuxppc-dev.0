@@ -1,16 +1,18 @@
 Return-Path: <timur.tabi@gmail.com>
 Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id 7D326DDE25
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 06:15:36 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so2100632qwe.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 01 May 2009 13:15:34 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTP id 17BBFDDE25
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 06:17:09 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so2101140qwe.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 May 2009 13:17:08 -0700 (PDT)
 MIME-Version: 1.0
 Sender: timur.tabi@gmail.com
-In-Reply-To: <1241206851-27749-1-git-send-email-Haiying.Wang@freescale.com>
+In-Reply-To: <1241206851-27749-3-git-send-email-Haiying.Wang@freescale.com>
 References: <1241206851-27749-1-git-send-email-Haiying.Wang@freescale.com>
-Date: Fri, 1 May 2009 15:15:34 -0500
-Message-ID: <ed82fe3e0905011315j4678d0c4idecc8c66d288367f@mail.gmail.com>
-Subject: Re: [PATCH 2/6 v2] powerpc/qe: update risc allocation for QE
+	<1241206851-27749-2-git-send-email-Haiying.Wang@freescale.com>
+	<1241206851-27749-3-git-send-email-Haiying.Wang@freescale.com>
+Date: Fri, 1 May 2009 15:17:08 -0500
+Message-ID: <ed82fe3e0905011317t4f3f1e63qb733b89da9685e79@mail.gmail.com>
+Subject: Re: [PATCH 5/6 v2] net/ucc_geth: Assign six threads to Rx for UEC
 From: Timur Tabi <timur@freescale.com>
 To: Haiying Wang <Haiying.Wang@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -25,13 +27,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Fri, May 1, 2009 at 2:40 PM, Haiying Wang <Haiying.Wang@freescale.com> wrote:
-> Change the RISC allocation to macros instead of enum, add function to read the
-> number of risc engines from the new property "fsl,qe-num-riscs" under qe node
-> in dts. Add new property "fsl,qe-num-riscs" description in qe.txt
+> in the case the QE has 46 SNUMs for the threads to support four UCC Ethernet at
+> 1000Base-T simultaneously.
 >
 > Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
 
 Acked-by: Timur Tabi <timur@freescale.com>
+
+FYI, this should have been cross-posted to the netdev mailing list.
 
 -- 
 Timur Tabi
