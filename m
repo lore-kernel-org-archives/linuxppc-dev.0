@@ -1,24 +1,23 @@
-Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4F5BCDDE1B
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 03:38:31 +1000 (EST)
-Message-ID: <49FB2EDC.9050300@zytor.com>
-Date: Fri, 01 May 2009 10:18:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <sam@ravnborg.org>
+Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
+	by ozlabs.org (Postfix) with ESMTP id 320BADDE19
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 03:42:52 +1000 (EST)
+Date: Fri, 1 May 2009 19:44:57 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [PATCH v2 1/6] Add new macros for page-aligned data and bss
 	sections.
+Message-ID: <20090501174457.GA26559@uranus.ravnborg.org>
 References: <1241121253-32341-1-git-send-email-tabbott@mit.edu>
 	<1241121253-32341-2-git-send-email-tabbott@mit.edu>
 	<20090501091848.GB18326@uranus.ravnborg.org>
 	<alpine.DEB.1.10.0905010951100.3955@vinegar-pot.mit.edu>
 	<49FB2449.1010301@zytor.com>
 	<20090501171717.GA26401@uranus.ravnborg.org>
-In-Reply-To: <20090501171717.GA26401@uranus.ravnborg.org>
-Content-Type: text/plain; charset=UTF-8
+	<49FB2EDC.9050300@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49FB2EDC.9050300@zytor.com>
 Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
 	Denys Vlasenko <vda.linux@googlemail.com>, Tim Abbott <tabbott@MIT.EDU>,
@@ -58,36 +57,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sam Ravnborg wrote:
-> On Fri, May 01, 2009 at 09:33:13AM -0700, H. Peter Anvin wrote:
->> Tim Abbott wrote:
->>> On Fri, 1 May 2009, Sam Ravnborg wrote:
->>>
->>>> On Thu, Apr 30, 2009 at 03:54:08PM -0400, Tim Abbott wrote:
->>>>> +#define __PAGE_ALIGNED_DATA	.section ".data.page_aligned", "aw", @progbits
->>>>> +#define __PAGE_ALIGNED_BSS	.section ".bss.page_aligned", "aw", @nobits
->>>> It is my understanding that the linker will automatically
->>>> assume nobits for section names starting with .bss and likewise
->>>> progbits for section names starting with .data - so we can leave them out?
->>> I believe that is correct.
->>>
->> ... but that doesn't mean it's the right thing to do.
->>
->> It's better to be fully explicit when macroizing this kind of stuff.
->> This is part of why macroizing it is good: it means we end up with *one*
->> place that determines this stuff, not some magic heuristics in the linker.
+On Fri, May 01, 2009 at 10:18:20AM -0700, H. Peter Anvin wrote:
+> Sam Ravnborg wrote:
+> > On Fri, May 01, 2009 at 09:33:13AM -0700, H. Peter Anvin wrote:
+> >> Tim Abbott wrote:
+> >>> On Fri, 1 May 2009, Sam Ravnborg wrote:
+> >>>
+> >>>> On Thu, Apr 30, 2009 at 03:54:08PM -0400, Tim Abbott wrote:
+> >>>>> +#define __PAGE_ALIGNED_DATA	.section ".data.page_aligned", "aw", @progbits
+> >>>>> +#define __PAGE_ALIGNED_BSS	.section ".bss.page_aligned", "aw", @nobits
+> >>>> It is my understanding that the linker will automatically
+> >>>> assume nobits for section names starting with .bss and likewise
+> >>>> progbits for section names starting with .data - so we can leave them out?
+> >>> I believe that is correct.
+> >>>
+> >> ... but that doesn't mean it's the right thing to do.
+> >>
+> >> It's better to be fully explicit when macroizing this kind of stuff.
+> >> This is part of why macroizing it is good: it means we end up with *one*
+> >> place that determines this stuff, not some magic heuristics in the linker.
+> > 
+> > Do you know if we can use % in place of @?
+> > I could see that gas supports both - at least in trunk in cvs.
+> > 
 > 
-> Do you know if we can use % in place of @?
-> I could see that gas supports both - at least in trunk in cvs.
+> I think it might depend on the architecture(!)... but it would
+> definitely have to be an issue with testing a bunch of different versions.
 > 
+> What's wrong with @?
+arm does not support it :-(
+I recall it denote a comment in arm assembler.
 
-I think it might depend on the architecture(!)... but it would
-definitely have to be an issue with testing a bunch of different versions.
+I could do some magic to detect the ARM case but I'm reluctant to do so.
+I could also ignore the arm issue for now as it is not used by arm,
+but that strikes me as the wrong approach.
 
-What's wrong with @?
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+	Sam
