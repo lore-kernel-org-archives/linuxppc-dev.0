@@ -1,22 +1,52 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
-	by ozlabs.org (Postfix) with ESMTP id 16ADFDDE0E
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 01:03:45 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so1983239qwe.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 01 May 2009 08:03:44 -0700 (PDT)
+Return-Path: <tabbott@MIT.EDU>
+Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
+	[18.7.7.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DA69FDDD1B
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 00:01:38 +1000 (EST)
+Date: Fri, 1 May 2009 09:54:34 -0400 (EDT)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH v2 1/6] Add new macros for page-aligned data and bss
+	sections.
+In-Reply-To: <20090501091848.GB18326@uranus.ravnborg.org>
+Message-ID: <alpine.DEB.1.10.0905010951100.3955@vinegar-pot.mit.edu>
+References: <1241121253-32341-1-git-send-email-tabbott@mit.edu>
+	<1241121253-32341-2-git-send-email-tabbott@mit.edu>
+	<20090501091848.GB18326@uranus.ravnborg.org>
 MIME-Version: 1.0
-In-Reply-To: <49FB0C3B.3000209@mlbassoc.com>
-References: <49FAF351.4010409@mlbassoc.com>
-	<9e4733910905010739q4038555ck211ee61b9b443f01@mail.gmail.com>
-	<9e4733910905010739p6c4fddf3oab1b583b72df4eeb@mail.gmail.com>
-	<49FB0C3B.3000209@mlbassoc.com>
-Date: Fri, 1 May 2009 10:55:53 -0400
-Message-ID: <9e4733910905010755g595d686fmf075a40d6012e3fc@mail.gmail.com>
-Subject: Re: Using archaic I2C with OF
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Gary Thomas <gary@mlbassoc.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
+	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+	Denys Vlasenko <vda.linux@googlemail.com>,
+	Greg Ungerer <gerg@uclinux.org>, Jeff Arnold <jbarnold@mit.edu>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	Waseem Daher <wdaher@mit.edu>, linux-s390@vger.kernel.org,
+	Jesper Nilsson <jesper.nilsson@axis.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Helge Deller <deller@gmx.de>, Ingo Molnar <mingo@redhat.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	microblaze-uclinux@itee.uq.edu.au,
+	Russell King <rmk+kernel@arm.linux.org.uk>,
+	user-mode-linux-devel@lists.sourceforge.net,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Jeff Dike <jdike@addtoit.com>, dev-etrax@axis.com,
+	Mikael Starvik <starvik@axis.com>, Cyrill Gorcunov <gorcunov@openvz.org>,
+	Michal Simek <monstr@monstr.eu>, Richard Henderson <rth@twiddle.net>,
+	Chris Zankel <chris@zankel.net>, Bryan Wu <cooloney@kernel.org>,
+	Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Hirokazu Takata <takata@linux-m32r.org>,
+	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+	Ralf Baechle <ralf@linux-mips.org>, Anders Kaseorg <andersk@mit.edu>,
+	Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
+	Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	uclinux-dist-devel@blackfin.uclinux.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +56,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 1, 2009 at 10:50 AM, Gary Thomas <gary@mlbassoc.com> wrote:
-> Jon Smirl wrote:
->> On Fri, May 1, 2009 at 10:39 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
->>> On Fri, May 1, 2009 at 9:04 AM, Gary Thomas <gary@mlbassoc.com> wrote:
->>>> I'd like to use an existing I2C driver (a touchscreen device)
->>>> with my 834x based platform. =A0How do I arrange to provide
->>>> platform data (i2c_client->dev.platform_data) from my OF world?
->>> It is easier to convert the i2c driver to work in the current model.
->>
->> All in-tree drivers have already been converted.
->
-> I'm looking at drivers/input/touchscreen/tsc2007.c (the one I need)
-> from Kumar's 'next' tree. =A0It most definitely still uses the old
-> model.
->
-> Can you suggest another place to look?
+On Fri, 1 May 2009, Sam Ravnborg wrote:
 
-Post this on the i2c list. Jean has made an effort to convert all
-drivers. He must have missed that one.
+> On Thu, Apr 30, 2009 at 03:54:08PM -0400, Tim Abbott wrote:
+> > +#define __PAGE_ALIGNED_DATA	.section ".data.page_aligned", "aw", @progbits
+> > +#define __PAGE_ALIGNED_BSS	.section ".bss.page_aligned", "aw", @nobits
+> 
+> It is my understanding that the linker will automatically
+> assume nobits for section names starting with .bss and likewise
+> progbits for section names starting with .data - so we can leave them out?
 
->
-> --
-> ------------------------------------------------------------
-> Gary Thomas =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0Consulting for the
-> MLB Associates =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0Embedded world
-> ------------------------------------------------------------
->
+I believe that is correct.
 
-
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
+	-Tim Abbott
