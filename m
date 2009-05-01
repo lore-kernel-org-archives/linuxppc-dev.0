@@ -1,18 +1,18 @@
 Return-Path: <sam@ravnborg.org>
-Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
-	by ozlabs.org (Postfix) with ESMTP id DA433DDDA9
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 19:16:45 +1000 (EST)
-Date: Fri, 1 May 2009 11:18:48 +0200
+Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
+	by ozlabs.org (Postfix) with ESMTP id 41243DDDB6
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 19:19:13 +1000 (EST)
+Date: Fri, 1 May 2009 11:21:14 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Tim Abbott <tabbott@MIT.EDU>
-Subject: Re: [PATCH v2 1/6] Add new macros for page-aligned data and bss
-	sections.
-Message-ID: <20090501091848.GB18326@uranus.ravnborg.org>
+Subject: Re: [PATCH v2 2/6] Add new NOSAVE_DATA linker script macro.
+Message-ID: <20090501092114.GC18326@uranus.ravnborg.org>
 References: <1241121253-32341-1-git-send-email-tabbott@mit.edu>
 	<1241121253-32341-2-git-send-email-tabbott@mit.edu>
+	<1241121253-32341-3-git-send-email-tabbott@mit.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1241121253-32341-2-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1241121253-32341-3-git-send-email-tabbott@mit.edu>
 Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
 	Denys Vlasenko <vda.linux@googlemail.com>,
@@ -52,11 +52,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 30, 2009 at 03:54:08PM -0400, Tim Abbott wrote:
-> This patch is preparation for replacing most uses of
-> ".bss.page_aligned" and ".data.page_aligned" in the kernel with
-> macros, so that the section name can later be changed without having
-> to touch a lot of the kernel.
+On Thu, Apr 30, 2009 at 03:54:09PM -0400, Tim Abbott wrote:
+> This patch is preparation for replacing most ".data.nosave" in the
+> kernel with macros, so that the section name can later be changed
+> without having to touch a lot of the kernel.
 > 
 > The long-term goal here is to be able to change the kernel's magic
 > section names to those that are compatible with -ffunction-sections
@@ -65,55 +64,32 @@ On Thu, Apr 30, 2009 at 03:54:08PM -0400, Tim Abbott wrote:
 > 
 > Signed-off-by: Tim Abbott <tabbott@mit.edu>
 > Cc: Sam Ravnborg <sam@ravnborg.org>
-> Acked-by: David Howells <dhowells@redhat.com>
 > ---
->  include/asm-generic/vmlinux.lds.h |    8 ++++++++
->  include/linux/linkage.h           |    9 +++++++++
->  2 files changed, 17 insertions(+), 0 deletions(-)
+>  include/asm-generic/vmlinux.lds.h |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
 > 
 > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> index 89853bc..3d88c87 100644
+> index 3d88c87..f5ebd2b 100644
 > --- a/include/asm-generic/vmlinux.lds.h
 > +++ b/include/asm-generic/vmlinux.lds.h
-> @@ -116,6 +116,14 @@
->  	FTRACE_EVENTS()							\
->  	TRACE_SYSCALLS()
+> @@ -124,6 +124,13 @@
+>  	. = ALIGN(PAGE_SIZE);						\
+>  	*(.bss.page_aligned)
 >  
-> +#define PAGE_ALIGNED_DATA						\
+> +#define NOSAVE_DATA							\
 > +	. = ALIGN(PAGE_SIZE);						\
-> +	*(.data.page_aligned)
-> +
-> +#define PAGE_ALIGNED_BSS						\
+> +	__nosave_begin = .;						\
+> +	*(.data.nosave)							\
 > +	. = ALIGN(PAGE_SIZE);						\
-> +	*(.bss.page_aligned)
+> +	__nosave_end = .;
 > +
->  #define RO_DATA(align)							\
->  	. = ALIGN((align));						\
->  	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
-> diff --git a/include/linux/linkage.h b/include/linux/linkage.h
-> index fee9e59..af051fc 100644
-> --- a/include/linux/linkage.h
-> +++ b/include/linux/linkage.h
-> @@ -22,6 +22,15 @@
->  #define __page_aligned_bss	__section(.bss.page_aligned) __aligned(PAGE_SIZE)
->  
->  /*
-> + * For assembly routines.
-> + *
-> + * Note when using these that you must specify the appropriate
-> + * alignment directives yourself
-> + */
-> +#define __PAGE_ALIGNED_DATA	.section ".data.page_aligned", "aw", @progbits
-> +#define __PAGE_ALIGNED_BSS	.section ".bss.page_aligned", "aw", @nobits
 
-The above will work on most architectures but fails (silently?) on arm.
-arm uses %{progbits,nobits} where all other uses @{nobits,progbits}.
+You need to use:
+	VMLINUX_SYMBOL(__nosave_begin) = .;
 
-I know we do not use page_aligned in arm assembler code for now,
-but if we do then it should work.
-It is my understanding that the linker will automatically
-assume nobits for section names starting with .bss and likewise
-progbits for section names starting with .data - so we can leave them out?
+Otherwise architectures such as m68k wil break as they
+add a leading underscore.
 
+See other symbols that is defined inside vmlinux.lds.h
 
 	Sam
