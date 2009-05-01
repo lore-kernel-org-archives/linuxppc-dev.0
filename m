@@ -1,32 +1,29 @@
-Return-Path: <maynardj@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <dave@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 74280DDE0D
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 03:18:05 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n41HE3K8001877
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 May 2009 13:14:03 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n41HHxY5151020
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 May 2009 13:17:59 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n41HHx8L006672
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 May 2009 13:17:59 -0400
-Received: from [127.0.0.1] (9-10-86-165.rchland.ibm.com [9.10.86.165])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	n41HHvqT006518
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 May 2009 13:17:58 -0400
-Message-ID: <49FB2EC5.4040400@us.ibm.com>
-Date: Fri, 01 May 2009 12:17:57 -0500
-From: Maynard Johnson <maynardj@us.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix oprofile sampling of marked events on POWER7 
-Content-Type: multipart/mixed; boundary="------------060404040409050306040209"
-Reply-To: maynardj@us.ibm.com
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 76C2FDDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 04:37:12 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n41IVPGu017720
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 May 2009 12:31:25 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n41Ib7aL090260
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 May 2009 12:37:07 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n41Ib6WW029627
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 May 2009 12:37:06 -0600
+Subject: Should ppc32 use CONFIG_HIGHPTE or not?
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Content-Type: text/plain
+Date: Fri, 01 May 2009 11:37:03 -0700
+Message-Id: <1241203023.29485.218.camel@nimitz>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,77 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060404040409050306040209
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+arch/powerpc/mm/pgtable_32.c has the following function:
 
-Description
------------
-Change ppc64 oprofile kernel driver to use the SLOT bits (MMCRA[37:39]only on 
-older processors where those bits are defined.
+pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
+{
+        struct page *ptepage;
 
-Background
-----------
-The performance monitor unit of the 64-bit POWER processor family has the 
-ability to collect accurate instruction-level samples when profiling on marked 
-events (i.e., "PM_MRK_<event-name>").  In processors prior to POWER6, the MMCRA 
-register contained "slot information" that the oprofile kernel driver used to 
-adjust the value latched in the SIAR at the time of a PMU interrupt.  But as of 
-POWER6, these slot bits in MMCRA are no longer necessary for oprofile to use, 
-since the SIAR itself holds the accurate sampled instruction address.  With 
-POWER6, these MMCRA slot bits were zero'ed out by hardware so oprofile's use of 
-these slot bits was, in effect, a NOP.  But with POWER7, these bits are no 
-longer zero'ed out; however, they serve some other purpose rather than slot 
-information.  Thus, using these bits on POWER7 to adjust the SIAR value results 
-in samples being attributed to the wrong instructions.  The attached patch 
-changes the oprofile kernel driver to ignore these slot bits on all newer 
-processors starting with POWER6.
+#ifdef CONFIG_HIGHPTE
+        gfp_t flags = GFP_KERNEL | __GFP_HIGHMEM | __GFP_REPEAT | __GFP_ZERO;
+#else
+        gfp_t flags = GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO;
+#endif
+...
 
-Thanks.
--Maynard
+But there's no trace of CONFIG_HIGHPTE anywhere in arch/powerpc.  But,
+the one and only definition on 32-bit of pte_offset_map() (in
+arch/powerpc/include/asm/pgtable-ppc32.h) seems to have HIGHPTE
+semantics:
 
-Signed-off-by: Maynard Johnson <maynardj@us.ibm.com>
+#define pte_offset_map(dir, addr)               \
+        ((pte_t *) kmap_atomic(pmd_page(*(dir)), KM_PTE0) + pte_index(addr))
+#define pte_offset_map_nested(dir, addr)        \
+        ((pte_t *) kmap_atomic(pmd_page(*(dir)), KM_PTE1) + pte_index(addr))
 
---------------060404040409050306040209
-Content-Type: text/plain;
- name="oprof-p7.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="oprof-p7.patch"
+So, it looks like ppc32 never actually allocates highmem pte pages, but
+it *does* go to the trouble of at least trying to kmap_atomic() them.
+Should we just give ppc32 unconditional direct-mapped ptes?  Or, should
+we remove that #ifdef and let it allocate them in highmem when it can
+since we also have the code to support that?
 
-diff -paur linux/arch/powerpc/oprofile/op_model_power4.c linux-p7-oprofile-patch//arch/powerpc/oprofile/op_model_power4.c
---- linux/arch/powerpc/oprofile/op_model_power4.c	2009-05-01 08:20:21.000000000 -0500
-+++ linux-p7-oprofile-patch//arch/powerpc/oprofile/op_model_power4.c	2009-05-01 08:20:05.000000000 -0500
-@@ -26,6 +26,7 @@
- static unsigned long reset_value[OP_MAX_COUNTER];
- 
- static int oprofile_running;
-+static int use_slot_nums;
- 
- /* mmcr values are set in power4_reg_setup, used in power4_cpu_setup */
- static u32 mmcr0_val;
-@@ -61,6 +62,12 @@ static int power4_reg_setup(struct op_co
- 	else
- 		mmcr0_val |= MMCR0_PROBLEM_DISABLE;
- 
-+	if (__is_processor(PV_POWER4) || __is_processor(PV_POWER4p) ||
-+	    __is_processor(PV_970) || __is_processor(PV_970FX) ||
-+	    __is_processor(PV_970MP) || __is_processor(PV_970GX) ||
-+	    __is_processor(PV_POWER5) || __is_processor(PV_POWER5p))
-+		use_slot_nums = 1;
-+
- 	return 0;
- }
- 
-@@ -206,7 +213,7 @@ static unsigned long get_pc(struct pt_re
- 
- 	mmcra = mfspr(SPRN_MMCRA);
- 
--	if (mmcra & MMCRA_SAMPLE_ENABLE) {
-+	if (use_slot_nums && (mmcra & MMCRA_SAMPLE_ENABLE)) {
- 		slot = ((mmcra & MMCRA_SLOT) >> MMCRA_SLOT_SHIFT);
- 		if (slot > 1)
- 			pc += 4 * (slot - 1);
-
---------------060404040409050306040209--
+-- Dave
