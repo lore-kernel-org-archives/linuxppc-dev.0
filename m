@@ -1,42 +1,60 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id 08901DDDA9
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 00:19:08 +1000 (EST)
-Date: Fri, 1 May 2009 16:21:10 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@MIT.EDU>
-Subject: Re: [PATCH v2 0/6] macros for section name cleanup
-Message-ID: <20090501142110.GA25236@uranus.ravnborg.org>
-References: <1241121253-32341-1-git-send-email-tabbott@mit.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1241121253-32341-1-git-send-email-tabbott@mit.edu>
+Return-Path: <cl@linux.com>
+Received: from smtp.ultrahosting.com (smtp.ultrahosting.com [74.213.174.254])
+	by ozlabs.org (Postfix) with ESMTP id 83BDADDDA0
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 01:07:48 +1000 (EST)
+Received: from localhost (smtp.ultrahosting.com [127.0.0.1])
+	by smtp.ultrahosting.com (Postfix) with ESMTP id 1DB1482C509
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 11:13:57 -0400 (EDT)
+Received: from smtp.ultrahosting.com ([74.213.174.254])
+	by localhost (smtp.ultrahosting.com [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP id MywyLIk5j1I8 for <linuxppc-dev@ozlabs.org>;
+	Fri,  1 May 2009 11:13:57 -0400 (EDT)
+Received: from qirst.com (unknown [74.213.171.31])
+	by smtp.ultrahosting.com (Postfix) with ESMTP id 4D78A82C4FE
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 11:13:51 -0400 (EDT)
+Date: Fri, 1 May 2009 09:52:18 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 6/6] Add support for __read_mostly to linux/cache.h
+In-Reply-To: <20090501094407.GD18326@uranus.ravnborg.org>
+Message-ID: <alpine.DEB.1.10.0905010948140.18324@qirst.com>
+References: <1241119956-31453-1-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-2-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-3-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-4-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-5-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-6-git-send-email-tabbott@mit.edu>
+	<1241119956-31453-7-git-send-email-tabbott@mit.edu>
+	<20090501094407.GD18326@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
 	linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
-	Denys Vlasenko <vda.linux@googlemail.com>,
-	Greg Ungerer <gerg@uclinux.org>, Jeff Arnold <jbarnold@mit.edu>,
+	Denys Vlasenko <vda.linux@googlemail.com>, Greg Ungerer <gerg@uclinux.org>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
 	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
-	Waseem Daher <wdaher@mit.edu>, linux-s390@vger.kernel.org,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	linux-arm-kernel@lists.arm.linux.org.uk, linux-s390@vger.kernel.org,
+	Jesper Nilsson <jesper.nilsson@axis.com>, linux-am33-list@redhat.com,
 	Yoshinori Sato <ysato@users.sourceforge.jp>,
 	Helge Deller <deller@gmx.de>, Ingo Molnar <mingo@redhat.com>,
 	Geert Uytterhoeven <geert@linux-m68k.org>,
-	microblaze-uclinux@itee.uq.edu.au,
 	Russell King <rmk+kernel@arm.linux.org.uk>,
 	user-mode-linux-devel@lists.sourceforge.net,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Jeff Dike <jdike@addtoit.com>, dev-etrax@axis.com,
-	Mikael Starvik <starvik@axis.com>, Cyrill Gorcunov <gorcunov@openvz.org>,
-	Michal Simek <monstr@monstr.eu>, Richard Henderson <rth@twiddle.net>,
+	microblaze-uclinux@itee.uq.edu.au, Jeff Dike <jdike@addtoit.com>,
+	Jeff Arnold <jbarnold@MIT.EDU>, dev-etrax@axis.com,
+	Mikael Starvik <starvik@axis.com>, Tony Luck <tony.luck@intel.com>,
+	Cyrill Gorcunov <gorcunov@openvz.org>,
+	Michal Simek <monstr@monstr.eu>, Waseem Daher <wdaher@MIT.EDU>,
+	Richard Henderson <rth@twiddle.net>,
 	Chris Zankel <chris@zankel.net>, Bryan Wu <cooloney@kernel.org>,
-	Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
+	linux-m32r@ml.linux-m32r.org, linux-parisc@vger.kernel.org,
 	Haavard Skinnemoen <hskinnemoen@atmel.com>,
 	Hirokazu Takata <takata@linux-m32r.org>,
-	Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-	Ralf Baechle <ralf@linux-mips.org>, Anders Kaseorg <andersk@mit.edu>,
-	Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
+	Tim Abbott <tabbott@MIT.EDU>, Ralf Baechle <ralf@linux-mips.org>,
+	Anders Kaseorg <andersk@MIT.EDU>, Kyle McMartin <kyle@mcmartin.ca>,
+	Paul Mundt <lethal@linux-sh.org>, linux-alpha@vger.kernel.org,
 	Martin Schwidefsky <schwidefsky@de.ibm.com>,
 	uclinux-dist-devel@blackfin.uclinux.org,
 	Linus Torvalds <torvalds@linux-foundation.org>,
@@ -50,57 +68,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 30, 2009 at 03:54:07PM -0400, Tim Abbott wrote:
-> (this patch series differs from v1 only in the CC list; some of the
-> architecture lists I sent the previous one to are moderated against
-> non-members; all replies should go to this version).
-> 
-> Here are the architecture-independent macro definitions needed for
-> to clean up the kernel's section names.  The overall diffstat from
-> this section name cleanup project is:
-> 
->  96 files changed, 261 insertions(+), 503 deletions(-)
-> 
-> The decrease results from removing a lot of redundancy in the linker
-> scripts.
-> 
-> The long-term goal here is to add support for building the kernel with
-> -ffunction-sections -fdata-sections.  This requires renaming all the
-> magic section names in the kernel of the form .text.foo, .data.foo,
-> .bss.foo, and .rodata.foo to not have collisions with sections
-> generated for code like:
-> 
-> static int nosave = 0; /* -fdata-sections places in .data.nosave */
-> static void head(); /* -ffunction-sections places in .text.head */
-> 
-> Sam Ravnborg proposed that rather than just renaming all the sections
-> outright, we should start by first getting more control over the
-> section names used in the kernel so that we can later rename sections
-> without touching too many files.  These patch series implement that
-> cleanup.  Later, there will be another patch series to actually rename
-> the sections.
-> 
-> I'm hoping we can get just these macro definitions into 2.6.30 so that
-> the arch maintainers don't have to grab the macro definitions for
-> their trees while reviewing the patches for 2.6.31.
-> 
-> Shortly, I'm going to send one patch series for each of the
-> architectures updating those architectures to use these new macros
-> (and otherwise cleaning up section names on those architectures).
-> 
-> 	-Tim Abbott
-> 
-> Tim Abbott (6):
->   Add new macros for page-aligned data and bss sections.
->   Add new NOSAVE_DATA linker script macro.
->   Add new CACHELINE_ALIGNED_DATA linker script macro.
->   Add new INIT_TASK_DATA() linker script macro.
->   Add new READ_MOSTLY_DATA(align) linker script macro.
+On Fri, 1 May 2009, Sam Ravnborg wrote:
 
-I am about to apply this part of your patches.
-I am doing some additional modifications and
-will most likely apply them as one patch.
+> Are there any specific reason why we do not support read_mostly on all
+> architectures?
 
-Will post to linux-arch for review when it is ready.
+Not that I know of.
 
-	Sam
+> read_mostly is about grouping rarely written data together
+> so what is needed is to introduce this section in the remaining
+> archtectures.
+>
+> Christoph - git log says you did the inital implmentation.
+> Do you agree?
+
+Yes.
+
+There is some concern that __read_mostly is needlessly applied to
+numerous variables that are not used in hot code paths. This may make
+__read_mostly ineffective and actually increase the cache footprint of a
+function since global variables are no longer in the same cacheline. If
+such a function is called and the caches are cold then two cacheline
+fetches have to be done instead of one.
