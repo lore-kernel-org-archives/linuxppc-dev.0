@@ -1,13 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 1CF59DDDA9
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 18:36:45 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org,
-	galak@kernel.crashing.org
-Subject: [PATCH] powerpc: fix mktree build error on Mac OS X host
-Date: Thu, 30 Apr 2009 23:16:44 -0500
-Message-Id: <1241151404-5274-1-git-send-email-timur@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AD4FFDDDB6
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 May 2009 18:50:16 +1000 (EST)
+Subject: Re: [PATCH 1/2] Add support for Designware SATA controller driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <49FAA434.9040106@garzik.org>
+References: <1241042419-19774-1-git-send-email-fkan@amcc.com>
+	<49FAA434.9040106@garzik.org>
+Content-Type: text/plain
+Date: Fri, 01 May 2009 18:49:08 +1000
+Message-Id: <1241167748.1781.3.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Feng Kan <fkan@amcc.com>,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,56 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The mktree utility defines some variables as "uint", although this is not a
-standard C type, and so cross-compiling on Mac OS X fails.  Change this to
-"unsigned int".
+On Fri, 2009-05-01 at 03:26 -0400, Jeff Garzik wrote:
+> Feng Kan wrote:
+> > Signed-off-by: Feng Kan <fkan@amcc.com>
+> > ---
+> >  drivers/ata/Kconfig    |   76 +-
+> >  drivers/ata/Makefile   |    1 +
+> >  drivers/ata/sata_dwc.c | 2047 ++++++++++++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 2091 insertions(+), 33 deletions(-)
+> >  create mode 100644 drivers/ata/sata_dwc.c
+> 
+> I don't see a patch 2/2 ?
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/boot/mktree.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+Patch 2/2 is just adding the device-tree bits to the platform for
+this driver to match against, so it's no big deal. However, Feng,
+we already mentioned that you do a lot of unrelated changes to the
+Kconfig file that shouldn't be part of this patch, just add the
+entry for this chip, don't move stuff around in Kconfig, unless I
+missed a good reason why this is done that way.
 
-diff --git a/arch/powerpc/boot/mktree.c b/arch/powerpc/boot/mktree.c
-index 45d06a8..c2baae0 100644
---- a/arch/powerpc/boot/mktree.c
-+++ b/arch/powerpc/boot/mktree.c
-@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
- {
- 	int	in_fd, out_fd;
- 	int	nblks, i;
--	uint	cksum, *cp;
-+	unsigned int	cksum, *cp;
- 	struct	stat	st;
- 	boot_block_t	bt;
- 
-@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
- 
- 	cksum = 0;
- 	cp = (void *)&bt;
--	for (i=0; i<sizeof(bt)/sizeof(uint); i++)
-+	for (i = 0; i < sizeof(bt) / sizeof(unsigned int); i++)
- 		cksum += *cp++;
- 
- 	/* Assume zImage is an ELF file, and skip the 64K header.
-@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
- 		exit(4);
- 	}
- 
--	if ((*(uint *)tmpbuf) != htonl(0x7f454c46)) {
-+	if ((*(unsigned int *)tmpbuf) != htonl(0x7f454c46)) {
- 		fprintf(stderr, "%s is not an ELF image\n", argv[1]);
- 		exit(4);
- 	}
-@@ -125,8 +125,8 @@ int main(int argc, char *argv[])
- 			perror("zImage read");
- 			exit(5);
- 		}
--		cp = (uint *)tmpbuf;
--		for (i=0; i<sizeof(tmpbuf)/sizeof(uint); i++)
-+		cp = (unsigned int *)tmpbuf;
-+		for (i = 0; i < sizeof(tmpbuf) / sizeof(unsigned int); i++)
- 			cksum += *cp++;
- 		if (write(out_fd, tmpbuf, sizeof(tmpbuf)) != sizeof(tmpbuf)) {
- 			perror("boot-image write");
--- 
-1.6.2.4
+Cheers,
+Ben.
