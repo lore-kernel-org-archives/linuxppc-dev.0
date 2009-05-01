@@ -1,21 +1,19 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 88FE4DDDA0
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 00:07:15 +1000 (EST)
-Message-ID: <49FB020B.8000505@garzik.org>
-Date: Fri, 01 May 2009 10:07:07 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-qy0-f123.google.com (mail-qy0-f123.google.com
+	[209.85.221.123]) by ozlabs.org (Postfix) with ESMTP id E46F7DDDA0
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 00:39:18 +1000 (EST)
+Received: by qyk29 with SMTP id 29so6111563qyk.17
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 May 2009 07:39:17 -0700 (PDT)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Add support for Designware SATA controller driver
-References: <1241042419-19774-1-git-send-email-fkan@amcc.com>	
-	<49FAA434.9040106@garzik.org> <1241167748.1781.3.camel@pasglop>
-In-Reply-To: <1241167748.1781.3.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Feng Kan <fkan@amcc.com>,
-	linux-ide@vger.kernel.org
+In-Reply-To: <49FAF351.4010409@mlbassoc.com>
+References: <49FAF351.4010409@mlbassoc.com>
+Date: Fri, 1 May 2009 10:39:17 -0400
+Message-ID: <9e4733910905010739q4038555ck211ee61b9b443f01@mail.gmail.com>
+Subject: Re: Using archaic I2C with OF
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Gary Thomas <gary@mlbassoc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> Patch 2/2 is just adding the device-tree bits to the platform for
-> this driver to match against, so it's no big deal. However, Feng,
-> we already mentioned that you do a lot of unrelated changes to the
-> Kconfig file that shouldn't be part of this patch, just add the
-> entry for this chip, don't move stuff around in Kconfig, unless I
-> missed a good reason why this is done that way.
+On Fri, May 1, 2009 at 9:04 AM, Gary Thomas <gary@mlbassoc.com> wrote:
+> I'd like to use an existing I2C driver (a touchscreen device)
+> with my 834x based platform. =A0How do I arrange to provide
+> platform data (i2c_client->dev.platform_data) from my OF world?
 
+It is easier to convert the i2c driver to work in the current model.
 
-Quite correct -- those drivers/ata/Kconfig changes are bogus.
-
-	Jeff
+--=20
+Jon Smirl
+jonsmirl@gmail.com
