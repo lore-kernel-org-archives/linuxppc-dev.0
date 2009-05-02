@@ -1,12 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 60625DE265
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 12:16:58 +1000 (EST)
-Date: Sat, 2 May 2009 06:16:56 +0400
+	by ozlabs.org (Postfix) with ESMTP id 6852BDE11D
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 12:17:01 +1000 (EST)
+Date: Sat, 2 May 2009 06:16:59 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 5/6] powerpc/85xx: Enable Serial RapidIO for MPC85xx MDS boards
-Message-ID: <20090502021656.GE18281@oksana.dev.rtsoft.ru>
+Subject: [PATCH 6/6] powerpc/85xx: Add STMicro M25P40 serial flash support
+	for MPC8569E-MDS
+Message-ID: <20090502021659.GF18281@oksana.dev.rtsoft.ru>
 References: <20090502021611.GA17570@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -21,93 +22,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Select HAS_RAPIDIO symbol and add rio nodes for MPC8568E-MDS
-and MPC8569E-MDS boards.
+For serial flash support we need to:
+
+- Add QE Par IO Bank E device tree node, a GPIO from this bank is
+  used for SPI chip-select line;
+- Add serial-flash node;
+- Add proper module alias into of/base.c.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/mpc8568mds.dts |   17 +++++++++++++++++
- arch/powerpc/boot/dts/mpc8569mds.dts |   17 +++++++++++++++++
- arch/powerpc/platforms/85xx/Kconfig  |    1 +
- 3 files changed, 35 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc8569mds.dts |   26 +++++++++++++++++++++++---
+ drivers/of/base.c                    |    1 +
+ 2 files changed, 24 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
-index fcab168..473fce6 100644
---- a/arch/powerpc/boot/dts/mpc8568mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-@@ -26,6 +26,7 @@
- 		serial1 = &serial1;
- 		pci0 = &pci0;
- 		pci1 = &pci1;
-+		rapidio0 = &rio0;
- 	};
- 
- 	cpus {
-@@ -539,4 +540,20 @@
- 				  0x0 0x800000>;
- 		};
- 	};
-+
-+	rio0: rapidio@e00c00000 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		compatible = "fsl,mpc8568-rapidio", "fsl,rapidio-delta";
-+		reg = <0xe00c0000 0x20000>;
-+		ranges = <0x0 0x0 0xc0000000 0x0 0x20000000>;
-+		interrupts = <48 2 /* error     */
-+			      49 2 /* bell_outb */
-+			      50 2 /* bell_inb  */
-+			      53 2 /* msg1_tx   */
-+			      54 2 /* msg1_rx   */
-+			      55 2 /* msg2_tx   */
-+			      56 2 /* msg2_rx   */>;
-+		interrupt-parent = <&mpic>;
-+	};
- };
 diff --git a/arch/powerpc/boot/dts/mpc8569mds.dts b/arch/powerpc/boot/dts/mpc8569mds.dts
-index 14120d7..975f2c5 100644
+index 975f2c5..e06ee92 100644
 --- a/arch/powerpc/boot/dts/mpc8569mds.dts
 +++ b/arch/powerpc/boot/dts/mpc8569mds.dts
-@@ -25,6 +25,7 @@
- 		ethernet2 = &enet2;
- 		ethernet3 = &enet3;
- 		pci1 = &pci1;
-+		rapidio0 = &rio0;
- 	};
- 
- 	cpus {
-@@ -528,4 +529,20 @@
- 				  0x0 0x800000>;
+@@ -260,10 +260,21 @@
  		};
- 	};
-+
-+	rio0: rapidio@e00c00000 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		compatible = "fsl,mpc8569-rapidio", "fsl,rapidio-delta";
-+		reg = <0xe00c0000 0x20000>;
-+		ranges = <0x0 0x0 0xc0000000 0x0 0x20000000>;
-+		interrupts = <48 2 /* error     */
-+			      49 2 /* bell_outb */
-+			      50 2 /* bell_inb  */
-+			      53 2 /* msg1_tx   */
-+			      54 2 /* msg1_rx   */
-+			      55 2 /* msg2_tx   */
-+			      56 2 /* msg2_rx   */>;
-+		interrupt-parent = <&mpic>;
-+	};
- };
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 7f066ad..43d385c 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -34,6 +34,7 @@ config MPC85xx_MDS
- 	bool "Freescale MPC85xx MDS"
- 	select DEFAULT_UIMAGE
- 	select PHYLIB
-+	select HAS_RAPIDIO
- 	help
- 	  This option enables support for the MPC85xx MDS board
  
+ 		par_io@e0100 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			reg = <0xe0100 0x100>;
++			ranges = <0x0 0xe0100 0x100>;
+ 			device_type = "par_io";
+ 			num-ports = <7>;
+ 
++			qe_pio_e: gpio-controller@80 {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8569-qe-pario-bank",
++					     "fsl,mpc8323-qe-pario-bank";
++				reg = <0x80 0x18>;
++				gpio-controller;
++			};
++
+ 			pio1: ucc_pin@01 {
+ 				pio-map = <
+ 			/* port  pin  dir  open_drain  assignment  has_irq */
+@@ -369,12 +380,21 @@
+ 		};
+ 
+ 		spi@4c0 {
+-			cell-index = <0>;
+-			compatible = "fsl,spi";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc8569-qe-spi", "fsl,spi";
+ 			reg = <0x4c0 0x40>;
++			cell-index = <0>;
+ 			interrupts = <2>;
+ 			interrupt-parent = <&qeic>;
+-			mode = "cpu";
++			gpios = <&qe_pio_e 30 0>;
++			mode = "cpu-qe";
++
++			serial-flash@0 {
++				compatible = "stm,m25p40";
++				reg = <0>;
++				spi-max-frequency = <25000000>;
++			};
+ 		};
+ 
+ 		spi@500 {
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 41c5dfd..391f91c 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -447,6 +447,7 @@ struct of_modalias_table {
+ static struct of_modalias_table of_modalias_table[] = {
+ 	{ "fsl,mcu-mpc8349emitx", "mcu-mpc8349emitx" },
+ 	{ "mmc-spi-slot", "mmc_spi" },
++	{ "stm,m25p40", "m25p80" },
+ };
+ 
+ /**
 -- 
 1.6.2.2
