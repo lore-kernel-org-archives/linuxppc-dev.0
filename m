@@ -1,20 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 58754DDF05
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 May 2009 23:38:22 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1621252yxb.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 02 May 2009 06:38:19 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <fa686aa40904282058l64fbcc7cp5ea3521951bd6b9c@mail.gmail.com>
-References: <fa686aa40904282058l64fbcc7cp5ea3521951bd6b9c@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 2 May 2009 07:38:04 -0600
-Message-ID: <fa686aa40905020638paea4930nee01b9b9a81926b9@mail.gmail.com>
-Subject: Re: Please pull merge branch
-To: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ED82BDDF4E
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 May 2009 05:42:55 +1000 (EST)
+In-Reply-To: <20090502001421.GA9342@oksana.dev.rtsoft.ru>
+References: <20090502001329.GA11549@oksana.dev.rtsoft.ru>
+	<20090502001421.GA9342@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc,
+	Makefile: Make it possible to safely select CONFIG_FRAME_POINTER
+Date: Sat, 2 May 2009 21:48:08 +0200
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Steven Rostedt <srostedt@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,84 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul/Ben,
+> This patch introduces HAVE_NORMAL_FRAME_POINTER Kconfig symbol. When
+> defined, the top level Makefile won't add -fno-omit-frame-pointer
+> cflag (the flag is useless for PowerPC kernels, and also makes gcc
+> generate wrong code).
 
-Here is an updated pull request which adds a fix to the bootwrapper
-Makefile clean-files list.  Please pull 'merge' branch of
-git://git.secretlab.ca/git/linux-2.6
+> +++ b/arch/powerpc/Kconfig
 
-Thanks,
-g.
+> +	select HAVE_NORMAL_FRAME_POINTER
 
-The following changes since commit 091438dd5668396328a3419abcbc6591159eb8d1=
-:
-  Linus Torvalds (1):
-        Linux 2.6.30-rc4
+> +config HAVE_NORMAL_FRAME_POINTER
+> +	bool
+> +	help
+> +	  Architectures should select this symbol if their ABI implies
+> +	  having a frame pointer.
 
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6 merge
-
-Grant Likely (3):
-      powerpc: Update MPC5xxx and Xilinx Virtex maintainer entries
-      powerpc/virtex: Add uImage to the default images list
-      powerpc/boot: add simpleImage.* to clean-files list
-
-John Linn (1):
-      powerpc/virtex: Fix duplicate level irq events.
-
- MAINTAINERS                        |    4 +-
- arch/powerpc/boot/Makefile         |    2 +-
- arch/powerpc/platforms/40x/Kconfig |    1 +
- arch/powerpc/platforms/44x/Kconfig |    1 +
- arch/powerpc/sysdev/xilinx_intc.c  |  117 ++++++++++++++++++++++++++++++++=
----
- 5 files changed, 112 insertions(+), 13 deletions(-)
+I am totally confused what you call a frame pointer here.
+None of the relevant PowerPC ABIs have a frame pointer
+separate from the stack pointer; the compiler can create
+one, of course.  A better config symbol name and help text
+would help understand this patch :-)
 
 
-On Tue, Apr 28, 2009 at 9:58 PM, Grant Likely <grant.likely@secretlab.ca> w=
-rote:
-> Hi Paul/Ben,
->
-> Here is a bug fix, a minor tweak and a tidy to merge for 2.6.30.
-> Please pull 'merge' branch of git://git.secretlab.ca/git/linux-2.6
->
-> Thanks,
-> g.
->
-> The following changes since commit 56a50adda49b2020156616c4eb15353e0f9ad7=
-de:
-> =A0Linus Torvalds (1):
-> =A0 =A0 =A0 =A0Merge branch 'drm-intel-next' of
-> git://git.kernel.org/.../anholt/drm-intel
->
-> are available in the git repository at:
->
-> =A0git://git.secretlab.ca/git/linux-2.6 merge
->
-> Grant Likely (2):
-> =A0 =A0 =A0powerpc: Update MPC5xxx and Xilinx Virtex maintainer entries
-> =A0 =A0 =A0powerpc/virtex: Add uImage to the default images list
->
-> John Linn (1):
-> =A0 =A0 =A0powerpc/virtex: Fix duplicate level irq events.
->
-> =A0MAINTAINERS =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A04 =
-+-
-> =A0arch/powerpc/platforms/40x/Kconfig | =A0 =A01 +
-> =A0arch/powerpc/platforms/44x/Kconfig | =A0 =A01 +
-> =A0arch/powerpc/sysdev/xilinx_intc.c =A0| =A0117 ++++++++++++++++++++++++=
-++++++++---
-> =A04 files changed, 111 insertions(+), 12 deletions(-)
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
->
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Segher
