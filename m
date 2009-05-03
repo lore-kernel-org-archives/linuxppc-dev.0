@@ -1,16 +1,15 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 9A13EDDDA9
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 May 2009 17:04:55 +1000 (EST)
-Date: Sun, 3 May 2009 03:04:53 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
-Subject: Re: unexpected non-allocatable section
-Message-ID: <20090503030453.592434e1@lappy.seanm.ca>
-In-Reply-To: <20090502224126.641c63bf@lappy.seanm.ca>
-References: <20090502224126.641c63bf@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <BLandau@nds.com>
+Received: from ilsmtp.nds.com (ilsmtp.nds.com [192.118.32.12])
+	by ozlabs.org (Postfix) with ESMTP id EC870DDDEE
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 May 2009 17:22:35 +1000 (EST)
+From: "Landau, Bracha" <BLandau@nds.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Sun, 3 May 2009 10:16:29 +0300
+Subject: help with MPC8272ADS board
+Message-ID: <065A7D06F7D4E546A18E80E08D066E1811892DD86B@ILMA1.IL.NDS.COM>
+Content-Type: multipart/alternative;
+	boundary="_000_065A7D06F7D4E546A18E80E08D066E1811892DD86BILMA1ILNDSCOM_"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,33 +19,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-b614a697dc17dff82f140d72d21a095f810fa7fb is first bad commit
-commit b614a697dc17dff82f140d72d21a095f810fa7fb
-Author: Anders Kaseorg <andersk@mit.edu>
-Date:   Thu Apr 23 16:49:33 2009 -0400
+--_000_065A7D06F7D4E546A18E80E08D066E1811892DD86BILMA1ILNDSCOM_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-    kbuild, modpost: Check the section flags, to catch missing "ax"/"aw"
-    
-    When you put
-      .section ".foo"
-    in an assembly file instead of
-      .section "foo", "ax"
-    , one of the possible symptoms is that modpost will see an
-    ld-generated section name ".foo.1" in section_rel() or section_rela().
-    But this heuristic has two problems: it will miss a bad section that
-    has no relocations, and it will incorrectly flag many gcc-generated
-    sections as bad when compiling with -ffunction-sections
-    -fdata-sections.
-    
-    On mips it fixes a lot of bogus warnings with gcc 4.4.0 lije this one:
-    WARNING: crypto/cryptd.o (.text.T.349): unexpected section name.
-    
-    So instead of checking whether the section name matches a particular
-    pattern, we directly check for a missing SHF_ALLOC in the section
-    flags.
-    
-    Signed-off-by: Anders Kaseorg <andersk@mit.edu>
-    Tested-by: Ralf Baechle <ralf@linux-mips.org>
-    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Hi,
 
-:040000 040000 9931d6ed1b6f9e836517162b15e757c8ad13d69e f1134de951b415eb7f5831898c827daf93c96c1a M      scripts
+I'm trying to get the MPC8272ADS evaluation board up and running with the l=
+atest versions of u-boot and Denx linux (2.6.24).
+
+I use the device tree file (mpc8272ads.dts) provided. Based on another post=
+, I updated the MPC8260ADS.h file, changing OF_CPU from "cpu@0<mailto:cpu@0=
+>" to "PowerPC,8272@0", because I was getting an error.
+
+I tried booting both using a cuImage (cuImage.mpc8272ads) and a uImage with=
+ a device tree blob. Neither boot was successful, with no helpful informati=
+on printed to the serial port.
+
+Is there any change that has to be made in order to get the board to boot?
+
+Bracha Landau
+
+
+
+
+
+
+
+________________________________
+This e-mail is confidential, the property of NDS Ltd and intended for the a=
+ddressee only. Any dissemination, copying or distribution of this message o=
+r any attachments by anyone other than the intended recipient is strictly p=
+rohibited. If you have received this message in error, please immediately n=
+otify the postmaster@nds.com and destroy the original message. Messages sen=
+t to and from NDS may be monitored. NDS cannot guarantee any message delive=
+ry method is secure or error-free. Information could be intercepted, corrup=
+ted, lost, destroyed, arrive late or incomplete, or contain viruses. We do =
+not accept responsibility for any errors or omissions in this message and/o=
+r attachment that arise as a result of transmission. You should carry out y=
+our own virus checks before opening any attachment. Any views or opinions p=
+resented are solely those of the author and do not necessarily represent th=
+ose of NDS.
+
+To protect the environment please do not print this e-mail unless necessary=
+.
+
+NDS Limited Registered Office: One London Road, Staines,Middlesex TW18 4EX,=
+ United Kingdom. A company registered in England and Wales Registered no. 3=
+080780 VAT no. GB 603 8808 40-00
+
+--_000_065A7D06F7D4E546A18E80E08D066E1811892DD86BILMA1ILNDSCOM_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+<meta content=3D"MSHTML 6.00.2900.3492" name=3D"GENERATOR">
+</head>
+<body>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"703545106-03052009">Hi,=
+</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"703545106-03052009"></s=
+pan></font>&nbsp;</div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"703545106-03052009">I'm=
+ trying to get the MPC8272ADS evaluation board up and running with the late=
+st versions of u-boot and Denx linux (2.6.24).</span></font></div>
+<div><font face=3D"Arial" size=3D"2"><span class=3D"703545106-03052009"></s=
+pan></font>&nbsp;</div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2">I u=
+se the device tree file (mpc8272ads.dts) provided. Based on another post, I=
+ updated the MPC8260ADS.h file, changing OF_CPU from &quot;</font><a href=
+=3D"mailto:cpu@0"><font face=3D"Arial" color=3D"#000000" size=3D"2">cpu@0</=
+font></a><font face=3D"Arial" size=3D"2">&quot;&nbsp;</font></span><span cl=
+ass=3D"703545106-03052009"><font face=3D"Arial" size=3D"2">to
+ &quot;PowerPC,8272@0&quot;, because I was getting an error.</font></span><=
+/div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2"></f=
+ont></span>&nbsp;</div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2">I t=
+ried booting both using a cuImage (cuImage.mpc8272ads) and a uImage with a =
+device tree blob. Neither boot was successful, with no helpful information =
+printed to the serial port.</font></span></div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2"></f=
+ont></span>&nbsp;</div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2">Is =
+there any change that has to be made in order to get the board to boot?</fo=
+nt></span></div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2"></f=
+ont></span>&nbsp;</div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2">Bra=
+cha Landau</font></span></div>
+<div><span class=3D"703545106-03052009"></span>&nbsp;</div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2"></f=
+ont></span>&nbsp;</div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2"></f=
+ont></span>&nbsp;</div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2"></f=
+ont></span>&nbsp;</div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2"></f=
+ont></span>&nbsp;</div>
+<div><span class=3D"703545106-03052009"><font face=3D"Arial" size=3D"2"></f=
+ont></span>&nbsp;</div>
+<br>
+<hr>
+<font face=3D"Arial" color=3D"Gray" size=3D"1">This e-mail is confidential,=
+ the property of NDS Ltd and intended for the addressee only. Any dissemina=
+tion, copying or distribution of this message or any attachments by anyone =
+other than the intended recipient is strictly
+ prohibited. If you have received this message in error, please immediately=
+ notify the postmaster@nds.com and destroy the original message. Messages s=
+ent to and from NDS may be monitored. NDS cannot guarantee any message deli=
+very method is secure or error-free.
+ Information could be intercepted, corrupted, lost, destroyed, arrive late =
+or incomplete, or contain viruses. We do not accept responsibility for any =
+errors or omissions in this message and/or attachment that arise as a resul=
+t of transmission. You should carry
+ out your own virus checks before opening any attachment. Any views or opin=
+ions presented are solely those of the author and do not necessarily repres=
+ent those of NDS.<br>
+<br>
+To protect the environment please do not print this e-mail unless necessary=
+.<br>
+<br>
+NDS Limited Registered Office: One London Road, Staines,Middlesex TW18 4EX,=
+ United Kingdom. A company registered in England and Wales Registered no. 3=
+080780 VAT no. GB 603 8808 40-00<br>
+</font>
+</body>
+</html>
+
+--_000_065A7D06F7D4E546A18E80E08D066E1811892DD86BILMA1ILNDSCOM_--
