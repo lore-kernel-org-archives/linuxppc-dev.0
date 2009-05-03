@@ -1,23 +1,21 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id B5B2BDDED7
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 06:49:38 +1000 (EST)
-Date: Sun, 3 May 2009 22:51:38 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: unexpected non-allocatable section
-Message-ID: <20090503205138.GB1506@uranus.ravnborg.org>
-References: <20090502224126.641c63bf@lappy.seanm.ca>
-	<20090503204546.691ec6e7.sfr@canb.auug.org.au>
-	<20090503123959.0cc5c967@lappy.seanm.ca>
-	<20090503193316.E72BC83420E8@gemini.denx.de>
-	<20090503200701.GA32601@uranus.ravnborg.org>
-	<20090503163241.50bfcae4@lappy.seanm.ca>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id C7E6FDDED1
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 07:15:33 +1000 (EST)
+Date: Sun, 03 May 2009 14:15:24 -0700 (PDT)
+Message-Id: <20090503.141524.253766195.davem@davemloft.net>
+To: rbrito@ime.usp.br
+Subject: Re: [PATCH] powerpc: convert mace to netdev_ops
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090503114820.GA14926@ime.usp.br>
+References: <20090427121633.GA29608@ime.usp.br>
+	<20090427.054258.16622932.davem@davemloft.net>
+	<20090503114820.GA14926@ime.usp.br>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090503163241.50bfcae4@lappy.seanm.ca>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Wolfgang Denk <wd@denx.de>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: Text/Plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 03, 2009 at 04:32:41PM -0400, Sean MacLennan wrote:
-> On Sun, 3 May 2009 22:07:01 +0200
-> "Sam Ravnborg" <sam@ravnborg.org> wrote:
-> 
-> > On Sun, May 03, 2009 at 09:33:16PM +0200, Wolfgang Denk wrote:
-> 
-> > > Which exact commands did you use to build the kenrel, and how did
-> > > you set (and export?) the CROSS_COMPILE environment variable?
-> 
-> export CROSS_COMPILE=ppc_4xxFP-
-> export ARCH=powerpc
-> 
-> The toolchain is in my path
-> 
-> > > The thing is, that I cannot reproduce this - I tested it with
-> > > v2.6.30-rc4, both with ELDK 4.1 (as you) and ELDK 4.2.
-> > > 
-> > > Both build the kernel image without any such warnings.
-> > 
-> > Anders already found the cause of this - it
-> > was a missing endian conversion.
-> > So you need to run this on a little endian target to
-> > see it. And you need to do a full kernel build
-> > so we run modpsot on vmlinux.
-> > 
-> > I will push the patch in a few minutes.
-> 
-> That patch gets rid of the warnings.
+From: Rog=E9rio Brito <rbrito@ime.usp.br>
+Date: Sun, 3 May 2009 08:48:20 -0300
 
-Thanks for the quick testing. I will add a "Tested-by: if I rebase the tree.
+> I hope that this version is a slightly better fix to convert mace to
+> netdev_ops.
+> =
 
-	Sam
+> This is against this morning's net-2.6 tree.
+> =
+
+> Signed-off-by: Rog=E9rio Brito <rbrito@ime.usp.br>
+
+I'll apply this, thanks!  I made one change however.
+
+> @@ -798,6 +807,13 @@ static irqreturn_t mace_interrupt(int irq, void =
+*dev_id)
+>      return IRQ_HANDLED;
+>  }
+>  =
+
+> +/*
+> + * In the following, the parameter "data" is treated like a pointer,=
+
+> + * which is probably OK for 32 bit arches, but not for 64.
+> + *
+> + * (Are mace's found on any newer machines??) -- rbrito
+> + *
+> + */
+>  static void mace_tx_timeout(unsigned long data)
+>  {
+>      struct net_device *dev =3D (struct net_device *) data;
+
+I left this new comment out, as this is a common idiom (passing opaque
+data as an 'unsigned long' argument to a callback) and casting it to a
+pointer.
+
+It also works perfectly fine on all 32-bit and 64-bit platforms.
