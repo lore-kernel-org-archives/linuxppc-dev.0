@@ -1,29 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ben@fluff.org.uk>
+Received: from kira.home.fluff.org (aeryn.fluff.org.uk [87.194.8.8])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 24704DDE0F
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 08:15:14 +1000 (EST)
-Subject: Re: Porting the ibm_newemac driver to use phylib (and other
-	PHY/MAC questions)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kyle Moffett <kyle@moffetthome.net>
-In-Reply-To: <f73f7ab80905022126ud3225enc6409bd39b5b2eb8@mail.gmail.com>
-References: <f73f7ab80904171732n41832d0hc62978e57bbcc32e@mail.gmail.com>
-	<625fc13d0904200529l152b8d75g33c3f940de1b2920@mail.gmail.com>
-	<f73f7ab80904201710m57472291yf7ff86760977b8e8@mail.gmail.com>
-	<1240388476.17445.10.camel@pasglop>
-	<f73f7ab80904300804j1f847b70ha0fe3cda07249110@mail.gmail.com>
-	<1241126291.29501.41.camel@pasglop>
-	<f73f7ab80904301521x16effa0ar2d4756daceada122@mail.gmail.com>
-	<f73f7ab80905022126ud3225enc6409bd39b5b2eb8@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 04 May 2009 08:14:54 +1000
-Message-Id: <1241388894.1781.18.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev <netdev@vger.kernel.org>,
-	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id A9891DDE41
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 08:41:30 +1000 (EST)
+Date: Sun, 3 May 2009 23:23:52 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] i2c-cpm: Pass dev ptr to dma_*_coherent rather than NULL
+Message-ID: <20090503222352.GB5750@fluff.org.uk>
+References: <49EDC0BE.7040505@elphinstone.net>
+	<E2205842-8019-4CE4-812B-64ABD76F36F4@kernel.crashing.org>
+	<20090422215646.GA19997@trinity.fluff.org>
+	<AAD6564F-9D99-492B-8364-10A652F990DF@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AAD6564F-9D99-492B-8364-10A652F990DF@kernel.crashing.org>
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>,
+	Mark Ware <mware@elphinstone.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,52 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2009-05-03 at 00:26 -0400, Kyle Moffett wrote:
+On Wed, Apr 29, 2009 at 08:43:14AM -0500, Kumar Gala wrote:
+>
+> On Apr 22, 2009, at 4:56 PM, Ben Dooks wrote:
+>
+>> On Tue, Apr 21, 2009 at 10:11:51AM -0500, Kumar Gala wrote:
+>>>
+>>> On Apr 21, 2009, at 7:49 AM, Mark Ware wrote:
+>>>
+>>>> Recent DMA changes result in a BUG() when NULL is passed to
+>>>> dma_alloc_coherent in place of a device.
+>>>>
+>>>> Signed-off-by: Mark Ware <mware@elphinstone.net>
+>>>> ---
+>>>>
+>>>> This patch fixes the BUG() during boot that has appeared during the
+>>>> 2.6.30 window. It has been tested and appears correct on my 8280  
+>>>> based
+>>>> board.
+>>>> Sent to both linuxppc-dev and linux-i2c, since I'm not sure where it
+>>>> belongs.
+>>>>
+>>>>
+>>>> drivers/i2c/busses/i2c-cpm.c |   14 ++++++++------
+>>>> 1 files changed, 8 insertions(+), 6 deletions(-)
+>>>
+>>> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+>>>
+>>> Ben, I'm expecting you to pick this up unless you tell me otherwise.
+>>
+>> Yes.
+>
+> This go in yet?
 
-> Ok, I've dug through the docs on the 460EPx (the CPU I'm using), and
-> I'd like some confirmation of the following:
-> 
-> *  The EMAC hardware itself internally has its own dedicated
-> MDIO/MDClk lines, driven by the STACR register.
+I've had to do a manual apply due to some changes in the
+driver, so can someone please do a build of my git tree
+at:
 
-Yes, though not all EMACs cells have this wired to anything. For
-example, the 405EP has 2 EMACs but only EMAC0 has MDIO, which is
-used to control both PHYs. Later variants multiplex the MDIOs via
-a programmable switch in the ZMII or RGMII though.
+git://aeryn.fluff.org.uk/bjdooks/linux.git i2c-for-2630-rc5
 
-> *  On many/most cpus, there is only a single set of external
-> MDIO/MDClk pins, driven either off the ZMII bridge or the RGMII
-> bridge.
+or tell me which arch and defconfig to build.
 
-Yes, though on the very old ones, the ZMII bridge is effectively
-invisible (if it exists at all) and only EMAC0 MDIO pins are wired out.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-> *  Both bridge-types have their own internal register for switching
-> the external MDIO/MDClk pins between the two sets of internal
-> EMAC<=>bridge links.
-
-Yes.
-
-> *  Some SoCs have both an ZMII and an RGMII bridge, and the external
-> MDIO/MDClk pins are only connected to one of the two bridges (How do I
-> know which one?  Alternatively, do I just program both and hope for
-> the best?).
-
-That's been my approach so far :-)
-
-> *  Some older SoCs simply export the MDIO/MDClk pins from one of their
-> internal EMAC chips and don't bother with running it through the
-> multiplexing bridge.
-
-Yes.
-
-> Are there any SoCs which actually export the MDIO/MDClk pins from
-> both/all of their EMACs?
-
-I don't know of such a beast.
-
-Cheers,
-Ben.
-
-> Cheers,
-> Kyle Moffett
+  'a smiley only costs 4 bytes'
