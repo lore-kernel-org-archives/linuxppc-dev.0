@@ -1,18 +1,17 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id E1515DDDFA
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 02:40:01 +1000 (EST)
-Date: Sun, 3 May 2009 12:39:59 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: unexpected non-allocatable section
-Message-ID: <20090503123959.0cc5c967@lappy.seanm.ca>
-In-Reply-To: <20090503204546.691ec6e7.sfr@canb.auug.org.au>
-References: <20090502224126.641c63bf@lappy.seanm.ca>
-	<20090503204546.691ec6e7.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 74783DDE07
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 05:26:08 +1000 (EST)
+To: "Landau, Bracha" <BLandau@nds.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: help with MPC8272ADS board
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <065A7D06F7D4E546A18E80E08D066E1811892DD86B@ILMA1.IL.NDS.COM>
+References: <065A7D06F7D4E546A18E80E08D066E1811892DD86B@ILMA1.IL.NDS.COM>
+Date: Sun, 03 May 2009 21:26:03 +0200
+Message-Id: <20090503192604.012C783420E8@gemini.denx.de>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 3 May 2009 20:45:46 +1000
-"Stephen Rothwell" <sfr@canb.auug.org.au> wrote:
+Dear Bracha,
 
-> What gcc, binutils versions and config are you using?
+In message <065A7D06F7D4E546A18E80E08D066E1811892DD86B@ILMA1.IL.NDS.COM> you wrote:
+> 
+> I'm trying to get the MPC8272ADS evaluation board up and running with
+> the latest versions of u-boot and Denx linux (2.6.24).
 
-gcc version 4.0.0 (DENX ELDK 4.1 4.0.0)
-GNU assembler version 2.16.1 (powerpc-linux) using BFD version 2.16.1
+2.6.24 is actually very old and not even close to latest. "Latest" is
+(as I'm typing this) v2.6.30-rc4.
 
-And this is all running on the Warp with a 440EP.
+> I use the device tree file (mpc8272ads.dts) provided. Based on
+> another post, I updated the MPC8260ADS.h file, changing OF_CPU from
+> "cpu@0<mailto:cpu@0>" to "PowerPC,8272@0", because I was getting an
+> error.
 
-Cheers,
-   Sean
+No such changes should be necessary.
+
+I  just  tried  this  (using  both  the  kernel.org  tree,  and   our
+linux-2.6-denx  repository),  with the same results (i. e. zero build
+problems):
+
+	$ export CROSS_COMPILE=ppc_6xx- 
+	$ export ARCH=powerpc
+
+	$ make CROSS_COMPILE=ppc_6xx- ARCH=powerpc mpc8272_ads_defconfig    
+	$ make -j6 CROSS_COMPILE=ppc_6xx- ARCH=powerpc uImage
+
+	$ make mpc8272ads.dtb
+
+Then use the images in "arch/powerpc/boot/uImage" and
+"arch/powerpc/boot/mpc8272ads.dtb", resp.
+
+[Sorry, I cannot test this myself as we don't have a mpc8272_ads board
+in our lab.]
+
+> I tried booting both using a cuImage (cuImage.mpc8272ads) and a
+> uImage with a device tree blob. Neither boot was successful, with no
+> helpful information printed to the serial port.
+> 
+> Is there any change that has to be made in order to get the board to
+> boot?
+
+Maybe you did not pass the right "console=" boot  argument?  Keep  in
+ind  that the serial ports are named "ttyCPM*" now, not "ttyS*" as it
+used to be with very old kernel versions.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I thought my people would grow tired of killing. But you were  right,
+they  see it is easier than trading. And it has its pleasures. I feel
+it myself. Like the hunt, but with richer rewards.
+	-- Apella, "A Private Little War", stardate 4211.8
