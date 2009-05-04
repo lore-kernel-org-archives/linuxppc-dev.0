@@ -1,14 +1,14 @@
 Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id C2341DDDA9
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 21:58:11 +1000 (EST)
-Date: Mon, 4 May 2009 13:59:55 +0200
+Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
+	by ozlabs.org (Postfix) with ESMTP id 391E6DE1CA
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 21:58:28 +1000 (EST)
+Date: Mon, 4 May 2009 14:00:25 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
 To: LKML <linux-kernel@vger.kernel.org>,
 	linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: [PATCH 1/3] kbuild,
-	modpost: fix unexpected non-allocatable section when cross compiling
-Message-ID: <20090504115955.GA7239@uranus.ravnborg.org>
+Subject: [PATCH 2/3] kbuild,
+	modpost: fix "unexpected non-allocatable" warning with SUSE gcc
+Message-ID: <20090504120025.GB7239@uranus.ravnborg.org>
 References: <20090504115704.GA7134@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,79 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From 7d875a02864a35532543897195dfea2235815df8 Mon Sep 17 00:00:00 2001
-From: Anders Kaseorg <andersk@MIT.EDU>
-Date: Sun, 3 May 2009 22:02:55 +0200
-Subject: [PATCH 1/3] kbuild, modpost: fix unexpected non-allocatable section when cross compiling
+>From 028ecebdd83cc4a7f8c7e96e28a5537d2ac98dae Mon Sep 17 00:00:00 2001
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Sun, 3 May 2009 22:17:37 +0200
+Subject: [PATCH 2/3] kbuild, modpost: fix "unexpected non-allocatable" warning with SUSE gcc
 
-The missing TO_NATIVE(sechdrs[i].sh_flags) was causing many
-unexpected non-allocatable section warnings when cross-compiling
-for an architecture with a different endianness.
+Jean reported that he saw one warning for each module like the one below:
+WARNING: arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.o (.comment.SUSE.OPTs): unexpected non-allocatable section.
 
-Fix endianness of all the fields in the ELF header and
-section headers, not just some of them so we are not
-hit by this anohter time.
+The warning appeared with the improved version of the
+check of the flags in the sections.
 
-Signed-off-by: Anders Kaseorg <andersk@mit.edu>
-Reported-by: Sean MacLennan <smaclennan@pikatech.com>
-Tested-by: Sean MacLennan <smaclennan@pikatech.com>
+That check already ignored sections named ".comment" - but SUSE store
+additional info in the comment section and has named it in a SUSE
+specific way. Therefore modpost failed to ignore the section.
+
+The fix is to extend the pattern so we ignore all sections
+that start with the name ".comment.".
+
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Reported-by: Jean Delvare <khali@linux-fr.org>
+Tested-by: Jean Delvare <khali@linux-fr.org>
 ---
- scripts/mod/modpost.c |   35 +++++++++++++++++++++++------------
- 1 files changed, 23 insertions(+), 12 deletions(-)
+ scripts/mod/modpost.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 936b6f8..a5c17db 100644
+index a5c17db..268d457 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -384,11 +384,19 @@ static int parse_elf(struct elf_info *info, const char *filename)
- 		return 0;
- 	}
- 	/* Fix endianness in ELF header */
--	hdr->e_shoff    = TO_NATIVE(hdr->e_shoff);
--	hdr->e_shstrndx = TO_NATIVE(hdr->e_shstrndx);
--	hdr->e_shnum    = TO_NATIVE(hdr->e_shnum);
--	hdr->e_machine  = TO_NATIVE(hdr->e_machine);
--	hdr->e_type     = TO_NATIVE(hdr->e_type);
-+	hdr->e_type      = TO_NATIVE(hdr->e_type);
-+	hdr->e_machine   = TO_NATIVE(hdr->e_machine);
-+	hdr->e_version   = TO_NATIVE(hdr->e_version);
-+	hdr->e_entry     = TO_NATIVE(hdr->e_entry);
-+	hdr->e_phoff     = TO_NATIVE(hdr->e_phoff);
-+	hdr->e_shoff     = TO_NATIVE(hdr->e_shoff);
-+	hdr->e_flags     = TO_NATIVE(hdr->e_flags);
-+	hdr->e_ehsize    = TO_NATIVE(hdr->e_ehsize);
-+	hdr->e_phentsize = TO_NATIVE(hdr->e_phentsize);
-+	hdr->e_phnum     = TO_NATIVE(hdr->e_phnum);
-+	hdr->e_shentsize = TO_NATIVE(hdr->e_shentsize);
-+	hdr->e_shnum     = TO_NATIVE(hdr->e_shnum);
-+	hdr->e_shstrndx  = TO_NATIVE(hdr->e_shstrndx);
- 	sechdrs = (void *)hdr + hdr->e_shoff;
- 	info->sechdrs = sechdrs;
+@@ -727,7 +727,7 @@ int match(const char *sym, const char * const pat[])
  
-@@ -402,13 +410,16 @@ static int parse_elf(struct elf_info *info, const char *filename)
+ /* sections that we do not want to do full section mismatch check on */
+ static const char *section_white_list[] =
+-	{ ".comment", ".debug*", ".stab*", ".note*", ".got*", ".toc*", NULL };
++	{ ".comment*", ".debug*", ".stab*", ".note*", ".got*", ".toc*", NULL };
  
- 	/* Fix endianness in section headers */
- 	for (i = 0; i < hdr->e_shnum; i++) {
--		sechdrs[i].sh_type   = TO_NATIVE(sechdrs[i].sh_type);
--		sechdrs[i].sh_offset = TO_NATIVE(sechdrs[i].sh_offset);
--		sechdrs[i].sh_size   = TO_NATIVE(sechdrs[i].sh_size);
--		sechdrs[i].sh_link   = TO_NATIVE(sechdrs[i].sh_link);
--		sechdrs[i].sh_name   = TO_NATIVE(sechdrs[i].sh_name);
--		sechdrs[i].sh_info   = TO_NATIVE(sechdrs[i].sh_info);
--		sechdrs[i].sh_addr   = TO_NATIVE(sechdrs[i].sh_addr);
-+		sechdrs[i].sh_name      = TO_NATIVE(sechdrs[i].sh_name);
-+		sechdrs[i].sh_type      = TO_NATIVE(sechdrs[i].sh_type);
-+		sechdrs[i].sh_flags     = TO_NATIVE(sechdrs[i].sh_flags);
-+		sechdrs[i].sh_addr      = TO_NATIVE(sechdrs[i].sh_addr);
-+		sechdrs[i].sh_offset    = TO_NATIVE(sechdrs[i].sh_offset);
-+		sechdrs[i].sh_size      = TO_NATIVE(sechdrs[i].sh_size);
-+		sechdrs[i].sh_link      = TO_NATIVE(sechdrs[i].sh_link);
-+		sechdrs[i].sh_info      = TO_NATIVE(sechdrs[i].sh_info);
-+		sechdrs[i].sh_addralign = TO_NATIVE(sechdrs[i].sh_addralign);
-+		sechdrs[i].sh_entsize   = TO_NATIVE(sechdrs[i].sh_entsize);
- 	}
- 	/* Find symbol table. */
- 	for (i = 1; i < hdr->e_shnum; i++) {
+ /*
+  * This is used to find sections missing the SHF_ALLOC flag.
 -- 
 1.6.3.rc3.40.g75b44
