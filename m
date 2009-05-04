@@ -1,18 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id C5BF7DDDA5
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 09:36:38 +1000 (EST)
-Date: Tue, 5 May 2009 03:36:35 +0400
+	by ozlabs.org (Postfix) with ESMTP id 04FF3DDE23
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 09:36:51 +1000 (EST)
+Date: Tue, 5 May 2009 03:36:48 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 9/9] spi_mpc8xxx: s/83xx/8xxx/g
-Message-ID: <20090504233635.GA5892@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 0/9] Some work for spi_mpc83xx driver, spi-mmc support
+	for MPC8610HPCD
+Message-ID: <20090504233648.GA6973@oksana.dev.rtsoft.ru>
 References: <20090430234739.GA27709@oksana.dev.rtsoft.ru>
-	<20090430234833.GI7901@oksana.dev.rtsoft.ru>
-	<20090504135327.13cd42af.akpm@linux-foundation.org>
+	<20090504135504.a6a6afcf.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090504135327.13cd42af.akpm@linux-foundation.org>
+In-Reply-To: <20090504135504.a6a6afcf.akpm@linux-foundation.org>
 Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
 	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
 Reply-To: avorontsov@ru.mvista.com
@@ -25,58 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 04, 2009 at 01:53:27PM -0700, Andrew Morton wrote:
-> On Fri, 1 May 2009 03:48:33 +0400
+On Mon, May 04, 2009 at 01:55:04PM -0700, Andrew Morton wrote:
+> On Fri, 1 May 2009 03:47:39 +0400
 > Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> > Since we renamed the file, we might want to rename the file
-> > internals too.
+> > Here are few patches that are needed to support spi-mmc slot on
+> > MPC8610HPCD PowerPC boards:
 > > 
-> > Though we don't bother with changing platform driver name and
-> > platform module alias. The stuff is legacy and hopefully we'll
-> > remove it soon.
+> > [1/9] spi_mpc83xx: Handles other Freescale processors
+> > [2/9] spi_mpc83xx: Quieten down the "Requested speed is too low" message
+> > [3/9] spi_mpc83xx: Add small delay after asserting chip-select line
+> > [4/9] powerpc/86xx: Add MMC SPI support for MPC8610HPCD boards
 > > 
 > 
-> but but but
-> 
-> >
-> > -static struct of_platform_driver of_mpc83xx_spi_driver = {
-> > -	.name		= "mpc83xx_spi",
-> > -	.match_table	= of_mpc83xx_spi_match,
-> > -	.probe		= of_mpc83xx_spi_probe,
-> > -	.remove		= __devexit_p(of_mpc83xx_spi_remove),
-> > +static struct of_platform_driver of_mpc8xxx_spi_driver = {
-> > +	.name		= "mpc8xxx_spi",
-> > +	.match_table	= of_mpc8xxx_spi_match,
-> > +	.probe		= of_mpc8xxx_spi_probe,
-> > +	.remove		= __devexit_p(of_mpc8xxx_spi_remove),
-> >  };
-> 
-> It _did_ change the platform driver name, didn't it?
+> Some or all of these seem appropriate to 2.6.30 and perhaps even -stable?
 
-This is an OF platform driver, here it is safe to change
-the name. But I didn't change the pure platform driver,
-here:
+I'd say no, we don't need the fixes for MPC8323E-RDB boards
+(currently the only mainline user of that driver), and support
+for MPC8610HPCD boards is a new feature, so I think all these
+patches can wait for 2.6.31.
 
-| -static struct platform_driver mpc83xx_spi_driver = {
-| -       .probe = plat_mpc83xx_spi_probe,
-| -       .remove = __exit_p(plat_mpc83xx_spi_remove),
-| +static struct platform_driver mpc8xxx_spi_driver = {
-| +       .probe = plat_mpc8xxx_spi_probe,
-| +       .remove = __exit_p(plat_mpc8xxx_spi_remove),
-|         .driver = {
-|                 .name = "mpc83xx_spi",
-
-------------------^
-
-> This patch series had quite a lot of conflicts with the already-pending
-> 
-> spi-move-common-spi_setup-functionality-into-core.patch
-> spi-move-more-spi_setup-functionality-into-core.patch
-> 
-> which I beleive I successfully fixed up.
-
-Thanks a lot, I'll test it soon.
+Thanks,
 
 -- 
 Anton Vorontsov
