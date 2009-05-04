@@ -1,23 +1,17 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 348FBDDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 06:59:51 +1000 (EST)
-Date: Mon, 4 May 2009 13:55:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 0/9] Some work for spi_mpc83xx driver, spi-mmc support
-	for MPC8610HPCD
-Message-Id: <20090504135504.a6a6afcf.akpm@linux-foundation.org>
-In-Reply-To: <20090430234739.GA27709@oksana.dev.rtsoft.ru>
-References: <20090430234739.GA27709@oksana.dev.rtsoft.ru>
+Return-Path: <pochini@shiny.it>
+Received: from smtp-out25.alice.it (smtp-out25.alice.it [85.33.2.25])
+	by ozlabs.org (Postfix) with ESMTP id A4608DDDA5
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 07:09:12 +1000 (EST)
+Date: Mon, 4 May 2009 23:02:16 +0200
+From: Giuliano Pochini <pochini@shiny.it>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Need a patch tested on a windtunnel powermac
+Message-ID: <20090504230216.3c8117cb@Jay>
+In-Reply-To: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
+References: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 1 May 2009 03:47:39 +0400
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+On Thu, 30 Apr 2009 09:30:59 +1000
+Paul Mackerras <paulus@samba.org> wrote:
 
-> Here are few patches that are needed to support spi-mmc slot on
-> MPC8610HPCD PowerPC boards:
+> Does anyone here still have a "windtunnel" powermac (PowerMac3,6)
+> machine running Linux?  We need someone to test Jean Delvare's patch
+> to the therm_windtunnel driver.  The patch is at:
 > 
-> [1/9] spi_mpc83xx: Handles other Freescale processors
-> [2/9] spi_mpc83xx: Quieten down the "Requested speed is too low" message
-> [3/9] spi_mpc83xx: Add small delay after asserting chip-select line
-> [4/9] powerpc/86xx: Add MMC SPI support for MPC8610HPCD boards
+> http://patchwork.ozlabs.org/patch/26095/
 > 
+> I don't have a windtunnel machine myself - I have a PowerMac3,5 but
+> not a PowerMac3,6.
 
-Some or all of these seem appropriate to 2.6.30 and perhaps even -stable?
+I have a dual-G4 MDD (/proc/cpuinfo says PowerMac3,6).
+
+On:
+
+Linux Jay 2.6.30-rc4 #1 SMP Sun May 3 16:20:08 CEST 2009 ppc 7455, altivec supported PowerMac3,6 GNU/Linux
+
+plus the patch above seems working fine as usual: temperature reports
+are written in the logs and fan speed changes correctly. therm_windtunnel
+is not compiled as module. I tested it for a few hours only.
+
+
+
+-- 
+Giuliano.
