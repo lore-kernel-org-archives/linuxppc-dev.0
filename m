@@ -1,17 +1,32 @@
-Return-Path: <pochini@shiny.it>
-Received: from smtp-out25.alice.it (smtp-out25.alice.it [85.33.2.25])
-	by ozlabs.org (Postfix) with ESMTP id A4608DDDA5
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 07:09:12 +1000 (EST)
-Date: Mon, 4 May 2009 23:02:16 +0200
-From: Giuliano Pochini <pochini@shiny.it>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Need a patch tested on a windtunnel powermac
-Message-ID: <20090504230216.3c8117cb@Jay>
-In-Reply-To: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
-References: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A178FDDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 09:14:38 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n44NEMdU025798
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 May 2009 16:14:33 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n44NEM0m012425
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 May 2009 18:14:22 -0500 (CDT)
+Date: Mon, 4 May 2009 18:14:21 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 00/13] OF device tree handling of PHY drivers
+Message-ID: <20090504231421.GA27541@ld0162-tx32.am.freescale.net>
+References: <20090425224458.32392.31296.stgit@localhost.localdomain>
+	<20090427.025436.68188155.davem@davemloft.net>
+	<fa686aa40904271017x726f92ffsbbc730770298766b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40904271017x726f92ffsbbc730770298766b@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, afleming@freescale.com,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 30 Apr 2009 09:30:59 +1000
-Paul Mackerras <paulus@samba.org> wrote:
-
-> Does anyone here still have a "windtunnel" powermac (PowerMac3,6)
-> machine running Linux?  We need someone to test Jean Delvare's patch
-> to the therm_windtunnel driver.  The patch is at:
+On Mon, Apr 27, 2009 at 11:17:08AM -0600, Grant Likely wrote:
+> Kumar,
 > 
-> http://patchwork.ozlabs.org/patch/26095/
+> David has pulled my phylib changes into his -next tree.  However, some
+> of the driver changes have been compile tested only due to lack of
+> hardware.  Who can I ask to test the changes to the following files?
 > 
-> I don't have a windtunnel machine myself - I have a PowerMac3,5 but
-> not a PowerMac3,6.
+>  arch/powerpc/platforms/82xx/ep8248e.c     |    9 +-
 
-I have a dual-G4 MDD (/proc/cpuinfo says PowerMac3,6).
+Tested OK.
 
-On:
+>  drivers/net/fs_enet/fs_enet-main.c        |   69 +--
+>  drivers/net/fs_enet/mii-bitbang.c         |   29 +-
 
-Linux Jay 2.6.30-rc4 #1 SMP Sun May 3 16:20:08 CEST 2009 ppc 7455, altivec supported PowerMac3,6 GNU/Linux
+Tested OK on pq2fads.
 
-plus the patch above seems working fine as usual: temperature reports
-are written in the logs and fan speed changes correctly. therm_windtunnel
-is not compiled as module. I tested it for a few hours only.
+>  drivers/net/fs_enet/mii-fec.c             |   26 +-
 
+Tested on ep88xc.  No *new* problems. :-P
 
-
--- 
-Giuliano.
+-Scott
