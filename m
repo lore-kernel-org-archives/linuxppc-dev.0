@@ -1,22 +1,18 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
-	by ozlabs.org (Postfix) with ESMTP id D6D6DDDDA9
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 21:59:27 +1000 (EST)
-Date: Mon, 4 May 2009 14:01:06 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-	linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: [PATCH 3/3] kbuild,
-	modpost: fix unexpected non-allocatable warning with mips
-Message-ID: <20090504120106.GC7239@uranus.ravnborg.org>
-References: <20090504115704.GA7134@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090504115704.GA7134@uranus.ravnborg.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Wolfgang Denk <wd@denx.de>,
-	Manuel Lauss <mano@roarinelk.homelinux.net>,
-	Anders Kaseorg <andersk@mit.edu>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Sean MacLennan <smaclennan@pikatech.com>, Jean Delvare <khali@linux-fr.org>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
+	by ozlabs.org (Postfix) with ESMTP id 23AF8DDDF3
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2009 22:19:27 +1000 (EST)
+Message-ID: <49FEDD42.4030806@mlbassoc.com>
+Date: Mon, 04 May 2009 06:19:14 -0600
+From: Gary Thomas <gary@mlbassoc.com>
+MIME-Version: 1.0
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: Using archaic I2C with OF
+References: <49FAF351.4010409@mlbassoc.com>	<9e4733910905010739q4038555ck211ee61b9b443f01@mail.gmail.com>	<9e4733910905010739p6c4fddf3oab1b583b72df4eeb@mail.gmail.com>	<49FB0C3B.3000209@mlbassoc.com>	<9e4733910905010755g595d686fmf075a40d6012e3fc@mail.gmail.com>
+	<20090501160403.GA7943@pengutronix.de>
+In-Reply-To: <20090501160403.GA7943@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,48 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From 4391ed6aa9a38cdfb48addd7a9b24a2ff099b1a7 Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 4 May 2009 13:05:26 +0200
-Subject: [PATCH 3/3] kbuild, modpost: fix unexpected non-allocatable warning with mips
+Wolfram Sang wrote:
+>> Post this on the i2c list. Jean has made an effort to convert all
+>> drivers. He must have missed that one.
+>>     
+>
+> What Jean did was converting all drivers who used the legacy i2c-binding to use
+> the new binding which is a lot better suited to the driver model. The above
+> mentioned driver already uses the new binding.
+>
+> The problem coming up here is another issue and also long standing and not yet
+> solved. There are drivers which require platform_data with function pointers.
+> You cannot encode function pointers to the device tree.
+>
+> One solution is to create a custom driver for your board with the needed
+> specific function and create a platform device from there. Sometimes it
+> works to add a bit more info to the device tree (e.g. some gpios) and
+> parse it via an of_wrapper around the platform driver.
+>   
+So somehow, I need to create a platform driver, possibly inside an
+of_wrapper, which
+eventually instantiates an I2C device on a particular bus, with my
+specific platform
+data. 
 
-mips emit the following debug sections:
-.mdebug* and .pdr
+Sorry, but I'm lost here.  How do I untangle this maze of twisty little
+passages?
 
-They were included in the check for non-allocatable section
-and caused modpost to warn.
-
-Manuel Lauss suggested to fix this by adding the relevant
-sections to the list of sections we do not check.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Reported-by: Manuel Lauss <mano@roarinelk.homelinux.net>
----
- scripts/mod/modpost.c |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 268d457..161b784 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -727,7 +727,17 @@ int match(const char *sym, const char * const pat[])
- 
- /* sections that we do not want to do full section mismatch check on */
- static const char *section_white_list[] =
--	{ ".comment*", ".debug*", ".stab*", ".note*", ".got*", ".toc*", NULL };
-+{
-+	".comment*",
-+	".debug*",
-+	".mdebug*",        /* alpha, score, mips etc. */
-+	".pdr",            /* alpha, score, mips etc. */
-+	".stab*",
-+	".note*",
-+	".got*",
-+	".toc*",
-+	NULL
-+};
- 
- /*
-  * This is used to find sections missing the SHF_ALLOC flag.
 -- 
-1.6.3.rc3.40.g75b44
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
