@@ -1,15 +1,32 @@
-Return-Path: <bruce.ashfield@gmail.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7D8CBDDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 00:53:43 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n44Encmn003833
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 May 2009 10:49:38 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n44Ercvk155838
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 May 2009 10:53:38 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n44ErcOb023578
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 May 2009 10:53:38 -0400
+Date: Mon, 4 May 2009 10:52:32 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>, Jean Delvare <khali@linux-fr.org>
+Subject: Re: Need a patch tested on a windtunnel powermac
+Message-ID: <20090504145232.GB14017@zod.rchland.ibm.com>
+References: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
+	<20090430002448.GA5208@hansolo.jdub.homelinux.org>
+	<20090430191707.GB2424@yoda.jdub.homelinux.org>
 MIME-Version: 1.0
-In-Reply-To: <6213bc560905040613q3cec9730idece67c1caf67112@mail.gmail.com>
-References: <6213bc560905040417p48d3f12co608b885482998e06@mail.gmail.com>
-	<6213bc560905040613q3cec9730idece67c1caf67112@mail.gmail.com>
-Date: Mon, 4 May 2009 10:42:37 -0400
-Message-ID: <3bd6b93c0905040742m64e1ef73i102106ca002236b2@mail.gmail.com>
-Subject: Re: KGDBOC testing on linux-2.6.30-rc4
-From: Bruce Ashfield <bruce.ashfield@gmail.com>
-To: srikanth krishnakar <skrishnakar@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev@ozlabs.org, Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090430191707.GB2424@yoda.jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,96 +36,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gTW9uLCBNYXkgNCwgMjAwOSBhdCA5OjEzIEFNLCBzcmlrYW50aCBrcmlzaG5ha2FyCjxza3Jp
-c2huYWthckBnbWFpbC5jb20+IHdyb3RlOgo+Cj4KPiBIaSBhbGwsCj4KPiBJIG5lZWQgaGVscCBp
-biBrZ2Rib2OgIHRlc3Rpbmcgb24gUG93ZXJQQyB0YXJnZXQuCgpIYXZlIHlvdSB0cmllZCBjb250
-YWN0aW5nIHRoZSBtYWludGFpbmVyID8gKEkgbm90aWNlZCB0aGF0IEphc29uCndhc24ndCBjYydk
-KSwganVzdCBpbiBjYXNlIGl0IGlzbid0IHNpbXBseSBhIHVzZSBjYXNlIHByb2JsZW0gYW5kCm1p
-Z2h0IGJlIHJlbGF0ZWQgdG8gS0dEQiBpbnRlcm5hbHMuCgpLR0RCClA6ICAgICAgSmFzb24gV2Vz
-c2VsCk06ICAgICAgamFzb24ud2Vzc2VsQHdpbmRyaXZlci5jb20KCkkndmUgdGVzdGVkIEtHREJP
-QyB1cCB0byB0aGUgMi42LjI5IGtlcm5lbCBhbmQgaXQgd29ya2VkIGZpbmUKb24gYSBzZXJpZXMg
-b2YgODV4eCBib2FyZHMuIEkgaGF2ZW4ndCBoYWQgYSBjaGFuY2Ugb24gMi42LjMwLXJjWAp5ZXQs
-IHNvIHNvbWV0aGluZyBtYXkgaGF2ZSBjaGFuZ2VkLgoKPgo+IExpbnV4IEtlcm5lbDogMi42LjMw
-LXJjNAo+IEtHREIgbWV0aG9kIDogS0dEQk9DCj4gQXJjaDogUG93ZXJQQwo+Cj4gTm90ZTogQXR0
-YWNoZWQgaXMgdGhlIGtlcm5lbCBjb25maWegIHVzZWQuCj4KPiBIYXMgYW55b25lIHRlc3RlZCBL
-R0RCT0MgZm9yIFNlcmlhbCA4MjUwLCBhbmQgdGhlIHNlcmlhbCBwb3J0IGhhcyBkZXBlbmRlbmN5
-Cj4gb24gT0ZfUExBVEZPUk0gZHJpdmVyID8KPgo+IEhlcmUgYXJlIHRoZSBrZXJuZWwgY29uZmln
-IG9wdGlvbnM6Cj4KPiBEZXZpY2UgRHJpdmVyc6AgLS0tPgo+IKCgoKCgoKCgoKAgQ2hhcmFjdGVy
-IGRldmljZXOgIC0tLT4KPiCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIFNlcmlhbCBkcml2ZXJz
-oCAtLS0+Cj4goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgoCA8Kj4gODI1MC8xNjU1MCBhbmQKPiBjb21wYXRpYmxlIHNlcmlhbCBzdXBwb3J0Cj4goCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgoCBbKl2goCBD
-b25zb2xlIG9uCj4gODI1MC8xNjU1MCBhbmQgY29tcGF0aWJsZSBzZXJpYWwgcG9ydAo+IKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoKCgoKCgoKCgoKCgoKAgKDQpIE51bWJl
-ciBvZgo+IDgyNTAvMTY1NTAgc2VyaWFsIHBvcnRzIHRvIHJlZ2lzdGVyIGF0IHJ1bnRpbWUKPiCg
-oKCgoKCgoKCgoKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoKAgoKCgoKCgoKCgoKCgIFsgXSBF
-eHRlbmRlZCA4MjUwLzE2NTUwCj4gc2VyaWFsIGRyaXZlciBvcHRpb25zCj4goKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAqKiogTm9uLTgyNTAgc2Vy
-aWFsCj4gcG9ydCBzdXBwb3J0ICoqKgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoKAgPCo+IFhpbGlueCB1YXJ0bGl0ZQo+IHNlcmlhbCBwb3J0IHN1
-cHBvcnQKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKCgIFsqXaCgIFN1cHBvcnQgZm9yCj4gY29uc29sZSBvbiBYaWxpbnggdWFydGxpdGUgc2VyaWFs
-IHBvcnQKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgIDwgPiBEaWdpIEludGVybmF0aW9uYWwKPiBORU8gUENJIFN1cHBvcnQKPiCgIKAgoCCgIKAg
-oKCgoKCgoKCgoKCgoKCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKCgIDwqPiBTZXJpYWwgcG9y
-dCBvbiBPcGVuCj4gRmlybXdhcmUgcGxhdGZvcm0gYnVzCj4goCCgIKAgoCCgIKAgoCCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8ID4gTldQIHNlcmlhbCBwb3J0Cj4gZHJp
-dmVyCj4KPiBLZXJuZWwgaGFja2luZ6AgLS0tPgo+IKCgoKCgoKCgoKAgLSotIE1hZ2ljIFN5c1Jx
-IGtleQo+IKCgoKCgoKCgoCCgIKAgoCCgIKAgoCCgIKAgoCBbKl0gS2VybmVsIGRlYnVnZ2luZwo+
-IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBbKl0gS0dEQjoga2VybmVsIGRlYnVnZ2luZyB3
-aXRoIHJlbW90ZSBnZGKgIC0tLT4KPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgLS0tIEtH
-REI6IGtlcm5lbCBkZWJ1Z2dpbmcgd2l0aCByZW1vdGUKPiBnZGIKPiCgoCCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoCA8Kj4gS0dEQjogdXNlIGtnZGIgb3ZlciB0aGUgc2VyaWFsIGNvbnNvbGUKPgo+
-Cj4gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+IEluIHRo
-ZSBwcm9jZXNzIDoKPgo+IKCgoCBPbiB0aGUgdGFyZ2V0IHNpZGUgOgo+Cj4goKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoCAuLi4uLi4uLi4uLi4uLi4KPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgIFNlcmlhbDogODI1MC8xNjU1MCBkcml2ZXIsIDQgcG9ydHMsIElSUSBzaGFyaW5nCj4g
-ZGlzYWJsZWQKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDgzZTAwMDAwLnNlcmlhbDog
-dHR5UzAgYXQgTU1JTyAweDgzZTAxMDAzIChpcnEKPiA9IDE2KSBpcyBhCj4gMTY1NTBBCj4goKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBjb25zb2xlIFt0dHlTMF0KPiBlbmFibGVkCj4goKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBrZ2RiOiBSZWdpc3RlcmVkIEkvTyBkcml2ZXIga2dk
-Ym9jLgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgLi4uLi4uLi4uLi4uLi4uLi4KPgo+
-IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCByb290QDEwLjE2MS4yLjM1On4jIGVjaG8gZyA+
-IC9wcm9jL3N5c3JxLXRyaWdnZXIKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgU3lzUnEg
-OiBHREIKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgRW50ZXJpbmcgS0dEQgo+Cj4KPiCg
-IE9uIGhvc3Qgc2lkZSA6Cj4KPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBbcm9vdEBzcmlr
-YW50IGxpbnV4LTIuNl0jIHBvd2VycGMtbGludXgtZ251LWdkYgo+IHZtbGludXgtcHVydQo+IKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIEdOVSBnZGIgRysrIDQuMy0xNTApIDYuOC41MC4yMDA4
-MTAyMi1jdnMKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBDb3B5cmlnaHQgKEMpIDIwMDgg
-RnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uLCBJbmMuCj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKAgTGljZW5zZSBHUEx2Mys6IEdOVSBHUEwgdmVyc2lvbiAzIG9yIGxhdGVyCj4gPGh0dHA6Ly9n
-bnUub3JnL2xpY2Vuc2VzL2dwbC5odG1sPgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIFRo
-aXMgaXMgZnJlZSBzb2Z0d2FyZTogeW91IGFyZSBmcmVlIHRvIGNoYW5nZSBhbmQKPiByZWRpc3Ry
-aWJ1dGUgaXQuCj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgVGhlcmUgaXMgTk8gV0FSUkFO
-VFksIHRvIHRoZSBleHRlbnQgcGVybWl0dGVkIGJ5Cj4gbGF3LqAgVHlwZSAic2hvdyBjb3B5aW5n
-Igo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIGFuZCAic2hvdyB3YXJyYW50eSIgZm9yIGRl
-dGFpbHMuCj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgVGhpcyBHREIgd2FzIGNvbmZpZ3Vy
-ZWQgYXMKPiAiLS1ob3N0PWk2ODYtcGMtbGludXgtZ251IC0tdGFyZ2V0PXBvd2VycGMtbGludXgt
-Z251Ii4KPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBGb3IgYnVnIHJlcG9ydGluZyBpbnN0
-cnVjdGlvbnMsIHBsZWFzZSBzZWU6Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCAoZ2RiKSBz
-ZXQgcmVtb3RlYmF1ZCA5NjAwCj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCAoZ2RiKSB0YXJn
-ZXQgcmVtb3RlIC9kZXYvdHR5UzAKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBSZW1vdGUg
-ZGVidWdnaW5nIHVzaW5nIC9kZXYvdHR5UzAKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIEln
-bm9yaW5nIHBhY2tldCBlcnJvciwgY29udGludWluZy4uLgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKAgd2FybmluZzogdW5yZWNvZ25pemVkIGl0ZW0gInRpbWVvdXQiIGluCj4gInFTdXBwb3J0
-ZWQiIHJlc3BvbnNlCj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBJZ25vcmluZyBwYWNrZXQg
-ZXJyb3IsIGNvbnRpbnVpbmcuLi4KPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIElnbm9yaW5n
-IHBhY2tldCBlcnJvciwgY29udGludWluZy4uLgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAg
-SWdub3JpbmcgcGFja2V0IGVycm9yLCBjb250aW51aW5nLi4uCj4goKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoCBJZ25vcmluZyBwYWNrZXQgZXJyb3IsIGNvbnRpbnVpbmcuLi4KPiCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgIElnbm9yaW5nIHBhY2tldCBlcnJvciwgY29udGludWluZy4uLgo+IKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgTWFsZm9ybWVkIHJlc3BvbnNlIHRvIG9mZnNldCBxdWVy
-eSwgdGltZW91dAoKSSdtIHdvbmRlcmluZyBpZiB0aGVyZSBpcyBhIEdEQiBwcm90b2NvbCBtaXNt
-YXRjaCBhbmQgeW91cgp2ZXJzaW9uIG9mIEdEQiBpcyBzZW5kaW5nIHBhY2tldHMgdGhhdCBLR0RC
-IGNhbid0IGhhbmRsZS4KSSdtIG5vIHdoZXJlIG5lYXIgYW4gZXhwZXJ0IG9uIEdEQidzIHByb3Rv
-Y29sIGFuZCB3b24ndCBrbm93CmlmIEknbSBzZWVpbmcgdGhlIHNhbWUgdGhpbmcgdW50aWwgSSB0
-cnkgMi42LjMwLXJjCgpCcnVjZQoKPgo+IENhbiBhbnlib2R5IGNvbW1lbnQgb24gdGhlIHN0ZXBz
-IGZvbGxvd2VkIGluIHRoZSBwcm9jZXNzIG9mIHRlc3Rpbmcgb3IKPiBzb21ldGhpbmcgaXMgbWlz
-c2luZyB3aXRoIHJlc3BlY3QgdG8gb2Zfc2VyaWFsLmMgZm9yIHBvd2VycGMgYXJjaGl0ZWN0dXJl
-Lgo+IFNlZW1zIHRoZSB0YXJnZXQgaGFzIG5ldmVyIHJlc3BvbmRlZCBmb3IgZ2RiIHJlcXVlc3Rz
-ICEhIQo+Cj4KPiBSZWdhcmRzCj4gU3Jpa2FudGgKPgo+Cj4KPgo+IF9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4gTGludXhwcGMtZGV2IG1haWxpbmcgbGlz
-dAo+IExpbnV4cHBjLWRldkBvemxhYnMub3JnCj4gaHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4v
-bGlzdGluZm8vbGludXhwcGMtZGV2Cj4KCgoKLS0gCiJUaG91IHNoYWx0IG5vdCBmb2xsb3cgdGhl
-IE5VTEwgcG9pbnRlciwgZm9yIGNoYW9zIGFuZCBtYWRuZXNzIGF3YWl0CnRoZWUgYXQgaXRzIGVu
-ZCIK
+On Thu, Apr 30, 2009 at 03:17:08PM -0400, Josh Boyer wrote:
+>On Wed, Apr 29, 2009 at 08:24:48PM -0400, Josh Boyer wrote:
+>>On Thu, Apr 30, 2009 at 09:30:59AM +1000, Paul Mackerras wrote:
+>>>Does anyone here still have a "windtunnel" powermac (PowerMac3,6)
+>>>machine running Linux?  We need someone to test Jean Delvare's patch
+>>>to the therm_windtunnel driver.  The patch is at:
+>>>
+>>>http://patchwork.ozlabs.org/patch/26095/
+>>>
+>>>I don't have a windtunnel machine myself - I have a PowerMac3,5 but
+>>>not a PowerMac3,6.
+>>
+>>I might have one.  I'll pull the G4 I have out of it's box and check tomorrow.
+>
+>Amazingly enough, I do.  It's running some crusty-arse gentoo install from
+>2005, so I need to install something newer on it.  Hopefully that goes smoothly
+>today...
+
+Ok, installed 2.6.30-rc4 plus Jean's patch and it appears to do something
+correctly:
+
+[jwboyer@localhost macintosh]$ sudo modprobe therm_windtunnel
+[jwboyer@localhost macintosh]$ dmesg
+<snip>
+DS1775 digital thermometer [@49]
+Temp: 52.5 C  Hyst: 75.0 C  OS: 80.0 C
+ADM1030 fan controller [@2c]
+Reducing overheating limit to 65.0 C (Hyst: 60.0 C)
+CPU-temp: 52.9 C, Case: 31.3 C,  Fan: 0 (tuned -11)
+[jwboyer@localhost macintosh]$ uname -a
+Linux localhost.localdomain 2.6.30-rc4 #1 SMP Mon May 4 10:20:39 EDT 2009 ppc ppc ppc GNU/Linux
+
+
+josh
