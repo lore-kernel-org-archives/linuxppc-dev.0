@@ -1,25 +1,23 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9A426DDDFF
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 06:45:10 +1000 (EST)
-Date: Mon, 4 May 2009 13:39:37 -0700
-From: Greg KH <gregkh@suse.de>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] sound: remove driver_data direct access of struct device
-Message-ID: <20090504203937.GA25362@suse.de>
-References: <20090504201936.GA23194@kroah.com>
-	<20090504203410.GA29859@rakim.wolfsonmicro.main>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090504203410.GA29859@rakim.wolfsonmicro.main>
-Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>,
-	Jaroslav Kysela <perex@perex.cz>, linuxppc-dev@ozlabs.org,
-	Ian Molton <ian@mnementh.co.uk>, Philipp Zabel <philipp.zabel@gmail.com>,
-	Jean Delvare <khali@linux-fr.org>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Timur Tabi <timur@freescale.com>, Liam Girdwood <lrg@slimlogic.co.uk>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B9A0ADDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 06:58:11 +1000 (EST)
+Date: Mon, 4 May 2009 13:53:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 9/9] spi_mpc8xxx: s/83xx/8xxx/g
+Message-Id: <20090504135327.13cd42af.akpm@linux-foundation.org>
+In-Reply-To: <20090430234833.GI7901@oksana.dev.rtsoft.ru>
+References: <20090430234739.GA27709@oksana.dev.rtsoft.ru>
+	<20090430234833.GI7901@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 04, 2009 at 09:34:10PM +0100, Mark Brown wrote:
-> On Mon, May 04, 2009 at 01:19:36PM -0700, Greg Kroah-Hartman wrote:
-> > From: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > In the near future, the driver core is going to not allow direct access
-> > to the driver_data pointer in struct device.  Instead, the functions
-> > dev_get_drvdata() and dev_set_drvdata() should be used.  These functions
-> > have been around since the beginning, so are backwards compatible with
-> > all older kernel versions.
-> 
-> > Cc: Takashi Iwai <tiwai@suse.de>
-> 
-> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+On Fri, 1 May 2009 03:48:33 +0400
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-Thanks, added it to the patch.
+> Since we renamed the file, we might want to rename the file
+> internals too.
+> 
+> Though we don't bother with changing platform driver name and
+> platform module alias. The stuff is legacy and hopefully we'll
+> remove it soon.
+> 
 
-greg k-h
+but but but
+
+>
+> -static struct of_platform_driver of_mpc83xx_spi_driver = {
+> -	.name		= "mpc83xx_spi",
+> -	.match_table	= of_mpc83xx_spi_match,
+> -	.probe		= of_mpc83xx_spi_probe,
+> -	.remove		= __devexit_p(of_mpc83xx_spi_remove),
+> +static struct of_platform_driver of_mpc8xxx_spi_driver = {
+> +	.name		= "mpc8xxx_spi",
+> +	.match_table	= of_mpc8xxx_spi_match,
+> +	.probe		= of_mpc8xxx_spi_probe,
+> +	.remove		= __devexit_p(of_mpc8xxx_spi_remove),
+>  };
+
+It _did_ change the platform driver name, didn't it?
+
+
+This patch series had quite a lot of conflicts with the already-pending
+
+spi-move-common-spi_setup-functionality-into-core.patch
+spi-move-more-spi_setup-functionality-into-core.patch
+
+which I beleive I successfully fixed up.
