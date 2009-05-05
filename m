@@ -1,21 +1,21 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-qy0-f123.google.com (mail-qy0-f123.google.com
-	[209.85.221.123]) by ozlabs.org (Postfix) with ESMTP id BA450DDD1C
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 07:16:49 +1000 (EST)
-Received: by qyk29 with SMTP id 29so11579051qyk.17
-	for <linuxppc-dev@ozlabs.org>; Tue, 05 May 2009 14:16:45 -0700 (PDT)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <16691A8B34B5D9458EA3A1C37A11555A01351C87@tanisys-ex2.Tanisys.Local>
-References: <AcnM6e3UsebkDqu/R72I7X8j7/gKCQ==>
-	<16691A8B34B5D9458EA3A1C37A11555A01351C87@tanisys-ex2.Tanisys.Local>
-Date: Tue, 5 May 2009 16:16:45 -0500
-Message-ID: <ed82fe3e0905051416u79e431bdy8544a437c79c1cd1@mail.gmail.com>
-Subject: Re: Setting Kernel Allocated Memory Uncached on the PPC460
-From: Timur Tabi <timur@freescale.com>
-To: Judd Gilbert <JuddG@tanisys.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9C02CDDD1C
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 07:18:13 +1000 (EST)
+Message-Id: <756DA1CE-4951-4087-9F1B-FE83A53BB253@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: "Morrison, Tom" <tmorrison@empirix.com>
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90110C30D34@EMPBEDEX.empirix.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: MSR_SPE - being turned off...
+Date: Tue, 5 May 2009 16:18:00 -0500
+References: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com>
+	<D54110FD-25F0-4A58-9C73-F08D4AE43751@kernel.crashing.org>
+	<BD261180E6D35F4D9D32F3E44FD3D90110C30D34@EMPBEDEX.empirix.com>
+Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 4, 2009 at 1:55 PM, Judd Gilbert <JuddG@tanisys.com> wrote:
-> I have a driver which maps some kernel allocated memory to user space which
-> works, and now I am trying to set that memory non-cacheable, on a power PC
-> using the Denx ELDK (linux-2.6.24) on a PPC460ex.
 
-Because of the way the kernel maps main memory, you cannot do this.
-It is a violation of the PowerPC architecture to map a particular
-memory address as both cached and uncached (using different TLB
-entries) at the same time.  When the kernel boots, it uses large
-mappings to map all of memory as cached.  There is no mechanism to
-punch holes in these mappings.  Therefore, if the memory is already
-mapped cached by the kernel, you cannot remap it as uncached.
+On May 5, 2009, at 7:56 AM, Morrison, Tom wrote:
 
-The only way around this is to use high memory, which is not mapped by
-the kernel normally.  You can "bring in" a high memory page and map it
-uncached.  However, I don't think there is a way for you to manually
-specify certain memory to be high.
+> Hi Kumar/Michael...
+>
+> Sorry, I really didn't explain myself very well...
+>
+> The Problem (answer to Michael):
+> ================================
+> We started using a new compiler that upon -O2 optimization - added
+> heavy SPE related instructions into our applications (where the older
+> compiler might not use as many). Once this was done, we started
+> experiencing problems with data being 'shifted' and/or corrupted
+> throughout the applications which didn't immediately cause problems,
+> but either scribbled on someone else's memory and/or bad results...
+> We knew where one of the offending scribbles started (by the shifting
+> by 1 byte of a structure) and found by comparing binaries with 'older'
+> compiler vs. this one that the only major difference was the 'density'
+> of the SPE instructions...
+>
+> As to your question, Kumar:
+> ===========================
+> Naively, I explicitly enabled the SPE in a BSP 'early_init' program
+> (as well as enabling Machine Checks) - which is what I meant by
+> Enabling SPE...
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Are you setting MSR_SPE in your own board code?  If so stop doing so.   
+There isn't any need or reason to be doing that.  MSR_SPE will get set  
+when an application starts using SPE code and the kernel will manage  
+it properly.
+
+- k
