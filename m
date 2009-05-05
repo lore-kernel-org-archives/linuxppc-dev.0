@@ -1,25 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 80462DDDA2
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 17:51:23 +1000 (EST)
-In-Reply-To: <1241316249.4243.22.camel@localhost.localdomain>
-References: <20090502001329.GA11549@oksana.dev.rtsoft.ru>
-	<20090502001421.GA9342@oksana.dev.rtsoft.ru>
-	<68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org>
-	<1241316249.4243.22.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc,
-	Makefile: Make it possible to safely select CONFIG_FRAME_POINTER
-Date: Tue, 5 May 2009 09:56:02 +0200
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <dhowells@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id 40082DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 19:46:24 +1000 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200905041802.30527.hannes.hering@linux.vnet.ibm.com>
+References: <200905041802.30527.hannes.hering@linux.vnet.ibm.com>
+To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2.6.30-rc5] ehea: fix invalid pointer access
+Date: Tue, 05 May 2009 10:11:27 +0100
+Message-ID: <25628.1241514687@redhat.com>
+Sender: dhowells@redhat.com
+Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, ossthema@de.ibm.com, osstklei@de.ibm.com,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,50 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Yeah, I agree. This needs a better description. I only know what's  
-> going
-> on because I was there for the start of the discussion.
->
-> But just to be sure, this is what I think is happening.
->
-> When we add "-pg" to gcc, it automatically causes frame pointers to be
-> used.
+Hannes Hering <hannes.hering@linux.vnet.ibm.com> wrote:
 
-Nope, it does no such thing.
+>  	pref = skb_array[x];
+> -	prefetchw(pref);
+> -	prefetchw(pref + EHEA_CACHE_LINE);
+> +	if (pref) {
+> +		prefetchw(pref);
+> +		prefetchw(pref + EHEA_CACHE_LINE);
 
-> But with PPC, it always has frame pointers and there's no problem.
+Ummm...  Is prefetch() or prefetchw() faulting?
 
-Well, what do you call a "frame pointer"?  In the general meaning
-of "some register that points to the incoming function arguments
-and the function local variables", PowerPC can _usually_ use GPR1,
-the stack pointer (and indeed it is called "stack frame pointer"
-in the ABI).  In the more narrow meaning of "what GCC calls the
-frame pointer", "the thing that -fomit-frame-pointer optimises
-away" -- on PowerPC (and many other targets), -fomit-frame-pointer
-is the *default* when optimisation is enabled!
-
-There is a GCC bug here though: it won't allow both -pg and
--fomit-frame-pointer be set at the command line at the same time,
-even on targets where that is not problematic.
-
-> But with Linux, when you add CONFIG_FRAME_POINTER, it automatically
-> adds:  -fno-omit-frame-pointer. Thus the config will add
-> "-fomit-frame-pointer" when CONFIG_FRAME_POINTER is not set, or it  
-> will
-> add "-fno-omit-frame-pointer" when it is set.
->
-> The problem with PPC is that "-fno-omit-frame-pointer" is buggy and
-> causes gcc to produce bad code.
-
-It's a deeper problem that is only _exposed_ by -fno-o-f-p (and can be
-hidden by -mno-sched-epilog in the one spot where it hit us).
-
-> Perhaps a better name would be:
->
-> HAVE_FRAME_POINTER_AS_DEFAULT
-
-NO_NO_OMIT_FRAME_POINTER ?  Or better, just never use -fno-o-f-p,
-I don't see why you would ever need it.
-
-
-Segher
+David
