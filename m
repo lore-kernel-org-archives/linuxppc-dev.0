@@ -1,21 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9C02CDDD1C
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 07:18:13 +1000 (EST)
-Message-Id: <756DA1CE-4951-4087-9F1B-FE83A53BB253@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90110C30D34@EMPBEDEX.empirix.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: MSR_SPE - being turned off...
-Date: Tue, 5 May 2009 16:18:00 -0500
-References: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com>
-	<D54110FD-25F0-4A58-9C73-F08D4AE43751@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90110C30D34@EMPBEDEX.empirix.com>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 42E7ADDD1C
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 07:54:45 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+	benh@kernel.crashing.org, scottwood@freescale.com,
+	smaclennan@pikatech.com, jwboyer@linux.vnet.ibm.com
+Subject: [PATCH v7] introduce macro spin_event_timeout()
+Date: Tue,  5 May 2009 16:53:05 -0500
+Message-Id: <1241560385-26868-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +22,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The macro spin_event_timeout() takes a condition and timeout value
+(in microseconds) as parameters.  It spins until either the condition is true
+or the timeout expires.  It returns the result of the condition when the loop
+was terminated.
 
-On May 5, 2009, at 7:56 AM, Morrison, Tom wrote:
+This primary purpose of this macro is to poll on a hardware register until a
+status bit changes.  The timeout ensures that the loop still terminates if the
+bit doesn't change as expected.  This macro makes it easier for driver
+developers to perform this kind of operation properly.
 
-> Hi Kumar/Michael...
->
-> Sorry, I really didn't explain myself very well...
->
-> The Problem (answer to Michael):
-> ================================
-> We started using a new compiler that upon -O2 optimization - added
-> heavy SPE related instructions into our applications (where the older
-> compiler might not use as many). Once this was done, we started
-> experiencing problems with data being 'shifted' and/or corrupted
-> throughout the applications which didn't immediately cause problems,
-> but either scribbled on someone else's memory and/or bad results...
-> We knew where one of the offending scribbles started (by the shifting
-> by 1 byte of a structure) and found by comparing binaries with 'older'
-> compiler vs. this one that the only major difference was the 'density'
-> of the SPE instructions...
->
-> As to your question, Kumar:
-> ===========================
-> Naively, I explicitly enabled the SPE in a BSP 'early_init' program
-> (as well as enabling Machine Checks) - which is what I meant by
-> Enabling SPE...
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-Are you setting MSR_SPE in your own board code?  If so stop doing so.   
-There isn't any need or reason to be doing that.  MSR_SPE will get set  
-when an application starts using SPE code and the kernel will manage  
-it properly.
+v7: add if-statement to use cpu_relax() if the delay is 0.  gcc will optimize
+out the if-statement if 'delay' is a constant.
 
-- k
+I'm making this a PowerPC-specific patch because I want to use
+tb_ticks_per_usec, which does not exist on all other platforms.  I don't want
+to use jiffies because jiffies works only when interrupts are enabled, and
+the resolution may not be fine enough.
+
+ arch/powerpc/include/asm/delay.h |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
+index f9200a6..2bde26f 100644
+--- a/arch/powerpc/include/asm/delay.h
++++ b/arch/powerpc/include/asm/delay.h
+@@ -2,6 +2,8 @@
+ #define _ASM_POWERPC_DELAY_H
+ #ifdef __KERNEL__
+ 
++#include <asm/time.h>
++
+ /*
+  * Copyright 1996, Paul Mackerras.
+  *
+@@ -30,5 +32,35 @@ extern void udelay(unsigned long usecs);
+ #define mdelay(n)	udelay((n) * 1000)
+ #endif
+ 
++/**
++ * spin_event_timeout - spin until a condition gets true or a timeout elapses
++ * @condition: a C expression to evalate
++ * @timeout: timeout, in microseconds
++ * @delay: the number of microseconds to delay between eache evaluation of
++ *         @condition
++ * @rc: the last value of the condition
++ *
++ * The process spins until the condition evaluates to true (non-zero) or the
++ * timeout elapses.  Upon exit, @rc contains the value of the condition. This
++ * allows you to test the condition without incurring any side effects.
++ *
++ * This primary purpose of this macro is to poll on a hardware register
++ * until a status bit changes.  The timeout ensures that the loop still
++ * terminates even if the bit never changes.  The delay is for devices that
++ * need a delay in between successive reads.
++ *
++ * gcc will optimize out the if-statement if @delay is a constant.
++ */
++#define spin_event_timeout(condition, timeout, delay, rc)                   \
++{                                                                           \
++	unsigned long __loops = tb_ticks_per_usec * timeout;                \
++	unsigned long __start = get_tbl();                                  \
++	while (!(rc = (condition)) && (tb_ticks_since(__start) <= __loops)) \
++		if (delay)                                                  \
++			udelay(delay);                                      \
++		else	                                                    \
++			cpu_relax();                                        \
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_DELAY_H */
+-- 
+1.6.0.6
