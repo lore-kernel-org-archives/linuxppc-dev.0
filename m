@@ -1,18 +1,19 @@
-Return-Path: <mikey@neuling.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9A817DDDA5
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 14:17:43 +1000 (EST)
-From: Michael Neuling <mikey@neuling.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Subject: Re: MSR_SPE - being turned off... 
-In-reply-to: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com> 
-References: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com>
-Date: Tue, 05 May 2009 14:17:42 +1000
-Message-ID: <23583.1241497062@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8AF0BDDDF9
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 14:57:09 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 05 May 2009 14:55:17 +1000
+Message-Id: <1241499317.10504.59.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	akpm <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I have both a MPC8548 SBC and MPC8572 system that are running different
-> flavors of the same Linux - 2.6.23.
-> 
-> I explicitly am turning it on very early on. 
+Hi Linus !
 
-Where are you turning this on?  In the appication?
+Here are a few things still for .30 for you to merge !
 
-> Later, I have an application that is compiled with SPE instructions
-> (e.g.: evstdd) , and there is where the problems happen. 
+Cheers,
+Ben.
 
-What is the problem?
+The following changes since commit 091438dd5668396328a3419abcbc6591159eb8d1:
+  Linus Torvalds (1):
+        Linux 2.6.30-rc4
 
-> If I explicitly make sure there are NO SPE instructions in the
-> application, nothing bad happens!
-> 
-> I am polling the MSR - and it seems the SPE is turned OFF?
+are available in the git repository at:
 
-You are polling MSR in your application?
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-Anyway, this is expected.  We do lazy restore of these registers after a
-context switch.  So the SPE bit in the MSR may not be set if no SPE
-instructions have run since the last context switch.
+Benjamin Herrenschmidt (1):
+      powerpc: Fix setting of oprofile cpu type
 
-> What have I done wrong and/or has there been fixes in later kernels that
-> I should be aware of that might help this issue?
+Grant Likely (1):
+      powerpc: Update MPC5xxx and Xilinx Virtex maintainer entries
 
-I'm not clear what the problem is.  You've just said "problems happen"
-when you include SPE instructions.  
+Michael Wolf (1):
+      powerpc adjust oprofile_cpu_type version 3
 
-Are you getting a SIGILL or some other signal?  Is your program
-terminating.  Can you get a GDB back-trace or dump of which instruction
-is causing the "problem".
-
-Mikey
+ MAINTAINERS                    |    4 ++--
+ arch/powerpc/kernel/cputable.c |   15 ++++++++++-----
+ 2 files changed, 12 insertions(+), 7 deletions(-)
