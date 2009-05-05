@@ -1,18 +1,32 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 42E7ADDD1C
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 07:54:45 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-	benh@kernel.crashing.org, scottwood@freescale.com,
-	smaclennan@pikatech.com, jwboyer@linux.vnet.ibm.com
-Subject: [PATCH v7] introduce macro spin_event_timeout()
-Date: Tue,  5 May 2009 16:53:05 -0500
-Message-Id: <1241560385-26868-1-git-send-email-timur@freescale.com>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 849E8DDDB2
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 09:09:35 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n45N3fPC021187
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 17:03:41 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n45N9V5X203862
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 17:09:31 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n45N9VoJ009161
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 17:09:31 -0600
+Date: Tue, 5 May 2009 19:08:24 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Setting Kernel Allocated Memory Uncached on the PPC460
+Message-ID: <20090505230824.GD14017@zod.rchland.ibm.com>
+References: <16691A8B34B5D9458EA3A1C37A11555A01351C87@tanisys-ex2.Tanisys.Local>
+	<ed82fe3e0905051416u79e431bdy8544a437c79c1cd1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ed82fe3e0905051416u79e431bdy8544a437c79c1cd1@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Judd Gilbert <JuddG@tanisys.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,78 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The macro spin_event_timeout() takes a condition and timeout value
-(in microseconds) as parameters.  It spins until either the condition is true
-or the timeout expires.  It returns the result of the condition when the loop
-was terminated.
+On Tue, May 05, 2009 at 04:16:45PM -0500, Timur Tabi wrote:
+>On Mon, May 4, 2009 at 1:55 PM, Judd Gilbert <JuddG@tanisys.com> wrote:
+>> I have a driver which maps some kernel allocated memory to user space which
+>> works, and now I am trying to set that memory non-cacheable, on a power PC
+>> using the Denx ELDK (linux-2.6.24) on a PPC460ex.
+>
+>Because of the way the kernel maps main memory, you cannot do this.
+>It is a violation of the PowerPC architecture to map a particular
+>memory address as both cached and uncached (using different TLB
+>entries) at the same time.  When the kernel boots, it uses large
+>mappings to map all of memory as cached.  There is no mechanism to
+>punch holes in these mappings.  Therefore, if the memory is already
+>mapped cached by the kernel, you cannot remap it as uncached.
+>
+>The only way around this is to use high memory, which is not mapped by
+>the kernel normally.  You can "bring in" a high memory page and map it
+>uncached.  However, I don't think there is a way for you to manually
+>specify certain memory to be high.
 
-This primary purpose of this macro is to poll on a hardware register until a
-status bit changes.  The timeout ensures that the loop still terminates if the
-bit doesn't change as expected.  This macro makes it easier for driver
-developers to perform this kind of operation properly.
+That isn't entirely true.  You can always limit the memory mapped via the
+kernel with mem= (or via a memreserve), and then have a driver ioremap the
+now unused memory.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
-
-v7: add if-statement to use cpu_relax() if the delay is 0.  gcc will optimize
-out the if-statement if 'delay' is a constant.
-
-I'm making this a PowerPC-specific patch because I want to use
-tb_ticks_per_usec, which does not exist on all other platforms.  I don't want
-to use jiffies because jiffies works only when interrupts are enabled, and
-the resolution may not be fine enough.
-
- arch/powerpc/include/asm/delay.h |   32 ++++++++++++++++++++++++++++++++
- 1 files changed, 32 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
-index f9200a6..2bde26f 100644
---- a/arch/powerpc/include/asm/delay.h
-+++ b/arch/powerpc/include/asm/delay.h
-@@ -2,6 +2,8 @@
- #define _ASM_POWERPC_DELAY_H
- #ifdef __KERNEL__
- 
-+#include <asm/time.h>
-+
- /*
-  * Copyright 1996, Paul Mackerras.
-  *
-@@ -30,5 +32,35 @@ extern void udelay(unsigned long usecs);
- #define mdelay(n)	udelay((n) * 1000)
- #endif
- 
-+/**
-+ * spin_event_timeout - spin until a condition gets true or a timeout elapses
-+ * @condition: a C expression to evalate
-+ * @timeout: timeout, in microseconds
-+ * @delay: the number of microseconds to delay between eache evaluation of
-+ *         @condition
-+ * @rc: the last value of the condition
-+ *
-+ * The process spins until the condition evaluates to true (non-zero) or the
-+ * timeout elapses.  Upon exit, @rc contains the value of the condition. This
-+ * allows you to test the condition without incurring any side effects.
-+ *
-+ * This primary purpose of this macro is to poll on a hardware register
-+ * until a status bit changes.  The timeout ensures that the loop still
-+ * terminates even if the bit never changes.  The delay is for devices that
-+ * need a delay in between successive reads.
-+ *
-+ * gcc will optimize out the if-statement if @delay is a constant.
-+ */
-+#define spin_event_timeout(condition, timeout, delay, rc)                   \
-+{                                                                           \
-+	unsigned long __loops = tb_ticks_per_usec * timeout;                \
-+	unsigned long __start = get_tbl();                                  \
-+	while (!(rc = (condition)) && (tb_ticks_since(__start) <= __loops)) \
-+		if (delay)                                                  \
-+			udelay(delay);                                      \
-+		else	                                                    \
-+			cpu_relax();                                        \
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_DELAY_H */
--- 
-1.6.0.6
+josh
