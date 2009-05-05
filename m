@@ -1,19 +1,18 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedexfe.empirix.com (empbedexfe.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 01379DDDA2
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 22:55:35 +1000 (EST)
+Return-Path: <skrishnakar@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: MSR_SPE - being turned off...
-Date: Tue, 5 May 2009 08:56:33 -0400
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90110C30D34@EMPBEDEX.empirix.com>
-In-Reply-To: <D54110FD-25F0-4A58-9C73-F08D4AE43751@kernel.crashing.org>
-References: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com>
-	<D54110FD-25F0-4A58-9C73-F08D4AE43751@kernel.crashing.org>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
+In-Reply-To: <4A0029E0.3000008@windriver.com>
+References: <6213bc560905040417p48d3f12co608b885482998e06@mail.gmail.com>
+	<6213bc560905040613q3cec9730idece67c1caf67112@mail.gmail.com>
+	<3bd6b93c0905040742m64e1ef73i102106ca002236b2@mail.gmail.com>
+	<6213bc560905050235l7fd05dfay9938d6600ab5339e@mail.gmail.com>
+	<4A0029E0.3000008@windriver.com>
+Date: Tue, 5 May 2009 18:29:14 +0530
+Message-ID: <6213bc560905050559i80bacb7g97f26acb0fa03318@mail.gmail.com>
+Subject: Re: [Kgdb-bugreport] KGDBOC testing on linux-2.6.30-rc4
+From: srikanth krishnakar <skrishnakar@gmail.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Content-Type: multipart/alternative; boundary=000e0cd175129311f8046929d85a
+Cc: kgdb-bugreport@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,102 +22,243 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar/Michael...
+--000e0cd175129311f8046929d85a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Sorry, I really didn't explain myself very well...
+On Tue, May 5, 2009 at 5:28 PM, Jason Wessel <jason.wessel@windriver.com>wrote:
 
-The Problem (answer to Michael):
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D
-We started using a new compiler that upon -O2 optimization - added
-heavy SPE related instructions into our applications (where the older
-compiler might not use as many). Once this was done, we started=20
-experiencing problems with data being 'shifted' and/or corrupted=20
-throughout the applications which didn't immediately cause problems,
-but either scribbled on someone else's memory and/or bad results...
-We knew where one of the offending scribbles started (by the shifting=20
-by 1 byte of a structure) and found by comparing binaries with 'older'
-compiler vs. this one that the only major difference was the 'density'=20
-of the SPE instructions...
+> srikanth krishnakar wrote:
+> > Hi all,
+> >
+> > Target : PowerPC, Virtex-440 Generic
+> > Serial port : Xilinx 16550 Uart ( depends on OF_PLATFORM)
+> >
+> > Further investigation of KGDBOC on PowerPC shows that kgdboc hangs at :
+> >
+> > In file : arch/powerpc/include/asm/kgdb.h
+> >
+> > *static inline void* arch_kgdb_breakpoint(*void*)
+> > {
+> >         *asm*(*".long 0x7d821008"*); /* *twge r2, r2 **/     * << ----
+> > KGDBOC Hangs here* * << ---*
+> >
+> >
+> > -----------------------------------------
+> > Debug Log:
+> >
+> > root@10.1.2.55:~# echo g >
+> > /proc/sysrq-trigger
+> > SysRq :
+> > GDB
+> >
+> > 1------------------------>sysrq_handle_gdb
+> >
+> > Entering KGDB
+> > 1-1----------------------->kgdb_breakpoint
+> > 1-2----------------------->kgdb_breakpoint
+> > 1-3----------------------->kgdb_breakpoint
+> > 1-1----------------------->arch_kgdb_breakpoint
+> >
+> > ---------------------------------------------
+> >
+> >
+> > Any comments or suggestions ????
+> >
+>
+> I had used the 2.6.30-rc3 kernel with the PowerPC 604 system I have and
+> it was working fine, but the 4xx archs are a bit different.
+>
+> What happens next after you execute the inline assembly is that an
+> exception occurs, and that is the point that the kgdb entry will
+> actually execute.  IE:
+>
+> arch/powerpc/kernel/traps.c
+>
+> program_check_exception()
+>
+> From there kgdb should be entered and the I/O driver gets activated.
+> You could put another printk in kgdb_handle_exception() in kernel/kgdb.c
+> to make sure it actually gets there.
+>
+> Generally when the system hangs hard on an initial entry to kgdb it
+> means there is a problem with the I/O polling driver or there is
+> something else eating the kgdb exception and the kgdb exception handler
+> was never fired in the first place.
+>
+> Jason.
+>
 
-As to your question, Kumar:=20
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D
-Naively, I explicitly enabled the SPE in a BSP 'early_init' program=20
-(as well as enabling Machine Checks) - which is what I meant by
-Enabling SPE...
+Hi Jason,
 
-Michael explained that it is 'normal' if we asynchronously polled=20
-the MSR (in an application and/or in the kernel) that it might be=20
-disabled at the moment, but that you do a 'lazy switch' that=20
-enables it...and gets turned on when an SPE exception comes in...
+Re attempted with inserting a printk in kernel/kgdb.c
+kgdb_handle_exception() function but seems the kgdb exception has never
+occurred !!
 
-...ok...I can live with that...
+------------------
+Debug Log:
 
--------where I was really going---------
-
-This is where I was trying to go. A developer at our company (who no
-longer works for us) - did some research/development on the SPE=20
-functionality, in the hopes that we could create an optimized library.
-The results were successful, but because of some of the restrictions=20
-(including 8 byte alignment for some instructions) - we decided not
-to incorporate this library into our application(s)
-
-But, this developer in his results, indicated that he believed our
-kernels were NOT properly saving/restoring the upper 32bits of the=20
-GPR (which can/will be used in the SPE instructions)... Thus, if the
-upper 32bits were not saved (and restored when the application got
-the SPE to operate on)...then, he thought there would be problems.
-He unfortunately, was unable to finish his work and fix these 'bugs'
-before he left our company...
-
-Again, I am only going on his results, and not my own investigations
-(I am not sure where to start to find this problem to begin with)...
-
-So, I was REALLY asking - has anybody else run into this type of
-problem,=20
-and/or the Linux community has recognized this problem and has fixed
-this?
-
-------
-
-I hope I am a little clearer in the history / and outline of the=20
-problem I am trying to solve this time?
-
-Thanks in advance!
-
-Tom Morrison
+root@10.1.2.55:~# echo g > /proc/sysrq-trigger
+SysRq : GDB
+1------------------------>sysrq_handle_gdb
+Entering KGDB
+1-1----------------------->kgdb_breakpoint
+1-2----------------------->kgdb_breakpoint
+1-3----------------------->kgdb_breakpoint
+1-1----------------------->arch_kgdb_breakpoint
 
 
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Tuesday, May 05, 2009 7:08 AM
->> To: Morrison, Tom
->> Cc: linuxppc-dev@ozlabs.org
->> Subject: Re: MSR_SPE - being turned off...
->>=20
->>=20
->> On May 4, 2009, at 5:25 PM, Morrison, Tom wrote:
->>=20
->> > I have both a MPC8548 SBC and MPC8572 system that are running
->> > different flavors of the
->> > same Linux - 2.6.23.
->> >
->> > I explicitly am turning it on very early on. Later, I have an
->> > application that is compiled
->> > with SPE instructions (e.g.: evstdd) , and there is where the
->> > problems happen. If I explicitly
->> > make sure there are NO SPE instructions in the application, nothing
->> > bad happens!
->> >
->> > I am polling the MSR - and it seems the SPE is turned OFF?
->> >
->> > What have I done wrong and/or has there been fixes in later kernels
->> > that I should be aware of that might help this issue?
->>=20
->> Can you explain what you mean by explicitly am turning it on very
->> early on.
->>=20
->> I can't think of anything that has changed w/regards to SPE handling.
->>=20
->> - k
+(gdb) target remote /dev/ttyS0
+Remote debugging using /dev/ttyS0
+Ignoring packet error, continuing...
+warning: unrecognized item "timeout" in "qSupported" response
+Ignoring packet error, continuing...
+Ignoring packet error, continuing...
+
+-------------------
+
+Inserted printk's in kernel kgdb.c  :
+int
+kgdb_handle_exception(int evector, int signo, int ecode, struct pt_regs
+*regs)
+{
+
+printk("1------------------------>%s\n",__FUNCTION__);
+        if (kgdb_reenter_check(ks)) {
+-----------------------------
+
+*Does the PowerPC uses PowerPC64 hooks ??*
+
+as seen below from arch/powerpc/kernel/kgdb.c
+
+/* KGDB functions to use existing PowerPC64 hooks. */
+static int kgdb_debugger(struct pt_regs *regs)
+{
+        printk("1------------------------>%s\n",__FUNCTION__);
+        return *kgdb_handle_exception*(0, computeSignal(TRAP(regs)), 0,
+regs);
+
+-------------------------------
+
+
+Thanks For your co-operation, patience and help.
+
+
+Regards
+Srikanth
+**********
+
+--000e0cd175129311f8046929d85a
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<br><br><div class=3D"gmail_quote">On Tue, May 5, 2009 at 5:28 PM, Jason We=
+ssel <span dir=3D"ltr">&lt;<a href=3D"mailto:jason.wessel@windriver.com">ja=
+son.wessel@windriver.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmai=
+l_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0p=
+t 0pt 0.8ex; padding-left: 1ex;">
+<div class=3D"im">srikanth krishnakar wrote:<br>
+&gt; Hi all,<br>
+&gt;<br>
+&gt; Target : PowerPC, Virtex-440 Generic<br>
+&gt; Serial port : Xilinx 16550 Uart ( depends on OF_PLATFORM)<br>
+&gt;<br>
+&gt; Further investigation of KGDBOC on PowerPC shows that kgdboc hangs at =
+:<br>
+&gt;<br>
+&gt; In file : arch/powerpc/include/asm/kgdb.h<br>
+&gt;<br>
+&gt; *static inline void* arch_kgdb_breakpoint(*void*)<br>
+&gt; {<br>
+&gt; =A0 =A0 =A0 =A0 *asm*(*&quot;.long 0x7d821008&quot;*); /* *twge r2, r2=
+ **/ =A0 =A0 * &lt;&lt; ----<br>
+&gt; KGDBOC Hangs here* * &lt;&lt; ---*<br>
+&gt;<br>
+&gt;<br>
+&gt; -----------------------------------------<br>
+&gt; Debug Log:<br>
+&gt;<br>
+&gt; root@10.1.2.55:~# echo g &gt;<br>
+&gt; /proc/sysrq-trigger<br>
+&gt; SysRq :<br>
+&gt; GDB<br>
+&gt;<br>
+&gt; 1------------------------&gt;sysrq_handle_gdb<br>
+&gt;<br>
+&gt; Entering KGDB<br>
+&gt; 1-1-----------------------&gt;kgdb_breakpoint<br>
+&gt; 1-2-----------------------&gt;kgdb_breakpoint<br>
+&gt; 1-3-----------------------&gt;kgdb_breakpoint<br>
+&gt; 1-1-----------------------&gt;arch_kgdb_breakpoint<br>
+&gt;<br>
+&gt; ---------------------------------------------<br>
+&gt;<br>
+&gt;<br>
+&gt; Any comments or suggestions ????<br>
+&gt;<br>
+<br>
+</div>I had used the 2.6.30-rc3 kernel with the PowerPC 604 system I have a=
+nd<br>
+it was working fine, but the 4xx archs are a bit different.<br>
+<br>
+What happens next after you execute the inline assembly is that an<br>
+exception occurs, and that is the point that the kgdb entry will<br>
+actually execute. =A0IE:<br>
+<br>
+arch/powerpc/kernel/traps.c<br>
+<br>
+program_check_exception()<br>
+<br>
+>From there kgdb should be entered and the I/O driver gets activated.<br>
+You could put another printk in kgdb_handle_exception() in kernel/kgdb.c<br=
+>
+to make sure it actually gets there.<br>
+<br>
+Generally when the system hangs hard on an initial entry to kgdb it<br>
+means there is a problem with the I/O polling driver or there is<br>
+something else eating the kgdb exception and the kgdb exception handler<br>
+was never fired in the first place.<br>
+<font color=3D"#888888"><br>
+Jason.<br>
+</font></blockquote></div><br>Hi Jason,<br><br>Re attempted with inserting =
+a printk in kernel/kgdb.c kgdb_handle_exception() function but seems the kg=
+db exception has never occurred !!<br><br>------------------<br><span style=
+=3D"background-color: rgb(204, 204, 204);">Debug Log:</span><br>
+<br><font size=3D"1">root@10.1.2.55:~# echo g &gt; /proc/sysrq-trigger<br>S=
+ysRq : GDB<br>1------------------------&gt;sysrq_handle_gdb<br>Entering KGD=
+B<br>1-1-----------------------&gt;kgdb_breakpoint<br>1-2------------------=
+-----&gt;kgdb_breakpoint<br>
+1-3-----------------------&gt;kgdb_breakpoint<br>1-1-----------------------=
+&gt;arch_kgdb_breakpoint<br><br><br>(gdb) target remote /dev/ttyS0<br>Remot=
+e debugging using /dev/ttyS0<br>Ignoring packet error, continuing...<br>
+warning: unrecognized item &quot;timeout&quot; in &quot;qSupported&quot; re=
+sponse<br>Ignoring packet error, continuing...<br>Ignoring packet error, co=
+ntinuing...</font><br><br>-------------------<br><br><span style=3D"backgro=
+und-color: rgb(204, 204, 204);">Inserted printk&#39;s in kernel kgdb.c=A0 :=
+</span><br>
+<font size=3D"1">int<br><span style=3D"color: rgb(153, 0, 0);">kgdb_handle_=
+exception(int evector, int signo, int ecode, struct pt_regs *regs)</span><b=
+r style=3D"color: rgb(153, 0, 0);"><span style=3D"color: rgb(153, 0, 0);">{=
+</span><br style=3D"color: rgb(153, 0, 0);">
+<br style=3D"color: rgb(153, 0, 0);"><span style=3D"color: rgb(153, 0, 0);"=
+>printk(&quot;1------------------------&gt;%s\n&quot;,__FUNCTION__);</span>=
+<br style=3D"color: rgb(153, 0, 0);"><span style=3D"color: rgb(153, 0, 0);"=
+>=A0=A0=A0=A0=A0=A0=A0 if (kgdb_reenter_check(ks)) {</span></font><br>
+-----------------------------<br><br><b><span style=3D"color: rgb(255, 0, 0=
+);">Does the PowerPC uses PowerPC64 hooks ??</span></b><br style=3D"color: =
+rgb(255, 0, 0);"><br>as seen below from arch/powerpc/kernel/kgdb.c<br><br><=
+span style=3D"color: rgb(153, 0, 0);">/* KGDB functions to use existing Pow=
+erPC64 hooks. */</span><br style=3D"color: rgb(153, 0, 0);">
+<span style=3D"color: rgb(153, 0, 0);">static int kgdb_debugger(struct pt_r=
+egs *regs)</span><br style=3D"color: rgb(153, 0, 0);"><span style=3D"color:=
+ rgb(153, 0, 0);">{</span><br style=3D"color: rgb(153, 0, 0);"><span style=
+=3D"color: rgb(153, 0, 0);">=A0=A0=A0=A0=A0=A0=A0 printk(&quot;1-----------=
+-------------&gt;%s\n&quot;,__FUNCTION__);</span><br style=3D"color: rgb(15=
+3, 0, 0);">
+<span style=3D"color: rgb(153, 0, 0);">=A0=A0=A0=A0=A0=A0=A0 return <b><spa=
+n style=3D"color: rgb(0, 0, 0);">kgdb_handle_exception</span></b>(0, comput=
+eSignal(TRAP(regs)), 0, regs);</span><br><br>------------------------------=
+-<br><br><br>Thanks For your co-operation, patience and help.<br>
+<br><br>Regards<br>Srikanth <br>**********<br>
+
+--000e0cd175129311f8046929d85a--
