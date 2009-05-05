@@ -1,22 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id DFD93DDDEE
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 15:16:46 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so2419868yxb.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 04 May 2009 22:16:45 -0700 (PDT)
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 8795CDDE00
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 15:23:54 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1M1D8A-0007fo-Nj
+	for linuxppc-dev@ozlabs.org; Mon, 04 May 2009 22:23:50 -0700
+Message-ID: <23381214.post@talk.nabble.com>
+Date: Mon, 4 May 2009 22:23:50 -0700 (PDT)
+From: "Sauce.Cheng" <chmhou@sina.com>
+To: linuxppc-dev@ozlabs.org
+Subject: PPC8247 booting error
 MIME-Version: 1.0
-In-Reply-To: <1241499317.10504.59.camel@pasglop>
-References: <1241499317.10504.59.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 4 May 2009 23:16:29 -0600
-Message-ID: <fa686aa40905042216n4d12fba7y21704fba1a201f59@mail.gmail.com>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	akpm <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +22,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hey Ben,
 
-Can you please also pull in my merge branch?
+i want to mapping FIFO memory to bank 3 by configure br3 and or3
+the boot info as following.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2009-May/071626.html
+in my code, i have mapped FIFO to 0xD0000000, then i red the value from this
+address.
 
-Thanks,
-g.
+the prompts as following 
 
-On Mon, May 4, 2009 at 10:55 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> Hi Linus !
->
-> Here are a few things still for .30 for you to merge !
->
-> Cheers,
-> Ben.
->
-> The following changes since commit 091438dd5668396328a3419abcbc6591159eb8=
-d1:
-> =A0Linus Torvalds (1):
-> =A0 =A0 =A0 =A0Linux 2.6.30-rc4
->
-> are available in the git repository at:
->
-> =A0git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
->
-> Benjamin Herrenschmidt (1):
-> =A0 =A0 =A0powerpc: Fix setting of oprofile cpu type
->
-> Grant Likely (1):
-> =A0 =A0 =A0powerpc: Update MPC5xxx and Xilinx Virtex maintainer entries
->
-> Michael Wolf (1):
-> =A0 =A0 =A0powerpc adjust oprofile_cpu_type version 3
->
-> =A0MAINTAINERS =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A04 ++--
-> =A0arch/powerpc/kernel/cputable.c | =A0 15 ++++++++++-----
-> =A02 files changed, 12 insertions(+), 7 deletions(-)
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =A0http://www.tux.org/lkml/
->
+there is some wrong with BRx and ORx set? or something others?
+
+please give me some suggestion, thanks everyone.
 
 
+## Booting image at 00400000 ...
+   Image Name:   Linux-2.6.11
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    818473 Bytes = 799.3 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+OK
+Linux version 2.6.11 (root@localhost.localdomain) (gcc version 4.0.0 (DENX
+ELDK 4.0 4.0.0)) 
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+#108 Mon May 4 22:54:23 EDT 2009
+
+Motorola PQ2 ADS PowerPC port
+
+Built 1 zonelists
+
+Kernel command line: mem=32M console=ttyCPM0,9600 root=/dev/nfs/ rw 
+
+nfsroot=192.168.0.131:/root/chengmo/fs_folder/rootfs 
+
+ip=192.168.0.100:192.168.0.131:#:255.0.0.0:::off
+
+PID hash table entries: 256 (order: 8, 4096 bytes)
+
+Warning: real time clock seems stuck!
+
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+
+Memory: 30632k available (1420k kernel code, 272k data, 88k init, 0k
+highmem)
+
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+
+scheduling while atomic: swapper/0x00000002/0
+
+Call trace: [c015fe20]  [c0003fe0]  [c01a09b4]  [c0194614]  [000035fc] 
+
+NET: Registered protocol family 16
+
+Sauce : fifo mapping to bank3 !	// here, indicate has enter fifo_init
+function, but after 
+
+this...
+
+Oops: kernel access of bad area, sig: 11 [#1]
+
+PREEMPT 
+
+NIP: C01A2108 LR: C01A2104 SP: C0227FC0 REGS: c0227f10 TRAP: 0300    Not
+tainted
+
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+
+DAR: D0000000, DSISR: 20000000
+
+TASK = c0220ab0[1] 'swapper' THREAD: c0226000
+
+Last syscall: 120 
+
+GPR00: C01A2104 C0227FC0 C0220AB0 00000025 00000467 FFFFFFFF F00000A0
+00000022 
+
+GPR08: 001FF1A0 D0000000 F00000A8 C0227ED0 00000001 7FBDFFFF 02000000
+00000000 
+
+GPR16: 00800000 01FFF9E8 FFFFFFFF 00000000 007FFF00 01FFA4DC 01BD92B8
+00000001 
+
+GPR24: 00000000 00400000 C01B0000 C0160000 C01A0000 00000001 C0226000
+C01A86A8 
+
+Call trace: [c0003a40]  [c0006504] 
+
+Kernel panic - not syncing: Attempted to kill init!
+
+here, i have other questions about these information.
+
+what dose mean by "NIP : C01A2108" ? i supposed "C01A2108" may be a address
+of user space, 
+
+what about NIP ?
+and what the expression "DAR, DSISR, TASK, and GPR00-24" represent.
+
+i hope some will let me know those or recommand some book for me. thanks
+-- 
+View this message in context: http://www.nabble.com/PPC8247-booting-error-tp23381214p23381214.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
