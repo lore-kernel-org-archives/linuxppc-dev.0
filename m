@@ -1,24 +1,37 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id 3CEBCDDE07
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 23:33:27 +1000 (EST)
-Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
-	select CONFIG_FRAME_POINTER
-From: Steven Rostedt <srostedt@redhat.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
-References: <20090502001329.GA11549@oksana.dev.rtsoft.ru>
-	<20090502001421.GA9342@oksana.dev.rtsoft.ru>
-	<68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org>
-	<1241316249.4243.22.camel@localhost.localdomain>
-	<6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
-Content-Type: text/plain
-Date: Tue, 05 May 2009 09:33:02 -0400
-Message-Id: <1241530382.11379.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <hannes.hering@linux.vnet.ibm.com>
+Received: from mtagate4.uk.ibm.com (mtagate4.uk.ibm.com [195.212.29.137])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate4.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B48EBDDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 23:45:15 +1000 (EST)
+Received: from d06nrmr1707.portsmouth.uk.ibm.com
+	(d06nrmr1707.portsmouth.uk.ibm.com [9.149.39.225])
+	by mtagate4.uk.ibm.com (8.14.3/8.13.8) with ESMTP id n45Dj74t166086
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 13:45:07 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
+	[9.149.37.213])
+	by d06nrmr1707.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.2) with
+	ESMTP id n45Dj7iZ725112
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 14:45:07 +0100
+Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id n45Dj67p007815
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 14:45:07 +0100
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 2.6.30-rc5] ehea: fix invalid pointer access
+Date: Tue, 5 May 2009 15:45:05 +0200
+References: <200905051319.05806.hannes.hering@linux.vnet.ibm.com>
+	<25628.1241514687@redhat.com> <26110.1241525994@redhat.com>
+In-Reply-To: <26110.1241525994@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200905051545.05877.hannes.hering@linux.vnet.ibm.com>
+Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, ossthema@de.ibm.com, osstklei@de.ibm.com,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,72 +41,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 05 May 2009 14:19:54 David Howells wrote:
+> In that case, you might want to move the prefetchw() calls in the following:
+> 
+> 		pref = skb_array[x];
+> 	-	prefetchw(pref);
+> 	-	prefetchw(pref + EHEA_CACHE_LINE);
+> 	+	if (pref) {
+> 	+		prefetchw(pref);
+> 	+		prefetchw(pref + EHEA_CACHE_LINE);
+> 
+> to before the if-statement.  That way the CPU can be attempting the prefetch
+> whilst it's chewing over the test and branch.  prefetching shouldn't fault on
+> a bad address.
+> 
+> David
+Hi David,
 
-On Tue, 2009-05-05 at 09:56 +0200, Segher Boessenkool wrote:
-> > Yeah, I agree. This needs a better description. I only know what's  
-> > going
-> > on because I was there for the start of the discussion.
-> >
-> > But just to be sure, this is what I think is happening.
-> >
-> > When we add "-pg" to gcc, it automatically causes frame pointers to be
-> > used.
-> 
-> Nope, it does no such thing.
+you are right so far, but actually the prefetch calls on POWER also contain
+an if statement to check if the address is valid (i. e. non-zero). We never
+have the case that the pref != NULL and pref->data == NULL. And the situation
+of pref==NULL is very rare. This means there is no benefit moving our if
+statement down from performance perspective if we assume that our if does not
+take longer then the if in the prefetch command. We can add an
+if(likely(pref) if you like. In fact doing the if statement as we do it now
+we actually save the prefetch if statements in case we hit the situation of
+pref==NULL.
 
-Well, mcount is expected to be able to get to not just who called
-mcount, but also the parent of that function. The way mcount is
-implemented does not let you do that. If mcount was the first thing to
-be called in a function, then it would have been perfect. We could get
-to the caller, its parent, and even the parameters. But unfortunately,
-mcount is called after the stack is set up. Thus, without frame pointers
-(the way to find a previous frame) there's no way (on some archs) to
-find the parent. Nor can we figure out the parameters, which really
-sucks.
+Regards
 
-
-> 
-> > But with PPC, it always has frame pointers and there's no problem.
-> 
-> Well, what do you call a "frame pointer"?  In the general meaning
-> of "some register that points to the incoming function arguments
-> and the function local variables", PowerPC can _usually_ use GPR1,
-> the stack pointer (and indeed it is called "stack frame pointer"
-> in the ABI).  In the more narrow meaning of "what GCC calls the
-> frame pointer", "the thing that -fomit-frame-pointer optimises
-> away" -- on PowerPC (and many other targets), -fomit-frame-pointer
-> is the *default* when optimisation is enabled!
-> 
-> There is a GCC bug here though: it won't allow both -pg and
-> -fomit-frame-pointer be set at the command line at the same time,
-> even on targets where that is not problematic.
-> 
-> > But with Linux, when you add CONFIG_FRAME_POINTER, it automatically
-> > adds:  -fno-omit-frame-pointer. Thus the config will add
-> > "-fomit-frame-pointer" when CONFIG_FRAME_POINTER is not set, or it  
-> > will
-> > add "-fno-omit-frame-pointer" when it is set.
-> >
-> > The problem with PPC is that "-fno-omit-frame-pointer" is buggy and
-> > causes gcc to produce bad code.
-> 
-> It's a deeper problem that is only _exposed_ by -fno-o-f-p (and can be
-> hidden by -mno-sched-epilog in the one spot where it hit us).
-> 
-> > Perhaps a better name would be:
-> >
-> > HAVE_FRAME_POINTER_AS_DEFAULT
-> 
-> NO_NO_OMIT_FRAME_POINTER ?  Or better, just never use -fno-o-f-p,
-> I don't see why you would ever need it.
-
-Because on x86_64 it gives better back traces. x86_64 has no way to get
-to the previous frames without it. There's code to use other debug
-metadata to get back tracing, but for uses of things like the stack
-tracer, we need to be able to use the actual stack frames.
-
-As you said above, -fomit-frame-pointer is default when we optimize, and
-that is how the kernel is built. If we optimize on x86_64 and do not use
--fno-omit-frame-pointer, the stack tracer is useless.
-
--- Steve
+Hannes
