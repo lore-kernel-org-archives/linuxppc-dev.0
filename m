@@ -2,13 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 42633DDDA5
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 22:20:25 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 2A97EDDFAB
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 22:20:31 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/pci: cleanup some minor cruft
-Date: Tue,  5 May 2009 07:20:08 -0500
-Message-Id: <1241526009-18695-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/pci: Remove redundant pcnet32 fixup
+Date: Tue,  5 May 2009 07:20:09 -0500
+Message-Id: <1241526009-18695-2-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1241526009-18695-1-git-send-email-galak@kernel.crashing.org>
+References: <1241526009-18695-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,78 +20,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Removed building setup-irq on ppc32, we don't use it anymore
-* Remove duplicate prototype for setup_grackle() code that needs it
-  gets it from <asm/grackle.h>
-* Removed gratuitous pci_io_size type differences between ppc32/ppc64
+The pcnet32 driver has had in its device id table for some time a match
+against the "broken" vendor ID.  No need to fake out the vendor ID
+with an explicit fixup.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/pci-bridge.h |    6 ------
- arch/powerpc/kernel/pci_32.c          |    8 --------
- drivers/pci/Makefile                  |    1 -
- 3 files changed, 0 insertions(+), 15 deletions(-)
+ arch/powerpc/kernel/pci_32.c |   11 -----------
+ arch/powerpc/kernel/pci_64.c |   10 ----------
+ 2 files changed, 0 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 90fcfc4..586138e 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -86,17 +86,12 @@ struct pci_controller {
- 	void *io_base_alloc;
- #endif
- 	resource_size_t io_base_phys;
--#ifndef CONFIG_PPC64
- 	resource_size_t pci_io_size;
--#endif
- 
- 	/* Some machines (PReP) have a non 1:1 mapping of
- 	 * the PCI memory space in the CPU bus space
- 	 */
- 	resource_size_t pci_mem_offset;
--#ifdef CONFIG_PPC64
--	unsigned long pci_io_size;
--#endif
- 
- 	/* Some machines have a special region to forward the ISA
- 	 * "memory" cycles such as VGA memory regions. Left to 0
-@@ -185,7 +180,6 @@ extern int early_find_capability(struct pci_controller *hose, int bus,
- extern void setup_indirect_pci(struct pci_controller* hose,
- 			       resource_size_t cfg_addr,
- 			       resource_size_t cfg_data, u32 flags);
--extern void setup_grackle(struct pci_controller *hose);
- #else	/* CONFIG_PPC64 */
- 
- /*
 diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index d473634..529e677 100644
+index 529e677..3ae1c66 100644
 --- a/arch/powerpc/kernel/pci_32.c
 +++ b/arch/powerpc/kernel/pci_32.c
-@@ -447,14 +447,6 @@ static int __init pcibios_init(void)
+@@ -33,7 +33,6 @@ int pcibios_assign_bus_offset = 1;
  
- subsys_initcall(pcibios_init);
+ void pcibios_make_OF_bus_map(void);
  
--/* the next one is stolen from the alpha port... */
--void __init
--pcibios_update_irq(struct pci_dev *dev, int irq)
+-static void fixup_broken_pcnet32(struct pci_dev* dev);
+ static void fixup_cpc710_pci64(struct pci_dev* dev);
+ #ifdef CONFIG_PPC_OF
+ static u8* pci_to_OF_bus_map;
+@@ -72,16 +71,6 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_res
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl); 
+ 
+ static void
+-fixup_broken_pcnet32(struct pci_dev* dev)
 -{
--	pci_write_config_byte(dev, PCI_INTERRUPT_LINE, irq);
--	/* XXX FIXME - update OF device tree node interrupt property */
+-	if ((dev->class>>8 == PCI_CLASS_NETWORK_ETHERNET)) {
+-		dev->vendor = PCI_VENDOR_ID_AMD;
+-		pci_write_config_word(dev, PCI_VENDOR_ID, PCI_VENDOR_ID_AMD);
+-	}
 -}
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TRIDENT,	PCI_ANY_ID,			fixup_broken_pcnet32);
 -
- static struct pci_controller*
- pci_bus_to_hose(int bus)
+-static void
+ fixup_cpc710_pci64(struct pci_dev* dev)
  {
-diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-index ba6af16..b77ae67 100644
---- a/drivers/pci/Makefile
-+++ b/drivers/pci/Makefile
-@@ -39,7 +39,6 @@ obj-$(CONFIG_ALPHA) += setup-bus.o setup-irq.o
- obj-$(CONFIG_ARM) += setup-bus.o setup-irq.o
- obj-$(CONFIG_PARISC) += setup-bus.o
- obj-$(CONFIG_SUPERH) += setup-bus.o setup-irq.o
--obj-$(CONFIG_PPC32) += setup-irq.o
- obj-$(CONFIG_PPC) += setup-bus.o
- obj-$(CONFIG_MIPS) += setup-bus.o setup-irq.o
- obj-$(CONFIG_X86_VISWS) += setup-irq.o
+ 	/* Hide the PCI64 BARs from the kernel as their content doesn't
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index be574fc..fb9a0f8 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -43,16 +43,6 @@ unsigned long pci_probe_only = 1;
+ unsigned long pci_io_base = ISA_IO_BASE;
+ EXPORT_SYMBOL(pci_io_base);
+ 
+-static void fixup_broken_pcnet32(struct pci_dev* dev)
+-{
+-	if ((dev->class>>8 == PCI_CLASS_NETWORK_ETHERNET)) {
+-		dev->vendor = PCI_VENDOR_ID_AMD;
+-		pci_write_config_word(dev, PCI_VENDOR_ID, PCI_VENDOR_ID_AMD);
+-	}
+-}
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TRIDENT, PCI_ANY_ID, fixup_broken_pcnet32);
+-
+-
+ static u32 get_int_prop(struct device_node *np, const char *name, u32 def)
+ {
+ 	const u32 *prop;
 -- 
 1.6.0.6
