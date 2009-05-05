@@ -1,21 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 04FF3DDE23
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 09:36:51 +1000 (EST)
-Date: Tue, 5 May 2009 03:36:48 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/9] Some work for spi_mpc83xx driver, spi-mmc support
-	for MPC8610HPCD
-Message-ID: <20090504233648.GA6973@oksana.dev.rtsoft.ru>
-References: <20090430234739.GA27709@oksana.dev.rtsoft.ru>
-	<20090504135504.a6a6afcf.akpm@linux-foundation.org>
+Return-Path: <jk@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 84578DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 11:24:52 +1000 (EST)
+From: Jeremy Kerr <jk@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [Patch] powerpc/cell: make ptcal more reliable
+Date: Tue, 5 May 2009 10:57:18 +1000
+References: <87iqkgd5qm.fsf@de.ibm.com>
+In-Reply-To: <87iqkgd5qm.fsf@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20090504135504.a6a6afcf.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200905051057.19562.jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 04, 2009 at 01:55:04PM -0700, Andrew Morton wrote:
-> On Fri, 1 May 2009 03:47:39 +0400
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > Here are few patches that are needed to support spi-mmc slot on
-> > MPC8610HPCD PowerPC boards:
-> > 
-> > [1/9] spi_mpc83xx: Handles other Freescale processors
-> > [2/9] spi_mpc83xx: Quieten down the "Requested speed is too low" message
-> > [3/9] spi_mpc83xx: Add small delay after asserting chip-select line
-> > [4/9] powerpc/86xx: Add MMC SPI support for MPC8610HPCD boards
-> > 
-> 
-> Some or all of these seem appropriate to 2.6.30 and perhaps even -stable?
+Hi Gerhard,
 
-I'd say no, we don't need the fixes for MPC8323E-RDB boards
-(currently the only mainline user of that driver), and support
-for MPC8610HPCD boards is a new feature, so I think all these
-patches can wait for 2.6.31.
+> This is for QS21. The following patch allocates pages only from
+> the specified node, moves the ptcal area into the middle of the
+> allocated page to avoid potential prefetch problems and prints
+> the address of the ptcal area to facilitate diagnostics.
 
-Thanks,
+You're seeing prefetches that cross a page boundary?
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> -	area->pages = alloc_pages_node(area->nid, GFP_KERNEL, area->order);
+> +	area->pages = alloc_pages_node(area->nid, GFP_KERNEL |
+> GFP_THISNODE, area->order);
+
+Best to keep this under 80 cols.
+
+>
+> -	if (!area->pages)
+> +	if (!area->pages) {
+> +		printk(KERN_INFO "%s: no page on node %d\n",
+> +			__FUNCTION__, area->nid);
+>  		goto out_free_area;
+> +	}
+
+That could probably be a KERN_ERR, as we don't have ptcal enabled on 
+that node. Also, I believe __func__ is preferred over __FUNCTION__.
+
+> -	addr = __pa(page_address(area->pages));
+> +	/*
+> +	 * We move the ptcal area to the middle of the allocated
+> +	 * page, in order to avoid prefetches in memcpy and similar
+> +	 * functions stepping on it.
+> +	 */
+> +	addr = __pa(page_address(area->pages)) + (PAGE_SIZE >> 1);
+
+Minor nitpick, but I think (PAGE_SIZE / 2) better illustrates that 
+you're putting the addr in the middle of the page. But either should be 
+fine.
+
+> +	printk(KERN_INFO "%s: enabling PTCAL on node %d address=0x%016lx
+> PAGE_SIZE>>1=0x%016lx \n",
+> +			__FUNCTION__, area->nid, addr, PAGE_SIZE>>1);
+
+80 cols again. Can we do this as a pr_debug?
+
+Cheers,
+
+Jeremy
