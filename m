@@ -1,37 +1,22 @@
-Return-Path: <hannes.hering@linux.vnet.ibm.com>
-Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1B884DDDA5
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 21:19:25 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate3.de.ibm.com (8.14.3/8.13.8) with ESMTP id n45BJ8wZ241634
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 11:19:08 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.2) with
-	ESMTP id n45BJ7g43694608
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 13:19:07 +0200
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id n45BJ6C2023620
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 13:19:06 +0200
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 2.6.30-rc5] ehea: fix invalid pointer access
-Date: Tue, 5 May 2009 13:19:05 +0200
-References: <200905041802.30527.hannes.hering@linux.vnet.ibm.com>
-	<25628.1241514687@redhat.com>
-In-Reply-To: <25628.1241514687@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200905051319.05806.hannes.hering@linux.vnet.ibm.com>
-Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	raisch@de.ibm.com, ossthema@de.ibm.com, osstklei@de.ibm.com,
-	David Miller <davem@davemloft.net>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 75150DDD1C
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 21:40:28 +1000 (EST)
+Message-Id: <7CD322DD-A8FC-49DB-AA4C-E67C20793625@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <1241103047.7356.8.camel@concordia>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 0/9] powerpc/pci: clean up direct access to sysdata
+Date: Tue, 5 May 2009 06:40:03 -0500
+References: <1241096999-11164-1-git-send-email-galak@kernel.crashing.org>
+	<1241099366.7356.4.camel@concordia>
+	<EAC6B615-35F2-4CD9-A7E8-FAAD4B9D9DF3@kernel.crashing.org>
+	<1241103047.7356.8.camel@concordia>
+Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,29 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 05 May 2009 11:11:27 David Howells wrote:
-> Hannes Hering <hannes.hering@linux.vnet.ibm.com> wrote:
-> 
-> >  	pref = skb_array[x];
-> > -	prefetchw(pref);
-> > -	prefetchw(pref + EHEA_CACHE_LINE);
-> > +	if (pref) {
-> > +		prefetchw(pref);
-> > +		prefetchw(pref + EHEA_CACHE_LINE);
-> 
-> Ummm...  Is prefetch() or prefetchw() faulting?
-> 
-> David
-Hi David,
 
-this is an ehea driver problem, which is occuring when the receive queue runs
-empty. The faulting code is more specifically the following line:
+On Apr 30, 2009, at 9:50 AM, Michael Ellerman wrote:
 
-	pref = (skb_array[x]->data);
+> On Thu, 2009-04-30 at 09:18 -0500, Kumar Gala wrote:
+>> On Apr 30, 2009, at 8:49 AM, Michael Ellerman wrote:
+>>
+>>> On Thu, 2009-04-30 at 08:09 -0500, Kumar Gala wrote:
+>>>> We shouldn't be accessing sysdata directly.  In the future we might
+>>>> have
+>>>> sysdata be a device_node on ppc32 to match ppc64.  Direct access
+>>>> would make that
+>>>> a bit difficult.
+>>>>
+>>>> If someone can look at the iseries code I would appreciate that:
+>>>>
+>>>> arch/powerpc/platforms/iseries/pci.c:
+>>>> iomm_table[current_iomm_table_entry] = dev->sysdata;
+>>>> arch/powerpc/platforms/iseries/pci.c:
+>>>> iseries_ds_addr(dev->sysdata) | (bar_num << 24);
+>>>> arch/powerpc/platforms/iseries/pci.c:   pdev->sysdata = node;
+>>>
+>>> It looks like it's basically doing the same logic as
+>>> pci_device_to_OF_node(), and fetch_dev_dn(), but there's probably  
+>>> some
+>>> reason why it's not using those.
+>>>
+>>> Given how much new iseries hardware there is, I think we'd probably
+>>> rather leave the code as is. It's a device node anyway, so it  
+>>> doesn't
+>>> block your plans RE ppc32.
+>>>
+>>> cheers
+>>
+>> I was already thinking along those lines, but figured I see if anyone
+>> is really "maintaining" iseries code :)
+>
+> Not that much, it would be sfr if anyone, but I think he's a bit  
+> busy :)
+>
+> cheers
 
-Here the access to the struct element data would cause an exception.We could
-have made the if block a little smaller.
+I was thinking about this a bit more and would like to clean up  
+iseries as well.  Either iseries is maintained by someone or its not.
 
-Regards
-
-Hannes
+- k
