@@ -1,20 +1,23 @@
-Return-Path: <jk@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 84578DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 11:24:52 +1000 (EST)
-From: Jeremy Kerr <jk@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [Patch] powerpc/cell: make ptcal more reliable
-Date: Tue, 5 May 2009 10:57:18 +1000
-References: <87iqkgd5qm.fsf@de.ibm.com>
-In-Reply-To: <87iqkgd5qm.fsf@de.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id C79CEDDD1C
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 11:55:21 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so2366716yxb.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 04 May 2009 18:55:19 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200905051057.19562.jk@ozlabs.org>
+In-Reply-To: <20090504231421.GA27541@ld0162-tx32.am.freescale.net>
+References: <20090425224458.32392.31296.stgit@localhost.localdomain>
+	<20090427.025436.68188155.davem@davemloft.net>
+	<fa686aa40904271017x726f92ffsbbc730770298766b@mail.gmail.com>
+	<20090504231421.GA27541@ld0162-tx32.am.freescale.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 4 May 2009 19:55:04 -0600
+Message-ID: <fa686aa40905041855s22203b12ua9bce36a992fbe68@mail.gmail.com>
+Subject: Re: [PATCH 00/13] OF device tree handling of PHY drivers
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, afleming@freescale.com,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Gerhard,
-
-> This is for QS21. The following patch allocates pages only from
-> the specified node, moves the ptcal area into the middle of the
-> allocated page to avoid potential prefetch problems and prints
-> the address of the ptcal area to facilitate diagnostics.
-
-You're seeing prefetches that cross a page boundary?
-
-> -	area->pages = alloc_pages_node(area->nid, GFP_KERNEL, area->order);
-> +	area->pages = alloc_pages_node(area->nid, GFP_KERNEL |
-> GFP_THISNODE, area->order);
-
-Best to keep this under 80 cols.
-
+On Mon, May 4, 2009 at 5:14 PM, Scott Wood <scottwood@freescale.com> wrote:
+> On Mon, Apr 27, 2009 at 11:17:08AM -0600, Grant Likely wrote:
+>> Kumar,
+>>
+>> David has pulled my phylib changes into his -next tree. =A0However, some
+>> of the driver changes have been compile tested only due to lack of
+>> hardware. =A0Who can I ask to test the changes to the following files?
+>>
+>> =A0arch/powerpc/platforms/82xx/ep8248e.c =A0 =A0 | =A0 =A09 +-
 >
-> -	if (!area->pages)
-> +	if (!area->pages) {
-> +		printk(KERN_INFO "%s: no page on node %d\n",
-> +			__FUNCTION__, area->nid);
->  		goto out_free_area;
-> +	}
+> Tested OK.
+>
+>> =A0drivers/net/fs_enet/fs_enet-main.c =A0 =A0 =A0 =A0| =A0 69 +--
+>> =A0drivers/net/fs_enet/mii-bitbang.c =A0 =A0 =A0 =A0 | =A0 29 +-
+>
+> Tested OK on pq2fads.
+>
+>> =A0drivers/net/fs_enet/mii-fec.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 26 +-
+>
+> Tested on ep88xc. =A0No *new* problems. :-P
 
-That could probably be a KERN_ERR, as we don't have ptcal enabled on 
-that node. Also, I believe __func__ is preferred over __FUNCTION__.
+Awesome!  Thanks Scott.
 
-> -	addr = __pa(page_address(area->pages));
-> +	/*
-> +	 * We move the ptcal area to the middle of the allocated
-> +	 * page, in order to avoid prefetches in memcpy and similar
-> +	 * functions stepping on it.
-> +	 */
-> +	addr = __pa(page_address(area->pages)) + (PAGE_SIZE >> 1);
+g.
 
-Minor nitpick, but I think (PAGE_SIZE / 2) better illustrates that 
-you're putting the addr in the middle of the page. But either should be 
-fine.
 
-> +	printk(KERN_INFO "%s: enabling PTCAL on node %d address=0x%016lx
-> PAGE_SIZE>>1=0x%016lx \n",
-> +			__FUNCTION__, area->nid, addr, PAGE_SIZE>>1);
-
-80 cols again. Can we do this as a pr_debug?
-
-Cheers,
-
-Jeremy
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
