@@ -1,21 +1,10 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8DFD3DDDB6
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 01:52:33 +1000 (EST)
-Message-ID: <4A0060B4.8010402@freescale.com>
-Date: Tue, 05 May 2009 10:52:20 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: "Landau, Bracha" <BLandau@nds.com>
-Subject: Re: help with MPC8272ADS board
-References: <065A7D06F7D4E546A18E80E08D066E18118931C627@ILMA1.IL.NDS.COM>
-In-Reply-To: <065A7D06F7D4E546A18E80E08D066E18118931C627@ILMA1.IL.NDS.COM>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <stenzel@de.ibm.com>
+From: stenzel@de.ibm.com
+Date: Tue, 05 May 2009 17:58:39 +0200
+Message-Id: <87ab5rsfrk.fsf@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [Patch] powerpc/cell: make ptcal more reliable (V2)
+Cc: jk@ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +14,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Landau, Bracha wrote:
-> I've upgraded to the latest kernel (2.6.29), and after updating the configuration the cuImage did boot.
-> What's the difference between the address for the early debug console for cuImage and uImage + blob?
+===================================================================
 
-The address is wherever the previous driver (u-boot or bootwrapper) put 
-the transmit descriptor.  The default address matches what Linux's 
-bootwrapper uses, but u-boot is a bit different (IIRC it's DPRAM+0x88).
+This is for QS21. The following patch allocates pages only from 
+the specified node, moves the ptcal area into the middle of the 
+allocated page to avoid potential prefetch problems and prints 
+the address of the ptcal area to facilitate diagnostics. 
 
--Scott
+Signed-off-by: Gerhard Stenzel <gerhard.stenzel@de.ibm.com>
+
+Index: linux-2.6/arch/powerpc/platforms/cell/ras.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/ras.c
++++ linux-2.6/arch/powerpc/platforms/cell/ras.c
+@@ -122,12 +122,23 @@ static int __init cbe_ptcal_enable_on_no
+ 
+ 	area->nid = nid;
+ 	area->order = order;
+-	area->pages = alloc_pages_node(area->nid, GFP_KERNEL, area->order);
++	area->pages = alloc_pages_node(area->nid, GFP_KERNEL | GFP_THISNODE,
++					area->order);
+ 
+-	if (!area->pages)
++	if (!area->pages) {
++		printk(KERN_WARNING "%s: no page on node %d\n",
++			__func__, area->nid);
+ 		goto out_free_area;
++	}
+ 
+-	addr = __pa(page_address(area->pages));
++	/*
++	 * We move the ptcal area to the middle of the allocated
++	 * page, in order to avoid prefetches in memcpy and similar
++	 * functions stepping on it.
++	 */
++	addr = __pa(page_address(area->pages)) + (PAGE_SIZE >> 1);
++	printk(KERN_DEBUG "%s: enabling PTCAL on node %d address=0x%016lx\n",
++			__func__, area->nid, addr);
+ 
+ 	ret = -EIO;
+ 	if (rtas_call(ptcal_start_tok, 3, 1, NULL, area->nid,
+
+===================================================================
+
+Best regards, 
+
+Gerhard Stenzel, Linux on Cell Development, LTC
+-------------------------------------------------------------------------------------
+IBM Deutschland Entwicklung GmbH
+Vorsitzender des Aufsichtsrats: Martin Jetter | Geschaeftsfuehrung: Erich Baier
+Sitz der Gesellschaft: Boeblingen | Registergericht: Amtsgericht Stuttgart, HRB 243294
