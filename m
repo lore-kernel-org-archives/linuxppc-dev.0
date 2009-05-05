@@ -1,20 +1,25 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 35449DDDF9
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 16:36:14 +1000 (EST)
-Date: Tue, 5 May 2009 08:35:53 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Giuliano Pochini <pochini@shiny.it>
-Subject: Re: Need a patch tested on a windtunnel powermac
-Message-ID: <20090505083553.7f8e6918@hyperion.delvare>
-In-Reply-To: <20090504230216.3c8117cb@Jay>
-References: <18936.58163.872136.772820@cargo.ozlabs.ibm.com>
-	<20090504230216.3c8117cb@Jay>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTPS id 80462DDDA2
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 17:51:23 +1000 (EST)
+In-Reply-To: <1241316249.4243.22.camel@localhost.localdomain>
+References: <20090502001329.GA11549@oksana.dev.rtsoft.ru>
+	<20090502001421.GA9342@oksana.dev.rtsoft.ru>
+	<68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org>
+	<1241316249.4243.22.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc,
+	Makefile: Make it possible to safely select CONFIG_FRAME_POINTER
+Date: Tue, 5 May 2009 09:56:02 +0200
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 4 May 2009 23:02:16 +0200, Giuliano Pochini wrote:
-> On Thu, 30 Apr 2009 09:30:59 +1000
-> Paul Mackerras <paulus@samba.org> wrote:
-> 
-> > Does anyone here still have a "windtunnel" powermac (PowerMac3,6)
-> > machine running Linux?  We need someone to test Jean Delvare's patch
-> > to the therm_windtunnel driver.  The patch is at:
-> > 
-> > http://patchwork.ozlabs.org/patch/26095/
-> > 
-> > I don't have a windtunnel machine myself - I have a PowerMac3,5 but
-> > not a PowerMac3,6.
-> 
-> I have a dual-G4 MDD (/proc/cpuinfo says PowerMac3,6).
-> 
-> On:
-> 
-> Linux Jay 2.6.30-rc4 #1 SMP Sun May 3 16:20:08 CEST 2009 ppc 7455, altivec supported PowerMac3,6 GNU/Linux
-> 
-> plus the patch above seems working fine as usual: temperature reports
-> are written in the logs and fan speed changes correctly. therm_windtunnel
-> is not compiled as module. I tested it for a few hours only.
+> Yeah, I agree. This needs a better description. I only know what's  
+> going
+> on because I was there for the start of the discussion.
+>
+> But just to be sure, this is what I think is happening.
+>
+> When we add "-pg" to gcc, it automatically causes frame pointers to be
+> used.
 
-Thanks for the report, Giuliano! I've added the information to the wiki.
+Nope, it does no such thing.
 
--- 
-Jean Delvare
+> But with PPC, it always has frame pointers and there's no problem.
+
+Well, what do you call a "frame pointer"?  In the general meaning
+of "some register that points to the incoming function arguments
+and the function local variables", PowerPC can _usually_ use GPR1,
+the stack pointer (and indeed it is called "stack frame pointer"
+in the ABI).  In the more narrow meaning of "what GCC calls the
+frame pointer", "the thing that -fomit-frame-pointer optimises
+away" -- on PowerPC (and many other targets), -fomit-frame-pointer
+is the *default* when optimisation is enabled!
+
+There is a GCC bug here though: it won't allow both -pg and
+-fomit-frame-pointer be set at the command line at the same time,
+even on targets where that is not problematic.
+
+> But with Linux, when you add CONFIG_FRAME_POINTER, it automatically
+> adds:  -fno-omit-frame-pointer. Thus the config will add
+> "-fomit-frame-pointer" when CONFIG_FRAME_POINTER is not set, or it  
+> will
+> add "-fno-omit-frame-pointer" when it is set.
+>
+> The problem with PPC is that "-fno-omit-frame-pointer" is buggy and
+> causes gcc to produce bad code.
+
+It's a deeper problem that is only _exposed_ by -fno-o-f-p (and can be
+hidden by -mno-sched-epilog in the one spot where it hit us).
+
+> Perhaps a better name would be:
+>
+> HAVE_FRAME_POINTER_AS_DEFAULT
+
+NO_NO_OMIT_FRAME_POINTER ?  Or better, just never use -fno-o-f-p,
+I don't see why you would ever need it.
+
+
+Segher
