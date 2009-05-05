@@ -1,23 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id C79CEDDD1C
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 11:55:21 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so2366716yxb.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 04 May 2009 18:55:19 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090504231421.GA27541@ld0162-tx32.am.freescale.net>
-References: <20090425224458.32392.31296.stgit@localhost.localdomain>
-	<20090427.025436.68188155.davem@davemloft.net>
-	<fa686aa40904271017x726f92ffsbbc730770298766b@mail.gmail.com>
-	<20090504231421.GA27541@ld0162-tx32.am.freescale.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 4 May 2009 19:55:04 -0600
-Message-ID: <fa686aa40905041855s22203b12ua9bce36a992fbe68@mail.gmail.com>
-Subject: Re: [PATCH 00/13] OF device tree handling of PHY drivers
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, afleming@freescale.com,
-	David Miller <davem@davemloft.net>
+Return-Path: <mikey@neuling.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9A817DDDA5
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 14:17:43 +1000 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Subject: Re: MSR_SPE - being turned off... 
+In-reply-to: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com> 
+References: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com>
+Date: Tue, 05 May 2009 14:17:42 +1000
+Message-ID: <23583.1241497062@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 4, 2009 at 5:14 PM, Scott Wood <scottwood@freescale.com> wrote:
-> On Mon, Apr 27, 2009 at 11:17:08AM -0600, Grant Likely wrote:
->> Kumar,
->>
->> David has pulled my phylib changes into his -next tree. =A0However, some
->> of the driver changes have been compile tested only due to lack of
->> hardware. =A0Who can I ask to test the changes to the following files?
->>
->> =A0arch/powerpc/platforms/82xx/ep8248e.c =A0 =A0 | =A0 =A09 +-
->
-> Tested OK.
->
->> =A0drivers/net/fs_enet/fs_enet-main.c =A0 =A0 =A0 =A0| =A0 69 +--
->> =A0drivers/net/fs_enet/mii-bitbang.c =A0 =A0 =A0 =A0 | =A0 29 +-
->
-> Tested OK on pq2fads.
->
->> =A0drivers/net/fs_enet/mii-fec.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 26 +-
->
-> Tested on ep88xc. =A0No *new* problems. :-P
+> I have both a MPC8548 SBC and MPC8572 system that are running different
+> flavors of the same Linux - 2.6.23.
+> 
+> I explicitly am turning it on very early on. 
 
-Awesome!  Thanks Scott.
+Where are you turning this on?  In the appication?
 
-g.
+> Later, I have an application that is compiled with SPE instructions
+> (e.g.: evstdd) , and there is where the problems happen. 
 
+What is the problem?
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> If I explicitly make sure there are NO SPE instructions in the
+> application, nothing bad happens!
+> 
+> I am polling the MSR - and it seems the SPE is turned OFF?
+
+You are polling MSR in your application?
+
+Anyway, this is expected.  We do lazy restore of these registers after a
+context switch.  So the SPE bit in the MSR may not be set if no SPE
+instructions have run since the last context switch.
+
+> What have I done wrong and/or has there been fixes in later kernels that
+> I should be aware of that might help this issue?
+
+I'm not clear what the problem is.  You've just said "problems happen"
+when you include SPE instructions.  
+
+Are you getting a SIGILL or some other signal?  Is your program
+terminating.  Can you get a GDB back-trace or dump of which instruction
+is causing the "problem".
+
+Mikey
