@@ -1,19 +1,37 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <hannes.hering@linux.vnet.ibm.com>
+Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 89A27DDD1B
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 21:07:52 +1000 (EST)
-Message-Id: <D54110FD-25F0-4A58-9C73-F08D4AE43751@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com>
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: MSR_SPE - being turned off...
-Date: Tue, 5 May 2009 06:07:40 -0500
-References: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1B884DDDA5
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2009 21:19:25 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate3.de.ibm.com (8.14.3/8.13.8) with ESMTP id n45BJ8wZ241634
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 11:19:08 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.2) with
+	ESMTP id n45BJ7g43694608
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 13:19:07 +0200
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id n45BJ6C2023620
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2009 13:19:06 +0200
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 2.6.30-rc5] ehea: fix invalid pointer access
+Date: Tue, 5 May 2009 13:19:05 +0200
+References: <200905041802.30527.hannes.hering@linux.vnet.ibm.com>
+	<25628.1241514687@redhat.com>
+In-Reply-To: <25628.1241514687@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200905051319.05806.hannes.hering@linux.vnet.ibm.com>
+Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, ossthema@de.ibm.com, osstklei@de.ibm.com,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +41,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 05 May 2009 11:11:27 David Howells wrote:
+> Hannes Hering <hannes.hering@linux.vnet.ibm.com> wrote:
+> 
+> >  	pref = skb_array[x];
+> > -	prefetchw(pref);
+> > -	prefetchw(pref + EHEA_CACHE_LINE);
+> > +	if (pref) {
+> > +		prefetchw(pref);
+> > +		prefetchw(pref + EHEA_CACHE_LINE);
+> 
+> Ummm...  Is prefetch() or prefetchw() faulting?
+> 
+> David
+Hi David,
 
-On May 4, 2009, at 5:25 PM, Morrison, Tom wrote:
+this is an ehea driver problem, which is occuring when the receive queue runs
+empty. The faulting code is more specifically the following line:
 
-> I have both a MPC8548 SBC and MPC8572 system that are running =20
-> different flavors of the
-> same Linux =96 2.6.23.
->
-> I explicitly am turning it on very early on. Later, I have an =20
-> application that is compiled
-> with SPE instructions (e.g.: evstdd) , and there is where the =20
-> problems happen. If I explicitly
-> make sure there are NO SPE instructions in the application, nothing =20=
+	pref = (skb_array[x]->data);
 
-> bad happens!
->
-> I am polling the MSR =96 and it seems the SPE is turned OFF?
->
-> What have I done wrong and/or has there been fixes in later kernels =20=
+Here the access to the struct element data would cause an exception.We could
+have made the if block a little smaller.
 
-> that I should be aware of that might help this issue?
+Regards
 
-Can you explain what you mean by explicitly am turning it on very =20
-early on.
-
-I can't think of anything that has changed w/regards to SPE handling.
-
-- k=
+Hannes
