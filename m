@@ -1,21 +1,22 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 64644DDF9B
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:09:57 +1000 (EST)
-To: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 9AE11DDFB7
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:12:53 +1000 (EST)
+To: Grant Likely <grant.likely@secretlab.ca>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
+Subject: Re: [PATCH 03/12] fs_enet: Add FEC TX Alignment workaround for
+	MPC5121.
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <4A01F602.2010601@freescale.com>
+In-reply-to: <fa686aa40905061337w6aa82f5aj787618ba108e528f@mail.gmail.com>
 References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-3-git-send-email-wd@denx.de>
-	<4A01F602.2010601@freescale.com>
-Date: Thu, 07 May 2009 00:09:54 +0200
-Message-Id: <20090506220954.5D3AF83420E8@gemini.denx.de>
-Cc: John Rigby <jrigby@gmail.com>, linuxppc-dev@ozlabs.org,
-	Piotr Ziecik <kosmo@semihalf.com>, Detlev Zundel <dzu@denx.de>,
-	netdev@vger.kernel.org
+	<1241640919-4650-4-git-send-email-wd@denx.de>
+	<fa686aa40905061337w6aa82f5aj787618ba108e528f@mail.gmail.com>
+Date: Thu, 07 May 2009 00:12:50 +0200
+Message-Id: <20090506221250.C977183420E8@gemini.denx.de>
+Cc: Piotr Ziecik <kosmo@semihalf.com>, Detlev Zundel <dzu@denx.de>,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Scott,
+Dear Grant Likely,
 
-in message <4A01F602.2010601@freescale.com> you wrote:
+In message <fa686aa40905061337w6aa82f5aj787618ba108e528f@mail.gmail.com> you wrote:
 >
-> All of the above is duplicative (with even the same names) of stuff in 
-> asm/cpm.h.  Beyond just the duplication, what happens if both CPM2 and 
+> > The FEC on 5121 has problems with misaligned tx buffers.
+> > The RM says any alignment is ok but empirical results
+> > show that packet buffers ending in 0x1E will sometimes
+> > hang the FEC. Other bad alignment does not hang but will
+> > cause silent TX failures resulting in about a 1% packet
+> > loss as tested by ping -f from a remote host.
+> >
+> > This patch is a work around that copies every tx packet
+> > to an aligned skb before sending.
+>
+> OUCH!
 
-OK, I can try to reuse the definitions from that file.
+Yes :-(
 
-> 512x are enabled in the same kernel?
+> > +#else
+> > +#define tx_skb_align_workaround(dev, skb) (skb)
+> > +#endif
+>
+> Another use of #ifdef blocks.  What is the multiplatform impact?
 
-Hm... both architectures look sufficiently different to me that I
-don't see sense in trying such a thing. Do you think that needs to be
-supported?
+Hm... Can you recommend a better way to solve the problem? Suggestions
+are welcome.
 
 Best regards,
 
@@ -48,7 +61,5 @@ Wolfgang Denk
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"You ain't experienced..." "Well, nor are you." "That's true. But the
-point is ... the point is ... the point is we've been not experienced
-for a lot longer than you. We've got  a  lot  of  experience  of  not
-having any experience."           - Terry Pratchett, _Witches Abroad_
+You don't have to worry about me. I might have been born yesterday...
+but I stayed up all night.
