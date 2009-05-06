@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 42217505C2
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:40:07 +1000 (EST)
-To: Grant Likely <grant.likely@secretlab.ca>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 01/04] mpc5121: prepare support for additional boards
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <fa686aa40905061329m352cfbah1afa2d07fe5930c7@mail.gmail.com>
-References: <1241641262-5202-1-git-send-email-wd@denx.de>
-	<1241641262-5202-2-git-send-email-wd@denx.de>
-	<fa686aa40905061329m352cfbah1afa2d07fe5930c7@mail.gmail.com>
-Date: Wed, 06 May 2009 22:40:04 +0200
-Message-Id: <20090506204004.090B783420E8@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 2977A51B1B
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:40:11 +1000 (EST)
+Date: Wed, 06 May 2009 13:40:03 -0700 (PDT)
+Message-Id: <20090506.134003.261424694.davem@davemloft.net>
+To: wd@denx.de
+Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1241640919-4650-3-git-send-email-wd@denx.de>
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<1241640919-4650-3-git-send-email-wd@denx.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: kosmo@semihalf.com, jrigby@freescale.com, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Grant,
 
-In message <fa686aa40905061329m352cfbah1afa2d07fe5930c7@mail.gmail.com> you wrote:
->
-> I'll ignore this one for the time being.  After stuff is actually
-> merged and at about -rc2 time is the time to muck around with
-> defconfigs.
+Would you be offended if I tell you that this is a horrible patch
+submission?
 
-Did you receive the first patch series as well:
+Your introductory email indicates 16 patches, yet the series indicates
+there were 12, and that intro email is only posted to the linuxppc-dev
+list for people to read.  Nobody on netdev nor other interested
+parties that get CC:'d along the line are able to read what this patch
+series is about.
 
-[PATCH 00/16] Add support for MPC512x etc. ?
+Since only some patches are CC:'d to netdev I have no idea if I should
+apply these or they are dependent on some other patches in the series
+that you didn't send here to netdev.
 
-It seems it takes ages before linuxppc-dev delivers the messages?
+What a mess... how can any maintainer figure out what patch is what,
+and what tree you expect these patches to even get applied to?
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-It is easier to change the specification to fit the program than vice
-versa.
+I'm definitely sending all of the copies I have received to /dev/null,
+you need to submit this work properly.
