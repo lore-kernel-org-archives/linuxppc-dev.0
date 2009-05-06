@@ -1,16 +1,16 @@
 Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 4732DDDDA2
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:15:25 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 4E98FDDF01
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:15:26 +1000 (EST)
 From: Wolfgang Denk <wd@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/12] mpc5121ads: Clean up and fix NAND description in
-	mpc5121ads DTS.
-Date: Wed,  6 May 2009 22:15:14 +0200
-Message-Id: <1241640919-4650-8-git-send-email-wd@denx.de>
+Subject: [PATCH 03/12] fs_enet: Add FEC TX Alignment workaround for MPC5121.
+Date: Wed,  6 May 2009 22:15:10 +0200
+Message-Id: <1241640919-4650-4-git-send-email-wd@denx.de>
 In-Reply-To: <1241640919-4650-1-git-send-email-wd@denx.de>
 References: <1241640919-4650-1-git-send-email-wd@denx.de>
-Cc: Piotr Ziecik <kosmo@semihalf.com>, Wolfgang Denk <wd@denx.de>
+Cc: Piotr Ziecik <kosmo@semihalf.com>, John Rigby <jrigby@freescale.com>,
+	netdev@vger.kernel.org, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,44 +20,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Piotr Ziecik <kosmo@semihalf.com>
+From: John Rigby <jrigby@freescale.com>
 
-- Removed unused properties.
-- Corrected NAND flash chip size.
+The FEC on 5121 has problems with misaligned tx buffers.
+The RM says any alignment is ok but empirical results
+show that packet buffers ending in 0x1E will sometimes
+hang the FEC.  Other bad alignment does not hang but will
+cause silent TX failures resulting in about a 1% packet
+loss as tested by ping -f from a remote host.
 
+This patch is a work around that copies every tx packet
+to an aligned skb before sending.
+
+Signed-off-by: John Rigby <jrigby@freescale.com>
 Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
 Signed-off-by: Wolfgang Denk <wd@denx.de>
+Cc: <netdev@vger.kernel.org>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: John Rigby <jcrigby@gmail.com>
 ---
- arch/powerpc/boot/dts/mpc5121ads.dts |   13 ++++---------
- 1 files changed, 4 insertions(+), 9 deletions(-)
+ drivers/net/fs_enet/Kconfig        |    3 ++
+ drivers/net/fs_enet/fs_enet-main.c |   41 ++++++++++++++++++++++++++++++++++++
+ drivers/net/fs_enet/mac-fec.c      |    2 +-
+ 3 files changed, 45 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
-index 1b83a9d..93fe12a 100644
---- a/arch/powerpc/boot/dts/mpc5121ads.dts
-+++ b/arch/powerpc/boot/dts/mpc5121ads.dts
-@@ -62,17 +62,12 @@
- 		interrupt-parent = < &ipic >;
- 		#address-cells = <1>;
- 		#size-cells = <1>;
--		bank-width = <1>;
- 		// ADS has two Hynix 512MB Nand flash chips in a single
--		// stacked package .
-+		// stacked package.
- 		chips = <2>;
--		nand0@0 {
--			label = "nand0";
--			reg = <0x00000000 0x02000000>; 	// first 32 MB of chip 0
--		};
--		nand1@20000000 {
--			label = "nand1";
--			reg = <0x20000000 0x02000000>; 	// first 32 MB of chip 1
-+		nand@0 {
-+			label = "nand";
-+			reg = <0x00000000 0x40000000>;	// 512MB + 512MB
- 		};
- 	};
+diff --git a/drivers/net/fs_enet/Kconfig b/drivers/net/fs_enet/Kconfig
+index fc073b5..79afd07 100644
+--- a/drivers/net/fs_enet/Kconfig
++++ b/drivers/net/fs_enet/Kconfig
+@@ -8,6 +8,9 @@ config FS_ENET_MPC5121_FEC
+ 	def_bool y if (FS_ENET && PPC_MPC512x)
+ 	select FS_ENET_HAS_FEC
  
++config FS_ENET_FEC_TX_ALIGN_WORKAROUND
++	def_bool y if FS_ENET_MPC5121_FEC
++
+ config FS_ENET_HAS_SCC
+ 	bool "Chip has an SCC usable for ethernet"
+ 	depends on FS_ENET && (CPM1 || CPM2)
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index 4170d33..c83ffc3 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -594,6 +594,37 @@ void fs_cleanup_bds(struct net_device *dev)
+ 
+ /**********************************************************************************/
+ 
++#ifdef CONFIG_FS_ENET_FEC_TX_ALIGN_WORKAROUND
++static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
++							struct sk_buff *skb)
++{
++	struct sk_buff *new_skb;
++
++	/* Alloc new skb */
++	new_skb = dev_alloc_skb(ENET_RX_FRSIZE + 32);
++	if (!new_skb) {
++		printk(KERN_WARNING DRV_MODULE_NAME
++				": %s Memory squeeze, dropping tx packet.\n",
++								dev->name);
++		return NULL;
++	}
++
++	/* Make sure new skb is properly aligned */
++	skb_align(new_skb, 32);
++
++	/* Copy data to new skb ... */
++	skb_copy_from_linear_data(skb, new_skb->data, skb->len);
++	skb_put(new_skb, skb->len);
++
++	/* ... and free an old one */
++	dev_kfree_skb_any(skb);
++
++	return new_skb;
++}
++#else
++#define tx_skb_align_workaround(dev, skb) (skb)
++#endif
++
+ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+@@ -602,6 +633,16 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	u16 sc;
+ 	unsigned long flags;
+ 
++	skb = tx_skb_align_workaround(dev, skb);
++	if (!skb) {
++		/*
++		 * We have lost packet due to memory allocation error in
++		 * tx_skb_align_workaround(). Hopefully original skb is still
++		 * valid, so try transmit it later.
++		 */
++		return NETDEV_TX_BUSY;
++	}
++
+ 	spin_lock_irqsave(&fep->tx_lock, flags);
+ 
+ 	/*
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index b069088..3e86498 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -311,7 +311,7 @@ static void restart(struct net_device *dev)
+ 	 * Enable big endian.
+ 	 */
+ #ifndef CONFIG_FS_ENET_MPC5121_FEC
+-	/* Don't care about SDMA FC. */
++	/* Don't care about SDMA Function Code. */
+ 	FW(fecp, fun_code, 0x78000000);
+ #else
+ 	FS(fecp, dma_control, 0xC0000000);
 -- 
 1.6.0.6
