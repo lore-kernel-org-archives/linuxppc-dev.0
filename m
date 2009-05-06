@@ -1,15 +1,15 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 479D8DDFBE
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:15:28 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 693C8DF87A
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:21:06 +1000 (EST)
 From: Wolfgang Denk <wd@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 11/12] mpc5121: Added MPC512x DMA driver.
-Date: Wed,  6 May 2009 22:15:18 +0200
-Message-Id: <1241640919-4650-12-git-send-email-wd@denx.de>
-In-Reply-To: <1241640919-4650-1-git-send-email-wd@denx.de>
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-Cc: Piotr Ziecik <kosmo@semihalf.com>, Wolfgang Denk <wd@denx.de>
+Subject: [PATCH 02/04] ARIA: add device tree source file
+Date: Wed,  6 May 2009 22:20:59 +0200
+Message-Id: <1241641262-5202-3-git-send-email-wd@denx.de>
+In-Reply-To: <1241641262-5202-1-git-send-email-wd@denx.de>
+References: <1241641262-5202-1-git-send-email-wd@denx.de>
+Cc: Andrea Scian <andrea.scian@dave.eu>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,926 +19,429 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Piotr Ziecik <kosmo@semihalf.com>
+ARIA is a MPC5121 based COM Express module by Dave/DENX.
 
-This patch adds initial version of MPC512x DMA driver.
-Only memory to memory transfers are currenly supported.
-
-Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+Signed-off-by: Andrea Scian <andrea.scian@dave.eu>
 Signed-off-by: Wolfgang Denk <wd@denx.de>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: John Rigby <jcrigby@gmail.com>
 ---
- arch/powerpc/boot/dts/mpc5121ads.dts         |    2 +-
- arch/powerpc/platforms/512x/mpc512x_shared.c |    1 +
- drivers/dma/Kconfig                          |    7 +
- drivers/dma/Makefile                         |    1 +
- drivers/dma/mpc512x_dma.c                    |  642 ++++++++++++++++++++++++++
- drivers/dma/mpc512x_dma.h                    |  192 ++++++++
- 6 files changed, 844 insertions(+), 1 deletions(-)
- create mode 100644 drivers/dma/mpc512x_dma.c
- create mode 100644 drivers/dma/mpc512x_dma.h
+ arch/powerpc/boot/dts/aria.dts |  410 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 410 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/aria.dts
 
-diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
-index c2d9de9..e7f0e09 100644
---- a/arch/powerpc/boot/dts/mpc5121ads.dts
-+++ b/arch/powerpc/boot/dts/mpc5121ads.dts
-@@ -373,7 +373,7 @@
- 		};
- 
- 		dma@14000 {
--			compatible = "fsl,mpc5121-dma2";
-+			compatible = "fsl,mpc512x-dma";
- 			reg = <0x14000 0x1800>;
- 			interrupts = <65 0x8>;
- 			interrupt-parent = < &ipic >;
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index b776e45..135fd6b 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -95,6 +95,7 @@ void __init mpc512x_init_i2c(void)
- static struct of_device_id __initdata of_bus_ids[] = {
- 	{ .compatible = "fsl,mpc5121-immr", },
- 	{ .compatible = "fsl,mpc5121-localbus", },
-+	{ .compatible = "fsl,mpc5121-dma", },
- 	{ .compatible = "fsl,mpc5121-nfc", },
- 	{},
- };
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 3b3c01b..e734a7a 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -55,6 +55,13 @@ config FSL_DMA
- 	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
- 	  Elo Plus is the DMA controller on 85xx and 86xx parts.
- 
-+config MPC512X_DMA
-+	tristate "Freescale MPC512x built-in DMA engine support"
-+	depends on PPC_MPC512x
-+	select DMA_ENGINE
-+	---help---
-+	  Enable support for the Freescale MPC512x built-in DMA engine.
-+
- config MV_XOR
- 	bool "Marvell XOR engine support"
- 	depends on PLAT_ORION
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index 2e5dc96..f02806c 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -5,6 +5,7 @@ obj-$(CONFIG_INTEL_IOATDMA) += ioatdma.o
- ioatdma-objs := ioat.o ioat_dma.o ioat_dca.o
- obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
- obj-$(CONFIG_FSL_DMA) += fsldma.o
-+obj-$(CONFIG_MPC512X_DMA) += mpc512x_dma.o
- obj-$(CONFIG_MV_XOR) += mv_xor.o
- obj-$(CONFIG_DW_DMAC) += dw_dmac.o
- obj-$(CONFIG_MX3_IPU) += ipu/
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
+diff --git a/arch/powerpc/boot/dts/aria.dts b/arch/powerpc/boot/dts/aria.dts
 new file mode 100644
-index 0000000..1aac897
+index 0000000..6c6b5e4
 --- /dev/null
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -0,0 +1,642 @@
++++ b/arch/powerpc/boot/dts/aria.dts
+@@ -0,0 +1,407 @@
 +/*
-+ * Copyright (C) Semihalf 2009
++ * Aria Device Tree Source
 + *
-+ * Written by: Piotr Ziecik <kosmo@semihalf.com>
++ * Copyright 2009 Dave Srl www.dave.eu
++ * Copyright 2009 Wolfgang Denk <wd@denx.de>
 + *
-+ * Approved as OSADL project by a majority of OSADL members and funded
-+ * by OSADL membership fees in 2009;  for details see www.osadl.org.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59
-+ * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+ *
-+ * The full GNU General Public License is included in this distribution in the
-+ * file called COPYING.
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
 +
-+/*
-+ * This is initial version of MPC5121 DMA driver. Only memory to memory
-+ * transfers are supported (tested using dmatest module).
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/dmaengine.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
-+
-+#include <linux/random.h>
-+
-+#include "mpc512x_dma.h"
-+
-+#define DRV_NAME	"mpc512x_dma"
-+
-+/* Convert struct dma_chan to struct mpc_dma_chan */
-+static inline struct mpc_dma_chan *dma_chan_to_mpc_dma_chan(struct dma_chan *c)
-+{
-+	return container_of(c, struct mpc_dma_chan, chan);
-+}
-+
-+/* Convert struct dma_chan to struct mpc_dma */
-+static inline struct mpc_dma *dma_chan_to_mpc_dma(struct dma_chan *c)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(c);
-+	return container_of(mchan, struct mpc_dma, channels[c->chan_id]);
-+}
-+
-+/*
-+ * Execute all queued DMA descriptors.
-+ *
-+ * Following requirements must be met while calling mpc_dma_execute():
-+ * 	a) mchan->lock is acquired,
-+ * 	b) mchan->active list is empty,
-+ * 	c) mchan->queued list contains at least one entry.
-+ */
-+static void mpc_dma_execute(struct mpc_dma_chan *mchan)
-+{
-+	struct mpc_dma *mdma = dma_chan_to_mpc_dma(&mchan->chan);
-+	struct mpc_dma_desc *first = NULL;
-+	struct mpc_dma_desc *prev = NULL;
-+	struct mpc_dma_desc *mdesc;
-+	int cid = mchan->chan.chan_id;
-+
-+	/* Move all queued descriptors to active list */
-+	list_splice_tail_init(&mchan->queued, &mchan->active);
-+
-+	/* Chain descriptors into one transaction */
-+	list_for_each_entry(mdesc, &mchan->active, node) {
-+		if (!first)
-+			first = mdesc;
-+
-+		if (!prev) {
-+			prev = mdesc;
-+			continue;
-+		}
-+
-+		prev->tcd->dlast_sga = mdesc->tcd_paddr;
-+		prev->tcd->e_sg = 1;
-+		mdesc->tcd->start = 1;
-+
-+		prev = mdesc;
-+	}
-+
-+	prev->tcd->start = 0;
-+	prev->tcd->int_maj = 1;
-+
-+	/* Send first descriptor in chain into hardware */
-+	memcpy_toio(&mdma->tcd[cid], first->tcd, sizeof(struct mpc_dma_tcd));
-+	out_8(&mdma->regs->dmassrt, cid);
-+}
-+
-+/* Handle interrupt on one half of DMA controller (32 channels) */
-+static void mpc_dma_irq_process(struct mpc_dma *mdma, u32 is, u32 es, int off)
-+{
-+	struct mpc_dma_chan *mchan;
-+	struct mpc_dma_desc *mdesc;
-+	u32 status = is | es;
-+	int ch;
-+
-+	while ((ch = fls(status) - 1) >= 0) {
-+		status &= ~(1 << ch);
-+		mchan = &mdma->channels[ch + off];
-+
-+		spin_lock(&mchan->lock);
-+
-+		/* Check error status */
-+		if (es & (1 << ch))
-+			list_for_each_entry(mdesc, &mchan->active, node)
-+				mdesc->error = -EIO;
-+
-+		/* Execute queued descriptors */
-+		list_splice_tail_init(&mchan->active, &mchan->completed);
-+		if (!list_empty(&mchan->queued))
-+			mpc_dma_execute(mchan);
-+
-+		spin_unlock(&mchan->lock);
-+	}
-+}
-+
-+/* Interrupt handler */
-+static irqreturn_t mpc_dma_irq(int irq, void *data)
-+{
-+	struct mpc_dma *mdma = data;
-+	uint es;
-+
-+	/* Save error status register */
-+	es = in_be32(&mdma->regs->dmaes);
-+	spin_lock(&mdma->error_status_lock);
-+	if ((es & MPC_DMA_DMAES_VLD) && mdma->error_status == 0)
-+		mdma->error_status = es;
-+	spin_unlock(&mdma->error_status_lock);
-+
-+	/* Handle interrupt on each channel */
-+	mpc_dma_irq_process(mdma, in_be32(&mdma->regs->dmainth),
-+					in_be32(&mdma->regs->dmaerrh), 32);
-+	mpc_dma_irq_process(mdma, in_be32(&mdma->regs->dmaintl),
-+					in_be32(&mdma->regs->dmaerrl), 0);
-+
-+	/* Ack interrupt on all channels */
-+	out_be32(&mdma->regs->dmainth, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaintl, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrh, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrl, 0xFFFFFFFF);
-+
-+	/* Schedule tasklet */
-+	tasklet_schedule(&mdma->tasklet);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/* DMA Tasklet */
-+static void mpc_dma_tasklet(unsigned long data)
-+{
-+	struct mpc_dma *mdma = (void *)data;
-+	dma_cookie_t last_cookie = 0;
-+	struct mpc_dma_chan *mchan;
-+	struct mpc_dma_desc *mdesc;
-+	struct dma_async_tx_descriptor *desc;
-+	unsigned long flags;
-+	LIST_HEAD(list);
-+	uint es;
-+	int i;
-+
-+	spin_lock_irqsave(&mdma->error_status_lock, flags);
-+	es = mdma->error_status;
-+	mdma->error_status = 0;
-+	spin_unlock_irqrestore(&mdma->error_status_lock, flags);
-+
-+	/* Print nice error report */
-+	if (es) {
-+		dev_err(mdma->dma.dev,
-+			"Hardware reported following error(s) on channel %u:\n",
-+						      MPC_DMA_DMAES_ERRCHN(es));
-+
-+		if (es & MPC_DMA_DMAES_GPE)
-+			dev_err(mdma->dma.dev, "- Group Priority Error\n");
-+		if (es & MPC_DMA_DMAES_CPE)
-+			dev_err(mdma->dma.dev, "- Channel Priority Error\n");
-+		if (es & MPC_DMA_DMAES_SAE)
-+			dev_err(mdma->dma.dev, "- Source Address Error\n");
-+		if (es & MPC_DMA_DMAES_SOE)
-+			dev_err(mdma->dma.dev, "- Source Offset"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_DAE)
-+			dev_err(mdma->dma.dev, "- Destination Address"
-+								" Error\n");
-+		if (es & MPC_DMA_DMAES_DOE)
-+			dev_err(mdma->dma.dev, "- Destination Offset"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_NCE)
-+			dev_err(mdma->dma.dev, "- NBytes/Citter"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_SGE)
-+			dev_err(mdma->dma.dev, "- Scatter/Gather"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_SBE)
-+			dev_err(mdma->dma.dev, "- Source Bus Error\n");
-+		if (es & MPC_DMA_DMAES_DBE)
-+			dev_err(mdma->dma.dev, "- Destination Bus Error\n");
-+	}
-+
-+	for (i = 0; i < mdma->dma.chancnt; i++) {
-+		mchan = &mdma->channels[i];
-+
-+		/* Get all completed descriptors */
-+		spin_lock_irqsave(&mchan->lock, flags);
-+		if (!list_empty(&mchan->completed))
-+			list_splice_tail_init(&mchan->completed, &list);
-+		spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+		if (list_empty(&list))
-+			continue;
-+
-+		/* Execute callbacks and run dependencies */
-+		list_for_each_entry(mdesc, &list, node) {
-+			desc = &mdesc->desc;
-+
-+			if (desc->callback)
-+				desc->callback(desc->callback_param);
-+
-+			last_cookie = desc->cookie;
-+			dma_run_dependencies(desc);
-+		}
-+
-+		/* Free descriptors */
-+		spin_lock_irqsave(&mchan->lock, flags);
-+		list_splice_tail_init(&list, &mchan->free);
-+		mchan->completed_cookie = last_cookie;
-+		spin_unlock_irqrestore(&mchan->lock, flags);
-+	}
-+}
-+
-+/* Submit descriptor to hardware */
-+static dma_cookie_t mpc_dma_tx_submit(struct dma_async_tx_descriptor *txd)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(txd->chan);
-+	struct mpc_dma_desc *mdesc;
-+	unsigned long flags;
-+	dma_cookie_t cookie;
-+
-+	mdesc = container_of(txd, struct mpc_dma_desc, desc);
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+
-+	/* Move descriptor to queue */
-+	list_move_tail(&mdesc->node, &mchan->queued);
-+
-+	/* If channel is idle, execute all queued descriptors */
-+	if (list_empty(&mchan->active))
-+		mpc_dma_execute(mchan);
-+
-+	/* Update cookie */
-+	cookie = mchan->chan.cookie + 1;
-+	if (cookie <= 0)
-+		cookie = 1;
-+
-+	mchan->chan.cookie = cookie;
-+	mdesc->desc.cookie = cookie;
-+
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	return cookie;
-+}
-+
-+/* Alloc channel resources */
-+static int mpc_dma_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	struct mpc_dma_desc *mdesc;
-+	struct mpc_dma_tcd *tcd;
-+	dma_addr_t tcd_paddr;
-+	unsigned long flags;
-+	LIST_HEAD(descs);
-+	int i;
-+
-+	/* Alloc DMA memory for Transfer Control Descriptors */
-+	tcd = dma_alloc_coherent(mdma->dma.dev,
-+			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
-+							&tcd_paddr, GFP_KERNEL);
-+	if (!tcd)
-+		return -ENOMEM;
-+
-+	/* Alloc descriptors for this channel */
-+	for (i = 0; i < MPC_DMA_DESCRIPTORS; i++) {
-+		mdesc = kzalloc(sizeof(struct mpc_dma_desc), GFP_KERNEL);
-+		if (!mdesc) {
-+			dev_notice(mdma->dma.dev, "Memory allocation error. "
-+					"Allocated only %u descriptors\n", i);
-+			break;
-+		}
-+
-+		dma_async_tx_descriptor_init(&mdesc->desc, chan);
-+		mdesc->desc.flags = DMA_CTRL_ACK;
-+		mdesc->desc.tx_submit = mpc_dma_tx_submit;
-+
-+		mdesc->tcd = &tcd[i];
-+		mdesc->tcd_paddr = tcd_paddr + (i * sizeof(struct mpc_dma_tcd));
-+
-+		list_add_tail(&mdesc->node, &descs);
-+	}
-+
-+	/* Return error only if no descriptors were allocated */
-+	if (i == 0) {
-+		dma_free_coherent(mdma->dma.dev,
-+			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
-+								tcd, tcd_paddr);
-+		return -ENOMEM;
-+	}
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+	mchan->tcd = tcd;
-+	mchan->tcd_paddr = tcd_paddr;
-+	list_splice_tail_init(&descs, &mchan->free);
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	/* Enable Error Interrupt */
-+	out_8(&mdma->regs->dmaseei, chan->chan_id);
-+
-+	return 0;
-+}
-+
-+/* Free channel resources */
-+static void mpc_dma_free_chan_resources(struct dma_chan *chan)
-+{
-+	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	struct mpc_dma_desc *mdesc, *tmp;
-+	struct mpc_dma_tcd *tcd;
-+	dma_addr_t tcd_paddr;
-+	unsigned long flags;
-+	LIST_HEAD(descs);
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+
-+	/* Channel must be idle */
-+	BUG_ON(!list_empty(&mchan->prepared));
-+	BUG_ON(!list_empty(&mchan->queued));
-+	BUG_ON(!list_empty(&mchan->active));
-+	BUG_ON(!list_empty(&mchan->completed));
-+
-+	/* Move data */
-+	list_splice_tail_init(&mchan->free, &descs);
-+	tcd = mchan->tcd;
-+	tcd_paddr = mchan->tcd_paddr;
-+
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	/* Free DMA memory used by descriptors */
-+	dma_free_coherent(mdma->dma.dev,
-+			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
-+								tcd, tcd_paddr);
-+
-+	/* Free descriptors */
-+	list_for_each_entry_safe(mdesc, tmp, &descs, node)
-+		kfree(mdesc);
-+
-+	/* Disable Error Interrupt */
-+	out_8(&mdma->regs->dmaceei, chan->chan_id);
-+}
-+
-+/* Send all pending descriptor to hardware */
-+static void mpc_dma_issue_pending(struct dma_chan *chan)
-+{
-+	/*
-+	 * We are posting descriptors to the hardware as soon as
-+	 * they are ready, so this function does nothing.
-+	 */
-+}
-+
-+/* Check request completion status */
-+static enum dma_status
-+mpc_dma_is_tx_complete(struct dma_chan *chan, dma_cookie_t cookie,
-+					dma_cookie_t *done, dma_cookie_t *used)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	unsigned long flags;
-+	dma_cookie_t last_used;
-+	dma_cookie_t last_complete;
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+	last_used = mchan->chan.cookie;
-+	last_complete = mchan->completed_cookie;
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	if (done)
-+		*done = last_complete;
-+
-+	if (used)
-+		*used = last_used;
-+
-+	return dma_async_is_complete(cookie, last_complete, last_used);
-+}
-+
-+/* Prepare descriptor for memory to memory copy */
-+static struct dma_async_tx_descriptor *
-+mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
-+					size_t len, unsigned long flags)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	struct mpc_dma_desc *mdesc = NULL;
-+	struct mpc_dma_tcd *tcd;
-+	unsigned long iflags;
-+
-+	/* Get free descriptor */
-+	spin_lock_irqsave(&mchan->lock, iflags);
-+	if (!list_empty(&mchan->free)) {
-+		mdesc = list_first_entry(&mchan->free, struct mpc_dma_desc,
-+									node);
-+		list_del(&mdesc->node);
-+	}
-+	spin_unlock_irqrestore(&mchan->lock, iflags);
-+
-+	if (!mdesc)
-+		return NULL;
-+
-+	mdesc->error = 0;
-+	tcd = mdesc->tcd;
-+
-+	/* Prepare Transfer Control Descriptor for this transaction */
-+	memset(tcd, 0, sizeof(struct mpc_dma_tcd));
-+
-+	if (IS_ALIGNED(src | dst | len, 32)) {
-+		tcd->ssize = MPC_DMA_TSIZE_32;
-+		tcd->dsize = MPC_DMA_TSIZE_32;
-+		tcd->soff = 32;
-+		tcd->doff = 32;
-+	} else if (IS_ALIGNED(src | dst | len, 16)) {
-+		tcd->ssize = MPC_DMA_TSIZE_16;
-+		tcd->dsize = MPC_DMA_TSIZE_16;
-+		tcd->soff = 16;
-+		tcd->doff = 16;
-+	} else if (IS_ALIGNED(src | dst | len, 4)) {
-+		tcd->ssize = MPC_DMA_TSIZE_4;
-+		tcd->dsize = MPC_DMA_TSIZE_4;
-+		tcd->soff = 4;
-+		tcd->doff = 4;
-+	} else if (IS_ALIGNED(src | dst | len, 2)) {
-+		tcd->ssize = MPC_DMA_TSIZE_2;
-+		tcd->dsize = MPC_DMA_TSIZE_2;
-+		tcd->soff = 2;
-+		tcd->doff = 2;
-+	} else {
-+		tcd->ssize = MPC_DMA_TSIZE_1;
-+		tcd->dsize = MPC_DMA_TSIZE_1;
-+		tcd->soff = 1;
-+		tcd->doff = 1;
-+	}
-+
-+	tcd->saddr = src;
-+	tcd->daddr = dst;
-+	tcd->nbytes = len;
-+	tcd->biter = 1;
-+	tcd->citer = 1;
-+
-+	/* Place descriptor in prepared list */
-+	spin_lock_irqsave(&mchan->lock, iflags);
-+	list_add_tail(&mdesc->node, &mchan->prepared);
-+	spin_unlock_irqrestore(&mchan->lock, iflags);
-+
-+	return &mdesc->desc;
-+}
-+
-+static int __init mpc_dma_probe(struct of_device *op,
-+					const struct of_device_id *match)
-+{
-+	struct device_node *dn = op->node;
-+	struct device *dev = &op->dev;
-+	struct dma_device *dma;
-+	struct mpc_dma *mdma;
-+	struct mpc_dma_chan *mchan;
-+	struct resource res;
-+	ulong regs_start, regs_size;
-+	int retval, i;
-+
-+	mdma = devm_kzalloc(dev, sizeof(struct mpc_dma), GFP_KERNEL);
-+	if (!mdma) {
-+		dev_err(dev, "Memory exhausted!\n");
-+		return -ENOMEM;
-+	}
-+
-+	mdma->irq = irq_of_parse_and_map(dn, 0);
-+	if (mdma->irq == NO_IRQ) {
-+		dev_err(dev, "Error mapping IRQ!\n");
-+		return -EINVAL;
-+	}
-+
-+	retval = of_address_to_resource(dn, 0, &res);
-+	if (retval) {
-+		dev_err(dev, "Error parsing memory region!\n");
-+		return retval;
-+	}
-+
-+	regs_start = res.start;
-+	regs_size = res.end - res.start + 1;
-+
-+	if (!devm_request_mem_region(dev, regs_start, regs_size, DRV_NAME)) {
-+		dev_err(dev, "Error requesting memory region!\n");
-+		return -EBUSY;
-+	}
-+
-+	mdma->regs = devm_ioremap(dev, regs_start, regs_size);
-+	if (!mdma->regs) {
-+		dev_err(dev, "Error mapping memory region!\n");
-+		return -ENOMEM;
-+	}
-+
-+	mdma->tcd = (struct mpc_dma_tcd *)((u8 *)(mdma->regs)
-+							+ MPC_DMA_TCD_OFFSET);
-+
-+	retval = devm_request_irq(dev, mdma->irq, &mpc_dma_irq, 0, DRV_NAME,
-+									mdma);
-+	if (retval) {
-+		dev_err(dev, "Error requesting IRQ!\n");
-+		return -EINVAL;
-+	}
-+
-+	spin_lock_init(&mdma->error_status_lock);
-+
-+	dma = &mdma->dma;
-+	dma->dev = dev;
-+	dma->chancnt = MPC_DMA_CHANNELS;
-+	dma->device_alloc_chan_resources = mpc_dma_alloc_chan_resources;
-+	dma->device_free_chan_resources = mpc_dma_free_chan_resources;
-+	dma->device_issue_pending = mpc_dma_issue_pending;
-+	dma->device_is_tx_complete = mpc_dma_is_tx_complete;
-+	dma->device_prep_dma_memcpy = mpc_dma_prep_memcpy;
-+
-+	INIT_LIST_HEAD(&dma->channels);
-+	dma_cap_set(DMA_MEMCPY, dma->cap_mask);
-+
-+	for (i = 0; i < dma->chancnt; i++) {
-+		mchan = &mdma->channels[i];
-+
-+		mchan->chan.device = dma;
-+		mchan->chan.chan_id = i;
-+		mchan->chan.cookie = 1;
-+		mchan->completed_cookie = mchan->chan.cookie;
-+
-+		INIT_LIST_HEAD(&mchan->free);
-+		INIT_LIST_HEAD(&mchan->prepared);
-+		INIT_LIST_HEAD(&mchan->queued);
-+		INIT_LIST_HEAD(&mchan->active);
-+		INIT_LIST_HEAD(&mchan->completed);
-+
-+		spin_lock_init(&mchan->lock);
-+		list_add_tail(&mchan->chan.device_node, &dma->channels);
-+	}
-+
-+	tasklet_init(&mdma->tasklet, mpc_dma_tasklet, (unsigned long)mdma);
-+
-+	/*
-+	 * Configure DMA Engine:
-+	 * - Dynamic clock,
-+	 * - Round-robin group arbitration,
-+	 * - Round-robin channel arbitration.
-+	 */
-+	out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_EDCG |
-+				MPC_DMA_DMACR_ERGA | MPC_DMA_DMACR_ERCA);
-+
-+	/* Disable hardware DMA requests */
-+	out_be32(&mdma->regs->dmaerqh, 0);
-+	out_be32(&mdma->regs->dmaerql, 0);
-+
-+	/* Disable error interrupts */
-+	out_be32(&mdma->regs->dmaeeih, 0);
-+	out_be32(&mdma->regs->dmaeeil, 0);
-+
-+	/* Clear interrupts status */
-+	out_be32(&mdma->regs->dmainth, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaintl, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrh, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrl, 0xFFFFFFFF);
-+
-+	/* Route interrupts to IPIC */
-+	out_be32(&mdma->regs->dmaihsa, 0);
-+	out_be32(&mdma->regs->dmailsa, 0);
-+
-+	/* Register DMA engine */
-+	dev_set_drvdata(dev, mdma);
-+	retval = dma_async_device_register(dma);
-+	if (retval)
-+		devm_free_irq(dev, mdma->irq, mdma);
-+
-+	return retval;
-+}
-+
-+static void __exit mpc_dma_remove(struct of_device *op)
-+{
-+	struct device *dev = &op->dev;
-+	struct mpc_dma *mdma = dev_get_drvdata(dev);
-+
-+	devm_free_irq(dev, mdma->irq, mdma);
-+}
-+
-+static struct of_device_id mpc_dma_match[] = {
-+	{ .compatible = "fsl,mpc512x-dma", },
-+	{},
++/dts-v1/;
++
++/ {
++	model = "aria";
++	compatible = "davedenx,aria";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	aliases {
++		ethernet0 = &enet;
++
++		serial0 = &serial0;
++		serial1 = &serial1;
++
++		pci = &pci;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,5121@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <0x20>;	// 32 bytes
++			i-cache-line-size = <0x20>;	// 32 bytes
++			d-cache-size = <0x8000>;	// L1, 32K
++			i-cache-size = <0x8000>;	// L1, 32K
++			timebase-frequency = <49500000>;// 49.5 MHz (csb/4)
++			//bus-frequency = <198000000>;	// 198 MHz csb bus
++			//clock-frequency = <396000000>;	// 396 MHz ppc core
++			bus-frequency = <158000000>;
++			clock-frequency = <316000000>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x10000000>;	// 256MB at 0
++	};
++
++	mbx@20000000 {
++		device_type = "mbx";
++		compatible = "fsl,mpc5121-mbx";
++		reg = <0x20000000 0x4000>;
++		interrupts = <66 0x8>;
++		interrupt-parent = < &ipic >;
++	};
++
++	sram@30000000 {
++		compatible = "fsl,mpc5121-sram";
++		reg = <0x30000000 0x20000>;		// 128K at 0x30000000
++	};
++
++	nfc@40000000 {
++		//compatible = "fsl,mpc5121rev2-nfc";
++		compatible = "fsl,mpc5121-nfc";
++		reg = <0x40000000 0x100000>;	// 1M at 0x40000000
++		interrupts = <6 8>;
++		interrupt-parent = < &ipic >;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		write-size = <2048>;
++		spare-size = <64>;
++		chips = <1>;
++		nand@0 {
++			label = "nand";
++			reg = <0x00000000 0x08000000>; 	// 128 MB
++		};
++	};
++
++	localbus@80000020 {
++		compatible = "fsl,mpc5121-localbus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		reg = <0x80000020 0x40>;
++
++		ranges = <0x0 0x0 0xF8000000 0x08000000>;
++
++		flash@0,0 {
++			compatible = "cfi-flash";
++			reg = <0 0x0 0x8000000>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			bank-width = <2>;
++			device-width = <2>;
++			partition@0 {
++				label = "user";
++				reg = <0x00000000 0x07000000>;  // 112 MiB for user data
++			};
++			partition@07000000 {
++				label = "rootfs";
++				reg = <0x07000000 0x00c00000>;	// 12 MiB for root file system
++			};
++			partition@07c00000 {
++				label = "kernel";
++				reg = <0x07c00000 0x00300000>;  // 3 MiB for kernel
++			};
++			partition@07f00000 {
++				label = "u-boot";
++				reg = <0x07f00000 0x000c0000>;  // 768 KiB for u-boot w/ env
++				read-only;
++			};
++			partition@07fc0000 {
++				label = "device-tree";
++				reg = <0x07fc0000 0x00040000>;  // 256 KiB for device tree
++			};
++		};
++	};
++
++	soc@80000000 {
++		compatible = "fsl,mpc5121-immr";
++		device_type = "soc";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		ranges = <0x0 0x80000000 0x400000>;
++		reg = <0x80000000 0x400000>;
++		bus-frequency = <66000000>;	// 66 MHz ips bus
++
++
++		// IPIC
++		// interrupts cell = <intr #, sense>
++		// sense values match linux IORESOURCE_IRQ_* defines:
++		// sense == 8: Level, low assertion
++		// sense == 2: Edge, high-to-low change
++		//
++		ipic: interrupt-controller@c00 {
++			compatible = "fsl,mpc5121-ipic", "fsl,ipic";
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0xc00 0x100>;
++		};
++
++		rtc@a00 {	// Real time clock
++			compatible = "fsl,mpc5121-rtc";
++			reg = <0xa00 0x100>;
++			interrupts = <79 0x8 80 0x8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		reset@e00 {	// Reset module
++			compatible = "fsl,mpc5121-reset";
++			reg = <0xe00 0x100>;
++		};
++
++		clock@f00 {	// Clock control
++			compatible = "fsl,mpc5121rev2-clock", "fsl,mpc5121-clock";
++			reg = <0xf00 0x100>;
++		};
++
++		pmc@1000{  //Power Management Controller
++			compatible = "fsl,mpc5121-pmc";
++			reg = <0x1000 0x100>;
++			interrupts = <83 0x2>;
++			interrupt-parent = < &ipic >;
++		};
++
++		gpio@1100 {
++			compatible = "fsl,mpc5121-gpio";
++			reg = <0x1100 0x100>;
++			interrupts = <78 0x8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		mscan@1300 {
++			compatible = "fsl,mpc5121-mscan";
++			cell-index = <0>;
++			interrupts = <12 0x8>;
++			interrupt-parent = < &ipic >;
++			reg = <0x1300 0x80>;
++		};
++
++		mscan@1380 {
++			compatible = "fsl,mpc5121-mscan";
++			cell-index = <1>;
++			interrupts = <13 0x8>;
++			interrupt-parent = < &ipic >;
++			reg = <0x1380 0x80>;
++		};
++
++		// this is here for reference only
++//		sdhc@1500 {
++//			compatible = "fsl,mpc5121-sdhc";
++//			interrupts = <8 0x8>;
++//			interrupt-parent = < &ipic >;
++//			reg = <0x1500 0x100>;
++//		};
++
++		i2c@1700 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
++			cell-index = <0>;
++			reg = <0x1700 0x20>;
++			interrupts = <9 0x8>;
++			interrupt-parent = < &ipic >;
++			fsl5200-clocking;
++
++			rtc@68 {
++				compatible = "stm,m41t80";
++				reg = <0x68>;
++			};
++		};
++
++		i2c@1720 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
++			cell-index = <1>;
++			reg = <0x1720 0x20>;
++			interrupts = <10 0x8>;
++			interrupt-parent = < &ipic >;
++			fsl5200-clocking;
++		};
++
++		i2c@1740 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
++			cell-index = <2>;
++			reg = <0x1740 0x20>;
++			interrupts = <11 0x8>;
++			interrupt-parent = < &ipic >;
++			fsl5200-clocking;
++		};
++
++		i2ccontrol@1760 {
++			compatible = "fsl,mpc5121-i2c-ctrl";
++			reg = <0x1760 0x8>;
++		};
++
++		axe@2000 {
++			compatible = "fsl,mpc5121-axe";
++			reg = <0x2000 0x100>;
++			interrupts = <42 0x8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		diu@2100 {
++			device_type = "display";
++			compatible = "fsl-diu";
++			reg = <0x2100 0x100>;
++			interrupts = <64 0x8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		mdio@2800 {
++			device_type = "mdio";
++			compatible = "fsl,mpc5121-fec-mdio";
++			reg = <0x2800 0x800>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			phy: ethernet-phy@0 {
++				reg = <23>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		enet: ethernet@2800 {
++			device_type = "network";
++			compatible = "fsl,mpc5121-fec";
++			reg = <0x2800 0x800>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <4 0x8>;
++			interrupt-parent = < &ipic >;
++			phy-handle = < &phy >;
++			fsl,align-tx-packets = <4>;
++		};
++
++		// 5121e has two dr usb modules
++		// We use only USB0
++
++		// USB1 using external ULPI PHY
++		//usb@3000 {
++		//	device_type = "usb";
++		//	compatible = "fsl-usb2-dr";
++		//	reg = <0x3000 0x1000>;
++		//	#address-cells = <1>;
++		//	#size-cells = <0>;
++		//	interrupt-parent = < &ipic >;
++		//	interrupts = <43 0x8>;
++		//	dr_mode = "otg";
++		//	phy_type = "ulpi";
++		//};
++
++		// USB0 using internal UTMI PHY
++		usb@4000 {
++			device_type = "usb";
++			compatible = "fsl-usb2-dr";
++			reg = <0x4000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = < &ipic >;
++			interrupts = <44 0x8>;
++			dr_mode = "host";
++			phy_type = "utmi_wide";
++			//port0;
++		};
++
++		// IO control
++		ioctl@a000 {
++			compatible = "fsl,mpc5121-ioctl";
++			reg = <0xA000 0x1000>;
++		};
++
++		pata@10200 {
++			compatible = "fsl,mpc5121-pata";
++			reg = <0x10200 0x100>;
++			interrupts = <5 0x8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		// 512x PSCs are not 52xx PSCs compatible
++		// PSC3 serial port A aka ttyPSC0
++		serial0: serial@11300 {
++			device_type = "serial";
++			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
++			// Logical port assignment needed until driver
++			// learns to use aliases
++			port-number = <0>;
++			cell-index = <3>;
++			reg = <0x11300 0x100>;
++			interrupts = <40 0x8 71 0x8>;
++			interrupt-parent = < &ipic >;
++			rx-fifo-size = <16>;
++			tx-fifo-size = <16>;
++			nodcd;
++		};
++
++		// PSC4 serial port B aka ttyPSC1
++		serial1: serial@11400 {
++			device_type = "serial";
++			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
++			// Logical port assignment needed until driver
++			// learns to use aliases
++			port-number = <1>;
++			cell-index = <4>;
++			reg = <0x11400 0x100>;
++			interrupts = <40 0x8 32 0x8>;
++			interrupt-parent = < &ipic >;
++			rx-fifo-size = <16>;
++			tx-fifo-size = <16>;
++			nodcd;
++		};
++
++		// PSC5 in ac97 mode
++		ac97@11500 {
++			device_type = "sound";
++			compatible = "fsl,mpc5121-psc-ac97", "fsl,mpc5121-psc";
++			cell-index = <5>;
++			reg = <0x11500 0x100>;
++			interrupts = <40 0x8>;
++			interrupt-parent = < &ipic >;
++			fsl,mode = "ac97-slave";
++			rx-fifo-size = <384>;
++			tx-fifo-size = <384>;
++		};
++
++		pscfifo@11f00 {
++			compatible = "fsl,mpc5121-psc-fifo";
++			reg = <0x11f00 0x100>;
++			interrupts = <40 0x8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		dma@14000 {
++			compatible = "mpc512x-dma";
++			reg = <0x14000 0x1800>;
++			interrupts = <65 0x8>;
++			interrupt-parent = < &ipic >;
++		};
++
++	};
++
++	pci: pci@80008500 {
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++				>;
++		interrupt-parent = < &ipic >;
++		interrupts = <1 0x8>;
++		bus-range = <0 0>;
++		ranges = <0x42000000 0x0 0xa0000000 0xa0000000 0x0 0x10000000
++			  0x02000000 0x0 0xb0000000 0xb0000000 0x0 0x10000000
++			  0x01000000 0x0 0x00000000 0x84000000 0x0 0x01000000>;
++		clock-frequency = <66666666>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0x80008500 0x100>;
++		compatible = "fsl,mpc5121-pci";
++		device_type = "pci";
++	};
 +};
-+
-+static struct of_platform_driver mpc_dma_driver = {
-+	.name		= DRV_NAME,
-+	.owner		= THIS_MODULE,
-+	.match_table	= mpc_dma_match,
-+	.probe		= mpc_dma_probe,
-+	.remove		= __exit_p(mpc_dma_remove),
-+	.suspend	= NULL,
-+	.resume		= NULL,
-+	.driver		= {
-+		.name	= DRV_NAME,
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init mpc_dma_init(void)
-+{
-+	return of_register_platform_driver(&mpc_dma_driver);
-+}
-+
-+static void __exit mpc_dma_exit(void)
-+{
-+	of_unregister_platform_driver(&mpc_dma_driver);
-+}
-+
-+module_init(mpc_dma_init);
-+module_exit(mpc_dma_exit);
-+
-+/* MODULE API */
-+MODULE_VERSION("0.5");
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Piotr Ziecik <kosmo@semihalf.com>");
-diff --git a/drivers/dma/mpc512x_dma.h b/drivers/dma/mpc512x_dma.h
-new file mode 100644
-index 0000000..867415b
---- /dev/null
-+++ b/drivers/dma/mpc512x_dma.h
-@@ -0,0 +1,192 @@
-+/*
-+ * Copyright (C) Freescale Semicondutor, Inc. 2007, 2008.
-+ * Copyright (C) Semihalf, 2009.
-+ *
-+ * Written by Piotr Ziecik <kosmo@semihalf.com>. Hardware description
-+ * (defines, structures and comments) was taken from MPC5121 DMA driver
-+ * written by Hongjun Chen <hong-jun.chen@freescale.com>.
-+ *
-+ * Approved as OSADL project by a majority of OSADL members and funded
-+ * by OSADL membership fees in 2009;  for details see www.osadl.org.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59
-+ * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+ *
-+ * The full GNU General Public License is included in this distribution in the
-+ * file called COPYING.
-+ */
-+#ifndef _MPC512X_DMA_H_
-+#define _MPC512X_DMA_H_
-+
-+#include <linux/dmaengine.h>
-+
-+/* Number of DMA Transfer descriptors allocated per channel */
-+#define MPC_DMA_DESCRIPTORS	64
-+
-+/* Macro definitions */
-+#define MPC_DMA_CHANNELS	64
-+#define MPC_DMA_TCD_OFFSET	0x1000
-+
-+/* Arbitration mode of group and channel */
-+#define MPC_DMA_DMACR_EDCG	(1 << 31)
-+#define MPC_DMA_DMACR_ERGA	(1 << 3)
-+#define MPC_DMA_DMACR_ERCA	(1 << 2)
-+
-+/* Error codes */
-+#define MPC_DMA_DMAES_VLD	(1 << 31)
-+#define MPC_DMA_DMAES_GPE	(1 << 15)
-+#define MPC_DMA_DMAES_CPE	(1 << 14)
-+#define MPC_DMA_DMAES_ERRCHN(err) \
-+				(((err) >> 8) & 0x3f)
-+#define MPC_DMA_DMAES_SAE	(1 << 7)
-+#define MPC_DMA_DMAES_SOE	(1 << 6)
-+#define MPC_DMA_DMAES_DAE	(1 << 5)
-+#define MPC_DMA_DMAES_DOE	(1 << 4)
-+#define MPC_DMA_DMAES_NCE	(1 << 3)
-+#define MPC_DMA_DMAES_SGE	(1 << 2)
-+#define MPC_DMA_DMAES_SBE	(1 << 1)
-+#define MPC_DMA_DMAES_DBE	(1 << 0)
-+
-+#define MPC_DMA_TSIZE_1		0x00
-+#define MPC_DMA_TSIZE_2		0x01
-+#define MPC_DMA_TSIZE_4		0x02
-+#define MPC_DMA_TSIZE_16	0x04
-+#define MPC_DMA_TSIZE_32	0x05
-+
-+/* MPC5121 DMA engine registers */
-+struct __attribute__ ((__packed__)) mpc_dma_regs {
-+	/* 0x00 */
-+	u32 dmacr;		/* DMA control register */
-+	u32 dmaes;		/* DMA error status */
-+	/* 0x08 */
-+	u32 dmaerqh;		/* DMA enable request high(channels 63~32) */
-+	u32 dmaerql;		/* DMA enable request low(channels 31~0) */
-+	u32 dmaeeih;		/* DMA enable error interrupt high(ch63~32) */
-+	u32 dmaeeil;		/* DMA enable error interrupt low(ch31~0) */
-+	/* 0x18 */
-+	u8 dmaserq;		/* DMA set enable request */
-+	u8 dmacerq;		/* DMA clear enable request */
-+	u8 dmaseei;		/* DMA set enable error interrupt */
-+	u8 dmaceei;		/* DMA clear enable error interrupt */
-+	/* 0x1c */
-+	u8 dmacint;		/* DMA clear interrupt request */
-+	u8 dmacerr;		/* DMA clear error */
-+	u8 dmassrt;		/* DMA set start bit */
-+	u8 dmacdne;		/* DMA clear DONE status bit */
-+	/* 0x20 */
-+	u32 dmainth;		/* DMA interrupt request high(ch63~32) */
-+	u32 dmaintl;		/* DMA interrupt request low(ch31~0) */
-+	u32 dmaerrh;		/* DMA error high(ch63~32) */
-+	u32 dmaerrl;		/* DMA error low(ch31~0) */
-+	/* 0x30 */
-+	u32 dmahrsh;		/* DMA hw request status high(ch63~32) */
-+	u32 dmahrsl;		/* DMA hardware request status low(ch31~0) */
-+	u32 dmaihsa;		/* DMA interrupt high select AXE(ch63~32) */
-+	u32 dmailsa;		/* DMA interrupt low select AXE(ch31~0) */
-+	/* 0x40 ~ 0xff */
-+	u32 reserve0[48];	/* Reserved */
-+	/* 0x100 */
-+	u8 dchpri[MPC_DMA_CHANNELS];
-+	/* DMA channels(0~63) priority */
-+};
-+
-+struct __attribute__ ((__packed__)) mpc_dma_tcd {
-+	/* 0x00 */
-+	u32 saddr;		/* Source address */
-+
-+	u32 smod:5;		/* Source address modulo */
-+	u32 ssize:3;		/* Source data transfer size */
-+	u32 dmod:5;		/* Destination address modulo */
-+	u32 dsize:3;		/* Destination data transfer size */
-+	u32 soff:16;		/* Signed source address offset */
-+
-+	/* 0x08 */
-+	u32 nbytes;		/* Inner "minor" byte count */
-+	u32 slast;		/* Last source address adjustment */
-+	u32 daddr;		/* Destination address */
-+
-+	/* 0x14 */
-+	u32 citer_elink:1;	/* Enable channel-to-channel linking on
-+				 * minor loop complete
-+				 */
-+	u32 citer_linkch:6;	/* Link channel for minor loop complete */
-+	u32 citer:9;		/* Current "major" iteration count */
-+	u32 doff:16;		/* Signed destination address offset */
-+
-+	/* 0x18 */
-+	u32 dlast_sga;		/* Last Destination address adjustment/scatter
-+				 * gather address
-+				 */
-+
-+	/* 0x1c */
-+	u32 biter_elink:1;	/* Enable channel-to-channel linking on major
-+				 * loop complete
-+				 */
-+	u32 biter_linkch:6;
-+	u32 biter:9;		/* Beginning "major" iteration count */
-+	u32 bwc:2;		/* Bandwidth control */
-+	u32 major_linkch:6;	/* Link channel number */
-+	u32 done:1;		/* Channel done */
-+	u32 active:1;		/* Channel active */
-+	u32 major_elink:1;	/* Enable channel-to-channel linking on major
-+				 * loop complete
-+				 */
-+	u32 e_sg:1;		/* Enable scatter/gather processing */
-+	u32 d_req:1;		/* Disable request */
-+	u32 int_half:1;		/* Enable an interrupt when major counter is
-+				 * half complete
-+				 */
-+	u32 int_maj:1;		/* Enable an interrupt when major iteration
-+				 * count completes
-+				 */
-+	u32 start:1;		/* Channel start */
-+};
-+
-+struct mpc_dma_desc {
-+	struct dma_async_tx_descriptor	desc;
-+	struct mpc_dma_tcd		*tcd;
-+	dma_addr_t			tcd_paddr;
-+	int				error;
-+	struct list_head		node;
-+};
-+
-+struct mpc_dma_chan {
-+	struct dma_chan			chan;
-+	struct list_head		free;
-+	struct list_head		prepared;
-+	struct list_head		queued;
-+	struct list_head		active;
-+	struct list_head		completed;
-+	struct mpc_dma_tcd		*tcd;
-+	dma_addr_t			tcd_paddr;
-+	dma_cookie_t			completed_cookie;
-+
-+	/* Lock for this structure */
-+	spinlock_t			lock;
-+};
-+
-+struct mpc_dma {
-+	struct dma_device		dma;
-+	struct tasklet_struct		tasklet;
-+	struct mpc_dma_chan		channels[MPC_DMA_CHANNELS];
-+	struct mpc_dma_regs __iomem	*regs;
-+	struct mpc_dma_tcd __iomem	*tcd;
-+	int				irq;
-+	uint				error_status;
-+
-+	/* Lock for error_status field in this structure */
-+	spinlock_t			error_status_lock;
-+};
-+
-+#endif /* _MPC512X_DMA_H_ */
 -- 
 1.6.0.6
