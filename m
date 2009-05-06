@@ -1,23 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 8A1CEDDF91
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:41:37 +1000 (EST)
-To: Grant Likely <grant.likely@secretlab.ca>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f172.google.com (mail-gx0-f172.google.com
+	[209.85.217.172]) by ozlabs.org (Postfix) with ESMTP id 3C0D3DE34E
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:41:51 +1000 (EST)
+Received: by gxk20 with SMTP id 20so787545gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 May 2009 15:41:50 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090506220225.A013583420E8@gemini.denx.de>
 References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-3-git-send-email-wd@denx.de>
-	<fa686aa40905061333q29c263c8p24856c048e30f4d0@mail.gmail.com>
-	<20090506220119.7322783420E8@gemini.denx.de>
-	<fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com>
-Date: Thu, 07 May 2009 00:41:34 +0200
-Message-Id: <20090506224134.83F1583420E8@gemini.denx.de>
-Cc: Piotr Ziecik <kosmo@semihalf.com>, Detlev Zundel <dzu@denx.de>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	John Rigby <jrigby@freescale.com>
+	<1241640919-4650-2-git-send-email-wd@denx.de>
+	<fa686aa40905061335q3a3c4cc7r33d77df655100531@mail.gmail.com>
+	<20090506220225.A013583420E8@gemini.denx.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 6 May 2009 16:41:30 -0600
+Message-ID: <fa686aa40905061541v6ff7777dl81f2f7116f26b0e2@mail.gmail.com>
+Subject: Re: [PATCH 01/12] fs_enet: Use defines to set driver tunables.
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Piotr Ziecik <kosmo@semihalf.com>,
+	Detlev Zundel <dzu@denx.de>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Grant,
-
-In message <fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com> you wrote:
+On Wed, May 6, 2009 at 4:02 PM, Wolfgang Denk <wd@denx.de> wrote:
+> Dear Grant,
 >
-> > Agreed that it's ugly, but duplicatio9ng the code would have been even
-> > worse. I don't think that it has multiplatform - at least not as long
-> > as you don't ask for one image that runs on 83xx and on 512x.
-> 
-> Actually, I *am* asking for one image that runs on 83xx, 52xx and
-> 521x.  I already can and do build and test a single image which boots
-> on all my 52xx boards, on my 8349 board, and on my G4 Mac.
+> In message <fa686aa40905061335q3a3c4cc7r33d77df655100531@mail.gmail.com> you wrote:
+>> On Wed, May 6, 2009 at 2:15 PM, Wolfgang Denk <wd@denx.de> wrote:
+>> > From: Piotr Ziecik <kosmo@semihalf.com>
+>> >
+>> > Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+>> > Signed-off-by: Wolfgang Denk <wd@denx.de>
+>> > Cc: <netdev@vger.kernel.org>
+>> > Cc: Grant Likely <grant.likely@secretlab.ca>
+>> > Cc: John Rigby <jcrigby@gmail.com>
+>>
+>> Not seeing much benefit to this patch, and the (non-existant) patch
+>> description doesn't really help me here either.
+>
+> Please see next patch which then uses the ability to change the
+> defaults.
 
-He. I was afraid you'd say that ;-)
+Please state that in the patch description when you repost it.  :-P
 
-In this case I need a helping hand as I can't figure out how to make
-this work. Any suggestions?
+g.
 
-Best regards,
-
-Wolfgang Denk
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Here's a fish hangs in the net like a poor man's right in  the  law.
-'Twill hardly come out."     - Shakespeare, Pericles, Act II, Scene 1
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
