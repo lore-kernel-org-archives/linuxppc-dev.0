@@ -1,23 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f172.google.com (mail-gx0-f172.google.com
-	[209.85.217.172]) by ozlabs.org (Postfix) with ESMTP id B74E2DDF93
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:40:50 +1000 (EST)
-Received: by gxk20 with SMTP id 20so786362gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 May 2009 15:40:49 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090506210644.GA17311@pengutronix.de>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 8A1CEDDF91
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:41:37 +1000 (EST)
+To: Grant Likely <grant.likely@secretlab.ca>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com>
 References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-11-git-send-email-wd@denx.de>
-	<20090506210644.GA17311@pengutronix.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 6 May 2009 16:40:29 -0600
-Message-ID: <fa686aa40905061540x96c1524hd88ee78bc366b89b@mail.gmail.com>
-Subject: Re: [PATCH 10/12] mpc5121: Add MPC5121 Real time clock driver.
-To: Wolfram Sang <w.sang@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: John Rigby <jrigby@freescale.com>, linuxppc-dev@ozlabs.org,
-	Wolfgang Denk <wd@denx.de>, rtc-linux@googlegroups.com,
-	Piotr Ziecik <kosmo@semihalf.com>
+	<1241640919-4650-3-git-send-email-wd@denx.de>
+	<fa686aa40905061333q29c263c8p24856c048e30f4d0@mail.gmail.com>
+	<20090506220119.7322783420E8@gemini.denx.de>
+	<fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com>
+Date: Thu, 07 May 2009 00:41:34 +0200
+Message-Id: <20090506224134.83F1583420E8@gemini.denx.de>
+Cc: Piotr Ziecik <kosmo@semihalf.com>, Detlev Zundel <dzu@denx.de>,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 6, 2009 at 3:06 PM, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> On Wed, May 06, 2009 at 10:15:17PM +0200, Wolfgang Denk wrote:
->> From: John Rigby <jrigby@freescale.com>
->>
->> Based on Domen Puncer's rtc driver for 5200 posted to
->> the ppclinux mailing list:
->> =A0 =A0 =A0 http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=3D116=
-75
->> but never commited anywhere.
->>
->> Changes to Domen's original:
->>
->> =A0 =A0 Changed filenames/routine names from mpc5200* to mpc5121*
+Dear Grant,
+
+In message <fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com> you wrote:
 >
-> Why not changing it to mpc5xxx? From a glimpse, it should still work on
-> MPC5200, too.
+> > Agreed that it's ugly, but duplicatio9ng the code would have been even
+> > worse. I don't think that it has multiplatform - at least not as long
+> > as you don't ask for one image that runs on 83xx and on 512x.
+> 
+> Actually, I *am* asking for one image that runs on 83xx, 52xx and
+> 521x.  I already can and do build and test a single image which boots
+> on all my 52xx boards, on my 8349 board, and on my G4 Mac.
 
-If this is true, the I heartily agree with Wolfram.  :-)
+He. I was afraid you'd say that ;-)
 
-g.
+In this case I need a helping hand as I can't figure out how to make
+this work. Any suggestions?
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Here's a fish hangs in the net like a poor man's right in  the  law.
+'Twill hardly come out."     - Shakespeare, Pericles, Act II, Scene 1
