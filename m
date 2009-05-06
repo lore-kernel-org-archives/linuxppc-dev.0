@@ -1,12 +1,12 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 0A141DE9B0
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:21:09 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2C859DE9BC
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:21:10 +1000 (EST)
 From: Wolfgang Denk <wd@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 01/04] mpc5121: prepare support for additional boards
-Date: Wed,  6 May 2009 22:20:58 +0200
-Message-Id: <1241641262-5202-2-git-send-email-wd@denx.de>
+Subject: [PATCH 04/04] ARIA: add default config file
+Date: Wed,  6 May 2009 22:21:01 +0200
+Message-Id: <1241641262-5202-5-git-send-email-wd@denx.de>
 In-Reply-To: <1241641262-5202-1-git-send-email-wd@denx.de>
 References: <1241641262-5202-1-git-send-email-wd@denx.de>
 Cc: Wolfgang Denk <wd@denx.de>
@@ -19,33 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-As more MPC512x based boards will be coming soon, a new directory
-arch/powerpc/configs/512x/ for board specific config files is created,
-following the example of other processor families.
-
-In a first step, we just copy (and update) the existing defconfig
-file for the mpc5121ads board. When new boards get added, the old
-arch/powerpc/configs/mpc5121_defconfig file will get adjusted to
-allow for a generic kernel image for MPC512x based boards.
+Default config file for the ARIA board,
+a MPC5121 based COM Express module by Dave/DENX.
 
 Signed-off-by: Wolfgang Denk <wd@denx.de>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: John Rigby <jcrigby@gmail.com>
 ---
- arch/powerpc/configs/512x/mpc5121ads_defconfig | 1190 ++++++++++++++++++++++++
- 1 files changed, 1190 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/configs/512x/mpc5121ads_defconfig
+ arch/powerpc/configs/512x/aria_defconfig | 1789 ++++++++++++++++++++++++++++++
+ 1 files changed, 1789 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/configs/512x/aria_defconfig
 
-diff --git a/arch/powerpc/configs/512x/mpc5121ads_defconfig b/arch/powerpc/configs/512x/mpc5121ads_defconfig
+diff --git a/arch/powerpc/configs/512x/aria_defconfig b/arch/powerpc/configs/512x/aria_defconfig
 new file mode 100644
-index 0000000..ac6c18f
+index 0000000..ee01bcd
 --- /dev/null
-+++ b/arch/powerpc/configs/512x/mpc5121ads_defconfig
-@@ -0,0 +1,1190 @@
++++ b/arch/powerpc/configs/512x/aria_defconfig
+@@ -0,0 +1,1789 @@
 +#
 +# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.30-rc4
-+# Wed May  6 20:48:17 2009
++# Linux kernel version: 2.6.30-rc3
++# Thu Apr 30 00:27:08 2009
 +#
 +# CONFIG_PPC64 is not set
 +
@@ -134,23 +128,19 @@ index 0000000..ac6c18f
 +CONFIG_SYSFS_DEPRECATED=y
 +CONFIG_SYSFS_DEPRECATED_V2=y
 +# CONFIG_RELAY is not set
-+CONFIG_NAMESPACES=y
-+# CONFIG_UTS_NS is not set
-+# CONFIG_IPC_NS is not set
-+# CONFIG_USER_NS is not set
-+# CONFIG_PID_NS is not set
-+# CONFIG_NET_NS is not set
++# CONFIG_NAMESPACES is not set
 +CONFIG_BLK_DEV_INITRD=y
 +CONFIG_INITRAMFS_SOURCE=""
 +CONFIG_RD_GZIP=y
-+CONFIG_RD_BZIP2=y
-+CONFIG_RD_LZMA=y
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++# CONFIG_RD_BZIP2 is not set
++# CONFIG_RD_LZMA is not set
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
 +CONFIG_SYSCTL=y
 +CONFIG_ANON_INODES=y
-+# CONFIG_EMBEDDED is not set
++CONFIG_EMBEDDED=y
 +CONFIG_SYSCTL_SYSCALL=y
 +CONFIG_KALLSYMS=y
++# CONFIG_KALLSYMS_ALL is not set
 +# CONFIG_KALLSYMS_EXTRA_PASS is not set
 +# CONFIG_STRIP_ASM_SYMS is not set
 +CONFIG_HOTPLUG=y
@@ -167,9 +157,10 @@ index 0000000..ac6c18f
 +CONFIG_AIO=y
 +CONFIG_VM_EVENT_COUNTERS=y
 +CONFIG_PCI_QUIRKS=y
-+# CONFIG_COMPAT_BRK is not set
-+CONFIG_SLAB=y
-+# CONFIG_SLUB is not set
++# CONFIG_SLUB_DEBUG is not set
++CONFIG_COMPAT_BRK=y
++# CONFIG_SLAB is not set
++CONFIG_SLUB=y
 +# CONFIG_SLOB is not set
 +# CONFIG_PROFILING is not set
 +# CONFIG_MARKERS is not set
@@ -183,7 +174,6 @@ index 0000000..ac6c18f
 +CONFIG_HAVE_CLK=y
 +# CONFIG_SLOW_WORK is not set
 +# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
-+CONFIG_SLABINFO=y
 +CONFIG_RT_MUTEXES=y
 +CONFIG_BASE_SMALL=0
 +CONFIG_MODULES=y
@@ -201,16 +191,15 @@ index 0000000..ac6c18f
 +# IO Schedulers
 +#
 +CONFIG_IOSCHED_NOOP=y
-+# CONFIG_IOSCHED_AS is not set
++CONFIG_IOSCHED_AS=y
 +CONFIG_IOSCHED_DEADLINE=y
-+# CONFIG_IOSCHED_CFQ is not set
-+# CONFIG_DEFAULT_AS is not set
-+CONFIG_DEFAULT_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_DEADLINE is not set
 +# CONFIG_DEFAULT_CFQ is not set
 +# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="deadline"
++CONFIG_DEFAULT_IOSCHED="anticipatory"
 +# CONFIG_FREEZER is not set
-+CONFIG_PPC_MSI_BITMAP=y
 +
 +#
 +# Platform support
@@ -218,8 +207,8 @@ index 0000000..ac6c18f
 +# CONFIG_PPC_CHRP is not set
 +CONFIG_PPC_MPC512x=y
 +CONFIG_PPC_MPC5121=y
-+# CONFIG_ARIA is not set
-+CONFIG_MPC5121_ADS=y
++CONFIG_ARIA=y
++# CONFIG_MPC5121_ADS is not set
 +# CONFIG_MPC5121_GENERIC is not set
 +# CONFIG_PPC_MPC52xx is not set
 +# CONFIG_PPC_PMAC is not set
@@ -254,19 +243,19 @@ index 0000000..ac6c18f
 +# CONFIG_HIGHMEM is not set
 +CONFIG_TICK_ONESHOT=y
 +CONFIG_NO_HZ=y
-+# CONFIG_HIGH_RES_TIMERS is not set
++CONFIG_HIGH_RES_TIMERS=y
 +CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-+# CONFIG_HZ_100 is not set
++CONFIG_HZ_100=y
 +# CONFIG_HZ_250 is not set
 +# CONFIG_HZ_300 is not set
-+CONFIG_HZ_1000=y
-+CONFIG_HZ=1000
-+# CONFIG_SCHED_HRTICK is not set
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=100
++CONFIG_SCHED_HRTICK=y
 +CONFIG_PREEMPT_NONE=y
 +# CONFIG_PREEMPT_VOLUNTARY is not set
 +# CONFIG_PREEMPT is not set
 +CONFIG_BINFMT_ELF=y
-+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
++CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS=y
 +# CONFIG_HAVE_AOUT is not set
 +# CONFIG_BINFMT_MISC is not set
 +# CONFIG_IOMMU_HELPER is not set
@@ -291,8 +280,9 @@ index 0000000..ac6c18f
 +CONFIG_ZONE_DMA_FLAG=1
 +CONFIG_BOUNCE=y
 +CONFIG_VIRT_TO_BUS=y
-+# CONFIG_UNEVICTABLE_LRU is not set
++CONFIG_UNEVICTABLE_LRU=y
 +CONFIG_HAVE_MLOCK=y
++CONFIG_HAVE_MLOCKED_PAGE_BIT=y
 +CONFIG_PPC_4K_PAGES=y
 +# CONFIG_PPC_16K_PAGES is not set
 +# CONFIG_PPC_64K_PAGES is not set
@@ -317,12 +307,11 @@ index 0000000..ac6c18f
 +CONFIG_PCI=y
 +CONFIG_PCI_DOMAINS=y
 +CONFIG_PCI_SYSCALL=y
-+CONFIG_PCIEPORTBUS=y
-+CONFIG_PCIEAER=y
-+# CONFIG_PCIEASPM is not set
++# CONFIG_PCIEPORTBUS is not set
 +CONFIG_ARCH_SUPPORTS_MSI=y
-+CONFIG_PCI_MSI=y
-+# CONFIG_PCI_LEGACY is not set
++# CONFIG_PCI_MSI is not set
++CONFIG_PCI_LEGACY=y
++# CONFIG_PCI_DEBUG is not set
 +# CONFIG_PCI_STUB is not set
 +# CONFIG_PCI_IOV is not set
 +# CONFIG_PCCARD is not set
@@ -332,15 +321,15 @@ index 0000000..ac6c18f
 +#
 +# Advanced setup
 +#
-+# CONFIG_ADVANCED_OPTIONS is not set
-+
-+#
-+# Default settings for advanced configuration options are used
-+#
++CONFIG_ADVANCED_OPTIONS=y
++# CONFIG_LOWMEM_SIZE_BOOL is not set
 +CONFIG_LOWMEM_SIZE=0x30000000
++# CONFIG_PAGE_OFFSET_BOOL is not set
 +CONFIG_PAGE_OFFSET=0xc0000000
++# CONFIG_KERNEL_START_BOOL is not set
 +CONFIG_KERNEL_START=0xc0000000
 +CONFIG_PHYSICAL_START=0x00000000
++# CONFIG_TASK_SIZE_BOOL is not set
 +CONFIG_TASK_SIZE=0xc0000000
 +CONFIG_NET=y
 +
@@ -350,29 +339,36 @@ index 0000000..ac6c18f
 +CONFIG_PACKET=y
 +# CONFIG_PACKET_MMAP is not set
 +CONFIG_UNIX=y
++CONFIG_XFRM=y
++CONFIG_XFRM_USER=m
++# CONFIG_XFRM_SUB_POLICY is not set
++# CONFIG_XFRM_MIGRATE is not set
++# CONFIG_XFRM_STATISTICS is not set
 +# CONFIG_NET_KEY is not set
 +CONFIG_INET=y
-+# CONFIG_IP_MULTICAST is not set
++CONFIG_IP_MULTICAST=y
 +# CONFIG_IP_ADVANCED_ROUTER is not set
 +CONFIG_IP_FIB_HASH=y
 +CONFIG_IP_PNP=y
-+# CONFIG_IP_PNP_DHCP is not set
-+# CONFIG_IP_PNP_BOOTP is not set
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
 +# CONFIG_IP_PNP_RARP is not set
 +# CONFIG_NET_IPIP is not set
 +# CONFIG_NET_IPGRE is not set
++# CONFIG_IP_MROUTE is not set
 +# CONFIG_ARPD is not set
-+# CONFIG_SYN_COOKIES is not set
++CONFIG_SYN_COOKIES=y
 +# CONFIG_INET_AH is not set
 +# CONFIG_INET_ESP is not set
 +# CONFIG_INET_IPCOMP is not set
 +# CONFIG_INET_XFRM_TUNNEL is not set
 +# CONFIG_INET_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_BEET is not set
++CONFIG_INET_XFRM_MODE_TRANSPORT=y
++CONFIG_INET_XFRM_MODE_TUNNEL=y
++CONFIG_INET_XFRM_MODE_BEET=y
 +# CONFIG_INET_LRO is not set
-+# CONFIG_INET_DIAG is not set
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
 +# CONFIG_TCP_CONG_ADVANCED is not set
 +CONFIG_TCP_CONG_CUBIC=y
 +CONFIG_DEFAULT_TCP_CONG="cubic"
@@ -422,10 +418,10 @@ index 0000000..ac6c18f
 +#
 +CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
 +CONFIG_STANDALONE=y
-+# CONFIG_PREVENT_FIRMWARE_BUILD is not set
-+CONFIG_FW_LOADER=y
-+# CONFIG_FIRMWARE_IN_KERNEL is not set
-+CONFIG_EXTRA_FIRMWARE=""
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++# CONFIG_FW_LOADER is not set
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_DEBUG_DEVRES is not set
 +# CONFIG_SYS_HYPERVISOR is not set
 +# CONFIG_CONNECTOR is not set
 +CONFIG_MTD=y
@@ -435,7 +431,7 @@ index 0000000..ac6c18f
 +# CONFIG_MTD_TESTS is not set
 +# CONFIG_MTD_REDBOOT_PARTS is not set
 +# CONFIG_MTD_CMDLINE_PARTS is not set
-+# CONFIG_MTD_OF_PARTS is not set
++CONFIG_MTD_OF_PARTS=y
 +# CONFIG_MTD_AR7_PARTS is not set
 +
 +#
@@ -454,8 +450,14 @@ index 0000000..ac6c18f
 +#
 +# RAM/ROM/Flash chip drivers
 +#
-+# CONFIG_MTD_CFI is not set
-+# CONFIG_MTD_JEDECPROBE is not set
++CONFIG_MTD_CFI=y
++CONFIG_MTD_JEDECPROBE=y
++CONFIG_MTD_GEN_PROBE=y
++CONFIG_MTD_CFI_ADV_OPTIONS=y
++CONFIG_MTD_CFI_NOSWAP=y
++# CONFIG_MTD_CFI_BE_BYTE_SWAP is not set
++# CONFIG_MTD_CFI_LE_BYTE_SWAP is not set
++# CONFIG_MTD_CFI_GEOMETRY is not set
 +CONFIG_MTD_MAP_BANK_WIDTH_1=y
 +CONFIG_MTD_MAP_BANK_WIDTH_2=y
 +CONFIG_MTD_MAP_BANK_WIDTH_4=y
@@ -466,6 +468,11 @@ index 0000000..ac6c18f
 +CONFIG_MTD_CFI_I2=y
 +# CONFIG_MTD_CFI_I4 is not set
 +# CONFIG_MTD_CFI_I8 is not set
++# CONFIG_MTD_OTP is not set
++CONFIG_MTD_CFI_INTELEXT=y
++CONFIG_MTD_CFI_AMDSTD=y
++CONFIG_MTD_CFI_STAA=y
++CONFIG_MTD_CFI_UTIL=y
 +# CONFIG_MTD_RAM is not set
 +# CONFIG_MTD_ROM is not set
 +# CONFIG_MTD_ABSENT is not set
@@ -474,6 +481,9 @@ index 0000000..ac6c18f
 +# Mapping drivers for chip access
 +#
 +# CONFIG_MTD_COMPLEX_MAPPINGS is not set
++CONFIG_MTD_PHYSMAP=y
++# CONFIG_MTD_PHYSMAP_COMPAT is not set
++CONFIG_MTD_PHYSMAP_OF=y
 +# CONFIG_MTD_INTEL_VR_NOR is not set
 +# CONFIG_MTD_PLATRAM is not set
 +
@@ -501,6 +511,7 @@ index 0000000..ac6c18f
 +# CONFIG_MTD_NAND_CAFE is not set
 +# CONFIG_MTD_NAND_NANDSIM is not set
 +# CONFIG_MTD_NAND_PLATFORM is not set
++# CONFIG_MTD_ALAUDA is not set
 +# CONFIG_MTD_NAND_FSL_ELBC is not set
 +CONFIG_MTD_NAND_MPC5121_NFC=y
 +# CONFIG_MTD_ONENAND is not set
@@ -535,40 +546,211 @@ index 0000000..ac6c18f
 +# CONFIG_BLK_DEV_LOOP is not set
 +# CONFIG_BLK_DEV_NBD is not set
 +# CONFIG_BLK_DEV_SX8 is not set
++# CONFIG_BLK_DEV_UB is not set
 +CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=1
++CONFIG_BLK_DEV_RAM_COUNT=2
 +CONFIG_BLK_DEV_RAM_SIZE=8192
-+CONFIG_BLK_DEV_XIP=y
++# CONFIG_BLK_DEV_XIP is not set
 +# CONFIG_CDROM_PKTCDVD is not set
 +# CONFIG_ATA_OVER_ETH is not set
 +# CONFIG_BLK_DEV_HD is not set
-+CONFIG_MISC_DEVICES=y
-+# CONFIG_PHANTOM is not set
-+# CONFIG_SGI_IOC4 is not set
-+# CONFIG_TIFM_CORE is not set
-+# CONFIG_ICS932S401 is not set
-+# CONFIG_ENCLOSURE_SERVICES is not set
-+# CONFIG_HP_ILO is not set
-+# CONFIG_ISL29003 is not set
-+# CONFIG_C2PORT is not set
++# CONFIG_MISC_DEVICES is not set
++CONFIG_HAVE_IDE=y
++CONFIG_IDE=y
 +
 +#
-+# EEPROM support
++# Please see Documentation/ide/ide.txt for help/info on IDE drives
 +#
-+CONFIG_EEPROM_AT24=y
-+# CONFIG_EEPROM_LEGACY is not set
-+# CONFIG_EEPROM_93CX6 is not set
-+CONFIG_HAVE_IDE=y
-+# CONFIG_IDE is not set
++CONFIG_IDE_ATAPI=y
++# CONFIG_BLK_DEV_IDE_SATA is not set
++CONFIG_IDE_GD=y
++CONFIG_IDE_GD_ATA=y
++# CONFIG_IDE_GD_ATAPI is not set
++CONFIG_BLK_DEV_IDECD=y
++CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS=y
++# CONFIG_BLK_DEV_IDETAPE is not set
++# CONFIG_IDE_TASK_IOCTL is not set
++CONFIG_IDE_PROC_FS=y
++
++#
++# IDE chipset support/bugfixes
++#
++# CONFIG_BLK_DEV_PLATFORM is not set
++
++#
++# PCI IDE chipsets support
++#
++# CONFIG_BLK_DEV_GENERIC is not set
++# CONFIG_BLK_DEV_OPTI621 is not set
++# CONFIG_BLK_DEV_AEC62XX is not set
++# CONFIG_BLK_DEV_ALI15X3 is not set
++# CONFIG_BLK_DEV_AMD74XX is not set
++# CONFIG_BLK_DEV_CMD64X is not set
++# CONFIG_BLK_DEV_TRIFLEX is not set
++# CONFIG_BLK_DEV_CS5520 is not set
++# CONFIG_BLK_DEV_CS5530 is not set
++# CONFIG_BLK_DEV_HPT366 is not set
++# CONFIG_BLK_DEV_JMICRON is not set
++# CONFIG_BLK_DEV_SC1200 is not set
++# CONFIG_BLK_DEV_PIIX is not set
++# CONFIG_BLK_DEV_IT8172 is not set
++# CONFIG_BLK_DEV_IT8213 is not set
++# CONFIG_BLK_DEV_IT821X is not set
++# CONFIG_BLK_DEV_NS87415 is not set
++# CONFIG_BLK_DEV_PDC202XX_OLD is not set
++# CONFIG_BLK_DEV_PDC202XX_NEW is not set
++# CONFIG_BLK_DEV_SVWKS is not set
++# CONFIG_BLK_DEV_SIIMAGE is not set
++# CONFIG_BLK_DEV_SL82C105 is not set
++# CONFIG_BLK_DEV_SLC90E66 is not set
++# CONFIG_BLK_DEV_TRM290 is not set
++# CONFIG_BLK_DEV_VIA82CXXX is not set
++# CONFIG_BLK_DEV_TC86C001 is not set
++# CONFIG_BLK_DEV_IDEDMA is not set
 +
 +#
 +# SCSI device support
 +#
 +# CONFIG_RAID_ATTRS is not set
-+# CONFIG_SCSI is not set
-+# CONFIG_SCSI_DMA is not set
++CONFIG_SCSI=y
++CONFIG_SCSI_DMA=y
++# CONFIG_SCSI_TGT is not set
 +# CONFIG_SCSI_NETLINK is not set
-+# CONFIG_ATA is not set
++CONFIG_SCSI_PROC_FS=y
++
++#
++# SCSI support type (disk, tape, CD-ROM)
++#
++CONFIG_BLK_DEV_SD=y
++# CONFIG_CHR_DEV_ST is not set
++# CONFIG_CHR_DEV_OSST is not set
++# CONFIG_BLK_DEV_SR is not set
++CONFIG_CHR_DEV_SG=y
++# CONFIG_CHR_DEV_SCH is not set
++
++#
++# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
++#
++CONFIG_SCSI_MULTI_LUN=y
++# CONFIG_SCSI_CONSTANTS is not set
++# CONFIG_SCSI_LOGGING is not set
++# CONFIG_SCSI_SCAN_ASYNC is not set
++CONFIG_SCSI_WAIT_SCAN=m
++
++#
++# SCSI Transports
++#
++# CONFIG_SCSI_SPI_ATTRS is not set
++# CONFIG_SCSI_FC_ATTRS is not set
++# CONFIG_SCSI_ISCSI_ATTRS is not set
++# CONFIG_SCSI_SAS_LIBSAS is not set
++# CONFIG_SCSI_SRP_ATTRS is not set
++CONFIG_SCSI_LOWLEVEL=y
++# CONFIG_ISCSI_TCP is not set
++# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
++# CONFIG_SCSI_3W_9XXX is not set
++# CONFIG_SCSI_ACARD is not set
++# CONFIG_SCSI_AACRAID is not set
++# CONFIG_SCSI_AIC7XXX is not set
++# CONFIG_SCSI_AIC7XXX_OLD is not set
++# CONFIG_SCSI_AIC79XX is not set
++# CONFIG_SCSI_AIC94XX is not set
++# CONFIG_SCSI_DPT_I2O is not set
++# CONFIG_SCSI_ADVANSYS is not set
++# CONFIG_SCSI_ARCMSR is not set
++# CONFIG_MEGARAID_NEWGEN is not set
++# CONFIG_MEGARAID_LEGACY is not set
++# CONFIG_MEGARAID_SAS is not set
++# CONFIG_SCSI_MPT2SAS is not set
++# CONFIG_SCSI_HPTIOP is not set
++# CONFIG_SCSI_BUSLOGIC is not set
++# CONFIG_LIBFC is not set
++# CONFIG_LIBFCOE is not set
++# CONFIG_FCOE is not set
++# CONFIG_SCSI_DMX3191D is not set
++# CONFIG_SCSI_EATA is not set
++# CONFIG_SCSI_FUTURE_DOMAIN is not set
++# CONFIG_SCSI_GDTH is not set
++# CONFIG_SCSI_IPS is not set
++# CONFIG_SCSI_INITIO is not set
++# CONFIG_SCSI_INIA100 is not set
++# CONFIG_SCSI_MVSAS is not set
++# CONFIG_SCSI_STEX is not set
++# CONFIG_SCSI_SYM53C8XX_2 is not set
++# CONFIG_SCSI_IPR is not set
++# CONFIG_SCSI_QLOGIC_1280 is not set
++# CONFIG_SCSI_QLA_FC is not set
++# CONFIG_SCSI_QLA_ISCSI is not set
++# CONFIG_SCSI_LPFC is not set
++# CONFIG_SCSI_DC395x is not set
++# CONFIG_SCSI_DC390T is not set
++# CONFIG_SCSI_NSP32 is not set
++# CONFIG_SCSI_DEBUG is not set
++# CONFIG_SCSI_SRP is not set
++# CONFIG_SCSI_DH is not set
++# CONFIG_SCSI_OSD_INITIATOR is not set
++CONFIG_ATA=y
++# CONFIG_ATA_NONSTANDARD is not set
++CONFIG_SATA_PMP=y
++# CONFIG_SATA_AHCI is not set
++# CONFIG_SATA_SIL24 is not set
++# CONFIG_SATA_FSL is not set
++CONFIG_ATA_SFF=y
++# CONFIG_SATA_SVW is not set
++# CONFIG_ATA_PIIX is not set
++# CONFIG_SATA_MV is not set
++# CONFIG_SATA_NV is not set
++# CONFIG_PDC_ADMA is not set
++# CONFIG_SATA_QSTOR is not set
++# CONFIG_SATA_PROMISE is not set
++# CONFIG_SATA_SX4 is not set
++# CONFIG_SATA_SIL is not set
++# CONFIG_SATA_SIS is not set
++# CONFIG_SATA_ULI is not set
++# CONFIG_SATA_VIA is not set
++# CONFIG_SATA_VITESSE is not set
++# CONFIG_SATA_INIC162X is not set
++# CONFIG_PATA_ALI is not set
++# CONFIG_PATA_AMD is not set
++# CONFIG_PATA_ARTOP is not set
++# CONFIG_PATA_ATIIXP is not set
++# CONFIG_PATA_CMD640_PCI is not set
++# CONFIG_PATA_CMD64X is not set
++# CONFIG_PATA_CS5520 is not set
++# CONFIG_PATA_CS5530 is not set
++# CONFIG_PATA_CYPRESS is not set
++# CONFIG_PATA_EFAR is not set
++# CONFIG_ATA_GENERIC is not set
++# CONFIG_PATA_HPT366 is not set
++# CONFIG_PATA_HPT37X is not set
++# CONFIG_PATA_HPT3X2N is not set
++# CONFIG_PATA_HPT3X3 is not set
++# CONFIG_PATA_IT821X is not set
++# CONFIG_PATA_IT8213 is not set
++# CONFIG_PATA_JMICRON is not set
++# CONFIG_PATA_TRIFLEX is not set
++# CONFIG_PATA_MARVELL is not set
++# CONFIG_PATA_MPIIX is not set
++# CONFIG_PATA_OLDPIIX is not set
++# CONFIG_PATA_NETCELL is not set
++# CONFIG_PATA_NINJA32 is not set
++# CONFIG_PATA_NS87410 is not set
++# CONFIG_PATA_NS87415 is not set
++# CONFIG_PATA_OPTI is not set
++# CONFIG_PATA_OPTIDMA is not set
++# CONFIG_PATA_PDC_OLD is not set
++# CONFIG_PATA_RADISYS is not set
++# CONFIG_PATA_RZ1000 is not set
++# CONFIG_PATA_SC1200 is not set
++# CONFIG_PATA_SERVERWORKS is not set
++# CONFIG_PATA_PDC2027X is not set
++# CONFIG_PATA_SIL680 is not set
++# CONFIG_PATA_SIS is not set
++# CONFIG_PATA_VIA is not set
++# CONFIG_PATA_WINBOND is not set
++CONFIG_PATA_PLATFORM=y
++CONFIG_PATA_OF_PLATFORM=y
++# CONFIG_PATA_SCH is not set
 +# CONFIG_MD is not set
 +# CONFIG_FUSION is not set
 +
@@ -597,21 +779,21 @@ index 0000000..ac6c18f
 +#
 +# MII PHY device drivers
 +#
-+CONFIG_MARVELL_PHY=y
-+CONFIG_DAVICOM_PHY=y
-+CONFIG_QSEMI_PHY=y
-+CONFIG_LXT_PHY=y
-+CONFIG_CICADA_PHY=y
-+CONFIG_VITESSE_PHY=y
++# CONFIG_MARVELL_PHY is not set
++# CONFIG_DAVICOM_PHY is not set
++# CONFIG_QSEMI_PHY is not set
++# CONFIG_LXT_PHY is not set
++# CONFIG_CICADA_PHY is not set
++# CONFIG_VITESSE_PHY is not set
 +CONFIG_SMSC_PHY=y
-+CONFIG_BROADCOM_PHY=y
-+CONFIG_ICPLUS_PHY=y
-+CONFIG_REALTEK_PHY=y
-+CONFIG_NATIONAL_PHY=y
-+CONFIG_STE10XP=y
-+CONFIG_LSI_ET1011C_PHY=y
-+CONFIG_FIXED_PHY=y
-+CONFIG_MDIO_BITBANG=y
++# CONFIG_BROADCOM_PHY is not set
++# CONFIG_ICPLUS_PHY is not set
++# CONFIG_REALTEK_PHY is not set
++# CONFIG_NATIONAL_PHY is not set
++# CONFIG_STE10XP is not set
++# CONFIG_LSI_ET1011C_PHY is not set
++# CONFIG_FIXED_PHY is not set
++# CONFIG_MDIO_BITBANG is not set
 +CONFIG_NET_ETHERNET=y
 +CONFIG_MII=y
 +# CONFIG_HAPPYMEAL is not set
@@ -650,11 +832,32 @@ index 0000000..ac6c18f
 +#
 +# Enable WiMAX (Networking options) to see the WiMAX drivers
 +#
++
++#
++# USB Network Adapters
++#
++# CONFIG_USB_CATC is not set
++CONFIG_USB_KAWETH=m
++CONFIG_USB_PEGASUS=m
++CONFIG_USB_RTL8150=m
++CONFIG_USB_USBNET=m
++CONFIG_USB_NET_AX8817X=m
++CONFIG_USB_NET_CDCETHER=m
++# CONFIG_USB_NET_DM9601 is not set
++# CONFIG_USB_NET_SMSC95XX is not set
++# CONFIG_USB_NET_GL620A is not set
++# CONFIG_USB_NET_NET1080 is not set
++# CONFIG_USB_NET_PLUSB is not set
++# CONFIG_USB_NET_MCS7830 is not set
++# CONFIG_USB_NET_RNDIS_HOST is not set
++# CONFIG_USB_NET_CDC_SUBSET is not set
++# CONFIG_USB_NET_ZAURUS is not set
 +# CONFIG_WAN is not set
 +# CONFIG_FDDI is not set
 +# CONFIG_HIPPI is not set
 +# CONFIG_PPP is not set
 +# CONFIG_SLIP is not set
++# CONFIG_NET_FC is not set
 +# CONFIG_NETCONSOLE is not set
 +# CONFIG_NETPOLL is not set
 +# CONFIG_NET_POLL_CONTROLLER is not set
@@ -676,13 +879,19 @@ index 0000000..ac6c18f
 +CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
 +CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
 +# CONFIG_INPUT_JOYDEV is not set
-+# CONFIG_INPUT_EVDEV is not set
++CONFIG_INPUT_EVDEV=y
 +# CONFIG_INPUT_EVBUG is not set
 +
 +#
 +# Input Device Drivers
 +#
-+# CONFIG_INPUT_KEYBOARD is not set
++CONFIG_INPUT_KEYBOARD=y
++# CONFIG_KEYBOARD_ATKBD is not set
++# CONFIG_KEYBOARD_SUNKBD is not set
++# CONFIG_KEYBOARD_LKKBD is not set
++# CONFIG_KEYBOARD_XTKBD is not set
++# CONFIG_KEYBOARD_NEWTON is not set
++# CONFIG_KEYBOARD_STOWAWAY is not set
 +# CONFIG_INPUT_MOUSE is not set
 +# CONFIG_INPUT_JOYSTICK is not set
 +# CONFIG_INPUT_TABLET is not set
@@ -692,7 +901,13 @@ index 0000000..ac6c18f
 +#
 +# Hardware I/O ports
 +#
-+# CONFIG_SERIO is not set
++CONFIG_SERIO=y
++CONFIG_SERIO_I8042=y
++CONFIG_SERIO_SERPORT=y
++# CONFIG_SERIO_PCIPS2 is not set
++CONFIG_SERIO_LIBPS2=y
++# CONFIG_SERIO_RAW is not set
++# CONFIG_SERIO_XILINX_XPS_PS2 is not set
 +# CONFIG_GAMEPORT is not set
 +
 +#
@@ -703,7 +918,7 @@ index 0000000..ac6c18f
 +CONFIG_VT_CONSOLE=y
 +CONFIG_HW_CONSOLE=y
 +# CONFIG_VT_HW_CONSOLE_BINDING is not set
-+# CONFIG_DEVKMEM is not set
++CONFIG_DEVKMEM=y
 +# CONFIG_SERIAL_NONSTANDARD is not set
 +# CONFIG_NOZOMI is not set
 +
@@ -724,7 +939,8 @@ index 0000000..ac6c18f
 +# CONFIG_SERIAL_JSM is not set
 +CONFIG_UNIX98_PTYS=y
 +# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
-+# CONFIG_LEGACY_PTYS is not set
++CONFIG_LEGACY_PTYS=y
++CONFIG_LEGACY_PTY_COUNT=256
 +# CONFIG_HVC_UDBG is not set
 +# CONFIG_IPMI_HANDLER is not set
 +# CONFIG_HW_RANDOM is not set
@@ -773,6 +989,7 @@ index 0000000..ac6c18f
 +#
 +# CONFIG_I2C_PARPORT_LIGHT is not set
 +# CONFIG_I2C_TAOS_EVM is not set
++# CONFIG_I2C_TINY_USB is not set
 +
 +#
 +# Graphics adapter I2C/DDC channel drivers
@@ -842,7 +1059,8 @@ index 0000000..ac6c18f
 +#
 +# Multimedia drivers
 +#
-+# CONFIG_DAB is not set
++CONFIG_DAB=y
++# CONFIG_USB_DABUSB is not set
 +
 +#
 +# Graphics support
@@ -851,22 +1069,276 @@ index 0000000..ac6c18f
 +# CONFIG_DRM is not set
 +# CONFIG_VGASTATE is not set
 +# CONFIG_VIDEO_OUTPUT_CONTROL is not set
-+# CONFIG_FB is not set
++CONFIG_FB=y
++# CONFIG_FIRMWARE_EDID is not set
++# CONFIG_FB_DDC is not set
++# CONFIG_FB_BOOT_VESA_SUPPORT is not set
++# CONFIG_FB_CFB_FILLRECT is not set
++# CONFIG_FB_CFB_COPYAREA is not set
++# CONFIG_FB_CFB_IMAGEBLIT is not set
++# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
++# CONFIG_FB_SYS_FILLRECT is not set
++# CONFIG_FB_SYS_COPYAREA is not set
++# CONFIG_FB_SYS_IMAGEBLIT is not set
++# CONFIG_FB_FOREIGN_ENDIAN is not set
++# CONFIG_FB_SYS_FOPS is not set
++# CONFIG_FB_SVGALIB is not set
++# CONFIG_FB_MACMODES is not set
++# CONFIG_FB_BACKLIGHT is not set
++# CONFIG_FB_MODE_HELPERS is not set
++# CONFIG_FB_TILEBLITTING is not set
++
++#
++# Frame buffer hardware drivers
++#
++# CONFIG_FB_CIRRUS is not set
++# CONFIG_FB_PM2 is not set
++# CONFIG_FB_CYBER2000 is not set
++# CONFIG_FB_OF is not set
++# CONFIG_FB_CT65550 is not set
++# CONFIG_FB_ASILIANT is not set
++# CONFIG_FB_IMSTT is not set
++# CONFIG_FB_VGA16 is not set
++# CONFIG_FB_S1D13XXX is not set
++# CONFIG_FB_NVIDIA is not set
++# CONFIG_FB_RIVA is not set
++# CONFIG_FB_MATROX is not set
++# CONFIG_FB_RADEON is not set
++# CONFIG_FB_ATY128 is not set
++# CONFIG_FB_ATY is not set
++# CONFIG_FB_S3 is not set
++# CONFIG_FB_SAVAGE is not set
++# CONFIG_FB_SIS is not set
++# CONFIG_FB_VIA is not set
++# CONFIG_FB_NEOMAGIC is not set
++# CONFIG_FB_KYRO is not set
++# CONFIG_FB_3DFX is not set
++# CONFIG_FB_VOODOO1 is not set
++# CONFIG_FB_VT8623 is not set
++# CONFIG_FB_TRIDENT is not set
++# CONFIG_FB_ARK is not set
++# CONFIG_FB_PM3 is not set
++# CONFIG_FB_CARMINE is not set
++# CONFIG_FB_FSL_DIU is not set
++# CONFIG_FB_IBM_GXT4500 is not set
++# CONFIG_FB_VIRTUAL is not set
++# CONFIG_FB_METRONOME is not set
++# CONFIG_FB_MB862XX is not set
++# CONFIG_FB_BROADSHEET is not set
 +# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
 +
 +#
 +# Display device support
 +#
-+# CONFIG_DISPLAY_SUPPORT is not set
++CONFIG_DISPLAY_SUPPORT=y
++
++#
++# Display hardware drivers
++#
 +
 +#
 +# Console display driver support
 +#
-+# CONFIG_VGA_CONSOLE is not set
++CONFIG_VGA_CONSOLE=y
++CONFIG_VGACON_SOFT_SCROLLBACK=y
++CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=64
 +CONFIG_DUMMY_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE=y
++# CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY is not set
++# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
++# CONFIG_FONTS is not set
++CONFIG_FONT_8x8=y
++CONFIG_FONT_8x16=y
++CONFIG_LOGO=y
++CONFIG_LOGO_LINUX_MONO=y
++CONFIG_LOGO_LINUX_VGA16=y
++CONFIG_LOGO_LINUX_CLUT224=y
 +# CONFIG_SOUND is not set
-+# CONFIG_HID_SUPPORT is not set
-+# CONFIG_USB_SUPPORT is not set
++CONFIG_HID_SUPPORT=y
++CONFIG_HID=y
++# CONFIG_HID_DEBUG is not set
++# CONFIG_HIDRAW is not set
++
++#
++# USB Input Devices
++#
++CONFIG_USB_HID=y
++# CONFIG_HID_PID is not set
++# CONFIG_USB_HIDDEV is not set
++
++#
++# Special HID drivers
++#
++# CONFIG_HID_A4TECH is not set
++# CONFIG_HID_APPLE is not set
++# CONFIG_HID_BELKIN is not set
++# CONFIG_HID_CHERRY is not set
++# CONFIG_HID_CHICONY is not set
++# CONFIG_HID_CYPRESS is not set
++# CONFIG_DRAGONRISE_FF is not set
++# CONFIG_HID_EZKEY is not set
++# CONFIG_HID_KYE is not set
++# CONFIG_HID_GYRATION is not set
++# CONFIG_HID_KENSINGTON is not set
++# CONFIG_HID_LOGITECH is not set
++# CONFIG_HID_MICROSOFT is not set
++# CONFIG_HID_MONTEREY is not set
++# CONFIG_HID_NTRIG is not set
++# CONFIG_HID_PANTHERLORD is not set
++# CONFIG_HID_PETALYNX is not set
++# CONFIG_HID_SAMSUNG is not set
++# CONFIG_HID_SONY is not set
++# CONFIG_HID_SUNPLUS is not set
++# CONFIG_GREENASIA_FF is not set
++# CONFIG_HID_TOPSEED is not set
++# CONFIG_THRUSTMASTER_FF is not set
++# CONFIG_ZEROPLUS_FF is not set
++CONFIG_USB_SUPPORT=y
++CONFIG_USB_ARCH_HAS_HCD=y
++CONFIG_USB_ARCH_HAS_OHCI=y
++CONFIG_USB_ARCH_HAS_EHCI=y
++CONFIG_USB=y
++# CONFIG_USB_DEBUG is not set
++# CONFIG_USB_ANNOUNCE_NEW_DEVICES is not set
++
++#
++# Miscellaneous USB options
++#
++CONFIG_USB_DEVICEFS=y
++# CONFIG_USB_DEVICE_CLASS is not set
++# CONFIG_USB_DYNAMIC_MINORS is not set
++# CONFIG_USB_OTG is not set
++# CONFIG_USB_OTG_WHITELIST is not set
++# CONFIG_USB_OTG_BLACKLIST_HUB is not set
++# CONFIG_USB_MON is not set
++# CONFIG_USB_WUSB is not set
++# CONFIG_USB_WUSB_CBAF is not set
++
++#
++# USB Host Controller Drivers
++#
++# CONFIG_USB_C67X00_HCD is not set
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_ROOT_HUB_TT=y
++# CONFIG_USB_EHCI_TT_NEWSCHED is not set
++# CONFIG_USB_EHCI_FSL is not set
++CONFIG_USB_EHCI_HCD_PPC_OF=y
++# CONFIG_USB_OXU210HP_HCD is not set
++# CONFIG_USB_ISP116X_HCD is not set
++# CONFIG_USB_ISP1760_HCD is not set
++# CONFIG_USB_OHCI_HCD is not set
++# CONFIG_USB_UHCI_HCD is not set
++# CONFIG_USB_SL811_HCD is not set
++# CONFIG_USB_R8A66597_HCD is not set
++# CONFIG_USB_WHCI_HCD is not set
++# CONFIG_USB_HWA_HCD is not set
++# CONFIG_USB_MUSB_HDRC is not set
++# CONFIG_USB_GADGET_MUSB_HDRC is not set
++
++#
++# USB Device Class drivers
++#
++# CONFIG_USB_ACM is not set
++# CONFIG_USB_PRINTER is not set
++# CONFIG_USB_WDM is not set
++# CONFIG_USB_TMC is not set
++
++#
++# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
++#
++
++#
++# also be needed; see USB_STORAGE Help for more info
++#
++CONFIG_USB_STORAGE=y
++CONFIG_USB_STORAGE_DEBUG=y
++# CONFIG_USB_STORAGE_DATAFAB is not set
++# CONFIG_USB_STORAGE_FREECOM is not set
++# CONFIG_USB_STORAGE_ISD200 is not set
++# CONFIG_USB_STORAGE_USBAT is not set
++# CONFIG_USB_STORAGE_SDDR09 is not set
++# CONFIG_USB_STORAGE_SDDR55 is not set
++# CONFIG_USB_STORAGE_JUMPSHOT is not set
++# CONFIG_USB_STORAGE_ALAUDA is not set
++# CONFIG_USB_STORAGE_ONETOUCH is not set
++# CONFIG_USB_STORAGE_KARMA is not set
++# CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
++# CONFIG_USB_LIBUSUAL is not set
++
++#
++# USB Imaging devices
++#
++# CONFIG_USB_MDC800 is not set
++# CONFIG_USB_MICROTEK is not set
++
++#
++# USB port drivers
++#
++# CONFIG_USB_SERIAL is not set
++
++#
++# USB Miscellaneous drivers
++#
++# CONFIG_USB_EMI62 is not set
++# CONFIG_USB_EMI26 is not set
++# CONFIG_USB_ADUTUX is not set
++# CONFIG_USB_SEVSEG is not set
++# CONFIG_USB_RIO500 is not set
++# CONFIG_USB_LEGOTOWER is not set
++# CONFIG_USB_LCD is not set
++# CONFIG_USB_BERRY_CHARGE is not set
++# CONFIG_USB_LED is not set
++# CONFIG_USB_CYPRESS_CY7C63 is not set
++# CONFIG_USB_CYTHERM is not set
++# CONFIG_USB_IDMOUSE is not set
++# CONFIG_USB_FTDI_ELAN is not set
++# CONFIG_USB_APPLEDISPLAY is not set
++# CONFIG_USB_SISUSBVGA is not set
++# CONFIG_USB_LD is not set
++# CONFIG_USB_TRANCEVIBRATOR is not set
++# CONFIG_USB_IOWARRIOR is not set
++# CONFIG_USB_TEST is not set
++# CONFIG_USB_ISIGHTFW is not set
++# CONFIG_USB_VST is not set
++CONFIG_USB_GADGET=y
++# CONFIG_USB_GADGET_DEBUG is not set
++# CONFIG_USB_GADGET_DEBUG_FILES is not set
++# CONFIG_USB_GADGET_DEBUG_FS is not set
++CONFIG_USB_GADGET_VBUS_DRAW=2
++CONFIG_USB_GADGET_SELECTED=y
++# CONFIG_USB_GADGET_AT91 is not set
++# CONFIG_USB_GADGET_ATMEL_USBA is not set
++# CONFIG_USB_GADGET_FSL_USB2 is not set
++# CONFIG_USB_GADGET_LH7A40X is not set
++# CONFIG_USB_GADGET_OMAP is not set
++# CONFIG_USB_GADGET_PXA25X is not set
++# CONFIG_USB_GADGET_PXA27X is not set
++# CONFIG_USB_GADGET_S3C2410 is not set
++# CONFIG_USB_GADGET_IMX is not set
++CONFIG_USB_GADGET_M66592=y
++CONFIG_USB_M66592=y
++# CONFIG_USB_GADGET_AMD5536UDC is not set
++# CONFIG_USB_GADGET_FSL_QE is not set
++# CONFIG_USB_GADGET_CI13XXX is not set
++# CONFIG_USB_GADGET_NET2280 is not set
++# CONFIG_USB_GADGET_GOKU is not set
++# CONFIG_USB_GADGET_DUMMY_HCD is not set
++CONFIG_USB_GADGET_DUALSPEED=y
++# CONFIG_USB_ZERO is not set
++CONFIG_USB_ETH=m
++CONFIG_USB_ETH_RNDIS=y
++CONFIG_USB_GADGETFS=m
++CONFIG_USB_FILE_STORAGE=m
++# CONFIG_USB_FILE_STORAGE_TEST is not set
++# CONFIG_USB_G_SERIAL is not set
++# CONFIG_USB_MIDI_GADGET is not set
++# CONFIG_USB_G_PRINTER is not set
++# CONFIG_USB_CDC_COMPOSITE is not set
++
++#
++# OTG and related infrastructure
++#
++# CONFIG_NOP_USB_XCEIV is not set
 +# CONFIG_UWB is not set
 +# CONFIG_MMC is not set
 +# CONFIG_MEMSTICK is not set
@@ -877,7 +1349,7 @@ index 0000000..ac6c18f
 +CONFIG_RTC_LIB=y
 +CONFIG_RTC_CLASS=y
 +CONFIG_RTC_HCTOSYS=y
-+CONFIG_RTC_HCTOSYS_DEVICE="rtc1"
++CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
 +# CONFIG_RTC_DEBUG is not set
 +
 +#
@@ -901,8 +1373,7 @@ index 0000000..ac6c18f
 +# CONFIG_RTC_DRV_X1205 is not set
 +# CONFIG_RTC_DRV_PCF8563 is not set
 +# CONFIG_RTC_DRV_PCF8583 is not set
-+CONFIG_RTC_DRV_M41T80=y
-+# CONFIG_RTC_DRV_M41T80_WDT is not set
++# CONFIG_RTC_DRV_M41T80 is not set
 +# CONFIG_RTC_DRV_S35390A is not set
 +# CONFIG_RTC_DRV_FM3130 is not set
 +# CONFIG_RTC_DRV_RX8581 is not set
@@ -943,9 +1414,9 @@ index 0000000..ac6c18f
 +#
 +# DMA Clients
 +#
-+# CONFIG_NET_DMA is not set
-+# CONFIG_ASYNC_TX_DMA is not set
-+CONFIG_DMATEST=m
++CONFIG_NET_DMA=y
++CONFIG_ASYNC_TX_DMA=y
++# CONFIG_DMATEST is not set
 +# CONFIG_AUXDISPLAY is not set
 +# CONFIG_UIO is not set
 +# CONFIG_STAGING is not set
@@ -955,19 +1426,26 @@ index 0000000..ac6c18f
 +#
 +CONFIG_EXT2_FS=y
 +# CONFIG_EXT2_FS_XATTR is not set
-+CONFIG_EXT2_FS_XIP=y
-+# CONFIG_EXT3_FS is not set
++# CONFIG_EXT2_FS_XIP is not set
++CONFIG_EXT3_FS=y
++# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
++CONFIG_EXT3_FS_XATTR=y
++# CONFIG_EXT3_FS_POSIX_ACL is not set
++# CONFIG_EXT3_FS_SECURITY is not set
 +# CONFIG_EXT4_FS is not set
-+CONFIG_FS_XIP=y
++CONFIG_JBD=y
++# CONFIG_JBD_DEBUG is not set
++CONFIG_FS_MBCACHE=y
 +# CONFIG_REISERFS_FS is not set
 +# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
++CONFIG_FS_POSIX_ACL=y
 +CONFIG_FILE_LOCKING=y
 +# CONFIG_XFS_FS is not set
 +# CONFIG_OCFS2_FS is not set
 +# CONFIG_BTRFS_FS is not set
-+# CONFIG_DNOTIFY is not set
-+# CONFIG_INOTIFY is not set
++CONFIG_DNOTIFY=y
++CONFIG_INOTIFY=y
++CONFIG_INOTIFY_USER=y
 +# CONFIG_QUOTA is not set
 +# CONFIG_AUTOFS_FS is not set
 +# CONFIG_AUTOFS4_FS is not set
@@ -987,15 +1465,18 @@ index 0000000..ac6c18f
 +#
 +# DOS/FAT/NT Filesystems
 +#
-+# CONFIG_MSDOS_FS is not set
-+# CONFIG_VFAT_FS is not set
++CONFIG_FAT_FS=y
++CONFIG_MSDOS_FS=y
++CONFIG_VFAT_FS=y
++CONFIG_FAT_DEFAULT_CODEPAGE=437
++CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
 +# CONFIG_NTFS_FS is not set
 +
 +#
 +# Pseudo filesystems
 +#
 +CONFIG_PROC_FS=y
-+# CONFIG_PROC_KCORE is not set
++CONFIG_PROC_KCORE=y
 +CONFIG_PROC_SYSCTL=y
 +CONFIG_PROC_PAGE_MONITOR=y
 +CONFIG_SYSFS=y
@@ -1023,13 +1504,15 @@ index 0000000..ac6c18f
 +CONFIG_JFFS2_RTIME=y
 +# CONFIG_JFFS2_RUBIN is not set
 +CONFIG_UBIFS_FS=y
-+# CONFIG_UBIFS_FS_XATTR is not set
-+# CONFIG_UBIFS_FS_ADVANCED_COMPR is not set
++CONFIG_UBIFS_FS_XATTR=y
++CONFIG_UBIFS_FS_ADVANCED_COMPR=y
 +CONFIG_UBIFS_FS_LZO=y
 +CONFIG_UBIFS_FS_ZLIB=y
 +# CONFIG_UBIFS_FS_DEBUG is not set
 +# CONFIG_CRAMFS is not set
-+# CONFIG_SQUASHFS is not set
++CONFIG_SQUASHFS=y
++# CONFIG_SQUASHFS_EMBEDDED is not set
++CONFIG_SQUASHFS_FRAGMENT_CACHE_SIZE=3
 +# CONFIG_VXFS_FS is not set
 +# CONFIG_MINIX_FS is not set
 +# CONFIG_OMFS_FS is not set
@@ -1042,15 +1525,17 @@ index 0000000..ac6c18f
 +CONFIG_NETWORK_FILESYSTEMS=y
 +CONFIG_NFS_FS=y
 +CONFIG_NFS_V3=y
-+# CONFIG_NFS_V3_ACL is not set
-+# CONFIG_NFS_V4 is not set
++CONFIG_NFS_V3_ACL=y
++CONFIG_NFS_V4=y
 +CONFIG_ROOT_NFS=y
 +# CONFIG_NFSD is not set
 +CONFIG_LOCKD=y
 +CONFIG_LOCKD_V4=y
++CONFIG_NFS_ACL_SUPPORT=y
 +CONFIG_NFS_COMMON=y
 +CONFIG_SUNRPC=y
-+# CONFIG_RPCSEC_GSS_KRB5 is not set
++CONFIG_SUNRPC_GSS=y
++CONFIG_RPCSEC_GSS_KRB5=y
 +# CONFIG_RPCSEC_GSS_SPKM3 is not set
 +# CONFIG_SMB_FS is not set
 +# CONFIG_CIFS is not set
@@ -1061,9 +1546,64 @@ index 0000000..ac6c18f
 +#
 +# Partition Types
 +#
-+# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_ACORN_PARTITION is not set
++# CONFIG_OSF_PARTITION is not set
++# CONFIG_AMIGA_PARTITION is not set
++# CONFIG_ATARI_PARTITION is not set
++# CONFIG_MAC_PARTITION is not set
 +CONFIG_MSDOS_PARTITION=y
-+# CONFIG_NLS is not set
++# CONFIG_BSD_DISKLABEL is not set
++# CONFIG_MINIX_SUBPARTITION is not set
++# CONFIG_SOLARIS_X86_PARTITION is not set
++# CONFIG_UNIXWARE_DISKLABEL is not set
++# CONFIG_LDM_PARTITION is not set
++# CONFIG_SGI_PARTITION is not set
++# CONFIG_ULTRIX_PARTITION is not set
++# CONFIG_SUN_PARTITION is not set
++# CONFIG_KARMA_PARTITION is not set
++# CONFIG_EFI_PARTITION is not set
++# CONFIG_SYSV68_PARTITION is not set
++CONFIG_NLS=y
++CONFIG_NLS_DEFAULT="iso8859-1"
++CONFIG_NLS_CODEPAGE_437=y
++# CONFIG_NLS_CODEPAGE_737 is not set
++# CONFIG_NLS_CODEPAGE_775 is not set
++# CONFIG_NLS_CODEPAGE_850 is not set
++# CONFIG_NLS_CODEPAGE_852 is not set
++# CONFIG_NLS_CODEPAGE_855 is not set
++# CONFIG_NLS_CODEPAGE_857 is not set
++# CONFIG_NLS_CODEPAGE_860 is not set
++# CONFIG_NLS_CODEPAGE_861 is not set
++# CONFIG_NLS_CODEPAGE_862 is not set
++# CONFIG_NLS_CODEPAGE_863 is not set
++# CONFIG_NLS_CODEPAGE_864 is not set
++# CONFIG_NLS_CODEPAGE_865 is not set
++# CONFIG_NLS_CODEPAGE_866 is not set
++# CONFIG_NLS_CODEPAGE_869 is not set
++# CONFIG_NLS_CODEPAGE_936 is not set
++# CONFIG_NLS_CODEPAGE_950 is not set
++# CONFIG_NLS_CODEPAGE_932 is not set
++# CONFIG_NLS_CODEPAGE_949 is not set
++# CONFIG_NLS_CODEPAGE_874 is not set
++# CONFIG_NLS_ISO8859_8 is not set
++# CONFIG_NLS_CODEPAGE_1250 is not set
++# CONFIG_NLS_CODEPAGE_1251 is not set
++# CONFIG_NLS_ASCII is not set
++CONFIG_NLS_ISO8859_1=y
++# CONFIG_NLS_ISO8859_2 is not set
++# CONFIG_NLS_ISO8859_3 is not set
++# CONFIG_NLS_ISO8859_4 is not set
++# CONFIG_NLS_ISO8859_5 is not set
++# CONFIG_NLS_ISO8859_6 is not set
++# CONFIG_NLS_ISO8859_7 is not set
++# CONFIG_NLS_ISO8859_9 is not set
++# CONFIG_NLS_ISO8859_13 is not set
++# CONFIG_NLS_ISO8859_14 is not set
++# CONFIG_NLS_ISO8859_15 is not set
++# CONFIG_NLS_KOI8_R is not set
++# CONFIG_NLS_KOI8_U is not set
++# CONFIG_NLS_UTF8 is not set
 +# CONFIG_DLM is not set
 +# CONFIG_BINARY_PRINTF is not set
 +
@@ -1084,8 +1624,6 @@ index 0000000..ac6c18f
 +CONFIG_LZO_COMPRESS=y
 +CONFIG_LZO_DECOMPRESS=y
 +CONFIG_DECOMPRESS_GZIP=y
-+CONFIG_DECOMPRESS_BZIP2=y
-+CONFIG_DECOMPRESS_LZMA=y
 +CONFIG_HAS_IOMEM=y
 +CONFIG_HAS_IOPORT=y
 +CONFIG_HAS_DMA=y
@@ -1095,20 +1633,46 @@ index 0000000..ac6c18f
 +#
 +# Kernel hacking
 +#
-+# CONFIG_PRINTK_TIME is not set
-+# CONFIG_ENABLE_WARN_DEPRECATED is not set
-+# CONFIG_ENABLE_MUST_CHECK is not set
++CONFIG_PRINTK_TIME=y
++CONFIG_ENABLE_WARN_DEPRECATED=y
++CONFIG_ENABLE_MUST_CHECK=y
 +CONFIG_FRAME_WARN=1024
 +# CONFIG_MAGIC_SYSRQ is not set
 +# CONFIG_UNUSED_SYMBOLS is not set
-+# CONFIG_DEBUG_FS is not set
++CONFIG_DEBUG_FS=y
 +# CONFIG_HEADERS_CHECK is not set
-+# CONFIG_DEBUG_KERNEL is not set
++CONFIG_DEBUG_KERNEL=y
++# CONFIG_DEBUG_SHIRQ is not set
++# CONFIG_DETECT_SOFTLOCKUP is not set
++# CONFIG_DETECT_HUNG_TASK is not set
++CONFIG_SCHED_DEBUG=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_TIMER_STATS is not set
++# CONFIG_DEBUG_OBJECTS is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
 +CONFIG_DEBUG_BUGVERBOSE=y
-+CONFIG_DEBUG_MEMORY_INIT=y
++CONFIG_DEBUG_INFO=y
++# CONFIG_DEBUG_VM is not set
++# CONFIG_DEBUG_WRITECOUNT is not set
++# CONFIG_DEBUG_MEMORY_INIT is not set
++# CONFIG_DEBUG_LIST is not set
++# CONFIG_DEBUG_SG is not set
++# CONFIG_DEBUG_NOTIFIERS is not set
++# CONFIG_BOOT_PRINTK_DELAY is not set
++# CONFIG_RCU_TORTURE_TEST is not set
 +# CONFIG_RCU_CPU_STALL_DETECTOR is not set
++# CONFIG_BACKTRACE_SELF_TEST is not set
++# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
++# CONFIG_FAULT_INJECTION is not set
 +# CONFIG_LATENCYTOP is not set
 +# CONFIG_SYSCTL_SYSCALL_CHECK is not set
++# CONFIG_DEBUG_PAGEALLOC is not set
 +CONFIG_HAVE_FUNCTION_TRACER=y
 +CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
 +CONFIG_HAVE_DYNAMIC_FTRACE=y
@@ -1128,12 +1692,33 @@ index 0000000..ac6c18f
 +# CONFIG_KMEMTRACE is not set
 +# CONFIG_WORKQUEUE_TRACER is not set
 +# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_DYNAMIC_DEBUG is not set
 +# CONFIG_SAMPLES is not set
 +CONFIG_HAVE_ARCH_KGDB=y
++# CONFIG_KGDB is not set
 +CONFIG_PRINT_STACK_DEPTH=64
++# CONFIG_DEBUG_STACKOVERFLOW is not set
++# CONFIG_DEBUG_STACK_USAGE is not set
++# CONFIG_CODE_PATCHING_SELFTEST is not set
++# CONFIG_FTR_FIXUP_SELFTEST is not set
++# CONFIG_MSI_BITMAP_SELFTEST is not set
++# CONFIG_XMON is not set
 +# CONFIG_IRQSTACKS is not set
-+# CONFIG_BOOTX_TEXT is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
++# CONFIG_VIRQ_DEBUG is not set
++# CONFIG_BDI_SWITCH is not set
++CONFIG_BOOTX_TEXT=y
++CONFIG_PPC_EARLY_DEBUG=y
++# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
++# CONFIG_PPC_EARLY_DEBUG_G5 is not set
++# CONFIG_PPC_EARLY_DEBUG_RTAS_PANEL is not set
++# CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE is not set
++# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
++# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
++# CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE is not set
++# CONFIG_PPC_EARLY_DEBUG_BEAT is not set
++# CONFIG_PPC_EARLY_DEBUG_44x is not set
++# CONFIG_PPC_EARLY_DEBUG_40x is not set
++# CONFIG_PPC_EARLY_DEBUG_CPM is not set
 +
 +#
 +# Security options
@@ -1150,10 +1735,18 @@ index 0000000..ac6c18f
 +# CONFIG_CRYPTO_FIPS is not set
 +CONFIG_CRYPTO_ALGAPI=y
 +CONFIG_CRYPTO_ALGAPI2=y
-+# CONFIG_CRYPTO_MANAGER is not set
-+# CONFIG_CRYPTO_MANAGER2 is not set
++CONFIG_CRYPTO_AEAD2=y
++CONFIG_CRYPTO_BLKCIPHER=y
++CONFIG_CRYPTO_BLKCIPHER2=y
++CONFIG_CRYPTO_HASH=y
++CONFIG_CRYPTO_HASH2=y
++CONFIG_CRYPTO_RNG2=y
++CONFIG_CRYPTO_PCOMP=y
++CONFIG_CRYPTO_MANAGER=y
++CONFIG_CRYPTO_MANAGER2=y
 +# CONFIG_CRYPTO_GF128MUL is not set
 +# CONFIG_CRYPTO_NULL is not set
++CONFIG_CRYPTO_WORKQUEUE=y
 +# CONFIG_CRYPTO_CRYPTD is not set
 +# CONFIG_CRYPTO_AUTHENC is not set
 +# CONFIG_CRYPTO_TEST is not set
@@ -1168,7 +1761,7 @@ index 0000000..ac6c18f
 +#
 +# Block modes
 +#
-+# CONFIG_CRYPTO_CBC is not set
++CONFIG_CRYPTO_CBC=y
 +# CONFIG_CRYPTO_CTR is not set
 +# CONFIG_CRYPTO_CTS is not set
 +# CONFIG_CRYPTO_ECB is not set
@@ -1187,7 +1780,7 @@ index 0000000..ac6c18f
 +#
 +# CONFIG_CRYPTO_CRC32C is not set
 +# CONFIG_CRYPTO_MD4 is not set
-+# CONFIG_CRYPTO_MD5 is not set
++CONFIG_CRYPTO_MD5=y
 +# CONFIG_CRYPTO_MICHAEL_MIC is not set
 +# CONFIG_CRYPTO_RMD128 is not set
 +# CONFIG_CRYPTO_RMD160 is not set
@@ -1209,7 +1802,7 @@ index 0000000..ac6c18f
 +# CONFIG_CRYPTO_CAMELLIA is not set
 +# CONFIG_CRYPTO_CAST5 is not set
 +# CONFIG_CRYPTO_CAST6 is not set
-+# CONFIG_CRYPTO_DES is not set
++CONFIG_CRYPTO_DES=y
 +# CONFIG_CRYPTO_FCRYPT is not set
 +# CONFIG_CRYPTO_KHAZAD is not set
 +# CONFIG_CRYPTO_SALSA20 is not set
