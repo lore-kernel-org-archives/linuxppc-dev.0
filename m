@@ -1,24 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f172.google.com (mail-gx0-f172.google.com
-	[209.85.217.172]) by ozlabs.org (Postfix) with ESMTP id 75797DDFCF
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:30:21 +1000 (EST)
-Received: by gxk20 with SMTP id 20so774152gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 May 2009 15:30:19 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090506220119.7322783420E8@gemini.denx.de>
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-3-git-send-email-wd@denx.de>
-	<fa686aa40905061333q29c263c8p24856c048e30f4d0@mail.gmail.com>
-	<20090506220119.7322783420E8@gemini.denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 6 May 2009 16:29:59 -0600
-Message-ID: <fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com>
-Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
-To: Wolfgang Denk <wd@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Piotr Ziecik <kosmo@semihalf.com>, Detlev Zundel <dzu@denx.de>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	John Rigby <jrigby@freescale.com>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 6E9D7DDFDF
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:34:19 +1000 (EST)
+To: "Shubhada Pugaonkar" <shubhada@chelsio.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Unable to boot 2.6.29 (and tot kernel) with 256k page size on
+	katmai.
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <8A71B368A89016469F72CD08050AD33402D575FA@maui.asicdesigners.com>
+References: <8A71B368A89016469F72CD08050AD33402D575FA@maui.asicdesigners.com>
+Date: Thu, 07 May 2009 00:34:15 +0200
+Message-Id: <20090506223415.C42F983420E8@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,41 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 6, 2009 at 4:01 PM, Wolfgang Denk <wd@denx.de> wrote:
-> Dear Grant,
->
-> in message <fa686aa40905061333q29c263c8p24856c048e30f4d0@mail.gmail.com> =
-you wrote:
->>
-> ...
->> > #ifdef CONFIG_FS_ENET_HAS_FEC
->> > +#ifdef CONFIG_FS_ENET_MPC5121_FEC
->> > + =A0 =A0{
->> > + =A0 =A0 =A0 =A0.compatible =3D "fsl,mpc5121-fec",
->> > + =A0 =A0 =A0 =A0.data =3D (void *)&fs_fec_ops,
->> > + =A0 =A0},
->> > +#else
->> > =A0 =A0{
->> > =A0 =A0 =A0 =A0.compatible =3D "fsl,pq1-fec-enet",
->> > =A0 =A0 =A0 =A0.data =3D (void *)&fs_fec_ops,
->> > =A0 =A0},
->> > #endif
->> > +#endif
->>
->> Hmmm. =A0A lot of these #ifdefs in here. =A0Does this have a multiplatfo=
-rm
->> impact? =A0Not to mention the fact that it's just plain ugly. =A0:-)
->
-> Agreed that it's ugly, but duplicatio9ng the code would have been even
-> worse. I don't think that it has multiplatform - at least not as long
-> as you don't ask for one image that runs on 83xx and on 512x.
+Dear Shubhada,
 
-Actually, I *am* asking for one image that runs on 83xx, 52xx and
-521x.  I already can and do build and test a single image which boots
-on all my 52xx boards, on my 8349 board, and on my G4 Mac.
+In message <8A71B368A89016469F72CD08050AD33402D575FA@maui.asicdesigners.com> you wrote:
+> 
+> I am unable to boot the 2.6.29-rc8 denx kernel (and 2.6.30-rc4 tot
+> kernel) when I enable the 256k page size. My config file is attached.
+> The *same* config works fine with 64k page size. I have 2GB memory on
+> this board. 
 
-g.
+Which root file system are you using?
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> ## Booting image at 01000000 ...
+>    Image Name:   Linux-2.6.29-rc8-01447-g3bf8ce5-
+>    Created:      2009-05-05   0:31:36 UTC
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    2138773 Bytes =  2 MB
+>    Load Address: 00000000
+>    Entry Point:  00000000
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
+>    Booting using the fdt at 0x4000000
+>    Loading Device Tree to 007fb000, end 007fefff ... OK
+
+Is this all you get? Nothing else?
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Nobody will ever need more than 640k RAM!"       -- Bill Gates, 1981
+"Windows 95 needs at least 8 MB RAM."             -- Bill Gates, 1996
+"Nobody will ever need Windows 95."             -- logical conclusion
