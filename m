@@ -1,20 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A9E7EDDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 23:13:42 +1000 (EST)
-Date: Wed, 6 May 2009 23:13:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/pci: clean up direct access to sysdata by
-	iseries platform
-Message-Id: <20090506231338.ea3e280d.sfr@canb.auug.org.au>
-In-Reply-To: <1241525095-18041-1-git-send-email-galak@kernel.crashing.org>
-References: <1241525095-18041-1-git-send-email-galak@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__6_May_2009_23_13_38_+1000_qa+GfUdEd+iP9MTp"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <fkan@amcc.com>
+Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BDCDCDDDEE
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 03:44:57 +1000 (EST)
+Message-ID: <4A01CC78.3060004@amcc.com>
+Date: Wed, 06 May 2009 10:44:24 -0700
+From: Feng Kan <fkan@amcc.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2] Added support for Designware SATA controller driver
+References: <1241211767-32697-1-git-send-email-fkan@amcc.com>
+	<49FB68F2.10301@freescale.com>
+In-Reply-To: <49FB68F2.10301@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Mark Miesfeld <miesfeld@gmail.com>, linuxppc-dev@ozlabs.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__6_May_2009_23_13_38_+1000_qa+GfUdEd+iP9MTp
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Scott:
 
-Hi Kumar,
+I agree with your statement, however this driver is wrapped with this 
+AHB DMA controller.
+It would be very hard for it to work on non 460EX platforms. I can 
+expand the depend in
+the future if it is available on more cores.
 
-On Tue,  5 May 2009 07:04:55 -0500 Kumar Gala <galak@kernel.crashing.org> w=
-rote:
+Thanks
+Feng Kan
+
+Scott Wood wrote:
+> Feng Kan wrote:
+>> This adds support for the Designware SATA controller.
+>>
+>> Signed-off-by: Feng Kan <fkan@amcc.com>
+>> Signed-off-by: Mark Miesfeld <miesfeld@gmail.com>
+>> ---
+>>  drivers/ata/Kconfig    |   10 +
+>>  drivers/ata/Makefile   |    1 +
+>>  drivers/ata/sata_dwc.c | 2053 
+>> ++++++++++++++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 2064 insertions(+), 0 deletions(-)
+>>  create mode 100644 drivers/ata/sata_dwc.c
+>>
+>> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+>> index 0bcf264..c3d0b24 100644
+>> --- a/drivers/ata/Kconfig
+>> +++ b/drivers/ata/Kconfig
+>> @@ -72,6 +72,16 @@ config SATA_FSL
+>>  
+>>        If unsure, say N.
+>>  
+>> +config SATA_DWC
+>> +    tristate "DesignWare Cores SATA support"
+>> +     depends on 460EX
 >
-> We shouldn't directly access sysdata to get the device node.  We should
-> be calling pci_device_to_OF_node().
->=20
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-It looks ok, but all I can say for now is that it doesn not make things
-worse.  During 2.6.28, the iSeries PCI code was broken.  I am working on
-a fix and after that I will be able to properly test this patch.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__6_May_2009_23_13_38_+1000_qa+GfUdEd+iP9MTp
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoBjQIACgkQjjKRsyhoI8zwuACeKFAkYCovGd8KLo6URTw7d30o
-rbYAn0C2xY2ER5UJWegxyNN4l/lGAjOW
-=3iRC
------END PGP SIGNATURE-----
-
---Signature=_Wed__6_May_2009_23_13_38_+1000_qa+GfUdEd+iP9MTp--
+> That "depends" looks too specific -- we don't want to grow a list if 
+> this controller gets added to other chips.
+>
+> Only depend on what this driver actually needs in order to function.
+>
+> -Scott
