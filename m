@@ -1,27 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 568A1DDDEE
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 22:44:18 +1000 (EST)
-Message-Id: <62217899-08C0-473A-8784-DEEC64A145DD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90110C94615@EMPBEDEX.empirix.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: MSR_SPE - being turned off... 
-Date: Wed, 6 May 2009 07:44:01 -0500
-References: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com>
-	<D54110FD-25F0-4A58-9C73-F08D4AE43751@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90110C30D34@EMPBEDEX.empirix.com>
-	<13221.1241568099@neuling.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90110C94528@EMPBEDEX.empirix.com>
-	<B5440F25-74DB-46BB-9374-837441826097@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D9010EEBF67D@EMPBEDEX.empirix.com>
-	<343F1A10-459E-4024-B0DD-ADB1D6DCDB9D@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90110C94615@EMPBEDEX.empirix.com>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A9E7EDDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 23:13:42 +1000 (EST)
+Date: Wed, 6 May 2009 23:13:38 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/pci: clean up direct access to sysdata by
+	iseries platform
+Message-Id: <20090506231338.ea3e280d.sfr@canb.auug.org.au>
+In-Reply-To: <1241525095-18041-1-git-send-email-galak@kernel.crashing.org>
+References: <1241525095-18041-1-git-send-email-galak@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__6_May_2009_23_13_38_+1000_qa+GfUdEd+iP9MTp"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,79 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Can you describe the # of processes you are running in your test.  Is  
-it possible for you to try the tests w/2.6.29 from kernel.org?
+--Signature=_Wed__6_May_2009_23_13_38_+1000_qa+GfUdEd+iP9MTp
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-- k
+Hi Kumar,
 
-On May 6, 2009, at 7:42 AM, Morrison, Tom wrote:
+On Tue,  5 May 2009 07:04:55 -0500 Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+>
+> We shouldn't directly access sysdata to get the device node.  We should
+> be calling pci_device_to_OF_node().
+>=20
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-> I'm sorry I forgot to put that, this issue was found with our
-> currently running kernel 2.6.23.final (what comes with the
-> Freescale LTIB BSP package dated 05/23/2009).
->
-> I am sorry if I don't understand your statement that the SMP might
-> be broken on this kernel, because I tried to analyze the kernel that
-> came with the latest BSP LTIB [ackage from Freescale (dated 12/18/2009
-> (where we got the 4.2.171 compiler from)), and the associated 'switch
-> context' code is exactly the same. Unfortunately, I have not started
-> the process of porting my current platform's BSP to this new kernel -
-> otherwise, I would have done the test on that platform (this also
-> requires a new version of u-boot in order to test correctly))..
->
-> I may have mis-interpreted something and/or I am sure I don't
-> understand everything about the SMP resource management (and
-> associated SPE management), so thank you for any insight you
-> may have on this front...
->
-> Tom
->
->>> -----Original Message-----
->>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->>> Sent: Wednesday, May 06, 2009 8:32 AM
->>> To: Morrison, Tom
->>> Cc: Michael Neuling; linuxppc-dev@ozlabs.org
->>> Subject: Re: MSR_SPE - being turned off...
->>>
->>>
->>> On May 6, 2009, at 3:31 AM, Morrison, Tom wrote:
->>>
->>>> Kumar,
->>>>
->>>> What about the case of a context switch (i.e.: when things are
-> setup
->>>> in registers for the SPE, but then a context switch happens before
->>>> the SPE is executed)?
->>>
->>> context switches will be fine.  What we normally do is keep track of
->>> which user app used SPE last and when some other app needs it we
-> clear
->>> MSR_SPE for the old app, save its registers.  Than we load up the
->>> registers for the new app and set MSR_SPE.  When the old app context
->>> switches in it will get an SPE unavail exception at the point it
->>> executes its next SPE insn and we will repeat the process.
->>>
->>>> As to load_up_spe & give_up_spe, it was pointed out to me tonight
-> by
->>>> a co-worker
->>>> to look at how things are saved in those routines, I definitely
-> will
->>>> look at this again,
-> c>> > and see how it is done...
->>>>
->>>> This is happening for us on an 8572 SMP. We are trying to get it to
->>>> happen
->>>> on 8548 (and single core 8572), but we haven't been able to push
->>>> this part
->>>> of the application as hard as it is being pushed on 8572...but we
->>>> will keep trying....
->>>
->>> Again, what kernel version for 8572?  Its possible old SMP kernels
-> are
->>> broken on 8572.
->>>
->>> - k
->>>
->>>> ________________________________
->>>>
-> <snip previous emails>
+It looks ok, but all I can say for now is that it doesn not make things
+worse.  During 2.6.28, the iSeries PCI code was broken.  I am working on
+a fix and after that I will be able to properly test this patch.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__6_May_2009_23_13_38_+1000_qa+GfUdEd+iP9MTp
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoBjQIACgkQjjKRsyhoI8zwuACeKFAkYCovGd8KLo6URTw7d30o
+rbYAn0C2xY2ER5UJWegxyNN4l/lGAjOW
+=3iRC
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__6_May_2009_23_13_38_+1000_qa+GfUdEd+iP9MTp--
