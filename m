@@ -1,18 +1,33 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 6E9D7DDFDF
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:34:19 +1000 (EST)
-To: "Shubhada Pugaonkar" <shubhada@chelsio.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Unable to boot 2.6.29 (and tot kernel) with 256k page size on
-	katmai.
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <8A71B368A89016469F72CD08050AD33402D575FA@maui.asicdesigners.com>
-References: <8A71B368A89016469F72CD08050AD33402D575FA@maui.asicdesigners.com>
-Date: Thu, 07 May 2009 00:34:15 +0200
-Message-Id: <20090506223415.C42F983420E8@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 90C54DDF90
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 08:37:22 +1000 (EST)
+Received: from mx3.mail.elte.hu ([157.181.1.138])
+	by fallback.mail.elte.hu with esmtp (Exim) id 1M1ohh-0005m5-Ry
+	from <mingo@elte.hu>
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 May 2009 23:31:01 +0200
+Date: Wed, 6 May 2009 23:29:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus Gutschke =?utf-8?B?KOmhp+Wtn+WLpCk=?= <markus@google.com>
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+Message-ID: <20090506212913.GC4861@elte.hu>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
+	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
+	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
+	<alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
+	<904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
+Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	stable@kernel.org, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,40 +37,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Shubhada,
 
-In message <8A71B368A89016469F72CD08050AD33402D575FA@maui.asicdesigners.com> you wrote:
+* Markus Gutschke (顧孟勤) <markus@google.com> wrote:
+
+> On Sat, Feb 28, 2009 at 10:23, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+
+> > And I guess the seccomp interaction means that this is 
+> > potentially a 2.6.29 thing. Not that I know whether anybody 
+> > actually _uses_ seccomp. It does seem to be enabled in at least 
+> > Fedora kernels, but it might not be used anywhere.
 > 
-> I am unable to boot the 2.6.29-rc8 denx kernel (and 2.6.30-rc4 tot
-> kernel) when I enable the 256k page size. My config file is attached.
-> The *same* config works fine with 64k page size. I have 2GB memory on
-> this board. 
+> In the Linux version of Google Chrome, we are currently working on 
+> code that will use seccomp for parts of our sandboxing solution.
 
-Which root file system are you using?
+That's a pretty interesting usage. What would be fallback mode you 
+are using if the kernel doesnt have seccomp built in? Completely 
+non-sandboxed? Or a ptrace/PTRACE_SYSCALL based sandbox?
 
-> ## Booting image at 01000000 ...
->    Image Name:   Linux-2.6.29-rc8-01447-g3bf8ce5-
->    Created:      2009-05-05   0:31:36 UTC
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    2138773 Bytes =  2 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
->    Booting using the fdt at 0x4000000
->    Loading Device Tree to 007fb000, end 007fefff ... OK
-
-Is this all you get? Nothing else?
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Nobody will ever need more than 640k RAM!"       -- Bill Gates, 1981
-"Windows 95 needs at least 8 MB RAM."             -- Bill Gates, 1996
-"Nobody will ever need Windows 95."             -- logical conclusion
+	Ingo
