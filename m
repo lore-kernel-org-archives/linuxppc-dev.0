@@ -1,20 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 6F9C250685
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:40:22 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so178798ywt.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 May 2009 13:40:20 -0700 (PDT)
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 07F49DE24A
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 06:41:46 +1000 (EST)
+Message-ID: <4A01F602.2010601@freescale.com>
+Date: Wed, 06 May 2009 15:41:38 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1241640919-4650-6-git-send-email-wd@denx.de>
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-6-git-send-email-wd@denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 6 May 2009 14:40:00 -0600
-Message-ID: <fa686aa40905061340s212385b1r8be4e2f7505bd0a0@mail.gmail.com>
-Subject: Re: [PATCH 05/12] mpc5121ads: Added Reset Module node to DTS.
 To: Wolfgang Denk <wd@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Piotr Ziecik <kosmo@semihalf.com>
+Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<1241640919-4650-3-git-send-email-wd@denx.de>
+In-Reply-To: <1241640919-4650-3-git-send-email-wd@denx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: John Rigby <jrigby@gmail.com>, linuxppc-dev@ozlabs.org,
+	Piotr Ziecik <kosmo@semihalf.com>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,49 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 6, 2009 at 2:15 PM, Wolfgang Denk <wd@denx.de> wrote:
-> From: Piotr Ziecik <kosmo@semihalf.com>
->
-> Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
-> Signed-off-by: Wolfgang Denk <wd@denx.de>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: John Rigby <jcrigby@gmail.com>
-
-Missing patch description.  Otherwise looks okay.
-
-g.
-
-> ---
-> =A0arch/powerpc/boot/dts/mpc5121ads.dts | =A0 =A05 +++++
-> =A01 files changed, 5 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts=
-/mpc5121ads.dts
-> index c2b8dbf..1b83a9d 100644
-> --- a/arch/powerpc/boot/dts/mpc5121ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc5121ads.dts
-> @@ -166,6 +166,11 @@
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-parent =3D < &ip=
-ic >;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 reset@e00 { =A0 =A0 // Reset module
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc5121=
--reset";
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0xe00 0x100>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
+Wolfgang Denk wrote:
+> +/*
+> + *	Define the buffer descriptor structure.
+> + */
+> +typedef struct bufdesc {
+> +	ushort	cbd_sc;			/* Control and status info */
+> +	ushort	cbd_datlen;		/* Data length */
+> +	uint	cbd_bufaddr;		/* Buffer address */
+> +} cbd_t;
 > +
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0clock@f00 { =A0 =A0 // Clock control
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc512=
-1-clock";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0xf00 0x100>;
-> --
-> 1.6.0.6
->
->
+> +/*
+> + *	The following definitions courtesy of commproc.h, which where
+> + *	Copyright (c) 1997 Dan Malek (dmalek@jlc.net).
+> + */
+> +#define BD_SC_WRAP		((ushort)0x2000)
+> +
+> +/*
+> + * Buffer descriptor control/status used by Ethernet receive.
+> + */
+> +#define BD_ENET_RX_EMPTY	((ushort)0x8000)
+> +#define BD_ENET_RX_WRAP		((ushort)0x2000)
+> +#define BD_ENET_RX_INTR		((ushort)0x1000)
+> +#define BD_ENET_RX_LAST		((ushort)0x0800)
+> +#define BD_ENET_RX_FIRST	((ushort)0x0400)
+> +#define BD_ENET_RX_MISS		((ushort)0x0100)
+> +#define BD_ENET_RX_LG		((ushort)0x0020)
+> +#define BD_ENET_RX_NO		((ushort)0x0010)
+> +#define BD_ENET_RX_SH		((ushort)0x0008)
+> +#define BD_ENET_RX_CR		((ushort)0x0004)
+> +#define BD_ENET_RX_OV		((ushort)0x0002)
+> +#define BD_ENET_RX_CL		((ushort)0x0001)
+> +#define BD_ENET_RX_STATS	((ushort)0x013f)	/* All status bits */
+> +
+> +/*
+> + * Buffer descriptor control/status used by Ethernet transmit.
+> + */
+> +#define BD_ENET_TX_READY	((ushort)0x8000)
+> +#define BD_ENET_TX_PAD		((ushort)0x4000)
+> +#define BD_ENET_TX_WRAP		((ushort)0x2000)
+> +#define BD_ENET_TX_INTR		((ushort)0x1000)
+> +#define BD_ENET_TX_LAST		((ushort)0x0800)
+> +#define BD_ENET_TX_TC		((ushort)0x0400)
+> +#define BD_ENET_TX_DEF		((ushort)0x0200)
+> +#define BD_ENET_TX_HB		((ushort)0x0100)
+> +#define BD_ENET_TX_LC		((ushort)0x0080)
+> +#define BD_ENET_TX_RL		((ushort)0x0040)
+> +#define BD_ENET_TX_UN		((ushort)0x0002)
+> +#define BD_ENET_TX_CSL		((ushort)0x0001)
+> +#define BD_ENET_TX_STATS	((ushort)0x03ff)	/* All status bits */
 
+All of the above is duplicative (with even the same names) of stuff in 
+asm/cpm.h.  Beyond just the duplication, what happens if both CPM2 and 
+512x are enabled in the same kernel?
 
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Scott
