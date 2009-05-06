@@ -1,26 +1,20 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by ozlabs.org (Postfix) with ESMTP id F369EDDDEE
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 09:12:04 +1000 (EST)
-Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
-	select CONFIG_FRAME_POINTER
-From: Steven Rostedt <srostedt@redhat.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <299D7402-29D3-4602-8F42-58FDF034DEC5@kernel.crashing.org>
-References: <20090502001329.GA11549@oksana.dev.rtsoft.ru>
-	<20090502001421.GA9342@oksana.dev.rtsoft.ru>
-	<68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org>
-	<1241316249.4243.22.camel@localhost.localdomain>
-	<6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
-	<1241530382.11379.12.camel@localhost.localdomain>
-	<299D7402-29D3-4602-8F42-58FDF034DEC5@kernel.crashing.org>
-Content-Type: text/plain
-Date: Tue, 05 May 2009 19:11:20 -0400
-Message-Id: <1241565080.11379.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <mikey@neuling.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B497CDDDA1
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2009 10:01:39 +1000 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Subject: Re: MSR_SPE - being turned off... 
+In-reply-to: <BD261180E6D35F4D9D32F3E44FD3D90110C30D34@EMPBEDEX.empirix.com> 
+References: <BD261180E6D35F4D9D32F3E44FD3D90110C30B99@EMPBEDEX.empirix.com>
+	<D54110FD-25F0-4A58-9C73-F08D4AE43751@kernel.crashing.org>
+	<BD261180E6D35F4D9D32F3E44FD3D90110C30D34@EMPBEDEX.empirix.com>
+Date: Wed, 06 May 2009 10:01:39 +1000
+Message-ID: <13221.1241568099@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,58 +24,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Tue, 2009-05-05 at 15:51 +0200, Segher Boessenkool wrote:
-> >>> When we add "-pg" to gcc, it automatically causes frame pointers  
-> >>> to be
-> >>> used.
-> >>
-> >> Nope, it does no such thing.
-> >
-> > Well, mcount is expected to be able to get to not just who called
-> > mcount, but also the parent of that function. The way mcount is
-> > implemented does not let you do that. If mcount was the first thing to
-> > be called in a function, then it would have been perfect. We could get
-> > to the caller, its parent, and even the parameters. But unfortunately,
-> > mcount is called after the stack is set up. Thus, without frame  
-> > pointers
-> > (the way to find a previous frame) there's no way (on some archs) to
-> > find the parent. Nor can we figure out the parameters, which really
-> > sucks.
+> Hi Kumar/Michael...
 > 
-> Yes, and this is (supposedly) why GCC does not like seeing -pg and
-> -fomit-frame-pointer at the same time -- because that cannot work
-> *on some architectures*.  These are the same architectures that
-> do not enable -fomit-frame-pointer automatically at -O.
+> Sorry, I really didn't explain myself very well...
 > 
-> >> NO_NO_OMIT_FRAME_POINTER ?  Or better, just never use -fno-o-f-p,
-> >> I don't see why you would ever need it.
-> >
-> > Because on x86_64 it gives better back traces. x86_64 has no way to  
-> > get
-> > to the previous frames without it. There's code to use other debug
-> > metadata to get back tracing, but for uses of things like the stack
-> > tracer, we need to be able to use the actual stack frames.
-> >
-> > As you said above, -fomit-frame-pointer is default when we  
-> > optimize, and
-> > that is how the kernel is built. If we optimize on x86_64 and do  
-> > not use
-> > -fno-omit-frame-pointer, the stack tracer is useless.
+> The Problem (answer to Michael):
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+> =3D=3D=3D=3D=3D=3D=3D
+> We started using a new compiler that upon -O2 optimization - added
+> heavy SPE related instructions into our applications (where the older
+> compiler might not use as many). Once this was done, we started=20
+> experiencing problems with data being 'shifted' and/or corrupted=20
+> throughout the applications which didn't immediately cause problems,
+> but either scribbled on someone else's memory and/or bad results...
+> We knew where one of the offending scribbles started (by the shifting=20
+> by 1 byte of a structure) and found by comparing binaries with 'older'
+> compiler vs. this one that the only major difference was the 'density'=20
+> of the SPE instructions...
 > 
-> No.  -fomit-frame-pointer is only the default when optimising on
-> archs/ABIs where it doesn't hinder debugging and -pg and all that
-> goodness; specifically, you do not get it by default on x86, not
-> at any optimisation level.
+> As to your question, Kumar:=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+> =3D=3D
+> Naively, I explicitly enabled the SPE in a BSP 'early_init' program=20
+> (as well as enabling Machine Checks) - which is what I meant by
+> Enabling SPE...
 
+Yeah, you don't want to do this.  It'll potentially break your
+application.
 
-OK, so what's the status with this patch series?
+I'm not that familiar with the CPU you are using but I'm guessing that
+you can't write the MSR from user space anyway.
 
-I don't want to pull it in unless I have an ack from Sam, and now
-there's issues with having -fno-omit-frame-pointer. Should we add a
-patch instead that simply removes that?
+> Michael explained that it is 'normal' if we asynchronously polled
+> the MSR (in an application and/or in the kernel) that it might be
+> disabled at the moment, but that you do a 'lazy switch' that=20
+> enables it...and gets turned on when an SPE exception comes in...
+> 
+> ...ok...I can live with that...
+> 
+> -------where I was really going---------
+> 
+> This is where I was trying to go. A developer at our company (who no
+> longer works for us) - did some research/development on the SPE=20
+> functionality, in the hopes that we could create an optimized library.
+> The results were successful, but because of some of the restrictions=20
+> (including 8 byte alignment for some instructions) - we decided not
+> to incorporate this library into our application(s)
+> 
+> But, this developer in his results, indicated that he believed our
+> kernels were NOT properly saving/restoring the upper 32bits of the
+> GPR (which can/will be used in the SPE instructions)... Thus, if the
+> upper 32bits were not saved (and restored when the application got
+> the SPE to operate on)...then, he thought there would be problems.
+> He unfortunately, was unable to finish his work and fix these 'bugs'
+> before he left our company...
+> 
+> Again, I am only going on his results, and not my own investigations
+> (I am not sure where to start to find this problem to begin with)...
+> 
+> So, I was REALLY asking - has anybody else run into this type of
+> problem, and/or the Linux community has recognized this problem and
+> has fixed this?
 
-If we eliminate the -fno-omit-frame-pointer, would that solve the PPC
-problem? And would it cause any other issues with other archs?
+If GPRs where getting corrupted in userspace, that would be a serious
+bug and would be noticed by someone pretty quickly.
 
--- Steve
+We'd really need a test case to get anywhere with this report.  
+
+Mikey
