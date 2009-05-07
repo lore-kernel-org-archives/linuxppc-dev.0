@@ -1,21 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B2BDDDDF80
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 10:52:40 +1000 (EST)
-Date: Thu, 7 May 2009 10:52:29 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/pci: clean up direct access to sysdata by
-	iseries platform
-Message-Id: <20090507105229.cb2e4900.sfr@canb.auug.org.au>
-In-Reply-To: <20090506231338.ea3e280d.sfr@canb.auug.org.au>
-References: <1241525095-18041-1-git-send-email-galak@kernel.crashing.org>
-	<20090506231338.ea3e280d.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__7_May_2009_10_52_29_+1000_rR4.iM4eKhChesYB"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <lhthanh@kobekara.com>
+Received: from phobos.lunarpages.com (phobos.lunarpages.com [67.210.120.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3EC19DDF85
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 12:02:58 +1000 (EST)
+Message-ID: <4A02409D.80500@kobekara.com>
+Date: Thu, 07 May 2009 08:59:57 +0700
+From: lhthanh <lhthanh@kobekara.com>
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: MPC8349E's DMA controller like ISA controller but with more
+	feature?
+References: <49EC6CB5.2020300@kobekara.com>
+	<20090420155511.GA25470@ld0162-tx32.am.freescale.net>
+	<49EFEA26.2010602@kobekara.com>
+	<20090423154311.GA19717@ld0162-tx32.am.freescale.net>
+	<49F08FBC.9010903@freescale.com> <49F15831.9080507@kobekara.com>
+	<49F1CF7B.2080703@freescale.com>
+In-Reply-To: <49F1CF7B.2080703@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,50 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__7_May_2009_10_52_29_+1000_rR4.iM4eKhChesYB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Kumar,
-
-On Wed, 6 May 2009 23:13:38 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
+lhthanh wrote:
+>   
+>> Thanks for your explaination! So if I want to transfer a buffer of data 
+>> from a single I/O port,  will not DMA framework
+>> also be able ?
+>>     
 >
-> On Tue,  5 May 2009 07:04:55 -0500 Kumar Gala <galak@kernel.crashing.org>=
- wrote:
-> >
-> > We shouldn't directly access sysdata to get the device node.  We should
-> > be calling pci_device_to_OF_node().
-> >=20
-> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->=20
-> It looks ok, but all I can say for now is that it doesn not make things
-> worse.  During 2.6.28, the iSeries PCI code was broken.  I am working on
-> a fix and after that I will be able to properly test this patch.
+> No.
+>
+>   
+>> Have I to write aother driver?
+>>     
+>
+> Yes.
+>
+>   
+>> Actually, I don't want write all because there are  serveral DMA code at 
+>> hand. I only want to use a framework instead of re-writing.
+>>     
+>
+> There is no framework for what you want to do.  There is only one other
+> driver that does what you want (sound/soc/fsl/fsl_dma.c), and that is a
+> complicated driver that does many things besides transferring data to an
+> I/O port.
+>
+>   
+>> And I afraid that I can not write code which assure sharing DMA channels.
+>>     
+>
+> Look at arch/powerpc/boot/dts/mpc8610_hpcd.dts.  The DMA channels that
+> are needed by the 8610 audio driver have a different 'compatible'
+> property.  This is how you prevent the generic DMA driver from using a
+> channel that you want.
+>
+> I'm afraid that you're going to have to study the DMA programming model,
+> and my device driver, and write a brand new driver from scratch.
+>
+>   
+Thank Scott and Timur very much! I will study more DMA driver and come 
+back later. :)
 
-With my fix for the old PCI breakage, I have tested your "pci" tree for
-iseries_defconfig.  Built and booted with and without CONFIG_PCI.
-
-Tested-by: Stephen Rothwell <sfr@canb.auug.og.au>
-Acked-by: Stephen Rothwell <sfr@canb.auug.og.au>
-
-My patch, however, will probably need your attention once Ben takes
-it. :-)
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__7_May_2009_10_52_29_+1000_rR4.iM4eKhChesYB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoCMM0ACgkQjjKRsyhoI8ybMwCaAoTeA/vNb5Gjgbx6jMMQJoqz
-qAQAn2tANAYTLhrsWVwvELhC3bO4Fy2t
-=QPNh
------END PGP SIGNATURE-----
-
---Signature=_Thu__7_May_2009_10_52_29_+1000_rR4.iM4eKhChesYB--
+Regard!
