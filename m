@@ -1,33 +1,17 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD5B5DDF90
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 20:12:59 +1000 (EST)
-Date: Thu, 7 May 2009 12:11:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nicholas Miell <nmiell@comcast.net>
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-Message-ID: <20090507101129.GB5978@elte.hu>
-References: <20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
-	<904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
-	<20090506212913.GC4861@elte.hu>
-	<904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
-	<20090506215450.GA9537@elte.hu>
-	<904b25810905061508n6d9cb8dbg71de5b1e0332ede7@mail.gmail.com>
-	<20090506221319.GA11493@elte.hu>
-	<904b25810905061521v62b3ddd6l14deb614d203385a@mail.gmail.com>
-	<1241670237.11500.7.camel@entropy>
+Return-Path: <d.dusha@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id C8224DDF8A
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 18:43:51 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so352661ywt.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 May 2009 01:43:50 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1241670237.11500.7.camel@entropy>
-Cc: linux-mips@linux-mips.org, linuxppc-dev@ozlabs.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-	Markus Gutschke =?utf-8?B?KOmhp+Wtn+WLpCk=?= <markus@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	stable@kernel.org, Roland McGrath <roland@redhat.com>
+Date: Thu, 7 May 2009 18:43:49 +1000
+Message-ID: <c788c1220905070143t5271ebe1ra12df43f8f53e491@mail.gmail.com>
+Subject: MPC5121 new board constantly resetting after u-boot passes control to
+	Linux
+From: Damien Dusha <d.dusha@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=0016361e8806ceef5704694e82b1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,45 +21,1665 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--0016361e8806ceef5704694e82b1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-* Nicholas Miell <nmiell@comcast.net> wrote:
+Dear all,
 
-> On Wed, 2009-05-06 at 15:21 -0700, Markus Gutschke (顧孟勤) wrote:
-> > On Wed, May 6, 2009 at 15:13, Ingo Molnar <mingo@elte.hu> wrote:
-> > > doing a (per arch) bitmap of harmless syscalls and replacing the
-> > > mode1_syscalls[] check with that in kernel/seccomp.c would be a
-> > > pretty reasonable extension. (.config controllable perhaps, for
-> > > old-style-seccomp)
-> > >
-> > > It would probably be faster than the current loop over
-> > > mode1_syscalls[] as well.
-> > 
-> > This would be a great option to improve performance of our sandbox. I
-> > can detect the availability of the new kernel API dynamically, and
-> > then not intercept the bulk of the system calls. This would allow the
-> > sandbox to work both with existing and with newer kernels.
-> > 
-> > We'll post a kernel patch for discussion in the next few days,
-> > 
-> 
-> I suspect the correct thing to do would be to leave seccomp mode 1 
-> alone and introduce a mode 2 with a less restricted set of system 
-> calls -- the interface was designed to be extended in this way, 
-> after all.
+We are attempting to bring up a new MPC5121e board, somewhat based on the
+Silicon Turnkey's ADS5121 development board.  We are using a kernel and
+u-boot based on Freescale/STx's board support package.
 
-Yes, that is what i alluded to above via the '.config controllable' 
-aspect.
+We have successfully modified u-boot for the 64MB of DDR2 RAM, and we can
+use u-boot's (and the BDI's) memory test facility to check that the RAM is
+working.
 
-Mode 2 could be implemented like this: extend prctl_set_seccomp() 
-with a bitmap pointer, and copy it to a per task seccomp context 
-structure.
+Our problem is that as soon as control is passed from u-boot to Linux, the
+board immediately resets.  It appears that the kernel has been decompressed
+correctly, and the memory at 0x00000000 appears to be similar to the same
+memory on the ADS board at the same address.  i.e. We have some confidence
+that the kernel is being decompressed correctly.
 
-a bitmap for 300 syscalls takes only about 40 bytes.
+With debug on, u-boot produces the following output on the console:
 
-Please take care to implement nesting properly: if a seccomp context 
-does a seccomp call (which mode 2 could allow), then the resulting 
-bitmap should be the logical-AND of the parent and child bitmaps. 
-There's no reason why seccomp couldnt be used in hiearachy of 
-sandboxes, in a gradually less permissive fashion.
 
-	Ingo
+
+U-Boot 2009.01-svn27683 (May 07 2009 - 15:35:15)
+MPC512X
+
+
+
+CPU:   MPC5121e rev. 2.0, Core e300c4 at 396 MHz, CSB at 198
+MHz
+
+Board: ADS5121 rev. 0x0000 (CPLD rev.
+0x00)
+
+I2C:   85
+kHz,
+
+85
+kHz,
+
+85
+kHz,
+
+ready
+
+DRAM:  64
+MB
+
+Top of RAM usable for U-Boot at:
+04000000
+
+Reserving 249k for U-Boot at:
+03fc1000
+
+Reserving 520k for malloc() at:
+03f3f000
+
+Reserving 60 Bytes for Board Info at:
+03f3efc4
+
+Reserving 64 Bytes for Global Data at:
+03f3ef84
+
+Stack Pointer at:
+03f3ef68
+
+New Stack Pointer is:
+03f3ef68
+
+Now running in RAM - U-Boot at:
+03fc1000
+
+FLASH: flash detect
+cfi
+
+fwc addr fc000000 cmd f0 f0 8bit x 8
+bit
+
+fwc addr fc000000 cmd ff ff 8bit x 8
+bit
+
+fwc addr fc000055 cmd 98 98 8bit x 8
+bit
+
+is= cmd 51(Q) addr fc000010 is= 30
+51
+
+fwc addr fc000555 cmd 98 98 8bit x 8
+bit
+
+is= cmd 51(Q) addr fc000010 is= 0
+51
+
+fwc addr fc000000 cmd f0 f0f0 16bit x 8
+bit
+
+fwc addr fc000000 cmd ff ffff 16bit x 8
+bit
+
+fwc addr fc0000aa cmd 98 9898 16bit x 8
+bit
+
+is= cmd 51(Q) addr fc000020 is= 2032
+5151
+
+fwc addr fc000aaa cmd 98 9898 16bit x 8
+bit
+
+is= cmd 51(Q) addr fc000020 is= 2032
+5151
+
+fwc addr fc000000 cmd f0 00f0 16bit x 16
+bit
+
+fwc addr fc000000 cmd ff 00ff 16bit x 16
+bit
+
+fwc addr fc0000aa cmd 98 0098 16bit x 16
+bit
+
+is= cmd 51(Q) addr fc000020 is= 2032
+0051
+
+fwc addr fc000aaa cmd 98 0098 16bit x 16
+bit
+
+is= cmd 51(Q) addr fc000020 is= 2032
+0051
+
+fwc addr fc000000 cmd f0 f0f0f0f0 32bit x 8
+bit
+
+fwc addr fc000000 cmd ff ffffffff 32bit x 8
+bit
+
+fwc addr fc000154 cmd 98 98989898 32bit x 8
+bit
+
+is= cmd 51(Q) addr fc000040 is= 00510051
+51515151
+
+fwc addr fc001554 cmd 98 98989898 32bit x 8
+bit
+
+is= cmd 51(Q) addr fc000040 is= 00510051
+51515151
+
+fwc addr fc000000 cmd f0 00f000f0 32bit x 16
+bit
+
+fwc addr fc000000 cmd ff 00ff00ff 32bit x 16
+bit
+
+fwc addr fc000154 cmd 98 00980098 32bit x 16
+bit
+
+is= cmd 51(Q) addr fc000040 is= 00510051
+00510051
+
+is= cmd 52(R) addr fc000044 is= 00520052
+00520052
+
+is= cmd 59(Y) addr fc000048 is= 00590059
+00590059
+
+device interface is
+2
+
+found port 4 chip 2 port 32 bits chip 16
+bits
+
+00 : 51 52 59 02 00 40 00 00 00 00 00 27 36 00 00 06  QRY..@.....'6...
+
+10 : 06 09 13 03 05 03 02 19 02 00 06 00 01 ff 00 00
+................
+
+20 : 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01
+................
+
+fwc addr fc000000 cmd f0 00f000f0 32bit x 16
+bit
+
+fwc addr fc001554 cmd aa 00aa00aa 32bit x 16
+bit
+
+fwc addr fc000aa8 cmd 55 00550055 32bit x 16
+bit
+
+fwc addr fc001554 cmd 90 00900090 32bit x 16
+bit
+
+fwc addr fc000000 cmd f0 00f000f0 32bit x 16
+bit
+
+fwc addr fc000154 cmd 98 00980098 32bit x 16
+bit
+
+manufacturer is
+2
+
+manufacturer id is
+0x1
+
+device id is
+0x227e
+
+device id2 is
+0x0
+
+cfi version is
+0x3133
+
+size_ratio 2 port 32 bits chip 16
+bits
+
+found 1 erase
+regions
+
+erase region 0:
+0x020000ff
+
+erase_region_count = 256 erase_region_size =
+131072
+
+fwc addr fc000000 cmd f0 00f000f0 32bit x 16
+bit
+
+flash_protect ON: from 0xFFF00000 to
+0xFFF36FFF
+
+protect on
+252
+
+flash_protect ON: from 0xFFF40000 to
+0xFFF7FFFF
+
+protect on
+253
+
+flash_protect ON: from 0xFFF80000 to
+0xFFF81FFF
+
+protect on
+254
+
+64
+MB
+
+In:
+serial
+
+Out:
+serial
+
+Err:
+serial
+
+i2c_write: failed to address
+chip
+
+i2c_read: failed to address
+chip
+
+DVI Encoder Read:
+0x00
+
+i2c_write: failed to address
+chip
+
+i2c_read: failed to address
+chip
+
+DVI Encoder Read:
+0x00
+
+U-Boot relocated to
+03fc1000
+
+Net:   FEC
+ETHERNET
+
+
+
+Type "run flash_nfs" to mount root filesystem over
+NFS
+
+
+
+### main_loop entered:
+bootdelay=5
+
+
+
+### main_loop: bootcmd="run
+cramfsboot"
+
+Hit any key to stop autoboot:
+0
+
+=>
+
+
+
+U-Boot 2009.01-svn27683 (May 07 2009 - 15:35:15)
+MPC512X
+
+
+
+CPU:   MPC5121e rev. 2.0, Core e300c4 at 396 MHz, CSB at 198
+MHz
+
+Board: ADS5121 rev. 0x0000 (CPLD rev.
+0x00)
+
+I2C:   85
+kHz,
+
+85
+kHz,
+
+85
+kHz,
+
+ready
+
+DRAM:  64
+MB
+
+Top of RAM usable for U-Boot at:
+04000000
+
+Reserving 249k for U-Boot at:
+03fc1000
+
+Reserving 520k for malloc() at:
+03f3f000
+
+Reserving 60 Bytes for Board Info at:
+03f3efc4
+
+Reserving 64 Bytes for Global Data at:
+03f3ef84
+
+Stack Pointer at:
+03f3ef68
+
+New Stack Pointer is:
+03f3ef68
+
+Now running in RAM - U-Boot at:
+03fc1000
+
+FLASH: flash detect
+cfi
+
+fwc addr fc000000 cmd f0 f0 8bit x 8
+bit
+
+fwc addr fc000000 cmd ff ff 8bit x 8
+bit
+
+fwc addr fc000055 cmd 98 98 8bit x 8
+bit
+
+is= cmd 51(Q) addr fc000010 is= 30
+51
+
+fwc addr fc000555 cmd 98 98 8bit x 8
+bit
+
+is= cmd 51(Q) addr fc000010 is= 0
+51
+
+fwc addr fc000000 cmd f0 f0f0 16bit x 8
+bit
+
+fwc addr fc000000 cmd ff ffff 16bit x 8
+bit
+
+fwc addr fc0000aa cmd 98 9898 16bit x 8
+bit
+
+is= cmd 51(Q) addr fc000020 is= 2032
+5151
+
+fwc addr fc000aaa cmd 98 9898 16bit x 8
+bit
+
+is= cmd 51(Q) addr fc000020 is= 2032
+5151
+
+fwc addr fc000000 cmd f0 00f0 16bit x 16
+bit
+
+fwc addr fc000000 cmd ff 00ff 16bit x 16
+bit
+
+fwc addr fc0000aa cmd 98 0098 16bit x 16
+bit
+
+is= cmd 51(Q) addr fc000020 is= 2032
+0051
+
+fwc addr fc000aaa cmd 98 0098 16bit x 16
+bit
+
+is= cmd 51(Q) addr fc000020 is= 2032
+0051
+
+fwc addr fc000000 cmd f0 f0f0f0f0 32bit x 8
+bit
+
+fwc addr fc000000 cmd ff ffffffff 32bit x 8
+bit
+
+fwc addr fc000154 cmd 98 98989898 32bit x 8
+bit
+
+is= cmd 51(Q) addr fc000040 is= 00510051
+51515151
+
+fwc addr fc001554 cmd 98 98989898 32bit x 8
+bit
+
+is= cmd 51(Q) addr fc000040 is= 00510051
+51515151
+
+fwc addr fc000000 cmd f0 00f000f0 32bit x 16
+bit
+
+fwc addr fc000000 cmd ff 00ff00ff 32bit x 16
+bit
+
+fwc addr fc000154 cmd 98 00980098 32bit x 16
+bit
+
+is= cmd 51(Q) addr fc000040 is= 00510051
+00510051
+
+is= cmd 52(R) addr fc000044 is= 00520052
+00520052
+
+is= cmd 59(Y) addr fc000048 is= 00590059
+00590059
+
+device interface is
+2
+
+found port 4 chip 2 port 32 bits chip 16
+bits
+
+00 : 51 52 59 02 00 40 00 00 00 00 00 27 36 00 00 06  QRY..@.....'6...
+
+10 : 06 09 13 03 05 03 02 19 02 00 06 00 01 ff 00 00
+................
+
+20 : 02 00 00 00 00 00 00 00 00 00 00 00 00 f7 ff fd
+................
+
+fwc addr fc000000 cmd f0 00f000f0 32bit x 16
+bit
+
+fwc addr fc001554 cmd aa 00aa00aa 32bit x 16
+bit
+
+fwc addr fc000aa8 cmd 55 00550055 32bit x 16
+bit
+
+fwc addr fc001554 cmd 90 00900090 32bit x 16
+bit
+
+fwc addr fc000000 cmd f0 00f000f0 32bit x 16
+bit
+
+fwc addr fc000154 cmd 98 00980098 32bit x 16
+bit
+
+manufacturer is
+2
+
+manufacturer id is
+0x1
+
+device id is
+0x227e
+
+device id2 is
+0x0
+
+cfi version is
+0x3133
+
+size_ratio 2 port 32 bits chip 16
+bits
+
+found 1 erase
+regions
+
+erase region 0:
+0x020000ff
+
+erase_region_count = 256 erase_region_size =
+131072
+
+fwc addr fc000000 cmd f0 00f000f0 32bit x 16
+bit
+
+flash_protect ON: from 0xFFF00000 to
+0xFFF36FFF
+
+protect on
+252
+
+flash_protect ON: from 0xFFF40000 to
+0xFFF7FFFF
+
+protect on
+253
+
+flash_protect ON: from 0xFFF80000 to
+0xFFF81FFF
+
+protect on
+254
+
+64
+MB
+
+In:
+serial
+
+Out:
+serial
+
+Err:
+serial
+
+i2c_write: failed to address
+chip
+
+i2c_read: failed to address
+chip
+
+DVI Encoder Read:
+0x00
+
+i2c_write: failed to address
+chip
+
+i2c_read: failed to address
+chip
+
+DVI Encoder Read:
+0x00
+
+U-Boot relocated to
+03fc1000
+
+Net:   FEC
+ETHERNET
+
+
+
+Type "run flash_nfs" to mount root filesystem over
+NFS
+
+
+
+### main_loop entered:
+bootdelay=5
+
+
+
+### main_loop: bootcmd="run
+cramfsboot"
+
+Hit any key to stop autoboot:
+0
+
+=>
+boot
+
+## Current stack ends at
+0x03f3e8f8
+
+*  kernel: cmdline image address =
+0xffc40000
+
+## Booting kernel from Legacy Image at ffc40000
+...
+
+   Image Name:
+Linux-2.6.24.6
+
+   Created:      2009-04-30   3:54:13
+UTC
+
+   Image Type:   PowerPC Linux Kernel Image (gzip
+compressed)
+
+   Data Size:    1782150 Bytes =  1.7
+MB
+
+   Load Address:
+00000000
+
+   Entry Point:
+00000000
+
+   Verifying Checksum ...
+OK
+
+   kernel data at 0xffc40040, len = 0x001b3186
+(1782150)
+
+## Skipping init
+Ramdisk
+
+## No init
+Ramdisk
+
+   ramdisk start = 0x00000000, ramdisk end =
+0x00000000
+
+*  fdt: cmdline image address =
+0xffec0000
+
+## Checking for 'FDT'/'FDT Image' at
+ffec0000
+
+*  fdt: raw FDT
+blob
+
+## Flattened Device Tree blob at
+ffec0000
+
+   Booting using the fdt blob at
+0xffec0000
+
+   of_flat_tree at 0xffec0000 size
+0x00000e06
+
+   Uncompressing Kernel Image ...
+OK
+
+   kernel loaded at 0x00000000, end =
+0x003ac244
+
+## initrd_high = 0xffffffff, copy_to_ram =
+1
+
+   ramdisk load start = 0x00000000, ramdisk load end =
+0x00000000
+
+## device tree at 0xFFEC0000 ... 0xFFEC0E05
+(len=15878=0x3E06)
+
+   Loading Device Tree to 007fc000, end 007ffe05 ...
+OK
+
+Updating property 'local-mac-address' =  00 00 00 00 00
+00
+
+Updating property 'address' =  00 00 00 00 00
+00
+
+Updating property 'bus-frequency' =  03 ef 14
+80
+
+Updating property '/cpus/PowerPC,5121@0/timebase-frequency' =  02 f3 4f
+60
+
+Updating property '/cpus/PowerPC,5121@0/bus-frequency' =  0b cd 3d
+80
+
+Updating property '/cpus/PowerPC,5121@0/clock-frequency' =  17 9a 7b
+00
+
+Updating property 'bus-frequency' =  03 ef 14
+80
+
+## Transferring control to Linux (at address 00000000)
+...
+
+   Booting using OF flat tree... (at address
+007fc000)
+
+
+At this point, the board immediately resets.  There is no hint of life from
+the kernel from the console, although setting a breakpoint on the BDI at
+0x0000000 and tracing through appears as though some code (although we don't
+know what) is being executed.
+
+Our u-boot environment is as follows:
+
+=>
+printenv
+
+bootdelay=5
+
+baudrate=115200
+
+loads_echo=1
+
+preboot=echo;echo Type \"run flash_nfs\" to mount root filesystem over
+NFS;echo
+
+rootpath=/opt/eldk/ppc_6xx
+
+hostname=gg200
+
+bootfile=gg200/uImage
+
+loadaddr=400000
+
+u-boot_addr_r=200000
+
+kernel_addr_r=600000
+
+fdt_addr_r=880000
+
+ramdisk_addr_r=900000
+
+u-boot_addr=FFF00000
+
+kernel_addr=FFC40000
+
+fdt_addr=FFEC0000
+
+ramdisk_addr=FC040000
+
+ramdiskfile=ads5121/uRamdisk
+
+u-boot=ads5121/u-boot.bin
+
+bootfile=ads5121/uImage
+
+fdtfile=ads5121/ads5121.dtb
+
+rootpath=/opt/eldk/ppc_6xx
+
+netdev=eth0
+
+consdev=ttyPSC0
+
+nfsargs=setenv bootargs root=/dev/nfs rw
+nfsroot=${serverip}:${rootpath}
+
+ramargs=setenv bootargs root=/dev/ram
+rw
+
+addip=setenv bootargs ${bootargs}
+ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:${netdev}:off
+panic=1
+addtty=setenv bootargs ${bootargs}
+console=${consdev},${baudrate}
+
+flash_nfs=run nfsargs addip addtty;bootm ${kernel_addr} -
+${fdt_addr}
+
+flash_self=run ramargs addip addtty;bootm ${kernel_addr} ${ramdisk_addr}
+${fdt_addr}
+
+net_nfs=tftp ${kernel_addr_r} ${bootfile};tftp ${fdt_addr_r} ${fdtfile};run
+nfsargs addip addtty;bootm ${kernel_addr_r} -
+${fdt_addr_r}
+net_self=tftp ${kernel_addr_r} ${bootfile};tftp ${ramdisk_addr_r}
+${ramdiskfile};tftp ${fdt_addr_r} ${fdtfile};run ramargs addip addtty;bootm
+${kernel_addr_r} ${ramdisk_a}
+load=tftp ${u-boot_addr_r}
+${u-boot}
+
+update=protect off ${u-boot_addr} +${filesize};era ${u-boot_addr}
++${filesize};cp.b ${u-boot_addr_r} ${u-boot_addr}
+${filesize}
+upd=run load
+update
+
+ethact=FEC
+ETHERNET
+
+cramfsboot=set bootargs root=/dev/mtdblock1 mem=64M; run addtty;bootm
+${kernel_addr} -
+${fdt_addr}
+
+bootcmd=run
+cramfsboot
+
+stdin=serial
+
+stdout=serial
+
+stderr=serial
+
+
+If anyone is able to provide some help as to where we should start looking
+for our problem (or how we can stop it from immediately rebooting, or trap
+the reboot on the BDI), we would be extremely grateful for the help.
+
+Best regards
+Damien.
+
+--0016361e8806ceef5704694e82b1
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: base64
+
+RGVhciBhbGwsPGJyPjxicj5XZSBhcmUgYXR0ZW1wdGluZyB0byBicmluZyB1cCBhIG5ldyBNUEM1
+MTIxZSBib2FyZCwgc29tZXdoYXQgYmFzZWQgb24gdGhlIFNpbGljb24gVHVybmtleSYjMzk7cyBB
+RFM1MTIxIGRldmVsb3BtZW50IGJvYXJkLqAgV2UgYXJlIHVzaW5nIGEga2VybmVsIGFuZCB1LWJv
+b3QgYmFzZWQgb24gRnJlZXNjYWxlL1NUeCYjMzk7cyBib2FyZCBzdXBwb3J0IHBhY2thZ2UuPGJy
+Pgo8YnI+V2UgaGF2ZSBzdWNjZXNzZnVsbHkgbW9kaWZpZWQgdS1ib290IGZvciB0aGUgNjRNQiBv
+ZiBERFIyIFJBTSwgYW5kIHdlIGNhbiB1c2UgdS1ib290JiMzOTtzIChhbmQgdGhlIEJESSYjMzk7
+cykgbWVtb3J5IHRlc3QgZmFjaWxpdHkgdG8gY2hlY2sgdGhhdCB0aGUgUkFNIGlzIHdvcmtpbmcu
+PGJyPjxicj5PdXIgcHJvYmxlbSBpcyB0aGF0IGFzIHNvb24gYXMgY29udHJvbCBpcyBwYXNzZWQg
+ZnJvbSB1LWJvb3QgdG8gTGludXgsIHRoZSBib2FyZCBpbW1lZGlhdGVseSByZXNldHMuoCBJdCBh
+cHBlYXJzIHRoYXQgdGhlIGtlcm5lbCBoYXMgYmVlbiBkZWNvbXByZXNzZWQgY29ycmVjdGx5LCBh
+bmQgdGhlIG1lbW9yeSBhdCAweDAwMDAwMDAwIGFwcGVhcnMgdG8gYmUgc2ltaWxhciB0byB0aGUg
+c2FtZSBtZW1vcnkgb24gdGhlIEFEUyBib2FyZCBhdCB0aGUgc2FtZSBhZGRyZXNzLqAgaS5lLiBX
+ZSBoYXZlIHNvbWUgY29uZmlkZW5jZSB0aGF0IHRoZSBrZXJuZWwgaXMgYmVpbmcgZGVjb21wcmVz
+c2VkIGNvcnJlY3RseS4gPGJyPgo8YnI+V2l0aCBkZWJ1ZyBvbiwgdS1ib290IHByb2R1Y2VzIHRo
+ZSBmb2xsb3dpbmcgb3V0cHV0IG9uIHRoZSBjb25zb2xlOjxicj48YnI+oKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KVS1Cb290IDIwMDkuMDEt
+c3ZuMjc2ODMgKE1heSAwNyAyMDA5IC0gMTU6MzU6MTUpIE1QQzUxMligoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPqCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KQ1BVOqCg
+IE1QQzUxMjFlIHJldi4gMi4wLCBDb3JlIGUzMDBjNCBhdCAzOTYgTUh6LCBDU0IgYXQgMTk4IE1I
+eqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPkJv
+YXJkOiBBRFM1MTIxIHJldi4gMHgwMDAwIChDUExEIHJldi4gMHgwMCmgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxi
+cj4KSTJDOqCgIDg1IGtIeiygoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKAgPGJyPjg1IGtIeiygoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgIDxicj4KODUga0h6LKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKAgPGJyPnJlYWR5oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgIDxicj4KRFJBTTqgIDY0IE1CoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPlRvcCBvZiBSQU0gdXNhYmxlIGZvciBVLUJvb3QgYXQ6
+IDA0MDAwMDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KUmVzZXJ2aW5nIDI0OWsgZm9yIFUtQm9vdCBh
+dDogMDNmYzEwMDCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPlJlc2VydmluZyA1MjBrIGZvciBtYWxs
+b2MoKSBhdDogMDNmM2YwMDCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KUmVzZXJ2aW5nIDYwIEJ5dGVz
+IGZvciBCb2FyZCBJbmZvIGF0OiAwM2YzZWZjNKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPlJlc2VydmluZyA2NCBC
+eXRlcyBmb3IgR2xvYmFsIERhdGEgYXQ6IDAzZjNlZjg0oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KU3RhY2sgUG9p
+bnRlciBhdDogMDNmM2VmNjigoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPk5ldyBT
+dGFjayBQb2ludGVyIGlzOiAwM2YzZWY2OKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4K
+Tm93IHJ1bm5pbmcgaW4gUkFNIC0gVS1Cb290IGF0OiAwM2ZjMTAwMKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAg
+PGJyPkZMQVNIOiBmbGFzaCBkZXRlY3QgY2ZpoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgIDxicj4KZndjIGFkZHIgZmMwMDAwMDAgY21kIGYwIGYwIDhiaXQgeCA4IGJpdKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKAgPGJyPmZ3YyBhZGRyIGZjMDAwMDAwIGNtZCBmZiBmZiA4Yml0IHggOCBiaXSgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAwNTUgY21kIDk4IDk4IDhiaXQgeCA4IGJp
+dKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDAxMCBpcz0gMzAg
+NTGgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDA1NTUgY21kIDk4IDk4IDhi
+aXQgeCA4IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDAx
+MCBpcz0gMCA1MaCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAwMDAgY21k
+IGYwIGYwZjAgMTZiaXQgeCA4IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmZ3YyBhZGRyIGZjMDAwMDAw
+IGNtZCBmZiBmZmZmIDE2Yml0IHggOCBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMw
+MDAwYWEgY21kIDk4IDk4OTggMTZiaXQgeCA4IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQg
+NTEoUSkgYWRkciBmYzAwMDAyMCBpcz0gMjAzMiA1MTUxoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndj
+IGFkZHIgZmMwMDBhYWEgY21kIDk4IDk4OTggMTZiaXQgeCA4IGJpdKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJy
+PmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDAyMCBpcz0gMjAzMiA1MTUxoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IDxicj4KZndjIGFkZHIgZmMwMDAwMDAgY21kIGYwIDAwZjAgMTZiaXQgeCAxNiBiaXSgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKAgPGJyPmZ3YyBhZGRyIGZjMDAwMDAwIGNtZCBmZiAwMGZmIDE2Yml0IHggMTYgYml0oKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAwYWEgY21kIDk4IDAwOTggMTZiaXQgeCAxNiBi
+aXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDAyMCBpcz0gMjAzMiAw
+MDUxoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDBhYWEgY21kIDk4IDAwOTggMTZi
+aXQgeCAxNiBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDAyMCBp
+cz0gMjAzMiAwMDUxoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAwMDAgY21kIGYw
+IGYwZjBmMGYwIDMyYml0IHggOCBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmZ3YyBhZGRyIGZjMDAwMDAwIGNt
+ZCBmZiBmZmZmZmZmZiAzMmJpdCB4IDggYml0oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAx
+NTQgY21kIDk4IDk4OTg5ODk4IDMyYml0IHggOCBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEo
+USkgYWRkciBmYzAwMDA0MCBpcz0gMDA1MTAwNTEgNTE1MTUxNTGgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFk
+ZHIgZmMwMDE1NTQgY21kIDk4IDk4OTg5ODk4IDMyYml0IHggOCBiaXSgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlz
+PSBjbWQgNTEoUSkgYWRkciBmYzAwMDA0MCBpcz0gMDA1MTAwNTEgNTE1MTUxNTGgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxi
+cj4KZndjIGFkZHIgZmMwMDAwMDAgY21kIGYwIDAwZjAwMGYwIDMyYml0IHggMTYgYml0oKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKAgPGJyPmZ3YyBhZGRyIGZjMDAwMDAwIGNtZCBmZiAwMGZmMDBmZiAzMmJpdCB4IDE2IGJpdKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAxNTQgY21kIDk4IDAwOTgwMDk4IDMyYml0IHggMTYg
+Yml0oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDA0MCBpcz0gMDA1MTAwNTEg
+MDA1MTAwNTGgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgIDxicj4KaXM9IGNtZCA1MihSKSBhZGRyIGZjMDAwMDQ0IGlzPSAwMDUy
+MDA1MiAwMDUyMDA1MqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTkoWSkgYWRkciBmYzAwMDA0OCBpcz0g
+MDA1OTAwNTkgMDA1OTAwNTmgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZGV2aWNlIGludGVyZmFjZSBpcyAyoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmZvdW5kIHBvcnQgNCBjaGlwIDIgcG9y
+dCAzMiBiaXRzIGNoaXAgMTYgYml0c6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KMDAgOiA1MSA1MiA1OSAwMiAw
+MCA0MCAwMCAwMCAwMCAwMCAwMCAyNyAzNiAwMCAwMCAwNqAgUVJZLi5ALi4uLi4mIzM5OzYuLi6g
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4xMCA6IDA2IDA5
+IDEzIDAzIDA1IDAzIDAyIDE5IDAyIDAwIDA2IDAwIDAxIGZmIDAwIDAwoCAuLi4uLi4uLi4uLi4u
+Li4uoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CjIwIDog
+MDIgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDGgIC4uLi4uLi4u
+Li4uLi4uLi6goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5m
+d2MgYWRkciBmYzAwMDAwMCBjbWQgZjAgMDBmMDAwZjAgMzJiaXQgeCAxNiBiaXSgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8
+YnI+CmZ3YyBhZGRyIGZjMDAxNTU0IGNtZCBhYSAwMGFhMDBhYSAzMmJpdCB4IDE2IGJpdKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgIDxicj5md2MgYWRkciBmYzAwMGFhOCBjbWQgNTUgMDA1NTAwNTUgMzJiaXQgeCAxNiBiaXSg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoCA8YnI+CmZ3YyBhZGRyIGZjMDAxNTU0IGNtZCA5MCAwMDkwMDA5MCAzMmJpdCB4IDE2
+IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgIDxicj5md2MgYWRkciBmYzAwMDAwMCBjbWQgZjAgMDBmMDAwZjAgMzJiaXQg
+eCAxNiBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoCA8YnI+CmZ3YyBhZGRyIGZjMDAwMTU0IGNtZCA5OCAwMDk4MDA5OCAz
+MmJpdCB4IDE2IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5tYW51ZmFjdHVyZXIgaXMgMqCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+Cm1hbnVmYWN0dXJlciBpZCBpcyAweDGgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5kZXZpY2UgaWQgaXMgMHgyMjdloKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CmRldmljZSBpZDIgaXMgMHgw
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5jZmkgdmVyc2lvbiBp
+cyAweDMxMzOgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnNpemVfcmF0
+aW8gMiBwb3J0IDMyIGJpdHMgY2hpcCAxNiBiaXRzoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5mb3Vu
+ZCAxIGVyYXNlIHJlZ2lvbnOgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+
+CmVyYXNlIHJlZ2lvbiAwOiAweDAyMDAwMGZmoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IDxicj5lcmFzZV9yZWdpb25fY291bnQgPSAyNTYgZXJhc2VfcmVnaW9uX3NpemUgPSAxMzEwNzKg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoCA8YnI+CmZ3YyBhZGRyIGZjMDAwMDAwIGNtZCBmMCAwMGYwMDBmMCAzMmJpdCB4IDE2IGJp
+dKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgIDxicj5mbGFzaF9wcm90ZWN0IE9OOiBmcm9tIDB4RkZGMDAwMDAgdG8gMHhGRkYz
+NkZGRqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoCA8YnI+CnByb3RlY3Qgb24gMjUyoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgIDxicj5mbGFzaF9wcm90ZWN0IE9OOiBmcm9tIDB4RkZGNDAwMDAg
+dG8gMHhGRkY3RkZGRqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnByb3RlY3Qgb24gMjUzoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5mbGFzaF9wcm90ZWN0IE9OOiBmcm9tIDB4
+RkZGODAwMDAgdG8gMHhGRkY4MUZGRqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnByb3RlY3Qgb24gMjU0oKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj42NCBNQqCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CkluOqCgoCBzZXJp
+YWygoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5PdXQ6oKAg
+c2VyaWFsoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CkVy
+cjqgoCBzZXJpYWygoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxi
+cj5pMmNfd3JpdGU6IGZhaWxlZCB0byBhZGRyZXNzIGNoaXCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oCA8YnI+CmkyY19yZWFkOiBmYWlsZWQgdG8gYWRkcmVzcyBjaGlwoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgIDxicj5EVkkgRW5jb2RlciBSZWFkOiAweDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoCA8YnI+CmkyY193cml0ZTogZmFpbGVkIHRvIGFkZHJlc3MgY2hpcKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgIDxicj5pMmNfcmVhZDogZmFpbGVkIHRvIGFkZHJlc3MgY2hpcKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CkRWSSBFbmNvZGVyIFJlYWQ6IDB4MDCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5VLUJvb3QgcmVsb2NhdGVkIHRvIDAzZmMxMDAw
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+Ck5ldDqgoCBGRUMgRVRIRVJORVSgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj6goKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+ClR5cGUgJnF1b3Q7cnVu
+IGZsYXNoX25mcyZxdW90OyB0byBtb3VudCByb290IGZpbGVzeXN0ZW0gb3ZlciBORlOgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAg
+PGJyPgojIyMgbWFpbl9sb29wIGVudGVyZWQ6IGJvb3RkZWxheT01oKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoCA8YnI+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKAgPGJyPgojIyMgbWFpbl9sb29wOiBib290Y21kPSZxdW90O3J1biBjcmFtZnNib290
+JnF1b3Q7oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPkhpdCBhbnkga2V5IHRvIHN0b3AgYXV0b2Jvb3Q6
+oCAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KPSZndDugoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPqCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KVS1Cb290IDIwMDku
+MDEtc3ZuMjc2ODMgKE1heSAwNyAyMDA5IC0gMTU6MzU6MTUpIE1QQzUxMligoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPqCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KQ1BV
+OqCgIE1QQzUxMjFlIHJldi4gMi4wLCBDb3JlIGUzMDBjNCBhdCAzOTYgTUh6LCBDU0IgYXQgMTk4
+IE1IeqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJy
+PkJvYXJkOiBBRFM1MTIxIHJldi4gMHgwMDAwIChDUExEIHJldi4gMHgwMCmgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IDxicj4KSTJDOqCgIDg1IGtIeiygoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKAgPGJyPjg1IGtIeiygoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgIDxicj4KODUga0h6LKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKAgPGJyPnJlYWR5oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KRFJBTTqgIDY0IE1CoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPlRvcCBvZiBSQU0gdXNhYmxlIGZvciBVLUJvb3Qg
+YXQ6IDA0MDAwMDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KUmVzZXJ2aW5nIDI0OWsgZm9yIFUtQm9v
+dCBhdDogMDNmYzEwMDCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPlJlc2VydmluZyA1MjBrIGZvciBt
+YWxsb2MoKSBhdDogMDNmM2YwMDCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KUmVzZXJ2aW5nIDYwIEJ5
+dGVzIGZvciBCb2FyZCBJbmZvIGF0OiAwM2YzZWZjNKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPlJlc2VydmluZyA2
+NCBCeXRlcyBmb3IgR2xvYmFsIERhdGEgYXQ6IDAzZjNlZjg0oKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KU3RhY2sg
+UG9pbnRlciBhdDogMDNmM2VmNjigoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPk5l
+dyBTdGFjayBQb2ludGVyIGlzOiAwM2YzZWY2OKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxi
+cj4KTm93IHJ1bm5pbmcgaW4gUkFNIC0gVS1Cb290IGF0OiAwM2ZjMTAwMKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKAgPGJyPkZMQVNIOiBmbGFzaCBkZXRlY3QgY2ZpoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAwMDAgY21kIGYwIGYwIDhiaXQgeCA4IGJpdKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKAgPGJyPmZ3YyBhZGRyIGZjMDAwMDAwIGNtZCBmZiBmZiA4Yml0IHggOCBiaXSg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAwNTUgY21kIDk4IDk4IDhiaXQgeCA4
+IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDAxMCBpcz0g
+MzAgNTGgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDA1NTUgY21kIDk4IDk4
+IDhiaXQgeCA4IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAw
+MDAxMCBpcz0gMCA1MaCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAwMDAg
+Y21kIGYwIGYwZjAgMTZiaXQgeCA4IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmZ3YyBhZGRyIGZjMDAw
+MDAwIGNtZCBmZiBmZmZmIDE2Yml0IHggOCBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIg
+ZmMwMDAwYWEgY21kIDk4IDk4OTggMTZiaXQgeCA4IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBj
+bWQgNTEoUSkgYWRkciBmYzAwMDAyMCBpcz0gMjAzMiA1MTUxoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4K
+ZndjIGFkZHIgZmMwMDBhYWEgY21kIDk4IDk4OTggMTZiaXQgeCA4IGJpdKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAg
+PGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDAyMCBpcz0gMjAzMiA1MTUxoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgIDxicj4KZndjIGFkZHIgZmMwMDAwMDAgY21kIGYwIDAwZjAgMTZiaXQgeCAxNiBiaXSgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKAgPGJyPmZ3YyBhZGRyIGZjMDAwMDAwIGNtZCBmZiAwMGZmIDE2Yml0IHggMTYgYml0
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAwYWEgY21kIDk4IDAwOTggMTZiaXQgeCAx
+NiBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDAyMCBpcz0gMjAz
+MiAwMDUxoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDBhYWEgY21kIDk4IDAwOTgg
+MTZiaXQgeCAxNiBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDAy
+MCBpcz0gMjAzMiAwMDUxoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAwMDAgY21k
+IGYwIGYwZjBmMGYwIDMyYml0IHggOCBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmZ3YyBhZGRyIGZjMDAwMDAw
+IGNtZCBmZiBmZmZmZmZmZiAzMmJpdCB4IDggYml0oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMw
+MDAxNTQgY21kIDk4IDk4OTg5ODk4IDMyYml0IHggOCBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQg
+NTEoUSkgYWRkciBmYzAwMDA0MCBpcz0gMDA1MTAwNTEgNTE1MTUxNTGgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZndj
+IGFkZHIgZmMwMDE1NTQgY21kIDk4IDk4OTg5ODk4IDMyYml0IHggOCBiaXSgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJy
+PmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDA0MCBpcz0gMDA1MTAwNTEgNTE1MTUxNTGgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IDxicj4KZndjIGFkZHIgZmMwMDAwMDAgY21kIGYwIDAwZjAwMGYwIDMyYml0IHggMTYgYml0oKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKAgPGJyPmZ3YyBhZGRyIGZjMDAwMDAwIGNtZCBmZiAwMGZmMDBmZiAzMmJpdCB4IDE2IGJp
+dKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgIDxicj4KZndjIGFkZHIgZmMwMDAxNTQgY21kIDk4IDAwOTgwMDk4IDMyYml0IHgg
+MTYgYml0oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTEoUSkgYWRkciBmYzAwMDA0MCBpcz0gMDA1MTAw
+NTEgMDA1MTAwNTGgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KaXM9IGNtZCA1MihSKSBhZGRyIGZjMDAwMDQ0IGlzPSAw
+MDUyMDA1MiAwMDUyMDA1MqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmlzPSBjbWQgNTkoWSkgYWRkciBmYzAwMDA0OCBp
+cz0gMDA1OTAwNTkgMDA1OTAwNTmgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KZGV2aWNlIGludGVyZmFjZSBpcyAyoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPmZvdW5kIHBvcnQgNCBjaGlwIDIg
+cG9ydCAzMiBiaXRzIGNoaXAgMTYgYml0c6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KMDAgOiA1MSA1MiA1OSAw
+MiAwMCA0MCAwMCAwMCAwMCAwMCAwMCAyNyAzNiAwMCAwMCAwNqAgUVJZLi5ALi4uLi4mIzM5OzYu
+Li6goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4xMCA6IDA2
+IDA5IDEzIDAzIDA1IDAzIDAyIDE5IDAyIDAwIDA2IDAwIDAxIGZmIDAwIDAwoCAuLi4uLi4uLi4u
+Li4uLi4uoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CjIw
+IDogMDIgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgZjcgZmYgZmSgIC4uLi4u
+Li4uLi4uLi4uLi6goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxi
+cj5md2MgYWRkciBmYzAwMDAwMCBjbWQgZjAgMDBmMDAwZjAgMzJiaXQgeCAxNiBiaXSgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oCA8YnI+CmZ3YyBhZGRyIGZjMDAxNTU0IGNtZCBhYSAwMGFhMDBhYSAzMmJpdCB4IDE2IGJpdKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgIDxicj5md2MgYWRkciBmYzAwMGFhOCBjbWQgNTUgMDA1NTAwNTUgMzJiaXQgeCAxNiBi
+aXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoCA8YnI+CmZ3YyBhZGRyIGZjMDAxNTU0IGNtZCA5MCAwMDkwMDA5MCAzMmJpdCB4
+IDE2IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgIDxicj5md2MgYWRkciBmYzAwMDAwMCBjbWQgZjAgMDBmMDAwZjAgMzJi
+aXQgeCAxNiBiaXSgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CmZ3YyBhZGRyIGZjMDAwMTU0IGNtZCA5OCAwMDk4MDA5
+OCAzMmJpdCB4IDE2IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5tYW51ZmFjdHVyZXIgaXMgMqCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+Cm1hbnVmYWN0dXJlciBpZCBpcyAweDGg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5kZXZpY2UgaWQgaXMgMHgyMjdl
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CmRldmljZSBpZDIgaXMg
+MHgwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5jZmkgdmVyc2lv
+biBpcyAweDMxMzOgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnNpemVf
+cmF0aW8gMiBwb3J0IDMyIGJpdHMgY2hpcCAxNiBiaXRzoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5m
+b3VuZCAxIGVyYXNlIHJlZ2lvbnOgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8
+YnI+CmVyYXNlIHJlZ2lvbiAwOiAweDAyMDAwMGZmoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgIDxicj5lcmFzZV9yZWdpb25fY291bnQgPSAyNTYgZXJhc2VfcmVnaW9uX3NpemUgPSAxMzEw
+NzKgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoCA8YnI+CmZ3YyBhZGRyIGZjMDAwMDAwIGNtZCBmMCAwMGYwMDBmMCAzMmJpdCB4IDE2
+IGJpdKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgIDxicj5mbGFzaF9wcm90ZWN0IE9OOiBmcm9tIDB4RkZGMDAwMDAgdG8gMHhG
+RkYzNkZGRqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoCA8YnI+CnByb3RlY3Qgb24gMjUyoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5mbGFzaF9wcm90ZWN0IE9OOiBmcm9tIDB4RkZGNDAw
+MDAgdG8gMHhGRkY3RkZGRqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnByb3RlY3Qgb24gMjUzoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5mbGFzaF9wcm90ZWN0IE9OOiBmcm9t
+IDB4RkZGODAwMDAgdG8gMHhGRkY4MUZGRqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CnByb3RlY3Qgb24gMjU0oKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj42NCBNQqCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CkluOqCgoCBz
+ZXJpYWygoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5PdXQ6
+oKAgc2VyaWFsoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+
+CkVycjqgoCBzZXJpYWygoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IDxicj5pMmNfd3JpdGU6IGZhaWxlZCB0byBhZGRyZXNzIGNoaXCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoCA8YnI+CmkyY19yZWFkOiBmYWlsZWQgdG8gYWRkcmVzcyBjaGlwoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgIDxicj5EVkkgRW5jb2RlciBSZWFkOiAweDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoCA8YnI+CmkyY193cml0ZTogZmFpbGVkIHRvIGFkZHJlc3MgY2hpcKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgIDxicj5pMmNfcmVhZDogZmFpbGVkIHRvIGFkZHJlc3MgY2hpcKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CkRWSSBFbmNvZGVyIFJlYWQ6IDB4MDCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5VLUJvb3QgcmVsb2NhdGVkIHRvIDAzZmMx
+MDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+Ck5ldDqgoCBGRUMgRVRIRVJORVSg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj6goKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+ClR5cGUgJnF1b3Q7
+cnVuIGZsYXNoX25mcyZxdW90OyB0byBtb3VudCByb290IGZpbGVzeXN0ZW0gb3ZlciBORlOgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8
+YnI+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKAgPGJyPgojIyMgbWFpbl9sb29wIGVudGVyZWQ6IGJvb3RkZWxheT01oKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoCA8YnI+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKAgPGJyPgojIyMgbWFpbl9sb29wOiBib290Y21kPSZxdW90O3J1biBjcmFtZnNi
+b290JnF1b3Q7oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPkhpdCBhbnkga2V5IHRvIHN0b3AgYXV0b2Jv
+b3Q6oCAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KPSZndDsgYm9vdKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPiMjIEN1cnJlbnQgc3Rh
+Y2sgZW5kcyBhdCAweDAzZjNlOGY4oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KKqAga2VybmVs
+OiBjbWRsaW5lIGltYWdlIGFkZHJlc3MgPSAweGZmYzQwMDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPiMjIEJv
+b3Rpbmcga2VybmVsIGZyb20gTGVnYWN5IEltYWdlIGF0IGZmYzQwMDAwIC4uLqCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4K
+oKAgSW1hZ2UgTmFtZTqgoCBMaW51eC0yLjYuMjQuNqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAg
+PGJyPqCgIENyZWF0ZWQ6oKCgoKAgMjAwOS0wNC0zMKCgIDM6NTQ6MTMgVVRDoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgIDxicj4KoKAgSW1hZ2UgVHlwZTqgoCBQb3dlclBDIExpbnV4IEtlcm5lbCBJbWFnZSAoZ3pp
+cCBjb21wcmVzc2VkKaCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKAgPGJyPqCgIERhdGEgU2l6ZTqgoKAgMTc4MjE1MCBCeXRlcyA9oCAxLjcgTUKgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgIDxicj4KoKAgTG9hZCBBZGRyZXNzOiAwMDAwMDAwMKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKAgPGJyPqCgIEVudHJ5IFBvaW50OqAgMDAwMDAwMDCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KoKAgVmVyaWZ5aW5nIENoZWNrc3VtIC4uLiBPS6Cg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPqCgIGtlcm5lbCBkYXRhIGF0IDB4ZmZjNDAw
+NDAsIGxlbiA9IDB4MDAxYjMxODYgKDE3ODIxNTApoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KIyMgU2tpcHBpbmcgaW5pdCBSYW1k
+aXNroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPiMjIE5vIGluaXQgUmFtZGlz
+a6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KoKAgcmFtZGlzayBz
+dGFydCA9IDB4MDAwMDAwMDAsIHJhbWRpc2sgZW5kID0gMHgwMDAwMDAwMKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPiqgIGZkdDog
+Y21kbGluZSBpbWFnZSBhZGRyZXNzID0gMHhmZmVjMDAwMKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KIyMg
+Q2hlY2tpbmcgZm9yICYjMzk7RkRUJiMzOTsvJiMzOTtGRFQgSW1hZ2UmIzM5OyBhdCBmZmVjMDAw
+MKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgIDxicj4qoCBmZHQ6IHJhdyBGRFQgYmxvYqCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoCA8YnI+CiMjIEZsYXR0ZW5lZCBEZXZpY2UgVHJlZSBibG9iIGF0IGZm
+ZWMwMDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj6goCBCb290aW5nIHVzaW5nIHRoZSBmZHQgYmxvYiBh
+dCAweGZmZWMwMDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CqCgIG9mX2ZsYXRfdHJlZSBhdCAweGZmZWMw
+MDAwIHNpemUgMHgwMDAwMGUwNqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj6goCBVbmNvbXByZXNzaW5nIEtlcm5l
+bCBJbWFnZSAuLi4gT0ugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CqCgIGtlcm5lbCBsb2FkZWQg
+YXQgMHgwMDAwMDAwMCwgZW5kID0gMHgwMDNhYzI0NKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4jIyBpbml0cmRfaGln
+aCA9IDB4ZmZmZmZmZmYsIGNvcHlfdG9fcmFtID0gMaCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CqCgIHJhbWRp
+c2sgbG9hZCBzdGFydCA9IDB4MDAwMDAwMDAsIHJhbWRpc2sgbG9hZCBlbmQgPSAweDAwMDAwMDAw
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4jIyBk
+ZXZpY2UgdHJlZSBhdCAweEZGRUMwMDAwIC4uLiAweEZGRUMwRTA1IChsZW49MTU4Nzg9MHgzRTA2
+KaCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+
+CqCgIExvYWRpbmcgRGV2aWNlIFRyZWUgdG8gMDA3ZmMwMDAsIGVuZCAwMDdmZmUwNSAuLi4gT0ug
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IDxicj5VcGRhdGluZyBwcm9wZXJ0eSAmIzM5O2xvY2FsLW1hYy1hZGRyZXNzJiMzOTsgPaAgMDAg
+MDAgMDAgMDAgMDAgMDCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgIDxicj4KVXBkYXRpbmcgcHJvcGVydHkgJiMzOTthZGRyZXNzJiMzOTsgPaAg
+MDAgMDAgMDAgMDAgMDAgMDCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+VXBkYXRpbmcgcHJvcGVydHkgJiMzOTtidXMt
+ZnJlcXVlbmN5JiMzOTsgPaAgMDMgZWYgMTQgODCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+ClVwZGF0aW5nIHByb3Bl
+cnR5ICYjMzk7L2NwdXMvUG93ZXJQQyw1MTIxQDAvdGltZWJhc2UtZnJlcXVlbmN5JiMzOTsgPaAg
+MDIgZjMgNGYgNjCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPlVw
+ZGF0aW5nIHByb3BlcnR5ICYjMzk7L2NwdXMvUG93ZXJQQyw1MTIxQDAvYnVzLWZyZXF1ZW5jeSYj
+Mzk7ID2gIDBiIGNkIDNkIDgwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKAgPGJyPgpVcGRhdGluZyBwcm9wZXJ0eSAmIzM5Oy9jcHVzL1Bvd2VyUEMsNTEyMUAwL2Ns
+b2NrLWZyZXF1ZW5jeSYjMzk7ID2gIDE3IDlhIDdiIDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgIDxicj5VcGRhdGluZyBwcm9wZXJ0eSAmIzM5O2J1cy1mcmVxdWVu
+Y3kmIzM5OyA9oCAwMyBlZiAxNCA4MKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KIyMgVHJhbnNmZXJyaW5nIGNvbnRy
+b2wgdG8gTGludXggKGF0IGFkZHJlc3MgMDAwMDAwMDApIC4uLqCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPqCgIEJvb3RpbmcgdXNpbmcg
+T0YgZmxhdCB0cmVlLi4uIChhdCBhZGRyZXNzIDAwN2ZjMDAwKaCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj4KPGJyPkF0IHRoaXMg
+cG9pbnQsIHRoZSBib2FyZCBpbW1lZGlhdGVseSByZXNldHMuoCBUaGVyZSBpcyBubyBoaW50IG9m
+IGxpZmUgZnJvbSB0aGUga2VybmVsIGZyb20gdGhlIGNvbnNvbGUsIGFsdGhvdWdoIHNldHRpbmcg
+YSBicmVha3BvaW50IG9uIHRoZSBCREkgYXQgMHgwMDAwMDAwIGFuZCB0cmFjaW5nIHRocm91Z2gg
+YXBwZWFycyBhcyB0aG91Z2ggc29tZSBjb2RlIChhbHRob3VnaCB3ZSBkb24mIzM5O3Qga25vdyB3
+aGF0KSBpcyBiZWluZyBleGVjdXRlZC48YnI+Cjxicj5PdXIgdS1ib290IGVudmlyb25tZW50IGlz
+IGFzIGZvbGxvd3M6PGJyPjxicj49Jmd0OyBwcmludGVudqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CmJvb3RkZWxheT01oKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5iYXVkcmF0ZT0xMTUyMDCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+CmxvYWRzX2VjaG89MaCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIDxicj5wcmVib290PWVjaG87ZWNo
+byBUeXBlIFwmcXVvdDtydW4gZmxhc2hfbmZzXCZxdW90OyB0byBtb3VudCByb290IGZpbGVzeXN0
+ZW0gb3ZlciBORlM7ZWNob6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpy
+b290cGF0aD0vb3B0L2VsZGsvcHBjXzZ4eKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8
+YnI+aG9zdG5hbWU9Z2cyMDCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKAgPGJyPgpib290ZmlsZT1nZzIwMC91SW1hZ2WgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoCA8YnI+bG9hZGFkZHI9NDAwMDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKAgPGJyPgp1LWJvb3RfYWRkcl9yPTIwMDAwMKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoCA8YnI+a2VybmVsX2FkZHJfcj02MDAwMDCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpmZHRfYWRkcl9yPTg4MDAwMKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+cmFtZGlza19hZGRyX3I9OTAwMDAwoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgp1LWJvb3RfYWRkcj1GRkYwMDAwMKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+a2VybmVsX2FkZHI9RkZDNDAw
+MDCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpmZHRfYWRkcj1GRkVD
+MDAwMKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+cmFtZGlza19h
+ZGRyPUZDMDQwMDAwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpyYW1k
+aXNrZmlsZT1hZHM1MTIxL3VSYW1kaXNroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+
+dS1ib290PWFkczUxMjEvdS1ib290LmJpbqCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAg
+PGJyPgpib290ZmlsZT1hZHM1MTIxL3VJbWFnZaCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoCA8YnI+ZmR0ZmlsZT1hZHM1MTIxL2FkczUxMjEuZHRioKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKAgPGJyPgpyb290cGF0aD0vb3B0L2VsZGsvcHBjXzZ4eKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoCA8YnI+bmV0ZGV2PWV0aDCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpjb25zZGV2PXR0eVBTQzCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+bmZzYXJncz1zZXRlbnYgYm9vdGFyZ3Mgcm9vdD0v
+ZGV2L25mcyBydyBuZnNyb290PSR7c2VydmVyaXB9OiR7cm9vdHBhdGh9oKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpyYW1hcmdzPXNldGVudiBib290YXJncyBy
+b290PS9kZXYvcmFtIHJ3oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+YWRkaXA9c2V0ZW52IGJvb3Rhcmdz
+ICR7Ym9vdGFyZ3N9IGlwPSR7aXBhZGRyfToke3NlcnZlcmlwfToke2dhdGV3YXlpcH06JHtuZXRt
+YXNrfToke2hvc3RuYW1lfToke25ldGRldn06b2ZmIHBhbmljPTGgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgphZGR0dHk9c2V0ZW52IGJv
+b3RhcmdzICR7Ym9vdGFyZ3N9IGNvbnNvbGU9JHtjb25zZGV2fSwke2JhdWRyYXRlfaCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+Zmxhc2hfbmZzPXJ1
+biBuZnNhcmdzIGFkZGlwIGFkZHR0eTtib290bSAke2tlcm5lbF9hZGRyfSAtICR7ZmR0X2FkZHJ9
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpmbGFzaF9z
+ZWxmPXJ1biByYW1hcmdzIGFkZGlwIGFkZHR0eTtib290bSAke2tlcm5lbF9hZGRyfSAke3JhbWRp
+c2tfYWRkcn0gJHtmZHRfYWRkcn2goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+bmV0
+X25mcz10ZnRwICR7a2VybmVsX2FkZHJfcn0gJHtib290ZmlsZX07dGZ0cCAke2ZkdF9hZGRyX3J9
+ICR7ZmR0ZmlsZX07cnVuIG5mc2FyZ3MgYWRkaXAgYWRkdHR5O2Jvb3RtICR7a2VybmVsX2FkZHJf
+cn0gLSAke2ZkdF9hZGRyX3J9oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJy
+PgpuZXRfc2VsZj10ZnRwICR7a2VybmVsX2FkZHJfcn0gJHtib290ZmlsZX07dGZ0cCAke3JhbWRp
+c2tfYWRkcl9yfSAke3JhbWRpc2tmaWxlfTt0ZnRwICR7ZmR0X2FkZHJfcn0gJHtmZHRmaWxlfTty
+dW4gcmFtYXJncyBhZGRpcCBhZGR0dHk7Ym9vdG0gJHtrZXJuZWxfYWRkcl9yfSAke3JhbWRpc2tf
+YX08YnI+bG9hZD10ZnRwICR7dS1ib290X2FkZHJfcn0gJHt1LWJvb3R9oKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKAgPGJyPgp1cGRhdGU9cHJvdGVjdCBvZmYgJHt1LWJvb3RfYWRkcn0gKyR7ZmlsZXNpemV9
+O2VyYSAke3UtYm9vdF9hZGRyfSArJHtmaWxlc2l6ZX07Y3AuYiAke3UtYm9vdF9hZGRyX3J9ICR7
+dS1ib290X2FkZHJ9ICR7ZmlsZXNpemV9oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoCA8YnI+dXBkPXJ1biBsb2FkIHVwZGF0ZaCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKAgPGJyPgpldGhhY3Q9RkVDIEVUSEVSTkVUoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+Y3JhbWZzYm9vdD1zZXQgYm9vdGFyZ3Mgcm9vdD0vZGV2
+L210ZGJsb2NrMSBtZW09NjRNOyBydW4gYWRkdHR5O2Jvb3RtICR7a2VybmVsX2FkZHJ9IC0gJHtm
+ZHRfYWRkcn2goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpib290Y21kPXJ1biBjcmFtZnNib290oKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+c3RkaW49c2VyaWFsoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgpzdGRvdXQ9c2VyaWFsoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCA8YnI+c3RkZXJyPXNlcmlhbKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgPGJyPgqgoKCgoKCgoKCg
+oKCgoKCgoKCgIDxicj5JZiBhbnlvbmUgaXMgYWJsZSB0byBwcm92aWRlIHNvbWUgaGVscCBhcyB0
+byB3aGVyZSB3ZSBzaG91bGQgc3RhcnQgbG9va2luZyBmb3Igb3VyIHByb2JsZW0gKG9yIGhvdyB3
+ZSBjYW4gc3RvcCBpdCBmcm9tIGltbWVkaWF0ZWx5IHJlYm9vdGluZywgb3IgdHJhcCB0aGUgcmVi
+b290IG9uIHRoZSBCREkpLCB3ZSB3b3VsZCBiZSBleHRyZW1lbHkgZ3JhdGVmdWwgZm9yIHRoZSBo
+ZWxwLjxicj4KPGJyPkJlc3QgcmVnYXJkczxicj5EYW1pZW4uPGJyPjxicj48YnI+PGJyPjxicj48
+YnI+PGJyPgo=
+--0016361e8806ceef5704694e82b1--
