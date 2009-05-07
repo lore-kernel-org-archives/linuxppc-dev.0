@@ -1,20 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 46961DDF7B
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 18:26:45 +1000 (EST)
-In-Reply-To: <1241641262-5202-6-git-send-email-wd@denx.de>
-References: <1241641262-5202-1-git-send-email-wd@denx.de>
-	<1241641262-5202-6-git-send-email-wd@denx.de>
-To: Wolfgang Denk <wd@denx.de>
-MIME-Version: 1.0
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 8802ADDF87
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 19:19:53 +1000 (EST)
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+From: Wolfgang Denk <wd@denx.de>
 Subject: Re: [PATCH 05/04] *** NOT FOR RELEASE *** HACK *** Work around MII
 	clock issue ***
-Message-ID: <OF97606123.49B50465-ONC12575AF.002E2518-C12575AF.002E6300@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 7 May 2009 10:26:40 +0200
-Content-Type: text/plain; charset="US-ASCII"
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <OF97606123.49B50465-ONC12575AF.002E2518-C12575AF.002E6300@transmode.se>
+References: <1241641262-5202-1-git-send-email-wd@denx.de>
+	<1241641262-5202-6-git-send-email-wd@denx.de>
+	<OF97606123.49B50465-ONC12575AF.002E2518-C12575AF.002E6300@transmode.se>
+Date: Thu, 07 May 2009 11:19:48 +0200
+Message-Id: <20090507091948.6C86883420E8@gemini.denx.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,24 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 
-> Signed-off-by: Wolfgang Denk <wd@denx.de>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: John Rigby <jcrigby@gmail.com>
-> ---
-> This patch is NOT intended for inclusion into mainline, but rather a
-> request for help. For some reason which I don't understand yet, the
-> Ethernet interface on the ARIA board does not work in the default
-> configuration, because MII probing fails.
-> 
-> What I'm seeing is this; the problem is with this part of code in
-> "drivers/net/fs_enet/mii-fec.c":
-> 
-> 156         fec->mii_speed = ((ppc_proc_freq + 4999999) / 5000000) << 1;
-> ...
-> 163         out_be32(&fec->fecp->fec_mii_speed, fec->mii_speed);
+Dear Joakim Tjernlund,
 
-Just a stab in the dark: Perhaps the fec->fecp->fec_mii_speed field is
-misaligned or is 16 bits ?
+In message <OF97606123.49B50465-ONC12575AF.002E2518-C12575AF.002E6300@transmode.se> you wrote:
+>
+> Just a stab in the dark: Perhaps the fec->fecp->fec_mii_speed field is
+> misaligned or is 16 bits ?
 
-   Jocke
+Good idea. The RM documents the register at offset 0x44 and describes
+it as 32 bits... and it's working fine on the MPC5121ADS  board,  but
+fails on ARIA.
+
+Thanks.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Lots of people drink from the wrong bottle sometimes.
+	-- Edith Keeler, "The City on the Edge of Forever",
+	   stardate unknown
