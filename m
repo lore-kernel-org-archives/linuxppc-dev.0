@@ -1,22 +1,18 @@
 Return-Path: <wg@grandegger.com>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id B2E85DDDF0
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 16:36:57 +1000 (EST)
-Message-ID: <4A028182.3040107@grandegger.com>
-Date: Thu, 07 May 2009 08:36:50 +0200
+	by ozlabs.org (Postfix) with ESMTP id 02D79DDF80
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 16:45:19 +1000 (EST)
+Message-ID: <4A02837C.5090608@grandegger.com>
+Date: Thu, 07 May 2009 08:45:16 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 08/12] mpc5121: Added I2C support.
-References: <1241640919-4650-1-git-send-email-wd@denx.de>	<1241640919-4650-9-git-send-email-wd@denx.de>
-	<fa686aa40905061401k319313c5q89fd3e245c30808f@mail.gmail.com>
-	<20090506221908.3927583420E8@gemini.denx.de>	<fa686aa40905061551l8cf5940sf4d4cbf34331cf9a@mail.gmail.com>
-	<fa686aa40905061941p6fd4b03dt1097cf4d16bdd665@mail.gmail.com>
-In-Reply-To: <fa686aa40905061941p6fd4b03dt1097cf4d16bdd665@mail.gmail.com>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 09/12] mpc5121ads: Added I2C RTC node to mpc5121ads DTS.
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<1241640919-4650-10-git-send-email-wd@denx.de>
+In-Reply-To: <1241640919-4650-10-git-send-email-wd@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-i2c@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-	Piotr Ziecik <kosmo@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org, Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, May 6, 2009 at 4:51 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->> On Wed, May 6, 2009 at 4:19 PM, Wolfgang Denk <wd@denx.de> wrote:
->>> Dear Grant Likely,
->>>
->>> In message <fa686aa40905061401k319313c5q89fd3e245c30808f@mail.gmail.com> you wrote:
->>>> On Wed, May 6, 2009 at 2:15 PM, Wolfgang Denk <wd@denx.de> wrote:
->>>>> From: Piotr Ziecik <kosmo@semihalf.com>
->>>>>
->>>>> - Enabled I2C interrupts on MPC5121.
->>>>> - Updated Kconfig for i2c-mpc driver.
->>>> I think this workaround belongs in the driver itself.
->>> Sorry, I don't get it. Which workaround? What exactly should I change?
->> Sorry, I misread the patch.  Never mind.
+Wolfgang Denk wrote:
+> From: Piotr Ziecik <kosmo@semihalf.com>
 > 
-> Actually, on 3rd reading, I think my first impression was correct
-> (even if I was wrong about it being a workaround).  This code in
-> mpc512x_init_i2c() is only relevant for i2c busses (it isn't shared
-> with any other drivers).  Therefore, it belongs with the i2c bus
-> itself.  It does not belong in platform code.
+> Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+> Signed-off-by: Wolfgang Denk <wd@denx.de>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: John Rigby <jcrigby@gmail.com>
+> ---
+>  arch/powerpc/boot/dts/mpc5121ads.dts |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
+> index 93fe12a..c2d9de9 100644
+> --- a/arch/powerpc/boot/dts/mpc5121ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc5121ads.dts
+> @@ -210,6 +210,11 @@
+>  			interrupts = <9 0x8>;
+>  			interrupt-parent = < &ipic >;
+>  			fsl5200-clocking;
 
-Right. Furthermore, the i2c-mpc.c should be extened to support bus speed
-setting for the MPC512x, which has been merged recently (see commit id
-f2bd5efe).
+The above line is obsolete since -rc4. Please check the revised bindings
+in Documentation/powerpc/dts-bindings/fsl/i2c.txt. You may even want:
+
+                        clock-frequency = <100000>;
 
 Wolfgang.
