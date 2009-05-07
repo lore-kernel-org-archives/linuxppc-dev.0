@@ -1,40 +1,20 @@
-Return-Path: <markus@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [216.239.45.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BDBDDDDF7D
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 18:11:58 +1000 (EST)
-Received: from zps18.corp.google.com (zps18.corp.google.com [172.25.146.18])
-	by smtp-out.google.com with ESMTP id n4781N2I011255
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 May 2009 01:01:24 -0700
-Received: from yw-out-2324.google.com (ywt2.prod.google.com [10.192.20.2])
-	by zps18.corp.google.com with ESMTP id n4781MpT029526
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 May 2009 01:01:22 -0700
-Received: by yw-out-2324.google.com with SMTP id 2so334388ywt.17
-	for <linuxppc-dev@ozlabs.org>; Thu, 07 May 2009 01:01:21 -0700 (PDT)
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id EDE7CDDF95
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 18:14:28 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
+Date: Thu, 7 May 2009 10:14:48 +0200
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<20090506220119.7322783420E8@gemini.denx.de>
+	<fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com>
+In-Reply-To: <fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090507070312.DCC5EFC39E@magilla.sf.frob.com>
-References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
-	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
-	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
-	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
-	<904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
-	<20090506212913.GC4861@elte.hu>
-	<904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
-	<20090507070312.DCC5EFC39E@magilla.sf.frob.com>
-Date: Thu, 7 May 2009 01:01:21 -0700
-Message-ID: <904b25810905070101u5abad0dagf8642a6950b1911@mail.gmail.com>
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-From: =?UTF-8?B?TWFya3VzIEd1dHNjaGtlICjpoaflrZ/li6Qp?= <markus@google.com>
-To: Roland McGrath <roland@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-mips@linux-mips.org, Andrew Morton <akpm@linux-foundation.org>,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200905071014.48852.david.jander@protonic.nl>
+Cc: Wolfgang Denk <wd@denx.de>, Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,49 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 7, 2009 at 00:03, Roland McGrath <roland@redhat.com> wrote:
+On Thursday 07 May 2009 00:29:59 Grant Likely wrote:
+> On Wed, May 6, 2009 at 4:01 PM, Wolfgang Denk <wd@denx.de> wrote:
+> > Dear Grant,
+> >
+> > in message <fa686aa40905061333q29c263c8p24856c048e30f4d0@mail.gmail.com>
+> > you wrote:
+> >
+> > ...
+> >
+> >> > #ifdef CONFIG_FS_ENET_HAS_FEC
+> >> > +#ifdef CONFIG_FS_ENET_MPC5121_FEC
+> >> > + =A0 =A0{
+> >> > + =A0 =A0 =A0 =A0.compatible =3D "fsl,mpc5121-fec",
+> >> > + =A0 =A0 =A0 =A0.data =3D (void *)&fs_fec_ops,
+> >> > + =A0 =A0},
+> >> > +#else
+> >> > =A0 =A0{
+> >> > =A0 =A0 =A0 =A0.compatible =3D "fsl,pq1-fec-enet",
+> >> > =A0 =A0 =A0 =A0.data =3D (void *)&fs_fec_ops,
+> >> > =A0 =A0},
+> >> > #endif
+> >> > +#endif
+> >>
+> >> Hmmm. =A0A lot of these #ifdefs in here. =A0Does this have a multiplat=
+form
+> >> impact? =A0Not to mention the fact that it's just plain ugly. =A0:-)
+> >
+> > Agreed that it's ugly, but duplicatio9ng the code would have been even
+> > worse. I don't think that it has multiplatform - at least not as long
+> > as you don't ask for one image that runs on 83xx and on 512x.
 >
-> That is not a "ptrace problem" per se at all. =C2=A0It's an intrinsic pro=
-blem
-> with any method based on "generic" syscall interception, if the filtering
-> and enforcement decisions depend on examining user memory.
+> Actually, I *am* asking for one image that runs on 83xx, 52xx and
+> 521x.  I already can and do build and test a single image which boots
+> on all my 52xx boards, on my 8349 board, and on my G4 Mac.
 
-Yes, this is indeed the main problem that we are aware of. It can be
-avoided by suspending all threads during user memory inspection, but
-that's a horrible price to pay (also: see below for an alternative
-approach, that could in principle be adapted to use with ptrace)
+Cool! I also want that! We have different boards with 5200 and 5121e's and =
+it=20
+would be terrific if one day we'd be able to use just one kernel for all of=
+=20
+them!
 
-> The only reason seccomp does not have this "reliability problem" is that
-> its filtering is trivial and depends only on registers (in fact, only on
-> one register, the syscall number).
+(Sorry for being a me-too-er)
 
-Simplicity is really the beauty of seccomp. It is very easy to verify
-that it does the right thing from a security point of view, because
-any attempt to call unsafe system calls results in the kernel
-terminating the program. This is much preferable over most ptrace
-solutions which is more difficult to audit for correctness.
+Best regards,
 
-The downside is that the sandbox'd code needs to delegate execution of
-most of its system calls to a monitor process. This is slow and rather
-awkward. Although due to the magic of clone(), (almost) all system
-calls can in fact be serialized, sent to the monitor process, have
-their arguments safely inspected, and then executed on behalf of the
-sandbox'd process. Details are tedious but we believe they are
-solvable with current kernel APIs.
-
-The other issue is performance. For system calls that are known to be
-safe, we would rather not pay the penalty of redirecting them. A
-kernel patch that made seccomp more efficient for these system calls
-would be very welcome, and we will post such a patch for discussion
-shortly.
-
-> If you want to do checks that depend on shared or volatile state, then
-> syscall interception is really not the proper mechanism for you.
-
-We agree that syscall interception is a poor abstraction level for a
-sandbox. But in the short term, we need to work with the APIs that are
-available in today's kernels. And we believe that seccomp is one of
-the more promising API that are currently available to us.
-
-
-Markus
+=2D-=20
+David Jander
+Protonic Holland.
