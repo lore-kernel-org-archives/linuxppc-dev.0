@@ -1,12 +1,12 @@
 Return-Path: <chrispl78@yahoo.com>
-Received: from web58104.mail.re3.yahoo.com (web58104.mail.re3.yahoo.com
-	[68.142.236.127]) by ozlabs.org (Postfix) with SMTP id 7499CDDE0D
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 08:12:08 +1000 (EST)
-Message-ID: <475052.53669.qm@web58104.mail.re3.yahoo.com>
-Date: Thu, 7 May 2009 15:12:07 -0700 (PDT)
+Received: from web58103.mail.re3.yahoo.com (web58103.mail.re3.yahoo.com
+	[68.142.236.126]) by ozlabs.org (Postfix) with SMTP id 3E156DDE07
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 08:19:25 +1000 (EST)
+Message-ID: <391391.27807.qm@web58103.mail.re3.yahoo.com>
+Date: Thu, 7 May 2009 15:19:24 -0700 (PDT)
 From: Chris Plasun <chrispl78@yahoo.com>
 Subject: Trouble using with Kegel cross tool chain
-To: linuxppc-dev@ozlabs.org
+To: linuxppc <linuxppc-dev@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,32 +19,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > + echo 'SRC_DIR not set, so source tarballs will be unpacked in the 
-> > build dir
-> > ectory'
-> > SRC_DIR not set, so source tarballs will be unpacked in the build 
-> > directory
-> > + case x$PREFIX in
-> > + case x$USER in
-> > + abort 'Don'\''t run all.sh or crosstool.sh as root, it'\''s
-> > dangerous'
-> > + echo 'Don'\''t' run all.sh or crosstool.sh as root, 'it'\''s' 
-> > dangerous
-> > Don't run all.sh or crosstool.sh as root, it's dangerous
-> > + exec false
+Hi Wolfgang,
+
+> Trouble using with Kegel cross tool chain
+> Wolfgang Denk wd at denx.de
+> Thu May 7 15:32:36 EST 2009
 > 
-> Are you running as root?  If so, don't.
+>      * Previous message: Trouble using with Kegel cross tool chain
+>      * Next message: Trouble using with Kegel cross tool chain
+>      * Messages sorted by: [ date ] [ thread ] [ subject ] [ author ]
 > 
-> Mikey
+> Dear Chris,
+> 
+> In message <407093.53240.qm at web58102.mail.re3.yahoo.com> you wrote:
+>  >
+>  > I'm getting a bit desperate trying to build a  gcc / glibc 
+> cross-toolchainfor
+>  > use on a Freescale MPC8313 but am having problems.
+> 
+> Try using ELDK (see http://www.denx.de/wiki/view/DULG/ELDK resp.
+> ftp://ftp.denx.de/pub/eldk/4.2/); it's based on crosstool but has
+> these issues already solved for you.
+> 
+> Best regards,
+> 
+> Wolfgang Denk
 
-Ah, now it's doing something...
+Is Denx your site? I poured over it for U-Boot.
 
-Thanks Mikey. I didn't think running as root would prevent the process from running. Everything is running in VirtualBox so I wasn't concerned about blowing things up.
+I will take a look at this tool.
 
-The build has been in progress for the past 15 minutes...
-
-I set the target as powerpc-603. Is this appropriate for the MPC8313?
-
-Thank you.
+Danke schoen!
 
 Chris Plasun
