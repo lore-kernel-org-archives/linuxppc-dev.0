@@ -1,29 +1,20 @@
-Return-Path: <jan.neskudla.ext@nsn.com>
-Received: from demumfd001.nsn-inter.net (demumfd001.nsn-inter.net
-	[217.115.75.233])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "demumfd001.nsn-inter.net",
-	Issuer "VeriSign Class 3 Secure Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6DA9EDDE1B
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 00:34:19 +1000 (EST)
-Received: from demuprx016.emea.nsn-intra.net ([10.150.129.55])
-	by demumfd001.nsn-inter.net (8.12.11.20060308/8.12.11) with ESMTP id
-	n47EAmlX009786
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 May 2009 16:10:48 +0200
-Received: from demuxf9c (demuxf9c.ul.emea.nsn-intra.net [10.151.17.108])
-	by demuprx016.emea.nsn-intra.net (8.12.11.20060308/8.12.11) with ESMTP
-	id n47EAlsl017730
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 May 2009 16:10:48 +0200
-Subject: RE: [PATCH 0/5] rapidio: adding memory mapping IO support and misc
-	fixes
-From: Jan Neskudla <jan.neskudla.ext@nsn.com>
+Return-Path: <nvbolhuis@aimvalley.nl>
+Received: from smtp-vbr11.xs4all.nl (smtp-vbr11.xs4all.nl [194.109.24.31])
+	by ozlabs.org (Postfix) with ESMTP id 93203DDF7F
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 01:06:52 +1000 (EST)
+Received: from mail3.aimsys.nl (a80-127-156-242.adsl.xs4all.nl
+	[80.127.156.242])
+	by smtp-vbr11.xs4all.nl (8.13.8/8.13.8) with ESMTP id n47F6n4D031639
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 7 May 2009 17:06:50 +0200 (CEST)
+	(envelope-from nvbolhuis@aimvalley.nl)
+Message-ID: <4A02F905.6080904@aimvalley.nl>
+Date: Thu, 07 May 2009 17:06:45 +0200
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Thu, 07 May 2009 16:10:47 +0200
-Message-Id: <1241705447.19689.114.camel@demuxf9c>
-Mime-Version: 1.0
+Subject: howto disable dcache (on a MPC8313)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,30 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hallo, 
 
-I tested your patches, and the MMIO is working when enabled in the
-rionet driver. Only the compilation of rionet as modules was a problem.
-I had to add following lines into rio.c to export missing symbols.
+We have a network-switch connected via PCI which comes with 3rd
+party (kernel) software.
+The frames trapped by the switch and sent to CPU (with DMA)
+are corrupt.
+To rule out any data cache problems (which probably isn't causing
+our problem) I thought I "quickly" disable the data cache.
 
-EXPORT_SYMBOL_GPL(rio_unmap_inb_region);
-EXPORT_SYMBOL_GPL(rio_map_inb_region);
-EXPORT_SYMBOL_GPL(rio_unmap_outb_region);
-EXPORT_SYMBOL_GPL(rio_map_outb_region);
+we use a pretty standard linux-2.6.28 kernel (on our custom MPC8313E
+board).
 
-And one more think, when I enabled usage of DMA, rionet does not compile too, 
-but in this case I do not have a fix. I tested this on kernel 2.6.29.1 and 
-EP8548 as target board. 
+I first tried to mark the one BAT entry that the kernel setups as
+cache_inhibit. I replaced setbat(..., _PAGE_RAM) by
+setbat(..., _PAGE_IO) (in mmu_mapin_ram). This results in the
+kernel not booting at all.
 
-                        Jan 
+I also tried to not set DCE in HID0 in u-boot, this results in
+the board not booting up at all.
+I couldn't find the kernel source for setting HID0. It's not
+op_powerpc_cpu_setup since CONFIG_OPROFILE isn't set (but
+CONFIG_HAVE_OPROFILE is ?)
+
+Is there a way to (simply) disable dcache for MPC8313 ?
+
+Btw. some other architecturs (e.g. blackfin) have a kernel config option
+to disable DCACHE.
 
 
-
-
-> 
-> The patch series add MMIO support to Linux rapidio and fix a few nits.
-> The patches cross rapidio, netdev, powerpc sub-systems.  It will be
-> good for them to go through one tree.  Probably Andrew?  As the
-> previous rapidio patches are mostly merged by you.
-> 
-> - Leo
+---
+N. van Bolhuis.
