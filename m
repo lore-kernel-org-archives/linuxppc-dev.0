@@ -1,13 +1,13 @@
 Return-Path: <roland@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id D7A07DDF86
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 17:14:27 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9B5F5DDF84
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 17:40:40 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: Roland McGrath <roland@redhat.com>
-To: =?UTF-8?B?TWFya3VzIEd1dHNjaGtlICjpoaflrZ/li6Qp?= <markus@google.com>
+To: <markus@google.com>
 Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-In-Reply-To: Markus Gutschke (顧��)'s message of  Wednesday, 6 May 2009 14:46:02 -0700 <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
+In-Reply-To: Markus Gutschke (é¡§å­å¤)'s message of  Wednesday, 6 May 2009 14:46:02 -0700 <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
 References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
 	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
 	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
@@ -17,8 +17,8 @@ References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
 	<904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
 	<20090506212913.GC4861@elte.hu>
 	<904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
-Message-Id: <20090507070312.DCC5EFC39E@magilla.sf.frob.com>
-Date: Thu,  7 May 2009 00:03:12 -0700 (PDT)
+Message-Id: <20090507073020.1517BFC39E@magilla.sf.frob.com>
+Date: Thu,  7 May 2009 00:30:20 -0700 (PDT)
 Cc: linux-mips@linux-mips.org, Andrew Morton <akpm@linux-foundation.org>,
 	x86@kernel.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
