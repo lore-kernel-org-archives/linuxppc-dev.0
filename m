@@ -1,34 +1,18 @@
-Return-Path: <nmiell@comcast.net>
-Received: from QMTA11.emeryville.ca.mail.comcast.net
-	(qmta11.emeryville.ca.mail.comcast.net [76.96.27.211])
-	by ozlabs.org (Postfix) with ESMTP id 06483DDF7F
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 14:32:22 +1000 (EST)
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-From: Nicholas Miell <nmiell@comcast.net>
-To: Markus Gutschke =?UTF-8?Q?=28=E9=A1=A7=E5=AD=9F=E5=8B=A4=29?=
-	<markus@google.com>
-In-Reply-To: <904b25810905061521v62b3ddd6l14deb614d203385a@mail.gmail.com>
-References: <20090228030413.5B915FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
-	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
-	<alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
-	<904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
-	<20090506212913.GC4861@elte.hu>
-	<904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
-	<20090506215450.GA9537@elte.hu>
-	<904b25810905061508n6d9cb8dbg71de5b1e0332ede7@mail.gmail.com>
-	<20090506221319.GA11493@elte.hu>
-	<904b25810905061521v62b3ddd6l14deb614d203385a@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 06 May 2009 21:23:57 -0700
-Message-Id: <1241670237.11500.7.camel@entropy>
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-	stable@kernel.org, linuxppc-dev@ozlabs.org,
-	sparclinux@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Roland McGrath <roland@redhat.com>
+Return-Path: <mikey@neuling.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7B83CDDF00
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 14:50:12 +1000 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: Chris Plasun <chrispl78@yahoo.com>
+Subject: Re: Trouble using with Kegel cross tool chain 
+In-reply-to: <407093.53240.qm@web58102.mail.re3.yahoo.com> 
+References: <407093.53240.qm@web58102.mail.re3.yahoo.com>
+Date: Thu, 07 May 2009 14:50:11 +1000
+Message-ID: <17589.1241671811@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,27 +22,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-05-06 at 15:21 -0700, Markus Gutschke (顧孟勤) wrote:
-> On Wed, May 6, 2009 at 15:13, Ingo Molnar <mingo@elte.hu> wrote:
-> > doing a (per arch) bitmap of harmless syscalls and replacing the
-> > mode1_syscalls[] check with that in kernel/seccomp.c would be a
-> > pretty reasonable extension. (.config controllable perhaps, for
-> > old-style-seccomp)
-> >
-> > It would probably be faster than the current loop over
-> > mode1_syscalls[] as well.
-> 
-> This would be a great option to improve performance of our sandbox. I
-> can detect the availability of the new kernel API dynamically, and
-> then not intercept the bulk of the system calls. This would allow the
-> sandbox to work both with existing and with newer kernels.
-> 
-> We'll post a kernel patch for discussion in the next few days,
-> 
 
-I suspect the correct thing to do would be to leave seccomp mode 1 alone
-and introduce a mode 2 with a less restricted set of system calls -- the
-interface was designed to be extended in this way, after all.
 
--- 
-Nicholas Miell <nmiell@comcast.net>
+In message <407093.53240.qm@web58102.mail.re3.yahoo.com> you wrote:
+> 
+> Hi,
+> 
+> I'm getting a bit desperate trying to build a  gcc / glibc cross-toolchainfor
+ 
+> use on a Freescale MPC8313 but am having problems.
+> 
+> I follow the Quick Start instructions at 
+> http://www.kegel.com/crosstool/crosstool-0.43/doc/crosstool-howto.html and 
+> run demo-powerpc-603.sh (is that the correct script for the MPC8313?)
+> 
+> I check the /opt/crosstool directory and there is nothing there.
+> 
+> Below are the results of running the above script:
+> 
+> =================
+>  
+> linux-66oa:~/work/crosstool-0.43 # sh demo-powerpc-603.sh 
+> + TARBALLS_DIR=/root/downloads
+> + RESULT_TOP=/opt/crosstool
+> + export TARBALLS_DIR RESULT_TOP
+> + GCC_LANGUAGES=c,c++
+> + export GCC_LANGUAGES
+> + mkdir -p /opt/crosstool
+> ++ cat powerpc-603.dat gcc-4.1.0-glibc-2.3.6-tls.dat
+> +
+> eval TARGET=powerpc-603-linux-gnu 'TARGET_CFLAGS="-O' '-mcpu=603"'
+> 'GCC_EXTRA_CONFIG="--with-cpu=603' '--enable-cxx-flags=-mcpu=603"'
+> BINUTILS_DIR=binutils-2.16.1 GCC_CORE_DIR=gcc-3.3.6 GCC_DIR=gcc-4.1.0
+> GLIBC_DIR=glibc-2.3.6 LINUX_DIR=linux-2.6.15.4 LINUX_SANITIZED_HEADER_DIR=lin
+ux-libc-headers-2.6.12.0
+> GLIBCTHREADS_FILENAME=glibc-linuxthreads-2.3.6 GDB_DIR=gdb-6.5
+> 'GLIBC_EXTRA_CONFIG="$GLIBC_EXTRA_CONFIG' --with-tls --with-__thread
+> '--enable-kernel=2.4.18"' sh all.sh --notest
+> ++ TARGET=powerpc-603-linux-gnu
+> ++ TARGET_CFLAGS='-O -mcpu=603'
+> ++ GCC_EXTRA_CONFIG='--with-cpu=603 --enable-cxx-flags=-mcpu=603'
+> ++ BINUTILS_DIR=binutils-2.16.1
+> ++ GCC_CORE_DIR=gcc-3.3.6
+> ++ GCC_DIR=gcc-4.1.0
+> ++ GLIBC_DIR=glibc-2.3.6
+> ++ LINUX_DIR=linux-2.6.15.4
+> ++ LINUX_SANITIZED_HEADER_DIR=linux-libc-headers-2.6.12.0
+> ++ GLIBCTHREADS_FILENAME=glibc-linuxthreads-2.3.6
+> ++ GDB_DIR=gdb-6.5
+> ++ GLIBC_EXTRA_CONFIG=' --with-tls --with-__thread --enable-kernel=2.4.18'
+> ++ sh all.sh --notest
+> You set both LINUX_DIR and LINUX_SANITIZED_HEADER_DIR - ignoring LINUX_DIR fo
+r the build
+> DEJAGNU not set, so not running any regression tests
+> GLIBC_ADDON_OPTIONS not set, so building all glibc add-on's
+> KERNELCONFIG not set, so not configuring linux kernel
+> + TOOLCOMBO=gcc-4.1.0-glibc-2.3.6
+> ++ pwd
+> + BUILD_DIR=/root/work/crosstool-0.43/build/powerpc-603-linux-gnu/gcc-4.1.0-g
+libc-2.3.6
+> ++ pwd
+> + TOP_DIR=/root/work/crosstool-0.43
+> + test -z ''
+> + SRC_DIR=/root/work/crosstool-0.43/build/powerpc-603-linux-gnu/gcc-4.1.0-gli
+bc-2.3.6
+> + echo 'SRC_DIR not set, so source tarballs will be unpacked in the build dir
+ectory'
+> SRC_DIR not set, so source tarballs will be unpacked in the build directory
+> + case x$PREFIX in
+> + case x$USER in
+> + abort 'Don'\''t run all.sh or crosstool.sh as root, it'\''s dangerous'
+> + echo 'Don'\''t' run all.sh or crosstool.sh as root, 'it'\''s' dangerous
+> Don't run all.sh or crosstool.sh as root, it's dangerous
+> + exec false
+
+Are you running as root?  If so, don't.
+
+Mikey
+
+> 
+> =================
+> 
+> The point of this exercise is to build a compiler to build Mono so that
+> I can run .NET programs on the MPC8313.
+> 
+> I would really appreciate any help.
+> 
+> Thanks,
+> Chris Plasun
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
