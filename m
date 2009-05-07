@@ -1,14 +1,20 @@
-Return-Path: <chrispl78@yahoo.com>
-Received: from web58103.mail.re3.yahoo.com (web58103.mail.re3.yahoo.com
-	[68.142.236.126]) by ozlabs.org (Postfix) with SMTP id 3E156DDE07
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 08:19:25 +1000 (EST)
-Message-ID: <391391.27807.qm@web58103.mail.re3.yahoo.com>
-Date: Thu, 7 May 2009 15:19:24 -0700 (PDT)
-From: Chris Plasun <chrispl78@yahoo.com>
-Subject: Trouble using with Kegel cross tool chain
-To: linuxppc <linuxppc-dev@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 6B07ADDF7E
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 09:16:55 +1000 (EST)
+Date: Fri, 8 May 2009 09:16:43 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>
+Subject: Re: [PATCH] powerpc/iseries; fix pci breakage
+Message-Id: <20090508091643.ca44575c.sfr@canb.auug.org.au>
+In-Reply-To: <20090507100752.4fa4db7f.sfr@canb.auug.org.au>
+References: <20090507100752.4fa4db7f.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__8_May_2009_09_16_43_+1000_k9TYUvOiYIVpKda="
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Becky Bruce <becky.bruce@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,37 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Fri__8_May_2009_09_16_43_+1000_k9TYUvOiYIVpKda=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Wolfgang,
+Hi Ben,
 
-> Trouble using with Kegel cross tool chain
-> Wolfgang Denk wd at denx.de
-> Thu May 7 15:32:36 EST 2009
-> 
->      * Previous message: Trouble using with Kegel cross tool chain
->      * Next message: Trouble using with Kegel cross tool chain
->      * Messages sorted by: [ date ] [ thread ] [ subject ] [ author ]
-> 
-> Dear Chris,
-> 
-> In message <407093.53240.qm at web58102.mail.re3.yahoo.com> you wrote:
->  >
->  > I'm getting a bit desperate trying to build a  gcc / glibc 
-> cross-toolchainfor
->  > use on a Freescale MPC8313 but am having problems.
-> 
-> Try using ELDK (see http://www.denx.de/wiki/view/DULG/ELDK resp.
-> ftp://ftp.denx.de/pub/eldk/4.2/); it's based on crosstool but has
-> these issues already solved for you.
-> 
-> Best regards,
-> 
-> Wolfgang Denk
+On Thu, 7 May 2009 10:07:52 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
+rote:
+>
+> This is a regression in v2.6.29 from v2.6.28, so I guess we need to
+> send this to the stable team (backported if necessary) after it is upstre=
+am.
 
-Is Denx your site? I poured over it for U-Boot.
+This same patch applies to 2.6.29.2 and fixes the problem there.
 
-I will take a look at this tool.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Danke schoen!
+--Signature=_Fri__8_May_2009_09_16_43_+1000_k9TYUvOiYIVpKda=
+Content-Type: application/pgp-signature
 
-Chris Plasun
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoDa9sACgkQjjKRsyhoI8yATgCeMBzhI3XB2q9QQCLwmjNbEdMf
+KbkAnA8c3rJsNgkqUjMZjwiW1JJBsNgR
+=KGJG
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__8_May_2009_09_16_43_+1000_k9TYUvOiYIVpKda=--
