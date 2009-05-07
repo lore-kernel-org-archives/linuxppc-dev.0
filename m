@@ -1,24 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f172.google.com (mail-gx0-f172.google.com
-	[209.85.217.172]) by ozlabs.org (Postfix) with ESMTP id F1790DDF82
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 12:42:08 +1000 (EST)
-Received: by gxk20 with SMTP id 20so1031193gxk.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 May 2009 19:42:07 -0700 (PDT)
+Return-Path: <chrispl78@yahoo.com>
+Received: from web58102.mail.re3.yahoo.com (web58102.mail.re3.yahoo.com
+	[68.142.236.125]) by ozlabs.org (Postfix) with SMTP id DF528DDF85
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 12:57:18 +1000 (EST)
+Message-ID: <407093.53240.qm@web58102.mail.re3.yahoo.com>
+Date: Wed, 6 May 2009 19:50:37 -0700 (PDT)
+From: Chris Plasun <chrispl78@yahoo.com>
+Subject: Trouble using with Kegel cross tool chain
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-In-Reply-To: <fa686aa40905061551l8cf5940sf4d4cbf34331cf9a@mail.gmail.com>
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-9-git-send-email-wd@denx.de>
-	<fa686aa40905061401k319313c5q89fd3e245c30808f@mail.gmail.com>
-	<20090506221908.3927583420E8@gemini.denx.de>
-	<fa686aa40905061551l8cf5940sf4d4cbf34331cf9a@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 6 May 2009 20:41:47 -0600
-Message-ID: <fa686aa40905061941p6fd4b03dt1097cf4d16bdd665@mail.gmail.com>
-Subject: Re: [PATCH 08/12] mpc5121: Added I2C support.
-To: Wolfgang Denk <wd@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Piotr Ziecik <kosmo@semihalf.com>,
-	Detlev Zundel <dzu@denx.de>, linux-i2c@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,34 +18,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 6, 2009 at 4:51 PM, Grant Likely <grant.likely@secretlab.ca> wr=
-ote:
-> On Wed, May 6, 2009 at 4:19 PM, Wolfgang Denk <wd@denx.de> wrote:
->> Dear Grant Likely,
->>
->> In message <fa686aa40905061401k319313c5q89fd3e245c30808f@mail.gmail.com>=
- you wrote:
->>> On Wed, May 6, 2009 at 2:15 PM, Wolfgang Denk <wd@denx.de> wrote:
->>> > From: Piotr Ziecik <kosmo@semihalf.com>
->>> >
->>> > - Enabled I2C interrupts on MPC5121.
->>> > - Updated Kconfig for i2c-mpc driver.
->>>
->>> I think this workaround belongs in the driver itself.
->>
->> Sorry, I don't get it. Which workaround? What exactly should I change?
->
-> Sorry, I misread the patch. =A0Never mind.
 
-Actually, on 3rd reading, I think my first impression was correct
-(even if I was wrong about it being a workaround).  This code in
-mpc512x_init_i2c() is only relevant for i2c busses (it isn't shared
-with any other drivers).  Therefore, it belongs with the i2c bus
-itself.  It does not belong in platform code.
+Hi,
 
-Cheers,
-g.
+I'm getting a bit desperate trying to build a  gcc / glibc cross-toolchainfor 
+use on a Freescale MPC8313 but am having problems.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+I follow the Quick Start instructions at 
+http://www.kegel.com/crosstool/crosstool-0.43/doc/crosstool-howto.html and 
+run demo-powerpc-603.sh (is that the correct script for the MPC8313?)
+
+I check the /opt/crosstool directory and there is nothing there.
+
+Below are the results of running the above script:
+
+=================
+ 
+linux-66oa:~/work/crosstool-0.43 # sh demo-powerpc-603.sh 
++ TARBALLS_DIR=/root/downloads
++ RESULT_TOP=/opt/crosstool
++ export TARBALLS_DIR RESULT_TOP
++ GCC_LANGUAGES=c,c++
++ export GCC_LANGUAGES
++ mkdir -p /opt/crosstool
+++ cat powerpc-603.dat gcc-4.1.0-glibc-2.3.6-tls.dat
++
+eval TARGET=powerpc-603-linux-gnu 'TARGET_CFLAGS="-O' '-mcpu=603"'
+'GCC_EXTRA_CONFIG="--with-cpu=603' '--enable-cxx-flags=-mcpu=603"'
+BINUTILS_DIR=binutils-2.16.1 GCC_CORE_DIR=gcc-3.3.6 GCC_DIR=gcc-4.1.0
+GLIBC_DIR=glibc-2.3.6 LINUX_DIR=linux-2.6.15.4 LINUX_SANITIZED_HEADER_DIR=linux-libc-headers-2.6.12.0
+GLIBCTHREADS_FILENAME=glibc-linuxthreads-2.3.6 GDB_DIR=gdb-6.5
+'GLIBC_EXTRA_CONFIG="$GLIBC_EXTRA_CONFIG' --with-tls --with-__thread
+'--enable-kernel=2.4.18"' sh all.sh --notest
+++ TARGET=powerpc-603-linux-gnu
+++ TARGET_CFLAGS='-O -mcpu=603'
+++ GCC_EXTRA_CONFIG='--with-cpu=603 --enable-cxx-flags=-mcpu=603'
+++ BINUTILS_DIR=binutils-2.16.1
+++ GCC_CORE_DIR=gcc-3.3.6
+++ GCC_DIR=gcc-4.1.0
+++ GLIBC_DIR=glibc-2.3.6
+++ LINUX_DIR=linux-2.6.15.4
+++ LINUX_SANITIZED_HEADER_DIR=linux-libc-headers-2.6.12.0
+++ GLIBCTHREADS_FILENAME=glibc-linuxthreads-2.3.6
+++ GDB_DIR=gdb-6.5
+++ GLIBC_EXTRA_CONFIG=' --with-tls --with-__thread --enable-kernel=2.4.18'
+++ sh all.sh --notest
+You set both LINUX_DIR and LINUX_SANITIZED_HEADER_DIR - ignoring LINUX_DIR for the build
+DEJAGNU not set, so not running any regression tests
+GLIBC_ADDON_OPTIONS not set, so building all glibc add-on's
+KERNELCONFIG not set, so not configuring linux kernel
++ TOOLCOMBO=gcc-4.1.0-glibc-2.3.6
+++ pwd
++ BUILD_DIR=/root/work/crosstool-0.43/build/powerpc-603-linux-gnu/gcc-4.1.0-glibc-2.3.6
+++ pwd
++ TOP_DIR=/root/work/crosstool-0.43
++ test -z ''
++ SRC_DIR=/root/work/crosstool-0.43/build/powerpc-603-linux-gnu/gcc-4.1.0-glibc-2.3.6
++ echo 'SRC_DIR not set, so source tarballs will be unpacked in the build directory'
+SRC_DIR not set, so source tarballs will be unpacked in the build directory
++ case x$PREFIX in
++ case x$USER in
++ abort 'Don'\''t run all.sh or crosstool.sh as root, it'\''s dangerous'
++ echo 'Don'\''t' run all.sh or crosstool.sh as root, 'it'\''s' dangerous
+Don't run all.sh or crosstool.sh as root, it's dangerous
++ exec false
+
+=================
+
+The point of this exercise is to build a compiler to build Mono so that
+I can run .NET programs on the MPC8313.
+
+I would really appreciate any help.
+
+Thanks,
+Chris Plasun
