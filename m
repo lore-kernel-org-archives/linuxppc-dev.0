@@ -1,18 +1,29 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 02D79DDF80
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 16:45:19 +1000 (EST)
-Message-ID: <4A02837C.5090608@grandegger.com>
-Date: Thu, 07 May 2009 08:45:16 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <roland@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id D7A07DDF86
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2009 17:14:27 +1000 (EST)
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 09/12] mpc5121ads: Added I2C RTC node to mpc5121ads DTS.
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-10-git-send-email-wd@denx.de>
-In-Reply-To: <1241640919-4650-10-git-send-email-wd@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Piotr Ziecik <kosmo@semihalf.com>
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: =?UTF-8?B?TWFya3VzIEd1dHNjaGtlICjpoaflrZ/li6Qp?= <markus@google.com>
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+In-Reply-To: Markus Gutschke (é¡§å­å¤)'s message of  Wednesday, 6 May 2009 14:46:02 -0700 <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
+	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
+	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
+	<alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
+	<904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
+	<20090506212913.GC4861@elte.hu>
+	<904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
+Message-Id: <20090507070312.DCC5EFC39E@magilla.sf.frob.com>
+Date: Thu,  7 May 2009 00:03:12 -0700 (PDT)
+Cc: linux-mips@linux-mips.org, Andrew Morton <akpm@linux-foundation.org>,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +33,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> From: Piotr Ziecik <kosmo@semihalf.com>
-> 
-> Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
-> Signed-off-by: Wolfgang Denk <wd@denx.de>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: John Rigby <jcrigby@gmail.com>
-> ---
->  arch/powerpc/boot/dts/mpc5121ads.dts |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
-> index 93fe12a..c2d9de9 100644
-> --- a/arch/powerpc/boot/dts/mpc5121ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc5121ads.dts
-> @@ -210,6 +210,11 @@
->  			interrupts = <9 0x8>;
->  			interrupt-parent = < &ipic >;
->  			fsl5200-clocking;
+> Ptrace has performance and/or reliability problems when used to
+> sandbox threaded applications due to potential race conditions when
+> inspecting system call arguments. We hope that we can avoid this
+> problem with seccomp.
 
-The above line is obsolete since -rc4. Please check the revised bindings
-in Documentation/powerpc/dts-bindings/fsl/i2c.txt. You may even want:
+ptrace certainly has performance issues.  I take it the only "reliability
+problems" you are talking about are MT races with modifications to user
+memory that is relevant to a system call.  (Is there something else?)
+That is not a "ptrace problem" per se at all.  It's an intrinsic problem
+with any method based on "generic" syscall interception, if the filtering
+and enforcement decisions depend on examining user memory.  By the same
+token, no such method has a "reliability problem" if the filtering checks
+only examine the registers (or other thread-synchronous state).
 
-                        clock-frequency = <100000>;
+In the sense that I mean, seccomp is "generic syscall interception" too.
+(That is, the checks/enforcement are "around" the call, rather than inside
+it with direct atomicity controls binding the checks and uses together.)
+The only reason seccomp does not have this "reliability problem" is that
+its filtering is trivial and depends only on registers (in fact, only on
+one register, the syscall number).
 
-Wolfgang.
+If you want to do checks that depend on shared or volatile state, then
+syscall interception is really not the proper mechanism for you.  (Likely
+examples include user memory, e.g. for file names in open calls, or ioctl
+struct contents, etc., fd tables or filesystem details, etc.)  For that
+you need mechanisms that look at stable kernel copies of user data that
+are what the syscall will actually use, such as is done by audit, LSM, etc.
+
+If you only have checks confined to thread-synchronous state such as the
+user registers, then you don't have any "reliability problem" regardless
+of the the particular syscall interception mechanism you use.  (ptrace has
+many problems for this or any other purpose, but this is not one of them.)
+That's unless you are referring to some other "reliability problem" that
+I'm not aware of.  (And I'll leave aside the "is it registers or is it
+user memory?" issue on ia64 as irrelevant, since, you know, it's ia64.)
+
+If syscall interception is indeed an appropriate mechanism for your needs
+and you want something tailored more specifically to your exact use in
+future kernels, a module doing this would be easy to implement using the
+utrace API.  (That might be a "compelling use" of utrace by virtue of the
+Midas brand name effect, if nothing else. ;-)
+
+
+Thanks,
+Roland
