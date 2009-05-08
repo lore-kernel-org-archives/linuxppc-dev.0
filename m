@@ -1,22 +1,25 @@
 Return-Path: <jcrigby@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.233])
-	by ozlabs.org (Postfix) with ESMTP id 63C5DDDF81
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 12:22:15 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f9so904262rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 07 May 2009 19:22:14 -0700 (PDT)
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.174])
+	by ozlabs.org (Postfix) with ESMTP id AE03DDDF7A
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 12:36:40 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so931512wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 May 2009 19:36:39 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <fa686aa40905061359p3ba2115fj57f4d9a79f01efda@mail.gmail.com>
+In-Reply-To: <fa686aa40905061542g2cf538bau5eebcfc154906810@mail.gmail.com>
 References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-7-git-send-email-wd@denx.de>
-	<fa686aa40905061359p3ba2115fj57f4d9a79f01efda@mail.gmail.com>
-Date: Thu, 7 May 2009 20:22:14 -0600
-Message-ID: <4b73d43f0905071922x7b5ed328q86b14a35c0040270@mail.gmail.com>
-Subject: Re: [PATCH 06/12] mpc5121: Added NAND Flash Controller driver.
+	<1241640919-4650-4-git-send-email-wd@denx.de>
+	<fa686aa40905061337w6aa82f5aj787618ba108e528f@mail.gmail.com>
+	<20090506221250.C977183420E8@gemini.denx.de>
+	<fa686aa40905061542g2cf538bau5eebcfc154906810@mail.gmail.com>
+Date: Thu, 7 May 2009 20:36:39 -0600
+Message-ID: <4b73d43f0905071936i9ba8551yc383820dd1ea1831@mail.gmail.com>
+Subject: Re: [PATCH 03/12] fs_enet: Add FEC TX Alignment workaround for
+	MPC5121.
 From: John Rigby <jcrigby@gmail.com>
 To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: multipart/alternative; boundary=000e0cd2e6e6f7030404695d4b3c
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	Wolfgang Denk <wd@denx.de>, Piotr Ziecik <kosmo@semihalf.com>
+Content-Type: multipart/alternative; boundary=000e0cd229d8839e6604695d7f56
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>, Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,60 +29,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---000e0cd2e6e6f7030404695d4b3c
+--000e0cd229d8839e6604695d7f56
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 6, 2009 at 2:59 PM, Grant Likely <grant.likely@secretlab.ca>wrote:
+I was having deja-vu with this and realized that I have fixed at least some
+of the objections to this patch.
 
+Wolfgang you may want to look at the patch in my 5121 git tree here:
+
+http://git.denx.de/?p=linux-mpc512x.git;a=commit;h=2950be3be42af7449941c3340998c27ef918f10f
+
+It does runtime tx packet alignment  It also has fewer ifdefs and trys to
+share more code.  It also has a header that explains everything including
+that fact that there is not a runtime conflict sine the only other ppc that
+has fec is 8xx which is not in the same family.
+
+On Wed, May 6, 2009 at 4:42 PM, Grant Likely <grant.likely@secretlab.ca>wrote:
+
+> On Wed, May 6, 2009 at 4:12 PM, Wolfgang Denk <wd@denx.de> wrote:
+> > Dear Grant Likely,
+> >
+> > In message <fa686aa40905061337w6aa82f5aj787618ba108e528f@mail.gmail.com>
+> you wrote:
+> >>
+> >> > The FEC on 5121 has problems with misaligned tx buffers.
+> >> > The RM says any alignment is ok but empirical results
+> >> > show that packet buffers ending in 0x1E will sometimes
+> >> > hang the FEC. Other bad alignment does not hang but will
+> >> > cause silent TX failures resulting in about a 1% packet
+> >> > loss as tested by ping -f from a remote host.
+> >> >
+> >> > This patch is a work around that copies every tx packet
+> >> > to an aligned skb before sending.
+> >>
+> >> OUCH!
+> >
+> > Yes :-(
+> >
+> >> > +#else
+> >> > +#define tx_skb_align_workaround(dev, skb) (skb)
+> >> > +#endif
+> >>
+> >> Another use of #ifdef blocks.  What is the multiplatform impact?
+> >
+> > Hm... Can you recommend a better way to solve the problem? Suggestions
+> > are welcome.
 >
+> I'd rather see a runtime selectable workaround.  ie. enable it based
+> on the compatible property.
 >
-> > diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c
-> b/arch/powerpc/platforms/512x/mpc512x_shared.c
-> > index d8cd579..7135d89 100644
-> > --- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-> > +++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-> > @@ -71,6 +71,7 @@ void __init mpc512x_init_IRQ(void)
-> >  static struct of_device_id __initdata of_bus_ids[] = {
-> >        { .compatible = "fsl,mpc5121-immr", },
-> >        { .compatible = "fsl,mpc5121-localbus", },
-> > +       { .compatible = "fsl,mpc5121-nfc", },
+> g.
 >
-> This doesn't look right.  Shouldn't the NAND controller be hanging of
-> the IMMR node?
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
 >
 
-I just wanted to confirm that NFC is in its own memory space.   It has its
-own mapping and is not part of the IMMR space.
-
---000e0cd2e6e6f7030404695d4b3c
+--000e0cd229d8839e6604695d7f56
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-<br><br><div class=3D"gmail_quote">On Wed, May 6, 2009 at 2:59 PM, Grant Li=
-kely <span dir=3D"ltr">&lt;<a href=3D"mailto:grant.likely@secretlab.ca">gra=
-nt.likely@secretlab.ca</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_=
-quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt =
-0pt 0.8ex; padding-left: 1ex;">
+I was having deja-vu with this and realized that I have fixed at least some=
+ of the objections to this patch.=A0 <br><br>Wolfgang you may want to look =
+at the patch in my 5121 git tree here:<br><br><a href=3D"http://git.denx.de=
+/?p=3Dlinux-mpc512x.git;a=3Dcommit;h=3D2950be3be42af7449941c3340998c27ef918=
+f10f">http://git.denx.de/?p=3Dlinux-mpc512x.git;a=3Dcommit;h=3D2950be3be42a=
+f7449941c3340998c27ef918f10f</a><br>
+<br>It does runtime tx packet alignment=A0 It also has fewer ifdefs and try=
+s to share more code.=A0 It also has a header that explains everything incl=
+uding that fact that there is not a runtime conflict sine the only other pp=
+c that has fec is 8xx which is not in the same family.<br>
+<br><div class=3D"gmail_quote">On Wed, May 6, 2009 at 4:42 PM, Grant Likely=
+ <span dir=3D"ltr">&lt;<a href=3D"mailto:grant.likely@secretlab.ca">grant.l=
+ikely@secretlab.ca</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quot=
+e" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt =
+0.8ex; padding-left: 1ex;">
+<div class=3D"im">On Wed, May 6, 2009 at 4:12 PM, Wolfgang Denk &lt;<a href=
+=3D"mailto:wd@denx.de">wd@denx.de</a>&gt; wrote:<br>
+&gt; Dear Grant Likely,<br>
+&gt;<br>
+&gt; In message &lt;<a href=3D"mailto:fa686aa40905061337w6aa82f5aj787618ba1=
+08e528f@mail.gmail.com">fa686aa40905061337w6aa82f5aj787618ba108e528f@mail.g=
+mail.com</a>&gt; you wrote:<br>
+&gt;&gt;<br>
+&gt;&gt; &gt; The FEC on 5121 has problems with misaligned tx buffers.<br>
+&gt;&gt; &gt; The RM says any alignment is ok but empirical results<br>
+&gt;&gt; &gt; show that packet buffers ending in 0x1E will sometimes<br>
+&gt;&gt; &gt; hang the FEC. Other bad alignment does not hang but will<br>
+&gt;&gt; &gt; cause silent TX failures resulting in about a 1% packet<br>
+&gt;&gt; &gt; loss as tested by ping -f from a remote host.<br>
+&gt;&gt; &gt;<br>
+&gt;&gt; &gt; This patch is a work around that copies every tx packet<br>
+&gt;&gt; &gt; to an aligned skb before sending.<br>
+&gt;&gt;<br>
+&gt;&gt; OUCH!<br>
+&gt;<br>
+&gt; Yes :-(<br>
+&gt;<br>
+&gt;&gt; &gt; +#else<br>
+&gt;&gt; &gt; +#define tx_skb_align_workaround(dev, skb) (skb)<br>
+&gt;&gt; &gt; +#endif<br>
+&gt;&gt;<br>
+&gt;&gt; Another use of #ifdef blocks. =A0What is the multiplatform impact?=
 <br>
-<div class=3D"im"><br>
-&gt; diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/power=
-pc/platforms/512x/mpc512x_shared.c<br>
-&gt; index d8cd579..7135d89 100644<br>
-&gt; --- a/arch/powerpc/platforms/512x/mpc512x_shared.c<br>
-&gt; +++ b/arch/powerpc/platforms/512x/mpc512x_shared.c<br>
-&gt; @@ -71,6 +71,7 @@ void __init mpc512x_init_IRQ(void)<br>
-&gt; =A0static struct of_device_id __initdata of_bus_ids[] =3D {<br>
-&gt; =A0 =A0 =A0 =A0{ .compatible =3D &quot;fsl,mpc5121-immr&quot;, },<br>
-&gt; =A0 =A0 =A0 =A0{ .compatible =3D &quot;fsl,mpc5121-localbus&quot;, },<=
-br>
-&gt; + =A0 =A0 =A0 { .compatible =3D &quot;fsl,mpc5121-nfc&quot;, },<br>
+&gt;<br>
+&gt; Hm... Can you recommend a better way to solve the problem? Suggestions=
 <br>
-</div>This doesn&#39;t look right. =A0Shouldn&#39;t the NAND controller be =
-hanging of<br>
-the IMMR node?<br>
-</blockquote><div><br>I just wanted to confirm that NFC is in its own memor=
-y space. =A0 It has its own mapping and is not part of the IMMR space.<br><=
-/div></div><br>
+&gt; are welcome.<br>
+<br>
+</div>I&#39;d rather see a runtime selectable workaround. =A0ie. enable it =
+based<br>
+on the compatible property.<br>
+<div><div></div><div class=3D"h5"><br>
+g.<br>
+<br>
+--<br>
+Grant Likely, B.Sc., P.Eng.<br>
+Secret Lab Technologies Ltd.<br>
+</div></div></blockquote></div><br>
 
---000e0cd2e6e6f7030404695d4b3c--
+--000e0cd229d8839e6604695d7f56--
