@@ -1,21 +1,20 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 71155DDF7C
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 02:06:43 +1000 (EST)
-Date: Fri, 8 May 2009 18:06:34 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] net/fs_enet/mii-fec: Use PHY_POLL instead of hard
-	coded '-1'
-Message-ID: <20090508160634.GD3100@pengutronix.de>
-References: <1241791201-23960-1-git-send-email-w.sang@pengutronix.de>
-	<fa686aa40905080855g1b24b9f4s7a78ccb75b5be8b1@mail.gmail.com>
+Return-Path: <dhlii@dlasys.net>
+Received: from outbound-mail-17.bluehost.com (outbound-mail-17.bluehost.com
+	[69.89.20.232]) by ozlabs.org (Postfix) with SMTP id 43A41DDF82
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 02:09:50 +1000 (EST)
+Received: from 72.25.32.200.dynamic.dejazzd.com ([72.25.32.200]
+	helo=[206.223.20.150])
+	by host200.hostmonster.com with esmtpa (Exim 4.69)
+	(envelope-from <dhlii@dlasys.net>) id 1M2SXU-0006VY-EJ
+	for linuxppc-dev@ozlabs.org; Fri, 08 May 2009 10:03:08 -0600
+Message-ID: <4A0457BC.3040408@dlasys.net>
+Date: Fri, 08 May 2009 12:03:08 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/unnNtmY43mpUSKx"
-In-Reply-To: <fa686aa40905080855g1b24b9f4s7a78ccb75b5be8b1@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Vitaly Bordug <vbordug@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: device trees.
+Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: dhlii@dlasys.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+    Is there an example somewhere that shows building a device tree on
+the fly ?
+   
+    As our products move forward it becomes increasingly clear that
+static configurations are not going to work.
 
---/unnNtmY43mpUSKx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-> This code no longer exists in net-next.
 
-EPIC FAIL! :/ I checked the powerpc-tree, but not linux-next. I'm sorry
-for the noise, will improve!
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
---/unnNtmY43mpUSKx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoEWIoACgkQD27XaX1/VRspBgCfbMD1StQGNshQOnFiVSWMR6WM
-FJwAoLBfSHWXn/d9HqV6daoEkKBO2zUk
-=AxQe
------END PGP SIGNATURE-----
-
---/unnNtmY43mpUSKx--
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
