@@ -1,20 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 5C108DDF95
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 06:15:49 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1M2WTw-0002tR-W4
-	for linuxppc-dev@ozlabs.org; Fri, 08 May 2009 13:15:44 -0700
-Message-ID: <23452009.post@talk.nabble.com>
-Date: Fri, 8 May 2009 13:15:44 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: initramfs with lzma compression
-In-Reply-To: <23446869.post@talk.nabble.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <23446869.post@talk.nabble.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 50B68DDF90
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 07:31:57 +1000 (EST)
+Message-Id: <0530B4F4-9A01-470B-84A2-996E7A6FFB7C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090430222745.GA10985@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] powerpc/fsl_soc: Remove mpc83xx_wdt_init, again
+Date: Fri, 8 May 2009 16:31:52 -0500
+References: <20090430222745.GA10985@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +24,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Thank you for the quick answer.
+On Apr 30, 2009, at 5:27 PM, Anton Vorontsov wrote:
 
-I am using the kernel version 2.6.23 with many other patches which require
-sometime to port to the latest kernel. I understand the it is possible to
-find the lzma patch also for older kernels in the git tree. Where can I find
-than the linuxppc git tree with the lzma patch.
+> commit b31a1d8b41513b96e9c7ec2f68c5734cef0b26a4 ("gianfar: Convert
+> gianfar to an of_platform_driver"), possibly due merge issues,
+> reintroduced completely unneded mpc83xx_wdt_init call, which
+> I removed some time ago in commit 20d38e01d48019c578ab0ec1464454c0
+> ("powerpc/fsl_soc: remove mpc83xx_wdt code").
+>
+> Remove it once again.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> arch/powerpc/sysdev/fsl_soc.c |   46  
+> -----------------------------------------
+> 1 files changed, 0 insertions(+), 46 deletions(-)
 
-Thanks
+applied to merge
 
-M.
-
-Mirek23 wrote:
-> 
-> Dear All,
-> 
-> I am looking for a patch which introduces lzma compression or suppresses
-> the standard gzip compression for the initramfs.
-> 
-> I would be grateful for any hint.
-> 
-> M.
-> 
-
--- 
-View this message in context: http://www.nabble.com/initramfs-with-lzma-compression-tp23446869p23452009.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+- k
