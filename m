@@ -1,13 +1,13 @@
 Return-Path: <alessandro.zummo@towertech.it>
 Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
-	by ozlabs.org (Postfix) with SMTP id AE423DDF94
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 02:16:56 +1000 (EST)
-Date: Fri, 8 May 2009 18:10:13 +0200
+	by ozlabs.org (Postfix) with SMTP id 08EE9DDF91
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 02:19:23 +1000 (EST)
+Date: Fri, 8 May 2009 18:09:44 +0200
 From: Alessandro Zummo <alessandro.zummo@towertech.it>
 To: rtc-linux@googlegroups.com
 Subject: Re: [rtc-linux] Re: [PATCH 10/12] mpc5121: Add MPC5121 Real time
 	clock driver.
-Message-ID: <20090508181013.65677fa2@i1501.lan.towertech.it>
+Message-ID: <20090508180944.1304a8b7@i1501.lan.towertech.it>
 In-Reply-To: <fa686aa40905080853q2156ba46w3d56d0285271ce43@mail.gmail.com>
 References: <1241640919-4650-1-git-send-email-wd@denx.de>
 	<1241640919-4650-11-git-send-email-wd@denx.de>
@@ -35,7 +35,7 @@ Grant Likely <grant.likely@secretlab.ca> wrote:
 > support both, I'd like it to be renamed to 5xxx before it is merged to
 > avoid a later rename patch.
 
- sorry, forget my last email, I misread the codes.
+ or 52xx ?
 
 -- 
 
