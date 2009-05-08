@@ -1,21 +1,27 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 8CDFADDF7B
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 11:47:31 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1M2FBQ-0006EX-9P
-	for linuxppc-dev@ozlabs.org; Thu, 07 May 2009 18:47:28 -0700
-Message-ID: <23438722.post@talk.nabble.com>
-Date: Thu, 7 May 2009 18:47:28 -0700 (PDT)
-From: "Sauce.Cheng" <chmhou@sina.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: PPC8247 booting error
-In-Reply-To: <20090505162649.GA4473@ld0162-tx32.am.freescale.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 54A6BDDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 13:01:42 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so653731ywt.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 May 2009 20:01:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <23381214.post@talk.nabble.com>
-	<20090505162649.GA4473@ld0162-tx32.am.freescale.net>
+In-Reply-To: <4b73d43f0905071912k4bcc8821nabfa27aa5b1f587b@mail.gmail.com>
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<1241640919-4650-9-git-send-email-wd@denx.de>
+	<fa686aa40905061401k319313c5q89fd3e245c30808f@mail.gmail.com>
+	<20090506221908.3927583420E8@gemini.denx.de>
+	<fa686aa40905061551l8cf5940sf4d4cbf34331cf9a@mail.gmail.com>
+	<fa686aa40905061941p6fd4b03dt1097cf4d16bdd665@mail.gmail.com>
+	<4b73d43f0905071912k4bcc8821nabfa27aa5b1f587b@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 7 May 2009 21:01:21 -0600
+Message-ID: <fa686aa40905072001y1424feb8x2fb3149a0c84fc9a@mail.gmail.com>
+Subject: Re: [PATCH 08/12] mpc5121: Added I2C support.
+To: John Rigby <jcrigby@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-i2c@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, May 7, 2009 at 8:12 PM, John Rigby <jcrigby@gmail.com> wrote:
+> Ok, the interrupt enabling should happen in the driver.=A0 Should it key =
+off
+> compatible or should a new property be added like the existing 5200 clock=
+ing
+> property?
 
-thanks for Scott's following
+key off compatible.  And the 5200 clocking property has been depreciated.
 
-> You need to pass your physical address (0xd0000000) to ioremap() to
-> obtain a virtual address that you can dereference.
+g.
 
-actually, i have done that like you said. pass my phy addr to a virtual
-addr, but i suppose it is a kernel virtual addr. i wanna get data from phy
-in my application of user space. i try it by copy_to_user transfer a kernel
-virtual addr to a use virtual addr for using by user. but copy_to_user
-failed...
-
-i do it like this
-
-ssize_t read(....,char *buf,....,....)
-{
-     ....
-      kernel_buf = (void *)ioremap(0xD0000000, 4096);
-      copy_to_user(buf, kernel_buf, 4096); 
-     ....
-}
-
-
-
-
--- 
-View this message in context: http://www.nabble.com/PPC8247-booting-error-tp23381214p23438722.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
