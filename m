@@ -1,19 +1,18 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
-	by ozlabs.org (Postfix) with ESMTP id 73DB1DDF93
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 03:23:20 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so847081ywt.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 08 May 2009 10:23:18 -0700 (PDT)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <4A0457BC.3040408@dlasys.net>
-References: <4A0457BC.3040408@dlasys.net>
-Date: Fri, 8 May 2009 12:15:12 -0500
-Message-ID: <ed82fe3e0905081015n41e1edd1l3908f68e0c8a7aa5@mail.gmail.com>
-Subject: Re: device trees.
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 70DF9DDF90
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 04:43:37 +1000 (EST)
+Message-Id: <42E5BD30-8DF6-4911-B331-558BAB96968B@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: dhlii@dlasys.net
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <4A0457BC.3040408@dlasys.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: device trees.
+Date: Fri, 8 May 2009 13:43:20 -0500
+References: <4A0457BC.3040408@dlasys.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,17 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 8, 2009 at 11:03 AM, David H. Lynch Jr. <dhlii@dlasys.net> wrot=
-e:
-> =A0 =A0Is there an example somewhere that shows building a device tree on
+you can look at the source to SLOF or u-boot to see cases of building  
+nodes on the fly.
+
+- k
+
+On May 8, 2009, at 11:03 AM, David H. Lynch Jr. wrote:
+
+>    Is there an example somewhere that shows building a device tree on
 > the fly ?
-
-A whole device tree?  I don't think so.  U-Boot does manipulate quite
-a few properties, but it assume that the DTS lists all the devices.
-
-Remember, one of the primary purposes of the DTS is to list devices
-that cannot be probed.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+>
+>    As our products move forward it becomes increasingly clear that
+> static configurations are not going to work.
+>
+>
+>
+>
+> -- 
+> Dave Lynch 					  	    DLA Systems
+> Software Development:  				         Embedded Linux
+> 717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+> fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+> Over 25 years' experience in platforms, languages, and technologies  
+> too numerous to list.
+>
+> "Any intelligent fool can make things bigger and more complex... It  
+> takes a touch of genius - and a lot of courage to move in the  
+> opposite direction."
+> Albert Einstein
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
