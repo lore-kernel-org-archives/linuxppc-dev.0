@@ -1,23 +1,17 @@
-Return-Path: <geert@sonycom.com>
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 08/15] powerpc/cell: Extract duplicated IOPTE_* to
-	<asm/iommu.h>
-Date: Fri,  8 May 2009 16:01:17 +0200
-Message-Id: <1241791284-11490-9-git-send-email-Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <1241791284-11490-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-References: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Sender: Geert Uytterhoeven <geert@sonycom.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Arnd Bergmann <arnd@arndb.de>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, cbe-oss-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E5CA3DDF7C
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 00:06:03 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n48E5vh5009244
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 May 2009 09:05:58 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/fsl: Removed reg property from 85xx/86xx soc node
+Date: Fri,  8 May 2009 09:05:57 -0500
+Message-Id: <1241791557-8598-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,106 +21,406 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Both arch/powerpc/platforms/cell/iommu.c and arch/powerpc/platforms/ps3/mm.c
-contain the same Cell IOMMU page table entry definitions. Extract them and move
-them to <asm/iommu.h>.
-This also allows them to be used by drivers.
+Between the addition of the ecm/mcm law nodes and the fact that the
+get_immrbase() has been using the range property of the SoC to determine
+the base address of CCSR space we no longer need the reg property at
+the soc node level.  It has been ill specified and varied between device
+trees to cover either the {e,m}cm-law node, some odd subset of CCSR
+space or all of CCSR space.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/iommu.h        |   10 ++++++++++
- arch/powerpc/platforms/cell/iommu.c     |   10 ----------
- arch/powerpc/platforms/ps3/mm.c         |    1 +
- arch/powerpc/platforms/ps3/platform.h   |   10 ----------
- arch/powerpc/platforms/ps3/system-bus.c |    1 +
- 5 files changed, 12 insertions(+), 20 deletions(-)
+ arch/powerpc/boot/dts/gef_ppc9a.dts            |    1 -
+ arch/powerpc/boot/dts/gef_sbc310.dts           |    1 -
+ arch/powerpc/boot/dts/gef_sbc610.dts           |    1 -
+ arch/powerpc/boot/dts/mpc8536ds.dts            |    1 -
+ arch/powerpc/boot/dts/mpc8540ads.dts           |    1 -
+ arch/powerpc/boot/dts/mpc8541cds.dts           |    1 -
+ arch/powerpc/boot/dts/mpc8544ds.dts            |    1 -
+ arch/powerpc/boot/dts/mpc8548cds.dts           |    1 -
+ arch/powerpc/boot/dts/mpc8555cds.dts           |    1 -
+ arch/powerpc/boot/dts/mpc8560ads.dts           |    1 -
+ arch/powerpc/boot/dts/mpc8568mds.dts           |    1 -
+ arch/powerpc/boot/dts/mpc8569mds.dts           |    1 -
+ arch/powerpc/boot/dts/mpc8572ds.dts            |    1 -
+ arch/powerpc/boot/dts/mpc8572ds_36b.dts        |    1 -
+ arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |    1 -
+ arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |    1 -
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts         |    1 -
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts         |    1 -
+ arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts     |    1 -
+ arch/powerpc/boot/dts/sbc8548.dts              |    1 -
+ arch/powerpc/boot/dts/sbc8560.dts              |    1 -
+ arch/powerpc/boot/dts/sbc8641d.dts             |    1 -
+ arch/powerpc/boot/dts/socrates.dts             |    1 -
+ arch/powerpc/boot/dts/stx_gp3_8560.dts         |    1 -
+ arch/powerpc/boot/dts/tqm8540.dts              |    1 -
+ arch/powerpc/boot/dts/tqm8541.dts              |    1 -
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts     |    1 -
+ arch/powerpc/boot/dts/tqm8548.dts              |    1 -
+ arch/powerpc/boot/dts/tqm8555.dts              |    1 -
+ arch/powerpc/boot/dts/tqm8560.dts              |    1 -
+ 30 files changed, 0 insertions(+), 30 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 7464c0d..0b16e76 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -35,6 +35,16 @@
- #define IOMMU_PAGE_MASK       (~((1 << IOMMU_PAGE_SHIFT) - 1))
- #define IOMMU_PAGE_ALIGN(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE)
+diff --git a/arch/powerpc/boot/dts/gef_ppc9a.dts b/arch/powerpc/boot/dts/gef_ppc9a.dts
+index 38dd005..910944e 100644
+--- a/arch/powerpc/boot/dts/gef_ppc9a.dts
++++ b/arch/powerpc/boot/dts/gef_ppc9a.dts
+@@ -164,7 +164,6 @@
+ 		device_type = "soc";
+ 		compatible = "fsl,mpc8641-soc", "simple-bus";
+ 		ranges = <0x0 0xfef00000 0x00100000>;
+-		reg = <0xfef00000 0x100000>;	// CCSRBAR 1M
+ 		bus-frequency = <33333333>;
  
-+/* Cell page table entries */
-+#define IOPTE_PP_W		0x8000000000000000ul /* protection: write */
-+#define IOPTE_PP_R		0x4000000000000000ul /* protection: read */
-+#define IOPTE_M			0x2000000000000000ul /* coherency required */
-+#define IOPTE_SO_R		0x1000000000000000ul /* ordering: writes */
-+#define IOPTE_SO_RW             0x1800000000000000ul /* ordering: r & w */
-+#define IOPTE_RPN_Mask		0x07fffffffffff000ul /* RPN */
-+#define IOPTE_H			0x0000000000000800ul /* cache hint */
-+#define IOPTE_IOID_Mask		0x00000000000007fful /* ioid */
-+
- /* Boot time flags */
- extern int iommu_is_off;
- extern int iommu_force_on;
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index bed4690..d85691c 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -100,16 +100,6 @@
- #define IOSTE_PS_1M		0x0000000000000005ul /*   - 1MB  */
- #define IOSTE_PS_16M		0x0000000000000007ul /*   - 16MB */
+ 		mcm-law@0 {
+diff --git a/arch/powerpc/boot/dts/gef_sbc310.dts b/arch/powerpc/boot/dts/gef_sbc310.dts
+index 155776c..0f4c9ec 100644
+--- a/arch/powerpc/boot/dts/gef_sbc310.dts
++++ b/arch/powerpc/boot/dts/gef_sbc310.dts
+@@ -163,7 +163,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xfef00000 0x00100000>;
+-		reg = <0xfef00000 0x100000>;	// CCSRBAR 1M
+ 		bus-frequency = <33333333>;
  
--/* Page table entries */
--#define IOPTE_PP_W		0x8000000000000000ul /* protection: write */
--#define IOPTE_PP_R		0x4000000000000000ul /* protection: read */
--#define IOPTE_M			0x2000000000000000ul /* coherency required */
--#define IOPTE_SO_R		0x1000000000000000ul /* ordering: writes */
--#define IOPTE_SO_RW             0x1800000000000000ul /* ordering: r & w */
--#define IOPTE_RPN_Mask		0x07fffffffffff000ul /* RPN */
--#define IOPTE_H			0x0000000000000800ul /* cache hint */
--#define IOPTE_IOID_Mask		0x00000000000007fful /* ioid */
--
+ 		mcm-law@0 {
+diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/gef_sbc610.dts
+index 6898d7e..217f8aa 100644
+--- a/arch/powerpc/boot/dts/gef_sbc610.dts
++++ b/arch/powerpc/boot/dts/gef_sbc610.dts
+@@ -128,7 +128,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xfef00000 0x00100000>;
+-		reg = <0xfef00000 0x100000>;	// CCSRBAR 1M
+ 		bus-frequency = <33333333>;
  
- /* IOMMU sizing */
- #define IO_SEGMENT_SHIFT	28
-diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-index 9a2b6d9..4f17e1d 100644
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -24,6 +24,7 @@
- #include <linux/lmb.h>
+ 		mcm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
+index b6fd856..e781ad2 100644
+--- a/arch/powerpc/boot/dts/mpc8536ds.dts
++++ b/arch/powerpc/boot/dts/mpc8536ds.dts
+@@ -51,7 +51,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xffe00000 0x100000>;
+-		reg = <0xffe00000 0x1000>;
+ 		bus-frequency = <0>;		// Filled out by uboot.
  
- #include <asm/firmware.h>
-+#include <asm/iommu.h>
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/lv1call.h>
-diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
-index 136aa06..9a196a8 100644
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -232,14 +232,4 @@ int ps3_repository_read_spu_resource_id(unsigned int res_index,
- int ps3_repository_read_vuart_av_port(unsigned int *port);
- int ps3_repository_read_vuart_sysmgr_port(unsigned int *port);
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
+index 7c8b109..9dc2929 100644
+--- a/arch/powerpc/boot/dts/mpc8540ads.dts
++++ b/arch/powerpc/boot/dts/mpc8540ads.dts
+@@ -55,7 +55,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x100000>;	// CCSRBAR 1M
+ 		bus-frequency = <0>;
  
--/* Page table entries */
--#define IOPTE_PP_W		0x8000000000000000ul /* protection: write */
--#define IOPTE_PP_R		0x4000000000000000ul /* protection: read */
--#define IOPTE_M			0x2000000000000000ul /* coherency required */
--#define IOPTE_SO_R		0x1000000000000000ul /* ordering: writes */
--#define IOPTE_SO_RW             0x1800000000000000ul /* ordering: r & w */
--#define IOPTE_RPN_Mask		0x07fffffffffff000ul /* RPN */
--#define IOPTE_H			0x0000000000000800ul /* cache hint */
--#define IOPTE_IOID_Mask		0x00000000000007fful /* ioid */
--
- #endif
-diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-index 9a73d02..6c655eb 100644
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -27,6 +27,7 @@
- #include <asm/udbg.h>
- #include <asm/lv1call.h>
- #include <asm/firmware.h>
-+#include <asm/iommu.h>
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8541cds.dts b/arch/powerpc/boot/dts/mpc8541cds.dts
+index de9d8b5..9a3ad31 100644
+--- a/arch/powerpc/boot/dts/mpc8541cds.dts
++++ b/arch/powerpc/boot/dts/mpc8541cds.dts
+@@ -55,7 +55,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x1000>;	// CCSRBAR 1M
+ 		bus-frequency = <0>;
  
- #include "platform.h"
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
+index 9819d6c..98e94b4 100644
+--- a/arch/powerpc/boot/dts/mpc8544ds.dts
++++ b/arch/powerpc/boot/dts/mpc8544ds.dts
+@@ -57,7 +57,6 @@
+ 		compatible = "simple-bus";
+ 
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x1000>;	// CCSRBAR 1M
+ 		bus-frequency = <0>;		// Filled out by uboot.
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
+index 6e40db7..475be14 100644
+--- a/arch/powerpc/boot/dts/mpc8548cds.dts
++++ b/arch/powerpc/boot/dts/mpc8548cds.dts
+@@ -60,7 +60,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x1000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8555cds.dts b/arch/powerpc/boot/dts/mpc8555cds.dts
+index 6291497..065b2f0 100644
+--- a/arch/powerpc/boot/dts/mpc8555cds.dts
++++ b/arch/powerpc/boot/dts/mpc8555cds.dts
+@@ -55,7 +55,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x1000>;	// CCSRBAR 1M
+ 		bus-frequency = <0>;
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
+index a2347b5..a5bb1ec 100644
+--- a/arch/powerpc/boot/dts/mpc8560ads.dts
++++ b/arch/powerpc/boot/dts/mpc8560ads.dts
+@@ -55,7 +55,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x200>;
+ 		bus-frequency = <330000000>;
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index fcab168..073f140 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -62,7 +62,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x1000>;
+ 		bus-frequency = <0>;
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8569mds.dts b/arch/powerpc/boot/dts/mpc8569mds.dts
+index e16a5d4..69cec81 100644
+--- a/arch/powerpc/boot/dts/mpc8569mds.dts
++++ b/arch/powerpc/boot/dts/mpc8569mds.dts
+@@ -94,7 +94,6 @@
+ 		device_type = "soc";
+ 		compatible = "fsl,mpc8569-immr", "simple-bus";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x1000>;
+ 		bus-frequency = <0>;
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8572ds.dts b/arch/powerpc/boot/dts/mpc8572ds.dts
+index 3f9a623..cafc128 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds.dts
+@@ -182,7 +182,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0 0xffe00000 0x100000>;
+-		reg = <0 0xffe00000 0 0x1000>;	// CCSRBAR & soc regs, remove once parse code for immrbase fixed
+ 		bus-frequency = <0>;		// Filled out by uboot.
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_36b.dts b/arch/powerpc/boot/dts/mpc8572ds_36b.dts
+index fee17f3..1197965 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_36b.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_36b.dts
+@@ -182,7 +182,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xf 0xffe00000 0x100000>;
+-		reg = <0xf 0xffe00000 0 0x1000>;	// CCSRBAR & soc regs, remove once parse code for immrbase fixed
+ 		bus-frequency = <0>;		// Filled out by uboot.
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+index abb1730..5bd1011 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
+@@ -59,7 +59,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xffe00000 0x100000>;
+-		reg = <0xffe00000 0x1000>;	// CCSRBAR & soc regs, remove once parse code for immrbase fixed
+ 		bus-frequency = <0>;		// Filled out by uboot.
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+index 0ded4a6..0efc345 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+@@ -58,7 +58,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x0 0xffe00000 0x100000>;
+-		reg = <0xffe00000 0x1000>;	// CCSRBAR & soc regs, remove once parse code for immrbase fixed
+ 		bus-frequency = <0>;		// Filled out by uboot.
+ 
+ 		L2: l2-cache-controller@20000 {
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 252db6e..cfc2c60 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -112,7 +112,6 @@
+ 		device_type = "soc";
+ 		compatible = "fsl,mpc8610-immr", "simple-bus";
+ 		ranges = <0x0 0xe0000000 0x00100000>;
+-		reg = <0xe0000000 0x1000>;
+ 		bus-frequency = <0>;
+ 
+ 		mcm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+index 8bcccd7..848320e 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -114,7 +114,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x00000000 0xffe00000 0x00100000>;
+-		reg = <0xffe00000 0x00001000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 
+ 		mcm-law@0 {
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts b/arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts
+index d4c909d..65893b9 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts
+@@ -107,7 +107,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x00000000 0x0f 0xffe00000 0x00100000>;
+-		reg = <0x0f 0xffe00000 0x0 0x00001000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 
+ 		mcm-law@0 {
+diff --git a/arch/powerpc/boot/dts/sbc8548.dts b/arch/powerpc/boot/dts/sbc8548.dts
+index 66c9165..9eefe00 100644
+--- a/arch/powerpc/boot/dts/sbc8548.dts
++++ b/arch/powerpc/boot/dts/sbc8548.dts
+@@ -151,7 +151,6 @@
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+ 		ranges = <0x00000000 0xe0000000 0x00100000>;
+-		reg = <0xe0000000 0x00001000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 		compatible = "simple-bus";
+ 
+diff --git a/arch/powerpc/boot/dts/sbc8560.dts b/arch/powerpc/boot/dts/sbc8560.dts
+index ff6a522..239d57a 100644
+--- a/arch/powerpc/boot/dts/sbc8560.dts
++++ b/arch/powerpc/boot/dts/sbc8560.dts
+@@ -57,7 +57,6 @@
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+ 		ranges = <0x0 0xff700000 0x00100000>;
+-		reg = <0xff700000 0x00100000>;
+ 		clock-frequency = <0>;
+ 
+ 		ecm-law@0 {
+diff --git a/arch/powerpc/boot/dts/sbc8641d.dts b/arch/powerpc/boot/dts/sbc8641d.dts
+index aa8f931..ee5538f 100644
+--- a/arch/powerpc/boot/dts/sbc8641d.dts
++++ b/arch/powerpc/boot/dts/sbc8641d.dts
+@@ -126,7 +126,6 @@
+ 		device_type = "soc";
+ 		compatible = "simple-bus";
+ 		ranges = <0x00000000 0xf8000000 0x00100000>;
+-		reg = <0xf8000000 0x00001000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 
+ 		mcm-law@0 {
+diff --git a/arch/powerpc/boot/dts/socrates.dts b/arch/powerpc/boot/dts/socrates.dts
+index 779876a..feb4ef6 100644
+--- a/arch/powerpc/boot/dts/socrates.dts
++++ b/arch/powerpc/boot/dts/socrates.dts
+@@ -55,7 +55,6 @@
+ 		device_type = "soc";
+ 
+ 		ranges = <0x00000000 0xe0000000 0x00100000>;
+-		reg = <0xe0000000 0x00001000>;	// CCSRBAR 1M
+ 		bus-frequency = <0>;		// Filled in by U-Boot
+ 		compatible = "fsl,mpc8544-immr", "simple-bus";
+ 
+diff --git a/arch/powerpc/boot/dts/stx_gp3_8560.dts b/arch/powerpc/boot/dts/stx_gp3_8560.dts
+index ce35e89..b670d03 100644
+--- a/arch/powerpc/boot/dts/stx_gp3_8560.dts
++++ b/arch/powerpc/boot/dts/stx_gp3_8560.dts
+@@ -52,7 +52,6 @@
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+ 		ranges = <0 0xfdf00000 0x100000>;
+-		reg = <0xfdf00000 0x1000>;
+ 		bus-frequency = <0>;
+ 		compatible = "fsl,mpc8560-immr", "simple-bus";
+ 
+diff --git a/arch/powerpc/boot/dts/tqm8540.dts b/arch/powerpc/boot/dts/tqm8540.dts
+index 5e9eecc..7134753 100644
+--- a/arch/powerpc/boot/dts/tqm8540.dts
++++ b/arch/powerpc/boot/dts/tqm8540.dts
+@@ -54,7 +54,6 @@
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x200>;
+ 		bus-frequency = <0>;
+ 		compatible = "fsl,mpc8540-immr", "simple-bus";
+ 
+diff --git a/arch/powerpc/boot/dts/tqm8541.dts b/arch/powerpc/boot/dts/tqm8541.dts
+index 3c8d5c1..b30f637 100644
+--- a/arch/powerpc/boot/dts/tqm8541.dts
++++ b/arch/powerpc/boot/dts/tqm8541.dts
+@@ -53,7 +53,6 @@
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x200>;
+ 		bus-frequency = <0>;
+ 		compatible = "fsl,mpc8541-immr", "simple-bus";
+ 
+diff --git a/arch/powerpc/boot/dts/tqm8548-bigflash.dts b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+index 435d2b2..61f25e1 100644
+--- a/arch/powerpc/boot/dts/tqm8548-bigflash.dts
++++ b/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+@@ -55,7 +55,6 @@
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+ 		ranges = <0x0 0xa0000000 0x100000>;
+-		reg = <0xa0000000 0x1000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 		compatible = "fsl,mpc8548-immr", "simple-bus";
+ 
+diff --git a/arch/powerpc/boot/dts/tqm8548.dts b/arch/powerpc/boot/dts/tqm8548.dts
+index 3b8af5b..025759c 100644
+--- a/arch/powerpc/boot/dts/tqm8548.dts
++++ b/arch/powerpc/boot/dts/tqm8548.dts
+@@ -55,7 +55,6 @@
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x1000>;	// CCSRBAR
+ 		bus-frequency = <0>;
+ 		compatible = "fsl,mpc8548-immr", "simple-bus";
+ 
+diff --git a/arch/powerpc/boot/dts/tqm8555.dts b/arch/powerpc/boot/dts/tqm8555.dts
+index a820bbe..95e2873 100644
+--- a/arch/powerpc/boot/dts/tqm8555.dts
++++ b/arch/powerpc/boot/dts/tqm8555.dts
+@@ -53,7 +53,6 @@
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x200>;
+ 		bus-frequency = <0>;
+ 		compatible = "fsl,mpc8555-immr", "simple-bus";
+ 
+diff --git a/arch/powerpc/boot/dts/tqm8560.dts b/arch/powerpc/boot/dts/tqm8560.dts
+index fa73550..ff70580 100644
+--- a/arch/powerpc/boot/dts/tqm8560.dts
++++ b/arch/powerpc/boot/dts/tqm8560.dts
+@@ -55,7 +55,6 @@
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+ 		ranges = <0x0 0xe0000000 0x100000>;
+-		reg = <0xe0000000 0x200>;
+ 		bus-frequency = <0>;
+ 		compatible = "fsl,mpc8560-immr", "simple-bus";
  
 -- 
-1.6.2.4
+1.6.0.6
