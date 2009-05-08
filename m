@@ -1,26 +1,21 @@
 Return-Path: <jcrigby@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.226])
-	by ozlabs.org (Postfix) with ESMTP id 0757FDDF81
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 12:02:55 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f9so187612rvb.1
-	for <linuxppc-dev@ozlabs.org>; Thu, 07 May 2009 19:02:53 -0700 (PDT)
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.170])
+	by ozlabs.org (Postfix) with ESMTP id D512DDDF82
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 12:09:28 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so922764wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 May 2009 19:09:26 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <fa686aa40905070709r7478837fnefb094d46f03ae0e@mail.gmail.com>
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-3-git-send-email-wd@denx.de>
-	<fa686aa40905061333q29c263c8p24856c048e30f4d0@mail.gmail.com>
-	<20090506220119.7322783420E8@gemini.denx.de>
-	<fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com>
-	<20090506224134.83F1583420E8@gemini.denx.de>
-	<fa686aa40905070709r7478837fnefb094d46f03ae0e@mail.gmail.com>
-Date: Thu, 7 May 2009 20:02:53 -0600
-Message-ID: <4b73d43f0905071902y3b51d36ct2a04c560b5acdfb9@mail.gmail.com>
-Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
+In-Reply-To: <1241641262-5202-6-git-send-email-wd@denx.de>
+References: <1241641262-5202-1-git-send-email-wd@denx.de>
+	<1241641262-5202-6-git-send-email-wd@denx.de>
+Date: Thu, 7 May 2009 20:09:26 -0600
+Message-ID: <4b73d43f0905071909v6e6e8b2el9eb6d4a1b9038f45@mail.gmail.com>
+Subject: Re: [PATCH 05/04] *** NOT FOR RELEASE *** HACK *** Work around MII
+	clock issue ***
 From: John Rigby <jcrigby@gmail.com>
-To: linuxppc <linuxppc-dev@ozlabs.org>, Wolfgang Denk <wd@denx.de>
-Content-Type: multipart/alternative; boundary=000e0cd32f98ce7eb804695d06d5
-Cc: netdev@vger.kernel.org, Piotr Ziecik <kosmo@semihalf.com>,
-	Detlev Zundel <dzu@denx.de>
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: multipart/alternative; boundary=001636e90eea2e6f4704695d1e5b
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,199 +25,207 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---000e0cd32f98ce7eb804695d06d5
+--001636e90eea2e6f4704695d1e5b
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-Wolfgang,
+I think the fec's parent clock is the ipb clock not the ppc core clock.
+Could that be the problem?
 
-Welcome to my world and why I gave up on this months ago.
+On Wed, May 6, 2009 at 2:21 PM, Wolfgang Denk <wd@denx.de> wrote:
 
-Everyone else,
-
-One thing to consider here is a rewrite with the goal of a new improved fec
-driver that would work on both 5121 and the various mx platforms that also
-have this same fec core.
-
-Also don't forget that the register map is the same on 512x, mx and coldfire
-platforms but not on the other ppc platforms so if you want to one binary to
-rule them all you will need to have an offest table or some such.
-
-John
-
-On Thu, May 7, 2009 at 8:09 AM, Grant Likely <grant.likely@secretlab.ca>wrote:
-
-> On Wed, May 6, 2009 at 4:41 PM, Wolfgang Denk <wd@denx.de> wrote:
-> > Dear Grant,
-> >
-> > In message <fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.gmail.com>
-> you wrote:
-> >>
-> >> > Agreed that it's ugly, but duplicatio9ng the code would have been even
-> >> > worse. I don't think that it has multiplatform - at least not as long
-> >> > as you don't ask for one image that runs on 83xx and on 512x.
-> >>
-> >> Actually, I *am* asking for one image that runs on 83xx, 52xx and
-> >> 521x.  I already can and do build and test a single image which boots
-> >> on all my 52xx boards, on my 8349 board, and on my G4 Mac.
-> >
-> > He. I was afraid you'd say that ;-)
-> >
-> > In this case I need a helping hand as I can't figure out how to make
-> > this work. Any suggestions?
+> Signed-off-by: Wolfgang Denk <wd@denx.de>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: John Rigby <jcrigby@gmail.com>
+> ---
+> This patch is NOT intended for inclusion into mainline, but rather a
+> request for help. For some reason which I don't understand yet, the
+> Ethernet interface on the ARIA board does not work in the default
+> configuration, because MII probing fails.
 >
-> Hmmm, it is rather ugly because the layout of fec_t is so different.
-> Easiest solution would be to duplicate the driver in its entirety, but
-> as you say it results in a lot of duplicate code.  It might be the
-> lesser of many weevils though.
+> What I'm seeing is this; the problem is with this part of code in
+> "drivers/net/fs_enet/mii-fec.c":
 >
-> Second easiest would be to factor out all the common code in the
-> driver into a separate .c file that gets included by a 'wrapper' .c
-> file for each config which first includes the correct definition of
-> fec_t.  This approach solves the duplicate code problem, but it also
-> fell out of the ugly tree and hit every branch on the way down.
+> 156         fec->mii_speed = ((ppc_proc_freq + 4999999) / 5000000) << 1;
+> ...
+> 163         out_be32(&fec->fecp->fec_mii_speed, fec->mii_speed);
 >
-> ie: the wrappers would look something like this:
+> I added some debug messages, and this is what I see:
 >
-> fs_enet_cpm1.c:
-> #include <asm/cpm1.h>
-> #include "fs_enet_main.c"
+> On the ADS5121, we have the CPU clocked at 400 MHz.  I get:
+> ...
+> ## ppc_proc_freq = 399999996, fec->mii_speed = 160
+> FEC MII Bus: probed
+> ...
+> It works fine.
 >
-> fs_enet_cpm2.c:
-> #include <asm/cpm2.h>
-> #include "fs_enet_main.c"
+> According to the Ref. Man.:
+>        A value of 0 in this field turns off the MDC and leaves it in
+>        a low-voltage state. Any non-zero value results in the MDC
+>        frequency of 1/(mii_speed*2) of the system clock frequency.
+> that means we have a MDC frequency of
+>        400 MHz / (2 * 160) = 1.25 MHz
+> which is obviously within the 2.5 MHz limit.
 >
-> fs_enet_512x.c:
-> #include <asm/mpc512x.h>
-> #include "fs_enet_main.c"
+> Now ARIA is currently running at 316.8 MHz, and this is what I get:
+> ...
+> ## ppc_proc_freq = 316800000, fec->mii_speed = 128
+> fsl-fec-mdio: probe of 80002800.mdio failed with error -5
+> ...
+> It fails. MDC frequency is
+>        316.8 MHz / (2 * 128) = 1.24 MHz
+> which should be fine.
 >
-> And then the makefile would be something along the lines of:
-> obj-${CONFIG_FS_ENET_CPM1_ += fs_enet_cpm1.o
-> obj-${CONFIG_FS_ENET_CPM2_ += fs_enet_cpm2.o
-> obj-${CONFIG_FS_ENET_MPC512x_ += fs_enet_512x.o
+> However, If I change the code to
 >
-> A brief look at the driver suggests that access to the fec_t structure
-> is restricted to the fec-mii.c and mac-fec.c files.  It might be
-> appropriate to duplicate just those files and do some form of
-> fs_enet_ops to select between them.
+> fec->mii_speed = (((ppc_proc_freq / 1000000) / 30) + 1) << 1;
 >
-> While on the topic, it looks to me like the driver could really use
-> some refactoring love.  Having multiple definitions of "fec_t" is
-> confusing and potentially lead to hard to find bugs if the wrong
-> header gets included by anyone.  I'd like to see all the fec specific
-> stuff in arch/powerpc/include/asm moved into drivers/net/fs_enet and
-> renamed to reflect the hardware it is associate with.  Stuff like
-> "fec_t" is far to generic, not to mention that typedefs are
-> discouraged now.
+> then I get:
+> ...
+> ## ppc_proc_freq = 316800000, fec->mii_speed = 22
+> FEC MII Bus: probed
+> ... and it's working!!! However, I compute MDC frequency as
+>        316.8 MHz / (2 * 22) = 7.2 MHz
+> which is far above the maximum allowed clock of 2.5 MHz ???
 >
-> Regardless, I feel your pain.  It is not a pretty situation.
+> Has anybody any idea what might be going on here?
 >
-> g.
 >
+>  drivers/net/fs_enet/mii-fec.c |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
+> index 9d8bd97..a51dd83 100644
+> --- a/drivers/net/fs_enet/mii-fec.c
+> +++ b/drivers/net/fs_enet/mii-fec.c
+> @@ -153,8 +153,12 @@ static int __devinit fs_enet_mdio_probe(struct
+> of_device *ofdev,
+>        if (!fec->fecp)
+>                goto out_fec;
+>
+> +#if 0
+>        fec->mii_speed = ((ppc_proc_freq + 4999999) / 5000000) << 1;
+> -
+> +#else
+> +       fec->mii_speed = (((ppc_proc_freq / 1000000) / 30) + 1) << 1;
+> +       printk("## ppc_proc_freq = %d, fec->mii_speed = %d\n",
+> ppc_proc_freq, fec->mii_speed);
+> +#endif
+>        setbits32(&fec->fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);
+>        setbits32(&fec->fecp->fec_ecntrl, FEC_ECNTRL_PINMUX |
+>                                          FEC_ECNTRL_ETHER_EN);
 > --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
+> 1.6.0.6
+>
 >
 
---000e0cd32f98ce7eb804695d06d5
+--001636e90eea2e6f4704695d1e5b
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Wolfgang,<br><br>Welcome to my world and why I gave up on this months ago.<=
-br><br>Everyone else,<br><br>One thing to consider here is a rewrite with t=
-he goal of a new improved fec driver that would work on both 5121 and the v=
-arious mx platforms that also have this same fec core.<br>
-<br>Also don&#39;t forget that the register map is the same on 512x, mx and=
- coldfire platforms but not on the other ppc platforms so if you want to on=
-e binary to rule them all you will need to have an offest table or some suc=
-h.<br>
-<br>John<br><br><div class=3D"gmail_quote">On Thu, May 7, 2009 at 8:09 AM, =
-Grant Likely <span dir=3D"ltr">&lt;<a href=3D"mailto:grant.likely@secretlab=
-.ca">grant.likely@secretlab.ca</a>&gt;</span> wrote:<br><blockquote class=
-=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin=
-: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div class=3D"im">On Wed, May 6, 2009 at 4:41 PM, Wolfgang Denk &lt;<a href=
-=3D"mailto:wd@denx.de">wd@denx.de</a>&gt; wrote:<br>
-&gt; Dear Grant,<br>
-&gt;<br>
-&gt; In message &lt;<a href=3D"mailto:fa686aa40905061529u11b231afle3b5bb10a=
-2334ad0@mail.gmail.com">fa686aa40905061529u11b231afle3b5bb10a2334ad0@mail.g=
-mail.com</a>&gt; you wrote:<br>
-&gt;&gt;<br>
-&gt;&gt; &gt; Agreed that it&#39;s ugly, but duplicatio9ng the code would h=
-ave been even<br>
-&gt;&gt; &gt; worse. I don&#39;t think that it has multiplatform - at least=
- not as long<br>
-&gt;&gt; &gt; as you don&#39;t ask for one image that runs on 83xx and on 5=
-12x.<br>
-&gt;&gt;<br>
-&gt;&gt; Actually, I *am* asking for one image that runs on 83xx, 52xx and<=
+I think the fec&#39;s parent clock is the ipb clock not the ppc core clock.=
+=A0 Could that be the problem?<br><br><div class=3D"gmail_quote">On Wed, Ma=
+y 6, 2009 at 2:21 PM, Wolfgang Denk <span dir=3D"ltr">&lt;<a href=3D"mailto=
+:wd@denx.de">wd@denx.de</a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
+204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">Signed-off-by: Wo=
+lfgang Denk &lt;<a href=3D"mailto:wd@denx.de">wd@denx.de</a>&gt;<br>
+Cc: Grant Likely &lt;<a href=3D"mailto:grant.likely@secretlab.ca">grant.lik=
+ely@secretlab.ca</a>&gt;<br>
+Cc: John Rigby &lt;<a href=3D"mailto:jcrigby@gmail.com">jcrigby@gmail.com</=
+a>&gt;<br>
+---<br>
+This patch is NOT intended for inclusion into mainline, but rather a<br>
+request for help. For some reason which I don&#39;t understand yet, the<br>
+Ethernet interface on the ARIA board does not work in the default<br>
+configuration, because MII probing fails.<br>
+<br>
+What I&#39;m seeing is this; the problem is with this part of code in<br>
+&quot;drivers/net/fs_enet/mii-fec.c&quot;:<br>
+<br>
+156 =A0 =A0 =A0 =A0 fec-&gt;mii_speed =3D ((ppc_proc_freq + 4999999) / 5000=
+000) &lt;&lt; 1;<br>
+...<br>
+163 =A0 =A0 =A0 =A0 out_be32(&amp;fec-&gt;fecp-&gt;fec_mii_speed, fec-&gt;m=
+ii_speed);<br>
+<br>
+I added some debug messages, and this is what I see:<br>
+<br>
+On the ADS5121, we have the CPU clocked at 400 MHz. =A0I get:<br>
+...<br>
+## ppc_proc_freq =3D 399999996, fec-&gt;mii_speed =3D 160<br>
+FEC MII Bus: probed<br>
+...<br>
+It works fine.<br>
+<br>
+According to the Ref. Man.:<br>
+ =A0 =A0 =A0 =A0A value of 0 in this field turns off the MDC and leaves it =
+in<br>
+ =A0 =A0 =A0 =A0a low-voltage state. Any non-zero value results in the MDC<=
 br>
-&gt;&gt; 521x. =A0I already can and do build and test a single image which =
-boots<br>
-&gt;&gt; on all my 52xx boards, on my 8349 board, and on my G4 Mac.<br>
-&gt;<br>
-&gt; He. I was afraid you&#39;d say that ;-)<br>
-&gt;<br>
-&gt; In this case I need a helping hand as I can&#39;t figure out how to ma=
-ke<br>
-&gt; this work. Any suggestions?<br>
+ =A0 =A0 =A0 =A0frequency of 1/(mii_speed*2) of the system clock frequency.=
 <br>
-</div>Hmmm, it is rather ugly because the layout of fec_t is so different.<=
+that means we have a MDC frequency of<br>
+ =A0 =A0 =A0 =A0400 MHz / (2 * 160) =3D 1.25 MHz<br>
+which is obviously within the 2.5 MHz limit.<br>
+<br>
+Now ARIA is currently running at 316.8 MHz, and this is what I get:<br>
+...<br>
+## ppc_proc_freq =3D 316800000, fec-&gt;mii_speed =3D 128<br>
+fsl-fec-mdio: probe of 80002800.mdio failed with error -5<br>
+...<br>
+It fails. MDC frequency is<br>
+ =A0 =A0 =A0 =A0316.8 MHz / (2 * 128) =3D 1.24 MHz<br>
+which should be fine.<br>
+<br>
+However, If I change the code to<br>
+<br>
+fec-&gt;mii_speed =3D (((ppc_proc_freq / 1000000) / 30) + 1) &lt;&lt; 1;<br=
+>
+<br>
+then I get:<br>
+...<br>
+## ppc_proc_freq =3D 316800000, fec-&gt;mii_speed =3D 22<br>
+FEC MII Bus: probed<br>
+... and it&#39;s working!!! However, I compute MDC frequency as<br>
+ =A0 =A0 =A0 =A0316.8 MHz / (2 * 22) =3D 7.2 MHz<br>
+which is far above the maximum allowed clock of 2.5 MHz ???<br>
+<br>
+Has anybody any idea what might be going on here?<br>
+<br>
+<br>
+=A0drivers/net/fs_enet/mii-fec.c | =A0 =A06 +++++-<br>
+=A01 files changed, 5 insertions(+), 1 deletions(-)<br>
+<br>
+diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c<=
 br>
-Easiest solution would be to duplicate the driver in its entirety, but<br>
-as you say it results in a lot of duplicate code. =A0It might be the<br>
-lesser of many weevils though.<br>
+index 9d8bd97..a51dd83 100644<br>
+--- a/drivers/net/fs_enet/mii-fec.c<br>
++++ b/drivers/net/fs_enet/mii-fec.c<br>
+@@ -153,8 +153,12 @@ static int __devinit fs_enet_mdio_probe(struct of_devi=
+ce *ofdev,<br>
+ =A0 =A0 =A0 =A0if (!fec-&gt;fecp)<br>
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto out_fec;<br>
 <br>
-Second easiest would be to factor out all the common code in the<br>
-driver into a separate .c file that gets included by a &#39;wrapper&#39; .c=
++#if 0<br>
+ =A0 =A0 =A0 =A0fec-&gt;mii_speed =3D ((ppc_proc_freq + 4999999) / 5000000)=
+ &lt;&lt; 1;<br>
+-<br>
++#else<br>
++ =A0 =A0 =A0 fec-&gt;mii_speed =3D (((ppc_proc_freq / 1000000) / 30) + 1) =
+&lt;&lt; 1;<br>
++ =A0 =A0 =A0 printk(&quot;## ppc_proc_freq =3D %d, fec-&gt;mii_speed =3D %=
+d\n&quot;, ppc_proc_freq, fec-&gt;mii_speed);<br>
++#endif<br>
+ =A0 =A0 =A0 =A0setbits32(&amp;fec-&gt;fecp-&gt;fec_r_cntrl, FEC_RCNTRL_MII=
+_MODE);<br>
+ =A0 =A0 =A0 =A0setbits32(&amp;fec-&gt;fecp-&gt;fec_ecntrl, FEC_ECNTRL_PINM=
+UX |<br>
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0FEC_ECNTRL_ETHER_EN);<br>
+<font color=3D"#888888">--<br>
+1.6.0.6<br>
 <br>
-file for each config which first includes the correct definition of<br>
-fec_t. =A0This approach solves the duplicate code problem, but it also<br>
-fell out of the ugly tree and hit every branch on the way down.<br>
-<br>
-ie: the wrappers would look something like this:<br>
-<br>
-fs_enet_cpm1.c:<br>
-#include &lt;asm/cpm1.h&gt;<br>
-#include &quot;fs_enet_main.c&quot;<br>
-<br>
-fs_enet_cpm2.c:<br>
-#include &lt;asm/cpm2.h&gt;<br>
-#include &quot;fs_enet_main.c&quot;<br>
-<br>
-fs_enet_512x.c:<br>
-#include &lt;asm/mpc512x.h&gt;<br>
-#include &quot;fs_enet_main.c&quot;<br>
-<br>
-And then the makefile would be something along the lines of:<br>
-obj-${CONFIG_FS_ENET_CPM1_ +=3D fs_enet_cpm1.o<br>
-obj-${CONFIG_FS_ENET_CPM2_ +=3D fs_enet_cpm2.o<br>
-obj-${CONFIG_FS_ENET_MPC512x_ +=3D fs_enet_512x.o<br>
-<br>
-A brief look at the driver suggests that access to the fec_t structure<br>
-is restricted to the fec-mii.c and mac-fec.c files. =A0It might be<br>
-appropriate to duplicate just those files and do some form of<br>
-fs_enet_ops to select between them.<br>
-<br>
-While on the topic, it looks to me like the driver could really use<br>
-some refactoring love. =A0Having multiple definitions of &quot;fec_t&quot; =
-is<br>
-confusing and potentially lead to hard to find bugs if the wrong<br>
-header gets included by anyone. =A0I&#39;d like to see all the fec specific=
-<br>
-stuff in arch/powerpc/include/asm moved into drivers/net/fs_enet and<br>
-renamed to reflect the hardware it is associate with. =A0Stuff like<br>
-&quot;fec_t&quot; is far to generic, not to mention that typedefs are<br>
-discouraged now.<br>
-<br>
-Regardless, I feel your pain. =A0It is not a pretty situation.<br>
-<div><div></div><div class=3D"h5"><br>
-g.<br>
-<br>
---<br>
-Grant Likely, B.Sc., P.Eng.<br>
-Secret Lab Technologies Ltd.<br>
-</div></div></blockquote></div><br>
+</font></blockquote></div><br>
 
---000e0cd32f98ce7eb804695d06d5--
+--001636e90eea2e6f4704695d1e5b--
