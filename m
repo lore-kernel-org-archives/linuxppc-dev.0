@@ -1,19 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id 09659DDF9E
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 01:55:53 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so827903yxb.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 08 May 2009 08:55:51 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1241791201-23960-1-git-send-email-w.sang@pengutronix.de>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 71155DDF7C
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 02:06:43 +1000 (EST)
+Date: Fri, 8 May 2009 18:06:34 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] net/fs_enet/mii-fec: Use PHY_POLL instead of hard
+	coded '-1'
+Message-ID: <20090508160634.GD3100@pengutronix.de>
 References: <1241791201-23960-1-git-send-email-w.sang@pengutronix.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 8 May 2009 09:55:31 -0600
-Message-ID: <fa686aa40905080855g1b24b9f4s7a78ccb75b5be8b1@mail.gmail.com>
-Subject: Re: [PATCH] net/fs_enet/mii-fec: Use PHY_POLL instead of hard coded
-	'-1'
-To: Wolfram Sang <w.sang@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	<fa686aa40905080855g1b24b9f4s7a78ccb75b5be8b1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="/unnNtmY43mpUSKx"
+In-Reply-To: <fa686aa40905080855g1b24b9f4s7a78ccb75b5be8b1@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
 	Vitaly Bordug <vbordug@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,37 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 8, 2009 at 8:00 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> Initialize the irq-table with PHY_POLL. '-1' means the same now, but is
-> hardly maintainable.
->
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Vitaly Bordug <vbordug@ru.mvista.com>
-> Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: netdev@vger.kernel.org
-> Cc: linuxppc-dev@ozlabs.org
-> ---
-> =A0drivers/net/fs_enet/mii-fec.c | =A0 =A02 +-
-> =A01 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.=
-c
-> index 28077cc..9eb5480 100644
-> --- a/drivers/net/fs_enet/mii-fec.c
-> +++ b/drivers/net/fs_enet/mii-fec.c
-> @@ -166,7 +166,7 @@ static int __devinit fs_enet_mdio_probe(struct of_dev=
-ice *ofdev,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto out_unmap_regs;
->
-> =A0 =A0 =A0 =A0for (i =3D 0; i < PHY_MAX_ADDR; i++)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 new_bus->irq[i] =3D -1;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 new_bus->irq[i] =3D PHY_POLL;
 
-This code no longer exists in net-next.
+--/unnNtmY43mpUSKx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-g.
+> This code no longer exists in net-next.
+
+EPIC FAIL! :/ I checked the powerpc-tree, but not linux-next. I'm sorry
+for the noise, will improve!
 
 --=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--/unnNtmY43mpUSKx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoEWIoACgkQD27XaX1/VRspBgCfbMD1StQGNshQOnFiVSWMR6WM
+FJwAoLBfSHWXn/d9HqV6daoEkKBO2zUk
+=AxQe
+-----END PGP SIGNATURE-----
+
+--/unnNtmY43mpUSKx--
