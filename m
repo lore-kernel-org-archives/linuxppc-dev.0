@@ -1,25 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 4C6BADDF8C
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 05:18:15 +1000 (EST)
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [rtc-linux] Re: [PATCH 10/12] mpc5121: Add MPC5121 Real time
-	clock driver.
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <20090508180944.1304a8b7@i1501.lan.towertech.it>
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<1241640919-4650-11-git-send-email-wd@denx.de>
-	<20090506210644.GA17311@pengutronix.de>
-	<fa686aa40905061540x96c1524hd88ee78bc366b89b@mail.gmail.com>
-	<4b73d43f0905071941xaa78e4dj41f7396ff227af31@mail.gmail.com>
-	<fa686aa40905080853q2156ba46w3d56d0285271ce43@mail.gmail.com>
-	<20090508180944.1304a8b7@i1501.lan.towertech.it>
-Date: Fri, 08 May 2009 21:18:10 +0200
-Message-Id: <20090508191810.D51BE832C2FB@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, Piotr Ziecik <kosmo@semihalf.com>,
-	rtc-linux@googlegroups.com
+Return-Path: <davem@davemloft.net>
+Date: Fri, 08 May 2009 12:43:47 -0700 (PDT)
+Message-Id: <20090508.124347.142493836.davem@davemloft.net>
+To: olof@lixom.net
+Subject: Re: INET_LRO as tristate and use from modules
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090422.021218.92737677.davem@davemloft.net>
+References: <1240339984.9110.141.camel@subratamodak.linux.ibm.com>
+	<20090421193319.GB20237@lixom.net>
+	<20090422.021218.92737677.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sachinp@linux.vnet.ibm.com, sfr@canb.auug.org.au, themann@de.ibm.com,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,29 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Alessandro Zummo,
+From: David Miller <davem@davemloft.net>
+Date: Wed, 22 Apr 2009 02:12:18 -0700 (PDT)
 
-In message <20090508180944.1304a8b7@i1501.lan.towertech.it> you wrote:
-> On Fri, 8 May 2009 09:53:20 -0600
-> Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Olof Johansson <olof@lixom.net>
+> Date: Tue, 21 Apr 2009 14:33:19 -0500
 > 
-> > That is fine by me, but since it is known that it will eventually
-> > support both, I'd like it to be renamed to 5xxx before it is merged to
-> > avoid a later rename patch.
+>> On Wed, Apr 22, 2009 at 12:23:03AM +0530, Subrata Modak wrote:
+>>>   MODPOST 338 modules
+>>> ERROR: ".lro_receive_skb" [drivers/net/pasemi_mac_driver.ko] undefined!
+>>> ERROR: ".lro_flush_all" [drivers/net/pasemi_mac_driver.ko] undefined!
+>>> WARNING: modpost: Found 1 section mismatch(es).
+>>> To see full details build your kernel with:
+>>> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>>> make[1]: *** [__modpost] Error 1
+>>> make: *** [modules] Error 2
+>> 
+>> This seems to be a problem with all tristate-capable drivers that use
+>> LRO (and uses select INET_LRO in their Kconfig): INET_LRO is a tristate
+>> and can thus be a module. Looks like it needs to be a bool instead?
 > 
->  or 52xx ?
+> Yes, making this a bool would be the easiest fix.
+> 
+> By why don't we get the same problem for PHYLIB?  It's also
+> tristate and "select"'d by a whole slew of networking drivers.
 
-No, because the current version is for MPC5>1<2x
+I guess nobody has any idea...
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Misquotation is, in fact, the pride and privilege of the  learned.  A
-widely-read  man  never  quotes  accurately,  for  the rather obvious
-reason that he has read too widely.
-                - Hesketh Pearson _Common Misquotations_ introduction
+I'll just make INET_LRO a bool to fix this.
