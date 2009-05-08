@@ -1,19 +1,35 @@
-Return-Path: <davem@davemloft.net>
-Date: Fri, 08 May 2009 12:43:47 -0700 (PDT)
-Message-Id: <20090508.124347.142493836.davem@davemloft.net>
-To: olof@lixom.net
-Subject: Re: INET_LRO as tristate and use from modules
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090422.021218.92737677.davem@davemloft.net>
-References: <1240339984.9110.141.camel@subratamodak.linux.ibm.com>
-	<20090421193319.GB20237@lixom.net>
-	<20090422.021218.92737677.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sachinp@linux.vnet.ibm.com, sfr@canb.auug.org.au, themann@de.ibm.com,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	subrata@linux.vnet.ibm.com
+Return-Path: <andi@firstfloor.org>
+Received: from one.firstfloor.org (one.firstfloor.org [213.235.205.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7AECDDDFD5
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 05:49:48 +1000 (EST)
+To: =?iso-8859-1?Q?Markus_Gutschke_=28=DC=D2=D0=29?= <markus@google.com>
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+	<20090228030413.5B915FC3DA@magilla.sf.frob.com>
+	<alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
+	<alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+	<20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
+	<alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
+	<904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
+	<20090506212913.GC4861@elte.hu>
+	<904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
+	<20090506215450.GA9537@elte.hu>
+	<904b25810905061508n6d9cb8dbg71de5b1e0332ede7@mail.gmail.com>
+Date: Fri, 08 May 2009 21:18:44 +0200
+In-Reply-To: <904b25810905061508n6d9cb8dbg71de5b1e0332ede7@mail.gmail.com>
+	(Markus Gutschke's message of "Wed, 6 May 2009 15:08:40 -0700")
+Message-ID: <878wl7o12j.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linux-mips@linux-mips.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+	stable@kernel.org, linuxppc-dev@ozlabs.org,
+	sparclinux@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +39,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: David Miller <davem@davemloft.net>
-Date: Wed, 22 Apr 2009 02:12:18 -0700 (PDT)
+"Markus Gutschke (мва)" <markus@google.com> writes:
+>
+> There are a large number of system calls that "normal" C/C++ code uses
+> quite frequently, and that are not security sensitive. A typical
+> example would be gettimeofday().
 
-> From: Olof Johansson <olof@lixom.net>
-> Date: Tue, 21 Apr 2009 14:33:19 -0500
-> 
->> On Wed, Apr 22, 2009 at 12:23:03AM +0530, Subrata Modak wrote:
->>>   MODPOST 338 modules
->>> ERROR: ".lro_receive_skb" [drivers/net/pasemi_mac_driver.ko] undefined!
->>> ERROR: ".lro_flush_all" [drivers/net/pasemi_mac_driver.ko] undefined!
->>> WARNING: modpost: Found 1 section mismatch(es).
->>> To see full details build your kernel with:
->>> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->>> make[1]: *** [__modpost] Error 1
->>> make: *** [modules] Error 2
->> 
->> This seems to be a problem with all tristate-capable drivers that use
->> LRO (and uses select INET_LRO in their Kconfig): INET_LRO is a tristate
->> and can thus be a module. Looks like it needs to be a bool instead?
-> 
-> Yes, making this a bool would be the easiest fix.
-> 
-> By why don't we get the same problem for PHYLIB?  It's also
-> tristate and "select"'d by a whole slew of networking drivers.
+At least on x86-64 gettimeofday() (and time(2)) work inside seccomp because 
+they're vsyscalls that run in ring 3 only.
 
-I guess nobody has any idea...
+-Andi
 
-I'll just make INET_LRO a bool to fix this.
+-- 
+ak@linux.intel.com -- Speaking for myself only.
