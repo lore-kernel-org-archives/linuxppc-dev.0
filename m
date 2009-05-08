@@ -1,20 +1,24 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-17.bluehost.com (outbound-mail-17.bluehost.com
-	[69.89.20.232]) by ozlabs.org (Postfix) with SMTP id 43A41DDF82
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 02:09:50 +1000 (EST)
-Received: from 72.25.32.200.dynamic.dejazzd.com ([72.25.32.200]
-	helo=[206.223.20.150])
-	by host200.hostmonster.com with esmtpa (Exim 4.69)
-	(envelope-from <dhlii@dlasys.net>) id 1M2SXU-0006VY-EJ
-	for linuxppc-dev@ozlabs.org; Fri, 08 May 2009 10:03:08 -0600
-Message-ID: <4A0457BC.3040408@dlasys.net>
-Date: Fri, 08 May 2009 12:03:08 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: device trees.
-Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: dhlii@dlasys.net
+Return-Path: <alessandro.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id AE423DDF94
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 02:16:56 +1000 (EST)
+Date: Fri, 8 May 2009 18:10:13 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Subject: Re: [rtc-linux] Re: [PATCH 10/12] mpc5121: Add MPC5121 Real time
+	clock driver.
+Message-ID: <20090508181013.65677fa2@i1501.lan.towertech.it>
+In-Reply-To: <fa686aa40905080853q2156ba46w3d56d0285271ce43@mail.gmail.com>
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<1241640919-4650-11-git-send-email-wd@denx.de>
+	<20090506210644.GA17311@pengutronix.de>
+	<fa686aa40905061540x96c1524hd88ee78bc366b89b@mail.gmail.com>
+	<4b73d43f0905071941xaa78e4dj41f7396ff227af31@mail.gmail.com>
+	<fa686aa40905080853q2156ba46w3d56d0285271ce43@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Piotr Ziecik <kosmo@semihalf.com>,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-    Is there an example somewhere that shows building a device tree on
-the fly ?
-   
-    As our products move forward it becomes increasingly clear that
-static configurations are not going to work.
+On Fri, 8 May 2009 09:53:20 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
+> That is fine by me, but since it is known that it will eventually
+> support both, I'd like it to be renamed to 5xxx before it is merged to
+> avoid a later rename patch.
 
-
+ sorry, forget my last email, I misread the codes.
 
 -- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
