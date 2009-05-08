@@ -1,21 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1E2C3DDF95
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 00:20:58 +1000 (EST)
-Message-Id: <059F23E3-64CF-4F9A-B35F-D271A666AFC2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090502021659.GF18281@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 6/6] powerpc/85xx: Add STMicro M25P40 serial flash support
-	for MPC8569E-MDS
-Date: Fri, 8 May 2009 09:13:51 -0500
-References: <20090502021611.GA17570@oksana.dev.rtsoft.ru>
-	<20090502021659.GF18281@oksana.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Haiying Wang <Haiying.Wang@freescale.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id DD477DDF8A
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 00:27:03 +1000 (EST)
+Date: Fri, 8 May 2009 16:27:02 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Mirek23 <miroslaw.dach@psi.ch>
+Subject: Re: initramfs with lzma compression
+In-Reply-To: <23446869.post@talk.nabble.com>
+Message-ID: <alpine.LRH.2.00.0905081625580.7964@vixen.sonytel.be>
+References: <23446869.post@talk.nabble.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 8 May 2009, Mirek23 wrote:
+> I am looking for a patch which introduces lzma compression or suppresses the
+> standard gzip compression for the initramfs.
 
-On May 1, 2009, at 9:16 PM, Anton Vorontsov wrote:
+It's already in the mainline kernel, e.g.:
 
-> For serial flash support we need to:
->
-> - Add QE Par IO Bank E device tree node, a GPIO from this bank is
->  used for SPI chip-select line;
-> - Add serial-flash node;
-> - Add proper module alias into of/base.c.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/boot/dts/mpc8569mds.dts |   26 +++++++++++++++++++++++---
-> drivers/of/base.c                    |    1 +
-> 2 files changed, 24 insertions(+), 3 deletions(-)
+commit 30d65dbfe3add7f010a075991dc0bfeaebb7d9e1
+Author: Alain Knaff <alain@knaff.lu>
+Date:   Sun Jan 4 22:46:17 2009 +0100
 
-applied to next
+    bzip2/lzma: config and initramfs support for bzip2/lzma decompression
+    
+    Impact: New code for initramfs decompression, new features
+    
+    This is the second part of the bzip2/lzma patch
+    
+    The bzip patch is based on an idea by Christian Ludwig, includes support for
+    compressing the kernel with bzip2 or lzma rather than gzip. Both
+    compressors give smaller sizes than gzip.  Lzma's decompresses faster
+    than bzip2.
+    
+    It also supports ramdisks and initramfs' compressed using these two
+    compressors.
+    
+    The functionality has been successfully used for a couple of years by
+    the udpcast project
+    
+    This version applies to "tip" kernel 2.6.28
+    
+    This part contains:
+    - support for new compressions (bzip2 and lzma) in initramfs and
+    old-style ramdisk
+    - config dialog for kernel compression (but new kernel compressions
+    not yet supported)
+    
+    Signed-off-by: Alain Knaff <alain@knaff.lu>
+    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
-- k
+For older kernel versions, you can backport it by git cherry-picking the
+commits you need.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
+
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
