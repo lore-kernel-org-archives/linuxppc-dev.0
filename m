@@ -1,15 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E7967DDE0F
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2009 23:53:01 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: pierre@ossman.eu
-Subject: [PATCH] mmc: Add fsl,esdhc as a valid compatible to bind against
-Date: Fri,  8 May 2009 08:52:49 -0500
-Message-Id: <1241790769-3843-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id C9D2FDDF7E
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 00:00:11 +1000 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: w.sang@pengutronix.de
+Subject: [PATCH] net/fs_enet/mii-fec: Use PHY_POLL instead of hard coded '-1'
+Date: Fri,  8 May 2009 16:00:01 +0200
+Message-Id: <1241791201-23960-1-git-send-email-w.sang@pengutronix.de>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Vitaly Bordug <vbordug@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +18,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We plan to use fsl,esdhc going forward as the base compatible so update
-the driver to bind against it.
+Initialize the irq-table with PHY_POLL. '-1' means the same now, but is
+hardly maintainable.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: netdev@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 ---
- drivers/mmc/host/sdhci-of.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/net/fs_enet/mii-fec.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index 3ff4ac3..09cc597 100644
---- a/drivers/mmc/host/sdhci-of.c
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -277,6 +277,7 @@ static int __devexit sdhci_of_remove(struct of_device *ofdev)
- static const struct of_device_id sdhci_of_match[] = {
- 	{ .compatible = "fsl,mpc8379-esdhc", .data = &sdhci_esdhc, },
- 	{ .compatible = "fsl,mpc8536-esdhc", .data = &sdhci_esdhc, },
-+	{ .compatible = "fsl,esdhc", .data = &sdhci_esdhc, },
- 	{ .compatible = "generic-sdhci", },
- 	{},
- };
+diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
+index 28077cc..9eb5480 100644
+--- a/drivers/net/fs_enet/mii-fec.c
++++ b/drivers/net/fs_enet/mii-fec.c
+@@ -166,7 +166,7 @@ static int __devinit fs_enet_mdio_probe(struct of_device *ofdev,
+ 		goto out_unmap_regs;
+ 
+ 	for (i = 0; i < PHY_MAX_ADDR; i++)
+-		new_bus->irq[i] = -1;
++		new_bus->irq[i] = PHY_POLL;
+ 
+ 	while ((np = of_get_next_child(ofdev->node, np)))
+ 		if (!strcmp(np->type, "ethernet-phy"))
 -- 
-1.6.0.6
+1.6.2
