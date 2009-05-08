@@ -1,17 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id DD477DDF8A
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 00:27:03 +1000 (EST)
-Date: Fri, 8 May 2009 16:27:02 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Mirek23 <miroslaw.dach@psi.ch>
-Subject: Re: initramfs with lzma compression
-In-Reply-To: <23446869.post@talk.nabble.com>
-Message-ID: <alpine.LRH.2.00.0905081625580.7964@vixen.sonytel.be>
-References: <23446869.post@talk.nabble.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f172.google.com (mail-gx0-f172.google.com
+	[209.85.217.172]) by ozlabs.org (Postfix) with ESMTP id 27DB9DDF9D
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 May 2009 01:40:30 +1000 (EST)
+Received: by gxk20 with SMTP id 20so2982326gxk.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 08 May 2009 08:40:28 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+In-Reply-To: <20090508123413.GC3100@pengutronix.de>
+References: <20090508123413.GC3100@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 8 May 2009 09:40:08 -0600
+Message-ID: <fa686aa40905080840x308c1addld75b1ec5df386c13@mail.gmail.com>
+Subject: Re: [PATCH] mpc5121/clocks: make debug output more readable
+To: Wolfram Sang <w.sang@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,61 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 8 May 2009, Mirek23 wrote:
-> I am looking for a patch which introduces lzma compression or suppresses the
-> standard gzip compression for the initramfs.
+On Fri, May 8, 2009 at 6:34 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+>
+> - Drop KERN_ levels for printks which print to the same line
+> - use '=3D' in output to connect key/value pairs
 
-It's already in the mainline kernel, e.g.:
+Personally, I'd rather see the printks converted to pr_info()/pr_cont().
 
-commit 30d65dbfe3add7f010a075991dc0bfeaebb7d9e1
-Author: Alain Knaff <alain@knaff.lu>
-Date:   Sun Jan 4 22:46:17 2009 +0100
+g.
 
-    bzip2/lzma: config and initramfs support for bzip2/lzma decompression
-    
-    Impact: New code for initramfs decompression, new features
-    
-    This is the second part of the bzip2/lzma patch
-    
-    The bzip patch is based on an idea by Christian Ludwig, includes support for
-    compressing the kernel with bzip2 or lzma rather than gzip. Both
-    compressors give smaller sizes than gzip.  Lzma's decompresses faster
-    than bzip2.
-    
-    It also supports ramdisks and initramfs' compressed using these two
-    compressors.
-    
-    The functionality has been successfully used for a couple of years by
-    the udpcast project
-    
-    This version applies to "tip" kernel 2.6.28
-    
-    This part contains:
-    - support for new compressions (bzip2 and lzma) in initramfs and
-    old-style ramdisk
-    - config dialog for kernel compression (but new kernel compressions
-    not yet supported)
-    
-    Signed-off-by: Alain Knaff <alain@knaff.lu>
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+>
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: John Rigby <jcrigby@gmail.com>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+>
+> ---
+> =A0arch/powerpc/platforms/512x/clock.c | =A0 =A07 +++----
+> =A01 file changed, 3 insertions(+), 4 deletions(-)
+>
+> Index: .kernel/arch/powerpc/platforms/512x/clock.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- .kernel.orig/arch/powerpc/platforms/512x/clock.c
+> +++ .kernel/arch/powerpc/platforms/512x/clock.c
+> @@ -83,12 +83,11 @@ static void dump_clocks(void)
+> =A0 =A0 =A0 =A0mutex_lock(&clocks_mutex);
+> =A0 =A0 =A0 =A0printk(KERN_INFO "CLOCKS:\n");
+> =A0 =A0 =A0 =A0list_for_each_entry(p, &clocks, node) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_INFO " =A0%s %ld", p->name, p->=
+rate);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_INFO " =A0%s=3D%ld", p->name, p=
+->rate);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (p->parent)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_INFO " %s %ld",=
+ p->parent->name,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0p->parent->r=
+ate);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(" %s=3D%ld", p->pare=
+nt->name, p->parent->rate);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (p->flags & CLK_HAS_CTRL)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_INFO " reg/bit =
+%d/%d", p->reg, p->bit);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk(" reg/bit=3D%d/%d", =
+p->reg, p->bit);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0printk("\n");
+> =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0mutex_unlock(&clocks_mutex);
+>
+> --
+> Pengutronix e.K. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | Wo=
+lfram Sang =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0|
+> Industrial Linux Solutions =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | http://www.p=
+engutronix.de/ =A0|
+>
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.9 (GNU/Linux)
+>
+> iEYEARECAAYFAkoEJsUACgkQD27XaX1/VRuQggCgm7auPJpCpTVleUD30B86X/jW
+> lZsAnR91XB0YVCBp95aGyEqUU8+LXaHv
+> =3D6IcQ
+> -----END PGP SIGNATURE-----
+>
+>
 
-For older kernel versions, you can backport it by git cherry-picking the
-commits you need.
 
-With kind regards,
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
