@@ -1,16 +1,23 @@
-Return-Path: <0x0000@163.com>
-Received: from m12-11.163.com (m12-11.163.com [220.181.12.11])
-	by ozlabs.org (Postfix) with SMTP id AF66EDDE0A
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 22:52:48 +1000 (EST)
-Date: Mon, 11 May 2009 20:36:58 +0800
-From: "0x0000" <0x0000@163.com>
-To: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
-Subject: some questions about the implementation of oprofile of mpc8560 in
-	linux kernel source code
-Message-ID: <200905112036570173816@163.com>
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====003_Dragon502454831168_====="
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 80857DDDA9
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 23:51:53 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1538179ywt.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 06:51:51 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <4A07C664.6040609@dlasys.net>
+References: <4A0457BC.3040408@dlasys.net>
+	<fa686aa40905091351k140c64a0w27eb44908218814@mail.gmail.com>
+	<1242007203.7767.28.camel@concordia>
+	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
+	<4A07C664.6040609@dlasys.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 11 May 2009 07:51:31 -0600
+Message-ID: <fa686aa40905110651r1c18b78bpe8ffebe041726695@mail.gmail.com>
+Subject: Re: device trees.
+To: "David H. Lynch Jr." <dhlii@dlasys.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,101 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, May 11, 2009 at 12:32 AM, David H. Lynch Jr. <dhlii@dlasys.net> wro=
+te:
+> =A0 =A0But partial reconfiguration is not the only way to encounter a
+> dynamic environment.
+> =A0 =A0A typical pico system has multiple bit files and multiple
+> executables stored in its flash file system.
+> =A0 =A0Power up and soft resets might each run through a different sequen=
+ce
+> of bit files and executables.
+>
+> =A0 =A0My issue is that post 2.6.26 unless I can dynamically create the
+> device tree inside our monitor/bootloader
+> =A0 =A0we must at minimum have a different device tree for each bitfile,
 
-This is a multi-part message in MIME format.
+This is true
 
---=====003_Dragon502454831168_=====
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+> or worse if we wrap the device tree into the executable,
+>    a different linux executable for each bit file.
 
-Dear All,
+As you say, this is undesirable.  simpleImage does this, but it it
+intended for the least common denominator case where there is no
+firmware support at all available and the kernel needs to be
+completely contained.  simpleImage is not intended to be the ideal.
 
-I am a user of oprofile. When I use oprofile, I find some problems. Could you please help me? 
+> =A0 =A0We are very actively headed in the opposite direction. It is my/ou=
+r
+> intention to have a single linux executable that works accross
+> =A0 =A0everyone of our cards and everyone of our bitfiles.
 
-I have some questions about the open source code of the implementation of oprofile in linux 
-kernel 2.6.26, which is presented op_model_fsl_emb.c, and the path in linux kernel source 
-tree is arch/powerpc/oprofile/op_model_fsl_emb.c. 
+That is the direction we are already going in.  U-Boot supports this.
+In fact, I can build a single kernel image which will boot on all of
+my MPC5200 boards, and my MPC83xx boards.  Similarly, if I have u-boot
+running on a Virtex board, I can build a single image which will boot
+all of them if the correct .dtb is passed to it.
 
-To present this question more clearly, It needs the following steps: 
+You *could* generate the device tree dynamically, but I think that is
+a path of diminishing returns considering that generating a .dts at
+the same time as bitstream creation time is cheap and it is small.  At
+one time Steven Neuendorffer was playing with a scheme to preload a
+section of BRAM with a gzipped .dtb so that the correct device tree is
+always present.  I really liked the idea, and I'd like to try to
+pursue it.
 
-1> I give some cpu event and its counter values, which finally will call the function fsl_emb_reg_setup 
+g.
 
-2> I execute setup, which finally will call the function fsl_emb_cpu_setup 
-
-3> I execute start, which finally will call the function fsl_emb_start 
-
-4> After calling start, the MPC8560 CPU will continuing increasing the PMCn value until its value reach 
-0x80000000. Basing on what metioned in E500CORERM.pdf, this value should cause a exception, and 
-should goto the interrupt routine:fsl_emb_handle_interrupt. 
-But in fact, It never goto this interrupt routine! It always cause a reboot without any information! 
-
-But while we using MPC7450 CPU, this situation never happened, it works well. 
-
-
-Basing on the information metioned above, my questions are: 
-1> Is there any bug in op_model_fsl_emb.c and its related source code? 
-2> If possible, could you please tell me what the reason it is? And How to use op_model_fsl_emb.c correctly? 
-
-
-Any feedback is appreciated! 
-
-Thanks & regards 
-Jike
-
-2009-05-11 
-
-
-
-0x0000 
-
---=====003_Dragon502454831168_=====
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=us-ascii">
-<META content="MSHTML 6.00.2900.3527" name=GENERATOR><LINK 
-href="BLOCKQUOTE{margin-Top: 0px; margin-Bottom: 0px; margin-Left: 2em}" 
-rel=stylesheet></HEAD>
-<BODY style="FONT-SIZE: 10pt; MARGIN: 10px; FONT-FAMILY: verdana">
-<DIV><FONT face=Verdana size=2>
-<DIV><FONT face=Verdana size=2>Dear All,</FONT></DIV>
-<DIV>&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 2em">I am a user of oprofile. When I use oprofile, I 
-find some problems. Could you please help me? </DIV>
-<DIV style="TEXT-INDENT: 2em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 2em">I have some questions about the open source code 
-of the implementation of oprofile in linux </DIV>
-<DIV style="TEXT-INDENT: 2em">kernel 2.6.26, which is presented 
-op_model_fsl_emb.c, and the path in linux kernel source </DIV>
-<DIV style="TEXT-INDENT: 2em">tree is arch/powerpc/oprofile/op_model_fsl_emb.c. 
-</DIV>
-<DIV style="TEXT-INDENT: 2em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 2em">To present this question more clearly, It needs 
-the following steps: <BR><BR>1&gt; I give some cpu event and its counter values, 
-which finally will call the function fsl_emb_reg_setup <BR><BR>2&gt; I execute 
-setup, which finally will call the function fsl_emb_cpu_setup <BR><BR>3&gt; I 
-execute start, which finally will call the function fsl_emb_start <BR><BR>4&gt; 
-After calling start, the MPC8560 CPU will continuing increasing the PMCn value 
-until its value reach <BR>0x80000000. Basing on what metioned in E500CORERM.pdf, 
-this value should cause a exception, and <BR>should goto the interrupt 
-routine:fsl_emb_handle_interrupt. <BR>But in fact, It never goto this interrupt 
-routine! It always cause a reboot without any information! <BR><BR>But while we 
-using MPC7450 CPU, this situation never happened, it works well. 
-<BR><BR><BR>Basing on the information metioned above, my questions are: 
-<BR>1&gt; Is there any bug in op_model_fsl_emb.c and its related source code? 
-<BR>2&gt; If possible, could you please tell me what the reason it is? And How 
-to use op_model_fsl_emb.c correctly? <BR><BR><BR>Any feedback is appreciated! 
-<BR><BR>Thanks &amp; regards <BR>Jike</DIV></FONT></DIV>
-<DIV><FONT face=Verdana size=2></FONT>&nbsp;</DIV>
-<DIV align=left><FONT face=Verdana color=#c0c0c0 size=2>2009-05-11 
-</FONT></DIV><FONT face=Verdana size=2>
-<HR style="WIDTH: 122px; HEIGHT: 2px" align=left SIZE=2>
-
-<DIV><FONT face=Verdana color=#c0c0c0 size=2><SPAN>0x0000</SPAN> 
-</FONT></DIV></FONT></BODY></HTML>
-
---=====003_Dragon502454831168_=====--
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
