@@ -1,20 +1,20 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-27.bluehost.com (outbound-mail-27.bluehost.com
-	[69.89.17.193]) by ozlabs.org (Postfix) with SMTP id 9D62CDDE18
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 16:38:47 +1000 (EST)
-Message-ID: <4A07C664.6040609@dlasys.net>
-Date: Mon, 11 May 2009 02:32:04 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 10E85DDE32
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 16:39:48 +1000 (EST)
+Date: Mon, 11 May 2009 08:39:46 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH v3] powerpc: Keep track of emulated instructions if
+	debugfs is enabled
+In-Reply-To: <1242009161.7767.38.camel@concordia>
+Message-ID: <alpine.LRH.2.00.0905110839110.14263@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0905081611130.7964@vixen.sonytel.be>
+	<1242009161.7767.38.camel@concordia>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: device trees.
-References: <4A0457BC.3040408@dlasys.net>
-	<fa686aa40905091351k140c64a0w27eb44908218814@mail.gmail.com>
-	<1242007203.7767.28.camel@concordia>
-	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
-In-Reply-To: <fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,78 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-    I will have to look at the code referenced below,
+On Mon, 11 May 2009, Michael Ellerman wrote:
+> On Fri, 2009-05-08 at 16:15 +0200, Geert Uytterhoeven wrote:
+> > Counters for the various classes of emulated instructions are available under
+> > /sys/kernel/debug/powerpc/emulated_instructions (assumed debugfs is mounted on
+> > /sys/kernel/debug).  Optionally (controlled by
+> > /sys/kernel/debug/powerpc/emulated_instructions/do_warn), rate-limited warnings
+> > can be printed to the console when instructions are emulated.
+> > 
+> > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > ---
+> > Tested on ppc64 (ps3) and ppc32 (sequoia) using mfpvr.
+> > 
+> > v3:
+> >   - add generic unaligned
+> >   - switch from sysfs + sysctl to debugfs. All virtual files now show up under
+> >     /sys/kernel/debug/powerpc/emulated_instructions (assumed debugfs mounted on
+> >     /sys/kernel/debug)
+> >   - enable the printing of rate-limited warnings by writing a non-zero value to
+> >     /sys/kernel/debug/powerpc/emulated_instructions/do_warn
+> >   - switch from per-CPU to system-wide counters
+> >   - always use 32-bit counters (was 64-bit on ppc64)
+> >   - counters are writable, i.e. can be reset (by root)
+> 
+> Nice :)
+> 
+> My only query is whether it needs its own CONFIG option. Some folks
+> might want other DEBUG_FS things but not this?
 
-    But my objective is not to address partial reconfiguration at this time.
-    At Pico we have come to the conclusion that as it is currently done
-partial reconfiguration has extremely limited use.
-    We are actively looking at other techniques as well as different
-FPGA technology to impliment usable equivalents.
+That's possible. Let's see what the other folks say...
 
-    But partial reconfiguration is not the only way to encounter a
-dynamic environment.
-    A typical pico system has multiple bit files and multiple
-executables stored in its flash file system.
-    Power up and soft resets might each run through a different sequence
-of bit files and executables.
-    
-    My issue is that post 2.6.26 unless I can dynamically create the
-device tree inside our monitor/bootloader
-    we must at minimum have a different device tree for each bitfile, or
-worse if we wrap the device tree into the executable,
-    a different linux executable for each bit file.
-    We are very actively headed in the opposite direction. It is my/our
-intention to have a single linux executable that works accross
-    everyone of our cards and everyone of our bitfiles.
-   
-   
+With kind regards,
 
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
 
-Grant Likely wrote:
-> On Sun, May 10, 2009 at 8:00 PM, Michael Ellerman
-> <michael@ellerman.id.au> wrote:
->   
->> On Sat, 2009-05-09 at 14:51 -0600, Grant Likely wrote:
->>     
->>> On Fri, May 8, 2009 at 10:03 AM, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
->>>       
->>>>    Is there an example somewhere that shows building a device tree on
->>>> the fly ?
->>>>
->>>>    As our products move forward it becomes increasingly clear that
->>>> static configurations are not going to work.
->>>>         
->>> To use device tree with partial reconfiguration would require rework
->>> to the device tree infrastructure to prune and graft portions of the
->>> device tree.  I think it is possible, but it is non-trivial to get
->>> working.
->>>       
->> arch/powerpc/platforms/pseries/reconfig.c
->>
->> Not pretty, but it does more or less what you're talking about. Would
->> need some work to get it going on !pseries obviously.
->>     
->
-> Heh, I didn't even know this existed.  :-)
->
-> Thinking about this more, it seems to me that the tricky bit would be
-> figuring out how to drop all references to a node before it is pruned
-> from the tree.  of_platform_devices would probably be the easiest
-> because the bus could walked before pruning the node, but there are
-> also references on the i2c, spi and mdio busses that must be dealt
-> with appropriately.
->
-> g.
->
->   
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
