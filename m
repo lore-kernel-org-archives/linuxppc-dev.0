@@ -1,22 +1,34 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-106.bluehost.com (outbound-mail-106.bluehost.com
-	[69.89.22.6]) by ozlabs.org (Postfix) with SMTP id 59C11DDDA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 03:01:41 +1000 (EST)
-Message-ID: <4A085862.5070303@dlasys.net>
-Date: Mon, 11 May 2009 12:54:58 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EF1C1DDDF0
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 03:07:13 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id n4BH5Dbd017807
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 03:05:13 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4BH7CUi336380
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 03:07:12 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n4BH7CYa031760
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 03:07:12 +1000
+Message-ID: <4A085B3D.5000806@in.ibm.com>
+Date: Mon, 11 May 2009 22:37:09 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: device trees.
-References: <4A0457BC.3040408@dlasys.net>	
-	<fa686aa40905091351k140c64a0w27eb44908218814@mail.gmail.com>	
-	<1242007203.7767.28.camel@concordia>	
-	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>	
-	<4A07C664.6040609@dlasys.net>
-	<ed82fe3e0905110758l59ee1c94nffbfa50280851613@mail.gmail.com>
-In-Reply-To: <ed82fe3e0905110758l59ee1c94nffbfa50280851613@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+To: Jiri Pirko <jpirko@redhat.com>
+Subject: Re: [PowerPC] Next May 8 boot failure: OOPS during ibmveth moduleinit
+References: <20090508180251.f53f204e.sfr@canb.auug.org.au>
+	<4A042B20.4090903@in.ibm.com>
+	<20090508.125722.54378771.davem@davemloft.net>
+	<20090508223332.GA4881@psychotron.englab.brq.redhat.com>
+In-Reply-To: <20090508223332.GA4881@psychotron.englab.brq.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, linux-next@vger.kernel.org,
+	David Miller <davem@davemloft.net>, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> On Mon, May 11, 2009 at 1:32 AM, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
->
-> So all you need to do is have your boot loader create a device tree
-> from scratch.  If you're using U-Boot, then you can already do this by
-> making the appropriate libfdt calls.  Otherwise, you should probably
-> add libfdt to your boot loader.
+Jiri Pirko wrote:
+> Fri, May 08, 2009 at 09:57:22PM CEST, davem@davemloft.net wrote:
 >   
-    As I mentioned before, we do nto use u-boot. I am not looking to
-start a debate on it either, but it does not meet a number of our needs,
-    and would require significant architectural changes to do so. The
-difference between it and devicetrees is that u-boot is avaiable to us
-if we want, I did port u-boot to our hardware at one point and it did
-everything it promised, but u-boot is optional, device trees are not.
-    I do not have to re-architect u-boot to fit into 16k of bram, or
-load bit files or .....
-     If I want to move past 2.6.26 I have to not only use device trees
-but actually make them work in a way that will function as we need with
-our systems.
-    It is likely I will use libdft as a starting point, but I can not
-see it as more than a short term solution. libdft is orders of magnitude
-large than our entire monitor, and it is a toolkit rather than the whole
-solution.
+>> From: Sachin Sant <sachinp@in.ibm.com>
+>> Date: Fri, 08 May 2009 18:22:48 +0530
+>>
+>>     
+>>> Todays Next failed to boot on a Power6 JS22 blade with following oops.
+>>>       
+>> Jiri, I suspect this might be your address list changes.
+>>
+>> Although that's just a guess.  But please take a look.
+>>     
+>
+> Hmm, only thing I see might cause the problem would be if calling __hw_addr_add
+> in dev_addr_init fails, then dev->dev_addr would contain zeroes (which looks
+> this is not the case). But in this case the oops would appear earlier (in
+> ibmveth_probe dev_addr memcpy).
+>
+> Will do the patch which checks the result to behave correctly in case of oom
+> but this imho this wouldn't help. Strange, I will dig into this more tomorrow.
+>   
+I can recreate this problem with today's Next release as well. Let me 
+know if you want me to try
+out any thing to debug this problem.
 
+Thanks
+-Sachin
 
 -- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
