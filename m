@@ -1,12 +1,24 @@
-Return-Path: <anton@ozlabs.org>
-Date: Mon, 11 May 2009 09:37:36 +1000
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Improve decrementer accuracy
-Message-ID: <20090510233736.GI15891@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org, davem@davemloft.net
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AACCEDDD0C
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 12:00:04 +1000 (EST)
+Subject: Re: device trees.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40905091351k140c64a0w27eb44908218814@mail.gmail.com>
+References: <4A0457BC.3040408@dlasys.net>
+	<fa686aa40905091351k140c64a0w27eb44908218814@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-u9N58I8vqcDKDW3rDaqO"
+Date: Mon, 11 May 2009 12:00:03 +1000
+Message-Id: <1242007203.7767.28.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, dhlii@dlasys.net
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,84 +29,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-I have been looking at sources of OS jitter and notice that after a long
-NO_HZ idle period we wakeup too early:
+--=-u9N58I8vqcDKDW3rDaqO
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-relative time (us)    event
-                      timer irq exit
-    999946.405        timer irq entry
-         4.835        timer irq exit
-        21.685        timer irq entry
-         3.540          timer (tick_sched_timer) entry
+On Sat, 2009-05-09 at 14:51 -0600, Grant Likely wrote:
+> On Fri, May 8, 2009 at 10:03 AM, David H. Lynch Jr. <dhlii@dlasys.net> wr=
+ote:
+> >    Is there an example somewhere that shows building a device tree on
+> > the fly ?
+> >
+> >    As our products move forward it becomes increasingly clear that
+> > static configurations are not going to work.
 
-Here we slept for just under a second then took a timer interrupt that did
-nothing. 21.685 us later we wake up again and do the work.
+> To use device tree with partial reconfiguration would require rework
+> to the device tree infrastructure to prune and graft portions of the
+> device tree.  I think it is possible, but it is non-trivial to get
+> working.
 
-We set a rather low shift value of 16 for the decrementer clockevent, which I
-think is causing this issue. On this box we have a 207MHz decrementer and see:
+arch/powerpc/platforms/pseries/reconfig.c
 
-clockevent: decrementer mult[3501] shift[16] cpu[0]
+Not pretty, but it does more or less what you're talking about. Would
+need some work to get it going on !pseries obviously.
+=20
+cheers
 
-For calculations of large intervals this mult/shift combination could be
-off by a significant amount. I notice the sparc code has a loop that iterates
-to find a mult/shift combination that maximises the shift value while
-keeping mult under 32bit. With the patch below we get:
+--=-u9N58I8vqcDKDW3rDaqO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-clockevent: decrementer mult[35015c20] shift[32] cpu[15]
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-And we no longer see the spurious wakeups.
+iEYEABECAAYFAkoHhqMACgkQdSjSd0sB4dJCzwCgwomkyQhChxfFpCgMDSw/r3ca
+8owAoKancwpJq+T7mL2NWcib0kEQjzGF
+=mFT5
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-- I haven't tested if it does the right thing on 32bit yet
-
-- Should we do something similar to the timebase? We use a 22 bit shift
-  there but time might drift if that isnt accurate enough.
-
-Index: linux-2.6/arch/powerpc/kernel/time.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/time.c	2009-05-10 19:48:39.000000000 +1000
-+++ linux-2.6/arch/powerpc/kernel/time.c	2009-05-11 09:36:25.000000000 +1000
-@@ -110,7 +110,7 @@
- static struct clock_event_device decrementer_clockevent = {
-        .name           = "decrementer",
-        .rating         = 200,
--       .shift          = 16,
-+       .shift          = 0,	/* To be filled in */
-        .mult           = 0,	/* To be filled in */
-        .irq            = 0,
-        .set_next_event = decrementer_set_next_event,
-@@ -852,6 +852,22 @@
- 		decrementer_set_next_event(DECREMENTER_MAX, dev);
- }
- 
-+static void __init setup_clockevent_multiplier(unsigned long hz)
-+{
-+	u64 mult, shift = 32;
-+
-+	while (1) {
-+		mult = div_sc(hz, NSEC_PER_SEC, shift);
-+		if (mult && (mult >> 32UL) == 0UL)
-+			break;
-+
-+		shift--;
-+	}
-+
-+	decrementer_clockevent.shift = shift;
-+	decrementer_clockevent.mult = mult;
-+}
-+
- static void register_decrementer_clockevent(int cpu)
- {
- 	struct clock_event_device *dec = &per_cpu(decrementers, cpu).event;
-@@ -869,8 +885,7 @@
- {
- 	int cpu = smp_processor_id();
- 
--	decrementer_clockevent.mult = div_sc(ppc_tb_freq, NSEC_PER_SEC,
--					     decrementer_clockevent.shift);
-+	setup_clockevent_multiplier(ppc_tb_freq);
- 	decrementer_clockevent.max_delta_ns =
- 		clockevent_delta2ns(DECREMENTER_MAX, &decrementer_clockevent);
- 	decrementer_clockevent.min_delta_ns =
+--=-u9N58I8vqcDKDW3rDaqO--
