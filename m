@@ -1,20 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id D2EC0DDF86
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 09:24:42 +1000 (EST)
-Date: Mon, 11 May 2009 16:24:36 -0700 (PDT)
-Message-Id: <20090511.162436.193717082.davem@davemloft.net>
-To: cfriesen@nortel.com
+Return-Path: <paulus@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 57C01DDF85
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 09:34:21 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18952.46585.142619.53608@cargo.ozlabs.ibm.com>
+Date: Tue, 12 May 2009 09:34:17 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Chris Friesen" <cfriesen@nortel.com>
 Subject: Re: question about softirqs
-From: David Miller <davem@davemloft.net>
 In-Reply-To: <4A086DB2.8040703@nortel.com>
-References: <18948.63755.279732.294842@cargo.ozlabs.ibm.com>
+References: <18948.49541.735156.176919@cargo.ozlabs.ibm.com>
+	<20090508.165358.97542490.davem@davemloft.net>
+	<18948.63755.279732.294842@cargo.ozlabs.ibm.com>
 	<20090508.234815.127227651.davem@davemloft.net>
 	<4A086DB2.8040703@nortel.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: "Chris Friesen" <cfriesen@nortel.com>
-Date: Mon, 11 May 2009 12:25:54 -0600
+Chris Friesen writes:
 
-> David Miller wrote:
-> 
->> You know, for networking over loopback (one of the only real cases
->> that even matters, if we get a hard interrupt then the return from
->> that would process any softints), we probably make out just fine
->> anyways.  As long as we hit a local_bh_enable() (and in the return
->> path from device transmit that's exceedingly likely as all of the
->> networking locking is BH safe) we'll run the softints from that and
->> thus long before we get to syscall return.
-> 
-> What about the issue I raised earlier?  (I don't think you were copied
-> at that point.)
+> Suppose I have a SCHED_FIFO task spinning on recvmsg() with MSG_DONTWAIT
+> set (and maybe doing other stuff if there are no messages). In this
+> case, schedule() would re-run the spinning task rather than running
+> ksoftirqd. This could prevent any incoming packets from actually being
+> sent up the stack until we get a real hardware interrupt--which could be
+> a whole jiffy if interrupt mitigation is enabled in the net device.
 
-I'm sure all of the networking experts on linuxppc-dev will have
-an answer.
+I suggest you ask Ingo Molnar about that.
 
-And yes that was sarcasm :-)  You need to ask this on netdev or similar
-list.
+> (And maybe longer if NOHZ is enabled.)
+
+We still have a timer interrupt every jiffy when stuff is running; we
+only turn off the timer interrupts when idle.
+
+Paul.
