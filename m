@@ -2,26 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C39DFDDDF0
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 08:29:29 +1000 (EST)
-Subject: Re: device trees.
+	by ozlabs.org (Postfix) with ESMTPS id C0A35DDEF1
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 08:33:51 +1000 (EST)
+Subject: Re: [PATCH] fix sata_sil compilation on non-DMI platforms
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-In-Reply-To: <4A089AC8.9080704@dlasys.net>
-References: <4A0457BC.3040408@dlasys.net>
-	<fa686aa40905091351k140c64a0w27eb44908218814@mail.gmail.com>
-	<1242007203.7767.28.camel@concordia>
-	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
-	<4A07C664.6040609@dlasys.net>
-	<fa686aa40905110651r1c18b78bpe8ffebe041726695@mail.gmail.com>
-	<4A085612.9050602@dlasys.net>
-	<fa686aa40905111047p5f350b0dh796564cc1383a336@mail.gmail.com>
-	<4A089AC8.9080704@dlasys.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090511194410.46641214@lxorguk.ukuu.org.uk>
+References: <200905062009.28087.markos@codex.gr> <4A086A76.3090008@garzik.org>
+	<20090511194410.46641214@lxorguk.ukuu.org.uk>
 Content-Type: text/plain
-Date: Tue, 12 May 2009 08:29:22 +1000
-Message-Id: <1242080962.304.10.camel@pasglop>
+Date: Tue, 12 May 2009 08:31:44 +1000
+Message-Id: <1242081104.304.12.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
+	Konstantinos Margaritis <markos@codex.gr>,
+	linux-ide@vger.kernel.org, rmk@arm.linux.org.uk,
+	Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+	Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,25 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2009-05-11 at 17:38 -0400, David H. Lynch Jr. wrote:
-> Not only is the device tree expected to pass static hardware
-> configuration information, but it is the sole means of passing
-> anything.
-> As an example Command lines are to be in the device tree.
-> Everything is supposed to be in the device tree, whether that
-> information is static or dynamic, whether it is hardware information,
-> or user choices.
+On Mon, 2009-05-11 at 19:44 +0100, Alan Cox wrote:
+> > Ideally the DMI subsystem should be provided wrappers for platforms 
+> > without DMI, rendering patches like this unnecessary.
 > 
->     That means that whether you are in a Sun or Apple Desktop or a
-> system with the no flash and barely enough resources to run Linux,
-> you still may have to manipulate the device tree.
+> Interesting question - is the PPC OpenFirmware machine information
+> mappable onto the DMI space ? or the various static bits of name
+> information in the various ARM and the like machine descriptions.
+> 
+> If not which bits are similar enough we could replace dmi at the high
+> level with an abstract interface for system/vendor/... that was ?
 
-To some extend, but the user choice information is well isolated, it's
-all in /chosen, so it's really only that node that needs to be modified
-or created from scratch by the bootloader.
+The one thing we could try to map would be the device-tree "compatible"
+property which would contain vendor,system tuples from more specific to
+more generic with which the machine is compatible with.
 
-Thus, your bootloader can pick the right static dtb for a given bitfile,
-and then just use libfdt to generate the right /chosen node with other
-informations.
+Of course I would argue the other way around and create a device-tree
+from the DMI data :-)
 
+Cheers,
 Ben.
