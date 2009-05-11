@@ -3,20 +3,21 @@ Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A2A6FDDDE1
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 12:14:08 +1000 (EST)
-Subject: Re: [PATCH] powerpc/mpic: improve interrupt handling performance
+	by ozlabs.org (Postfix) with ESMTPS id 85CF5DDDF6
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 12:32:43 +1000 (EST)
+Subject: Re: [PATCH v3] powerpc: Keep track of emulated instructions if
+	debugfs is enabled
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1241820500-12545-1-git-send-email-galak@kernel.crashing.org>
-References: <1241820500-12545-1-git-send-email-galak@kernel.crashing.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <alpine.LRH.2.00.0905081611130.7964@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0905081611130.7964@vixen.sonytel.be>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-/aok1PSwuUyrsiskbajz"
-Date: Mon, 11 May 2009 12:14:07 +1000
-Message-Id: <1242008047.7767.33.camel@concordia>
+	boundary="=-WonCJdrtJ8M9FA0uT7eB"
+Date: Mon, 11 May 2009 12:32:41 +1000
+Message-Id: <1242009161.7767.38.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,51 +29,56 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-/aok1PSwuUyrsiskbajz
+--=-WonCJdrtJ8M9FA0uT7eB
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2009-05-08 at 17:08 -0500, Kumar Gala wrote:
-> Before when we were setting up the irq host map for mpic we passed in
-> just isu_size for the size of the linear map.  However, for a number of
-> mpic implementations we have no isu (thus pass in 0) and will end up
-> with a no linear map (size =3D 0).  This causes us to always call
-> irq_find_mapping() from mpic_get_irq().
+On Fri, 2009-05-08 at 16:15 +0200, Geert Uytterhoeven wrote:
+> Counters for the various classes of emulated instructions are available u=
+nder
+> /sys/kernel/debug/powerpc/emulated_instructions (assumed debugfs is mount=
+ed on
+> /sys/kernel/debug).  Optionally (controlled by
+> /sys/kernel/debug/powerpc/emulated_instructions/do_warn), rate-limited wa=
+rnings
+> can be printed to the console when instructions are emulated.
 >=20
-> By moving the allocation of the host map to after we've determined the
-> number of sources we can actually benefit from having a linear map for
-> the non-isu users that covers all the interrupt sources.
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> ---
+> Tested on ppc64 (ps3) and ppc32 (sequoia) using mfpvr.
+>=20
+> v3:
+>   - add generic unaligned
+>   - switch from sysfs + sysctl to debugfs. All virtual files now show up =
+under
+>     /sys/kernel/debug/powerpc/emulated_instructions (assumed debugfs moun=
+ted on
+>     /sys/kernel/debug)
+>   - enable the printing of rate-limited warnings by writing a non-zero va=
+lue to
+>     /sys/kernel/debug/powerpc/emulated_instructions/do_warn
+>   - switch from per-CPU to system-wide counters
+>   - always use 32-bit counters (was 64-bit on ppc64)
+>   - counters are writable, i.e. can be reset (by root)
 
-That's a nasty bug, so I think we should do:
+Nice :)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 7d46e5d..2b958d6 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -537,6 +537,7 @@ struct irq_host *irq_alloc_host(struct device_node *of_=
-node,
-                }
-                break;
-        case IRQ_HOST_MAP_LINEAR:
-+               WARN_ON(revmap_arg =3D=3D 0);
-                rmap =3D (unsigned int *)(host + 1);
-                for (i =3D 0; i < revmap_arg; i++)
-                        rmap[i] =3D NO_IRQ;
-
-To save anyone else the embarrassment :)
+My only query is whether it needs its own CONFIG option. Some folks
+might want other DEBUG_FS things but not this?
 
 cheers
 
---=-/aok1PSwuUyrsiskbajz
+
+--=-WonCJdrtJ8M9FA0uT7eB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkoHie8ACgkQdSjSd0sB4dJwIQCgg6sTQbLDiAu57sOam8YmTTiT
-lo4AoJeFcLLZgAoHsmW8wD7y4gayw0ve
-=yE7U
+iEYEABECAAYFAkoHjkkACgkQdSjSd0sB4dIk5gCdEMrFpOLyCnD+2qHItwmCYfXG
+d3wAniu9B0wKwBkLBUPX0MP/oCddpvJd
+=zuOc
 -----END PGP SIGNATURE-----
 
---=-/aok1PSwuUyrsiskbajz--
+--=-WonCJdrtJ8M9FA0uT7eB--
