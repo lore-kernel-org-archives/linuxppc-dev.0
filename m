@@ -1,24 +1,26 @@
-Return-Path: <paulus@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 57C01DDF85
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 09:34:21 +1000 (EST)
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from WA4EHSOBE006.bigfish.com (wa4ehsobe005.messaging.microsoft.com
+	[216.32.181.15]) by ozlabs.org (Postfix) with ESMTP id 65565DDF85
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 09:34:27 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18952.46585.142619.53608@cargo.ozlabs.ibm.com>
-Date: Tue, 12 May 2009 09:34:17 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: question about softirqs
-In-Reply-To: <4A086DB2.8040703@nortel.com>
-References: <18948.49541.735156.176919@cargo.ozlabs.ibm.com>
-	<20090508.165358.97542490.davem@davemloft.net>
-	<18948.63755.279732.294842@cargo.ozlabs.ibm.com>
-	<20090508.234815.127227651.davem@davemloft.net>
-	<4A086DB2.8040703@nortel.com>
-Cc: linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: device trees.
+Date: Mon, 11 May 2009 16:19:15 -0700
+In-Reply-To: <4A089AC8.9080704@dlasys.net>
+References: <4A0457BC.3040408@dlasys.net>
+	<fa686aa40905091351k140c64a0w27eb44908218814@mail.gmail.com>
+	<1242007203.7767.28.camel@concordia>
+	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
+	<4A07C664.6040609@dlasys.net>
+	<fa686aa40905110651r1c18b78bpe8ffebe041726695@mail.gmail.com>
+	<4A085612.9050602@dlasys.net>
+	<fa686aa40905111047p5f350b0dh796564cc1383a336@mail.gmail.com>
+	<4A089AC8.9080704@dlasys.net>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: "David H. Lynch Jr." <dhlii@dlasys.net>,
+	<grant.likely@secretlab.ca>
+Message-ID: <20090511231915.007AC1430052@mail201-wa4.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Chris Friesen writes:
 
-> Suppose I have a SCHED_FIFO task spinning on recvmsg() with MSG_DONTWAIT
-> set (and maybe doing other stuff if there are no messages). In this
-> case, schedule() would re-run the spinning task rather than running
-> ksoftirqd. This could prevent any incoming packets from actually being
-> sent up the stack until we get a real hardware interrupt--which could be
-> a whole jiffy if interrupt mitigation is enabled in the net device.
+> >>    The best alternative to creating the device tree dynamically
+would
+> >> be to
+> >>    append the devicetree to the bitimage in a way the boot loader
+could
+> >> always find it.
+> >>
+> >
+> > That sounds like a good solution to me.
+> >
+>     I am glad you like it. If Xilinx would like to offer any advice as
+> to how to prepend a device tree to the end of a bit file without
+>     foreclosing any of their future plans or .... I would be happy to
+> look at implementing it.
 
-I suggest you ask Ingo Molnar about that.
+There are options here...
 
-> (And maybe longer if NOHZ is enabled.)
+For the benefit of the mailing list: they are tied into how the FPGA
+configuration is loaded, and the
+particular FPGA family.  By far the most portable/generic option is to
+simply use an initialized BRAM for this.
 
-We still have a timer interrupt every jiffy when stuff is running; we
-only turn off the timer interrupts when idle.
+David: If you would like to have a discussion regarding particular
+design tradeoffs, I'd be happy to, but since I doubt there is anyone on
+this list who is interested in the vagaries of FPGA configuration
+methods, I suggest we have the discussion privately.
 
-Paul.
+Steve
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
