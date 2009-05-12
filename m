@@ -1,23 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 93025DDEDB
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 17:44:53 +1000 (EST)
-Date: Tue, 12 May 2009 17:44:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PowerPC] Next May 8 boot failure: OOPS during ibmveth moduleinit
-Message-Id: <20090512174451.eeed4126.sfr@canb.auug.org.au>
-In-Reply-To: <20090512170458.39c4ffb7.sfr@canb.auug.org.au>
-References: <20090508180251.f53f204e.sfr@canb.auug.org.au>
-	<4A042B20.4090903@in.ibm.com>
-	<20090508.125722.54378771.davem@davemloft.net>
-	<20090508223332.GA4881@psychotron.englab.brq.redhat.com>
-	<4A085B3D.5000806@in.ibm.com>
-	<20090512170458.39c4ffb7.sfr@canb.auug.org.au>
+Return-Path: <sankar.curiosity@gmail.com>
+Received: from mail-bw0-f171.google.com (mail-bw0-f171.google.com
+	[209.85.218.171]) by ozlabs.org (Postfix) with ESMTP id C5854DDF7D
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 17:13:46 +1000 (EST)
+Received: by bwz19 with SMTP id 19so3098623bwz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 00:13:43 -0700 (PDT)
+Subject: [PATCH] Trivial spelling fix in ppc code comments
+From: Sankar P <sankar.curiosity@gmail.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"trivial@kernel.org" <trivial@kernel.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 12 May 2009 12:41:13 +0530
+Message-Id: <1242112273.736.6.camel@blr-psankar.blr.novell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org, netdev@vger.kernel.org,
-	Jiri Pirko <jpirko@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Dave,
+Fixes a trivial spelling error in powerpc code comments. 
 
-This fixes it (I wonder if this bug is lurking in any other drivers):
+Signed-off-by: Sankar P <sankar.curiosity@gmail.com>
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 12 May 2009 17:24:02 +1000
-Subject: [PATCH] net/ibmveth: fix panic in probe
-
-netdev->dev_addr changed from being an array to being a pointer, so we
-should not take its address for memcpy().
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/net/ibmveth.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
-index 7902e5e..8daffad 100644
---- a/drivers/net/ibmveth.c
-+++ b/drivers/net/ibmveth.c
-@@ -1285,7 +1285,7 @@ static int __devinit ibmveth_probe(struct vio_dev *dev, const struct vio_device_
-  	netdev->features |= NETIF_F_LLTX;
- 	spin_lock_init(&adapter->stats_lock);
- 
--	memcpy(&netdev->dev_addr, &adapter->mac_addr, netdev->addr_len);
-+	memcpy(netdev->dev_addr, &adapter->mac_addr, netdev->addr_len);
- 
- 	for(i = 0; i<IbmVethNumBufferPools; i++) {
- 		struct kobject *kobj = &adapter->rx_buff_pool[i].kobj;
--- 
-1.6.3
-
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 89497fb..3b52c80 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -2,7 +2,7 @@
+  * PowerPC64 SLB support.
+  *
+  * Copyright (C) 2004 David Gibson <dwg@au.ibm.com>, IBM
+- * Based on earlier code writteh by:
++ * Based on earlier code written by:
+  * Dave Engebretsen and Mike Corrigan {engebret|mikejc}@us.ibm.com
+  *    Copyright (c) 2001 Dave Engebretsen
+  * Copyright (C) 2002 Anton Blanchard <anton@au.ibm.com>, IBM
