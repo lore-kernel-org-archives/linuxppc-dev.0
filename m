@@ -1,33 +1,17 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 10A67DDFA0
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 06:28:17 +1000 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28smtp02.in.ibm.com (8.13.1/8.13.1) with ESMTP id n4CKSEpY010729
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 01:58:14 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n4CKSENo1556550
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 01:58:14 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id n4CKSDQQ017389
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 01:58:13 +0530
-Date: Wed, 13 May 2009 01:58:10 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC] Hardware Breakpoint interfaces implementation for PPC64
-Message-ID: <20090512202810.GF6033@in.ibm.com>
-References: <20090511200355.GA17988@in.ibm.com>
-	<20090512115149.GA1885@yoda.jdub.homelinux.org>
-	<20090512164738.GA1173@b07421-ec1.am.freescale.net>
+Return-Path: <Joaquin.Luna@jdsu.com>
+Received: from exprod7og112.obsmtp.com (exprod7og112.obsmtp.com [64.18.2.177])
+	by ozlabs.org (Postfix) with SMTP id DBCDCDDFA2
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 06:46:10 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090512164738.GA1173@b07421-ec1.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	paulus@samba.org
-Reply-To: prasad@linux.vnet.ibm.com
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Having a hell of a time with spidev and spi_mpc8313
+Date: Tue, 12 May 2009 13:39:33 -0700
+Message-ID: <DF6C7BC3780EE44B83430A9F756D43B60A65C253@SJEXCH03.ds.jdsu.net>
+In-Reply-To: <8A71B368A89016469F72CD08050AD33402D5760B@maui.asicdesigners.com>
+References: <8A71B368A89016469F72CD08050AD33402D5760B@maui.asicdesigners.com>
+From: "Joaquin Luna" <Joaquin.Luna@jdsu.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,27 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2009 at 11:47:38AM -0500, Scott Wood wrote:
-> On Tue, May 12, 2009 at 07:51:49AM -0400, Josh Boyer wrote:
-> > On Tue, May 12, 2009 at 01:33:55AM +0530, K.Prasad wrote:
-> > >- The patch is currently implemented only for PPC64 architecture. Other
-> > >  architectures (especially Book-E implementations are expected to
-> > >  happen in due course).
-> > 
-> > Does this mean you will work on transitioning Book-E implementations, or that
-> > you expect the Book-E maintainers to?  I'm just curious.  The code as written
-> > relies heavily on the DABR/MSR setup that ppc64 has and Book-E unfortunately
-> > doesn't follow that at all.
-> 
-> And since there will eventually be 64-bit book E chips, we need to use
-> something more specific than CONFIG_PPC64 in the #ifdef (easier now than
-> figuring out which ones are breakpoint-related later).
-> 
-> -Scott
+I have a device that I need to access via SPI.  I am running 2.6.27 on
+the MPC8313.  I have configured the kernel with both CONFIG_SPI_MPC83xx
+and CONFIG_SPI_SPIDEV.  I hand made a character device with a major
+number of 153 and a minor number of 0.
 
-Sure. I will be glad to receive & incorporate suggestions in this regard
-from PowerPC experts (or will 64-bit Book-E implementations be called by
-a different name altogether?)
+I need some guidance on how to make the SPI slave table, and where to
+put the code that connects this to my device file.  Also, I am not
+seeing the "%s: MPC83xx SPI Controller driver" print out at boot up, is
+this a problem?
 
-Thanks,
-K.Prasad
+- Joaquin Luna
