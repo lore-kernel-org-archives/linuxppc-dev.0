@@ -1,20 +1,29 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id AFF4DDDFAD
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 09:14:29 +1000 (EST)
-Date: Tue, 12 May 2009 19:14:25 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH] leds: Add options to have GPIO LEDs start on or keep
-	their state
-Message-ID: <20090512191425.7b8c53df@lappy.seanm.ca>
-In-Reply-To: <1242167592-14649-1-git-send-email-xyzzy@speakeasy.org>
-References: <fa686aa40904172207sc0f923eoefe8fb0a2703d548@mail.gmail.com>
-	<1242167592-14649-1-git-send-email-xyzzy@speakeasy.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Richard Purdie <rpurdie@rpsys.net>,
-	Trent Piepho <xyzzy@speakeasy.org>
+Return-Path: <dgibson@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 12ABADDFAD
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 09:34:09 +1000 (EST)
+Date: Wed, 13 May 2009 09:24:46 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: device trees.
+Message-ID: <20090512232446.GB24338@yookeroo.seuss>
+References: <1242007203.7767.28.camel@concordia>
+	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
+	<4A07C664.6040609@dlasys.net>
+	<fa686aa40905110651r1c18b78bpe8ffebe041726695@mail.gmail.com>
+	<4A085612.9050602@dlasys.net>
+	<fa686aa40905111047p5f350b0dh796564cc1383a336@mail.gmail.com>
+	<4A089AC8.9080704@dlasys.net>
+	<fa686aa40905111609l3feaf555taadf048714030a1@mail.gmail.com>
+	<20090512011219.GB18223@yookeroo.seuss>
+	<fa686aa40905112222q75056b60hd9c2465b335496d1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <fa686aa40905112222q75056b60hd9c2465b335496d1@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, "David H. Lynch Jr." <dhlii@dlasys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 12 May 2009 15:33:12 -0700
-Trent Piepho <xyzzy@speakeasy.org> wrote:
+On Mon, May 11, 2009 at 11:22:21PM -0600, Grant Likely wrote:
+> On Mon, May 11, 2009 at 7:12 PM, David Gibson
+> <david@gibson.dropbear.id.au> wrote:
+> > On Mon, May 11, 2009 at 05:09:27PM -0600, Grant Likely wrote:
+> >> In other words; having your bootloader support FDT is preferred, but
+> >> not required.
+> >
+> > I wouldn't even go so far as to say it's preferred.  IMO, people have
+> > gone a bit prematurely keen on moving devtree handling into the
+> > firmware.  Putting it in the firmware has a number of advantages, but
+> > it also has a number of non-trivial disadvantages.
+> 
+> I disagree.  The more I work with it, the more I appreciate the
+> advantage of decoupling the kernel image file from the hardware
+> description.  It is valuable being able to build a single image file
+> that boots on a wide range of boards because the device tree passed in
+> by firmware.
 
-> +			if (!strcmp(state, "keep")) {
-> +				led.default_state =
-> LEDS_GPIO_DEFSTATE_KEEP;
-> +			} else if(!strcmp(state, "on")) {
-> +				led.default_state =
-> LEDS_GPIO_DEFSTATE_ON;
-> +			} else {
-> +				led.default_state =
-> LEDS_GPIO_DEFSTATE_OFF;
-> +			}
+Heh, where all my work in the embedded space has led me to more and
+more appreciate the fact that firmware is almost invariably crap, and
+that it's therefore best not to trust anything it tells you.
 
-Just a nitpick, you don't need the {} braces here. Other than that:
+> I'm not downplaying the disadvantages and problems, but I still hold
+> the view that the striving for generic multiplatform kernel images is
+> worth the effort.
+> 
+> ... but I do agree that hard linking the .dtb into firmware, or making
+> the .dtb hard to upgrade is the way of madness.
 
-Acked-by: Sean MacLennan <smaclennan@pikatech.com>
-Tested-by: Sean MacLennan <smaclennan@pikatech.com>
+Ah, we're talking at cross purposes a bit then.  Yeah, I'm talking
+about the situation where the dtb is part of the firmware, or at least
+as difficult / inconvenient to update as the firmware.  If the dtb is
+separate from the kernel, but as easy to update / switch as the
+kernel, that is indeed a very nice setup.
 
-Tested on a warp with the following:
-
-			power-leds {
-				compatible = "gpio-leds";
-				green {
-					gpios = <&GPIO1 0 0>;
-					default-state = "on";
-				};
-				red {
-					gpios = <&GPIO1 1 0>;
-					default-state = "keep";
-				};
-			};
-
-I tested with both the red LED initially off and initially on as set in
-u-boot.
-
-Cheers,
-   Sean
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
