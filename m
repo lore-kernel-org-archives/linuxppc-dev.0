@@ -1,20 +1,20 @@
-Return-Path: <jkosina@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E4BD6DDFB6
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 18:47:54 +1000 (EST)
-Date: Tue, 12 May 2009 10:47:45 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Sankar P <sankar.curiosity@gmail.com>
-Subject: Re: [PATCH] Trivial spelling fix in ppc code comments
-In-Reply-To: <1242112273.736.6.camel@blr-psankar.blr.novell.com>
-Message-ID: <alpine.LNX.2.00.0905121047350.22712@wotan.suse.de>
-References: <1242112273.736.6.camel@blr-psankar.blr.novell.com>
+Return-Path: <yjwei@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+	by ozlabs.org (Postfix) with ESMTP id 3DDA1DDF8F
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 19:38:52 +1000 (EST)
+Message-ID: <4A09309C.8000404@cn.fujitsu.com>
+Date: Tue, 12 May 2009 16:17:32 +0800
+From: Wei Yongjun <yjwei@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, "trivial@kernel.org" <trivial@kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PowerPC] Next May 8 boot failure: OOPS during ibmveth moduleinit
+References: <20090508180251.f53f204e.sfr@canb.auug.org.au>	<4A042B20.4090903@in.ibm.com>	<20090508.125722.54378771.davem@davemloft.net>	<20090508223332.GA4881@psychotron.englab.brq.redhat.com>	<4A085B3D.5000806@in.ibm.com>	<20090512170458.39c4ffb7.sfr@canb.auug.org.au>
+	<20090512174451.eeed4126.sfr@canb.auug.org.au>
+In-Reply-To: <20090512174451.eeed4126.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Jiri Pirko <jpirko@redhat.com>, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 12 May 2009, Sankar P wrote:
+Stephen Rothwell wrote:
+> Hi Dave,
+>
+> This fixes it (I wonder if this bug is lurking in any other drivers):
+>   
 
-> Fixes a trivial spelling error in powerpc code comments. 
-> 
-> Signed-off-by: Sankar P <sankar.curiosity@gmail.com>
+Yes, there are some other exists. This spatch script can help to found this.
+(http://www.emn.fr/x-info/coccinelle/)
 
-Applied to trivial tree, thanks.
+# cat netdev_dev_addr.cocci
+@@
+struct net_device *dev;
+@@
+memcpy(
+- &dev->dev_addr
++ dev->dev_addr
+, ...);
 
--- 
-Jiri Kosina
-SUSE Labs
+@@
+struct net_device *dev;
+expression E;
+@@
+memcpy(E,
+- &dev->dev_addr
++ dev->dev_addr
+, ...);
+
+@@
+expression E;
+@@
+- &E->dev_addr
++ E->dev_addr
+
+
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Tue, 12 May 2009 17:24:02 +1000
+> Subject: [PATCH] net/ibmveth: fix panic in probe
+>
+> netdev->dev_addr changed from being an array to being a pointer, so we
+> should not take its address for memcpy().
+>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/net/ibmveth.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
+> index 7902e5e..8daffad 100644
+> --- a/drivers/net/ibmveth.c
+> +++ b/drivers/net/ibmveth.c
+> @@ -1285,7 +1285,7 @@ static int __devinit ibmveth_probe(struct vio_dev *dev, const struct vio_device_
+>   	netdev->features |= NETIF_F_LLTX;
+>  	spin_lock_init(&adapter->stats_lock);
+>  
+> -	memcpy(&netdev->dev_addr, &adapter->mac_addr, netdev->addr_len);
+> +	memcpy(netdev->dev_addr, &adapter->mac_addr, netdev->addr_len);
+>  
+>  	for(i = 0; i<IbmVethNumBufferPools; i++) {
+>  		struct kobject *kobj = &adapter->rx_buff_pool[i].kobj;
+>   
+
+maybe this line should be fix too.
+
+
+@@ -1368,7 +1368,7 @@ static void ibmveth_proc_unregister_driv
+ static int ibmveth_show(struct seq_file *seq, void *v)
+ {
+ 	struct ibmveth_adapter *adapter = seq->private;
+-	char *current_mac = ((char*) &adapter->netdev->dev_addr);
++	char *current_mac = ((char*) adapter->netdev->dev_addr);
+ 	char *firmware_mac = ((char*) &adapter->mac_addr) ;
+ 
+ 	seq_printf(seq, "%s %s\n\n", ibmveth_driver_string, ibmveth_driver_version);
