@@ -1,30 +1,22 @@
-Return-Path: <npiggin@suse.de>
+Return-Path: <gregkh@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A4545DDEF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 16:56:06 +1000 (EST)
-Date: Tue, 12 May 2009 08:56:01 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Next May 11 : BUG during scsi initialization
-Message-ID: <20090512065601.GA19079@wotan.suse.de>
-References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
-	<4A081002.4050802@in.ibm.com>
-	<20090511115233.GB8112@parisc-linux.org>
-	<4A081437.7000409@in.ibm.com>
-	<20090511122135.GC8112@parisc-linux.org>
-	<20090512045716.GC32535@wotan.suse.de>
-	<20090512155613.881fa2ec.sfr@canb.auug.org.au>
-	<20090512055918.GF32535@wotan.suse.de>
-	<20090512160352.4a97d2f4.sfr@canb.auug.org.au>
-	<20090512165245.78b6bf83.sfr@canb.auug.org.au>
-Mime-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTPS id 7FC6ADDF7F
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 17:03:30 +1000 (EST)
+Date: Mon, 11 May 2009 23:57:43 -0700
+From: Greg KH <gregkh@suse.de>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [PATCH] aoa: remove driver_data direct access of
+	struct device
+Message-ID: <20090512065743.GA25267@suse.de>
+References: <4A08828B.7090106@gmail.com> <s5hws8mu8my.wl%tiwai@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090512165245.78b6bf83.sfr@canb.auug.org.au>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	linux-next@vger.kernel.org
+In-Reply-To: <s5hws8mu8my.wl%tiwai@suse.de>
+Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net,
+	Roel Kluin <roel.kluin@gmail.com>, alsa-devel@alsa-project.org,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,17 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2009 at 04:52:45PM +1000, Stephen Rothwell wrote:
-> Hi Nick,
+On Tue, May 12, 2009 at 08:40:05AM +0200, Takashi Iwai wrote:
+> At Mon, 11 May 2009 21:54:51 +0200,
+> Roel Kluin wrote:
+> > 
+> > To avoid direct access to the driver_data pointer in struct device, the
+> > functions dev_get_drvdata() and dev_set_drvdata() should be used.
+> > 
+> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 > 
-> On Tue, 12 May 2009 16:03:52 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > This is what I have been getting for the last few days:
+> The same fix has been already in Greg's tree (and thus in linux-next).
 > 
-> bisected into the net changes, I will follow up there, sorry.
+> Greg, is it OK that I take over your patch to sound git tree?
 
-No problem. Phew, yours was looking like a nasty one if it was indeed
-an SLQB bug ;) 
+Yes, please do, no objection from me at all.
 
-Thanks,
-Nick
+thanks,
+
+greg k-h
