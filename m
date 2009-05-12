@@ -1,24 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id AC4ACDDF81
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 17:05:05 +1000 (EST)
-Date: Tue, 12 May 2009 17:04:58 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sachin Sant <sachinp@in.ibm.com>
-Subject: Re: [PowerPC] Next May 8 boot failure: OOPS during ibmveth moduleinit
-Message-Id: <20090512170458.39c4ffb7.sfr@canb.auug.org.au>
-In-Reply-To: <4A085B3D.5000806@in.ibm.com>
-References: <20090508180251.f53f204e.sfr@canb.auug.org.au>
-	<4A042B20.4090903@in.ibm.com>
-	<20090508.125722.54378771.davem@davemloft.net>
-	<20090508223332.GA4881@psychotron.englab.brq.redhat.com>
-	<4A085B3D.5000806@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__12_May_2009_17_04_58_+1000_OgMhgcPHONrnGr98"
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, linux-next@vger.kernel.org,
-	David Miller <davem@davemloft.net>, Jiri Pirko <jpirko@redhat.com>
+Return-Path: <dhlii@dlasys.net>
+Received: from outbound-mail-160.bluehost.com (outbound-mail-160.bluehost.com
+	[67.222.39.40]) by ozlabs.org (Postfix) with SMTP id E9A73DDF62
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 17:20:48 +1000 (EST)
+Received: from 72.25.32.200.dynamic.dejazzd.com ([72.25.32.200]
+	helo=[206.223.20.150])
+	by host200.hostmonster.com with esmtpa (Exim 4.69)
+	(envelope-from <dhlii@dlasys.net>) id 1M3mIA-0002pw-5j
+	for linuxppc-dev@ozlabs.org; Tue, 12 May 2009 01:20:46 -0600
+Message-ID: <4A09234E.4020401@dlasys.net>
+Date: Tue, 12 May 2009 03:20:46 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Xilinx FIFO TEMAC !?
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,65 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__12_May_2009_17_04_58_+1000_OgMhgcPHONrnGr98
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+        I am working on changes to xilinx_lltemac.c that support both
+the SDMA and FIFO TEMAC's.
+        I was wondering if anyone else had done anything already ?
 
-Hi all,
+       I have it pretty much working with a few issues:
+             every so often the read FIFO gets out of sync and I have to
+reset it dropping atleast one packet.
+             Somehow something is screwed up that is breaking the
+Busybox Web server. This is really weird because nothing else seems to
+be broken.
+             I have no clue how a driver that has no idea what is in the
+packets passing through it can selectively screw up HTTP packets, but I
+have proven to myself that the problem is in the driver - despite the my
+beleif that is impossible.
 
-On Mon, 11 May 2009 22:37:09 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
->
-> Jiri Pirko wrote:
-> > Fri, May 08, 2009 at 09:57:22PM CEST, davem@davemloft.net wrote:
-> >  =20
-> >> From: Sachin Sant <sachinp@in.ibm.com>
-> >> Date: Fri, 08 May 2009 18:22:48 +0530
-> >>
-> >>    =20
-> >>> Todays Next failed to boot on a Power6 JS22 blade with following oops.
-> >>>      =20
-> >> Jiri, I suspect this might be your address list changes.
-> >>
-> >> Although that's just a guess.  But please take a look.
-> >>    =20
-> >
-> > Hmm, only thing I see might cause the problem would be if calling __hw_=
-addr_add
-> > in dev_addr_init fails, then dev->dev_addr would contain zeroes (which =
-looks
-> > this is not the case). But in this case the oops would appear earlier (=
-in
-> > ibmveth_probe dev_addr memcpy).
-> >
-> > Will do the patch which checks the result to behave correctly in case o=
-f oom
-> > but this imho this wouldn't help. Strange, I will dig into this more to=
-morrow.
+       Anyway is there any interest in an LL FIFO TEMAC driver ?
+       Or adding the FIFO code to the SDMA TEMAC code ? It only adds a
+couple of dozen lines to the driver.
 
-Bisected down to:
 
-commit f001fde5eadd915f4858d22ed70d7040f48767cf
-Author: Jiri Pirko <jpirko@redhat.com>
-Date:   Tue May 5 02:48:28 2009 +0000
 
-    net: introduce a list of device addresses dev_addr_list (v6)
 
-I can reproduce this at will on the last three linux-next trees.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
---Signature=_Tue__12_May_2009_17_04_58_+1000_OgMhgcPHONrnGr98
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoJH5oACgkQjjKRsyhoI8zPGgCgt2pJ4q6YoTA0CXSrn7j4oscz
-2qgAnRK/QLZAkfEGjqSpmDF838IHJ8Yc
-=IG2y
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_May_2009_17_04_58_+1000_OgMhgcPHONrnGr98--
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
