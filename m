@@ -1,22 +1,24 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7FC6ADDF7F
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 17:03:30 +1000 (EST)
-Date: Mon, 11 May 2009 23:57:43 -0700
-From: Greg KH <gregkh@suse.de>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [alsa-devel] [PATCH] aoa: remove driver_data direct access of
-	struct device
-Message-ID: <20090512065743.GA25267@suse.de>
-References: <4A08828B.7090106@gmail.com> <s5hws8mu8my.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <s5hws8mu8my.wl%tiwai@suse.de>
-Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net,
-	Roel Kluin <roel.kluin@gmail.com>, alsa-devel@alsa-project.org,
-	lkml <linux-kernel@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id AC4ACDDF81
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 17:05:05 +1000 (EST)
+Date: Tue, 12 May 2009 17:04:58 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: [PowerPC] Next May 8 boot failure: OOPS during ibmveth moduleinit
+Message-Id: <20090512170458.39c4ffb7.sfr@canb.auug.org.au>
+In-Reply-To: <4A085B3D.5000806@in.ibm.com>
+References: <20090508180251.f53f204e.sfr@canb.auug.org.au>
+	<4A042B20.4090903@in.ibm.com>
+	<20090508.125722.54378771.davem@davemloft.net>
+	<20090508223332.GA4881@psychotron.englab.brq.redhat.com>
+	<4A085B3D.5000806@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__12_May_2009_17_04_58_+1000_OgMhgcPHONrnGr98"
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, linux-next@vger.kernel.org,
+	David Miller <davem@davemloft.net>, Jiri Pirko <jpirko@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +28,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2009 at 08:40:05AM +0200, Takashi Iwai wrote:
-> At Mon, 11 May 2009 21:54:51 +0200,
-> Roel Kluin wrote:
-> > 
-> > To avoid direct access to the driver_data pointer in struct device, the
-> > functions dev_get_drvdata() and dev_set_drvdata() should be used.
-> > 
-> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> 
-> The same fix has been already in Greg's tree (and thus in linux-next).
-> 
-> Greg, is it OK that I take over your patch to sound git tree?
+--Signature=_Tue__12_May_2009_17_04_58_+1000_OgMhgcPHONrnGr98
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, please do, no objection from me at all.
+Hi all,
 
-thanks,
+On Mon, 11 May 2009 22:37:09 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
+>
+> Jiri Pirko wrote:
+> > Fri, May 08, 2009 at 09:57:22PM CEST, davem@davemloft.net wrote:
+> >  =20
+> >> From: Sachin Sant <sachinp@in.ibm.com>
+> >> Date: Fri, 08 May 2009 18:22:48 +0530
+> >>
+> >>    =20
+> >>> Todays Next failed to boot on a Power6 JS22 blade with following oops.
+> >>>      =20
+> >> Jiri, I suspect this might be your address list changes.
+> >>
+> >> Although that's just a guess.  But please take a look.
+> >>    =20
+> >
+> > Hmm, only thing I see might cause the problem would be if calling __hw_=
+addr_add
+> > in dev_addr_init fails, then dev->dev_addr would contain zeroes (which =
+looks
+> > this is not the case). But in this case the oops would appear earlier (=
+in
+> > ibmveth_probe dev_addr memcpy).
+> >
+> > Will do the patch which checks the result to behave correctly in case o=
+f oom
+> > but this imho this wouldn't help. Strange, I will dig into this more to=
+morrow.
 
-greg k-h
+Bisected down to:
+
+commit f001fde5eadd915f4858d22ed70d7040f48767cf
+Author: Jiri Pirko <jpirko@redhat.com>
+Date:   Tue May 5 02:48:28 2009 +0000
+
+    net: introduce a list of device addresses dev_addr_list (v6)
+
+I can reproduce this at will on the last three linux-next trees.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__12_May_2009_17_04_58_+1000_OgMhgcPHONrnGr98
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoJH5oACgkQjjKRsyhoI8zPGgCgt2pJ4q6YoTA0CXSrn7j4oscz
+2qgAnRK/QLZAkfEGjqSpmDF838IHJ8Yc
+=IG2y
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__12_May_2009_17_04_58_+1000_OgMhgcPHONrnGr98--
