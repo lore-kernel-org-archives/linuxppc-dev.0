@@ -1,27 +1,27 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id B6562DDE45
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 15:22:42 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so1787271ywt.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 22:22:41 -0700 (PDT)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id 9324BDDEE5
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 15:30:43 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1788599ywt.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 22:30:42 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20090512011219.GB18223@yookeroo.seuss>
-References: <4A0457BC.3040408@dlasys.net> <1242007203.7767.28.camel@concordia>
-	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
-	<4A07C664.6040609@dlasys.net>
+In-Reply-To: <20090512042733.8D4A21400054@mail184-dub.bigfish.com>
+References: <4A0457BC.3040408@dlasys.net> <4A07C664.6040609@dlasys.net>
 	<fa686aa40905110651r1c18b78bpe8ffebe041726695@mail.gmail.com>
-	<4A085612.9050602@dlasys.net>
-	<fa686aa40905111047p5f350b0dh796564cc1383a336@mail.gmail.com>
-	<4A089AC8.9080704@dlasys.net>
-	<fa686aa40905111609l3feaf555taadf048714030a1@mail.gmail.com>
-	<20090512011219.GB18223@yookeroo.seuss>
+	<20090511155232.A30671B6005D@mail89-va3.bigfish.com>
+	<4A08593C.4010503@dlasys.net>
+	<20090511183638.F07C01438054@mail184-wa4.bigfish.com>
+	<4A08C599.2030100@dlasys.net>
+	<20090512005554.EEE1019D009B@mail129-dub.bigfish.com>
+	<4A08E050.9000302@dlasys.net>
+	<20090512042733.8D4A21400054@mail184-dub.bigfish.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 11 May 2009 23:22:21 -0600
-Message-ID: <fa686aa40905112222q75056b60hd9c2465b335496d1@mail.gmail.com>
+Date: Mon, 11 May 2009 23:30:22 -0600
+Message-ID: <fa686aa40905112230ve176b30o25abcdf5c203f6c7@mail.gmail.com>
 Subject: Re: device trees.
-To: Grant Likely <grant.likely@secretlab.ca>,
-	"David H. Lynch Jr." <dhlii@dlasys.net>, linuxppc-dev@ozlabs.org
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, "David H. Lynch Jr." <dhlii@dlasys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,29 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 11, 2009 at 7:12 PM, David Gibson
-<david@gibson.dropbear.id.au> wrote:
-> On Mon, May 11, 2009 at 05:09:27PM -0600, Grant Likely wrote:
->> In other words; having your bootloader support FDT is preferred, but
->> not required.
+On Mon, May 11, 2009 at 10:27 PM, Stephen Neuendorffer
+<stephen.neuendorffer@xilinx.com> wrote:
+>> > OK, so the key question seems to be *when* the bitstream is
+> associated
+>> > with the
+>> > device tree. =A0If at bitstream generation time, you can prepend the
+> .dtb
+>> > to the bitstream. =A0As long as the dtb doesn't contain the magic
+>> > bitstream start code, you can go back and access it later.
+>> >
+>> You really mean prepend ? I was presuming that things would work
+> better
+>> if it was appended ?
 >
-> I wouldn't even go so far as to say it's preferred. =A0IMO, people have
-> gone a bit prematurely keen on moving devtree handling into the
-> firmware. =A0Putting it in the firmware has a number of advantages, but
-> it also has a number of non-trivial disadvantages.
+> Yes, actually prepend is simpler because you don't have to know the size
+> of the bitstream.
+> Everything before the SYNC code in the bitstream is ignored.
 
-I disagree.  The more I work with it, the more I appreciate the
-advantage of decoupling the kernel image file from the hardware
-description.  It is valuable being able to build a single image file
-that boots on a wide range of boards because the device tree passed in
-by firmware.
-
-I'm not downplaying the disadvantages and problems, but I still hold
-the view that the striving for generic multiplatform kernel images is
-worth the effort.
-
-... but I do agree that hard linking the .dtb into firmware, or making
-the .dtb hard to upgrade is the way of madness.
+...In this case, might need to preprocess the .dtb the escape out the
+possibility of a sync code appearing.
 
 g.
 
