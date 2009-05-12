@@ -1,29 +1,18 @@
-Return-Path: <dgibson@bilbo.ozlabs.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5ACE0DDF90
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 11:12:22 +1000 (EST)
-Date: Tue, 12 May 2009 11:12:19 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: device trees.
-Message-ID: <20090512011219.GB18223@yookeroo.seuss>
-References: <4A0457BC.3040408@dlasys.net>
-	<fa686aa40905091351k140c64a0w27eb44908218814@mail.gmail.com>
-	<1242007203.7767.28.camel@concordia>
-	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
-	<4A07C664.6040609@dlasys.net>
-	<fa686aa40905110651r1c18b78bpe8ffebe041726695@mail.gmail.com>
-	<4A085612.9050602@dlasys.net>
-	<fa686aa40905111047p5f350b0dh796564cc1383a336@mail.gmail.com>
-	<4A089AC8.9080704@dlasys.net>
-	<fa686aa40905111609l3feaf555taadf048714030a1@mail.gmail.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 5053ADDE07
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 11:59:05 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1M3hGm-0005Kz-AH
+	for linuxppc-dev@ozlabs.org; Mon, 11 May 2009 18:59:00 -0700
+Message-ID: <23494879.post@talk.nabble.com>
+Date: Mon, 11 May 2009 18:59:00 -0700 (PDT)
+From: "Sauce.Cheng" <chmhou@sina.com>
+To: linuxppc-dev@ozlabs.org
+Subject: get data failed with DMA
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <fa686aa40905111609l3feaf555taadf048714030a1@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, "David H. Lynch Jr." <dhlii@dlasys.net>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,59 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 11, 2009 at 05:09:27PM -0600, Grant Likely wrote:
-> On Mon, May 11, 2009 at 3:38 PM, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
-> > Grant Likely wrote:
-> >>
-> >> What do you mean by "one size fits all solution?"
-> >>
-> >> The kernel doesn't care where the device tree comes from.  All it
-> >> cares about is that by the time the kernel is started the device tree
-> >> must be fully formed and populated.  It can be completely pre-canned
-> >> (like simpleImage), it can be modified by firmware (like u-boot), or
-> >> it can be generated from scratch (like with real OpenFirmware).  There
-> >> is lots of flexibility on how to handle it.
-> >>
-> >>
-> > First device trees are now the ONLY means of  passing information to the
-> > kernel.
-> > By definition that means it is a one size fits all solution.
-> > While there is nothing inherently wrong with that, solutions intended to
-> > meet all circumstances need to be
-> > simple, powerful, and flexible. They need to work well 100% of the time
-> > not 98%.
-> >
-> > Not only is the device tree expected to pass static hardware
-> > configuration information, but it is the sole means of passing anything.
-> > As an example Command lines are to be in the device tree.
-> > Everything is supposed to be in the device tree, whether that
-> > information is static or dynamic, whether it is hardware information,
-> > or user choices.
-> 
-> It is the sole means of passing anything *to the kernel*.  You can
-> pass whatever you like to the bootwrapper.  :-)
-> 
-> >    That means that whether you are in a Sun or Apple Desktop or a
-> > system with the no flash and barely enough resources to run Linux,
-> > you still may have to manipulate the device tree.
-> 
-> ...or if you really are constrained, then define a format for the data
-> you want to pass, pass it to the bootwrapper along with the device
-> tree, and use the bootwrapper (which already has libfdt) to update the
-> device tree.  cuImage targets do this to support older u-boots which
-> don't understand device trees.  You are not forced to put device tree
-> support in your firmware.
-> 
-> In other words; having your bootloader support FDT is preferred, but
-> not required.
 
-I wouldn't even go so far as to say it's preferred.  IMO, people have
-gone a bit prematurely keen on moving devtree handling into the
-firmware.  Putting it in the firmware has a number of advantages, but
-it also has a number of non-trivial disadvantages.
+i tried to fetch data from periphial memories with DMA
+
+the flow as following
+
+flags = claim_dma_lock();
+disable_dma(DMA_CH);
+clear_dma_ff();
+set_dma_count(DMA_CH, 4);
+set_dma_addr(DMA_CH, virt_to_bus(kv_buf));
+release_dma_lock(flags);
+enable_dma(DMA_CH);
+
+the code hault at disable_dma(DMA_CH)
+
+in addition, i defined DMA_CH as 0 for channel 0
+'kv_buf' is an kernel space virtual address. i can red the correct value of
+periphal from this address
+i supposed the fault along with the configured of registers about DMA in
+processer. but i am not sure.
+give some suggestion about this, thanks!
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+View this message in context: http://www.nabble.com/get-data-failed-with-DMA-tp23494879p23494879.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
