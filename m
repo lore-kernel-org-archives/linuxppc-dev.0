@@ -1,18 +1,31 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 5053ADDE07
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 11:59:05 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1M3hGm-0005Kz-AH
-	for linuxppc-dev@ozlabs.org; Mon, 11 May 2009 18:59:00 -0700
-Message-ID: <23494879.post@talk.nabble.com>
-Date: Mon, 11 May 2009 18:59:00 -0700 (PDT)
-From: "Sauce.Cheng" <chmhou@sina.com>
-To: linuxppc-dev@ozlabs.org
-Subject: get data failed with DMA
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DFAE0DDDEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 12:37:51 +1000 (EST)
+Subject: Re: device trees.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20090511225631.GA15371@yookeroo.seuss>
+References: <4A0457BC.3040408@dlasys.net>
+	<fa686aa40905091351k140c64a0w27eb44908218814@mail.gmail.com>
+	<1242007203.7767.28.camel@concordia>
+	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
+	<4A07C664.6040609@dlasys.net>
+	<fa686aa40905110651r1c18b78bpe8ffebe041726695@mail.gmail.com>
+	<4A085612.9050602@dlasys.net>
+	<fa686aa40905111047p5f350b0dh796564cc1383a336@mail.gmail.com>
+	<4A089AC8.9080704@dlasys.net> <20090511225631.GA15371@yookeroo.seuss>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-QEToRSYOYBJ9QlA+gIoy"
+Date: Tue, 12 May 2009 12:37:50 +1000
+Message-Id: <1242095870.7421.30.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, "David H. Lynch Jr." <dhlii@dlasys.net>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +36,76 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-i tried to fetch data from periphial memories with DMA
+--=-QEToRSYOYBJ9QlA+gIoy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-the flow as following
+On Tue, 2009-05-12 at 08:56 +1000, David Gibson wrote:
+> On Mon, May 11, 2009 at 05:38:16PM -0400, David H. Lynch Jr. wrote:
+> > Grant Likely wrote:
+> > >>    Anyway, all I was looking for was a leg up on figuring out how to=
+ do
+> > >> what I want with them. Rather than starting from scratch.
+> > >>    I am not looking to be convinced that I am approaching this all w=
+rong.
+> > >>    If you are happy with what you have - great. I am not.
+> > >>    While I was not looking to restart a great debate over device tre=
+es
+> > >> - I do not actually think they are a bad idea.
+> > >>    =20
+> > >
+> > > I still don't understand what you're worried about starting an arguin=
+g
+> > > about.  Pretty much any of the PowerPC maintainers can point at warts
+> > > and problems in the current handling of device trees.  I'm not
+> > > particularly happy with simpleImage (and I wrote it), but it takes
+> > > time and effort to write something more capable.
+> > >  =20
+> >     I was not trying to start an argument, my initial question was
+> >=20
+> >    "Is there an example somewhere that shows building a device tree on =
+the fly ?"
+> >=20
+> >    The responses have questioned why I want to do that rather than how =
+can I do that.
+> >    I was not actually seeking a debate over the merit of device trees, =
+or u-boot, or libdft, or ....=20
+>=20
+> Probably the closest things to suitable examples here are
+> arch/powerpc/kernel/prom_init.c, which builds the dtb from the "live"
+> OF device tree.  At the moment that's a bit of a special case, but
+> there's no inherent reason that logic couldn't be moved to the
+> bootwrapper.
+>=20
+> The other, not in the main tree, is Paul's restodt, which builds a
+> device tree from old-style PReP residual information.  I recall it was
+> sent to the list as a userspace program (we were gathering information
+> on the sorts of PReP out there).  I think Paul made at least a first
+> cut at fusing it into the bootwrapper, but I don't know if that ever
+> got sent out to the list.
 
-flags = claim_dma_lock();
-disable_dma(DMA_CH);
-clear_dma_ff();
-set_dma_count(DMA_CH, 4);
-set_dma_addr(DMA_CH, virt_to_bus(kv_buf));
-release_dma_lock(flags);
-enable_dma(DMA_CH);
 
-the code hault at disable_dma(DMA_CH)
+There's also the iseries code, which is not pretty, but shows a very
+minimal example of constructing a device tree on the fly, some of it
+based on static config and some that's not.
 
-in addition, i defined DMA_CH as 0 for channel 0
-'kv_buf' is an kernel space virtual address. i can red the correct value of
-periphal from this address
-i supposed the fault along with the configured of registers about DMA in
-processer. but i am not sure.
-give some suggestion about this, thanks!
+The routines for constructing DT nodes and properties is about 110
+lines, and most of that is brackets.
 
--- 
-View this message in context: http://www.nabble.com/get-data-failed-with-DMA-tp23494879p23494879.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+arch/powerpc/platforms/iseries/dt.c
+
+cheers
+
+--=-QEToRSYOYBJ9QlA+gIoy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkoI4P4ACgkQdSjSd0sB4dKiwQCfekyJkMhR9BGnkQ4rYotceEI9
+UgQAoMZr/0rTOEDSGdLEafmEIP51JTF9
+=ZZMz
+-----END PGP SIGNATURE-----
+
+--=-QEToRSYOYBJ9QlA+gIoy--
