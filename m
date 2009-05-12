@@ -1,25 +1,27 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 689A5DDE09
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 14:57:25 +1000 (EST)
-Date: Tue, 12 May 2009 06:57:16 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: Next May 11 : BUG during scsi initialization
-Message-ID: <20090512045716.GC32535@wotan.suse.de>
-References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
-	<4A081002.4050802@in.ibm.com>
-	<20090511115233.GB8112@parisc-linux.org>
-	<4A081437.7000409@in.ibm.com>
-	<20090511122135.GC8112@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090511122135.GC8112@parisc-linux.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-scsi <linux-scsi@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Pekka Enberg <penberg@cs.helsinki.fi>, linux-next@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id B6562DDE45
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 15:22:42 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1787271ywt.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 May 2009 22:22:41 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090512011219.GB18223@yookeroo.seuss>
+References: <4A0457BC.3040408@dlasys.net> <1242007203.7767.28.camel@concordia>
+	<fa686aa40905102108l5c964893y2dfb84763e13511@mail.gmail.com>
+	<4A07C664.6040609@dlasys.net>
+	<fa686aa40905110651r1c18b78bpe8ffebe041726695@mail.gmail.com>
+	<4A085612.9050602@dlasys.net>
+	<fa686aa40905111047p5f350b0dh796564cc1383a336@mail.gmail.com>
+	<4A089AC8.9080704@dlasys.net>
+	<fa686aa40905111609l3feaf555taadf048714030a1@mail.gmail.com>
+	<20090512011219.GB18223@yookeroo.seuss>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 11 May 2009 23:22:21 -0600
+Message-ID: <fa686aa40905112222q75056b60hd9c2465b335496d1@mail.gmail.com>
+Subject: Re: device trees.
+To: Grant Likely <grant.likely@secretlab.ca>,
+	"David H. Lynch Jr." <dhlii@dlasys.net>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,41 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 11, 2009 at 06:21:35AM -0600, Matthew Wilcox wrote:
-> On Mon, May 11, 2009 at 05:34:07PM +0530, Sachin Sant wrote:
-> > Matthew Wilcox wrote:
-> >> On Mon, May 11, 2009 at 05:16:10PM +0530, Sachin Sant wrote:
-> >>   
-> >>> Today's Next tree failed to boot on a Power6 box with following BUG :
-> >>
-> >> This doesn't actually appear to be a SCSI bug ... it looks like SCSI tried
-> >> to allocate memory and things went wrong in the memory allocator:
-> >>
-> >> [c0000000c7d038b0] [c0000000005d67d8] ._spin_lock+0x10/0x24
-> >> [c0000000c7d03920] [c00000000013fbdc] .__slab_alloc_page+0x344/0x3cc
-> >> [c0000000c7d039e0] [c000000000141168] .kmem_cache_alloc+0x13c/0x21c
-> >> [c0000000c7d03aa0] [c000000000141b04] .kmem_cache_create+0x294/0x2a8
-> >> [c0000000c7d03b90] [d000000000ea14cc] .scsi_init_queue+0x38/0x170 [scsi_mod]
-> >>
-> >> Which memory allocator did you have selected (SLAB, SLUB, SLOB, SLQB)?
-> >>   
-> > Default one. SLQB
-> >
-> > CONFIG_SLQB_ALLOCATOR=y
-> > CONFIG_SLQB=y
-> >
-> > Page size is 64K with Config DEBUG_PAGEALLOC set.
-> >
-> > CONFIG_PPC_HAS_HASH_64K=y
-> > CONFIG_PPC_64K_PAGES=y
-> > CONFIG_DEBUG_PAGEALLOC=y
-> 
-> Hm.  We've seen some similar problems at Intel while doing database
-> performance tests with SLQB.  Any ideas, Nick?
+On Mon, May 11, 2009 at 7:12 PM, David Gibson
+<david@gibson.dropbear.id.au> wrote:
+> On Mon, May 11, 2009 at 05:09:27PM -0600, Grant Likely wrote:
+>> In other words; having your bootloader support FDT is preferred, but
+>> not required.
+>
+> I wouldn't even go so far as to say it's preferred. =A0IMO, people have
+> gone a bit prematurely keen on moving devtree handling into the
+> firmware. =A0Putting it in the firmware has a number of advantages, but
+> it also has a number of non-trivial disadvantages.
 
-Hmm, I think (hope) your problems were fixed with the recent memory
-coruption bug fix for SLQB. (if not, let me know)
+I disagree.  The more I work with it, the more I appreciate the
+advantage of decoupling the kernel image file from the hardware
+description.  It is valuable being able to build a single image file
+that boots on a wide range of boards because the device tree passed in
+by firmware.
 
-This one possibly looks like a problem with remote memory allocation
-or memory hotplug or something like that. I'll do a bit of code
-review....
+I'm not downplaying the disadvantages and problems, but I still hold
+the view that the striving for generic multiplatform kernel images is
+worth the effort.
+
+... but I do agree that hard linking the .dtb into firmware, or making
+the .dtb hard to upgrade is the way of madness.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
