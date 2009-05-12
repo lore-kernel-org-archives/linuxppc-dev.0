@@ -1,20 +1,21 @@
-Return-Path: <yjwei@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
-	by ozlabs.org (Postfix) with ESMTP id 3DDA1DDF8F
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 19:38:52 +1000 (EST)
-Message-ID: <4A09309C.8000404@cn.fujitsu.com>
-Date: Tue, 12 May 2009 16:17:32 +0800
-From: Wei Yongjun <yjwei@cn.fujitsu.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
+	by ozlabs.org (Postfix) with ESMTP id 29E5ADDF86
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 22:00:09 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so2193943qwe.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 05:00:07 -0700 (PDT)
+Sender: Josh Boyer <jwboyer@gmail.com>
+Date: Tue, 12 May 2009 07:51:49 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [RFC] Hardware Breakpoint interfaces implementation for PPC64
+Message-ID: <20090512115149.GA1885@yoda.jdub.homelinux.org>
+References: <20090511200355.GA17988@in.ibm.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PowerPC] Next May 8 boot failure: OOPS during ibmveth moduleinit
-References: <20090508180251.f53f204e.sfr@canb.auug.org.au>	<4A042B20.4090903@in.ibm.com>	<20090508.125722.54378771.davem@davemloft.net>	<20090508223332.GA4881@psychotron.englab.brq.redhat.com>	<4A085B3D.5000806@in.ibm.com>	<20090512170458.39c4ffb7.sfr@canb.auug.org.au>
-	<20090512174451.eeed4126.sfr@canb.auug.org.au>
-In-Reply-To: <20090512174451.eeed4126.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Jiri Pirko <jpirko@redhat.com>, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090511200355.GA17988@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,76 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell wrote:
-> Hi Dave,
+On Tue, May 12, 2009 at 01:33:55AM +0530, K.Prasad wrote:
+>Hi PPC Dev folks,
+>	Please find a patch below that implements the proposed Hardware
+>Breakpoint interfaces for PPC64 architecture.
 >
-> This fixes it (I wonder if this bug is lurking in any other drivers):
->   
-
-Yes, there are some other exists. This spatch script can help to found this.
-(http://www.emn.fr/x-info/coccinelle/)
-
-# cat netdev_dev_addr.cocci
-@@
-struct net_device *dev;
-@@
-memcpy(
-- &dev->dev_addr
-+ dev->dev_addr
-, ...);
-
-@@
-struct net_device *dev;
-expression E;
-@@
-memcpy(E,
-- &dev->dev_addr
-+ dev->dev_addr
-, ...);
-
-@@
-expression E;
-@@
-- &E->dev_addr
-+ E->dev_addr
-
-
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Tue, 12 May 2009 17:24:02 +1000
-> Subject: [PATCH] net/ibmveth: fix panic in probe
+>As a brief introduction, the proposed Hardware Breakpoint
+>infrastructure provides generic in-kernel interfaces to which users
+>from kernel- and user-space can request for breakpoint registers. An
+>ftrace plugin that can trace accesses to data variables is also part
+>of the generic HW Breakpoint interface patchset. The latest submission
+>for this patchset along with an x86 implementation can be found here:
+>http://lkml.org/lkml/2009/5/11/159.
 >
-> netdev->dev_addr changed from being an array to being a pointer, so we
-> should not take its address for memcpy().
+>The following are the salient features of the PPC64 patch.
 >
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  drivers/net/ibmveth.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>- Arch-specific definitions for kernel and user-space requests are
+>  defined in arch/powerpc/kernel/hw_breakpoint.c
+>- Ptrace is converted to use the HW Breakpoint interfaces
+>- The ftrace plugin called ksym_tracer is tested to work fine. For
+>  instance when tracing pid_max kernel variable, the following was
+>  obtained as output
 >
-> diff --git a/drivers/net/ibmveth.c b/drivers/net/ibmveth.c
-> index 7902e5e..8daffad 100644
-> --- a/drivers/net/ibmveth.c
-> +++ b/drivers/net/ibmveth.c
-> @@ -1285,7 +1285,7 @@ static int __devinit ibmveth_probe(struct vio_dev *dev, const struct vio_device_
->   	netdev->features |= NETIF_F_LLTX;
->  	spin_lock_init(&adapter->stats_lock);
->  
-> -	memcpy(&netdev->dev_addr, &adapter->mac_addr, netdev->addr_len);
-> +	memcpy(netdev->dev_addr, &adapter->mac_addr, netdev->addr_len);
->  
->  	for(i = 0; i<IbmVethNumBufferPools; i++) {
->  		struct kobject *kobj = &adapter->rx_buff_pool[i].kobj;
->   
+># cat trace
+># tracer: ksym_tracer
+>#
+>#       TASK-PID      CPU#      Symbol         Type    Function         
+>#          |           |          |              |         |            
+>bash            4502  3   pid_max               RW  .do_proc_dointvec_minmax_conv+0x78/0x10c
+>bash            4502  3   pid_max               RW  .do_proc_dointvec_minmax_conv+0xa0/0x10c
+>bash            4502  3   pid_max               RW  .alloc_pid+0x8c/0x4a4
+>
+>There are however a few limitations/caveats of the patch as identified
+>below:
+>
+>- The patch is currently implemented only for PPC64 architecture. Other
+>  architectures (especially Book-E implementations are expected to
+>  happen in due course).
 
-maybe this line should be fix too.
+Does this mean you will work on transitioning Book-E implementations, or that
+you expect the Book-E maintainers to?  I'm just curious.  The code as written
+relies heavily on the DABR/MSR setup that ppc64 has and Book-E unfortunately
+doesn't follow that at all.
+
+Book-E also allows for more than one HW breakpoint, which means you're growing
+the thread_struct by 32-bytes to support 4 of them.  64-bytes if this ever
+supports DAC events.  Have you thought at all about a way to support this
+without carrying around the data in the thread struct?
+
+<snip>
+
+>Index: linux-2.6-tip.hbkpt/arch/powerpc/mm/fault.c
+>===================================================================
+>--- linux-2.6-tip.hbkpt.orig/arch/powerpc/mm/fault.c
+>+++ linux-2.6-tip.hbkpt/arch/powerpc/mm/fault.c
+>@@ -137,6 +137,12 @@ int __kprobes do_page_fault(struct pt_re
+> 		error_code &= 0x48200000;
+> 	else
+> 		is_write = error_code & DSISR_ISSTORE;
+>+
+>+	if (error_code & DSISR_DABRMATCH) {
+>+		/* DABR match */
+>+		do_dabr(regs, address, error_code);
+>+		return 0;
+>+	}
+> #else
+> 	is_write = error_code & ESR_DST;
+> #endif /* CONFIG_4xx || CONFIG_BOOKE */
+>@@ -151,14 +157,6 @@ int __kprobes do_page_fault(struct pt_re
+> 	if (!user_mode(regs) && (address >= TASK_SIZE))
+> 		return SIGSEGV;
+> 
+>-#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+>-  	if (error_code & DSISR_DABRMATCH) {
+>-		/* DABR match */
+>-		do_dabr(regs, address, error_code);
+>-		return 0;
+>-	}
+>-#endif /* !(CONFIG_4xx || CONFIG_BOOKE)*/
+>-
+> 	if (in_atomic() || mm == NULL) {
+> 		if (!user_mode(regs))
+> 			return SIGSEGV;
 
 
-@@ -1368,7 +1368,7 @@ static void ibmveth_proc_unregister_driv
- static int ibmveth_show(struct seq_file *seq, void *v)
- {
- 	struct ibmveth_adapter *adapter = seq->private;
--	char *current_mac = ((char*) &adapter->netdev->dev_addr);
-+	char *current_mac = ((char*) adapter->netdev->dev_addr);
- 	char *firmware_mac = ((char*) &adapter->mac_addr) ;
- 
- 	seq_printf(seq, "%s %s\n\n", ibmveth_driver_string, ibmveth_driver_version);
+I don't understand why this was changed, and the changelog doesn't highlight it.
+
+josh
