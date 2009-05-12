@@ -1,17 +1,26 @@
-Return-Path: <sankar.curiosity@gmail.com>
-Received: from mail-bw0-f171.google.com (mail-bw0-f171.google.com
-	[209.85.218.171]) by ozlabs.org (Postfix) with ESMTP id C5854DDF7D
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 17:13:46 +1000 (EST)
-Received: by bwz19 with SMTP id 19so3098623bwz.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 00:13:43 -0700 (PDT)
-Subject: [PATCH] Trivial spelling fix in ppc code comments
-From: Sankar P <sankar.curiosity@gmail.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"trivial@kernel.org" <trivial@kernel.org>, linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Tue, 12 May 2009 12:41:13 +0530
-Message-Id: <1242112273.736.6.camel@blr-psankar.blr.novell.com>
-Mime-Version: 1.0
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 95C62DDEE0
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 18:13:04 +1000 (EST)
+Date: Tue, 12 May 2009 10:12:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Friesen <cfriesen@nortel.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: question about softirqs
+Message-ID: <20090512081237.GA16403@elte.hu>
+References: <18948.63755.279732.294842@cargo.ozlabs.ibm.com>
+	<20090508.234815.127227651.davem@davemloft.net>
+	<4A086DB2.8040703@nortel.com>
+	<20090511.162436.193717082.davem@davemloft.net>
+	<4A08C62F.1050105@nortel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4A08C62F.1050105@nortel.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Miller <davem@davemloft.net>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +30,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fixes a trivial spelling error in powerpc code comments. 
 
-Signed-off-by: Sankar P <sankar.curiosity@gmail.com>
+* Chris Friesen <cfriesen@nortel.com> wrote:
 
----
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 89497fb..3b52c80 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -2,7 +2,7 @@
-  * PowerPC64 SLB support.
-  *
-  * Copyright (C) 2004 David Gibson <dwg@au.ibm.com>, IBM
-- * Based on earlier code writteh by:
-+ * Based on earlier code written by:
-  * Dave Engebretsen and Mike Corrigan {engebret|mikejc}@us.ibm.com
-  *    Copyright (c) 2001 Dave Engebretsen
-  * Copyright (C) 2002 Anton Blanchard <anton@au.ibm.com>, IBM
+> This started out as a thread on the ppc list, but on the 
+> suggestion of DaveM and Paul Mackerras I'm expanding the receiver 
+> list a bit.
+> 
+> Currently, if a softirq is raised in process context the 
+> TIF_RESCHED_PENDING flag gets set and on return to userspace we 
+> run the scheduler, expecting it to switch to ksoftirqd to handle 
+> the softirqd processing.
+> 
+> I think I see a possible problem with this. Suppose I have a 
+> SCHED_FIFO task spinning on recvmsg() with MSG_DONTWAIT set. Under 
+> the scenario above, schedule() would re-run the spinning task 
+> rather than ksoftirqd, thus preventing any incoming packets from 
+> being sent up the stack until we get a real hardware 
+> interrupt--which could be a whole jiffy if interrupt mitigation is 
+> enabled in the net device.
+
+TIF_RESCHED_PENDING will not be set if a SCHED_FIFO task wakes up a 
+SCHED_OTHER ksoftirqd task. But starvation of ksoftirqd processing 
+will occur.
+
+> DaveM pointed out that if we're doing transmits we're likely to 
+> hit local_bh_enable(), which would process the softirq work.  
+> However, I think we may still have a problem in the above rx-only 
+> scenario--or is it too contrived to matter?
+
+This could occur, and the problem is really that task priorities do 
+not extend across softirq work processing.
+
+This could occur in ordinary SCHED_OTHER tasks as well, if the 
+softirq is bounced to ksoftirqd - which it only should be if there's 
+serious softirq overload - or, as you describe it above, if the 
+softirq is raised in process context:
+
+        if (!in_interrupt())
+                wakeup_softirqd();
+
+that's not really clean. We look into eliminating process context 
+use of raise_softirq_irqsoff(). Such code sequence:
+
+	local_irq_save(flags);
+	...
+	raise_softirq_irqsoff(nr);
+	...
+	local_irq_restore(flags);
+
+should be converted to something like:
+
+	local_irq_save(flags);
+	...
+	raise_softirq_irqsoff(nr);
+	...
+	local_irq_restore(flags);
+	recheck_softirqs();
+
+If someone does not do proper local_bh_disable()/enable() sequences 
+for micro-optimization reasons, then push the check to after the 
+critcal section - and dont cause extra reschedules by waking up 
+ksoftirqd. raise_softirq_irqsoff() will also be faster.
+
+	Ingo
