@@ -1,13 +1,14 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A4BE1DDEDB
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 16:52:55 +1000 (EST)
-Date: Tue, 12 May 2009 16:52:45 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Nick Piggin <npiggin@suse.de>
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A4545DDEF5
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2009 16:56:06 +1000 (EST)
+Date: Tue, 12 May 2009 08:56:01 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: Next May 11 : BUG during scsi initialization
-Message-Id: <20090512165245.78b6bf83.sfr@canb.auug.org.au>
-In-Reply-To: <20090512160352.4a97d2f4.sfr@canb.auug.org.au>
+Message-ID: <20090512065601.GA19079@wotan.suse.de>
 References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
 	<4A081002.4050802@in.ibm.com>
 	<20090511115233.GB8112@parisc-linux.org>
@@ -17,10 +18,10 @@ References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
 	<20090512155613.881fa2ec.sfr@canb.auug.org.au>
 	<20090512055918.GF32535@wotan.suse.de>
 	<20090512160352.4a97d2f4.sfr@canb.auug.org.au>
+	<20090512165245.78b6bf83.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__12_May_2009_16_52_45_+1000_1w_au2XhoAYZWPic"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090512165245.78b6bf83.sfr@canb.auug.org.au>
 Cc: linux-scsi <linux-scsi@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
 	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
 	linux-next@vger.kernel.org
@@ -33,34 +34,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__12_May_2009_16_52_45_+1000_1w_au2XhoAYZWPic
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, May 12, 2009 at 04:52:45PM +1000, Stephen Rothwell wrote:
+> Hi Nick,
+> 
+> On Tue, 12 May 2009 16:03:52 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > This is what I have been getting for the last few days:
+> 
+> bisected into the net changes, I will follow up there, sorry.
 
-Hi Nick,
+No problem. Phew, yours was looking like a nasty one if it was indeed
+an SLQB bug ;) 
 
-On Tue, 12 May 2009 16:03:52 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> This is what I have been getting for the last few days:
-
-bisected into the net changes, I will follow up there, sorry.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__12_May_2009_16_52_45_+1000_1w_au2XhoAYZWPic
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoJHL0ACgkQjjKRsyhoI8xCUQCfSZ3e9mpZT9k3SfXCZGh71PiA
-WZMAniu3+IBo6EqdWv6y1LF2P9509KK9
-=f31l
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_May_2009_16_52_45_+1000_1w_au2XhoAYZWPic--
+Thanks,
+Nick
