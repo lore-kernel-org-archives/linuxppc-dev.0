@@ -1,12 +1,15 @@
-Return-Path: <andi@firstfloor.org>
-Received: from one.firstfloor.org (one.firstfloor.org [213.235.205.2])
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CDBFEDDFD1
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 00:24:30 +1000 (EST)
-To: Thomas Gleixner <tglx@linutronix.de>
+	by ozlabs.org (Postfix) with ESMTPS id B11CADDFC9
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 00:42:10 +1000 (EST)
+Date: Wed, 13 May 2009 16:17:08 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
 Subject: Re: question about softirqs
-From: Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <20090513141532.GT19296@one.firstfloor.org>
+Message-ID: <alpine.LFD.2.00.0905131612180.3561@localhost.localdomain>
 References: <18948.63755.279732.294842@cargo.ozlabs.ibm.com>
 	<20090508.234815.127227651.davem@davemloft.net>
 	<4A086DB2.8040703@nortel.com>
@@ -15,14 +18,8 @@ References: <18948.63755.279732.294842@cargo.ozlabs.ibm.com>
 	<4A09933B.8010606@nortel.com> <874ovpmmdq.fsf@basil.nowhere.org>
 	<4A0AC9EC.6070908@nortel.com>
 	<20090513141532.GT19296@one.firstfloor.org>
-	<alpine.LFD.2.00.0905131612180.3561@localhost.localdomain>
-Date: Wed, 13 May 2009 16:24:23 +0200
-In-Reply-To: <alpine.LFD.2.00.0905131612180.3561@localhost.localdomain>
-	(Thomas Gleixner's message of "Wed,
-	13 May 2009 16:17:08 +0200 (CEST)")
-Message-ID: <87my9hkrmw.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
 	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
 	paulus@samba.org, Ingo Molnar <mingo@elte.hu>,
@@ -36,30 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+On Wed, 13 May 2009, Andi Kleen wrote:
 
+> > "If a soft irq is raised in process context, raise_softirq() in
+> > kernel/softirq.c calls wakeup_softirqd() to make sure that ksoftirqd
+> 
+> softirqd is only used when the softirq runs for too long or when
+> there are no suitable irq exits for a long time.
+> 
+> In normal situations (not excessive time in softirq) they don't
+> do anything. 
 
-> Err, no. Chris is completely correct:
->
->         if (!in_interrupt())
-> 		wakeup_softirqd();
+Err, no. Chris is completely correct:
 
-Yes you have to wake it up just in case, but it doesn't normally
-process the data because a normal softirq comes in faster. It's
-just a safety policy. 
+        if (!in_interrupt())
+		wakeup_softirqd();
 
-You can check this by checking the accumulated CPU time on your
-ksoftirqs.  Mine are all 0 even on long running systems.
+We can not rely on irqs coming in when the softirq is raised from
+thread context. An irq_exit might be faster to process it than the
+scheduler can schedule ksoftirqd in, but ksoftirqd is woken and runs
+nevertheless. If it finds a softirq pending then it processes them in
+it's context and irq_exit calls to softirq are returning right away.
 
-The reason Andrea originally added the softirqds was just that
-if you have very softirq intensive workloads they would tie
-up too much CPU time or not make enough process with the default
-"don't loop too often" heuristics. 
+Thanks,
 
-> We can not rely on irqs coming in when the softirq is raised from
-
-You can't rely on it, but it happens in near all cases.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	tglx
