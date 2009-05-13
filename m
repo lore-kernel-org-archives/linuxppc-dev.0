@@ -1,21 +1,20 @@
-Return-Path: <pierre@ossman.eu>
-Received: from smtp.ossman.eu (82-117-125-11.tcdsl.calypso.net [82.117.125.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0447FDE002
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 05:53:24 +1000 (EST)
-Date: Wed, 13 May 2009 21:47:07 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Dave Liu <daveliu@freescale.com>, avorontsov@ru.mvista.com
-Subject: Re: [PATCH] mmc: Fix the wrong accessor to HOSTVER register
-Message-ID: <20090513214707.67801506@mjolnir.ossman.eu>
-In-Reply-To: <1241606407-18685-1-git-send-email-daveliu@freescale.com>
-References: <1241606407-18685-1-git-send-email-daveliu@freescale.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature";
-	boundary="=_freyr.ossman.eu-9120-1242244032-0001-2"
-Cc: linuxppc-dev@ozlabs.org, sdhci-devel@list.drzeus.cx, ben-linux@fluff.org
+Return-Path: <dan.j.williams@gmail.com>
+Received: from mail-qy0-f123.google.com (mail-qy0-f123.google.com
+	[209.85.221.123]) by ozlabs.org (Postfix) with ESMTP id 61A9DDE00C
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 07:48:49 +1000 (EST)
+Received: by qyk29 with SMTP id 29so1639693qyk.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 14:48:47 -0700 (PDT)
+MIME-Version: 1.0
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <1242249957-10352-1-git-send-email-galak@kernel.crashing.org>
+References: <1242249957-10352-1-git-send-email-galak@kernel.crashing.org>
+Date: Wed, 13 May 2009 14:40:41 -0700
+Message-ID: <e9c3a7c20905131440n7a8c66a2j73997e44db7e4d97@mail.gmail.com>
+Subject: Re: [PATCH] fsldma: Fix compile warnings
+From: Dan Williams <dan.j.williams@intel.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Wed, May 13, 2009 at 2:25 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
+> We we build with dma_addr_t as a 64-bit quantity we get:
+>
+> drivers/dma/fsldma.c: In function 'fsl_chan_xfer_ld_queue':
+> drivers/dma/fsldma.c:625: warning: cast to pointer from integer of different size
+> drivers/dma/fsldma.c: In function 'fsl_dma_chan_do_interrupt':
+> drivers/dma/fsldma.c:737: warning: cast to pointer from integer of different size
+> drivers/dma/fsldma.c:737: warning: cast to pointer from integer of different size
+> drivers/dma/fsldma.c: In function 'of_fsl_dma_probe':
+> drivers/dma/fsldma.c:927: warning: cast to pointer from integer of different
+>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
---=_freyr.ossman.eu-9120-1242244032-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Dan Williams <dan.j.williams@intel.com>
 
-On Wed,  6 May 2009 18:40:07 +0800
-Dave Liu <daveliu@freescale.com> wrote:
+I'm fine with this going through your tree.
 
-> Freescale eSDHC controller has the special order for
-> the HOST version register. that is not same as the other's
-> registers. The address of HOSTVER in spec is 0xFE, and
-> we need use the in_be16(0xFE) to access it, not in_be16(0xFC).
->=20
-> Signed-off-by: Dave Liu <daveliu@freescale.com>
-> ---
-
-Any objections, Anton?
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-9120-1242244032-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkoLI78ACgkQ7b8eESbyJLiaywCgyPzZgso8If1c+rCwzUJltM1y
-m5kAoJMtl2Udvi5HFhcI0jzTXiY4Aaqu
-=k3TI
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-9120-1242244032-0001-2--
+Thanks,
+Dan
