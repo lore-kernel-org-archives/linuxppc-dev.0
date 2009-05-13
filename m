@@ -2,13 +2,13 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9FF54DDFE6
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 08:32:07 +1000 (EST)
-Date: Wed, 13 May 2009 17:31:59 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 352E2DE017
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 08:33:41 +1000 (EST)
+Date: Wed, 13 May 2009 17:33:37 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull from 'merge' branch for 2.6.30
-Message-ID: <Pine.LNX.4.64.0905131731260.772@localhost.localdomain>
+Subject: Please pull from 'next' branch
+Message-ID: <Pine.LNX.4.64.0905131732520.781@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -21,73 +21,134 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Just added defconfig updates for the normal FSL set of HW.
+This is based on v2.6.30-rc5.
 
 - k
 
-Please pull from 'merge' branch of
+Please pull from 'next' branch of
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
 
 to receive the following updates:
 
- arch/powerpc/configs/83xx/asp8347_defconfig       |  104 ++++-
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  114 ++++--
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  114 ++++--
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  107 ++++--
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  113 ++++--
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  108 ++++--
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  108 ++++--
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  103 ++++-
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  108 ++++--
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   96 ++++-
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  104 ++++-
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  111 ++++--
- arch/powerpc/configs/83xx/sbc834x_defconfig       |   96 ++++-
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   86 +++-
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   82 +++-
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   89 +++--
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   88 +++--
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   84 +++-
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   83 +++-
- arch/powerpc/configs/85xx/socrates_defconfig      |  385 ++++++++++++++++------
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |  105 ++++--
- arch/powerpc/configs/85xx/tqm8540_defconfig       |  100 ++++-
- arch/powerpc/configs/85xx/tqm8541_defconfig       |  101 ++++-
- arch/powerpc/configs/85xx/tqm8548_defconfig       |   64 ++-
- arch/powerpc/configs/85xx/tqm8555_defconfig       |  101 ++++-
- arch/powerpc/configs/85xx/tqm8560_defconfig       |  101 ++++-
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |   92 ++++-
- arch/powerpc/configs/86xx/gef_sbc310_defconfig    |   92 ++++-
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |  122 +++++-
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |  100 ++++-
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |  211 ++++--------
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |  114 ++++--
- arch/powerpc/configs/adder875_defconfig           |   65 ++-
- arch/powerpc/configs/c2k_defconfig                |  128 +++++--
- arch/powerpc/configs/ep8248e_defconfig            |   74 +++-
- arch/powerpc/configs/ep88xc_defconfig             |   63 ++-
- arch/powerpc/configs/linkstation_defconfig        |   96 ++++-
- arch/powerpc/configs/mgcoge_defconfig             |   74 +++-
- arch/powerpc/configs/mgsuvd_defconfig             |   72 +++-
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |   91 +++--
- arch/powerpc/configs/mpc8272_ads_defconfig        |   77 +++-
- arch/powerpc/configs/mpc83xx_defconfig            |  115 ++++--
- arch/powerpc/configs/mpc866_ads_defconfig         |   77 +++-
- arch/powerpc/configs/mpc86xx_defconfig            |  211 ++++--------
- arch/powerpc/configs/mpc885_ads_defconfig         |   63 ++-
- arch/powerpc/configs/pq2fads_defconfig            |   90 +++--
- arch/powerpc/configs/prpmc2800_defconfig          |  120 +++++-
- arch/powerpc/configs/storcenter_defconfig         |   71 ++--
- arch/powerpc/sysdev/fsl_soc.c                     |   46 --
- 49 files changed, 3630 insertions(+), 1489 deletions(-)
+ Documentation/powerpc/dts-bindings/ecm.txt           |   64 +
+ Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt |    3
+ Documentation/powerpc/dts-bindings/fsl/mcm.txt       |   64 +
+ arch/powerpc/boot/dts/gef_ppc9a.dts                  |   14
+ arch/powerpc/boot/dts/gef_sbc310.dts                 |   14
+ arch/powerpc/boot/dts/gef_sbc610.dts                 |   14
+ arch/powerpc/boot/dts/ksi8560.dts                    |   13
+ arch/powerpc/boot/dts/mpc832x_mds.dts                |    3
+ arch/powerpc/boot/dts/mpc832x_rdb.dts                |    3
+ arch/powerpc/boot/dts/mpc8349emitx.dts               |    2
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts             |    1
+ arch/powerpc/boot/dts/mpc834x_mds.dts                |    2
+ arch/powerpc/boot/dts/mpc836x_mds.dts                |    3
+ arch/powerpc/boot/dts/mpc836x_rdk.dts                |    2
+ arch/powerpc/boot/dts/mpc8377_mds.dts                |    1
+ arch/powerpc/boot/dts/mpc8378_mds.dts                |    1
+ arch/powerpc/boot/dts/mpc8379_mds.dts                |    1
+ arch/powerpc/boot/dts/mpc8536ds.dts                  |   18
+ arch/powerpc/boot/dts/mpc8540ads.dts                 |   15
+ arch/powerpc/boot/dts/mpc8541cds.dts                 |   16
+ arch/powerpc/boot/dts/mpc8544ds.dts                  |   18
+ arch/powerpc/boot/dts/mpc8548cds.dts                 |   17
+ arch/powerpc/boot/dts/mpc8555cds.dts                 |   16
+ arch/powerpc/boot/dts/mpc8560ads.dts                 |   15
+ arch/powerpc/boot/dts/mpc8568mds.dts                 |   51 +
+ arch/powerpc/boot/dts/mpc8569mds.dts                 |  583 ++++++++++++++++++
+ arch/powerpc/boot/dts/mpc8572ds.dts                  |   17
+ arch/powerpc/boot/dts/mpc8572ds_36b.dts              |   39 -
+ arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts       |   16
+ arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts       |    2
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts               |   16
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts               |   16
+ arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts           |  609 +++++++++++++++++++
+ arch/powerpc/boot/dts/sbc8349.dts                    |    1
+ arch/powerpc/boot/dts/sbc8548.dts                    |   16
+ arch/powerpc/boot/dts/sbc8560.dts                    |   15
+ arch/powerpc/boot/dts/sbc8641d.dts                   |   16
+ arch/powerpc/boot/dts/socrates.dts                   |   15
+ arch/powerpc/boot/dts/stx_gp3_8560.dts               |   15
+ arch/powerpc/boot/dts/tqm8540.dts                    |   15
+ arch/powerpc/boot/dts/tqm8541.dts                    |   15
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts           |   16
+ arch/powerpc/boot/dts/tqm8548.dts                    |   16
+ arch/powerpc/boot/dts/tqm8555.dts                    |   15
+ arch/powerpc/boot/dts/tqm8560.dts                    |   15
+ arch/powerpc/include/asm/cpm1.h                      |    2
+ arch/powerpc/include/asm/cpm2.h                      |    4
+ arch/powerpc/include/asm/mpc86xx.h                   |   33 -
+ arch/powerpc/include/asm/pci-bridge.h                |    6
+ arch/powerpc/include/asm/qe.h                        |   21
+ arch/powerpc/oprofile/op_model_fsl_emb.c             |   14
+ arch/powerpc/platforms/82xx/pq2ads.h                 |   13
+ arch/powerpc/platforms/85xx/Kconfig                  |    1
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c            |   52 +
+ arch/powerpc/platforms/86xx/gef_ppc9a.c              |    1
+ arch/powerpc/platforms/86xx/gef_sbc310.c             |    1
+ arch/powerpc/platforms/86xx/gef_sbc610.c             |    1
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c           |    1
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c           |    1
+ arch/powerpc/platforms/86xx/mpc86xx_smp.c            |    8
+ arch/powerpc/platforms/86xx/sbc8641d.c               |    1
+ arch/powerpc/platforms/8xx/mpc885ads.h               |    4
+ arch/powerpc/platforms/fsl_uli1575.c                 |   23
+ arch/powerpc/sysdev/cpm2.c                           |    2
+ arch/powerpc/sysdev/fsl_msi.c                        |    9
+ arch/powerpc/sysdev/fsl_pci.c                        |    6
+ arch/powerpc/sysdev/fsl_rio.c                        |   15
+ arch/powerpc/sysdev/fsl_soc.c                        |   14
+ arch/powerpc/sysdev/qe_lib/qe.c                      |   75 ++
+ drivers/dma/fsldma.c                                 |   13
+ drivers/net/ucc_geth.c                               |   24
+ drivers/net/ucc_geth.h                               |    4
+ drivers/of/base.c                                    |    1
+ drivers/rapidio/rio-scan.c                           |    6
+ include/linux/pci_ids.h                              |    2
+ 75 files changed, 1949 insertions(+), 248 deletions(-)
 
-Anton Vorontsov (1):
-      powerpc/fsl_soc: Remove mpc83xx_wdt_init, again
+Anton Vorontsov (6):
+      powerpc/85xx: Add PCI IDs for MPC8569 family processors
+      powerpc/85xx: Fix mpc8569emds crypto node to include SNOW unit
+      powerpc/85xx: Fix reg & interrupts for mpc8569emds localbus added NAND
+      powerpc/85xx: Add eSDHC support for MPC8569E-MDS boards
+      powerpc/85xx: Enable Serial RapidIO for MPC85xx MDS boards
+      powerpc/85xx: Add STMicro M25P40 serial flash support for MPC8569E-MDS
 
-Kumar Gala (5):
-      powerpc/83xx: Update defconfigs
-      powerpc/85xx: Update defconfigs
-      powerpc/86xx: Update defconfigs
-      powerpc/embedded6xx: Update defconfigs
-      powerpc/8xx: Update defconfigs
+Becky Bruce (2):
+      powerpc/86xx: Add 36-bit device tree for mpc8641hpcn
+      powerpc: make dma_window_* in pci_controller struct avail on 32b
+
+Haiying Wang (7):
+      powerpc/85xx: clean up for mpc8568_mds name
+      powerpc/qe: update risc allocation for QE
+      net/ucc_geth: update riscTx and riscRx in ucc_geth
+      powerpc/qe: update QE Serial Number
+      net/ucc_geth: Assign six threads to Rx for UEC
+      powerpc/85xx: Add MPC8569MDS board support
+      powerpc/qe: add new qe properties for QE based chips
+
+Kumar Gala (15):
+      powerpc/fsl: Remove cell-index from PCI nodes
+      powerpc: Refactor board check for PCI quirks on FSL boards with uli1575
+      powerpc/fsl: use of_iomap() for rstcr mapping
+      powerpc/85xx: Add binding for LAWs and ECM
+      powerpc/85xx: Add new LAW & ECM device tree nodes for all 85xx systems
+      powerpc/86xx: Add binding for LAWs and MCM
+      powerpc/86xx: Add new LAW & MCM device tree nodes for all 86xx systems
+      powerpc/cpm: Remove some cruft code and defines
+      powerpc/86xx: clean up smp init code
+      powerpc/fsl: Removed reg property from 85xx/86xx soc node
+      fsldma: Fix compile warnings
+      powerpc/85xx: Add MSI nodes for MPC8568/9 MDS systems
+      powerpc/fsl: Support unique MSI addresses per PCIe Root Complex
+      powerpc/8xxx: Update PCI outbound window addresses for 36-bit configs
+      powerpc/fsl_rio: Fix compile warnings
+
+Li Yang (2):
+      powerpc/fsl_rio: use LAW address from device tree
+      rapidio: fix section mismatch warnings
+
+Michael Ellerman (1):
+      powerpc/oprofile: Remove unused dump_pmcs() in FSL oprofile
