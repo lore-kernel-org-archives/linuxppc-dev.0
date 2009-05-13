@@ -1,24 +1,30 @@
-Return-Path: <xyzzy@speakeasy.org>
-Received: from mail6.sea5.speakeasy.net (mail6.sea5.speakeasy.net
-	[69.17.117.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.speakeasy.net", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AE31DDDFEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 04:54:34 +1000 (EST)
-Date: Wed, 13 May 2009 11:54:28 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH] leds: Add options to have GPIO LEDs start on or keep
-	their state
-In-Reply-To: <20090513091330.GA3078@pengutronix.de>
-Message-ID: <Pine.LNX.4.58.0905131148120.7837@shell2.speakeasy.net>
-References: <fa686aa40904172207sc0f923eoefe8fb0a2703d548@mail.gmail.com>
-	<1242167592-14649-1-git-send-email-xyzzy@speakeasy.org>
-	<20090513091330.GA3078@pengutronix.de>
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kp.nortel.com (zrtps0kp.nortel.com [47.140.192.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id B040BDDFF1
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 05:04:19 +1000 (EST)
+Message-ID: <4A0B19A9.1090206@nortel.com>
+Date: Wed, 13 May 2009 13:04:09 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Richard Purdie <rpurdie@rpsys.net>,
-	Sean MacLennan <smaclennan@pikatech.com>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: question about softirqs
+References: <20090511.162436.193717082.davem@davemloft.net>
+	<4A08C62F.1050105@nortel.com> <20090512081237.GA16403@elte.hu>
+	<4A09933B.8010606@nortel.com> <874ovpmmdq.fsf@basil.nowhere.org>
+	<4A0AC9EC.6070908@nortel.com>
+	<20090513141532.GT19296@one.firstfloor.org>
+	<alpine.LFD.2.00.0905131612180.3561@localhost.localdomain>
+	<87my9hkrmw.fsf@basil.nowhere.org> <4A0AE19D.9040509@nortel.com>
+	<20090513170122.GZ19296@one.firstfloor.org>
+In-Reply-To: <20090513170122.GZ19296@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+	Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,36 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 13 May 2009, Wolfram Sang wrote:
-> > diff --git a/include/linux/leds.h b/include/linux/leds.h
-> > index 376fe07..66e7d75 100644
-> > --- a/include/linux/leds.h
-> > +++ b/include/linux/leds.h
-> > @@ -141,9 +141,14 @@ struct gpio_led {
-> >  	const char *name;
-> >  	const char *default_trigger;
-> >  	unsigned 	gpio;
-> > -	u8 		active_low : 1;
-> > -	u8		retain_state_suspended : 1;
-> > +	unsigned	active_low : 1;
-> > +	unsigned	retain_state_suspended : 1;
-> > +	unsigned	default_state : 2;
-> > +	/* default_state should be one of LEDS_GPIO_DEFSTATE_(ON|OFF|KEEP) */
->
-> Any specific reason for the change from u8 to unsigned? Could be
-> mentioned in the patch description maybe. And what Sean mentioned :)
+Andi Kleen wrote:
 
-I should have mentioned that in the description.  It didn't make sense to
-me to declare a bit field with u8.  An eight bit type that is one bit
-wide?  The field width overrides the type width, but I think it's better to
-just use "unsigned" and only specify a width once.
+> network packets are normally processed by the network packet interrupt's
+> softirq or alternatively in the NAPI poll loop.
 
->
-> Other than that:
->
-> Acked-by: Wolfram Sang <w.sang@pengutronix.de>
->
-> --
-> Pengutronix e.K.                           | Wolfram Sang                |
-> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
->
+If we have a high priority task, ksoftirqd may not get a chance to run.
+
+My point is simply that the documentation says that softirqs are
+processed on return from a syscall, and this is not necessarily the case.
+
+Chris
