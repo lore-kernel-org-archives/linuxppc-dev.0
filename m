@@ -1,31 +1,17 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5752FDDEFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 01:54:44 +1000 (EST)
-Date: Wed, 13 May 2009 17:54:03 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chris Friesen <cfriesen@nortel.com>
-Subject: Re: question about softirqs
-In-Reply-To: <4A0AE19D.9040509@nortel.com>
-Message-ID: <alpine.LFD.2.00.0905131751150.3561@localhost.localdomain>
-References: <18948.63755.279732.294842@cargo.ozlabs.ibm.com>
-	<20090508.234815.127227651.davem@davemloft.net>
-	<4A086DB2.8040703@nortel.com>
-	<20090511.162436.193717082.davem@davemloft.net>
-	<4A08C62F.1050105@nortel.com> <20090512081237.GA16403@elte.hu>
-	<4A09933B.8010606@nortel.com> <874ovpmmdq.fsf@basil.nowhere.org>
-	<4A0AC9EC.6070908@nortel.com>
-	<20090513141532.GT19296@one.firstfloor.org>
-	<alpine.LFD.2.00.0905131612180.3561@localhost.localdomain>
-	<87my9hkrmw.fsf@basil.nowhere.org> <4A0AE19D.9040509@nortel.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id ABE3DDDFE4
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 02:01:44 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/3] powerpc/cell: make ptcal more reliable
+Date: Wed, 13 May 2009 17:50:46 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Andi Kleen <andi@firstfloor.org>, paulus@samba.org,
-	Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <0ML21M-1M4Gtp1PZb-0001oc@mrelayeu.kundenserver.de>
+Cc: Gerhard Stenzel <gerhard.stenzel@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,31 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 13 May 2009, Chris Friesen wrote:
-> Andi Kleen wrote:
-> > Thomas Gleixner <tglx@linutronix.de> writes:
-> 
-> >>Err, no. Chris is completely correct:
-> >>
-> >>        if (!in_interrupt())
-> >>		wakeup_softirqd();
-> > 
-> > Yes you have to wake it up just in case, but it doesn't normally
-> > process the data because a normal softirq comes in faster. It's
-> > just a safety policy. 
-> 
-> What about the scenario I raised earlier, where we have incoming network
-> packets, no hardware interrupts coming in other than the timer tick, and
-> a high-priority userspace app is spinning on recvmsg() with MSG_DONTWAIT
-> set?
-> 
-> As far as I can tell, in this scenario softirqs may not get processed on
-> return from a syscall (contradicting the documentation).  In the worst
-> case, they may not get processed until the next timer tick.
+From: Gerhard Stenzel <stenzel@de.ibm.com>
 
-Right because your high prio tasks prevents that ksoftirqd runs,
-because it can not preempt the high priority task.
+There have been a series of checkstops on QS21 related to
+ptcal being set up incorrectly. On systems that only
+have memory on a single node, ptcal fails when it gets
+a pointer to memory on the remote node.
 
-Thanks,
+Moreover, agressive prefetching in memcpy and other
+functions may accidentally touch the first cache line
+of the page that we reserve for ptcal, which causes
+an ECC checkstop.
 
-	tglx
+We now allocate pages only from the specified node, moves the
+ptcal area into the middle of the allocated page to avoid
+potential prefetch problems and prints the address of the
+ptcal area to facilitate diagnostics.
+
+Signed-off-by: Gerhard Stenzel <gerhard.stenzel@de.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/powerpc/platforms/cell/ras.c |   17 ++++++++++++++---
+ 1 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
+index 5f961c4..296b526 100644
+--- a/arch/powerpc/platforms/cell/ras.c
++++ b/arch/powerpc/platforms/cell/ras.c
+@@ -122,12 +122,23 @@ static int __init cbe_ptcal_enable_on_node(int nid, int order)
+ 
+ 	area->nid = nid;
+ 	area->order = order;
+-	area->pages = alloc_pages_node(area->nid, GFP_KERNEL, area->order);
++	area->pages = alloc_pages_node(area->nid, GFP_KERNEL | GFP_THISNODE,
++					area->order);
+ 
+-	if (!area->pages)
++	if (!area->pages) {
++		printk(KERN_WARNING "%s: no page on node %d\n",
++			__func__, area->nid);
+ 		goto out_free_area;
++	}
+ 
+-	addr = __pa(page_address(area->pages));
++	/*
++	 * We move the ptcal area to the middle of the allocated
++	 * page, in order to avoid prefetches in memcpy and similar
++	 * functions stepping on it.
++	 */
++	addr = __pa(page_address(area->pages)) + (PAGE_SIZE >> 1);
++	printk(KERN_DEBUG "%s: enabling PTCAL on node %d address=0x%016lx\n",
++			__func__, area->nid, addr);
+ 
+ 	ret = -EIO;
+ 	if (rtas_call(ptcal_start_tok, 3, 1, NULL, area->nid,
+-- 
+1.5.6.3
