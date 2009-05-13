@@ -1,14 +1,16 @@
 Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 82CA0DE074
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 02:01:50 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/3] powerpc/spufs: remove double check for non-negative dentry
-Date: Wed, 13 May 2009 17:58:56 +0200
+Subject: Please pull next branch of cell.git
+Date: Wed, 13 May 2009 18:01:37 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Message-Id: <200905131758.57327.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Jan Blunck <jblunck@suse.de>,
-	Jeremy Kerr <jk@ozlabs.org>
+Message-Id: <200905131801.38243.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,32 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jan Blunck <jblunck@suse.de>
+Hi Ben,
 
-This patch removes an unnecessary double check if the dentry returned by
-lookup_create() is actually non-negative. Since lookup_create() itself returns
-an error in this case just remove the check.
+I have three small fixes for Cell that I'd like you to
+add to your powerpc tree.
 
-Signed-off-by: Jan Blunck <jblunck@suse.de>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+git pull git.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git next
+
+The first two patches might still be good to have in 2.6.30,
+the patch from Jan is just a cleanup for 2.6.31.
+
+Thanks,
+
+	Arnd <><
 ---
+
+commit 2de7d2f19196445eecc89e161a6ae0a3e3f272b9
+Author: Jan Blunck <jblunck@suse.de>
+
+    powerpc/spufs: remove double check for non-negative dentry
+
  arch/powerpc/platforms/cell/spufs/inode.c |    4 ----
  1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index 706eb5c..36b6700 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -631,10 +631,6 @@ long spufs_create(struct nameidata *nd, unsigned int flags, mode_t mode,
- 	if (IS_ERR(dentry))
- 		goto out_dir;
- 
--	ret = -EEXIST;
--	if (dentry->d_inode)
--		goto out_dput;
--
- 	mode &= ~current_umask();
- 
- 	if (flags & SPU_CREATE_GANG)
--- 
-1.5.6.3
+commit f1eaf5e7b1b0c5140e4b730d81b966cd37ff2245
+Author: Benjamin Krill <ben@codiert.org>
+
+    serial/nwpserial: fix wrong register read address and add interrupt acknowledge.
+
+ drivers/serial/nwpserial.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+commit f0cbc66cf73524e0c97957bc909d263810c4f339
+Author: Gerhard Stenzel <stenzel@de.ibm.com>
+
+    powerpc/cell: make ptcal more reliable
+
+ arch/powerpc/platforms/cell/ras.c |   17 ++++++++++++++---
+ 1 files changed, 14 insertions(+), 3 deletions(-)
