@@ -1,30 +1,16 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3FB80DDFE4
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 06:56:14 +1000 (EST)
-Date: Wed, 13 May 2009 22:55:38 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: question about softirqs
-In-Reply-To: <20090513195340.GC19296@one.firstfloor.org>
-Message-ID: <alpine.LFD.2.00.0905132252570.3561@localhost.localdomain>
-References: <874ovpmmdq.fsf@basil.nowhere.org> <4A0AC9EC.6070908@nortel.com>
-	<20090513141532.GT19296@one.firstfloor.org>
-	<alpine.LFD.2.00.0905131612180.3561@localhost.localdomain>
-	<87my9hkrmw.fsf@basil.nowhere.org> <4A0AE19D.9040509@nortel.com>
-	<20090513170122.GZ19296@one.firstfloor.org>
-	<4A0B19A9.1090206@nortel.com>
-	<20090513191354.GB19296@one.firstfloor.org>
-	<4A0B233B.8010105@nortel.com>
-	<20090513195340.GC19296@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Ingo Molnar <mingo@elte.hu>,
-	David Miller <davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTPS id D4FDEDDFFC
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 07:13:13 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: jeff@garzik.org
+Subject: [PATCH] sata_fsl: Fix compile warnings
+Date: Wed, 13 May 2009 16:12:11 -0500
+Message-Id: <1242249131-25014-1-git-send-email-galak@kernel.crashing.org>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,32 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 13 May 2009, Andi Kleen wrote:
-> On Wed, May 13, 2009 at 01:44:59PM -0600, Chris Friesen wrote:
-> > Andi Kleen wrote:
-> > > On Wed, May 13, 2009 at 01:04:09PM -0600, Chris Friesen wrote:
-> > >> Andi Kleen wrote:
-> > >>
-> > >>> network packets are normally processed by the network packet interrupt's
-> > >>> softirq or alternatively in the NAPI poll loop.
-> > >> If we have a high priority task, ksoftirqd may not get a chance to run.
-> > > 
-> > > In this case the next interrupt will also process them. It will just
-> > > go more slowly because interrupts limit the work compared to ksoftirqd.
-> > 
-> > I realize that they will eventually get processed.  My point is that the
-> > documentation (in-kernel, online, and in various books) says that
-> > softirqs will be processed _on the return from a syscall_. 
-> 
-> They are. The documentation is correct. 
+We we build with dma_addr_t as a 64-bit quantity we get:
 
-No, the documentation is wrong for the case that the task, which
-raised the softirq and therefor woke up ksoftirqd, has a higher
-priority than ksoftirqd. In that case the kernel does _NOT_ schedule
-ksoftirqd in the return from syscall path.
+drivers/ata/sata_fsl.c: In function 'sata_fsl_fill_sg':
+drivers/ata/sata_fsl.c:340: warning: format '%x' expects type 'unsigned int', but argument 4 has type 'dma_addr_t'
 
-And that's all what Chris is pointing out.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/ata/sata_fsl.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-Thanks,
-
-	tglx
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index c2e90e1..c7ee52d 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -332,13 +332,14 @@ static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
+ 		dma_addr_t sg_addr = sg_dma_address(sg);
+ 		u32 sg_len = sg_dma_len(sg);
+ 
+-		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%x, sg_len = %d\n",
+-			sg_addr, sg_len);
++		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%llx, sg_len = %d\n",
++			(unsigned long long)sg_addr, sg_len);
+ 
+ 		/* warn if each s/g element is not dword aligned */
+ 		if (sg_addr & 0x03)
+ 			ata_port_printk(qc->ap, KERN_ERR,
+-					"s/g addr unaligned : 0x%x\n", sg_addr);
++					"s/g addr unaligned : 0x%llxx\n", 
++					(unsigned long long)sg_addr);
+ 		if (sg_len & 0x03)
+ 			ata_port_printk(qc->ap, KERN_ERR,
+ 					"s/g len unaligned : 0x%x\n", sg_len);
+-- 
+1.6.0.6
