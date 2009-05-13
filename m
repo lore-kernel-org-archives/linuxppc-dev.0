@@ -1,26 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E12C0DDFBE
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 16:39:08 +1000 (EST)
-Date: Wed, 13 May 2009 16:39:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PowerPC] Next May 8 boot failure: OOPS during ibmveth moduleinit
-Message-Id: <20090513163901.42f1110d.sfr@canb.auug.org.au>
-In-Reply-To: <20090512174451.eeed4126.sfr@canb.auug.org.au>
-References: <20090508180251.f53f204e.sfr@canb.auug.org.au>
-	<4A042B20.4090903@in.ibm.com>
-	<20090508.125722.54378771.davem@davemloft.net>
-	<20090508223332.GA4881@psychotron.englab.brq.redhat.com>
-	<4A085B3D.5000806@in.ibm.com>
-	<20090512170458.39c4ffb7.sfr@canb.auug.org.au>
-	<20090512174451.eeed4126.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__13_May_2009_16_39_01_+1000_WqeK12O6tU83QWoA"
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org, netdev@vger.kernel.org,
-	Jiri Pirko <jpirko@redhat.com>
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 166C7DDFC1
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 16:41:02 +1000 (EST)
+Message-ID: <4A0A683B.5010209@denx.de>
+Date: Wed, 13 May 2009 08:27:07 +0200
+From: Heiko Schocher <hs@denx.de>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash, size
+References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
+In-Reply-To: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,39 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__13_May_2009_16_39_01_+1000_WqeK12O6tU83QWoA
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello Wolfgang,
 
-Hi Dave,
+> The current device tree for the MPC8272ADS assumes a mapping of 32 MB
+> of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
+> the boards, mapped at 0xFF80.0000. When booting an uImage with such a
+> device tree, the kernel crashes because 0xFE00.0000 is not mapped.
 
-On Tue, 12 May 2009 17:44:51 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Tue, 12 May 2009 17:24:02 +1000
-> Subject: [PATCH] net/ibmveth: fix panic in probe
->=20
-> netdev->dev_addr changed from being an array to being a pointer, so we
-> should not take its address for memcpy().
+Wouldn;t it be better, if u-boot fixes the device tree entries?
+I think, u-boot should know, where the flash begins and ends, and
+because this is maybe a dynamic variable for this board, it should
+be better, if u-boot fixes this, so no need for adding a device tree
+for every board variant.
 
-I have applied this to linux-next until you decide what to do with it.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__13_May_2009_16_39_01_+1000_WqeK12O6tU83QWoA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoKawUACgkQjjKRsyhoI8yb5QCeIn6gd4nvVJ1my7iV/BGP0GnZ
-Jf8An3ps24EgleVouCX40HH5hW83QllC
-=tQMf
------END PGP SIGNATURE-----
-
---Signature=_Wed__13_May_2009_16_39_01_+1000_WqeK12O6tU83QWoA--
+bye
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
