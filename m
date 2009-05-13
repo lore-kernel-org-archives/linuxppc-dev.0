@@ -1,21 +1,20 @@
 Return-Path: <pku.leo@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
-	by ozlabs.org (Postfix) with ESMTP id D88AFDDFC5
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 20:28:15 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c2so104424anc.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 03:28:14 -0700 (PDT)
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id AE54EDDFC1
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 20:57:31 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so269052ywt.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 03:57:29 -0700 (PDT)
 MIME-Version: 1.0
 Sender: pku.leo@gmail.com
-In-Reply-To: <1242155174-2513-1-git-send-email-wd@denx.de>
-References: <1242155174-2513-1-git-send-email-wd@denx.de>
-Date: Wed, 13 May 2009 18:28:09 +0800
-Message-ID: <2a27d3730905130328m27743852w2d68a62ebc32ce31@mail.gmail.com>
-Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash size
+In-Reply-To: <1242119872.16400.113.camel@demuxf9c>
+References: <1242119872.16400.113.camel@demuxf9c>
+Date: Wed, 13 May 2009 18:57:28 +0800
+Message-ID: <2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
+Subject: Re: RapidIO - general questions
 From: Li Yang <leoli@freescale.com>
-To: Wolfgang Denk <wd@denx.de>
+To: Jan Neskudla <jan.neskudla.ext@nsn.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 13, 2009 at 3:06 AM, Wolfgang Denk <wd@denx.de> wrote:
-> The current device tree for the MPC8272ADS assumes a mapping of 32 MB
-> of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
-> the boards, mapped at 0xFF80.0000. When booting an uImage with such a
-> device tree, the kernel crashes because 0xFE00.0000 is not mapped.
->
-> Also introduce aliases for serial[01] and ethernet[01].
->
-> Signed-off-by: Wolfgang Denk <wd@denx.de>
-> Cc: Scott Wood <scottwood@freescale.com>
-> cc: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> I am not really sure what the typical flash size on MPC8272ADS boards
-> is. The board I used for testing is marked as "Prototype", so it may
-> not be the release configuration. On the other hand, the manual also
-> says 8 MB, Vitaly Borduk confirms 8 MB on his board, too, and Scott
-> Wood eventually tested only with cuImage which fixes up the localbus
-> mappings, thus eventually concealing the issue.
+cc'ed LKML
 
-The latest reference board I got also has an 8MB SIMM flash module
-shipped in the box.
+On Tue, May 12, 2009 at 5:17 PM, Jan Neskudla <jan.neskudla.ext@nsn.com> wr=
+ote:
+> Hallo
+>
+> we'd likes to use a RapidIO as a general communication bus on our new
+> product, and so I have some questions about general design of Linux RIO
+> subsystem. I did not find any better mailing list for RapidIO
+> discussion.
+>
+> [1] - we'd like to implement following features
+> =C2=A0 =C2=A0* Hot-plug (hot-insert/hot-remove) of devices
+> =C2=A0 =C2=A0* Error handling (port-write packets - configuration, handli=
+ng of
+> them)
+> =C2=A0 =C2=A0* Static ID configuration based on port numbers
+> =C2=A0 =C2=A0* Aux driver - basic driver, for sending messages over diffe=
+rent
+> mboxes, handling ranges of doorbells
+>
+> =C2=A0 =C2=A0Is it here anyone who is working on any improvement, or anyo=
+ne who
+> knows the development plans for RapidIO subsystem?
+>
+
+AFAIK, there is no one currently working on these features for Linux.
+It will be good if you can add these useful features.
+
+> [2] - I have a following problem with a current implementation of
+> loading drivers. The driver probe-function call is based on comparison
+> of VendorID (VID) and DeviceID (DID) only. Thus if I have 3 devices with
+> same DID and VID connected to the same network (bus), the driver is
+> loaded 3times, instead only once for the actual device Master port.
+
+This should be the correct way as you actually have 3 instances of the devi=
+ce.
 
 >
-> I'm posting this as reference in case the 8 MB should turn out to be
-> correct. -- wd
+> Rionet driver solved this by enabling to call initialization function
+> just once, and it expect that this is the Master port.
 
-Although 8MB seems to be the common size used.  It can be very easy
-changed as a pluggable module.  It might be better to make the code
-working for any reasonable flash sizes.
+Rionet is kind of special.  It's not working like a simple device
+driver, but more like a customized protocol stack to support multiple
+ethernet over rio links.
+
+>
+> Is it this correct behavior =C2=A0? It looks to me that RapidIO is handle=
+d
+> like a local bus (like PCI)
+
+This is correct behavior.  All of them are using Linux device/driver
+infrastructure, but rionet is a special device.
 
 - Leo
