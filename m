@@ -1,21 +1,21 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 45FD8DDFCF
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 19:13:40 +1000 (EST)
-Date: Wed, 13 May 2009 11:13:30 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH] leds: Add options to have GPIO LEDs start on or keep
-	their state
-Message-ID: <20090513091330.GA3078@pengutronix.de>
-References: <fa686aa40904172207sc0f923eoefe8fb0a2703d548@mail.gmail.com>
-	<1242167592-14649-1-git-send-email-xyzzy@speakeasy.org>
+Return-Path: <pku.leo@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id D88AFDDFC5
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 20:28:15 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c2so104424anc.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 03:28:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VS++wcV0S1rZb1Fb"
-In-Reply-To: <1242167592-14649-1-git-send-email-xyzzy@speakeasy.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Richard Purdie <rpurdie@rpsys.net>,
-	Sean MacLennan <smaclennan@pikatech.com>
+Sender: pku.leo@gmail.com
+In-Reply-To: <1242155174-2513-1-git-send-email-wd@denx.de>
+References: <1242155174-2513-1-git-send-email-wd@denx.de>
+Date: Wed, 13 May 2009 18:28:09 +0800
+Message-ID: <2a27d3730905130328m27743852w2d68a62ebc32ce31@mail.gmail.com>
+Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash size
+From: Li Yang <leoli@freescale.com>
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, May 13, 2009 at 3:06 AM, Wolfgang Denk <wd@denx.de> wrote:
+> The current device tree for the MPC8272ADS assumes a mapping of 32 MB
+> of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
+> the boards, mapped at 0xFF80.0000. When booting an uImage with such a
+> device tree, the kernel crashes because 0xFE00.0000 is not mapped.
+>
+> Also introduce aliases for serial[01] and ethernet[01].
+>
+> Signed-off-by: Wolfgang Denk <wd@denx.de>
+> Cc: Scott Wood <scottwood@freescale.com>
+> cc: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> I am not really sure what the typical flash size on MPC8272ADS boards
+> is. The board I used for testing is marked as "Prototype", so it may
+> not be the release configuration. On the other hand, the manual also
+> says 8 MB, Vitaly Borduk confirms 8 MB on his board, too, and Scott
+> Wood eventually tested only with cuImage which fixes up the localbus
+> mappings, thus eventually concealing the issue.
 
---VS++wcV0S1rZb1Fb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The latest reference board I got also has an 8MB SIMM flash module
+shipped in the box.
 
-Hello Trent,
+>
+> I'm posting this as reference in case the 8 MB should turn out to be
+> correct. -- wd
 
-> diff --git a/include/linux/leds.h b/include/linux/leds.h
-> index 376fe07..66e7d75 100644
-> --- a/include/linux/leds.h
-> +++ b/include/linux/leds.h
-> @@ -141,9 +141,14 @@ struct gpio_led {
->  	const char *name;
->  	const char *default_trigger;
->  	unsigned 	gpio;
-> -	u8 		active_low : 1;
-> -	u8		retain_state_suspended : 1;
-> +	unsigned	active_low : 1;
-> +	unsigned	retain_state_suspended : 1;
-> +	unsigned	default_state : 2;
-> +	/* default_state should be one of LEDS_GPIO_DEFSTATE_(ON|OFF|KEEP) */
+Although 8MB seems to be the common size used.  It can be very easy
+changed as a pluggable module.  It might be better to make the code
+working for any reasonable flash sizes.
 
-Any specific reason for the change from u8 to unsigned? Could be
-mentioned in the patch description maybe. And what Sean mentioned :)
-
-Other than that:
-
-Acked-by: Wolfram Sang <w.sang@pengutronix.de>
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---VS++wcV0S1rZb1Fb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoKjzoACgkQD27XaX1/VRs9UgCgmo2nP69Og40eX/x736TPEAEd
-uX0An1bx1SkGnS5xL53JI8RmG2+t9/Eq
-=Dtjw
------END PGP SIGNATURE-----
-
---VS++wcV0S1rZb1Fb--
+- Leo
