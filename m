@@ -1,20 +1,25 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id AE54EDDFC1
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 20:57:31 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so269052ywt.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 03:57:29 -0700 (PDT)
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kp.nortel.com (zrtps0kp.nortel.com [47.140.192.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 54E3DDDFCF
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 23:24:16 +1000 (EST)
+Message-ID: <4A0AC9EC.6070908@nortel.com>
+Date: Wed, 13 May 2009 07:23:56 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
 MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <1242119872.16400.113.camel@demuxf9c>
-References: <1242119872.16400.113.camel@demuxf9c>
-Date: Wed, 13 May 2009 18:57:28 +0800
-Message-ID: <2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
-Subject: Re: RapidIO - general questions
-From: Li Yang <leoli@freescale.com>
-To: Jan Neskudla <jan.neskudla.ext@nsn.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: question about softirqs
+References: <18948.63755.279732.294842@cargo.ozlabs.ibm.com>	<20090508.234815.127227651.davem@davemloft.net>	<4A086DB2.8040703@nortel.com>	<20090511.162436.193717082.davem@davemloft.net>	<4A08C62F.1050105@nortel.com>
+	<20090512081237.GA16403@elte.hu>	<4A09933B.8010606@nortel.com>
+	<874ovpmmdq.fsf@basil.nowhere.org>
+In-Reply-To: <874ovpmmdq.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,58 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-cc'ed LKML
+Andi Kleen wrote:
+> "Chris Friesen" <cfriesen@nortel.com> writes:
+> 
+>>One of the reasons I brought up this issue is that there is a lot of
+>>documentation out there that says "softirqs will be processed on return
+>>from a syscall".  The fact that it actually depends on the scheduler
+>>parameters of the task issuing the syscall isn't ever mentioned.
 
-On Tue, May 12, 2009 at 5:17 PM, Jan Neskudla <jan.neskudla.ext@nsn.com> wr=
-ote:
-> Hallo
->
-> we'd likes to use a RapidIO as a general communication bus on our new
-> product, and so I have some questions about general design of Linux RIO
-> subsystem. I did not find any better mailing list for RapidIO
-> discussion.
->
-> [1] - we'd like to implement following features
-> =C2=A0 =C2=A0* Hot-plug (hot-insert/hot-remove) of devices
-> =C2=A0 =C2=A0* Error handling (port-write packets - configuration, handli=
-ng of
-> them)
-> =C2=A0 =C2=A0* Static ID configuration based on port numbers
-> =C2=A0 =C2=A0* Aux driver - basic driver, for sending messages over diffe=
-rent
-> mboxes, handling ranges of doorbells
->
-> =C2=A0 =C2=A0Is it here anyone who is working on any improvement, or anyo=
-ne who
-> knows the development plans for RapidIO subsystem?
->
+> It's not mentioned because it is not currently.
 
-AFAIK, there is no one currently working on these features for Linux.
-It will be good if you can add these useful features.
+Paul Mackerras explained the current behaviour earlier in the thread
+(when it was still on the ppc list).  His explanation agrees with my
+exporation of the code.
 
-> [2] - I have a following problem with a current implementation of
-> loading drivers. The driver probe-function call is based on comparison
-> of VendorID (VID) and DeviceID (DID) only. Thus if I have 3 devices with
-> same DID and VID connected to the same network (bus), the driver is
-> loaded 3times, instead only once for the actual device Master port.
+"If a soft irq is raised in process context, raise_softirq() in
+kernel/softirq.c calls wakeup_softirqd() to make sure that ksoftirqd
+runs soon to process the soft irq.  So what would happen is that we
+would see the TIF_RESCHED_PENDING flag on the current task in the
+syscall exit path and call schedule() which would switch to ksoftirqd
+to process the soft irq (if it hasn't already been processed by that
+stage)."
 
-This should be the correct way as you actually have 3 instances of the devi=
-ce.
+If the current task is of higher priority, ksoftirqd doesn't get a
+chance to run and we don't process softirqs on return from a syscall.
 
->
-> Rionet driver solved this by enabling to call initialization function
-> just once, and it expect that this is the Master port.
-
-Rionet is kind of special.  It's not working like a simple device
-driver, but more like a customized protocol stack to support multiple
-ethernet over rio links.
-
->
-> Is it this correct behavior =C2=A0? It looks to me that RapidIO is handle=
-d
-> like a local bus (like PCI)
-
-This is correct behavior.  All of them are using Linux device/driver
-infrastructure, but rionet is a special device.
-
-- Leo
+Chris
