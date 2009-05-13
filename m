@@ -1,17 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 21C95DDFD5
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 01:17:30 +1000 (EST)
-Message-Id: <E3137750-3D9B-40FF-AB03-7F0999C97C4A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: removing pcibios_fixup_bus
-Date: Wed, 13 May 2009 10:17:25 -0500
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kp.nortel.com (zrtps0kp.nortel.com [47.140.192.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 2C489DDFCF
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 01:31:40 +1000 (EST)
+Message-ID: <4A0AE19D.9040509@nortel.com>
+Date: Wed, 13 May 2009 09:05:01 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: question about softirqs
+References: <18948.63755.279732.294842@cargo.ozlabs.ibm.com>	<20090508.234815.127227651.davem@davemloft.net>	<4A086DB2.8040703@nortel.com>	<20090511.162436.193717082.davem@davemloft.net>	<4A08C62F.1050105@nortel.com>
+	<20090512081237.GA16403@elte.hu>	<4A09933B.8010606@nortel.com>
+	<874ovpmmdq.fsf@basil.nowhere.org>	<4A0AC9EC.6070908@nortel.com>	<20090513141532.GT19296@one.firstfloor.org>	<alpine.LFD.2.00.0905131612180.3561@localhost.localdomain>
+	<87my9hkrmw.fsf@basil.nowhere.org>
+In-Reply-To: <87my9hkrmw.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+	Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben,
+Andi Kleen wrote:
+> Thomas Gleixner <tglx@linutronix.de> writes:
 
-We have:
+>>Err, no. Chris is completely correct:
+>>
+>>        if (!in_interrupt())
+>>		wakeup_softirqd();
+> 
+> Yes you have to wake it up just in case, but it doesn't normally
+> process the data because a normal softirq comes in faster. It's
+> just a safety policy. 
 
-         /* Platform specific bus fixups. This is currently only used
-          * by fsl_pci and I'm hoping to get rid of it at some point
-          */
-         if (ppc_md.pcibios_fixup_bus)
-                 ppc_md.pcibios_fixup_bus(bus);
+What about the scenario I raised earlier, where we have incoming network
+packets, no hardware interrupts coming in other than the timer tick, and
+a high-priority userspace app is spinning on recvmsg() with MSG_DONTWAIT
+set?
 
-I can remove this but would need to replace it with:
+As far as I can tell, in this scenario softirqs may not get processed on
+return from a syscall (contradicting the documentation).  In the worst
+case, they may not get processed until the next timer tick.
 
-         if (bus->self != NULL) {
-                 pci_read_bridge_bases(bus);
-		if (ppc_md.pcibios_fixup_bridge_resources)
-			ppc_md.pcibios_fixup_bridge_resources(bus);
-	}
-
-This is only moving the issue, but its a bit cleaner as the fixup I'm  
-doing is because when we read the BARs on the virtual P2P bridge on  
-our PCIe PHBs we get bogus values back.
-
-Thoughts?
-
-- k
+Chris
