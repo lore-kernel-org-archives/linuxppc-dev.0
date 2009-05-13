@@ -1,19 +1,25 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 166C7DDFC1
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 16:41:02 +1000 (EST)
-Message-ID: <4A0A683B.5010209@denx.de>
-Date: Wed, 13 May 2009 08:27:07 +0200
-From: Heiko Schocher <hs@denx.de>
+Return-Path: <zbr@ioremap.net>
+Received: from tservice.net.ru (matrixpower.ru [195.178.208.66])
+	by ozlabs.org (Postfix) with ESMTP id 831A2DDF9B
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 16:15:01 +1000 (EST)
+Date: Wed, 13 May 2009 09:55:11 +0400
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: question about softirqs
+Message-ID: <20090513055511.GA8529@ioremap.net>
+References: <18948.63755.279732.294842@cargo.ozlabs.ibm.com>
+	<20090508.234815.127227651.davem@davemloft.net>
+	<4A086DB2.8040703@nortel.com>
+	<20090511.162436.193717082.davem@davemloft.net>
+	<4A08C62F.1050105@nortel.com> <20090512081237.GA16403@elte.hu>
+	<1242119578.11251.321.camel@twins>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash, size
-References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
-In-Reply-To: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-Reply-To: hs@denx.de
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1242119578.11251.321.camel@twins>
+Cc: netdev@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Wolfgang,
+Hi.
 
-> The current device tree for the MPC8272ADS assumes a mapping of 32 MB
-> of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
-> the boards, mapped at 0xFF80.0000. When booting an uImage with such a
-> device tree, the kernel crashes because 0xFE00.0000 is not mapped.
+On Tue, May 12, 2009 at 11:12:58AM +0200, Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> Wouldn't the even better solution be to get rid of softirqs
+> all-together?
 
-Wouldn;t it be better, if u-boot fixes the device tree entries?
-I think, u-boot should know, where the flash begins and ends, and
-because this is maybe a dynamic variable for this board, it should
-be better, if u-boot fixes this, so no need for adding a device tree
-for every board variant.
+And move tasklets into some thread context?
 
-bye
-Heiko
+Only if we are ready to fix 7 times rescheduling regressions compared to
+kernel threads (work queue actually). At least that's how tasklet
+behaved compared to work queue 1.5 years ago in the simplest
+and quite naive test where tasklet/work rescheduled iself number of
+times:
+
+http://marc.info/?l=linux-crypto-vger&m=119462472517405&w=2
+
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+	Evgeniy Polyakov
