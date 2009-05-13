@@ -1,29 +1,23 @@
-Return-Path: <andi@firstfloor.org>
-Received: from one.firstfloor.org (one.firstfloor.org [213.235.205.2])
+Return-Path: <kosmo@semihalf.com>
+Received: from semihalf.com (semihalf.com [206.130.101.55])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 122C3DDFCE
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 18:35:05 +1000 (EST)
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: question about softirqs
-From: Andi Kleen <andi@firstfloor.org>
-References: <18948.63755.279732.294842@cargo.ozlabs.ibm.com>
-	<20090508.234815.127227651.davem@davemloft.net>
-	<4A086DB2.8040703@nortel.com>
-	<20090511.162436.193717082.davem@davemloft.net>
-	<4A08C62F.1050105@nortel.com> <20090512081237.GA16403@elte.hu>
-	<4A09933B.8010606@nortel.com>
-Date: Wed, 13 May 2009 10:34:57 +0200
-In-Reply-To: <4A09933B.8010606@nortel.com> (Chris Friesen's message of "Tue,
-	12 May 2009 09:18:19 -0600")
-Message-ID: <874ovpmmdq.fsf@basil.nowhere.org>
+	by ozlabs.org (Postfix) with ESMTPS id 4D03CDDFB4
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2009 19:00:09 +1000 (EST)
+From: Piotr =?iso-8859-2?q?Zi=EAcik?= <kosmo@semihalf.com>
+To: John Rigby <jcrigby@gmail.com>
+Subject: Re: [PATCH 06/12] mpc5121: Added NAND Flash Controller driver.
+Date: Wed, 13 May 2009 10:41:45 +0200
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<1241640919-4650-7-git-send-email-wd@denx.de>
+	<4b73d43f0905072030n1b014dafmea840387ab0f3a6d@mail.gmail.com>
+In-Reply-To: <4b73d43f0905072030n1b014dafmea840387ab0f3a6d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Message-Id: <200905131041.45944.kosmo@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,33 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-"Chris Friesen" <cfriesen@nortel.com> writes:
->
-> One of the reasons I brought up this issue is that there is a lot of
-> documentation out there that says "softirqs will be processed on return
-> from a syscall".  The fact that it actually depends on the scheduler
-> parameters of the task issuing the syscall isn't ever mentioned.
+=46riday 08 May 2009 05:30:15 John Rigby napisa=B3(a):
+> Did you choose to not support hardware ECC so you could use the spare are=
+a?
+> The original driver only supported hardware ECC but unfortuneatly the
+> hardware ECC includes the spare area so the spare area cannot be written
+> separately.
 
-It's not mentioned because it is not currently.
+In short yes. There are fundamental problems which you described. Flash=20
+filesystems expect that ECC is calculated from main area only and writes to=
+=20
+spare area not change it. MPC5121 NAND flash controller calculates ECC from=
+=20
+both areas except few bytes holding ECC. This makes flash filesystems=20
+unusable when we turn on hardware ECC.
 
-However some network TCP RX processing can happen in process context,
-which gives you most of the benefit anyways.
+This could be fixed by disabling spare area usage in flash filesystems but
+this probably requires changes in the MTD/filesystem infrastructure.
 
-> In fact, "Documentation/DocBook/kernel-hacking.tmpl" in the kernel
-> source still has the following:
->
->     Whenever a system call is about to return to userspace, or a
->     hardware interrupt handler exits, any 'software interrupts'
->     which are marked pending (usually by hardware interrupts) are
->     run (<filename>kernel/softirq.c</filename>).
->
-> If anyone is looking at changing this code, it might be good to ensure
-> that at least the kernel docs are updated.
-
-So far the code is not changed in mainline. There have been some
-proposals only.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+=2D-=20
+Best Regards.
+Piotr Zi=EAcik
