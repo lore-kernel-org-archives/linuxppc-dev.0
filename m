@@ -1,21 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.239])
-	by ozlabs.org (Postfix) with ESMTP id 3ADA4DE04E
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 02:11:19 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f9so753451rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 09:11:17 -0700 (PDT)
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 31EFEDE04E
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 02:13:56 +1000 (EST)
+Date: Thu, 14 May 2009 09:13:53 -0700
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Dan Williams <dan.j.williams@intel.com>, Li Yang <leoli@freescale.com>,
+	Zhang Wei <wei.zhang@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: [RFC] Using the DMAEngine API for scatter/gather operations
+Message-ID: <20090514161353.GA4379@ovro.caltech.edu>
 MIME-Version: 1.0
-In-Reply-To: <4A0C40D4.1090508@freescale.com>
-References: <1241560385-26868-1-git-send-email-timur@freescale.com>
-	<fa686aa40905140813l5caf7085r64bce935be0a22d3@mail.gmail.com>
-	<4A0C40D4.1090508@freescale.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 14 May 2009 10:10:57 -0600
-Message-ID: <fa686aa40905140910i194acbd7y34142720874b8299@mail.gmail.com>
-Subject: Re: [PATCH v7] introduce macro spin_event_timeout()
-To: Timur Tabi <timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com, scottwood@freescale.com
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 14, 2009 at 10:03 AM, Timur Tabi <timur@freescale.com> wrote:
-> Grant Likely wrote:
->
->> This version looks good to me. =A0Who's the first user? (I'd like to see
->> that something is ready to use this before merging it)
->
-> I was going to do it the other way around - wait until this patch is merg=
-ed, and then update some code to use it. =A0After all, it's easier to use a=
- macro if it already exists in a header file. :-)
+Hello all.
 
-Heh, I think you miss my meaning.  Of course this patch must be merged
-before any users.  I just want to hold off merging it until I see
-viable patches on the mailing list which depend on it.
+I'm working on a driver for a custom board (based heavily on the
+MPC8349EMDS board) to dump data out of onboard FPGA's. I need to use the
+onboard DMA controller for this, mostly due to data transfer rate and
+timing requirements.
 
-In other words, write your patches which use it and submit the lot as
-a patch series with this patch as the first.  That gives some evidence
-that this macro will actually be used and useful.
+Of course, I'd like to "play nice" with the existing Linux
+infrastructure in my driver, even though I have no plans to submit the
+driver upstream (since it is only useful for our custom board).
 
-g.
+I have been using the DMAEngine API to interact with the DMA controller,
+and it works without any problems. However it seems that it is missing
+one of the major features that is supported by almost all DMA
+controllers: scatter/gather support.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+What I'd really like to do is give the controller a scatterlist and list
+of hardware addresses, and have it set up the transfer. The Freescale
+hardware can handle this, and I could program it by hand to do so, but I
+don't want to invent my own DMA API.
+
+I'm aware that the DMAEngine API was designed to offload memcpy, and
+pretty much nothing else. Is there any chance that such a change would
+be accepted into the mainline kernel? Any opinions on what such an API
+should look like?
+
+Thanks,
+Ira
