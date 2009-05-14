@@ -1,18 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 33FAFDE00C
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 22:59:33 +1000 (EST)
-Message-Id: <1F461318-8C17-4C70-92CD-D6E04E8C19C9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: SDHCI_QUIRK_INVERTED_WRITE_PROTECT and compatiable
-Date: Thu, 14 May 2009 07:57:25 -0500
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Sandeep Gopalpet <sandeep.kumar@freescale.com>
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2DAB8DDFAE
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 23:42:59 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp09.au.ibm.com (8.13.1/8.13.1) with ESMTP id n4EDFik6003891
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 09:15:44 -0400
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4EDgweT438530
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 23:42:58 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n4EDgwXa021783
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 23:42:58 +1000
+Date: Thu, 14 May 2009 19:12:50 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC Patch 0/6] PPC64: Hardware Breakpoint interfaces - ver II
+Message-ID: <20090514134250.GA14229@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Alan Stern <stern@rowland.harvard.edu>, Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, paulus@samba.org,
+	Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton,
+Hi All,
+	Please find a revised patchset that implement hardware breakpoint
+interfaces for PPC64 architecture. The changes over the previous patchset
+posted here: http://ozlabs.org/pipermail/linuxppc-dev/2009-May/071942.html
+are given below.
 
-I'm guessing the following commit is to deal with some FSL ref board  
-specific issue:
+Kindly let me know your comments about the same.
 
-commit c5075a1089e808d8f471ce21b02810cc98ab2692
-Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date:   Tue Mar 17 00:13:54 2009 +0300
+Changelog - ver II
+------------------
+(Ver I: http://ozlabs.org/pipermail/linuxppc-dev/2009-May/071942.html)
 
-     sdhci: Add support for hosts reporting inverted write-protect state
+- Split the monolithic patch into six logical patches
 
-     This patch adds SDHCI_QUIRK_INVERTED_WRITE_PROTECT quirk. When
-     specified, the sdhci driver will invert WP state.
+- Changed the signature of arch_check_va_in_<user><kernel>space functions. They
+  are now marked static.
 
-     p.s. Actually, the quirk is more board-specific than
-          controller-specific.
+- HB_NUM is now called as HBP_NUM (to preserve a consistent short-name
+  convention)
 
---
+- Introduced hw_breakpoint_disable() and changes to kexec code to disable
+  breakpoints before a reboot.
+  
+- Minor changes in ptrace code to use macro-defined constants instead of
+  numbers.
 
-If so I don't think we should unconditionally be setting this flag  
-based on the compatible.  Was this just on the MPC837x RDB boards?   
-Also on the MDS?
+- Introduced a new constant definition INSTRUCTION_LEN in reg.h
 
-- k
+Thanks,
+K.Prasad
