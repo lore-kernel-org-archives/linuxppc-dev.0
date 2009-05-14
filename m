@@ -1,15 +1,16 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 78433DE035
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 16:48:50 +1000 (EST)
-Date: Thu, 14 May 2009 08:48:36 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: [RFC] How to allow selecting mv643xx_eth on Pegasos again
-Message-ID: <20090514064836.GA21486@iram.es>
+Return-Path: <dgaur@cdotd.ernet.in>
+Received: from sandesh.cdotd.ernet.in (sandesh.cdotd.ernet.in [196.1.105.47])
+	by ozlabs.org (Postfix) with ESMTP id B9CADDDFF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 17:11:54 +1000 (EST)
+From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
+To: linuxppc-dev@ozlabs.org,
+	u-boot@lists.denx.de
+Subject: Does U-BOOT (MPC8560) support Micron MT18VDD12872DG
+Date: Thu, 14 May 2009 12:53:14 +0530
+Message-Id: <20090514070132.M24973@cdotd.ernet.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LinuxPPC <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+	charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,47 +20,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 08, 2009 at 11:53:10PM -0600, Matt Sealey wrote:
-> Lennert Buytenhek wrote:
->> On Thu, Jan 08, 2009 at 11:38:33PM -0600, Matt Sealey wrote:
->>
->> On this topic, I sent a patch to linuxppc-dev@ some time ago that moves
->> the mv643xx_eth SRAM window programming code from the Pegasos platform
->> code to the mv643xx_eth driver, and adds a couple of fields to the
->> mv643xx_eth platform data that lets you pass the sram addresses/sizes
->> in.  Since I don't have the hardware I haven't been able to test it,
->> but it would be nice if someone could.
->
-> It seems to work. However it's still static stuff in some platform  
-> driver, which I don't really like. pegasos_eth.c is really a holdover  
-> from the very early days of ppc->powerpc architecture port, where they  
-> insisted that we do detection that way (and fudge it based on host  
-> controller PCI ID)
->
-> The Pegasos device tree is so screwed up, you could never gain the  
-> information you need from it. And times have changed..
+Hi All,
 
-I just tried to compile a very recent kernel for my Pegasoi, and
-I can no more select the MV643XX_ETH driver. The root cause is that
-PPC_MULTIPLATFORM has been removed. There are several possibilities:
+I have a custom board similar to MPC8560ADS board with 1GB DDR SDRAM. The DDR SDRAM Make
+is MT18VDDF12872DG-335D3. In U-BOOT (2009.01) config file I have enabled CONFIG_SPD_EEPROM
+so U-boot configures MPC8560ADS DDR controller with the values read from SPD_EEPROM (i2c
+address 0x51) 
 
-1) remove simply the PPC_MULTIPLATFORM and let it depends on PPC32
+After card reset U-BOOT runs from BOOT Flash and debug prints start coming on SCC1 port
+But after configuring the MPC8560 DDR controller the U-BOOT HANGS when it tries to run
+from RAM locations after relocation from BOOT Flash. 
 
-2) replace PPC_MULTIPLATFORM && PPC32 by 6xx which is apparently the
-   blessed way of doing this. But I dislike a 6xx condition in anything
-   outside arch/powerpc.
+Somewhere I read that it is due to failure of Burst Mode access of RAM. But DDR SDRAM 
+inherently work in Burst Mode only. Moreover U-BBOT  initialized the DDR SDRAM Mode
+config register using SPD EEPROM values . The value indicate that SDRAM is in Burst Mode
 
-3) add a select statement for MV64X60 in CHRP. It will bring in more
-   code and would probably need an OF node for the system controller.
-   I suspect that the mv64x60 pic and i2c are not wired on Pegasos.
+MPC8560 CPU Version is 2.0.2
 
-Pick your poison...
+Please help in understanding the issue here
 
-While at it, I'm also going to remove the last remnants of MV64360
-since it is never selected anywhere (replaced by MV64X60).  
+The U-BOOT Details are
+-----------------------------------------------------------------------------------------
+U-Boot 2009.01 (Apr 27 2009 - 14:17:09)
 
-	Regards,
-	Gabriel
 
-P.S.: this is not sufficient, after this the driver crashes at initialization
-but that's a separate patch, that has to do with the dma mapping interface.
+CPU:   8560, Version: 2.0, (0x80700020)
+Core:  E500, Version: 2.0, (0x80200020)
+Clock Configuration:
+       CPU:660  MHz, CCB:264  MHz,
+       DDR:132  MHz (264 MT/s data rate), LBC:66   MHz
+CPM:   264 MHz
+L1:    D-cache 32 kB enabled
+       I-cache 32 kB enabled
+Board: ADS
+    PCI1: 32 bit, 33 MHz (compiled)
+I2C:   ready
+DRAM:  Initializing
+SDRAM SPD EEPROM
+starting at step 1 (STEP_GET_SPD)
+
+ MEM TYPE 0x7DDR: DDR I rank density = 0x20000000
+mclk_ps = 7580
+i=0, x = 0, lowest_tCKmin_found = 0
+i=1, x = 7500, lowest_tCKmin_found = 0
+i=2, x = 6000, lowest_tCKmin_found = 7500
+i=3, x = 5000, lowest_tCKmin_found = 7500
+lowest_tCKmin_CL = 2
+Computing lowest common DIMM parameters for memctl=0
+using mclk_ps = 7580
+checking common caslat = 3
+CL = 3 ok on DIMM 0 at tCK=7580 ps with its tCKmin_X_ps of 6000
+checking common caslat = 2
+CL = 2 ok on DIMM 0 at tCK=7580 ps with its tCKmin_X_minus_1_ps of 7500
+lowest common SPD-defined CAS latency = 2
+highest common dereated CAS latency = 2
+all DIMMs ECC capable
+Reloading memory controller configuration options for memctl=0
+mclk_ps = 7580 ps
+FSL Memory ctrl cg register computation
+FSLDDR: cs[0]_bnds = 0x0000001f
+FSLDDR: cs[0]_config = 0x80010103
+FSLDDR: cs[0]_config_2 = 0x00000000
+FSLDDR: cs[1]_bnds = 0x0020003f
+FSLDDR: cs[1]_config = 0x80010103
+FSLDDR: cs[1]_config_2 = 0x00000000
+FSLDDR: timing_cfg_3 = 0x00000000
+FSLDDR: timing_cfg_1 = 0x36332422
+FSLDDR: timing_cfg_2 = 0x00006482
+FSLDDR: ddr_sdram_cfg = 0xe2000000
+FSLDDR: ddr_sdram_cfg_2 = 0x20401000
+FSLDDR: ddr_sdram_mode = 0x00000022
+FSLDDR: ddr_sdram_mode_2 = 0x00000000
+FSLDDR: ddr_sdram_interval = 0x04060100
+FSLDDR: timing_cfg_4 = 0x00000000
+FSLDDR: timing_cfg_5 = 0x00000000
+
+...
+...
+Some stack location related prints 
+...
+<hangs> here   <---- checked with emulator its somewhere in RAM but no prints coming
+
+---------------------------------------------------------------------------------------
+The SPD EEROM Data for this Module is given on Micron's website
+
+http://www.micron.com/products/spddetail?part=MT18VDDF12872DG-335D3
+---------------------------------------------------------------------------------------
+
+with warm regards,
+
+Deepak Gaur
