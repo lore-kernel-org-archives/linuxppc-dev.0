@@ -1,16 +1,10 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CDC27DE029
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 13:11:53 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: jeff@garzik.org
-Subject: [PATCH v3] sata_fsl: Fix compile warnings
-Date: Wed, 13 May 2009 22:10:50 -0500
-Message-Id: <1242270650-27945-1-git-send-email-galak@kernel.crashing.org>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <e805665453162bf2eb90b402e41fc7b672fcf639.1242282612.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc/ftrace: Use pr_devel() in ftrace.c
+Date: Thu, 14 May 2009 16:30:24 +1000 (EST)
+Cc: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,40 +14,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We we build with dma_addr_t as a 64-bit quantity we get:
+pr_debug() can now result in code being generated even when #DEBUG
+is not defined. That's not really desirable in the ftrace code
+which we want to be snappy.
 
-drivers/ata/sata_fsl.c: In function 'sata_fsl_fill_sg':
-drivers/ata/sata_fsl.c:340: warning: format '%x' expects type 'unsigned int', but argument 4 has type 'dma_addr_t'
+With CONFIG_DYNAMIC_DEBUG=y:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+size before:
+   text	   data	    bss	    dec	    hex	filename
+   3334	    672	      4	   4010	    faa	arch/powerpc/kernel/ftrace.o
+
+size after:
+   text	   data	    bss	    dec	    hex	filename
+   2616	    360	      4	   2980	    ba4	arch/powerpc/kernel/ftrace.o
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
-* v2: fixed extra 'x'
-* v3: fixed whitespace issue
+ arch/powerpc/kernel/ftrace.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
- drivers/ata/sata_fsl.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index c2e90e1..5edd654 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -332,13 +332,14 @@ static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
- 		dma_addr_t sg_addr = sg_dma_address(sg);
- 		u32 sg_len = sg_dma_len(sg);
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 70e2a73..5b078ee 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -157,7 +157,7 @@ __ftrace_make_nop(struct module *mod,
+ 	 * 0xe8, 0x4c, 0x00, 0x28,    ld      r2,40(r12)
+ 	 */
  
--		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%x, sg_len = %d\n",
--			sg_addr, sg_len);
-+		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%llx, sg_len = %d\n",
-+			(unsigned long long)sg_addr, sg_len);
+-	pr_debug("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
++	pr_devel("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
  
- 		/* warn if each s/g element is not dword aligned */
- 		if (sg_addr & 0x03)
- 			ata_port_printk(qc->ap, KERN_ERR,
--					"s/g addr unaligned : 0x%x\n", sg_addr);
-+					"s/g addr unaligned : 0x%llx\n",
-+					(unsigned long long)sg_addr);
- 		if (sg_len & 0x03)
- 			ata_port_printk(qc->ap, KERN_ERR,
- 					"s/g len unaligned : 0x%x\n", sg_len);
+ 	/* Find where the trampoline jumps to */
+ 	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
+@@ -165,7 +165,7 @@ __ftrace_make_nop(struct module *mod,
+ 		return -EFAULT;
+ 	}
+ 
+-	pr_debug(" %08x %08x", jmp[0], jmp[1]);
++	pr_devel(" %08x %08x", jmp[0], jmp[1]);
+ 
+ 	/* verify that this is what we expect it to be */
+ 	if (((jmp[0] & 0xffff0000) != 0x3d820000) ||
+@@ -181,18 +181,18 @@ __ftrace_make_nop(struct module *mod,
+ 	offset = ((unsigned)((unsigned short)jmp[0]) << 16) +
+ 		(int)((short)jmp[1]);
+ 
+-	pr_debug(" %x ", offset);
++	pr_devel(" %x ", offset);
+ 
+ 	/* get the address this jumps too */
+ 	tramp = mod->arch.toc + offset + 32;
+-	pr_debug("toc: %lx", tramp);
++	pr_devel("toc: %lx", tramp);
+ 
+ 	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
+ 		printk(KERN_ERR "Failed to read %lx\n", tramp);
+ 		return -EFAULT;
+ 	}
+ 
+-	pr_debug(" %08x %08x\n", jmp[0], jmp[1]);
++	pr_devel(" %08x %08x\n", jmp[0], jmp[1]);
+ 
+ 	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
+ 
+@@ -269,7 +269,7 @@ __ftrace_make_nop(struct module *mod,
+ 	 *  0x4e, 0x80, 0x04, 0x20  bctr
+ 	 */
+ 
+-	pr_debug("ip:%lx jumps to %lx", ip, tramp);
++	pr_devel("ip:%lx jumps to %lx", ip, tramp);
+ 
+ 	/* Find where the trampoline jumps to */
+ 	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
+@@ -277,7 +277,7 @@ __ftrace_make_nop(struct module *mod,
+ 		return -EFAULT;
+ 	}
+ 
+-	pr_debug(" %08x %08x ", jmp[0], jmp[1]);
++	pr_devel(" %08x %08x ", jmp[0], jmp[1]);
+ 
+ 	/* verify that this is what we expect it to be */
+ 	if (((jmp[0] & 0xffff0000) != 0x3d600000) ||
+@@ -293,7 +293,7 @@ __ftrace_make_nop(struct module *mod,
+ 	if (tramp & 0x8000)
+ 		tramp -= 0x10000;
+ 
+-	pr_debug(" %lx ", tramp);
++	pr_devel(" %lx ", tramp);
+ 
+ 	if (tramp != addr) {
+ 		printk(KERN_ERR
+@@ -402,7 +402,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	/* ld r2,40(r1) */
+ 	op[1] = 0xe8410028;
+ 
+-	pr_debug("write to %lx\n", rec->ip);
++	pr_devel("write to %lx\n", rec->ip);
+ 
+ 	if (probe_kernel_write((void *)ip, op, MCOUNT_INSN_SIZE * 2))
+ 		return -EPERM;
+@@ -442,7 +442,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 		return -EINVAL;
+ 	}
+ 
+-	pr_debug("write to %lx\n", rec->ip);
++	pr_devel("write to %lx\n", rec->ip);
+ 
+ 	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
+ 		return -EPERM;
 -- 
-1.6.0.6
+1.6.2.1
