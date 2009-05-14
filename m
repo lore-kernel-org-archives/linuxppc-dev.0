@@ -1,18 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BC605DE05D
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 07:00:47 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n4EL0fDF028924
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 16:00:42 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc/fsl: Setup PCI inbound window based on actual
-	amount of memory
-Date: Thu, 14 May 2009 16:00:41 -0500
-Message-Id: <1242334841-16835-1-git-send-email-galak@kernel.crashing.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 04EB6DE01F
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 07:48:24 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n4ELmKlW017236
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 14:48:21 -0700 (MST)
+Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
+	[10.82.121.43])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n4ELmJpd015146
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 16:48:20 -0500 (CDT)
+Date: Thu, 14 May 2009 16:48:19 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash, size
+Message-ID: <20090514214819.GA15549@b07421-ec1.am.freescale.net>
+References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
+	<4A0A683B.5010209@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4A0A683B.5010209@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,218 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Previouslly we just always set the inbound window to 2G.  This was
-broken for systems with >2G.  If a system has >=4G we will need
-SWIOTLB support to handle that case.
+On Wed, May 13, 2009 at 08:27:07AM +0200, Heiko Schocher wrote:
+> Hello Wolfgang,
+> 
+> > The current device tree for the MPC8272ADS assumes a mapping of 32 MB
+> > of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
+> > the boards, mapped at 0xFF80.0000. When booting an uImage with such a
+> > device tree, the kernel crashes because 0xFE00.0000 is not mapped.
+> 
+> Wouldn;t it be better, if u-boot fixes the device tree entries?
 
-We now allocate PCICSRBAR/PEXCSRBAR right below the lowest PCI outbound
-address for MMIO or the 4G boundary (if the lowest PCI address is above
-4G).
+We should proabbly leave out the ranges altogether, and have u-boot
+populate it from the mappings it establishes.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-* Fixed up the warn/err msgs
-* use a idx to keep track of which window we are setting up
+> I think, u-boot should know, where the flash begins and ends, and
+> because this is maybe a dynamic variable for this board, it should
+> be better, if u-boot fixes this, so no need for adding a device tree
+> for every board variant.
 
-- k
+Flash is on a SIMM on this board, and the board manual says it's
+expandable to 32 MiB.  However, I suspect that the current DTS was just
+an error as I based it on a board that had not had its flash SIMM
+modified.  That specific flash SIMM is no longer working (or perhaps just
+got its contents corrupted -- one of these days I may hook up a BDI and
+try to reflash), so I can't go back and check.
 
- arch/powerpc/sysdev/fsl_pci.c |  130 ++++++++++++++++++++++++++++++++++------
- arch/powerpc/sysdev/fsl_pci.h |    6 ++-
- 2 files changed, 115 insertions(+), 21 deletions(-)
+I don't see how current u-boot would accomodate more than 8MiB flash on
+this board (there's some detection in board/freescale/mpc8260ads/flash.c,
+but I don't see any setting of BR0 besides the preliminary value at
+0xff800000).
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index b20171d..0de91c6 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -23,6 +23,8 @@
- #include <linux/string.h>
- #include <linux/init.h>
- #include <linux/bootmem.h>
-+#include <linux/lmb.h>
-+#include <linux/log2.h>
- 
- #include <asm/io.h>
- #include <asm/prom.h>
-@@ -96,7 +98,13 @@ static void __init setup_pci_atmu(struct pci_controller *hose,
- 				  struct resource *rsrc)
- {
- 	struct ccsr_pci __iomem *pci;
--	int i, j, n;
-+	int i, j, n, mem_log, win_idx = 2;
-+	u64 mem, sz, paddr_hi = 0;
-+	u64 paddr_lo = ULLONG_MAX;
-+	u32 pcicsrbar = 0, pcicsrbar_sz;
-+	u32 piwar = PIWAR_EN | PIWAR_PF | PIWAR_TGI_LOCAL |
-+			PIWAR_READ_SNOOP | PIWAR_WRITE_SNOOP;
-+	char *name = hose->dn->full_name;
- 
- 	pr_debug("PCI memory map start 0x%016llx, size 0x%016llx\n",
- 		    (u64)rsrc->start, (u64)rsrc->end - (u64)rsrc->start + 1);
-@@ -117,6 +125,9 @@ static void __init setup_pci_atmu(struct pci_controller *hose,
- 		if (!(hose->mem_resources[i].flags & IORESOURCE_MEM))
- 			continue;
- 
-+		paddr_lo = min(paddr_lo, (u64)hose->mem_resources[i].start);
-+		paddr_hi = max(paddr_hi, (u64)hose->mem_resources[i].end);
-+
- 		n = setup_one_atmu(pci, j, &hose->mem_resources[i],
- 				   hose->pci_mem_offset);
- 
-@@ -147,14 +158,105 @@ static void __init setup_pci_atmu(struct pci_controller *hose,
- 		}
- 	}
- 
--	/* Setup 2G inbound Memory Window @ 1 */
--	out_be32(&pci->piw[2].pitar, 0x00000000);
--	out_be32(&pci->piw[2].piwbar,0x00000000);
--	out_be32(&pci->piw[2].piwar, PIWAR_2G);
-+	/* convert to pci address space */
-+	paddr_hi -= hose->pci_mem_offset;
-+	paddr_lo -= hose->pci_mem_offset;
-+
-+	if (paddr_hi == paddr_lo) {
-+		pr_err("%s: No outbound window space\n", name);
-+		return ;
-+	}
-+
-+	if (paddr_lo == 0) {
-+		pr_err("%s: No space for inbound window\n", name);
-+		return ;
-+	}
-+
-+	/* setup PCSRBAR/PEXCSRBAR */
-+	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, 0xffffffff);
-+	early_read_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, &pcicsrbar_sz);
-+	pcicsrbar_sz = ~pcicsrbar_sz + 1;
-+
-+	if (paddr_hi < (0x100000000ull - pcicsrbar_sz) ||
-+		(paddr_lo > 0x100000000ull))
-+		pcicsrbar = 0x100000000ull - pcicsrbar_sz;
-+	else
-+		pcicsrbar = (paddr_lo - pcicsrbar_sz) & -pcicsrbar_sz;
-+	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, pcicsrbar);
-+
-+	paddr_lo = min(paddr_lo, (u64)pcicsrbar);
- 
--	/* Save the base address and size covered by inbound window mappings */
--	hose->dma_window_base_cur = 0x00000000;
--	hose->dma_window_size = 0x80000000;
-+	pr_info("%s: PCICSRBAR @ 0x%x\n", name, pcicsrbar);
-+
-+	/* Setup inbound mem window */
-+	mem = lmb_end_of_DRAM();
-+	sz = min(mem, paddr_lo);
-+	mem_log = __ilog2_u64(sz);
-+
-+	/* PCIe can overmap inbound & outbound since RX & TX are separated */
-+	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
-+		/* Size window to exact size if power-of-two or one size up */
-+		if ((1ull << mem_log) != mem) {
-+			if ((1ull << mem_log) > mem)
-+				pr_info("%s: Setting PCI inbound window "
-+					"greater than memory size\n", name);
-+			mem_log++;
-+		}
-+
-+		piwar |= (mem_log - 1);
-+
-+		/* Setup inbound memory window */
-+		out_be32(&pci->piw[win_idx].pitar,  0x00000000);
-+		out_be32(&pci->piw[win_idx].piwbar, 0x00000000);
-+		out_be32(&pci->piw[win_idx].piwar,  piwar);
-+		win_idx--;
-+
-+		hose->dma_window_base_cur = 0x00000000;
-+		hose->dma_window_size = (resource_size_t)sz;
-+	} else {
-+		u64 paddr = 0;
-+
-+		/* Setup inbound memory window */
-+		out_be32(&pci->piw[win_idx].pitar,  paddr >> 12);
-+		out_be32(&pci->piw[win_idx].piwbar, paddr >> 12);
-+		out_be32(&pci->piw[win_idx].piwar,  (piwar | (mem_log - 1)));
-+		win_idx--;
-+
-+		paddr += 1ull << mem_log;
-+		sz -= 1ull << mem_log;
-+
-+		if (sz) {
-+			mem_log = __ilog2_u64(sz);
-+			piwar |= (mem_log - 1);
-+
-+			out_be32(&pci->piw[win_idx].pitar,  paddr >> 12);
-+			out_be32(&pci->piw[win_idx].piwbar, paddr >> 12);
-+			out_be32(&pci->piw[win_idx].piwar,  piwar);
-+			win_idx--;
-+
-+			paddr += 1ull << mem_log;
-+		}
-+
-+		hose->dma_window_base_cur = 0x00000000;
-+		hose->dma_window_size = (resource_size_t)paddr;
-+	}
-+
-+	if (hose->dma_window_size < mem) {
-+#ifndef CONFIG_SWIOTLB
-+		pr_err("%s: ERROR: Memory size exceeds PCI ATMU ability to "
-+			"map - enable CONFIG_SWIOTLB to avoid dma errors.\n",
-+			 name);
-+#endif
-+		/* adjusting outbound windows could reclaim space in mem map */
-+		if (paddr_hi < 0xffffffffull)
-+			pr_warning("%s: WARNING: Outbound window cfg leaves "
-+				"gaps in memory map. Adjusting the memory map "
-+				"could reduce unnecessary bounce buffering.\n",
-+				name);
-+
-+		pr_info("%s: DMA window size is 0x%llx\n", name,
-+			(u64)hose->dma_window_size);
-+	}
- 
- 	iounmap(pci);
- }
-@@ -180,16 +282,6 @@ static void __init setup_pci_cmd(struct pci_controller *hose)
- 	}
- }
- 
--static void __init setup_pci_pcsrbar(struct pci_controller *hose)
--{
--#ifdef CONFIG_PCI_MSI
--	phys_addr_t immr_base;
--
--	immr_base = get_immrbase();
--	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, immr_base);
--#endif
--}
--
- void fsl_pcibios_fixup_bus(struct pci_bus *bus)
- {
- 	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
-@@ -273,8 +365,6 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 	/* Setup PEX window registers */
- 	setup_pci_atmu(hose, &rsrc);
- 
--	/* Setup PEXCSRBAR */
--	setup_pci_pcsrbar(hose);
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index 13f30c2..a9d8bbe 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -16,7 +16,11 @@
- 
- #define PCIE_LTSSM	0x0404		/* PCIE Link Training and Status */
- #define PCIE_LTSSM_L0	0x16		/* L0 state */
--#define PIWAR_2G	0xa0f5501e	/* Enable, Prefetch, Local Mem, Snoop R/W, 2G */
-+#define PIWAR_EN		0x80000000	/* Enable */
-+#define PIWAR_PF		0x20000000	/* prefetch */
-+#define PIWAR_TGI_LOCAL		0x00f00000	/* target - local memory */
-+#define PIWAR_READ_SNOOP	0x00050000
-+#define PIWAR_WRITE_SNOOP	0x00005000
- 
- /* PCI/PCI Express outbound window reg */
- struct pci_outbound_window_regs {
--- 
-1.6.0.6
+-Scott
