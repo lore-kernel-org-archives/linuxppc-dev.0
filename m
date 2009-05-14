@@ -1,20 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5E295DE02B
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 02:04:03 +1000 (EST)
-Message-ID: <4A0C40D4.1090508@freescale.com>
-Date: Thu, 14 May 2009 11:03:32 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.239])
+	by ozlabs.org (Postfix) with ESMTP id 3ADA4DE04E
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 02:11:19 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f9so753451rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 09:11:17 -0700 (PDT)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v7] introduce macro spin_event_timeout()
+In-Reply-To: <4A0C40D4.1090508@freescale.com>
 References: <1241560385-26868-1-git-send-email-timur@freescale.com>
 	<fa686aa40905140813l5caf7085r64bce935be0a22d3@mail.gmail.com>
-In-Reply-To: <fa686aa40905140813l5caf7085r64bce935be0a22d3@mail.gmail.com>
+	<4A0C40D4.1090508@freescale.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 14 May 2009 10:10:57 -0600
+Message-ID: <fa686aa40905140910i194acbd7y34142720874b8299@mail.gmail.com>
+Subject: Re: [PATCH v7] introduce macro spin_event_timeout()
+To: Timur Tabi <timur@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com, scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,17 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
+On Thu, May 14, 2009 at 10:03 AM, Timur Tabi <timur@freescale.com> wrote:
+> Grant Likely wrote:
+>
+>> This version looks good to me. =A0Who's the first user? (I'd like to see
+>> that something is ready to use this before merging it)
+>
+> I was going to do it the other way around - wait until this patch is merg=
+ed, and then update some code to use it. =A0After all, it's easier to use a=
+ macro if it already exists in a header file. :-)
 
-> This version looks good to me.  Who's the first user? (I'd like to see
-> that something is ready to use this before merging it)
+Heh, I think you miss my meaning.  Of course this patch must be merged
+before any users.  I just want to hold off merging it until I see
+viable patches on the mailing list which depend on it.
 
-I was going to do it the other way around - wait until this patch is merged, and then update some code to use it.  After all, it's easier to use a macro if it already exists in a header file. :-)
+In other words, write your patches which use it and submit the lot as
+a patch series with this patch as the first.  That gives some evidence
+that this macro will actually be used and useful.
 
-Grepping for "while.*in_be" finds lots of candidates.
+g.
 
-I was originally planning to use this macro in sound/soc/fsl/fsl_ssi.c, but I eliminated the need to poll on a register with commit a4d11fe50c238a7da5225d1399314c3505cbd792 ("ASoC: remove trigger delay in Freescale MPC8610 sound driver").  So now I need to find a new guinea pig.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
