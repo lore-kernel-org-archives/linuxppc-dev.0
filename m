@@ -1,31 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 04EB6DE01F
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 07:48:24 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n4ELmKlW017236
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 14:48:21 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id n4ELmJpd015146
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 16:48:20 -0500 (CDT)
-Date: Thu, 14 May 2009 16:48:19 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash, size
-Message-ID: <20090514214819.GA15549@b07421-ec1.am.freescale.net>
-References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
-	<4A0A683B.5010209@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4A0A683B.5010209@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
-	linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C8F3CDE00A
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 08:42:36 +1000 (EST)
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH V2 1/3] powerpc: Use sg->dma_length in sg_dma_len() macro on
+	32-bit
+Date: Thu, 14 May 2009 17:42:27 -0500
+Message-Id: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
+Cc: fujita.tomonori@lab.ntt.co.jp
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,34 +20,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 13, 2009 at 08:27:07AM +0200, Heiko Schocher wrote:
-> Hello Wolfgang,
-> 
-> > The current device tree for the MPC8272ADS assumes a mapping of 32 MB
-> > of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
-> > the boards, mapped at 0xFF80.0000. When booting an uImage with such a
-> > device tree, the kernel crashes because 0xFE00.0000 is not mapped.
-> 
-> Wouldn;t it be better, if u-boot fixes the device tree entries?
+Currently, the 32-bit code uses sg->length instead of sg->dma_lentgh
+to report sg_dma_len.  However, since the default dma code for 32-bit
+(the dma_direct case) sets dma_length and length to the same thing,
+we should be able to use dma_length there as well.  This gets rid of
+some 32-vs-64-bit ifdefs, and is needed by the swiotlb code which
+actually distinguishes between dma_length and length.
 
-We should proabbly leave out the ranges altogether, and have u-boot
-populate it from the mappings it establishes.
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/scatterlist.h |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
 
-> I think, u-boot should know, where the flash begins and ends, and
-> because this is maybe a dynamic variable for this board, it should
-> be better, if u-boot fixes this, so no need for adding a device tree
-> for every board variant.
-
-Flash is on a SIMM on this board, and the board manual says it's
-expandable to 32 MiB.  However, I suspect that the current DTS was just
-an error as I based it on a board that had not had its flash SIMM
-modified.  That specific flash SIMM is no longer working (or perhaps just
-got its contents corrupted -- one of these days I may hook up a BDI and
-try to reflash), so I can't go back and check.
-
-I don't see how current u-boot would accomodate more than 8MiB flash on
-this board (there's some detection in board/freescale/mpc8260ads/flash.c,
-but I don't see any setting of BR0 besides the preliminary value at
-0xff800000).
-
--Scott
+diff --git a/arch/powerpc/include/asm/scatterlist.h b/arch/powerpc/include/asm/scatterlist.h
+index fcf7d55..912bf59 100644
+--- a/arch/powerpc/include/asm/scatterlist.h
++++ b/arch/powerpc/include/asm/scatterlist.h
+@@ -21,7 +21,7 @@ struct scatterlist {
+ 	unsigned int offset;
+ 	unsigned int length;
+ 
+-	/* For TCE support */
++	/* For TCE or SWIOTLB support */
+ 	dma_addr_t dma_address;
+ 	u32 dma_length;
+ };
+@@ -34,11 +34,7 @@ struct scatterlist {
+  * is 0.
+  */
+ #define sg_dma_address(sg)	((sg)->dma_address)
+-#ifdef __powerpc64__
+ #define sg_dma_len(sg)		((sg)->dma_length)
+-#else
+-#define sg_dma_len(sg)		((sg)->length)
+-#endif
+ 
+ #ifdef __powerpc64__
+ #define ISA_DMA_THRESHOLD	(~0UL)
+-- 
+1.6.0.6
