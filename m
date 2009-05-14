@@ -1,32 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D61ABDE026
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 00:55:43 +1000 (EST)
-Subject: Re: [RFC Patch 6/6] Adapt kexec and samples code to recognise
-	PPC64 hardware breakpoint usage
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <alpine.LRH.2.00.0905141617480.2225@vixen.sonytel.be>
-References: <20090514133312.360702378@prasadkr_t60p.in.ibm.com>
-	<20090514134614.GG14229@in.ibm.com>
-	<alpine.LRH.2.00.0905141557260.2225@vixen.sonytel.be>
-	<1242310317.8608.1.camel@concordia>
-	<alpine.LRH.2.00.0905141617480.2225@vixen.sonytel.be>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-6VbPPiLEI6QCyVCJWgEm"
-Date: Fri, 15 May 2009 00:55:42 +1000
-Message-Id: <1242312942.8608.38.camel@concordia>
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Alan Stern <stern@rowland.harvard.edu>,
-	"K.Prasad" <prasad@linux.vnet.ibm.com>, Roland McGrath <roland@redhat.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 63296DDDF0
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 01:13:55 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so675146ywt.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 08:13:53 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1241560385-26868-1-git-send-email-timur@freescale.com>
+References: <1241560385-26868-1-git-send-email-timur@freescale.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 14 May 2009 09:13:33 -0600
+Message-ID: <fa686aa40905140813l5caf7085r64bce935be0a22d3@mail.gmail.com>
+Subject: Re: [PATCH v7] introduce macro spin_event_timeout()
+To: Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com, scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,79 +23,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, May 5, 2009 at 3:53 PM, Timur Tabi <timur@freescale.com> wrote:
+> The macro spin_event_timeout() takes a condition and timeout value
+> (in microseconds) as parameters. =A0It spins until either the condition i=
+s true
+> or the timeout expires. =A0It returns the result of the condition when th=
+e loop
+> was terminated.
+>
+> This primary purpose of this macro is to poll on a hardware register unti=
+l a
+> status bit changes. =A0The timeout ensures that the loop still terminates=
+ if the
+> bit doesn't change as expected. =A0This macro makes it easier for driver
+> developers to perform this kind of operation properly.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 
---=-6VbPPiLEI6QCyVCJWgEm
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This version looks good to me.  Who's the first user? (I'd like to see
+that something is ready to use this before merging it)
 
-On Thu, 2009-05-14 at 16:18 +0200, Geert Uytterhoeven wrote:
-> On Fri, 15 May 2009, Michael Ellerman wrote:
-> > On Thu, 2009-05-14 at 15:59 +0200, Geert Uytterhoeven wrote:
-> > > On Thu, 14 May 2009, K.Prasad wrote:
-> > > > Modify kexec code to disable DABR registers before a reboot. Adapt =
-the samples
-> > > > code to populate PPC64-arch specific fields.
-> > > >=20
-> > > > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > > > ---
-> > > >  arch/powerpc/kernel/machine_kexec_64.c   |    6=20
-> > > >  samples/hw_breakpoint/data_breakpoint.c  |    4=20
-> > > >=20
-> > > > Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c
-> > > > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > > > --- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/machine_kexec_64.c=
-	2009-05-14 00:17:24.000000000 +0530
-> > > > +++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c	2009=
--05-14 09:48:09.000000000 +0530
-> > > > @@ -24,6 +24,7 @@
-> > > >  #include <asm/sections.h>	/* _end */
-> > > >  #include <asm/prom.h>
-> > > >  #include <asm/smp.h>
-> > > > +#include <asm/hw_breakpoint.h>
-> > > > =20
-> > > >  int default_machine_kexec_prepare(struct kimage *image)
-> > > >  {
-> > > > @@ -214,6 +215,9 @@
-> > > >  	put_cpu();
-> > > > =20
-> > > >  	local_irq_disable();
-> > > > +#ifdef CONFIG_PPC64
-> > >    ^^^^^^^^^^^^^^^^^^^
-> > > > +	hw_breakpoint_disable();
-> > > > +#endif
-> > >    ^^^^^^
-> > >=20
-> > > What about providing a dummy definition of hw_breakpoint_disable()
-> > > in <asm/hw_breakpoint.h> if !CONFIG_PPC64?
-> >=20
-> > That would be good.
-> >=20
-> > What would be better, is to notice that machine_kexec_64.c is only ever
-> > built for 64-bit - hence the name. And so no ifdefs or anything else is
-> > required.
->=20
-> Right ;-)
->=20
-> But that can't be said for other files, like e.g. arch/powerpc/kernel/ptr=
-ace.c.
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Yeah you're right, the rest of this series could use lots of #ifdefs in
-headers love.
+> ---
+>
+> v7: add if-statement to use cpu_relax() if the delay is 0. =A0gcc will op=
+timize
+> out the if-statement if 'delay' is a constant.
+>
+> I'm making this a PowerPC-specific patch because I want to use
+> tb_ticks_per_usec, which does not exist on all other platforms. =A0I don'=
+t want
+> to use jiffies because jiffies works only when interrupts are enabled, an=
+d
+> the resolution may not be fine enough.
+>
+> =A0arch/powerpc/include/asm/delay.h | =A0 32 ++++++++++++++++++++++++++++=
+++++
+> =A01 files changed, 32 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/=
+delay.h
+> index f9200a6..2bde26f 100644
+> --- a/arch/powerpc/include/asm/delay.h
+> +++ b/arch/powerpc/include/asm/delay.h
+> @@ -2,6 +2,8 @@
+> =A0#define _ASM_POWERPC_DELAY_H
+> =A0#ifdef __KERNEL__
+>
+> +#include <asm/time.h>
+> +
+> =A0/*
+> =A0* Copyright 1996, Paul Mackerras.
+> =A0*
+> @@ -30,5 +32,35 @@ extern void udelay(unsigned long usecs);
+> =A0#define mdelay(n) =A0 =A0 =A0udelay((n) * 1000)
+> =A0#endif
+>
+> +/**
+> + * spin_event_timeout - spin until a condition gets true or a timeout el=
+apses
+> + * @condition: a C expression to evalate
+> + * @timeout: timeout, in microseconds
+> + * @delay: the number of microseconds to delay between eache evaluation =
+of
+> + * =A0 =A0 =A0 =A0 @condition
+> + * @rc: the last value of the condition
+> + *
+> + * The process spins until the condition evaluates to true (non-zero) or=
+ the
+> + * timeout elapses. =A0Upon exit, @rc contains the value of the conditio=
+n. This
+> + * allows you to test the condition without incurring any side effects.
+> + *
+> + * This primary purpose of this macro is to poll on a hardware register
+> + * until a status bit changes. =A0The timeout ensures that the loop stil=
+l
+> + * terminates even if the bit never changes. =A0The delay is for devices=
+ that
+> + * need a delay in between successive reads.
+> + *
+> + * gcc will optimize out the if-statement if @delay is a constant.
+> + */
+> +#define spin_event_timeout(condition, timeout, delay, rc) =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 \
+> +{ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 \
+> + =A0 =A0 =A0 unsigned long __loops =3D tb_ticks_per_usec * timeout; =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 unsigned long __start =3D get_tbl(); =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 while (!(rc =3D (condition)) && (tb_ticks_since(__start) <=
+=3D __loops)) \
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (delay) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(delay); =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+\
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cpu_relax(); =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> +}
+> +
+> =A0#endif /* __KERNEL__ */
+> =A0#endif /* _ASM_POWERPC_DELAY_H */
+> --
+> 1.6.0.6
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-cheers
 
---=-6VbPPiLEI6QCyVCJWgEm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkoMMO4ACgkQdSjSd0sB4dK9WACfUfsqtS8ssKOWvYmIFeoLbB8I
-u24An2Cerw5RpMUwbriR455zVbwgr+nP
-=zR7P
------END PGP SIGNATURE-----
-
---=-6VbPPiLEI6QCyVCJWgEm--
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
