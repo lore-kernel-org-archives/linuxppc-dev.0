@@ -1,33 +1,36 @@
 Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AE23DDDE0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 04:52:40 +1000 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
-	by e23smtp08.au.ibm.com (8.13.1/8.13.1) with ESMTP id n4EImR1K026340
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 04:48:27 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n4EIqdTd409628
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 04:52:39 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n4EIqdna020902
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 04:52:39 +1000
-Date: Fri, 15 May 2009 00:22:34 +0530
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0667BDE052
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 05:15:56 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id n4EJFl83030911
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 05:15:47 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4EJFtrO1589470
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 05:15:55 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n4EJFskp025005
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 05:15:55 +1000
+Date: Fri, 15 May 2009 00:45:48 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, paulus@samba.org
-Subject: Re: [RFC] Hardware Breakpoint interfaces implementation for PPC64
-Message-ID: <20090514185234.GB30963@in.ibm.com>
-References: <20090511200355.GA17988@in.ibm.com>
-	<20090512115149.GA1885@yoda.jdub.homelinux.org>
-	<20090512202545.GE6033@in.ibm.com>
-	<20090513025717.GN24338@yookeroo.seuss>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [RFC Patch 6/6] Adapt kexec and samples code to recognise
+	PPC64hardware breakpoint usage
+Message-ID: <20090514191548.GC30963@in.ibm.com>
+References: <20090514133312.360702378@prasadkr_t60p.in.ibm.com>
+	<20090514134614.GG14229@in.ibm.com>
+	<alpine.LRH.2.00.0905141557260.2225@vixen.sonytel.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090513025717.GN24338@yookeroo.seuss>
+In-Reply-To: <alpine.LRH.2.00.0905141557260.2225@vixen.sonytel.be>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, Alan Stern <stern@rowland.harvard.edu>,
+	paulus@samba.org, Roland McGrath <roland@redhat.com>
 Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -38,29 +41,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 13, 2009 at 12:57:17PM +1000, David Gibson wrote:
-> On Wed, May 13, 2009 at 01:55:45AM +0530, K.Prasad wrote:
-> > On Tue, May 12, 2009 at 07:51:49AM -0400, Josh Boyer wrote:
-> > > On Tue, May 12, 2009 at 01:33:55AM +0530, K.Prasad wrote:
-> [snip]
+On Thu, May 14, 2009 at 03:59:45PM +0200, Geert Uytterhoeven wrote:
+> On Thu, 14 May 2009, K.Prasad wrote:
+> > Modify kexec code to disable DABR registers before a reboot. Adapt the samples
+> > code to populate PPC64-arch specific fields.
+> > 
+> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/kernel/machine_kexec_64.c   |    6 
+> >  samples/hw_breakpoint/data_breakpoint.c  |    4 
+> > 
+> > Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c
+> > ===================================================================
+> > --- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/machine_kexec_64.c	2009-05-14 00:17:24.000000000 +0530
+> > +++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c	2009-05-14 09:48:09.000000000 +0530
+> > @@ -24,6 +24,7 @@
+> >  #include <asm/sections.h>	/* _end */
+> >  #include <asm/prom.h>
+> >  #include <asm/smp.h>
+> > +#include <asm/hw_breakpoint.h>
+> >  
+> >  int default_machine_kexec_prepare(struct kimage *image)
+> >  {
+> > @@ -214,6 +215,9 @@
+> >  	put_cpu();
+> >  
+> >  	local_irq_disable();
+> > +#ifdef CONFIG_PPC64
+>    ^^^^^^^^^^^^^^^^^^^
+> > +	hw_breakpoint_disable();
+> > +#endif
+>    ^^^^^^
 > 
-> It seems to me that a kind of minimal requirement for a sensible
-> generic debug interface is that if no processes actually ask to use
-> the debug regs, then we should never touch them in the hardware.  This
-> means that debugging hacks in the kernel can just use the debug regs
-> directly and don't have to go through the interface to avoid having
-> their stuff clobbered on context switch.
-> 
+> What about providing a dummy definition of hw_breakpoint_disable()
+> in <asm/hw_breakpoint.h> if !CONFIG_PPC64?
+>
 
-All that we do additionally for kernel users (when no process is
-currently using the debug regs) is to account for the usage just so that
-any new requests (kernel or user-space) are denied.
-
-> -- 
-> David Gibson			| I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-> 				| _way_ _around_!
-> http://www.ozlabs.org/~dgibson
+Yes, that's a good idea. I will change it.
 
 Thanks,
 K.Prasad
+ 
