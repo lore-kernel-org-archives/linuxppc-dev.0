@@ -1,18 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D1F3ADE0F8
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 00:50:19 +1000 (EST)
-Date: Thu, 14 May 2009 09:47:07 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] sata_fsl: Fix the command description of FSL SATA controller
-Message-ID: <Pine.LNX.4.64.0905140945540.8378@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 705BDDDE32
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 00:54:22 +1000 (EST)
+Subject: Re: [RFC Patch 4/6] Modify process handling code to handle
+	hardware debug registers
+From: Michael Ellerman <michael@ellerman.id.au>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+In-Reply-To: <20090514134528.GE14229@in.ibm.com>
+References: <20090514133312.360702378@prasadkr_t60p.in.ibm.com>
+	<20090514134528.GE14229@in.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-xfOMZLfz0hOGmMeMxkTg"
+Date: Fri, 15 May 2009 00:54:21 +1000
+Message-Id: <1242312861.8608.37.camel@concordia>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, Alan Stern <stern@rowland.harvard.edu>,
+	paulus@samba.org, Roland McGrath <roland@redhat.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,61 +32,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Dave Liu <daveliu@freescale.com>
 
-The bit 11 of command description is reserved bit in Freescale
-SATA controller and needs to be set to '1'.  This is needed to
-make sure the last write from the controller to the buffer
-descriptor is seen before an interrupt is raised.
+--=-xfOMZLfz0hOGmMeMxkTg
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Dave Liu <daveliu@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+On Thu, 2009-05-14 at 19:15 +0530, K.Prasad wrote:
+> plain text document attachment (ppc64_modify_process_handling_04)
 
-Jeff, please pick this up as a bug fix for 2.6.30
+> Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/process.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/process.c
+> +++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/process.c
+> @@ -50,6 +50,7 @@
+>  #include <asm/syscalls.h>
+>  #ifdef CONFIG_PPC64
+>  #include <asm/firmware.h>
+> +#include <asm/hw_breakpoint.h>
+>  #endif
+>  #include <linux/kprobes.h>
+>  #include <linux/kdebug.h>
+> @@ -254,8 +255,10 @@ void do_dabr(struct pt_regs *regs, unsig
+>  			11, SIGSEGV) =3D=3D NOTIFY_STOP)
+>  		return;
+> =20
+> +#ifndef CONFIG_PPC64
+>  	if (debugger_dabr_match(regs))
+>  		return;
+> +#endif
+> =20
+>  	/* Clear the DAC and struct entries.  One shot trigger */
+>  #if defined(CONFIG_BOOKE)
+> @@ -372,8 +375,13 @@ struct task_struct *__switch_to(struct t
+> =20
+>  #endif /* CONFIG_SMP */
+> =20
+> +#ifdef CONFIG_PPC64
+> +		if (unlikely(test_tsk_thread_flag(new, TIF_DEBUG)))
+> +			switch_to_thread_hw_breakpoint(new);
+> +#else
 
- drivers/ata/sata_fsl.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+To avoid all these ifdefs in the code we need something like this in a
+header:
 
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index 5edd654..36b8629 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -205,6 +205,7 @@ struct cmdhdr_tbl_entry {
-  * Description information bitdefs
-  */
- enum {
-+	CMD_DESC_RES = (1 << 11),
- 	VENDOR_SPECIFIC_BIST = (1 << 10),
- 	CMD_DESC_SNOOP_ENABLE = (1 << 9),
- 	FPDMA_QUEUED_CMD = (1 << 8),
-@@ -388,7 +389,7 @@ static void sata_fsl_qc_prep(struct ata_queued_cmd *qc)
- 	void __iomem *hcr_base = host_priv->hcr_base;
- 	unsigned int tag = sata_fsl_tag(qc->tag, hcr_base);
- 	struct command_desc *cd;
--	u32 desc_info = CMD_DESC_SNOOP_ENABLE;
-+	u32 desc_info = CMD_DESC_RES | CMD_DESC_SNOOP_ENABLE;
- 	u32 num_prde = 0;
- 	u32 ttl_dwords = 0;
- 	dma_addr_t cd_paddr;
-@@ -841,7 +842,7 @@ issue_srst:
+static inline int task_uses_debug_regs(struct task_struct *tsk)
+{
+#ifdef CONFIG_PPC64
+	return test_tsk_thread_flag(tsk, TIF_DEBUG);
+#else
+	return 0;
+#endif
+}
 
- 	/* device reset/SRST is a control register update FIS, uses tag0 */
- 	sata_fsl_setup_cmd_hdr_entry(pp, 0,
--				     SRST_CMD | CMD_DESC_SNOOP_ENABLE, 0, 0, 5);
-+		SRST_CMD | CMD_DESC_RES | CMD_DESC_SNOOP_ENABLE, 0, 0, 5);
+> @@ -605,6 +617,9 @@ int copy_thread(unsigned long clone_flag
+>  	struct pt_regs *childregs, *kregs;
+>  	extern void ret_from_fork(void);
+>  	unsigned long sp =3D (unsigned long)task_stack_page(p) + THREAD_SIZE;
+> +#ifdef CONFIG_PPC64
+> +	struct task_struct *tsk =3D current;
+> +#endif
+> =20
+>  	CHECK_FULL_REGS(regs);
+>  	/* Copy registers */
+> @@ -672,6 +687,9 @@ int copy_thread(unsigned long clone_flag
+>  	 * function.
+>   	 */
+>  	kregs->nip =3D *((unsigned long *)ret_from_fork);
+> +
+> +	if (unlikely(test_tsk_thread_flag(tsk, TIF_DEBUG)))
+> +		copy_thread_hw_breakpoint(tsk, p, clone_flags);
 
- 	tf.ctl |= ATA_SRST;	/* setup SRST bit in taskfile control reg */
- 	ata_tf_to_fis(&tf, pmp, 0, cfis);
-@@ -887,7 +888,8 @@ issue_srst:
- 	 * using ATA signature D2H register FIS to the host controller.
- 	 */
+If you just use current here you don't need to define tsk above.
 
--	sata_fsl_setup_cmd_hdr_entry(pp, 0, CMD_DESC_SNOOP_ENABLE, 0, 0, 5);
-+	sata_fsl_setup_cmd_hdr_entry(pp, 0, CMD_DESC_RES | CMD_DESC_SNOOP_ENABLE,
-+				      0, 0, 5);
+cheers
 
- 	tf.ctl &= ~ATA_SRST;	/* 2nd H2D Ctl. register FIS */
- 	ata_tf_to_fis(&tf, pmp, 0, cfis);
--- 
-1.6.0.6
+--=-xfOMZLfz0hOGmMeMxkTg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkoMMJ0ACgkQdSjSd0sB4dKphACfXIOiL5gan2Ctoq+ziZwcOSFJ
+xhAAoLVF3cgZakOuRa5qmJvxlO9HuHcc
+=ia6J
+-----END PGP SIGNATURE-----
+
+--=-xfOMZLfz0hOGmMeMxkTg--
