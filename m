@@ -1,21 +1,25 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <penberg@cs.helsinki.fi>
+Received: from mail.cs.helsinki.fi (courier.cs.helsinki.fi [128.214.9.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D3361DDF84
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 19:58:35 +1000 (EST)
-In-Reply-To: <4A0BDAD6.5020005@doredevelopment.dk>
-References: <4A0BD1DB.4090305@doredevelopment.dk>	<20090514083453.GB3043@pengutronix.de>
-	<4A0BDAD6.5020005@doredevelopment.dk>
-Subject: Re: [PATCH] i2c-mpc: generate START condition after STOP caused
-	by	read i2c_msg
-To: Esben Haabendal <eha@doredevelopment.dk>
-Message-ID: <OF9EE5E055.DDB954D2-ONC12575B6.003636EC-C12575B6.0036CB06@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 14 May 2009 11:58:29 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id 8611EDE036
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 19:59:17 +1000 (EST)
+Subject: Re: Next May 11 : BUG during scsi initialization
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <4A0BEA44.2050908@in.ibm.com>
+References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
+	<4A081002.4050802@in.ibm.com> <20090511115233.GB8112@parisc-linux.org>
+	<4A081437.7000409@in.ibm.com> <20090511122135.GC8112@parisc-linux.org>
+	<20090512045716.GC32535@wotan.suse.de>  <4A0BD6BB.1050600@in.ibm.com>
+	<1242291113.21646.6.camel@penberg-laptop> <4A0BEA44.2050908@in.ibm.com>
+Date: Thu, 14 May 2009 12:59:10 +0300
+Message-Id: <1242295150.21646.10.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Nick Piggin <npiggin@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-next@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Matthew Wilcox <matthew@wil.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,95 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->
-> Wolfram Sang wrote:
-> > On Thu, May 14, 2009 at 10:10:03AM +0200, Esben Haabendal wrote:
-> >
-> >> This fixes MAL (arbitration lost) bug caused by illegal use of
-> >> RSTA (repeated START) after STOP condition generated after last byte
-> >> of reads.
-> >>
-> >>
-> >
-> > Could you elaborate a bit, please? Like an example when the original bug
-> > occured (so I could reproduce easily) and how this patch actually solves
-> > the problem.
-> >
-> Sure. I used the following code to initialize a CS4265 chip:
-> (simplified here for the example)
->
-> static int
-> i2c_init_chip(void)
-> {
->     int err=0;
->     char write_dac_control_1[] = { 0x03, chip->regs.dac_control_1 };
->     char seek_chip_id[] = { 0x01 };
->     char write_power_control[] = { 0x02, chip->regs.power_control };
->     struct i2c_msg cs4265_init_cmds[] = {
->         { chip->i2c_addr, 0, 2, write_dac_control_1 },
->         { chip->i2c_addr, 0, 1, seek_chip_id },
->         { chip->i2c_addr, I2C_M_RD, 1, &regs.chip_id },
->         { chip->i2c_addr, 0, 2, write_power_control },
->     };
->
->     err = i2c_transfer(i2c, cs4265_init_cmds,
->                sizeof(cs4265_init_cmds)/sizeof(*cs4265_init_cmds));
->     if (err < 0) {
->         printk(KERN_ERR "i2c_transfer failed: %d\n", err);
->         return err;
->     }
->
->     return 0;
-> }
->
-> I have added some additional debug output and traces something like this:
->
-> [   36.114297] writeccr 80 [MEN]
-> [   36.114324] mpc_xfer: 2 bytes to 4f:W - 1 of 5 messages
-> [   36.120176] next 1 bytes to 4f:W
-> [   36.124159] mpc_write addr=4f len=2
-> [   36.128044] writeccr 80 [MEN]
-> [   36.128062] writeccr f0 [MEN MIEN MSTA MTX] -> START
-> [   36.128219] I2C: SR=a2
-> [   36.131528] I2C: SR=a6
-> [   36.134406] I2C: SR=a2
->
-> [   36.137165] mpc_xfer: 1 bytes to 4f:W - 2 of 5 messages
-> [   36.142802] next 1 bytes to 4f:R
-> [   36.146699] mpc_write addr=4f len=1
-> [   36.150583] writeccr f4 [MEN MIEN MSTA MTX RSTA] -> repeated START
-> [   36.150758] I2C: SR=a2
-> [   36.153851] I2C: SR=a6
->
-> [   36.156236] mpc_xfer: 1 bytes to 4f:R - 3 of 5 messages
-> [   36.162081] next 2 bytes to 4f:W
-> [   36.166062] mpc_read addr=4f len=1
-> [   36.169858] writeccr f4 [MEN MIEN MSTA MTX RSTA] -> repeated START
-> [   36.170031] I2C: SR=a6
-> [   36.172993] writeccr e8 [MEN MIEN MSTA TXAK] -> receive & no ACK
-> [   36.173143] I2C: SR=a7
-> [   36.175511] writeccr c8 [MEN MIEN TXAK] -> STOP
->
-> [   36.175529] mpc_xfer: 2 bytes to 4f:W - 4 of 5 messages
-> [   36.181804] next 2 bytes to 4f:W
-> [   36.185788] mpc_write addr=4f len=2
-> [   36.189672] writeccr f4 [MEN MIEN MSTA MTX RSTA] -> repeated START
-> [   36.189704] I2C: SR=b7
-> [   36.192072] I2C: MAL
-> [   36.195075] i2c_wait(address) error: -5
-> [   36.199311] writeccr 80
->
-> The problem is that after the STOP condition, the following i2c_msg will be
-> attempted with a repeated START, which according to specification will
-> cause a MAL, which also happens.  My MPC8360ERM reads:
->
-> "Attempting a repeated START at the wrong time (or if the bus is owned
-> by another master), results in loss of arbitration."
->
-> Which I know read as it that we must own the I2C bus when using RSTA.
+On Thu, 2009-05-14 at 15:24 +0530, Sachin Sant wrote:
+> Pekka Enberg wrote:
+> > I wasn't able to find your .config in this thread. Can you please post
+> > it?
+> >   
+> Config attached.
 
-I agree with the theory, but isn't the problem here that STOP is performed in
-the middle of this transaction?
-Remove the STOP and RSTA will work I think.
+Thanks! Can you please enable CONFIG_DEBUG_VM, CONFIG_DEBUG_LIST, and
+decrease CONFIG_NR_CPUS=1024 to, say, 32 and retest? Perhaps we'll get a
+some clues to what's going on here.
 
- Jocke
+			Pekka
