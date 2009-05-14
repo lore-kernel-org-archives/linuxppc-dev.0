@@ -1,10 +1,15 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <e805665453162bf2eb90b402e41fc7b672fcf639.1242282612.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] powerpc/ftrace: Use pr_devel() in ftrace.c
-Date: Thu, 14 May 2009 16:30:24 +1000 (EST)
-Cc: rostedt@goodmis.org
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 78433DE035
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 16:48:50 +1000 (EST)
+Date: Thu, 14 May 2009 08:48:36 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: [RFC] How to allow selecting mv643xx_eth on Pegasos again
+Message-ID: <20090514064836.GA21486@iram.es>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: LinuxPPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,113 +19,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pr_debug() can now result in code being generated even when #DEBUG
-is not defined. That's not really desirable in the ftrace code
-which we want to be snappy.
+On Thu, Jan 08, 2009 at 11:53:10PM -0600, Matt Sealey wrote:
+> Lennert Buytenhek wrote:
+>> On Thu, Jan 08, 2009 at 11:38:33PM -0600, Matt Sealey wrote:
+>>
+>> On this topic, I sent a patch to linuxppc-dev@ some time ago that moves
+>> the mv643xx_eth SRAM window programming code from the Pegasos platform
+>> code to the mv643xx_eth driver, and adds a couple of fields to the
+>> mv643xx_eth platform data that lets you pass the sram addresses/sizes
+>> in.  Since I don't have the hardware I haven't been able to test it,
+>> but it would be nice if someone could.
+>
+> It seems to work. However it's still static stuff in some platform  
+> driver, which I don't really like. pegasos_eth.c is really a holdover  
+> from the very early days of ppc->powerpc architecture port, where they  
+> insisted that we do detection that way (and fudge it based on host  
+> controller PCI ID)
+>
+> The Pegasos device tree is so screwed up, you could never gain the  
+> information you need from it. And times have changed..
 
-With CONFIG_DYNAMIC_DEBUG=y:
+I just tried to compile a very recent kernel for my Pegasoi, and
+I can no more select the MV643XX_ETH driver. The root cause is that
+PPC_MULTIPLATFORM has been removed. There are several possibilities:
 
-size before:
-   text	   data	    bss	    dec	    hex	filename
-   3334	    672	      4	   4010	    faa	arch/powerpc/kernel/ftrace.o
+1) remove simply the PPC_MULTIPLATFORM and let it depends on PPC32
 
-size after:
-   text	   data	    bss	    dec	    hex	filename
-   2616	    360	      4	   2980	    ba4	arch/powerpc/kernel/ftrace.o
+2) replace PPC_MULTIPLATFORM && PPC32 by 6xx which is apparently the
+   blessed way of doing this. But I dislike a 6xx condition in anything
+   outside arch/powerpc.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/ftrace.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+3) add a select statement for MV64X60 in CHRP. It will bring in more
+   code and would probably need an OF node for the system controller.
+   I suspect that the mv64x60 pic and i2c are not wired on Pegasos.
 
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 70e2a73..5b078ee 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -157,7 +157,7 @@ __ftrace_make_nop(struct module *mod,
- 	 * 0xe8, 0x4c, 0x00, 0x28,    ld      r2,40(r12)
- 	 */
- 
--	pr_debug("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
-+	pr_devel("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
- 
- 	/* Find where the trampoline jumps to */
- 	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
-@@ -165,7 +165,7 @@ __ftrace_make_nop(struct module *mod,
- 		return -EFAULT;
- 	}
- 
--	pr_debug(" %08x %08x", jmp[0], jmp[1]);
-+	pr_devel(" %08x %08x", jmp[0], jmp[1]);
- 
- 	/* verify that this is what we expect it to be */
- 	if (((jmp[0] & 0xffff0000) != 0x3d820000) ||
-@@ -181,18 +181,18 @@ __ftrace_make_nop(struct module *mod,
- 	offset = ((unsigned)((unsigned short)jmp[0]) << 16) +
- 		(int)((short)jmp[1]);
- 
--	pr_debug(" %x ", offset);
-+	pr_devel(" %x ", offset);
- 
- 	/* get the address this jumps too */
- 	tramp = mod->arch.toc + offset + 32;
--	pr_debug("toc: %lx", tramp);
-+	pr_devel("toc: %lx", tramp);
- 
- 	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
- 		printk(KERN_ERR "Failed to read %lx\n", tramp);
- 		return -EFAULT;
- 	}
- 
--	pr_debug(" %08x %08x\n", jmp[0], jmp[1]);
-+	pr_devel(" %08x %08x\n", jmp[0], jmp[1]);
- 
- 	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
- 
-@@ -269,7 +269,7 @@ __ftrace_make_nop(struct module *mod,
- 	 *  0x4e, 0x80, 0x04, 0x20  bctr
- 	 */
- 
--	pr_debug("ip:%lx jumps to %lx", ip, tramp);
-+	pr_devel("ip:%lx jumps to %lx", ip, tramp);
- 
- 	/* Find where the trampoline jumps to */
- 	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
-@@ -277,7 +277,7 @@ __ftrace_make_nop(struct module *mod,
- 		return -EFAULT;
- 	}
- 
--	pr_debug(" %08x %08x ", jmp[0], jmp[1]);
-+	pr_devel(" %08x %08x ", jmp[0], jmp[1]);
- 
- 	/* verify that this is what we expect it to be */
- 	if (((jmp[0] & 0xffff0000) != 0x3d600000) ||
-@@ -293,7 +293,7 @@ __ftrace_make_nop(struct module *mod,
- 	if (tramp & 0x8000)
- 		tramp -= 0x10000;
- 
--	pr_debug(" %lx ", tramp);
-+	pr_devel(" %lx ", tramp);
- 
- 	if (tramp != addr) {
- 		printk(KERN_ERR
-@@ -402,7 +402,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 	/* ld r2,40(r1) */
- 	op[1] = 0xe8410028;
- 
--	pr_debug("write to %lx\n", rec->ip);
-+	pr_devel("write to %lx\n", rec->ip);
- 
- 	if (probe_kernel_write((void *)ip, op, MCOUNT_INSN_SIZE * 2))
- 		return -EPERM;
-@@ -442,7 +442,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 		return -EINVAL;
- 	}
- 
--	pr_debug("write to %lx\n", rec->ip);
-+	pr_devel("write to %lx\n", rec->ip);
- 
- 	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
- 		return -EPERM;
--- 
-1.6.2.1
+Pick your poison...
+
+While at it, I'm also going to remove the last remnants of MV64360
+since it is never selected anywhere (replaced by MV64X60).  
+
+	Regards,
+	Gabriel
+
+P.S.: this is not sufficient, after this the driver crashes at initialization
+but that's a separate patch, that has to do with the dma mapping interface.
