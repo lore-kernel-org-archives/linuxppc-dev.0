@@ -1,19 +1,34 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id DA426DE060
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 02:55:04 +1000 (EST)
-Date: Thu, 14 May 2009 09:55:02 -0700
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [RFC] Using the DMAEngine API for scatter/gather operations
-Message-ID: <20090514165502.GB4379@ovro.caltech.edu>
-References: <20090514161353.GA4379@ovro.caltech.edu>
-	<1242318437.6797.3.camel@dwillia2-mobl1.amr.corp.intel.com>
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AE23DDDE0F
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 04:52:40 +1000 (EST)
+Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
+	by e23smtp08.au.ibm.com (8.13.1/8.13.1) with ESMTP id n4EImR1K026340
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 04:48:27 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4EIqdTd409628
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 04:52:39 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n4EIqdna020902
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 04:52:39 +1000
+Date: Fri, 15 May 2009 00:22:34 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, paulus@samba.org
+Subject: Re: [RFC] Hardware Breakpoint interfaces implementation for PPC64
+Message-ID: <20090514185234.GB30963@in.ibm.com>
+References: <20090511200355.GA17988@in.ibm.com>
+	<20090512115149.GA1885@yoda.jdub.homelinux.org>
+	<20090512202545.GE6033@in.ibm.com>
+	<20090513025717.GN24338@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1242318437.6797.3.camel@dwillia2-mobl1.amr.corp.intel.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Li Yang <leoli@freescale.com>, Zhang Wei <wei.zhang@freescale.com>
+In-Reply-To: <20090513025717.GN24338@yookeroo.seuss>
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 14, 2009 at 09:27:17AM -0700, Dan Williams wrote:
-> On Thu, 2009-05-14 at 09:13 -0700, Ira Snyder wrote:
-> > Hello all.
-> > 
-> > I'm working on a driver for a custom board (based heavily on the
-> > MPC8349EMDS board) to dump data out of onboard FPGA's. I need to use the
-> > onboard DMA controller for this, mostly due to data transfer rate and
-> > timing requirements.
-> > 
-> > Of course, I'd like to "play nice" with the existing Linux
-> > infrastructure in my driver, even though I have no plans to submit the
-> > driver upstream (since it is only useful for our custom board).
-> > 
-> > I have been using the DMAEngine API to interact with the DMA controller,
-> > and it works without any problems. However it seems that it is missing
-> > one of the major features that is supported by almost all DMA
-> > controllers: scatter/gather support.
-> > 
-> > What I'd really like to do is give the controller a scatterlist and list
-> > of hardware addresses, and have it set up the transfer. The Freescale
-> > hardware can handle this, and I could program it by hand to do so, but I
-> > don't want to invent my own DMA API.
-> > 
-> > I'm aware that the DMAEngine API was designed to offload memcpy, and
-> > pretty much nothing else. Is there any chance that such a change would
-> > be accepted into the mainline kernel? Any opinions on what such an API
-> > should look like?
-> > 
+On Wed, May 13, 2009 at 12:57:17PM +1000, David Gibson wrote:
+> On Wed, May 13, 2009 at 01:55:45AM +0530, K.Prasad wrote:
+> > On Tue, May 12, 2009 at 07:51:49AM -0400, Josh Boyer wrote:
+> > > On Tue, May 12, 2009 at 01:33:55AM +0530, K.Prasad wrote:
+> [snip]
 > 
-> Have you taken a look at the 'slave' interface implemented by dw_dmac
-> and other drivers?  It has the following interface:
-> 
->        struct dma_async_tx_descriptor *(*device_prep_slave_sg)(
->                 struct dma_chan *chan, struct scatterlist *sgl,
->                 unsigned int sg_len, enum dma_data_direction direction,
->                 unsigned long flags);
-> 
-> Haavard uses this interface to do sgl transfers on behalf of the
-> atmel-mci driver (drivers/mmc/host/atmel-mci.c).
+> It seems to me that a kind of minimal requirement for a sensible
+> generic debug interface is that if no processes actually ask to use
+> the debug regs, then we should never touch them in the hardware.  This
+> means that debugging hacks in the kernel can just use the debug regs
+> directly and don't have to go through the interface to avoid having
+> their stuff clobbered on context switch.
 > 
 
-I had started looking at it, though the Freescale device does not
-implement DMA_SLAVE support. I was a bit discouraged by the changelog
-for commit dc0ee643, which says that the interface is for "DMA with
-hardware handshaking", which I do not have. There is not anything
-special about accessing the FPGA's, they appear in the processor's
-memory map and can be read from/written to just like RAM.
+All that we do additionally for kernel users (when no process is
+currently using the debug regs) is to account for the usage just so that
+any new requests (kernel or user-space) are denied.
 
-I'll try studying the dw_dmac implementation and atmel-mci example.
+> -- 
+> David Gibson			| I'll have my music baroque, and my code
+> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+> 				| _way_ _around_!
+> http://www.ozlabs.org/~dgibson
 
-Thanks for the response,
-Ira
+Thanks,
+K.Prasad
