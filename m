@@ -1,18 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id 8A22EDE05F
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 02:46:37 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so703506yxb.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 09:46:36 -0700 (PDT)
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ACBB5DE05A
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 02:52:28 +1000 (EST)
+In-Reply-To: <d2b9ea600905140317u7a4b9a70s574568d79a1ce7cc@mail.gmail.com>
+References: <4A0BD1DB.4090305@doredevelopment.dk>	
+	<20090514083453.GB3043@pengutronix.de>
+	<4A0BDAD6.5020005@doredevelopment.dk>	
+	<OF9EE5E055.DDB954D2-ONC12575B6.003636EC-C12575B6.0036CB06@transmode.se>
+	<d2b9ea600905140317u7a4b9a70s574568d79a1ce7cc@mail.gmail.com>
+Subject: Re: [PATCH] i2c-mpc: generate START condition after STOP caused by
+	read i2c_msg
+To: Esben Haabendal <esbenhaabendal@gmail.com>
+Message-ID: <OF3CD158BA.04CCFBB5-ONC12575B6.005911D5-C12575B6.005CAFC2@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 14 May 2009 18:52:23 +0200
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0905131731260.772@localhost.localdomain>
-References: <Pine.LNX.4.64.0905131731260.772@localhost.localdomain>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 14 May 2009 10:41:16 -0600
-Message-ID: <fa686aa40905140941y742320eep5070ec9c579e9b6@mail.gmail.com>
-Subject: Re: Please pull from 'merge' branch for 2.6.30
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,145 +28,120 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben,
-
-Here are some more commits which got missed in the last merge cycle.
-I've based this on top of Kumar's pull request from yesterday to
-minimize merge commits.
-
-Note: This pull request replaces my previous pull request.  I rebased
-the series since some of the commits in my previous request have
-already been merged.  If you've already pulled my last request then
-you don't need to pull this one.
-
-Cheers,
-g.
-
-The following changes since commit 2e15eedffaae555085071c68cb94b9eeed2245be=
+Esben Haabendal <esbenhaabendal@gmail.com> wrote on 14/05/2009 12:17:48=
 :
-  Kumar Gala (1):
-        powerpc/8xx: Update defconfigs
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6 merge
-
-Grant Likely (2):
-      powerpc/boot: add simpleImage.* to clean-files list
-      powerpc/virtex: Add uImage to the default images list
-
-John Linn (1):
-      powerpc/virtex: Fix duplicate level irq events.
-
- arch/powerpc/boot/Makefile         |    2 +-
- arch/powerpc/platforms/40x/Kconfig |    1 +
- arch/powerpc/platforms/44x/Kconfig |    1 +
- arch/powerpc/sysdev/xilinx_intc.c  |  117 ++++++++++++++++++++++++++++++++=
----
- 4 files changed, 110 insertions(+), 11 deletions(-)
-
-
-On Wed, May 13, 2009 at 4:31 PM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
-> Just added defconfig updates for the normal FSL set of HW.
+> On Thu, May 14, 2009 at 11:58 AM, Joakim Tjernlund
+> <joakim.tjernlund@transmode.se> wrote:
+> >>
+> >> The problem is that after the STOP condition, the following i2c_ms=
+g will be
+> >> attempted with a repeated START, which according to specification =
+will
+> >> cause a MAL, which also happens. =A0My MPC8360ERM reads:
+> >>
+> >> "Attempting a repeated START at the wrong time (or if the bus is o=
+wned
+> >> by another master), results in loss of arbitration."
+> >>
+> >> Which I know read as it that we must own the I2C bus when using RS=
+TA.
+> >
+> > I agree with the theory, but isn't the problem here that STOP is pe=
+rformed in
+> > the middle of this transaction?
+> > Remove the STOP and RSTA will work I think.
 >
-> - k
+> That was also my first idea.
 >
-> Please pull from 'merge' branch of
+> But at least for my CS4265, reads does not work without a STOP follow=
+ing the
+> last byte. I guess I am not the first to experience this, as indicate=
+d
+> by the current
+> i2c-mpc.c implementation.
+> As far as I can understand the I2C specification, a STOP should not b=
+e required
+> after reads, but I am not sure.
 >
-> =A0 =A0 =A0 =A0master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.=
-git merge
+> The cost of the additional STOP is really small.  The only issue I ca=
+n see,
+> is that with the STOP in the midle of an i2c_transfer, the I2C bus is=
+ released.
+> This naturally also happens with the current implementation, so I bel=
+ieve
+> that this patch is a clean improvement.
 >
-> to receive the following updates:
->
-> =A0arch/powerpc/configs/83xx/asp8347_defconfig =A0 =A0 =A0 | =A0104 ++++-
-> =A0arch/powerpc/configs/83xx/mpc8313_rdb_defconfig =A0 | =A0114 ++++--
-> =A0arch/powerpc/configs/83xx/mpc8315_rdb_defconfig =A0 | =A0114 ++++--
-> =A0arch/powerpc/configs/83xx/mpc832x_mds_defconfig =A0 | =A0107 ++++--
-> =A0arch/powerpc/configs/83xx/mpc832x_rdb_defconfig =A0 | =A0113 ++++--
-> =A0arch/powerpc/configs/83xx/mpc834x_itx_defconfig =A0 | =A0108 ++++--
-> =A0arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig | =A0108 ++++--
-> =A0arch/powerpc/configs/83xx/mpc834x_mds_defconfig =A0 | =A0103 ++++-
-> =A0arch/powerpc/configs/83xx/mpc836x_mds_defconfig =A0 | =A0108 ++++--
-> =A0arch/powerpc/configs/83xx/mpc836x_rdk_defconfig =A0 | =A0 96 ++++-
-> =A0arch/powerpc/configs/83xx/mpc837x_mds_defconfig =A0 | =A0104 ++++-
-> =A0arch/powerpc/configs/83xx/mpc837x_rdb_defconfig =A0 | =A0111 ++++--
-> =A0arch/powerpc/configs/83xx/sbc834x_defconfig =A0 =A0 =A0 | =A0 96 ++++-
-> =A0arch/powerpc/configs/85xx/ksi8560_defconfig =A0 =A0 =A0 | =A0 86 +++-
-> =A0arch/powerpc/configs/85xx/mpc8540_ads_defconfig =A0 | =A0 82 +++-
-> =A0arch/powerpc/configs/85xx/mpc8560_ads_defconfig =A0 | =A0 89 +++--
-> =A0arch/powerpc/configs/85xx/mpc85xx_cds_defconfig =A0 | =A0 88 +++--
-> =A0arch/powerpc/configs/85xx/sbc8548_defconfig =A0 =A0 =A0 | =A0 84 +++-
-> =A0arch/powerpc/configs/85xx/sbc8560_defconfig =A0 =A0 =A0 | =A0 83 +++-
-> =A0arch/powerpc/configs/85xx/socrates_defconfig =A0 =A0 =A0| =A0385 +++++=
-+++++++++++------
-> =A0arch/powerpc/configs/85xx/stx_gp3_defconfig =A0 =A0 =A0 | =A0105 ++++-=
--
-> =A0arch/powerpc/configs/85xx/tqm8540_defconfig =A0 =A0 =A0 | =A0100 ++++-
-> =A0arch/powerpc/configs/85xx/tqm8541_defconfig =A0 =A0 =A0 | =A0101 ++++-
-> =A0arch/powerpc/configs/85xx/tqm8548_defconfig =A0 =A0 =A0 | =A0 64 ++-
-> =A0arch/powerpc/configs/85xx/tqm8555_defconfig =A0 =A0 =A0 | =A0101 ++++-
-> =A0arch/powerpc/configs/85xx/tqm8560_defconfig =A0 =A0 =A0 | =A0101 ++++-
-> =A0arch/powerpc/configs/86xx/gef_ppc9a_defconfig =A0 =A0 | =A0 92 ++++-
-> =A0arch/powerpc/configs/86xx/gef_sbc310_defconfig =A0 =A0| =A0 92 ++++-
-> =A0arch/powerpc/configs/86xx/gef_sbc610_defconfig =A0 =A0| =A0122 +++++-
-> =A0arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig =A0| =A0100 ++++-
-> =A0arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig =A0| =A0211 ++++-----=
----
-> =A0arch/powerpc/configs/86xx/sbc8641d_defconfig =A0 =A0 =A0| =A0114 ++++-=
--
-> =A0arch/powerpc/configs/adder875_defconfig =A0 =A0 =A0 =A0 =A0 | =A0 65 +=
-+-
-> =A0arch/powerpc/configs/c2k_defconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0128 +++++--
-> =A0arch/powerpc/configs/ep8248e_defconfig =A0 =A0 =A0 =A0 =A0 =A0| =A0 74=
- +++-
-> =A0arch/powerpc/configs/ep88xc_defconfig =A0 =A0 =A0 =A0 =A0 =A0 | =A0 63=
- ++-
-> =A0arch/powerpc/configs/linkstation_defconfig =A0 =A0 =A0 =A0| =A0 96 +++=
-+-
-> =A0arch/powerpc/configs/mgcoge_defconfig =A0 =A0 =A0 =A0 =A0 =A0 | =A0 74=
- +++-
-> =A0arch/powerpc/configs/mgsuvd_defconfig =A0 =A0 =A0 =A0 =A0 =A0 | =A0 72=
- +++-
-> =A0arch/powerpc/configs/mpc7448_hpc2_defconfig =A0 =A0 =A0 | =A0 91 +++--
-> =A0arch/powerpc/configs/mpc8272_ads_defconfig =A0 =A0 =A0 =A0| =A0 77 +++=
--
-> =A0arch/powerpc/configs/mpc83xx_defconfig =A0 =A0 =A0 =A0 =A0 =A0| =A0115=
- ++++--
-> =A0arch/powerpc/configs/mpc866_ads_defconfig =A0 =A0 =A0 =A0 | =A0 77 +++=
--
-> =A0arch/powerpc/configs/mpc86xx_defconfig =A0 =A0 =A0 =A0 =A0 =A0| =A0211=
- ++++--------
-> =A0arch/powerpc/configs/mpc885_ads_defconfig =A0 =A0 =A0 =A0 | =A0 63 ++-
-> =A0arch/powerpc/configs/pq2fads_defconfig =A0 =A0 =A0 =A0 =A0 =A0| =A0 90=
- +++--
-> =A0arch/powerpc/configs/prpmc2800_defconfig =A0 =A0 =A0 =A0 =A0| =A0120 +=
-++++-
-> =A0arch/powerpc/configs/storcenter_defconfig =A0 =A0 =A0 =A0 | =A0 71 ++-=
--
-> =A0arch/powerpc/sysdev/fsl_soc.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-| =A0 46 --
-> =A049 files changed, 3630 insertions(+), 1489 deletions(-)
->
-> Anton Vorontsov (1):
-> =A0 =A0 =A0powerpc/fsl_soc: Remove mpc83xx_wdt_init, again
->
-> Kumar Gala (5):
-> =A0 =A0 =A0powerpc/83xx: Update defconfigs
-> =A0 =A0 =A0powerpc/85xx: Update defconfigs
-> =A0 =A0 =A0powerpc/86xx: Update defconfigs
-> =A0 =A0 =A0powerpc/embedded6xx: Update defconfigs
-> =A0 =A0 =A0powerpc/8xx: Update defconfigs
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+> Anyways, if someone can figure out how to achive this without STOP,
+> I will be happy (re)test with my hardware setup here.
+
+>From just playing a little, I think the below patch will get you far.
+However, I had to change this too to make it stable:
+static void mpc_i2c_start(struct mpc_i2c *i2c)
+{
+	/* Clear arbitration */
+	writeb(0, i2c->base + MPC_I2C_SR);
+#if 1 // fix, not sure why
+	writeccr(i2c, 0);
+	udelay(5);
+#endif
+	/* Start with MEN */
+	writeccr(i2c, CCR_MEN);
+}
+
+PS.
+   I added back the linuxppc list, let it stay.
 
 
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.=
+c
+index 6c1cddd..d7edcd2 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -189,9 +189,6 @@ static int mpc_write(struct mpc_i2c *i2c, int targe=
+t,
+ 	unsigned timeout =3D i2c->adap.timeout;
+ 	u32 flags =3D restart ? CCR_RSTA : 0;
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-	/* Start with MEN */
+-	if (!restart)
+-		writeccr(i2c, CCR_MEN);
+ 	/* Start as master */
+ 	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
+ 	/* Write target byte */
+@@ -220,9 +217,6 @@ static int mpc_read(struct mpc_i2c *i2c, int target=
+,
+ 	int i, result;
+ 	u32 flags =3D restart ? CCR_RSTA : 0;
+
+-	/* Start with MEN */
+-	if (!restart)
+-		writeccr(i2c, CCR_MEN);
+ 	/* Switch to read - restart */
+ 	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
+ 	/* Write target address byte - this time with the read flag set */
+@@ -241,18 +235,15 @@ static int mpc_read(struct mpc_i2c *i2c, int targ=
+et,
+ 		readb(i2c->base + MPC_I2C_DR);
+ 	}
+
+-	for (i =3D 0; i < length; i++) {
++	for (i =3D length; i ; --i) {
+ 		result =3D i2c_wait(i2c, timeout, 0);
+ 		if (result < 0)
+ 			return result;
+
+-		/* Generate txack on next to last byte */
+-		if (i =3D=3D length - 2)
++		/* Generate txack on next to last byte(s) */
++		if (i <=3D 2)
+ 			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_TXAK);
+-		/* Generate stop on last byte */
+-		if (i =3D=3D length - 1)
+-			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_TXAK);
+-		data[i] =3D readb(i2c->base + MPC_I2C_DR);
++		data[length-i] =3D readb(i2c->base + MPC_I2C_DR);
+ 	}
+
+ 	return length;
+
+=
