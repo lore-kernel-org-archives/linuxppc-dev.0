@@ -1,17 +1,22 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 471E8DE010
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 01:49:52 +1000 (EST)
-Date: Thu, 14 May 2009 11:49:50 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/ftrace: Use pr_devel() in ftrace.c
-In-Reply-To: <e805665453162bf2eb90b402e41fc7b672fcf639.1242282612.git.michael@ellerman.id.au>
-Message-ID: <alpine.DEB.2.00.0905141149130.30591@gandalf.stny.rr.com>
-References: <e805665453162bf2eb90b402e41fc7b672fcf639.1242282612.git.michael@ellerman.id.au>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5E295DE02B
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 02:04:03 +1000 (EST)
+Message-ID: <4A0C40D4.1090508@freescale.com>
+Date: Thu, 14 May 2009 11:03:32 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v7] introduce macro spin_event_timeout()
+References: <1241560385-26868-1-git-send-email-timur@freescale.com>
+	<fa686aa40905140813l5caf7085r64bce935be0a22d3@mail.gmail.com>
+In-Reply-To: <fa686aa40905140813l5caf7085r64bce935be0a22d3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com, scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,125 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Grant Likely wrote:
 
-I'm fine with this patch, but it should go via the PPC tree.
+> This version looks good to me.  Who's the first user? (I'd like to see
+> that something is ready to use this before merging it)
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+I was going to do it the other way around - wait until this patch is merged, and then update some code to use it.  After all, it's easier to use a macro if it already exists in a header file. :-)
 
--- Steve
+Grepping for "while.*in_be" finds lots of candidates.
 
+I was originally planning to use this macro in sound/soc/fsl/fsl_ssi.c, but I eliminated the need to poll on a register with commit a4d11fe50c238a7da5225d1399314c3505cbd792 ("ASoC: remove trigger delay in Freescale MPC8610 sound driver").  So now I need to find a new guinea pig.
 
-On Thu, 14 May 2009, Michael Ellerman wrote:
-
-> pr_debug() can now result in code being generated even when #DEBUG
-> is not defined. That's not really desirable in the ftrace code
-> which we want to be snappy.
-> 
-> With CONFIG_DYNAMIC_DEBUG=y:
-> 
-> size before:
->    text	   data	    bss	    dec	    hex	filename
->    3334	    672	      4	   4010	    faa	arch/powerpc/kernel/ftrace.o
-> 
-> size after:
->    text	   data	    bss	    dec	    hex	filename
->    2616	    360	      4	   2980	    ba4	arch/powerpc/kernel/ftrace.o
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  arch/powerpc/kernel/ftrace.c |   20 ++++++++++----------
->  1 files changed, 10 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-> index 70e2a73..5b078ee 100644
-> --- a/arch/powerpc/kernel/ftrace.c
-> +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -157,7 +157,7 @@ __ftrace_make_nop(struct module *mod,
->  	 * 0xe8, 0x4c, 0x00, 0x28,    ld      r2,40(r12)
->  	 */
->  
-> -	pr_debug("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
-> +	pr_devel("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
->  
->  	/* Find where the trampoline jumps to */
->  	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
-> @@ -165,7 +165,7 @@ __ftrace_make_nop(struct module *mod,
->  		return -EFAULT;
->  	}
->  
-> -	pr_debug(" %08x %08x", jmp[0], jmp[1]);
-> +	pr_devel(" %08x %08x", jmp[0], jmp[1]);
->  
->  	/* verify that this is what we expect it to be */
->  	if (((jmp[0] & 0xffff0000) != 0x3d820000) ||
-> @@ -181,18 +181,18 @@ __ftrace_make_nop(struct module *mod,
->  	offset = ((unsigned)((unsigned short)jmp[0]) << 16) +
->  		(int)((short)jmp[1]);
->  
-> -	pr_debug(" %x ", offset);
-> +	pr_devel(" %x ", offset);
->  
->  	/* get the address this jumps too */
->  	tramp = mod->arch.toc + offset + 32;
-> -	pr_debug("toc: %lx", tramp);
-> +	pr_devel("toc: %lx", tramp);
->  
->  	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
->  		printk(KERN_ERR "Failed to read %lx\n", tramp);
->  		return -EFAULT;
->  	}
->  
-> -	pr_debug(" %08x %08x\n", jmp[0], jmp[1]);
-> +	pr_devel(" %08x %08x\n", jmp[0], jmp[1]);
->  
->  	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
->  
-> @@ -269,7 +269,7 @@ __ftrace_make_nop(struct module *mod,
->  	 *  0x4e, 0x80, 0x04, 0x20  bctr
->  	 */
->  
-> -	pr_debug("ip:%lx jumps to %lx", ip, tramp);
-> +	pr_devel("ip:%lx jumps to %lx", ip, tramp);
->  
->  	/* Find where the trampoline jumps to */
->  	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
-> @@ -277,7 +277,7 @@ __ftrace_make_nop(struct module *mod,
->  		return -EFAULT;
->  	}
->  
-> -	pr_debug(" %08x %08x ", jmp[0], jmp[1]);
-> +	pr_devel(" %08x %08x ", jmp[0], jmp[1]);
->  
->  	/* verify that this is what we expect it to be */
->  	if (((jmp[0] & 0xffff0000) != 0x3d600000) ||
-> @@ -293,7 +293,7 @@ __ftrace_make_nop(struct module *mod,
->  	if (tramp & 0x8000)
->  		tramp -= 0x10000;
->  
-> -	pr_debug(" %lx ", tramp);
-> +	pr_devel(" %lx ", tramp);
->  
->  	if (tramp != addr) {
->  		printk(KERN_ERR
-> @@ -402,7 +402,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
->  	/* ld r2,40(r1) */
->  	op[1] = 0xe8410028;
->  
-> -	pr_debug("write to %lx\n", rec->ip);
-> +	pr_devel("write to %lx\n", rec->ip);
->  
->  	if (probe_kernel_write((void *)ip, op, MCOUNT_INSN_SIZE * 2))
->  		return -EPERM;
-> @@ -442,7 +442,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
->  		return -EINVAL;
->  	}
->  
-> -	pr_debug("write to %lx\n", rec->ip);
-> +	pr_devel("write to %lx\n", rec->ip);
->  
->  	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
->  		return -EPERM;
-> -- 
-> 1.6.2.1
-> 
-> 
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
