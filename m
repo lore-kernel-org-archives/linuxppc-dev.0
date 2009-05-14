@@ -1,19 +1,18 @@
-Return-Path: <stern+4a1a87d0@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id B93D4DE05C
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 06:28:30 +1000 (EST)
-Date: Thu, 14 May 2009 16:21:48 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [RFC Patch 6/6] Adapt kexec and samples code to recognise PPC64
-	hardware breakpoint usage
-In-Reply-To: <20090514134614.GG14229@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0905141621040.4344-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, paulus@samba.org,
-	Roland McGrath <roland@redhat.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BC605DE05D
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 07:00:47 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n4EL0fDF028924
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 16:00:42 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/fsl: Setup PCI inbound window based on actual
+	amount of memory
+Date: Thu, 14 May 2009 16:00:41 -0500
+Message-Id: <1242334841-16835-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +22,218 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 14 May 2009, K.Prasad wrote:
+Previouslly we just always set the inbound window to 2G.  This was
+broken for systems with >2G.  If a system has >=4G we will need
+SWIOTLB support to handle that case.
 
-> Index: linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/samples/hw_breakpoint/data_breakpoint.c	2009-05-14 00:17:24.000000000 +0530
-> +++ linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c	2009-05-14 00:58:06.000000000 +0530
-> @@ -54,6 +54,10 @@
->  	sample_hbp.info.type = HW_BREAKPOINT_WRITE;
->  	sample_hbp.info.len = HW_BREAKPOINT_LEN_4;
->  #endif /* CONFIG_X86 */
-> +#ifdef CONFIG_PPC64
-> +	sample_hbp.info.name = ksym_name;
-> +	sample_hbp.info.type = DABR_DATA_WRITE;
+We now allocate PCICSRBAR/PEXCSRBAR right below the lowest PCI outbound
+address for MMIO or the 4G boundary (if the lowest PCI address is above
+4G).
 
-This should be HW_BREAKPOINT_WRITE, not DABR_DATA_WRITE.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+* Fixed up the warn/err msgs
+* use a idx to keep track of which window we are setting up
 
-Alan Stern
+- k
+
+ arch/powerpc/sysdev/fsl_pci.c |  130 ++++++++++++++++++++++++++++++++++------
+ arch/powerpc/sysdev/fsl_pci.h |    6 ++-
+ 2 files changed, 115 insertions(+), 21 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index b20171d..0de91c6 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -23,6 +23,8 @@
+ #include <linux/string.h>
+ #include <linux/init.h>
+ #include <linux/bootmem.h>
++#include <linux/lmb.h>
++#include <linux/log2.h>
+ 
+ #include <asm/io.h>
+ #include <asm/prom.h>
+@@ -96,7 +98,13 @@ static void __init setup_pci_atmu(struct pci_controller *hose,
+ 				  struct resource *rsrc)
+ {
+ 	struct ccsr_pci __iomem *pci;
+-	int i, j, n;
++	int i, j, n, mem_log, win_idx = 2;
++	u64 mem, sz, paddr_hi = 0;
++	u64 paddr_lo = ULLONG_MAX;
++	u32 pcicsrbar = 0, pcicsrbar_sz;
++	u32 piwar = PIWAR_EN | PIWAR_PF | PIWAR_TGI_LOCAL |
++			PIWAR_READ_SNOOP | PIWAR_WRITE_SNOOP;
++	char *name = hose->dn->full_name;
+ 
+ 	pr_debug("PCI memory map start 0x%016llx, size 0x%016llx\n",
+ 		    (u64)rsrc->start, (u64)rsrc->end - (u64)rsrc->start + 1);
+@@ -117,6 +125,9 @@ static void __init setup_pci_atmu(struct pci_controller *hose,
+ 		if (!(hose->mem_resources[i].flags & IORESOURCE_MEM))
+ 			continue;
+ 
++		paddr_lo = min(paddr_lo, (u64)hose->mem_resources[i].start);
++		paddr_hi = max(paddr_hi, (u64)hose->mem_resources[i].end);
++
+ 		n = setup_one_atmu(pci, j, &hose->mem_resources[i],
+ 				   hose->pci_mem_offset);
+ 
+@@ -147,14 +158,105 @@ static void __init setup_pci_atmu(struct pci_controller *hose,
+ 		}
+ 	}
+ 
+-	/* Setup 2G inbound Memory Window @ 1 */
+-	out_be32(&pci->piw[2].pitar, 0x00000000);
+-	out_be32(&pci->piw[2].piwbar,0x00000000);
+-	out_be32(&pci->piw[2].piwar, PIWAR_2G);
++	/* convert to pci address space */
++	paddr_hi -= hose->pci_mem_offset;
++	paddr_lo -= hose->pci_mem_offset;
++
++	if (paddr_hi == paddr_lo) {
++		pr_err("%s: No outbound window space\n", name);
++		return ;
++	}
++
++	if (paddr_lo == 0) {
++		pr_err("%s: No space for inbound window\n", name);
++		return ;
++	}
++
++	/* setup PCSRBAR/PEXCSRBAR */
++	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, 0xffffffff);
++	early_read_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, &pcicsrbar_sz);
++	pcicsrbar_sz = ~pcicsrbar_sz + 1;
++
++	if (paddr_hi < (0x100000000ull - pcicsrbar_sz) ||
++		(paddr_lo > 0x100000000ull))
++		pcicsrbar = 0x100000000ull - pcicsrbar_sz;
++	else
++		pcicsrbar = (paddr_lo - pcicsrbar_sz) & -pcicsrbar_sz;
++	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, pcicsrbar);
++
++	paddr_lo = min(paddr_lo, (u64)pcicsrbar);
+ 
+-	/* Save the base address and size covered by inbound window mappings */
+-	hose->dma_window_base_cur = 0x00000000;
+-	hose->dma_window_size = 0x80000000;
++	pr_info("%s: PCICSRBAR @ 0x%x\n", name, pcicsrbar);
++
++	/* Setup inbound mem window */
++	mem = lmb_end_of_DRAM();
++	sz = min(mem, paddr_lo);
++	mem_log = __ilog2_u64(sz);
++
++	/* PCIe can overmap inbound & outbound since RX & TX are separated */
++	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
++		/* Size window to exact size if power-of-two or one size up */
++		if ((1ull << mem_log) != mem) {
++			if ((1ull << mem_log) > mem)
++				pr_info("%s: Setting PCI inbound window "
++					"greater than memory size\n", name);
++			mem_log++;
++		}
++
++		piwar |= (mem_log - 1);
++
++		/* Setup inbound memory window */
++		out_be32(&pci->piw[win_idx].pitar,  0x00000000);
++		out_be32(&pci->piw[win_idx].piwbar, 0x00000000);
++		out_be32(&pci->piw[win_idx].piwar,  piwar);
++		win_idx--;
++
++		hose->dma_window_base_cur = 0x00000000;
++		hose->dma_window_size = (resource_size_t)sz;
++	} else {
++		u64 paddr = 0;
++
++		/* Setup inbound memory window */
++		out_be32(&pci->piw[win_idx].pitar,  paddr >> 12);
++		out_be32(&pci->piw[win_idx].piwbar, paddr >> 12);
++		out_be32(&pci->piw[win_idx].piwar,  (piwar | (mem_log - 1)));
++		win_idx--;
++
++		paddr += 1ull << mem_log;
++		sz -= 1ull << mem_log;
++
++		if (sz) {
++			mem_log = __ilog2_u64(sz);
++			piwar |= (mem_log - 1);
++
++			out_be32(&pci->piw[win_idx].pitar,  paddr >> 12);
++			out_be32(&pci->piw[win_idx].piwbar, paddr >> 12);
++			out_be32(&pci->piw[win_idx].piwar,  piwar);
++			win_idx--;
++
++			paddr += 1ull << mem_log;
++		}
++
++		hose->dma_window_base_cur = 0x00000000;
++		hose->dma_window_size = (resource_size_t)paddr;
++	}
++
++	if (hose->dma_window_size < mem) {
++#ifndef CONFIG_SWIOTLB
++		pr_err("%s: ERROR: Memory size exceeds PCI ATMU ability to "
++			"map - enable CONFIG_SWIOTLB to avoid dma errors.\n",
++			 name);
++#endif
++		/* adjusting outbound windows could reclaim space in mem map */
++		if (paddr_hi < 0xffffffffull)
++			pr_warning("%s: WARNING: Outbound window cfg leaves "
++				"gaps in memory map. Adjusting the memory map "
++				"could reduce unnecessary bounce buffering.\n",
++				name);
++
++		pr_info("%s: DMA window size is 0x%llx\n", name,
++			(u64)hose->dma_window_size);
++	}
+ 
+ 	iounmap(pci);
+ }
+@@ -180,16 +282,6 @@ static void __init setup_pci_cmd(struct pci_controller *hose)
+ 	}
+ }
+ 
+-static void __init setup_pci_pcsrbar(struct pci_controller *hose)
+-{
+-#ifdef CONFIG_PCI_MSI
+-	phys_addr_t immr_base;
+-
+-	immr_base = get_immrbase();
+-	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, immr_base);
+-#endif
+-}
+-
+ void fsl_pcibios_fixup_bus(struct pci_bus *bus)
+ {
+ 	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
+@@ -273,8 +365,6 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	/* Setup PEX window registers */
+ 	setup_pci_atmu(hose, &rsrc);
+ 
+-	/* Setup PEXCSRBAR */
+-	setup_pci_pcsrbar(hose);
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index 13f30c2..a9d8bbe 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -16,7 +16,11 @@
+ 
+ #define PCIE_LTSSM	0x0404		/* PCIE Link Training and Status */
+ #define PCIE_LTSSM_L0	0x16		/* L0 state */
+-#define PIWAR_2G	0xa0f5501e	/* Enable, Prefetch, Local Mem, Snoop R/W, 2G */
++#define PIWAR_EN		0x80000000	/* Enable */
++#define PIWAR_PF		0x20000000	/* prefetch */
++#define PIWAR_TGI_LOCAL		0x00f00000	/* target - local memory */
++#define PIWAR_READ_SNOOP	0x00050000
++#define PIWAR_WRITE_SNOOP	0x00005000
+ 
+ /* PCI/PCI Express outbound window reg */
+ struct pci_outbound_window_regs {
+-- 
+1.6.0.6
