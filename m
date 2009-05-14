@@ -1,23 +1,25 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 93145DE027
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 23:59:49 +1000 (EST)
-Date: Thu, 14 May 2009 15:59:45 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [RFC Patch 6/6] Adapt kexec and samples code to recognise PPC64
-	hardware breakpoint usage
-In-Reply-To: <20090514134614.GG14229@in.ibm.com>
-Message-ID: <alpine.LRH.2.00.0905141557260.2225@vixen.sonytel.be>
-References: <20090514133312.360702378@prasadkr_t60p.in.ibm.com>
-	<20090514134614.GG14229@in.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 1319FDE052
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 00:00:54 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so652686yxb.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 07:00:53 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	linuxppc-dev@ozlabs.org, Alan Stern <stern@rowland.harvard.edu>,
-	paulus@samba.org, Roland McGrath <roland@redhat.com>
+In-Reply-To: <200905141438.23348.kosmo@semihalf.com>
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<20090506220954.5D3AF83420E8@gemini.denx.de>
+	<fa686aa40905061539t4fa463aehe56fdb64d053135d@mail.gmail.com>
+	<200905141438.23348.kosmo@semihalf.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 14 May 2009 08:00:33 -0600
+Message-ID: <fa686aa40905140700k3ca28ac0m74c9c161ad538abc@mail.gmail.com>
+Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
+To: =?ISO-8859-2?Q?Piotr_Zi=EAcik?= <kosmo@semihalf.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: Becky Bruce <Becky.Bruce@freescale.com>, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>, John Rigby <jrigby@gmail.com>,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,67 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 14 May 2009, K.Prasad wrote:
-> Modify kexec code to disable DABR registers before a reboot. Adapt the samples
-> code to populate PPC64-arch specific fields.
-> 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/machine_kexec_64.c   |    6 
->  samples/hw_breakpoint/data_breakpoint.c  |    4 
-> 
-> Index: linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/machine_kexec_64.c	2009-05-14 00:17:24.000000000 +0530
-> +++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/machine_kexec_64.c	2009-05-14 09:48:09.000000000 +0530
-> @@ -24,6 +24,7 @@
->  #include <asm/sections.h>	/* _end */
->  #include <asm/prom.h>
->  #include <asm/smp.h>
-> +#include <asm/hw_breakpoint.h>
->  
->  int default_machine_kexec_prepare(struct kimage *image)
->  {
-> @@ -214,6 +215,9 @@
->  	put_cpu();
->  
->  	local_irq_disable();
-> +#ifdef CONFIG_PPC64
-   ^^^^^^^^^^^^^^^^^^^
-> +	hw_breakpoint_disable();
-> +#endif
-   ^^^^^^
+2009/5/14 Piotr Zi=EAcik <kosmo@semihalf.com>:
+> Thursday 07 May 2009 00:39:25 Grant Likely napisa=B3(a):
+>> >> 512x are enabled in the same kernel?
+>> >
+>> > Hm... both architectures look sufficiently different to me that I
+>> > don't see sense in trying such a thing. Do you think that needs to be
+>> > supported?
+>>
+>> Yes! =A0:-) =A0It's not hard to do and it keeps the driver cleaner
+>> (IMNSHO). =A0I don't think it is quite possible at the moment due to
+>> cache coherency issues, but with Becky's recently merged dma ops
+>> changes it should be fixable.
+>
+> Could you elaborate on the cache coherency issues in MPC5121
+> FEC context? Especially how these issues are related to the driver
+> binary compatibility.
+>
+> MPC5121 support was added to drivers/net/fs_enet. MPC52xx uses
+> drivers/net/fec_mpc52xx.c. Do you think that creating one universal
+> driver from these two is now possible? You said that it should be easy,
+> however you also said that cache coherency issues makes this imposible.
 
-What about providing a dummy definition of hw_breakpoint_disable()
-in <asm/hw_breakpoint.h> if !CONFIG_PPC64?
+Not impossible.  Hard.
 
-and if you make it safe to always include <asm/hw_breakpoint.h>, you can
-get rid of the #ifdef in e.g.
+The mpc5200 is a cache coherent part.  Bestcomm memory accesses are
+noticed (snooped) by the cache, and it will flush out cache lines
+appropriately to maintain coherency.
 
---- linux-2.6-tip.hbkpt.orig/arch/powerpc/kernel/ptrace.c
-+++ linux-2.6-tip.hbkpt/arch/powerpc/kernel/ptrace.c
-@@ -37,6 +37,9 @@
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/system.h>
-+#ifdef CONFIG_PPC64
-+#include <asm/hw_breakpoint.h>
-+#endif
+The mpc5121 bus design is non-coherent.  The e300 core is essentially
+the same as on the 5200, and the core can do snooping, but the
+multiport memory controller on the 5121 doesn't support bus snooping
+so the cache is not automatically maintained in a consistent state.
+On this part Linux needs to manually flush the relevant cache lines
+before initiating DMA transfers, and invalidiate them afterwards.
 
-With kind regards,
+All of this doesn't actually affect the driver code at all.  It's all
+handled by the kernel and the DMA apis.  What it does affect is
+multiplatform kernels.  The DMA behaviour is set at compile time, not
+run time, depending on the setting of CONFIG_NON_COHERENT_CACHE (see
+arch/powerpc/platforms/Kconfig.cputype).  A kernel which has it on
+won't run properly on a platform which has it off, and visa-versa.
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
+So, while the MPC5200 and MPC5121 (and MPC83xx) all have the same
+core, it isn't currently possible to build a single kernel which will
+boot on both the MPC5200 and the MPC5121.  The solution (i think) is
+to kill CONFIG_NON_COHERENT_CACHE and have the platform setup code set
+the appropriate dmaops at platform init time.
 
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+Cheers,
+g.
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+>
+> --
+> Best Regards.
+> Piotr Ziecik
+>
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
