@@ -1,14 +1,17 @@
 Return-Path: <Qingtao.Cao@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 5C608DE0DF
+	by ozlabs.org (Postfix) with ESMTP id C08D7DE0F9
 	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 18:43:02 +1000 (EST)
 From: Harry Ciao <qingtao.cao@windriver.com>
 To: bluesmoke-devel@lists.sourceforge.net
-Subject: [v0 PATCH 1/4] EDAC: MPIC Hypertransport IRQ support
-Date: Fri, 15 May 2009 16:43:51 +0800
-Message-Id: <1242377034-7378-2-git-send-email-qingtao.cao@windriver.com>
-In-Reply-To: <1242377034-7378-1-git-send-email-qingtao.cao@windriver.com>
+Subject: [v0 PATCH 4/4] EDAC: INT mode support for AMD8131 driver
+Date: Fri, 15 May 2009 16:43:54 +0800
+Message-Id: <1242377034-7378-5-git-send-email-qingtao.cao@windriver.com>
+In-Reply-To: <1242377034-7378-4-git-send-email-qingtao.cao@windriver.com>
 References: <1242377034-7378-1-git-send-email-qingtao.cao@windriver.com>
+	<1242377034-7378-2-git-send-email-qingtao.cao@windriver.com>
+	<1242377034-7378-3-git-send-email-qingtao.cao@windriver.com>
+	<1242377034-7378-4-git-send-email-qingtao.cao@windriver.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -19,215 +22,370 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Support EDAC INT mode for Hypertransport devices, where southbridge
-NMI Request messages posted through Hypertransport Channel will
-be transferred to a MPIC interrupt instance that latches MPIC INT0
-pin. Also, Hypertransport Hostbridge controller may latch MPIC INT2
-pin for Hypertransport Link Errors.
+Support EDAC INT mode for AMD8131 EDAC driver, which may post upstream
+NMI interrupt request messages that will latch MPIC INT0 pin.
 
-Since multiple Hypertransport southbridges such as AMD8131 & AMD8111
-could post NMI request messages, EDAC core should be responsible
-for maintaining the mapping from hwirq == 0 to a virq.
+Following aspects for this patch have been tested:
+1, module initialization and deletion for NMI mode;
+2, creation and deletion for the mapping between hwirq==0 to a virq;
 
-The edac_mpic_irq.c is inert for EDAC drivers where related hardware
-is not connecting to MPIC, so it should be controlled by CONFIG_MPIC.
+Note, due to the difficulty and complexity to generate a real hardware
+EDAC Errors, below aspects have not been tested yet:
+1, code that controls the generation of the NMI Request Message;
+2, the mapping from the NMI Request Messages to MPIC INT0 pin;
+3, if EDAC isr methods could handle errors correctly.
 
 Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
-diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
-index 07a31cf..62778ee 100644
---- a/drivers/edac/Makefile
-+++ b/drivers/edac/Makefile
-@@ -17,6 +17,10 @@ ifdef CONFIG_PCI
- edac_core-objs	+= edac_pci.o edac_pci_sysfs.o
- endif
- 
-+ifdef CONFIG_MPIC
-+edac_core-objs += edac_mpic_irq.o
-+endif
-+
- obj-$(CONFIG_EDAC_AMD76X)		+= amd76x_edac.o
- obj-$(CONFIG_EDAC_CPC925)		+= cpc925_edac.o
- obj-$(CONFIG_EDAC_I5000)		+= i5000_edac.o
-diff --git a/drivers/edac/edac_mpic_irq.c b/drivers/edac/edac_mpic_irq.c
-new file mode 100644
-index 0000000..26b43c0
---- /dev/null
-+++ b/drivers/edac/edac_mpic_irq.c
-@@ -0,0 +1,145 @@
-+/*
-+ * edac_mpic_irq.c -
-+ * 	For all EDAC Hypertransport southbridge devices(such as AMD8111
-+ * 	or AMD8131) that could post upstream NMI Request Messages, this
-+ * 	driver is used to manage the mapping from the hardware IRQ that
-+ * 	carried in the NMI Request Message to its related virtual IRQ.
-+ *
-+ * 	The EDAC driver for a specific Hypertransport southbridge device
-+ * 	must implement its mach-specific method for edac_mach_get_irq().
-+ *
-+ * Copyright (c) 2009 Wind River Systems, Inc.
-+ *
-+ * Authors:	Cao Qingtao <qingtao.cao@windriver.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ * See the GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
+diff --git a/drivers/edac/amd8131_edac.c b/drivers/edac/amd8131_edac.c
+index b432d60..913be34 100644
+--- a/drivers/edac/amd8131_edac.c
++++ b/drivers/edac/amd8131_edac.c
+@@ -28,6 +28,7 @@
+ #include <linux/bitops.h>
+ #include <linux/edac.h>
+ #include <linux/pci_ids.h>
 +#include <linux/interrupt.h>
-+#include <linux/of.h>
-+#include <linux/edac.h>
+ 
+ #include "edac_core.h"
+ #include "edac_module.h"
+@@ -36,6 +37,11 @@
+ #define AMD8131_EDAC_REVISION	" Ver: 1.0.0 " __DATE__
+ #define AMD8131_EDAC_MOD_STR	"amd8131_edac"
+ 
++static int amd8131_op_state = EDAC_OPSTATE_POLL;
++module_param(amd8131_op_state, int, 0444);
++MODULE_PARM_DESC(amd8131_op_state, "EDAC Error Reporting state: 0=Poll, 1=NMI");
++static int amd8131_nmi_irq;
 +
-+struct irqmap {
-+	int virq;
-+	int count;
-+};
+ /* Wrapper functions for accessing PCI configuration space */
+ static void edac_pci_read_dword(struct pci_dev *dev, int reg, u32 *val32)
+ {
+@@ -139,6 +145,17 @@ static void amd8131_pcix_init(struct amd8131_dev_info *dev_info)
+ 	edac_pci_read_dword(dev, REG_LNK_CTRL_B, &val32);
+ 	val32 |= LNK_CTRL_CRCFEN;
+ 	edac_pci_write_dword(dev, REG_LNK_CTRL_B, val32);
 +
-+static struct irqmap hwirq2virqs[MPIC_HWIRQS] = {
-+	[MPIC_HWIRQ_HT_NMI] = {
-+		.virq = NO_IRQ,
-+		.count = 0,
-+	},
-+	[MPIC_HWIRQ_INTERNAL_ERROR] = {
-+		.virq = NO_IRQ,
-+		.count = 0,
-+	},
-+};
++	/* enable HT NMI messages generation on errors */
++	if (amd8131_op_state == EDAC_OPSTATE_NMI) {
++		edac_pci_read_dword(dev, REG_MISC_I, &val32);
++		val32 &= ~MISC_I_NIOAMODE;
++		edac_pci_write_dword(dev, REG_MISC_I, val32);
 +
-+#ifdef CONFIG_PPC_MAPLE
-+static int edac_maple_get_irq(int hwirq)
-+{
-+	struct device_node *np, *mpic_node = NULL;
-+	int irq = NO_IRQ;
-+
-+	/*
-+	 * Locate MPIC in the device-tree. Note that there is a bug
-+	 * in Maple device-tree where the type of the controller is
-+	 * open-pic and not interrupt-controller
-+	 */
-+	for_each_node_by_type(np, "interrupt-controller") {
-+		if (of_device_is_compatible(np, "open-pic")) {
-+			mpic_node = np;
-+			break;
-+		}
++		edac_pci_read_dword(dev, REG_MISC_II, &val32);
++		val32 |= MISC_II_NMIEN;
++		edac_pci_write_dword(dev, REG_MISC_II, val32);
 +	}
-+
-+	if (mpic_node == NULL) {
-+		for_each_node_by_type(np, "open-pic") {
-+			mpic_node = np;
-+			break;
-+		}
-+	}
-+
-+	if (mpic_node) {
-+		irq = irq_create_of_mapping(mpic_node, &hwirq, 1);
-+		of_node_put(mpic_node);
-+	} else
-+		printk(KERN_ERR "Failed to locate the MPIC DTB node\n");
-+
-+	return irq;
-+}
-+#endif
-+
-+/*
-+ * NOTE:
-+ * The EDAC driver should implement and register its machine-specific
-+ * method to get a virtual IRQ here.
-+ */
-+static int edac_mach_get_irq(int hwirq)
-+{
-+	int virq = NO_IRQ;
-+
-+#ifdef CONFIG_PPC_MAPLE
-+	virq = edac_maple_get_irq(hwirq);
-+#endif
-+
-+	return virq;
-+}
-+
-+int edac_get_mpic_irq(int hwirq)
-+{
-+	struct irqmap *irq;
-+
-+	if ((hwirq != MPIC_HWIRQ_HT_NMI) &&
-+	    (hwirq != MPIC_HWIRQ_INTERNAL_ERROR))
-+		return NO_IRQ;
-+
-+	irq = &hwirq2virqs[hwirq];
-+
-+	if (irq->virq == NO_IRQ) {
-+		if (irq->count == 0) {
-+			irq->virq = edac_mach_get_irq(hwirq);
-+			if (irq->virq != NO_IRQ)
-+				irq->count++;
-+			else
-+				irq->count = -1; /* error */
-+		}
-+	} else
-+		irq->count++;
-+
-+	return irq->virq;
-+}
-+EXPORT_SYMBOL_GPL(edac_get_mpic_irq);
-+
-+void edac_put_mpic_irq(int hwirq)
-+{
-+	struct irqmap *irq;
-+
-+	if ((hwirq != MPIC_HWIRQ_HT_NMI) &&
-+	    (hwirq != MPIC_HWIRQ_INTERNAL_ERROR))
-+		return;
-+
-+	irq = &hwirq2virqs[hwirq];
-+
-+	if (irq->count <= 0)
-+		return;
-+
-+	if (--irq->count == 0) {
-+		irq_dispose_mapping(irq->virq);
-+		irq->virq = NO_IRQ;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(edac_put_mpic_irq);
-diff --git a/include/linux/edac.h b/include/linux/edac.h
-index 7cf92e8..804dbb6 100644
---- a/include/linux/edac.h
-+++ b/include/linux/edac.h
-@@ -38,4 +38,27 @@ static inline void opstate_init(void)
- 	return;
  }
  
+ static void amd8131_pcix_exit(struct amd8131_dev_info *dev_info)
+@@ -165,6 +182,17 @@ static void amd8131_pcix_exit(struct amd8131_dev_info *dev_info)
+ 	edac_pci_read_dword(dev, REG_LNK_CTRL_B, &val32);
+ 	val32 &= ~LNK_CTRL_CRCFEN;
+ 	edac_pci_write_dword(dev, REG_LNK_CTRL_B, val32);
++
++	/* Disable HT NMI messages on errors*/
++	if (amd8131_op_state == EDAC_OPSTATE_NMI) {
++		edac_pci_read_dword(dev, REG_MISC_II, &val32);
++		val32 &= ~MISC_II_NMIEN;
++		edac_pci_write_dword(dev, REG_MISC_II, val32);
++
++		edac_pci_read_dword(dev, REG_MISC_I, &val32);
++		val32 |= MISC_I_NIOAMODE;
++		edac_pci_write_dword(dev, REG_MISC_I, val32);
++	}
+ }
+ 
+ static void amd8131_pcix_check(struct edac_pci_ctl_info *edac_dev)
+@@ -233,12 +261,33 @@ static void amd8131_pcix_check(struct edac_pci_ctl_info *edac_dev)
+ 	}
+ }
+ 
++static irqreturn_t amd8131_pcix_isr(int irq, void *dev_id)
++{
++	struct edac_pci_ctl_info *edac_pci = dev_id;
++	struct amd8131_dev_info *dev_info = edac_pci->pvt_info;
++	struct pci_dev *dev = dev_info->dev;
++	u32 val32;
++
++	/*
++	 * Only a handful of errors in PCI-X Bridge Memory Base-Limit
++	 * Register could trigger NMI interrupt request message.
++	 */
++	edac_pci_read_dword(dev, REG_MEM_LIM, &val32);
++	if (!(val32 & MEM_LIMIT_NMI_MASK))
++		return IRQ_NONE;
++
++	amd8131_pcix_check(edac_pci);
++
++	return IRQ_HANDLED;
++}
++
+ static struct amd8131_info amd8131_chipset = {
+ 	.err_dev = PCI_DEVICE_ID_AMD_8131_APIC,
+ 	.devices = amd8131_devices,
+ 	.init = amd8131_pcix_init,
+ 	.exit = amd8131_pcix_exit,
+ 	.check = amd8131_pcix_check,
++	.isr = amd8131_pcix_isr,
+ };
+ 
+ /*
+@@ -249,6 +298,7 @@ static struct amd8131_info amd8131_chipset = {
+ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ {
+ 	struct amd8131_dev_info *dev_info;
++	int ret = -ENODEV;
+ 
+ 	for (dev_info = amd8131_chipset.devices; dev_info->inst != NO_BRIDGE;
+ 		dev_info++)
+@@ -256,7 +306,7 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 			break;
+ 
+ 	if (dev_info->inst == NO_BRIDGE) /* should never happen */
+-		return -ENODEV;
++		goto out;
+ 
+ 	/*
+ 	 * We can't call pci_get_device() as we are used to do because
+@@ -265,12 +315,11 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	dev_info->dev = pci_dev_get(dev);
+ 
+ 	if (pci_enable_device(dev_info->dev)) {
+-		pci_dev_put(dev_info->dev);
+ 		printk(KERN_ERR "failed to enable:"
+ 			"vendor %x, device %x, devfn %x, name %s\n",
+ 			PCI_VENDOR_ID_AMD, amd8131_chipset.err_dev,
+ 			dev_info->devfn, dev_info->ctl_name);
+-		return -ENODEV;
++		goto err1;
+ 	}
+ 
+ 	/*
+@@ -280,8 +329,10 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	 */
+ 	dev_info->edac_idx = edac_pci_alloc_index();
+ 	dev_info->edac_dev = edac_pci_alloc_ctl_info(0, dev_info->ctl_name);
+-	if (!dev_info->edac_dev)
+-		return -ENOMEM;
++	if (!dev_info->edac_dev) {
++		ret = -ENOMEM;
++		goto err1;
++	}
+ 
+ 	dev_info->edac_dev->pvt_info = dev_info;
+ 	dev_info->edac_dev->dev = &dev_info->dev->dev;
+@@ -289,7 +340,7 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	dev_info->edac_dev->ctl_name = dev_info->ctl_name;
+ 	dev_info->edac_dev->dev_name = dev_name(&dev_info->dev->dev);
+ 
+-	if (edac_op_state == EDAC_OPSTATE_POLL)
++	if (amd8131_op_state == EDAC_OPSTATE_POLL)
+ 		dev_info->edac_dev->edac_check = amd8131_chipset.check;
+ 
+ 	if (amd8131_chipset.init)
+@@ -298,8 +349,8 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	if (edac_pci_add_device(dev_info->edac_dev, dev_info->edac_idx) > 0) {
+ 		printk(KERN_ERR "failed edac_pci_add_device() for %s\n",
+ 			dev_info->ctl_name);
+-		edac_pci_free_ctl_info(dev_info->edac_dev);
+-		return -ENODEV;
++		ret = -ENOMEM;
++		goto err2;
+ 	}
+ 
+ 	printk(KERN_INFO "added one device on AMD8131 "
+@@ -307,7 +358,18 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 		PCI_VENDOR_ID_AMD, amd8131_chipset.err_dev,
+ 		dev_info->devfn, dev_info->ctl_name);
+ 
+-	return 0;
++	ret = 0;
++	goto out;
++
++err2:
++	if (amd8131_chipset.exit)
++		amd8131_chipset.exit(dev_info);
++
++	edac_pci_free_ctl_info(dev_info->edac_dev);
++err1:
++	pci_dev_put(dev_info->dev);
++out:
++	return ret;
+ }
+ 
+ static void amd8131_remove(struct pci_dev *dev)
+@@ -322,14 +384,14 @@ static void amd8131_remove(struct pci_dev *dev)
+ 	if (dev_info->inst == NO_BRIDGE) /* should never happen */
+ 		return;
+ 
++	if (amd8131_chipset.exit)
++		amd8131_chipset.exit(dev_info);
++
+ 	if (dev_info->edac_dev) {
+ 		edac_pci_del_device(dev_info->edac_dev->dev);
+ 		edac_pci_free_ctl_info(dev_info->edac_dev);
+ 	}
+ 
+-	if (amd8131_chipset.exit)
+-		amd8131_chipset.exit(dev_info);
+-
+ 	pci_dev_put(dev_info->dev);
+ }
+ 
+@@ -342,9 +404,7 @@ static const struct pci_device_id amd8131_edac_pci_tbl[] = {
+ 	.class_mask = 0,
+ 	.driver_data = 0,
+ 	},
+-	{
+-	0,
+-	}			/* table is NULL-terminated */
++	{0}	/* table is NULL-terminated */
+ };
+ MODULE_DEVICE_TABLE(pci, amd8131_edac_pci_tbl);
+ 
+@@ -355,20 +415,97 @@ static struct pci_driver amd8131_edac_driver = {
+ 	.id_table = amd8131_edac_pci_tbl,
+ };
+ 
++/*
++ * AMD8131 NMI handler - check PCI-X Bridges to claim any
++ * possible NMI instance.
++ * Southbridge NMI Request messages posted through Hypertransport
++ * Channel will be transferred to a MPIC interrupt instance.
++ *
++ * NOTE: According to AMD8131 data sheet 4.5.7 section,
++ * only a partial of error detections could generate NMI
++ * Upstream Hypertransport Interrupt request messages, so
++ * use NMI mode at sacrifice that not all error detections
++ * could be made use of.
++ */
++static irqreturn_t amd8131_nmi_handler(int irq, void *dev_id)
++{
++	struct amd8131_info *info = dev_id;
++	struct amd8131_dev_info *dev_info;
++	irqreturn_t ret = IRQ_NONE;
++
++	if (!info->isr)
++		return IRQ_NONE;
++
++	for (dev_info = info->devices; dev_info->inst != NO_BRIDGE; dev_info++)
++		ret |= info->isr(irq, dev_info->edac_dev);
++
++	return ret;
++}
++
++static void __init amd8131_nmi_handler_setup(void)
++{
++	int ret;
++
++	if (amd8131_op_state != EDAC_OPSTATE_NMI)
++		return;
++
++	amd8131_nmi_irq = NO_IRQ;
++
 +#ifdef CONFIG_MPIC
-+enum {
-+	/*
-+	 * Vector carried in southbridge NMI Request Messages
-+	 * posted through Hypertransport Channel
-+	 */
-+	MPIC_HWIRQ_HT_NMI = 0,
-+
-+	/*
-+	 * Vector for MPIC Internal Error
-+	 */
-+	MPIC_HWIRQ_INTERNAL_ERROR = 2,
-+
-+	MPIC_HWIRQS,	/* must be the very last */
-+};
-+
-+/* Create a hwirq2virq mapping for the specified hwirq */
-+extern int edac_get_mpic_irq(int hwirq);
-+
-+/* Dispose the hwirq2virq mapping for the specified hwirq */
-+extern void edac_put_mpic_irq(int hwirq);
++	amd8131_nmi_irq = edac_get_mpic_irq(MPIC_HWIRQ_HT_NMI);
 +#endif
 +
- #endif
++	if (amd8131_nmi_irq == NO_IRQ) {
++		printk(KERN_ERR "%s: failed to get virq "
++			"for AMD8131 NMI requests\n", __func__);
++		return;
++	}
++
++	ret = request_irq(amd8131_nmi_irq, amd8131_nmi_handler,
++			  IRQF_SHARED, "[EDAC] AMD8131", &amd8131_chipset);
++	if (ret < 0) {
++		printk(KERN_INFO "%s: failed to request irq %d for "
++			"AMD8131 NMI requests\n", __func__, amd8131_nmi_irq);
++		return;
++	}
++
++	debugf0("%s: Successfully requested irq %d for AMD8131 NMI requests\n",
++		 __func__, amd8131_nmi_irq);
++}
++
++static void __exit amd8131_nmi_handler_exit(void)
++{
++	if (amd8131_op_state != EDAC_OPSTATE_NMI)
++		return;
++
++	if (amd8131_nmi_irq != NO_IRQ) {
++		free_irq(amd8131_nmi_irq, &amd8131_chipset);
++#ifdef CONGIF_MPIC
++		edac_put_mpic_irq(MPIC_HWIRQ_HT_NMI);
++#endif
++	}
++}
++
+ static int __init amd8131_edac_init(void)
+ {
++	int ret;
++
+ 	printk(KERN_INFO "AMD8131 EDAC driver " AMD8131_EDAC_REVISION "\n");
+ 	printk(KERN_INFO "\t(c) 2008 Wind River Systems, Inc.\n");
+ 
+-	/* Only POLL mode supported so far */
+-	edac_op_state = EDAC_OPSTATE_POLL;
++	ret = pci_register_driver(&amd8131_edac_driver);
+ 
+-	return pci_register_driver(&amd8131_edac_driver);
++	if (ret == 0)
++		amd8131_nmi_handler_setup();
++
++	return ret;
+ }
+ 
+ static void __exit amd8131_edac_exit(void)
+ {
+ 	pci_unregister_driver(&amd8131_edac_driver);
++
++	amd8131_nmi_handler_exit();
+ }
+ 
+ module_init(amd8131_edac_init);
+diff --git a/drivers/edac/amd8131_edac.h b/drivers/edac/amd8131_edac.h
+index 60e0d1c..7e86cbf 100644
+--- a/drivers/edac/amd8131_edac.h
++++ b/drivers/edac/amd8131_edac.h
+@@ -61,7 +61,8 @@ enum mem_limit_bits {
+ 	MEM_LIMIT_STA	= BIT(27),
+ 	MEM_LIMIT_MDPE	= BIT(24),
+ 	MEM_LIMIT_MASK	= MEM_LIMIT_DPE|MEM_LIMIT_RSE|MEM_LIMIT_RMA|
+-				MEM_LIMIT_RTA|MEM_LIMIT_STA|MEM_LIMIT_MDPE
++				MEM_LIMIT_RTA|MEM_LIMIT_STA|MEM_LIMIT_MDPE,
++	MEM_LIMIT_NMI_MASK = MEM_LIMIT_DPE | MEM_LIMIT_RSE
+ };
+ 
+ /************************************************************
+@@ -80,6 +81,22 @@ enum lnk_ctrl_bits {
+ 	LNK_CTRL_CRCFEN		= BIT(1)
+ };
+ 
++/************************************************************
++ *	PCI-X Miscellaneous Register, Dev[B,A]:0x40
++ ************************************************************/
++#define REG_MISC_I	0x40
++enum misc_i_bits {
++	MISC_I_NIOAMODE	= BIT(0),
++};
++
++/************************************************************
++ *	PCI-X Miscellaneous II Register, Dev[B,A]:0x44
++ ************************************************************/
++#define REG_MISC_II	0x44
++enum misc_ii_bits {
++	MISC_II_NMIEN	= BIT(0),
++};
++
+ enum pcix_bridge_inst {
+ 	NORTH_A = 0,
+ 	NORTH_B = 1,
+@@ -113,6 +130,7 @@ struct amd8131_info {
+ 	void (*init)(struct amd8131_dev_info *dev_info);
+ 	void (*exit)(struct amd8131_dev_info *dev_info);
+ 	void (*check)(struct edac_pci_ctl_info *edac_dev);
++	irqreturn_t (*isr)(int irq, void *dev_id);
+ };
+ 
+ #endif /* _AMD8131_EDAC_H_ */
