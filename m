@@ -1,26 +1,24 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 23669DE0C3
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 21:06:02 +1000 (EST)
-In-Reply-To: <d2b9ea600905150318s69b86b5ct3816b274bf343a79@mail.gmail.com>
-References: <4A0BD1DB.4090305@doredevelopment.dk>	
-	<20090514083453.GB3043@pengutronix.de>
-	<4A0BDAD6.5020005@doredevelopment.dk>	
-	<OF9EE5E055.DDB954D2-ONC12575B6.003636EC-C12575B6.0036CB06@transmode.se>
-	<d2b9ea600905140317u7a4b9a70s574568d79a1ce7cc@mail.gmail.com>	
-	<OF3CD158BA.04CCFBB5-ONC12575B6.005911D5-C12575B6.005CAFC2@transmode.se>
-	<d2b9ea600905150318s69b86b5ct3816b274bf343a79@mail.gmail.com>
-Subject: Re: [PATCH] i2c-mpc: generate START condition after STOP caused by
-	read i2c_msg
-To: Esben Haabendal <esbenhaabendal@gmail.com>
-Message-ID: <OFCADC684E.A2599121-ONC12575B7.003B8AB5-C12575B7.003CF795@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Fri, 15 May 2009 13:05:56 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4B07BDE09B
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 21:30:11 +1000 (EST)
+Subject: Re: [PATCH] powerpc/ftrace: Use pr_devel() in ftrace.c
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <alpine.DEB.2.00.0905141149130.30591@gandalf.stny.rr.com>
+References: <e805665453162bf2eb90b402e41fc7b672fcf639.1242282612.git.michael@ellerman.id.au>
+	<alpine.DEB.2.00.0905141149130.30591@gandalf.stny.rr.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-iWSWsv1GGUexFmzyuHKZ"
+Date: Fri, 15 May 2009 21:30:10 +1000
+Message-Id: <1242387010.7946.2.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,92 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Esben Haabendal <esbenhaabendal@gmail.com> wrote on 15/05/2009 12:18:39:
 
->
-> I have now spent a few hours trying a lot of different paths to fix
-> this approach, but I simply cannot find a way to get i2c read to work
-> without a trailing STOP condition with this controller.
+--=-iWSWsv1GGUexFmzyuHKZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I found a bug which lets me remove the "fix" and seems related to your
-problem. Updated patch last in mail
+On Thu, 2009-05-14 at 11:49 -0400, Steven Rostedt wrote:
+> I'm fine with this patch, but it should go via the PPC tree.
 
->
-> Is there a problem in applying my patch, as it should be "clean"
-> improvement over the current implementation, which uses STOP
-> condition, but does not work.
->
-> Until Isomeone finds a way to get it to work without STOP, we will
-> have a working driver, which I assume is what we want.
+Yep, it went To linux-ppc, CC you - so that's the plan, I'll nag Ben to
+pick it up.
 
-Your patch appears OK too. I just wanted to see if a better fix was
-possible. Your patch is less risky and it is the safe bet so soon before
-release.
+> Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
- Jocke
+Thanks for the ack.
 
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index 6c1cddd..04eff40 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -189,9 +189,6 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
- 	unsigned timeout = i2c->adap.timeout;
- 	u32 flags = restart ? CCR_RSTA : 0;
+cheers
 
--	/* Start with MEN */
--	if (!restart)
--		writeccr(i2c, CCR_MEN);
- 	/* Start as master */
- 	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
- 	/* Write target byte */
-@@ -214,15 +211,12 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
- }
+--=-iWSWsv1GGUexFmzyuHKZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
- static int mpc_read(struct mpc_i2c *i2c, int target,
--		    u8 * data, int length, int restart)
-+		    u8 * data, int length, int restart, int last)
- {
- 	unsigned timeout = i2c->adap.timeout;
- 	int i, result;
- 	u32 flags = restart ? CCR_RSTA : 0;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
--	/* Start with MEN */
--	if (!restart)
--		writeccr(i2c, CCR_MEN);
- 	/* Switch to read - restart */
- 	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
- 	/* Write target address byte - this time with the read flag set */
-@@ -241,18 +235,18 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
- 		readb(i2c->base + MPC_I2C_DR);
- 	}
+iEYEABECAAYFAkoNUj4ACgkQdSjSd0sB4dJYkwCfapHsOS3Cl1A8cTcq0bOXTZ4f
+aWYAoMaOvhXy8F+dbiU2W3OUPgK8j2wX
+=2tJo
+-----END PGP SIGNATURE-----
 
--	for (i = 0; i < length; i++) {
-+	for (i = length; i ; --i) {
- 		result = i2c_wait(i2c, timeout, 0);
- 		if (result < 0)
- 			return result;
-
- 		/* Generate txack on next to last byte */
--		if (i == length - 2)
-+		if (i == 2)
- 			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_TXAK);
--		/* Generate stop on last byte */
--		if (i == length - 1)
--			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_TXAK);
--		data[i] = readb(i2c->base + MPC_I2C_DR);
-+		/* Generate stop on last byte, iff last transaction */
-+		if (i == 1 && last)
-+			writeccr(i2c, CCR_MIEN | CCR_MEN);
-+		data[length-i] = readb(i2c->base + MPC_I2C_DR);
- 	}
-
- 	return length;
-@@ -294,7 +288,7 @@ static int mpc_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 		tm_i2c_select_mux(pmsg->addr);
- 		if (pmsg->flags & I2C_M_RD)
- 			ret =
--			    mpc_read(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
-+			    mpc_read(i2c, pmsg->addr, pmsg->buf, pmsg->len, i, i == num-1);
- 		else
- 			ret =
- 			    mpc_write(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
+--=-iWSWsv1GGUexFmzyuHKZ--
