@@ -1,17 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C0015DE065
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 15:45:32 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id n4F5jLXu031056
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 00:45:26 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: Add SWIOTLB support to FSL boards
-Date: Fri, 15 May 2009 00:45:21 -0500
-Message-Id: <1242366321-29112-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2365EDE081
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 16:09:46 +1000 (EST)
+Message-ID: <4A0D03AB.2040602@denx.de>
+Date: Fri, 15 May 2009 07:54:51 +0200
+From: Heiko Schocher <hs@denx.de>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash, size
+References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
+	<4A0A683B.5010209@denx.de>
+	<20090514214819.GA15549@b07421-ec1.am.freescale.net>
+In-Reply-To: <20090514214819.GA15549@b07421-ec1.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
+	linux-kernel@vger.kernel.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,242 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the platform-specific code for enabling SWIOTLB if needed on P2020DS,
-MPC85xx DS, and MPC85xx MDS boards as they are capable of having >4G of
-memory.
+Hello Scott,
 
-We determine if we need to enable swiotlb based on how much memory is in
-the board and if it exceeds 4G or what we can map via PCI inbound
-windows.
+Scott Wood wrote:
+> On Wed, May 13, 2009 at 08:27:07AM +0200, Heiko Schocher wrote:
+>> Hello Wolfgang,
+>>
+>>> The current device tree for the MPC8272ADS assumes a mapping of 32 MB
+>>> of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
+>>> the boards, mapped at 0xFF80.0000. When booting an uImage with such a
+>>> device tree, the kernel crashes because 0xFE00.0000 is not mapped.
+>> Wouldn;t it be better, if u-boot fixes the device tree entries?
+> 
+> We should proabbly leave out the ranges altogether, and have u-boot
+> populate it from the mappings it establishes.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/platforms/85xx/Kconfig       |    3 +++
- arch/powerpc/platforms/85xx/mpc8536_ds.c  |   17 +++++++++++++++++
- arch/powerpc/platforms/85xx/mpc85xx_ds.c  |   19 +++++++++++++++++++
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |   20 ++++++++++++++++++++
- 4 files changed, 59 insertions(+), 0 deletions(-)
+No, I vote for manipulating just the entries, which u-boot dynamically
+detect, and let the other entries untouched. It is possible that
+there is a device which u-boot didn;t use/know, and there is in the DTS
+an ranges entry for it (Maybe not on the MPC8727ADS, but we should
+define a rule, how a bootloader has to manipulate entries). So if
+u-boot build the complete ranges entry, it maybe miss something.
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 43d385c..0ee5b12 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -35,12 +35,14 @@ config MPC85xx_MDS
- 	select DEFAULT_UIMAGE
- 	select PHYLIB
- 	select HAS_RAPIDIO
-+	select SWIOTLB
- 	help
- 	  This option enables support for the MPC85xx MDS board
- 
- config MPC8536_DS
- 	bool "Freescale MPC8536 DS"
- 	select DEFAULT_UIMAGE
-+	select SWIOTLB
- 	help
- 	  This option enables support for the MPC8536 DS board
- 
-@@ -49,6 +51,7 @@ config MPC85xx_DS
- 	select PPC_I8259
- 	select DEFAULT_UIMAGE
- 	select FSL_ULI1575
-+	select SWIOTLB
- 	help
- 	  This option enables support for the MPC85xx DS (MPC8544 DS) board
- 
-diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-index 63efca2..055ff41 100644
---- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-@@ -17,6 +17,7 @@
- #include <linux/seq_file.h>
- #include <linux/interrupt.h>
- #include <linux/of_platform.h>
-+#include <linux/lmb.h>
- 
- #include <asm/system.h>
- #include <asm/time.h>
-@@ -26,6 +27,7 @@
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/mpic.h>
-+#include <asm/swiotlb.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-@@ -65,7 +67,9 @@ static void __init mpc8536_ds_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	struct pci_controller *hose;
- #endif
-+	dma_addr_t max = 0xffffffff;
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc8536_ds_setup_arch()", 0);
-@@ -80,11 +84,22 @@ static void __init mpc8536_ds_setup_arch(void)
- 				fsl_add_bridge(np, 1);
- 			else
- 				fsl_add_bridge(np, 0);
-+
-+			hose = pci_find_hose_for_OF_device(np);
-+			max = min(max, hose->dma_window_base_cur +
-+					hose->dma_window_size);
- 		}
- 	}
- 
- #endif
- 
-+#ifdef CONFIG_SWIOTLB
-+	if (lmb_end_of_DRAM() > max) {
-+		ppc_swiotlb_enable = 1;
-+		set_pci_dma_ops(&swiotlb_pci_dma_ops);
-+	}
-+#endif
-+
- 	printk("MPC8536 DS board from Freescale Semiconductor\n");
- }
- 
-@@ -102,6 +117,8 @@ static int __init mpc8536_ds_publish_devices(void)
- }
- machine_device_initcall(mpc8536_ds, mpc8536_ds_publish_devices);
- 
-+machine_arch_initcall(mpc8536_ds, swiotlb_setup_bus_notifier);
-+
- /*
-  * Called very early, device-tree isn't unflattened
-  */
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 53d5851..849c0ac 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -20,6 +20,7 @@
- #include <linux/seq_file.h>
- #include <linux/interrupt.h>
- #include <linux/of_platform.h>
-+#include <linux/lmb.h>
- 
- #include <asm/system.h>
- #include <asm/time.h>
-@@ -30,6 +31,7 @@
- #include <asm/udbg.h>
- #include <asm/mpic.h>
- #include <asm/i8259.h>
-+#include <asm/swiotlb.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-@@ -155,7 +157,9 @@ static void __init mpc85xx_ds_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	struct pci_controller *hose;
- #endif
-+	dma_addr_t max = 0xffffffff;
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
-@@ -171,6 +175,10 @@ static void __init mpc85xx_ds_setup_arch(void)
- 				fsl_add_bridge(np, 1);
- 			else
- 				fsl_add_bridge(np, 0);
-+
-+			hose = pci_find_hose_for_OF_device(np);
-+			max = min(max, hose->dma_window_base_cur +
-+					hose->dma_window_size);
- 		}
- 	}
- 
-@@ -181,6 +189,13 @@ static void __init mpc85xx_ds_setup_arch(void)
- 	mpc85xx_smp_init();
- #endif
- 
-+#ifdef CONFIG_SWIOTLB
-+	if (lmb_end_of_DRAM() > max) {
-+		ppc_swiotlb_enable = 1;
-+		set_pci_dma_ops(&swiotlb_pci_dma_ops);
-+	}
-+#endif
-+
- 	printk("MPC85xx DS board from Freescale Semiconductor\n");
- }
- 
-@@ -217,6 +232,10 @@ machine_device_initcall(mpc8544_ds, mpc85xxds_publish_devices);
- machine_device_initcall(mpc8572_ds, mpc85xxds_publish_devices);
- machine_device_initcall(p2020_ds, mpc85xxds_publish_devices);
- 
-+machine_arch_initcall(mpc8544_ds, swiotlb_setup_bus_notifier);
-+machine_arch_initcall(mpc8572_ds, swiotlb_setup_bus_notifier);
-+machine_arch_initcall(p2020_ds, swiotlb_setup_bus_notifier);
-+
- /*
-  * Called very early, device-tree isn't unflattened
-  */
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index b2c0a43..77f90b3 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -33,6 +33,7 @@
- #include <linux/of_platform.h>
- #include <linux/of_device.h>
- #include <linux/phy.h>
-+#include <linux/lmb.h>
- 
- #include <asm/system.h>
- #include <asm/atomic.h>
-@@ -49,6 +50,7 @@
- #include <asm/qe.h>
- #include <asm/qe_ic.h>
- #include <asm/mpic.h>
-+#include <asm/swiotlb.h>
- 
- #undef DEBUG
- #ifdef DEBUG
-@@ -155,6 +157,10 @@ static void __init mpc85xx_mds_setup_arch(void)
- {
- 	struct device_node *np;
- 	static u8 __iomem *bcsr_regs = NULL;
-+#ifdef CONFIG_PCI
-+	struct pci_controller *hose;
-+#endif
-+	dma_addr_t max = 0xffffffff;
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc85xx_mds_setup_arch()", 0);
-@@ -179,6 +185,10 @@ static void __init mpc85xx_mds_setup_arch(void)
- 				fsl_add_bridge(np, 1);
- 			else
- 				fsl_add_bridge(np, 0);
-+
-+			hose = pci_find_hose_for_OF_device(np);
-+			max = min(max, hose->dma_window_base_cur +
-+					hose->dma_window_size);
- 		}
- 	}
- #endif
-@@ -227,6 +237,13 @@ static void __init mpc85xx_mds_setup_arch(void)
- 		iounmap(bcsr_regs);
- 	}
- #endif	/* CONFIG_QUICC_ENGINE */
-+
-+#ifdef CONFIG_SWIOTLB
-+	if (lmb_end_of_DRAM() > max) {
-+		ppc_swiotlb_enable = 1;
-+		set_pci_dma_ops(&swiotlb_pci_dma_ops);
-+	}
-+#endif
- }
- 
- 
-@@ -281,6 +298,9 @@ static int __init mpc85xx_publish_devices(void)
- machine_device_initcall(mpc8568_mds, mpc85xx_publish_devices);
- machine_device_initcall(mpc8569_mds, mpc85xx_publish_devices);
- 
-+machine_arch_initcall(mpc8568_mds, swiotlb_setup_bus_notifier);
-+machine_arch_initcall(mpc8569_mds, swiotlb_setup_bus_notifier);
-+
- static void __init mpc85xx_mds_pic_init(void)
- {
- 	struct mpic *mpic;
+>> I think, u-boot should know, where the flash begins and ends, and
+>> because this is maybe a dynamic variable for this board, it should
+>> be better, if u-boot fixes this, so no need for adding a device tree
+>> for every board variant.
+> 
+> Flash is on a SIMM on this board, and the board manual says it's
+> expandable to 32 MiB.  However, I suspect that the current DTS was just
+> an error as I based it on a board that had not had its flash SIMM
+> modified.  That specific flash SIMM is no longer working (or perhaps just
+> got its contents corrupted -- one of these days I may hook up a BDI and
+> try to reflash), so I can't go back and check.
+> 
+> I don't see how current u-boot would accomodate more than 8MiB flash on
+> this board (there's some detection in board/freescale/mpc8260ads/flash.c,
+
+Didn;t this board uses the CFI driver? :-(
+
+> but I don't see any setting of BR0 besides the preliminary value at
+> 0xff800000).
+
+OK, then the patch from Wolfgang should be sufficient.
+
+bye
+Heiko
 -- 
-1.6.0.6
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
