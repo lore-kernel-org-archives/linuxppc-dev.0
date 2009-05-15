@@ -1,19 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 5D3E2DE0F0
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 May 2009 00:52:41 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so1018225ywt.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 07:52:39 -0700 (PDT)
+Return-Path: <vinay@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A791FDE0BE
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 19:17:08 +1000 (EST)
+Received: from d23relay02.au.ibm.com (d23relay02.au.ibm.com [202.81.31.244])
+	by e23smtp08.au.ibm.com (8.13.1/8.13.1) with ESMTP id n4F9CmCl023527
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 19:12:48 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay02.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4F9H7NJ1544238
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 19:17:07 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n4F9H78j032467
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 19:17:07 +1000
+From: Vinay Sridhar <vinay@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc64: xmon: Add dl command to dump contents of __log_buf
+Date: Fri, 15 May 2009 14:43:07 +0530
 MIME-Version: 1.0
-In-Reply-To: <4A0D1FF1-302-2D5C780A@nukeman.tgi-sci.com>
-References: <4A0D1FF1-302-2D5C780A@nukeman.tgi-sci.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 15 May 2009 08:52:19 -0600
-Message-ID: <fa686aa40905150752o722a7e3ej7a65114130b8eb9e@mail.gmail.com>
-Subject: Re: FEC & SDMA (bestcomm) interaction on the 5200
-To: Dimiter Popoff <dp@tgi-sci.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200905151443.07723.vinay@linux.vnet.ibm.com>
+Cc: ellerman@au1.ibm.com, vinay@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +33,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 15, 2009 at 2:36 AM, Dimiter Popoff <dp@tgi-sci.com> wrote:
-> Hi people,
->
-> I am porting my (not linux) OS to the 5200. I went all the
-> way understanding how the SDMA works and programming what
-> I needed for it so things are now pretty stable in terms
-> of disk I/O and system memory -> PCI (offscreen window
-> buffers -> PCI display framebuffer).
->
-> =A0And I wanted to make use of the Ethernet ("FEC", as they have
-> it), hoping it would take me a few days (not my first one).
->
-> =A0I am out of luck - it is practically undocumented. There is some
-> talk of receive buffers which the FEC should see empty etc.,
-> how on earth is that supposed to happen when it has no bus
-> master capability at all? It relies on the SDMA for its bus
-> activity - but in what format does it expect to get these
-> buffer related data?
-> =A0Or (more likely, at least hopefully so) this talk in the
-> MPC5200BUM (and MPC5200UM, for that) is just nonsense and
-> the FEC simply puts in the FIFO incoming packets, writing as
-> a last .l the receive frame status word? If so, I could
-> easily handle that with the SDMA.
-> =A0Same question about transmitting. I can only hope/assume
-> that the FEC will just send what it is handed through the
-> FIFO by the SDMA, the very first .l being the frame control
-> word, and ending when the TFD from the data drd1a or whatever
-> makes it through?
+Hello All,
 
-It's been a long time since I've been in the bowels of the FEC driver,
-but I believe you are correct.
+Quite a while back Michael Ellerman had posted a patch to add support to xmon to print the contents of the console log pointed to by __log_buf.
+Here's the link to that patch - http://ozlabs.org/pipermail/linuxppc64-dev/2005-March/003657.html
+I've ported the patch in the above link to 2.6.30-rc5 and have tested it. 
 
-g.
+Thanks & regards,
+Vinay
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Signed-off-by: Michael Ellerman <michael at ellerman.id.au>
+
+diff -Nuarp linux-2.6.30-rc5_orig//arch/powerpc/xmon/xmon.c linux-2.6.30-rc5/arch/powerpc/xmon/xmon.c
+--- linux-2.6.30-rc5_orig//arch/powerpc/xmon/xmon.c	2009-05-15 03:06:24.000000000 -0500
++++ linux-2.6.30-rc5/arch/powerpc/xmon/xmon.c	2009-05-15 03:26:26.000000000 -0500
+@@ -110,6 +110,7 @@ static int bsesc(void);
+ static void dump(void);
+ static void prdump(unsigned long, long);
+ static int ppc_inst_dump(unsigned long, long, int);
++static void dump_log_buf(void);
+ static void backtrace(struct pt_regs *);
+ static void excprint(struct pt_regs *);
+ static void prregs(struct pt_regs *);
+@@ -197,6 +198,7 @@ Commands:\n\
+   di	dump instructions\n\
+   df	dump float values\n\
+   dd	dump double values\n\
++  dl    dump the kernel log buffer\n\
+   dr	dump stream of raw bytes\n\
+   e	print exception information\n\
+   f	flush cache\n\
+@@ -2009,6 +2011,8 @@ dump(void)
+ 			nidump = MAX_DUMP;
+ 		adrs += ppc_inst_dump(adrs, nidump, 1);
+ 		last_cmd = "di\n";
++	} else if (c == 'l') {
++		dump_log_buf();
+ 	} else if (c == 'r') {
+ 		scanhex(&ndump);
+ 		if (ndump == 0)
+@@ -2122,6 +2126,49 @@ print_address(unsigned long addr)
+ 	xmon_print_symbol(addr, "\t# ", "");
+ }
+ 
++void
++dump_log_buf(void)
++{
++        const unsigned long size = 128;
++        unsigned long i, end, addr;
++        unsigned char buf[size + 1];
++
++        addr = 0;
++        buf[size] = '\0';
++
++        if (setjmp(bus_error_jmp) != 0) {
++                printf("Unable to lookup symbol __log_buf!\n");
++                return;
++        }
++
++        catch_memory_errors = 1;
++        sync();
++        addr = kallsyms_lookup_name("__log_buf");
++
++        if (! addr)
++                printf("Symbol __log_buf not found!\n");
++        else {
++                end = addr + (1 << CONFIG_LOG_BUF_SHIFT);
++                while (addr < end) {
++                        if (! mread(addr, buf, size)) {
++                                printf("Can't read memory at address 0x%lx\n", addr);
++                                break;
++                        }
++      
++                        printf("%s", buf);
++       
++                        if (strlen(buf) < size)
++                                break;
++
++                        addr += size;
++                }
++        }
++
++        sync();
++        /* wait a little while to see if we get a machine check */
++        __delay(200);
++        catch_memory_errors = 0;
++}
+ 
+ /*
+  * Memory operations - move, set, print differences
