@@ -1,19 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dp@tgi-sci.com>
+Received: from server318.com (server318.com [216.35.196.92])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 59D2ADE09B
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 18:02:15 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 15 May 2009 18:01:31 +1000
-Message-Id: <1242374491.22331.65.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTPS id 6D571DE0E3
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 18:02:19 +1000 (EST)
+Message-id: <4A0D1FF1-302-2D5C780A@nukeman.tgi-sci.com>
+To: <linuxppc-dev@ozlabs.org>
+From: Dimiter Popoff <dp@tgi-sci.com>
+Subject: FEC & SDMA (bestcomm) interaction on the 5200
+Date: Fri, 15 May 2009 10:36:54 +0200
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,135 +18,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Hi people,
 
-Here are some updates for .30. A bit more than I would have hoped at
-this stage in the game, but I've been MIA for a while, first on vacation
-and then carried off to a customer issue, and so a lot of this have
-actually been around for some time. There are bug fixes and defconfig
-updates exclusively (though not all are regressions).
+I am porting my (not linux) OS to the 5200. I went all the
+way understanding how the SDMA works and programming what
+I needed for it so things are now pretty stable in terms
+of disk I/O and system memory -> PCI (offscreen window 
+buffers -> PCI display framebuffer).
 
-The tree is based on an older -rc3 checkout but it seems to merge fine
-with your latest so I didn't feel the need to stick a merge commit
-myself in there.
+ And I wanted to make use of the Ethernet ("FEC", as they have
+it), hoping it would take me a few days (not my first one).
 
-Cheers,
-Ben.
+ I am out of luck - it is practically undocumented. There is some
+talk of receive buffers which the FEC should see empty etc.,
+how on earth is that supposed to happen when it has no bus
+master capability at all? It relies on the SDMA for its bus
+activity - but in what format does it expect to get these
+buffer related data?
+ Or (more likely, at least hopefully so) this talk in the
+MPC5200BUM (and MPC5200UM, for that) is just nonsense and
+the FEC simply puts in the FIFO incoming packets, writing as
+a last .l the receive frame status word? If so, I could
+easily handle that with the SDMA.
+ Same question about transmitting. I can only hope/assume
+that the FEC will just send what it is handed through the
+FIFO by the SDMA, the very first .l being the frame control
+word, and ending when the TFD from the data drd1a or whatever
+makes it through?
 
-The following changes since commit 45d447406a19cbfd42720f066f156f4eb9d68801:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../czankel/xtensa-2.6
+ If the above assumptions are correct, I could manage it
+in a reasonably short time. 
+ I know this is an "untypicall" question, but people who
+have wrestled the FEC & SDMA may have enough observations
+to confirm or reject my assumptions and perhaps provide
+some more insight.
 
-are available in the git repository at:
+Thanks for any input,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+Dimiter
 
-Anton Vorontsov (1):
-      powerpc/fsl_soc: Remove mpc83xx_wdt_init, again
+------------------------------------------------------
+Dimiter Popoff               Transgalactic Instruments
 
-Becky Bruce (1):
-      powerpc: Allow mem=x cmdline to work with 4G+
-
-Benjamin Herrenschmidt (2):
-      powerpc/pseries: Really fix the oprofile CPU type on pseries
-      powerpc: Fix PCI ROM access
-
-Benjamin Krill (1):
-      serial/nwpserial: Fix wrong register read address and add interrupt acknowledge.
-
-Gerhard Stenzel (1):
-      powerpc/cell: Make ptcal more reliable
-
-Grant Likely (2):
-      powerpc/boot: add simpleImage.* to clean-files list
-      powerpc/virtex: Add uImage to the default images list
-
-John Linn (1):
-      powerpc/virtex: Fix duplicate level irq events.
-
-Kumar Gala (6):
-      powerpc/83xx: Update defconfigs
-      powerpc/85xx: Update defconfigs
-      powerpc/86xx: Update defconfigs
-      powerpc/embedded6xx: Update defconfigs
-      powerpc/8xx: Update defconfigs
-      powerpc/mpic: Fix incorrect allocation of interrupt rev-map
-
-Maynard Johnson (1):
-      powerpc: Fix oprofile sampling of marked events on POWER7
-
-Stephen Rothwell  x (1):
-      powerpc/iseries: Fix pci breakage due to bad dma_data initialization
-
-Timur Tabi (1):
-      powerpc: Fix mktree build error on Mac OS X host
-
- arch/powerpc/boot/Makefile                        |    2 +-
- arch/powerpc/boot/mktree.c                        |   10 +-
- arch/powerpc/configs/83xx/asp8347_defconfig       |  104 ++++--
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  114 +++++--
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  114 +++++--
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  107 +++++--
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  113 +++++--
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  108 +++++--
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  108 +++++--
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  103 ++++--
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  108 +++++--
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   96 ++++--
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  104 +++++--
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  111 +++++--
- arch/powerpc/configs/83xx/sbc834x_defconfig       |   96 ++++--
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   86 ++++--
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   82 ++++--
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   89 ++++--
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   88 ++++--
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   84 ++++-
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   83 ++++--
- arch/powerpc/configs/85xx/socrates_defconfig      |  385 ++++++++++++++++-----
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |  105 +++++--
- arch/powerpc/configs/85xx/tqm8540_defconfig       |  100 ++++--
- arch/powerpc/configs/85xx/tqm8541_defconfig       |  101 ++++--
- arch/powerpc/configs/85xx/tqm8548_defconfig       |   64 +++-
- arch/powerpc/configs/85xx/tqm8555_defconfig       |  101 ++++--
- arch/powerpc/configs/85xx/tqm8560_defconfig       |  101 ++++--
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |   92 ++++--
- arch/powerpc/configs/86xx/gef_sbc310_defconfig    |   92 ++++--
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |  122 +++++--
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |  100 ++++--
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |  211 +++++-------
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |  114 +++++--
- arch/powerpc/configs/adder875_defconfig           |   65 +++-
- arch/powerpc/configs/c2k_defconfig                |  128 +++++--
- arch/powerpc/configs/ep8248e_defconfig            |   74 +++--
- arch/powerpc/configs/ep88xc_defconfig             |   63 +++-
- arch/powerpc/configs/linkstation_defconfig        |   96 ++++--
- arch/powerpc/configs/mgcoge_defconfig             |   74 +++-
- arch/powerpc/configs/mgsuvd_defconfig             |   72 +++-
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |   91 ++++--
- arch/powerpc/configs/mpc8272_ads_defconfig        |   77 +++--
- arch/powerpc/configs/mpc83xx_defconfig            |  115 +++++--
- arch/powerpc/configs/mpc866_ads_defconfig         |   77 +++--
- arch/powerpc/configs/mpc86xx_defconfig            |  211 +++++-------
- arch/powerpc/configs/mpc885_ads_defconfig         |   63 +++-
- arch/powerpc/configs/pq2fads_defconfig            |   90 ++++--
- arch/powerpc/configs/prpmc2800_defconfig          |  120 +++++--
- arch/powerpc/configs/storcenter_defconfig         |   71 +++-
- arch/powerpc/include/asm/iseries/iommu.h          |    4 -
- arch/powerpc/include/asm/system.h                 |    2 +-
- arch/powerpc/kernel/cputable.c                    |    2 +-
- arch/powerpc/kernel/machine_kexec.c               |    4 +-
- arch/powerpc/kernel/pci-common.c                  |   21 +-
- arch/powerpc/kernel/pci_64.c                      |   15 +-
- arch/powerpc/kernel/prom.c                        |    8 +-
- arch/powerpc/mm/mem.c                             |    2 +-
- arch/powerpc/oprofile/op_model_power4.c           |    9 +-
- arch/powerpc/platforms/40x/Kconfig                |    1 +
- arch/powerpc/platforms/44x/Kconfig                |    1 +
- arch/powerpc/platforms/cell/ras.c                 |   17 +-
- arch/powerpc/platforms/iseries/iommu.c            |    6 +-
- arch/powerpc/platforms/iseries/pci.c              |    1 -
- arch/powerpc/sysdev/fsl_soc.c                     |   46 ---
- arch/powerpc/sysdev/mpic.c                        |   16 +-
- arch/powerpc/sysdev/xilinx_intc.c                 |  117 ++++++-
- drivers/serial/nwpserial.c                        |    4 +-
- 68 files changed, 3819 insertions(+), 1542 deletions(-)
+http://www.tgi-sci.com
+------------------------------------------------------
+http://www.flickr.com/photos/didi_tgi/sets/72157600228621276/
