@@ -1,14 +1,22 @@
-Return-Path: <dp@tgi-sci.com>
-Received: from server318.com (server318.com [216.35.196.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6D571DE0E3
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 18:02:19 +1000 (EST)
-Message-id: <4A0D1FF1-302-2D5C780A@nukeman.tgi-sci.com>
-To: <linuxppc-dev@ozlabs.org>
-From: Dimiter Popoff <dp@tgi-sci.com>
-Subject: FEC & SDMA (bestcomm) interaction on the 5200
-Date: Fri, 15 May 2009 10:36:54 +0200
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-gx0-f220.google.com (mail-gx0-f220.google.com
+	[209.85.217.220]) by ozlabs.org (Postfix) with ESMTP id 6E0DADE287
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 18:02:44 +1000 (EST)
+Received: by gxk20 with SMTP id 20so3472453gxk.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 01:02:41 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <1242372791.26759.34.camel@demuxf9c>
+References: <1242119872.16400.113.camel@demuxf9c>
+	<2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
+	<1242372791.26759.34.camel@demuxf9c>
+Date: Fri, 15 May 2009 15:56:49 +0800
+Message-ID: <2a27d3730905150056m7298b66ckb9db92f9432953d6@mail.gmail.com>
+Subject: Re: RapidIO - general questions
+From: Li Yang <leoli@freescale.com>
+To: Jan Neskudla <jan.neskudla.ext@nsn.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,48 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi people,
+On Fri, May 15, 2009 at 3:33 PM, Jan Neskudla <jan.neskudla.ext@nsn.com> wr=
+ote:
+> On Wed, 2009-05-13 at 18:57 +0800, ext Li Yang wrote:
+>> cc'ed LKML
+>>
+>> On Tue, May 12, 2009 at 5:17 PM, Jan Neskudla <jan.neskudla.ext@nsn.com>=
+ wrote:
+>> > Hallo
+>> >
+>> > we'd likes to use a RapidIO as a general communication bus on our new
+>> > product, and so I have some questions about general design of Linux RI=
+O
+>> > subsystem. I did not find any better mailing list for RapidIO
+>> > discussion.
+>> >
+>> > [1] - we'd like to implement following features
+>> > =C2=A0 =C2=A0* Hot-plug (hot-insert/hot-remove) of devices
+>> > =C2=A0 =C2=A0* Error handling (port-write packets - configuration, han=
+dling of
+>> > them)
+>> > =C2=A0 =C2=A0* Static ID configuration based on port numbers
+>> > =C2=A0 =C2=A0* Aux driver - basic driver, for sending messages over di=
+fferent
+>> > mboxes, handling ranges of doorbells
+>> >
+>> > =C2=A0 =C2=A0Is it here anyone who is working on any improvement, or a=
+nyone who
+>> > knows the development plans for RapidIO subsystem?
+>> >
+>>
+>> AFAIK, there is no one currently working on these features for Linux.
+>> It will be good if you can add these useful features.
+> Yes it looks like that, currently we are analyzing current rapidIO
+> system, and how we can add these features.
+>
+>>
+>> > [2] - I have a following problem with a current implementation of
+>> > loading drivers. The driver probe-function call is based on comparison
+>> > of VendorID (VID) and DeviceID (DID) only. Thus if I have 3 devices wi=
+th
+>> > same DID and VID connected to the same network (bus), the driver is
+>> > loaded 3times, instead only once for the actual device Master port.
+>>
+>> This should be the correct way as you actually have 3 instances of the d=
+evice.
+>>
+>> >
+>> > Rionet driver solved this by enabling to call initialization function
+>> > just once, and it expect that this is the Master port.
+>>
+>> Rionet is kind of special. =C2=A0It's not working like a simple device
+>> driver, but more like a customized protocol stack to support multiple
+>> ethernet over rio links.
+>>
+>> >
+>> > Is it this correct behavior =C2=A0? It looks to me that RapidIO is han=
+dled
+>> > like a local bus (like PCI)
+>>
+>> This is correct behavior. =C2=A0All of them are using Linux device/drive=
+r
+>> infrastructure, but rionet is a special device.
+>
+> But I do not have a 3 devices on one silicon. I am talking about 3
+> devices (3 x EP8548 boards + IDT switch) connected over rapidIO through
+> the switch. And in this case I'd like to have only one driver siting on
+> the top of Linux RapidIO subsystem. I don't see the advantage of loading
 
-I am porting my (not linux) OS to the 5200. I went all the
-way understanding how the SDMA works and programming what
-I needed for it so things are now pretty stable in terms
-of disk I/O and system memory -> PCI (offscreen window 
-buffers -> PCI display framebuffer).
+You are having one driver, but it probes 3 times for each device using
+the driver.
 
- And I wanted to make use of the Ethernet ("FEC", as they have
-it), hoping it would take me a few days (not my first one).
+> a driver locally for remote device. Am I missing something =C2=A0?
 
- I am out of luck - it is practically undocumented. There is some
-talk of receive buffers which the FEC should see empty etc.,
-how on earth is that supposed to happen when it has no bus
-master capability at all? It relies on the SDMA for its bus
-activity - but in what format does it expect to get these
-buffer related data?
- Or (more likely, at least hopefully so) this talk in the
-MPC5200BUM (and MPC5200UM, for that) is just nonsense and
-the FEC simply puts in the FIFO incoming packets, writing as
-a last .l the receive frame status word? If so, I could
-easily handle that with the SDMA.
- Same question about transmitting. I can only hope/assume
-that the FEC will just send what it is handed through the
-FIFO by the SDMA, the very first .l being the frame control
-word, and ending when the TFD from the data drd1a or whatever
-makes it through?
+If you want to interact with the remote device, you need the driver to
+do the work locally.
 
- If the above assumptions are correct, I could manage it
-in a reasonably short time. 
- I know this is an "untypicall" question, but people who
-have wrestled the FEC & SDMA may have enough observations
-to confirm or reject my assumptions and perhaps provide
-some more insight.
+>
+> And one more think, I am getting so much Bus errors OOPSes. Whenever
+> there is a problem with a comunication over Rio I get such a kernel OPS.
+> I had to add some delays into some function to be able to finish the
+> enum+discovery process. Did you have some experience with some bigger
+> rio network running under linux ?
 
-Thanks for any input,
+It looks like an known issue for switched rio network, but I don't
+have the correct equipment to reproduce the problem here.  Could you
+do some basic debugging and share your findings?  Thanks.
 
-Dimiter
-
-------------------------------------------------------
-Dimiter Popoff               Transgalactic Instruments
-
-http://www.tgi-sci.com
-------------------------------------------------------
-http://www.flickr.com/photos/didi_tgi/sets/72157600228621276/
+- Leo
