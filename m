@@ -1,18 +1,18 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 8A94BDE107
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 May 2009 00:40:23 +1000 (EST)
-Date: Fri, 15 May 2009 16:40:15 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH V2] mpc5121/clocks: make debug output more readable
-Message-ID: <20090515144015.GD3689@pengutronix.de>
-References: <20090508123413.GC3100@pengutronix.de>
-	<fa686aa40905080840x308c1addld75b1ec5df386c13@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 5D3E2DE0F0
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 May 2009 00:52:41 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1018225ywt.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 07:52:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="n2Pv11Ogg/Ox8ay5"
-In-Reply-To: <fa686aa40905080840x308c1addld75b1ec5df386c13@mail.gmail.com>
+In-Reply-To: <4A0D1FF1-302-2D5C780A@nukeman.tgi-sci.com>
+References: <4A0D1FF1-302-2D5C780A@nukeman.tgi-sci.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 15 May 2009 08:52:19 -0600
+Message-ID: <fa686aa40905150752o722a7e3ej7a65114130b8eb9e@mail.gmail.com>
+Subject: Re: FEC & SDMA (bestcomm) interaction on the 5200
+To: Dimiter Popoff <dp@tgi-sci.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,64 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, May 15, 2009 at 2:36 AM, Dimiter Popoff <dp@tgi-sci.com> wrote:
+> Hi people,
+>
+> I am porting my (not linux) OS to the 5200. I went all the
+> way understanding how the SDMA works and programming what
+> I needed for it so things are now pretty stable in terms
+> of disk I/O and system memory -> PCI (offscreen window
+> buffers -> PCI display framebuffer).
+>
+> =A0And I wanted to make use of the Ethernet ("FEC", as they have
+> it), hoping it would take me a few days (not my first one).
+>
+> =A0I am out of luck - it is practically undocumented. There is some
+> talk of receive buffers which the FEC should see empty etc.,
+> how on earth is that supposed to happen when it has no bus
+> master capability at all? It relies on the SDMA for its bus
+> activity - but in what format does it expect to get these
+> buffer related data?
+> =A0Or (more likely, at least hopefully so) this talk in the
+> MPC5200BUM (and MPC5200UM, for that) is just nonsense and
+> the FEC simply puts in the FIFO incoming packets, writing as
+> a last .l the receive frame status word? If so, I could
+> easily handle that with the SDMA.
+> =A0Same question about transmitting. I can only hope/assume
+> that the FEC will just send what it is handed through the
+> FIFO by the SDMA, the very first .l being the frame control
+> word, and ending when the TFD from the data drd1a or whatever
+> makes it through?
 
---n2Pv11Ogg/Ox8ay5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It's been a long time since I've been in the bowels of the FEC driver,
+but I believe you are correct.
 
-
-- refactor printk with pr_info/pr_cont
-- use '=3D' in output to connect key/value pairs
-
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: John Rigby <jcrigby@gmail.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>
-
----
- arch/powerpc/platforms/512x/clock.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: arch/powerpc/platforms/512x/clock.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- arch/powerpc/platforms/512x/clock.c.orig
-+++ arch/powerpc/platforms/512x/clock.c
-@@ -83,13 +83,13 @@ static void dump_clocks(void)
- 	mutex_lock(&clocks_mutex);
- 	printk(KERN_INFO "CLOCKS:\n");
- 	list_for_each_entry(p, &clocks, node) {
--		printk(KERN_INFO "  %s %ld", p->name, p->rate);
-+		pr_info("  %s=3D%ld", p->name, p->rate);
- 		if (p->parent)
--			printk(KERN_INFO " %s %ld", p->parent->name,
-+			pr_cont(" %s=3D%ld", p->parent->name,
- 			       p->parent->rate);
- 		if (p->flags & CLK_HAS_CTRL)
--			printk(KERN_INFO " reg/bit %d/%d", p->reg, p->bit);
--		printk("\n");
-+			pr_cont(" reg/bit=3D%d/%d", p->reg, p->bit);
-+		pr_cont("\n");
- 	}
- 	mutex_unlock(&clocks_mutex);
- }
+g.
 
 --=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---n2Pv11Ogg/Ox8ay5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoNfs8ACgkQD27XaX1/VRtJPwCgkqhNTUXYQNbU8r29iyOAeELg
-AZAAoJGMolVIfuEXMg93Lc1QRKG9pL39
-=LJ0v
------END PGP SIGNATURE-----
-
---n2Pv11Ogg/Ox8ay5--
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
