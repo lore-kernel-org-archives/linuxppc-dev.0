@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jan.neskudla.ext@nsn.com>
+Received: from demumfd002.nsn-inter.net (demumfd002.nsn-inter.net
+	[217.115.75.234])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B23B4DE088
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 16:29:41 +1000 (EST)
-Subject: Re: [Linux-fbdev-devel] [PATCH] offb: use framebuffer_alloc() to
-	allocate fb_info struct
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-In-Reply-To: <20090504190724.c2dfb53c.krzysztof.h1@poczta.fm>
-References: <20090504190724.c2dfb53c.krzysztof.h1@poczta.fm>
+	(Client CN "demumfd002.nsn-inter.net",
+	Issuer "VeriSign Class 3 Secure Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 48265DE084
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 17:33:39 +1000 (EST)
+Subject: Re: RapidIO - general questions
+From: Jan Neskudla <jan.neskudla.ext@nsn.com>
+To: ext Li Yang <leoli@freescale.com>
+In-Reply-To: <2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
+References: <1242119872.16400.113.camel@demuxf9c>
+	<2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 15 May 2009 16:28:34 +1000
-Message-Id: <1242368914.22331.18.camel@pasglop>
+Date: Fri, 15 May 2009 09:33:11 +0200
+Message-Id: <1242372791.26759.34.camel@demuxf9c>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>,
-	Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,60 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2009-05-04 at 19:07 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Wed, 2009-05-13 at 18:57 +0800, ext Li Yang wrote:
+> cc'ed LKML
 > 
-> Use the framebuffer_alloc() function to allocate the fb_info
-> structure so the structure is correctly initialized after allocation.
+> On Tue, May 12, 2009 at 5:17 PM, Jan Neskudla <jan.neskudla.ext@nsn.com> wrote:
+> > Hallo
+> >
+> > we'd likes to use a RapidIO as a general communication bus on our new
+> > product, and so I have some questions about general design of Linux RIO
+> > subsystem. I did not find any better mailing list for RapidIO
+> > discussion.
+> >
+> > [1] - we'd like to implement following features
+> >    * Hot-plug (hot-insert/hot-remove) of devices
+> >    * Error handling (port-write packets - configuration, handling of
+> > them)
+> >    * Static ID configuration based on port numbers
+> >    * Aux driver - basic driver, for sending messages over different
+> > mboxes, handling ranges of doorbells
+> >
+> >    Is it here anyone who is working on any improvement, or anyone who
+> > knows the development plans for RapidIO subsystem?
+> >
 > 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> AFAIK, there is no one currently working on these features for Linux.
+> It will be good if you can add these useful features.
+Yes it looks like that, currently we are analyzing current rapidIO
+system, and how we can add these features. 
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> 
+> > [2] - I have a following problem with a current implementation of
+> > loading drivers. The driver probe-function call is based on comparison
+> > of VendorID (VID) and DeviceID (DID) only. Thus if I have 3 devices with
+> > same DID and VID connected to the same network (bus), the driver is
+> > loaded 3times, instead only once for the actual device Master port.
+> 
+> This should be the correct way as you actually have 3 instances of the device.
+> 
+> >
+> > Rionet driver solved this by enabling to call initialization function
+> > just once, and it expect that this is the Master port.
+> 
+> Rionet is kind of special.  It's not working like a simple device
+> driver, but more like a customized protocol stack to support multiple
+> ethernet over rio links.
+> 
+> >
+> > Is it this correct behavior  ? It looks to me that RapidIO is handled
+> > like a local bus (like PCI)
+> 
+> This is correct behavior.  All of them are using Linux device/driver
+> infrastructure, but rionet is a special device.
 
-> ---
-> 
-> diff -urp linux-orig/drivers/video/offb.c linux-2.6.30/drivers/video/offb.c
-> --- linux-orig/drivers/video/offb.c	2008-08-09 05:09:05.000000000 +0200
-> +++ linux-2.6.30/drivers/video/offb.c	2009-05-04 00:14:28.000000000 +0200
-> @@ -378,7 +378,6 @@ static void __init offb_init_fb(const ch
->  	struct fb_fix_screeninfo *fix;
->  	struct fb_var_screeninfo *var;
->  	struct fb_info *info;
-> -	int size;
->  
->  	if (!request_mem_region(res_start, res_size, "offb"))
->  		return;
-> @@ -393,15 +392,12 @@ static void __init offb_init_fb(const ch
->  		return;
->  	}
->  
-> -	size = sizeof(struct fb_info) + sizeof(u32) * 16;
-> -
-> -	info = kmalloc(size, GFP_ATOMIC);
-> +	info = framebuffer_alloc(sizeof(u32) * 16, NULL);
->  	
->  	if (info == 0) {
->  		release_mem_region(res_start, res_size);
->  		return;
->  	}
-> -	memset(info, 0, size);
->  
->  	fix = &info->fix;
->  	var = &info->var;
-> 
-> ----------------------------------------------------------------------
-> Wygraj 3000 zl, wycieczke lub lot balonem!
-> Sprawdz >> http://link.interia.pl/f2154
-> 
-> 
-> ------------------------------------------------------------------------------
-> Register Now & Save for Velocity, the Web Performance & Operations 
-> Conference from O'Reilly Media. Velocity features a full day of 
-> expert-led, hands-on workshops and two days of sessions from industry 
-> leaders in dedicated Performance & Operations tracks. Use code vel09scf 
-> and Save an extra 15% before 5/3. http://p.sf.net/sfu/velocityconf
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+But I do not have a 3 devices on one silicon. I am talking about 3
+devices (3 x EP8548 boards + IDT switch) connected over rapidIO through
+the switch. And in this case I'd like to have only one driver siting on
+the top of Linux RapidIO subsystem. I don't see the advantage of loading
+a driver locally for remote device. Am I missing something  ?
+
+And one more think, I am getting so much Bus errors OOPSes. Whenever
+there is a problem with a comunication over Rio I get such a kernel OPS.
+I had to add some delays into some function to be able to finish the
+enum+discovery process. Did you have some experience with some bigger
+rio network running under linux ? 
+
+
+                Jan 
