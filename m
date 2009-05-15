@@ -1,30 +1,17 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F3758DE066
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 10:27:36 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n4F0RGh6019641
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 17:27:27 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n4F0RE4V012633
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2009 19:27:15 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Does U-BOOT (MPC8560) support Micron MT18VDD12872DG
-Date: Fri, 15 May 2009 08:27:15 +0800
-Message-ID: <D7CCA83BB0796C49BC0BB53B6AB120893484DB@zch01exm21.fsl.freescale.net>
-In-Reply-To: <20090514070132.M24973@cdotd.ernet.in>
-References: <20090514070132.M24973@cdotd.ernet.in>
-From: "Liu Dave-R63238" <DaveLiu@freescale.com>
-To: "Deepak Gaur" <dgaur@cdotd.ernet.in>, <linuxppc-dev@ozlabs.org>,
-	<u-boot@lists.denx.de>
+Return-Path: <guojin02@tsinghua.org.cn>
+Received: from tsinghua.org.cn (mail.tsinghua.org.cn [211.151.65.103])
+	by ozlabs.org (Postfix) with SMTP id 290DCDE06B
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 11:49:06 +1000 (EST)
+Date: Fri, 15 May 2009 09:43:26 +0800
+From: "guojin02" <guojin02@tsinghua.org.cn>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Subject: The question about the u-boot on intel ixp460?
+Message-ID: <200905150943257036863@tsinghua.org.cn>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon540271425487_====="
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, wd <wd@denx.de>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,97 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I have a custom board similar to MPC8560ADS board with 1GB=20
-> DDR SDRAM. The DDR SDRAM Make
-> is MT18VDDF12872DG-335D3. In U-BOOT (2009.01) config file I=20
-> have enabled CONFIG_SPD_EEPROM
-> so U-boot configures MPC8560ADS DDR controller with the=20
-> values read from SPD_EEPROM (i2c
-> address 0x51)=20
->=20
-> After card reset U-BOOT runs from BOOT Flash and debug prints=20
-> start coming on SCC1 port
-> But after configuring the MPC8560 DDR controller the U-BOOT=20
-> HANGS when it tries to run
-> from RAM locations after relocation from BOOT Flash.=20
->=20
-> Somewhere I read that it is due to failure of Burst Mode=20
-> access of RAM. But DDR SDRAM=20
-> inherently work in Burst Mode only. Moreover U-BBOT =20
-> initialized the DDR SDRAM Mode
-> config register using SPD EEPROM values . The value indicate=20
-> that SDRAM is in Burst Mode
->=20
-> MPC8560 CPU Version is 2.0.2
->=20
-> Please help in understanding the issue here
->=20
-> The U-BOOT Details are
-> --------------------------------------------------------------
-> ---------------------------
-> U-Boot 2009.01 (Apr 27 2009 - 14:17:09)
->=20
->=20
-> CPU:   8560, Version: 2.0, (0x80700020)
-> Core:  E500, Version: 2.0, (0x80200020)
-> Clock Configuration:
->        CPU:660  MHz, CCB:264  MHz,
->        DDR:132  MHz (264 MT/s data rate), LBC:66   MHz
-> CPM:   264 MHz
-> L1:    D-cache 32 kB enabled
->        I-cache 32 kB enabled
-> Board: ADS
->     PCI1: 32 bit, 33 MHz (compiled)
-> I2C:   ready
-> DRAM:  Initializing
-> SDRAM SPD EEPROM
-> starting at step 1 (STEP_GET_SPD)
->=20
->  MEM TYPE 0x7DDR: DDR I rank density =3D 0x20000000
-> mclk_ps =3D 7580
-> i=3D0, x =3D 0, lowest_tCKmin_found =3D 0
-> i=3D1, x =3D 7500, lowest_tCKmin_found =3D 0
-> i=3D2, x =3D 6000, lowest_tCKmin_found =3D 7500
-> i=3D3, x =3D 5000, lowest_tCKmin_found =3D 7500
-> lowest_tCKmin_CL =3D 2
-> Computing lowest common DIMM parameters for memctl=3D0
-> using mclk_ps =3D 7580
-> checking common caslat =3D 3
-> CL =3D 3 ok on DIMM 0 at tCK=3D7580 ps with its tCKmin_X_ps of 6000
-> checking common caslat =3D 2
-> CL =3D 2 ok on DIMM 0 at tCK=3D7580 ps with its=20
-> tCKmin_X_minus_1_ps of 7500
-> lowest common SPD-defined CAS latency =3D 2
-> highest common dereated CAS latency =3D 2
-> all DIMMs ECC capable
-> Reloading memory controller configuration options for memctl=3D0
-> mclk_ps =3D 7580 ps
-> FSL Memory ctrl cg register computation
-> FSLDDR: cs[0]_bnds =3D 0x0000001f
-> FSLDDR: cs[0]_config =3D 0x80010103
-> FSLDDR: cs[0]_config_2 =3D 0x00000000
-> FSLDDR: cs[1]_bnds =3D 0x0020003f
-> FSLDDR: cs[1]_config =3D 0x80010103
-> FSLDDR: cs[1]_config_2 =3D 0x00000000
-> FSLDDR: timing_cfg_3 =3D 0x00000000
-> FSLDDR: timing_cfg_1 =3D 0x36332422
-> FSLDDR: timing_cfg_2 =3D 0x00006482
-> FSLDDR: ddr_sdram_cfg =3D 0xe2000000
-> FSLDDR: ddr_sdram_cfg_2 =3D 0x20401000
-> FSLDDR: ddr_sdram_mode =3D 0x00000022
-> FSLDDR: ddr_sdram_mode_2 =3D 0x00000000
-> FSLDDR: ddr_sdram_interval =3D 0x04060100
-> FSLDDR: timing_cfg_4 =3D 0x00000000
-> FSLDDR: timing_cfg_5 =3D 0x00000000
->=20
-> ...
-> ...
-> Some stack location related prints=20
-> ...
-> <hangs> here   <---- checked with emulator its somewhere in=20
-> RAM but no prints coming
 
-Have a try change clk_adjust, cpo_override, write_data_delay
-in the board/freescale/mpc8560ads/ddr.c for your DIMMs.
+This is a multi-part message in MIME format.
 
-Thanks, Dave
+--=====003_Dragon540271425487_=====
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+
+SGksIGZyaWVuZHMsDQoNCkkgbW92ZSB0aGUgdS1ib290IHBhdGNoZWQgZnJvbSBodHRwOi8vd3d3
+LmV2aWRlbmNlLmV1LmNvbS9jb250ZW50L3ZpZXcvMTA0LzE2OS8gICB0byBteSBJWFA0NjAgYm9h
+cmQuIFRoZXJlIGFyZSBzb21lIGRpZmZlcmVuY2UgYmV0d2VlbiBpeGRwNDY1IGJvYXJkIGFuZCBt
+eSBpeHA0NjAgYm9hcmQuICBUaGUgY3B1IHBhcnQgbnVtYmVyIGlzIGRpZmZlcmVudCwgbXkgaXhw
+NDYwIGJvYXJkIGhhdmUgMTI4TUIgZGRyIG1lbW9yeShNVDQ2VjMyTTE2LTZUICksIGFuZCAxNk1C
+IGZsYXNoIChKUzI4RjEyOEozRDc1KSwgYnV0IHRoZSBpeGRwNDY1IGhhdmUgNjRNQiBkZHIgKE1U
+NDZWMTZNMTYtNlQpIGFuZCAzMk1CIGZsYXNoKFJDMjhGMjU2SjNDMTI1KS4gSSBhbSBzdXJlIHRo
+YXQgdGhlIFVBUlQgc2VsZWN0ZWQgYnkgbWUgaXMgcmlnaHQuIEkgZGlkIG5vdCBjaGFuZ2UgYW55
+IGNvZGUgZnJvbSBldmlkZW5jZSwgSSB1c2VkIHRoZSBhcm0tbGludXgtdG9vbHMtMjAwNjEyMTMs
+IHRoZSBidWlsZCBpcyBzdWNjZXNzLiB0aGVuIEkgdXNlZCB0aGUgQmludG9TMTkgY29udmVydCB1
+LWJvb3QuYmluIHRvIFMxOSBzdHlsZSwgd3JpdGUgdG8gdGhlIGZsYXNoIGJ5IE9DRGVtb24gZmxh
+c2ggbWVtb3J5IHByb2dyYW1tZXIuICBidXQgbXkgaXhwNDYwIGJvYXJkIGhhZCBubyBhbnkgcmVz
+cG9uc2UgZnJvbSBzZXJpYWwgaW50ZXJmYWNlLCBteSBpeHA0NjAgYm9hcmQgY2FuIHdvcmsgbm9y
+bWFsbHkgd2l0aCBSRURCT09ULCBzbyB0aGUgaGFyZHdhcmUgaGF2ZSBubyBwcm9ibGVtLiBDb3Vs
+ZCB5b3UgdGVsbCBtZSB3aHk/IFRoYW5rcy4NCg0KDQoyMDA5LTA1LTE1IA0KDQoNCg0KICAgILn5
+ICC+og0KMTM4MTA2MDc4NzYNCjAxMC02Mjc3MTY5NA0K
+
+--=====003_Dragon540271425487_=====
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
+dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
+MC42MDAwLjE2ODA5IiBuYW1lPUdFTkVSQVRPUj48TElOSyANCmhyZWY9IkJMT0NLUVVPVEV7bWFy
+Z2luLVRvcDogMHB4OyBtYXJnaW4tQm90dG9tOiAwcHg7IG1hcmdpbi1MZWZ0OiAyZW19IiANCnJl
+bD1zdHlsZXNoZWV0PjwvSEVBRD4NCjxCT0RZIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQ7IE1BUkdJ
+TjogMTBweDsgRk9OVC1GQU1JTFk6IHZlcmRhbmEiPg0KPERJVj48Rk9OVCBmYWNlPVZlcmRhbmEg
+c2l6ZT0yPkhpLCBmcmllbmRzLDwvRk9OVD48L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElW
+PkkgbW92ZSB0aGUgdS1ib290IHBhdGNoZWQgZnJvbSA8QSANCmhyZWY9Imh0dHA6Ly93d3cuZXZp
+ZGVuY2UuZXUuY29tL2NvbnRlbnQvdmlldy8xMDQvMTY5LyAiPmh0dHA6Ly93d3cuZXZpZGVuY2Uu
+ZXUuY29tL2NvbnRlbnQvdmlldy8xMDQvMTY5LyZuYnNwOzwvQT4mbmJzcDsgDQp0byBteSBJWFA0
+NjAgYm9hcmQuIFRoZXJlIGFyZSBzb21lIGRpZmZlcmVuY2UgYmV0d2VlbiBpeGRwNDY1IGJvYXJk
+IGFuZCBteSANCml4cDQ2MCBib2FyZC4mbmJzcDsgVGhlIGNwdSBwYXJ0IG51bWJlciBpcyBkaWZm
+ZXJlbnQsJm5ic3A7bXkgaXhwNDYwIA0KYm9hcmQmbmJzcDtoYXZlIDEyOE1CIGRkciBtZW1vcnko
+TVQ0NlYzMk0xNi02VCApLCBhbmQgMTZNQiBmbGFzaCANCihKUzI4RjEyOEozRDc1KSwgYnV0IHRo
+ZSBpeGRwNDY1IGhhdmUgNjRNQiBkZHIgKE1UNDZWMTZNMTYtNlQpIGFuZCAzMk1CIA0KZmxhc2go
+UkMyOEYyNTZKM0MxMjUpLiZuYnNwO0kgYW0gc3VyZSB0aGF0IHRoZSBVQVJUIHNlbGVjdGVkIGJ5
+IG1lIGlzIA0KcmlnaHQuJm5ic3A7PEZPTlQgY29sb3I9I2ZmMDAwMD5JIGRpZCBub3QgY2hhbmdl
+IGFueSBjb2RlIGZyb20gZXZpZGVuY2UsPC9GT05UPiANCkkgdXNlZCB0aGUmbmJzcDthcm0tbGlu
+dXgtdG9vbHMtMjAwNjEyMTMsIHRoZSBidWlsZCBpcyBzdWNjZXNzLiZuYnNwO3RoZW4gSSB1c2Vk
+IA0KdGhlIEJpbnRvUzE5IGNvbnZlcnQgdS1ib290LmJpbiZuYnNwO3RvIFMxOSBzdHlsZSwmbmJz
+cDt3cml0ZSB0byB0aGUgZmxhc2ggYnkgDQpPQ0RlbW9uIGZsYXNoIG1lbW9yeSBwcm9ncmFtbWVy
+LiZuYnNwOyBidXQgbXkgaXhwNDYwIGJvYXJkIGhhZCBubyBhbnkgcmVzcG9uc2UgDQpmcm9tIHNl
+cmlhbCBpbnRlcmZhY2UsIG15IGl4cDQ2MCBib2FyZCBjYW4gd29yayBub3JtYWxseSB3aXRoIFJF
+REJPT1QsIHNvIHRoZSANCmhhcmR3YXJlIGhhdmUgbm8gcHJvYmxlbS4gQ291bGQgeW91IHRlbGwg
+bWUgd2h5PyBUaGFua3MuPC9ESVY+DQo8RElWPiZuYnNwOzwvRElWPg0KPERJVj48Rk9OVCBmYWNl
+PVZlcmRhbmEgc2l6ZT0yPjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxESVYgYWxpZ249bGVmdD48Rk9O
+VCBmYWNlPVZlcmRhbmEgY29sb3I9I2MwYzBjMCBzaXplPTI+MjAwOS0wNS0xNSANCjwvRk9OVD48
+L0RJVj48Rk9OVCBmYWNlPVZlcmRhbmEgc2l6ZT0yPg0KPEhSIHN0eWxlPSJXSURUSDogMTIycHg7
+IEhFSUdIVDogMnB4IiBhbGlnbj1sZWZ0IFNJWkU9Mj4NCg0KPERJVj48Rk9OVCBmYWNlPVZlcmRh
+bmEgY29sb3I9I2MwYzBjMCBzaXplPTI+PFNQQU4+DQo8RElWPg0KPERJVj48Rk9OVCBzaXplPTU+
+Jm5ic3A7PEZPTlQgY29sb3I9IzAwMDBmZj4mbmJzcDsmbmJzcDsgufkmbmJzcDsgDQq+ojwvRk9O
+VD48L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIGNvbG9yPSMwMDAwZmYgc2l6ZT01PjEzODEwNjA3
+ODc2PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBjb2xvcj0jMDAwMGZmIHNpemU9NT4wMTAtNjI3
+NzE2OTQ8L0ZPTlQ+PC9ESVY+DQo8RElWPiZuYnNwOzwvRElWPjwvRElWPjwvU1BBTj48L0ZPTlQ+
+PC9ESVY+PC9GT05UPjwvQk9EWT48L0hUTUw+DQo=
+
+--=====003_Dragon540271425487_=====--
