@@ -1,16 +1,16 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id C6D6DDE11A
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 May 2009 04:33:23 +1000 (EST)
-Date: Fri, 15 May 2009 11:33:20 -0700
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Dan Williams <dan.j.williams@intel.com>, Li Yang <leoli@freescale.com>,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH] fsldma: snooping is not enabled for last entry in
-	descriptor chain
-Message-ID: <20090515183320.GB858@ovro.caltech.edu>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 10F25DE115
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 May 2009 04:39:42 +1000 (EST)
+Date: Fri, 15 May 2009 20:39:24 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Subject: [PATCH] mv643xx_eth: fix PPC DMA breakage
+Message-ID: <20090515183924.GA29279@iram.es>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Cc: tbm@cyrius.com, LinuxPPC <linuxppc-dev@ozlabs.org>, pacman@kosh.dhis.org,
+	netdev@vger.kernel.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,53 +20,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On the 83xx controller, snooping is necessary for the DMA controller to
-ensure cache coherence with the CPU when transferring to/from RAM.
+After 2.6.29, PPC no more admits passing NULL to the dev parameter of
+the DMA API. The result is a BUG followed by solid lock-up when the 
+mv643xx_eth driver brings an interface up. The following patch makes 
+the driver work on my Pegasos again; it is mostly a search and replace 
+of NULL by mp->dev->dev.parent in dma allocation/freeing/mapping/unmapping
+functions.
 
-The last descriptor in a chain will always have the End-of-Chain interrupt
-bit set, so we can set the snoop bit while adding the End-of-Chain
-interrupt bit.
+Signed-off-by: Gabriel Paubert <paubert@iram.es>
 
-Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
----
-
-While working on adding the DMA_SLAVE feature, I noticed that the last
-descriptor in a chain does not have the snoop bits enabled.
-
-This is easily verified by doing the following:
-1) set FSL_DMA_BCR_MAX_CNT = (1 << 18)
-2) #define DEBUG 1
-3) #define FSL_DMA_LD_DEBUG 1
-4) setup a 1MB memcpy operation
-
-The memcpy must be set up on an idle channel, and must be submitted
-without any other transactions. dma_async_memcpy_issue_pending() must be
-called without queueing any more transactions. You will see that the
-snoop bit (bit 4) is not set in the last descriptor.
-
- drivers/dma/fsldma.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 4264c98..dba0b58 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -179,9 +179,14 @@ static void dma_halt(struct fsl_dma_chan *fsl_chan)
- static void set_ld_eol(struct fsl_dma_chan *fsl_chan,
- 			struct fsl_desc_sw *desc)
+diff --git a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
+index a400d71..6bb5af3 100644
+--- a/drivers/net/mv643xx_eth.c
++++ b/drivers/net/mv643xx_eth.c
+@@ -569,7 +569,7 @@ static int rxq_process(struct rx_queue *rxq, int budget)
+ 		if (rxq->rx_curr_desc == rxq->rx_ring_size)
+ 			rxq->rx_curr_desc = 0;
+ 
+-		dma_unmap_single(NULL, rx_desc->buf_ptr,
++		dma_unmap_single(mp->dev->dev.parent, rx_desc->buf_ptr,
+ 				 rx_desc->buf_size, DMA_FROM_DEVICE);
+ 		rxq->rx_desc_count--;
+ 		rx++;
+@@ -678,8 +678,9 @@ static int rxq_refill(struct rx_queue *rxq, int budget)
+ 
+ 		rx_desc = rxq->rx_desc_area + rx;
+ 
+-		rx_desc->buf_ptr = dma_map_single(NULL, skb->data,
+-					mp->skb_size, DMA_FROM_DEVICE);
++		rx_desc->buf_ptr = dma_map_single(mp->dev->dev.parent,
++						  skb->data, mp->skb_size,
++						  DMA_FROM_DEVICE);
+ 		rx_desc->buf_size = mp->skb_size;
+ 		rxq->rx_skb[rx] = skb;
+ 		wmb();
+@@ -718,6 +719,7 @@ static inline unsigned int has_tiny_unaligned_frags(struct sk_buff *skb)
+ 
+ static void txq_submit_frag_skb(struct tx_queue *txq, struct sk_buff *skb)
  {
-+	u64 snoop_bits;
-+
-+	snoop_bits = ((fsl_chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_83XX)
-+		? FSL_DMA_SNEN : 0;
-+
- 	desc->hw.next_ln_addr = CPU_TO_DMA(fsl_chan,
--		DMA_TO_CPU(fsl_chan, desc->hw.next_ln_addr, 64)	| FSL_DMA_EOL,
--		64);
-+		DMA_TO_CPU(fsl_chan, desc->hw.next_ln_addr, 64) | FSL_DMA_EOL
-+			| snoop_bits, 64);
++	struct mv643xx_eth_private *mp = txq_to_mp(txq);
+ 	int nr_frags = skb_shinfo(skb)->nr_frags;
+ 	int frag;
+ 
+@@ -746,10 +748,10 @@ static void txq_submit_frag_skb(struct tx_queue *txq, struct sk_buff *skb)
+ 
+ 		desc->l4i_chk = 0;
+ 		desc->byte_cnt = this_frag->size;
+-		desc->buf_ptr = dma_map_page(NULL, this_frag->page,
+-						this_frag->page_offset,
+-						this_frag->size,
+-						DMA_TO_DEVICE);
++		desc->buf_ptr = dma_map_page(mp->dev->dev.parent,
++					     this_frag->page,
++					     this_frag->page_offset,
++					     this_frag->size, DMA_TO_DEVICE);
+ 	}
  }
  
- static void append_ld_queue(struct fsl_dma_chan *fsl_chan,
--- 
-1.5.4.3
+@@ -826,7 +828,8 @@ no_csum:
+ 
+ 	desc->l4i_chk = l4i_chk;
+ 	desc->byte_cnt = length;
+-	desc->buf_ptr = dma_map_single(NULL, skb->data, length, DMA_TO_DEVICE);
++	desc->buf_ptr = dma_map_single(mp->dev->dev.parent, skb->data,
++				       length, DMA_TO_DEVICE);
+ 
+ 	__skb_queue_tail(&txq->tx_skb, skb);
+ 
+@@ -956,10 +959,10 @@ static int txq_reclaim(struct tx_queue *txq, int budget, int force)
+ 		}
+ 
+ 		if (cmd_sts & TX_FIRST_DESC) {
+-			dma_unmap_single(NULL, desc->buf_ptr,
++			dma_unmap_single(mp->dev->dev.parent, desc->buf_ptr,
+ 					 desc->byte_cnt, DMA_TO_DEVICE);
+ 		} else {
+-			dma_unmap_page(NULL, desc->buf_ptr,
++			dma_unmap_page(mp->dev->dev.parent, desc->buf_ptr,
+ 				       desc->byte_cnt, DMA_TO_DEVICE);
+ 		}
+ 
+@@ -1894,9 +1897,9 @@ static int rxq_init(struct mv643xx_eth_private *mp, int index)
+ 						mp->rx_desc_sram_size);
+ 		rxq->rx_desc_dma = mp->rx_desc_sram_addr;
+ 	} else {
+-		rxq->rx_desc_area = dma_alloc_coherent(NULL, size,
+-							&rxq->rx_desc_dma,
+-							GFP_KERNEL);
++		rxq->rx_desc_area = dma_alloc_coherent(mp->dev->dev.parent,
++						       size, &rxq->rx_desc_dma,
++						       GFP_KERNEL);
+ 	}
+ 
+ 	if (rxq->rx_desc_area == NULL) {
+@@ -1947,7 +1950,7 @@ out_free:
+ 	if (index == 0 && size <= mp->rx_desc_sram_size)
+ 		iounmap(rxq->rx_desc_area);
+ 	else
+-		dma_free_coherent(NULL, size,
++		dma_free_coherent(mp->dev->dev.parent, size,
+ 				  rxq->rx_desc_area,
+ 				  rxq->rx_desc_dma);
+ 
+@@ -1979,7 +1982,7 @@ static void rxq_deinit(struct rx_queue *rxq)
+ 	    rxq->rx_desc_area_size <= mp->rx_desc_sram_size)
+ 		iounmap(rxq->rx_desc_area);
+ 	else
+-		dma_free_coherent(NULL, rxq->rx_desc_area_size,
++		dma_free_coherent(mp->dev->dev.parent, rxq->rx_desc_area_size,
+ 				  rxq->rx_desc_area, rxq->rx_desc_dma);
+ 
+ 	kfree(rxq->rx_skb);
+@@ -2007,9 +2010,9 @@ static int txq_init(struct mv643xx_eth_private *mp, int index)
+ 						mp->tx_desc_sram_size);
+ 		txq->tx_desc_dma = mp->tx_desc_sram_addr;
+ 	} else {
+-		txq->tx_desc_area = dma_alloc_coherent(NULL, size,
+-							&txq->tx_desc_dma,
+-							GFP_KERNEL);
++		txq->tx_desc_area = dma_alloc_coherent(mp->dev->dev.parent,
++						       size, &txq->tx_desc_dma,
++						       GFP_KERNEL);
+ 	}
+ 
+ 	if (txq->tx_desc_area == NULL) {
+@@ -2053,7 +2056,7 @@ static void txq_deinit(struct tx_queue *txq)
+ 	    txq->tx_desc_area_size <= mp->tx_desc_sram_size)
+ 		iounmap(txq->tx_desc_area);
+ 	else
+-		dma_free_coherent(NULL, txq->tx_desc_area_size,
++		dma_free_coherent(mp->dev->dev.parent, txq->tx_desc_area_size,
+ 				  txq->tx_desc_area, txq->tx_desc_dma);
+ }
+ 
