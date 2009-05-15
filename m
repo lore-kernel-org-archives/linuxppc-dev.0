@@ -1,33 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A2BDFDE0DB
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 May 2009 01:36:40 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	n4FFaKSu029335
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 08:36:30 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n4FFaJ3j010560
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2009 10:36:19 -0500 (CDT)
-Date: Fri, 15 May 2009 10:36:19 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash, size
-Message-ID: <20090515153619.GA24872@b07421-ec1.am.freescale.net>
-References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
-	<4A0A683B.5010209@denx.de>
-	<20090514214819.GA15549@b07421-ec1.am.freescale.net>
-	<4A0D03AB.2040602@denx.de>
-Mime-Version: 1.0
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id CC3D5DE0EA
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 May 2009 02:59:49 +1000 (EST)
+Date: Fri, 15 May 2009 09:59:46 -0700
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Dan Williams <dan.j.williams@intel.com>, Li Yang <leoli@freescale.com>,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH] fsldma: fix memory leak on error path in fsl_dma_prep_memcpy()
+Message-ID: <20090515165946.GA858@ovro.caltech.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4A0D03AB.2040602@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
-	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,36 +19,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 15, 2009 at 07:54:51AM +0200, Heiko Schocher wrote:
-> Scott Wood wrote:
-> > We should proabbly leave out the ranges altogether, and have u-boot
-> > populate it from the mappings it establishes.
-> 
-> No, I vote for manipulating just the entries, which u-boot dynamically
-> detect, and let the other entries untouched. It is possible that
-> there is a device which u-boot didn;t use/know, and there is in the DTS
-> an ranges entry for it (Maybe not on the MPC8727ADS, but we should
-> define a rule, how a bootloader has to manipulate entries). So if
-> u-boot build the complete ranges entry, it maybe miss something.
+When preparing a memcpy operation, if the kernel fails to allocate memory
+for a link descriptor after the first link descriptor has already been
+allocated, then some memory will never be released. Fix the problem by
+walking the list of allocated descriptors backwards, and freeing the
+allocated descriptors back into the DMA pool.
 
-If u-boot doesn't know about it, then it didn't create the mapping, and
-thus it's not accessible (if something later on creates a mapping, it can
-update ranges itself).  The devices themselves would still be described,
-just not the non-existent mapping.
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+---
+ drivers/dma/fsldma.c |   18 +++++++++++++++---
+ 1 files changed, 15 insertions(+), 3 deletions(-)
 
-The benefit is that you would have just one place that reads out the
-localbus config into the device tree, with no error-prone duplication of
-data, or separate hacks for each board that has something that is
-variable.
-
-We could leave ranges in the dts for cuImage, and have u-boot just
-overwrite the entire thing rather than patch up individual entries.
-
-> > I don't see how current u-boot would accomodate more than 8MiB flash on
-> > this board (there's some detection in board/freescale/mpc8260ads/flash.c,
-> 
-> Didn;t this board uses the CFI driver? :-(
-
-Not yet, unfortunately.  This is pretty old code.
-
--Scott
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index da8a8ed..4264c98 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -454,8 +454,8 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+ {
+ 	struct fsl_dma_chan *fsl_chan;
+ 	struct fsl_desc_sw *first = NULL, *prev = NULL, *new;
++	struct list_head *list;
+ 	size_t copy;
+-	LIST_HEAD(link_chain);
+ 
+ 	if (!chan)
+ 		return NULL;
+@@ -472,7 +472,7 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+ 		if (!new) {
+ 			dev_err(fsl_chan->dev,
+ 					"No free memory for link descriptor\n");
+-			return NULL;
++			goto fail;
+ 		}
+ #ifdef FSL_DMA_LD_DEBUG
+ 		dev_dbg(fsl_chan->dev, "new link desc alloc %p\n", new);
+@@ -507,7 +507,19 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+ 	/* Set End-of-link to the last link descriptor of new list*/
+ 	set_ld_eol(fsl_chan, new);
+ 
+-	return first ? &first->async_tx : NULL;
++	return &first->async_tx;
++
++fail:
++	if (!first)
++		return NULL;
++
++	list = &first->async_tx.tx_list;
++	list_for_each_entry_safe_reverse(new, prev, list, node) {
++		list_del(&new->node);
++		dma_pool_free(fsl_chan->desc_pool, new, new->async_tx.phys);
++	}
++
++	return NULL;
+ }
+ 
+ /**
+-- 
+1.5.4.3
