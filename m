@@ -1,28 +1,20 @@
-Return-Path: <rbrito@ime.usp.br>
-Received: from smtp.uol.com.br (smtpout2.uol.com.br [200.221.4.193])
-	by ozlabs.org (Postfix) with ESMTP id 99565DE09B
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 May 2009 02:11:31 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by socom2.uol.com.br (Postfix) with ESMTP id CF4AF3386
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 May 2009 13:05:04 -0300 (BRT)
-Received: from chagas.nectar.ath.cx (unknown [187.22.248.170])
-	by socom2.uol.com.br (Postfix) with ESMTPA id A3CED32FB
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 May 2009 13:04:53 -0300 (BRT)
-Date: Sat, 16 May 2009 13:04:53 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc: minimizing the configuration of linkstation_defconfig
-Message-ID: <20090516160453.GA15138@ime.usp.br>
-References: <20090424065816.GA15525@ime.usp.br>
-	<Pine.LNX.4.64.0904242158210.8309@axis700.grange>
-	<20090424223355.GB7858@ime.usp.br>
-	<2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org>
-	<20090428133200.GB12828@ime.usp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20090428133200.GB12828@ime.usp.br>
-Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	linux-kernel@vger.kernel.org
+Return-Path: <krzysztof.h1@poczta.fm>
+Received: from smtp239.poczta.interia.pl (smtp239.poczta.interia.pl
+	[217.74.64.239]) by ozlabs.org (Postfix) with ESMTP id 9F694DE058
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 May 2009 18:00:57 +1000 (EST)
+Date: Sun, 17 May 2009 10:06:43 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Add PLB support and cleanup
+	DCR in xilinxfb driver.
+Message-Id: <20090517100643.9d00e980.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090515181237.22961.64270.stgit@localhost.localdomain>
+References: <20090515181237.22961.64270.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-fbdev-devel@lists.sourceforge.net,
+	Antonino Daplas <adaplas@gmail.com>, Suneel <suneelg@xilinx.com>,
+	linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,333 +24,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Kumar, Guennadi, and Co.
+Hi Grant and John,
+
+On Fri, 15 May 2009 12:19:17 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
+
+> Antonino,
+> 
+
+Antonino is gone for quite a long time. I have reviewed your patch.
+I have two comments only. Both are of small caliber.
+
+> If you prefer, I'm willing to merge it via my powerpc tree.
+> 
+
+As you prefer. If you want to send it here, CC it top Andrew Morton.
+
+>  drivers/video/xilinxfb.c |  290 ++++++++++++++++++++++++----------------------
+>  1 files changed, 151 insertions(+), 139 deletions(-)
+> 
+> 
+> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+> index 40a3a2a..7a868bd 100644
+> --- a/drivers/video/xilinxfb.c
+> +++ b/drivers/video/xilinxfb.c
+
+(...)
+
+> @@ -107,17 +111,28 @@ static struct fb_var_screeninfo xilinx_fb_var = {
+>  	.activate =	FB_ACTIVATE_NOW
+>  };
+>  
+> +
+> +#define PLB_ACCESS_FLAG	0x1		/* 1 = PLB, 0 = DCR */
+> +
+>  struct xilinxfb_drvdata {
+>  
+>  	struct fb_info	info;		/* FB driver info record */
+>  
+> -	u32		regs_phys;	/* phys. address of the control registers */
+> -	u32 __iomem	*regs;		/* virt. address of the control registers */
+> +	phys_addr_t	regs_phys;	/* phys. address of the control
+> +						registers */
+
+There are fields fb_info.fix.mmio_start and fb_info.fix.mmio_len for
+physical IO range used by framebuffer. There is no field for
+virtual IO address so the "regs" below must stay.
+
+> +	void __iomem	*regs;		/* virt. address of the control
+> +						registers */
+> +
+> +	dcr_host_t      dcr_host;
+> +	unsigned int    dcr_start;
+> +	unsigned int    dcr_len;
+>  
+>  	void		*fb_virt;	/* virt. address of the frame buffer */
+>  	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
+>  	int		fb_alloced;	/* Flag, was the fb memory alloced? */
+>  
+> +	u8 		flags;		/* features of the driver */
+> +
+>  	u32		reg_ctrl_default;
+>  
+>  	u32		pseudo_palette[PALETTE_ENTRIES_NO];
+
+(...)
+
+> @@ -247,7 +266,10 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
+>  	if (!drvdata->fb_virt) {
+>  		dev_err(dev, "Could not allocate frame buffer memory\n");
+>  		rc = -ENOMEM;
+> -		goto err_fbmem;
+> +		if (drvdata->flags & PLB_ACCESS_FLAG)
+> +			goto err_fbmem;
+> +		else
+> +			goto err_region;
+>  	}
+>  
+
+The code after labels err_fbmem and err_region is also
+modified so there is no need for the if clause here (just
+do "goto err_fbmem").
+
+>  	/* Clear (turn to black) the framebuffer */
 
 
-This patch addresses the following issues:
+The rest of the patch is ok for me.
 
-01. makes CFQ the default scheduler, to be in line with the rest of  
-the kernel.
+Regards,
+Krzysztof
 
-02. since linkstations are meant to store files, enable large blk  
-devices.
-
-03. disable CONFIG_MIGRATION in in such low memory devices.
-
-04. disable CONFIG_BLK_DEV_RAM.
-
-05. disable CONFIG_SCSI_LOWLEVEL, as no device under that tree is  
-used.
-
-06. idem for CONFIG_NETDEV_10000.
-
-07. idem for CONFIG_WIRELESS.
-
-08. idem for CONFIG_HWMON.
-
-09. idem for CONFIG_CRYPTO_HW.
-
-10. disable CONFIG_VIDEO_OUTPUT_CONTROL.
-
-11. keep consistency and disable extended attributes in CIFS, ext3,  
-and NFS.
-
-12. enable CONFIG_PRINTK_TIME.
-
-Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
-
----
-
-This is the patch for tidying the defconfig. I'm still having issues
-with the MTD devices, it seems. :-( I will investigate this now.
-
-I can send a similar patch to storcenter.
-
-diff --git a/arch/powerpc/configs/linkstation_defconfig b/arch/powerpc/configs/linkstation_defconfig
-index a4053ab..e762af0 100644
---- a/arch/powerpc/configs/linkstation_defconfig
-+++ b/arch/powerpc/configs/linkstation_defconfig
-@@ -155,7 +155,7 @@ CONFIG_MODULE_UNLOAD=y
- # CONFIG_MODVERSIONS is not set
- # CONFIG_MODULE_SRCVERSION_ALL is not set
- CONFIG_BLOCK=y
--# CONFIG_LBD is not set
-+CONFIG_LBD=y
- # CONFIG_BLK_DEV_BSG is not set
- # CONFIG_BLK_DEV_INTEGRITY is not set
- 
-@@ -166,11 +166,11 @@ CONFIG_IOSCHED_NOOP=y
- CONFIG_IOSCHED_AS=y
- CONFIG_IOSCHED_DEADLINE=y
- CONFIG_IOSCHED_CFQ=y
--CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_AS is not set
- # CONFIG_DEFAULT_DEADLINE is not set
--# CONFIG_DEFAULT_CFQ is not set
-+CONFIG_DEFAULT_CFQ=y
- # CONFIG_DEFAULT_NOOP is not set
--CONFIG_DEFAULT_IOSCHED="anticipatory"
-+CONFIG_DEFAULT_IOSCHED="cfq"
- # CONFIG_FREEZER is not set
- 
- #
-@@ -252,7 +252,7 @@ CONFIG_FLATMEM=y
- CONFIG_FLAT_NODE_MEM_MAP=y
- CONFIG_PAGEFLAGS_EXTENDED=y
- CONFIG_SPLIT_PTLOCK_CPUS=4
--CONFIG_MIGRATION=y
-+# CONFIG_MIGRATION is not set
- # CONFIG_PHYS_ADDR_T_64BIT is not set
- CONFIG_ZONE_DMA_FLAG=1
- CONFIG_BOUNCE=y
-@@ -492,13 +492,7 @@ CONFIG_IP_NF_ARP_MANGLE=m
- # CONFIG_IRDA is not set
- # CONFIG_BT is not set
- # CONFIG_AF_RXRPC is not set
--CONFIG_WIRELESS=y
--# CONFIG_CFG80211 is not set
--CONFIG_WIRELESS_OLD_REGULATORY=y
--CONFIG_WIRELESS_EXT=y
--CONFIG_WIRELESS_EXT_SYSFS=y
--# CONFIG_LIB80211 is not set
--# CONFIG_MAC80211 is not set
-+# CONFIG_WIRELESS is not set
- # CONFIG_WIMAX is not set
- # CONFIG_RFKILL is not set
- # CONFIG_NET_9P is not set
-@@ -625,10 +619,7 @@ CONFIG_BLK_DEV_LOOP=y
- # CONFIG_BLK_DEV_NBD is not set
- # CONFIG_BLK_DEV_SX8 is not set
- # CONFIG_BLK_DEV_UB is not set
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_COUNT=2
--CONFIG_BLK_DEV_RAM_SIZE=8192
--# CONFIG_BLK_DEV_XIP is not set
-+# CONFIG_BLK_DEV_RAM is not set
- # CONFIG_CDROM_PKTCDVD is not set
- # CONFIG_ATA_OVER_ETH is not set
- # CONFIG_BLK_DEV_HD is not set
-@@ -688,49 +679,7 @@ CONFIG_SCSI_WAIT_SCAN=m
- # CONFIG_SCSI_ISCSI_ATTRS is not set
- # CONFIG_SCSI_SAS_LIBSAS is not set
- # CONFIG_SCSI_SRP_ATTRS is not set
--CONFIG_SCSI_LOWLEVEL=y
--# CONFIG_ISCSI_TCP is not set
--# CONFIG_SCSI_CXGB3_ISCSI is not set
--# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
--# CONFIG_SCSI_3W_9XXX is not set
--# CONFIG_SCSI_ACARD is not set
--# CONFIG_SCSI_AACRAID is not set
--# CONFIG_SCSI_AIC7XXX is not set
--# CONFIG_SCSI_AIC7XXX_OLD is not set
--# CONFIG_SCSI_AIC79XX is not set
--# CONFIG_SCSI_AIC94XX is not set
--# CONFIG_SCSI_DPT_I2O is not set
--# CONFIG_SCSI_ADVANSYS is not set
--# CONFIG_SCSI_ARCMSR is not set
--# CONFIG_MEGARAID_NEWGEN is not set
--# CONFIG_MEGARAID_LEGACY is not set
--# CONFIG_MEGARAID_SAS is not set
--# CONFIG_SCSI_MPT2SAS is not set
--# CONFIG_SCSI_HPTIOP is not set
--# CONFIG_SCSI_BUSLOGIC is not set
--# CONFIG_LIBFC is not set
--# CONFIG_LIBFCOE is not set
--# CONFIG_FCOE is not set
--# CONFIG_SCSI_DMX3191D is not set
--# CONFIG_SCSI_EATA is not set
--# CONFIG_SCSI_FUTURE_DOMAIN is not set
--# CONFIG_SCSI_GDTH is not set
--# CONFIG_SCSI_IPS is not set
--# CONFIG_SCSI_INITIO is not set
--# CONFIG_SCSI_INIA100 is not set
--# CONFIG_SCSI_MVSAS is not set
--# CONFIG_SCSI_STEX is not set
--# CONFIG_SCSI_SYM53C8XX_2 is not set
--# CONFIG_SCSI_IPR is not set
--# CONFIG_SCSI_QLOGIC_1280 is not set
--# CONFIG_SCSI_QLA_FC is not set
--# CONFIG_SCSI_QLA_ISCSI is not set
--# CONFIG_SCSI_LPFC is not set
--# CONFIG_SCSI_DC395x is not set
--# CONFIG_SCSI_DC390T is not set
--# CONFIG_SCSI_NSP32 is not set
--# CONFIG_SCSI_DEBUG is not set
--# CONFIG_SCSI_SRP is not set
-+# CONFIG_SCSI_LOWLEVEL is not set
- # CONFIG_SCSI_DH is not set
- # CONFIG_SCSI_OSD_INITIATOR is not set
- CONFIG_ATA=y
-@@ -872,25 +821,7 @@ CONFIG_R8169=y
- # CONFIG_ATL1E is not set
- # CONFIG_ATL1C is not set
- # CONFIG_JME is not set
--CONFIG_NETDEV_10000=y
--# CONFIG_CHELSIO_T1 is not set
--CONFIG_CHELSIO_T3_DEPENDS=y
--# CONFIG_CHELSIO_T3 is not set
--# CONFIG_ENIC is not set
--# CONFIG_IXGBE is not set
--# CONFIG_IXGB is not set
--# CONFIG_S2IO is not set
--# CONFIG_VXGE is not set
--# CONFIG_MYRI10GE is not set
--# CONFIG_NETXEN_NIC is not set
--# CONFIG_NIU is not set
--# CONFIG_MLX4_EN is not set
--# CONFIG_MLX4_CORE is not set
--# CONFIG_TEHUTI is not set
--# CONFIG_BNX2X is not set
--# CONFIG_QLGE is not set
--# CONFIG_SFC is not set
--# CONFIG_BE2NET is not set
-+# CONFIG_NETDEV_10000 is not set
- # CONFIG_TR is not set
- 
- #
-@@ -1085,68 +1016,7 @@ CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
- # CONFIG_GPIOLIB is not set
- # CONFIG_W1 is not set
- # CONFIG_POWER_SUPPLY is not set
--CONFIG_HWMON=y
--# CONFIG_HWMON_VID is not set
--# CONFIG_SENSORS_AD7414 is not set
--# CONFIG_SENSORS_AD7418 is not set
--# CONFIG_SENSORS_ADM1021 is not set
--# CONFIG_SENSORS_ADM1025 is not set
--# CONFIG_SENSORS_ADM1026 is not set
--# CONFIG_SENSORS_ADM1029 is not set
--# CONFIG_SENSORS_ADM1031 is not set
--# CONFIG_SENSORS_ADM9240 is not set
--# CONFIG_SENSORS_ADT7462 is not set
--# CONFIG_SENSORS_ADT7470 is not set
--# CONFIG_SENSORS_ADT7473 is not set
--# CONFIG_SENSORS_ADT7475 is not set
--# CONFIG_SENSORS_ATXP1 is not set
--# CONFIG_SENSORS_DS1621 is not set
--# CONFIG_SENSORS_I5K_AMB is not set
--# CONFIG_SENSORS_F71805F is not set
--# CONFIG_SENSORS_F71882FG is not set
--# CONFIG_SENSORS_F75375S is not set
--# CONFIG_SENSORS_G760A is not set
--# CONFIG_SENSORS_GL518SM is not set
--# CONFIG_SENSORS_GL520SM is not set
--# CONFIG_SENSORS_IT87 is not set
--# CONFIG_SENSORS_LM63 is not set
--# CONFIG_SENSORS_LM75 is not set
--# CONFIG_SENSORS_LM77 is not set
--# CONFIG_SENSORS_LM78 is not set
--# CONFIG_SENSORS_LM80 is not set
--# CONFIG_SENSORS_LM83 is not set
--# CONFIG_SENSORS_LM85 is not set
--# CONFIG_SENSORS_LM87 is not set
--# CONFIG_SENSORS_LM90 is not set
--# CONFIG_SENSORS_LM92 is not set
--# CONFIG_SENSORS_LM93 is not set
--# CONFIG_SENSORS_LTC4215 is not set
--# CONFIG_SENSORS_LTC4245 is not set
--# CONFIG_SENSORS_LM95241 is not set
--# CONFIG_SENSORS_MAX1619 is not set
--# CONFIG_SENSORS_MAX6650 is not set
--# CONFIG_SENSORS_PC87360 is not set
--# CONFIG_SENSORS_PC87427 is not set
--# CONFIG_SENSORS_PCF8591 is not set
--# CONFIG_SENSORS_SIS5595 is not set
--# CONFIG_SENSORS_DME1737 is not set
--# CONFIG_SENSORS_SMSC47M1 is not set
--# CONFIG_SENSORS_SMSC47M192 is not set
--# CONFIG_SENSORS_SMSC47B397 is not set
--# CONFIG_SENSORS_ADS7828 is not set
--# CONFIG_SENSORS_THMC50 is not set
--# CONFIG_SENSORS_VIA686A is not set
--# CONFIG_SENSORS_VT1211 is not set
--# CONFIG_SENSORS_VT8231 is not set
--# CONFIG_SENSORS_W83781D is not set
--# CONFIG_SENSORS_W83791D is not set
--# CONFIG_SENSORS_W83792D is not set
--# CONFIG_SENSORS_W83793 is not set
--# CONFIG_SENSORS_W83L785TS is not set
--# CONFIG_SENSORS_W83L786NG is not set
--# CONFIG_SENSORS_W83627HF is not set
--# CONFIG_SENSORS_W83627EHF is not set
--# CONFIG_HWMON_DEBUG_CHIP is not set
-+# CONFIG_HWMON is not set
- # CONFIG_THERMAL is not set
- # CONFIG_THERMAL_HWMON is not set
- # CONFIG_WATCHDOG is not set
-@@ -1193,7 +1063,7 @@ CONFIG_SSB_POSSIBLE=y
- # CONFIG_AGP is not set
- # CONFIG_DRM is not set
- # CONFIG_VGASTATE is not set
--CONFIG_VIDEO_OUTPUT_CONTROL=m
-+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
- # CONFIG_FB is not set
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
- 
-@@ -1460,21 +1330,19 @@ CONFIG_EXT2_FS=y
- # CONFIG_EXT2_FS_XIP is not set
- CONFIG_EXT3_FS=y
- # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
--CONFIG_EXT3_FS_XATTR=y
--# CONFIG_EXT3_FS_POSIX_ACL is not set
--# CONFIG_EXT3_FS_SECURITY is not set
-+# CONFIG_EXT3_FS_XATTR is not set
- # CONFIG_EXT4_FS is not set
- CONFIG_JBD=y
--CONFIG_FS_MBCACHE=y
- # CONFIG_REISERFS_FS is not set
- # CONFIG_JFS_FS is not set
--CONFIG_FS_POSIX_ACL=y
-+# CONFIG_FS_POSIX_ACL is not set
- CONFIG_FILE_LOCKING=y
- CONFIG_XFS_FS=m
- # CONFIG_XFS_QUOTA is not set
- # CONFIG_XFS_POSIX_ACL is not set
- # CONFIG_XFS_RT is not set
- # CONFIG_XFS_DEBUG is not set
-+# CONFIG_GFS2_FS is not set
- # CONFIG_OCFS2_FS is not set
- # CONFIG_BTRFS_FS is not set
- CONFIG_DNOTIFY=y
-@@ -1546,7 +1414,7 @@ CONFIG_MISC_FILESYSTEMS=y
- CONFIG_NETWORK_FILESYSTEMS=y
- CONFIG_NFS_FS=y
- CONFIG_NFS_V3=y
--CONFIG_NFS_V3_ACL=y
-+# CONFIG_NFS_V3_ACL is not set
- CONFIG_NFS_V4=y
- CONFIG_ROOT_NFS=y
- CONFIG_NFSD=m
-@@ -1556,7 +1424,6 @@ CONFIG_NFSD_V3=y
- CONFIG_LOCKD=y
- CONFIG_LOCKD_V4=y
- CONFIG_EXPORTFS=m
--CONFIG_NFS_ACL_SUPPORT=y
- CONFIG_NFS_COMMON=y
- CONFIG_SUNRPC=y
- CONFIG_SUNRPC_GSS=y
-@@ -1649,7 +1516,7 @@ CONFIG_NLATTR=y
- #
- # Kernel hacking
- #
--# CONFIG_PRINTK_TIME is not set
-+CONFIG_PRINTK_TIME=y
- CONFIG_ENABLE_WARN_DEPRECATED=y
- CONFIG_ENABLE_MUST_CHECK=y
- CONFIG_FRAME_WARN=1024
-@@ -1832,8 +1699,6 @@ CONFIG_CRYPTO_DEFLATE=m
- # Random Number Generation
- #
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
--CONFIG_CRYPTO_HW=y
--# CONFIG_CRYPTO_DEV_HIFN_795X is not set
--# CONFIG_CRYPTO_DEV_TALITOS is not set
-+# CONFIG_CRYPTO_HW is not set
- # CONFIG_PPC_CLOCK is not set
- # CONFIG_VIRTUALIZATION is not set
-
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+----------------------------------------------------------------------
+Fantastyczne nagrody do zgarniecia!
+Zagraj >> http://link.interia.pl/f2177 
