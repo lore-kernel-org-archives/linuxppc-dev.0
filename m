@@ -1,21 +1,14 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id CD5EEDE050
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 00:29:09 +1000 (EST)
-Message-ID: <4A1170B0.5080203@grandegger.com>
-Date: Mon, 18 May 2009 16:29:04 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: =?ISO-8859-2?Q?Piotr_Zi=EAcik?= <kosmo@semihalf.com>
-Subject: Re: [PATCH 08/12] mpc5121: Added I2C support.
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<fa686aa40905061941p6fd4b03dt1097cf4d16bdd665@mail.gmail.com>
-	<4A028182.3040107@grandegger.com>
-	<200905181557.11766.kosmo@semihalf.com>
-In-Reply-To: <200905181557.11766.kosmo@semihalf.com>
-Content-Type: text/plain; charset=iso-8859-2
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, linux-i2c@vger.kernel.org
+Return-Path: <dp@tgi-sci.com>
+Received: from server318.com (server318.com [216.35.196.92])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E0FBEDDFB7
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 01:01:03 +1000 (EST)
+Message-id: <4A117823-3B-3CBB2B73@nukeman.tgi-sci.com>
+To: <linuxppc-dev@ozlabs.org>
+From: Dimiter Popoff <dp@tgi-sci.com>
+Subject: Re: FEC & SDMA (bestcomm) interaction on the 5200
+Date: Mon, 18 May 2009 17:59:47 +0200
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +18,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Piotr Ziêcik wrote:
->> Right. Furthermore, the i2c-mpc.c should be extened to support bus speed
->> setting for the MPC512x, which has been merged recently (see commit id
->> f2bd5efe).
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Fri, 15 May 2009 08:52:19 -0600
+> Subject: Re: FEC & SDMA (bestcomm) interaction on the 5200
+> To: Dimiter Popoff <dp@tgi-sci.com>
+> Cc: linuxppc-dev@ozlabs.org
 > 
-> I have simple question about bus speed setting support. Existing 
-> implementation uses default safe speed if there is no 'clock-frequency' 
-> property in i2c node. Comments in code suggest that this behaviour is left 
-> for backward compatibility only. Should I make the 'clock-frequency'
-> property mandatory for a new type of I2C controller (MPC5121) ?
+> On Fri, May 15, 2009 at 2:36 AM, Dimiter Popoff <dp@tgi-sci.com> wrote:
+> > Hi people,
+> >
+> > I am porting my (not linux) OS to the 5200. I went all the
+> > way understanding how the SDMA works and programming what
+> > I needed for it so things are now pretty stable in terms
+> > of disk I/O and system memory -> PCI (offscreen window
+> > buffers -> PCI display framebuffer).
+> >
+> > =A0And I wanted to make use of the Ethernet ("FEC", as they have
+> > it), hoping it would take me a few days (not my first one).
+> >
+> > =A0I am out of luck - it is practically undocumented. There is some
+> > talk of receive buffers which the FEC should see empty etc.,
+> > how on earth is that supposed to happen when it has no bus
+> > master capability at all? It relies on the SDMA for its bus
+> > activity - but in what format does it expect to get these
+> > buffer related data?
+> > =A0Or (more likely, at least hopefully so) this talk in the
+> > MPC5200BUM (and MPC5200UM, for that) is just nonsense and
+> > the FEC simply puts in the FIFO incoming packets, writing as
+> > a last .l the receive frame status word? If so, I could
+> > easily handle that with the SDMA.
+> > =A0Same question about transmitting. I can only hope/assume
+> > that the FEC will just send what it is handed through the
+> > FIFO by the SDMA, the very first .l being the frame control
+> > word, and ending when the TFD from the data drd1a or whatever
+> > makes it through?
+> 
+> It's been a long time since I've been in the bowels of the FEC driver,
+> but I believe you are correct.
+> 
+> g.
+> 
+> -- =
+> 
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+>
 
-I don't think so, for the same backward compatibility reason as for the
-other boards. But the DTS file might be changed to use clock-frequency.
-BTW, when I wrote the code I already had the MPC512x in mind. IIRC, the
-FDR table and the function scanning it for the MPC52xx should work for
-the MPC512x as well. It's mainly a matter of using the proper function
-to get the source clock frequency and fiddling with multiple-arch support.
+Thanks for the input, Grant. It matches the memories of a guy
+at Frrecale who has had to deal with it ass well, so I guess
+I am on the right path - It won't be without trying this or
+that out but I am well enough positioned to start.
 
-Wolfgang.
+Dimiter
+
+------------------------------------------------------
+Dimiter Popoff               Transgalactic Instruments
+
+http://www.tgi-sci.com
+------------------------------------------------------
+http://www.flickr.com/photos/didi_tgi/sets/72157600228621276/
