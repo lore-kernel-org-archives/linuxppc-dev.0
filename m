@@ -1,18 +1,29 @@
-Return-Path: <mikey@neuling.org>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 474F2DE046
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 14:14:05 +1000 (EST)
-From: Michael Neuling <mikey@neuling.org>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] powerpc: Make the NR_CPUS max 8192 
-In-reply-to: <1242609873.13757.4.camel@concordia> 
-References: <17087.1242609196@neuling.org> <1242609873.13757.4.camel@concordia>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 85666DE087
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 14:14:20 +1000 (EST)
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
+	select CONFIG_FRAME_POINTER
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <1241565080.11379.14.camel@localhost.localdomain>
+References: <20090502001329.GA11549@oksana.dev.rtsoft.ru>
+	<20090502001421.GA9342@oksana.dev.rtsoft.ru>
+	<68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org>
+	<1241316249.4243.22.camel@localhost.localdomain>
+	<6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
+	<1241530382.11379.12.camel@localhost.localdomain>
+	<299D7402-29D3-4602-8F42-58FDF034DEC5@kernel.crashing.org>
+	<1241565080.11379.14.camel@localhost.localdomain>
+Content-Type: text/plain
 Date: Mon, 18 May 2009 14:14:04 +1000
-Message-ID: <9686.1242620044@neuling.org>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Message-Id: <1242620044.18075.31.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > We can compile and boot with NR_CPUS=3D8192, so make this the max.  1024
-> > was an arbitrary decision anyway.
+On Tue, 2009-05-05 at 19:11 -0400, Steven Rostedt wrote:
+
+> OK, so what's the status with this patch series?
 > 
-> Is 8192 still arbitrary? Or does something break above that?
+> I don't want to pull it in unless I have an ack from Sam, and now
+> there's issues with having -fno-omit-frame-pointer. Should we add a
+> patch instead that simply removes that?
+> 
+> If we eliminate the -fno-omit-frame-pointer, would that solve the PPC
+> problem? And would it cause any other issues with other archs?
 
-Yeah, the compile breaks after that with 4K pages.
+Well, the patch looks fine to me to be honest I'm not sure what the
+complaint is above... 
 
-In drivers/base/node.c we have:
-	/* 2008/04/07: buf currently PAGE_SIZE, need 9 chars per 32 bits. */
-	BUILD_BUG_ON((NR_CPUS/32 * 9) > (PAGE_SIZE-1));
-which causes:
-drivers/base/node.c: In function 'node_read_cpumap':
-drivers/base/node.c:31: error: size of array 'type name' is negative
+IE. On arch that define the new HAVE_NORMAL_FRAME_POINTER (let's just
+call it HAVE_IMPLIED_FRAME_POINTER then :-)  we just don't do
+-fno-omit-frame-pointer and avoid triggering the bug...
 
-I can compile with 16384 CPUs with 64K pages, but it doesn't boot.  
+Segher, what are we missing here ?
 
-sfr asked for size info for different builds, so I may as well repost
-them here:
-
-   text	   data		bss		dec		hex	filename
-9237767	3225768		4409996		16873531	101783b	vmlinux.1024
-9247355	4769472		7373708		21390535	14664c7	vmlinux.2048
-9267239	7857032		13301132	30425403	1d0413b	vmlinux.4096
-9302623	14035832	25155980	48494435	2e3f763	vmlinux.8192
-9373283	26389360	48865676	84628319	50b535f	vmlinux.16384
-
-config was pseries_defconfig but with 64K pages.
-
-Mikey
+Ben.
