@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E42D8DE01E
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 07:52:53 +1000 (EST)
-Subject: Re: fs_enet build breakage
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20090518172016.GB18620@b07421-ec1.am.freescale.net>
-References: <1242630064.18075.48.camel@pasglop>
-	<9732983B-B67C-4831-BBAB-65472BE0F279@kernel.crashing.org>
-	<20090518172016.GB18620@b07421-ec1.am.freescale.net>
-Content-Type: text/plain
-Date: Tue, 19 May 2009 07:50:44 +1000
-Message-Id: <1242683444.16901.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: Kumar Gala <galak@gate.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 0DF22DE03E
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 08:19:00 +1000 (EST)
+Date: Tue, 19 May 2009 00:18:47 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>
+Subject: Re: [PATCH] Allow selecting mv643xx_eth on Pegasos again
+Message-ID: <20090518221847.GA17348@iram.es>
+References: <20090518173756.GA11805@iram.es>
+	<598D5675D34BE349929AF5EDE9B03E2702C2D323@az33exm24.fsl.freescale.net>
+	<20090518184752.GA12972@iram.es>
+	<598D5675D34BE349929AF5EDE9B03E2702C2D3A5@az33exm24.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <598D5675D34BE349929AF5EDE9B03E2702C2D3A5@az33exm24.fsl.freescale.net>
+Cc: netdev@vger.kernel.org, tbm@cyrius.com, LinuxPPC <linuxppc-dev@ozlabs.org>,
+	pacman@kosh.dhis.org, David Miller <davem@davemloft.net>,
+	Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2009-05-18 at 12:20 -0500, Scott Wood wrote:
-> > I'm pretty sure the driver changes to address this are in dave's
-> net- 
-> > next tree.
-> 
-> Won't this break git bisect?
-> 
-> Not to mention anyone trying to use your tree now...
+Hello Medve
 
-Right, though if you have the commit ID in DaveM tree, I can work with
-him to sort out that driver, for example by having the same commit in
-my tree.
+On Mon, May 18, 2009 at 01:15:12PM -0700, Medve Emilian-EMMEDVE1 wrote:
+> 
+> You're correct. MV64360 seems to be stale. Do you want to re-spin your
+> patch to get rid of it?
 
-Ben.
+
+No problem, bu should I respin in from the current official git
+or on top of yours?
+
+> 
+> (I wouldn't create a dependency between MV643XX_ETH and PPC_CHRP.)
+
+Fine with me.
+
+	Regards,
+	Gabriel
