@@ -2,15 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A16FDDE06F
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 22:57:30 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 50233DE0B2
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 23:23:22 +1000 (EST)
+Message-Id: <9732983B-B67C-4831-BBAB-65472BE0F279@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] powerpc/pci: clean up direct access to sysdata by iseries
-	platform
-Date: Mon, 18 May 2009 07:56:27 -0500
-Message-Id: <1242651387-13194-1-git-send-email-galak@kernel.crashing.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1242630064.18075.48.camel@pasglop>
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: fs_enet build breakage
+Date: Mon, 18 May 2009 08:23:17 -0500
+References: <1242630064.18075.48.camel@pasglop>
+Cc: Kumar Gala <galak@gate.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,70 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We shouldn't directly access sysdata to get the device node.  We should
-be calling pci_device_to_OF_node().
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-* Fixed compile error (dev -> pdev)
+On May 18, 2009, at 2:01 AM, Benjamin Herrenschmidt wrote:
 
- arch/powerpc/platforms/iseries/iommu.c |    2 +-
- arch/powerpc/platforms/iseries/pci.c   |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+> Hi Kumar
+>
+> Commit 4484079d517c2b6521621be0b1ea246ccc55c7d7 from your next branch
+> breaks my 8xx test config with the following error:
+>
+> /home/benh/linux-powerpc-test/drivers/net/fs_enet/fs_enet-main.c: In =20=
 
-diff --git a/arch/powerpc/platforms/iseries/iommu.c b/arch/powerpc/platforms/iseries/iommu.c
-index 4021982..6c1e101 100644
---- a/arch/powerpc/platforms/iseries/iommu.c
-+++ b/arch/powerpc/platforms/iseries/iommu.c
-@@ -177,7 +177,7 @@ static struct iommu_table *iommu_table_find(struct iommu_table * tbl)
- static void pci_dma_dev_setup_iseries(struct pci_dev *pdev)
- {
- 	struct iommu_table *tbl;
--	struct device_node *dn = pdev->sysdata;
-+	struct device_node *dn = pci_device_to_OF_node(pdev);
- 	struct pci_dn *pdn = PCI_DN(dn);
- 	const u32 *lsn = of_get_property(dn, "linux,logical-slot-number", NULL);
- 
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 21cddc3..175aac8 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -318,6 +318,7 @@ static void __init iomm_table_allocate_entry(struct pci_dev *dev, int bar_num)
- {
- 	struct resource *bar_res = &dev->resource[bar_num];
- 	long bar_size = pci_resource_len(dev, bar_num);
-+	struct device_node *dn = pci_device_to_OF_node(dev);
- 
- 	/*
- 	 * No space to allocate, quick exit, skip Allocation.
-@@ -335,9 +336,9 @@ static void __init iomm_table_allocate_entry(struct pci_dev *dev, int bar_num)
- 	 * Allocate the number of table entries needed for BAR.
- 	 */
- 	while (bar_size > 0 ) {
--		iomm_table[current_iomm_table_entry] = dev->sysdata;
-+		iomm_table[current_iomm_table_entry] = dn;
- 		ds_addr_table[current_iomm_table_entry] =
--			iseries_ds_addr(dev->sysdata) | (bar_num << 24);
-+			iseries_ds_addr(dn) | (bar_num << 24);
- 		bar_size -= IOMM_TABLE_ENTRY_SIZE;
- 		++current_iomm_table_entry;
- 	}
-@@ -410,7 +411,7 @@ void __init iSeries_pcibios_fixup_resources(struct pci_dev *pdev)
- 	struct device_node *node;
- 	int i;
- 
--	node = find_device_node(bus, pdev->devfn);
-+	node = pci_device_to_OF_node(pdev);
- 	pr_debug("PCI: iSeries %s, pdev %p, node %p\n",
- 		 pci_name(pdev), pdev, node);
- 	if (!node) {
-@@ -441,7 +442,6 @@ void __init iSeries_pcibios_fixup_resources(struct pci_dev *pdev)
- 		}
- 	}
- 
--	pdev->sysdata = node;
- 	allocate_device_bars(pdev);
- 	iseries_device_information(pdev, bus, *sub_bus);
- }
--- 
-1.6.0.6
+> function =91setup_immap=92:
+> /home/benh/linux-powerpc-test/drivers/net/fs_enet/fs_enet-main.c:=20
+> 947: error: =91IMAP_ADDR=92 undeclared (first use in this function)
+> /home/benh/linux-powerpc-test/drivers/net/fs_enet/fs_enet-main.c:=20
+> 947: error: (Each undeclared identifier is reported only once
+> /home/benh/linux-powerpc-test/drivers/net/fs_enet/fs_enet-main.c:=20
+> 947: error: for each function it appears in.)
+>
+> I'm still pushing it with a bunch of other stuff to "test" so people =20=
+
+> get
+> to find more breakage but it will need to be fixed for the actual =20
+> "next"
+> branch.
+>
+> Cheers,
+> Ben.
+>
+
+I'm pretty sure the driver changes to address this are in dave's net-=20
+next tree.
+
+- k=
