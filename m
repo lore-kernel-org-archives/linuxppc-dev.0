@@ -1,17 +1,23 @@
-Return-Path: <mikey@neuling.org>
+Return-Path: <michael@ellerman.id.au>
 Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bilbo.ozlabs.org",
 	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 74652DDFB6
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 11:13:17 +1000 (EST)
-From: Michael Neuling <mikey@neuling.org>
-To: paulus@samba.org, benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: [PATCH] powerpc: Make the NR_CPUS max 8192
-Date: Mon, 18 May 2009 11:13:16 +1000
-Message-ID: <17087.1242609196@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 5440DDE050
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 11:24:34 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Make the NR_CPUS max 8192
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <17087.1242609196@neuling.org>
+References: <17087.1242609196@neuling.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-JxJIjAKiK46r42zU707W"
+Date: Mon, 18 May 2009 11:24:33 +1000
+Message-Id: <1242609873.13757.4.camel@concordia>
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We can compile and boot with NR_CPUS=8192, so make this the max.  1024
-was an arbitrary decision anyway.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
---
-No, I've not actually booted on a 8192 way machine, although if wishing
-made it so.... 
+--=-JxJIjAKiK46r42zU707W
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- arch/powerpc/platforms/Kconfig.cputype |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Mon, 2009-05-18 at 11:13 +1000, Michael Neuling wrote:
+> We can compile and boot with NR_CPUS=3D8192, so make this the max.  1024
+> was an arbitrary decision anyway.
 
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/Kconfig.cputype
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/Kconfig.cputype
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/Kconfig.cputype
-@@ -262,8 +262,8 @@ config SMP
- 	  If you don't know what to do here, say N.
- 
- config NR_CPUS
--	int "Maximum number of CPUs (2-1024)"
--	range 2 1024
-+	int "Maximum number of CPUs (2-8192)"
-+	range 2 8192
- 	depends on SMP
- 	default "32" if PPC64
- 	default "4"
+Is 8192 still arbitrary? Or does something break above that?
+
+cheers
+
+--=-JxJIjAKiK46r42zU707W
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkoQuM0ACgkQdSjSd0sB4dKgSwCfbKo7HVrt5T11sVfjLi8RHgPH
+AnsAn2lCB6JciYeIzgmDUJNU1bes8zsd
+=khXI
+-----END PGP SIGNATURE-----
+
+--=-JxJIjAKiK46r42zU707W--
