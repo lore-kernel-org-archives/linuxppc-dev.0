@@ -2,19 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 50233DE0B2
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 23:23:22 +1000 (EST)
-Message-Id: <9732983B-B67C-4831-BBAB-65472BE0F279@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 62F56DE0AB
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 23:25:10 +1000 (EST)
+Message-Id: <DE108B1C-85A6-4D1F-8E4D-E1AB5495578A@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1242630064.18075.48.camel@pasglop>
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed; delsp=yes
+In-Reply-To: <1242622141.18075.37.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: fs_enet build breakage
-Date: Mon, 18 May 2009 08:23:17 -0500
-References: <1242630064.18075.48.camel@pasglop>
-Cc: Kumar Gala <galak@gate.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+Date: Mon, 18 May 2009 08:25:01 -0500
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
+	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
+	<1242622141.18075.37.camel@pasglop>
+Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +26,53 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 18, 2009, at 2:01 AM, Benjamin Herrenschmidt wrote:
+On May 17, 2009, at 11:49 PM, Benjamin Herrenschmidt wrote:
 
-> Hi Kumar
+> On Thu, 2009-05-14 at 17:42 -0500, Becky Bruce wrote:
+>> This patch includes the basic infrastructure to use swiotlb
+>> bounce buffering on 32-bit powerpc.  It is not yet enabled on
+>> any platforms.  Probably the most interesting bit is the
+>> addition of addr_needs_map to dma_ops - we need this as
+>> a dma_op because the decision of whether or not an addr
+>> can be mapped by a device is device-specific.
+>>
+>> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
 >
-> Commit 4484079d517c2b6521621be0b1ea246ccc55c7d7 from your next branch
-> breaks my 8xx test config with the following error:
+> Hi Becky !
 >
-> /home/benh/linux-powerpc-test/drivers/net/fs_enet/fs_enet-main.c: In =20=
+> Finally I got to look at your patch :-)
+>
+> A few comments below...
+>
+>> #ifdef CONFIG_NOT_COHERENT_CACHE
+>> /*
+>>  * DMA-consistent mapping functions for PowerPCs that don't support
+>> @@ -76,6 +85,8 @@ struct dma_mapping_ops {
+>> 				dma_addr_t dma_address, size_t size,
+>> 				enum dma_data_direction direction,
+>> 				struct dma_attrs *attrs);
+>> +	int		(*addr_needs_map)(struct device *dev, dma_addr_t addr,
+>> +				size_t size);
+>
+> What annoys me here is that we basically end up with two indirect
+> function calls for pretty much any DMA map. One was bad enough on low
+> end processors or very intensive networking, but this is getting real
+> bad don't you think ?
+>
+> Granted, this is only used when swiotlb is used too, but still...
+>
+> So the problem is that the region that can pass-through is somewhat
+> a mix of bus specific (incoming DMA window location & size) and
+> device specific (device addressing limitations).
+>
+> Now, if we can always reduce it to a single range though, which I
+> think is practically the case, can't we instead pre-calculate that
+> range and stick -that- in the struct dev archdata or similar thus
+> speeding up the decision for a given address as to whether it needs
+> a swiotlb mapping or not ? Or does it gets too messy ?
 
-> function =91setup_immap=92:
-> /home/benh/linux-powerpc-test/drivers/net/fs_enet/fs_enet-main.c:=20
-> 947: error: =91IMAP_ADDR=92 undeclared (first use in this function)
-> /home/benh/linux-powerpc-test/drivers/net/fs_enet/fs_enet-main.c:=20
-> 947: error: (Each undeclared identifier is reported only once
-> /home/benh/linux-powerpc-test/drivers/net/fs_enet/fs_enet-main.c:=20
-> 947: error: for each function it appears in.)
->
-> I'm still pushing it with a bunch of other stuff to "test" so people =20=
+Part of this is how the generic swiotlb code works and part of it was  
+our desire not to bloat dev archdata by adding such info that as you  
+say is either bus specific or conveyed in the dma addr mask.
 
-> get
-> to find more breakage but it will need to be fixed for the actual =20
-> "next"
-> branch.
->
-> Cheers,
-> Ben.
->
-
-I'm pretty sure the driver changes to address this are in dave's net-=20
-next tree.
-
-- k=
+- k
