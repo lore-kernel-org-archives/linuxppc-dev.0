@@ -1,28 +1,18 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7C7E4DE039
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 03:27:18 +1000 (EST)
-Date: Mon, 18 May 2009 10:26:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [BUG] 2.6.30-rc3: BUG triggered on some hugepage usages
-In-Reply-To: <20090518171322.GB13093@csn.ul.ie>
-Message-ID: <alpine.LFD.2.01.0905181022420.3301@localhost.localdomain>
-References: <alpine.LFD.2.00.0904212014170.3101@localhost.localdomain>
-	<20090424095116.GB14283@csn.ul.ie>
-	<1240586690.12551.31.camel@localhost>
-	<20090430205919.GA24279@csn.ul.ie>
-	<1241128126.29501.48.camel@pasglop>
-	<20090518171322.GB13093@csn.ul.ie>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 4C936DE074
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 03:34:05 +1000 (EST)
+Date: Mon, 18 May 2009 19:33:52 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Allow selecting mv643xx_eth on Pegasos again
+Message-ID: <20090518173352.GA11767@iram.es>
+References: <20090515181813.GA28132@iram.es>
+	<1242617089.18075.25.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: ebmunson@us.ibm.com,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1242617089.18075.25.camel@pasglop>
+Cc: LinuxPPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,19 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-On Mon, 18 May 2009, Mel Gorman wrote:
+On Mon, May 18, 2009 at 01:24:49PM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2009-05-15 at 20:18 +0200, Gabriel Paubert wrote:
+> > Since PPC_MUTIPLATFORM was removed, it was impossible to select the
+> > driver for mv643xx_eth on the Pegasos. Fix by allowing to select
+> > the driver on CHRP platforms; Pegasos is a CHRP platform and the driver
+> > will not work wihtout arch/powerpc/platforms/chrp/pegasos_eth.
+> > 
+> > The patch also removes all references to MV64360 config option which 
+> > no more exists.
+> > 
+> > Signed-off-by: Gabriel Paubert <paubert@iram.es> 
 > 
-> What's the story with this patch? I'm still hearing of failures with huge pages
-> that this patch fixes but I'm no seeing it upstream. Was the patch
-> rejected or did it just slip through the cracks?
+> Please break that up into 2 different patches. The arch/powerpc one that
+> removes the reference from IRQ_ALL_CPUs and the drivers/net/ one which
+> should be set to the netdev mailing list.
+> 
 
-It didn't slip through the cracks, it was apparently just delayed. It's 
-part of the merge requests I've gotten today (well, strictly speaking it 
-seems to have hit my inbox just before midnight yesterday, but that's 
-because those silly aussies stand upside down and sleep at odd hours).
+Ok, but I have a doubt about the PPC one, should MV64360 be removed or
+changed to MV64X60?
 
-In fact, I just merged it, I haven't even had time to push that out. 
+In any case, I can't test it.
 
-		Linus
+	Gabriel
