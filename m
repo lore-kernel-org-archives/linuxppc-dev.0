@@ -1,34 +1,18 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <mikey@neuling.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB9DADE04C
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 13:35:34 +1000 (EST)
-Received: from d23relay01.au.ibm.com (d23relay01.au.ibm.com [202.81.31.243])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id n4I3XaxO009468
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 13:33:36 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay01.au.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n4I3ZXmB454878
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 13:35:33 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n4I3ZXef023985
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 13:35:33 +1000
-Subject: Re: [RFC Patch 1/6] Prepare the PowerPC platform for HW Breakpoint
-	infrastructure
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-In-Reply-To: <20090514134335.GB14229@in.ibm.com>
-References: <20090514133312.360702378@prasadkr_t60p.in.ibm.com>
-	<20090514134335.GB14229@in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 18 May 2009 13:35:32 +1000
-Message-Id: <1242617732.18075.29.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Roland McGrath <roland@redhat.com>, paulus@samba.org
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 474F2DE046
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 14:14:05 +1000 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] powerpc: Make the NR_CPUS max 8192 
+In-reply-to: <1242609873.13757.4.camel@concordia> 
+References: <17087.1242609196@neuling.org> <1242609873.13757.4.camel@concordia>
+Date: Mon, 18 May 2009 14:14:04 +1000
+Message-ID: <9686.1242620044@neuling.org>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,26 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-05-14 at 19:13 +0530, K.Prasad wrote:
-> plain text document attachment (ppc64_prepare_code_01)
-> Prepare the PowerPC code for HW Breakpoint infrastructure patches by including
-> relevant constant definitions and function declarations.
+> > We can compile and boot with NR_CPUS=3D8192, so make this the max.  1024
+> > was an arbitrary decision anyway.
+> 
+> Is 8192 still arbitrary? Or does something break above that?
 
-Hi !
+Yeah, the compile breaks after that with 4K pages.
 
-Some comments below...
+In drivers/base/node.c we have:
+	/* 2008/04/07: buf currently PAGE_SIZE, need 9 chars per 32 bits. */
+	BUILD_BUG_ON((NR_CPUS/32 * 9) > (PAGE_SIZE-1));
+which causes:
+drivers/base/node.c: In function 'node_read_cpumap':
+drivers/base/node.c:31: error: size of array 'type name' is negative
 
-> +#define   HBP_NUM	1	/* Number of physical HW breakpoint registers */
+I can compile with 16384 CPUs with 64K pages, but it doesn't boot.  
 
-Can you use a more verbose constant ? reg.h is included everywhere so
-the risk of collision is high.
+sfr asked for size info for different builds, so I may as well repost
+them here:
 
->  #define   DABR_TRANSLATION	(1UL << 2)
->  #define   DABR_DATA_WRITE	(1UL << 1)
->  #define   DABR_DATA_READ	(1UL << 0)
-> +#define   DABR_DATA_RW		(3UL << 0)
+   text	   data		bss		dec		hex	filename
+9237767	3225768		4409996		16873531	101783b	vmlinux.1024
+9247355	4769472		7373708		21390535	14664c7	vmlinux.2048
+9267239	7857032		13301132	30425403	1d0413b	vmlinux.4096
+9302623	14035832	25155980	48494435	2e3f763	vmlinux.8192
+9373283	26389360	48865676	84628319	50b535f	vmlinux.16384
 
-Do you really need that ? It's just DABR_DATA_WRITE | DABR_DATA_READ :-)
+config was pseries_defconfig but with 64K pages.
 
-Cheers,
-Ben.
+Mikey
