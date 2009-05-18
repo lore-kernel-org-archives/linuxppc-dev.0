@@ -1,9 +1,21 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 18 May 2009 15:17:59 +1000
-Subject: [PATCH] powerpc: Explicit alignment for .data.cacheline_aligned
-Message-Id: <20090518051800.57B89DE05C@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 72B83DE064
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 15:47:26 +1000 (EST)
+Date: Mon, 18 May 2009 15:47:21 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH]  bug fix in arch/powerpc/mm/tlb_nohash_low.S
+Message-Id: <20090518154721.0a9c3dee.sfr@canb.auug.org.au>
+In-Reply-To: <1242623523.18075.39.camel@pasglop>
+References: <1242622146.31702.26.camel@torez.austin.ibm.com>
+	<1242623523.18075.39.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__18_May_2009_15_47_21_+1000_.KFVVWCrW.fFSAdQ"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Torez Smith <lnxtorez@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,27 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I don't think anything guarantees that the objects in data.page_aligned
-are a multiple of PAGE_SIZE, thus the section may end on any boundary.
+--Signature=_Mon__18_May_2009_15_47_21_+1000_.KFVVWCrW.fFSAdQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So the following section, .data.cacheline_aligned needs an explicit
-alignment.
+Hi Ben,
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+On Mon, 18 May 2009 15:12:03 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> Thanks, but it's been fixed already :-)
+>=20
+> See commit b62c31ae401c6df25c61b206681a6e904ef97169.
 
-And this is the right patch after a "quilt ref" and without typo :-)
+Should this be submitted for 2.6.29 stable?
 
- arch/powerpc/kernel/vmlinux.lds.S |    1 +
- 1 file changed, 1 insertion(+)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
---- linux-work.orig/arch/powerpc/kernel/vmlinux.lds.S	2009-05-18 14:24:05.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/vmlinux.lds.S	2009-05-18 15:16:54.000000000 +1000
-@@ -264,6 +264,7 @@ SECTIONS
- 		*(.data.page_aligned)
- 	}
- 
-+	. = ALIGN(L1_CACHE_BYTES);
- 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
- 		*(.data.cacheline_aligned)
- 	}
+--Signature=_Mon__18_May_2009_15_47_21_+1000_.KFVVWCrW.fFSAdQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoQ9mkACgkQjjKRsyhoI8w2kACgpOiTZpFxQQkZB0tHM5M1GkmS
+S/AAn0JUm0sFbY3bEQm28Y0BhRPbP+zY
+=PJg5
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__18_May_2009_15_47_21_+1000_.KFVVWCrW.fFSAdQ--
