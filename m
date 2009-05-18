@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CB6AADE066
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 16:34:35 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 18 May 2009 16:34:25 +1000
-Message-Id: <1242628465.18075.46.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from pophost.sonytel.be (vervifontaine.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 7290CDE03B
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 16:58:02 +1000 (EST)
+Date: Mon, 18 May 2009 08:57:55 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc: Make the NR_CPUS max 8192 
+In-Reply-To: <9686.1242620044@neuling.org>
+Message-ID: <alpine.LRH.2.00.0905180857060.16754@vixen.sonytel.be>
+References: <17087.1242609196@neuling.org> <1242609873.13757.4.camel@concordia>
+	<9686.1242620044@neuling.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Mon, 18 May 2009, Michael Neuling wrote:
+> > > We can compile and boot with NR_CPUS=3D8192, so make this the max.  1024
+> > > was an arbitrary decision anyway.
+> > 
+> > Is 8192 still arbitrary? Or does something break above that?
+> 
+> Yeah, the compile breaks after that with 4K pages.
+> 
+> In drivers/base/node.c we have:
+> 	/* 2008/04/07: buf currently PAGE_SIZE, need 9 chars per 32 bits. */
+> 	BUILD_BUG_ON((NR_CPUS/32 * 9) > (PAGE_SIZE-1));
+> which causes:
+> drivers/base/node.c: In function 'node_read_cpumap':
+> drivers/base/node.c:31: error: size of array 'type name' is negative
+> 
+> I can compile with 16384 CPUs with 64K pages, but it doesn't boot.  
+> 
+> sfr asked for size info for different builds, so I may as well repost
+> them here:
+> 
+>    text	   data		bss		dec		hex	filename
+> 9237767	3225768		4409996		16873531	101783b	vmlinux.1024
+> 9247355	4769472		7373708		21390535	14664c7	vmlinux.2048
+> 9267239	7857032		13301132	30425403	1d0413b	vmlinux.4096
+> 9302623	14035832	25155980	48494435	2e3f763	vmlinux.8192
+> 9373283	26389360	48865676	84628319	50b535f	vmlinux.16384
 
-A few more 2.6.30 things for you... a defconfig update, and a couple
-of small fixes, either obvious enough or regression fixes.
+Will distros now start pushing NR_CPUS=8192-kernels on us?
 
-Cheers,
-Ben.
+With kind regards,
 
-The following changes since commit 86460103c412f9e11aeb7950cce64b9e51539d4d:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../rafael/suspend-2.6
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
 
-are available in the git repository at:
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-Benjamin Herrenschmidt (1):
-      powerpc: Explicit alignment for .data.cacheline_aligned
-
-Geoff Levand (1):
-      powerpc/ps3: Update ps3_defconfig
-
-Mel Gorman (1):
-      powerpc: Do not assert pte_locked for hugepage PTE entries
-
-Michael Ellerman (1):
-      powerpc/ftrace: Use pr_devel() in ftrace.c
-
-Steven Rostedt (1):
-      powerpc/ftrace: Fix constraint to be early clobber
-
- arch/powerpc/configs/ps3_defconfig |  105 +++++++++++++++++++++---------------
- arch/powerpc/kernel/ftrace.c       |   22 ++++----
- arch/powerpc/kernel/vmlinux.lds.S  |    1 +
- arch/powerpc/mm/pgtable.c          |    3 +-
- 4 files changed, 76 insertions(+), 55 deletions(-)
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
