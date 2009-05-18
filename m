@@ -1,17 +1,15 @@
 Return-Path: <Qingtao.Cao@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 05A2BDE078
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 20:04:04 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id F2CE5DE06F
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 20:04:03 +1000 (EST)
 From: Harry Ciao <qingtao.cao@windriver.com>
 To: benh@kernel.crashing.org, bluesmoke-devel@lists.sourceforge.net
-Subject: [v1 PATCH 4/4] EDAC: INT mode support for AMD8131 driver
-Date: Mon, 18 May 2009 18:05:00 +0800
-Message-Id: <1242641100-15324-5-git-send-email-qingtao.cao@windriver.com>
-In-Reply-To: <1242641100-15324-4-git-send-email-qingtao.cao@windriver.com>
+Subject: [v1 PATCH 2/4] EDAC: MCE & INT mode support for CPC925 driver
+Date: Mon, 18 May 2009 18:04:58 +0800
+Message-Id: <1242641100-15324-3-git-send-email-qingtao.cao@windriver.com>
+In-Reply-To: <1242641100-15324-2-git-send-email-qingtao.cao@windriver.com>
 References: <1242641100-15324-1-git-send-email-qingtao.cao@windriver.com>
 	<1242641100-15324-2-git-send-email-qingtao.cao@windriver.com>
-	<1242641100-15324-3-git-send-email-qingtao.cao@windriver.com>
-	<1242641100-15324-4-git-send-email-qingtao.cao@windriver.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,373 +20,609 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Support EDAC INT mode for AMD8131 EDAC driver, which may post upstream
-NMI interrupt request messages that will latch MPIC INT0 pin.
+Support EDAC INT mode and add a new EDAC MCE mode for CPC925 EDAC driver.
+CPC925 Hypertransport hostbridge controller may trigger interrupt that
+latches MPIC INT2 pin on Hypertransport Link Errors, and generate MCE on
+memory ECC Errors and Processor Interface Errors.
+
+The global variable "edac_op_state" defined by EDAC core will be
+obsolete, not only different EDAC modules on the same machine may
+operate in different EDAC modes, but further this could be the
+case for different EDAC devices of the same EDAC module, for example,
+each CPC925 EDAC device could work in the mode specified by their own
+"op_state" member in their private structure.
+
+A spinlock will be used to protect the EDAC MCE handler from being
+silently unregistered, however, it also implies a constraint that
+when EDAC MCE handler is called on one CPU, it will be bypassed by
+another MCE event on other CPUs.
 
 Following aspects for this patch have been tested:
-1, module initialization and deletion for NMI mode;
-2, creation and deletion for the mapping between hwirq==0 to a virq;
+1, module initialization and deletion;
+2, creation and deletion for the mapping between hwirq==2 to a virq
+   for the Hypertransport Link Errors;
+3, registration and unregistration for the EDAC MCE handler from the
+   generic MCE handler on PPC;
 
 Note, due to the difficulty and complexity to generate a real hardware
-EDAC Errors, below aspects have not been tested yet:
-1, code that controls the generation of the NMI Request Message;
-2, the mapping from the NMI Request Messages to MPIC INT0 pin;
-3, if EDAC isr methods could handle errors correctly.
+ECC/HT Link/CPU Errors, below aspects have not been tested yet:
+1, if ECC or CPU Errors would generate MCE event;
+2, if HT Link Error will indeed latch MPIC INT2 pin;
+3, if EDAC isr/mce methods could handle errors correctly.
 
 Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
 ---
- drivers/edac/amd8131_edac.c |  169 ++++++++++++++++++++++++++++++++++++++-----
- drivers/edac/amd8131_edac.h |   20 +++++-
- 2 files changed, 170 insertions(+), 19 deletions(-)
+ arch/powerpc/kernel/traps.c |   16 +++
+ drivers/edac/cpc925_edac.c  |  275 ++++++++++++++++++++++++++++++++++++++++---
+ drivers/edac/edac_stub.c    |    6 +
+ include/linux/edac.h        |    6 +
+ 4 files changed, 284 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/edac/amd8131_edac.c b/drivers/edac/amd8131_edac.c
-index b432d60..9b8217b 100644
---- a/drivers/edac/amd8131_edac.c
-+++ b/drivers/edac/amd8131_edac.c
-@@ -28,6 +28,7 @@
- #include <linux/bitops.h>
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 678fbff..1ae3465 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -57,6 +57,10 @@
+ #include <asm/dbell.h>
+ #endif
+ 
++#ifdef CONFIG_EDAC
++#include <linux/edac.h>
++#endif
++
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+ int (*__debugger)(struct pt_regs *regs);
+ int (*__debugger_ipi)(struct pt_regs *regs);
+@@ -481,6 +485,18 @@ int machine_check_generic(struct pt_regs *regs)
+ 	default:
+ 		printk("Unknown values in msr\n");
+ 	}
++
++#ifdef CONFIG_EDAC
++	if (spin_trylock(&edac_mce_lock)) {
++		if (edac_mce_handler) {
++			int ret = edac_mce_handler();
++			spin_unlock(&edac_mce_lock);
++			return ret;
++		}
++		spin_unlock(&edac_mce_lock);
++	}
++#endif
++
+ 	return 0;
+ }
+ #endif /* everything else */
+diff --git a/drivers/edac/cpc925_edac.c b/drivers/edac/cpc925_edac.c
+index 8c54196..36fc506 100644
+--- a/drivers/edac/cpc925_edac.c
++++ b/drivers/edac/cpc925_edac.c
+@@ -25,6 +25,8 @@
  #include <linux/edac.h>
- #include <linux/pci_ids.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
 +#include <linux/interrupt.h>
++#include <asm/reg.h>
  
  #include "edac_core.h"
  #include "edac_module.h"
-@@ -36,6 +37,11 @@
- #define AMD8131_EDAC_REVISION	" Ver: 1.0.0 " __DATE__
- #define AMD8131_EDAC_MOD_STR	"amd8131_edac"
+@@ -273,22 +275,29 @@ enum brgctrl_bits {
  
-+static int amd8131_op_state = EDAC_OPSTATE_POLL;
-+module_param(amd8131_op_state, int, 0444);
-+MODULE_PARM_DESC(amd8131_op_state, "EDAC Error Reporting state: 0=Poll, 1=NMI");
-+static int amd8131_nmi_irq;
-+
- /* Wrapper functions for accessing PCI configuration space */
- static void edac_pci_read_dword(struct pci_dev *dev, int reg, u32 *val32)
- {
-@@ -139,6 +145,17 @@ static void amd8131_pcix_init(struct amd8131_dev_info *dev_info)
- 	edac_pci_read_dword(dev, REG_LNK_CTRL_B, &val32);
- 	val32 |= LNK_CTRL_CRCFEN;
- 	edac_pci_write_dword(dev, REG_LNK_CTRL_B, val32);
-+
-+	/* enable HT NMI messages generation on errors */
-+	if (amd8131_op_state == EDAC_OPSTATE_NMI) {
-+		edac_pci_read_dword(dev, REG_MISC_I, &val32);
-+		val32 &= ~MISC_I_NIOAMODE;
-+		edac_pci_write_dword(dev, REG_MISC_I, val32);
-+
-+		edac_pci_read_dword(dev, REG_MISC_II, &val32);
-+		val32 |= MISC_II_NMIEN;
-+		edac_pci_write_dword(dev, REG_MISC_II, val32);
-+	}
- }
+ /* Private structure for edac memory controller */
+ struct cpc925_mc_pdata {
++	int op_state;
+ 	void __iomem *vbase;
+ 	unsigned long total_mem;
+ 	const char *name;
+ 	int edac_idx;
++	struct mem_ctl_info *mci;
++	int (*mce)(struct mem_ctl_info *mci);
+ };
  
- static void amd8131_pcix_exit(struct amd8131_dev_info *dev_info)
-@@ -165,6 +182,17 @@ static void amd8131_pcix_exit(struct amd8131_dev_info *dev_info)
- 	edac_pci_read_dword(dev, REG_LNK_CTRL_B, &val32);
- 	val32 &= ~LNK_CTRL_CRCFEN;
- 	edac_pci_write_dword(dev, REG_LNK_CTRL_B, val32);
-+
-+	/* Disable HT NMI messages on errors*/
-+	if (amd8131_op_state == EDAC_OPSTATE_NMI) {
-+		edac_pci_read_dword(dev, REG_MISC_II, &val32);
-+		val32 &= ~MISC_II_NMIEN;
-+		edac_pci_write_dword(dev, REG_MISC_II, val32);
-+
-+		edac_pci_read_dword(dev, REG_MISC_I, &val32);
-+		val32 |= MISC_I_NIOAMODE;
-+		edac_pci_write_dword(dev, REG_MISC_I, val32);
-+	}
- }
+ /* Private structure for common edac device */
+ struct cpc925_dev_info {
++	int op_state;
+ 	void __iomem *vbase;
+ 	struct platform_device *pdev;
+ 	char *ctl_name;
+ 	int edac_idx;
+ 	struct edac_device_ctl_info *edac_dev;
++	int irq;
+ 	void (*init)(struct cpc925_dev_info *dev_info);
+ 	void (*exit)(struct cpc925_dev_info *dev_info);
+ 	void (*check)(struct edac_device_ctl_info *edac_dev);
++	int (*mce)(struct edac_device_ctl_info *edac_dev);
++	irqreturn_t (*isr)(int irq, void *dev_id);
+ };
  
- static void amd8131_pcix_check(struct edac_pci_ctl_info *edac_dev)
-@@ -233,12 +261,33 @@ static void amd8131_pcix_check(struct edac_pci_ctl_info *edac_dev)
+ /* Get total memory size from Open Firmware DTB */
+@@ -382,6 +391,18 @@ static void cpc925_init_csrows(struct mem_ctl_info *mci)
  	}
  }
  
-+static irqreturn_t amd8131_pcix_isr(int irq, void *dev_id)
++/* Set up HID0_EMCP bit if necessary, MSR[ME] has been set up */
++static void cpc925_mce_enable(void)
 +{
-+	struct edac_pci_ctl_info *edac_pci = dev_id;
-+	struct amd8131_dev_info *dev_info = edac_pci->pvt_info;
-+	struct pci_dev *dev = dev_info->dev;
-+	u32 val32;
++	unsigned long hid0 = mfspr(SPRN_HID0);
 +
-+	/*
-+	 * Only a handful of errors in PCI-X Bridge Memory Base-Limit
-+	 * Register could trigger NMI interrupt request message.
-+	 */
-+	edac_pci_read_dword(dev, REG_MEM_LIM, &val32);
-+	if (!(val32 & MEM_LIMIT_NMI_MASK))
++	if ((hid0 & HID0_EMCP) == 0)
++		mtspr(SPRN_HID0, hid0 | HID0_EMCP);
++
++	debugf0("%s: MSR[ME] = %d, HID0[EMCP] = %d\n", __func__,
++		mfmsr() & MSR_ME, mfspr(SPRN_HID0));
++}
++
+ /* Enable memory controller ECC detection */
+ static void cpc925_mc_init(struct mem_ctl_info *mci)
+ {
+@@ -402,6 +423,9 @@ static void cpc925_mc_init(struct mem_ctl_info *mci)
+ 		mccr |= MCCR_ECC_EN;
+ 		__raw_writel(mccr, pdata->vbase + REG_MCCR_OFFSET);
+ 	}
++
++	if (pdata->op_state == EDAC_OPSTATE_MCE)
++		cpc925_mce_enable();
+ }
+ 
+ /* Disable memory controller ECC detection */
+@@ -520,7 +544,10 @@ static int cpc925_mc_find_channel(struct mem_ctl_info *mci, u16 syndrome)
+ 	return 1;
+ }
+ 
+-/* Check memory controller registers for ECC errors */
++/*
++ * Check memory controller registers for ECC errors,
++ * called when EDAC MC works in POLL mode.
++ */
+ static void cpc925_mc_check(struct mem_ctl_info *mci)
+ {
+ 	struct cpc925_mc_pdata *pdata = mci->pvt_info;
+@@ -579,6 +606,70 @@ static void cpc925_mc_check(struct mem_ctl_info *mci)
+ 		syndrome);
+ }
+ 
++/*
++ * Check memory controller registers for ECC errors,
++ * called when EDAC MC works in MCE mode.
++ */
++static int cpc925_mc_mce(struct mem_ctl_info *mci)
++{
++	struct cpc925_mc_pdata *pdata = mci->pvt_info;
++	u32 apiexcp;
++	u32 mear;
++	u32 mesr;
++	u16 syndrome;
++	unsigned long pfn = 0, offset = 0;
++	int csrow = 0, channel = 0;
++
++	/* APIEXCP is cleared when read */
++	apiexcp = __raw_readl(pdata->vbase + REG_APIEXCP_OFFSET);
++	if ((apiexcp & ECC_EXCP_DETECTED) == 0)
++		return 0;
++
++	mesr = __raw_readl(pdata->vbase + REG_MESR_OFFSET);
++	syndrome = mesr | (MESR_ECC_SYN_H_MASK | MESR_ECC_SYN_L_MASK);
++
++	mear = __raw_readl(pdata->vbase + REG_MEAR_OFFSET);
++
++	/* Revert column/row addresses into page frame number, etc */
++	cpc925_mc_get_pfn(mci, mear, &pfn, &offset, &csrow);
++
++	if (apiexcp & CECC_EXCP_DETECTED) {
++		cpc925_mc_printk(mci, KERN_EMERG, "DRAM CECC Fault\n");
++		channel = cpc925_mc_find_channel(mci, syndrome);
++		edac_mc_handle_ce(mci, pfn, offset, syndrome,
++				  csrow, channel, mci->ctl_name);
++	}
++
++	if (apiexcp & UECC_EXCP_DETECTED) {
++		cpc925_mc_printk(mci, KERN_EMERG, "DRAM UECC Fault\n");
++		edac_mc_handle_ue(mci, pfn, offset, csrow, mci->ctl_name);
++	}
++
++	cpc925_mc_printk(mci, KERN_EMERG, "Dump registers:\n");
++	cpc925_mc_printk(mci, KERN_EMERG, "APIMASK               0x%08x\n",
++		__raw_readl(pdata->vbase + REG_APIMASK_OFFSET));
++	cpc925_mc_printk(mci, KERN_EMERG, "APIEXCP               0x%08x\n",
++		apiexcp);
++	cpc925_mc_printk(mci, KERN_EMERG, "Mem Scrub Ctrl        0x%08x\n",
++		__raw_readl(pdata->vbase + REG_MSCR_OFFSET));
++	cpc925_mc_printk(mci, KERN_EMERG, "Mem Scrub Rge Start   0x%08x\n",
++		__raw_readl(pdata->vbase + REG_MSRSR_OFFSET));
++	cpc925_mc_printk(mci, KERN_EMERG, "Mem Scrub Rge End     0x%08x\n",
++		__raw_readl(pdata->vbase + REG_MSRER_OFFSET));
++	cpc925_mc_printk(mci, KERN_EMERG, "Mem Scrub Pattern     0x%08x\n",
++		__raw_readl(pdata->vbase + REG_MSPR_OFFSET));
++	cpc925_mc_printk(mci, KERN_EMERG, "Mem Chk Ctrl          0x%08x\n",
++		__raw_readl(pdata->vbase + REG_MCCR_OFFSET));
++	cpc925_mc_printk(mci, KERN_EMERG, "Mem Chk Rge End       0x%08x\n",
++		__raw_readl(pdata->vbase + REG_MCRER_OFFSET));
++	cpc925_mc_printk(mci, KERN_EMERG, "Mem Err Address       0x%08x\n",
++		mesr);
++	cpc925_mc_printk(mci, KERN_EMERG, "Mem Err Syndrome      0x%08x\n",
++		syndrome);
++
++	return 1;
++}
++
+ /******************** CPU err device********************************/
+ /* Enable CPU Errors detection */
+ static void cpc925_cpu_init(struct cpc925_dev_info *dev_info)
+@@ -609,7 +700,7 @@ static void cpc925_cpu_exit(struct cpc925_dev_info *dev_info)
+ 	return;
+ }
+ 
+-/* Check for CPU Errors */
++/* Check for CPU Errors, called in POLL mode */
+ static void cpc925_cpu_check(struct edac_device_ctl_info *edac_dev)
+ {
+ 	struct cpc925_dev_info *dev_info = edac_dev->pvt_info;
+@@ -630,6 +721,28 @@ static void cpc925_cpu_check(struct edac_device_ctl_info *edac_dev)
+ 	edac_device_handle_ue(edac_dev, 0, 0, edac_dev->ctl_name);
+ }
+ 
++/* Check for CPU Errors, called in MCE mode */
++static int cpc925_cpu_mce(struct edac_device_ctl_info *edac_dev)
++{
++	struct cpc925_dev_info *dev_info = edac_dev->pvt_info;
++	u32 apiexcp;
++	u32 apimask;
++
++	/* APIEXCP is cleared when read */
++	apiexcp = __raw_readl(dev_info->vbase + REG_APIEXCP_OFFSET);
++	if ((apiexcp & CPU_EXCP_DETECTED) == 0)
++		return 0;
++
++	apimask = __raw_readl(dev_info->vbase + REG_APIMASK_OFFSET);
++	cpc925_printk(KERN_EMERG, "Processor Interface Fault\n"
++				  "Processor Interface register dump:\n");
++	cpc925_printk(KERN_EMERG, "APIMASK               0x%08x\n", apimask);
++	cpc925_printk(KERN_EMERG, "APIEXCP               0x%08x\n", apiexcp);
++
++	edac_device_handle_ue(edac_dev, 0, 0, edac_dev->ctl_name);
++	return 1;
++}
++
+ /******************** HT Link err device****************************/
+ /* Enable HyperTransport Link Error detection */
+ static void cpc925_htlink_init(struct cpc925_dev_info *dev_info)
+@@ -704,23 +817,105 @@ static void cpc925_htlink_check(struct edac_device_ctl_info *edac_dev)
+ 	edac_device_handle_ce(edac_dev, 0, 0, edac_dev->ctl_name);
+ }
+ 
++static irqreturn_t cpc925_htlink_isr(int irq, void *dev_id)
++{
++	struct edac_device_ctl_info *edac_dev = dev_id;
++	struct cpc925_dev_info *dev_info = edac_dev->pvt_info;
++	u32 brgctrl = __raw_readl(dev_info->vbase + REG_BRGCTRL_OFFSET);
++	u32 linkctrl = __raw_readl(dev_info->vbase + REG_LINKCTRL_OFFSET);
++	u32 errctrl = __raw_readl(dev_info->vbase + REG_ERRCTRL_OFFSET);
++	u32 linkerr = __raw_readl(dev_info->vbase + REG_LINKERR_OFFSET);
++
++	if (!((brgctrl & BRGCTRL_DETSERR) ||
++	      (linkctrl & HT_LINKCTRL_DETECTED) ||
++	      (errctrl & HT_ERRCTRL_DETECTED) ||
++	      (linkerr & HT_LINKERR_DETECTED)))
 +		return IRQ_NONE;
 +
-+	amd8131_pcix_check(edac_pci);
++	cpc925_htlink_check(edac_dev);
 +
 +	return IRQ_HANDLED;
 +}
 +
- static struct amd8131_info amd8131_chipset = {
- 	.err_dev = PCI_DEVICE_ID_AMD_8131_APIC,
- 	.devices = amd8131_devices,
- 	.init = amd8131_pcix_init,
- 	.exit = amd8131_pcix_exit,
- 	.check = amd8131_pcix_check,
-+	.isr = amd8131_pcix_isr,
++/* Private structure for EDAC Memory Controller */
++static struct cpc925_mc_pdata cpc925_mc_private = {
++	/* EDAC MC supports POLL and MCE mode */
++	.op_state = EDAC_OPSTATE_MCE,
++	.mce = cpc925_mc_mce,
++	.mci = NULL,
++};
++
++/*
++ * Private strucutures for common EDAC devices for CPU Error
++ * and Hypertransport Link Error
++ */
+ static struct cpc925_dev_info cpc925_devs[] = {
+ 	{
++	/* CPU Error supports POLL and MCE mode */
++	.op_state = EDAC_OPSTATE_MCE,
+ 	.ctl_name = CPC925_CPU_ERR_DEV,
+ 	.init = cpc925_cpu_init,
+ 	.exit = cpc925_cpu_exit,
+ 	.check = cpc925_cpu_check,
++	.mce = cpc925_cpu_mce,
+ 	},
+ 	{
++	/* Hypertransport Link Error supports POLL and INT mode */
++	.op_state = EDAC_OPSTATE_INT,
+ 	.ctl_name = CPC925_HT_LINK_DEV,
+ 	.init = cpc925_htlink_init,
+ 	.exit = cpc925_htlink_exit,
+ 	.check = cpc925_htlink_check,
++	.irq = NO_IRQ,
++	.isr = cpc925_htlink_isr,
+ 	},
+ 	{0}, /* Terminated by NULL */
  };
  
  /*
-@@ -249,6 +298,7 @@ static struct amd8131_info amd8131_chipset = {
- static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
- {
- 	struct amd8131_dev_info *dev_info;
-+	int ret = -ENODEV;
- 
- 	for (dev_info = amd8131_chipset.devices; dev_info->inst != NO_BRIDGE;
- 		dev_info++)
-@@ -256,7 +306,7 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 			break;
- 
- 	if (dev_info->inst == NO_BRIDGE) /* should never happen */
--		return -ENODEV;
-+		goto out;
- 
- 	/*
- 	 * We can't call pci_get_device() as we are used to do because
-@@ -265,12 +315,11 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	dev_info->dev = pci_dev_get(dev);
- 
- 	if (pci_enable_device(dev_info->dev)) {
--		pci_dev_put(dev_info->dev);
- 		printk(KERN_ERR "failed to enable:"
- 			"vendor %x, device %x, devfn %x, name %s\n",
- 			PCI_VENDOR_ID_AMD, amd8131_chipset.err_dev,
- 			dev_info->devfn, dev_info->ctl_name);
--		return -ENODEV;
-+		goto err1;
- 	}
- 
- 	/*
-@@ -280,8 +329,10 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	 */
- 	dev_info->edac_idx = edac_pci_alloc_index();
- 	dev_info->edac_dev = edac_pci_alloc_ctl_info(0, dev_info->ctl_name);
--	if (!dev_info->edac_dev)
--		return -ENOMEM;
-+	if (!dev_info->edac_dev) {
-+		ret = -ENOMEM;
-+		goto err1;
-+	}
- 
- 	dev_info->edac_dev->pvt_info = dev_info;
- 	dev_info->edac_dev->dev = &dev_info->dev->dev;
-@@ -289,7 +340,7 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	dev_info->edac_dev->ctl_name = dev_info->ctl_name;
- 	dev_info->edac_dev->dev_name = dev_name(&dev_info->dev->dev);
- 
--	if (edac_op_state == EDAC_OPSTATE_POLL)
-+	if (amd8131_op_state == EDAC_OPSTATE_POLL)
- 		dev_info->edac_dev->edac_check = amd8131_chipset.check;
- 
- 	if (amd8131_chipset.init)
-@@ -298,8 +349,8 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	if (edac_pci_add_device(dev_info->edac_dev, dev_info->edac_idx) > 0) {
- 		printk(KERN_ERR "failed edac_pci_add_device() for %s\n",
- 			dev_info->ctl_name);
--		edac_pci_free_ctl_info(dev_info->edac_dev);
--		return -ENODEV;
-+		ret = -ENOMEM;
-+		goto err2;
- 	}
- 
- 	printk(KERN_INFO "added one device on AMD8131 "
-@@ -307,7 +358,18 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 		PCI_VENDOR_ID_AMD, amd8131_chipset.err_dev,
- 		dev_info->devfn, dev_info->ctl_name);
- 
--	return 0;
-+	ret = 0;
-+	goto out;
-+
-+err2:
-+	if (amd8131_chipset.exit)
-+		amd8131_chipset.exit(dev_info);
-+
-+	edac_pci_free_ctl_info(dev_info->edac_dev);
-+err1:
-+	pci_dev_put(dev_info->dev);
-+out:
-+	return ret;
- }
- 
- static void amd8131_remove(struct pci_dev *dev)
-@@ -322,14 +384,14 @@ static void amd8131_remove(struct pci_dev *dev)
- 	if (dev_info->inst == NO_BRIDGE) /* should never happen */
- 		return;
- 
-+	if (amd8131_chipset.exit)
-+		amd8131_chipset.exit(dev_info);
-+
- 	if (dev_info->edac_dev) {
- 		edac_pci_del_device(dev_info->edac_dev->dev);
- 		edac_pci_free_ctl_info(dev_info->edac_dev);
- 	}
- 
--	if (amd8131_chipset.exit)
--		amd8131_chipset.exit(dev_info);
--
- 	pci_dev_put(dev_info->dev);
- }
- 
-@@ -342,9 +404,7 @@ static const struct pci_device_id amd8131_edac_pci_tbl[] = {
- 	.class_mask = 0,
- 	.driver_data = 0,
- 	},
--	{
--	0,
--	}			/* table is NULL-terminated */
-+	{0}	/* table is NULL-terminated */
- };
- MODULE_DEVICE_TABLE(pci, amd8131_edac_pci_tbl);
- 
-@@ -355,20 +415,93 @@ static struct pci_driver amd8131_edac_driver = {
- 	.id_table = amd8131_edac_pci_tbl,
- };
- 
-+/*
-+ * AMD8131 NMI handler - check PCI-X Bridges to claim any
-+ * possible NMI instance.
-+ * Southbridge NMI Request messages posted through Hypertransport
-+ * Channel will be transferred to a MPIC interrupt instance.
-+ *
-+ * NOTE: According to AMD8131 data sheet 4.5.7 section,
-+ * only a partial of error detections could generate NMI
-+ * Upstream Hypertransport Interrupt request messages, so
-+ * use NMI mode at sacrifice that not all error detections
-+ * could be made use of.
++ * MCE handler for EDAC CPC925 driver, check memory controller and
++ * Hypertransport hostbridge to claim any possbile MCE instance.
 + */
-+static irqreturn_t amd8131_nmi_handler(int irq, void *dev_id)
++static int cpc925_mce_handler(void)
 +{
-+	struct amd8131_info *info = dev_id;
-+	struct amd8131_dev_info *dev_info;
-+	irqreturn_t ret = IRQ_NONE;
++	struct cpc925_mc_pdata *pdata = &cpc925_mc_private;
++	struct cpc925_dev_info *dev_info;
++	int ret = 0;
 +
-+	if (!info->isr)
-+		return IRQ_NONE;
++	if (pdata->op_state == EDAC_OPSTATE_MCE)
++		if (pdata->mce)
++			ret |= pdata->mce(pdata->mci);
 +
-+	for (dev_info = info->devices; dev_info->inst != NO_BRIDGE; dev_info++)
-+		ret |= info->isr(irq, dev_info->edac_dev);
++	for (dev_info = &cpc925_devs[0]; dev_info->init; dev_info++) {
++		if (dev_info->op_state == EDAC_OPSTATE_MCE)
++			if (dev_info->mce)
++				ret |= dev_info->mce(dev_info->edac_dev);
++	}
 +
 +	return ret;
 +}
 +
-+static void __init amd8131_nmi_handler_setup(void)
++/* Hook CPC925 MCE handler to PowerPC generic MCE handler */
++static void cpc925_mce_handler_setup(void)
 +{
-+	int ret;
++	unsigned long flags;
 +
-+	if (amd8131_op_state != EDAC_OPSTATE_NMI)
-+		return;
-+
-+	amd8131_nmi_irq = NO_IRQ;
-+
-+#ifdef CONFIG_MPIC
-+	amd8131_nmi_irq = edac_get_mpic_irq(MPIC_HWIRQ_HT_NMI);
-+#endif
-+
-+	if (amd8131_nmi_irq == NO_IRQ) {
-+		printk(KERN_ERR "%s: failed to get virq "
-+			"for AMD8131 NMI requests\n", __func__);
-+		return;
-+	}
-+
-+	ret = request_irq(amd8131_nmi_irq, amd8131_nmi_handler,
-+			  IRQF_SHARED, "[EDAC] AMD8131", &amd8131_chipset);
-+	if (ret < 0) {
-+		printk(KERN_INFO "%s: failed to request irq %d for "
-+			"AMD8131 NMI requests\n", __func__, amd8131_nmi_irq);
-+		return;
-+	}
-+
-+	debugf0("%s: Successfully requested irq %d for AMD8131 NMI requests\n",
-+		 __func__, amd8131_nmi_irq);
++	spin_lock_irqsave(&edac_mce_lock, flags);
++	edac_mce_handler = cpc925_mce_handler;
++	spin_unlock_irqrestore(&edac_mce_lock, flags);
 +}
 +
-+static void __exit amd8131_nmi_handler_exit(void)
++static void cpc925_mce_handler_exit(void)
 +{
-+	if (amd8131_op_state != EDAC_OPSTATE_NMI)
-+		return;
++	unsigned long flags;
 +
-+	if (amd8131_nmi_irq != NO_IRQ)
-+		free_irq(amd8131_nmi_irq, &amd8131_chipset);
++	spin_lock_irqsave(&edac_mce_lock, flags);
++	if (edac_mce_handler)
++		edac_mce_handler = NULL;
++	spin_unlock_irqrestore(&edac_mce_lock, flags);
 +}
 +
- static int __init amd8131_edac_init(void)
++/*
+  * Add CPU Err detection and HyperTransport Link Err detection
+  * as common "edac_device", they have no corresponding device
+  * nodes in the Open Firmware DTB and we have to add platform
+@@ -730,6 +925,7 @@ static struct cpc925_dev_info cpc925_devs[] = {
+ static void cpc925_add_edac_devices(void __iomem *vbase)
  {
-+	int ret;
-+
- 	printk(KERN_INFO "AMD8131 EDAC driver " AMD8131_EDAC_REVISION "\n");
- 	printk(KERN_INFO "\t(c) 2008 Wind River Systems, Inc.\n");
+ 	struct cpc925_dev_info *dev_info;
++	int ret = 0;
  
--	/* Only POLL mode supported so far */
+ 	if (!vbase) {
+ 		cpc925_printk(KERN_ERR, "MMIO not established yet\n");
+@@ -766,8 +962,36 @@ static void cpc925_add_edac_devices(void __iomem *vbase)
+ 		dev_info->edac_dev->mod_name = CPC925_EDAC_MOD_STR;
+ 		dev_info->edac_dev->dev_name = dev_name(&dev_info->pdev->dev);
+ 
+-		if (edac_op_state == EDAC_OPSTATE_POLL)
++		if (dev_info->op_state == EDAC_OPSTATE_POLL)
+ 			dev_info->edac_dev->edac_check = dev_info->check;
++		else if (dev_info->irq == EDAC_OPSTATE_MCE) {
++			/*
++			 * do nothing, MCE handler has been registered
++			 * by memory controller.
++			 */
++		} else if (dev_info->op_state == EDAC_OPSTATE_INT) {
++			dev_info->irq =
++				edac_get_mpic_irq(MPIC_HWIRQ_INTERNAL_ERROR);
++			if (dev_info->irq == NO_IRQ) {
++				cpc925_printk(KERN_ERR,	"%s: failed to get "
++					"virq for %s\n", __func__,
++					dev_info->ctl_name);
++				goto err2;
++			}
++
++			ret = request_irq(dev_info->irq, dev_info->isr,
++					IRQF_SHARED, "[EDAC] CPC925 ",
++					dev_info->edac_dev);
++			if (ret < 0) {
++				cpc925_printk(KERN_INFO, "%s: failed to "
++					"request irq %d for %s\n", __func__,
++					dev_info->irq, dev_info->ctl_name);
++				goto err2;
++			}
++
++			debugf0("%s: Successfully requested irq %d for %s\n",
++				 __func__, dev_info->irq, dev_info->ctl_name);
++		}
+ 
+ 		if (dev_info->init)
+ 			dev_info->init(dev_info);
+@@ -776,7 +1000,7 @@ static void cpc925_add_edac_devices(void __iomem *vbase)
+ 			cpc925_printk(KERN_ERR,
+ 				"Unable to add edac device for %s\n",
+ 				dev_info->ctl_name);
+-			goto err2;
++			goto err3;
+ 		}
+ 
+ 		debugf0("%s: Successfully added edac device for %s\n",
+@@ -784,9 +1008,13 @@ static void cpc925_add_edac_devices(void __iomem *vbase)
+ 
+ 		continue;
+ 
+-err2:
++err3:
+ 		if (dev_info->exit)
+ 			dev_info->exit(dev_info);
++
++		if (dev_info->op_state == EDAC_OPSTATE_INT)
++			free_irq(dev_info->irq, dev_info->edac_dev);
++err2:
+ 		edac_device_free_ctl_info(dev_info->edac_dev);
+ err1:
+ 		platform_device_unregister(dev_info->pdev);
+@@ -802,15 +1030,17 @@ static void cpc925_del_edac_devices(void)
+ 	struct cpc925_dev_info *dev_info;
+ 
+ 	for (dev_info = &cpc925_devs[0]; dev_info->init; dev_info++) {
++		if (dev_info->exit)
++			dev_info->exit(dev_info);
++
+ 		if (dev_info->edac_dev) {
++			if (dev_info->op_state == EDAC_OPSTATE_INT)
++				free_irq(dev_info->irq, dev_info->edac_dev);
+ 			edac_device_del_device(dev_info->edac_dev->dev);
+ 			edac_device_free_ctl_info(dev_info->edac_dev);
+ 			platform_device_unregister(dev_info->pdev);
+ 		}
+ 
+-		if (dev_info->exit)
+-			dev_info->exit(dev_info);
+-
+ 		debugf0("%s: Successfully deleted edac device for %s\n",
+ 			__func__, dev_info->ctl_name);
+ 	}
+@@ -900,18 +1130,18 @@ static int __devinit cpc925_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	nr_channels = cpc925_mc_get_channels(vbase);
+-	mci = edac_mc_alloc(sizeof(struct cpc925_mc_pdata),
+-			CPC925_NR_CSROWS, nr_channels + 1, edac_mc_idx);
++	mci = edac_mc_alloc(0, CPC925_NR_CSROWS, nr_channels + 1, edac_mc_idx);
+ 	if (!mci) {
+ 		cpc925_printk(KERN_ERR, "No memory for mem_ctl_info\n");
+ 		res = -ENOMEM;
+ 		goto err2;
+ 	}
+ 
+-	pdata = mci->pvt_info;
++	pdata = mci->pvt_info = &cpc925_mc_private;
+ 	pdata->vbase = vbase;
+ 	pdata->edac_idx = edac_mc_idx++;
+ 	pdata->name = pdev->name;
++	pdata->mci = mci;
+ 
+ 	mci->dev = &pdev->dev;
+ 	platform_set_drvdata(pdev, mci);
+@@ -922,15 +1152,16 @@ static int __devinit cpc925_probe(struct platform_device *pdev)
+ 	mci->mod_name = CPC925_EDAC_MOD_STR;
+ 	mci->mod_ver = CPC925_EDAC_REVISION;
+ 	mci->ctl_name = pdev->name;
+-
+-	if (edac_op_state == EDAC_OPSTATE_POLL)
+-		mci->edac_check = cpc925_mc_check;
+-
+ 	mci->ctl_page_to_phys = NULL;
+ 	mci->scrub_mode = SCRUB_SW_SRC;
+ 	mci->set_sdram_scrub_rate = NULL;
+ 	mci->get_sdram_scrub_rate = cpc925_get_sdram_scrub_rate;
+ 
++	if (pdata->op_state == EDAC_OPSTATE_POLL)
++		mci->edac_check = cpc925_mc_check;
++	else if (pdata->op_state == EDAC_OPSTATE_MCE)
++		cpc925_mce_handler_setup();
++
+ 	cpc925_init_csrows(mci);
+ 
+ 	/* Setup memory controller registers */
+@@ -951,6 +1182,10 @@ static int __devinit cpc925_probe(struct platform_device *pdev)
+ 
+ err3:
+ 	cpc925_mc_exit(mci);
++
++	if (pdata->op_state == EDAC_OPSTATE_MCE)
++		cpc925_mce_handler_exit();
++
+ 	edac_mc_free(mci);
+ err2:
+ 	devm_release_mem_region(&pdev->dev, r->start, r->end-r->start+1);
+@@ -963,14 +1198,19 @@ out:
+ static int cpc925_remove(struct platform_device *pdev)
+ {
+ 	struct mem_ctl_info *mci = platform_get_drvdata(pdev);
++	struct cpc925_mc_pdata *pdata = mci->pvt_info;
+ 
+ 	/*
+ 	 * Delete common edac devices before edac mc, because
+ 	 * the former share the MMIO of the latter.
+ 	 */
+ 	cpc925_del_edac_devices();
++
+ 	cpc925_mc_exit(mci);
+ 
++	if (pdata->op_state == EDAC_OPSTATE_MCE)
++		cpc925_mce_handler_exit();
++
+ 	edac_mc_del_mc(&pdev->dev);
+ 	edac_mc_free(mci);
+ 
+@@ -981,7 +1221,7 @@ static struct platform_driver cpc925_edac_driver = {
+ 	.probe = cpc925_probe,
+ 	.remove = cpc925_remove,
+ 	.driver = {
+-		   .name = "cpc925_edac",
++		.name = "cpc925_edac",
+ 	}
+ };
+ 
+@@ -992,9 +1232,6 @@ static int __init cpc925_edac_init(void)
+ 	printk(KERN_INFO "IBM CPC925 EDAC driver " CPC925_EDAC_REVISION "\n");
+ 	printk(KERN_INFO "\t(c) 2008 Wind River Systems, Inc\n");
+ 
+-	/* Only support POLL mode so far */
 -	edac_op_state = EDAC_OPSTATE_POLL;
-+	ret = pci_register_driver(&amd8131_edac_driver);
- 
--	return pci_register_driver(&amd8131_edac_driver);
-+	if (ret == 0)
-+		amd8131_nmi_handler_setup();
-+
-+	return ret;
+-
+ 	ret = platform_driver_register(&cpc925_edac_driver);
+ 	if (ret) {
+ 		printk(KERN_WARNING "Failed to register %s\n",
+diff --git a/drivers/edac/edac_stub.c b/drivers/edac/edac_stub.c
+index 20b428a..d2814d0 100644
+--- a/drivers/edac/edac_stub.c
++++ b/drivers/edac/edac_stub.c
+@@ -44,3 +44,9 @@ void edac_atomic_assert_error(void)
+ 	edac_err_assert++;
  }
+ EXPORT_SYMBOL_GPL(edac_atomic_assert_error);
++
++int (*edac_mce_handler)(void) = NULL;
++EXPORT_SYMBOL_GPL(edac_mce_handler);
++
++DEFINE_SPINLOCK(edac_mce_lock);
++EXPORT_SYMBOL_GPL(edac_mce_lock);
+diff --git a/include/linux/edac.h b/include/linux/edac.h
+index c122d22..da2dc20 100644
+--- a/include/linux/edac.h
++++ b/include/linux/edac.h
+@@ -12,12 +12,14 @@
+ #ifndef _LINUX_EDAC_H_
+ #define _LINUX_EDAC_H_
  
- static void __exit amd8131_edac_exit(void)
++#include <linux/spinlock.h>
+ #include <asm/atomic.h>
+ 
+ #define EDAC_OPSTATE_INVAL	-1
+ #define EDAC_OPSTATE_POLL	0
+ #define EDAC_OPSTATE_NMI	1
+ #define EDAC_OPSTATE_INT	2
++#define EDAC_OPSTATE_MCE	3
+ 
+ extern int edac_op_state;
+ extern int edac_err_assert;
+@@ -26,11 +28,15 @@ extern atomic_t edac_handlers;
+ extern int edac_handler_set(void);
+ extern void edac_atomic_assert_error(void);
+ 
++extern int (*edac_mce_handler)(void);
++extern spinlock_t edac_mce_lock;
++
+ static inline void opstate_init(void)
  {
- 	pci_unregister_driver(&amd8131_edac_driver);
-+
-+	amd8131_nmi_handler_exit();
- }
- 
- module_init(amd8131_edac_init);
-diff --git a/drivers/edac/amd8131_edac.h b/drivers/edac/amd8131_edac.h
-index 60e0d1c..7e86cbf 100644
---- a/drivers/edac/amd8131_edac.h
-+++ b/drivers/edac/amd8131_edac.h
-@@ -61,7 +61,8 @@ enum mem_limit_bits {
- 	MEM_LIMIT_STA	= BIT(27),
- 	MEM_LIMIT_MDPE	= BIT(24),
- 	MEM_LIMIT_MASK	= MEM_LIMIT_DPE|MEM_LIMIT_RSE|MEM_LIMIT_RMA|
--				MEM_LIMIT_RTA|MEM_LIMIT_STA|MEM_LIMIT_MDPE
-+				MEM_LIMIT_RTA|MEM_LIMIT_STA|MEM_LIMIT_MDPE,
-+	MEM_LIMIT_NMI_MASK = MEM_LIMIT_DPE | MEM_LIMIT_RSE
- };
- 
- /************************************************************
-@@ -80,6 +81,22 @@ enum lnk_ctrl_bits {
- 	LNK_CTRL_CRCFEN		= BIT(1)
- };
- 
-+/************************************************************
-+ *	PCI-X Miscellaneous Register, Dev[B,A]:0x40
-+ ************************************************************/
-+#define REG_MISC_I	0x40
-+enum misc_i_bits {
-+	MISC_I_NIOAMODE	= BIT(0),
-+};
-+
-+/************************************************************
-+ *	PCI-X Miscellaneous II Register, Dev[B,A]:0x44
-+ ************************************************************/
-+#define REG_MISC_II	0x44
-+enum misc_ii_bits {
-+	MISC_II_NMIEN	= BIT(0),
-+};
-+
- enum pcix_bridge_inst {
- 	NORTH_A = 0,
- 	NORTH_B = 1,
-@@ -113,6 +130,7 @@ struct amd8131_info {
- 	void (*init)(struct amd8131_dev_info *dev_info);
- 	void (*exit)(struct amd8131_dev_info *dev_info);
- 	void (*check)(struct edac_pci_ctl_info *edac_dev);
-+	irqreturn_t (*isr)(int irq, void *dev_id);
- };
- 
- #endif /* _AMD8131_EDAC_H_ */
+ 	switch (edac_op_state) {
+ 	case EDAC_OPSTATE_POLL:
+ 	case EDAC_OPSTATE_NMI:
++	case EDAC_OPSTATE_MCE:
+ 		break;
+ 	default:
+ 		edac_op_state = EDAC_OPSTATE_POLL;
 -- 
 1.5.6.2
