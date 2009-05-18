@@ -1,20 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <lnxtorez@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CA07DDE060
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 14:49:23 +1000 (EST)
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Becky Bruce <beckyb@kernel.crashing.org>
-In-Reply-To: <1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
-	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CB17BDE064
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 14:51:08 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.1/8.13.1) with ESMTP id n4I4mNGD003379
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 May 2009 22:48:23 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4I4p58G224570
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 May 2009 22:51:05 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	n4I4p5Fc004491
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 May 2009 22:51:05 -0600
+Subject: [PATCH]  bug fix in arch/powerpc/mm/tlb_nohash_low.S
+From: Torez Smith <lnxtorez@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Mon, 18 May 2009 14:49:01 +1000
-Message-Id: <1242622141.18075.37.camel@pasglop>
+Date: Sun, 17 May 2009 23:49:06 -0500
+Message-Id: <1242622146.31702.26.camel@torez.austin.ibm.com>
 Mime-Version: 1.0
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,48 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-05-14 at 17:42 -0500, Becky Bruce wrote:
-> This patch includes the basic infrastructure to use swiotlb
-> bounce buffering on 32-bit powerpc.  It is not yet enabled on
-> any platforms.  Probably the most interesting bit is the
-> addition of addr_needs_map to dma_ops - we need this as
-> a dma_op because the decision of whether or not an addr
-> can be mapped by a device is device-specific.
-> 
-> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+File arch/powerpc/mm/tlb_nohash_low.S defines various processor specific low level TLB invalidation. Most all family of validations are grouped via pre-processor defines with the intent we error out if we reach the end and our platform is not represented. Given this, the last few lines of the file should look similar to the following....
+<<  SNIP  >>
+1:      wrtee   r10
+        blr
+#else
+#error Unsupported processor type !
+#endif
 
-Hi Becky !
+However, the #else is incorrectly written as #elif.  On some of the newer compilers/assemblers, this will not successfully assemble and will cause an error.
 
-Finally I got to look at your patch :-)
+Signed-off-by: Torez Smith  <lnxtorez@linux.vnet.ibm.com>
+---
 
-A few comments below...
+Index: linux-2.6.29/arch/powerpc/mm/tlb_nohash_low.S
+===================================================================
+--- linux-2.6.29.orig/arch/powerpc/mm/tlb_nohash_low.S	2009-05-17 21:31:20.000000000 -0500
++++ linux-2.6.29/arch/powerpc/mm/tlb_nohash_low.S	2009-05-17 21:31:40.000000000 -0500
+@@ -161,6 +161,6 @@
+ 	isync
+ 1:	wrtee	r10
+ 	blr
+-#elif
++#else
+ #error Unsupported processor type !
+ #endif
 
->  #ifdef CONFIG_NOT_COHERENT_CACHE
->  /*
->   * DMA-consistent mapping functions for PowerPCs that don't support
-> @@ -76,6 +85,8 @@ struct dma_mapping_ops {
->  				dma_addr_t dma_address, size_t size,
->  				enum dma_data_direction direction,
->  				struct dma_attrs *attrs);
-> +	int		(*addr_needs_map)(struct device *dev, dma_addr_t addr,
-> +				size_t size);
-
-What annoys me here is that we basically end up with two indirect
-function calls for pretty much any DMA map. One was bad enough on low
-end processors or very intensive networking, but this is getting real
-bad don't you think ?
-
-Granted, this is only used when swiotlb is used too, but still...
-
-So the problem is that the region that can pass-through is somewhat
-a mix of bus specific (incoming DMA window location & size) and
-device specific (device addressing limitations).
-
-Now, if we can always reduce it to a single range though, which I
-think is practically the case, can't we instead pre-calculate that
-range and stick -that- in the struct dev archdata or similar thus
-speeding up the decision for a given address as to whether it needs
-a swiotlb mapping or not ? Or does it gets too messy ?
-
-Cheers,
-Ben.
+-- 
+Torez Smith
+IBM Linux Technology Center
