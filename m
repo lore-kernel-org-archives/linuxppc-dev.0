@@ -2,21 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0C79DDE01E
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 07:50:07 +1000 (EST)
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+	by ozlabs.org (Postfix) with ESMTPS id E42D8DE01E
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 07:52:53 +1000 (EST)
+Subject: Re: fs_enet build breakage
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <DE108B1C-85A6-4D1F-8E4D-E1AB5495578A@kernel.crashing.org>
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
-	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
-	<1242622141.18075.37.camel@pasglop>
-	<DE108B1C-85A6-4D1F-8E4D-E1AB5495578A@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20090518172016.GB18620@b07421-ec1.am.freescale.net>
+References: <1242630064.18075.48.camel@pasglop>
+	<9732983B-B67C-4831-BBAB-65472BE0F279@kernel.crashing.org>
+	<20090518172016.GB18620@b07421-ec1.am.freescale.net>
 Content-Type: text/plain
-Date: Tue, 19 May 2009 07:49:55 +1000
-Message-Id: <1242683395.16901.0.camel@pasglop>
+Date: Tue, 19 May 2009 07:50:44 +1000
+Message-Id: <1242683444.16901.1.camel@pasglop>
 Mime-Version: 1.0
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org
+Cc: Kumar Gala <galak@gate.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2009-05-18 at 08:25 -0500, Kumar Gala wrote:
+On Mon, 2009-05-18 at 12:20 -0500, Scott Wood wrote:
+> > I'm pretty sure the driver changes to address this are in dave's
+> net- 
+> > next tree.
 > 
-> Part of this is how the generic swiotlb code works and part of it
-> was  
-> our desire not to bloat dev archdata by adding such info that as you  
-> say is either bus specific or conveyed in the dma addr mask.
+> Won't this break git bisect?
+> 
+> Not to mention anyone trying to use your tree now...
 
-Right but perf sucks :-)
+Right, though if you have the commit ID in DaveM tree, I can work with
+him to sort out that driver, for example by having the same commit in
+my tree.
 
-Maybe an option is to clamp the DMA mask when it's set by the driver to
-limit it to the available inbound window ?
-
-Cheers,
 Ben.
