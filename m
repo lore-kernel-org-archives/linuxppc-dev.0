@@ -1,16 +1,15 @@
-Return-Path: <guojin02@tsinghua.org.cn>
-Received: from tsinghua.org.cn (mail.tsinghua.org.cn [211.151.65.103])
-	by ozlabs.org (Postfix) with SMTP id EED87DE070
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 19:51:07 +1000 (EST)
-Date: Mon, 18 May 2009 17:50:56 +0800
-From: "guojin02" <guojin02@tsinghua.org.cn>
-To: "u-boot" <u-boot-users@lists.sourceforge.net >,
-	"linuxppc-dev" <linuxppc-dev@ozlabs.org>
-Subject: the question about the DDR1_Rcomp code for INTEL IXP4XX CPU?
-Message-ID: <200905181750548435257@tsinghua.org.cn>
-Mime-Version: 1.0
+Return-Path: <emillbrandt@dekaresearch.com>
+Received: from dekaexchange.deka.local (mail.dekaresearch.com [208.65.175.196])
+	by ozlabs.org (Postfix) with ESMTP id 3922DDE08A
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 03:45:04 +1000 (EST)
+MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="=====003_Dragon738546183078_====="
+	boundary="----_=_NextPart_001_01C9D7DF.2BFC71C8"
+Subject: mpc5200 fec error
+Date: Mon, 18 May 2009 13:36:27 -0400
+Message-ID: <A88094362DE0AE49A118AB9B4EB3612403F9DEB6@dekaexchange.deka.local>
+From: "Eric Millbrandt" <emillbrandt@dekaresearch.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,183 +19,502 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
 This is a multi-part message in MIME format.
 
---=====003_Dragon738546183078_=====
+------_=_NextPart_001_01C9D7DF.2BFC71C8
 Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-SGksZXZlcnkgb25lLA0KDQoNCkkgd2FudCB0byBkcml2ZSB0aGUgIFJjb21wIGNpcmN1aXQgZm9y
-IGl4cDQ2MCwgYmVjYXVzZSBJIGZvdW5kIHRoYXQgdGhlIGl4cDQ2MCBjb3VsZCBub3QgcG93ZXIg
-dXAgb24gbG93IHRlbXBlcmF0dXJlKC00MCBkZWdyZWUpLiAgSSB3YW50IHRvIGFkZCB0aG9zZSBj
-b2RlIG9uIHN0YXJ0LnMsIGZvbGxvdyBpcyB0aGUgaW5zdHJ1Y3Rpb24gZnJvbSBpeHA0NjAgZGV2
-ZWxvcGVyJ3MgbWFudWFsLiBEb2VzIGFueW9uZSBjYW4gaGVscCBtZSByZWFsaXplIHRob3NlIGNv
-ZGUgZnJvbSBOby40IHRvIE5vLjY/DQoNCg0KDQoNCg0KSW5zdHJjdGlvbjoNCjEuIFRoZSBNQ1Ug
-YXBwbGllcyB0aGUgY2xvY2sgRERSSV9DS1syOjBdIGF0IHBvd2VyIHVwIGFsb25nIHdpdGggc3lz
-dGVtIHBvd2VyDQooY2xvY2sgZnJlcXVlbmN5IHVua25vd24pLg0KMi4gVGhlIE1DVSBtdXN0IHN0
-YWJpbGl6ZSBERFJJX0NLWzI6MF0gd2l0aGluIDEwMCCmzHMgYWZ0ZXIgcG93ZXIgc3RhYmlsaXpl
-cy4NCjMuIFRoZSBNQ1UgaG9sZHMgdGhlIGZvbGxvd2luZyBjb250cm9sIGlucHV0cyBpbmFjdGl2
-ZToNCkREUklfUkFTX04sIEREUklfQ0FTX04sIEREUklfV0VfTiwgRERSSV9DU19OWzE6MF0NClRo
-ZSBNQ1UgdGhlbiBwbGFjZXMgYWxsIG9mIHRoZSBmb2xsb3dpbmcgZGF0YSBvdXRwdXRzIGFuZCBz
-dHJvYmVzIGluIHRoZSBIaWdoLVoNCnN0YXRlOg0KRERSSV9EUVNbNDowXSwgRERSSV9EUVszMTow
-XSwgRERSX0NCWzc6MF0NCg0KNC4gVGhlIE1DVSB0aGVuIHBlcmZvcm1zIHNpeHRlZW4gUkNPTVAg
-Y2FsaWJyYXRpb24gY3ljbGVzIHdoaWNoIHRha2UgYW4gYWRkaXRpb25hbA0KMzQgbXMuIFNvZnR3
-YXJlIE1VU1Qgd2FpdCB1bnRpbCB0aGlzIHRpbWUgaGFzIGVsYXBzZWQgYmVmb3JlIGNvbnRpbnVp
-bmcgd2l0aCBERFJJDQpTRFJBTSBpbml0aWFsaXphdGlvbi4NCjUuIFNvZnR3YXJlIG92ZXJ3cml0
-ZXMgdGhlIGRlZmF1bHQgdmFsdWUgb2YgcmVnaXN0ZXIgRERSX1JDT01QX0NTUjMgKEhleCBPZmZz
-ZXQNCkFkZHJlc3MgPSAweDBDQzAwIEY1NzApIHdpdGggYSBuZXcgdmFsdWUgb2YgMHgwMDAwIDEw
-MDAuDQo2LiBTb2Z0d2FyZSBvdmVyd3JpdGVzIHRoZSBkZWZhdWx0IHZhbHVlIG9mIHJlZ2lzdGVy
-IEREUl9EUklWRTMgKEhleCBPZmZzZXQgQWRkcmVzcw0KPSAweDBDQzAwIEY1QUMpIHdpdGggYSBu
-ZXcgdmFsdWUgb2YgMHgwMDAyIDA4RjAuDQoNCjcuIFNvZnR3YXJlIGRpc2FibGVzIHRoZSByZWZy
-ZXNoIGNvdW50ZXIgYnkgc2V0dGluZyB0aGUgUkZSIHRvIHplcm8uDQo4LiBTb2Z0d2FyZSBpc3N1
-ZXMgb25lIE5PUCBjeWNsZSBhZnRlciB0aGUgMjAwIHVzIGRldmljZSBkZXNlbGVjdC4gQSBOT1Ag
-aXMNCmFjY29tcGxpc2hlZCBieSBzZXR0aW5nIHRoZSBTRElSIHRvIDAwMTEyLiBUaGUgTUNVIGFz
-c2VydHMgRERSSV9DS0VbMTowXSB3aXRoDQp0aGUgTk9QLg0KOS4gU29mdHdhcmUgaXNzdWVzIGEg
-cHJlY2hhcmdlLWFsbCBjb21tYW5kIHRvIHRoZSBERFJJIFNEUkFNIGludGVyZmFjZSBieSBzZXR0
-aW5nDQp0aGUgU0RJUiB0byAwMDEwMi4NCjEwLiBTb2Z0d2FyZSBpc3N1ZXMgYW4gZXh0ZW5kZWQt
-bW9kZS1yZWdpc3Rlci1zZXQgY29tbWFuZCB0byBlbmFibGUgdGhlIERMTCBieQ0Kd3JpdGluZyAw
-MTAwMiB0byB0aGUgU0RJUi4gVGhlIE1DVSBzdXBwb3J0cyB0aGUgZm9sbG93aW5nIEREUkkgU0RS
-QU0gbW9kZQ0KcGFyYW1ldGVyczoNCjExLiBBZnRlciB3YWl0aW5nIFRtcmQgY3ljbGVzLCBzb2Z0
-d2FyZSBpc3N1ZXMgYSBtb2RlLXJlZ2lzdGVyLXNldCBjb21tYW5kIGJ5IHdyaXRpbmcNCjAwMDEy
-IHRvIHRoZSBTRElSIHRvIHByb2dyYW0gdGhlIEREUkkgU0RSQU0gcGFyYW1ldGVycyBhbmQgdG8g
-cmVzZXQgdGhlIERMTC4NClRoZSBNQ1Ugc3VwcG9ydHMgdGhlIGZvbGxvd2luZyBERFJJIFNEUkFN
-IG1vZGUgcGFyYW1ldGVyczoNCjEyLiBBZnRlciB3YWl0aW5nIFRtcmQgY3ljbGVzLCBzb2Z0d2Fy
-ZSBpc3N1ZXMgYSBwcmVjaGFyZ2UtYWxsIGNvbW1hbmQgdG8gdGhlIEREUkkNClNEUkFNIGludGVy
-ZmFjZSBieSBzZXR0aW5nIHRoZSBTRElSIHRvIDAwMTAyLg0KMTMuIEFmdGVyIHdhaXRpbmcgVHJw
-IGN5Y2xlcywgc29mdHdhcmUgcHJvdmlkZXMgdHdvIGF1dG8tcmVmcmVzaCBjeWNsZXMuIEFuIGF1
-dG8tcmVmcmVzaA0KY3ljbGUgaXMgYWNjb21wbGlzaGVkIGJ5IHNldHRpbmcgdGhlIFNESVIgdG8g
-MDExMDIuIFNvZnR3YXJlIG11c3QgZW5zdXJlIGF0IGxlYXN0DQpUcmZjIGN5Y2xlcyBiZXR3ZWVu
-IGVhY2ggYXV0by1yZWZyZXNoIGNvbW1hbmQuDQoxNC4gRm9sbG93aW5nIHRoZSBzZWNvbmQgYXV0
-by1yZWZyZXNoIGN5Y2xlLCBzb2Z0d2FyZSBtdXN0IHdhaXQgVHJmYyBjeWNsZXMuIFRoZW4sDQpz
-b2Z0d2FyZSBpc3N1ZXMgYSBtb2RlLXJlZ2lzdGVyLXNldCBjb21tYW5kIGJ5IHdyaXRpbmcgdG8g
-dGhlIFNESVIgdG8gcHJvZ3JhbSB0aGUNCkREUkkgU0RSQU0gcGFyYW1ldGVycyB3aXRob3V0IHJl
-c2V0dGluZyB0aGUgRExMIGJ5IHdyaXRpbmcgMDAwMDIgdG8gdGhlIFNESVIuDQoxNS4gVGhlIE1D
-VSBtYXkgaXNzdWUgYSByb3ctYWN0aXZhdGUgY29tbWFuZCBUbXJkIGN5Y2xlcyBhZnRlciB0aGUg
-bW9kZS1yZWdpc3Rlci1zZXQNCmNvbW1hbmQuDQoxNi4gU29mdHdhcmUgcmUtZW5hYmxlcyB0aGUg
-cmVmcmVzaCBjb3VudGVyIGJ5IHNldHRpbmcgdGhlIFJGUiB0byB0aGUgcmVxdWlyZWQgdmFsdWUu
-DQpUaGUgd2F2ZWZvcm0gaW4gRmlndXJlIDEwOSBpbGx1c3RyYXRlcyB0aGUgRERSSSBTRFJBTSBp
-bml0aWFsaXphdGlvbiBzZXF1ZW5jZS4NCg0KDQoyMDA5LTA1LTE4IA0KDQoNCg0KICAgILn5ICC+
-og0KMTM4MTA2MDc4NzYNCjAxMC02Mjc3MTY5NA0K
+Hello all,
 
---=====003_Dragon738546183078_=====
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+=20
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC42MDAwLjE2ODA5IiBuYW1lPUdFTkVSQVRPUj48TElOSyANCmhyZWY9IkJMT0NLUVVPVEV7bWFy
-Z2luLVRvcDogMHB4OyBtYXJnaW4tQm90dG9tOiAwcHg7IG1hcmdpbi1MZWZ0OiAyZW19IiANCnJl
-bD1zdHlsZXNoZWV0PjwvSEVBRD4NCjxCT0RZIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQ7IE1BUkdJ
-TjogMTBweDsgRk9OVC1GQU1JTFk6IHZlcmRhbmEiPg0KPERJVj5IaSxldmVyeSBvbmUsPC9ESVY+
-DQo8RElWPiZuYnNwOzwvRElWPg0KPERJVj4mbmJzcDs8L0RJVj4NCjxESVY+SSB3YW50IHRvIGRy
-aXZlIHRoZSZuYnNwOyZuYnNwO1Jjb21wJm5ic3A7Y2lyY3VpdCBmb3IgaXhwNDYwLCBiZWNhdXNl
-IEkgDQpmb3VuZCB0aGF0IHRoZSBpeHA0NjAgY291bGQgbm90IHBvd2VyIHVwIG9uIGxvdyB0ZW1w
-ZXJhdHVyZSgtNDAgZGVncmVlKS4mbmJzcDsgSSANCndhbnQgdG8gYWRkIHRob3NlIGNvZGUgb24g
-c3RhcnQucywgZm9sbG93IGlzIHRoZSBpbnN0cnVjdGlvbiBmcm9tIGl4cDQ2MCANCmRldmVsb3Bl
-cidzIG1hbnVhbC4gRG9lcyBhbnlvbmUgY2FuIGhlbHAgbWUgcmVhbGl6ZSB0aG9zZSBjb2RlIGZy
-b20gTm8uNCB0byANCk5vLjY/PC9ESVY+DQo8RElWPiZuYnNwOzwvRElWPg0KPERJVj4mbmJzcDs8
-L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElWPiZuYnNwOzwvRElWPg0KPERJVj4mbmJzcDs8
-L0RJVj4NCjxESVY+SW5zdHJjdGlvbjo8L0RJVj4NCjxESVY+DQo8RElWPjEuJm5ic3A7VGhlJm5i
-c3A7TUNVJm5ic3A7YXBwbGllcyZuYnNwO3RoZSZuYnNwO2Nsb2NrJm5ic3A7RERSSV9DS1syOjBd
-Jm5ic3A7YXQmbmJzcDtwb3dlciZuYnNwO3VwJm5ic3A7YWxvbmcmbmJzcDt3aXRoJm5ic3A7c3lz
-dGVtJm5ic3A7cG93ZXI8L0RJVj4NCjxESVY+KGNsb2NrJm5ic3A7ZnJlcXVlbmN5Jm5ic3A7dW5r
-bm93bikuPC9ESVY+DQo8RElWPjIuJm5ic3A7VGhlJm5ic3A7TUNVJm5ic3A7bXVzdCZuYnNwO3N0
-YWJpbGl6ZSZuYnNwO0REUklfQ0tbMjowXSZuYnNwO3dpdGhpbiZuYnNwOzEwMCZuYnNwO6bMcyZu
-YnNwO2FmdGVyJm5ic3A7cG93ZXImbmJzcDtzdGFiaWxpemVzLjwvRElWPg0KPERJVj4zLiZuYnNw
-O1RoZSZuYnNwO01DVSZuYnNwO2hvbGRzJm5ic3A7dGhlJm5ic3A7Zm9sbG93aW5nJm5ic3A7Y29u
-dHJvbCZuYnNwO2lucHV0cyZuYnNwO2luYWN0aXZlOjwvRElWPg0KPERJVj5ERFJJX1JBU19OLCZu
-YnNwO0REUklfQ0FTX04sJm5ic3A7RERSSV9XRV9OLCZuYnNwO0REUklfQ1NfTlsxOjBdPC9ESVY+
-PC9ESVY+DQo8RElWPg0KPERJVj5UaGUmbmJzcDtNQ1UmbmJzcDt0aGVuJm5ic3A7cGxhY2VzJm5i
-c3A7YWxsJm5ic3A7b2YmbmJzcDt0aGUmbmJzcDtmb2xsb3dpbmcmbmJzcDtkYXRhJm5ic3A7b3V0
-cHV0cyZuYnNwO2FuZCZuYnNwO3N0cm9iZXMmbmJzcDtpbiZuYnNwO3RoZSZuYnNwO0hpZ2gtWjwv
-RElWPg0KPERJVj5zdGF0ZTo8L0RJVj4NCjxESVY+RERSSV9EUVNbNDowXSwmbmJzcDtERFJJX0RR
-WzMxOjBdLCZuYnNwO0REUl9DQls3OjBdPC9ESVY+PC9ESVY+DQo8RElWPiZuYnNwOzwvRElWPg0K
-PERJVj4NCjxESVY+PEZPTlQgDQpjb2xvcj0jZmYwMDAwPjQuJm5ic3A7VGhlJm5ic3A7TUNVJm5i
-c3A7dGhlbiZuYnNwO3BlcmZvcm1zJm5ic3A7c2l4dGVlbiZuYnNwO1JDT01QJm5ic3A7Y2FsaWJy
-YXRpb24mbmJzcDtjeWNsZXMmbmJzcDt3aGljaCZuYnNwO3Rha2UmbmJzcDthbiZuYnNwO2FkZGl0
-aW9uYWw8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIA0KY29sb3I9I2ZmMDAwMD4zNCZuYnNwO21z
-LiZuYnNwO1NvZnR3YXJlJm5ic3A7TVVTVCZuYnNwO3dhaXQmbmJzcDt1bnRpbCZuYnNwO3RoaXMm
-bmJzcDt0aW1lJm5ic3A7aGFzJm5ic3A7ZWxhcHNlZCZuYnNwO2JlZm9yZSZuYnNwO2NvbnRpbnVp
-bmcmbmJzcDt3aXRoJm5ic3A7RERSSTwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgY29sb3I9I2Zm
-MDAwMD5TRFJBTSZuYnNwO2luaXRpYWxpemF0aW9uLjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQg
-DQpjb2xvcj0jZmYwMDAwPjUuJm5ic3A7U29mdHdhcmUmbmJzcDtvdmVyd3JpdGVzJm5ic3A7dGhl
-Jm5ic3A7ZGVmYXVsdCZuYnNwO3ZhbHVlJm5ic3A7b2YmbmJzcDtyZWdpc3RlciZuYnNwO0REUl9S
-Q09NUF9DU1IzJm5ic3A7KEhleCZuYnNwO09mZnNldDwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQg
-DQpjb2xvcj0jZmYwMDAwPkFkZHJlc3MmbmJzcDs9Jm5ic3A7MHgwQ0MwMCZuYnNwO0Y1NzApJm5i
-c3A7d2l0aCZuYnNwO2EmbmJzcDtuZXcmbmJzcDt2YWx1ZSZuYnNwO29mJm5ic3A7MHgwMDAwJm5i
-c3A7MTAwMC48L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIA0KY29sb3I9I2ZmMDAwMD42LiZuYnNw
-O1NvZnR3YXJlJm5ic3A7b3ZlcndyaXRlcyZuYnNwO3RoZSZuYnNwO2RlZmF1bHQmbmJzcDt2YWx1
-ZSZuYnNwO29mJm5ic3A7cmVnaXN0ZXImbmJzcDtERFJfRFJJVkUzJm5ic3A7KEhleCZuYnNwO09m
-ZnNldCZuYnNwO0FkZHJlc3M8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIA0KY29sb3I9I2ZmMDAw
-MD49Jm5ic3A7MHgwQ0MwMCZuYnNwO0Y1QUMpJm5ic3A7d2l0aCZuYnNwO2EmbmJzcDtuZXcmbmJz
-cDt2YWx1ZSZuYnNwO29mJm5ic3A7MHgwMDAyJm5ic3A7MDhGMC48L0ZPTlQ+PC9ESVY+PC9ESVY+
-DQo8RElWPiZuYnNwOzwvRElWPg0KPERJVj4NCjxESVY+Ny4mbmJzcDtTb2Z0d2FyZSZuYnNwO2Rp
-c2FibGVzJm5ic3A7dGhlJm5ic3A7cmVmcmVzaCZuYnNwO2NvdW50ZXImbmJzcDtieSZuYnNwO3Nl
-dHRpbmcmbmJzcDt0aGUmbmJzcDtSRlImbmJzcDt0byZuYnNwO3plcm8uPC9ESVY+DQo8RElWPjgu
-Jm5ic3A7U29mdHdhcmUmbmJzcDtpc3N1ZXMmbmJzcDtvbmUmbmJzcDtOT1AmbmJzcDtjeWNsZSZu
-YnNwO2FmdGVyJm5ic3A7dGhlJm5ic3A7MjAwJm5ic3A7dXMmbmJzcDtkZXZpY2UmbmJzcDtkZXNl
-bGVjdC4mbmJzcDtBJm5ic3A7Tk9QJm5ic3A7aXM8L0RJVj4NCjxESVY+YWNjb21wbGlzaGVkJm5i
-c3A7YnkmbmJzcDtzZXR0aW5nJm5ic3A7dGhlJm5ic3A7U0RJUiZuYnNwO3RvJm5ic3A7MDAxMTIu
-Jm5ic3A7VGhlJm5ic3A7TUNVJm5ic3A7YXNzZXJ0cyZuYnNwO0REUklfQ0tFWzE6MF0mbmJzcDt3
-aXRoPC9ESVY+DQo8RElWPnRoZSZuYnNwO05PUC48L0RJVj4NCjxESVY+OS4mbmJzcDtTb2Z0d2Fy
-ZSZuYnNwO2lzc3VlcyZuYnNwO2EmbmJzcDtwcmVjaGFyZ2UtYWxsJm5ic3A7Y29tbWFuZCZuYnNw
-O3RvJm5ic3A7dGhlJm5ic3A7RERSSSZuYnNwO1NEUkFNJm5ic3A7aW50ZXJmYWNlJm5ic3A7Ynkm
-bmJzcDtzZXR0aW5nPC9ESVY+DQo8RElWPnRoZSZuYnNwO1NESVImbmJzcDt0byZuYnNwOzAwMTAy
-LjwvRElWPg0KPERJVj4xMC4mbmJzcDtTb2Z0d2FyZSZuYnNwO2lzc3VlcyZuYnNwO2FuJm5ic3A7
-ZXh0ZW5kZWQtbW9kZS1yZWdpc3Rlci1zZXQmbmJzcDtjb21tYW5kJm5ic3A7dG8mbmJzcDtlbmFi
-bGUmbmJzcDt0aGUmbmJzcDtETEwmbmJzcDtieTwvRElWPg0KPERJVj53cml0aW5nJm5ic3A7MDEw
-MDImbmJzcDt0byZuYnNwO3RoZSZuYnNwO1NESVIuJm5ic3A7VGhlJm5ic3A7TUNVJm5ic3A7c3Vw
-cG9ydHMmbmJzcDt0aGUmbmJzcDtmb2xsb3dpbmcmbmJzcDtERFJJJm5ic3A7U0RSQU0mbmJzcDtt
-b2RlPC9ESVY+DQo8RElWPnBhcmFtZXRlcnM6PC9ESVY+PC9ESVY+DQo8RElWPg0KPERJVj4xMS4m
-bmJzcDtBZnRlciZuYnNwO3dhaXRpbmcmbmJzcDtUbXJkJm5ic3A7Y3ljbGVzLCZuYnNwO3NvZnR3
-YXJlJm5ic3A7aXNzdWVzJm5ic3A7YSZuYnNwO21vZGUtcmVnaXN0ZXItc2V0Jm5ic3A7Y29tbWFu
-ZCZuYnNwO2J5Jm5ic3A7d3JpdGluZzwvRElWPg0KPERJVj4wMDAxMiZuYnNwO3RvJm5ic3A7dGhl
-Jm5ic3A7U0RJUiZuYnNwO3RvJm5ic3A7cHJvZ3JhbSZuYnNwO3RoZSZuYnNwO0REUkkmbmJzcDtT
-RFJBTSZuYnNwO3BhcmFtZXRlcnMmbmJzcDthbmQmbmJzcDt0byZuYnNwO3Jlc2V0Jm5ic3A7dGhl
-Jm5ic3A7RExMLjwvRElWPg0KPERJVj5UaGUmbmJzcDtNQ1UmbmJzcDtzdXBwb3J0cyZuYnNwO3Ro
-ZSZuYnNwO2ZvbGxvd2luZyZuYnNwO0REUkkmbmJzcDtTRFJBTSZuYnNwO21vZGUmbmJzcDtwYXJh
-bWV0ZXJzOjwvRElWPjwvRElWPg0KPERJVj4NCjxESVY+MTIuJm5ic3A7QWZ0ZXImbmJzcDt3YWl0
-aW5nJm5ic3A7VG1yZCZuYnNwO2N5Y2xlcywmbmJzcDtzb2Z0d2FyZSZuYnNwO2lzc3VlcyZuYnNw
-O2EmbmJzcDtwcmVjaGFyZ2UtYWxsJm5ic3A7Y29tbWFuZCZuYnNwO3RvJm5ic3A7dGhlJm5ic3A7
-RERSSTwvRElWPg0KPERJVj5TRFJBTSZuYnNwO2ludGVyZmFjZSZuYnNwO2J5Jm5ic3A7c2V0dGlu
-ZyZuYnNwO3RoZSZuYnNwO1NESVImbmJzcDt0byZuYnNwOzAwMTAyLjwvRElWPg0KPERJVj4xMy4m
-bmJzcDtBZnRlciZuYnNwO3dhaXRpbmcmbmJzcDtUcnAmbmJzcDtjeWNsZXMsJm5ic3A7c29mdHdh
-cmUmbmJzcDtwcm92aWRlcyZuYnNwO3R3byZuYnNwO2F1dG8tcmVmcmVzaCZuYnNwO2N5Y2xlcy4m
-bmJzcDtBbiZuYnNwO2F1dG8tcmVmcmVzaDwvRElWPg0KPERJVj5jeWNsZSZuYnNwO2lzJm5ic3A7
-YWNjb21wbGlzaGVkJm5ic3A7YnkmbmJzcDtzZXR0aW5nJm5ic3A7dGhlJm5ic3A7U0RJUiZuYnNw
-O3RvJm5ic3A7MDExMDIuJm5ic3A7U29mdHdhcmUmbmJzcDttdXN0Jm5ic3A7ZW5zdXJlJm5ic3A7
-YXQmbmJzcDtsZWFzdDwvRElWPg0KPERJVj5UcmZjJm5ic3A7Y3ljbGVzJm5ic3A7YmV0d2VlbiZu
-YnNwO2VhY2gmbmJzcDthdXRvLXJlZnJlc2gmbmJzcDtjb21tYW5kLjwvRElWPg0KPERJVj4xNC4m
-bmJzcDtGb2xsb3dpbmcmbmJzcDt0aGUmbmJzcDtzZWNvbmQmbmJzcDthdXRvLXJlZnJlc2gmbmJz
-cDtjeWNsZSwmbmJzcDtzb2Z0d2FyZSZuYnNwO211c3QmbmJzcDt3YWl0Jm5ic3A7VHJmYyZuYnNw
-O2N5Y2xlcy4mbmJzcDtUaGVuLDwvRElWPg0KPERJVj5zb2Z0d2FyZSZuYnNwO2lzc3VlcyZuYnNw
-O2EmbmJzcDttb2RlLXJlZ2lzdGVyLXNldCZuYnNwO2NvbW1hbmQmbmJzcDtieSZuYnNwO3dyaXRp
-bmcmbmJzcDt0byZuYnNwO3RoZSZuYnNwO1NESVImbmJzcDt0byZuYnNwO3Byb2dyYW0mbmJzcDt0
-aGU8L0RJVj4NCjxESVY+RERSSSZuYnNwO1NEUkFNJm5ic3A7cGFyYW1ldGVycyZuYnNwO3dpdGhv
-dXQmbmJzcDtyZXNldHRpbmcmbmJzcDt0aGUmbmJzcDtETEwmbmJzcDtieSZuYnNwO3dyaXRpbmcm
-bmJzcDswMDAwMiZuYnNwO3RvJm5ic3A7dGhlJm5ic3A7U0RJUi48L0RJVj48L0RJVj4NCjxESVY+
-DQo8RElWPjE1LiZuYnNwO1RoZSZuYnNwO01DVSZuYnNwO21heSZuYnNwO2lzc3VlJm5ic3A7YSZu
-YnNwO3Jvdy1hY3RpdmF0ZSZuYnNwO2NvbW1hbmQmbmJzcDtUbXJkJm5ic3A7Y3ljbGVzJm5ic3A7
-YWZ0ZXImbmJzcDt0aGUmbmJzcDttb2RlLXJlZ2lzdGVyLXNldDwvRElWPg0KPERJVj5jb21tYW5k
-LjwvRElWPg0KPERJVj4xNi4mbmJzcDtTb2Z0d2FyZSZuYnNwO3JlLWVuYWJsZXMmbmJzcDt0aGUm
-bmJzcDtyZWZyZXNoJm5ic3A7Y291bnRlciZuYnNwO2J5Jm5ic3A7c2V0dGluZyZuYnNwO3RoZSZu
-YnNwO1JGUiZuYnNwO3RvJm5ic3A7dGhlJm5ic3A7cmVxdWlyZWQmbmJzcDt2YWx1ZS48L0RJVj4N
-CjxESVY+VGhlJm5ic3A7d2F2ZWZvcm0mbmJzcDtpbiZuYnNwO0ZpZ3VyZSZuYnNwOzEwOSZuYnNw
-O2lsbHVzdHJhdGVzJm5ic3A7dGhlJm5ic3A7RERSSSZuYnNwO1NEUkFNJm5ic3A7aW5pdGlhbGl6
-YXRpb24mbmJzcDtzZXF1ZW5jZS48L0RJVj48L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElW
-PjxGT05UIGZhY2U9VmVyZGFuYSBzaXplPTI+PC9GT05UPiZuYnNwOzwvRElWPg0KPERJViBhbGln
-bj1sZWZ0PjxGT05UIGZhY2U9VmVyZGFuYSBjb2xvcj0jYzBjMGMwIHNpemU9Mj4yMDA5LTA1LTE4
-IA0KPC9GT05UPjwvRElWPjxGT05UIGZhY2U9VmVyZGFuYSBzaXplPTI+DQo8SFIgc3R5bGU9IldJ
-RFRIOiAxMjJweDsgSEVJR0hUOiAycHgiIGFsaWduPWxlZnQgU0laRT0yPg0KDQo8RElWPjxGT05U
-IGZhY2U9VmVyZGFuYSBjb2xvcj0jYzBjMGMwIHNpemU9Mj48U1BBTj4NCjxESVY+DQo8RElWPjxG
-T05UIHNpemU9NT4mbmJzcDs8Rk9OVCBjb2xvcj0jMDAwMGZmPiZuYnNwOyZuYnNwOyC5+SZuYnNw
-OyANCr6iPC9GT05UPjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgY29sb3I9IzAwMDBmZiBzaXpl
-PTU+MTM4MTA2MDc4NzY8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIGNvbG9yPSMwMDAwZmYgc2l6
-ZT01PjAxMC02Mjc3MTY5NDwvRk9OVD48L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+PC9ESVY+PC9T
-UEFOPjwvRk9OVD48L0RJVj48L0ZPTlQ+PC9CT0RZPjwvSFRNTD4NCg==
+I am testing a 2.6.29.3 (with preempt_rt patches) kernel on a phytec
+pcm030 and am getting a kernel hang when testing the fec Ethernet
+controller.  The error only occurs when running the preempt-patched
+kernel, an unmodified kernel works fine.  Is anyone out there using
+preempt_rt on an MPC5200 successfully?
 
---=====003_Dragon738546183078_=====--
+=20
+
+Eric
+
+=20
+
+root@rudolph-ui:/root> iperf -c linux-5200bdevl01 -P 2 -i 1 -p 5001 -f k
+-t 600
+
+------------------------------------------------------------
+
+Client connecting to linux-5200bdevl01, TCP port 5001
+
+TCP window size: 36.2 KByte (default)
+
+------------------------------------------------------------
+
+[  4] local 10.1.4.88 port 37872 connected with 10.1.5.234 port 5001
+
+[  3] local 10.1.4.88 port 37871 connected with 10.1.5.234 port 5001
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  3]  0.0- 1.0 sec  3824 KBytes  31326 Kbits/sec
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  4]  0.0- 1.0 sec  3656 KBytes  29950 Kbits/sec
+
+[SUM]  0.0- 1.0 sec  7480 KBytes  61276 Kbits/sec
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  4]  1.0- 2.0 sec  3760 KBytes  30802 Kbits/sec
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  3]  1.0- 2.0 sec  3752 KBytes  30736 Kbits/sec
+
+[SUM]  1.0- 2.0 sec  7512 KBytes  61538 Kbits/sec
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  4]  2.0- 3.0 sec  3728 KBytes  30540 Kbits/sec
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  3]  2.0- 3.0 sec  3816 KBytes  31261 Kbits/sec
+
+[SUM]  2.0- 3.0 sec  7544 KBytes  61800 Kbits/sec
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  3]  3.0- 4.0 sec  3712 KBytes  30409 Kbits/sec
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  4]  3.0- 4.0 sec  3824 KBytes  31326 Kbits/sec
+
+[SUM]  3.0- 4.0 sec  7536 KBytes  61735 Kbits/sec
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  3]  4.0- 5.0 sec  3968 KBytes  32506 Kbits/sec
+
+[ ID] Interval       Transfer     Bandwidth
+
+[  4]  4.0- 5.0 sec  3624 KBytes  29688 Kbits/sec
+
+[SUM]  4.0- 5.0 sec  7592 KBytes  62194 Kbits/sec
+
+[ 5761.999175] net eth0: transmit queue overrun
+
+[ 5762.003591] net eth0: transmit queue overrun
+
+[ 5762.007948] net eth0: transmit queue overrun
+
+[ 5762.012302] net eth0: transmit queue overrun
+
+[ 5762.016658] net eth0: transmit queue overrun
+
+[ 5762.021013] net eth0: transmit queue overrun
+
+[ 5762.025381] net eth0: transmit queue overrun
+
+[ 5762.029735] net eth0: transmit queue overrun
+
+[ 5762.034090] net eth0: transmit queue overrun
+
+[ 5762.038445] net eth0: transmit queue overrun
+
+[ 5767.000928] net eth0: transmit queue overrun
+
+[ 5767.005278] net eth0: transmit queue overrun
+
+[ 5767.009634] net eth0: transmit queue overrun
+
+[ 5767.013990] net eth0: transmit queue overrun
+
+[ 5767.018345] net eth0: transmit queue overrun
+
+[ 5767.022701] net eth0: transmit queue overrun
+
+...
+
+
+
+_________________________________________________________________________=
+________________
+
+This e-mail and the information, including any attachments, it contains =
+are intended to be a confidential communication only to the person or =
+entity to whom it is addressed and may contain information that is =
+privileged. If the reader of this message is not the intended recipient, =
+you are hereby notified that any dissemination, distribution or copying =
+of this communication is strictly prohibited. If you have received this =
+communication in error, please immediately notify the sender and destroy =
+the original message.
+
+Thank you.
+
+Please consider the environment before printing this email.
+
+------_=_NextPart_001_01C9D7DF.2BFC71C8
+Content-Type: text/html
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue =
+vlink=3Dpurple><!--ppd1000034--><!--ppd1000033-->
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hello all,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am testing a 2.6.29.3 (with preempt_rt patches) =
+kernel on
+a phytec pcm030 and am getting a kernel hang when testing the fec =
+Ethernet controller.&nbsp;
+The error only occurs when running the preempt-patched kernel, an =
+unmodified
+kernel works fine.&nbsp; Is anyone out there using preempt_rt on an =
+MPC5200
+successfully?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Eric<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>root@rudolph-ui:/root&gt; iperf -c linux-5200bdevl01 =
+-P 2 -i
+1 -p 5001 -f k -t 600<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>------------------------------------------------------=
+------<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Client connecting to linux-5200bdevl01, TCP port =
+5001<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>TCP window size: 36.2 KByte =
+(default)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>------------------------------------------------------=
+------<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 4] local 10.1.4.88 port 37872 connected with
+10.1.5.234 port 5001<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 3] local 10.1.4.88 port 37871 connected with
+10.1.5.234 port 5001<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Transfer&nbsp;&nbsp;&nbsp;&nbsp; Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 3]&nbsp; 0.0- 1.0 sec&nbsp; 3824 KBytes&nbsp; =
+31326
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Transfer&nbsp;&nbsp;&nbsp;&nbsp; Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 4]&nbsp; 0.0- 1.0 sec&nbsp; 3656 KBytes&nbsp; =
+29950
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[SUM]&nbsp; 0.0- 1.0 sec&nbsp; 7480 KBytes&nbsp; =
+61276
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Transfer&nbsp;&nbsp;&nbsp;&nbsp; Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 4]&nbsp; 1.0- 2.0 sec&nbsp; 3760 KBytes&nbsp; =
+30802
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Transfer&nbsp;&nbsp;&nbsp;&nbsp; Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 3]&nbsp; 1.0- 2.0 sec&nbsp; 3752 KBytes&nbsp; =
+30736
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[SUM]&nbsp; 1.0- 2.0 sec&nbsp; 7512 KBytes&nbsp; =
+61538
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Transfer&nbsp;&nbsp;&nbsp;&nbsp; Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 4]&nbsp; 2.0- 3.0 sec&nbsp; 3728 KBytes&nbsp; =
+30540
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;Transfer&nbsp;&nbsp;&nbsp;&nbsp;
+Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 3]&nbsp; 2.0- 3.0 sec&nbsp; 3816 KBytes&nbsp; =
+31261
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[SUM]&nbsp; 2.0- 3.0 sec&nbsp; 7544 KBytes&nbsp; =
+61800
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Transfer&nbsp;&nbsp;&nbsp;&nbsp; Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 3]&nbsp; 3.0- 4.0 sec&nbsp; 3712 KBytes&nbsp; =
+30409
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Transfer&nbsp;&nbsp;&nbsp;&nbsp; Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 4]&nbsp; 3.0- 4.0 sec&nbsp; 3824 KBytes&nbsp; =
+31326
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[SUM]&nbsp; 3.0- 4.0 sec&nbsp; 7536 KBytes&nbsp; =
+61735
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Transfer&nbsp;&nbsp;&nbsp;&nbsp; Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 3]&nbsp; 4.0- 5.0 sec&nbsp; 3968 KBytes&nbsp; =
+32506
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ ID] Interval&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;Transfer&nbsp;&nbsp;&nbsp;&nbsp;
+Bandwidth<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[&nbsp; 4]&nbsp; 4.0- 5.0 sec&nbsp; 3624 KBytes&nbsp; =
+29688
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[SUM]&nbsp; 4.0- 5.0 sec&nbsp; 7592 KBytes&nbsp; =
+62194
+Kbits/sec<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5761.999175] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5762.003591] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5762.007948] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5762.012302] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5762.016658] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5762.021013] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5762.025381] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5762.029735] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5762.034090] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5762.038445] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5767.000928] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5767.005278] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5767.009634] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5767.013990] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5767.018345] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>[ 5767.022701] net eth0: transmit queue =
+overrun<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&#8230;.<o:p></o:p></span></font></p>
+
+</div>
+
+<BR><BR><P><FONT color=3Dgray =
+size=3D2>________________________________________________________________=
+_____________</FONT></P><P><FONT color=3Dgray size=3D2>This e-mail and =
+the information, including any attachments, it contains are intended to =
+be a confidential communication only to the person or entity to whom it =
+is addressed and may contain information that is privileged. If the =
+reader of this message is not the intended recipient, you are hereby =
+notified that any dissemination, distribution or copying of this =
+communication is strictly prohibited. If you have received this =
+communication in error, please immediately notify the sender and destroy =
+the original message.</FONT></P><P><FONT color=3Dgray size=3D2>Thank =
+you.</FONT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P><BR><BR><P=
+><FONT color=3Dgreen size=3D2>Please consider the environment before =
+printing this email.</FONT></P></body>
+
+</html>
+
+------_=_NextPart_001_01C9D7DF.2BFC71C8--
