@@ -1,27 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9822CDE0C9
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 08:19:50 +1000 (EST)
-Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <timur.tabi@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
+	by ozlabs.org (Postfix) with ESMTP id 5EFA6DE0A6
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 08:49:14 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so2381446qwe.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 May 2009 15:49:12 -0700 (PDT)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <fa686aa40905140910i194acbd7y34142720874b8299@mail.gmail.com>
+References: <1241560385-26868-1-git-send-email-timur@freescale.com>
+	<fa686aa40905140813l5caf7085r64bce935be0a22d3@mail.gmail.com>
+	<4A0C40D4.1090508@freescale.com>
+	<fa686aa40905140910i194acbd7y34142720874b8299@mail.gmail.com>
+Date: Mon, 18 May 2009 17:49:12 -0500
+Message-ID: <ed82fe3e0905181549n6d9a5370rcc0e1f52cebdc2d3@mail.gmail.com>
+Subject: Re: [PATCH v7] introduce macro spin_event_timeout()
+From: Timur Tabi <timur@freescale.com>
 To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40905140700k3ca28ac0m74c9c161ad538abc@mail.gmail.com>
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<20090506220954.5D3AF83420E8@gemini.denx.de>
-	<fa686aa40905061539t4fa463aehe56fdb64d053135d@mail.gmail.com>
-	<200905141438.23348.kosmo@semihalf.com>
-	<fa686aa40905140700k3ca28ac0m74c9c161ad538abc@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 19 May 2009 08:17:31 +1000
-Message-Id: <1242685051.16901.6.camel@pasglop>
-Mime-Version: 1.0
-Cc: Becky Bruce <Becky.Bruce@freescale.com>,
-	Piotr =?UTF-8?Q?Zi=C4=99cik?= <kosmo@semihalf.com>,
-	Detlev Zundel <dzu@denx.de>, John Rigby <jrigby@gmail.com>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Scott Wood <scottwood@freescale.com>, Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, smaclennan@pikatech.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,17 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2009-05-14 at 08:00 -0600, Grant Likely wrote:
-> 
-> All of this doesn't actually affect the driver code at all.  It's all
-> handled by the kernel and the DMA apis.  What it does affect is
-> multiplatform kernels.  The DMA behaviour is set at compile time, not
-> run time, depending on the setting of CONFIG_NON_COHERENT_CACHE (see
-> arch/powerpc/platforms/Kconfig.cputype).  A kernel which has it on
-> won't run properly on a platform which has it off, and visa-versa.
+On Thu, May 14, 2009 at 11:10 AM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> In other words, write your patches which use it and submit the lot as
+> a patch series with this patch as the first. =A0That gives some evidence
+> that this macro will actually be used and useful.
 
-We are close to the point where we can make this a runtime option
-though, by just having a different set of dma_ops hooked in.
+This is going to be more difficult than you think.  The problem is
+that I don't have access to much hardware that uses drivers which can
+take advantage of this macro.  I can find one, maybe two examples, but
+if I put a timeout that's too short, I might break some other platform
+without knowing it.
 
-Cheers,
-Ben.
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
