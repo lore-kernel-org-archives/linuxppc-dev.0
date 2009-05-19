@@ -1,23 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kosmo@semihalf.com>
+Received: from semihalf.com (semihalf.com [206.130.101.55])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6ACBCDE03E
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 17:01:38 +1000 (EST)
-Message-Id: <58E6156F-8A23-4C86-A50D-C04283430684@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1242683444.16901.1.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: fs_enet build breakage
-Date: Tue, 19 May 2009 01:59:24 -0500
-References: <1242630064.18075.48.camel@pasglop>
-	<9732983B-B67C-4831-BBAB-65472BE0F279@kernel.crashing.org>
-	<20090518172016.GB18620@b07421-ec1.am.freescale.net>
-	<1242683444.16901.1.camel@pasglop>
-Cc: Scott Wood <scottwood@freescale.com>, Kumar Gala <galak@gate.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id D90AADE0C8
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 17:51:51 +1000 (EST)
+From: Piotr =?iso-8859-2?q?Zi=EAcik?= <kosmo@semihalf.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH 08/12] mpc5121: Added I2C support.
+Date: Tue, 19 May 2009 09:47:22 +0200
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<200905181557.11766.kosmo@semihalf.com>
+	<4A1170B0.5080203@grandegger.com>
+In-Reply-To: <4A1170B0.5080203@grandegger.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Message-Id: <200905190947.22972.kosmo@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On May 18, 2009, at 4:50 PM, Benjamin Herrenschmidt wrote:
-
-> On Mon, 2009-05-18 at 12:20 -0500, Scott Wood wrote:
->>> I'm pretty sure the driver changes to address this are in dave's
->> net-
->>> next tree.
->>
->> Won't this break git bisect?
->>
->> Not to mention anyone trying to use your tree now...
+Monday 18 May 2009 16:29:04 Wolfgang Grandegger napisa=B3(a):
+> > I have simple question about bus speed setting support. Existing
+> > implementation uses default safe speed if there is no 'clock-frequency'
+> > property in i2c node. Comments in code suggest that this behaviour is
+> > left for backward compatibility only. Should I make the 'clock-frequenc=
+y'
+> > property mandatory for a new type of I2C controller (MPC5121) ?
 >
-> Right, though if you have the commit ID in DaveM tree, I can work with
-> him to sort out that driver, for example by having the same commit in
-> my tree.
+> I don't think so, for the same backward compatibility reason as for the
+> other boards. But the DTS file might be changed to use clock-frequency.
 
-As discussed on IRC, its easier to modify the commit that cause the  
-issue to drop removing IMAP_ADDR for cpm1 devices for now.  I'll  
-generate a separate patch for us to deal w/during the merge window  
-for .31
+In my opinion implementing "backward compatilility" for MPC5121 is not good
+idea. MPC5121 I2C support is completly new thing in mainline. Simply, there=
+ is=20
+no DTS with which I have to be compatible. Adding backward compatibility
+with nothing may be confusing.
 
-- k
+=2D-=20
+Best Regards,
+Piotr Zi=EAcik
