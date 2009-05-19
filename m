@@ -1,21 +1,17 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 84A79DE0C8
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 15:27:18 +1000 (EST)
-Date: Tue, 19 May 2009 14:27:12 +0900
-To: beckyb@kernel.crashing.org
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
-	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20090519142656T.fujita.tomonori@lab.ntt.co.jp>
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id A0B56DE0D2
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 15:53:51 +1000 (EST)
+Date: Tue, 19 May 2009 00:53:46 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull from 'next' branch
+Message-ID: <Pine.LNX.4.64.0905190052480.8412@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,258 +21,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-CC'ed linux-kernel
+Ben,
 
-On Thu, 14 May 2009 17:42:28 -0500
-Becky Bruce <beckyb@kernel.crashing.org> wrote:
+This is based on benh/next and fixes the cpm cruft patch to drop the
+removal of IMAP_ADDR from cpm1 so we still build on 8xx.  Will deal with
+that when we get into the merge window for 2.6.31.
 
-> This patch includes the basic infrastructure to use swiotlb
-> bounce buffering on 32-bit powerpc.  It is not yet enabled on
-> any platforms.  Probably the most interesting bit is the
-> addition of addr_needs_map to dma_ops - we need this as
-> a dma_op because the decision of whether or not an addr
-> can be mapped by a device is device-specific.
-> 
-> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
-> ---
->  arch/powerpc/Kconfig                   |   12 ++-
->  arch/powerpc/include/asm/dma-mapping.h |   11 ++
->  arch/powerpc/include/asm/swiotlb.h     |   27 +++++
->  arch/powerpc/kernel/Makefile           |    1 +
->  arch/powerpc/kernel/dma-swiotlb.c      |  163 ++++++++++++++++++++++++++++++++
->  arch/powerpc/kernel/dma.c              |    2 +-
->  arch/powerpc/kernel/setup_32.c         |    6 +
->  arch/powerpc/kernel/setup_64.c         |    6 +
->  8 files changed, 226 insertions(+), 2 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/swiotlb.h
->  create mode 100644 arch/powerpc/kernel/dma-swiotlb.c
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index a0d1146..54e519a 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -296,9 +296,19 @@ config IOMMU_VMERGE
->  config IOMMU_HELPER
->  	def_bool PPC64
->  
-> +config SWIOTLB
-> +	bool "SWIOTLB support"
-> +	default n
-> +	select IOMMU_HELPER
-> +	---help---
-> +	  Support for IO bounce buffering for systems without an IOMMU.
-> +	  This allows us to DMA to the full physical address space on
-> +	  platforms where the size of a physical address is larger
-> +	  than the bus address.  Not all platforms support this.
-> +
->  config PPC_NEED_DMA_SYNC_OPS
->  	def_bool y
-> -	depends on NOT_COHERENT_CACHE
-> +	depends on (NOT_COHERENT_CACHE || SWIOTLB)
->  
->  config HOTPLUG_CPU
->  	bool "Support for enabling/disabling CPUs"
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index c69f2b5..71bbc17 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -15,9 +15,18 @@
->  #include <linux/scatterlist.h>
->  #include <linux/dma-attrs.h>
->  #include <asm/io.h>
-> +#include <asm/swiotlb.h>
->  
->  #define DMA_ERROR_CODE		(~(dma_addr_t)0x0)
->  
-> +/* Some dma direct funcs must be visible for use in other dma_ops */
-> +extern void *dma_direct_alloc_coherent(struct device *dev, size_t size,
-> +				       dma_addr_t *dma_handle, gfp_t flag);
-> +extern void dma_direct_free_coherent(struct device *dev, size_t size,
-> +				     void *vaddr, dma_addr_t dma_handle);
-> +
-> +extern unsigned long get_dma_direct_offset(struct device *dev);
-> +
->  #ifdef CONFIG_NOT_COHERENT_CACHE
->  /*
->   * DMA-consistent mapping functions for PowerPCs that don't support
-> @@ -76,6 +85,8 @@ struct dma_mapping_ops {
->  				dma_addr_t dma_address, size_t size,
->  				enum dma_data_direction direction,
->  				struct dma_attrs *attrs);
-> +	int		(*addr_needs_map)(struct device *dev, dma_addr_t addr,
-> +				size_t size);
->  #ifdef CONFIG_PPC_NEED_DMA_SYNC_OPS
->  	void            (*sync_single_range_for_cpu)(struct device *hwdev,
->  				dma_addr_t dma_handle, unsigned long offset,
-> diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
-> new file mode 100644
-> index 0000000..30891d6
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/swiotlb.h
-> @@ -0,0 +1,27 @@
-> +/*
-> + * Copyright (C) 2009 Becky Bruce, Freescale Semiconductor
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + *
-> + */
-> +
-> +#ifndef __ASM_SWIOTLB_H
-> +#define __ASM_SWIOTLB_H
-> +
-> +#include <linux/swiotlb.h>
-> +
-> +extern struct dma_mapping_ops swiotlb_dma_ops;
-> +extern struct dma_mapping_ops swiotlb_pci_dma_ops;
-> +
-> +int swiotlb_arch_address_needs_mapping(struct device *, dma_addr_t,
-> +				       size_t size);
-> +
-> +static inline void dma_mark_clean(void *addr, size_t size) {}
-> +
-> +extern unsigned int ppc_swiotlb_enable;
-> +int __init swiotlb_setup_bus_notifier(void);
-> +
-> +#endif /* __ASM_SWIOTLB_H */
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 71901fb..34c0a95 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -82,6 +82,7 @@ obj-$(CONFIG_SMP)		+= smp.o
->  obj-$(CONFIG_KPROBES)		+= kprobes.o
->  obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
->  obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
-> +obj-$(CONFIG_SWIOTLB)		+= dma-swiotlb.o
->  
->  pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
->  obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
-> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-> new file mode 100644
-> index 0000000..68ccf11
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/dma-swiotlb.c
-> @@ -0,0 +1,163 @@
-> +/*
-> + * Contains routines needed to support swiotlb for ppc.
-> + *
-> + * Copyright (C) 2009 Becky Bruce, Freescale Semiconductor
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + *
-> + */
-> +
-> +#include <linux/dma-mapping.h>
-> +#include <linux/pfn.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pci.h>
-> +
-> +#include <asm/machdep.h>
-> +#include <asm/swiotlb.h>
-> +#include <asm/dma.h>
-> +#include <asm/abs_addr.h>
-> +
-> +int swiotlb __read_mostly;
-> +unsigned int ppc_swiotlb_enable;
-> +
-> +void *swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t addr)
-> +{
-> +	unsigned long pfn = PFN_DOWN(swiotlb_bus_to_phys(hwdev, addr));
-> +	void *pageaddr = page_address(pfn_to_page(pfn));
-> +
-> +	if (pageaddr != NULL)
-> +		return pageaddr + (addr % PAGE_SIZE);
-> +	return NULL;
-> +}
-> +
-> +dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
-> +{
-> +	return paddr + get_dma_direct_offset(hwdev);
-> +}
-> +
-> +phys_addr_t swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
-> +
-> +{
-> +	return baddr - get_dma_direct_offset(hwdev);
-> +}
-> +
-> +/*
-> + * Determine if an address needs bounce buffering via swiotlb.
-> + * Going forward I expect the swiotlb code to generalize on using
-> + * a dma_ops->addr_needs_map, and this function will move from here to the
-> + * generic swiotlb code.
-> + */
-> +int
-> +swiotlb_arch_address_needs_mapping(struct device *hwdev, dma_addr_t addr,
-> +				   size_t size)
-> +{
-> +	struct dma_mapping_ops *dma_ops = get_dma_ops(hwdev);
-> +
-> +	BUG_ON(!dma_ops);
-> +	return dma_ops->addr_needs_map(hwdev, addr, size);
-> +}
-> +
-> +/*
-> + * Determine if an address is reachable by a pci device, or if we must bounce.
-> + */
-> +static int
-> +swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
-> +{
-> +	u64 mask = dma_get_mask(hwdev);
-> +	dma_addr_t max;
-> +	struct pci_controller *hose;
-> +	struct pci_dev *pdev = to_pci_dev(hwdev);
-> +
-> +	hose = pci_bus_to_host(pdev->bus);
-> +	max = hose->dma_window_base_cur + hose->dma_window_size;
-> +
-> +	/* check that we're within mapped pci window space */
-> +	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
-> +		return 1;
-> +
-> +	return !is_buffer_dma_capable(mask, addr, size);
-> +}
-> +
-> +static int
-> +swiotlb_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
-> +{
-> +	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
-> +}
+- k
 
-I think that swiotlb_pci_addr_needs_map and swiotlb_addr_needs_map
-don't need swiotlb_arch_range_needs_mapping() since
+Please pull from 'next' branch of
 
-- swiotlb_arch_range_needs_mapping() is always used with
-swiotlb_arch_address_needs_mapping().
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git next
 
-- swiotlb_arch_address_needs_mapping() uses is_buffer_dma_capable()
-and powerpc doesn't overwrite swiotlb_arch_address_needs_mapping()
+to receive the following updates:
 
+ Documentation/powerpc/dts-bindings/ecm.txt           |   64 +
+ Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt |    3
+ Documentation/powerpc/dts-bindings/fsl/esdhc.txt     |    5
+ Documentation/powerpc/dts-bindings/fsl/mcm.txt       |   64 +
+ arch/powerpc/boot/dts/gef_ppc9a.dts                  |   14
+ arch/powerpc/boot/dts/gef_sbc310.dts                 |   14
+ arch/powerpc/boot/dts/gef_sbc610.dts                 |   14
+ arch/powerpc/boot/dts/ksi8560.dts                    |   13
+ arch/powerpc/boot/dts/mpc832x_mds.dts                |    3
+ arch/powerpc/boot/dts/mpc832x_rdb.dts                |    3
+ arch/powerpc/boot/dts/mpc8349emitx.dts               |    2
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts             |    1
+ arch/powerpc/boot/dts/mpc834x_mds.dts                |    2
+ arch/powerpc/boot/dts/mpc836x_mds.dts                |    3
+ arch/powerpc/boot/dts/mpc836x_rdk.dts                |    2
+ arch/powerpc/boot/dts/mpc8377_mds.dts                |    1
+ arch/powerpc/boot/dts/mpc8378_mds.dts                |    1
+ arch/powerpc/boot/dts/mpc8379_mds.dts                |    1
+ arch/powerpc/boot/dts/mpc8536ds.dts                  |   18
+ arch/powerpc/boot/dts/mpc8540ads.dts                 |   15
+ arch/powerpc/boot/dts/mpc8541cds.dts                 |   16
+ arch/powerpc/boot/dts/mpc8544ds.dts                  |   18
+ arch/powerpc/boot/dts/mpc8548cds.dts                 |   17
+ arch/powerpc/boot/dts/mpc8555cds.dts                 |   16
+ arch/powerpc/boot/dts/mpc8560ads.dts                 |   15
+ arch/powerpc/boot/dts/mpc8568mds.dts                 |   51 +
+ arch/powerpc/boot/dts/mpc8569mds.dts                 |  583 +++++++++++++++
+ arch/powerpc/boot/dts/mpc8572ds.dts                  |   17
+ arch/powerpc/boot/dts/mpc8572ds_36b.dts              |   39 -
+ arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts       |   16
+ arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts       |    2
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts               |   16
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts               |   16
+ arch/powerpc/boot/dts/mpc8641_hpcn_36b.dts           |  609 ++++++++++++++++
+ arch/powerpc/boot/dts/p2020ds.dts                    |  704 +++++++++++++++++++
+ arch/powerpc/boot/dts/sbc8349.dts                    |    1
+ arch/powerpc/boot/dts/sbc8548.dts                    |   16
+ arch/powerpc/boot/dts/sbc8560.dts                    |   15
+ arch/powerpc/boot/dts/sbc8641d.dts                   |   16
+ arch/powerpc/boot/dts/socrates.dts                   |   15
+ arch/powerpc/boot/dts/stx_gp3_8560.dts               |   15
+ arch/powerpc/boot/dts/tqm8540.dts                    |   15
+ arch/powerpc/boot/dts/tqm8541.dts                    |   15
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts           |   16
+ arch/powerpc/boot/dts/tqm8548.dts                    |   16
+ arch/powerpc/boot/dts/tqm8555.dts                    |   15
+ arch/powerpc/boot/dts/tqm8560.dts                    |   15
+ arch/powerpc/include/asm/cpm2.h                      |    4
+ arch/powerpc/include/asm/mpc86xx.h                   |   33
+ arch/powerpc/include/asm/pci-bridge.h                |    6
+ arch/powerpc/include/asm/qe.h                        |   21
+ arch/powerpc/oprofile/op_model_fsl_emb.c             |   14
+ arch/powerpc/platforms/82xx/pq2ads.h                 |   13
+ arch/powerpc/platforms/85xx/Kconfig                  |    1
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c             |   43 +
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c            |   52 +
+ arch/powerpc/platforms/86xx/gef_ppc9a.c              |    1
+ arch/powerpc/platforms/86xx/gef_sbc310.c             |    1
+ arch/powerpc/platforms/86xx/gef_sbc610.c             |    1
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c           |    1
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c           |    1
+ arch/powerpc/platforms/86xx/mpc86xx_smp.c            |    8
+ arch/powerpc/platforms/86xx/sbc8641d.c               |    1
+ arch/powerpc/platforms/8xx/mpc885ads.h               |    4
+ arch/powerpc/platforms/fsl_uli1575.c                 |   24
+ arch/powerpc/sysdev/cpm2.c                           |    2
+ arch/powerpc/sysdev/fsl_msi.c                        |    9
+ arch/powerpc/sysdev/fsl_pci.c                        |  132 +++
+ arch/powerpc/sysdev/fsl_pci.h                        |    6
+ arch/powerpc/sysdev/fsl_rio.c                        |   15
+ arch/powerpc/sysdev/fsl_soc.c                        |   14
+ arch/powerpc/sysdev/qe_lib/qe.c                      |   75 +-
+ drivers/dma/fsldma.c                                 |   13
+ drivers/net/ucc_geth.c                               |   24
+ drivers/net/ucc_geth.h                               |    4
+ drivers/of/base.c                                    |    1
+ drivers/rapidio/rio-scan.c                           |    6
+ include/linux/pci_ids.h                              |    4
+ 78 files changed, 2810 insertions(+), 272 deletions(-)
 
-Do I miss something?
+Anton Vorontsov (6):
+      powerpc/85xx: Add PCI IDs for MPC8569 family processors
+      powerpc/85xx: Fix mpc8569emds crypto node to include SNOW unit
+      powerpc/85xx: Fix reg & interrupts for mpc8569emds localbus added NAND
+      powerpc/85xx: Add eSDHC support for MPC8569E-MDS boards
+      powerpc/85xx: Enable Serial RapidIO for MPC85xx MDS boards
+      powerpc/85xx: Add STMicro M25P40 serial flash support for MPC8569E-MDS
 
-Anyway, we need to fix swiotlb checking code to if an area is
-DMA-capable or not.
+Becky Bruce (2):
+      powerpc/86xx: Add 36-bit device tree for mpc8641hpcn
+      powerpc: make dma_window_* in pci_controller struct avail on 32b
 
-swiotlb_arch_address_needs_mapping() calls is_buffer_dma_capable() in
-dma-mapping.h but it should not. It should live in an arch-specific
-place such as arch's dma-mapping.h or something since
-is_buffer_dma_capable() is arch-specific. I didn't know that
-is_buffer_dma_capable() is arch-specific when I added it to the
-generic place.
+Haiying Wang (7):
+      powerpc/85xx: clean up for mpc8568_mds name
+      powerpc/qe: update risc allocation for QE
+      net/ucc_geth: update riscTx and riscRx in ucc_geth
+      powerpc/qe: update QE Serial Number
+      net/ucc_geth: Assign six threads to Rx for UEC
+      powerpc/85xx: Add MPC8569MDS board support
+      powerpc/qe: add new qe properties for QE based chips
 
-If we have something like in arch/{x86|ia64|powerpc}/dma-mapping.h:
+Kumar Gala (18):
+      powerpc/fsl: Remove cell-index from PCI nodes
+      powerpc: Refactor board check for PCI quirks on FSL boards with uli1575
+      powerpc/fsl: use of_iomap() for rstcr mapping
+      powerpc/85xx: Add binding for LAWs and ECM
+      powerpc/85xx: Add new LAW & ECM device tree nodes for all 85xx systems
+      powerpc/86xx: Add binding for LAWs and MCM
+      powerpc/86xx: Add new LAW & MCM device tree nodes for all 86xx systems
+      powerpc/cpm: Remove some cruft code and defines
+      powerpc/86xx: clean up smp init code
+      powerpc/fsl: Removed reg property from 85xx/86xx soc node
+      fsldma: Fix compile warnings
+      powerpc/85xx: Add MSI nodes for MPC8568/9 MDS systems
+      powerpc/fsl: Support unique MSI addresses per PCIe Root Complex
+      powerpc/8xxx: Update PCI outbound window addresses for 36-bit configs
+      powerpc/fsl_rio: Fix compile warnings
+      powerpc/fsl: Update FSL esdhc binding
+      powerpc/85xx: Add P2020DS board support
+      powerpc/fsl: Setup PCI inbound window based on actual amount of memory
 
-static inline int is_buffer_dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+Li Yang (2):
+      powerpc/fsl_rio: use LAW address from device tree
+      rapidio: fix section mismatch warnings
 
-then we don't need two checking functions, address_needs_mapping and
-range_needs_mapping.
-
-But I guess the bad thing is that we can't the arch abstraction due to
-dom0 support.
+Michael Ellerman (1):
+      powerpc/oprofile: Remove unused dump_pmcs() in FSL oprofile
