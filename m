@@ -1,25 +1,29 @@
-Return-Path: <kosmo@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
+Return-Path: <albrecht.dress@arcor.de>
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9A695DE0AC
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 21:27:53 +1000 (EST)
-From: Piotr =?iso-8859-2?q?Zi=EAcik?= <kosmo@semihalf.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
-Date: Tue, 19 May 2009 13:26:28 +0200
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<fa686aa40905140700k3ca28ac0m74c9c161ad538abc@mail.gmail.com>
-	<1242685051.16901.6.camel@pasglop>
-In-Reply-To: <1242685051.16901.6.camel@pasglop>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1CED3DE128
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 21:59:18 +1000 (EST)
+Received: from mail-in-02-z2.arcor-online.net (mail-in-02-z2.arcor-online.net
+	[151.189.8.14]) by mx.arcor.de (Postfix) with ESMTP id 553482BACF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 13:59:00 +0200 (CEST)
+Received: from mail-in-16.arcor-online.net (mail-in-16.arcor-online.net
+	[151.189.21.56])
+	by mail-in-02-z2.arcor-online.net (Postfix) with ESMTP id 493311140B2
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 13:59:00 +0200 (CEST)
+Received: from webmail15.arcor-online.net (webmail15.arcor-online.net
+	[151.189.8.68])
+	by mail-in-16.arcor-online.net (Postfix) with ESMTP id 374B22572F3
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 13:59:00 +0200 (CEST)
+Message-ID: <5023288.1242734340173.JavaMail.ngmail@webmail15.arcor-online.net>
+Date: Tue, 19 May 2009 13:59:00 +0200 (CEST)
+From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Q: MTD RAM in OF Device Tree
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200905191326.29122.kosmo@semihalf.com>
-Cc: Becky Bruce <Becky.Bruce@freescale.com>, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, John Rigby <jrigby@gmail.com>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,15 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tuesday 19 May 2009 00:17:31 Benjamin Herrenschmidt wrote:
->
-> We are close to the point where we can make this a runtime option
-> though, by just having a different set of dma_ops hooked in.
->
+Hi all,
 
-Is somebody currently working on it? If yes, where we can see
-code ?
+is there a standard way to define a ram chip (in my case a battery-buffered=
+ nv ram, attached to the 5200's Local Bus) in the OF tree, and are there an=
+y drivers (on 2.6.29.1) which pick up the chip/partition specification for =
+mtd?  Does such a driver exist, or do I have to write one (probably based o=
+n plat-ram.c?)?  I think of something like
 
-=2D-=20
-Best Regards.
-Piotr Zi=EAcik
+localbus {
+=09[...]
+=09ranges =3D < 0 0 0xfe000000 0x02000000
+=09=09   1 0 0xfc000000 0x00080000>;
+
+        flash@0,0 {
+=09=09[flash definition & partitions]
+=09};
+
+=09nvram@1,0 {
+=09=09compatible =3D "mtd-ram";
+=09=09reg =3D <1 0x0 0x00080000>;
+=09=09bank-width =3D <2>;
+=09=09device-width =3D <2>;
+=09=09#size-cells =3D <1>;
+=09=09#address-cells =3D <1>;
+=09=09part@0 {
+=09=09=09label =3D "pdata";
+=09=09=09reg =3D <0x00000000 0x00080000>;
+=09=09};
+=09};
+};
+
+Thanks,
+Albrecht.
+
+Arcor.de Gaming Area - kostenfrei daddeln bis der Arzt kommt!
+Jetzt checken und aus =FCber 80 Spielen w=E4hlen!
+http://www.arcor.de/footer-gaming/
