@@ -1,24 +1,25 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 28289DE127
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 07:10:32 +1000 (EST)
-Message-ID: <4A131FEF.3080405@freescale.com>
-Date: Tue, 19 May 2009 16:09:03 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] qe: add polling timeout to qe_issue_cmd()
-References: <1242761199-17875-1-git-send-email-timur@freescale.com>
-	<1242761199-17875-2-git-send-email-timur@freescale.com>
-	<1242761199-17875-3-git-send-email-timur@freescale.com>
-	<fa686aa40905191310h3ed0efdfn4bd4b4f4b9ca0b7d@mail.gmail.com>
-In-Reply-To: <fa686aa40905191310h3ed0efdfn4bd4b4f4b9ca0b7d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3AD15DE11A
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 07:59:10 +1000 (EST)
+Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Piotr =?UTF-8?Q?Zi=C4=99cik?= <kosmo@semihalf.com>
+In-Reply-To: <200905191326.29122.kosmo@semihalf.com>
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<fa686aa40905140700k3ca28ac0m74c9c161ad538abc@mail.gmail.com>
+	<1242685051.16901.6.camel@pasglop>
+	<200905191326.29122.kosmo@semihalf.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 20 May 2009 07:56:42 +1000
+Message-Id: <1242770202.16901.116.camel@pasglop>
+Mime-Version: 1.0
+Cc: Becky Bruce <Becky.Bruce@freescale.com>, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>, John Rigby <jrigby@gmail.com>,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,30 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
+On Tue, 2009-05-19 at 13:26 +0200, Piotr Zięcik wrote:
+> Tuesday 19 May 2009 00:17:31 Benjamin Herrenschmidt wrote:
+> >
+> > We are close to the point where we can make this a runtime option
+> > though, by just having a different set of dma_ops hooked in.
+> >
+> 
+> Is somebody currently working on it? If yes, where we can see
+> code ?
 
-> Hmmm, the ret value is backwards from what most coders would expect
-> (zero on success, non-zero on failure).  I'd personally recommend
-> reversing the polarity in the macro.
+Well, the current upstream code has the dma ops support. Becky is
+massaging that more for swiotlb support which has been submitted to the
+linuxppc-dev list. We haven't yet added runtime support rather than
+compile time for non-cache coherent platforms, but it's becoming
+reasonably easy to add now (though still needs to be done).
 
-The ret value is documented as being the value of the expression when the loop terminates.  The reason it appears backwards is because the expression is
-
-	(in_be32(&qe_immr->cp.cecr) & QE_CR_FLG) == 0
-
-That is, the loop should spin until the QE_CR_FLG is zero.  So when the loop terminates normally, the expression (x) == 0 is true, which is equal to one.
-
-I would expect that in most cases, the loop spins until some bit is *set*.  Let's pretend that QE_CR_FLG operates this way.  In that case, the call would look like this:
-
-spin_event_timeout(in_be32(&qe_immr->cp.cecr) & QE_CR_FLG, 100, 0, ret);
-
-At loop termination, the result of the expression will be either QE_CR_FLG or zero.
-
-> Otherwise, feel free to add my acked-by line to both patches.
-
-Thanks.
-
-Ben, would you please apply this to your 'next' branch?
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Cheers,
+Ben
