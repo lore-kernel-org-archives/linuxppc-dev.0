@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f220.google.com (mail-gx0-f220.google.com
-	[209.85.217.220]) by ozlabs.org (Postfix) with ESMTP id 646A8DE100
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 02:31:05 +1000 (EST)
-Received: by gxk20 with SMTP id 20so7974538gxk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 09:31:02 -0700 (PDT)
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp2.netcologne.de (smtp2.netcologne.de [194.8.194.112])
+	by ozlabs.org (Postfix) with ESMTP id 7E4BEDE002
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 04:00:47 +1000 (EST)
+Received: from antares (cable-195-14-199-136.netcologne.de [195.14.199.136])
+	by smtp2.netcologne.de (Postfix) with ESMTP id 9FB904B2A
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 20:00:44 +0200 (MEST)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id 86F3FBA042
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 20:00:44 +0200 (CEST)
+Date: Tue, 19 May 2009 20:00:36 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: Q: MTD RAM in OF Device Tree
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <20090519122714.GH30753@pengutronix.de> (from
+	w.sang@pengutronix.de on Tue May 19 14:27:14 2009)
+Message-Id: <1242756044.3502.0@antares>
 MIME-Version: 1.0
-In-Reply-To: <20090519162511.7454D17E8058@mail19-dub.bigfish.com>
-References: <fa686aa40905190828x251765dek586f5bf8e73e4cf7@mail.gmail.com>
-	<20090519162511.7454D17E8058@mail19-dub.bigfish.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 19 May 2009 10:30:39 -0600
-Message-ID: <fa686aa40905190930h54d22e2fj9c9cd4c9911aa485@mail.gmail.com>
-Subject: Re: Musings on PCI busses
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Roderick Colenbrander <thunderbird2k@gmail.com>,
-	John Linn <linnj@xilinx.com>
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-RX9+FxudCdKHnL1CnQm3"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 19, 2009 at 10:25 AM, Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com> wrote:
->
->> 1) Probe the host controller in an of_platform driver. =A0This has the
->> advantage of simplicity. =A0The probe routine will get automatically
->> called when the PCI host controller device tree node is registered
->> with the of_platform bus. =A0The bus parenthood also gets reflected in
->> the device model and sysfs. =A0The disadvantage is that it defers PCI
->> bus probing until after the of_platform bus is probed (maybe this is
->> okay; maybe this already happens anyway).
->>
->> 2) Probe the host controller in an subsys_initcall(). =A0Advantage is
->> PCI can be probed earlier in the init path. =A0Disadvantages (minor) are
->> that it will always get called if the driver is enabled, and it needs
->> to manually search the device tree for PCI nodes.
->>
->> I'm leaning towards making it an of_platform driver. =A0Doing so also
->> makes it available to other powerpc processors (not just virtex) in
->> the case where a Xilinx FPGA is welded up to a discrete SoC and a host
->> controller instance is put into the FPGA. =A0(one of those weird things
->> people do when they have an FPGA in their system).
->
-> I agree that something is called for... =A0The first might be slightly
-> simpler, since it would probably transparently deal with the presence
-> of more than one PLB->PCI bridge?
+--=-RX9+FxudCdKHnL1CnQm3
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, I think so.
+Hi Wolfram!
 
-g.
+Am 19.05.09 14:27 schrieb(en) Wolfram Sang:
+> I wrote such a driver (yet without partitioning support) and I am =20
+> trying to get it mainline, just didn't get any comments so far:
+>=20
+> http://patchwork.ozlabs.org/patch/23557/
+> http://patchwork.ozlabs.org/patch/23556/
 
+Thanks a lot, this is *exactly* what I was looking for!  Actually, =20
+partition support is not important as I want to use the whole chip - =20
+512k isn't *that* much...
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> I'd be happy if you could give it a try and donate some =20
+> {Acked|Tested|Reviewed}-by tags. Maybe this will help for my next try =20
+> to get it mainline.
+
+Will do that once I get it running completely.  The first test =20
+triggered some strange problems when I wrote to /dev/mtdn and read back =20
+the data (which is supposed to give "raw" direct access, right?) - the =20
+last dword in each 512 byte block is partly broken.  Probably something =20
+in the localbus layout or timing...
+
+Thanks again,
+Albrecht.
+
+--=-RX9+FxudCdKHnL1CnQm3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD4DBQBKEvPMn/9unNAn/9ERAgLWAJ9pVYhWvINEG7Q2n4c09mJdpF2qTACXUgZ6
+c44gnTQDIa7Qlzg+B0WFYQ==
+=wcKw
+-----END PGP SIGNATURE-----
+
+--=-RX9+FxudCdKHnL1CnQm3--
