@@ -1,19 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 17B08DDF7B
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 05:05:19 +1000 (EST)
-Date: Tue, 19 May 2009 12:05:14 -0700 (PDT)
-Message-Id: <20090519.120514.26253637.davem@davemloft.net>
-To: arnd@arndb.de
-Subject: Re: Musings on PCI busses
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200905191812.03347.arnd@arndb.de>
-References: <fa686aa40905190828x251765dek586f5bf8e73e4cf7@mail.gmail.com>
-	<200905191812.03347.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, thunderbird2k@gmail.com, John.Linn@xilinx.com
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3D818DE010
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 05:28:07 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
+	grant.likely@secretlab.ca, smaclennan@pikatech.com
+Subject: [PATCH 1/2 v8] powerpc: introduce macro spin_event_timeout()
+Date: Tue, 19 May 2009 14:26:38 -0500
+Message-Id: <1242761199-17875-2-git-send-email-timur@freescale.com>
+In-Reply-To: <1242761199-17875-1-git-send-email-timur@freescale.com>
+References: <1242761199-17875-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 19 May 2009 18:12:02 +0200
+The macro spin_event_timeout() takes a condition and timeout value
+(in microseconds) as parameters.  It spins until either the condition is true
+or the timeout expires.  It returns the result of the condition when the loop
+was terminated.
 
-> On Tuesday 19 May 2009, Grant Likely wrote:
->> 1) Probe the host controller in an of_platform driver. =A0This has t=
-he
->> advantage of simplicity. =A0The probe routine will get automatically=
+This primary purpose of this macro is to poll on a hardware register until a
+status bit changes.  The timeout ensures that the loop still terminates if the
+bit doesn't change as expected.  This macro makes it easier for driver
+developers to perform this kind of operation properly.
 
->> called when the PCI host controller device tree node is registered
->> with the of_platform bus. =A0The bus parenthood also gets reflected =
-in
->> the device model and sysfs. =A0The disadvantage is that it defers PC=
-I
->> bus probing until after the of_platform bus is probed (maybe this is=
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
->> okay; maybe this already happens anyway).
-> =
+v8: added a copyright notice
 
-> This is also what we do on 64-bit systems (well, Cell at this time).
-> There are no fundamental problems with this, just some slightly
-> unexpected interactions e.g. when you have use a PCI serial port
-> as your console before probing PCI.
+ arch/powerpc/include/asm/delay.h |   33 +++++++++++++++++++++++++++++++++
+ 1 files changed, 33 insertions(+), 0 deletions(-)
 
-This is also what sparc64 does :-)
-
-All of the individual sparc64 PCI controller types have a OF driver
-and then there is a common layer of OF PCI helper code to do most
-of the work.
+diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
+index f9200a6..af4a270 100644
+--- a/arch/powerpc/include/asm/delay.h
++++ b/arch/powerpc/include/asm/delay.h
+@@ -2,8 +2,11 @@
+ #define _ASM_POWERPC_DELAY_H
+ #ifdef __KERNEL__
+ 
++#include <asm/time.h>
++
+ /*
+  * Copyright 1996, Paul Mackerras.
++ * Copyright (C) 2009 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+@@ -30,5 +33,35 @@ extern void udelay(unsigned long usecs);
+ #define mdelay(n)	udelay((n) * 1000)
+ #endif
+ 
++/**
++ * spin_event_timeout - spin until a condition gets true or a timeout elapses
++ * @condition: a C expression to evalate
++ * @timeout: timeout, in microseconds
++ * @delay: the number of microseconds to delay between eache evaluation of
++ *         @condition
++ * @rc: the last value of the condition
++ *
++ * The process spins until the condition evaluates to true (non-zero) or the
++ * timeout elapses.  Upon exit, @rc contains the value of the condition. This
++ * allows you to test the condition without incurring any side effects.
++ *
++ * This primary purpose of this macro is to poll on a hardware register
++ * until a status bit changes.  The timeout ensures that the loop still
++ * terminates even if the bit never changes.  The delay is for devices that
++ * need a delay in between successive reads.
++ *
++ * gcc will optimize out the if-statement if @delay is a constant.
++ */
++#define spin_event_timeout(condition, timeout, delay, rc)                   \
++{                                                                           \
++	unsigned long __loops = tb_ticks_per_usec * timeout;                \
++	unsigned long __start = get_tbl();                                  \
++	while (!(rc = (condition)) && (tb_ticks_since(__start) <= __loops)) \
++		if (delay)                                                  \
++			udelay(delay);                                      \
++		else	                                                    \
++			cpu_relax();                                        \
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_DELAY_H */
+-- 
+1.6.0.6
