@@ -1,21 +1,24 @@
-Return-Path: <beckyb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 69D76DE3CF
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 06:57:39 +1000 (EST)
-Message-Id: <19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090519142656T.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-Date: Tue, 19 May 2009 15:57:31 -0500
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
-	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
-	<20090519142656T.fujita.tomonori@lab.ntt.co.jp>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 28289DE127
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 07:10:32 +1000 (EST)
+Message-ID: <4A131FEF.3080405@freescale.com>
+Date: Tue, 19 May 2009 16:09:03 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/2] qe: add polling timeout to qe_issue_cmd()
+References: <1242761199-17875-1-git-send-email-timur@freescale.com>
+	<1242761199-17875-2-git-send-email-timur@freescale.com>
+	<1242761199-17875-3-git-send-email-timur@freescale.com>
+	<fa686aa40905191310h3ed0efdfn4bd4b4f4b9ca0b7d@mail.gmail.com>
+In-Reply-To: <fa686aa40905191310h3ed0efdfn4bd4b4f4b9ca0b7d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,141 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Grant Likely wrote:
 
-On May 19, 2009, at 12:27 AM, FUJITA Tomonori wrote:
+> Hmmm, the ret value is backwards from what most coders would expect
+> (zero on success, non-zero on failure).  I'd personally recommend
+> reversing the polarity in the macro.
 
-> CC'ed linux-kernel
->
-> On Thu, 14 May 2009 17:42:28 -0500
-> Becky Bruce <beckyb@kernel.crashing.org> wrote:
+The ret value is documented as being the value of the expression when the loop terminates.  The reason it appears backwards is because the expression is
 
->
->
->> This patch includes the basic infrastructure to use swiotlb
->> bounce buffering on 32-bit powerpc.  It is not yet enabled on
->> any platforms.  Probably the most interesting bit is the
->> addition of addr_needs_map to dma_ops - we need this as
->> a dma_op because the decision of whether or not an addr
->> can be mapped by a device is device-specific.
->>
->> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+	(in_be32(&qe_immr->cp.cecr) & QE_CR_FLG) == 0
 
-<snip>
+That is, the loop should spin until the QE_CR_FLG is zero.  So when the loop terminates normally, the expression (x) == 0 is true, which is equal to one.
 
->> +/*
->> + * Determine if an address needs bounce buffering via swiotlb.
->> + * Going forward I expect the swiotlb code to generalize on using
->> + * a dma_ops->addr_needs_map, and this function will move from  
->> here to the
->> + * generic swiotlb code.
->> + */
->> +int
->> +swiotlb_arch_address_needs_mapping(struct device *hwdev,  
->> dma_addr_t addr,
->> +				   size_t size)
->> +{
->> +	struct dma_mapping_ops *dma_ops = get_dma_ops(hwdev);
->> +
->> +	BUG_ON(!dma_ops);
->> +	return dma_ops->addr_needs_map(hwdev, addr, size);
->> +}
->> +
->> +/*
->> + * Determine if an address is reachable by a pci device, or if we  
->> must bounce.
->> + */
->> +static int
->> +swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr,  
->> size_t size)
->> +{
->> +	u64 mask = dma_get_mask(hwdev);
->> +	dma_addr_t max;
->> +	struct pci_controller *hose;
->> +	struct pci_dev *pdev = to_pci_dev(hwdev);
->> +
->> +	hose = pci_bus_to_host(pdev->bus);
->> +	max = hose->dma_window_base_cur + hose->dma_window_size;
->> +
->> +	/* check that we're within mapped pci window space */
->> +	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
->> +		return 1;
->> +
->> +	return !is_buffer_dma_capable(mask, addr, size);
->> +}
->> +
->> +static int
->> +swiotlb_addr_needs_map(struct device *hwdev, dma_addr_t addr,  
->> size_t size)
->> +{
->> +	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
->> +}
->
-> I think that swiotlb_pci_addr_needs_map and swiotlb_addr_needs_map
-> don't need swiotlb_arch_range_needs_mapping() since
->
-> - swiotlb_arch_range_needs_mapping() is always used with
-> swiotlb_arch_address_needs_mapping().
+I would expect that in most cases, the loop spins until some bit is *set*.  Let's pretend that QE_CR_FLG operates this way.  In that case, the call would look like this:
 
-Yes.  I don't need range_needs_mapping() on ppc, so I let it default  
-to the lib/swiotlb.c implementation, which just returns 0.  All the  
-determination of whether an address needs mapping comes from  
-swiotlb_arch_address_needs_mapping().
+spin_event_timeout(in_be32(&qe_immr->cp.cecr) & QE_CR_FLG, 100, 0, ret);
 
->
->
-> - swiotlb_arch_address_needs_mapping() uses is_buffer_dma_capable()
-> and powerpc doesn't overwrite swiotlb_arch_address_needs_mapping()
+At loop termination, the result of the expression will be either QE_CR_FLG or zero.
 
-I *do* overwrite it.  But I still use is_buffer_dma_capable().  I just  
-add some other checks to it in the pci case, because I need to know  
-what the controller has mapped as it changes the point at which I must  
-begin to bounce buffer.
+> Otherwise, feel free to add my acked-by line to both patches.
 
->
->
->
-> Do I miss something?
+Thanks.
 
-I don't think so.  But let me know if I've misunderstood you.
+Ben, would you please apply this to your 'next' branch?
 
->
->
-> Anyway, we need to fix swiotlb checking code to if an area is
-> DMA-capable or not.
->
-> swiotlb_arch_address_needs_mapping() calls is_buffer_dma_capable() in
-> dma-mapping.h but it should not. It should live in an arch-specific
-> place such as arch's dma-mapping.h or something since
-> is_buffer_dma_capable() is arch-specific. I didn't know that
-> is_buffer_dma_capable() is arch-specific when I added it to the
-> generic place.
-
-Errrr, is_buffer_dma_capable is generic right now, unless I'm missing  
-something.  It's in include/linux/dma-mapping.h, unless I'm getting  
-bitten by a slightly stale tree.
-
->
->
-> If we have something like in arch/{x86|ia64|powerpc}/dma-mapping.h:
->
-> static inline int is_buffer_dma_capable(struct device *dev,  
-> dma_addr_t addr, size_t size)
->
-> then we don't need two checking functions, address_needs_mapping and
-> range_needs_mapping.
-
-It's never been clear to me *why* we had both in the first place - if  
-you can explain this, I'd be grateful :)
-
-It actually looks like we want to remove the dma_op that I created for  
-addr_needs_map because of the perf hit.... it gets called a ton of  
-times, many times on addresses that don't actually require bounce  
-buffering (and thus, are more sensitive to the minor performance  
-hit).  We are looking instead at adding a per-device variable that is  
-used to determine if we need to bounce (in addition to  
-is_buffer_dma_capable) that would live inside archdata - see the other  
-posts on this thread for details (we're still hashing out exactly how  
-we want to do this).
-
-Cheers,
-Becky
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
