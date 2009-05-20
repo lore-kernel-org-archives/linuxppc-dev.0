@@ -1,16 +1,28 @@
-Return-Path: <BLandau@nds.com>
-Received: from ilsmtp.nds.com (ilsmtp.nds.com [192.118.32.12])
-	by ozlabs.org (Postfix) with ESMTP id 8F333DE114
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 02:40:36 +1000 (EST)
-From: "Landau, Bracha" <BLandau@nds.com>
-To: Scott Wood <scottwood@freescale.com>, "linuxppc-dev@ozlabs.org"
-	<linuxppc-dev@ozlabs.org>
-Date: Wed, 20 May 2009 19:40:32 +0300
-Subject: no rx interrupts on mpc8272-based board
-Message-ID: <065A7D06F7D4E546A18E80E08D066E181189D54939@ILMA1.IL.NDS.COM>
-Content-Type: multipart/alternative;
-	boundary="_000_065A7D06F7D4E546A18E80E08D066E181189D54939ILMA1ILNDSCOM_"
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f172.google.com (mail-gx0-f172.google.com
+	[209.85.217.172]) by ozlabs.org (Postfix) with ESMTP id 9BAF2DE1CA
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 03:42:16 +1000 (EST)
+Received: by gxk20 with SMTP id 20so893881gxk.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 10:42:15 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <A88094362DE0AE49A118AB9B4EB3612403F9DEC1@dekaexchange.deka.local>
+References: <A88094362DE0AE49A118AB9B4EB3612403F9DEB6@dekaexchange.deka.local>
+	<fa686aa40905191636u6f4a23d0xc8c6c13904a65b8e@mail.gmail.com>
+	<20090520064218.GA29102@pengutronix.de>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBE@dekaexchange.deka.local>
+	<9e4733910905200814p63915ff8pf65614dbb8dc9adf@mail.gmail.com>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBF@dekaexchange.deka.local>
+	<9e4733910905200829o423bf483h5b0b6dd202367872@mail.gmail.com>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEC0@dekaexchange.deka.local>
+	<fa686aa40905200949q1fbeee8fy4b3a06d8e44d7c6b@mail.gmail.com>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEC1@dekaexchange.deka.local>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 20 May 2009 11:41:55 -0600
+Message-ID: <fa686aa40905201041v101a6f18icf62620a035386b9@mail.gmail.com>
+Subject: Re: mpc5200 fec error
+To: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,90 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---_000_065A7D06F7D4E546A18E80E08D066E181189D54939ILMA1ILNDSCOM_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-I have ported Linux-2-6-29 to my MPC8272 based board, very similar to the M=
-PC8272ADS. I am using a cuImage.
-Things seem to be working ok except that I am not getting any FEC interrupt=
-s (on IRQ5).
-I see that I am transmitting ok.
-Any ideas where the problem could be?
-
-
-________________________________
-This e-mail is confidential, the property of NDS Ltd and intended for the a=
-ddressee only. Any dissemination, copying or distribution of this message o=
-r any attachments by anyone other than the intended recipient is strictly p=
-rohibited. If you have received this message in error, please immediately n=
-otify the postmaster@nds.com and destroy the original message. Messages sen=
-t to and from NDS may be monitored. NDS cannot guarantee any message delive=
-ry method is secure or error-free. Information could be intercepted, corrup=
-ted, lost, destroyed, arrive late or incomplete, or contain viruses. We do =
-not accept responsibility for any errors or omissions in this message and/o=
-r attachment that arise as a result of transmission. You should carry out y=
-our own virus checks before opening any attachment. Any views or opinions p=
-resented are solely those of the author and do not necessarily represent th=
-ose of NDS.
-
-To protect the environment please do not print this e-mail unless necessary=
-.
-
-NDS Limited Registered Office: One London Road, Staines,Middlesex TW18 4EX,=
- United Kingdom. A company registered in England and Wales Registered no. 3=
-080780 VAT no. GB 603 8808 40-00
-
---_000_065A7D06F7D4E546A18E80E08D066E181189D54939ILMA1ILNDSCOM_
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html>
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+[ed: quoting repaired]
+On Wed, May 20, 2009 at 11:26 AM, Eric Millbrandt
+<emillbrandt@dekaresearch.com> wrote:
+> Grant Likely wrote:
+> > Yes, that sounds familiar. =A0Most likely, the value of the MDIO bus
+> > control register got clobbered and not reset when the FEC was reset.
+> > Try adding this line to the beginning of mpc52xx_fec_mdio_transfer():
+> >
+> > out_be32(&fec->mii_speed, 0x7e);
+> >
+> > It's a dirty ugly hack, but it should help. =A0If that works, then I ca=
+n
+> > come up with a better solution. =A0Part of the problem is that the MDIO
+> > handling in the current code really isn't very good. =A0I've got change=
+s
+> > queued up in -next which cleans it up quite a bit which should make it
+> > easier to fix properly.
 >
-<meta content=3D"MSHTML 6.00.2900.3527" name=3D"GENERATOR">
-</head>
-<body>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"218543416-20052009">I h=
-ave ported Linux-2-6-29 to my MPC8272 based board, very similar to the MPC8=
-272ADS. I am using a cuImage.</span></font></div>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"218543416-20052009">Thi=
-ngs seem to be working ok except that I am not getting any FEC interrupts (=
-on IRQ5).</span></font></div>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"218543416-20052009">I s=
-ee that I am transmitting ok.</span></font></div>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"218543416-20052009">Any=
- ideas where&nbsp;the problem could be?</span></font></div>
-<div><font face=3D"Arial" size=3D"2"><span class=3D"218543416-20052009"></s=
-pan></font>&nbsp;</div>
-<br>
-<hr>
-<font face=3D"Arial" color=3D"Gray" size=3D"1">This e-mail is confidential,=
- the property of NDS Ltd and intended for the addressee only. Any dissemina=
-tion, copying or distribution of this message or any attachments by anyone =
-other than the intended recipient is strictly
- prohibited. If you have received this message in error, please immediately=
- notify the postmaster@nds.com and destroy the original message. Messages s=
-ent to and from NDS may be monitored. NDS cannot guarantee any message deli=
-very method is secure or error-free.
- Information could be intercepted, corrupted, lost, destroyed, arrive late =
-or incomplete, or contain viruses. We do not accept responsibility for any =
-errors or omissions in this message and/or attachment that arise as a resul=
-t of transmission. You should carry
- out your own virus checks before opening any attachment. Any views or opin=
-ions presented are solely those of the author and do not necessarily repres=
-ent those of NDS.<br>
-<br>
-To protect the environment please do not print this e-mail unless necessary=
-.<br>
-<br>
-NDS Limited Registered Office: One London Road, Staines,Middlesex TW18 4EX,=
- United Kingdom. A company registered in England and Wales Registered no. 3=
-080780 VAT no. GB 603 8808 40-00<br>
-</font>
-</body>
-</html>
+> That worked! =A0I'm still getting the fifo receive errors, but at least n=
+ow the fec recovers.
 
---_000_065A7D06F7D4E546A18E80E08D066E181189D54939ILMA1ILNDSCOM_--
+Okay, I'll see if I can work that into a cleaner patch.  In fact, I
+should look into reworking it so that the PHY doesn't get reset on a
+FIFO error.  It shouldn't need to be reset at all AFAIKT.  That way
+even when FIFO errors occur, they should not cause an expensive
+renegotiate time.
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
