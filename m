@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 69FCADE230
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 13:02:19 +1000 (EST)
-Subject: RE: Musings on PCI busses
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-In-Reply-To: <20090519162511.7454D17E8058@mail19-dub.bigfish.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 34F76DE19A
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 13:17:30 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so115046ywt.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2009 20:17:28 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1242788522.16901.134.camel@pasglop>
 References: <fa686aa40905190828x251765dek586f5bf8e73e4cf7@mail.gmail.com>
 	<20090519162511.7454D17E8058@mail19-dub.bigfish.com>
-Content-Type: text/plain
-Date: Wed, 20 May 2009 13:02:02 +1000
-Message-Id: <1242788522.16901.134.camel@pasglop>
-Mime-Version: 1.0
+	<1242788522.16901.134.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 19 May 2009 21:17:08 -0600
+Message-ID: <fa686aa40905192017r7978fdddq70872dcf86127008@mail.gmail.com>
+Subject: Re: Musings on PCI busses
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
 	Roderick Colenbrander <thunderbird2k@gmail.com>,
 	John Linn <linnj@xilinx.com>
@@ -26,13 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-05-19 at 09:25 -0700, Stephen Neuendorffer wrote:
+On Tue, May 19, 2009 at 9:02 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2009-05-19 at 09:25 -0700, Stephen Neuendorffer wrote:
+>
+>> I agree that something is called for... =A0The first might be slightly
+>> simpler, since it would probably transparently deal with the presence
+>> of more than one PLB->PCI bridge?
+>
+> The current code doesn't already ?
 
-> I agree that something is called for...  The first might be slightly
-> simpler, since it would probably transparently deal with the presence
-> of more than one PLB->PCI bridge?
+Current code doesn't exist in mainline.  :-)
 
-The current code doesn't already ?
+And, no, the patch Roderick wrote doesn't handle more than one PHB.
+No reason it couldn't though.
 
-Cheers,
-Ben.
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
