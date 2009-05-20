@@ -1,18 +1,24 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id 0123ADE12F
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 01:17:15 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so287138qwe.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 08:17:14 -0700 (PDT)
+Return-Path: <emillbrandt@dekaresearch.com>
+Received: from dekaexchange.deka.local (mail.dekaresearch.com [208.65.175.196])
+	by ozlabs.org (Postfix) with ESMTP id 345A1DE1B9
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 01:24:28 +1000 (EST)
 MIME-Version: 1.0
-In-Reply-To: <1242806865-2334-1-git-send-email-w.sang@pengutronix.de>
-References: <1242806865-2334-1-git-send-email-w.sang@pengutronix.de>
-Date: Wed, 20 May 2009 11:17:13 -0400
-Message-ID: <9e4733910905200817w20a812bcy14481255fefd011f@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/pcm030.dts: add i2c eeprom and delete cruft
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: mpc5200 fec error
+Date: Wed, 20 May 2009 11:28:04 -0400
+Message-ID: <A88094362DE0AE49A118AB9B4EB3612403F9DEBF@dekaexchange.deka.local>
+In-Reply-To: <9e4733910905200814p63915ff8pf65614dbb8dc9adf@mail.gmail.com>
+References: <A88094362DE0AE49A118AB9B4EB3612403F9DEB6@dekaexchange.deka.local>
+	<20090519203645.GW19843@pengutronix.de>
+	<20090519205706.GD27476@pengutronix.de>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBC@dekaexchange.deka.local>
+	<fa686aa40905191636u6f4a23d0xc8c6c13904a65b8e@mail.gmail.com>
+	<20090520064218.GA29102@pengutronix.de>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBE@dekaexchange.deka.local>
+	<9e4733910905200814p63915ff8pf65614dbb8dc9adf@mail.gmail.com>
+From: "Eric Millbrandt" <emillbrandt@dekaresearch.com>
+To: "Jon Smirl" <jonsmirl@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,59 +29,135 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gV2VkLCBNYXkgMjAsIDIwMDkgYXQgNDowNyBBTSwgV29sZnJhbSBTYW5nIDx3LnNhbmdAcGVu
-Z3V0cm9uaXguZGU+IHdyb3RlOgo+IEFkZCBhIG5vZGUgZm9yIHRoZSBpMmMgZWVwcm9tIGFuZCBk
-ZWxldGUgdGhlIHN1cGVyZmxvdXMgZ3Bpby1leGFtcGxlLgo+Cj4gU2lnbmVkLW9mZi1ieTogV29s
-ZnJhbSBTYW5nIDx3LnNhbmdAcGVuZ3V0cm9uaXguZGU+Cj4gQ2M6IEdyYW50IExpa2VseSA8Z3Jh
-bnQubGlrZWx5QHNlY3JldGxhYi5jYT4KPiBDYzogbGludXhwcGMtZGV2QG96bGFicy5vcmcKPiAt
-LS0KPiCgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3BjbTAzMC5kdHMgfCCgIDI2ICsrKystLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tCj4goDEgZmlsZXMgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspLCAyMiBk
-ZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcGNtMDMw
-LmR0cyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9wY20wMzAuZHRzCj4gaW5kZXggODk1ODM0Ny4u
-MzNjZTQ4OCAxMDA2NDQKPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcGNtMDMwLmR0cwo+
-ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9wY20wMzAuZHRzCj4gQEAgLTI1OCwzNCArMjU4
-LDE2IEBACj4goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoGNvbXBhdGlibGUgPSAibnhw
-LHBjZjg1NjMiOwo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKByZWcgPSA8MHg1MT47
-Cj4goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKB9Owo+IC0goCCgIKAgoCCgIKAgoCCgIKAgoCCgIC8q
-IEZJWE1FOiBFRVBST00gKi8KPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBlZXByb21ANTIgewo+
-ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJhdDI0LDI0YzMy
-IjsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlZyA9IDwweDUyPjsKPiArIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCB9OwoKR3JhbnQgc3VnZ2VzdGVkIHRoaXMgZWFybGllci4uLgoJ
-CQllZXByb21ANTIgewoJCQkJY29tcGF0aWJsZSA9ICJhdG1lbCwyNGMzMiIsICJlZXByb20iOwoJ
-CQkJcmVnID0gPDB4NTI+OwoJCQl9OwoKCgoKPiCgIKAgoCCgIKAgoCCgIKB9Owo+Cj4goCCgIKAg
-oCCgIKAgoCCgc3JhbUA4MDAwIHsKPiCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoGNvbXBhdGlibGUg
-PSAiZnNsLG1wYzUyMDBiLXNyYW0iLCJmc2wsbXBjNTIwMC1zcmFtIjsKPiCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoHJlZyA9IDwweDgwMDAgMHg0MDAwPjsKPiCgIKAgoCCgIKAgoCCgIKB9Owo+IC0K
-PiAtIKAgoCCgIKAgoCCgIKAgLyogVGhpcyBpcyBvbmx5IGFuIGV4YW1wbGUgZGV2aWNlIHRvIHNo
-b3cgdGhlIHVzYWdlIG9mIGdwaW9zLiBJdCBtYXBzIGFsbCBhdmFpbGFibGUKPiAtIKAgoCCgIKAg
-oCCgIKAgoCogZ3Bpb3MgdG8gdGhlICJncGlvLXByb3ZpZGVyIiBkZXZpY2UuCj4gLSCgIKAgoCCg
-IKAgoCCgIKAqLwo+IC0goCCgIKAgoCCgIKAgoCBncGlvIHsKPiAtIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCBjb21wYXRpYmxlID0gImdwaW8tcHJvdmlkZXIiOwo+IC0KPiAtIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgLyogbXBjNTJ4eCCgIKAgoCCgIKBl
-eHAuY29uIKAgoCCgIKAgcGF0Y2hmaWVsZCAqLwo+IC0goCCgIKAgoCCgIKAgoCCgIKAgoCCgIGdw
-aW9zID0gPCZncGlvX3drdXAgoCCgIDAgMCAvKiBHUElPX1dLVVBfNyCgIKAgoDExZCCgIKAgoCCg
-IKAgoCBqcDEzLTMgoCCgICovCj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgJmdw
-aW9fd2t1cCCgIKAgMSAwIC8qIEdQSU9fV0tVUF82IKAgoCCgMTRjIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgKi8KPiAtIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAmZ3Bpb193a3VwIKAg
-oCA2IDAgLyogUFNDMl80IKAgoCCgIKAgoCA0M2MgoCCgIKAgoCCgIKAgeDUtMTEgoCCgIKAqLwo+
-IC0goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCZncGlvX3NpbXBsZSCgIDIgMCAvKiBJ
-UkRBXzEgoCCgIKAgoCCgIDI0YyCgIKAgoCCgIKAgoCB4Ny02IKAgoHNldCBHUFNfUE9SVF9DT05G
-SUdbSVJEQV0gPSAwICovCj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgJmdwaW9f
-c2ltcGxlIKAgMyAwIC8qIElSREFfMCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHg4LTUgoCCg
-c2V0IEdQU19QT1JUX0NPTkZJR1tJUkRBXSA9IDAgKi8KPiAtIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAmZ3B0MiCgIKAgoCCgIKAwIDAgLyogdGltZXIyIKAgoCCgIKAgoCAxMmQgoCCg
-IKAgoCCgIKAgeDQtNCCgIKAgoCAqLwo+IC0goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCZncHQzIKAgoCCgIKAgoDAgMCAvKiB0aW1lcjMgoCCgIKAgoCCgIDEzZCCgIKAgoCCgIKAgoCB4
-Ni00IKAgoCCgICovCj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgJmdwdDQgoCCg
-IKAgoCCgMCAwIC8qIHRpbWVyNCCgIKAgoCCgIKAgNjFjIKAgoCCgIKAgoCCgIHgyLTE2IKAgoCCg
-Ki8KPiAtIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAmZ3B0NSCgIKAgoCCgIKAwIDAg
-LyogdGltZXI1IKAgoCCgIKAgoCA0NGMgoCCgIKAgoCCgIKAgeDctMTEgoCCgIKAqLwo+IC0goCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCZncHQ2IKAgoCCgIKAgoDAgMCAvKiB0aW1lcjYg
-oCCgIKAgoCCgIDYwYyCgIKAgoCCgIKAgoCB4OC0xNSCgIKAgoCovCj4gLSCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgJmdwdDcgoCCgIKAgoCCgMCAwIC8qIHRpbWVyNyCgIKAgoCCgIKAg
-MzZhIKAgoCCgIKAgoCCgIHgxNy05IKAgoCCgKi8KPiAtIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKA+Owo+IC0goCCgIKAgoCCgIKAgoCB9Owo+IKAgoCCgIKB9Owo+Cj4goCCgIKAgoHBj
-aUBmMDAwMGQwMCB7Cj4gLS0KPiAxLjYuMgo+Cj4gX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KPiBMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0Cj4gTGludXhw
-cGMtZGV2QG96bGFicy5vcmcKPiBodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9s
-aW51eHBwYy1kZXYKPgoKCgotLSAKSm9uIFNtaXJsCmpvbnNtaXJsQGdtYWlsLmNvbQo=
+-----Original Message-----
+From: Jon Smirl [mailto:jonsmirl@gmail.com]=20
+Sent: Wednesday, May 20, 2009 11:15
+To: Eric Millbrandt
+Cc: Wolfram Sang; Grant Likely; linuxppc-dev@ozlabs.org
+Subject: Re: mpc5200 fec error
+
+On Wed, May 20, 2009 at 9:42 AM, Eric Millbrandt
+<emillbrandt@dekaresearch.com> wrote:
+>> > I am able to reproduce the error using 2.6.29.2-rt11.  I was able =
+to
+>> > mitigate the problem by raising the priority of the transmit irq.
+>> > However when running an NFS server on the pcm030 under high cpu =
+load I
+>> > now get
+>> >
+>> > [  132.477503] net eth0: FEC_IEVENT_RFIFO_ERROR
+>> > [  132.892329] net eth0: FEC_IEVENT_RFIFO_ERROR
+>> > [  133.884109] net eth0: FEC_IEVENT_RFIFO_ERROR
+>> > [  134.876059] net eth0: FEC_IEVENT_RFIFO_ERROR
+>> >
+>> > Raising the priority of the rx irq does not seem to fix this =
+problem
+>> > though.
+>>
+>> Hi Eric,
+>>
+>> This error has been seen before in non-rt kernels.  I haven't had the
+>> chance to track it down and kill it yet.  I believe there are locking
+>> issues associated with it.
+>
+> Uuuh, I recall this message. Kept me busy for some time :(
+>
+> You might try this patch which helped in our situation.
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> Subject: Enable XLB pipelining for MPC5200B
+> From: Wolfram Sang <w.sang@pengutronix.de>
+>
+> Enable pipelining as it helps getting rid of FEC problems.
+> Not intended for upstream, this must be dealt differently there.
+>
+> This patch is disabled by default. The bootloader should enable this =
+feature.
+> So, this patch is only intended to be used where the bootloader does =
+it in a
+> wrong manner and can't be replaced.
+>
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Acked-by: Juergen Beisert <j.beisert@pengutronix.de>
+>
+> ---
+>  arch/powerpc/platforms/52xx/mpc52xx_common.c |    7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> Index: arch/powerpc/platforms/52xx/mpc52xx_common.c
+> =
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- arch/powerpc/platforms/52xx/mpc52xx_common.c.orig
+> +++ arch/powerpc/platforms/52xx/mpc52xx_common.c
+> @@ -107,6 +107,13 @@ mpc5200_setup_xlb_arbiter(void)
+>         */
+>        if ((mfspr(SPRN_SVR) & MPC5200_SVR_MASK) =3D=3D MPC5200_SVR)
+>                out_be32(&xlb->config, in_be32(&xlb->config) | =
+MPC52xx_XLB_CFG_PLDIS);
+> +#if 0
+> +       /*
+> +        * Enable pipelining, fixes FEC problems. The previous =
+workaround is not
+> +        * needed, as we have an MPC5200B (not A).
+> +        */
+> +       out_be32(&xlb->config, in_be32(&xlb->config) & =
+~MPC52xx_XLB_CFG_PLDIS);
+> +#endif
+>
+>        iounmap(xlb);
+>  }
+>
+> --
+> Pengutronix e.K.                           | Wolfram Sang              =
+  |
+> Industrial Linux Solutions                 | =
+http://www.pengutronix.de/  |
+>
+> Wolfram,
+>
+> Thanks, but no luck with this patch.  It was already setup correctly =
+by U-Boot.
+
+
+I don't see where this gets enabled in the u-boot source. Have you
+added it locally?
+
+These are the only two I see:
+cpu/mpc5xxx/cpu_init.c:	*(vu_long *)(MPC5XXX_XLBARB + 0x40) |=3D (1 << =
+13);
+cpu/mpc5xxx/cpu_init.c:	*(vu_long *)(MPC5XXX_XLBARB + 0x40) |=3D (1 << =
+15);
+
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
+
+If you look a few more lines down you should see
+# if defined(CFG_XLB_PIPELINING)
+	/* Enable piplining */
+	*(vu_long *)(MPC5XXX_XLBARB + 0x40) &=3D ~(1 << 31);
+# endif
+
+I obtained the u-boot sources directly from phytec, for my phyCore, so I =
+am not sure if they added it.
+
+
+_________________________________________________________________________=
+________________
+
+This e-mail and the information, including any attachments, it contains =
+are intended to be a confidential communication only to the person or =
+entity to whom it is addressed and may contain information that is =
+privileged. If the reader of this message is not the intended recipient, =
+you are hereby notified that any dissemination, distribution or copying =
+of this communication is strictly prohibited. If you have received this =
+communication in error, please immediately notify the sender and destroy =
+the original message.
+
+Thank you.
+
+Please consider the environment before printing this email.
