@@ -1,22 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id AD6DEDE1CE
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 06:06:59 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so339513yxb.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 13:06:58 -0700 (PDT)
-MIME-Version: 1.0
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 85B3FDE081
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 07:56:31 +1000 (EST)
+Subject: Re: Musings on PCI busses
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
 In-Reply-To: <20090520.122453.169463011.davem@davemloft.net>
 References: <1242788490.16901.133.camel@pasglop>
 	<20090519.225118.58497608.davem@davemloft.net>
 	<1242802267.16901.187.camel@pasglop>
 	<20090520.122453.169463011.davem@davemloft.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 20 May 2009 14:06:38 -0600
-Message-ID: <fa686aa40905201306j4ef96cafl8ac02736dbdf7e5@mail.gmail.com>
-Subject: Re: Musings on PCI busses
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: thunderbird2k@gmail.com, John.Linn@xilinx.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 21 May 2009 07:56:09 +1000
+Message-Id: <1242856569.16901.199.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, thunderbird2k@gmail.com, John.Linn@xilinx.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 20, 2009 at 1:24 PM, David Miller <davem@davemloft.net> wrote:
->> What do you mean by fully resolve ? IE. The issue above is specific to
->> IO space, which you can resolve both as MMIO, or as "IO" which in linux
->> means going through the special mapping for IO which allows the use of
->> the inX/outX instructions...
->
-> I mean that all OF devices have fully resolved MMIO resources. =A0So
+
+> I mean that all OF devices have fully resolved MMIO resources.  So
 > very early serial devices that sit in I/O space on sparc64 end
-> up being OF device drivers. =A0See for example, drivers/net/sunsu.c
+> up being OF device drivers.  See for example, drivers/net/sunsu.c
 > which is simply a 8250 chip that sits behind Sun's I/O space bus
 > that sits on PCI and provides things normally found via ISA on
-> x86 machines. =A0Another example is drivers/serial/sunsab.c
+> x86 machines.  Another example is drivers/serial/sunsab.c
 
-Unfortunately in the embedded powerpc case we don't actually have real
-OF.  We've only got the flattened device tree which usually doesn't
-itemize the devices behind the PCI bus.  Instead we rely on the kernel
-probing for them.
+Right. On Cell, we use the "normal" 8250 driver, via of_serial which
+basically initializes it from the of device and associated resources.
 
-g.
+It gets a bit messy because we -also- create a platform driver that can
+be matched by 8250, in fact, we have a bit of generic powerpc code that
+does that early at boot, initializes our low level very early udbg
+thingy with it and creates the platform devices.
 
+And then the serial port can -also- be detected by 8250_pci.c when it's
+on a PCI based UART :-)
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Now, generally thinks work fine even if you use all 3 drivers because
+they have the same resources and 8250 has some smarts to figure that out
+and not re-create ports. It somewhat fails in the case where we end up
+with IO looking like MMIO on one side and looking like PCI IO on another
+tho.
+
+We -could- try to standardize on a single of those 3 methods of course.
+The of_serial one has some appeal but I quite like the platform driver
+approach at this stage because we have code to handle all sort of weirdo
+special cases in there (more or less insane device-tree's, weird SoC's,
+etc...) and still pump out something 8250_platform can grok, and that
+code can run -very- early and provide a udbg backend for early debug and
+xmon usage.
+
+> I would make these device drivers OF device drivers.
+> 
+> Another option is to make use of the "address" property if present.
+> You can bypass all of the hassle of figuring out what the 'reg'
+> property resolves to by using that and if the device is the
+> console it is pretty reliable to expect OF to provide that "address"
+> property.
+> 
+> Of course this doesn't work well for non-console devices.
+
+Also we have various broken firmwares with non usable "address"
+properties to deal with.
+
+Ben.
