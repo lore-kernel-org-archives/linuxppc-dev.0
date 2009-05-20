@@ -1,20 +1,18 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net
 	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 562BCDE18A
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 05:24:59 +1000 (EST)
-Date: Wed, 20 May 2009 12:24:53 -0700 (PDT)
-Message-Id: <20090520.122453.169463011.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: Musings on PCI busses
+	by ozlabs.org (Postfix) with ESMTP id 2C72FDE067
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 05:26:27 +1000 (EST)
+Date: Wed, 20 May 2009 12:26:22 -0700 (PDT)
+Message-Id: <20090520.122622.112939264.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Subject: Re: [PATCH] powerpc/ep8248e: phylib needs NET_SCHED to build
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1242802267.16901.187.camel@pasglop>
-References: <1242788490.16901.133.camel@pasglop>
-	<20090519.225118.58497608.davem@davemloft.net>
-	<1242802267.16901.187.camel@pasglop>
+In-Reply-To: <1242821902-16836-1-git-send-email-a.beregalov@gmail.com>
+References: <1242821902-16836-1-git-send-email-a.beregalov@gmail.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, thunderbird2k@gmail.com, John.Linn@xilinx.com
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 20 May 2009 16:51:07 +1000
+From: Alexander Beregalov <a.beregalov@gmail.com>
+Date: Wed, 20 May 2009 16:18:22 +0400
 
-> On Tue, 2009-05-19 at 22:51 -0700, David Miller wrote:
->> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Date: Wed, 20 May 2009 13:01:30 +1000
->> 
->> > For example, some of the OF parsing bits may fail to convert memory
->> > addresses to IO addresses if the PCI host bridges have not been
->> > discovered yet, potentially causing issues with matching of resources
->> > between the early serial stuff and the generic serial driver (if you
->> > use an IO driven UART, the PCI 8250 driver may not properly figure out
->> > that what it's finding in its IO BARs is actually the same port as
->> > what it gets from the platform code as the later will end up with
->> > memory addresses rather than IO ones). That's one example.
->> 
->> FWIW, I never run into this issue on sparc64 exactly because I
->> fully resolve all resources when I populate the OF device tree
->> in the kernel.
+> Fix this build error:
+> drivers/built-in.o: In function `phy_state_machine':
+> drivers/net/phy/phy.c:893: undefined reference to 'netif_carrier_off'
+> drivers/net/phy/phy.c:854: undefined reference to 'netif_carrier_on'
 > 
-> What do you mean by fully resolve ? IE. The issue above is specific to
-> IO space, which you can resolve both as MMIO, or as "IO" which in linux
-> means going through the special mapping for IO which allows the use of
-> the inX/outX instructions...
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-I mean that all OF devices have fully resolved MMIO resources.  So
-very early serial devices that sit in I/O space on sparc64 end
-up being OF device drivers.  See for example, drivers/net/sunsu.c
-which is simply a 8250 chip that sits behind Sun's I/O space bus
-that sits on PCI and provides things normally found via ISA on
-x86 machines.  Another example is drivers/serial/sunsab.c
+This isn't right.  Otherwise no networking driver would build
+with NET_SCHED disabled.
 
-> One of the issues we may have here on powerpc is that our very early
-> probe of serial ports (so we get some debug output early) may get to
-> those resources while the serial driver later sees the actual
-> IORESOURCE_IO resources coming from the PCI probe, and is unable to
-> figure that they are the same things.
+net/sched/sch_generic.c is always built when NET is enabled
+and that's where netif_carrier_off() is defined.
 
-I would make these device drivers OF device drivers.
-
-Another option is to make use of the "address" property if present.
-You can bypass all of the hassle of figuring out what the 'reg'
-property resolves to by using that and if the device is the
-console it is pretty reliable to expect OF to provide that "address"
-property.
-
-Of course this doesn't work well for non-console devices.
+As you can see in net/sched/Makefile, sch_generic.o is
+"obj-y", did you even check? :-)
