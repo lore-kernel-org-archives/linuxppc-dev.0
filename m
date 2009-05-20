@@ -1,16 +1,22 @@
-Return-Path: <skrishnakar@gmail.com>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 35B9BDE035
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 16:42:33 +1000 (EST)
+Date: Wed, 20 May 2009 08:42:18 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: mpc5200 fec error
+Message-ID: <20090520064218.GA29102@pengutronix.de>
+References: <A88094362DE0AE49A118AB9B4EB3612403F9DEB6@dekaexchange.deka.local>
+	<20090519203645.GW19843@pengutronix.de>
+	<20090519205706.GD27476@pengutronix.de>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBC@dekaexchange.deka.local>
+	<fa686aa40905191636u6f4a23d0xc8c6c13904a65b8e@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090520060014.GL6333@yookeroo.seuss>
-References: <6213bc560905190608j73f4191fxbd94158a2b1740c0@mail.gmail.com>
-	<20090519235302.GA6333@yookeroo.seuss>
-	<6213bc560905192250w4caa84aem9c0dedb2eed72fea@mail.gmail.com>
-	<20090520060014.GL6333@yookeroo.seuss>
-Date: Wed, 20 May 2009 11:44:20 +0530
-Message-ID: <6213bc560905192314i2bf7e246r33c6edce9a2669f9@mail.gmail.com>
-Subject: Re: Initialize DBCR0 for PPC440 targets
-From: srikanth krishnakar <skrishnakar@gmail.com>
-To: srikanth krishnakar <skrishnakar@gmail.com>, Linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
+In-Reply-To: <fa686aa40905191636u6f4a23d0xc8c6c13904a65b8e@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Eric Millbrandt <emillbrandt@dekaresearch.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,76 +26,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi David,
 
-Just to correct the statements : How the DBCR0 is initialized on
-targets that don't use boot loaders ?
-
--Srikant
-
-On Wed, May 20, 2009 at 11:30 AM, David Gibson
-<david@gibson.dropbear.id.au> wrote:
-> On Wed, May 20, 2009 at 11:20:46AM +0530, srikanth krishnakar wrote:
->> Hi David,
->>
->> I am not sure how the IDM behaves on few of PPC440 targets which don't
->> have boot loaders. I have a reference for your question:
->>
->> http://www.nabble.com/Question-about-DBCR0-initialization-for-440-td2304=
-9044.html
->>
->> Without this fix (given patch) I am facing problems with GDB, and
->> further target hangs while running gdbserver !
->
-> That doesn't answer my question. =A0It's not enough to say "this fixes a
-> problem" you need to explain *how* it fixes the problem.
->
-> And I don't see why IDM would have any effect on *software*
-> breakpoints.
->
->> On Wed, May 20, 2009 at 5:23 AM, David Gibson
->> <david@gibson.dropbear.id.au> wrote:
->> > On Tue, May 19, 2009 at 06:38:53PM +0530, srikanth krishnakar wrote:
->> >> Hi,
->> >>
->> >> kernel- 2.6.29
->> >> Debug technique: KGDB
->> >>
->> >> The PowerPC kernel does not initialize the PPC440 DBCR0 register. Thi=
-s
->> >> prevents the use of software breakpoints in case of internal debug
->> >> mode. Looking into head_fsl_booke.S for initialization of DBCR0 is
->> >> used by boot-loaders.
->> >> It seems head_44x.S lacks this step of DBCR0 register initialization.
->> >> So fixing this with initializing the DBCR0 register as shown below :
->> >>
->> >> Subject: [PATCH] powerpc: 44x: Initialize DBCR0 for targets not havin=
-g
->> >> bootloader
->> >>
->> >> The kernel does not initialize the PPC440 DBCR0 register.
->> >> This prevents (among other things) the use of software
->> >> breakpoints with GDB. The boot loaders probably do initialize
->> >> this but few targets run without a boot loader
->> >
->> > Um.. how does this prevent the use of software breakpoints with gdb?
->> > The trap instructions still work with IDM=3D=3D0.
->
-> --
-> David Gibson =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| I'll have my music =
-baroque, and my code
-> david AT gibson.dropbear.id.au =A0| minimalist, thank you. =A0NOT _the_ _=
-other_
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| _way_ _a=
-round_!
-> http://www.ozlabs.org/~dgibson
->
+--M9NhX3UHpAaciwkO
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
+> > I am able to reproduce the error using 2.6.29.2-rt11. =A0I was able to
+> > mitigate the problem by raising the priority of the transmit irq.
+> > However when running an NFS server on the pcm030 under high cpu load I
+> > now get
+> >
+> > [ =A0132.477503] net eth0: FEC_IEVENT_RFIFO_ERROR
+> > [ =A0132.892329] net eth0: FEC_IEVENT_RFIFO_ERROR
+> > [ =A0133.884109] net eth0: FEC_IEVENT_RFIFO_ERROR
+> > [ =A0134.876059] net eth0: FEC_IEVENT_RFIFO_ERROR
+> >
+> > Raising the priority of the rx irq does not seem to fix this problem
+> > though.
+>=20
+> Hi Eric,
+>=20
+> This error has been seen before in non-rt kernels.  I haven't had the
+> chance to track it down and kill it yet.  I believe there are locking
+> issues associated with it.
+
+Uuuh, I recall this message. Kept me busy for some time :(
+
+You might try this patch which helped in our situation.
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+Subject: Enable XLB pipelining for MPC5200B
+=46rom: Wolfram Sang <w.sang@pengutronix.de>
+
+Enable pipelining as it helps getting rid of FEC problems.
+Not intended for upstream, this must be dealt differently there.
+
+This patch is disabled by default. The bootloader should enable this featur=
+e.
+So, this patch is only intended to be used where the bootloader does it in a
+wrong manner and can't be replaced.
+
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Acked-by: Juergen Beisert <j.beisert@pengutronix.de>
+
+---
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: arch/powerpc/platforms/52xx/mpc52xx_common.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- arch/powerpc/platforms/52xx/mpc52xx_common.c.orig
++++ arch/powerpc/platforms/52xx/mpc52xx_common.c
+@@ -107,6 +107,13 @@ mpc5200_setup_xlb_arbiter(void)
+ 	 */
+ 	if ((mfspr(SPRN_SVR) & MPC5200_SVR_MASK) =3D=3D MPC5200_SVR)
+ 		out_be32(&xlb->config, in_be32(&xlb->config) | MPC52xx_XLB_CFG_PLDIS);
++#if 0
++	/*
++	 * Enable pipelining, fixes FEC problems. The previous workaround is not
++	 * needed, as we have an MPC5200B (not A).
++	 */
++	out_be32(&xlb->config, in_be32(&xlb->config) & ~MPC52xx_XLB_CFG_PLDIS);
++#endif
+=20
+ 	iounmap(xlb);
+ }
 
 --=20
-"The Good You Do, The Best You GET"
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-Regards
-Srikanth Krishnakar
-**********************
+--M9NhX3UHpAaciwkO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoTpkoACgkQD27XaX1/VRsYzACfZIXPnRXQrTOSt3kSSB9cwOZy
+m6wAoLaEOW2INgrfwCdJZbxbZHSlefhN
+=QfT1
+-----END PGP SIGNATURE-----
+
+--M9NhX3UHpAaciwkO--
