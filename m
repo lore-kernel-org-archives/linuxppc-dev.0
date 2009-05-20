@@ -1,28 +1,13 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 7D966DE169
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 02:49:36 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so281680yxb.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 09:49:35 -0700 (PDT)
+Return-Path: <wg@grandegger.com>
+Message-ID: <4A143896.7050200@grandegger.com>
+Date: Wed, 20 May 2009 19:06:30 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-In-Reply-To: <A88094362DE0AE49A118AB9B4EB3612403F9DEC0@dekaexchange.deka.local>
-References: <A88094362DE0AE49A118AB9B4EB3612403F9DEB6@dekaexchange.deka.local>
-	<20090519205706.GD27476@pengutronix.de>
-	<A88094362DE0AE49A118AB9B4EB3612403F9DEBC@dekaexchange.deka.local>
-	<fa686aa40905191636u6f4a23d0xc8c6c13904a65b8e@mail.gmail.com>
-	<20090520064218.GA29102@pengutronix.de>
-	<A88094362DE0AE49A118AB9B4EB3612403F9DEBE@dekaexchange.deka.local>
-	<9e4733910905200814p63915ff8pf65614dbb8dc9adf@mail.gmail.com>
-	<A88094362DE0AE49A118AB9B4EB3612403F9DEBF@dekaexchange.deka.local>
-	<9e4733910905200829o423bf483h5b0b6dd202367872@mail.gmail.com>
-	<A88094362DE0AE49A118AB9B4EB3612403F9DEC0@dekaexchange.deka.local>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 20 May 2009 10:49:15 -0600
-Message-ID: <fa686aa40905200949q1fbeee8fy4b3a06d8e44d7c6b@mail.gmail.com>
-Subject: Re: mpc5200 fec error
-To: Eric Millbrandt <emillbrandt@dekaresearch.com>
+To: Linux Netdev List <netdev@vger.kernel.org>
+Subject: [net-next-2.6 PATCH] can: SJA1000: generic OF platform bus driver
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	devicetree-discuss <devicetree-discuss@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,105 +17,276 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 20, 2009 at 10:41 AM, Eric Millbrandt
-<emillbrandt@dekaresearch.com> wrote:
-> It looks like the phy is never getting reset properly after the FEC_IEVEN=
-T_RFIFO_ERROR. =A0I threw some printk's into the fec mdio driver
+This patch adds a generic driver for SJA1000 chips on the OpenFirmware
+platform bus found on embedded PowerPC systems. You need a SJA1000 node
+definition in your flattened device tree source (DTS) file similar to:
 
-Yes, that sounds familiar.  Most likely, the value of the MDIO bus
-control register got clobbered and not reset when the FEC was reset.
-Try adding this line to the beginning of mpc52xx_fec_mdio_transfer():
+   can@3,100 {
+           compatible = "philips,sja1000";
+           reg = <3 0x100 0x80>;
+           clock-frequency = <8000000>;
+           cdr-reg = <0x48>;
+           ocr-reg = <0x0a>;
+           interrupts = <2 0>;
+           interrupt-parent = <&mpic>;
+   };
 
-out_be32(&fec->mii_speed, 0x7e);
+Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+---
+ drivers/net/can/Kconfig                       |    9 +
+ drivers/net/can/sja1000/Makefile              |    1 
+ drivers/net/can/sja1000/sja1000_of_platform.c |  215 ++++++++++++++++++++++++++
+ 3 files changed, 225 insertions(+)
 
-It's a dirty ugly hack, but it should help.  If that works, then I can
-come up with a better solution.  Part of the problem is that the MDIO
-handling in the current code really isn't very good.  I've got changes
-queued up in -next which cleans it up quite a bit which should make it
-easier to fix properly.
-
-g.
-
->
-> /drivers/net/fec_mpc52xx_phy.c
-> =A025 static int mpc52xx_fec_mdio_transfer(struct mii_bus *bus, int phy_i=
-d,
-> =A026 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 int reg, u32 value)
-> =A027 {
-> =A028 =A0 =A0 =A0 =A0 struct mpc52xx_fec_mdio_priv *priv =3D bus->priv;
-> =A029 =A0 =A0 =A0 =A0 struct mpc52xx_fec __iomem *fec;
-> =A030 =A0 =A0 =A0 =A0 int tries =3D 100;
-> =A031
-> =A032 =A0 =A0 =A0 =A0 value |=3D (phy_id << FEC_MII_DATA_PA_SHIFT) & FEC_=
-MII_DATA_PA_MSK;
-> =A033 =A0 =A0 =A0 =A0 value |=3D (reg << FEC_MII_DATA_RA_SHIFT) & FEC_MII=
-_DATA_RA_MSK;
-> =A034
-> =A035 =A0 =A0 =A0 =A0 fec =3D priv->regs;
-> =A036 =A0 =A0 =A0 =A0 out_be32(&fec->ievent, FEC_IEVENT_MII);
-> =A037 =A0 =A0 =A0 =A0 out_be32(&priv->regs->mii_data, value);
-> =A038
-> =A039 =A0 =A0 =A0 =A0 /* wait for it to finish, this takes about 23 us on=
- lite5200b */
-> =A040 =A0 =A0 =A0 =A0 while (!(in_be32(&fec->ievent) & FEC_IEVENT_MII) &&=
- --tries)
-> =A041 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(5);
-> =A042
-> =A043 =A0 =A0 =A0 =A0 if (!tries) {
-> =A044 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 printk("Unable to reset phy\n");
-> =A045 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ETIMEDOUT;
-> =A046 =A0 =A0 =A0 =A0 }
-> =A047
-> =A048 =A0 =A0 =A0 =A0 return value & FEC_MII_DATA_OP_RD ?
-> =A049 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 in_be32(&priv->regs->mii_data) & FE=
-C_MII_DATA_DATAMSK : 0;
-> =A050 }
->
-> and got this
->
-> [ =A0127.085632] net eth0: FEC_IEVENT_RFIFO_ERROR
-> [ =A0127.093401] Resetting FEC
-> [ =A0127.096620] Unable to reset phy
-> [ =A0127.322224] Unable to reset phy
-> [ =A0128.321987] PHY: f0003000:00 - Link is Down
-> [ =A0129.221034] net eth0: FEC_IEVENT_RFIFO_ERROR
-> [ =A0129.228165] Resetting FEC
-> [ =A0129.231384] Unable to reset phy
-> [ =A0129.322286] Unable to reset phy
-> [ =A0132.885863] net eth0: FEC_IEVENT_RFIFO_ERROR
-> [ =A0132.893002] Resetting FEC
-> [ =A0132.896176] Unable to reset phy
-> [ =A0133.322202] Unable to reset phy
-> [ =A0135.684793] net eth0: FEC_IEVENT_RFIFO_ERROR
-> [ =A0135.691969] Resetting FEC
-> [ =A0135.695192] Unable to reset phy
-> [ =A0136.322530] Unable to reset phy
-> [ =A0138.490805] net eth0: FEC_IEVENT_RFIFO_ERROR
-> [ =A0138.497963] Resetting FEC
-> [ =A0138.501135] Unable to reset phy
-> [ =A0139.334200] Unable to reset phy
->
-> I guess I have to spend some quality time with the 5200 manual.
->
->
-> _________________________________________________________________________=
-________________
->
-> This e-mail and the information, including any attachments, it contains a=
-re intended to be a confidential communication only to the person or entity=
- to whom it is addressed and may contain information that is privileged. If=
- the reader of this message is not the intended recipient, you are hereby n=
-otified that any dissemination, distribution or copying of this communicati=
-on is strictly prohibited. If you have received this communication in error=
-, please immediately notify the sender and destroy the original message.
->
-> Thank you.
->
-> Please consider the environment before printing this email.
->
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Index: net-next-2.6/drivers/net/can/Kconfig
+===================================================================
+--- net-next-2.6.orig/drivers/net/can/Kconfig
++++ net-next-2.6/drivers/net/can/Kconfig
+@@ -51,6 +51,15 @@ config CAN_SJA1000_PLATFORM
+ 	  boards from Phytec (http://www.phytec.de) like the PCM027,
+ 	  PCM038.
+ 
++config CAN_SJA1000_OF_PLATFORM
++	depends on CAN_SJA1000 && PPC_OF
++	tristate "Generic OF Platform Bus based SJA1000 driver"
++	---help---
++	  This driver adds support for the SJA1000 chips connected to
++	  the OpenFirmware "platform bus" found on embedded systems with
++	  OpenFirmware bindings, e.g. if you have a PowerPC based system
++	  you may want to enable this option.
++
+ config CAN_EMS_PCI
+ 	tristate "EMS CPC-PCI and CPC-PCIe Card"
+ 	depends on PCI && CAN_SJA1000
+Index: net-next-2.6/drivers/net/can/sja1000/Makefile
+===================================================================
+--- net-next-2.6.orig/drivers/net/can/sja1000/Makefile
++++ net-next-2.6/drivers/net/can/sja1000/Makefile
+@@ -4,6 +4,7 @@
+ 
+ obj-$(CONFIG_CAN_SJA1000) += sja1000.o
+ obj-$(CONFIG_CAN_SJA1000_PLATFORM) += sja1000_platform.o
++obj-$(CONFIG_CAN_SJA1000_OF_PLATFORM) += sja1000_of_platform.o
+ obj-$(CONFIG_CAN_EMS_PCI) += ems_pci.o
+ obj-$(CONFIG_CAN_KVASER_PCI) += kvaser_pci.o
+ 
+Index: net-next-2.6/drivers/net/can/sja1000/sja1000_of_platform.c
+===================================================================
+--- /dev/null
++++ net-next-2.6/drivers/net/can/sja1000/sja1000_of_platform.c
+@@ -0,0 +1,215 @@
++/*
++ * Driver for SJA1000 CAN controllers on the OpenFirmware platform bus
++ *
++ * Copyright (C) 2008-2009 Wolfgang Grandegger <wg@grandegger.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the version 2 of the GNU General Public License
++ * as published by the Free Software Foundation
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/* This is a generic driver for SJA1000 chips on the OpenFirmware platform
++ * bus found on embedded PowerPC systems. You need a SJA1000 CAN node
++ * definition in your flattened device tree source (DTS) file similar to:
++ *
++ *   can@3,100 {
++ *           compatible = "philips,sja1000";
++ *           reg = <3 0x100 0x80>;
++ *           clock-frequency = <8000000>;
++ *           cdr-reg = <0x48>;
++ *           ocr-reg = <0x0a>;
++ *           interrupts = <2 0>;
++ *           interrupt-parent = <&mpic>;
++ *   };
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/netdevice.h>
++#include <linux/delay.h>
++#include <linux/can.h>
++#include <linux/can/dev.h>
++
++#include <linux/of_platform.h>
++#include <asm/prom.h>
++
++#include "sja1000.h"
++
++#define DRV_NAME "sja1000_of_platform"
++
++MODULE_AUTHOR("Wolfgang Grandegger <wg@grandegger.com>");
++MODULE_DESCRIPTION("Socket-CAN driver for SJA1000 on the OF platform bus");
++MODULE_LICENSE("GPL v2");
++
++#define SJA1000_OFP_CAN_CLOCK  (16000000 / 2)
++
++#define SJA1000_OFP_OCR        OCR_TX0_PULLDOWN
++#define SJA1000_OFP_CDR        (CDR_CBP | CDR_CLK_OFF)
++
++static u8 sja1000_ofp_read_reg(const struct net_device *dev, int reg)
++{
++	return in_8((void __iomem *)(dev->base_addr + reg));
++}
++
++static void sja1000_ofp_write_reg(const struct net_device *dev, int reg, u8 val)
++{
++	out_8((void __iomem *)(dev->base_addr + reg), val);
++}
++
++static int __devexit sja1000_ofp_remove(struct of_device *ofdev)
++{
++	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
++	struct device_node *np = ofdev->node;
++	struct resource res;
++
++	dev_set_drvdata(&ofdev->dev, NULL);
++
++	unregister_sja1000dev(dev);
++	free_sja1000dev(dev);
++	iounmap((void __iomem *)dev->base_addr);
++	irq_dispose_mapping(dev->irq);
++
++	of_address_to_resource(np, 0, &res);
++	release_mem_region(res.start, resource_size(res));
++
++	return 0;
++}
++
++static int __devinit sja1000_ofp_probe(struct of_device *ofdev,
++				       const struct of_device_id *id)
++{
++	struct device_node *np = ofdev->node;
++	struct net_device *dev;
++	struct sja1000_priv *priv;
++	struct resource res;
++	const u32 *prop;
++	int err, irq, res_size, prop_size;
++	void __iomem *base;
++
++	err = of_address_to_resource(np, 0, &res);
++	if (err) {
++		dev_err(&ofdev->dev, "invalid address\n");
++		return err;
++	}
++
++	res_size = resource_size(res);
++
++	if (!request_mem_region(res.start, res_size, DRV_NAME)) {
++		dev_err(&ofdev->dev, "couldn't request %#x..%#x\n",
++			res.start, res.end);
++		return -EBUSY;
++	}
++
++	base = ioremap_nocache(res.start, res_size);
++	if (!base) {
++		dev_err(&ofdev->dev, "couldn't ioremap %#x..%#x\n",
++			res.start, res.end);
++		err = -ENOMEM;
++		goto exit_release_mem;
++	}
++
++	irq = irq_of_parse_and_map(np, 0);
++	if (irq == NO_IRQ) {
++		dev_err(&ofdev->dev, "no irq found\n");
++		err = -ENODEV;
++		goto exit_unmap_mem;
++	}
++
++	dev = alloc_sja1000dev(0);
++	if (!dev) {
++		err = -ENOMEM;
++		goto exit_dispose_irq;
++	}
++
++	priv = netdev_priv(dev);
++
++	priv->read_reg = sja1000_ofp_read_reg;
++	priv->write_reg = sja1000_ofp_write_reg;
++
++	prop = of_get_property(np, "clock-frequency", &prop_size);
++	if (prop && (prop_size ==  sizeof(u32)))
++		priv->can.clock.freq = *prop;
++	else
++		priv->can.clock.freq = SJA1000_OFP_CAN_CLOCK;
++
++	prop = of_get_property(np, "ocr-reg", &prop_size);
++	if (prop && (prop_size == sizeof(u32)))
++		priv->ocr = (u8)*prop;
++	else
++		priv->ocr = SJA1000_OFP_OCR;
++
++	prop = of_get_property(np, "cdr-reg", &prop_size);
++	if (prop && (prop_size == sizeof(u32)))
++		priv->cdr = (u8)*prop;
++	else
++		priv->cdr = SJA1000_OFP_CDR;
++
++	priv->irq_flags = IRQF_SHARED;
++
++	dev->irq = irq;
++	dev->base_addr = (unsigned long)base;
++
++	dev_info(&ofdev->dev,
++		 "base=0x%lx irq=%d clock=%d ocr=0x%02x cdr=0x%02x\n",
++		 dev->base_addr, dev->irq, priv->can.clock.freq,
++		 priv->ocr, priv->cdr);
++
++	dev_set_drvdata(&ofdev->dev, dev);
++	SET_NETDEV_DEV(dev, &ofdev->dev);
++
++	err = register_sja1000dev(dev);
++	if (err) {
++		dev_err(&ofdev->dev, "registering %s failed (err=%d)\n",
++			DRV_NAME, err);
++		goto exit_free_sja1000;
++	}
++
++	return 0;
++
++exit_free_sja1000:
++	free_sja1000dev(dev);
++exit_dispose_irq:
++	irq_dispose_mapping(irq);
++exit_unmap_mem:
++	iounmap(base);
++exit_release_mem:
++	release_mem_region(res.start, res_size);
++
++	return err;
++}
++
++static struct of_device_id __devinitdata sja1000_ofp_table[] = {
++	{.compatible = "philips,sja1000"},
++	{.compatible = "nxp,sja1000"},
++	{},
++};
++
++static struct of_platform_driver sja1000_ofp_driver = {
++	.owner = THIS_MODULE,
++	.name = DRV_NAME,
++	.probe = sja1000_ofp_probe,
++	.remove = __devexit_p(sja1000_ofp_remove),
++	.match_table = sja1000_ofp_table,
++};
++
++static int __init sja1000_ofp_init(void)
++{
++	return of_register_platform_driver(&sja1000_ofp_driver);
++}
++module_init(sja1000_ofp_init);
++
++static void __exit sja1000_ofp_exit(void)
++{
++	return of_unregister_platform_driver(&sja1000_ofp_driver);
++};
++module_exit(sja1000_ofp_exit);
