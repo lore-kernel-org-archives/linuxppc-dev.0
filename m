@@ -1,15 +1,27 @@
-Return-Path: <xuemingmin@126.com>
-Received: from m15-28.126.com (m15-28.126.com [220.181.15.28])
-	by ozlabs.org (Postfix) with SMTP id 8B11CDE11E
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 01:16:27 +1000 (EST)
-Date: Wed, 20 May 2009 22:44:48 +0800 (CST)
-From: xuemingmin <xuemingmin@126.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <6825098.918711242830688677.JavaMail.coremail@bj126app28.126.com>
-Subject: Linux pcf8574 driver based MPC8349EA
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
+	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id CC235DE14B
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 01:37:25 +1000 (EST)
+Received: by qyk34 with SMTP id 34so920174qyk.17
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 08:37:22 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_245322_25644880.1242830688675"
+In-Reply-To: <A88094362DE0AE49A118AB9B4EB3612403F9DEBF@dekaexchange.deka.local>
+References: <A88094362DE0AE49A118AB9B4EB3612403F9DEB6@dekaexchange.deka.local>
+	<20090519203645.GW19843@pengutronix.de>
+	<20090519205706.GD27476@pengutronix.de>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBC@dekaexchange.deka.local>
+	<fa686aa40905191636u6f4a23d0xc8c6c13904a65b8e@mail.gmail.com>
+	<20090520064218.GA29102@pengutronix.de>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBE@dekaexchange.deka.local>
+	<9e4733910905200814p63915ff8pf65614dbb8dc9adf@mail.gmail.com>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBF@dekaexchange.deka.local>
+Date: Wed, 20 May 2009 11:29:20 -0400
+Message-ID: <9e4733910905200829o423bf483h5b0b6dd202367872@mail.gmail.com>
+Subject: Re: mpc5200 fec error
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +31,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_245322_25644880.1242830688675
-Content-Type: text/plain; charset=gbk
-Content-Transfer-Encoding: 7bit
+On Wed, May 20, 2009 at 11:28 AM, Eric Millbrandt
+<emillbrandt@dekaresearch.com> wrote:
+> -----Original Message-----
+> From: Jon Smirl [mailto:jonsmirl@gmail.com]
+> Sent: Wednesday, May 20, 2009 11:15
+> To: Eric Millbrandt
+> Cc: Wolfram Sang; Grant Likely; linuxppc-dev@ozlabs.org
+> Subject: Re: mpc5200 fec error
+>
+> On Wed, May 20, 2009 at 9:42 AM, Eric Millbrandt
+> <emillbrandt@dekaresearch.com> wrote:
+>>> > I am able to reproduce the error using 2.6.29.2-rt11. =A0I was able t=
+o
+>>> > mitigate the problem by raising the priority of the transmit irq.
+>>> > However when running an NFS server on the pcm030 under high cpu load =
+I
+>>> > now get
+>>> >
+>>> > [ =A0132.477503] net eth0: FEC_IEVENT_RFIFO_ERROR
+>>> > [ =A0132.892329] net eth0: FEC_IEVENT_RFIFO_ERROR
+>>> > [ =A0133.884109] net eth0: FEC_IEVENT_RFIFO_ERROR
+>>> > [ =A0134.876059] net eth0: FEC_IEVENT_RFIFO_ERROR
+>>> >
+>>> > Raising the priority of the rx irq does not seem to fix this problem
+>>> > though.
+>>>
+>>> Hi Eric,
+>>>
+>>> This error has been seen before in non-rt kernels. =A0I haven't had the
+>>> chance to track it down and kill it yet. =A0I believe there are locking
+>>> issues associated with it.
+>>
+>> Uuuh, I recall this message. Kept me busy for some time :(
+>>
+>> You might try this patch which helped in our situation.
+>>
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>>
+>> Subject: Enable XLB pipelining for MPC5200B
+>> From: Wolfram Sang <w.sang@pengutronix.de>
+>>
+>> Enable pipelining as it helps getting rid of FEC problems.
+>> Not intended for upstream, this must be dealt differently there.
+>>
+>> This patch is disabled by default. The bootloader should enable this fea=
+ture.
+>> So, this patch is only intended to be used where the bootloader does it =
+in a
+>> wrong manner and can't be replaced.
+>>
+>> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+>> Acked-by: Juergen Beisert <j.beisert@pengutronix.de>
+>>
+>> ---
+>> =A0arch/powerpc/platforms/52xx/mpc52xx_common.c | =A0 =A07 +++++++
+>> =A01 file changed, 7 insertions(+)
+>>
+>> Index: arch/powerpc/platforms/52xx/mpc52xx_common.c
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>> --- arch/powerpc/platforms/52xx/mpc52xx_common.c.orig
+>> +++ arch/powerpc/platforms/52xx/mpc52xx_common.c
+>> @@ -107,6 +107,13 @@ mpc5200_setup_xlb_arbiter(void)
+>> =A0 =A0 =A0 =A0 */
+>> =A0 =A0 =A0 =A0if ((mfspr(SPRN_SVR) & MPC5200_SVR_MASK) =3D=3D MPC5200_S=
+VR)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_be32(&xlb->config, in_be32(&xlb->conf=
+ig) | MPC52xx_XLB_CFG_PLDIS);
+>> +#if 0
+>> + =A0 =A0 =A0 /*
+>> + =A0 =A0 =A0 =A0* Enable pipelining, fixes FEC problems. The previous w=
+orkaround is not
+>> + =A0 =A0 =A0 =A0* needed, as we have an MPC5200B (not A).
+>> + =A0 =A0 =A0 =A0*/
+>> + =A0 =A0 =A0 out_be32(&xlb->config, in_be32(&xlb->config) & ~MPC52xx_XL=
+B_CFG_PLDIS);
+>> +#endif
+>>
+>> =A0 =A0 =A0 =A0iounmap(xlb);
+>> =A0}
+>>
+>> --
+>> Pengutronix e.K. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | W=
+olfram Sang =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0|
+>> Industrial Linux Solutions =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | http://www.=
+pengutronix.de/ =A0|
+>>
+>> Wolfram,
+>>
+>> Thanks, but no luck with this patch. =A0It was already setup correctly b=
+y U-Boot.
+>
+>
+> I don't see where this gets enabled in the u-boot source. Have you
+> added it locally?
+>
+> These are the only two I see:
+> cpu/mpc5xxx/cpu_init.c: *(vu_long *)(MPC5XXX_XLBARB + 0x40) |=3D (1 << 13=
+);
+> cpu/mpc5xxx/cpu_init.c: *(vu_long *)(MPC5XXX_XLBARB + 0x40) |=3D (1 << 15=
+);
+>
+>
+> --
+> Jon Smirl
+> jonsmirl@gmail.com
+>
+> If you look a few more lines down you should see
+> # if defined(CFG_XLB_PIPELINING)
+> =A0 =A0 =A0 =A0/* Enable piplining */
+> =A0 =A0 =A0 =A0*(vu_long *)(MPC5XXX_XLBARB + 0x40) &=3D ~(1 << 31);
+> # endif
+>
+> I obtained the u-boot sources directly from phytec, for my phyCore, so I =
+am not sure if they added it.
 
-Recently , I'm busy with a project based on the main board - MPC8349EA. We use a pcf8574 connected I2C bus. Now my task is programming to test I2C bus. I find that file system contains the chip(pcf8574) module .And I add this module into the kernel. But I find that system only registers the driver,not device.And I can not get the device's major and minor device number. Therefore, I can not create the device file to operate the device.
-My question:
- How can I use the device which is not registered in the system,or can you provide some advices to complete the task.
+It is ok in main u-boot source. I just missed the lower section.
 
-
- 
-------=_Part_245322_25644880.1242830688675
-Content-Type: text/html; charset=gbk
-Content-Transfer-Encoding: quoted-printable
-
-<DIV>Recently , I'm busy with a project based on the main board - MPC8349EA=
- We use a pcf8574 connected I2C bus. Now my task is programming to test I2=
-C bus. I find that file system contains the chip(pcf8574) module .And I add=
- this module into the kernel. But I find that system only registers the dri=
-ver,not device.And I can not get the device's major and minor device number=
-&nbsp;Therefore, I can not create the device file to operate the device.<B=
-R>My question:<BR>&nbsp;How can I use the device which is not registered in=
- the system,or can you provide some advices to complete the task.</DIV>
-<DIV><BR><BR>&nbsp;</DIV><br><!-- footer --><br><span title=3D"neteasefoote=
-r"/><hr/>
-<a href=3D"http://512.mail.163.com/mailstamp/stamp/dz/activity.do?from=3Dfo=
-oter">=B4=A9=D4=BD=B5=D8=D5=F0=B4=F8 =BC=CD=C4=EE=E3=EB=B4=A8=B5=D8=D5=F0=
-=D2=BB=D6=DC=C4=EA</a>
-</span>
-------=_Part_245322_25644880.1242830688675--
+--=20
+Jon Smirl
+jonsmirl@gmail.com
