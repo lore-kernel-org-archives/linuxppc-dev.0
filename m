@@ -1,19 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id B1C60DE06E
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 15:51:24 +1000 (EST)
-Date: Tue, 19 May 2009 22:51:18 -0700 (PDT)
-Message-Id: <20090519.225118.58497608.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: Musings on PCI busses
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1242788490.16901.133.camel@pasglop>
-References: <fa686aa40905190828x251765dek586f5bf8e73e4cf7@mail.gmail.com>
-	<1242788490.16901.133.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, thunderbird2k@gmail.com, John.Linn@xilinx.com
+Return-Path: <skrishnakar@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <20090519235302.GA6333@yookeroo.seuss>
+References: <6213bc560905190608j73f4191fxbd94158a2b1740c0@mail.gmail.com>
+	<20090519235302.GA6333@yookeroo.seuss>
+Date: Wed, 20 May 2009 11:20:46 +0530
+Message-ID: <6213bc560905192250w4caa84aem9c0dedb2eed72fea@mail.gmail.com>
+Subject: Re: Initialize DBCR0 for PPC440 targets
+From: srikanth krishnakar <skrishnakar@gmail.com>
+To: srikanth krishnakar <skrishnakar@gmail.com>, Linuxppc-dev@ozlabs.org,
+	Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +19,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 20 May 2009 13:01:30 +1000
+Hi David,
 
-> For example, some of the OF parsing bits may fail to convert memory
-> addresses to IO addresses if the PCI host bridges have not been
-> discovered yet, potentially causing issues with matching of resources
-> between the early serial stuff and the generic serial driver (if you
-> use an IO driven UART, the PCI 8250 driver may not properly figure out
-> that what it's finding in its IO BARs is actually the same port as
-> what it gets from the platform code as the later will end up with
-> memory addresses rather than IO ones). That's one example.
+I am not sure how the IDM behaves on few of PPC440 targets which don't
+have boot loaders. I have a reference for your question:
 
-FWIW, I never run into this issue on sparc64 exactly because I
-fully resolve all resources when I populate the OF device tree
-in the kernel.
+http://www.nabble.com/Question-about-DBCR0-initialization-for-440-td2304904=
+4.html
+
+Without this fix (given patch) I am facing problems with GDB, and
+further target hangs while running gdbserver !
+
+Thanks,
+Srikanth
+
+On Wed, May 20, 2009 at 5:23 AM, David Gibson
+<david@gibson.dropbear.id.au> wrote:
+> On Tue, May 19, 2009 at 06:38:53PM +0530, srikanth krishnakar wrote:
+>> Hi,
+>>
+>> kernel- 2.6.29
+>> Debug technique: KGDB
+>>
+>> The PowerPC kernel does not initialize the PPC440 DBCR0 register. This
+>> prevents the use of software breakpoints in case of internal debug
+>> mode. Looking into head_fsl_booke.S for initialization of DBCR0 is
+>> used by boot-loaders.
+>> It seems head_44x.S lacks this step of DBCR0 register initialization.
+>> So fixing this with initializing the DBCR0 register as shown below :
+>>
+>> Subject: [PATCH] powerpc: 44x: Initialize DBCR0 for targets not having
+>> bootloader
+>>
+>> The kernel does not initialize the PPC440 DBCR0 register.
+>> This prevents (among other things) the use of software
+>> breakpoints with GDB. The boot loaders probably do initialize
+>> this but few targets run without a boot loader
+>
+> Um.. how does this prevent the use of software breakpoints with gdb?
+> The trap instructions still work with IDM=3D=3D0.
+>
+> --
+> David Gibson =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| I'll have my music =
+baroque, and my code
+> david AT gibson.dropbear.id.au =A0| minimalist, thank you. =A0NOT _the_ _=
+other_
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| _way_ _a=
+round_!
+> http://www.ozlabs.org/~dgibson
+>
+
+
+
+--=20
+"The Good You Do, The Best You GET"
+
+Regards
+Srikanth Krishnakar
+**********************
