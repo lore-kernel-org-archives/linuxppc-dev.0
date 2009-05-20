@@ -2,23 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6CE31DE10B
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 15:32:02 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 6C017DE128
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 15:33:17 +1000 (EST)
 Subject: Re: Musings on PCI busses
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40905192017r7978fdddq70872dcf86127008@mail.gmail.com>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20090519.120514.26253637.davem@davemloft.net>
 References: <fa686aa40905190828x251765dek586f5bf8e73e4cf7@mail.gmail.com>
-	<20090519162511.7454D17E8058@mail19-dub.bigfish.com>
-	<1242788522.16901.134.camel@pasglop>
-	<fa686aa40905192017r7978fdddq70872dcf86127008@mail.gmail.com>
+	<200905191812.03347.arnd@arndb.de>
+	<20090519.120514.26253637.davem@davemloft.net>
 Content-Type: text/plain
-Date: Wed, 20 May 2009 15:31:44 +1000
-Message-Id: <1242797504.16901.135.camel@pasglop>
+Date: Wed, 20 May 2009 15:33:03 +1000
+Message-Id: <1242797583.16901.136.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Roderick Colenbrander <thunderbird2k@gmail.com>,
-	John Linn <linnj@xilinx.com>
+Cc: linuxppc-dev@ozlabs.org, thunderbird2k@gmail.com, John.Linn@xilinx.com,
+	arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-05-19 at 21:17 -0600, Grant Likely wrote:
-> On Tue, May 19, 2009 at 9:02 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Tue, 2009-05-19 at 09:25 -0700, Stephen Neuendorffer wrote:
-> >
-> >> I agree that something is called for...  The first might be slightly
-> >> simpler, since it would probably transparently deal with the presence
-> >> of more than one PLB->PCI bridge?
-> >
-> > The current code doesn't already ?
+On Tue, 2009-05-19 at 12:05 -0700, David Miller wrote:
 > 
-> Current code doesn't exist in mainline.  :-)
+> This is also what sparc64 does :-)
+> 
+> All of the individual sparc64 PCI controller types have a OF driver
+> and then there is a common layer of OF PCI helper code to do most
+> of the work.
 
-Well, I was thinking about ppc4xx_pci :-)
+I agree it's a good idea in the long run, but on ppc32, I would be a bit
+careful due to the amount of historical crap & early board fixup we have
+that may need working PCI config space accesses and make assumption
+about when PCI is probed.
 
-> And, no, the patch Roderick wrote doesn't handle more than one PHB.
-> No reason it couldn't though.
-
-Right, it shouldn't be hard.
+We could add the necessary bits for ppc32 to be able to "opt-in" the new
+scheme on a per board basis I suppose.
 
 Cheers,
 Ben.
