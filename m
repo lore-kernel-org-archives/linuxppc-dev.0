@@ -1,27 +1,20 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id 11F1CDE1CD
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 03:57:16 +1000 (EST)
-Date: Wed, 20 May 2009 19:57:06 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: mpc5200 fec error
-Message-ID: <20090520175706.GA13287@pengutronix.de>
-References: <20090519205706.GD27476@pengutronix.de>
-	<A88094362DE0AE49A118AB9B4EB3612403F9DEBC@dekaexchange.deka.local>
-	<fa686aa40905191636u6f4a23d0xc8c6c13904a65b8e@mail.gmail.com>
-	<20090520064218.GA29102@pengutronix.de>
-	<A88094362DE0AE49A118AB9B4EB3612403F9DEBE@dekaexchange.deka.local>
-	<9e4733910905200814p63915ff8pf65614dbb8dc9adf@mail.gmail.com>
-	<A88094362DE0AE49A118AB9B4EB3612403F9DEBF@dekaexchange.deka.local>
-	<9e4733910905200829o423bf483h5b0b6dd202367872@mail.gmail.com>
-	<A88094362DE0AE49A118AB9B4EB3612403F9DEC0@dekaexchange.deka.local>
-	<fa686aa40905200949q1fbeee8fy4b3a06d8e44d7c6b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
-In-Reply-To: <fa686aa40905200949q1fbeee8fy4b3a06d8e44d7c6b@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Eric Millbrandt <emillbrandt@dekaresearch.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 562BCDE18A
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 05:24:59 +1000 (EST)
+Date: Wed, 20 May 2009 12:24:53 -0700 (PDT)
+Message-Id: <20090520.122453.169463011.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: Musings on PCI busses
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1242802267.16901.187.camel@pasglop>
+References: <1242788490.16901.133.camel@pasglop>
+	<20090519.225118.58497608.davem@davemloft.net>
+	<1242802267.16901.187.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, thunderbird2k@gmail.com, John.Linn@xilinx.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,51 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 20 May 2009 16:51:07 +1000
 
---qMm9M+Fa2AknHoGS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Tue, 2009-05-19 at 22:51 -0700, David Miller wrote:
+>> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Date: Wed, 20 May 2009 13:01:30 +1000
+>> 
+>> > For example, some of the OF parsing bits may fail to convert memory
+>> > addresses to IO addresses if the PCI host bridges have not been
+>> > discovered yet, potentially causing issues with matching of resources
+>> > between the early serial stuff and the generic serial driver (if you
+>> > use an IO driven UART, the PCI 8250 driver may not properly figure out
+>> > that what it's finding in its IO BARs is actually the same port as
+>> > what it gets from the platform code as the later will end up with
+>> > memory addresses rather than IO ones). That's one example.
+>> 
+>> FWIW, I never run into this issue on sparc64 exactly because I
+>> fully resolve all resources when I populate the OF device tree
+>> in the kernel.
+> 
+> What do you mean by fully resolve ? IE. The issue above is specific to
+> IO space, which you can resolve both as MMIO, or as "IO" which in linux
+> means going through the special mapping for IO which allows the use of
+> the inX/outX instructions...
 
-> Yes, that sounds familiar.  Most likely, the value of the MDIO bus
-> control register got clobbered and not reset when the FEC was reset.
+I mean that all OF devices have fully resolved MMIO resources.  So
+very early serial devices that sit in I/O space on sparc64 end
+up being OF device drivers.  See for example, drivers/net/sunsu.c
+which is simply a 8250 chip that sits behind Sun's I/O space bus
+that sits on PCI and provides things normally found via ISA on
+x86 machines.  Another example is drivers/serial/sunsab.c
 
-I recall that I wondered about the RFIFO-error case back then. The manual s=
-tates
+> One of the issues we may have here on powerpc is that our very early
+> probe of serial ports (so we get some debug output early) may get to
+> those resources while the serial driver later sees the actual
+> IORESOURCE_IO resources coming from the PCI probe, and is unable to
+> figure that they are the same things.
 
-=3D=3D=3D
+I would make these device drivers OF device drivers.
 
-Receive FIFO Error - indicates error occurred within the RX FIFO. When
-RFIFO_ERROR bit is set, ECNTRL.ETHER_EN is cleared, halting FEC frame
-processing. When this occurs, software must ensure both the FIFO Controller=
- and
-BestComm are soft-reset.
+Another option is to make use of the "address" property if present.
+You can bypass all of the hassle of figuring out what the 'reg'
+property resolves to by using that and if the device is the
+console it is pretty reliable to expect OF to provide that "address"
+property.
 
-=3D=3D=3D
-
-It does not say that the whole FEC needs to be reset. (BTW doing a full FEC
-reset in IRQ context caused OOPSes back then, have to dig up details, as it
-doesn't seem to happen here...)
-
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---qMm9M+Fa2AknHoGS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoURHIACgkQD27XaX1/VRvuDgCfY1rGjwYw4NxYhpbVtMLg6ND+
-PDMAoIKI/Px7jxOHNPp0m+FIju0KGtWe
-=U7x7
------END PGP SIGNATURE-----
-
---qMm9M+Fa2AknHoGS--
+Of course this doesn't work well for non-console devices.
