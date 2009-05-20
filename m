@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6C017DE128
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 15:33:17 +1000 (EST)
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id B1C60DE06E
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 15:51:24 +1000 (EST)
+Date: Tue, 19 May 2009 22:51:18 -0700 (PDT)
+Message-Id: <20090519.225118.58497608.davem@davemloft.net>
+To: benh@kernel.crashing.org
 Subject: Re: Musings on PCI busses
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20090519.120514.26253637.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1242788490.16901.133.camel@pasglop>
 References: <fa686aa40905190828x251765dek586f5bf8e73e4cf7@mail.gmail.com>
-	<200905191812.03347.arnd@arndb.de>
-	<20090519.120514.26253637.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 20 May 2009 15:33:03 +1000
-Message-Id: <1242797583.16901.136.camel@pasglop>
+	<1242788490.16901.133.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, thunderbird2k@gmail.com, John.Linn@xilinx.com,
-	arnd@arndb.de
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, thunderbird2k@gmail.com, John.Linn@xilinx.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2009-05-19 at 12:05 -0700, David Miller wrote:
-> 
-> This is also what sparc64 does :-)
-> 
-> All of the individual sparc64 PCI controller types have a OF driver
-> and then there is a common layer of OF PCI helper code to do most
-> of the work.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 20 May 2009 13:01:30 +1000
 
-I agree it's a good idea in the long run, but on ppc32, I would be a bit
-careful due to the amount of historical crap & early board fixup we have
-that may need working PCI config space accesses and make assumption
-about when PCI is probed.
+> For example, some of the OF parsing bits may fail to convert memory
+> addresses to IO addresses if the PCI host bridges have not been
+> discovered yet, potentially causing issues with matching of resources
+> between the early serial stuff and the generic serial driver (if you
+> use an IO driven UART, the PCI 8250 driver may not properly figure out
+> that what it's finding in its IO BARs is actually the same port as
+> what it gets from the platform code as the later will end up with
+> memory addresses rather than IO ones). That's one example.
 
-We could add the necessary bits for ppc32 to be able to "opt-in" the new
-scheme on a per board basis I suppose.
-
-Cheers,
-Ben.
+FWIW, I never run into this issue on sparc64 exactly because I
+fully resolve all resources when I populate the OF device tree
+in the kernel.
