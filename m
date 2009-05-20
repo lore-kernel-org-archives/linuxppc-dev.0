@@ -1,25 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C5B59DE0D8
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 00:48:20 +1000 (EST)
-Message-ID: <4A141810.4020104@freescale.com>
-Date: Wed, 20 May 2009 09:47:44 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
+	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id 5920EDE14D
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 01:14:48 +1000 (EST)
+Received: by qyk34 with SMTP id 34so891378qyk.17
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2009 08:14:47 -0700 (PDT)
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash size
-References: <1242155174-2513-1-git-send-email-wd@denx.de>
-	<2a27d3730905130328m27743852w2d68a62ebc32ce31@mail.gmail.com>
-	<20090513194249.BA7D9832E416@gemini.denx.de>
-	<156C2E1E-8E67-4358-B72E-4BB67D79C2AF@kernel.crashing.org>
-In-Reply-To: <156C2E1E-8E67-4358-B72E-4BB67D79C2AF@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Li Yang <leoli@freescale.com>,
-	Wolfgang Denk <wd@denx.de>, LKML List <linux-kernel@vger.kernel.org>
+In-Reply-To: <A88094362DE0AE49A118AB9B4EB3612403F9DEBE@dekaexchange.deka.local>
+References: <A88094362DE0AE49A118AB9B4EB3612403F9DEB6@dekaexchange.deka.local>
+	<20090519203645.GW19843@pengutronix.de>
+	<20090519205706.GD27476@pengutronix.de>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBC@dekaexchange.deka.local>
+	<fa686aa40905191636u6f4a23d0xc8c6c13904a65b8e@mail.gmail.com>
+	<20090520064218.GA29102@pengutronix.de>
+	<A88094362DE0AE49A118AB9B4EB3612403F9DEBE@dekaexchange.deka.local>
+Date: Wed, 20 May 2009 11:14:46 -0400
+Message-ID: <9e4733910905200814p63915ff8pf65614dbb8dc9adf@mail.gmail.com>
+Subject: Re: mpc5200 fec error
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,14 +29,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Scott, any feedback if our boards have 8M or 32M flash modules?
+On Wed, May 20, 2009 at 9:42 AM, Eric Millbrandt
+<emillbrandt@dekaresearch.com> wrote:
+>> > I am able to reproduce the error using 2.6.29.2-rt11. =A0I was able to
+>> > mitigate the problem by raising the priority of the transmit irq.
+>> > However when running an NFS server on the pcm030 under high cpu load I
+>> > now get
+>> >
+>> > [ =A0132.477503] net eth0: FEC_IEVENT_RFIFO_ERROR
+>> > [ =A0132.892329] net eth0: FEC_IEVENT_RFIFO_ERROR
+>> > [ =A0133.884109] net eth0: FEC_IEVENT_RFIFO_ERROR
+>> > [ =A0134.876059] net eth0: FEC_IEVENT_RFIFO_ERROR
+>> >
+>> > Raising the priority of the rx irq does not seem to fix this problem
+>> > though.
+>>
+>> Hi Eric,
+>>
+>> This error has been seen before in non-rt kernels. =A0I haven't had the
+>> chance to track it down and kill it yet. =A0I believe there are locking
+>> issues associated with it.
+>
+> Uuuh, I recall this message. Kept me busy for some time :(
+>
+> You might try this patch which helped in our situation.
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> Subject: Enable XLB pipelining for MPC5200B
+> From: Wolfram Sang <w.sang@pengutronix.de>
+>
+> Enable pipelining as it helps getting rid of FEC problems.
+> Not intended for upstream, this must be dealt differently there.
+>
+> This patch is disabled by default. The bootloader should enable this feat=
+ure.
+> So, this patch is only intended to be used where the bootloader does it i=
+n a
+> wrong manner and can't be replaced.
+>
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Acked-by: Juergen Beisert <j.beisert@pengutronix.de>
+>
+> ---
+> =A0arch/powerpc/platforms/52xx/mpc52xx_common.c | =A0 =A07 +++++++
+> =A01 file changed, 7 insertions(+)
+>
+> Index: arch/powerpc/platforms/52xx/mpc52xx_common.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- arch/powerpc/platforms/52xx/mpc52xx_common.c.orig
+> +++ arch/powerpc/platforms/52xx/mpc52xx_common.c
+> @@ -107,6 +107,13 @@ mpc5200_setup_xlb_arbiter(void)
+> =A0 =A0 =A0 =A0 */
+> =A0 =A0 =A0 =A0if ((mfspr(SPRN_SVR) & MPC5200_SVR_MASK) =3D=3D MPC5200_SV=
+R)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0out_be32(&xlb->config, in_be32(&xlb->confi=
+g) | MPC52xx_XLB_CFG_PLDIS);
+> +#if 0
+> + =A0 =A0 =A0 /*
+> + =A0 =A0 =A0 =A0* Enable pipelining, fixes FEC problems. The previous wo=
+rkaround is not
+> + =A0 =A0 =A0 =A0* needed, as we have an MPC5200B (not A).
+> + =A0 =A0 =A0 =A0*/
+> + =A0 =A0 =A0 out_be32(&xlb->config, in_be32(&xlb->config) & ~MPC52xx_XLB=
+_CFG_PLDIS);
+> +#endif
+>
+> =A0 =A0 =A0 =A0iounmap(xlb);
+> =A0}
+>
+> --
+> Pengutronix e.K. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | Wo=
+lfram Sang =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0|
+> Industrial Linux Solutions =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | http://www.p=
+engutronix.de/ =A0|
+>
+> Wolfram,
+>
+> Thanks, but no luck with this patch. =A0It was already setup correctly by=
+ U-Boot.
 
-According to the manual, it comes with 8 but can be expanded to 32.  I 
-don't think we swapped out the flash SIMM that came with the board.
 
-As I wrote earlier in the thread, I don't see any way a current u-boot 
-would enable more than 8MiB of flash on this board anyway.  I'd go ahead 
-and apply the patch.
+I don't see where this gets enabled in the u-boot source. Have you
+added it locally?
 
--Scott
+These are the only two I see:
+cpu/mpc5xxx/cpu_init.c:	*(vu_long *)(MPC5XXX_XLBARB + 0x40) |=3D (1 << 13);
+cpu/mpc5xxx/cpu_init.c:	*(vu_long *)(MPC5XXX_XLBARB + 0x40) |=3D (1 << 15);
+
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
