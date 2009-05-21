@@ -1,22 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f172.google.com (mail-gx0-f172.google.com
-	[209.85.217.172]) by ozlabs.org (Postfix) with ESMTP id 9884DDE1D6
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 05:58:30 +1000 (EST)
-Received: by gxk20 with SMTP id 20so2218675gxk.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 12:58:26 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090521165008.A020D710053@mail54-sin.bigfish.com>
-References: <20090521162202.10880.34056.stgit@localhost.localdomain>
-	<20090521162434.10880.62883.stgit@localhost.localdomain>
-	<20090521165008.A020D710053@mail54-sin.bigfish.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 21 May 2009 13:58:01 -0600
-Message-ID: <fa686aa40905211258j1e99734dmc1c0bf2bed0c01b7@mail.gmail.com>
-Subject: Re: [PATCH v4 3/3] powerpc/virtex: Add Xilinx ML510 reference
-	designsupport
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Roderick Colenbrander <thunderbird2k@gmail.com>
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
+	[66.63.167.143]) by ozlabs.org (Postfix) with ESMTP id 9EBD5DDFDF
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 06:01:39 +1000 (EST)
+Subject: Re: ipr boot failure caused by MSI (2.6.30-rc1+)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Brian King <brking@linux.vnet.ibm.com>
+In-Reply-To: <4A15A1B2.8060609@linux.vnet.ibm.com>
+References: <1242926159.3007.5.camel@localhost.localdomain>
+	<4A15A1B2.8060609@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 21 May 2009 14:51:55 -0500
+Message-Id: <1242935515.3007.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Wayne Boyer <wayneb@linux.vnet.ibm.com>,
+	linux-scsi <linux-scsi@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,91 +23,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 21, 2009 at 10:50 AM, Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com> wrote:
->> diff --git a/arch/powerpc/platforms/44x/Kconfig
-> b/arch/powerpc/platforms/44x/Kconfig
->> index 0d83a6a..af1c51d 100644
->> --- a/arch/powerpc/platforms/44x/Kconfig
->> +++ b/arch/powerpc/platforms/44x/Kconfig
->> @@ -156,7 +156,7 @@ config YOSEMITE
->> =A0# =A0 =A0 =A0This option enables support for the IBM PPC440GX evaluat=
-ion
-> board.
->>
->> =A0config XILINX_VIRTEX440_GENERIC_BOARD
->> - =A0 =A0 bool "Generic Xilinx Virtex 440 board"
->> + =A0 =A0 bool "Xilinx Virtex 5 support"
->
-> 'Virtex 5' is a little ambiguous.. =A0I'd suggest keeping the old wording=
-,
-> or saying 'Virtex 5 FXT support'. =A0Even then it's somewhat ambiguous,
-> since you could conceivably run linux on microblaze on V5FXT and use the
-> powerpc for something else..
+On Thu, 2009-05-21 at 13:47 -0500, Brian King wrote:
+> cc'ing linuxppc-dev...
+> 
+> -Brian
+> 
+> 
+> James Bottomley wrote:
+> > Kernels after 2.6.30-rc1 stopped booting on my powerstation.  The ipr
+> > just times out and refuses to probe devices.  If I let it drop into the
+> > initramfs system, this is what the interrupts shows:
+> > 
+> > (initramfs) cat /proc/interrupts 
+> >            CPU0       CPU1       CPU2       CPU3       
+> >  16:         20         10         13         11   MPIC      Level     pata_amd
+> >  20:          0          0          0          0   MPIC      Level     ohci_hcd:usb1, ohci_hcd:usb2
+> >  21:          0          0          0          0  MPIC-U3MSI Edge      ipr
+> >  68:         37         37         48         37   MPIC      Edge      serial
+> > 251:         10         71         69         72   MPIC      Edge      ipi call function
+> > 252:       1555       1779       1372       1155   MPIC      Edge      ipi reschedule
+> > 253:          0          0          0          0   MPIC      Edge      ipi call function single
+> > 254:          0          0          0          0   MPIC      Edge      ipi debugger
+> > BAD:        416
+> > 
+> > So you see the IPR is the only device not receiving them.
+> > 
+> > I can fix the boot hang by reverting
+> > 
+> > commit 5a9ef25b14d39b8413364df12cb8d9bb7a673a32
+> > Author: Wayne Boyer <wayneb@linux.vnet.ibm.com>
+> > Date:   Fri Jan 23 09:17:35 2009 -0800
+> > 
+> >     [SCSI] ipr: add MSI support
+> > 
+> > The system in question is:
+> > 
+> > SYSTEM INFORMATION
+> >  Processor  = PowerPC,970MP @ 2500 MHz
+> >  I/O Bridge = U4 (4.4)
+> >  SMP Size   = 4 (#0 #1 #2 #3)
+> >  Boot-Date  = 2009-04-21 17:13:36
+> >  Memory     = 2 GB of RAM @ 666 MHz
+> >  Board Type = Bimini (7047191/0000000/1)
+> >  MFG Date   = 1608
+> >  Part No.   = 10N8748     
+> >  FRU No.    = 10N7182     
+> >  FRU Serial = YL30W8106038
+> >  UUID       = 00000000000000000000000000000000
+> >  Flashside  = 1 (temporary)
+> >  Version    = HEAD
+> >  Build Date = 12-04-2008 16:13
 
-Considering that this option only appears when AMCC 44x is selected, I
-think the ambiguity is minimal.  :-)
-I'll add the FXT though.
+OK, so as an update, I booted to the initrd and inserted the network
+modules, which are also MSI enabled and this is what I get:
 
->> diff --git a/arch/powerpc/platforms/44x/virtex_ml510.c
-> b/arch/powerpc/platforms/44x/virtex_ml510.c
->> new file mode 100644
->> index 0000000..ba4a6e3
->> --- /dev/null
->> +++ b/arch/powerpc/platforms/44x/virtex_ml510.c
->> @@ -0,0 +1,29 @@
->> +#include <asm/i8259.h>
->> +#include <linux/pci.h>
->> +#include "44x.h"
->> +
->> +/**
->> + * ml510_ail_quirk
->
-> Tpyo, but is the comment even necessary if it doesn't say anything
-> useful?
+(initramfs) cat /proc/interrupts 
+           CPU0       CPU1       CPU2       CPU3       
+ 16:         14         11         11         18   MPIC      Level     pata_amd
+ 20:          0          0          0          0   MPIC      Level     ohci_hcd:usb1, ohci_hcd:usb2
+ 21:          0          0          0          0  MPIC-U3MSI Edge      ipr
+ 22:          1          0          1          0  MPIC-U3MSI Edge      eth0
+ 23:          0          2          1          0  MPIC-U3MSI Edge      eth1
+ 68:        193        166        113        177   MPIC      Edge      serial
+251:         16         65         71         70   MPIC      Edge      ipi call function
+252:       1574       1804       1346       1289   MPIC      Edge      ipi reschedule
+253:          0          0          0          0   MPIC      Edge      ipi call function single
+254:          0          0          0          0   MPIC      Edge      ipi debugger
+BAD:       1866
 
-Oops; I started writing a comment and then never completed it.
-Roderick; care to contribute some lines as to the purpose of this
-block?
+So clearly the MSI interrupts to the network cards are working and it
+looks like just a local problem with the ipr rather than a platform
+problem with MSI.
 
->> diff --git a/arch/powerpc/sysdev/xilinx_intc.c
-> b/arch/powerpc/sysdev/xilinx_intc.c
->> index 90b5772..3ee1fd3 100644
->> --- a/arch/powerpc/sysdev/xilinx_intc.c
->> +++ b/arch/powerpc/sysdev/xilinx_intc.c
->> @@ -257,6 +257,11 @@ static void __init
-> xilinx_i8259_setup_cascade(void)
->> =A0 =A0 =A0 i8259_init(cascade_node, 0);
->> =A0 =A0 =A0 set_irq_chained_handler(cascade_irq, xilinx_i8259_cascade);
->>
->> + =A0 =A0 /* Program irq 7 (usb/audio), 14/15 (ide) to level sensitive *=
-/
->> + =A0 =A0 /* This looks like a dirty hack to me --gcl */
->> + =A0 =A0 outb(0xc0, 0x4d0);
->> + =A0 =A0 outb(0xc0, 0x4d1);
->> +
->
-> Yeow... I agree about the dirty hack part... =A0shouldn't this be in the
-> device tree somewhere, or in the ali driver?
-
-Chatting with Roderick on IRC today, it may be that these two lines
-aren't even necessary.  They come from an old guide for porting Linux
-to the ml410 in the pre-arch/powerpc days.  Now that IRQ sense is
-encoded into the device tree, this probably isn't needed.
-
-> I'm curious if this works on ml410 as well.. =A0(Yes, I know, does this
-> really matter much? =A0But there are still a bunch of them floating aroun=
-d
-> in universities.)
-
-It should do (at least I hope it does).  If I get my hands on an
-ML410, then I'll try it out.
-
-> =A0It may be nice to factor this out so ml410/ppc405 and
-> microblaze can get it as well.
-
-indeed.
-
---
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+James
