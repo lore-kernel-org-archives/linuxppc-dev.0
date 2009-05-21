@@ -1,19 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 5A8B3DE0E1
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 18:06:47 +1000 (EST)
-Date: Thu, 21 May 2009 18:06:40 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: next branch update
-Message-Id: <20090521180640.fc18005b.sfr@canb.auug.org.au>
-In-Reply-To: <1242890760.5109.1.camel@pasglop>
-References: <1242890760.5109.1.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__21_May_2009_18_06_40_+1000_M8l.zILcSTppnsAK"
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <kosmo@semihalf.com>
+Received: from semihalf.com (semihalf.com [206.130.101.55])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8FCBFDE18A
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 18:36:01 +1000 (EST)
+From: Piotr =?iso-8859-2?q?Zi=EAcik?= <kosmo@semihalf.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
+Date: Thu, 21 May 2009 10:34:39 +0200
+References: <1241640919-4650-1-git-send-email-wd@denx.de>
+	<200905141438.23348.kosmo@semihalf.com>
+	<fa686aa40905140700k3ca28ac0m74c9c161ad538abc@mail.gmail.com>
+In-Reply-To: <fa686aa40905140700k3ca28ac0m74c9c161ad538abc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Message-Id: <200905211034.39762.kosmo@semihalf.com>
+Cc: Becky Bruce <Becky.Bruce@freescale.com>, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>, John Rigby <jrigby@gmail.com>,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__21_May_2009_18_06_40_+1000_M8l.zILcSTppnsAK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Ben,
-
-On Thu, 21 May 2009 17:26:00 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
+Thursday 14 May 2009 16:00:33 Grant Likely wrote:
+> > MPC5121 support was added to drivers/net/fs_enet. MPC52xx uses
+> > drivers/net/fec_mpc52xx.c. Do you think that creating one universal
+> > driver from these two is now possible? You said that it should be easy,
+> > however you also said that cache coherency issues makes this imposible.
 >
-> I updated my "next" branch with the following patches. If something
-> older than a week old is missing (and not already delegated to a
-> maintainer on patchwork) please let me know.
+> Not impossible.  Hard.
 
-Not older than a week, but trivial and has nowhere else to go:
-http://patchwork.ozlabs.org/patch/27437/
+I thought a bit more about merging FEC drivers and I see one problem more.
+Driver fs_enet works with FEC's with own DMA engine and fec_mpc52xx.c uses 
+BestComm. Integration of these two drivers will need a DMA abstraction layer 
+to keep everything clean. Unfortuanetly BestComm driver does not provide any 
+abstraction - it only exports set of functions to deal with specific 
+hardware: FEC and PATA.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+More #ifdef's will be needed to remove linking with BestComm driver if kernel 
+will be compiled without 52xx support and resulting code will not be much 
+better than existing one. Especially that new DMA abstraction layer probably 
+will be quite complex.
 
---Signature=_Thu__21_May_2009_18_06_40_+1000_M8l.zILcSTppnsAK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoVC5AACgkQjjKRsyhoI8wkgACeNGJuNQdQK/+Z7tb7VeSTMVaV
-vVgAn2lViyCyG6lOaqrh++GyZKY1R2I4
-=8vn5
------END PGP SIGNATURE-----
-
---Signature=_Thu__21_May_2009_18_06_40_+1000_M8l.zILcSTppnsAK--
+-- 
+Best Regards.
+Piotr Ziecik
