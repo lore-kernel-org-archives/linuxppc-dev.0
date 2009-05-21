@@ -1,26 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 373E0DE1E8
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 03:59:17 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so626858ywt.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 10:59:16 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <38563D01-3F19-480A-AC65-743A0A2318BE@kernel.crashing.org>
-References: <1242806865-2334-1-git-send-email-w.sang@pengutronix.de>
-	<9e4733910905200817w20a812bcy14481255fefd011f@mail.gmail.com>
-	<20090520155346.GG29102@pengutronix.de>
-	<9e4733910905200910r5342c087pa4ebc579b37c8671@mail.gmail.com>
-	<20090520161511.GH29102@pengutronix.de>
-	<fa686aa40905200925o763179c7r27c12f7659560807@mail.gmail.com>
-	<fa686aa40905200936o63f47937rda28126ce0f46aad@mail.gmail.com>
-	<38563D01-3F19-480A-AC65-743A0A2318BE@kernel.crashing.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 21 May 2009 11:58:56 -0600
-Message-ID: <fa686aa40905211058h76dfea91sbccf2903b9218c49@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/pcm030.dts: add i2c eeprom and delete cruft
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5651FDE18B
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 04:28:04 +1000 (EST)
+Message-Id: <E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <4A1592CF.8000208@goop.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
+Date: Thu, 21 May 2009 13:27:36 -0500
+References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
+	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
+	<20090519142656T.fujita.tomonori@lab.ntt.co.jp>
+	<19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
+	<4A1592CF.8000208@goop.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, Ian Campbell <Ian.Campbell@citrix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,21 +28,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 21, 2009 at 11:43 AM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->> However, on the other point, Jon is correct. =A0The first value in the
->> list should be "atmel,24c32", not "at24,24c32".
+
+On May 21, 2009, at 12:43 PM, Jeremy Fitzhardinge wrote:
+
+> Becky Bruce wrote:
+>>>
+>>>
+>>> If we have something like in arch/{x86|ia64|powerpc}/dma-mapping.h:
+>>>
+>>> static inline int is_buffer_dma_capable(struct device *dev,  
+>>> dma_addr_t addr, size_t size)
+>>>
+>>> then we don't need two checking functions, address_needs_mapping and
+>>> range_needs_mapping.
+>>
+>> It's never been clear to me *why* we had both in the first place -  
+>> if you can explain this, I'd be grateful :)
 >
-> Yeah. =A0So perhaps "atmel,24c32","24c32" ? =A0I'm not terribly happy
-> with that last name, but these devices are _very_ common.
+> I was about to ask the same thing.  It seems that  
+> range_needs_mapping should be able to do both jobs.
+>
+> I think range_needs_mapping came from the Xen swiotlb changes, and  
+> address_needs_mapping came from your powerpc changes.   Many of the  
+> changes were exact overlaps; I think this was one of the few  
+> instances where there was a difference.
 
-I don't think the last name is necessary at all.  I'd leave it at
-"atmel,24c32".  non-atmel parts can claim compatibility with the atmel
-version if really necessary.  I don't like the 'generic' version
-either.
+I think address_needs_mapping was already there and I added the  
+ability for an arch to provide its own version.  Ian added  
+range_needs_mapping in commit b81ea27b2329bf44b.   At the time, it  
+took a virtual address as its argument, so we couldn't use it for  
+highmem.  That's since been changed to phys_addr_t, so I think we  
+should be able to merge the two.
 
-g.
+>
+> We need a range check in Xen (rather than iterating over individual  
+> pages) because we want to check that the underlying pages are  
+> machine contiguous, but I think that's also sufficient to do  
+> whatever checks you need to do.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Yes.
+
+>
+> The other difference is that is_buffer_dma_capable operates on a  
+> dma_addr_t, which presumes that you can generate a dma address and  
+> then test for its validity.  For Xen, it doesn't make much sense to  
+> talk about the dma_addr_t for memory which isn't actually dma- 
+> capable; we need the test to be in terms of phys_addr_t.  Given that  
+> the two functions are always called from the same place, that  
+> doesn't seem to pose a problem.
+>
+> So I think the unified function would be something like:
+>
+>   int range_needs_mapping(struct device *hwdev, phys_addr_t addr,
+>   size_t size);
+>
+> which would be defined somewhere under asm/*.h.  Would that work for  
+> powerpc?
+
+I can work with that, but it's going to be a bit inefficient, as I  
+actually need the dma_addr_t, not the phys_addr_t, so I'll have to  
+convert.  In every case, this is a conversion I've already done and  
+that I need in the calling code as well.  Can we pass in both the  
+phys_addr_t and the dma_addr_t?  We have both in every case but one,  
+which is in swiotlb_map_page where we call address_needs_mapping()  
+without calling range_needs_mapping.  It's not actually clear to me  
+that we need that check, though.  Can someone explain what case that  
+was designed to catch?
+
+Cheers,
+Becky
