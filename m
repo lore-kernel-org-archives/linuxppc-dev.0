@@ -1,23 +1,19 @@
-Return-Path: <jeremy@goop.org>
-Received: from claw.goop.org (claw.goop.org [74.207.240.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AE4C9DE1CE
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 03:52:48 +1000 (EST)
-Message-ID: <4A1592CF.8000208@goop.org>
-Date: Thu, 21 May 2009 10:43:43 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+Return-Path: <thunderbird2k@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.26])
+	by ozlabs.org (Postfix) with ESMTP id 5D34ADE0C4
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 03:56:15 +1000 (EST)
+Received: by ey-out-2122.google.com with SMTP id 9so284487eyd.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 10:56:12 -0700 (PDT)
 MIME-Version: 1.0
-To: Becky Bruce <beckyb@kernel.crashing.org>
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>
-	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>
-	<20090519142656T.fujita.tomonori@lab.ntt.co.jp>
-	<19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
-In-Reply-To: <19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, Ian Campbell <Ian.Campbell@citrix.com>
+In-Reply-To: <20090521162202.10880.34056.stgit@localhost.localdomain>
+References: <20090521162202.10880.34056.stgit@localhost.localdomain>
+Date: Thu, 21 May 2009 19:56:12 +0200
+Message-ID: <c8485d470905211056j590d10a4ob9d5d369744c1ff5@mail.gmail.com>
+Subject: Re: [PATCH v4 0/3] Add support for ML510 board
+From: Roderick Colenbrander <thunderbird2k@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,47 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Becky Bruce wrote:
->>
->>
->> If we have something like in arch/{x86|ia64|powerpc}/dma-mapping.h:
->>
->> static inline int is_buffer_dma_capable(struct device *dev, 
->> dma_addr_t addr, size_t size)
->>
->> then we don't need two checking functions, address_needs_mapping and
->> range_needs_mapping.
+On Thu, May 21, 2009 at 6:24 PM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
+> Heck, I don't know if this stuff even works, but I've refactored
+> Roderick's patches into something closer to the structure that I'd like
+> to see. =A0There are still a few things that bother me, but I think it
+> is mostly there.
 >
-> It's never been clear to me *why* we had both in the first place - if 
-> you can explain this, I'd be grateful :)
+> It at least boots on an ML507 board.
+>
+> Roderick, can you please take a look?
+>
+> Thanks,
+> g.
+>
+> --
+> Grant Likely, B.Sc. P.Eng.
+> Secret Lab Technologies Ltd.
+>
 
-I was about to ask the same thing.  It seems that range_needs_mapping 
-should be able to do both jobs.
+>From a quick glance it looks good. I will test it on monday.
 
-I think range_needs_mapping came from the Xen swiotlb changes, and 
-address_needs_mapping came from your powerpc changes.   Many of the 
-changes were exact overlaps; I think this was one of the few instances 
-where there was a difference.
-
-We need a range check in Xen (rather than iterating over individual 
-pages) because we want to check that the underlying pages are machine 
-contiguous, but I think that's also sufficient to do whatever checks you 
-need to do.
-
-The other difference is that is_buffer_dma_capable operates on a 
-dma_addr_t, which presumes that you can generate a dma address and then 
-test for its validity.  For Xen, it doesn't make much sense to talk 
-about the dma_addr_t for memory which isn't actually dma-capable; we 
-need the test to be in terms of phys_addr_t.  Given that the two 
-functions are always called from the same place, that doesn't seem to 
-pose a problem.
-
-So I think the unified function would be something like:
-
-    int range_needs_mapping(struct device *hwdev, phys_addr_t addr,
-    size_t size);
-
-which would be defined somewhere under asm/*.h.  Would that work for 
-powerpc?
-
-    J
+Roderick
