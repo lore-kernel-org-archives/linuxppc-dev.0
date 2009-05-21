@@ -1,32 +1,12 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B6D66DE19B
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 04:47:20 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.1/8.13.1) with ESMTP id n4LIhJjW014343
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 14:43:19 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
-	n4LIlFbv243860
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 14:47:15 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	n4LIlF7M008518
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 14:47:15 -0400
-Message-ID: <4A15A1B2.8060609@linux.vnet.ibm.com>
-Date: Thu, 21 May 2009 13:47:14 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <jonsmirl@gmail.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: ipr boot failure caused by MSI (2.6.30-rc1+)
-References: <1242926159.3007.5.camel@localhost.localdomain>
-In-Reply-To: <1242926159.3007.5.camel@localhost.localdomain>
+Date: Thu, 21 May 2009 14:52:32 -0400
+Message-ID: <9e4733910905211152x6ded5c9tadc085bc4bc800e3@mail.gmail.com>
+Subject: Audio and mpc5200 bestcomm tasks
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>,
+	linuxppc-dev <Linuxppc-dev@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Brian King <brking@linux.vnet.ibm.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
-	Wayne Boyer <wayneb@linux.vnet.ibm.com>,
-	linux-scsi <linux-scsi@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,66 +16,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-cc'ing linuxppc-dev...
+ALSA really wants to dynamically know the address of the current DMA
+location while transfers are active. This is an important piece of
+implementing pause/resume. Pause doesn't work too well if there is 2s
+of music already queued. The work around is to know the sample rate
+and use the jiffy count to estimate how far into the buffer DMA has
+progressed. But that's not as accurate as just asking the DMA
+hardware.
 
--Brian
-
-
-James Bottomley wrote:
-> Kernels after 2.6.30-rc1 stopped booting on my powerstation.  The ipr
-> just times out and refuses to probe devices.  If I let it drop into the
-> initramfs system, this is what the interrupts shows:
-> 
-> (initramfs) cat /proc/interrupts 
->            CPU0       CPU1       CPU2       CPU3       
->  16:         20         10         13         11   MPIC      Level     pata_amd
->  20:          0          0          0          0   MPIC      Level     ohci_hcd:usb1, ohci_hcd:usb2
->  21:          0          0          0          0  MPIC-U3MSI Edge      ipr
->  68:         37         37         48         37   MPIC      Edge      serial
-> 251:         10         71         69         72   MPIC      Edge      ipi call function
-> 252:       1555       1779       1372       1155   MPIC      Edge      ipi reschedule
-> 253:          0          0          0          0   MPIC      Edge      ipi call function single
-> 254:          0          0          0          0   MPIC      Edge      ipi debugger
-> BAD:        416
-> 
-> So you see the IPR is the only device not receiving them.
-> 
-> I can fix the boot hang by reverting
-> 
-> commit 5a9ef25b14d39b8413364df12cb8d9bb7a673a32
-> Author: Wayne Boyer <wayneb@linux.vnet.ibm.com>
-> Date:   Fri Jan 23 09:17:35 2009 -0800
-> 
->     [SCSI] ipr: add MSI support
-> 
-> The system in question is:
-> 
-> SYSTEM INFORMATION
->  Processor  = PowerPC,970MP @ 2500 MHz
->  I/O Bridge = U4 (4.4)
->  SMP Size   = 4 (#0 #1 #2 #3)
->  Boot-Date  = 2009-04-21 17:13:36
->  Memory     = 2 GB of RAM @ 666 MHz
->  Board Type = Bimini (7047191/0000000/1)
->  MFG Date   = 1608
->  Part No.   = 10N8748     
->  FRU No.    = 10N7182     
->  FRU Serial = YL30W8106038
->  UUID       = 00000000000000000000000000000000
->  Flashside  = 1 (temporary)
->  Version    = HEAD
->  Build Date = 12-04-2008 16:13
-> 
-> James
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+I poked around in the SRAM data and couldn't find the address. Is it
+there or can the Bestcomm tasks be modified to leave it somewhere
+visible?
 
 -- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+Jon Smirl
+jonsmirl@gmail.com
