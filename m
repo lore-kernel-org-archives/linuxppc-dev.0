@@ -1,16 +1,16 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-pz0-f125.google.com (mail-pz0-f125.google.com
-	[209.85.222.125]) by ozlabs.org (Postfix) with ESMTP id 1F86EDE1C9
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 02:30:09 +1000 (EST)
-Received: by pzk31 with SMTP id 31so1466832pzk.17
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 09:30:08 -0700 (PDT)
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
+	by ozlabs.org (Postfix) with ESMTP id CB491DE064
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 02:31:27 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id j37so285805waf.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 09:31:26 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v4 2/3] powerpc/virtex: refactor intc driver and add support
-	for i8259 cascading
+Subject: [PATCH v4 3/3] powerpc/virtex: Add Xilinx ML510 reference design
+	support
 To: linuxppc-dev@ozlabs.org, Roderick Colenbrander <thunderbird2k@gmail.com>
-Date: Thu, 21 May 2009 10:24:29 -0600
-Message-ID: <20090521162429.10880.31243.stgit@localhost.localdomain>
+Date: Thu, 21 May 2009 10:24:34 -0600
+Message-ID: <20090521162434.10880.62883.stgit@localhost.localdomain>
 In-Reply-To: <20090521162202.10880.34056.stgit@localhost.localdomain>
 References: <20090521162202.10880.34056.stgit@localhost.localdomain>
 MIME-Version: 1.0
@@ -24,144 +24,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+From: Roderick Colenbrander <thunderbird2k@gmail.com>
 
-This patch refactors some of the xilinx_intc interrupt controller driver
-and adds support for cascading an i8259 off one of the irq lines.
-
-This patch was based on the ML510 support work done by Roderick
-Colenbrander.
-
+Signed-off-by: Roderick Colenbrander <thunderbird2k@gmail.com>
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/powerpc/sysdev/xilinx_intc.c |   76 ++++++++++++++++++++++++++++---------
- 1 files changed, 58 insertions(+), 18 deletions(-)
+ arch/powerpc/platforms/44x/Kconfig        |   10 +++++++++-
+ arch/powerpc/platforms/44x/Makefile       |    1 +
+ arch/powerpc/platforms/44x/virtex_ml510.c |   29 +++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/xilinx_intc.c         |    5 +++++
+ 4 files changed, 44 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/platforms/44x/virtex_ml510.c
 
 
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 0d83a6a..af1c51d 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -156,7 +156,7 @@ config YOSEMITE
+ #	  This option enables support for the IBM PPC440GX evaluation board.
+ 
+ config XILINX_VIRTEX440_GENERIC_BOARD
+-	bool "Generic Xilinx Virtex 440 board"
++	bool "Xilinx Virtex 5 support"
+ 	depends on 44x
+ 	default n
+ 	select XILINX_VIRTEX_5_FXT
+@@ -171,6 +171,14 @@ config XILINX_VIRTEX440_GENERIC_BOARD
+ 	  Most Virtex 5 designs should use this unless it needs to do some
+ 	  special configuration at board probe time.
+ 
++config XILINX_ML510
++	bool "Xilinx ML510 board support"
++	depends on XILINX_VIRTEX440_GENERIC_BOARD
++	select PPC_PCI_CHOICE
++	select XILINX_PCI if PCI
++	select PPC_INDIRECT_PCI if PCI
++	select PPC_I8259 if PCI
++
+ config PPC44x_SIMPLE
+ 	bool "Simple PowerPC 44x board support"
+ 	depends on 44x
+diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+index 01f51da..ee6185a 100644
+--- a/arch/powerpc/platforms/44x/Makefile
++++ b/arch/powerpc/platforms/44x/Makefile
+@@ -4,3 +4,4 @@ obj-$(CONFIG_EBONY)	+= ebony.o
+ obj-$(CONFIG_SAM440EP) 	+= sam440ep.o
+ obj-$(CONFIG_WARP)	+= warp.o
+ obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
++obj-$(CONFIG_XILINX_ML510) += virtex_ml510.o
+diff --git a/arch/powerpc/platforms/44x/virtex_ml510.c b/arch/powerpc/platforms/44x/virtex_ml510.c
+new file mode 100644
+index 0000000..ba4a6e3
+--- /dev/null
++++ b/arch/powerpc/platforms/44x/virtex_ml510.c
+@@ -0,0 +1,29 @@
++#include <asm/i8259.h>
++#include <linux/pci.h>
++#include "44x.h"
++
++/**
++ * ml510_ail_quirk
++ */
++static void __devinit ml510_ali_quirk(struct pci_dev *dev)
++{
++	/* Enable the IDE controller */
++	pci_write_config_byte(dev, 0x58, 0x4c);
++	/* Assign irq 14 to the primary ide channel */
++	pci_write_config_byte(dev, 0x44, 0x0d);
++	/* Assign irq 15 to the secondary ide channel */
++	pci_write_config_byte(dev, 0x75, 0x0f);
++	/* Set the ide controller in native mode */
++	pci_write_config_byte(dev, 0x09, 0xff);
++
++	/* INTB = disabled, INTA = disabled */
++	pci_write_config_byte(dev, 0x48, 0x00);
++	/* INTD = disabled, INTC = disabled */
++	pci_write_config_byte(dev, 0x4a, 0x00);
++	/* Audio = INT7, Modem = disabled. */
++	pci_write_config_byte(dev, 0x4b, 0x60);
++	/* USB = INT7 */
++	pci_write_config_byte(dev, 0x74, 0x06);
++}
++DECLARE_PCI_FIXUP_EARLY(0x10b9, 0x1533, ml510_ali_quirk);
++
 diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-index c658b41..90b5772 100644
+index 90b5772..3ee1fd3 100644
 --- a/arch/powerpc/sysdev/xilinx_intc.c
 +++ b/arch/powerpc/sysdev/xilinx_intc.c
-@@ -25,6 +25,7 @@
- #include <linux/of.h>
- #include <asm/io.h>
- #include <asm/processor.h>
-+#include <asm/i8259.h>
- #include <asm/irq.h>
+@@ -257,6 +257,11 @@ static void __init xilinx_i8259_setup_cascade(void)
+ 	i8259_init(cascade_node, 0);
+ 	set_irq_chained_handler(cascade_irq, xilinx_i8259_cascade);
  
- /*
-@@ -191,20 +192,14 @@ struct irq_host * __init
- xilinx_intc_init(struct device_node *np)
- {
- 	struct irq_host * irq;
--	struct resource res;
- 	void * regs;
--	int rc;
- 
- 	/* Find and map the intc registers */
--	rc = of_address_to_resource(np, 0, &res);
--	if (rc) {
--		printk(KERN_ERR __FILE__ ": of_address_to_resource() failed\n");
-+	regs = of_iomap(np, 0);
-+	if (!regs) {
-+		pr_err("xilinx_intc: could not map registers\n");
- 		return NULL;
- 	}
--	regs = ioremap(res.start, 32);
--
--	printk(KERN_INFO "Xilinx intc at 0x%08llx mapped to 0x%p\n",
--		(unsigned long long) res.start, regs);
- 
- 	/* Setup interrupt controller */
- 	out_be32(regs + XINTC_IER, 0); /* disable all irqs */
-@@ -217,6 +212,7 @@ xilinx_intc_init(struct device_node *np)
- 	if (!irq)
- 		panic(__FILE__ ": Cannot allocate IRQ host\n");
- 	irq->host_data = regs;
++	/* Program irq 7 (usb/audio), 14/15 (ide) to level sensitive */
++	/* This looks like a dirty hack to me --gcl */
++	outb(0xc0, 0x4d0);
++	outb(0xc0, 0x4d1);
 +
- 	return irq;
- }
- 
-@@ -227,23 +223,65 @@ int xilinx_intc_get_irq(void)
- 	return irq_linear_revmap(master_irqhost, in_be32(regs + XINTC_IVR));
- }
- 
-+#if defined(CONFIG_PPC_I8259)
-+/*
-+ * Support code for cascading to 8259 interrupt controllers
-+ */
-+static void xilinx_i8259_cascade(unsigned int irq, struct irq_desc *desc)
-+{
-+	unsigned int cascade_irq = i8259_irq();
-+	if (cascade_irq)
-+		generic_handle_irq(cascade_irq);
-+
-+	/* Let xilinx_intc end the interrupt */
-+	desc->chip->ack(irq);
-+	desc->chip->unmask(irq);
-+}
-+
-+static void __init xilinx_i8259_setup_cascade(void)
-+{
-+	struct device_node *cascade_node;
-+	int cascade_irq;
-+
-+	/* Initialize i8259 controller */
-+	cascade_node = of_find_compatible_node(NULL, NULL, "chrp,iic");
-+	if (!cascade_node)
-+		return;
-+
-+	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
-+	if (!cascade_irq) {
-+		pr_err("virtex_ml510: Failed to map cascade interrupt\n");
-+		goto out;
-+	}
-+
-+	i8259_init(cascade_node, 0);
-+	set_irq_chained_handler(cascade_irq, xilinx_i8259_cascade);
-+
-+ out:
-+	of_node_put(cascade_node);
-+}
-+#else
-+static inline void xilinx_i8259_setup_cascade(void) { return; }
-+#endif /* defined(CONFIG_PPC_I8259) */
-+
-+static struct of_device_id xilinx_intc_match[] __initconst = {
-+	{ .compatible = "xlnx,opb-intc-1.00.c", },
-+	{ .compatible = "xlnx,xps-intc-1.00.a", },
-+	{}
-+};
-+
-+/*
-+ * Initialize master Xilinx interrupt controller
-+ */
- void __init xilinx_intc_init_tree(void)
- {
- 	struct device_node *np;
- 
- 	/* find top level interrupt controller */
--	for_each_compatible_node(np, NULL, "xlnx,opb-intc-1.00.c") {
-+	for_each_matching_node(np, xilinx_intc_match) {
- 		if (!of_get_property(np, "interrupts", NULL))
- 			break;
- 	}
--	if (!np) {
--		for_each_compatible_node(np, NULL, "xlnx,xps-intc-1.00.a") {
--			if (!of_get_property(np, "interrupts", NULL))
--				break;
--		}
--	}
--
--	/* xilinx interrupt controller needs to be top level */
- 	BUG_ON(!np);
- 
- 	master_irqhost = xilinx_intc_init(np);
-@@ -251,4 +289,6 @@ void __init xilinx_intc_init_tree(void)
- 
- 	irq_set_default_host(master_irqhost);
- 	of_node_put(np);
-+
-+	xilinx_i8259_setup_cascade();
+  out:
+ 	of_node_put(cascade_node);
  }
