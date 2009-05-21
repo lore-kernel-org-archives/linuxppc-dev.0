@@ -1,12 +1,17 @@
-Return-Path: <jonsmirl@gmail.com>
+Return-Path: <roel.kluin@gmail.com>
+Received: from mail-ew0-f167.google.com (mail-ew0-f167.google.com
+	[209.85.219.167]) by ozlabs.org (Postfix) with ESMTP id EEBEADE1CD
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 05:44:53 +1000 (EST)
+Received: by ewy11 with SMTP id 11so1469781ewy.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 12:44:51 -0700 (PDT)
+Message-ID: <4A15AF33.60100@gmail.com>
+Date: Thu, 21 May 2009 21:44:51 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
 MIME-Version: 1.0
-Date: Thu, 21 May 2009 14:52:32 -0400
-Message-ID: <9e4733910905211152x6ded5c9tadc085bc4bc800e3@mail.gmail.com>
-Subject: Audio and mpc5200 bestcomm tasks
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>
+To: paulmck@linux.vnet.ibm.com
+Subject: [PATCH] powerpc:beyond ARRAY_SIZE of args.args
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,18 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ALSA really wants to dynamically know the address of the current DMA
-location while transfers are active. This is an important piece of
-implementing pause/resume. Pause doesn't work too well if there is 2s
-of music already queued. The work around is to know the sample rate
-and use the jiffy count to estimate how far into the buffer DMA has
-progressed. But that's not as accurate as just asking the DMA
-hardware.
+Do not go beyond ARRAY_SIZE of args.args
 
-I poked around in the SRAM data and couldn't find the address. Is it
-there or can the Bestcomm tasks be modified to leave it somewhere
-visible?
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+I'm quite sure the first is correct, but should maybe `args.nret'
+and `nargs + args.nret' also be `>= ARRAY_SIZE(args.args)'?
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 1f8505c..c94ab76 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -779,7 +779,7 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+ 		return -EFAULT;
+ 
+ 	nargs = args.nargs;
+-	if (nargs > ARRAY_SIZE(args.args)
++	if (nargs >= ARRAY_SIZE(args.args)
+ 	    || args.nret > ARRAY_SIZE(args.args)
+ 	    || nargs + args.nret > ARRAY_SIZE(args.args))
+ 		return -EINVAL;
