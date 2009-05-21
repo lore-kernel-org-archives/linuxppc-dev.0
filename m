@@ -1,19 +1,21 @@
 Return-Path: <thunderbird2k@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.26])
-	by ozlabs.org (Postfix) with ESMTP id 5D34ADE0C4
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 03:56:15 +1000 (EST)
-Received: by ey-out-2122.google.com with SMTP id 9so284487eyd.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 10:56:12 -0700 (PDT)
+Received: from mail-ew0-f167.google.com (mail-ew0-f167.google.com
+	[209.85.219.167]) by ozlabs.org (Postfix) with ESMTP id 92BBBDE19B
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 03:58:21 +1000 (EST)
+Received: by ewy11 with SMTP id 11so1402129ewy.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 10:58:18 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20090521162202.10880.34056.stgit@localhost.localdomain>
+In-Reply-To: <20090521165008.A020D710053@mail54-sin.bigfish.com>
 References: <20090521162202.10880.34056.stgit@localhost.localdomain>
-Date: Thu, 21 May 2009 19:56:12 +0200
-Message-ID: <c8485d470905211056j590d10a4ob9d5d369744c1ff5@mail.gmail.com>
-Subject: Re: [PATCH v4 0/3] Add support for ML510 board
+	<20090521162434.10880.62883.stgit@localhost.localdomain>
+	<20090521165008.A020D710053@mail54-sin.bigfish.com>
+Date: Thu, 21 May 2009 19:58:18 +0200
+Message-ID: <c8485d470905211058t38d13d63n880c5c24cc0f5d94@mail.gmail.com>
+Subject: Re: [PATCH v4 3/3] powerpc/virtex: Add Xilinx ML510 reference
+	designsupport
 From: Roderick Colenbrander <thunderbird2k@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 21, 2009 at 6:24 PM, Grant Likely <grant.likely@secretlab.ca> w=
-rote:
-> Heck, I don't know if this stuff even works, but I've refactored
-> Roderick's patches into something closer to the structure that I'd like
-> to see. =A0There are still a few things that bother me, but I think it
-> is mostly there.
+> Yeow... I agree about the dirty hack part...  shouldn't this be in the
+> device tree somewhere, or in the ali driver?
 >
-> It at least boots on an ML507 board.
+> I'm curious if this works on ml410 as well..  (Yes, I know, does this
+> really matter much?  But there are still a bunch of them floating around
+> in universities.)  It may be nice to factor this out so ml410/ppc405 and
+> microblaze can get it as well.
 >
-> Roderick, can you please take a look?
->
-> Thanks,
-> g.
->
-> --
-> Grant Likely, B.Sc. P.Eng.
-> Secret Lab Technologies Ltd.
->
+> Steve
 
->From a quick glance it looks good. I will test it on monday.
+Yes the code can work one the ML410 as well. The thing is that you
+would need a recent reference design from Xilinx. Before Xilinx used a
+OPB pci bridge and these days they use a PLB (v46) pci bridge. The old
+reference designs use the OPB core. I saw someone using a ML410
+reference design which used the PBL pci soft-core and the same memory
+addresses were even used as in the ml510 reference design I'm using.
+I'm not sure where the guy got the design since the xilinx site only
+shows old opb_pci stuff. (though the core is nearly the same) Further
+most devices are also at the same locations on the pci bus.
+
+Further the ml410 also offers good old lpt1 and some other things
+which aren't on the ml510 but yes the pci code and big parts of the
+dts file I wrote can be reused.
 
 Roderick
