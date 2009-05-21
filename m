@@ -1,25 +1,25 @@
-Return-Path: <kosmo@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8FCBFDE18A
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 18:36:01 +1000 (EST)
-From: Piotr =?iso-8859-2?q?Zi=EAcik?= <kosmo@semihalf.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 02/12] fs_enet: Add MPC5121 FEC support.
-Date: Thu, 21 May 2009 10:34:39 +0200
-References: <1241640919-4650-1-git-send-email-wd@denx.de>
-	<200905141438.23348.kosmo@semihalf.com>
-	<fa686aa40905140700k3ca28ac0m74c9c161ad538abc@mail.gmail.com>
-In-Reply-To: <fa686aa40905140700k3ca28ac0m74c9c161ad538abc@mail.gmail.com>
+Return-Path: <pku.leo@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 91F08DE1B3
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 20:43:26 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so516522yxb.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 May 2009 03:43:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200905211034.39762.kosmo@semihalf.com>
-Cc: Becky Bruce <Becky.Bruce@freescale.com>, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, John Rigby <jrigby@gmail.com>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Scott Wood <scottwood@freescale.com>
+Sender: pku.leo@gmail.com
+In-Reply-To: <20090512150552.a98dca64.akpm@linux-foundation.org>
+References: <1242117363-14949-1-git-send-email-leoli@freescale.com>
+	<1242117363-14949-2-git-send-email-leoli@freescale.com>
+	<1242117363-14949-3-git-send-email-leoli@freescale.com>
+	<20090512150552.a98dca64.akpm@linux-foundation.org>
+Date: Thu, 21 May 2009 18:43:23 +0800
+Message-ID: <2a27d3730905210343k1e44225eh5555de768abdbb03@mail.gmail.com>
+Subject: Re: [PATCH 3/6] powerpc: add memory map support to Freescale RapidIO
+	block
+From: Li Yang <leoli@freescale.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: zw@zh-kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thursday 14 May 2009 16:00:33 Grant Likely wrote:
-> > MPC5121 support was added to drivers/net/fs_enet. MPC52xx uses
-> > drivers/net/fec_mpc52xx.c. Do you think that creating one universal
-> > driver from these two is now possible? You said that it should be easy,
-> > however you also said that cache coherency issues makes this imposible.
+On Wed, May 13, 2009 at 6:05 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Tue, 12 May 2009 16:36:00 +0800
+> Li Yang <leoli@freescale.com> wrote:
 >
-> Not impossible.  Hard.
+>> + =C2=A0 =C2=A0 align =3D (size < 0x1000) ? 0x1000 : 1 << (__ilog2(size =
+- 1) + 1);
+>> +
+>> + =C2=A0 =C2=A0 /* Align the size */
+>> + =C2=A0 =C2=A0 if ((lstart + size) > (_ALIGN_DOWN(lstart, align) + alig=
+n)) {
+>
+> __ilog2() and _ALIGN_DOWN() are powerpc-specific functions. =C2=A0It woul=
+d
+> be preferable to use more general helpers if possible. =C2=A0ALIGN() and =
+ilog2()
+> might suit here.
 
-I thought a bit more about merging FEC drivers and I see one problem more.
-Driver fs_enet works with FEC's with own DMA engine and fec_mpc52xx.c uses 
-BestComm. Integration of these two drivers will need a DMA abstraction layer 
-to keep everything clean. Unfortuanetly BestComm driver does not provide any 
-abstraction - it only exports set of functions to deal with specific 
-hardware: FEC and PATA.
+Will change to use ilog2().
 
-More #ifdef's will be needed to remove linking with BestComm driver if kernel 
-will be compiled without 52xx support and resulting code will not be much 
-better than existing one. Especially that new DMA abstraction layer probably 
-will be quite complex.
+_ALIGN_DOWN() gets a lower aligned address while ALIGN() gets a higher
+address.  It seems that we don't have a general helper to do the same.
 
--- 
-Best Regards.
-Piotr Ziecik
+- Leo
