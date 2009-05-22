@@ -1,21 +1,21 @@
-Return-Path: <pierre@ossman.eu>
-Received: from smtp.ossman.eu (82-117-125-11.tcdsl.calypso.net [82.117.125.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5C013DE18B
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 21:53:25 +1000 (EST)
-Date: Fri, 22 May 2009 13:53:11 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] mmc: Add fsl,esdhc as a valid compatible to bind against
-Message-ID: <20090522135311.090c98ad@mjolnir.ossman.eu>
-In-Reply-To: <1241790769-3843-1-git-send-email-galak@kernel.crashing.org>
-References: <1241790769-3843-1-git-send-email-galak@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature";
-	boundary="=_freyr.ossman.eu-27028-1242993197-0001-2"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-qy0-f128.google.com (mail-qy0-f128.google.com
+	[209.85.221.128]) by ozlabs.org (Postfix) with ESMTP id 39E2CDE1B7
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 23:29:55 +1000 (EST)
+Received: by qyk34 with SMTP id 34so3166595qyk.17
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 06:29:54 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20090430223114.GA12571@oksana.dev.rtsoft.ru>
+References: <20090430223114.GA12571@oksana.dev.rtsoft.ru>
+Date: Fri, 22 May 2009 09:29:51 -0400
+Message-ID: <9e4733910905220629p6592c8acj2f5a1e6df8c48099@mail.gmail.com>
+Subject: Re: [PATCH] mpc52xx_psc_spi: Convert to cs_control callback
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thu, Apr 30, 2009 at 6:31 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> mpc52xx_psc_spi driver is the last user of the legacy activate_cs
+> and deactivate_cs callbacks, so convert the driver to the cs_control
 
---=_freyr.ossman.eu-27028-1242993197-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+This driver is missing a call to of_register_spi_devices(master, op->node);
 
-On Fri,  8 May 2009 08:52:49 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+Here's how I added it, but it could be done more cleanly.
 
-> We plan to use fsl,esdhc going forward as the base compatible so update
-> the driver to bind against it.
->=20
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
 
-Applied.
+diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
+index 68c77a9..fe0658a 100644
+--- a/drivers/spi/mpc52xx_psc_spi.c
++++ b/drivers/spi/mpc52xx_psc_spi.c
+@@ -22,6 +22,7 @@
+ #include <linux/delay.h>
+ #include <linux/spi/spi.h>
+ #include <linux/fsl_devices.h>
++#include <linux/of_spi.h>
 
-Rgds
---=20
-     -- Pierre Ossman
+ #include <asm/mpc52xx.h>
+ #include <asm/mpc52xx_psc.h>
+@@ -370,24 +371,24 @@ static irqreturn_t mpc52xx_psc_spi_isr(int irq,
+void *dev_id)
+ }
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+ /* bus_num is used only for the case dev->platform_data == NULL */
+-static int __init mpc52xx_psc_spi_do_probe(struct device *dev, u32 regaddr,
++static int __init mpc52xx_psc_spi_do_probe(struct of_device *op, u32 regaddr,
+ 				u32 size, unsigned int irq, s16 bus_num)
+ {
+-	struct fsl_spi_platform_data *pdata = dev->platform_data;
++	struct fsl_spi_platform_data *pdata = op->dev.platform_data;
+ 	struct mpc52xx_psc_spi *mps;
+ 	struct spi_master *master;
+ 	int ret;
 
---=_freyr.ossman.eu-27028-1242993197-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+-	master = spi_alloc_master(dev, sizeof *mps);
++	master = spi_alloc_master(&op->dev, sizeof *mps);
+ 	if (master == NULL)
+ 		return -ENOMEM;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
+-	dev_set_drvdata(dev, master);
++	dev_set_drvdata(&op->dev, master);
+ 	mps = spi_master_get_devdata(master);
 
-iEYEARECAAYFAkoWkisACgkQ7b8eESbyJLhE+QCgx/oYiz4LFnd/vFcKWiR4+DDI
-jr4An3yUIoLOURJm4SpcgdQlWbZeRSZB
-=J8Hr
------END PGP SIGNATURE-----
+ 	mps->irq = irq;
+ 	if (pdata == NULL) {
+-		dev_warn(dev, "probe called without platform data, no "
++		dev_warn(&op->dev, "probe called without platform data, no "
+ 				"(de)activate_cs function will be called\n");
+ 		mps->activate_cs = NULL;
+ 		mps->deactivate_cs = NULL;
+@@ -407,7 +408,7 @@ static int __init mpc52xx_psc_spi_do_probe(struct
+device *dev, u32 regaddr,
 
---=_freyr.ossman.eu-27028-1242993197-0001-2--
+ 	mps->psc = ioremap(regaddr, size);
+ 	if (!mps->psc) {
+-		dev_err(dev, "could not ioremap I/O port range\n");
++		dev_err(&op->dev, "could not ioremap I/O port range\n");
+ 		ret = -EFAULT;
+ 		goto free_master;
+ 	}
+@@ -439,6 +440,8 @@ static int __init mpc52xx_psc_spi_do_probe(struct
+device *dev, u32 regaddr,
+ 	if (ret < 0)
+ 		goto unreg_master;
+
++	of_register_spi_devices(master, op->node);
++
+ 	return ret;
+
+ unreg_master:
+@@ -495,7 +498,7 @@ static int __init mpc52xx_psc_spi_of_probe(struct
+of_device *op,
+ 		id = *psc_nump + 1;
+ 	}
+
+-	return mpc52xx_psc_spi_do_probe(&op->dev, (u32)regaddr64, (u32)size64,
++	return mpc52xx_psc_spi_do_probe(op, (u32)regaddr64, (u32)size64,
+ 					irq_of_parse_and_map(op->node, 0), id);
+ }
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
