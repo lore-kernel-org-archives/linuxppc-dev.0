@@ -1,16 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 21 May 2009 23:31:23 -0700 (PDT)
-Message-Id: <20090521.233123.135354184.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [net-next-2.6 PATCH] can: SJA1000: generic OF platform bus driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <fa686aa40905212142n4a8c3caamb2f28eef036e3922@mail.gmail.com>
-References: <4A143896.7050200@grandegger.com>
-	<fa686aa40905212142n4a8c3caamb2f28eef036e3922@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: netdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
-	Linuxppc-dev@ozlabs.org
+Return-Path: <pku.leo@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id B54ABDE0D1
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 18:03:29 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so810458yxb.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 01:03:27 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <4A133DEF.6080604@gmail.com>
+References: <4A133DEF.6080604@gmail.com>
+Date: Fri, 22 May 2009 16:03:26 +0800
+Message-ID: <2a27d3730905220103k12d7f9a6n269fcd079818b168@mail.gmail.com>
+Subject: Re: [PATCH] freescale: beyond ARRAY_SIZE of fdev->chan
+From: Li Yang <leoli@freescale.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 21 May 2009 22:42:07 -0600
+On Wed, May 20, 2009 at 7:17 AM, Roel Kluin <roel.kluin@gmail.com> wrote:
+> Do not go beyond ARRAY_SIZE of fdev->chan
+>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-> On Wed, May 20, 2009 at 11:06 AM, Wolfgang Grandegger <wg@grandegger.=
-com> wrote:
->> This patch adds a generic driver for SJA1000 chips on the OpenFirmwa=
-re
->> platform bus found on embedded PowerPC systems. You need a SJA1000 n=
-ode
->> definition in your flattened device tree source (DTS) file similar t=
-o:
->>
->> =A0 can@3,100 {
->> =A0 =A0 =A0 =A0 =A0 compatible =3D "philips,sja1000";
->> =A0 =A0 =A0 =A0 =A0 reg =3D <3 0x100 0x80>;
->> =A0 =A0 =A0 =A0 =A0 clock-frequency =3D <8000000>;
->> =A0 =A0 =A0 =A0 =A0 cdr-reg =3D <0x48>;
->> =A0 =A0 =A0 =A0 =A0 ocr-reg =3D <0x0a>;
->> =A0 =A0 =A0 =A0 =A0 interrupts =3D <2 0>;
->> =A0 =A0 =A0 =A0 =A0 interrupt-parent =3D <&mpic>;
->> =A0 };
-> =
+Indeed, thanks.
 
-> This new binding must be documented in Documentation/powerpc/dts-bind=
-ings
+But I would like the title and description of this patch be changed to
+like this:
 
-Wolfgang, please add this documentation and resubmit your patch.
-Thanks!
+fsldma: fix check on potential fdev->chan[] overflow
+
+Fix the check of potential array overflow when using corrupted channel
+device tree nodes.
+
+> ---
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> index da8a8ed..391b1bd 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -830,7 +830,7 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dm=
+a_device *fdev,
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0new_fsl_chan->reg.end - new_fsl_chan->reg.start + 1);
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0new_fsl_chan->id =3D ((new_fsl_chan->reg.start=
+ - 0x100) & 0xfff) >> 7;
+> - =C2=A0 =C2=A0 =C2=A0 if (new_fsl_chan->id > FSL_DMA_MAX_CHANS_PER_DEVIC=
+E) {
+> + =C2=A0 =C2=A0 =C2=A0 if (new_fsl_chan->id >=3D FSL_DMA_MAX_CHANS_PER_DE=
+VICE) {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0dev_err(fdev->dev,=
+ "There is no %d channel!\n",
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0new_fsl_chan->id);
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0err =3D -EINVAL;
