@@ -1,14 +1,16 @@
 Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-In-Reply-To: <9e4733910905211152x6ded5c9tadc085bc4bc800e3@mail.gmail.com>
-References: <9e4733910905211152x6ded5c9tadc085bc4bc800e3@mail.gmail.com>
+In-Reply-To: <4A143896.7050200@grandegger.com>
+References: <4A143896.7050200@grandegger.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 21 May 2009 22:33:40 -0600
-Message-ID: <fa686aa40905212133o472a15c1tbc25c793557e2e73@mail.gmail.com>
-Subject: Re: Audio and mpc5200 bestcomm tasks
-To: Jon Smirl <jonsmirl@gmail.com>
+Date: Thu, 21 May 2009 22:42:07 -0600
+Message-ID: <fa686aa40905212142n4a8c3caamb2f28eef036e3922@mail.gmail.com>
+Subject: Re: [net-next-2.6 PATCH] can: SJA1000: generic OF platform bus driver
+To: Wolfgang Grandegger <wg@grandegger.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Cc: Linux Netdev List <netdev@vger.kernel.org>,
+	devicetree-discuss <devicetree-discuss@ozlabs.org>,
+	linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,24 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 21, 2009 at 12:52 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
-> ALSA really wants to dynamically know the address of the current DMA
-> location while transfers are active. This is an important piece of
-> implementing pause/resume. Pause doesn't work too well if there is 2s
-> of music already queued. The work around is to know the sample rate
-> and use the jiffy count to estimate how far into the buffer DMA has
-> progressed. But that's not as accurate as just asking the DMA
-> hardware.
+On Wed, May 20, 2009 at 11:06 AM, Wolfgang Grandegger <wg@grandegger.com> w=
+rote:
+> This patch adds a generic driver for SJA1000 chips on the OpenFirmware
+> platform bus found on embedded PowerPC systems. You need a SJA1000 node
+> definition in your flattened device tree source (DTS) file similar to:
 >
-> I poked around in the SRAM data and couldn't find the address. Is it
-> there or can the Bestcomm tasks be modified to leave it somewhere
-> visible?
+> =A0 can@3,100 {
+> =A0 =A0 =A0 =A0 =A0 compatible =3D "philips,sja1000";
+> =A0 =A0 =A0 =A0 =A0 reg =3D <3 0x100 0x80>;
+> =A0 =A0 =A0 =A0 =A0 clock-frequency =3D <8000000>;
+> =A0 =A0 =A0 =A0 =A0 cdr-reg =3D <0x48>;
+> =A0 =A0 =A0 =A0 =A0 ocr-reg =3D <0x0a>;
+> =A0 =A0 =A0 =A0 =A0 interrupts =3D <2 0>;
+> =A0 =A0 =A0 =A0 =A0 interrupt-parent =3D <&mpic>;
+> =A0 };
 
-It may be possible, but I haven't made any attempts at writing
-bestcomm task code.  I've got no idea how difficult it would be.
+This new binding must be documented in Documentation/powerpc/dts-bindings
 
 g.
 
--- 
+--=20
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
