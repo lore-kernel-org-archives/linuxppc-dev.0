@@ -1,16 +1,14 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bilbo.ozlabs.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7EA00DE1E4
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 13:32:46 +1000 (EST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <d9509d4f228388a6c4606eedbd72436322e38b71.1242963165.git.tony@bakeyournoodle.com>
-From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 1/1] Remove __devinit annotation from pcibios_claim_one_bus()
-Date: Fri, 22 May 2009 13:32:45 +1000 (EST)
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+In-Reply-To: <9e4733910905211152x6ded5c9tadc085bc4bc800e3@mail.gmail.com>
+References: <9e4733910905211152x6ded5c9tadc085bc4bc800e3@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 21 May 2009 22:33:40 -0600
+Message-ID: <fa686aa40905212133o472a15c1tbc25c793557e2e73@mail.gmail.com>
+Subject: Re: Audio and mpc5200 bestcomm tasks
+To: Jon Smirl <jonsmirl@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pcibios_finish_adding_to_bus() is NOT annotated __devinit but it calls
-pcibios_claim_one_bus().  pcibios_finish_adding_to_bus() is called from
-at least the rpadlpar code which also is NOT annotated __devinit.
+On Thu, May 21, 2009 at 12:52 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> ALSA really wants to dynamically know the address of the current DMA
+> location while transfers are active. This is an important piece of
+> implementing pause/resume. Pause doesn't work too well if there is 2s
+> of music already queued. The work around is to know the sample rate
+> and use the jiffy count to estimate how far into the buffer DMA has
+> progressed. But that's not as accurate as just asking the DMA
+> hardware.
+>
+> I poked around in the SRAM data and couldn't find the address. Is it
+> there or can the Bestcomm tasks be modified to leave it somewhere
+> visible?
 
-The annotation seems bogus so remove it.
+It may be possible, but I haven't made any attempts at writing
+bestcomm task code.  I've got no idea how difficult it would be.
 
-Found by Jeremy Huddleston a reported at:
-	http://bugzilla.kernel.org/show_bug.cgi?id=13228
+g.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/kernel/pci-common.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 0f41812..a9f988f 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1469,7 +1469,7 @@ void __init pcibios_resource_survey(void)
-  * rest of the code later, for now, keep it as-is as our main
-  * resource allocation function doesn't deal with sub-trees yet.
-  */
--void __devinit pcibios_claim_one_bus(struct pci_bus *bus)
-+void pcibios_claim_one_bus(struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
- 	struct pci_bus *child_bus;
 -- 
-1.6.0.6
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
