@@ -1,21 +1,16 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 4590ADE1CE
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 13:24:07 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1M7LMZ-0004uv-Qg
-	for linuxppc-dev@ozlabs.org; Thu, 21 May 2009 20:24:03 -0700
-Message-ID: <23663840.post@talk.nabble.com>
-Date: Thu, 21 May 2009 20:24:03 -0700 (PDT)
-From: "Sauce.Cheng" <chmhou@sina.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: question : DMA of PCI bridge
-In-Reply-To: <4A14D12D.4050302@ovro.caltech.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <23628338.post@talk.nabble.com> <4A137E4F.4040900@ovro.caltech.edu>
-	<23647394.post@talk.nabble.com> <4A14D12D.4050302@ovro.caltech.edu>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7EA00DE1E4
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 13:32:46 +1000 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-Id: <d9509d4f228388a6c4606eedbd72436322e38b71.1242963165.git.tony@bakeyournoodle.com>
+From: Tony Breeds <tony@bakeyournoodle.com>
+Subject: [PATCH 1/1] Remove __devinit annotation from pcibios_claim_one_bus()
+Date: Fri, 22 May 2009 13:32:45 +1000 (EST)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+pcibios_finish_adding_to_bus() is NOT annotated __devinit but it calls
+pcibios_claim_one_bus().  pcibios_finish_adding_to_bus() is called from
+at least the rpadlpar code which also is NOT annotated __devinit.
 
+The annotation seems bogus so remove it.
 
->
-> in the manual reference charpter 9.13 DMA, source and destination address
+Found by Jeremy Huddleston a reported at:
+	http://bugzilla.kernel.org/show_bug.cgi?id=13228
 
-> If you are DMAing from an internal peripheral, then it's
-> width will be hard-coded and can be read from the user-manual.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ arch/powerpc/kernel/pci-common.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-you mean it will be set by hard circuit ? maybe i should talk with your hard
-engineer.
-but as you say, the width will be hard-coded, mean that the width can not be
-changed ? 
-it can fetch 16 bits to 32bits, can not tetch 16bits to 16bits ?
-
-i am sorry about my poor English, i am not sure if i expressed clearly
-
-
-> If you are DMAing from a local bus then the local bus definition
-> should determine what happens. For example, on the MPC8349, you
-> can put 16-bit flash on the local bus, and configure the local
-> bus controller to know that it is 16-bits wide. A 32-bit access
-> by the CPU or DMA controller will generate two reads on the
-> local bus.
-
-that's right, BRx and ORx should be configured for setting width, but that
-is bus width, not data width. or bus width should be equal to data width
-what fetch from the bus ?
-
-> You can investigate to see whether the MPC8247 works similarly.
-all right, i will , thanks a lot
-
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 0f41812..a9f988f 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1469,7 +1469,7 @@ void __init pcibios_resource_survey(void)
+  * rest of the code later, for now, keep it as-is as our main
+  * resource allocation function doesn't deal with sub-trees yet.
+  */
+-void __devinit pcibios_claim_one_bus(struct pci_bus *bus)
++void pcibios_claim_one_bus(struct pci_bus *bus)
+ {
+ 	struct pci_dev *dev;
+ 	struct pci_bus *child_bus;
 -- 
-View this message in context: http://www.nabble.com/question-%3A-DMA-of-PCI-bridge-tp23628338p23663840.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+1.6.0.6
