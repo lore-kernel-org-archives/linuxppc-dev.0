@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C056CDE1B3
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 19:28:02 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 86CA2DE1E3
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 19:42:28 +1000 (EST)
 Subject: Re: can't flush tlb on e500
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Saito Hideo <hsaito.ppc@gmail.com>
-In-Reply-To: <d50492d40905200312r729608a3nf244b153892ac257@mail.gmail.com>
+In-Reply-To: <1242984470.26104.29.camel@pasglop>
 References: <d50492d40905200312r729608a3nf244b153892ac257@mail.gmail.com>
+	<1242984470.26104.29.camel@pasglop>
 Content-Type: text/plain
-Date: Fri, 22 May 2009 19:27:50 +1000
-Message-Id: <1242984470.26104.29.camel@pasglop>
+Date: Fri, 22 May 2009 19:42:16 +1000
+Message-Id: <1242985336.26104.30.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
 	Kumar Gala <galak@gate.crashing.org>
@@ -24,54 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-05-20 at 19:12 +0900, Saito Hideo wrote:
-
-> I think that the tlb should be cleared before mm->context.id is set
-> MMU_NO_CONTEXT.
-
-You are right, this definitely looks like a bug on platforms that have
-HW support for the tlbil instruction (and thus care about the PID for
-flushing) which afaik is only the case of recent freescale chips.
-
-Have you verified that this change fixes your problem ?
-
-Can you re-submit to linuxppc-dev@ozlabs.org mailing list, along with
-proper changeset comment and signed-off-by: line ?
-
-Cheers,
-Ben.
-
-> --- arch/powerpc/mm/mmu_context_nohash.c.orig	2009-03-24
-> 08:12:14.000000000 +0900
-> +++ arch/powerpc/mm/mmu_context_nohash.c	2009-05-20 18:33:53.000000000 +0900
-> @@ -122,22 +122,22 @@ static unsigned int steal_context_up(uns
->  	struct mm_struct *mm;
->  	int cpu = smp_processor_id();
+On Fri, 2009-05-22 at 19:27 +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-05-20 at 19:12 +0900, Saito Hideo wrote:
 > 
->  	/* Pick up the victim mm */
->  	mm = context_mm[id];
+> > I think that the tlb should be cleared before mm->context.id is set
+> > MMU_NO_CONTEXT.
 > 
->  	pr_debug("[%d] steal context %d from mm @%p\n", cpu, id, mm);
+> You are right, this definitely looks like a bug on platforms that have
+> HW support for the tlbil instruction (and thus care about the PID for
+> flushing) which afaik is only the case of recent freescale chips.
+
+In fact, you are doubly right in that it also happens on other platforms
+because local_flush_tlb_mm() will check if the PID is MMU_NO_CONTEXT
+regardless of what tlbilx supports.. oops
+
+Looks like I only ran my context torture test with CONFIG_SMP enabled.
+Shame on me.
+
+> Have you verified that this change fixes your problem ?
 > 
-> -	/* Mark this mm has having no context anymore */
-> -	mm->context.id = MMU_NO_CONTEXT;
-> -
->  	/* Flush the TLB for that context */
->  	local_flush_tlb_mm(mm);
+> Can you re-submit to linuxppc-dev@ozlabs.org mailing list, along with
+> proper changeset comment and signed-off-by: line ?
 > 
-> +	/* Mark this mm has having no context anymore */
-> +	mm->context.id = MMU_NO_CONTEXT;
-> +
->  	/* XXX This clear should ultimately be part of local_flush_tlb_mm */
->  	__clear_bit(id, stale_map[cpu]);
+> Cheers,
+> Ben.
 > 
->  	return id;
->  }
+> > --- arch/powerpc/mm/mmu_context_nohash.c.orig	2009-03-24
+> > 08:12:14.000000000 +0900
+> > +++ arch/powerpc/mm/mmu_context_nohash.c	2009-05-20 18:33:53.000000000 +0900
+> > @@ -122,22 +122,22 @@ static unsigned int steal_context_up(uns
+> >  	struct mm_struct *mm;
+> >  	int cpu = smp_processor_id();
+> > 
+> >  	/* Pick up the victim mm */
+> >  	mm = context_mm[id];
+> > 
+> >  	pr_debug("[%d] steal context %d from mm @%p\n", cpu, id, mm);
+> > 
+> > -	/* Mark this mm has having no context anymore */
+> > -	mm->context.id = MMU_NO_CONTEXT;
+> > -
+> >  	/* Flush the TLB for that context */
+> >  	local_flush_tlb_mm(mm);
+> > 
+> > +	/* Mark this mm has having no context anymore */
+> > +	mm->context.id = MMU_NO_CONTEXT;
+> > +
+> >  	/* XXX This clear should ultimately be part of local_flush_tlb_mm */
+> >  	__clear_bit(id, stale_map[cpu]);
+> > 
+> >  	return id;
+> >  }
+> > 
+> >  #ifdef DEBUG_MAP_CONSISTENCY
+> >  static void context_check_map(void)
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
 > 
->  #ifdef DEBUG_MAP_CONSISTENCY
->  static void context_check_map(void)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
