@@ -1,19 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5439DDE098
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 16:11:36 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 22 May 2009 16:11:26 +1000
-Message-Id: <1242972686.26104.17.camel@pasglop>
+Return-Path: <davem@davemloft.net>
+Date: Thu, 21 May 2009 23:31:23 -0700 (PDT)
+Message-Id: <20090521.233123.135354184.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Subject: Re: [net-next-2.6 PATCH] can: SJA1000: generic OF platform bus driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <fa686aa40905212142n4a8c3caamb2f28eef036e3922@mail.gmail.com>
+References: <4A143896.7050200@grandegger.com>
+	<fa686aa40905212142n4a8c3caamb2f28eef036e3922@mail.gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: Text/Plain; charset=iso-8859-1
+Cc: netdev@vger.kernel.org, devicetree-discuss@ozlabs.org,
+	Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linus !
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 21 May 2009 22:42:07 -0600
 
-Here's a small fix for .30 that works around a regression caused by
-enabling MSI support in the IPR driver.
+> On Wed, May 20, 2009 at 11:06 AM, Wolfgang Grandegger <wg@grandegger.=
+com> wrote:
+>> This patch adds a generic driver for SJA1000 chips on the OpenFirmwa=
+re
+>> platform bus found on embedded PowerPC systems. You need a SJA1000 n=
+ode
+>> definition in your flattened device tree source (DTS) file similar t=
+o:
+>>
+>> =A0 can@3,100 {
+>> =A0 =A0 =A0 =A0 =A0 compatible =3D "philips,sja1000";
+>> =A0 =A0 =A0 =A0 =A0 reg =3D <3 0x100 0x80>;
+>> =A0 =A0 =A0 =A0 =A0 clock-frequency =3D <8000000>;
+>> =A0 =A0 =A0 =A0 =A0 cdr-reg =3D <0x48>;
+>> =A0 =A0 =A0 =A0 =A0 ocr-reg =3D <0x0a>;
+>> =A0 =A0 =A0 =A0 =A0 interrupts =3D <2 0>;
+>> =A0 =A0 =A0 =A0 =A0 interrupt-parent =3D <&mpic>;
+>> =A0 };
+> =
 
-Cheers,
-Ben.
+> This new binding must be documented in Documentation/powerpc/dts-bind=
+ings
 
-The following changes since commit 5805977e63a36ad56594a623f3bd2bebcb7db233:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/drm-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Michael Ellerman (1):
-      powerpc/maple: Add a quirk to disable MSI for IPR on Bimini
-
- arch/powerpc/platforms/maple/pci.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+Wolfgang, please add this documentation and resubmit your patch.
+Thanks!
