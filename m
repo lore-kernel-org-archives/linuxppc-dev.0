@@ -1,19 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 55A74DE1D0
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 11:28:16 +1000 (EST)
-Date: Fri, 22 May 2009 11:28:11 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: linux-next: powerpc tree build warning
-Message-Id: <20090522112811.433432e2.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__22_May_2009_11_28_11_+1000_rfyL2T_Onf7BBDwS"
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Vinay Sridhar <vinay@linux.vnet.ibm.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 4590ADE1CE
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 13:24:07 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1M7LMZ-0004uv-Qg
+	for linuxppc-dev@ozlabs.org; Thu, 21 May 2009 20:24:03 -0700
+Message-ID: <23663840.post@talk.nabble.com>
+Date: Thu, 21 May 2009 20:24:03 -0700 (PDT)
+From: "Sauce.Cheng" <chmhou@sina.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: question : DMA of PCI bridge
+In-Reply-To: <4A14D12D.4050302@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <23628338.post@talk.nabble.com> <4A137E4F.4040900@ovro.caltech.edu>
+	<23647394.post@talk.nabble.com> <4A14D12D.4050302@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__22_May_2009_11_28_11_+1000_rfyL2T_Onf7BBDwS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ben,
 
-Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+>
+> in the manual reference charpter 9.13 DMA, source and destination address
 
-arch/powerpc/xmon/xmon.c: In function 'dump_log_buf':
-arch/powerpc/xmon/xmon.c:2133: warning: unused variable 'i'
+> If you are DMAing from an internal peripheral, then it's
+> width will be hard-coded and can be read from the user-manual.
 
-Introduced by commit f312deb4cd0c88196edf6dab192b7d42514398d6
-("powerpc/xmon: Add dl command to dump contents of __log_buf").
+you mean it will be set by hard circuit ? maybe i should talk with your hard
+engineer.
+but as you say, the width will be hard-coded, mean that the width can not be
+changed ? 
+it can fetch 16 bits to 32bits, can not tetch 16bits to 16bits ?
 
-[As an aside, that commit contains this:
-	Signed-off-by: Michael Ellerman <michael at ellerman.id.au>
-but we use real email addresses normally]
+i am sorry about my poor English, i am not sure if i expressed clearly
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Fri__22_May_2009_11_28_11_+1000_rfyL2T_Onf7BBDwS
-Content-Type: application/pgp-signature
+> If you are DMAing from a local bus then the local bus definition
+> should determine what happens. For example, on the MPC8349, you
+> can put 16-bit flash on the local bus, and configure the local
+> bus controller to know that it is 16-bits wide. A 32-bit access
+> by the CPU or DMA controller will generate two reads on the
+> local bus.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+that's right, BRx and ORx should be configured for setting width, but that
+is bus width, not data width. or bus width should be equal to data width
+what fetch from the bus ?
 
-iEYEARECAAYFAkoV/6sACgkQjjKRsyhoI8z8AgCfWP+uELrtefAYzlaAQkJlLibO
-RbAAoKbYp02h/fCYq0zDdXcJdSQNch3O
-=Y/5/
------END PGP SIGNATURE-----
+> You can investigate to see whether the MPC8247 works similarly.
+all right, i will , thanks a lot
 
---Signature=_Fri__22_May_2009_11_28_11_+1000_rfyL2T_Onf7BBDwS--
+-- 
+View this message in context: http://www.nabble.com/question-%3A-DMA-of-PCI-bridge-tp23628338p23663840.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
