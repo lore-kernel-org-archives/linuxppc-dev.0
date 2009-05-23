@@ -1,19 +1,18 @@
-Return-Path: <hunter.cobbs@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
-	by ozlabs.org (Postfix) with ESMTP id E0BFDDE114
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 04:50:05 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so1349882qwe.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 11:50:03 -0700 (PDT)
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id 89EEEDE036
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 08:12:20 +1000 (EST)
 MIME-Version: 1.0
-In-Reply-To: <20090523181422.794B3832E416@gemini.denx.de>
-References: <ad84a70a0905222048i4e7ae5ddp66418f96d531f5f3@mail.gmail.com>
-	<20090523181422.794B3832E416@gemini.denx.de>
-Date: Sat, 23 May 2009 13:50:03 -0500
-Message-ID: <ad84a70a0905231150s18026213r9360eb6807ab842e@mail.gmail.com>
-Subject: Re: PPC405EX based irq flooding with USB-OTG and usbserial device
-From: Hunter Cobbs <hunter.cobbs@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=0016364272b5503dac046a98d85a
+In-Reply-To: <c384c5ea0905231358t4803fbc6gf54618b2839a448a@mail.gmail.com>
+References: <c384c5ea0905231358t4803fbc6gf54618b2839a448a@mail.gmail.com>
+Date: Sun, 24 May 2009 00:12:18 +0200
+Message-ID: <c384c5ea0905231512u72894e34g17746548e640d4fe@mail.gmail.com>
+Subject: Re: mpc8315e-rdb: pci_enable_msi() fails (using today's
+	galak/powerpc.git tree)
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: Linux PPC <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,101 +22,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0016364272b5503dac046a98d85a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hello,
 
-On Sat, May 23, 2009 at 1:14 PM, Wolfgang Denk <wd@denx.de> wrote:
-
-> Dear Hunter,
+On Sat, May 23, 2009 at 10:58 PM, Leon Woestenberg
+<leon.woestenberg@gmail.com> wrote:
+> using this tree: git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
 >
-> In message <ad84a70a0905222048i4e7ae5ddp66418f96d531f5f3@mail.gmail.com>
-> you wrote:
-> >
-> > This is my first post to the PPC dev list as my company has just started
-> > developing a new project based on Linux.  The good news is, this post is
-> not
-> > debug-related as much as it is an introduction and query while I download
-> > the latest DENX kernel(only place I know that has the DWC_OTG driver).
->
-> there is a strong reason why we decided  not  to  try  to  push  this
-> driver  upstream:  it  is not in a state that would have a chance for
-> being accepted for mainline. The problems you  are  experiencing  are
-> probably   not   the   only  one.  Please  consider  this  driver  as
-> unsupported.
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --
-> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-> "Ada is PL/I trying to be Smalltalk.                 - Codoso diBlini
->
+> pci_enable_msi() fails on my MPC8315E-RDB board with PCIe device in
 
-Which leads me to another question.  Since I should consider this
-unsupported, is there a better driver out there as my company is already
-well down the road with our design?  Or would you recommend just creating
-our own driver for the USB-OTG?
+I found that the DTS for the MPC8315E-RDB is missing the msi bits. I
+added these, converted from the BSP (in old non-hex format):
 
-I'm developing with the Kilauea, and I guess I should ask how unstable is
-Linux support for this Processor.
--- 
-Hunter Cobbs
+                ipic-msi@7c0 {
+                        compatible = "fsl,ipic-msi";
+                        reg = <0x7c0 0x40>;
+                        msi-available-ranges = <0 0x100>;
+                        interrupts = < 0x43 8
+                                       0x4  8
+                                       0x51 8
+                                       0x52 8
+                                       0x56 8
+                                       0x57 8
+                                       0x58 8
+                                       0x59 8 >;
+                        interrupt-parent = < &ipic >;
+                };
 
---0016364272b5503dac046a98d85a
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-<br><br><div class=3D"gmail_quote">On Sat, May 23, 2009 at 1:14 PM, Wolfgan=
-g Denk <span dir=3D"ltr">&lt;<a href=3D"mailto:wd@denx.de">wd@denx.de</a>&g=
-t;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"border-left:=
- 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex=
-;">
-Dear Hunter,<br>
-<div class=3D"im"><br>
-In message &lt;<a href=3D"mailto:ad84a70a0905222048i4e7ae5ddp66418f96d531f5=
-f3@mail.gmail.com">ad84a70a0905222048i4e7ae5ddp66418f96d531f5f3@mail.gmail.=
-com</a>&gt; you wrote:<br>
-&gt;<br>
-&gt; This is my first post to the PPC dev list as my company has just start=
-ed<br>
-&gt; developing a new project based on Linux. =A0The good news is, this pos=
-t is not<br>
-&gt; debug-related as much as it is an introduction and query while I downl=
-oad<br>
-&gt; the latest DENX kernel(only place I know that has the DWC_OTG driver).=
-<br>
-<br>
-</div>there is a strong reason why we decided =A0not =A0to =A0try =A0to =A0=
-push =A0this<br>
-driver =A0upstream: =A0it =A0is not in a state that would have a chance for=
-<br>
-being accepted for mainline. The problems you =A0are =A0experiencing =A0are=
-<br>
-probably =A0 not =A0 the =A0 only =A0one. =A0Please =A0consider =A0this =A0=
-driver =A0as<br>
-unsupported.<br>
-<br>
-Best regards,<br>
-<br>
-Wolfgang Denk<br>
-<font color=3D"#888888"><br>
---<br>
-DENX Software Engineering GmbH, =A0 =A0 MD: Wolfgang Denk &amp; Detlev Zund=
-el<br>
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany<br>
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: <a href=3D"mailt=
-o:wd@denx.de">wd@denx.de</a><br>
-&quot;Ada is PL/I trying to be Smalltalk. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 -=
- Codoso diBlini<br>
-</font></blockquote></div><br>Which leads me to another question.=A0 Since =
-I should consider this unsupported, is there a better driver out there as m=
-y company is already well down the road with our design?=A0 Or would you re=
-commend just creating our own driver for the USB-OTG?=A0 <br>
-<br>I&#39;m developing with the Kilauea, and I guess I should ask how unsta=
-ble is Linux support for this Processor. <br>-- <br>Hunter Cobbs<br>
 
---0016364272b5503dac046a98d85a--
+Now the MSI stuff gets set-up, pci_enable_msi() does not fault. My
+interrupt handler is still not called though.
+
+Partial log below:
+
+[  246.907366] Setting up Freescale MSI support
+[  247.858192] irq: irq 67 on host
+/immr@e0000000/interrupt-controller@700 mapped to virtual irq 67
+[  249.323654] irq: irq 4 on host
+/immr@e0000000/interrupt-controller@700 mapped to virtual irq 21
+[  250.779210] irq: irq 81 on host
+/immr@e0000000/interrupt-controller@700 mapped to virtual irq 81
+[  252.244662] irq: irq 82 on host
+/immr@e0000000/interrupt-controller@700 mapped to virtual irq 82
+[  253.710192] irq: irq 86 on host
+/immr@e0000000/interrupt-controller@700 mapped to virtual irq 86
+[  255.175651] irq: irq 87 on host
+/immr@e0000000/interrupt-controller@700 mapped to virtual irq 87
+[  256.641100] irq: irq 88 on host
+/immr@e0000000/interrupt-controller@700 mapped to virtual irq 88
+[  258.106549] irq: irq 89 on host
+/immr@e0000000/interrupt-controller@700 mapped to virtual irq 89
+
+[  309.396138] pci_enable_msi()
+[  309.399735] irq: irq 0 on host /immr@e0000000/ipic-msi@7c0 mapped
+to virtual irq 24
+[  309.408030] fsl_compose_msi_msg: allocated srs: 0, ibs: 0
+[  309.414160] Enabled MSI interrupting.
+[  309.418449] pci_read_config_byte(..., PCI_REVISION_ID, ...)
+[  309.424754] Board revision: 0x01.
+[  309.428690] pci_request_regions()
+[  309.432654] pci_set_dma_mask()
+[  309.436337] Using a 64-bit DMA mask.
+[  309.455605] request_irq()
+[  309.458925] Succesfully requested IRQ #24 with dev_id 0xc71c5440
+
+debugfs shows:
+
+virq   hwirq    chip name        host name
+   17  0x00009   IPIC            /immr@e0000000/interrupt-controller@700
+   22  0x00010   IPIC            /immr@e0000000/interrupt-controller@700
+   23  0x0000e   IPIC            /immr@e0000000/interrupt-controller@700
+   24  0x00000   FSL-MSI         /immr@e0000000/ipic-msi@7c0
+   32  0x00020   IPIC            /immr@e0000000/interrupt-controller@700
+   33  0x00021   IPIC            /immr@e0000000/interrupt-controller@700
+   34  0x00022   IPIC            /immr@e0000000/interrupt-controller@700
+   35  0x00023   IPIC            /immr@e0000000/interrupt-controller@700
+   36  0x00024   IPIC            /immr@e0000000/interrupt-controller@700
+   37  0x00025   IPIC            /immr@e0000000/interrupt-controller@700
+   38  0x00026   IPIC            /immr@e0000000/interrupt-controller@700
+
+Regards, Leon.
