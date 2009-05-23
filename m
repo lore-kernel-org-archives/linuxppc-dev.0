@@ -1,16 +1,18 @@
-Return-Path: <hunter.cobbs@gmail.com>
-Received: from mail-qy0-f128.google.com (mail-qy0-f128.google.com
-	[209.85.221.128]) by ozlabs.org (Postfix) with ESMTP id 78696DE000
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 13:54:59 +1000 (EST)
-Received: by qyk34 with SMTP id 34so3897784qyk.17
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 20:54:57 -0700 (PDT)
+Return-Path: <wg@grandegger.com>
+Message-ID: <4A1797C5.1040907@grandegger.com>
+Date: Sat, 23 May 2009 08:29:25 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Date: Fri, 22 May 2009 22:48:40 -0500
-Message-ID: <ad84a70a0905222048i4e7ae5ddp66418f96d531f5f3@mail.gmail.com>
-Subject: PPC405EX based irq flooding with USB-OTG and usbserial device
-From: Hunter Cobbs <hunter.cobbs@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=00163642719eb5f806046a8c40dc
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
+	driver
+References: <4A16BAAE.3070401@grandegger.com>
+	<fa686aa40905220808kecd06cdqb570b78ca97f0ca6@mail.gmail.com>
+In-Reply-To: <fa686aa40905220808kecd06cdqb570b78ca97f0ca6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux Netdev List <netdev@vger.kernel.org>,
+	devicetree-discuss <devicetree-discuss@ozlabs.org>,
+	linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,48 +22,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---00163642719eb5f806046a8c40dc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hi Grant,
 
-Hello everyone,
+Grant Likely wrote:
+> Hi Wolfgang, thanks for the quick response.  Comments below...
+> 
+> On Fri, May 22, 2009 at 8:46 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>> +++ net-next-2.6/Documentation/powerpc/dts-bindings/can/sja1000.txt
+>> @@ -0,0 +1,37 @@
+>> +Memory mapped SJA1000 CAN controller from NXP (formerly Philips)
+>> +
+>> +Required properties:
+>> +
+>> +- compatible : should be "nxp,sja1000".
+>> +- reg : should specify the chip select, address offset and size used
+>> +       for the chip depending on the bus it is connected to.
+>> +- interrupts: property with a value describing the interrupt source
+>> +       (number and sensitivity) for that device. The encoding depends
+>> +       on the type of interrupt controller used.
+> 
+> Hmmm, "reg", "interrupts", and "interrupt-parent" are well understood
+> properties.  I don't think we need to keep boilerplate defining the
+> meaning every time a new binding is added.  (general musing; not an
+> ack or nack of this patch)
 
-This is my first post to the PPC dev list as my company has just started
-developing a new project based on Linux.  The good news is, this post is not
-debug-related as much as it is an introduction and query while I download
-the latest DENX kernel(only place I know that has the DWC_OTG driver).
+OK.
 
-I've been working with a Kilauea dev board and have had lots of trouble when
-I plug in a sierra-wireless modem dev kit on the USB.  It goes fine untill I
-actually try to communicate(pppd or minicom) with the little bugger and then
-my IRQs go through the roof.  And they only calm back down after I shut down
-my communicaiton channel.
+> However, what should be defined is *what* the register range is (ie.
+> one tuple; location of device registers), and what the interrupts are
+> (ie. single tuple for device's irq line).  Granted this is a trivial
+> case, but in the case of devices with more than one address range or
+> irq line, the meaning of each tuple is critical information.  I think
+> it would be a good pattern to establish.
 
-I've solved this issue with our board, and was wondering if it has since
-been fixed (I'm running 2.6.25-DENX).  I don't want to waste the board's
-time with a patch that is no longer necesarry.
+Sounds reasonable.
 
--- 
-Hunter Cobbs
+>> +Optional properties:
+>> +
+>> +- interrupt-parent : the phandle for the interrupt controller that
+>> +       services interrupts for that device.
+> 
+> Thinking further; I wouldn't even mention "interrupt-parent" here.
+> Anyone working with this stuff must already understand irq routing.
 
---00163642719eb5f806046a8c40dc
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+OK, I will remove it.
 
-Hello everyone, <br><br>This is my first post to the PPC dev list as my com=
-pany has just started developing a new project based on Linux.=A0 The good =
-news is, this post is not debug-related as much as it is an introduction an=
-d query while I download the latest DENX kernel(only place I know that has =
-the DWC_OTG driver).<br>
-<br>I&#39;ve been working with a Kilauea dev board and have had lots of tro=
-uble when I plug in a sierra-wireless modem dev kit on the USB.=A0 It goes =
-fine untill I actually try to communicate(pppd or minicom) with the little =
-bugger and then my IRQs go through the roof.=A0 And they only calm back dow=
-n after I shut down my communicaiton channel.<br>
-<br>I&#39;ve solved this issue with our board, and was wondering if it has =
-since been fixed (I&#39;m running 2.6.25-DENX).=A0 I don&#39;t want to wast=
-e the board&#39;s time with a patch that is no longer necesarry.<br clear=
-=3D"all">
-<br>-- <br>Hunter Cobbs<br>
+>> +- clock-frequency : CAN system clock frequency in Hz, which is normally
+>> +       half of the oscillator clock frequency. If not specified, a
+>> +       default value of 8000000 (8 MHz) is used.
+> 
+> A clock-frequency property typically refers to the bus clock
+> frequency.  Something like can-frequency would be better.
 
---00163642719eb5f806046a8c40dc--
+Ah, right, but I'm also not happy with "can-frequency". The manual
+speaks about the "internal clock", which is half of the external
+oscillator frequency. Maybe "internal-clock-frequency" might be better.
+
+>> +- cdr-reg : value of the SJA1000 clock divider register according to
+>> +       the SJA1000 data sheet. If not specified, a default value of
+>> +       0x48 is used.
+> 
+> Ewh.  The driver should be clueful enough to derive the clock divider
+> value given both the bus and can frequencies.  I don't like this
+> property.
+
+The clock divider register controls the CLKOUT frequency for the
+microcontroller another CAN controller and allows to deactivate the
+CLKOUT pin. It's not used to configure the CAN bus frequency.
+
+> 
+>> +- ocr-reg : value of the SJA1000 output control register according to
+>> +       the SJA1000 data sheet. If not specified, a default value of
+>> +       0x0a is used.
+> 
+> Ditto here; the binding should describe the usage mode; not the
+> register settings to get the usage mode.  What sort of settings will
+> the .dts author be writing here?
+
+Unfortunately, there are many:
+
+clkout-frequency
+bypass-comperator
+tx1-output-on-rx-irq
+
+#define OCR_MODE_BIPHASE  0x00
+#define OCR_MODE_TEST     0x01
+#define OCR_MODE_NORMAL   0x02
+#define OCR_MODE_CLOCK    0x03
+
+#define OCR_TX0_INVERT    0x04
+#define OCR_TX0_PULLDOWN  0x08
+#define OCR_TX0_PULLUP    0x10
+#define OCR_TX0_PUSHPULL  0x18
+#define OCR_TX1_INVERT    0x20
+#define OCR_TX1_PULLDOWN  0x40
+#define OCR_TX1_PULLUP    0x80
+#define OCR_TX1_PUSHPULL  0xc0
+
+I think implementing properties for each option is overkill.
+
+Wolfgang.
+
+> 
