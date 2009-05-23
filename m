@@ -1,15 +1,15 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id A8670DE182
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id E999DDE184
 	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 09:13:14 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1216789yxb.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 16:13:12 -0700 (PDT)
-Subject: [PATCH V2 8/9] Fabric bindings for STAC9766 on the Efika
+Received: by yw-out-2324.google.com with SMTP id 2so1211819ywt.39
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 16:13:14 -0700 (PDT)
+Subject: [PATCH V2 9/9] Support for AC97 on Phytec pmc030 base board.
 To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
 	alsa-devel@alsa-project.org, broonie@sirena.org.uk
 From: Jon Smirl <jonsmirl@gmail.com>
-Date: Sat, 23 May 2009 19:13:11 -0400
-Message-ID: <20090523231311.17919.38581.stgit@terra>
+Date: Sat, 23 May 2009 19:13:13 -0400
+Message-ID: <20090523231313.17919.93066.stgit@terra>
 In-Reply-To: <20090523231148.17919.46103.stgit@terra>
 References: <20090523231148.17919.46103.stgit@terra>
 MIME-Version: 1.0
@@ -23,52 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fabric bindings for STAC9766 AC97 codec on the Efika.
+Support for AC97 on Phytec pmc030 base board. A wm9712 AC97 codec is used.
 
 Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
- sound/soc/fsl/Kconfig              |    8 +++
- sound/soc/fsl/Makefile             |    3 +
- sound/soc/fsl/efika-audio-fabric.c |   94 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 105 insertions(+), 0 deletions(-)
- create mode 100644 sound/soc/fsl/efika-audio-fabric.c
+ sound/soc/fsl/Kconfig               |    7 +++
+ sound/soc/fsl/Makefile              |    1 
+ sound/soc/fsl/pcm030-audio-fabric.c |   94 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 102 insertions(+), 0 deletions(-)
+ create mode 100644 sound/soc/fsl/pcm030-audio-fabric.c
 
 diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index 3bce952..edd8516 100644
+index edd8516..5080e3e 100644
 --- a/sound/soc/fsl/Kconfig
 +++ b/sound/soc/fsl/Kconfig
-@@ -39,4 +39,12 @@ config SND_SOC_MPC5200_AC97
+@@ -47,4 +47,11 @@ config SND_MPC52xx_SOC_EFIKA
  	help
- 	  Say Y here to support the MPC5200 PSCs in AC97 mode.
+ 	  Say Y if you want to add support for sound on the Efika.
  
-+config SND_MPC52xx_SOC_EFIKA
-+	tristate "SoC AC97 Audio support for bbplan Efika and STAC9766"
-+	depends on PPC_EFIKA
++config SND_MPC52xx_SOC_PCM030
++	tristate "SoC AC97 Audio support for Phytec pcm030 and WM9712"
++	depends on PPC_MPC5200_SIMPLE
 +	select SND_SOC_MPC5200_AC97
-+	select SND_SOC_STAC9766
++	select SND_SOC_WM9712
 +	help
-+	  Say Y if you want to add support for sound on the Efika.
-+
++	  Say Y if you want to add support for sound on the Phytec pcm030 baseboard.
  
 diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index 14631a1..f406470 100644
+index f406470..5806d11 100644
 --- a/sound/soc/fsl/Makefile
 +++ b/sound/soc/fsl/Makefile
-@@ -15,3 +15,6 @@ obj-$(CONFIG_SND_MPC52xx_DMA) += mpc5200_dma.o
- obj-$(CONFIG_SND_SOC_MPC5200_I2S) += mpc5200_psc_i2s.o
- obj-$(CONFIG_SND_SOC_MPC5200_AC97) += mpc5200_psc_ac97.o
+@@ -17,4 +17,5 @@ obj-$(CONFIG_SND_SOC_MPC5200_AC97) += mpc5200_psc_ac97.o
  
-+# MPC5200 Machine Support
-+obj-$(CONFIG_SND_MPC52xx_SOC_EFIKA) += efika-audio-fabric.o
-+
-diff --git a/sound/soc/fsl/efika-audio-fabric.c b/sound/soc/fsl/efika-audio-fabric.c
+ # MPC5200 Machine Support
+ obj-$(CONFIG_SND_MPC52xx_SOC_EFIKA) += efika-audio-fabric.o
++obj-$(CONFIG_SND_MPC52xx_SOC_PCM030) += pcm030-audio-fabric.o
+ 
+diff --git a/sound/soc/fsl/pcm030-audio-fabric.c b/sound/soc/fsl/pcm030-audio-fabric.c
 new file mode 100644
-index 0000000..5126a81
+index 0000000..4bd957a
 --- /dev/null
-+++ b/sound/soc/fsl/efika-audio-fabric.c
++++ b/sound/soc/fsl/pcm030-audio-fabric.c
 @@ -0,0 +1,94 @@
 +/*
-+ * Efika driver for the PSC of the Freescale MPC52xx configured as AC97 interface
++ * Phytec pcm030 driver for the PSC of the Freescale MPC52xx configured as AC97 interface
 + *
 + * Copyright 2008 Jon Smirl, Digispeaker
 + * Author: Jon Smirl <jonsmirl@gmail.com>
@@ -96,45 +94,45 @@ index 0000000..5126a81
 +
 +#include "mpc5200_dma.h"
 +#include "mpc5200_psc_ac97.h"
-+#include "../codecs/stac9766.h"
++#include "../codecs/wm9712.h"
 +
 +static struct snd_soc_device device;
 +static struct snd_soc_card card;
 +
-+static struct snd_soc_dai_link efika_fabric_dai[] = {
++static struct snd_soc_dai_link pcm030_fabric_dai[] = {
 +{
 +	.name = "AC97",
 +	.stream_name = "AC97 Analog",
-+	.codec_dai = &stac9766_dai[STAC9766_DAI_AC97_ANALOG],
++	.codec_dai = &wm9712_dai[WM9712_DAI_AC97_HIFI],
 +	.cpu_dai = &psc_ac97_dai[MPC5200_AC97_NORMAL],
 +},
 +{
 +	.name = "AC97",
 +	.stream_name = "AC97 IEC958",
-+	.codec_dai = &stac9766_dai[STAC9766_DAI_AC97_DIGITAL],
++	.codec_dai = &wm9712_dai[WM9712_DAI_AC97_AUX],
 +	.cpu_dai = &psc_ac97_dai[MPC5200_AC97_SPDIF],
 +},
 +};
 +
-+static __init int efika_fabric_init(void)
++static __init int pcm030_fabric_init(void)
 +{
 +	struct platform_device *pdev;
 +	int rc;
 +
-+	if (!machine_is_compatible("bplan,efika"))
++	if (!machine_is_compatible("phytec,pcm030"))
 +		return -ENODEV;
 +
 +	card.platform = &mpc5200_audio_dma_platform;
-+	card.name = "Efika";
-+	card.dai_link = efika_fabric_dai;
-+	card.num_links = ARRAY_SIZE(efika_fabric_dai);
++	card.name = "pcm030";
++	card.dai_link = pcm030_fabric_dai;
++	card.num_links = ARRAY_SIZE(pcm030_fabric_dai);
 +
 +	device.card = &card;
-+	device.codec_dev = &soc_codec_dev_stac9766;
++	device.codec_dev = &soc_codec_dev_wm9712;
 +
 +	pdev = platform_device_alloc("soc-audio", 1);
 +	if (!pdev) {
-+		pr_err("efika_fabric_init: platform_device_alloc() failed\n");
++		pr_err("pcm030_fabric_init: platform_device_alloc() failed\n");
 +		return -ENODEV;
 +	}
 +
@@ -143,21 +141,21 @@ index 0000000..5126a81
 +
 +	rc = platform_device_add(pdev);
 +	if (rc) {
-+		pr_err("efika_fabric_init: platform_device_add() failed\n");
++		pr_err("pcm030_fabric_init: platform_device_add() failed\n");
 +		return -ENODEV;
 +	}
 +	return 0;
 +}
 +
-+static __exit void efika_fabric_exit(void)
++static __exit void pcm030_fabric_exit(void)
 +{
 +}
 +
-+module_init(efika_fabric_init);
-+module_exit(efika_fabric_exit);
++module_init(pcm030_fabric_init);
++module_exit(pcm030_fabric_exit);
 +
 +
 +MODULE_AUTHOR("Jon Smirl <jonsmirl@gmail.com>");
-+MODULE_DESCRIPTION(DRV_NAME ": mpc5200 Efika fabric driver");
++MODULE_DESCRIPTION(DRV_NAME ": mpc5200 pcm030 fabric driver");
 +MODULE_LICENSE("GPL");
 +
