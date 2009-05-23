@@ -1,17 +1,17 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4A18298E.8090209@grandegger.com>
-Date: Sat, 23 May 2009 18:51:26 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
-	driver
-References: <4A16BAAE.3070401@grandegger.com>
-	<200905231315.57016.arnd@arndb.de>
-In-Reply-To: <200905231315.57016.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux Netdev List <netdev@vger.kernel.org>, devicetree-discuss@ozlabs.org,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id C19D4DDF9E
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 04:14:26 +1000 (EST)
+To: Hunter Cobbs <hunter.cobbs@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: PPC405EX based irq flooding with USB-OTG and usbserial device
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <ad84a70a0905222048i4e7ae5ddp66418f96d531f5f3@mail.gmail.com>
+References: <ad84a70a0905222048i4e7ae5ddp66418f96d531f5f3@mail.gmail.com>
+Date: Sat, 23 May 2009 20:14:22 +0200
+Message-Id: <20090523181422.794B3832E416@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Friday 22 May 2009, Wolfgang Grandegger wrote:
->> This patch adds a generic driver for SJA1000 chips on the OpenFirmware
->> platform bus found on embedded PowerPC systems. 
-> 
-> Nice driver!
-> 
->> +static u8 sja1000_ofp_read_reg(const struct net_device *dev, int reg)
->> +{
->> +	return in_8((void __iomem *)(dev->base_addr + reg));
->> +}
->> +
->> +static void sja1000_ofp_write_reg(const struct net_device *dev, int reg, u8 val)
->> +{
->> +	out_8((void __iomem *)(dev->base_addr + reg), val);
->> +}
-> 
-> Minor nitpicking: dev->base_addr should be defined as an __iomem pointer
-> so you can avoid the cast here and in the ioremap/iounmap path.
+Dear Hunter,
 
-Here the member "base_addr" of "struct net_device" is used and it's not
-up to me to change the type.
+In message <ad84a70a0905222048i4e7ae5ddp66418f96d531f5f3@mail.gmail.com> you wrote:
+> 
+> This is my first post to the PPC dev list as my company has just started
+> developing a new project based on Linux.  The good news is, this post is not
+> debug-related as much as it is an introduction and query while I download
+> the latest DENX kernel(only place I know that has the DWC_OTG driver).
 
-Wolfgang.
+there is a strong reason why we decided  not  to  try  to  push  this
+driver  upstream:  it  is not in a state that would have a chance for
+being accepted for mainline. The problems you  are  experiencing  are
+probably   not   the   only  one.  Please  consider  this  driver  as
+unsupported.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Ada is PL/I trying to be Smalltalk.                 - Codoso diBlini
