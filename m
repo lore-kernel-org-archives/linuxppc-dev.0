@@ -1,19 +1,20 @@
 Return-Path: <hunter.cobbs@gmail.com>
 Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id DD2B1DE074
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 22:44:27 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so1293402qwe.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 05:44:26 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTP id 98D77DE151
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 23:44:57 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so1302691qwe.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 06:44:56 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <4A17E7FD.1070905@mindspring.com>
+In-Reply-To: <ad84a70a0905230544m42bc2ce1o8c3d9a240f83fcc8@mail.gmail.com>
 References: <ad84a70a0905222048i4e7ae5ddp66418f96d531f5f3@mail.gmail.com>
 	<4A17E7FD.1070905@mindspring.com>
-Date: Sat, 23 May 2009 07:44:26 -0500
-Message-ID: <ad84a70a0905230544m42bc2ce1o8c3d9a240f83fcc8@mail.gmail.com>
+	<ad84a70a0905230544m42bc2ce1o8c3d9a240f83fcc8@mail.gmail.com>
+Date: Sat, 23 May 2009 08:44:55 -0500
+Message-ID: <ad84a70a0905230644u59bc14d3r34aea451906f86e4@mail.gmail.com>
 Subject: Re: PPC405EX based irq flooding with USB-OTG and usbserial device
 From: Hunter Cobbs <hunter.cobbs@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=0016364272b5c0d057046a93bc2b
+Content-Type: multipart/alternative; boundary=0016364272b5177680046a949509
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,150 +24,235 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0016364272b5c0d057046a93bc2b
+--0016364272b5177680046a949509
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-Egads!  Forgot to respond to the list!
+OK, here are the patches... one for ppc4xx_dma.h and one for the Makefile
 
-My git checkout failed last night, so I'm downloading the resource cd, but I
-can tell you what I did before I get the actual patch done, and you can tell
-me if my logic is sound.
 
-First thing I thought when I saw this is WHY use IRQ based methods to access
-a USB controller with internal DMA transfers?  I tried in vain to enable
-this with the driver module parameters(which I dug up how to specify module
-parameters to built-in drivers from an old 2.2-series kernel discussion).
-So, then I put on my boots and started slogging throught the driver.
+----------- ppc4xx_dma.h snip --------
+--- linux-2.6-denx/drivers/usb/gadget/dwc_otg/ppc4xx_dma.h    2008-05-07
+09:13:33.000000000 -0500
++++ linux-2.6-denx_patched/drivers/usb/gadget/dwc_otg/ppc4xx_dma.h
+2009-05-23 08:33:26.172500000 -0500
+@@ -84,8 +84,13 @@
+  * DMA Channel Control Registers
+  */
 
-Getting frustrated with that line of execution, I turned up the verbosity on
-the kernel compile and noticed a warning in the dwc_otg compilation.
-Specifically that a left and right shift go out of bounds of the variables
-used.  The only place this occurs is in a section of code that is wrapped
-with DMA_64BIT.  Which made absolutely no sense because the DMA controller
-on the 405EX is only 32 bits wide.  On tracking this define down, I come to
-find out that someone made the assumption that the 44x and the 405EX/r all
-have the same DMA controller.  Which is incorrect, they both have the same
-control register definitions(the offset of 1 due to the MSBit being reserved
-and the register being in Big Endian mode); however, the 44x is 64bits and
-the 405 is 32bits.  So, I broke the DMA control down into two areas,
-data-width and control register offsets.
+-#if defined(CONFIG_44x) || defined(CONFIG_405EX) || defined(CONFIG_405EXr)
++/* The PPC44x series has a 64Bit DMA */
++#if defined(CONFIG_44x)
+ #define    PPC4xx_DMA_64BIT
++#endif
++
++/* The PPC44x and PPC405EX/r have a reserved bit in DMA control register*/
++#if defined(CONFIG_44x) || defined(CONFIG_405EX) || defined(CONFIG_405EXr)
+ #define DMA_CR_OFFSET 1
+ #else
+ #define DMA_CR_OFFSET 0
+------------- end snip -----------
 
-When this still didn't fix the problem, I found yet another section that can
-force you to operate in slave(irq) mode only wrapped in yet another define.
-When I search out that define (DWC_SLAVE I believe), I find it in the
-dwc_otg Makefile.
 
-Correcting both of these has enabled full DMA access to the USB, and I'm
-doing much better with my sierra wireless dev kit.
 
-On Sat, May 23, 2009 at 7:11 AM, Chuck Meade <chuckmeade@mindspring.com>wrote:
+--------- Makefile snip ----------
+--- linux-2.6-denx/drivers/usb/gadget/dwc_otg/Makefile    2008-05-07
+09:13:33.000000000 -0500
++++ linux-2.6-denx_patched/drivers/usb/gadget/dwc_otg/Makefile    2009-05-23
+08:38:04.182500000 -0500
+@@ -22,7 +22,7 @@
+ #KBUILD_CPPFLAGS    += -DOTG_EXT_CHG_PUMP
 
-> Hunter Cobbs wrote:
-> > Hello everyone,
-> >
-> > This is my first post to the PPC dev list as my company has just started
-> > developing a new project based on Linux.  The good news is, this post is
-> > not debug-related as much as it is an introduction and query while I
-> > download the latest DENX kernel(only place I know that has the DWC_OTG
-> > driver).
-> >
-> > I've been working with a Kilauea dev board and have had lots of trouble
-> > when I plug in a sierra-wireless modem dev kit on the USB.  It goes fine
-> > untill I actually try to communicate(pppd or minicom) with the little
-> > bugger and then my IRQs go through the roof.  And they only calm back
-> > down after I shut down my communicaiton channel.
-> >
-> > I've solved this issue with our board, and was wondering if it has since
-> > been fixed (I'm running 2.6.25-DENX).  I don't want to waste the board's
-> > time with a patch that is no longer necesarry.
-> >
-> > --
-> > Hunter Cobbs
+ # PLB DMA mode
+-KBUILD_CPPFLAGS    += -Dlinux -DDWC_SLAVE -DOTG_PLB_DMA
+-DOTG_PLB_DMA_TASKLET  #-DDWC_DEVICE_ONLY # -DDWC_HS_ELECT_TST  -DDWC_SLAVE
+-DDWC_HOST_ONLY
++KBUILD_CPPFLAGS    += -Dlinux -DOTG_PLB_DMA -DOTG_PLB_DMA_TASKLET
+ endif
+
+ ifeq ($(CONFIG_460EX),y)
+------------- end snip -----------
+
+
+On Sat, May 23, 2009 at 7:44 AM, Hunter Cobbs <hunter.cobbs@gmail.com>wrote:
+
+> Egads!  Forgot to respond to the list!
 >
-> Hello Hunter,
+> My git checkout failed last night, so I'm downloading the resource cd, but
+> I can tell you what I did before I get the actual patch done, and you can
+> tell me if my logic is sound.
 >
-> It would absolutely *not* be a waste of anyone's time.  I for one would
-> like
-> to see how you solved this.  I am dealing with the same problem, with the
-> same
-> setup.
+> First thing I thought when I saw this is WHY use IRQ based methods to
+> access a USB controller with internal DMA transfers?  I tried in vain to
+> enable this with the driver module parameters(which I dug up how to specify
+> module parameters to built-in drivers from an old 2.2-series kernel
+> discussion).  So, then I put on my boots and started slogging throught the
+> driver.
 >
-> The underlying cause for this problem is the PPC405EX CPU's erratum USBO_9.
-> The USB 2.0 PING protocol is supposed to handle a PING transaction in
-> the hardware -- note that in USB 2.0, a PING is the method used by the
-> sender to
-> determine if it can send.  If I remember correctly, erratum USBO_9 is
-> caused when
-> a NAK response from the PING transaction is handled not in hardware, but
-> instead
-> as an interrupt in software, and that NAK leads to a lot of processing.  In
-> the
-> 2.6.25 Denx Linux tree that I used, that processing ends up trying to
-> restart the
-> channel, restart the send, which leads to yet another PING/NAK sequence,
-> yet another
-> interrupt...
+> Getting frustrated with that line of execution, I turned up the verbosity
+> on the kernel compile and noticed a warning in the dwc_otg compilation.
+> Specifically that a left and right shift go out of bounds of the variables
+> used.  The only place this occurs is in a section of code that is wrapped
+> with DMA_64BIT.  Which made absolutely no sense because the DMA controller
+> on the 405EX is only 32 bits wide.  On tracking this define down, I come to
+> find out that someone made the assumption that the 44x and the 405EX/r all
+> have the same DMA controller.  Which is incorrect, they both have the same
+> control register definitions(the offset of 1 due to the MSBit being reserved
+> and the register being in Big Endian mode); however, the 44x is 64bits and
+> the 405 is 32bits.  So, I broke the DMA control down into two areas,
+> data-width and control register offsets.
 >
-> The end result is that you get over 100,000 interrupts (with significant
-> interrupt
-> handling logic) per second, and the target can't do anything else.  I was
-> able
-> to get this interrupt count by looking at /proc/interrupts, then causing
-> this problem
-> for 20 seconds, then pulling out the USB modem physically (mine is on a
-> Express card)
-> to stop the interrupt storm, then checking /proc/interrupts again.
->  Averaged over
-> 100,000 ints/sec.
+> When this still didn't fix the problem, I found yet another section that
+> can force you to operate in slave(irq) mode only wrapped in yet another
+> define.  When I search out that define (DWC_SLAVE I believe), I find it in
+> the dwc_otg Makefile.
 >
-> In contact with AMCC, they told us they are not respinning the CPU (at
-> least not
-> at this time) to fix this erratum.
+> Correcting both of these has enabled full DMA access to the USB, and I'm
+> doing much better with my sierra wireless dev kit.
 >
-> I have tried to solve the problem as suggested by the erratum, by not
-> allowing the
-> NAK interrupt handling to *directly* cause a retry of the send, but rather
-> to wait
-> until the next SOF interrupt (start of microframe, which happens 8,000
-> times per sec)
-> to restart it.  "Breaking the chain" like this does allow the board to
-> proceed, but
-> I think it is suboptimal, or at least unfortunate.
+> On Sat, May 23, 2009 at 7:11 AM, Chuck Meade <chuckmeade@mindspring.com>wrote:
 >
-> One painful side effect of this workaround is that you cannot disable the
-> 8,000 SOF
-> interrupts/second, or at least some of them, since they are being used now
-> for another
-> purpose -- recovery from the erratum.
+>> Hunter Cobbs wrote:
+>> > Hello everyone,
+>> >
+>> > This is my first post to the PPC dev list as my company has just started
+>> > developing a new project based on Linux.  The good news is, this post is
+>> > not debug-related as much as it is an introduction and query while I
+>> > download the latest DENX kernel(only place I know that has the DWC_OTG
+>> > driver).
+>> >
+>> > I've been working with a Kilauea dev board and have had lots of trouble
+>> > when I plug in a sierra-wireless modem dev kit on the USB.  It goes fine
+>> > untill I actually try to communicate(pppd or minicom) with the little
+>> > bugger and then my IRQs go through the roof.  And they only calm back
+>> > down after I shut down my communicaiton channel.
+>> >
+>> > I've solved this issue with our board, and was wondering if it has since
+>> > been fixed (I'm running 2.6.25-DENX).  I don't want to waste the board's
+>> > time with a patch that is no longer necesarry.
+>> >
+>> > --
+>> > Hunter Cobbs
+>>
+>> Hello Hunter,
+>>
+>> It would absolutely *not* be a waste of anyone's time.  I for one would
+>> like
+>> to see how you solved this.  I am dealing with the same problem, with the
+>> same
+>> setup.
+>>
+>> The underlying cause for this problem is the PPC405EX CPU's erratum
+>> USBO_9.
+>> The USB 2.0 PING protocol is supposed to handle a PING transaction in
+>> the hardware -- note that in USB 2.0, a PING is the method used by the
+>> sender to
+>> determine if it can send.  If I remember correctly, erratum USBO_9 is
+>> caused when
+>> a NAK response from the PING transaction is handled not in hardware, but
+>> instead
+>> as an interrupt in software, and that NAK leads to a lot of processing.
+>>  In the
+>> 2.6.25 Denx Linux tree that I used, that processing ends up trying to
+>> restart the
+>> channel, restart the send, which leads to yet another PING/NAK sequence,
+>> yet another
+>> interrupt...
+>>
+>> The end result is that you get over 100,000 interrupts (with significant
+>> interrupt
+>> handling logic) per second, and the target can't do anything else.  I was
+>> able
+>> to get this interrupt count by looking at /proc/interrupts, then causing
+>> this problem
+>> for 20 seconds, then pulling out the USB modem physically (mine is on a
+>> Express card)
+>> to stop the interrupt storm, then checking /proc/interrupts again.
+>>  Averaged over
+>> 100,000 ints/sec.
+>>
+>> In contact with AMCC, they told us they are not respinning the CPU (at
+>> least not
+>> at this time) to fix this erratum.
+>>
+>> I have tried to solve the problem as suggested by the erratum, by not
+>> allowing the
+>> NAK interrupt handling to *directly* cause a retry of the send, but rather
+>> to wait
+>> until the next SOF interrupt (start of microframe, which happens 8,000
+>> times per sec)
+>> to restart it.  "Breaking the chain" like this does allow the board to
+>> proceed, but
+>> I think it is suboptimal, or at least unfortunate.
+>>
+>> One painful side effect of this workaround is that you cannot disable the
+>> 8,000 SOF
+>> interrupts/second, or at least some of them, since they are being used now
+>> for another
+>> purpose -- recovery from the erratum.
+>>
+>> The 8000 SOF ints being handled per second do cause a measurable drain on
+>> the
+>> CPU.  In some cursory testing we see a 10% slowdown of certain
+>> transactions in
+>> lmbench.
+>>
+>> So please send me your patch for the dwc_otg driver.  I am very interested
+>> in what
+>> you did, and if it perhaps is a better solution for the problem we both
+>> are seeing
+>> than what I implemented.
+>>
+>> Thanks in advance,
+>> Chuck
+>>
+>>
 >
-> The 8000 SOF ints being handled per second do cause a measurable drain on
-> the
-> CPU.  In some cursory testing we see a 10% slowdown of certain transactions
-> in
-> lmbench.
 >
-> So please send me your patch for the dwc_otg driver.  I am very interested
-> in what
-> you did, and if it perhaps is a better solution for the problem we both are
-> seeing
-> than what I implemented.
+> --
+> Hunter Cobbs
 >
-> Thanks in advance,
-> Chuck
->
->
+
 
 
 -- 
 Hunter Cobbs
 
---0016364272b5c0d057046a93bc2b
+--0016364272b5177680046a949509
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Egads!=A0 Forgot to respond to the list!<br><br>My git checkout failed last=
- night, so I&#39;m downloading the resource cd,
+OK, here are the patches... one for ppc4xx_dma.h and one for the Makefile<b=
+r><br><br>----------- ppc4xx_dma.h snip --------<br>--- linux-2.6-denx/driv=
+ers/usb/gadget/dwc_otg/ppc4xx_dma.h=A0=A0=A0 2008-05-07 09:13:33.000000000 =
+-0500<br>
++++ linux-2.6-denx_patched/drivers/usb/gadget/dwc_otg/ppc4xx_dma.h=A0=A0=A0=
+ 2009-05-23 08:33:26.172500000 -0500<br>@@ -84,8 +84,13 @@<br>=A0 * DMA Cha=
+nnel Control Registers<br>=A0 */<br>=A0<br>-#if defined(CONFIG_44x) || defi=
+ned(CONFIG_405EX) || defined(CONFIG_405EXr)<br>
++/* The PPC44x series has a 64Bit DMA */<br>+#if defined(CONFIG_44x)<br>=A0=
+#define=A0=A0=A0 PPC4xx_DMA_64BIT<br>+#endif<br>+<br>+/* The PPC44x and PPC=
+405EX/r have a reserved bit in DMA control register*/<br>+#if defined(CONFI=
+G_44x) || defined(CONFIG_405EX) || defined(CONFIG_405EXr)<br>
+=A0#define DMA_CR_OFFSET 1<br>=A0#else<br>=A0#define DMA_CR_OFFSET 0<br>---=
+---------- end snip -----------<br><br><br><br>--------- Makefile snip ----=
+------<br>--- linux-2.6-denx/drivers/usb/gadget/dwc_otg/Makefile=A0=A0=A0 2=
+008-05-07 09:13:33.000000000 -0500<br>
++++ linux-2.6-denx_patched/drivers/usb/gadget/dwc_otg/Makefile=A0=A0=A0 200=
+9-05-23 08:38:04.182500000 -0500<br>@@ -22,7 +22,7 @@<br>=A0#KBUILD_CPPFLAG=
+S=A0=A0=A0 +=3D -DOTG_EXT_CHG_PUMP<br>=A0<br>=A0# PLB DMA mode<br>-KBUILD_C=
+PPFLAGS=A0=A0=A0 +=3D -Dlinux -DDWC_SLAVE -DOTG_PLB_DMA -DOTG_PLB_DMA_TASKL=
+ET=A0 #-DDWC_DEVICE_ONLY # -DDWC_HS_ELECT_TST=A0 -DDWC_SLAVE -DDWC_HOST_ONL=
+Y<br>
++KBUILD_CPPFLAGS=A0=A0=A0 +=3D -Dlinux -DOTG_PLB_DMA -DOTG_PLB_DMA_TASKLET =
+<br>=A0endif<br>=A0<br>=A0ifeq ($(CONFIG_460EX),y)<br>------------- end sni=
+p -----------<br><br><br><div class=3D"gmail_quote">On Sat, May 23, 2009 at=
+ 7:44 AM, Hunter Cobbs <span dir=3D"ltr">&lt;<a href=3D"mailto:hunter.cobbs=
+@gmail.com">hunter.cobbs@gmail.com</a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
+204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">Egads!=A0 Forgot =
+to respond to the list!<div class=3D"im"><br><br>My git checkout failed las=
+t night, so I&#39;m downloading the resource cd,
 but I can tell you what I did before I get the actual patch done, and
 you can tell me if my logic is sound.<br><br>First thing I thought when
 I saw this is WHY use IRQ based methods to access a USB controller with
@@ -192,13 +278,14 @@ that can force you to operate in slave(irq) mode only wrapped in yet
 another define.=A0 When I search out that define (DWC_SLAVE I believe), I
 find it in the dwc_otg Makefile.<br>
 <br>Correcting both of these has enabled full DMA access to the USB, and I&=
-#39;m doing much better with my sierra wireless dev kit.<br><br><div class=
-=3D"gmail_quote">On Sat, May 23, 2009 at 7:11 AM, Chuck Meade <span dir=3D"=
-ltr">&lt;<a href=3D"mailto:chuckmeade@mindspring.com">chuckmeade@mindspring=
-.com</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, =
-204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div><div></div><=
-div class=3D"h5">Hunter Cobbs wrote:<br>
+#39;m doing much better with my sierra wireless dev kit.<br><br></div><div =
+class=3D"gmail_quote"><div class=3D"im">On Sat, May 23, 2009 at 7:11 AM, Ch=
+uck Meade <span dir=3D"ltr">&lt;<a href=3D"mailto:chuckmeade@mindspring.com=
+" target=3D"_blank">chuckmeade@mindspring.com</a>&gt;</span> wrote:<br>
+
+</div><div><div></div><div class=3D"h5"><blockquote class=3D"gmail_quote" s=
+tyle=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8e=
+x; padding-left: 1ex;"><div><div></div><div>Hunter Cobbs wrote:<br>
 &gt; Hello everyone,<br>
 &gt;<br>
 &gt; This is my first post to the PPC dev list as my company has just start=
@@ -302,6 +389,8 @@ than what I implemented.<br>
 Thanks in advance,<br>
 <font color=3D"#888888">Chuck<br>
 <br>
+</font></blockquote></div></div></div><br><br clear=3D"all"><br>-- <br><fon=
+t color=3D"#888888">Hunter Cobbs<br>
 </font></blockquote></div><br><br clear=3D"all"><br>-- <br>Hunter Cobbs<br>
 
---0016364272b5c0d057046a93bc2b--
+--0016364272b5177680046a949509--
