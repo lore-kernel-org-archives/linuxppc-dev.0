@@ -1,27 +1,16 @@
-Return-Path: <jeremy@goop.org>
-Received: from claw.goop.org (claw.goop.org [74.207.240.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.goop.org", Issuer "Goop.org CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 5EFE2DE1B2
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 09:55:35 +1000 (EST)
-Message-ID: <4A173B72.5000201@goop.org>
-Date: Fri, 22 May 2009 16:55:30 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+Return-Path: <hunter.cobbs@gmail.com>
+Received: from mail-qy0-f128.google.com (mail-qy0-f128.google.com
+	[209.85.221.128]) by ozlabs.org (Postfix) with ESMTP id 78696DE000
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 13:54:59 +1000 (EST)
+Received: by qyk34 with SMTP id 34so3897784qyk.17
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 May 2009 20:54:57 -0700 (PDT)
 MIME-Version: 1.0
-To: Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: [PATCH V2 2/3] powerpc: Add support for swiotlb on 32-bit
-References: <1242340949-16369-1-git-send-email-beckyb@kernel.crashing.org>	
-	<1242340949-16369-2-git-send-email-beckyb@kernel.crashing.org>	
-	<20090519142656T.fujita.tomonori@lab.ntt.co.jp>	
-	<19E48A70-3332-423C-ACAD-390F940EE81C@kernel.crashing.org>	
-	<4A1592CF.8000208@goop.org>	
-	<E6DAA792-9923-4B76-9759-6955AABE3EAB@kernel.crashing.org>
-	<1242990702.22654.253.camel@zakaz.uk.xensource.com>
-In-Reply-To: <1242990702.22654.253.camel@zakaz.uk.xensource.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 22 May 2009 22:48:40 -0500
+Message-ID: <ad84a70a0905222048i4e7ae5ddp66418f96d531f5f3@mail.gmail.com>
+Subject: PPC405EX based irq flooding with USB-OTG and usbserial device
+From: Hunter Cobbs <hunter.cobbs@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=00163642719eb5f806046a8c40dc
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,37 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ian Campbell wrote:
-> On Thu, 2009-05-21 at 14:27 -0400, Becky Bruce wrote:
->   
->> I can work with that, but it's going to be a bit inefficient, as I  
->> actually need the dma_addr_t, not the phys_addr_t, so I'll have to  
->> convert.  In every case, this is a conversion I've already done and  
->> that I need in the calling code as well. 
->>     
->
-> Does
->
->     dma_addr_t dma_map_range(struct device *hwdev, phys_addr_t addr,
->     size_t size);
->
-> work for you?
->
-> If the range does not need mapping then it returns the dma address, if
-> you needed to calculate the dma address anyway to figure out if mapping
-> is required then this is fine. If the range does need mapping then it
-> returns NULL.
->   
+--00163642719eb5f806046a8c40dc
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-My only concern is whether dma_addr_t == 0 is actually equivalent to 
-NULL.  That is, can we be sure that address 0 will never be used?
+Hello everyone,
 
-Taking dma_alloc_coherent as a model, we could have something like:
+This is my first post to the PPC dev list as my company has just started
+developing a new project based on Linux.  The good news is, this post is not
+debug-related as much as it is an introduction and query while I download
+the latest DENX kernel(only place I know that has the DWC_OTG driver).
 
-    int dma_map_range(struct device *hwdev, phys_addr_t addr, size_t size, dma_addr_t *dma_addrp);
-      
+I've been working with a Kilauea dev board and have had lots of trouble when
+I plug in a sierra-wireless modem dev kit on the USB.  It goes fine untill I
+actually try to communicate(pppd or minicom) with the little bugger and then
+my IRQs go through the roof.  And they only calm back down after I shut down
+my communicaiton channel.
 
-where *dma_addrp is set if the function returns success (bool return 
-type might be clearer).
+I've solved this issue with our board, and was wondering if it has since
+been fixed (I'm running 2.6.25-DENX).  I don't want to waste the board's
+time with a patch that is no longer necesarry.
 
-    J
+-- 
+Hunter Cobbs
+
+--00163642719eb5f806046a8c40dc
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hello everyone, <br><br>This is my first post to the PPC dev list as my com=
+pany has just started developing a new project based on Linux.=A0 The good =
+news is, this post is not debug-related as much as it is an introduction an=
+d query while I download the latest DENX kernel(only place I know that has =
+the DWC_OTG driver).<br>
+<br>I&#39;ve been working with a Kilauea dev board and have had lots of tro=
+uble when I plug in a sierra-wireless modem dev kit on the USB.=A0 It goes =
+fine untill I actually try to communicate(pppd or minicom) with the little =
+bugger and then my IRQs go through the roof.=A0 And they only calm back dow=
+n after I shut down my communicaiton channel.<br>
+<br>I&#39;ve solved this issue with our board, and was wondering if it has =
+since been fixed (I&#39;m running 2.6.25-DENX).=A0 I don&#39;t want to wast=
+e the board&#39;s time with a patch that is no longer necesarry.<br clear=
+=3D"all">
+<br>-- <br>Hunter Cobbs<br>
+
+--00163642719eb5f806046a8c40dc--
