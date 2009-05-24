@@ -1,23 +1,21 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A5DCDDFE7
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 05:15:01 +1000 (EST)
-Date: Sun, 24 May 2009 20:14:49 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Message-ID: <20090524191448.GD4525@sirena.org.uk>
-References: <20090523231148.17919.46103.stgit@terra>
-	<20090523231257.17919.4483.stgit@terra>
-	<20090524111118.GC4933@sirena.org.uk>
-	<9e4733910905240828q4b4cfd96xe840f3ae983143dc@mail.gmail.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
+	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id 8E456DE047
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 06:10:54 +1000 (EST)
+Received: by qyk34 with SMTP id 34so4850295qyk.17
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 13:10:53 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910905240828q4b4cfd96xe840f3ae983143dc@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH V2 1/9] Register the wm9712 DAIs on module
-	load
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+In-Reply-To: <20090524185509.GA3561@pengutronix.de>
+References: <20090523231148.17919.46103.stgit@terra>
+	<20090523231305.17919.12239.stgit@terra>
+	<20090524185509.GA3561@pengutronix.de>
+Date: Sun, 24 May 2009 16:10:52 -0400
+Message-ID: <9e4733910905241310n59952fd2oaafd7f1363db324@mail.gmail.com>
+Subject: Re: [PATCH V2 5/9] Main rewite of the mpc5200 audio DMA code
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 24, 2009 at 11:28:15AM -0400, Jon Smirl wrote:
-> On Sun, May 24, 2009 at 7:11 AM, Mark Brown
+On Sun, May 24, 2009 at 2:55 PM, Wolfram Sang <w.sang@pengutronix.de> wrote=
+:
+>> Rewrite the mpc5200 audio DMA code to support both I2S and AC97. Make it=
+ more robust.
+>
+> Why is it more robust?
 
-> > Why do you wish to do this - ASoC does not require or use DAI registration
-> > for AC97 CODECs?
+I've implemented retries for when the AC97 hardware doesn't reset on
+first try. About 10% of the time both the Efika and pcm030 AC97 codecs
+don't reset on first try and need to be poked multiple times.  Failure
+is indicated by not having the link clock start ticking. Every once in
+a while even five pokes won't get the link started and I have to power
+cycle.
 
-> Then what is wrong with my binding code? If I take out the
-> registration my bind fails.
+I don't have an oscilloscope, after I get these basic drivers in maybe
+someone can put a scope on this and figure out why reset is failing.
+I've read the various datasheets and I believe my reset pulses have
+the correct timings.
 
-It appears that the problem here is that your CPU DAI isn't marked as an
-ac97 DAI by having ac97_control set so the core expects the codec to
-instantiate prior to the card.  Setting ac97_control ought to fix the
-problem, but obviously I can't test.
+>
+> --
+> Pengutronix e.K. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | Wo=
+lfram Sang =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0|
+> Industrial Linux Solutions =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | http://www.p=
+engutronix.de/ =A0|
+>
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.9 (GNU/Linux)
+>
+> iEYEARECAAYFAkoZmA0ACgkQD27XaX1/VRvugwCgsluxfp1rJH2MVFMTH6Yqo8bX
+> dnIAn1z0QRIFEUJa0XpGFE937siwf8Cy
+> =3DM0wP
+> -----END PGP SIGNATURE-----
+>
+>
 
-When looking at problems like this it's worth taking a step back and
-looking at why the existing code is the way that it is when considering
-if you've found the right fix.  In this case AC97 is fairly widely used
-and there are also a number of WM9712 users but neither WM9712 or any of
-the other AC97 CODEC drivers ever register their DAIs.  That should be
-an indication that either things probably should work without a change
-to existing code or things are completely broken and something wider
-than a change in a single driver is required in order to get things
-working.
+
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
