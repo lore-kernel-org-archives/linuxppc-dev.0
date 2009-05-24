@@ -2,18 +2,18 @@ Return-Path: <broonie@sirena.org.uk>
 Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AC483DE058
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 21:46:51 +1000 (EST)
-Date: Sun, 24 May 2009 12:46:35 +0100
+	by ozlabs.org (Postfix) with ESMTPS id 214D4DE03E
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 22:10:21 +1000 (EST)
+Date: Sun, 24 May 2009 13:10:09 +0100
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Jon Smirl <jonsmirl@gmail.com>
-Message-ID: <20090524114635.GF4933@sirena.org.uk>
+Message-ID: <20090524121009.GG4933@sirena.org.uk>
 References: <20090523231148.17919.46103.stgit@terra>
-	<20090523231307.17919.5277.stgit@terra>
+	<20090523231309.17919.83073.stgit@terra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20090523231307.17919.5277.stgit@terra>
-Subject: Re: [alsa-devel] [PATCH V2 6/9] Codec for STAC9766 used on the Efika
+In-Reply-To: <20090523231309.17919.83073.stgit@terra>
+Subject: Re: [alsa-devel] [PATCH V2 7/9] AC97 driver for mpc5200
 Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,65 +24,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, May 23, 2009 at 07:13:07PM -0400, Jon Smirl wrote:
-> AC97 codec for STAC9766 used on the Efika.
-> Datasheet: http://www.idt.com/products/getDoc.cfm?docID=13134007
-> 
-> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+On Sat, May 23, 2009 at 07:13:09PM -0400, Jon Smirl wrote:
 
-This looks mostly good, a couple of issues below.  I'll apply the patch
-but please submit a followup patch for resume as discussed below.
-
-> +static int ac97_digital_trigger(struct snd_pcm_substream *substream,
-> +								int cmd, struct snd_soc_dai *dai)
-
-Very strange indentation here...
-
-> +static int stac9766_codec_resume(struct platform_device *pdev)
+> +#ifdef CONFIG_PM
+> +static int psc_ac97_suspend(struct snd_soc_dai *dai)
 > +{
-
-> +	/* give the codec an AC97 warm reset to start the link */
-> +reset:
-> +	if (reset > 5) {
-> +		printk(KERN_ERR "stac9766 failed to resume");
-> +		return -EIO;
-> +	}
-> +	codec->ac97->bus->ops->warm_reset(codec->ac97);
-> +	id = soc_ac97_ops.read(codec->ac97, AC97_VENDOR_ID2);
-> +	if (id != 0x4c13) {
-> +		stac9766_reset(codec, 0);
-> +		reset++;
-> +		goto reset;
-> +	}
-
-As I said last time I'd this looks like it should be using the reset
-function that you've provided?  
-
-The loop is new since last time and seems very suspicious - are you sure
-that this is a CODEC problem that's being worked around and not an issue
-with the AC97 controller or with the specific system starting up the
-master clock for the CODEC after resume?  If it's an issue with the
-controler then it'd be better to fix it there so that all CODEC drivers
-get the benefit.  If it's a CODEC issue a comment explaining the problem
-would be helpful since it's not the sort of issue I'd expect to see in a
-CODEC.  The fact that it's not needed on initial boot suggests something
-controller or external clock related.
-
-Either way, it'd be much clearer to rewrite it using a for or while loop
-rather than a goto.  Please submit a followup patch fixing at least this
-issue.
-
-> +static int __init stac9766_modinit(void)
-> +{
-> +	return snd_soc_register_dais(stac9766_dai, ARRAY_SIZE(stac9766_dai));
+> +	return 0;
 > +}
-> +module_init(stac9766_modinit);
 > +
-> +static void __exit stac9766_exit(void)
+> +static int psc_ac97_resume(struct snd_soc_dai *dai)
 > +{
-> +	snd_soc_unregister_dais(stac9766_dai, ARRAY_SIZE(stac9766_dai));
+> +	return 0;
 > +}
-> +module_exit(stac9766_exit);
+> +
+> +#else
+> +#define psc_ac97_suspend	NULL
+> +#define psc_ac97_resume	NULL
+> +#endif
 
-These are not needed for AC97 CODECs, ASoC doesn't wait for them to
-probe.  I'll apply a patch removing these.
+These can all just be removed, they can be added later if they are
+implemented.
+
+> +static int psc_ac97_hw_analog_params(struct snd_pcm_substream *substream,
+> +				 struct snd_pcm_hw_params *params,
+> +				 struct snd_soc_dai *dai)
+> +{
+> +	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+> +	struct psc_dma *psc_dma = rtd->dai->cpu_dai->private_data;
+
+Note that cpu_dai is passed in as an argument here - this didn't used to
+be the case which is why most drivers fish it out of rtd but that's not
+required any more.
+
+> +static int psc_ac97_trigger(struct snd_pcm_substream *substream, int cmd,
+> +								 struct snd_soc_dai *dai)
+
+Again with the odd indentation.
+
+> +static int __devinit psc_ac97_of_probe(struct of_device *op,
+> +				      const struct of_device_id *match)
+> +{
+
+> +	rc = snd_soc_register_dais(psc_ac97_dai, ARRAY_SIZE(psc_ac97_dai));
+> +	if (rc != 0) {
+> +		pr_err("Failed to register DAI\n");
+> +		return 0;
+> +	}
+
+I'd expect to see the error passed back to the caller here?  I'd also
+expect to see this happening right at the end of this function after
+you're happy everything else has worked, otherwise the core might try to
+start using the half-initialised driver.
+
+> +	/* AC97 clock is generated by the codec.
+> +	 * Ensure that it starts ticking after codec reset.
+> +	 */
+> +	max_reset = 0;
+> +reset:
+> +	if (max_reset++ > 5) {
+> +		dev_err(&op->dev, "AC97 codec failed to reset\n");
+> +		mpc5200_audio_dma_destroy(op);
+> +		return -ENODEV;
+> +	}
+> +
+> +	psc_ac97_cold_reset(&ac97);
+> +	psc_ac97_warm_reset(&ac97);
+> +
+> +	/* first make sure it is low */
+> +	timeout = 0;
+> +	while ((in_8(&regs->ipcr_acr.ipcr) & 0x80) != 0) {
+> +		udelay(1);
+> +		if (timeout++ > 1000)
+> +			goto reset;
+> +	}
+
+This looks awfully similar to the logic in the resume function of your
+CODEC driver...  In general an ASoC AC97 DAI driver shouldn't be trying
+to bring the CODEC up like this, it should normally leave that up to the
+CODEC driver.  This is mostly because some system designers do strange
+and wonderful things with clocking which require some system specific
+code to either bring up the master clock for the codec before it'll
+reset or reconfigure the clocking to something standard.
+
+The issue with the use of goto rather than a real loop also applies
+here.
+
+> +	/* then wait for the transition to high */
+> +	timeout = 0;
+> +	while ((in_8(&regs->ipcr_acr.ipcr) & 0x80) == 0) {
+> +		udelay(1);
+> +		if (timeout++ > 1000)
+> +			psc_ac97_warm_reset(&ac97);
+> +	}
+
+Shouldn't this be integrated into the warm reset operation (or to put it
+another way, why wouldn't a warm reset want to do this)?  
+
+> +
+> +	/* Go */
+> +	out_8(&regs->command, MPC52xx_PSC_TX_ENABLE | MPC52xx_PSC_RX_ENABLE);
+> +
+> +	id1 = psc_ac97_read(&ac97, AC97_VENDOR_ID1);
+> +	id2 = psc_ac97_read(&ac97, AC97_VENDOR_ID2);
+> +
+> +	dev_info(&op->dev, "Codec ID is %04x %04x\n", id1, id2);
+
+You really can't rely on this working in general system designs - like I
+say, some platforms will require additional work to bring the CODEC up.
+I'd just remove it, it's purely for information anyway.  The out_8()
+probably ought to be moved into the ASoC probe() function (called once
+the card is coming up).
