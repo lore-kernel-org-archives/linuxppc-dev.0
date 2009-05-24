@@ -1,16 +1,18 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
-	by ozlabs.org (Postfix) with ESMTP id D7B82DE037
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 01:21:18 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 3so1477898qwe.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 08:21:16 -0700 (PDT)
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
+	by ozlabs.org (Postfix) with ESMTP id 0EC60DE037
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 01:28:17 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so1478735qwe.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 08:28:15 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20090524110854.GB4933@sirena.org.uk>
+In-Reply-To: <20090524111118.GC4933@sirena.org.uk>
 References: <20090523231148.17919.46103.stgit@terra>
-	<20090524110854.GB4933@sirena.org.uk>
-Date: Sun, 24 May 2009 11:21:15 -0400
-Message-ID: <9e4733910905240821p7313f82bu171e0d4a2f3dbbff@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH V2 0/9] mpc5200 audio rework for AC97
+	<20090523231257.17919.4483.stgit@terra>
+	<20090524111118.GC4933@sirena.org.uk>
+Date: Sun, 24 May 2009 11:28:15 -0400
+Message-ID: <9e4733910905240828q4b4cfd96xe840f3ae983143dc@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH V2 1/9] Register the wm9712 DAIs on module
+	load
 From: Jon Smirl <jonsmirl@gmail.com>
 To: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -24,26 +26,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 24, 2009 at 7:08 AM, Mark Brown
+On Sun, May 24, 2009 at 7:11 AM, Mark Brown
 <broonie@opensource.wolfsonmicro.com> wrote:
-> I'm not aware of any CODEC drivers which can't currently be built and
-> used as modules. =A0If you mean "load via the normal device model" then
-> yes, that'd be very good (and is in progress) but it's another issue and
-> as I explained last time AC97 poses particular problems there.
+> On Sat, May 23, 2009 at 07:12:57PM -0400, Jon Smirl wrote:
+>> Register the wm9712 DAIs on module load
+>
+>> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+>
+> Why do you wish to do this - ASoC does not require or use DAI registration
+> for AC97 CODECs?
 >
 
-I mean "load via the normal device model". For example the AC97
-drivers need to be loadable by the codec id. There's no entry in
-scripts/mod/file2alias.c for dynamically loading the modules.  They
-don't have an id_table.
+Then what is wrong with my binding code? If I take out the
+registration my bind fails.
 
-My AC97 driver is detecting the codec id and printing it before trying
-to access the codec driver. I can convert that to a load_module() call
-when the drivers are ready.
+static struct snd_soc_dai_link pcm030_fabric_dai[] = {
+{
+	.name = "AC97",
+	.stream_name = "AC97 Analog",
+	.codec_dai = &wm9712_dai[WM9712_DAI_AC97_HIFI],
+	.cpu_dai = &psc_ac97_dai[MPC5200_AC97_NORMAL],
+},
+{
+	.name = "AC97",
+	.stream_name = "AC97 IEC958",
+	.codec_dai = &wm9712_dai[WM9712_DAI_AC97_AUX],
+	.cpu_dai = &psc_ac97_dai[MPC5200_AC97_SPDIF],
+},
+};
 
-The core needs to detect if a specific codec id can't be supported to
-fall back to the generic AC97 driver.
+static __init int pcm030_fabric_init(void)
+{
+	struct platform_device *pdev;
+	int rc;
 
---=20
+	if (!machine_is_compatible("phytec,pcm030"))
+		return -ENODEV;
+
+	card.platform = &mpc5200_audio_dma_platform;
+	card.name = "pcm030";
+	card.dai_link = pcm030_fabric_dai;
+	card.num_links = ARRAY_SIZE(pcm030_fabric_dai);
+
+	device.card = &card;
+	device.codec_dev = &soc_codec_dev_wm9712;
+
+	pdev = platform_device_alloc("soc-audio", 1);
+	if (!pdev) {
+		pr_err("pcm030_fabric_init: platform_device_alloc() failed\n");
+		return -ENODEV;
+	}
+
+	platform_set_drvdata(pdev, &device);
+	device.dev = &pdev->dev;
+
+	rc = platform_device_add(pdev);
+	if (rc) {
+		pr_err("pcm030_fabric_init: platform_device_add() failed\n");
+		return -ENODEV;
+	}
+	return 0;
+}
+
+
+Advanced Linux Sound Architecture Driver Version 1.0.19.
+No device for DAI stac9766 analog
+No device for DAI stac9766 IEC958
+No device for DAI tas5504
+irq: irq 129 on host /soc5200@f0000000/interrupt-controller@500 mapped
+to virtual irq 129
+irq: irq 194 on host /soc5200@f0000000/interrupt-controller@500 mapped
+to virtual irq 194
+irq: irq 195 on host /soc5200@f0000000/interrupt-controller@500 mapped
+to virtual irq 195
+mpc5200-psc-ac97 f0002000.ac97: Codec ID is 574d 4c12
+ALSA device list:
+  No soundcards found.
+
+
+
+
+
+-- 
 Jon Smirl
 jonsmirl@gmail.com
