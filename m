@@ -1,19 +1,26 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id 763E4DDF54
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 09:21:22 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 2so1212731ywt.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2009 16:21:20 -0700 (PDT)
-Subject: [PATCH V2 4/9] Add a few more mpc5200 PSC defines
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, broonie@sirena.org.uk
-From: Jon Smirl <jonsmirl@gmail.com>
-Date: Sat, 23 May 2009 19:13:03 -0400
-Message-ID: <20090523231303.17919.35877.stgit@terra>
-In-Reply-To: <20090523231148.17919.46103.stgit@terra>
-References: <20090523231148.17919.46103.stgit@terra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <michael@ellerman.id.au>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CEC3BDE100
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 16:38:12 +1000 (EST)
+Subject: Re: mpc8315e-rdb: pci_enable_msi() fails (using today's
+	galak/powerpc.git tree)
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+In-Reply-To: <c384c5ea0905231512u72894e34g17746548e640d4fe@mail.gmail.com>
+References: <c384c5ea0905231358t4803fbc6gf54618b2839a448a@mail.gmail.com>
+	<c384c5ea0905231512u72894e34g17746548e640d4fe@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-e+v5y4I+8MwMO+hRXr4g"
+Date: Sun, 24 May 2009 16:38:11 +1000
+Message-Id: <1243147091.27293.3.camel@concordia>
+Mime-Version: 1.0
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,45 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a few more mpc5200 PSC defines. More bit fields defines for mpc5200 PSC registers. This patch is going in via Grant's tree.
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
- 0 files changed, 0 insertions(+), 0 deletions(-)
+--=-e+v5y4I+8MwMO+hRXr4g
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/include/asm/mpc52xx_psc.h b/arch/powerpc/include/asm/mpc52xx_psc.h
-index a218da6..fb84120 100644
---- a/arch/powerpc/include/asm/mpc52xx_psc.h
-+++ b/arch/powerpc/include/asm/mpc52xx_psc.h
-@@ -28,6 +28,10 @@
- #define MPC52xx_PSC_MAXNUM	6
- 
- /* Programmable Serial Controller (PSC) status register bits */
-+#define MPC52xx_PSC_SR_UNEX_RX	0x0001
-+#define MPC52xx_PSC_SR_DATA_VAL	0x0002
-+#define MPC52xx_PSC_SR_DATA_OVR	0x0004
-+#define MPC52xx_PSC_SR_CMDSEND	0x0008
- #define MPC52xx_PSC_SR_CDE	0x0080
- #define MPC52xx_PSC_SR_RXRDY	0x0100
- #define MPC52xx_PSC_SR_RXFULL	0x0200
-@@ -61,6 +65,12 @@
- #define MPC52xx_PSC_RXTX_FIFO_EMPTY	0x0001
- 
- /* PSC interrupt status/mask bits */
-+#define MPC52xx_PSC_IMR_UNEX_RX_SLOT 0x0001
-+#define MPC52xx_PSC_IMR_DATA_VALID	0x0002
-+#define MPC52xx_PSC_IMR_DATA_OVR	0x0004
-+#define MPC52xx_PSC_IMR_CMD_SEND	0x0008
-+#define MPC52xx_PSC_IMR_ERROR		0x0040
-+#define MPC52xx_PSC_IMR_DEOF		0x0080
- #define MPC52xx_PSC_IMR_TXRDY		0x0100
- #define MPC52xx_PSC_IMR_RXRDY		0x0200
- #define MPC52xx_PSC_IMR_DB		0x0400
-@@ -117,6 +127,7 @@
- #define MPC52xx_PSC_SICR_SIM_FIR		(0x6 << 24)
- #define MPC52xx_PSC_SICR_SIM_CODEC_24		(0x7 << 24)
- #define MPC52xx_PSC_SICR_SIM_CODEC_32		(0xf << 24)
-+#define MPC52xx_PSC_SICR_AWR			(1 << 30)
- #define MPC52xx_PSC_SICR_GENCLK			(1 << 23)
- #define MPC52xx_PSC_SICR_I2S			(1 << 22)
- #define MPC52xx_PSC_SICR_CLKPOL			(1 << 21)
+On Sun, 2009-05-24 at 00:12 +0200, Leon Woestenberg wrote:
+> Hello,
+>=20
+> On Sat, May 23, 2009 at 10:58 PM, Leon Woestenberg
+> <leon.woestenberg@gmail.com> wrote:
+> > using this tree: git://git.kernel.org/pub/scm/linux/kernel/git/galak/po=
+werpc.git
+> >
+> > pci_enable_msi() fails on my MPC8315E-RDB board with PCIe device in
+
+<snip good bug report>
+
+'lspci -vvv' of the device in question is often useful too.
+
+cheers
+
+
+--=-e+v5y4I+8MwMO+hRXr4g
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkoY61MACgkQdSjSd0sB4dIszgCfSZwTcpPgmZmKUhch7m3SIqyJ
+9GgAoJiWfHusf2xDl0Q/xen/vc4S7d8w
+=aT5v
+-----END PGP SIGNATURE-----
+
+--=-e+v5y4I+8MwMO+hRXr4g--
