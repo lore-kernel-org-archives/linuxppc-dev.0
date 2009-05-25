@@ -1,19 +1,16 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4A1A418D.3040207@grandegger.com>
-Date: Mon, 25 May 2009 08:58:21 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <skrishnakar@gmail.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
-	driver
-References: <4A16BAAE.3070401@grandegger.com>
-	<200905231315.57016.arnd@arndb.de>
-	<4A18298E.8090209@grandegger.com>
-	<200905242327.15139.arnd@arndb.de>
-In-Reply-To: <200905242327.15139.arnd@arndb.de>
+In-Reply-To: <6213bc560905192250w4caa84aem9c0dedb2eed72fea@mail.gmail.com>
+References: <6213bc560905190608j73f4191fxbd94158a2b1740c0@mail.gmail.com>
+	<20090519235302.GA6333@yookeroo.seuss>
+	<6213bc560905192250w4caa84aem9c0dedb2eed72fea@mail.gmail.com>
+Date: Mon, 25 May 2009 12:00:50 +0530
+Message-ID: <6213bc560905242330j31c14d22pabb67174e105d68c@mail.gmail.com>
+Subject: Re: Initialize DBCR0 for PPC440 targets
+From: srikanth krishnakar <skrishnakar@gmail.com>
+To: grant.likely@secretlab.ca
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
-	Linux Netdev List <netdev@vger.kernel.org>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +20,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Saturday 23 May 2009, Wolfgang Grandegger wrote:
->> Arnd Bergmann wrote:
->>> Minor nitpicking: dev->base_addr should be defined as an __iomem pointer
->>> so you can avoid the cast here and in the ioremap/iounmap path.
->> Here the member "base_addr" of "struct net_device" is used and it's not
->> up to me to change the type.
-> 
-> Right, that makes sense. However, most drivers use the field to store the
-> physical address, not the iomap token. Maybe there should be a new field
-> in struct sja1000_priv for the virtual address, but that would be a change
-> to the base driver, not just to the OF portion.
+Hello Grant,
 
-Is that common practice? If yes, I will add a member to store the
-virtual address to struct sja1000_priv.
+Is there any conclusion of the below discussion:
 
-Wolfgang.
+http://www.nabble.com/Question-about-DBCR0-initialization-for-440-td2304904=
+4.html
+
+Xilinx target (virtex5) hangs (while running GDBServer & KGDB) without
+the DBCR0 initialization.
+
+Can you please comment on this ?
+
+
+Thanks,
+-Srikanth
+
+On Wed, May 20, 2009 at 11:20 AM, srikanth krishnakar
+<skrishnakar@gmail.com> wrote:
+> Hi David,
+>
+> I am not sure how the IDM behaves on few of PPC440 targets which don't
+> have boot loaders. I have a reference for your question:
+>
+> http://www.nabble.com/Question-about-DBCR0-initialization-for-440-td23049=
+044.html
+>
+> Without this fix (given patch) I am facing problems with GDB, and
+> further target hangs while running gdbserver !
+>
+> Thanks,
+> Srikanth
+>
+> On Wed, May 20, 2009 at 5:23 AM, David Gibson
+> <david@gibson.dropbear.id.au> wrote:
+>> On Tue, May 19, 2009 at 06:38:53PM +0530, srikanth krishnakar wrote:
+>>> Hi,
+>>>
+>>> kernel- 2.6.29
+>>> Debug technique: KGDB
+>>>
+>>> The PowerPC kernel does not initialize the PPC440 DBCR0 register. This
+>>> prevents the use of software breakpoints in case of internal debug
+>>> mode. Looking into head_fsl_booke.S for initialization of DBCR0 is
+>>> used by boot-loaders.
+>>> It seems head_44x.S lacks this step of DBCR0 register initialization.
+>>> So fixing this with initializing the DBCR0 register as shown below :
+>>>
+>>> Subject: [PATCH] powerpc: 44x: Initialize DBCR0 for targets not having
+>>> bootloader
+>>>
+>>> The kernel does not initialize the PPC440 DBCR0 register.
+>>> This prevents (among other things) the use of software
+>>> breakpoints with GDB. The boot loaders probably do initialize
+>>> this but few targets run without a boot loader
+>>
+>> Um.. how does this prevent the use of software breakpoints with gdb?
+>> The trap instructions still work with IDM=3D=3D0.
+>>
+>> --
+>> David Gibson =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| I'll have my music=
+ baroque, and my code
+>> david AT gibson.dropbear.id.au =A0| minimalist, thank you. =A0NOT _the_ =
+_other_
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| _way_ _=
+around_!
+>> http://www.ozlabs.org/~dgibson
+>>
+>
+>
+>
+> --
+> "The Good You Do, The Best You GET"
+>
+> Regards
+> Srikanth Krishnakar
+> **********************
+>
+
+
+
+--=20
+"The Good You Do, The Best You GET"
+
+Regards
+Srikanth Krishnakar
+**********************
