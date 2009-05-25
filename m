@@ -1,19 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 7F62FDE1B9
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 11:39:00 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1404089yxb.39
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 May 2009 18:38:58 -0700 (PDT)
-Subject: [PATCH V3 4/4] Fabric bindings for STAC9766 on the Efika
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, broonie@sirena.org.uk
-From: Jon Smirl <jonsmirl@gmail.com>
-Date: Sun, 24 May 2009 21:38:53 -0400
-Message-ID: <20090525013853.3073.78627.stgit@terra>
-In-Reply-To: <20090525013606.3073.86753.stgit@terra>
-References: <20090525013606.3073.86753.stgit@terra>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id E5692DE140
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 11:44:06 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: powerpc: DMA coherent allocations broken for
+	CONFIG_NOT_COHERENT_CACHE
+Date: Mon, 25 May 2009 02:43:14 +0100
+References: <9481.63517.qm@web28305.mail.ukl.yahoo.com>
+	<1243160487.22770.59.camel@pasglop>
+	<1243210914.24376.11.camel@pasglop>
+In-Reply-To: <1243210914.24376.11.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <200905250243.15436.arnd@arndb.de>
+Cc: Albert Herranz <albert_herranz@yahoo.es>, Ilya Yanok <yanok@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,140 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fabric bindings for STAC9766 AC97 codec on the Efika.
+On Monday 25 May 2009, Benjamin Herrenschmidt wrote:
+> Note that I still think the right approach in the long run is to ban the
+> consistent allocs from atomic contexts generically in linux, though that
+> will be a hard nut to crack.
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
- sound/soc/fsl/Kconfig              |    8 +++
- sound/soc/fsl/Makefile             |    1 
- sound/soc/fsl/efika-audio-fabric.c |   95 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 104 insertions(+), 0 deletions(-)
- create mode 100644 sound/soc/fsl/efika-audio-fabric.c
+I might be missing too much context here, but can't we make drivers that
+need this allocate an uncached memory range at setup time and call
+dma_declare_coherent_memory() on that to make a later dma_alloc_coherent()
+succeed without GFP_KERNEL?
 
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index 79579ae..f571c6e 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -47,3 +47,11 @@ config SND_MPC52xx_SOC_PCM030
- 	help
- 	  Say Y if you want to add support for sound on the Phytec pcm030 baseboard.
- 
-+config SND_MPC52xx_SOC_EFIKA
-+	tristate "SoC AC97 Audio support for bbplan Efika and STAC9766"
-+	depends on PPC_EFIKA
-+	select SND_SOC_MPC5200_AC97
-+	select SND_SOC_STAC9766
-+	help
-+	  Say Y if you want to add support for sound on the Efika.
-+
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index 66d88c8..a83a739 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -17,4 +17,5 @@ obj-$(CONFIG_SND_SOC_MPC5200_AC97) += mpc5200_psc_ac97.o
- 
- # MPC5200 Machine Support
- obj-$(CONFIG_SND_MPC52xx_SOC_PCM030) += pcm030-audio-fabric.o
-+obj-$(CONFIG_SND_MPC52xx_SOC_EFIKA) += efika-audio-fabric.o
- 
-diff --git a/sound/soc/fsl/efika-audio-fabric.c b/sound/soc/fsl/efika-audio-fabric.c
-new file mode 100644
-index 0000000..4b7ed2b
---- /dev/null
-+++ b/sound/soc/fsl/efika-audio-fabric.c
-@@ -0,0 +1,95 @@
-+/*
-+ * Efika driver for the PSC of the Freescale MPC52xx
-+ * configured as AC97 interface
-+ *
-+ * Copyright 2008 Jon Smirl, Digispeaker
-+ * Author: Jon Smirl <jonsmirl@gmail.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/device.h>
-+#include <linux/delay.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
-+#include <linux/dma-mapping.h>
-+
-+#include <sound/core.h>
-+#include <sound/pcm.h>
-+#include <sound/pcm_params.h>
-+#include <sound/initval.h>
-+#include <sound/soc.h>
-+#include <sound/soc-of-simple.h>
-+
-+#include "mpc5200_dma.h"
-+#include "mpc5200_psc_ac97.h"
-+#include "../codecs/stac9766.h"
-+
-+static struct snd_soc_device device;
-+static struct snd_soc_card card;
-+
-+static struct snd_soc_dai_link efika_fabric_dai[] = {
-+{
-+	.name = "AC97",
-+	.stream_name = "AC97 Analog",
-+	.codec_dai = &stac9766_dai[STAC9766_DAI_AC97_ANALOG],
-+	.cpu_dai = &psc_ac97_dai[MPC5200_AC97_NORMAL],
-+},
-+{
-+	.name = "AC97",
-+	.stream_name = "AC97 IEC958",
-+	.codec_dai = &stac9766_dai[STAC9766_DAI_AC97_DIGITAL],
-+	.cpu_dai = &psc_ac97_dai[MPC5200_AC97_SPDIF],
-+},
-+};
-+
-+static __init int efika_fabric_init(void)
-+{
-+	struct platform_device *pdev;
-+	int rc;
-+
-+	if (!machine_is_compatible("bplan,efika"))
-+		return -ENODEV;
-+
-+	card.platform = &mpc5200_audio_dma_platform;
-+	card.name = "Efika";
-+	card.dai_link = efika_fabric_dai;
-+	card.num_links = ARRAY_SIZE(efika_fabric_dai);
-+
-+	device.card = &card;
-+	device.codec_dev = &soc_codec_dev_stac9766;
-+
-+	pdev = platform_device_alloc("soc-audio", 1);
-+	if (!pdev) {
-+		pr_err("efika_fabric_init: platform_device_alloc() failed\n");
-+		return -ENODEV;
-+	}
-+
-+	platform_set_drvdata(pdev, &device);
-+	device.dev = &pdev->dev;
-+
-+	rc = platform_device_add(pdev);
-+	if (rc) {
-+		pr_err("efika_fabric_init: platform_device_add() failed\n");
-+		return -ENODEV;
-+	}
-+	return 0;
-+}
-+
-+static __exit void efika_fabric_exit(void)
-+{
-+}
-+
-+module_init(efika_fabric_init);
-+module_exit(efika_fabric_exit);
-+
-+
-+MODULE_AUTHOR("Jon Smirl <jonsmirl@gmail.com>");
-+MODULE_DESCRIPTION(DRV_NAME ": mpc5200 Efika fabric driver");
-+MODULE_LICENSE("GPL");
-+
+If that is not enough, dma_alloc_coherent could be changed to
+try dma_alloc_from_coherent() on the bridge device (PCI HB,
+PLB4, ...), if we reserve a reasonably sized amount of uncached
+memory for each bridge that has noncoherent devices.
+
+	Arnd <><
