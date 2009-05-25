@@ -1,16 +1,21 @@
-Return-Path: <carl.erwin@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id ACC20DE0D8
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 00:23:39 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so1523663yxb.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 07:23:37 -0700 (PDT)
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
+	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id 4FEA3DEB6D
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 01:21:03 +1000 (EST)
+Received: by qyk34 with SMTP id 34so5416997qyk.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 08:21:02 -0700 (PDT)
 MIME-Version: 1.0
-Date: Mon, 25 May 2009 16:23:37 +0200
-Message-ID: <5c90346a0905250723t2c9d30a0qd4fbebed38917cd7@mail.gmail.com>
-Subject: 82xx multiple soc support/initialization
-From: Carl-Erwin GRIFFITH <carl.erwin@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=00163616469125fb3d046abd5b7a
+In-Reply-To: <20090525102647.GD18290@sirena.org.uk>
+References: <20090525013849.3073.96729.stgit@terra>
+	<20090525102647.GD18290@sirena.org.uk>
+Date: Mon, 25 May 2009 11:21:01 -0400
+Message-ID: <9e4733910905250821nf433121s6c161d3f2104b453@mail.gmail.com>
+Subject: Re: [PATCH V3 2/4] AC97 driver for mpc5200
+From: Jon Smirl <jonsmirl@gmail.com>
+To: grant.likely@secretlab.ca
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,46 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---00163616469125fb3d046abd5b7a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Mon, May 25, 2009 at 6:26 AM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+>> + =A0 =A0 =A0 =A0 =A0 =A0 spin_lock(&psc_dma->lock);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&psc_dma->psc_regs->ac97_slots, psc_d=
+ma->slots);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 spin_unlock(&psc_dma->lock);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 break;
+>
+> This locking looks wrong - I'd expect it to also cover the modification
+> of psc_dma->slots? =A0Otherwise it's hard to see what it buys you.
 
-Hi guys,
-
-
- I'm working on an derived muas3001 board (kernel version 2.6.30-rc5),
-
-and so far I did not find an example of multiple SOCs initialization.
-
-The board has 3 cpus (only one core activated).
-
-1) Is there a special syntax to use in the device tree ?
-
-2) Do the kernel provide an API to support multiple SOCs ?
+Grant, why are you spin locking around register access?
 
 
-Best regards,
-
-Carl-Erwin Griffith
-
---00163616469125fb3d046abd5b7a
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-
-
-<p style="margin: 0px; text-indent: 0px;">Hi guys,</p><p style="margin: 0px; text-indent: 0px;"><br></p>
-<p style="margin: 0px; text-indent: 0px;"></p>
-
-<p style="margin: 0px; text-indent: 0px;">I&#39;m working on an derived muas3001 board (kernel version 2.6.30-rc5),
-</p>
-<p style="margin: 0px; text-indent: 0px;">and so far I did not find an example of multiple SOCs initialization.</p>
-<p style="margin: 0px; text-indent: 0px;">The board has 3 cpus (only one core activated).</p><br><p style="margin: 0px; text-indent: 0px;">
-1) Is there a special syntax to use in the device tree ?</p>
-<p style="margin: 0px; text-indent: 0px;">2) Do the kernel provide an API to support multiple SOCs ? </p>
-<p style="margin: 0px; text-indent: 0px;"></p>
-<p style="margin: 0px; text-indent: 0px;"><br></p><p style="margin: 0px; text-indent: 0px;">Best regards,</p>
-<p style="margin: 0px; text-indent: 0px;">Carl-Erwin Griffith</p><p style="margin: 0px; text-indent: 0px;"><br></p>
-<p style="margin: 0px; text-indent: 0px;"></p>
-
---00163616469125fb3d046abd5b7a--
+--=20
+Jon Smirl
+jonsmirl@gmail.com
