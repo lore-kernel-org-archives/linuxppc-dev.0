@@ -1,17 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Initialize DBCR0 for PPC440 targets
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20090520060014.GL6333@yookeroo.seuss>
-References: <6213bc560905190608j73f4191fxbd94158a2b1740c0@mail.gmail.com>
-	<20090519235302.GA6333@yookeroo.seuss>
-	<6213bc560905192250w4caa84aem9c0dedb2eed72fea@mail.gmail.com>
-	<20090520060014.GL6333@yookeroo.seuss>
-Content-Type: text/plain
-Date: Mon, 25 May 2009 17:04:35 +1000
-Message-Id: <1243235075.24376.60.camel@pasglop>
-Mime-Version: 1.0
-Cc: srikanth krishnakar <skrishnakar@gmail.com>, Linuxppc-dev@ozlabs.org
+Return-Path: <jbe@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) by ozlabs.org (Postfix) with ESMTP id CD572DE0C4
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 17:57:48 +1000 (EST)
+From: Juergen Beisert <jbe@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Date: Mon, 25 May 2009 09:56:27 +0200
+References: <20090523231148.17919.46103.stgit@terra>
+	<20090524185509.GA3561@pengutronix.de>
+	<9e4733910905241310n59952fd2oaafd7f1363db324@mail.gmail.com>
+In-Reply-To: <9e4733910905241310n59952fd2oaafd7f1363db324@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200905250956.28206.jbe@pengutronix.de>
+Subject: Re: [PATCH V2 5/9] Main rewite of the mpc5200 audio DMA code
+Cc: alsa-devel@alsa-project.org, broonie@sirena.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,57 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2009-05-20 at 16:00 +1000, David Gibson wrote:
-> On Wed, May 20, 2009 at 11:20:46AM +0530, srikanth krishnakar wrote:
-> > Hi David,
-> > 
-> > I am not sure how the IDM behaves on few of PPC440 targets which don't
-> > have boot loaders. I have a reference for your question:
-> > 
-> > http://www.nabble.com/Question-about-DBCR0-initialization-for-440-td23049044.html
-> > 
-> > Without this fix (given patch) I am facing problems with GDB, and
-> > further target hangs while running gdbserver !
-> 
-> That doesn't answer my question.  It's not enough to say "this fixes a
-> problem" you need to explain *how* it fixes the problem.
-> 
-> And I don't see why IDM would have any effect on *software*
-> breakpoints.
+Jon,
 
-No but gdb can use the DABR emulation and single step would be busted
-too. GDB internally heavily uses single step in places you wouldn't
-expect it to :-) Like I think when breaking on main, it sometimes single
-step the whole init process of the executable until it hits it. At least
-I've seen it do that when I was debugging the debug support for 64-bit
-Book3E.
+On Sonntag, 24. Mai 2009, Jon Smirl wrote:
+> On Sun, May 24, 2009 at 2:55 PM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+> >> Rewrite the mpc5200 audio DMA code to support both I2S and AC97. Make it
+> >> more robust.
+> >
+> > Why is it more robust?
+>
+> I've implemented retries for when the AC97 hardware doesn't reset on
+> first try. About 10% of the time both the Efika and pcm030 AC97 codecs
+> don't reset on first try and need to be poked multiple times.  Failure
+> is indicated by not having the link clock start ticking. Every once in
+> a while even five pokes won't get the link started and I have to power
+> cycle.
 
-Cheers,
-Ben.
+Do you know this (from our website)?
 
-> > On Wed, May 20, 2009 at 5:23 AM, David Gibson
-> > <david@gibson.dropbear.id.au> wrote:
-> > > On Tue, May 19, 2009 at 06:38:53PM +0530, srikanth krishnakar wrote:
-> > >> Hi,
-> > >>
-> > >> kernel- 2.6.29
-> > >> Debug technique: KGDB
-> > >>
-> > >> The PowerPC kernel does not initialize the PPC440 DBCR0 register. This
-> > >> prevents the use of software breakpoints in case of internal debug
-> > >> mode. Looking into head_fsl_booke.S for initialization of DBCR0 is
-> > >> used by boot-loaders.
-> > >> It seems head_44x.S lacks this step of DBCR0 register initialization.
-> > >> So fixing this with initializing the DBCR0 register as shown below :
-> > >>
-> > >> Subject: [PATCH] powerpc: 44x: Initialize DBCR0 for targets not having
-> > >> bootloader
-> > >>
-> > >> The kernel does not initialize the PPC440 DBCR0 register.
-> > >> This prevents (among other things) the use of software
-> > >> breakpoints with GDB. The boot loaders probably do initialize
-> > >> this but few targets run without a boot loader
-> > >
-> > > Um.. how does this prevent the use of software breakpoints with gdb?
-> > > The trap instructions still work with IDM==0.
-> 
+"The AC97 mixer needs a hardware patch to make it wake up from power down 
+mode. Download here the instruction how to do so."
+
+http://www.pengutronix.de/oselas/bsp/phytec/download/phyCORE-MPC5200B-tiny/TN-015e_1.pdf
+
+jbe
+
+-- 
+Pengutronix e.K.                              | Juergen Beisert             |
+Linux Solutions for Science and Industry      | Phone: +49-8766-939 228     |
+Vertretung Sued/Muenchen, Germany             | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686              | http://www.pengutronix.de/  |
