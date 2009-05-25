@@ -1,17 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1E86BDDFD1
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 04:11:43 +1000 (EST)
-To: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Weird 5200/mtd-ram problem
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <1243273283.3328.0@antares>
-References: <1243273283.3328.0@antares>
-Date: Mon, 25 May 2009 20:11:39 +0200
-Message-Id: <20090525181140.01DB1832E416@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 0E98DDE04E
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 06:40:38 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1M8gyI-0005hh-Kd
+	for linuxppc-dev@ozlabs.org; Mon, 25 May 2009 13:40:34 -0700
+Message-ID: <23712750.post@talk.nabble.com>
+Date: Mon, 25 May 2009 13:40:34 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: U-boot and linux command line parameters
+In-Reply-To: <23703397.post@talk.nabble.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <23698384.post@talk.nabble.com>
+	<20090525000618.GD8059@yookeroo.seuss>
+	<23703397.post@talk.nabble.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,41 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Albrecht =?iso-8859-1?b?RHJl3w==?=,
 
-In message <1243273283.3328.0@antares> you wrote:
->
-> Thanks for youre help, and sorry for the late reply - I've been on  
-> vacation...
+I have done some experiments with u-boot (version 1.2.0) and with linux
+kernel (version 2.6.23) and it seems to be that the limitation of 8MB is not
+anymore the problem. I have built u-boot and linux for ppc405 (virtex-4). I
+have set the CFG_BOOTMAPSZ to 16 MB:
+#define CFG_BOOTMAPSZ             (8 << 21)  /* 16 MB */
 
-Hally you...
+and Linux has picked up the command line parameters which were set in
+u-boot.
 
-> For the mtd driver, I tracked down the problem via mapram_write() (in  
-> drivers/mtd/chips/map_ram.c) down to the call of map_copy_to() which is  
-> actually inline_map_copy_to(), which in turn calls memcpy_toio().  I  
-> *think* this is _memcpy_toio() in arch/powerpc/kernel/io.c, which  
-> copies all data in long (4-byte) moves, except for the last 4 bytes.  I  
-> guess I have to write my own copy function which respects the fact that  
-> byte writes actually must be a read word - modify - write word  
-> sequence, right?
-
-I remember some nasty problems with memcpy*(),  especially  with  un-
-aligned  accesses  over the LocalPlus Bus. I'm not sure if fixes ever
-made it into 2.6; the only commit that might be related is 6989f5122f
-"fec: do not use memcpy on physical addresses", but this doesn't  got
-into details about the casue.
-
-Please see here for an old (2.4.25) patch for this problem - maybe
-it's worth a try on your system:
-
-http://git.denx.de/?p=linuxppc_2_4_devel.git;a=commit;h=222bd702a59efb22bf66937f6ac844ed7327fd1a
-
-Best regards,
-
-Wolfgang Denk
+>/*
+> * For booting Linux, the board info and command line data
+> * have to be in the first 8 MB of memory, since this is
+> * the maximum mapped by the Linux kernel during initialization.
+> */
+> #define CFG_BOOTMAPSZ             (8 << 20)   /* Initial Memory map for
+> Linux */
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If you're not part of the solution, you're part of the problem.
+View this message in context: http://www.nabble.com/U-boot-and-linux-command-line-parameters-tp23698384p23712750.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
