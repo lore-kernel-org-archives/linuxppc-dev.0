@@ -1,22 +1,24 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A8F0CDE108
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 20:51:47 +1000 (EST)
-Date: Mon, 25 May 2009 11:51:40 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Juergen Beisert <jbe@pengutronix.de>
-Subject: Re: [PATCH V2 5/9] Main rewite of the mpc5200 audio DMA code
-Message-ID: <20090525105140.GF18290@sirena.org.uk>
-References: <20090523231148.17919.46103.stgit@terra>
-	<20090524185509.GA3561@pengutronix.de>
-	<9e4733910905241310n59952fd2oaafd7f1363db324@mail.gmail.com>
-	<200905250956.28206.jbe@pengutronix.de>
+	by ozlabs.org (Postfix) with ESMTPS id AB791DDFD5
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 22:33:00 +1000 (EST)
+Date: Mon, 25 May 2009 14:32:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+Subject: Re: [PATCH resend4 2/3] itimers: fix periodic tics precision
+In-Reply-To: <20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
+Message-ID: <alpine.LFD.2.00.0905251423490.3582@localhost.localdomain>
+References: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com>
+	<alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
+	<20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200905250956.28206.jbe@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 25, 2009 at 09:56:27AM +0200, Juergen Beisert wrote:
+On Mon, 25 May 2009, Stanislaw Gruszka wrote:
+> @@ -904,6 +905,7 @@ void __init time_init(void)
+>  	tb_ticks_per_usec = ppc_tb_freq / 1000000;
+>  	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
+>  	calc_cputime_factors();
+> +	cputime_one = jiffies_to_cputime(1);
 
-> Do you know this (from our website)?
+  1) The variable name is misleading.
 
-> "The AC97 mixer needs a hardware patch to make it wake up from power down 
-> mode. Download here the instruction how to do so."
+  2) The patch breaks all powerpc platforms which have
+  CONFIG_VIRT_CPU_ACCOUNTING=n and ia64 with
+  CONFIG_VIRT_CPU_ACCOUNTING=y
 
-> http://www.pengutronix.de/oselas/bsp/phytec/download/phyCORE-MPC5200B-tiny/TN-015e_1.pdf
+Thanks,
 
-This modification should not be required - a warm reset should be enough
-to bring the AC97 link up.  The current ASoC driver for the WM9712 will
-do this automatically - the expectation for non-ASoC systems is that the
-warm reset will always be issued.
-
-That said, I'd be surprised if it were the same problem given that
-iterating cold resets appears to resolve whatever the issues is.
+	tglx
