@@ -1,21 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
-	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id 53074DE105
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 01:15:36 +1000 (EST)
-Received: by qyk34 with SMTP id 34so5412762qyk.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 08:15:35 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <fa686aa40905242316j3e8b46e7mcc71dc34df209003@mail.gmail.com>
-References: <20090525013606.3073.86753.stgit@terra>
-	<20090525013849.3073.96729.stgit@terra>
-	<fa686aa40905242316j3e8b46e7mcc71dc34df209003@mail.gmail.com>
-Date: Mon, 25 May 2009 11:15:34 -0400
-Message-ID: <9e4733910905250815r4a6fa205s26531f08fe99131a@mail.gmail.com>
-Subject: Re: [PATCH V3 2/4] AC97 driver for mpc5200
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
+Return-Path: <sgruszka@redhat.com>
+Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
+	by ozlabs.org (Postfix) with ESMTP id CB64EDE0DF
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 21:35:15 +1000 (EST)
+Date: Mon, 25 May 2009 13:28:14 +0200
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH resend4 2/3] itimers: fix periodic tics precision
+Message-ID: <20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
+In-Reply-To: <alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
+References: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com>
+	<alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Ingo, Peter Zijlstra <a.p.zijlstra@chello.nl>, linuxppc-dev@ozlabs.org,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Nesterov <oleg@redhat.com>, Oleg, Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,136 +25,180 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 25, 2009 at 2:16 AM, Grant Likely <grant.likely@secretlab.ca> w=
-rote:
-> On Sun, May 24, 2009 at 7:38 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->> +static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned sho=
-rt reg)
->> +{
->> + =A0 =A0 =A0 int timeout;
->> + =A0 =A0 =A0 unsigned int val;
->> +
->> + =A0 =A0 =A0 spin_lock(&psc_dma->lock);
->> +
->> + =A0 =A0 =A0 /* Wait for it to be ready */
->> + =A0 =A0 =A0 timeout =3D 1000;
->> + =A0 =A0 =A0 while ((--timeout) && (in_be16(&psc_dma->psc_regs->sr_csr.=
-status) &
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 MPC52xx_PSC_SR_CMDSEND))
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
->
-> Holy unbounded latency Batman! =A0This code waits up to 10ms for a regist=
-er read!
->
-> I hate spinning, but if it must be done; I'd like to see it small.
-> What is the worst case latency? 125us for 8000Hz bus speed? =A0If you
-> must spin; can a cpu_relax() be used instead of the udelay() while
-> watch the timebase? =A0Timur recently posted a patch which makes this
-> easier.
->
-> http://patchwork.ozlabs.org/patch/27414/
->
-> They *should* be appearing in Ben's -next branch soon.
+(linuxppc-dev CC added)
 
+On Fri, 22 May 2009 16:27:40 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-The link always runs at 12.288Mhz. Each frame is 256 bits. Worst case
-you wait for two frames, 42us. If it doesn't respond in 42us the codec
-clock is not ticking ( a recurring problem I am running into). These
-codecs may be going into a sleep mode I don't understand, but this is
-not the right place to try and wake them up. I'll lower the retry
-counts to 10 instead of 1000.
+> >  	if (cputime_ge(cur_time, it->expires)) {
+> > -		it->expires = it->incr;
+> > -		if (!cputime_eq(it->expires, cputime_zero))
+> > -			it->expires = cputime_add(it->expires, cur_time);
+> > +		if (!cputime_eq(it->incr, cputime_zero)) {
+> > +			it->expires = cputime_add(it->expires, it->incr);
+> > +			it->error += it->incr_error;
+> > +			if (it->error >= onecputick) {
+> > +				it->expires = cputime_sub(it->expires,
+> > +							jiffies_to_cputime(1));
+> > +				it->error -= onecputick;
+> > +			}
+> 
+>   Yep, that's a sane solution except for jiffies_to_cputime(), which
+>   can be precomputed as well.
 
-I played around with implementing this on a kernel thread with
-interrupts. It can be done but the code is a lot more complex.
+I think precomputed is only needed for PPC where jiffies_to_cputime(1) is not
+compile time constant. To not affect other architectures, I wrote a patch with
+cputime_one value, it is global variable for PPC and preprocessor definition
+for others. This patch is against current Linus' tree. I send it as RFC, it
+was only compile tested for x86.
 
-BTW, 8000Hz is implemented by slot stuffing. The link always runs at
-12.288Mhz. The DACs are double buffered. When a sample is transfered
-between buffers it sets a bit on the link back to the host, and the
-host sends the next sample in the appropriate slot.
-
-
->
->> +
->> + =A0 =A0 =A0 if (!timeout) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("timeout on ac97 bus (rdy)\n");
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0xffff;
->> + =A0 =A0 =A0 }
->> +
->> + =A0 =A0 =A0 /* Do the read */
->> + =A0 =A0 =A0 out_be32(&psc_dma->psc_regs->ac97_cmd, (1<<31) | ((reg & 0=
-x7f) << 24));
->> +
->> + =A0 =A0 =A0 /* Wait for the answer */
->> + =A0 =A0 =A0 timeout =3D 1000;
->> + =A0 =A0 =A0 while ((--timeout) && !(in_be16(&psc_dma->psc_regs->sr_csr=
-.status) &
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 MPC52xx_PSC_SR_DATA_VAL))
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
->
-> ditto.
->
->> +static int psc_ac97_cold_reset_check(struct snd_ac97 *ac97)
->> +{
->> + =A0 =A0 =A0 int max_reset, timeout;
->> + =A0 =A0 =A0 struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
->> +
->> + =A0 =A0 =A0 /* AC97 clock is generated by the codec.
->> + =A0 =A0 =A0 =A0* Ensure that it starts ticking after codec reset.
->> + =A0 =A0 =A0 =A0*/
->> + =A0 =A0 =A0 for (max_reset =3D 0; max_reset < 5; max_reset++) {
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Do a cold reset */
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_8(&regs->op1, MPC52xx_PSC_OP_RES);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_8(&regs->op0, MPC52xx_PSC_OP_RES);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(50);
->
-> :-/ =A0Don't like, but don't know if there is an alternative.
->
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* PSC recover from cold reset
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* (cfr user manual, not sure if useful)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&regs->sicr, in_be32(&regs->sicr)=
-);
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 psc_ac97_warm_reset(ac97);
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* first make sure AC97 clock is low */
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 for (timeout =3D 0; ((in_8(&regs->ipcr_acr=
-.ipcr) & 0x80) !=3D 0) &&
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (timeout <=
- 100); timeout++)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (timeout =3D=3D 100)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* then wait for the transition to high */
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 for (timeout =3D 0; ((in_8(&regs->ipcr_acr=
-.ipcr) & 0x80) =3D=3D 0) &&
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (timeout <=
- 100); timeout++)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (timeout =3D=3D 100)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
->
-> Using udelay makes this less accurate. =A0Only possible reason to use a
-> udelay is if the register cannot be polled at full speed (which is
-> possibly the case if it adds bus contention; but I don't think it is
-> an issue here).
->
-> g.
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
->
-
-
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
+diff --git a/arch/ia64/include/asm/cputime.h b/arch/ia64/include/asm/cputime.h
+index d20b998..df88b07 100644
+--- a/arch/ia64/include/asm/cputime.h
++++ b/arch/ia64/include/asm/cputime.h
+@@ -30,6 +30,7 @@ typedef u64 cputime_t;
+ typedef u64 cputime64_t;
+ 
+ #define cputime_zero			((cputime_t)0)
++#define cputime_one			jiffies_to_cputime(1)
+ #define cputime_max			((~((cputime_t)0) >> 1) - 1)
+ #define cputime_add(__a, __b)		((__a) +  (__b))
+ #define cputime_sub(__a, __b)		((__a) -  (__b))
+diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+index f42e623..e57f951 100644
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@ -48,6 +48,8 @@ typedef u64 cputime64_t;
+ 
+ #ifdef __KERNEL__
+ 
++extern cputime_t cputime_one;
++
+ /*
+  * Convert cputime <-> jiffies
+  */
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 48571ac..e46e210 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -498,6 +498,7 @@ static int __init iSeries_tb_recal(void)
+ 				tb_to_xs = divres.result_low;
+ 				vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
+ 				vdso_data->tb_to_xs = tb_to_xs;
++				cputime_one = jiffies_to_cputime(1);
+ 			}
+ 			else {
+ 				printk( "Titan recalibrate: FAILED (difference > 4 percent)\n"
+@@ -904,6 +905,7 @@ void __init time_init(void)
+ 	tb_ticks_per_usec = ppc_tb_freq / 1000000;
+ 	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
+ 	calc_cputime_factors();
++	cputime_one = jiffies_to_cputime(1);
+ 
+ 	/*
+ 	 * Calculate the length of each tick in ns.  It will not be
+diff --git a/arch/s390/include/asm/cputime.h b/arch/s390/include/asm/cputime.h
+index 941384f..f7bbdc9 100644
+--- a/arch/s390/include/asm/cputime.h
++++ b/arch/s390/include/asm/cputime.h
+@@ -39,6 +39,7 @@ __div(unsigned long long n, unsigned int base)
+ #endif /* __s390x__ */
+ 
+ #define cputime_zero			(0ULL)
++#define cputime_one			jiffies_to_cputime(1)
+ #define cputime_max			((~0UL >> 1) - 1)
+ #define cputime_add(__a, __b)		((__a) +  (__b))
+ #define cputime_sub(__a, __b)		((__a) -  (__b))
+diff --git a/include/asm-generic/cputime.h b/include/asm-generic/cputime.h
+index 1c1fa42..f2b18be 100644
+--- a/include/asm-generic/cputime.h
++++ b/include/asm-generic/cputime.h
+@@ -7,6 +7,7 @@
+ typedef unsigned long cputime_t;
+ 
+ #define cputime_zero			(0UL)
++#define cputime_one			(1UL)
+ #define cputime_max			((~0UL >> 1) - 1)
+ #define cputime_add(__a, __b)		((__a) +  (__b))
+ #define cputime_sub(__a, __b)		((__a) -  (__b))
+diff --git a/kernel/itimer.c b/kernel/itimer.c
+index 58762f7..ba378c6 100644
+--- a/kernel/itimer.c
++++ b/kernel/itimer.c
+@@ -65,7 +65,7 @@ int do_getitimer(int which, struct itimerval *value)
+ 			thread_group_cputimer(tsk, &cputime);
+ 			utime = cputime.utime;
+ 			if (cputime_le(cval, utime)) { /* about to fire */
+-				cval = jiffies_to_cputime(1);
++				cval = cputime_one;
+ 			} else {
+ 				cval = cputime_sub(cval, utime);
+ 			}
+@@ -85,7 +85,7 @@ int do_getitimer(int which, struct itimerval *value)
+ 			thread_group_cputimer(tsk, &times);
+ 			ptime = cputime_add(times.utime, times.stime);
+ 			if (cputime_le(cval, ptime)) { /* about to fire */
+-				cval = jiffies_to_cputime(1);
++				cval = cputime_one;
+ 			} else {
+ 				cval = cputime_sub(cval, ptime);
+ 			}
+@@ -182,8 +182,7 @@ again:
+ 		if (!cputime_eq(cval, cputime_zero) ||
+ 		    !cputime_eq(nval, cputime_zero)) {
+ 			if (cputime_gt(nval, cputime_zero))
+-				nval = cputime_add(nval,
+-						   jiffies_to_cputime(1));
++				nval = cputime_add(nval, cputime_one);
+ 			set_process_cpu_timer(tsk, CPUCLOCK_VIRT,
+ 					      &nval, &cval);
+ 		}
+@@ -204,8 +203,7 @@ again:
+ 		if (!cputime_eq(cval, cputime_zero) ||
+ 		    !cputime_eq(nval, cputime_zero)) {
+ 			if (cputime_gt(nval, cputime_zero))
+-				nval = cputime_add(nval,
+-						   jiffies_to_cputime(1));
++				nval = cputime_add(nval, cputime_one);
+ 			set_process_cpu_timer(tsk, CPUCLOCK_PROF,
+ 					      &nval, &cval);
+ 		}
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index bece7c0..a86333c 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -1456,7 +1456,7 @@ void set_process_cpu_timer(struct task_struct *tsk, unsigned int clock_idx,
+ 		if (!cputime_eq(*oldval, cputime_zero)) {
+ 			if (cputime_le(*oldval, now.cpu)) {
+ 				/* Just about to fire. */
+-				*oldval = jiffies_to_cputime(1);
++				*oldval = cputime_one;
+ 			} else {
+ 				*oldval = cputime_sub(*oldval, now.cpu);
+ 			}
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 26efa47..b17fe3c 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4726,17 +4726,16 @@ void account_idle_time(cputime_t cputime)
+  */
+ void account_process_tick(struct task_struct *p, int user_tick)
+ {
+-	cputime_t one_jiffy = jiffies_to_cputime(1);
+-	cputime_t one_jiffy_scaled = cputime_to_scaled(one_jiffy);
++	cputime_t one_jiffy_scaled = cputime_to_scaled(cputime_one);
+ 	struct rq *rq = this_rq();
+ 
+ 	if (user_tick)
+-		account_user_time(p, one_jiffy, one_jiffy_scaled);
++		account_user_time(p, cputime_one, one_jiffy_scaled);
+ 	else if ((p != rq->idle) || (irq_count() != HARDIRQ_OFFSET))
+-		account_system_time(p, HARDIRQ_OFFSET, one_jiffy,
++		account_system_time(p, HARDIRQ_OFFSET, cputime_one,
+ 				    one_jiffy_scaled);
+ 	else
+-		account_idle_time(one_jiffy);
++		account_idle_time(cputime_one);
+ }
+ 
+ /*
