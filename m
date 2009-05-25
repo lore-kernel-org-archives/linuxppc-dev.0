@@ -1,23 +1,20 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp4.netcologne.de (smtp4.netcologne.de [194.8.194.137])
-	by ozlabs.org (Postfix) with ESMTP id C3939DE0C4
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 03:41:26 +1000 (EST)
-Received: from antares (xdsl-78-34-109-91.netcologne.de [78.34.109.91])
-	by smtp4.netcologne.de (Postfix) with ESMTP id 5E2EFDA62F
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 19:41:24 +0200 (CEST)
-Received: from antares (localhost [127.0.0.1])
-	by antares (Postfix) with ESMTPS id 22CC6BA042
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 19:41:24 +0200 (CEST)
-Date: Mon, 25 May 2009 19:41:14 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: Weird 5200/mtd-ram problem
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <20090520200135.GB13287@pengutronix.de> (from
-	w.sang@pengutronix.de on Wed May 20 22:01:35 2009)
-Message-Id: <1243273283.3328.0@antares>
+Return-Path: <jonsmirl@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.27])
+	by ozlabs.org (Postfix) with ESMTP id C8188DE10E
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 03:46:49 +1000 (EST)
+Received: by qw-out-2122.google.com with SMTP id 3so1738599qwe.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 10:46:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-Ou84vrHEXDM8Kz+/Nipv"
+In-Reply-To: <1242761199-17875-2-git-send-email-timur@freescale.com>
+References: <1242761199-17875-1-git-send-email-timur@freescale.com>
+	<1242761199-17875-2-git-send-email-timur@freescale.com>
+Date: Mon, 25 May 2009 13:46:47 -0400
+Message-ID: <9e4733910905251046y5f7377f4y49ce72e775faef16@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v8] powerpc: introduce macro spin_event_timeout()
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, smaclennan@pikatech.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,52 +24,135 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---=-Ou84vrHEXDM8Kz+/Nipv
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, May 19, 2009 at 3:26 PM, Timur Tabi <timur@freescale.com> wrote:
+> The macro spin_event_timeout() takes a condition and timeout value
+> (in microseconds) as parameters. =A0It spins until either the condition i=
+s true
+> or the timeout expires. =A0It returns the result of the condition when th=
+e loop
+> was terminated.
+>
+> This primary purpose of this macro is to poll on a hardware register unti=
+l a
+> status bit changes. =A0The timeout ensures that the loop still terminates=
+ if the
+> bit doesn't change as expected. =A0This macro makes it easier for driver
+> developers to perform this kind of operation properly.
 
-Hi Gary & Wolfram:
 
-Thanks for youre help, and sorry for the late reply - I've been on =20
-vacation...
+I just tried using this. The !rc has the effect of making the error
+return be zero instead the normal not zero.
 
-Am 20.05.09 21:59 schrieb(en) Gary Thomas:
-> Try to access this without using the cache.
+	/* Wait for command send status zero =3D ready */
+	spin_event_timeout(!(in_be16(&psc_dma->psc_regs->sr_csr.status) &
+				MPC52xx_PSC_SR_CMDSEND), 100, 0, rc);
+	if (rc =3D=3D 0) {
+		pr_err("timeout on ac97 bus (rdy)\n");
+		return -ENODEV;
+	}
 
-Unfortunately, this is not cache related - I switched the dcache off =20
-completely - same results.
+I want the register to be zero, would this be more obvious?
 
-Am 20.05.09 22:01 schrieb(en) Wolfram Sang:
-> Does it work with byte, word and long accesses?
+	/* Wait for command send status zero =3D ready */
+	spin_event_timeout((in_be16(&psc_dma->psc_regs->sr_csr.status) &
+				MPC52xx_PSC_SR_CMDSEND), 100, 0, rc);
+	if (rc !=3D 0) {
+		pr_err("timeout on ac97 bus (rdy)\n");
+		return -ENODEV;
+	}
 
-A word or long copy of 0x0055aaff with U-Boot works fine, but a byte =20
-copy filled the whole ram with 0x0000aaaa.  The reason is apparently =20
-that the chip is attached to the local bus in 16-bit mode, which is =20
-incompatible with byte accesses.  However, the Local Bus doesn't =20
-provide "low byte" or "high byte" indicators in non-muxed mode.  How is =20
-this supposed to work then?
 
-For the mtd driver, I tracked down the problem via mapram_write() (in =20
-drivers/mtd/chips/map_ram.c) down to the call of map_copy_to() which is =20
-actually inline_map_copy_to(), which in turn calls memcpy_toio().  I =20
-*think* this is _memcpy_toio() in arch/powerpc/kernel/io.c, which =20
-copies all data in long (4-byte) moves, except for the last 4 bytes.  I =20
-guess I have to write my own copy function which respects the fact that =20
-byte writes actually must be a read word - modify - write word =20
-sequence, right?
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>
+> v8: added a copyright notice
+>
+> =A0arch/powerpc/include/asm/delay.h | =A0 33 ++++++++++++++++++++++++++++=
++++++
+> =A01 files changed, 33 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/=
+delay.h
+> index f9200a6..af4a270 100644
+> --- a/arch/powerpc/include/asm/delay.h
+> +++ b/arch/powerpc/include/asm/delay.h
+> @@ -2,8 +2,11 @@
+> =A0#define _ASM_POWERPC_DELAY_H
+> =A0#ifdef __KERNEL__
+>
+> +#include <asm/time.h>
+> +
+> =A0/*
+> =A0* Copyright 1996, Paul Mackerras.
+> + * Copyright (C) 2009 Freescale Semiconductor, Inc. All rights reserved.
+> =A0*
+> =A0* This program is free software; you can redistribute it and/or
+> =A0* modify it under the terms of the GNU General Public License
+> @@ -30,5 +33,35 @@ extern void udelay(unsigned long usecs);
+> =A0#define mdelay(n) =A0 =A0 =A0udelay((n) * 1000)
+> =A0#endif
+>
+> +/**
+> + * spin_event_timeout - spin until a condition gets true or a timeout el=
+apses
+> + * @condition: a C expression to evalate
+> + * @timeout: timeout, in microseconds
+> + * @delay: the number of microseconds to delay between eache evaluation =
+of
+> + * =A0 =A0 =A0 =A0 @condition
+> + * @rc: the last value of the condition
+> + *
+> + * The process spins until the condition evaluates to true (non-zero) or=
+ the
+> + * timeout elapses. =A0Upon exit, @rc contains the value of the conditio=
+n. This
+> + * allows you to test the condition without incurring any side effects.
+> + *
+> + * This primary purpose of this macro is to poll on a hardware register
+> + * until a status bit changes. =A0The timeout ensures that the loop stil=
+l
+> + * terminates even if the bit never changes. =A0The delay is for devices=
+ that
+> + * need a delay in between successive reads.
+> + *
+> + * gcc will optimize out the if-statement if @delay is a constant.
+> + */
+> +#define spin_event_timeout(condition, timeout, delay, rc) =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 \
+> +{ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 \
+> + =A0 =A0 =A0 unsigned long __loops =3D tb_ticks_per_usec * timeout; =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 unsigned long __start =3D get_tbl(); =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 while (!(rc =3D (condition)) && (tb_ticks_since(__start) <=
+=3D __loops)) \
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (delay) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(delay); =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+\
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cpu_relax(); =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+> +}
+> +
+> =A0#endif /* __KERNEL__ */
+> =A0#endif /* _ASM_POWERPC_DELAY_H */
+> --
+> 1.6.0.6
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-Thanks, Albrecht.
 
---=-Ou84vrHEXDM8Kz+/Nipv
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQBKGthDn/9unNAn/9ERAhZuAKDJP2iyqvhOLDcs3JXV1XxTMdoldQCgloii
-m1UiP1Qte4r7L0FV0DTwG9g=
-=5TBa
------END PGP SIGNATURE-----
-
---=-Ou84vrHEXDM8Kz+/Nipv--
+--=20
+Jon Smirl
+jonsmirl@gmail.com
