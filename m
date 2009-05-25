@@ -1,23 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [59.145.155.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F15AFDDF7F
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 10:23:08 +1000 (EST)
-Subject: Re: powerpc: DMA coherent allocations broken for
-	CONFIG_NOT_COHERENT_CACHE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <1243160487.22770.59.camel@pasglop>
-References: <9481.63517.qm@web28305.mail.ukl.yahoo.com>
-	<fa686aa40905232347t57187d0fv51c714bfe6dd40d9@mail.gmail.com>
-	<1243160487.22770.59.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 25 May 2009 10:21:54 +1000
-Message-Id: <1243210914.24376.11.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Albert Herranz <albert_herranz@yahoo.es>,
-	Ilya Yanok <yanok@emcraft.com>
+	(Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9E52BDE09D
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 11:14:07 +1000 (EST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+	by e28smtp09.in.ibm.com (8.13.1/8.13.1) with ESMTP id n4P0XZbg010182
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 06:03:35 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v9.2) with ESMTP id
+	n4P1E3E72707556
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 06:44:03 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id n4P1E2o7017279
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 06:44:03 +0530
+Date: Mon, 25 May 2009 06:43:58 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [Patch 0/6] PPC64: Hardware Breakpoint interfaces - ver IV
+Message-ID: <20090525011357.GA11078@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Alan Stern <stern@rowland.harvard.edu>, paulus@samba.org,
+	Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,107 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2009-05-24 at 20:21 +1000, Benjamin Herrenschmidt wrote:
+Hi All,
+	Please find a new patchset that implements Hardware Breakpoint interfaces
+for PPC64 architecture, the previous version of which was posted here:
+http://ozlabs.org/pipermail/linuxppc-dev/2009-May/072387.html and the changes over
+it are mentioned in the changelog below.
 
-> We need to see if we can get the vmalloc allocator safe for GFP_ATOMIC
-> context, might be doable.
-> 
-> As for free, unfortunately, even the old allocator won't help with SMP,
-> since that needs to do IPIs for cross TLB invalidates.
-> 
-> Maybe we should enqueue free blocks and do the actual freeing from a
-> workqueue or something similar.
+Changelog - ver IV
+------------------
+(Ver I: http://ozlabs.org/pipermail/linuxppc-dev/2009-May/071942.html)
+(Ver II: http://ozlabs.org/pipermail/linuxppc-dev/2009-May/072106.html)
+(Ver III: http://ozlabs.org/pipermail/linuxppc-dev/2009-May/072387.html
 
-Ok, so here's my conclusion:
+- While DABR register requires double-word (8 bytes) aligned addresses, i.e.
+the breakpoint is active over a range of 8 bytes, PPC64 allows byte-level
+addressability. This may lead to stray exceptions which have to be ignored in
+hw_breakpoint_handler(), when DAR != (Breakpoint request address). However DABR
+will be populated with the requested breakpoint address aligned to the previous
+double-word address. The code is now modified to store user-requested address
+in 'bp->info.address' but update the DABR with a double-word aligned address.
 
-First, I need to apologize as I'm the one iirc who told Ilya to
-implement it that way... oops.
+- Please note that the Data Breakpoint facility in Xmon is broken as of 2.6.29
+and the same has not been integrated into this facility as described in Ver I.
 
-I don't think we can easily get the mm/vmalloc.c code irq safe,
-especially not since it got bloated recently for scalability.
+Kindly review the patches and let me know if they're in a form that is ready for
+upstream inclusion.
 
-So at this stage, we have no choice I think be re-instate the old code.
-
-This won't fix all the issues because we still can't do TLB shootdown in
-SMP at interrupt time, but I don't think there's any released platform
-in 2.6.30 that does SMP and non-coherent DMA, so we can fix that later.
-
-I'll do the revert as it's not trivial (we removed CONFIG_CONSISTENT_*
-etc...) for now.
-
-Note that I still think the right approach in the long run is to ban the
-consistent allocs from atomic contexts generically in linux, though that
-will be a hard nut to crack.
-
-Cheers,
-Ben.
-
-> Cheers,
-> Ben.
-> 
-> > On Thu, May 21, 2009 at 10:50 AM, Albert Herranz
-> > <albert_herranz@yahoo.es> wrote:
-> > >
-> > > Hello list,
-> > >
-> > > Commit 33f00dcedb0e22cdb156a23632814fc580fcfcf8 seems to have broken DMA coherent allocations for CONFIG_NOT_COHERENT_CACHE platforms.
-> > >
-> > > The problems seem to be that the new __dma_alloc_coherent() and __dma_free_coherent() implementations:
-> > >
-> > > - don't respect anymore the passed gfp flags (__dma_alloc_coherent() unconditionally uses GFP_KERNEL within the function irrespective of the caller flags)
-> > > - can't be used in interrupt context as they use get_vm_area_caller()/vfree() which end up triggering BUG_ON(in_interrupt())
-> > >
-> > > One victim happens to be the USB core subsystem which sometimes frees dma coherent memory in interrupt context for drivers flagged HCD_LOCAL_MEM.
-> > >
-> > > This has been experienced while writing a new EHCI driver for the Nintendo Wii platform.
-> > >
-> > > usb 1-1: new high speed USB device using ehci-mipc and address 2
-> > > ------------[ cut here ]------------
-> > > kernel BUG at mm/vmalloc.c:1328!
-> > > Oops: Exception in kernel mode, sig: 5 [#1]
-> > > PREEMPT wii
-> > > Modules linked in:
-> > > NIP: c008ea20 LR: c0015890 CTR: c00111d4
-> > > REGS: d2c65b10 TRAP: 0700   Not tainted  (2.6.30-rc2-isobel-wii-00092-gcba94db-dirty)
-> > > MSR: 00021032 <ME,CE,IR,DR>  CR: 42482028  XER: 00000000
-> > > TASK = d2c600f0[28] 'kmmcd' THREAD: d2c64000
-> > > GPR00: 00010000 d2c65bc0 d2c600f0 d4030000 d4030000 d4030000 12da1000 00000001
-> > > GPR08: 00000000 d2c64000 00000020 00000000 22482022 94fdfb98 6e1979bc c6bbdbdd
-> > > GPR16: 00000020 00200200 00100100 d4020060 00000001 d401c0ec 00000001 d401c0ec
-> > > GPR24: d2d9a6c0 00000000 00000000 d2f69de0 d2d9a600 d2f69e30 d2f69e2c d2da08e0
-> > > NIP [c008ea20] vfree+0xc/0x18
-> > > LR [c0015890] __dma_free_coherent+0x14/0x24
-> > > Call Trace:
-> > > [d2c65bc0] [c0017af8] __mipc_recv_req+0x160/0x178 (unreliable)
-> > > [d2c65bd0] [c00111ec] dma_direct_free_coherent+0x18/0x28
-> > > [d2c65be0] [c01cfca4] hcd_free_coherent+0x7c/0x12c
-> > > [d2c65c10] [c01d00b8] unmap_urb_for_dma+0x150/0x1cc
-> > > [d2c65c20] [c01d0174] usb_hcd_giveback_urb+0x40/0xe4
-> > > [d2c65c30] [c01df474] ehci_urb_done+0xf0/0x114
-> > > [d2c65c50] [c01e3870] qh_completions+0x41c/0x4dc
-> > > [d2c65ca0] [c01e44e0] scan_async+0x9c/0x1a0
-> > > [d2c65cc0] [c01e49ec] ehci_work+0x58/0xc4
-> > > [d2c65cd0] [c01e5424] ehci_irq+0x22c/0x230
-> > > [d2c65d00] [c01cfa88] usb_hcd_irq+0x50/0xa8
-> > > [d2c65d20] [c00597d8] handle_IRQ_event+0xdc/0x250
-> > > [d2c65d60] [c005ba20] handle_level_irq+0x9c/0x138
-> > > [d2c65d80] [c001cbc8] hollywood_pic_irq_cascade+0x7c/0xf8
-> > > [d2c65da0] [c00064b4] do_IRQ+0x9c/0xc4
-> > > [d2c65dc0] [c0011fb8] ret_from_except+0x0/0x14
-> > >
-> > > Any comments on how to address this issue (other than reverting the above mentioned commit, which fixes it) are welcome.
-> > >
-> > > Thanks,
-> > > Albert
-> > >
-> > >
-> > >
-> > >
-> > > _______________________________________________
-> > > Linuxppc-dev mailing list
-> > > Linuxppc-dev@ozlabs.org
-> > > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> > >
-> > 
-> > 
-> > 
+Thanks,
+K.Prasad
