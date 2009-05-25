@@ -1,24 +1,22 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AB791DDFD5
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 22:33:00 +1000 (EST)
-Date: Mon, 25 May 2009 14:32:14 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: Re: [PATCH resend4 2/3] itimers: fix periodic tics precision
-In-Reply-To: <20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
-Message-ID: <alpine.LFD.2.00.0905251423490.3582@localhost.localdomain>
-References: <20090522154339.06d30f0a@dhcp-lab-109.englab.brq.redhat.com>
-	<alpine.LFD.2.00.0905221611380.3570@localhost.localdomain>
-	<20090525132814.442877e5@dhcp-lab-109.englab.brq.redhat.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id 13A9DDE016
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 23:22:58 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 2so1507070ywt.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 06:22:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090525093439.GA18290@sirena.org.uk>
+References: <20090525013606.3073.86753.stgit@terra>
+	<20090525013847.3073.55951.stgit@terra>
+	<fa686aa40905242326y6a88af84n40f23759661a6cd0@mail.gmail.com>
+	<20090525093439.GA18290@sirena.org.uk>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 25 May 2009 07:22:37 -0600
+Message-ID: <fa686aa40905250622h3c2076c2l21a5dd9f29e5f78e@mail.gmail.com>
+Subject: Re: [PATCH V3 1/4] Main rewite of the mpc5200 audio DMA code
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 25 May 2009, Stanislaw Gruszka wrote:
-> @@ -904,6 +905,7 @@ void __init time_init(void)
->  	tb_ticks_per_usec = ppc_tb_freq / 1000000;
->  	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
->  	calc_cputime_factors();
-> +	cputime_one = jiffies_to_cputime(1);
+On Mon, May 25, 2009 at 3:34 AM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Mon, May 25, 2009 at 12:26:27AM -0600, Grant Likely wrote:
+>> On Sun, May 24, 2009 at 7:38 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+>
+>> > +/* ------------------------------------------------------------------=
+---
+>> > + * Sysfs attributes for error monitoring
+>> > + */
+>
+>> All this sysfs stuff should be dropped from this patch. =A0It is an
+>> abuse of sysfs and I never should have written it this way. =A0Feel free
+>> to put it in a separate patch so others can use it if they really need
+>> it, but I'd like it to not be kept in mainline.
+>
+> If this is going to be kept it should be in debugfs like I said in
+> response to the v2 posting.
 
-  1) The variable name is misleading.
+exactly.
 
-  2) The patch breaks all powerpc platforms which have
-  CONFIG_VIRT_CPU_ACCOUNTING=n and ia64 with
-  CONFIG_VIRT_CPU_ACCOUNTING=y
+g.
 
-Thanks,
-
-	tglx
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
