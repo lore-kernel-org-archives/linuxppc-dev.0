@@ -1,21 +1,22 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
-	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id 4FEA3DEB6D
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 01:21:03 +1000 (EST)
-Received: by qyk34 with SMTP id 34so5416997qyk.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 08:21:02 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20090525102647.GD18290@sirena.org.uk>
-References: <20090525013849.3073.96729.stgit@terra>
-	<20090525102647.GD18290@sirena.org.uk>
-Date: Mon, 25 May 2009 11:21:01 -0400
-Message-ID: <9e4733910905250821nf433121s6c161d3f2104b453@mail.gmail.com>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 81804DE13C
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 01:22:45 +1000 (EST)
+Date: Mon, 25 May 2009 16:22:38 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: [PATCH V3 2/4] AC97 driver for mpc5200
-From: Jon Smirl <jonsmirl@gmail.com>
-To: grant.likely@secretlab.ca
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>
+Message-ID: <20090525152237.GK18290@sirena.org.uk>
+References: <20090525013606.3073.86753.stgit@terra>
+	<20090525013849.3073.96729.stgit@terra>
+	<fa686aa40905242316j3e8b46e7mcc71dc34df209003@mail.gmail.com>
+	<9e4733910905250815r4a6fa205s26531f08fe99131a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910905250815r4a6fa205s26531f08fe99131a@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 25, 2009 at 6:26 AM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
->> + =A0 =A0 =A0 =A0 =A0 =A0 spin_lock(&psc_dma->lock);
->> + =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&psc_dma->psc_regs->ac97_slots, psc_d=
-ma->slots);
->> + =A0 =A0 =A0 =A0 =A0 =A0 spin_unlock(&psc_dma->lock);
->> + =A0 =A0 =A0 =A0 =A0 =A0 break;
->
-> This locking looks wrong - I'd expect it to also cover the modification
-> of psc_dma->slots? =A0Otherwise it's hard to see what it buys you.
+On Mon, May 25, 2009 at 11:15:34AM -0400, Jon Smirl wrote:
 
-Grant, why are you spin locking around register access?
+> The link always runs at 12.288Mhz. Each frame is 256 bits. Worst case
+> you wait for two frames, 42us. If it doesn't respond in 42us the codec
 
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Note that some embedded systems will choose to vary the AC97 link clock.
+The most common case is where there's a PLL on the CODEC - the CODEC
+will start up misclocked at whatever the input frequency it's got is and
+then be reclocked using register writes to configure the PLL.
