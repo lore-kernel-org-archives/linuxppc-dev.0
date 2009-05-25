@@ -1,21 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 274F8DDFF2
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 18:41:29 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1M8VkL-0000Xg-J5
-	for linuxppc-dev@ozlabs.org; Mon, 25 May 2009 01:41:25 -0700
-Message-ID: <23703397.post@talk.nabble.com>
-Date: Mon, 25 May 2009 01:41:25 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: U-boot and linux command line parameters
-In-Reply-To: <20090525000618.GD8059@yookeroo.seuss>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 696BADE0E2
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 19:34:48 +1000 (EST)
+Date: Mon, 25 May 2009 10:34:41 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH V3 1/4] Main rewite of the mpc5200 audio DMA code
+Message-ID: <20090525093439.GA18290@sirena.org.uk>
+References: <20090525013606.3073.86753.stgit@terra>
+	<20090525013847.3073.55951.stgit@terra>
+	<fa686aa40905242326y6a88af84n40f23759661a6cd0@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-References: <23698384.post@talk.nabble.com>
-	<20090525000618.GD8059@yookeroo.seuss>
+In-Reply-To: <fa686aa40905242326y6a88af84n40f23759661a6cd0@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, May 25, 2009 at 12:26:27AM -0600, Grant Likely wrote:
+> On Sun, May 24, 2009 at 7:38 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
 
-Thank you for your answer. When studying the u-boot source code I have found
-that 
-it is indeed register r6 and r7 which pass the location of the command line
-parameters and the
-size. 
+> > +/* ---------------------------------------------------------------------
+> > + * Sysfs attributes for error monitoring
+> > + */
 
-The location of the parameters could be changed in u-boot according to the
-macro:
-CFG_BOOTMAPSZ
+> All this sysfs stuff should be dropped from this patch.  It is an
+> abuse of sysfs and I never should have written it this way.  Feel free
+> to put it in a separate patch so others can use it if they really need
+> it, but I'd like it to not be kept in mainline.
 
-There is however the message in all configuration files for u-boot that
-Linux can only map first initial 8MB
-so it seems to be not possible to set CFG_BOOTMAPSZ to something higher than
-8MB?
-
-/*
- * For booting Linux, the board info and command line data
- * have to be in the first 8 MB of memory, since this is
- * the maximum mapped by the Linux kernel during initialization.
- */
-#define CFG_BOOTMAPSZ             (8 << 20)   /* Initial Memory map for
-Linux */
- 
-
-Does somebody have an idea how to bypass this limitation in linux 2.6.23 or
-higher?
-
-M.
-
-
-
-
--- 
-View this message in context: http://www.nabble.com/U-boot-and-linux-command-line-parameters-tp23698384p23703397.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+If this is going to be kept it should be in debugfs like I said in
+response to the v2 posting.
