@@ -1,20 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-px0-f176.google.com (mail-px0-f176.google.com
-	[209.85.216.176]) by ozlabs.org (Postfix) with ESMTP id 15F7EDE154
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 00:48:48 +1000 (EST)
-Received: by pxi6 with SMTP id 6so3894537pxi.17
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 07:48:47 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v5 2/4] powerpc/virtex: refactor intc driver and add support
-	for i8259 cascading
-To: linuxppc-dev@ozlabs.org, Roderick Colenbrander <thunderbird2k@gmail.com>
-Date: Mon, 25 May 2009 08:41:23 -0600
-Message-ID: <20090525144123.13016.22963.stgit@localhost.localdomain>
-In-Reply-To: <20090525144023.13016.23071.stgit@localhost.localdomain>
-References: <20090525144023.13016.23071.stgit@localhost.localdomain>
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-qy0-f196.google.com (mail-qy0-f196.google.com
+	[209.85.221.196]) by ozlabs.org (Postfix) with ESMTP id 53074DE105
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2009 01:15:36 +1000 (EST)
+Received: by qyk34 with SMTP id 34so5412762qyk.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 08:15:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <fa686aa40905242316j3e8b46e7mcc71dc34df209003@mail.gmail.com>
+References: <20090525013606.3073.86753.stgit@terra>
+	<20090525013849.3073.96729.stgit@terra>
+	<fa686aa40905242316j3e8b46e7mcc71dc34df209003@mail.gmail.com>
+Date: Mon, 25 May 2009 11:15:34 -0400
+Message-ID: <9e4733910905250815r4a6fa205s26531f08fe99131a@mail.gmail.com>
+Subject: Re: [PATCH V3 2/4] AC97 driver for mpc5200
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, broonie@sirena.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,144 +25,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Mon, May 25, 2009 at 2:16 AM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
+> On Sun, May 24, 2009 at 7:38 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+>> +static unsigned short psc_ac97_read(struct snd_ac97 *ac97, unsigned sho=
+rt reg)
+>> +{
+>> + =A0 =A0 =A0 int timeout;
+>> + =A0 =A0 =A0 unsigned int val;
+>> +
+>> + =A0 =A0 =A0 spin_lock(&psc_dma->lock);
+>> +
+>> + =A0 =A0 =A0 /* Wait for it to be ready */
+>> + =A0 =A0 =A0 timeout =3D 1000;
+>> + =A0 =A0 =A0 while ((--timeout) && (in_be16(&psc_dma->psc_regs->sr_csr.=
+status) &
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 MPC52xx_PSC_SR_CMDSEND))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
+>
+> Holy unbounded latency Batman! =A0This code waits up to 10ms for a regist=
+er read!
+>
+> I hate spinning, but if it must be done; I'd like to see it small.
+> What is the worst case latency? 125us for 8000Hz bus speed? =A0If you
+> must spin; can a cpu_relax() be used instead of the udelay() while
+> watch the timebase? =A0Timur recently posted a patch which makes this
+> easier.
+>
+> http://patchwork.ozlabs.org/patch/27414/
+>
+> They *should* be appearing in Ben's -next branch soon.
 
-This patch refactors some of the xilinx_intc interrupt controller driver
-and adds support for cascading an i8259 off one of the irq lines.
 
-This patch was based on the ML510 support work done by Roderick
-Colenbrander.
+The link always runs at 12.288Mhz. Each frame is 256 bits. Worst case
+you wait for two frames, 42us. If it doesn't respond in 42us the codec
+clock is not ticking ( a recurring problem I am running into). These
+codecs may be going into a sleep mode I don't understand, but this is
+not the right place to try and wake them up. I'll lower the retry
+counts to 10 instead of 1000.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+I played around with implementing this on a kernel thread with
+interrupts. It can be done but the code is a lot more complex.
 
- arch/powerpc/sysdev/xilinx_intc.c |   76 ++++++++++++++++++++++++++++---------
- 1 files changed, 58 insertions(+), 18 deletions(-)
+BTW, 8000Hz is implemented by slot stuffing. The link always runs at
+12.288Mhz. The DACs are double buffered. When a sample is transfered
+between buffers it sets a bit on the link back to the host, and the
+host sends the next sample in the appropriate slot.
 
 
-diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-index c658b41..90b5772 100644
---- a/arch/powerpc/sysdev/xilinx_intc.c
-+++ b/arch/powerpc/sysdev/xilinx_intc.c
-@@ -25,6 +25,7 @@
- #include <linux/of.h>
- #include <asm/io.h>
- #include <asm/processor.h>
-+#include <asm/i8259.h>
- #include <asm/irq.h>
- 
- /*
-@@ -191,20 +192,14 @@ struct irq_host * __init
- xilinx_intc_init(struct device_node *np)
- {
- 	struct irq_host * irq;
--	struct resource res;
- 	void * regs;
--	int rc;
- 
- 	/* Find and map the intc registers */
--	rc = of_address_to_resource(np, 0, &res);
--	if (rc) {
--		printk(KERN_ERR __FILE__ ": of_address_to_resource() failed\n");
-+	regs = of_iomap(np, 0);
-+	if (!regs) {
-+		pr_err("xilinx_intc: could not map registers\n");
- 		return NULL;
- 	}
--	regs = ioremap(res.start, 32);
--
--	printk(KERN_INFO "Xilinx intc at 0x%08llx mapped to 0x%p\n",
--		(unsigned long long) res.start, regs);
- 
- 	/* Setup interrupt controller */
- 	out_be32(regs + XINTC_IER, 0); /* disable all irqs */
-@@ -217,6 +212,7 @@ xilinx_intc_init(struct device_node *np)
- 	if (!irq)
- 		panic(__FILE__ ": Cannot allocate IRQ host\n");
- 	irq->host_data = regs;
-+
- 	return irq;
- }
- 
-@@ -227,23 +223,65 @@ int xilinx_intc_get_irq(void)
- 	return irq_linear_revmap(master_irqhost, in_be32(regs + XINTC_IVR));
- }
- 
-+#if defined(CONFIG_PPC_I8259)
-+/*
-+ * Support code for cascading to 8259 interrupt controllers
-+ */
-+static void xilinx_i8259_cascade(unsigned int irq, struct irq_desc *desc)
-+{
-+	unsigned int cascade_irq = i8259_irq();
-+	if (cascade_irq)
-+		generic_handle_irq(cascade_irq);
-+
-+	/* Let xilinx_intc end the interrupt */
-+	desc->chip->ack(irq);
-+	desc->chip->unmask(irq);
-+}
-+
-+static void __init xilinx_i8259_setup_cascade(void)
-+{
-+	struct device_node *cascade_node;
-+	int cascade_irq;
-+
-+	/* Initialize i8259 controller */
-+	cascade_node = of_find_compatible_node(NULL, NULL, "chrp,iic");
-+	if (!cascade_node)
-+		return;
-+
-+	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
-+	if (!cascade_irq) {
-+		pr_err("virtex_ml510: Failed to map cascade interrupt\n");
-+		goto out;
-+	}
-+
-+	i8259_init(cascade_node, 0);
-+	set_irq_chained_handler(cascade_irq, xilinx_i8259_cascade);
-+
-+ out:
-+	of_node_put(cascade_node);
-+}
-+#else
-+static inline void xilinx_i8259_setup_cascade(void) { return; }
-+#endif /* defined(CONFIG_PPC_I8259) */
-+
-+static struct of_device_id xilinx_intc_match[] __initconst = {
-+	{ .compatible = "xlnx,opb-intc-1.00.c", },
-+	{ .compatible = "xlnx,xps-intc-1.00.a", },
-+	{}
-+};
-+
-+/*
-+ * Initialize master Xilinx interrupt controller
-+ */
- void __init xilinx_intc_init_tree(void)
- {
- 	struct device_node *np;
- 
- 	/* find top level interrupt controller */
--	for_each_compatible_node(np, NULL, "xlnx,opb-intc-1.00.c") {
-+	for_each_matching_node(np, xilinx_intc_match) {
- 		if (!of_get_property(np, "interrupts", NULL))
- 			break;
- 	}
--	if (!np) {
--		for_each_compatible_node(np, NULL, "xlnx,xps-intc-1.00.a") {
--			if (!of_get_property(np, "interrupts", NULL))
--				break;
--		}
--	}
--
--	/* xilinx interrupt controller needs to be top level */
- 	BUG_ON(!np);
- 
- 	master_irqhost = xilinx_intc_init(np);
-@@ -251,4 +289,6 @@ void __init xilinx_intc_init_tree(void)
- 
- 	irq_set_default_host(master_irqhost);
- 	of_node_put(np);
-+
-+	xilinx_i8259_setup_cascade();
- }
+>
+>> +
+>> + =A0 =A0 =A0 if (!timeout) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("timeout on ac97 bus (rdy)\n");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0xffff;
+>> + =A0 =A0 =A0 }
+>> +
+>> + =A0 =A0 =A0 /* Do the read */
+>> + =A0 =A0 =A0 out_be32(&psc_dma->psc_regs->ac97_cmd, (1<<31) | ((reg & 0=
+x7f) << 24));
+>> +
+>> + =A0 =A0 =A0 /* Wait for the answer */
+>> + =A0 =A0 =A0 timeout =3D 1000;
+>> + =A0 =A0 =A0 while ((--timeout) && !(in_be16(&psc_dma->psc_regs->sr_csr=
+.status) &
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 MPC52xx_PSC_SR_DATA_VAL))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
+>
+> ditto.
+>
+>> +static int psc_ac97_cold_reset_check(struct snd_ac97 *ac97)
+>> +{
+>> + =A0 =A0 =A0 int max_reset, timeout;
+>> + =A0 =A0 =A0 struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
+>> +
+>> + =A0 =A0 =A0 /* AC97 clock is generated by the codec.
+>> + =A0 =A0 =A0 =A0* Ensure that it starts ticking after codec reset.
+>> + =A0 =A0 =A0 =A0*/
+>> + =A0 =A0 =A0 for (max_reset =3D 0; max_reset < 5; max_reset++) {
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Do a cold reset */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_8(&regs->op1, MPC52xx_PSC_OP_RES);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_8(&regs->op0, MPC52xx_PSC_OP_RES);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(50);
+>
+> :-/ =A0Don't like, but don't know if there is an alternative.
+>
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* PSC recover from cold reset
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* (cfr user manual, not sure if useful)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&regs->sicr, in_be32(&regs->sicr)=
+);
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 psc_ac97_warm_reset(ac97);
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* first make sure AC97 clock is low */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 for (timeout =3D 0; ((in_8(&regs->ipcr_acr=
+.ipcr) & 0x80) !=3D 0) &&
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (timeout <=
+ 100); timeout++)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (timeout =3D=3D 100)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* then wait for the transition to high */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 for (timeout =3D 0; ((in_8(&regs->ipcr_acr=
+.ipcr) & 0x80) =3D=3D 0) &&
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (timeout <=
+ 100); timeout++)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 udelay(10);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (timeout =3D=3D 100)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
+>
+> Using udelay makes this less accurate. =A0Only possible reason to use a
+> udelay is if the register cannot be polled at full speed (which is
+> possibly the case if it adds bus contention; but I don't think it is
+> an issue here).
+>
+> g.
+>
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+>
+
+
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
