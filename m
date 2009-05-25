@@ -1,18 +1,20 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [net-next-2.6 PATCH v2] can: SJA1000: generic OF platform bus
-	driver
-Date: Sun, 24 May 2009 23:27:14 +0100
-References: <4A16BAAE.3070401@grandegger.com>
-	<200905231315.57016.arnd@arndb.de>
-	<4A18298E.8090209@grandegger.com>
-In-Reply-To: <4A18298E.8090209@grandegger.com>
+Return-Path: <dgibson@bilbo.ozlabs.org>
+Received: from bilbo.ozlabs.org (bilbo.ozlabs.org [203.10.76.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bilbo.ozlabs.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5917ADE059
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2009 10:17:53 +1000 (EST)
+Date: Mon, 25 May 2009 10:06:18 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Mirek23 <miroslaw.dach@psi.ch>
+Subject: Re: U-boot and linux command line parameters
+Message-ID: <20090525000618.GD8059@yookeroo.seuss>
+References: <23698384.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200905242327.15139.arnd@arndb.de>
-Cc: Linux Netdev List <netdev@vger.kernel.org>, devicetree-discuss@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <23698384.post@talk.nabble.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 23 May 2009, Wolfgang Grandegger wrote:
-> Arnd Bergmann wrote:
-> > 
-> > Minor nitpicking: dev->base_addr should be defined as an __iomem pointer
-> > so you can avoid the cast here and in the ioremap/iounmap path.
+On Sun, May 24, 2009 at 02:38:52PM -0700, Mirek23 wrote:
 > 
-> Here the member "base_addr" of "struct net_device" is used and it's not
-> up to me to change the type.
+> Dear All,
+> 
+> I use linux kernel 2.6.23 and u-boot 1.2.0 (on ppc405 virtex-4 ) for
+> some time. All works fine when the kernel together with initramfs is
+> smaller than 8MB. If it is bigger than the kernel does not boot
+> properly.
+> 
+> First of all I would like to know how the address for the linux
+> command line parameters is "transferred" from u-boot to linux for
+> ppc405 (virtex4 chip)?  (via some registers or is it a fixed address
+> in the memory ie. 8MB?)  Does somebody know what should be changed,
+> in the kernel, in order to move this limitation from 8MB to let say
+> 12MB? I would be grateful for any hint.
 
-Right, that makes sense. However, most drivers use the field to store the
-physical address, not the iomap token. Maybe there should be a new field
-in struct sja1000_priv for the virtual address, but that would be a change
-to the base driver, not just to the OF portion.
+IIRC, U-boot 1.2.0 is a version of u-boot before it became device tree
+aware.  Which means if I'm reading the cuboot.c code correctly, the
+command line address is passed to the kernel at entry in r6, with the
+length in r7.  With later, device-tree aware u-boot versions, the
+command line is instead passed as a device tree property.
 
-Thanks,
-
-	Arnd <><
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
